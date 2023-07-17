@@ -20,6 +20,10 @@ def login(email, password):
     res = supabase.auth.sign_in(email, password)
     return res
 
+@app.route('/sign-out')
+def sign_out():
+    res = supabase.auth.sign_out()
+    return "Logged out"
 
 @app.route('/quick-search/<search>/<county>')
 def quick_search(search, county):
