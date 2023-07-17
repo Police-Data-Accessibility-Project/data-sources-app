@@ -10,6 +10,21 @@ SUPABASE_URL = os.getenv('SUPABASE_URL')
 SUPABASE_KEY = os.getenv('SUPABASE_KEY')
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+@app.route('/sign-up/<email>/<password>')
+def sign_up(email, password):
+    res = supabase.auth.sign_up(email, password)
+    return res
+
+@app.route('/login/<email>/<password>')
+def login(email, password):
+    res = supabase.auth.sign_in(email, password)
+    return res
+
+@app.route('/sign-out')
+def sign_out():
+    res = supabase.auth.sign_out()
+    return "Logged out"
+
 @app.route('/quick-search/<search>/<county>')
 def quick_search(search, county):
     # Query for all county_fips codes that match the county name searched
