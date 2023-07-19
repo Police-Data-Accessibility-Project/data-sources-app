@@ -5,10 +5,14 @@ import os
 app = Flask(__name__)
 
 def read_env():
-    with open('.env') as file:
-        for line in file:
-            key, value = line.strip().split('=', 1)
-            os.environ[key] = value
+    try:
+        with open('.env') as file:
+            for line in file:
+                key, value = line.strip().split('=', 1)
+                os.environ[key] = value
+    except: 
+        print('Cannot open file')
+        file.close()
 
 read_env()
 
@@ -44,7 +48,6 @@ def quick_search(search, county):
         return data_sources
 
     else:
-        # Add error handling below
         return data_sources
 
 if __name__ == '__main__':
