@@ -16,9 +16,17 @@ def read_env():
 
 read_env()
 
-SUPABASE_URL = os.getenv('SUPABASE_URL')
-SUPABASE_KEY = os.getenv('SUPABASE_KEY')
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+def initialize_supabase_client():
+    try:
+        SUPABASE_URL = os.getenv('SUPABASE_URL')
+        SUPABASE_KEY = os.getenv('SUPABASE_KEY')
+        return create_client(SUPABASE_URL, SUPABASE_KEY)
+    except:
+        print('Error while initializing the Supabase client.')
+        raise
+
+supabase = initialize_supabase_client()
+
 
 @app.route('/quick-search/<search>/<county>')
 def quick_search(search, county):
