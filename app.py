@@ -1,10 +1,16 @@
 from flask import Flask
 from supabase_py import create_client
-from dotenv import load_dotenv
 import os
 
 app = Flask(__name__)
-load_dotenv()
+
+def read_env():
+    with open('.env') as file:
+        for line in file:
+            key, value = line.strip().split('=', 1)
+            os.environ[key] = value
+
+read_env()
 
 SUPABASE_URL = os.getenv('SUPABASE_URL')
 SUPABASE_KEY = os.getenv('SUPABASE_KEY')
@@ -15,6 +21,8 @@ def quick_search(search, county):
     # Query for all county_fips codes that match the county name searched
     counties = supabase.table('counties').select('fips').eq('name', county).execute()
     counties_fips = counties.get('data', []) 
+
+    data_sources = {'count': 0, 'data': []}
 
     if len(counties_fips) > 0:
         # For each county_fip code, query for all agencies within that county and add to all agency list
@@ -27,7 +35,6 @@ def quick_search(search, county):
                 all_agencies.append(agency_data)
         
         # For each agency_uid, find all matches in the data_sources table that also have a partial match with the search term
-        data_sources = {'count': 0, 'data': []}
         for agency in all_agencies:
             agency_data_sources = supabase.table('data_sources').select('name, description, record_type, source_url, record_format, coverage_start, coverage_end, agency_supplied').ilike('name', f"%{search}%").eq('agency_described', f"['{agency['airtable_uid']}']").execute()
             agency_data_sources_records = agency_data_sources.get('data')
@@ -38,7 +45,7 @@ def quick_search(search, county):
 
     else:
         # Add error handling below
-        return "No counties found"
+        return data_sources
 
 if __name__ == '__main__':
     app.run()
