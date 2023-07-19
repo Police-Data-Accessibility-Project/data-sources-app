@@ -1,9 +1,11 @@
 from flask import Flask
 from flask_restful import Api
+from flask_bcrypt import Bcrypt
 from supabase_py import create_client
 import os
 
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
 api = Api(app)
 
 def read_env():
