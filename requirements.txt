@@ -1,5 +1,6 @@
 aniso8601==9.0.1
 attrs==23.1.0
+bcrypt==4.0.1
 blinker==1.6.2
 certifi==2023.5.7
 chardet==4.0.0
@@ -7,6 +8,7 @@ click==8.1.4
 dataclasses==0.6
 deprecation==2.1.0
 Flask==2.3.2
+Flask-Bcrypt==1.0.1
 Flask-JWT==0.3.2
 Flask-RESTful==0.3.10
 gotrue==0.2.0
