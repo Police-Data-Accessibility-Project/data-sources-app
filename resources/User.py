@@ -5,10 +5,15 @@ import jwt
 import os
 
 class User(Resource):
+    def __init__(self, **kwargs):
+        self.bcrypt = kwargs['bcrypt']
+        self.supabase = kwargs['supabase']
+
     def get(self):
         try:
-            email = request.get_json('email')
-            password = request.get_json('password')
+            data = request.get_json()
+            email = data.get('email')
+            password = data.get('password')
             user = self.supabase.table('users').select('*').eq('email', email).execute()['data']
             SECRET_KEY = os.getenv('SECRET_KEY')
             if self.bcrypt.check_password_hash(user.password_digest, password):
@@ -19,10 +24,11 @@ class User(Resource):
     
     def post(self):
         try:
-            email = request.get_json('email')
-            password = request.get_json('password')
+            data = request.get_json()
+            email = data.get('email')
+            password = data.get('password')
             password_digest = self.bcrypt.generate_password_hash(password)
-            user = self.supabase.table('users').insert({email, password_digest}).execute()
+            user = self.supabase.table('users').insert({"id": 1, "email": email, "password_digest": password_digest}).execute()
             return user
         except Exception as e:
             return {'error': e}
