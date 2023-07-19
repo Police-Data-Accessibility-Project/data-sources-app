@@ -1,0 +1,1 @@
+# Initialize resources module
