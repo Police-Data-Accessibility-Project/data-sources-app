@@ -1,12 +1,15 @@
 from flask import Flask
 from flask_restful import Api
 from flask_bcrypt import Bcrypt
+from flask_cors import CORS
+from resources.User import User
 from supabase_py import create_client
 import os
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
 api = Api(app)
+CORS(app)
 
 def read_env():
     try:
@@ -30,6 +33,8 @@ def initialize_supabase_client():
         raise
 
 supabase = initialize_supabase_client()
+
+api.add_resource(User, '/user', resource_class_kwargs={"bcrypt": bcrypt, "supabase": supabase})
 
 @app.route('/sign-up/<email>/<password>')
 def sign_up(email, password):
