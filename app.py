@@ -13,6 +13,8 @@ def read_env():
     except: 
         print('Cannot open file')
         file.close()
+        data_sources = {'count': 0, 'data': []}
+        return data_sources
 
 read_env()
 
@@ -23,7 +25,8 @@ def initialize_supabase_client():
         return create_client(SUPABASE_URL, SUPABASE_KEY)
     except:
         print('Error while initializing the Supabase client.')
-        raise
+        data_sources = {'count': 0, 'data': []}
+        return data_sources
 
 supabase = initialize_supabase_client()
 
