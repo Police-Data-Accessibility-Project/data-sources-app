@@ -47,7 +47,7 @@ def quick_search(search, county):
                 agencies = supabase.table('agencies').select('name, municipality, state_iso, airtable_uid').eq('county_fips', fips).execute()
                 agencies_data = agencies.get('data', [])
                 for agency_data in agencies_data:
-                    all_agencies.append(agency_data)
+                    all_agencies.append({**agency_data, "agency_name": agency_data.pop('name')})
             
             # For each agency_uid, find all matches in the data_sources table that also have a partial match with the search term
             for agency in all_agencies:
@@ -55,7 +55,7 @@ def quick_search(search, county):
                 agency_data_sources_records = agency_data_sources.get('data')
                 for record in agency_data_sources_records:
                     data_sources['count'] += 1
-                    data_sources['data'].append({**record, **agency})
+                    data_sources['data'].append({**record, **agency, "data_source_name": record.pop('name')})
             return data_sources
 
         else:
