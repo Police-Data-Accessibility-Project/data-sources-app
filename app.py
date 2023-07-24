@@ -4,17 +4,26 @@ import os
 
 app = Flask(__name__)
 
+
+
 def read_env():
-    try:
-        with open('.env') as file:
-            for line in file:
-                key, value = line.strip().split('=', 1)
-                os.environ[key] = value
-    except: 
-        print('Cannot open file')
-        file.close()
-        data_sources = {'count': 0, 'data': []}
-        return data_sources
+    app_env = os.environ.get('APP_ENV')
+    
+    if app_env == 'local':
+        try:
+            with open('.env') as file:
+                for line in file:
+                    key, value = line.strip().split('=', 1)
+                    os.environ[key] = value
+        except FileNotFoundError:
+            print("The '.env' file was not found. Please create the file and set the necessary environment variables.")
+            data_sources = {'count': 0, 'data': []}
+            return data_sources
+        except: 
+            print('Cannot open file')
+            file.close()
+            data_sources = {'count': 0, 'data': []}
+            return data_sources
 
 read_env()
 
