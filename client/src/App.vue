@@ -1,13 +1,18 @@
 <template>
-  <img src="@/assets/logo.svg" />
-  <h2>Our mission is to help people locate, understand, and share public records about every U.S. police system. Try giving our database a search to see if we can help you find public records.</h2>
+  <img src="@/assets/logo.svg" class="logo"/>
+  <h2 class="quick-search-description">Our mission is to help people locate, understand, and share public records about every U.S. police system. Try giving our database a search to see if we can help you find public records.</h2>
   <QuickSearchForm :searchTerm="searchTerm" :county="county" @handleChange="handleChange" @handleSubmit="handleSubmit"/>
   <button @click="console.log('Clicked advanced search')">Advanced search</button>
-  <a href="https://airtable.com/shrbFfWk6fjzGnNsk" target="_blank" rel="noopener noreferrer">Request data</a>
-  <a href="https://pdap.io/index.html" target="_blank" rel="noopener noreferrer">Ask a question</a>
-  <a href="https://airtable.com/shrJafakrcmTxHU2i" target="_blank" rel="noopener noreferrer">Submit a Data Source</a>
-  <a href="https://pdap.io/index.html" target="_blank" rel="noopener noreferrer">Report issue</a>
-  <a href="https://docs.pdap.io/" target="_blank" rel="noopener noreferrer">Docs</a>
+  <div v-if="searchResult">
+    <p>{{ searchResult }}</p>
+  </div>
+  <footer>
+    <a href="https://airtable.com/shrbFfWk6fjzGnNsk" target="_blank" rel="noopener noreferrer">Request data</a>
+    <a href="https://pdap.io/index.html" target="_blank" rel="noopener noreferrer">Ask a question</a>
+    <a href="https://airtable.com/shrJafakrcmTxHU2i" target="_blank" rel="noopener noreferrer">Submit a Data Source</a>
+    <a href="https://pdap.io/index.html" target="_blank" rel="noopener noreferrer">Report issue</a>
+    <a href="https://docs.pdap.io/" target="_blank" rel="noopener noreferrer">Docs</a>
+  </footer>
 </template>
 
 <script>
@@ -44,8 +49,17 @@ export default {
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  margin: 0;
+  padding: 1rem;
 }
+
+.logo {
+  width: 50px;
+  margin: 1rem
+}
+
+.quick-search-description {
+  text-align: center;
+}
+
 </style>
