@@ -1,10 +1,14 @@
 <template>
   <div>
-    <form @submit="handleSubmit">
-      <label for="searchTerm">What are you looking for?</label>
-      <input @input="handleChange" placeholder="Complaints" :value="searchTerm" name="searchTerm" />
-      <label for="county">From where?</label>
-      <input @input="handleChange" placeholder="Allegheny County" :value="county" name="county" />
+    <form class="quick-search-form" @submit="handleSubmit">
+      <div class="quick-search-input-label">
+        <label for="searchTerm">What are you looking for?</label>
+        <input @input="handleChange" placeholder="Complaints" :value="searchTerm" name="searchTerm" />
+      </div>
+      <div class="quick-search-input-label">
+        <label for="county">From where?</label>
+        <input @input="handleChange" placeholder="Allegheny County" :value="county" name="county" />
+      </div>
       <button>Search</button>
     </form>
   </div>
@@ -28,3 +32,16 @@ export default {
   }
 }
 </script>
+
+<style>
+.quick-search-form {
+  display: flex;
+  justify-content: center;
+}
+
+.quick-search-input-label {
+  display: flex;
+  flex-flow: column-reverse wrap;
+  padding: 1rem;
+}
+</style>
