@@ -13,15 +13,14 @@
     </div>
   </div>
   <footer>
-    <a href="https://airtable.com/shrbFfWk6fjzGnNsk" target="_blank" rel="noopener noreferrer">Request data</a>
-    <p>|</p>
-    <a href="https://pdap.io/index.html" target="_blank" rel="noopener noreferrer">Ask a question</a>
-    <p>|</p>
-    <a href="https://airtable.com/shrJafakrcmTxHU2i" target="_blank" rel="noopener noreferrer">Submit a Data Source</a>
-    <p>|</p>
-    <a href="https://pdap.io/index.html" target="_blank" rel="noopener noreferrer">Report issue</a>
-    <p>|</p>
-    <a href="https://docs.pdap.io/" target="_blank" rel="noopener noreferrer">Docs</a>
+    <div class="footer-links">
+      <a href="https://airtable.com/shrbFfWk6fjzGnNsk" target="_blank" rel="noopener noreferrer">Request data</a>
+      <p>|</p>
+      <a href="https://airtable.com/shrJafakrcmTxHU2i" target="_blank" rel="noopener noreferrer">Submit a Data Source</a>
+      <p>|</p>
+      <a href="https://docs.pdap.io/" target="_blank" rel="noopener noreferrer">Docs</a>
+    </div>
+    <p class="footer-email">To report an issue or ask a question, email<a href="mailto:contact@pdap.io">contact@pdap.io</a></p>
   </footer>
 </template>
 
@@ -104,6 +103,10 @@ footer {
   bottom: 0;
   width: 100%;
   padding: 1rem 0;
+  text-align: center;
+}
+
+.footer-links {
   display: flex;
   justify-content: center;
 }
@@ -115,6 +118,11 @@ footer a, footer p {
 
 footer p {
   font-weight: bold
+}
+
+.footer-email {
+  font-weight: normal;
+  padding: 1rem 0
 }
 
 </style>
