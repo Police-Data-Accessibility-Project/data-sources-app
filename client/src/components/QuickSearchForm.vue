@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="quick-search-component">
     <form class="quick-search-form" @submit="handleSubmit">
       <div class="quick-search-input-label">
         <label for="searchTerm">What are you looking for?</label>
@@ -9,7 +9,7 @@
         <label for="county">From where?</label>
         <input @input="handleChange" placeholder="Allegheny County" :value="county" name="county" />
       </div>
-      <button>Search</button>
+      <button class="quick-search-button">Search Data Sources</button>
     </form>
   </div>
 </template>
@@ -34,14 +34,37 @@ export default {
 </script>
 
 <style>
+.quick-search-component {
+  display: flex;
+  justify-content: center; 
+}
+
 .quick-search-form {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  width: 50%;
+  min-width: 450px;
 }
 
 .quick-search-input-label {
   display: flex;
   flex-flow: column-reverse wrap;
-  padding: 1rem;
+  padding: 1rem 0;
+  width: 45%;
+}
+
+.quick-search-input-label input {
+  padding: .5rem .25rem;
+  width: 100%
+}
+
+.quick-search-input-label label {
+  margin: .5rem 0;
+}
+
+.quick-search-button {
+  width: 100%;
+  padding: .5rem 1rem;
 }
 </style>

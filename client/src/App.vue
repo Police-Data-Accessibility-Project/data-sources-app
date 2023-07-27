@@ -1,16 +1,26 @@
 <template>
   <img src="@/assets/logo.svg" class="logo"/>
-  <h2 class="quick-search-description">Our mission is to help people locate, understand, and share public records about every U.S. police system. Try giving our database a search to see if we can help you find public records.</h2>
-  <QuickSearchForm :searchTerm="searchTerm" :county="county" @handleChange="handleChange" @handleSubmit="handleSubmit"/>
-  <button @click="console.log('Clicked advanced search')">Advanced search</button>
-  <div v-if="searchResult">
-    <p>{{ searchResult }}</p>
+  <div class="quick-search-card">
+    <div class="quick-search-description-div">
+      <h3 class="quick-search-description">Our mission is to help people locate, understand, and share public records about every U.S. police system. Try giving our database a search to see if we can help you find public records.</h3>
+    </div>
+    <QuickSearchForm :searchTerm="searchTerm" :county="county" @handleChange="handleChange" @handleSubmit="handleSubmit"/>
+    <div class="advanced-search-button-div">
+      <button @click="console.log('Clicked advanced search')" class="advanced-search-button">Advanced search</button>
+    </div>
+    <div v-if="searchResult">
+      <p>{{ searchResult }}</p>
+    </div>
   </div>
   <footer>
     <a href="https://airtable.com/shrbFfWk6fjzGnNsk" target="_blank" rel="noopener noreferrer">Request data</a>
+    <p>|</p>
     <a href="https://pdap.io/index.html" target="_blank" rel="noopener noreferrer">Ask a question</a>
+    <p>|</p>
     <a href="https://airtable.com/shrJafakrcmTxHU2i" target="_blank" rel="noopener noreferrer">Submit a Data Source</a>
+    <p>|</p>
     <a href="https://pdap.io/index.html" target="_blank" rel="noopener noreferrer">Report issue</a>
+    <p>|</p>
     <a href="https://docs.pdap.io/" target="_blank" rel="noopener noreferrer">Docs</a>
   </footer>
 </template>
@@ -58,8 +68,53 @@ export default {
   margin: 1rem
 }
 
+.quick-search-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-flow: column wrap;
+  height: 75vh;
+}
+
+.quick-search-description-div {
+  display: flex;
+  justify-content: center;
+}
+
 .quick-search-description {
   text-align: center;
+  width: 50%;
+}
+
+.advanced-search-button-div {
+  display: flex;
+  justify-content: center;
+}
+
+.advanced-search-button {
+  width: 50%;
+  padding: .5rem 1rem;
+  margin: .5rem 0;
+  min-width: 450px;
+}
+
+footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 1rem 0;
+  display: flex;
+  justify-content: center;
+}
+
+footer a, footer p {
+  margin: 0 .5rem;
+  text-decoration: none;
+}
+
+footer p {
+  font-weight: bold
 }
 
 </style>
