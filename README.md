@@ -9,22 +9,33 @@ git clone https://github.com/Police-Data-Accessibility-Project/data-sources-app.
 cd data-sources-app
 ```
 
-### 2. Create an .env file in the root directory with a SUPABASE_URL and SUPABASE_KEY.
+### 2. Create an .env file in the root directory.
+It should have a SUPABASE_URL and SUPABASE_KEY.
 
 ### 3. Create a virtual environment.
-```python3 -m venv venv```
+```
+python3 -m venv venv
+```
 
 ### 4. Activate the virtual environment.
-```source venv/bin/activate```
+```
+source venv/bin/activate
+```
 
 ### 5. Install dependencies.
-```pip install -r requirements.txt```
+```
+pip install -r requirements.txt
+```
 
 ### 6. Run the Python app.
-```python3 app.py```
+```
+python3 app.py
+```
 
 ### 7. In a new terminal window, install the Vue app.
-```npm install```
+```
+npm install
+```
 
 ### 8. Run the development server.
 ```
