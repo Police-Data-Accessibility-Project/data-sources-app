@@ -5,9 +5,9 @@
       <h3 class="quick-search-description">Our mission is to help people locate, understand, and share public records about every U.S. police system. Try giving our database a search to see if we can help you find public records.</h3>
     </div>
     <QuickSearchForm :searchTerm="searchTerm" :county="county" @handleChange="handleChange" @handleSubmit="handleSubmit"/>
-    <div class="advanced-search-button-div">
+    <!-- <div class="advanced-search-button-div">
       <button @click="console.log('Clicked advanced search')" class="advanced-search-button">Advanced Search</button>
-    </div>
+    </div> -->
     <div v-if="searchResult">
       <p>{{ searchResult }}</p>
     </div>
