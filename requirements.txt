@@ -9,6 +9,7 @@ dataclasses==0.6
 deprecation==2.1.0
 Flask==2.3.2
 Flask-Bcrypt==1.0.1
+flask_cors==4.0.0
 Flask-JWT==0.3.2
 Flask-RESTful==0.3.10
 gotrue==0.2.0
