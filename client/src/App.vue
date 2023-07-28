@@ -6,7 +6,7 @@
     </div>
     <QuickSearchForm :searchTerm="searchTerm" :county="county" @handleChange="handleChange" @handleSubmit="handleSubmit"/>
     <div class="advanced-search-button-div">
-      <button @click="console.log('Clicked advanced search')" class="advanced-search-button">Advanced search</button>
+      <button @click="console.log('Clicked advanced search')" class="advanced-search-button">Advanced Search</button>
     </div>
     <div v-if="searchResult">
       <p>{{ searchResult }}</p>
@@ -83,6 +83,7 @@ export default {
 .quick-search-description {
   text-align: center;
   width: 50%;
+  min-width: 450px;
 }
 
 .advanced-search-button-div {
@@ -98,8 +99,7 @@ export default {
 }
 
 footer {
-  position: fixed;
-  left: 0;
+  position: relative;
   bottom: 0;
   width: 100%;
   padding: 1rem 0;
@@ -125,4 +125,24 @@ footer p {
   padding: 1rem 0
 }
 
+@media (max-width: 450px) {
+  .quick-search-description {
+    width: 80%;
+    min-width: 50px;
+  }
+
+  .advanced-search-button {
+    width: 80%;
+    min-width: 50px;
+  }
+
+  .advanced-search-button-div {
+    width: 100%;
+  }
+
+  footer a, footer p {
+    margin: 0 .25rem;
+    font-size: smaller;
+  }
+}
 </style>

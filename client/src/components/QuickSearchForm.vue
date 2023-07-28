@@ -67,4 +67,17 @@ export default {
   width: 100%;
   padding: .5rem 1rem;
 }
+
+@media (max-width: 500px) {
+  .quick-search-input-label {
+    width: 100%;
+  }
+}
+
+@media (max-width: 450px) {
+  .quick-search-form {
+    width: 80%;
+    min-width: 50px;
+  }
+}
 </style>
