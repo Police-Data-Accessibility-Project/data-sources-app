@@ -34,12 +34,12 @@ python3 app.py
 
 ### 7. In a new terminal window, install the Vue app.
 ```
+cd client
 npm install
 ```
 
 ### 8. Run the development server.
 ```
-cd client
 npm run serve
 ```
 
