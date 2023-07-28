@@ -78,6 +78,7 @@ export default {
 .quick-search-description-div {
   display: flex;
   justify-content: center;
+  width: 100%;
 }
 
 .quick-search-description {
@@ -125,7 +126,7 @@ footer p {
   padding: 1rem 0
 }
 
-@media (max-width: 450px) {
+@media (max-width: 500px) {
   .quick-search-description {
     width: 80%;
     min-width: 50px;

@@ -33,7 +33,6 @@ h3 {
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  max-width:43ch;
 }
 
 h4 {
@@ -75,10 +74,6 @@ h6 a, h5 a, h4 a, h3 a, h2 a, h1 a {
 
 p {
   margin-bottom: 15px;
-}
-
-ul, p, li {
-  max-width: 43ch;
 }
 
 ul {
