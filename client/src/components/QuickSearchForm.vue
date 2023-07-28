@@ -57,7 +57,10 @@ export default {
 
 .quick-search-input-label input {
   padding: .5rem .25rem;
-  width: 100%
+  width: 100%;
+  line-height: 1.5;
+  font-weight: normal;
+  font-family: 'Inter', sans-serif;
 }
 
 .quick-search-input-label label {
