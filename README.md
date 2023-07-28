@@ -43,6 +43,8 @@ cd client
 npm run serve
 ```
 
+## Other helpful commands
+
 ### Compiles and minifies for production
 ```
 npm run build
