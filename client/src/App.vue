@@ -126,6 +126,19 @@ footer p {
   padding: 1rem 0
 }
 
+@media (max-height: 700px) {
+  .quick-search-card {
+    min-height: 700px;
+  }
+}
+
+@media (max-width: 700px) {
+  footer a, footer p {
+    margin: 0 .25rem;
+    font-size: 1rem;
+  }
+}
+
 @media (max-width: 500px) {
   .quick-search-description {
     width: 80%;
@@ -143,7 +156,7 @@ footer p {
 
   footer a, footer p {
     margin: 0 .25rem;
-    font-size: smaller;
+    font-size: .75rem;
   }
 }
 </style>
