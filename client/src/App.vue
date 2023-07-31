@@ -2,7 +2,7 @@
   <img src="@/assets/logo.svg" class="logo"/>
   <div class="quick-search-card">
     <div class="quick-search-description-div">
-      <h3 class="quick-search-description">Our mission is to help people locate, understand, and share public records about every U.S. police system. Try giving our database a search to see if we can help you find public records.</h3>
+      <p class="quick-search-description">Our mission is to help people locate, understand, and share public records about every U.S. police system. Try giving our database a search to see if we can help you find public records.</p>
     </div>
     <QuickSearchForm :searchTerm="searchTerm" :county="county" @handleChange="handleChange" @handleSubmit="handleSubmit"/>
     <!-- <div class="advanced-search-button-div">
@@ -13,14 +13,14 @@
     </div>
   </div>
   <footer>
-    <div class="footer-links">
+    <div class="footer-links small">
       <a href="https://airtable.com/shrbFfWk6fjzGnNsk" target="_blank" rel="noopener noreferrer">Request data</a>
       <p>|</p>
       <a href="https://airtable.com/shrJafakrcmTxHU2i" target="_blank" rel="noopener noreferrer">Submit a Data Source</a>
       <p>|</p>
       <a href="https://docs.pdap.io/" target="_blank" rel="noopener noreferrer">Docs</a>
     </div>
-    <p class="footer-email">To report an issue or ask a question, email<a href="mailto:contact@pdap.io">contact@pdap.io</a></p>
+    <p class="small">To report an issue or ask a question, email<a href="mailto:contact@pdap.io">contact@pdap.io</a></p>
   </footer>
 </template>
 
@@ -55,9 +55,6 @@ export default {
 
 <style>
 #app {
-  font-family: 'Inter', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 1rem;
 }
@@ -105,11 +102,15 @@ footer {
   width: 100%;
   padding: 1rem 0;
   text-align: center;
+  display:flex;
+  flex-direction:column;
+  align-items: center;
 }
 
 .footer-links {
   display: flex;
   justify-content: center;
+  margin-bottom:10px;
 }
 
 footer a, footer p {
@@ -117,12 +118,7 @@ footer a, footer p {
   text-decoration: none;
 }
 
-footer p {
-  font-weight: bold
-}
-
 .footer-email {
-  font-weight: normal;
   padding: 1rem 0
 }
 
