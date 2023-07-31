@@ -9,7 +9,6 @@
       <button @click="console.log('Clicked advanced search')" class="advanced-search-button">Advanced Search</button>
     </div> -->
     <div v-if="searchResult">
-      <p>{{ searchResult }}</p>
       <SearchResultCard :key="dataSource.uuid" v-for="dataSource in searchResult.data" :dataSource="dataSource"/>
     </div>
   </div>

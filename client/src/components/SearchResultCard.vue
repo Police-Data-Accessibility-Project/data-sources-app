@@ -1,12 +1,12 @@
 <template>
-  <div>
-    <h3>{{ dataSource.data_source_name }}</h3>
-    <h4 v-if="dataSource.agency_name">{{ dataSource.agency_name }}</h4>
-    <h4 v-else>Agency Unknown</h4>
-    <h4 v-if="dataSource.municipality && dataSource.state_iso">{{ dataSource.municipality }}, {{ dataSource.state_iso }}</h4>
-    <h4 v-else-if="dataSource.municipality">{{ dataSource.municipality }}</h4>
-    <h4 v-else-if="dataSource.state_iso">{{ dataSource.state_iso }}</h4>
-    <h4 v-else>Location Unknown</h4>
+  <div class="search-result-card ">
+    <p>{{ dataSource.data_source_name }}</p>
+    <p v-if="dataSource.agency_name">{{ dataSource.agency_name }}</p>
+    <p v-else>Agency Unknown</p>
+    <p v-if="dataSource.municipality && dataSource.state_iso">{{ dataSource.municipality }}, {{ dataSource.state_iso }}</p>
+    <p v-else-if="dataSource.municipality">{{ dataSource.municipality }}</p>
+    <p v-else-if="dataSource.state_iso">{{ dataSource.state_iso }}</p>
+    <p v-else>Location Unknown</p>
     <p v-if="dataSource.record_type">Record type</p>
     <p v-if="dataSource.record_type">{{ dataSource.record_type }}</p>
     <p v-else>Record Type Unknown</p>
@@ -56,3 +56,7 @@
     }
   }
 </script>
+
+<style>
+
+</style>
