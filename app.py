@@ -11,15 +11,26 @@ bcrypt = Bcrypt(app)
 api = Api(app)
 CORS(app)
 
+
+
 def read_env():
-    try:
-        with open('.env') as file:
-            for line in file:
-                key, value = line.strip().split('=', 1)
-                os.environ[key] = value
-    except: 
-        print('Cannot open file')
-        file.close()
+    app_env = os.environ.get('APP_ENV')
+    
+    if app_env == 'local':
+        try:
+            with open('.env') as file:
+                for line in file:
+                    key, value = line.strip().split('=', 1)
+                    os.environ[key] = value
+        except FileNotFoundError:
+            print("The '.env' file was not found. Please create the file and set the necessary environment variables.")
+            data_sources = {'count': 0, 'data': []}
+            return data_sources
+        except: 
+            print('Cannot open file')
+            file.close()
+            data_sources = {'count': 0, 'data': []}
+            return data_sources
 
 read_env()
 
@@ -30,7 +41,8 @@ def initialize_supabase_client():
         return create_client(SUPABASE_URL, SUPABASE_KEY)
     except:
         print('Error while initializing the Supabase client.')
-        raise
+        data_sources = {'count': 0, 'data': []}
+        return data_sources
 
 supabase = initialize_supabase_client()
 
@@ -68,7 +80,7 @@ def quick_search(search, county):
                 agencies = supabase.table('agencies').select('name, municipality, state_iso, airtable_uid').eq('county_fips', fips).execute()
                 agencies_data = agencies.get('data', [])
                 for agency_data in agencies_data:
-                    all_agencies.append(agency_data)
+                    all_agencies.append({**agency_data, "agency_name": agency_data.pop('name')})
             
             # For each agency_uid, find all matches in the data_sources table that also have a partial match with the search term
             for agency in all_agencies:
@@ -76,7 +88,7 @@ def quick_search(search, county):
                 agency_data_sources_records = agency_data_sources.get('data')
                 for record in agency_data_sources_records:
                     data_sources['count'] += 1
-                    data_sources['data'].append({**record, **agency})
+                    data_sources['data'].append({**record, **agency, "data_source_name": record.pop('name')})
             return data_sources
 
         else:
