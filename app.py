@@ -1,8 +1,15 @@
 from flask import Flask
+from flask_restful import Api
+from flask_bcrypt import Bcrypt
+from flask_cors import CORS
+from resources.User import User
 from supabase_py import create_client
 import os
 
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
+api = Api(app)
+CORS(app)
 
 
 
@@ -38,6 +45,23 @@ def initialize_supabase_client():
         return data_sources
 
 supabase = initialize_supabase_client()
+
+api.add_resource(User, '/user', resource_class_kwargs={"bcrypt": bcrypt, "supabase": supabase})
+
+@app.route('/sign-up/<email>/<password>')
+def sign_up(email, password):
+    res = supabase.auth.sign_up(email, password)
+    return res
+
+@app.route('/login/<email>/<password>')
+def login(email, password):
+    res = supabase.auth.sign_in(email, password)
+    return res
+
+@app.route('/sign-out')
+def sign_out():
+    res = supabase.auth.sign_out()
+    return "Logged out"
 
 @app.route('/quick-search/<search>/<county>')
 def quick_search(search, county):
