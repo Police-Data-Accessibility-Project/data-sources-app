@@ -11,8 +11,8 @@
     <p :key="recordFormat" v-for="recordFormat in dataSource.record_formats">
       {{ recordFormat }}
     </p>
-    <button href="dataSource.source_url">Visit Source URL</button>
-    <button @click="handleClick">Source details</button>
+    <button @click="openSource" :href="dataSource.source_url">Visit Source URL</button>
+    <button @click="showDetails">Source Details</button>
     <p v-if="expand">
       {{ dataSource.description }}
     </p>
@@ -29,8 +29,11 @@
       expand: false
     }),
     methods: {
-      handleClick() {
+      showDetails() {
         this.expand = !this.expand
+      },
+      openSource() {
+        window.open(this.dataSource.source_url, '_blank');
       }
     }
   }
