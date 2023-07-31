@@ -10,6 +10,7 @@
     </div> -->
     <div v-if="searchResult">
       <p>{{ searchResult }}</p>
+      <SearchResultCard :key="dataSource.uuid" v-for="dataSource in searchResult.data" :dataSource="dataSource"/>
     </div>
   </div>
   <footer>
@@ -26,13 +27,15 @@
 
 <script>
 import QuickSearchForm from './components/QuickSearchForm.vue';
+import SearchResultCard from './components/SearchResultCard.vue';
 import {BASE_URL} from '../globals'
 import axios from 'axios'
 
 export default {
   name: 'App',
   components: {
-    QuickSearchForm
+    QuickSearchForm,
+    SearchResultCard
   },
   data: () => ({
     searchTerm: '',
@@ -69,7 +72,7 @@ export default {
   justify-content: center;
   align-items: center;
   flex-flow: column wrap;
-  height: 75vh;
+  min-height: 75vh;
 }
 
 .quick-search-description-div {
@@ -120,12 +123,6 @@ footer a, footer p {
 
 .footer-email {
   padding: 1rem 0
-}
-
-@media (max-height: 700px) {
-  .quick-search-card {
-    min-height: 700px;
-  }
 }
 
 @media (max-width: 700px) {
