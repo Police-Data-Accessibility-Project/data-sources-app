@@ -5,6 +5,7 @@
   </div>
   <div v-else>
     <p>You searched "{{ searchTerm }}" for {{county}} County and you got {{ searchResult.count }} results</p>
+    <button @click="openForm">Missing something? Request data here</button>
     <div v-if="searchResult.count > 0">
       <SearchResultCard :key="dataSource.uuid" v-for="dataSource in searchResult?.data" :dataSource="dataSource"/>
     </div>
@@ -40,6 +41,9 @@ export default {
       const res = await axios.get(`${BASE_URL}/quick-search/${this.searchTerm}/${this.county}`)
       this.searchResult = res.data
       this.searched = true
+    },
+    openForm() {
+      window.open('https://airtable.com/shrbFfWk6fjzGnNsk', '_blank');
     }
   }
 }
