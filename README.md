@@ -10,7 +10,7 @@ cd data-sources-app
 ```
 
 ### 2. Create an .env file in the root directory.
-It should have a SUPABASE_URL and SUPABASE_KEY.
+It should have a SUPABASE_URL and SUPABASE_KEY for PDAP's Data Sources [Supabase](https://supabase.com/).
 
 ### 3. Create a virtual environment.
 ```
