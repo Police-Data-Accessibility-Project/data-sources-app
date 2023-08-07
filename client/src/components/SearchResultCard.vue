@@ -15,12 +15,12 @@
     <p class="search-result-data" v-if="dataSource.record_type">{{ dataSource.record_type }}</p>
     <p class="search-result-data" v-else>Record Type Unknown</p>
     <p class="search-result-label" v-if="dataSource.coverage_start || dataSource.coverage_end">Coverage</p>
-    <p class="search-result-data" v-if="dataSource.coverage_start && dataSource.coverage_end">{{ dataSource.coverage_start }}-{{ dataSource.coverage_end }}</p>
+    <p class="search-result-data" v-if="dataSource.coverage_start && dataSource.coverage_end">{{ formatDate(dataSource.coverage_start) }}-{{ formatDate(dataSource.coverage_end) }}</p>
     <p class="search-result-data" v-else-if="dataSource.coverage_start && !dataSource.coverage_end">
       {{ formatDate(dataSource.coverage_start) }} - End Date Unknown
     </p>
     <p class="search-result-data" v-else-if="!dataSource.coverage_start && dataSource.coverage_end">
-      Start Date Unknown - {{ dataSource.coverage_end }}
+      Start Date Unknown - {{ formatDate(dataSource.coverage_end) }}
     </p>
     <p class="search-result-data" v-else>
       Coverage Date Unknown
