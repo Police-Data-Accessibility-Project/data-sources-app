@@ -1,5 +1,5 @@
 <template>
-  <div class="search-results-page">
+  <div class="search-results-page" data-test="search-results-page">
     <h2>Search results</h2>
     <div class="loading-section" v-if="!searched">
       <p>Loading results...</p>
