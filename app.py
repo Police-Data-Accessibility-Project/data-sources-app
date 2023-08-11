@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from flask import Flask
 from flask_restful import Api
 from flask_bcrypt import Bcrypt

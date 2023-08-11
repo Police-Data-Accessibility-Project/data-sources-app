@@ -3,13 +3,15 @@ attrs==23.1.0
 bcrypt==4.0.1
 blinker==1.6.2
 certifi==2023.5.7
+cffi==1.15.1
 chardet==4.0.0
 click==8.1.4
+cryptography==41.0.2
 dataclasses==0.6
 deprecation==2.1.0
 Flask==2.3.2
 Flask-Bcrypt==1.0.1
-flask_cors==4.0.0
+Flask-Cors==4.0.0
 Flask-JWT==0.3.2
 Flask-RESTful==0.3.10
 gotrue==0.2.0
@@ -25,6 +27,7 @@ packaging==23.1
 pluggy==1.2.0
 postgrest-py==0.4.0
 py==1.11.0
+pycparser==2.21
 PyJWT==1.4.2
 pytest==6.2.5
 python-dateutil==2.8.2
