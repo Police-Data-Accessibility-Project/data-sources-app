@@ -1,11 +1,9 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_restful import Resource
 from flask import request, jsonify, make_response
-from flask_jwt import jwt_required
 
 class QuickSearch(Resource):
   def __init__(self, **kwargs):
-    self.bcrypt = kwargs['bcrypt']
     self.supabase = kwargs['supabase']
   
   def get(self, search, county):

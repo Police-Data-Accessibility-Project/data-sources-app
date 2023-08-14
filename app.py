@@ -1,7 +1,6 @@
 from collections.abc import Mapping
 from flask import Flask
 from flask_restful import Api
-from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from resources.User import User
 from resources.QuickSearch import QuickSearch
@@ -9,7 +8,6 @@ from supabase_py import create_client
 import os
 
 app = Flask(__name__)
-bcrypt = Bcrypt(app)
 api = Api(app)
 CORS(app)
 
@@ -45,8 +43,8 @@ def initialize_supabase_client():
 read_env()
 supabase = initialize_supabase_client()
 
-api.add_resource(User, '/user', resource_class_kwargs={"bcrypt": bcrypt, "supabase": supabase})
-api.add_resource(QuickSearch, '/quick-search/<search>/<county>', resource_class_kwargs={"bcrypt": bcrypt, "supabase": supabase})
+api.add_resource(User, '/user', resource_class_kwargs={"supabase": supabase})
+api.add_resource(QuickSearch, '/quick-search/<search>/<county>', resource_class_kwargs={"supabase": supabase})
 
 if __name__ == '__main__':
     app.run()

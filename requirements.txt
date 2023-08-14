@@ -1,6 +1,5 @@
 aniso8601==9.0.1
 attrs==23.1.0
-bcrypt==4.0.1
 blinker==1.6.2
 certifi==2023.5.7
 cffi==1.15.1
