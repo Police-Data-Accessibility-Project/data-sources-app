@@ -27,7 +27,7 @@
     </p>
     <p class="search-result-label" data-test="search-result-label-formats">Formats available</p>
     <div v-if="dataSource.record_format" data-test="search-result-formats">
-      <p class="search-result-data" :key="recordFormat" v-for="recordFormat in dataSource.record_format" data-test="search-result-format">
+      <p class="search-result-data" :key="recordFormat" v-for="recordFormat in parseRecordFormat(dataSource.record_format)" data-test="search-result-format">
         {{ recordFormat }}
       </p>
     </div>
@@ -63,6 +63,15 @@
         newDate.push(year)
         let formattedDate = newDate.join('/')
         return formattedDate
+      },
+      parseRecordFormat(recordFormat) {
+        const outputArray = []
+        const regex = /'([^']+)'/g;
+        let match;
+        while ((match = regex.exec(recordFormat)) !== null) {
+          outputArray.push(match[1]);
+        }
+        return outputArray
       }
     }
   }
