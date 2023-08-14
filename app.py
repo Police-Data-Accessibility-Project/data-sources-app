@@ -1,15 +1,11 @@
-from collections.abc import Mapping
 from flask import Flask
 from flask_restful import Api
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 from resources.User import User
 from resources.QuickSearch import QuickSearch
 from supabase_py import create_client
 import os
-
-app = Flask(__name__)
-api = Api(app)
-CORS(app)
 
 def read_env():
     app_env = os.environ.get('APP_ENV', 'local')
@@ -42,6 +38,12 @@ def initialize_supabase_client():
 
 read_env()
 supabase = initialize_supabase_client()
+
+app = Flask(__name__)
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+api = Api(app)
+jwt = JWTManager(app)
+CORS(app)
 
 api.add_resource(User, '/user', resource_class_kwargs={"supabase": supabase})
 api.add_resource(QuickSearch, '/quick-search/<search>/<county>', resource_class_kwargs={"supabase": supabase})
