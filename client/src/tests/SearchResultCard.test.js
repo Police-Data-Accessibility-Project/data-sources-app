@@ -13,7 +13,7 @@ describe('SearchResultCard with all data', () => {
 		description: 'Test description',
 		municipality: 'Bridgeview',
 		name: 'Cicero Police Department - IN',
-		record_format: ['json', 'pdf'],
+		record_format: "['json', 'pdf']",
 		record_type: 'Calls for Service',
 		source_url:
 			'https://cityprotect.com/agency/cc0d9a3d-50b2-4424-ae25-5699ba6eaff9',
@@ -102,14 +102,15 @@ describe('SearchResultCard with all data', () => {
 
 	it('search result card contains correct record formats', () => {
 		expect(wrapper.findAll('[data-test="search-result-format"]').length).toBe(
-			dataSource.record_format.length
+			wrapper.vm.parseRecordFormat(dataSource.record_format).length
 		);
+		console.log(wrapper.findAll('[data-test="search-result-format"]'));
 		expect(
 			wrapper.findAll('[data-test="search-result-format"]')[0].text()
-		).toBe(dataSource.record_format[0]);
+		).toBe(wrapper.vm.parseRecordFormat(dataSource.record_format)[0]);
 		expect(
 			wrapper.findAll('[data-test="search-result-format"]')[1].text()
-		).toBe(dataSource.record_format[1]);
+		).toBe(wrapper.vm.parseRecordFormat(dataSource.record_format)[1]);
 	});
 
 	it('search result card contains a source button', () => {
