@@ -1,8 +1,7 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_restful import Resource
 from flask import request, jsonify, make_response
-import jwt 
-import os
+from flask_jwt_extended import create_access_token
 
 class User(Resource):
     def __init__(self, **kwargs):
@@ -19,10 +18,9 @@ class User(Resource):
                 user = user_data[0]
             else:
                 return {'error': 'no match'}
-            SECRET_KEY = os.getenv('SECRET_KEY')
             if check_password_hash(user['password_digest'], password):
-                token = jwt.encode({'payload': user}, SECRET_KEY)
-                return make_response(jsonify({'token': token.decode('UTF-8')}))
+                access_token = create_access_token(user)
+                return jsonify({'access_token': access_token})
         except Exception as e:
             return {'error': str(e)}
     
