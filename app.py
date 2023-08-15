@@ -11,9 +11,10 @@ bcrypt = Bcrypt(app)
 api = Api(app)
 CORS(app)
 
+
+
 def read_env():
     app_env = os.environ.get('APP_ENV', 'local')
-    
     if app_env == 'local':
         try:
             with open('.env') as file:
