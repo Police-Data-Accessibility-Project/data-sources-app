@@ -104,7 +104,6 @@ describe('SearchResultCard with all data', () => {
 		expect(wrapper.findAll('[data-test="search-result-format"]').length).toBe(
 			wrapper.vm.parseRecordFormat(dataSource.record_format).length
 		);
-		console.log(wrapper.findAll('[data-test="search-result-format"]'));
 		expect(
 			wrapper.findAll('[data-test="search-result-format"]')[0].text()
 		).toBe(wrapper.vm.parseRecordFormat(dataSource.record_format)[0]);
