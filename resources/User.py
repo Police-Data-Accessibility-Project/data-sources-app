@@ -1,34 +1,37 @@
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_restful import Resource
-from flask import request, jsonify
-from flask_jwt import jwt_required
-import jwt
-import os
+from flask import request, jsonify, make_response
+from flask_jwt_extended import create_access_token
 
 class User(Resource):
     def __init__(self, **kwargs):
-        self.bcrypt = kwargs['bcrypt']
         self.supabase = kwargs['supabase']
 
-    def get(self):
+    def get(self):        
         try:
             data = request.get_json()
             email = data.get('email')
             password = data.get('password')
-            user = self.supabase.table('users').select('*').eq('email', email).execute()['data'][0]
-            SECRET_KEY = os.getenv('SECRET_KEY')
-            if self.bcrypt.check_password_hash(user['password_digest'], password):
-                token = jwt.encode({'payload': user}, SECRET_KEY, algorithm="HS256")
-                return jsonify(token)
+            user_data = self.supabase.table('users').select('*').eq('email', email).execute()['data']
+            user = {}
+            if len(user_data) > 0:
+                user = user_data[0]
+            else:
+                return {'error': 'no match'}
+            if check_password_hash(user['password_digest'], password):
+                access_token = create_access_token(user)
+                return jsonify({'access_token': access_token})
         except Exception as e:
-            return {'error': e}
+            return {'error': str(e)}
     
     def post(self):
         try:
             data = request.get_json()
             email = data.get('email')
             password = data.get('password')
-            password_digest = self.bcrypt.generate_password_hash(password)
-            user = self.supabase.table('users').insert({"email": email, "password_digest": str(password_digest)}).execute()
+            password_digest = generate_password_hash(password)
+            user = self.supabase.table('users').insert({"email": email, "password_digest": password_digest}).execute()
             return user
         except Exception as e:
             return {'error': e}
+        
