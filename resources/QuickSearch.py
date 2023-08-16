@@ -7,10 +7,16 @@ class QuickSearch(Resource):
   def __init__(self, **kwargs):
     self.supabase = kwargs['supabase']
   
-  @jwt_required()
+#   @jwt_required()
   def get(self, search, county):
     try:
         data_sources = {'count': 0, 'data': []}
+
+        # data_source_matches = self.supabase.table('Data Sources').select('*').eq('county', county).execute()
+
+        # print(data_source_matches)
+
+        # return
 
         # Query for all county_fips codes that match the county name searched
         counties = self.supabase.table('counties').select('fips').eq('name', county).execute()
@@ -25,7 +31,6 @@ class QuickSearch(Resource):
                 agencies_data = agencies.get('data', [])
                 for agency_data in agencies_data:
                     all_agencies.append({**agency_data, "agency_name": agency_data.pop('name')})
-            
             # For each agency_uid, find all matches in the data_sources table that also have a partial match with the search term
             for agency in all_agencies:
                 agency_data_sources = self.supabase.table('data_sources').select('name, description, record_type, source_url, record_format, coverage_start, coverage_end, agency_supplied').ilike('name', f"%{search}%").eq('agency_described', f"['{agency['airtable_uid']}']").execute()
