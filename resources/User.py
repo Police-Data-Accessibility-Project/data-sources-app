@@ -22,8 +22,7 @@ class User(Resource):
             if check_password_hash(user['password_digest'], password):
                 api_key = uuid.uuid4().hex
                 user_id = str(user['id'])
-                test = self.supabase.table('users').update({'api_key': api_key}).eq('id', user_id).execute()
-                print(test)
+                self.supabase.table('users').update({'api_key': api_key}).eq('id', user_id).execute()
                 return jsonify({'api_key': api_key})
         except Exception as e:
             return {'error': str(e)}
