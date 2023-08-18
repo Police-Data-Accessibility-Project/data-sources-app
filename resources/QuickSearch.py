@@ -1,13 +1,13 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_restful import Resource
 from flask import request, jsonify, make_response
-from flask_jwt_extended import jwt_required
+from middleware.security import api_required
 
 class QuickSearch(Resource):
   def __init__(self, **kwargs):
     self.supabase = kwargs['supabase']
   
-  @jwt_required()
+  @api_required
   def get(self, search, county):
     try:
         data_sources = {'count': 0, 'data': []}

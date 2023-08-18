@@ -20,6 +20,10 @@ class User(Resource):
                 return {'error': 'no match'}
             if check_password_hash(user['password_digest'], password):
                 access_token = create_access_token(user)
+                user_id = str(user['id'])
+                print(access_token, user['id'])
+                test = self.supabase.table('users').update({'access_token': access_token}).eq('id', user_id).execute()
+                print(test)
                 return jsonify({'access_token': access_token})
         except Exception as e:
             return {'error': str(e)}
