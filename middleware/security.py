@@ -8,7 +8,8 @@ def is_valid(api_key):
     user = supabase.table('users').select("*").eq('api_key', api_key).execute()
     user_data = {}
     if user:
-        user_data = user.data[0]
+        if len(user.data) > 0:
+            user_data = user.data[0]
     if compare_digest(user_data['api_key'], api_key):
         return True
 
