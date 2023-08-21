@@ -1,4 +1,4 @@
-from supabase_py import create_client
+from supabase import create_client
 import os
 
 def initialize_supabase_client():
