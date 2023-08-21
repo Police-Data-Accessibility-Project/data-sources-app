@@ -12,12 +12,6 @@ class QuickSearch(Resource):
     try:
         data_sources = {'count': 0, 'data': []}
 
-        # data_source_matches = self.supabase.table('Data Sources').select('*').eq('county', county).execute()
-
-        # print(data_source_matches)
-
-        # return
-
         # Query for all county_fips codes that match the county name searched
         counties = self.supabase.table('counties').select('fips').eq('name', county).execute()
         counties_fips = counties.data
@@ -27,13 +21,14 @@ class QuickSearch(Resource):
             all_agencies = []
             for county_fips in counties_fips:
                 fips = str(county_fips['fips'])
-                agencies = self.supabase.table('agencies').select('name, municipality, state_iso, airtable_uid').eq('county_fips', fips).execute()
+                agencies = self.supabase.table('Agencies').select('name, municipality, state_iso, airtable_uid').eq('county_fips', fips).execute()
                 agencies_data = agencies.data
                 for agency_data in agencies_data:
                     all_agencies.append({**agency_data, "agency_name": agency_data.pop('name')})
+
             # For each agency_uid, find all matches in the data_sources table that also have a partial match with the search term
             for agency in all_agencies:
-                agency_data_sources = self.supabase.table('data_sources').select('name, description, record_type, source_url, record_format, coverage_start, coverage_end, agency_supplied').ilike('name', f"%{search}%").eq('agency_described', f"['{agency['airtable_uid']}']").execute()
+                agency_data_sources = self.supabase.table('Data Sources').select('name, description, record_type, source_url, record_format, coverage_start, coverage_end, agency_supplied').ilike('name', f"%{search}%").eq('agency_described', f"['{agency['airtable_uid']}']").execute()
                 agency_data_sources_records = agency_data_sources.data
                 for record in agency_data_sources_records:
                     data_sources['count'] += 1
