@@ -6,8 +6,10 @@ from middleware.initialize_supabase_client import initialize_supabase_client
 def is_valid(api_key):
     supabase = initialize_supabase_client()
     user = supabase.table('users').select("*").eq('api_key', api_key).execute()
-    user_data = user.get('data', [])
-    if compare_digest(user_data.api_key, api_key):
+    user_data = {}
+    if user:
+        user_data = user.data[0]
+    if compare_digest(user_data['api_key'], api_key):
         return True
 
 def api_required(func):
