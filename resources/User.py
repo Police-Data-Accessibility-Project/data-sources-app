@@ -3,7 +3,6 @@ from flask_restful import Resource
 from flask import request, jsonify, make_response
 from flask_jwt_extended import create_access_token
 import uuid
-import json
 
 class User(Resource):
     def __init__(self, **kwargs):
@@ -17,7 +16,8 @@ class User(Resource):
             user = self.supabase.table('users').select('*').eq('email', email).execute()
             user_data = {}
             if user:
-                user_data = user.data[0]
+                if len(user.data) > 0:
+                    user_data = user.data[0]
             else:
                 return {'error': 'no match'}
             if check_password_hash(user_data['password_digest'], password):
@@ -37,7 +37,8 @@ class User(Resource):
             user = self.supabase.table('users').insert({"email": email, "password_digest": password_digest}).execute()
             user_data = {}
             if user:
-                user_data = user.data[0]
+                if len(user.data) > 0:
+                    user_data = user.data[0]
             return user_data
         except Exception as e:
             return {'error': e}
