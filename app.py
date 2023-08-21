@@ -4,7 +4,6 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from resources.User import User
 from resources.QuickSearch import QuickSearch
-from supabase_py import create_client
 from middleware.initialize_supabase_client import initialize_supabase_client
 import os
 
