@@ -17,8 +17,10 @@ def api_required(func):
     @functools.wraps(func)
     def decorator(*args, **kwargs):
         api_key = None
-        if request.headers:
+        if request.headers and 'Authorization' in request.headers:
             api_key = request.headers['Authorization'].split(" ")[1]
+            if api_key == "undefined":
+                return {"message": "Please provide an API key"}, 400
         else:
             return {"message": "Please provide an API key"}, 400
         # Check if API key is correct and valid
