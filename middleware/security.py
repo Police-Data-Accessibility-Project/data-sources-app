@@ -16,6 +16,7 @@ def is_valid(api_key):
         return True
 
 # The api_required decorator can be added to protect a route so that only authenticated users can access the information
+# To protect a route with this decorator, add @api_required on the line above a given route
 # The request header for a protected route must include an "Authorization" key with the value formatted as "Bearer [api_key]"
 # A user can get an API key by signing up and logging in (see User.py)
 def api_required(func):
