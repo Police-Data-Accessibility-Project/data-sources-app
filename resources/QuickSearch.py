@@ -7,6 +7,8 @@ class QuickSearch(Resource):
   def __init__(self, **kwargs):
     self.supabase = kwargs['supabase']
   
+  # api_required decorator requires the request's header to include an "Authorization" key with the value formatted as "Bearer [api_key]"
+  # A user can get an API key by signing up and logging in (see User.py)
   @api_required
   def get(self, search, county):
     try:

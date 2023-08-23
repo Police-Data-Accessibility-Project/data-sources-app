@@ -7,6 +7,9 @@ class User(Resource):
     def __init__(self, **kwargs):
         self.supabase = kwargs['supabase']
 
+    # Login function: allows a user to login using their email and password as credentials
+    # The password is compared to the hashed password stored in the users table
+    # Once the password is verified, an API key is generated, which is stored in the users table and sent to the verified user
     def get(self):        
         try:
             data = request.get_json()
@@ -27,6 +30,7 @@ class User(Resource):
         except Exception as e:
             return {'error': str(e)}
     
+    # Sign up function: allows a user to sign up by submitting an email and password. The email and a hashed password are stored in the users table and this data is returned to the user upon completion
     def post(self):
         try:
             data = request.get_json()
