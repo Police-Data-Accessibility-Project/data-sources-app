@@ -1,7 +1,6 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_restful import Resource
-from flask import request, jsonify, make_response
-from flask_jwt_extended import create_access_token
+from flask import request, jsonify
 import uuid
 
 class User(Resource):

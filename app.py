@@ -1,7 +1,6 @@
 from flask import Flask
 from flask_restful import Api
 from flask_cors import CORS
-from flask_jwt_extended import JWTManager
 from resources.User import User
 from resources.QuickSearch import QuickSearch
 from middleware.initialize_supabase_client import initialize_supabase_client
@@ -31,8 +30,6 @@ supabase = initialize_supabase_client()
 
 app = Flask(__name__)
 api = Api(app)
-app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
-jwt = JWTManager(app)
 CORS(app)
 
 api.add_resource(User, '/user', resource_class_kwargs={"supabase": supabase})
