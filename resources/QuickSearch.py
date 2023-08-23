@@ -21,7 +21,7 @@ class QuickSearch(Resource):
             all_agencies = []
             for county_fips in counties_fips:
                 fips = str(county_fips['fips'])
-                agencies = self.supabase.table('Agencies').select('name, municipality, state_iso, airtable_uid').eq('county_fips', fips).execute()                
+                agencies = self.supabase.table('agencies').select('name, municipality, state_iso, airtable_uid').eq('county_fips', fips).execute()                
                 agencies_data = agencies.data
                 
                 for agency_data in agencies_data:
@@ -34,7 +34,7 @@ class QuickSearch(Resource):
                 agency_data_sources_records = agency_data_sources.data
 
                 for agency_data_sources_record in agency_data_sources_records:
-                    data_source_matches = self.supabase.table('Data Sources').select('name, description, record_type, source_url, record_format, coverage_start, coverage_end, agency_supplied').ilike('name', f"%{search}%").eq('airtable_uid', agency_data_sources_record['airtable_uid']).execute()
+                    data_source_matches = self.supabase.table('data_sources').select('name, description, record_type, source_url, record_format, coverage_start, coverage_end, agency_supplied').ilike('name', f"%{search}%").eq('airtable_uid', agency_data_sources_record['airtable_uid']).execute()
                     data_source_matches_data = data_source_matches.data
 
                     for record in data_source_matches_data:
