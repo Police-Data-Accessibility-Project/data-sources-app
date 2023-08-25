@@ -9,8 +9,13 @@ def is_valid(api_key):
     user = supabase.table('users').select("*").eq('api_key', api_key).execute()
     user_data = {}
     if user:
+        print(len(user.data))
         if len(user.data) > 0:
             user_data = user.data[0]
+        else:
+            return False
+    else:
+        return False
     # Compare the API key in the user table to the API in the request header and proceed through the protected route if it's valid. Otherwise, compare_digest will return False and api_required will send an error message to provide a valid API key
     if compare_digest(user_data.get('api_key'), api_key):
         return True
