@@ -9,7 +9,6 @@ def is_valid(api_key):
     user = supabase.table('users').select("*").eq('api_key', api_key).execute()
     user_data = {}
     if user:
-        print(len(user.data))
         if len(user.data) > 0:
             user_data = user.data[0]
         else:
