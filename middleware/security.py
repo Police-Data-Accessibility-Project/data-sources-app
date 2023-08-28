@@ -28,11 +28,15 @@ def api_required(func):
     def decorator(*args, **kwargs):
         api_key = None
         if request.headers and 'Authorization' in request.headers:
-            api_key = request.headers['Authorization'].split(" ")[1]
-            if api_key == "undefined":
-                return {"message": "Please provide an API key"}, 400
+            authorization_header = request.headers['Authorization'].split(" ")
+            if len(authorization_header) >= 2 and authorization_header[0] == "Bearer":
+                api_key = request.headers['Authorization'].split(" ")[1]
+                if api_key == "undefined":
+                    return {"message": "Please provide an API key"}, 400
+            else:
+                return {'message': "Please provide a properly formatted bearer token and API key"}, 400
         else:
-            return {"message": "Please provide an API key"}, 400
+            return {"message": "Please provide an 'Authorization' key in the request header"}, 400
         # Check if API key is correct and valid
         if is_valid(api_key):
             return func(*args, **kwargs)
