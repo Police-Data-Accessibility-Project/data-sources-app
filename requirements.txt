@@ -16,6 +16,7 @@ Flask==2.3.2
 Flask-Cors==4.0.0
 Flask-RESTful==0.3.10
 gotrue==1.0.3
+gunicorn==21.2.0
 h11==0.14.0
 httpcore==0.17.3
 httpx==0.24.1

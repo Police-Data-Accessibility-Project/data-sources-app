@@ -19,4 +19,4 @@ api.add_resource(QuickSearch, '/quick-search/<search>/<county>', resource_class_
 api.add_resource(DataSources, '/data-sources', resource_class_kwargs={"supabase": supabase})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0")
