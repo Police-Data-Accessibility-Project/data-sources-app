@@ -18,10 +18,6 @@ class QuickSearch(Resource):
 
         cursor = self.psycopg2_connection.cursor()
 
-        # cursor.execute('SELECT * FROM users')
-        # result = cursor.fetchall()
-        # print(result)
-
         sql_query = """
             SELECT
                 data_sources.name AS data_source_name,
