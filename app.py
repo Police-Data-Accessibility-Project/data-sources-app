@@ -5,16 +5,18 @@ from resources.User import User
 from resources.QuickSearch import QuickSearch
 from resources.DataSources import DataSources
 from middleware.initialize_supabase_client import initialize_supabase_client
+from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 
 supabase = initialize_supabase_client()
+psycopg2_connection = initialize_psycopg2_connection()
 
 app = Flask(__name__)
 api = Api(app)
 CORS(app)
 
 api.add_resource(User, '/user', resource_class_kwargs={"supabase": supabase})
-api.add_resource(QuickSearch, '/quick-search/<search>/<county>', resource_class_kwargs={"supabase": supabase})
+api.add_resource(QuickSearch, '/quick-search/<search>/<county>', resource_class_kwargs={"supabase": supabase, 'psycopg2_connection': psycopg2_connection})
 api.add_resource(DataSources, '/data-sources', resource_class_kwargs={"supabase": supabase})
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0")
