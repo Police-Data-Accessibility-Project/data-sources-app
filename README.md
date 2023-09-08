@@ -1,6 +1,6 @@
 # data-sources-app
 
-An API and UI for using and maintaining the Data Sources database. Documentation about how the app works can be found [here](https://docs.pdap.io/).
+An API and UI for using and maintaining the Data Sources database. Documentation about how the app works can be found [here](https://docs.pdap.io/api/introduction).
 
 ## Installation
 
