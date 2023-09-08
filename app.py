@@ -5,8 +5,6 @@ from resources.User import User
 from resources.QuickSearch import QuickSearch
 from resources.DataSources import DataSources
 from middleware.initialize_supabase_client import initialize_supabase_client
-import os
-
 
 supabase = initialize_supabase_client()
 
