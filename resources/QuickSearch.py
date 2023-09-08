@@ -2,10 +2,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_restful import Resource
 from flask import request, jsonify, make_response
 from middleware.security import api_required
+from utilities.convert_dates_to_strings import convert_dates_to_strings
 
 class QuickSearch(Resource):
   def __init__(self, **kwargs):
     self.supabase = kwargs['supabase']
+    self.psycopg2_connection = kwargs['psycopg2_connection']
   
   # api_required decorator requires the request's header to include an "Authorization" key with the value formatted as "Bearer [api_key]"
   # A user can get an API key by signing up and logging in (see User.py)
@@ -14,17 +16,53 @@ class QuickSearch(Resource):
     try:
         data_sources = {'count': 0, 'data': []}
 
-        data_source_matches = self.supabase.table('agency_source_link').select('data_sources(data_source_name:name, description, record_type, source_url, record_format, coverage_start, coverage_end, agency_supplied), agencies(agency_name:name, municipality, state_iso)').ilike('data_sources.name', f"%{search}%").eq('agencies.county_name', f"[\"{county}\"]").execute()
+        cursor = self.psycopg2_connection.cursor()
 
-        filtered_data_source_matches = [data_source_match for data_source_match in data_source_matches.data if data_source_match['agencies'] is not None and data_source_match['data_sources'] is not None]
+        # cursor.execute('SELECT * FROM users')
+        # result = cursor.fetchall()
+        # print(result)
+
+        sql_query = """
+            SELECT
+                data_sources.name AS data_source_name,
+                data_sources.description,
+                data_sources.record_type,
+                data_sources.source_url,
+                data_sources.record_format,
+                data_sources.coverage_start,
+                data_sources.coverage_end,
+                data_sources.agency_supplied,
+                agencies.name AS agency_name,
+                agencies.municipality,
+                agencies.state_iso
+            FROM
+                agency_source_link
+            INNER JOIN
+                data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
+            INNER JOIN
+                agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+            WHERE
+                data_sources.name ILIKE %s OR data_sources.description ILIKE %s AND agencies.county_name = %s
+        """
+
+        cursor.execute(sql_query, ('%' + search + '%', '%' + search + '%', county))
+
+        results = cursor.fetchall()
+
+        column_names = ['data_source_name', 'description', 'record_type', 'source_url', 'record_format', 'coverage_start', 'coverage_end', 'agency_supplied', 'agency_name', 'municipality', 'state_iso']
+
+        data_source_matches = [dict(zip(column_names, result)) for result in results]
+
+        for item in data_source_matches:
+           convert_dates_to_strings(item)
 
         data_sources = {
-            "count": len(filtered_data_source_matches),
-            "data": [{**record["agencies"], **record['data_sources']} for record in filtered_data_source_matches]
+            "count": len(data_source_matches),
+            "data": data_source_matches
         }
 
         return data_sources
         
-    except:
-        print('Error during quick search operation')
+    except Exception as e:
+        print('Error during quick search operation', str(e))
         return data_sources
