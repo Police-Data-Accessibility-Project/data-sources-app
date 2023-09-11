@@ -1,6 +1,7 @@
 from flask_restful import Resource
 from middleware.security import api_required
 from utilities.convert_dates_to_strings import convert_dates_to_strings
+import spacy
 
 class QuickSearch(Resource):
   def __init__(self, **kwargs):
@@ -13,6 +14,11 @@ class QuickSearch(Resource):
   def get(self, search, county):
     try:
         data_sources = {'count': 0, 'data': []}
+        
+        nlp = spacy.load("en_core_web_sm")
+        doc = nlp(search)
+        lemmatized_tokens = [token.lemma_ for token in doc]
+        depluralized_search_term = " ".join(lemmatized_tokens)
 
         cursor = self.psycopg2_connection.cursor()
 
@@ -39,7 +45,7 @@ class QuickSearch(Resource):
                 (data_sources.name ILIKE %s OR data_sources.description ILIKE %s OR data_sources.record_type ILIKE %s OR data_sources.tags ILIKE %s) AND (agencies.county_name ILIKE %s OR agencies.state_iso ILIKE %s OR agencies.municipality ILIKE %s OR agencies.agency_type ILIKE %s OR agencies.jurisdiction_type ILIKE %s OR agencies.name ILIKE %s)
         """
 
-        cursor.execute(sql_query, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{county}%', f'%{county}%', f'%{county}%', f'%{county}%', f'%{county}%', f'%{county}%'))
+        cursor.execute(sql_query, (f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{county}%', f'%{county}%', f'%{county}%', f'%{county}%', f'%{county}%', f'%{county}%'))
 
         results = cursor.fetchall()
 
