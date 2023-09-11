@@ -38,10 +38,10 @@ class QuickSearch(Resource):
             INNER JOIN
                 agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
             WHERE
-                data_sources.name ILIKE %s OR data_sources.description ILIKE %s AND agencies.county_name = %s
+                (data_sources.name ILIKE %s OR data_sources.description ILIKE %s OR data_sources.record_type ILIKE %s OR data_sources.tags ILIKE %s) AND (agencies.county_name ILIKE %s OR agencies.state_iso ILIKE %s OR agencies.municipality ILIKE %s OR agencies.agency_type ILIKE %s OR agencies.jurisdiction_type ILIKE %s OR agencies.name ILIKE %s)
         """
 
-        cursor.execute(sql_query, ('%' + search + '%', '%' + search + '%', county))
+        cursor.execute(sql_query, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{county}%', f'%{county}%', f'%{county}%', f'%{county}%', f'%{county}%', f'%{county}%'))
 
         results = cursor.fetchall()
 
