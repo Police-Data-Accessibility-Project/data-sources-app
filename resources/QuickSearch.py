@@ -1,6 +1,4 @@
-from werkzeug.security import generate_password_hash, check_password_hash
 from flask_restful import Resource
-from flask import request, jsonify, make_response
 from middleware.security import api_required
 from utilities.convert_dates_to_strings import convert_dates_to_strings
 
