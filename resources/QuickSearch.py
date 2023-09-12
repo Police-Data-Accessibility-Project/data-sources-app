@@ -5,13 +5,12 @@ import spacy
 
 class QuickSearch(Resource):
   def __init__(self, **kwargs):
-    self.supabase = kwargs['supabase']
     self.psycopg2_connection = kwargs['psycopg2_connection']
   
   # api_required decorator requires the request's header to include an "Authorization" key with the value formatted as "Bearer [api_key]"
   # A user can get an API key by signing up and logging in (see User.py)
   @api_required
-  def get(self, search, county):
+  def get(self, search, location):
     try:
         data_sources = {'count': 0, 'data': []}
         
@@ -45,7 +44,7 @@ class QuickSearch(Resource):
                 (data_sources.name ILIKE %s OR data_sources.description ILIKE %s OR data_sources.record_type ILIKE %s OR data_sources.tags ILIKE %s) AND (agencies.county_name ILIKE %s OR agencies.state_iso ILIKE %s OR agencies.municipality ILIKE %s OR agencies.agency_type ILIKE %s OR agencies.jurisdiction_type ILIKE %s OR agencies.name ILIKE %s)
         """
 
-        cursor.execute(sql_query, (f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{county}%', f'%{county}%', f'%{county}%', f'%{county}%', f'%{county}%', f'%{county}%'))
+        cursor.execute(sql_query, (f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
 
         results = cursor.fetchall()
 

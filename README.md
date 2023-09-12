@@ -52,6 +52,7 @@ The app should have a SUPABASE_URL and SUPABASE_KEY for PDAP's Data Sources [Sup
 ```
 export SUPABASE_URL="**"
 export SUPABASE_KEY="**"
+export SUPABASE_DATABASE_URL=postgresql://postgres:<password>@db.hgzbfhtjmnpnwdbzluot.supabase.co:5432/postgres
 
 ```
 
