@@ -15,7 +15,7 @@ api = Api(app)
 CORS(app)
 
 api.add_resource(User, '/user', resource_class_kwargs={"supabase": supabase})
-api.add_resource(QuickSearch, '/quick-search/<search>/<county>', resource_class_kwargs={'psycopg2_connection': psycopg2_connection})
+api.add_resource(QuickSearch, '/quick-search/<search>/<location>', resource_class_kwargs={'psycopg2_connection': psycopg2_connection})
 api.add_resource(DataSources, '/data-sources', resource_class_kwargs={"supabase": supabase})
 
 if __name__ == '__main__':
