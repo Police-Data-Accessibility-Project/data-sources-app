@@ -43,7 +43,6 @@ export default {
   methods: {
     async search() {
       const headers = {"Authorization": `Bearer ${process.env.VUE_APP_PDAP_API_KEY}`}
-      console.log(headers)
       const res = await axios.get(`${BASE_URL}/quick-search/${this.searchTerm}/${this.location}`, {headers})
       this.searchResult = res.data
       this.searched = true
