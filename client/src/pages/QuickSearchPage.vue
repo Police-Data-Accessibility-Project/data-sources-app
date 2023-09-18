@@ -3,7 +3,7 @@
     <div class="quick-search-description-div">
       <p class="quick-search-description">Our mission is to help people locate, understand, and share public records about every U.S. police system. Try giving our database a search to see if we can help you find public records.</p>
     </div>
-    <QuickSearchForm :searchTerm="searchTerm" :county="county" @handleChange="handleChange" @handleSubmit="handleSubmit"/>
+    <QuickSearchForm :searchTerm="searchTerm" :location="location" @handleChange="handleChange" @handleSubmit="handleSubmit"/>
     <!-- <div class="advanced-search-button-div">
       <button @click="console.log('Clicked advanced search')" class="advanced-search-button">Advanced Search</button>
     </div> -->
@@ -20,7 +20,7 @@ export default {
   },
   data: () => ({
     searchTerm: '',
-    county: ''
+    location: ''
   }),
   methods: {
     handleChange(name, value) {
@@ -28,10 +28,10 @@ export default {
     },
     async handleSubmit() {
       let searchTerm = this.searchTerm
-      let county = this.county
+      let location = this.location
       this.searchTerm = ''
-      this.county = ''
-      this.$router.push(`/search/${searchTerm}/${county}`)
+      this.location = ''
+      this.$router.push(`/search/${searchTerm}/${location}`)
     }
   }
 }
