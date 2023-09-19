@@ -11,20 +11,36 @@ class Archives(Resource):
     def get(self):
         try:
             cursor = self.psycopg2_connection.cursor()
-            sql_query = 'SELECT id, source_url, update_frequency, agency_name, last_cached FROM test_data_sources WHERE (last_cached IS NULL OR update_frequency IS NOT NULL) AND broken_source_url_as_of IS NULL'
+            sql_query = '''
+            SELECT
+                data_sources.airtable_uid,
+                data_sources.source_url,
+                data_sources.update_frequency,
+                data_sources.last_cached,
+                agencies.name
+            FROM
+                agency_source_link
+            INNER JOIN
+                data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
+            INNER JOIN
+                agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+            WHERE 
+                (data_sources.last_cached IS NULL OR data_sources.update_frequency IS NOT NULL) AND data_sources.broken_source_url_as_of IS NULL AND data_sources.source_url IS NOT NULL
+            '''
             cursor.execute(sql_query)
             results = cursor.fetchall()
 
-            column_names = ['id', 'source_url', 'update_frequency', 'agency_name', 'last_cached']
+            column_names = ['id', 'source_url', 'update_frequency', 'last_cached', 'agency_name']
 
             archive_results = [dict(zip(column_names, result)) for result in results]
 
             for item in archive_results:
-              convert_dates_to_strings(item)
+                convert_dates_to_strings(item)
 
             return archive_results
         
-        except:
+        except Exception as e:
+            print(str(e))
             return "There has been an error pulling data!"
         
     @api_required 
@@ -36,10 +52,10 @@ class Archives(Resource):
             cursor = self.psycopg2_connection.cursor()
 
             if data['broken_source_url_as_of']:
-                sql_query = 'UPDATE test_data_sources SET broken_source_url_as_of = %s AND last_cached = %s WHERE id = %s'
+                sql_query = 'UPDATE data_sources SET broken_source_url_as_of = %s AND last_cached = %s WHERE id = %s'
                 cursor.execute(sql_query, (data['broken_source_url_as_of'], data['last_cached'], data['id']))
             else:
-                sql_query = 'UPDATE test_data_sources SET last_cached = %s WHERE id = %s'
+                sql_query = 'UPDATE data_sources SET last_cached = %s WHERE airtable_uid = %s'
                 cursor.execute(sql_query, (data['last_cached'], data['id']))
 
             self.psycopg2_connection.commit()
