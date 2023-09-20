@@ -5,7 +5,7 @@ import uuid
 
 class User(Resource):
     def __init__(self, **kwargs):
-        self.supabase = kwargs['supabase']
+        self.psycopg2_connection = kwargs['psycopg2_connection']
 
     # Login function: allows a user to login using their email and password as credentials
     # The password is compared to the hashed password stored in the users table
@@ -14,18 +14,22 @@ class User(Resource):
         try:
             data = request.get_json()
             email = data.get('email')
+            print(email)
             password = data.get('password')
-            user = self.supabase.table('users').select('*').eq('email', email).execute()
+            print(password)
+            cursor = self.psycopg2_connection.cursor()
+            cursor.execute(f"select * from users where email = '{email}'")
+            results = cursor.fetchall()
+            print(results)
             user_data = {}
-            if user:
-                if len(user.data) > 0:
-                    user_data = user.data[0]
+            if len(results) > 0:
+                user_data = results[0]
             else:
                 return {'error': 'no match'}
             if check_password_hash(user_data['password_digest'], password):
                 api_key = uuid.uuid4().hex
                 user_id = str(user_data['id'])
-                self.supabase.table('users').update({'api_key': api_key}).eq('id', user_id).execute()
+                cursor.execute(f"update users set api_key = {api_key} where id = {user_id}")
                 return jsonify({'api_key': api_key})
         except Exception as e:
             return {'error': str(e)}
@@ -37,12 +41,13 @@ class User(Resource):
             email = data.get('email')
             password = data.get('password')
             password_digest = generate_password_hash(password)
-            user = self.supabase.table('users').insert({"email": email, "password_digest": password_digest}).execute()
-            user_data = {}
-            if user:
-                if len(user.data) > 0:
-                    user_data = user.data[0]
-            return user_data
+            cursor = self.psycopg2_connection.cursor()
+            cursor.execute(f"insert into users (email, password_digest) values (%s, %s)", (email, password_digest))
+            #user = self.supabase.table('users').insert({"email": email, "password_digest": password_digest}).execute()
+            self.psycopg2_connection.commit()
+
+            return {"data": "Successfully added user"}
+
         except Exception as e:
             return {'error': e}
         

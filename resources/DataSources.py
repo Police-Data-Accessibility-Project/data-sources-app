@@ -1,7 +1,7 @@
-from middleware.initialize_supabase_client import initialize_supabase_client
 from flask_restful import Resource
 from flask import request, jsonify
 from middleware.security import api_required
+from utilities.convert_dates_to_strings import convert_dates_to_strings
 import json
 
 approved_columns = [
@@ -59,15 +59,25 @@ approved_columns = [
 
 class DataSources(Resource):
     def __init__(self, **kwargs):
-        self.supabase = kwargs['supabase']
+        self.psycopg2_connection = kwargs['psycopg2_connection']
     
     @api_required 
     def get(self):
         try:
             joined_column_names = ", ".join(approved_columns)
-            response = self.supabase.table("data_sources").select(joined_column_names).eq("approved", "TRUE").execute()
-            data = json.loads(response.json())
-            data_sources = data['data']
+            cursor = self.psycopg2_connection.cursor()
+            cursor.execute(f"select {joined_column_names} from data_sources where approved = 'TRUE'")
+            results = cursor.fetchall()
+            data_source_matches = [dict(zip(approved_columns, result)) for result in results]
+
+            for item in data_source_matches:
+                convert_dates_to_strings(item)
+
+            data_sources = {
+                "count": len(data_source_matches),
+                "data": data_source_matches
+            }
+        
             return data_sources
         
         except:

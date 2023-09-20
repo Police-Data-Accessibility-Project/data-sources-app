@@ -1,7 +1,7 @@
-from middleware.initialize_supabase_client import initialize_supabase_client
 from flask_restful import Resource
 from flask import request, jsonify
 from middleware.security import api_required
+from utilities.convert_dates_to_strings import convert_dates_to_strings
 import json
 
 approved_columns = [
@@ -34,17 +34,27 @@ approved_columns = [
 
 class Agencies(Resource):
     def __init__(self, **kwargs):
-        self.supabase = kwargs['supabase']
+         self.psycopg2_connection = kwargs['psycopg2_connection']
     
     @api_required 
     def get(self):
         try:
+            cursor = self.psycopg2_connection.cursor()
             joined_column_names = ", ".join(approved_columns)
-            response = self.supabase.table("agencies").select(joined_column_names).eq("approved", "TRUE").execute()
-            data = json.loads(response.json())
-            agencies = data['data']
-            return agencies
+            cursor.execute(f"select {joined_column_names} from agencies where approved = 'TRUE'")
+            results = cursor.fetchall()
+            agencies_matches = [dict(zip(approved_columns, result)) for result in results]
+
+            for item in agencies_matches:
+                convert_dates_to_strings(item)
+
+            agencies = {
+                "count": len(agencies_matches),
+                "data": agencies_matches
+            }
         
+            return agencies
+
         except:
             return "There has been an error pulling data!"
 
