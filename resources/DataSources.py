@@ -64,28 +64,28 @@ class DataSources(Resource):
     @api_required 
     def get(self):
         try:
-            data_source_approved_columns = [f"data_sources.{approved_column}" for approved_column in approved_columns].append('agencies.name')
+            data_source_approved_columns = [f"data_sources.{approved_column}" for approved_column in approved_columns]
+            data_source_approved_columns.append('agencies.name')
+
             joined_column_names = ", ".join(data_source_approved_columns)
 
             cursor = self.psycopg2_connection.cursor()
             sql_query = """
                 SELECT
-                    %s
+                    {}
                 FROM
                     agency_source_link
-            INNER JOIN
-                data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
-            INNER JOIN
-                agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
-            WHERE
-                data_sources.approved = 'TRUE'
-            """
-            cursor.execute(sql_query, (joined_column_names))
+                INNER JOIN
+                    data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
+                INNER JOIN
+                    agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+                WHERE
+                    data_sources.approved = 'TRUE'
+            """.format(joined_column_names)
+            cursor.execute(sql_query)
             results = cursor.fetchall()
 
-            column_names = joined_column_names.split(', ')
-
-            data_source_matches = [dict(zip(column_names, result)) for result in results]
+            data_source_matches = [dict(zip(approved_columns, result)) for result in results]
 
             for item in data_source_matches:
                 convert_dates_to_strings(item)
@@ -97,6 +97,7 @@ class DataSources(Resource):
         
             return data_sources
         
-        except:
+        except Exception as e:
+            print(str(e))
             return "There has been an error pulling data!"
 
