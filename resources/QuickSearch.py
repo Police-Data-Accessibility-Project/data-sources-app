@@ -5,6 +5,7 @@ import spacy
 import requests
 import json
 import os
+import datetime
 
 class QuickSearch(Resource):
   def __init__(self, **kwargs):
@@ -63,14 +64,20 @@ class QuickSearch(Resource):
             "data": data_source_matches
         }
 
+        current_datetime = datetime.datetime.now()
+        datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+
+        query_results = json.dumps(data_sources['data'])
+
         cursor_query_log = self.psycopg2_connection.cursor()
-        sql_query_log = "INSERT INTO quick_search_query_logs (search, location, result_count) VALUES (%s, %s, %s)"
-        cursor_query_log.execute(sql_query_log, (search, location, data_sources['count']))
+        sql_query_log = "INSERT INTO quick_search_query_logs (search, location, results, result_count, datetime_of_request) VALUES (%s, %s, %s, %s, %s)"
+        cursor_query_log.execute(sql_query_log, (search, location, query_results, data_sources['count'], datetime_string))
         self.psycopg2_connection.commit()
 
         return data_sources
         
     except Exception as e:
+        print(str(e))
         webhook_url = os.getenv('WEBHOOK_URL')
         message = {'content': 'Error during quick search operation: ' + str(e) + "\n" + f"Search term: {search}\n" + f'Location: {location}'}
         requests.post(webhook_url, data=json.dumps(message), headers={"Content-Type": "application/json"})
