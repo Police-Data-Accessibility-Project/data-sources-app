@@ -2,6 +2,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_restful import Resource
 from flask import request, jsonify
 import uuid
+import os
+import jwt
 
 class User(Resource):
     def __init__(self, **kwargs):
@@ -26,7 +28,9 @@ class User(Resource):
                 api_key = uuid.uuid4().hex
                 user_id = str(user_data['id'])
                 self.supabase.table('users').update({'api_key': api_key}).eq('id', user_id).execute()
-                return jsonify({'api_key': api_key})
+                payload = {'api_key': api_key}
+                token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm='HS256')
+                return jsonify(token)
         except Exception as e:
             return {'error': str(e)}
     
