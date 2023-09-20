@@ -14,13 +14,10 @@ class User(Resource):
         try:
             data = request.get_json()
             email = data.get('email')
-            print(email)
             password = data.get('password')
-            print(password)
             cursor = self.psycopg2_connection.cursor()
             cursor.execute(f"select * from users where email = '{email}'")
             results = cursor.fetchall()
-            print(results)
             user_data = {}
             if len(results) > 0:
                 user_data = results[0]
