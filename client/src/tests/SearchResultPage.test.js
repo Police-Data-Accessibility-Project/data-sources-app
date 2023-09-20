@@ -8,7 +8,7 @@ vi.mock('axios');
 const $routeMock = {
 	params: {
 		searchTerm: 'calls',
-		county: 'Cook',
+		location: 'Cook',
 	},
 };
 
@@ -96,7 +96,7 @@ describe('SearchResultPage successfully renders components', () => {
 		expect(
 			wrapper.get('[data-test="search-results-section-header-p"]').text()
 		).toBe(
-			`You searched "${wrapper.vm.searchTerm}" in ${wrapper.vm.county} County and you got ${wrapper.vm.searchResult.count} results`
+			`You searched "${wrapper.vm.searchTerm}" in ${wrapper.vm.location} and you got ${wrapper.vm.searchResult.count} results`
 		);
 	});
 
