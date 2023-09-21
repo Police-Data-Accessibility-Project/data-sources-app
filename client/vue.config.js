@@ -3,7 +3,8 @@ module.exports = defineConfig({
 	transpileDependencies: true,
 	devServer: {
 		allowedHosts: 'all',
-		publicPath = '/data-sources-app-client/',
+		devMiddleWare:{ '/data-sources-app-client/'
+		},
   },
 	
 });
