@@ -85,6 +85,7 @@ class DataSources(Resource):
             cursor.execute(sql_query)
             results = cursor.fetchall()
 
+            approved_columns.append('agency_name')
             data_source_matches = [dict(zip(approved_columns, result)) for result in results]
 
             for item in data_source_matches:
