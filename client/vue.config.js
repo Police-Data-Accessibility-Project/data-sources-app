@@ -4,4 +4,5 @@ module.exports = defineConfig({
 	devServer: {
 		allowedHosts: 'all'
   },
+	publicPath = '/data-sources-app-client/',
 });
