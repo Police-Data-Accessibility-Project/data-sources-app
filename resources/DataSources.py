@@ -64,10 +64,27 @@ class DataSources(Resource):
     @api_required 
     def get(self):
         try:
-            joined_column_names = ", ".join(approved_columns)
+            data_source_approved_columns = [f"data_sources.{approved_column}" for approved_column in approved_columns]
+            data_source_approved_columns.append('agencies.name')
+
+            joined_column_names = ", ".join(data_source_approved_columns)
+
             cursor = self.psycopg2_connection.cursor()
-            cursor.execute(f"select {joined_column_names} from data_sources where approved = 'TRUE'")
+            sql_query = """
+                SELECT
+                    {}
+                FROM
+                    agency_source_link
+                INNER JOIN
+                    data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
+                INNER JOIN
+                    agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+                WHERE
+                    data_sources.approved = 'TRUE'
+            """.format(joined_column_names)
+            cursor.execute(sql_query)
             results = cursor.fetchall()
+
             data_source_matches = [dict(zip(approved_columns, result)) for result in results]
 
             for item in data_source_matches:
@@ -80,6 +97,7 @@ class DataSources(Resource):
         
             return data_sources
         
-        except:
+        except Exception as e:
+            print(str(e))
             return "There has been an error pulling data!"
 
