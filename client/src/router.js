@@ -9,7 +9,7 @@ const routes = [
 		component: SearchResultPage,
 		name: 'SearchResultPage',
 	},
-    { path: "*", redirect: "/data-sources-app-client" } 
+    { path: "*", redirect: "/data-sources-app-client" },
 ];
 
 const router = createRouter({
