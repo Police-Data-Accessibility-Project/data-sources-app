@@ -1,7 +1,9 @@
 const { defineConfig } = require('@vue/cli-service');
 module.exports = defineConfig({
 	transpileDependencies: true,
-	publicPath: "",
+	publicPath: '',
 	devServer: {
-		allowedHosts: 'all' },
+		allowedHosts: 'all',
+	},
+	outputDir: 'dist',
 });
