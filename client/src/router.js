@@ -9,7 +9,6 @@ const routes = [
 		component: SearchResultPage,
 		name: 'SearchResultPage',
 	},
-    { path: "*", redirect: "/" },
 ];
 
 const router = createRouter({
