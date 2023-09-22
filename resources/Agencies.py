@@ -37,11 +37,12 @@ class Agencies(Resource):
          self.psycopg2_connection = kwargs['psycopg2_connection']
     
     @api_required 
-    def get(self):
+    def get(self, page):
         try:
             cursor = self.psycopg2_connection.cursor()
             joined_column_names = ", ".join(approved_columns)
-            cursor.execute(f"select {joined_column_names} from agencies where approved = 'TRUE'")
+            offset = (int(page) - 1) * 1000
+            cursor.execute(f"select {joined_column_names} from agencies where approved = 'TRUE' limit 1000 offset {offset}")
             results = cursor.fetchall()
             agencies_matches = [dict(zip(approved_columns, result)) for result in results]
 
