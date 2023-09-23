@@ -5,7 +5,7 @@ import SearchResultPage from '../src/pages/SearchResultPage';
 const routes = [
 	{ path: '/data-sources-app-client', component: QuickSearchPage, name: 'QuickSearchPage' },
 	{
-		path: '/data-sources-app-client/search/:searchTerm/:county',
+		path: '/search/:searchTerm/:county',
 		component: SearchResultPage,
 		name: 'SearchResultPage',
 	},
