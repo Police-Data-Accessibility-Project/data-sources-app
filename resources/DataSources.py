@@ -57,10 +57,50 @@ approved_columns = [
     "tags_other"
     ]
 
-class DataSources(Resource):
+class DataSourceById(Resource):
     def __init__(self, **kwargs):
         self.psycopg2_connection = kwargs['psycopg2_connection']
     
+    @api_required
+    def get(self, data_source_id):
+        try:
+            print(data_source_id)
+            data_source_approved_columns = [f"data_sources.{approved_column}" for approved_column in approved_columns]
+            data_source_approved_columns.append('agencies.name')
+
+            joined_column_names = ", ".join(data_source_approved_columns)
+
+            cursor = self.psycopg2_connection.cursor()
+            sql_query = """
+                SELECT
+                    {}
+                FROM
+                    agency_source_link
+                INNER JOIN
+                    data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
+                INNER JOIN
+                    agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+                WHERE
+                    data_sources.approved = 'TRUE' AND data_sources.airtable_uid = %s
+            """.format(joined_column_names)
+            cursor.execute(sql_query, (data_source_id,))
+            result = cursor.fetchone()
+
+            if result:
+                data_source_details = dict(zip(approved_columns, result))
+                convert_dates_to_strings(data_source_details)
+                return data_source_details
+            else:
+                return "Data source not found.", 404
+        
+        except Exception as e:
+            print(str(e))
+            return "There has been an error pulling data!"
+    
+class DataSources(Resource):
+    def __init__(self, **kwargs):
+        self.psycopg2_connection = kwargs['psycopg2_connection']
+
     @api_required 
     def get(self):
         try:
