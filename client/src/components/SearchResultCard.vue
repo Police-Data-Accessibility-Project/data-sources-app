@@ -34,10 +34,6 @@
     <p class="search-result-data" data-test="search-result-format-unknown" v-else>Data Formats Unknown</p>
     <button class="button" @click="openSource" :href="dataSource.source_url" data-test="search-result-source-button">Visit Source URL</button>
     <button class="source button" @click="showDetails" data-test="search-result-source-details-button">Source Details</button>
-    <p v-if="expand && dataSource.description" data-test="search-result-description">
-      {{ dataSource.description }}
-    </p>
-    <p v-else-if="expand && !dataSource.description" data-test="search-result-description-unknown">No Description Available</p>
   </div>
 </template>
 
@@ -47,12 +43,9 @@
     props: {
       dataSource: Object
     },
-    data: () => ({
-      expand: false
-    }),
     methods: {
       showDetails() {
-        this.expand = !this.expand
+        this.$router.push(`/data-sources/${this.dataSource.airtable_uid}`)
       },
       openSource() {
         window.open(this.dataSource.source_url, '_blank');
