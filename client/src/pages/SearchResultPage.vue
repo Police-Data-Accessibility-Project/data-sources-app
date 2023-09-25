@@ -6,7 +6,7 @@
     </div>
     <div class="search-results-section" data-test="search-results-section" v-else>
       <div class="search-results-section-header small" >
-        <p data-test="search-results-section-header-p">You searched "{{ searchTerm }}" in {{county}} County and you got {{ searchResult.count }} results</p>
+        <p data-test="search-results-section-header-p">You searched "{{ searchTerm }}" in {{location}} and you got {{ searchResult.count }} results</p>
         <button class="button" data-test="search-results-section-header-button" @click="openForm">Missing something? Request data here</button>
       </div>
       <div class="search-results-content" data-test="search-results-content" v-if="searchResult.count > 0">
@@ -33,16 +33,17 @@ export default {
     searched: false,
     searchResult: {},
     searchTerm: '',
-    county: ''
+    location: ''
   }),
   mounted: function() {
     this.searchTerm = this.$route.params.searchTerm
-    this.county = this.$route.params.county
+    this.location = this.$route.params.location
     this.search()
   },
   methods: {
     async search() {
-      const res = await axios.get(`${BASE_URL}/quick-search/${this.searchTerm}/${this.county}`)
+      const headers = {"Authorization": `Bearer ${process.env.VUE_APP_PDAP_TOKEN}`}
+      const res = await axios.get(`${BASE_URL}/quick-search/${this.searchTerm}/${this.location}`, {headers})
       this.searchResult = res.data
       this.searched = true
     },
