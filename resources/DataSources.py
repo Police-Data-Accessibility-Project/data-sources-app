@@ -1,7 +1,7 @@
-from middleware.initialize_supabase_client import initialize_supabase_client
 from flask_restful import Resource
 from flask import request, jsonify
 from middleware.security import api_required
+from utilities.convert_dates_to_strings import convert_dates_to_strings
 import json
 
 approved_columns = [
@@ -59,17 +59,46 @@ approved_columns = [
 
 class DataSources(Resource):
     def __init__(self, **kwargs):
-        self.supabase = kwargs['supabase']
+        self.psycopg2_connection = kwargs['psycopg2_connection']
     
     @api_required 
     def get(self):
         try:
-            joined_column_names = ", ".join(approved_columns)
-            response = self.supabase.table("data_sources").select(joined_column_names).eq("approved", "TRUE").execute()
-            data = json.loads(response.json())
-            data_sources = data['data']
+            data_source_approved_columns = [f"data_sources.{approved_column}" for approved_column in approved_columns]
+            data_source_approved_columns.append('agencies.name')
+
+            joined_column_names = ", ".join(data_source_approved_columns)
+
+            cursor = self.psycopg2_connection.cursor()
+            sql_query = """
+                SELECT
+                    {}
+                FROM
+                    agency_source_link
+                INNER JOIN
+                    data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
+                INNER JOIN
+                    agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+                WHERE
+                    data_sources.approved = 'TRUE'
+            """.format(joined_column_names)
+            cursor.execute(sql_query)
+            results = cursor.fetchall()
+
+            approved_columns.append('agency_name')
+            data_source_matches = [dict(zip(approved_columns, result)) for result in results]
+
+            for item in data_source_matches:
+                convert_dates_to_strings(item)
+
+            data_sources = {
+                "count": len(data_source_matches),
+                "data": data_source_matches
+            }
+        
             return data_sources
         
-        except:
+        except Exception as e:
+            print(str(e))
             return "There has been an error pulling data!"
 

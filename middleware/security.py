@@ -1,18 +1,18 @@
 import functools
 from hmac import compare_digest
 from flask import request, jsonify
-from middleware.initialize_supabase_client import initialize_supabase_client
-import jwt
-import os
+from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 
 def is_valid(api_key):
-    supabase = initialize_supabase_client()
+    psycopg2_connection = initialize_psycopg2_connection()
     # Get the user data that matches the API key from the request
-    user = supabase.table('users').select("*").eq('api_key', api_key).execute()
+    cursor = psycopg2_connection.cursor()
+    cursor.execute(f"select id, api_key from users where api_key = '{api_key}'")
+    results = cursor.fetchall()
     user_data = {}
-    if user:
-        if len(user.data) > 0:
-            user_data = user.data[0]
+    if results:
+        if len(results) > 0:
+            user_data = dict(zip(('id', 'api_key'), results[0]))
         else:
             return False
     else:
