@@ -66,7 +66,8 @@ class DataSourceById(Resource):
         try:
             print(data_source_id)
             data_source_approved_columns = [f"data_sources.{approved_column}" for approved_column in approved_columns]
-            data_source_approved_columns.append('agencies.name')
+            for field in ['agencies.name', 'agencies.jurisdiction_type, agencies.state_iso, agencies.municipality, agencies.county_name']:
+                data_source_approved_columns.append(field)
 
             joined_column_names = ", ".join(data_source_approved_columns)
 
@@ -87,6 +88,8 @@ class DataSourceById(Resource):
             result = cursor.fetchone()
 
             if result:
+                for field in ['agency_name', 'agency_jurisdiction_type, agency_state_iso, agency_municipality, agency_county_name']:
+                    approved_columns.append(field)
                 data_source_details = dict(zip(approved_columns, result))
                 convert_dates_to_strings(data_source_details)
                 return data_source_details
