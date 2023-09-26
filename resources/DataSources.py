@@ -57,6 +57,34 @@ approved_columns = [
     "tags_other"
     ]
 
+agency_approved_columns = [
+    "name",
+    "homepage_url",
+    "count_data_sources",
+    "agency_type",
+    "multi_agency",
+    "submitted_name",
+    "jurisdiction_type",
+    "state_iso",
+    "municipality",
+    "zip_code",
+    "county_fips",
+    "county_name",
+    "lat",
+    "lng",
+    "data_sources",
+    "no_web_presence",
+    "airtable_agency_last_modified",
+    "data_sources_last_updated",
+    "approved",
+    "rejection_reason",
+    "last_approval_editor",
+    "agency_created",
+    "county_airtable_uid",
+    "defunct_year",
+    "airtable_uid",
+]
+
 class DataSourceById(Resource):
     def __init__(self, **kwargs):
         self.psycopg2_connection = kwargs['psycopg2_connection']
@@ -66,8 +94,8 @@ class DataSourceById(Resource):
         try:
             print(data_source_id)
             data_source_approved_columns = [f"data_sources.{approved_column}" for approved_column in approved_columns]
-            for field in ['agencies.name', 'agencies.jurisdiction_type, agencies.state_iso, agencies.municipality, agencies.county_name']:
-                data_source_approved_columns.append(field)
+            for field in agency_approved_columns:
+                data_source_approved_columns.append(f"agencies.{field}")
 
             joined_column_names = ", ".join(data_source_approved_columns)
 
@@ -88,8 +116,11 @@ class DataSourceById(Resource):
             result = cursor.fetchone()
 
             if result:
-                for field in ['agency_name', 'agency_jurisdiction_type, agency_state_iso, agency_municipality, agency_county_name']:
-                    approved_columns.append(field)
+                for field in agency_approved_columns:
+                    if field == "name":
+                        approved_columns.append(f"agency_{field}")
+                    else:
+                        approved_columns.append(field)
                 data_source_details = dict(zip(approved_columns, result))
                 convert_dates_to_strings(data_source_details)
                 return data_source_details
