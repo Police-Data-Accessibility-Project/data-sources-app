@@ -92,12 +92,11 @@ class DataSourceById(Resource):
     @api_required
     def get(self, data_source_id):
         try:
-            print(data_source_id)
             data_source_approved_columns = [f"data_sources.{approved_column}" for approved_column in approved_columns]
-            for field in agency_approved_columns:
-                data_source_approved_columns.append(f"agencies.{field}")
+            agency_approved_columns = [f"agencies.{field}" for field in agency_approved_columns]
+            all_approved_columns = list(**data_source_approved_columns, **agency_approved_columns)
 
-            joined_column_names = ", ".join(data_source_approved_columns)
+            joined_column_names = ", ".join(all_approved_columns)
 
             cursor = self.psycopg2_connection.cursor()
             sql_query = """
@@ -116,12 +115,8 @@ class DataSourceById(Resource):
             result = cursor.fetchone()
 
             if result:
-                for field in agency_approved_columns:
-                    if field == "name":
-                        approved_columns.append(f"agency_{field}")
-                    else:
-                        approved_columns.append(field)
-                data_source_details = dict(zip(approved_columns, result))
+                data_source_and_agency_columns = list(**approved_columns, **agency_approved_columns)
+                data_source_details = dict(zip(data_source_and_agency_columns, result))
                 convert_dates_to_strings(data_source_details)
                 return data_source_details
             else:
@@ -159,8 +154,8 @@ class DataSources(Resource):
             cursor.execute(sql_query)
             results = cursor.fetchall()
 
-            approved_columns.append('agency_name')
-            data_source_matches = [dict(zip(approved_columns, result)) for result in results]
+            columns_to_match = list(**approved_columns, 'agency_name')
+            data_source_matches = [dict(zip(columns_to_match, result)) for result in results]
 
             for item in data_source_matches:
                 convert_dates_to_strings(item)
