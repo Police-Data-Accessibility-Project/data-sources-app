@@ -1,6 +1,6 @@
 from flask_restful import Resource
 from middleware.security import api_required
-from utilities.convert_dates_to_strings import convert_dates_to_strings
+from utilities.common import convert_dates_to_strings
 import spacy
 import requests
 import json

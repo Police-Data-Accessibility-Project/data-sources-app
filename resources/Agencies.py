@@ -1,7 +1,7 @@
 from flask_restful import Resource
 from flask import request, jsonify
 from middleware.security import api_required
-from utilities.convert_dates_to_strings import convert_dates_to_strings
+from utilities.common import convert_dates_to_strings
 import json
 
 approved_columns = [

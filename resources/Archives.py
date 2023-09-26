@@ -1,6 +1,6 @@
 from middleware.security import api_required
 from flask_restful import Resource, request
-from utilities.convert_dates_to_strings import convert_dates_to_strings
+from utilities.common import convert_dates_to_strings
 import json
 
 class Archives(Resource):
