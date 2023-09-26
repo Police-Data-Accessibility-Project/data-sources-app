@@ -2,6 +2,8 @@ import functools
 from hmac import compare_digest
 from flask import request, jsonify
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
+import jwt
+import os
 
 def is_valid(api_key):
     psycopg2_connection = initialize_psycopg2_connection()
