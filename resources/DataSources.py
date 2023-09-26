@@ -1,7 +1,7 @@
 from flask_restful import Resource
 from flask import request, jsonify
 from middleware.security import api_required
-from utilities.common import convert_dates_to_strings
+from utilities.common import convert_dates_to_strings, format_arrays
 import json
 
 approved_columns = [
@@ -118,6 +118,7 @@ class DataSourceById(Resource):
                 data_source_and_agency_columns = approved_columns + agency_approved_columns
                 data_source_details = dict(zip(data_source_and_agency_columns, result))
                 convert_dates_to_strings(data_source_details)
+                format_arrays(data_source_details)
                 return data_source_details
             else:
                 return "Data source not found.", 404
