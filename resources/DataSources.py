@@ -93,8 +93,8 @@ class DataSourceById(Resource):
     def get(self, data_source_id):
         try:
             data_source_approved_columns = [f"data_sources.{approved_column}" for approved_column in approved_columns]
-            agency_approved_columns = [f"agencies.{field}" for field in agency_approved_columns]
-            all_approved_columns = list(**data_source_approved_columns, **agency_approved_columns)
+            agencies_approved_columns = [f"agencies.{field}" for field in agency_approved_columns]
+            all_approved_columns = data_source_approved_columns + agencies_approved_columns
 
             joined_column_names = ", ".join(all_approved_columns)
 
@@ -115,7 +115,7 @@ class DataSourceById(Resource):
             result = cursor.fetchone()
 
             if result:
-                data_source_and_agency_columns = list(**approved_columns, **agency_approved_columns)
+                data_source_and_agency_columns = approved_columns + agency_approved_columns
                 data_source_details = dict(zip(data_source_and_agency_columns, result))
                 convert_dates_to_strings(data_source_details)
                 return data_source_details
@@ -154,7 +154,8 @@ class DataSources(Resource):
             cursor.execute(sql_query)
             results = cursor.fetchall()
 
-            columns_to_match = list(**approved_columns, 'agency_name')
+            columns_to_match = [column for column in approved_columns]
+            columns_to_match.append('agency_name')
             data_source_matches = [dict(zip(columns_to_match, result)) for result in results]
 
             for item in data_source_matches:
