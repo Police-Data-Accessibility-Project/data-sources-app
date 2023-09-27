@@ -215,6 +215,7 @@ export default {
   width: 45%;
   padding: 1%;
   position: relative;
+  margin: 1% 0;
 }
 
 @media (prefers-color-scheme: dark) {
