@@ -6,7 +6,7 @@ import DataSourceStaticView from '../src/pages/DataSourceStaticView';
 const routes = [
 	{ path: '/', component: QuickSearchPage, name: 'QuickSearchPage' },
 	{
-		path: '/search/:searchTerm/:county',
+		path: '/search/:searchTerm/:location',
 		component: SearchResultPage,
 		name: 'SearchResultPage',
 	},
