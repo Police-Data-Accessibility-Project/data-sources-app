@@ -1,6 +1,6 @@
 from flask_restful import Resource
 from middleware.security import api_required
-from utilities.common import convert_dates_to_strings
+from utilities.common import convert_dates_to_strings, format_arrays
 import spacy
 import requests
 import json
@@ -59,6 +59,7 @@ class QuickSearch(Resource):
 
         for item in data_source_matches:
            convert_dates_to_strings(item)
+           format_arrays(item)
 
         data_sources = {
             "count": len(data_source_matches),
