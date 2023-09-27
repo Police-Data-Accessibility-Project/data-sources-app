@@ -39,7 +39,7 @@ def api_required(func):
                     payload = jwt.decode(token, os.getenv('SECRET_KEY'), algorithms=['HS256'])
                     api_key = payload['api_key']
                 except jwt.InvalidTokenError:
-                    return {"message": 'Invalid token.'}, 400
+                    api_key = request.headers['Authorization'].split(" ")[1]
                 if api_key == "undefined":
                     return {"message": "Please provide an API key"}, 400
             else:
