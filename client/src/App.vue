@@ -1,18 +1,26 @@
 <template>
-  <NavBar />
+  <NavBarLinks v-if="showNavLinks()" />
+  <NavBarLogo v-else />
   <router-view></router-view>
   <FooterComponent />
 </template>
 
 <script>
 import FooterComponent from './components/FooterComponent.vue';
-import NavBar from './components/NavBar.vue'
+import NavBarLogo from './components/NavBarLogo.vue'
+import NavBarLinks from './components/NavBarLinks.vue'
 
 export default {
   name: 'App',
   components: {
-    NavBar,
+    NavBarLogo,
+    NavBarLinks,
     FooterComponent
+  },
+  methods: {
+    showNavLinks() {
+      return this.$route.path.includes('/data-sources/')
+    }
   }
 }
 </script>
@@ -25,6 +33,7 @@ export default {
 
 .logo {
   width: 50px;
-  margin: 1rem
+  margin: 1rem;
+  cursor: pointer;
 }
 </style>
