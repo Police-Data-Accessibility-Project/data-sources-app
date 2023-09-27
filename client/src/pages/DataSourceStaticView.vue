@@ -198,7 +198,7 @@ export default {
   flex-flow: row wrap;
   justify-content: center;
   align-items: stretch;
-  gap: 2rem;
+  gap: 2%;
   margin: 4rem 0;
 }
 
@@ -213,7 +213,7 @@ export default {
 .data-detail-section {
   border: #000 1px solid;
   width: 45%;
-  padding: 2rem;
+  padding: 1%;
   position: relative;
 }
 
