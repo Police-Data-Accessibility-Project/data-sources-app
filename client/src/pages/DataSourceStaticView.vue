@@ -1,8 +1,11 @@
 <template>
   <div>
-    <h2>{{ dataSource.name }}</h2>
+    <div class="data-details-header">
+      <h2>{{ dataSource.name }}</h2>
+      <button class="button">Edit</button>
+    </div>
     <div class="data-details-container">
-      <div class="data-type">
+      <div class="data-detail-section">
         <h2>Data type</h2>
         <p class="large">Record type</p>
         <p class="small">{{ dataSource.record_type || 'null' }}</p>
@@ -18,7 +21,7 @@
         </div>
       </div>
 
-      <div class="agency">
+      <div class="data-detail-section">
         <h2>Agency</h2>
         <p class="large">Name</p>
         <p class="small">{{ dataSource.agency_name || 'null' }}</p>
@@ -40,7 +43,7 @@
         <p class="small">{{ dataSource.jurisdiction_type || 'null' }}</p>
       </div>
 
-      <div class="access-format">
+      <div class="data-detail-section">
         <h2>Access & format</h2>
         <p class="large">Source URL</p>
         <p class="small">{{ dataSource.source_url || 'null' }}</p>
@@ -91,7 +94,7 @@
         <p class="small">{{ dataSource.records_not_online || 'null' }}</p>
       </div>
 
-      <div class="provenance">
+      <div class="data-detail-section">
         <h2>Provenance</h2>
         <p class="large">Agency Supplied</p>
         <p class="small">{{ dataSource.agency_supplied || 'null' }}</p>
@@ -109,7 +112,7 @@
         <p class="small">{{ dataSource.community_data_source || 'null' }}</p>
       </div>
 
-      <div class="coverage-retention">
+      <div class="data-detail-section">
         <h2>Coverage & retention</h2>
         <p class="large">Coverage Start Date</p>
         <p class="small">{{ dataSource.coverage_start || 'null' }}</p>
@@ -136,7 +139,7 @@
         <p class="small">{{ dataSource.number_of_records_available || 'null' }}</p>
       </div>
 
-      <div class="data-source-meta">
+      <div class="data-detail-section">
         <h2>Data Source Meta</h2>
         <p class="large">Scraper URL</p>
         <p class="small">{{ dataSource.scraper_url || 'null' }}</p>
@@ -179,17 +182,48 @@ export default {
 </script>
 
 <style scoped>
+.data-details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 1rem;
+}
+
+.data-details-header .button {
+  height: 50%
+}
+
 .data-details-container {
   display: flex;
   flex-flow: row wrap;
   justify-content: center;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 2rem;
+  margin: 4rem 0;
 }
 
-.data-type, .agency, .access-format, .provenance, .coverage-retention, .data-source-meta {
-  border: white 1px solid;
+.data-detail-section h2 {
+  position: absolute;
+  top: -1.75em;
+  z-index: 1;
+  padding: 0 .5em;
+  background-color: #fffbfa;
+}
+
+.data-detail-section {
+  border: #000 1px solid;
   width: 45%;
   padding: 2rem;
+  position: relative;
+}
+
+@media (prefers-color-scheme: dark) {
+  .data-detail-section {
+    border: #fffbfa 1px solid;
+  }
+
+  .data-detail-section h2 {
+    background-color: #000;
+  }
 }
 </style>
