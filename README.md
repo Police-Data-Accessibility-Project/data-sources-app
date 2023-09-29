@@ -76,7 +76,7 @@ npm install
 
 ```
 VUE_APP_PDAP_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlfa2V5IjoiNmVlOTQ2ZmI3YjY0NGUzNTgxNWVkMzMzOWY0MGRjNmQifQ.UMqlzKkJxwmz0bJy9BSONcoetg9zErl0XTkip1-W7a0
-VUE_APP_BASE_URL=https://data-sources.pdap.io
+VUE_APP_BASE_URL=http://localhost:5000
 
 ```
 
