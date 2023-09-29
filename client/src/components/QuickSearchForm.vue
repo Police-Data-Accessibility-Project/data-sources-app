@@ -6,8 +6,8 @@
         <input @input="handleChange" placeholder="Complaints" :value="searchTerm" name="searchTerm" />
       </div>
       <div class="quick-search-input-label">
-        <label for="county">From where?</label>
-        <input @input="handleChange" placeholder="Allegheny County" :value="county" name="county" />
+        <label for="location">From where?</label>
+        <input @input="handleChange" placeholder="Allegheny County" :value="location" name="location" />
       </div>
       <button class="quick-search-button">Search Data Sources</button>
     </form>
@@ -19,7 +19,7 @@ export default {
   name: 'QuickSearchForm',
   props: {
     searchTerm: String,
-    county: String
+    location: String
   },
   methods: {
     handleChange(e) {

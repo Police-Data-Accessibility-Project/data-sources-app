@@ -2,6 +2,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_restful import Resource
 from flask import request, jsonify
 import uuid
+import os
+import jwt
 
 class User(Resource):
     def __init__(self, **kwargs):
@@ -16,18 +18,20 @@ class User(Resource):
             email = data.get('email')
             password = data.get('password')
             cursor = self.psycopg2_connection.cursor()
-            cursor.execute(f"select * from users where email = '{email}'")
+            cursor.execute(f"select id, password_digest from users where email = '{email}'")
             results = cursor.fetchall()
             user_data = {}
             if len(results) > 0:
-                user_data = results[0]
+                user_data = {'id': results[0][0], 'password_digest': results[0][1]}
             else:
                 return {'error': 'no match'}
             if check_password_hash(user_data['password_digest'], password):
                 api_key = uuid.uuid4().hex
                 user_id = str(user_data['id'])
-                cursor.execute(f"update users set api_key = {api_key} where id = {user_id}")
-                return jsonify({'api_key': api_key})
+                cursor.execute("UPDATE users SET api_key = %s WHERE id = %s", (api_key, user_id))
+                payload = {'api_key': api_key}
+                token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm='HS256')
+                return jsonify(token)
         except Exception as e:
             return {'error': str(e)}
     

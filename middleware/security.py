@@ -2,6 +2,8 @@ import functools
 from hmac import compare_digest
 from flask import request, jsonify
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
+import jwt
+import os
 
 def is_valid(api_key):
     psycopg2_connection = initialize_psycopg2_connection()
@@ -32,7 +34,12 @@ def api_required(func):
         if request.headers and 'Authorization' in request.headers:
             authorization_header = request.headers['Authorization'].split(" ")
             if len(authorization_header) >= 2 and authorization_header[0] == "Bearer":
-                api_key = request.headers['Authorization'].split(" ")[1]
+                try:
+                    token = request.headers['Authorization'].split(" ")[1]
+                    payload = jwt.decode(token, os.getenv('SECRET_KEY'), algorithms=['HS256'])
+                    api_key = payload['api_key']
+                except jwt.InvalidTokenError:
+                    api_key = request.headers['Authorization'].split(" ")[1]
                 if api_key == "undefined":
                     return {"message": "Please provide an API key"}, 400
             else:
