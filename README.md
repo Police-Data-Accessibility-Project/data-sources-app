@@ -72,7 +72,15 @@ npm install
 
 ```
 
-### 8. Run the development server.
+### 8. Create .env file and add the following env variables for the Vue app
+
+```
+VUE_APP_PDAP_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlfa2V5IjoiNmVlOTQ2ZmI3YjY0NGUzNTgxNWVkMzMzOWY0MGRjNmQifQ.UMqlzKkJxwmz0bJy9BSONcoetg9zErl0XTkip1-W7a0
+VUE_APP_BASE_URL=https://data-sources.pdap.io
+
+```
+
+### 9. Run the development server.
 
 ```
 
