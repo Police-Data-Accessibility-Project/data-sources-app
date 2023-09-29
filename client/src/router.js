@@ -4,7 +4,7 @@ import SearchResultPage from '../src/pages/SearchResultPage';
 import DataSourceStaticView from '../src/pages/DataSourceStaticView';
 
 const routes = [
-	{ path: '/data-sources-app-client', component: QuickSearchPage, name: 'QuickSearchPage' },
+	{ path: '/', component: QuickSearchPage, name: 'QuickSearchPage' },
 	{
 		path: '/search/:searchTerm/:location',
 		component: SearchResultPage,
