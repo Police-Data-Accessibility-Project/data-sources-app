@@ -60,7 +60,7 @@ class DataSources(Resource):
     def get(self):
         try:
             data_source_approved_columns = [f"data_sources.{approved_column}" for approved_column in approved_columns]
-            data_source_approved_columns.append('agencies.name')
+            data_source_approved_columns.append('agencies.name as agency_name')
 
             joined_column_names = ", ".join(data_source_approved_columns)
 
@@ -80,7 +80,7 @@ class DataSources(Resource):
             cursor.execute(sql_query)
             results = cursor.fetchall()
 
-            approved_columns.append('agency_name')
+            data_source_output_columns = approved_columns + ['agency_name']
             data_source_matches = [dict(zip(approved_columns, result)) for result in results]
 
             for item in data_source_matches:
