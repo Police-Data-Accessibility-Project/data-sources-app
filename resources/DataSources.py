@@ -81,7 +81,7 @@ class DataSources(Resource):
             results = cursor.fetchall()
 
             data_source_output_columns = approved_columns + ['agency_name']
-            data_source_matches = [dict(zip(approved_columns, result)) for result in results]
+            data_source_matches = [dict(zip(data_source_output_columns, result)) for result in results]
 
             for item in data_source_matches:
                 convert_dates_to_strings(item)
