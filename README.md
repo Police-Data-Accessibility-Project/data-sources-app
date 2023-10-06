@@ -45,14 +45,14 @@ pip install -r requirements.txt
 
 ```
 
-### 5. Manually export a SUPABASE_DATABASE_URL in the command line
+### 5. Manually export a SUPABASE_DATABASE_URL, SECRET_KEY, and WEBHOOK_URL in the command line
 
-The app should have a SUPABASE_DATABASE_URL and SECRET_KEY for PDAP's Data Sources [Supabase](https://supabase.com/).
+The app should have a SUPABASE_DATABASE_URL, SECRET_KEY, and WEBHOOK_URL for PDAP's Data Sources [Supabase](https://supabase.com/). Reach out to contact@pdap.io or make noise in Discord if you'd like access to these keys.
 
 ```
 export SUPABASE_DATABASE_URL=postgresql://postgres:<password>@db.hgzbfhtjmnpnwdbzluot.supabase.co:5432/postgres
-export SECRET_KEY="**"
-export WEBHOOK_URL="**"
+export SECRET_KEY=<secret_key>
+export WEBHOOK_URL=<webhook_url>
 
 ```
 
@@ -73,15 +73,7 @@ npm install
 
 ```
 
-### 8. Create .env file and add the following env variables for the Vue app
-
-```
-VUE_APP_PDAP_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlfa2V5IjoiNmVlOTQ2ZmI3YjY0NGUzNTgxNWVkMzMzOWY0MGRjNmQifQ.UMqlzKkJxwmz0bJy9BSONcoetg9zErl0XTkip1-W7a0
-VUE_APP_BASE_URL=http://localhost:5000
-
-```
-
-### 9. Run the development server.
+### 8. Run the development server.
 
 ```
 
