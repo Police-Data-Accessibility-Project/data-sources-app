@@ -24,14 +24,10 @@ approved_columns = [
     "number_of_records_available",
     "size",
     "access_type",
-    "record_download_option_provided",
     "data_portal_type",
-    "access_restrictions",
-    "access_restrictions_notes",
     "record_format",
     "update_frequency",
     "update_method",
-    "sort_method",
     "tags",
     "readme_url",
     "scraper_url",
@@ -40,10 +36,9 @@ approved_columns = [
     "municipality",
     "agency_type",
     "jurisdiction_type",
-    "community_data_source",
     "data_source_created",
     "airtable_source_last_modified",
-    "url_broken",
+    "url_status",
     "rejection_note",
     "last_approval_editor",
     "agency_described_submitted",
@@ -65,7 +60,7 @@ class DataSources(Resource):
     def get(self):
         try:
             data_source_approved_columns = [f"data_sources.{approved_column}" for approved_column in approved_columns]
-            data_source_approved_columns.append('agencies.name')
+            data_source_approved_columns.append('agencies.name as agency_name')
 
             joined_column_names = ", ".join(data_source_approved_columns)
 
@@ -85,8 +80,8 @@ class DataSources(Resource):
             cursor.execute(sql_query)
             results = cursor.fetchall()
 
-            approved_columns.append('agency_name')
-            data_source_matches = [dict(zip(approved_columns, result)) for result in results]
+            data_source_output_columns = approved_columns + ['agency_name']
+            data_source_matches = [dict(zip(data_source_output_columns, result)) for result in results]
 
             for item in data_source_matches:
                 convert_dates_to_strings(item)
