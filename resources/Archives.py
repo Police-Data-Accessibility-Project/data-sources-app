@@ -40,6 +40,7 @@ class Archives(Resource):
             return archive_results
         
         except Exception as e:
+            self.psycopg2_connection.rollback()
             print(str(e))
             return "There has been an error pulling data!"
         
@@ -64,4 +65,5 @@ class Archives(Resource):
             return {'status': 'success'}
         
         except Exception as e:
+            self.psycopg2_connection.rollback()
             return {'error': str(e)}
