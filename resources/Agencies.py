@@ -56,8 +56,9 @@ class Agencies(Resource):
         
             return agencies
 
-        except:
+        except Exception as e:
             self.psycopg2_connection.rollback()
+            print(str(e))
             return "There has been an error pulling data!"
             
 
