@@ -66,4 +66,5 @@ class Archives(Resource):
         
         except Exception as e:
             self.psycopg2_connection.rollback()
+            print(str(e))
             return {'error': str(e)}
