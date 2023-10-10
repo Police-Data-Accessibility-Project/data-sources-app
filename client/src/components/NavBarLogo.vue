@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  name: 'NavBarLogo',
+  name: 'NavLogo',
   methods: {
     navHome() {
       this.$router.push('/')

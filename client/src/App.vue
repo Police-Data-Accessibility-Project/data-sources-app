@@ -1,19 +1,19 @@
 <template>
   <NavLinks v-if="showNavLinks()" />
-  <NavBarLogo v-else />
+  <NavLogo v-else />
   <router-view></router-view>
   <FooterComponent />
 </template>
 
 <script>
 import FooterComponent from './components/FooterComponent.vue';
-import NavBarLogo from './components/NavBarLogo.vue'
+import NavLogo from './components/NavLogo.vue'
 import NavLinks from './components/NavLinks.vue'
 
 export default {
   name: 'App',
   components: {
-    NavBarLogo,
+    NavLogo,
     NavLinks,
     FooterComponent
   },
