@@ -1,5 +1,5 @@
 <template>
-  <NavBarLinks v-if="showNavLinks()" />
+  <NavLinks v-if="showNavLinks()" />
   <NavBarLogo v-else />
   <router-view></router-view>
   <FooterComponent />
@@ -8,13 +8,13 @@
 <script>
 import FooterComponent from './components/FooterComponent.vue';
 import NavBarLogo from './components/NavBarLogo.vue'
-import NavBarLinks from './components/NavBarLinks.vue'
+import NavLinks from './components/NavLinks.vue'
 
 export default {
   name: 'App',
   components: {
     NavBarLogo,
-    NavBarLinks,
+    NavLinks,
     FooterComponent
   },
   methods: {

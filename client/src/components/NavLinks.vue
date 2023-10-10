@@ -13,7 +13,7 @@
 
 <script>
 export default {
-  name: 'NavBarLinks',
+  name: 'NavLinks',
   navHome() {
       this.$router.push('/')
     }
