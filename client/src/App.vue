@@ -1,26 +1,18 @@
 <template>
-  <NavLinks v-if="showNavLinks()" />
-  <NavLogo v-else />
+  <AppHeader />
   <router-view></router-view>
   <FooterComponent />
 </template>
 
 <script>
+import AppHeader from './components/AppHeader.vue';
 import FooterComponent from './components/FooterComponent.vue';
-import NavLogo from './components/NavLogo.vue'
-import NavLinks from './components/NavLinks.vue'
 
 export default {
   name: 'App',
   components: {
-    NavLogo,
-    NavLinks,
+    AppHeader,
     FooterComponent
-  },
-  methods: {
-    showNavLinks() {
-      return this.$route.path.includes('/data-sources/')
-    }
   }
 }
 </script>
