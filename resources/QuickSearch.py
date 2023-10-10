@@ -77,6 +77,7 @@ class QuickSearch(Resource):
         return data_sources
         
     except Exception as e:
+        self.psycopg2_connection.rollback()
         print(str(e))
         webhook_url = os.getenv('WEBHOOK_URL')
         message = {'content': 'Error during quick search operation: ' + str(e) + "\n" + f"Search term: {search}\n" + f'Location: {location}'}
