@@ -4,154 +4,25 @@
       <h2>{{ dataSource.name }}</h2>
       <button class="button">Edit</button>
     </div>
-    <div class="data-details-container">
-      <div class="data-detail-section">
-        <h2>Data type</h2>
-        <p class="large">Record type</p>
-        <p class="small">{{ dataSource.record_type || 'null' }}</p>
-        <p class="large">Description</p>
-        <p class="small">{{ dataSource.description || 'null' }}</p>
-        <div v-if="dataSource.tags">
-          <p class="large">Tags</p>
-          <p v-for="tag in dataSource.tags" :key="tag" class="small">{{ tag }}</p>
+    <div class="data-details-container" v-for="(property, index) in dataToRender" :key="index">
+      <div
+        v-for="(section, index) in dataToRender"
+        :key="index"
+        class="data-detail-section"
+      >
+        <h2>{{ section.header }}</h2>
+        <div
+          v-for="(record, recordIndex) in section.records"
+          :key="recordIndex"
+        >
+          <p class="large">{{ record.title }}</p>
+          <div v-if="Array.isArray(dataSource[record.key])">
+            <p v-for="item in dataSource[record.key]" :key="item" class="small">{{ item }}</p>
+          </div>
+          <p class="small" v-else>
+            {{ dataSource[record.key] || 'null' }}
+          </p>
         </div>
-        <div v-else>
-          <p class="large">Tags</p>
-          <p class="small">null</p>
-        </div>
-      </div>
-
-      <div class="data-detail-section">
-        <h2>Agency</h2>
-        <p class="large">Name</p>
-        <p class="small">{{ dataSource.agency_name || 'null' }}</p>
-        <p class="large">State</p>
-        <p class="small">{{ dataSource.state_iso || 'null' }}</p>
-        <div v-if="dataSource.county_name">
-          <p class="large">County</p>
-          <p class="small">{{ dataSource.county_name[0] }}</p>
-        </div>
-        <div v-else>
-          <p class="large">County</p>
-          <p class="small">null</p>
-        </div>
-        <p class="large">Municipality</p>
-        <p class="small">{{ dataSource.municipality || 'null' }}</p>
-        <p class="large">Agency Type</p>
-        <p class="small">{{ dataSource.agency_type || 'null' }}</p>
-        <p class="large">Jurisdiction Type</p>
-        <p class="small">{{ dataSource.jurisdiction_type || 'null' }}</p>
-      </div>
-
-      <div class="data-detail-section">
-        <h2>Access & format</h2>
-        <p class="large">Source URL</p>
-        <p class="small">{{ dataSource.source_url || 'null' }}</p>
-
-        <p class="large">ReadMe URL</p>
-        <p class="small">{{ dataSource.readme_url || 'null' }}</p>
-
-        <div v-if="dataSource.access_type">
-          <p class="large">Access Type:</p>
-          <p v-for="access_type in dataSource.access_type" :key="access_type" class="small">{{ access_type }}</p>
-        </div>
-        <div v-else>
-          <p class="large">Access Type</p>
-          <p class="small">null</p>
-        </div>
-
-        <div v-if="dataSource.record_format">
-          <p class="large">Record Formats:</p>
-          <p v-for="record_format in dataSource.record_format" :key="record_format" class="small">{{ record_format }}</p>
-        </div>
-        <div v-else>
-          <p class="large">Record Formats</p>
-          <p class="small">null</p>
-        </div>
-
-        <div v-if="dataSource.detail_level">
-          <p class="large">Detail Level:</p>
-          <p v-for="detail_level in dataSource.detail_level" :key="detail_level" class="small">{{ detail_level }}</p>
-        </div>
-        <div v-else>
-          <p class="large">Detail Level</p>
-          <p class="small">null</p>
-        </div>
-
-        <p class="large">Download Options</p>
-        <p class="small">{{ dataSource.record_download_option_provided || 'null' }}</p>
-
-        <p class="large">Size</p>
-        <p class="small">{{ dataSource.size || 'null' }}</p>
-
-        <p class="large">Access Restrictions</p>
-        <p class="small">{{ dataSource.access_restrictions || 'null' }}</p>
-
-        <p class="large">Access Restriction Notes</p>
-        <p class="small">{{ dataSource.access_restrictions_notes || 'null' }}</p>
-
-        <p class="large">Records Not Online</p>
-        <p class="small">{{ dataSource.records_not_online || 'null' }}</p>
-      </div>
-
-      <div class="data-detail-section">
-        <h2>Provenance</h2>
-        <p class="large">Agency Supplied</p>
-        <p class="small">{{ dataSource.agency_supplied || 'null' }}</p>
-
-        <p class="large">Supplying Entity</p>
-        <p class="small">{{ dataSource.supplying_entity || 'null' }}</p>
-
-        <p class="large">Agency Originated</p>
-        <p class="small">{{ dataSource.agency_originated || 'null' }}</p>
-
-        <p class="large">Originating Entity</p>
-        <p class="small">{{ dataSource.originating_entity || 'null' }}</p>
-
-        <p class="large">Community Data Source</p>
-        <p class="small">{{ dataSource.community_data_source || 'null' }}</p>
-      </div>
-
-      <div class="data-detail-section">
-        <h2>Coverage & retention</h2>
-        <p class="large">Coverage Start Date</p>
-        <p class="small">{{ dataSource.coverage_start || 'null' }}</p>
-
-        <p class="large">Coverage End Date</p>
-        <p class="small">{{ dataSource.coverage_end || 'null' }}</p>
-
-        <p class="large">Source Last Updated</p>
-        <p class="small">{{ dataSource.source_last_updated || 'null' }}</p>
-
-        <p class="large">Update Frequency</p>
-        <p class="small">{{ dataSource.update_frequency || 'null' }}</p>
-
-        <p class="large">Update Method</p>
-        <p class="small">{{ dataSource.update_method || 'null' }}</p>
-
-        <p class="large">Sort Method</p>
-        <p class="small">{{ dataSource.sort_method || 'null' }}</p>
-
-        <p class="large">Retention Schedule</p>
-        <p class="small">{{ dataSource.retention_schedule || 'null' }}</p>
-
-        <p class="large">Number of Records Available</p>
-        <p class="small">{{ dataSource.number_of_records_available || 'null' }}</p>
-      </div>
-
-      <div class="data-detail-section">
-        <h2>Data Source Meta</h2>
-        <p class="large">Scraper URL</p>
-        <p class="small">{{ dataSource.scraper_url || 'null' }}</p>
-
-        <p class="large">Created</p>
-        <p class="small">{{ dataSource.data_source_created || 'null' }}</p>
-
-        <p class="large">Agency ID</p>
-        <p class="small">{{ dataSource.agency_described_linked_uid || 'null' }}</p>
-
-        <p class="large">Data Source ID</p>
-        <p class="small">{{ dataSource.airtable_uid || 'null' }}</p>
       </div>
     </div>
   </div>
@@ -164,7 +35,49 @@ export default {
   name: 'DataSourceStaticView',
   data: () => ({
     dataSource: {},
-    id: null
+    id: null, 
+    dataToRender: [
+      {header: 'Data Type', records: [{ title: 'Record type', key: 'record_type' },
+      { title: 'Description', key: 'description' },
+      { title: 'Tags', key: 'tags' }]}, {header: "Agency", records: [
+      { title: 'Name', key: 'agency_name' },
+      { title: 'State', key: 'state_iso' },
+      { title: 'County', key: 'county_name' },
+      { title: 'Municipality', key: 'municipality' },
+      { title: 'Agency Type', key: 'agency_type' },
+      { title: 'Jurisdiction Type', key: 'jurisdiction_type' }]}, 
+      {header: "Access & format", records: [
+      { title: 'Source URL', key: 'source_url' },
+      { title: 'ReadMe URL', key: 'readme_url' },
+      { title: 'Access Type', key: 'access_type' },
+      { title: 'Record Formats', key: 'record_format' },
+      { title: 'Detail Level', key: 'detail_level' },
+      { title: 'Download Options', key: 'record_download_option_provided' },
+      { title: 'Size', key: 'size' },
+      { title: 'Access Restrictions', key: 'access_restrictions' },
+      { title: 'Access Restriction Notes', key: 'access_restrictions_notes' },
+      { title: 'Records Not Online', key: 'records_not_online' }]},
+      {header: "Provenace", records: [
+      { title: 'Agency Supplied', key: 'agency_supplied' },
+      { title: 'Supplying Entity', key: 'supplying_entity' },
+      { title: 'Agency Originated', key: 'agency_originated' },
+      { title: 'Originating Entity', key: 'originating_entity' },
+      { title: 'Community Data Source', key: 'community_data_source' }]},
+      {header: "Coverage & retention", records: [
+      { title: 'Coverage Start Date', key: 'coverage_start' },
+      { title: 'Coverage End Date', key: 'coverage_end' },
+      { title: 'Source Last Updated', key: 'source_last_updated' },
+      { title: 'Update Frequency', key: 'update_frequency' },
+      { title: 'Update Method', key: 'update_method' },
+      { title: 'Sort Method', key: 'sort_method' },
+      { title: 'Retention Schedule', key: 'retention_schedule' },
+      { title: 'Number of Records Available', key: 'number_of_records_available' }]},
+      {header: "Data Source Meta", records: [
+      { title: 'Scraper URL', key: 'scraper_url' },
+      { title: 'Created', key: 'data_source_created' },
+      { title: 'Agency ID', key: 'agency_described_linked_uid' },
+      { title: 'Data Source ID', key: 'airtable_uid' }]}
+    ]
   }),
   mounted: function() {
     this.id = this.$route.params.id
