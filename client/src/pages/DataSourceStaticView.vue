@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="!noData">
     <div class="data-details-header">
       <h2>{{ dataSource.name }}</h2>
       <button class="button">Edit</button>
@@ -25,6 +25,9 @@
         </div>
       </div>
     </div>
+  </div>
+  <div v-else>
+    <h2>{{ errorMessage }}</h2>
   </div>
 </template>
 
@@ -77,7 +80,9 @@ export default {
       { title: 'Created', key: 'data_source_created' },
       { title: 'Agency ID', key: 'agency_described_linked_uid' },
       { title: 'Data Source ID', key: 'airtable_uid' }]}
-    ]
+    ],
+    noData: true,
+    errorMessage: ""
   }),
   mounted: function() {
     this.id = this.$route.params.id
@@ -86,8 +91,14 @@ export default {
   methods: {
     async getDataSourceDetails() {
       const headers = {"Authorization": `Bearer ${process.env.VUE_APP_PDAP_TOKEN}`}
-      const res = await axios.get(`${process.env.VUE_APP_BASE_URL}/data-sources/${this.id}`, {headers})
-      this.dataSource = res.data
+      try {
+        const res = await axios.get(`${process.env.VUE_APP_BASE_URL}/data-sources/${this.id}`, {headers})
+        this.dataSource = res.data
+        this.noData = false
+      }
+      catch (error) {
+        this.errorMessage = error.response.data
+      }
     }
   }
 }
