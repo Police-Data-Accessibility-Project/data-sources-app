@@ -13,7 +13,7 @@
 
 <script>
 export default {
-  name: 'FooterComponent'
+  name: 'AppFooter'
 }
 </script>
 
