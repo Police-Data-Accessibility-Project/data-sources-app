@@ -22,7 +22,6 @@
 <script>
 import SearchResultCard from '../components/SearchResultCard.vue';
 import axios from 'axios'
-import globals from '@/globals'
 
 export default {
   name: 'SearchResultPage',
@@ -43,8 +42,8 @@ export default {
   methods: {
     async search() {
       try{
-        const headers = {"Authorization": `Bearer ${globals.PDAP_TOKEN}`}
-        const res = await axios.get(`${globals.BASE_URL}/quick-search/${this.searchTerm}/${this.location}`, {headers})
+        const headers = {"Authorization": `Bearer ${process.env.PDAP_TOKEN}`}
+        const res = await axios.get(`${process.env.BASE_URL}/quick-search/${this.searchTerm}/${this.location}`, {headers})
         this.searchResult = res.data
         this.searched = true
       }

@@ -33,7 +33,6 @@
 
 <script>
 import axios from 'axios';
-import globals from '@/globals';
 
 export default {
   name: 'DataSourceStaticView',
@@ -91,9 +90,9 @@ export default {
   }, 
   methods: {
     async getDataSourceDetails() {
-      const headers = {"Authorization": `Bearer ${globals.PDAP_TOKEN}`}
+      const headers = {"Authorization": `Bearer ${process.env.PDAP_TOKEN}`}
       try {
-        const res = await axios.get(`${globals.BASE_URL}/data-sources/${this.id}`, {headers})
+        const res = await axios.get(`${process.env.BASE_URL}/data-sources/${this.id}`, {headers})
         this.dataSource = res.data
         this.noData = false
       }
