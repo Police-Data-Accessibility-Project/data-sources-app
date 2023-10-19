@@ -90,9 +90,9 @@ export default {
   }, 
   methods: {
     async getDataSourceDetails() {
-      const headers = {"Authorization": `Bearer ${process.env.PDAP_TOKEN}`}
+      const headers = {"Authorization": `Bearer ${process.env.VUE_APP_PDAP_TOKEN}`}
       try {
-        const res = await axios.get(`${process.env.BASE_URL}/data-sources/${this.id}`, {headers})
+        const res = await axios.get(`${process.env.VUE_APP_BASE_URL}/data-sources/${this.id}`, {headers})
         this.dataSource = res.data
         this.noData = false
       }
