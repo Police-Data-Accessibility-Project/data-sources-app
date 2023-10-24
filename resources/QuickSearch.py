@@ -1,6 +1,6 @@
 from flask_restful import Resource
 from middleware.security import api_required
-from utilities.convert_dates_to_strings import convert_dates_to_strings
+from utilities.common import convert_dates_to_strings, format_arrays
 import spacy
 import requests
 import json
@@ -27,6 +27,7 @@ class QuickSearch(Resource):
 
         sql_query = """
             SELECT
+                data_sources.airtable_uid,
                 data_sources.name AS data_source_name,
                 data_sources.description,
                 data_sources.record_type,
@@ -52,12 +53,13 @@ class QuickSearch(Resource):
 
         results = cursor.fetchall()
 
-        column_names = ['data_source_name', 'description', 'record_type', 'source_url', 'record_format', 'coverage_start', 'coverage_end', 'agency_supplied', 'agency_name', 'municipality', 'state_iso']
+        column_names = ['airtable_uid', 'data_source_name', 'description', 'record_type', 'source_url', 'record_format', 'coverage_start', 'coverage_end', 'agency_supplied', 'agency_name', 'municipality', 'state_iso']
 
         data_source_matches = [dict(zip(column_names, result)) for result in results]
 
         for item in data_source_matches:
            convert_dates_to_strings(item)
+           format_arrays(item)
 
         data_sources = {
             "count": len(data_source_matches),

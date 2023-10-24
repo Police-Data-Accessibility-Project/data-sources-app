@@ -27,17 +27,13 @@
     </p>
     <p class="search-result-label" data-test="search-result-label-formats">Formats available</p>
     <div v-if="dataSource.record_format" data-test="search-result-formats">
-      <p class="search-result-data" :key="recordFormat" v-for="recordFormat in parseRecordFormat(dataSource.record_format)" data-test="search-result-format">
+      <p class="search-result-data" :key="recordFormat" v-for="recordFormat in dataSource.record_format" data-test="search-result-format">
         {{ recordFormat }}
       </p>
     </div>
     <p class="search-result-data" data-test="search-result-format-unknown" v-else>Data Formats Unknown</p>
     <button class="button" @click="openSource" :href="dataSource.source_url" data-test="search-result-source-button">Visit Source URL</button>
     <button class="source button" @click="showDetails" data-test="search-result-source-details-button">Source Details</button>
-    <p v-if="expand && dataSource.description" data-test="search-result-description">
-      {{ dataSource.description }}
-    </p>
-    <p v-else-if="expand && !dataSource.description" data-test="search-result-description-unknown">No Description Available</p>
   </div>
 </template>
 
@@ -47,12 +43,9 @@
     props: {
       dataSource: Object
     },
-    data: () => ({
-      expand: false
-    }),
     methods: {
       showDetails() {
-        this.expand = !this.expand
+        this.$router.push(`/data-sources/${this.dataSource.airtable_uid}`)
       },
       openSource() {
         window.open(this.dataSource.source_url, '_blank');
@@ -63,15 +56,6 @@
         newDate.push(year)
         let formattedDate = newDate.join('/')
         return formattedDate
-      },
-      parseRecordFormat(recordFormat) {
-        const outputArray = []
-        const regex = /'([^']+)'/g;
-        let match;
-        while ((match = regex.exec(recordFormat)) !== null) {
-          outputArray.push(match[1]);
-        }
-        return outputArray
       }
     }
   }
