@@ -4,8 +4,9 @@ from flask import request, jsonify
 import datetime
 import uuid
 import os
-import jwt
 import requests
+
+BASE_URL = os.getenv("VUE_APP_BASE_URL")
 
 class SearchTokens(Resource):
     def __init__(self, **kwargs):
@@ -25,7 +26,7 @@ class SearchTokens(Resource):
             self.psycopg2_connection.commit()
 
             headers = {"Authorization": f"Bearer {token}"}
-            r = requests.get(f"http://127.0.0.1:5001/quick-search/{search}/{location}", headers=headers)
+            r = requests.get(f"{BASE_URL}/quick-search/{search}/{location}", headers=headers)
             return r.json()
 
         except Exception as e:
