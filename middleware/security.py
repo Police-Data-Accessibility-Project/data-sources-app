@@ -2,7 +2,7 @@ import functools
 from hmac import compare_digest
 from flask import request, jsonify
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
-import jwt
+from datetime import datetime as dt
 import os
 
 def is_valid(api_key):
@@ -12,13 +12,16 @@ def is_valid(api_key):
     cursor.execute(f"select id, api_key from users where api_key = '{api_key}'")
     results = cursor.fetchall()
     user_data = {}
-    if results:
-        if len(results) > 0:
-            user_data = dict(zip(('id', 'api_key'), results[0]))
-        else:
+    if not results:
+        cursor.execute(f"delete from access_tokens where expiration_date < '{dt.now()}'")
+        psycopg2_connection.commit()
+        cursor.execute(f"select id, token from access_tokens where token = '{api_key}'")
+        results = cursor.fetchall()
+        
+        if not results:
             return False
-    else:
-        return False
+
+    user_data = dict(zip(('id', 'api_key'), results[0]))
     # Compare the API key in the user table to the API in the request header and proceed through the protected route if it's valid. Otherwise, compare_digest will return False and api_required will send an error message to provide a valid API key
     if compare_digest(user_data.get('api_key'), api_key):
         return True
@@ -31,15 +34,11 @@ def api_required(func):
     @functools.wraps(func)
     def decorator(*args, **kwargs):
         api_key = None
+        print(request.headers)
         if request.headers and 'Authorization' in request.headers:
             authorization_header = request.headers['Authorization'].split(" ")
             if len(authorization_header) >= 2 and authorization_header[0] == "Bearer":
-                try:
-                    token = request.headers['Authorization'].split(" ")[1]
-                    payload = jwt.decode(token, os.getenv('SECRET_KEY'), algorithms=['HS256'])
-                    api_key = payload['api_key']
-                except jwt.InvalidTokenError:
-                    api_key = request.headers['Authorization'].split(" ")[1]
+                api_key = request.headers['Authorization'].split(" ")[1]
                 if api_key == "undefined":
                     return {"message": "Please provide an API key"}, 400
             else:
