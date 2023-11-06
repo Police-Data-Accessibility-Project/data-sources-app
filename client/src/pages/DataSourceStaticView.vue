@@ -4,17 +4,10 @@
       <h2>{{ dataSource.name }}</h2>
       <button class="button">Edit</button>
     </div>
-    <div class="data-details-container" v-for="(property, index) in dataToRender" :key="index">
-      <div
-        v-for="(section, index) in dataToRender"
-        :key="index"
-        class="data-detail-section"
-      >
+    <div class="data-details-container">
+      <div v-for="(section, index) in dataToRender" :key="index" class="data-detail-section">
         <h2>{{ section.header }}</h2>
-        <div
-          v-for="(record, recordIndex) in section.records"
-          :key="recordIndex"
-        >
+        <div v-for="(record, recordIndex) in section.records" :key="recordIndex">
           <p class="large">{{ record.title }}</p>
           <div v-if="Array.isArray(dataSource[record.key])">
             <p v-for="item in dataSource[record.key]" :key="item" class="small">{{ item }}</p>
