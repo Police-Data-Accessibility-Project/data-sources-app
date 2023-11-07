@@ -34,7 +34,6 @@ def api_required(func):
     @functools.wraps(func)
     def decorator(*args, **kwargs):
         api_key = None
-        print(request.headers)
         if request.headers and 'Authorization' in request.headers:
             authorization_header = request.headers['Authorization'].split(" ")
             if len(authorization_header) >= 2 and authorization_header[0] == "Bearer":
