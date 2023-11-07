@@ -19,9 +19,10 @@ class QuickSearch(Resource):
         data_sources = {'count': 0, 'data': []}
         
         nlp = spacy.load("en_core_web_sm")
-        doc = nlp(search)
+        doc = nlp(search.strip())
         lemmatized_tokens = [token.lemma_ for token in doc]
         depluralized_search_term = " ".join(lemmatized_tokens)
+        location = location.strip()
 
         cursor = self.psycopg2_connection.cursor()
 
@@ -46,10 +47,10 @@ class QuickSearch(Resource):
             INNER JOIN
                 agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
             WHERE
-                (data_sources.name ILIKE %s OR data_sources.description ILIKE %s OR data_sources.record_type ILIKE %s OR data_sources.tags ILIKE %s) AND (agencies.county_name ILIKE %s OR agencies.state_iso ILIKE %s OR agencies.municipality ILIKE %s OR agencies.agency_type ILIKE %s OR agencies.jurisdiction_type ILIKE %s OR agencies.name ILIKE %s)
+                (data_sources.name ILIKE %s OR data_sources.description ILIKE %s OR data_sources.record_type ILIKE %s OR data_sources.tags ILIKE %s) AND (agencies.county_name ILIKE %s OR concat(substr(agencies.county_name,3,length(agencies.county_name)-4), ' county') ILIKE %s OR agencies.state_iso ILIKE %s OR agencies.municipality ILIKE %s OR agencies.agency_type ILIKE %s OR agencies.jurisdiction_type ILIKE %s OR agencies.name ILIKE %s)
         """
-
-        cursor.execute(sql_query, (f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
+        print(f"Query parameters: '%{depluralized_search_term}%', '%{location}%'")
+        cursor.execute(sql_query, (f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
 
         results = cursor.fetchall()
 
