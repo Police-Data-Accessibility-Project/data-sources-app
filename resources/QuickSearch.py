@@ -18,6 +18,8 @@ class QuickSearch(Resource):
     try:
         data_sources = {'count': 0, 'data': []}
         
+        search = "" if search == "all" else search
+        location = "" if location == "all" else location
         nlp = spacy.load("en_core_web_sm")
         doc = nlp(search.strip())
         lemmatized_tokens = [token.lemma_ for token in doc]
