@@ -1,12 +1,9 @@
 import psycopg2
 import os
-from decouple import config
 
 def initialize_psycopg2_connection():
     try:
         SUPABASE_DATABASE_URL = os.getenv('SUPABASE_DATABASE_URL')
-        if not SUPABASE_DATABASE_URL:
-            SUPABASE_DATABASE_URL = config('SUPABASE_DATABASE_URL')
 
         return psycopg2.connect(SUPABASE_DATABASE_URL)
     except:

@@ -19,7 +19,8 @@ class QuickSearch(Resource):
         data_sources = {'count': 0, 'data': []}
         
         nlp = spacy.load("en_core_web_sm")
-        doc = nlp(search.strip())
+        search = search.strip()
+        doc = nlp(search)
         lemmatized_tokens = [token.lemma_ for token in doc]
         depluralized_search_term = " ".join(lemmatized_tokens)
         location = location.strip()
@@ -51,9 +52,13 @@ class QuickSearch(Resource):
         """
         print(f"Query parameters: '%{depluralized_search_term}%', '%{location}%'")
         cursor.execute(sql_query, (f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
-
         results = cursor.fetchall()
 
+        if not results:
+            print(f"Query parameters: '%{search}%', '%{location}%'")
+            cursor.execute(sql_query, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
+            results = cursor.fetchall()
+        
         column_names = ['airtable_uid', 'data_source_name', 'description', 'record_type', 'source_url', 'record_format', 'coverage_start', 'coverage_end', 'agency_supplied', 'agency_name', 'municipality', 'state_iso']
 
         data_source_matches = [dict(zip(column_names, result)) for result in results]

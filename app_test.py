@@ -1,8 +1,11 @@
 import pytest
+import os
 from app import app
-from decouple import config
+from dotenv import load_dotenv
 
-API_KEY = config('API_KEY')
+load_dotenv()
+
+API_KEY = os.getenv('API_KEY')
 
 @pytest.fixture()
 def test_app():
@@ -54,4 +57,16 @@ def test_quicksearch_officer_involved_shootings_kings_results(client):
 def test_quicksearch_officer_involved_shootings_kings_county_results(client):
     headers = {"Authorization": f"Bearer {API_KEY}"}
     response = client.get("/quick-search/Officer Involved Shootings/kings county", headers=headers)
+    assert len(response.json["data"]) > 0
+
+
+def test_quicksearch_officer_involved_shootings_kings_county_results(client):
+    headers = {"Authorization": f"Bearer {API_KEY}"}
+    response = client.get("/quick-search/Officer Involved Shootings/Philadelphia", headers=headers)
+    assert len(response.json["data"]) > 0
+
+
+def test_quicksearch_officer_involved_shootings_kings_county_results(client):
+    headers = {"Authorization": f"Bearer {API_KEY}"}
+    response = client.get("/quick-search/officer involved shootings/Philadelphia", headers=headers)
     assert len(response.json["data"]) > 0
