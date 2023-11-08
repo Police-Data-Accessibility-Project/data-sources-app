@@ -71,8 +71,8 @@ export default {
       {header: "Data Source Meta", records: [
       { title: 'Scraper URL', key: 'scraper_url' },
       { title: 'Created', key: 'data_source_created' },
-      { title: 'Agency ID', key: 'agency_described_linked_uid' },
-      { title: 'Data Source ID', key: 'airtable_uid' }]}
+      { title: 'Agency ID', key: 'agency_id' },
+      { title: 'Data Source ID', key: 'data_source_id' }]}
     ],
     noData: true,
     errorMessage: ""
