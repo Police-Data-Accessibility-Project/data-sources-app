@@ -7,7 +7,7 @@
       </div>
       <div class="quick-search-input-label">
         <label for="location">From where?</label>
-        <input @input="handleChange" placeholder="Enter a state, county, muncipipality, or 'all'" :value="location" name="location" />
+        <input @input="handleChange" placeholder="Enter a state abbreviation, county, muncipipality, or 'all'" :value="location" name="location" />
       </div>
       <button class="quick-search-button">Search Data Sources</button>
     </form>
