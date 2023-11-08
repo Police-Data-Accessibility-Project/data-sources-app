@@ -1,6 +1,5 @@
 import psycopg2
 import os
-from decouple import config
 
 def initialize_psycopg2_connection():
     try:
