@@ -10,7 +10,6 @@ approved_columns = [
     "description",
     "record_type",
     "source_url",
-    "airtable_uid", 
     "agency_supplied",
     "supplying_entity",
     "agency_originated",
@@ -71,8 +70,7 @@ agency_approved_columns = [
     "last_approval_editor",
     "agency_created",
     "county_airtable_uid",
-    "defunct_year",
-    "airtable_uid",
+    "defunct_year"
 ]
 
 class DataSourceById(Resource):
@@ -85,6 +83,8 @@ class DataSourceById(Resource):
             data_source_approved_columns = [f"data_sources.{approved_column}" for approved_column in approved_columns]
             agencies_approved_columns = [f"agencies.{field}" for field in agency_approved_columns]
             all_approved_columns = data_source_approved_columns + agencies_approved_columns
+            all_approved_columns.append("data_sources.airtable_uid as data_source_id")
+            all_approved_columns.append("agencies.airtable_uid as agency_id")
 
             joined_column_names = ", ".join(all_approved_columns)
 
@@ -106,6 +106,8 @@ class DataSourceById(Resource):
 
             if result:
                 data_source_and_agency_columns = approved_columns + agency_approved_columns
+                data_source_and_agency_columns.append("data_source_id")
+                data_source_and_agency_columns.append("agency_id")
                 data_source_details = dict(zip(data_source_and_agency_columns, result))
                 convert_dates_to_strings(data_source_details)
                 format_arrays(data_source_details)
