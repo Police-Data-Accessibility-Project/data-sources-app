@@ -10,15 +10,15 @@ BASE_URL = os.getenv("VUE_APP_BASE_URL")
 
 class SearchTokens(Resource):
     def __init__(self, **kwargs):
-        self.psycopg2_connection = kwargs['psycopg2_connection']
+        self.psycopg2_connection = kwargs["psycopg2_connection"]
 
-    # Login function: allows a user to login using their email and password as credentials
-    # The password is compared to the hashed password stored in the users table
-    # Once the password is verified, an API key is generated, which is stored in the users table and sent to the verified user
-    def get(self, search, location):        
+
+    def get(self, endpoint, arg1, arg2=''):        
         try:
+            data_sources = {"count": 0, "data": []}
             if type(self.psycopg2_connection) == dict:
-                return self.psycopg2_connection
+                return data_sources        
+
             cursor = self.psycopg2_connection.cursor()
             token = uuid.uuid4().hex
             expiration = datetime.datetime.now() + datetime.timedelta(minutes=5)
@@ -26,11 +26,19 @@ class SearchTokens(Resource):
             self.psycopg2_connection.commit()
 
             headers = {"Authorization": f"Bearer {token}"}
-            r = requests.get(f"{BASE_URL}/quick-search/{search}/{location}", headers=headers)
-            return r.json()
+            if endpoint == "quick-search":
+                r = requests.get(f"{BASE_URL}/quick-search/{arg1}/{arg2}", headers=headers)
+                return r.json()
+            
+            elif endpoint == "data-sources":
+                r = requests.get(f"{BASE_URL}/data-sources/{arg1}", headers=headers)
+                return r.json()
+            
+            else:
+                return {"error": "Unknown endpoint"}
 
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {'error': e}
+            return {"error": e}
         

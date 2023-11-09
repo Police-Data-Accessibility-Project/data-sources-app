@@ -42,9 +42,7 @@ export default {
   methods: {
     async search() {
       try{
-        /*const headers = {"Authorization": `Bearer ${process.env.VUE_APP_PDAP_TOKEN}`}
-        const res = await axios.get(`${process.env.VUE_APP_BASE_URL}/quick-search/${this.searchTerm}/${this.location}`, {headers})*/
-        const res = await axios.get(`${process.env.VUE_APP_BASE_URL}/search-tokens/${this.searchTerm}/${this.location}`)
+        const res = await axios.get(`${process.env.VUE_APP_BASE_URL}/search-tokens/quick-search/${this.searchTerm}/${this.location}`)
         this.searchResult = res.data
         this.searched = true
       }

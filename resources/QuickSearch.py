@@ -16,9 +16,9 @@ class QuickSearch(Resource):
   @api_required
   def get(self, search, location):
     try:
-        if type(self.psycopg2_connection) == dict:
-            return self.psycopg2_connection
         data_sources = {'count': 0, 'data': []}
+        if type(self.psycopg2_connection) == dict:
+            return data_sources        
         
         nlp = spacy.load("en_core_web_sm")
         doc = nlp(search)

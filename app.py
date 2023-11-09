@@ -22,7 +22,7 @@ api.add_resource(Archives, '/archives', resource_class_kwargs={'psycopg2_connect
 api.add_resource(DataSources, '/data-sources', resource_class_kwargs={'psycopg2_connection': psycopg2_connection})
 api.add_resource(DataSourceById, '/data-sources/<data_source_id>', resource_class_kwargs={'psycopg2_connection': psycopg2_connection})
 api.add_resource(Agencies, '/agencies/<page>', resource_class_kwargs={'psycopg2_connection': psycopg2_connection})
-api.add_resource(SearchTokens, '/search-tokens/<search>/<location>', resource_class_kwargs={'psycopg2_connection': psycopg2_connection})
+api.add_resource(SearchTokens, '/search-tokens/<endpoint>/<arg1>/<arg2>', resource_class_kwargs={'psycopg2_connection': psycopg2_connection})
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0")
