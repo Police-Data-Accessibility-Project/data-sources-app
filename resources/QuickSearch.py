@@ -17,9 +17,10 @@ class QuickSearch(Resource):
   def get(self, search, location):
     try:
         data_sources = {'count': 0, 'data': []}
-        
+        # Depluralize search term to increase match potential
         nlp = spacy.load("en_core_web_sm")
-        doc = nlp(search.strip())
+        search = search.strip()
+        doc = nlp(search)
         lemmatized_tokens = [token.lemma_ for token in doc]
         depluralized_search_term = " ".join(lemmatized_tokens)
         location = location.strip()
@@ -52,12 +53,17 @@ class QuickSearch(Resource):
                 (data_sources.name ILIKE %s OR data_sources.description ILIKE %s OR data_sources.record_type ILIKE %s OR data_sources.tags ILIKE %s) AND (agencies.county_name ILIKE %s OR concat(substr(agencies.county_name,3,length(agencies.county_name)-4), ' county') ILIKE %s OR agencies.state_iso ILIKE %s OR agencies.municipality ILIKE %s OR agencies.agency_type ILIKE %s OR agencies.jurisdiction_type ILIKE %s OR agencies.name ILIKE %s OR state_names.state_name ILIKE %s)
         """
         print(f"Query parameters: '%{depluralized_search_term}%', '%{location}%'")
+     
         cursor.execute(sql_query, (f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
 
         results = cursor.fetchall()
-
+        # If altered search term returns no results, try with unaltered search term      
+        if not results:
+            print(f"Query parameters: '%{search}%', '%{location}%'")
+            cursor.execute(sql_query, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'), f'%{location}%'))
+            results = cursor.fetchall()
+            
         column_names = ['airtable_uid', 'data_source_name', 'description', 'record_type', 'source_url', 'record_format', 'coverage_start', 'coverage_end', 'agency_supplied', 'agency_name', 'municipality', 'state_iso', 'state_name']
-
         data_source_matches = [dict(zip(column_names, result)) for result in results]
 
         for item in data_source_matches:
