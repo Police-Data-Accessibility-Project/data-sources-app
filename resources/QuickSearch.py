@@ -17,7 +17,7 @@ class QuickSearch(Resource):
   def get(self, search, location):
     try:
         data_sources = {'count': 0, 'data': []}
-        
+        # Depluralize search term to increase match potential
         nlp = spacy.load("en_core_web_sm")
         search = search.strip()
         doc = nlp(search)
@@ -57,6 +57,7 @@ class QuickSearch(Resource):
         cursor.execute(sql_query, (f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
 
         results = cursor.fetchall()
+        # If altered search term returns no results, try with unaltered search term      
         if not results:
             print(f"Query parameters: '%{search}%', '%{location}%'")
             cursor.execute(sql_query, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'), f'%{location}%'))
