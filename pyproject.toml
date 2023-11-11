@@ -11,6 +11,8 @@ flask = "2.3.2"
 flask-restful = "0.3.10"
 spacy = "3.6.1"
 pyjwt = "2.8.0"
+psycopg2-binary = "^2.9.9"
+flask-cors = "^4.0.0"
 
 
 [build-system]
