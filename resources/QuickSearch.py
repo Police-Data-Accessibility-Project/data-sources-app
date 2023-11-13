@@ -64,10 +64,10 @@ class QuickSearch(Resource):
         # If altered search term returns no results, try with unaltered search term      
         if not results:
             print(f"Query parameters: '%{search}%', '%{location}%'")
-            cursor.execute(sql_query, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'), f'%{location}%'))
+            cursor.execute(sql_query, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
             results = cursor.fetchall()
             
-        column_names = ['airtable_uid', 'data_source_name', 'description', 'record_type', 'source_url', 'record_format', 'coverage_start', 'coverage_end', 'agency_supplied', 'agency_name', 'municipality', 'state_iso', 'state_name']
+        column_names = ['airtable_uid', 'data_source_name', 'description', 'record_type', 'source_url', 'record_format', 'coverage_start', 'coverage_end', 'agency_supplied', 'agency_name', 'municipality', 'state_iso']
         data_source_matches = [dict(zip(column_names, result)) for result in results]
 
         for item in data_source_matches:
