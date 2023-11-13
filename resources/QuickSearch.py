@@ -17,6 +17,10 @@ class QuickSearch(Resource):
   def get(self, search, location):
     try:
         data_sources = {'count': 0, 'data': []}
+        
+        search = "" if search == "all" else search
+        location = "" if location == "all" else location
+
         # Depluralize search term to increase match potential
         nlp = spacy.load("en_core_web_sm")
         search = search.strip()
