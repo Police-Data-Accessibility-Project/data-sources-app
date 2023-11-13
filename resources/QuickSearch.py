@@ -8,89 +8,65 @@ import os
 import datetime
 
 class QuickSearch(Resource):
-  def __init__(self, **kwargs):
-    self.psycopg2_connection = kwargs['psycopg2_connection']
-  
-  # api_required decorator requires the request's header to include an "Authorization" key with the value formatted as "Bearer [api_key]"
-  # A user can get an API key by signing up and logging in (see User.py)
-  @api_required
-  def get(self, search, location):
-    try:
-        data_sources = {'count': 0, 'data': []}
-        # Depluralize search term to increase match potential
-        nlp = spacy.load("en_core_web_sm")
-        search = search.strip()
-        doc = nlp(search)
-        lemmatized_tokens = [token.lemma_ for token in doc]
-        depluralized_search_term = " ".join(lemmatized_tokens)
-        location = location.strip()
+    def __init__(self, **kwargs):
+        self.psycopg2_connection = kwargs['psycopg2_connection']
+        self.QUICK_SEARCH_QUERY = kwargs['QUICK_SEARCH_QUERY']
 
-        cursor = self.psycopg2_connection.cursor()
+    # api_required decorator requires the request's header to include an "Authorization" key with the value formatted as "Bearer [api_key]"
+    # A user can get an API key by signing up and logging in (see User.py)
+    @api_required
+    def get(self, search, location):
+        try:
+            data_sources = {'count': 0, 'data': []}
+            # Depluralize search term to increase match potential
+            nlp = spacy.load("en_core_web_sm")
+            search = search.strip()
+            doc = nlp(search)
+            lemmatized_tokens = [token.lemma_ for token in doc]
+            depluralized_search_term = " ".join(lemmatized_tokens)
+            location = location.strip()
 
-        sql_query = """
-            SELECT
-                data_sources.airtable_uid,
-                data_sources.name AS data_source_name,
-                data_sources.description,
-                data_sources.record_type,
-                data_sources.source_url,
-                data_sources.record_format,
-                data_sources.coverage_start,
-                data_sources.coverage_end,
-                data_sources.agency_supplied,
-                agencies.name AS agency_name,
-                agencies.municipality,
-                agencies.state_iso
-            FROM
-                agency_source_link
-            INNER JOIN
-                data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
-            INNER JOIN
-                agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
-            INNER JOIN
-                state_names ON agencies.state_iso = state_names.state_iso
-            WHERE
-                (data_sources.name ILIKE %s OR data_sources.description ILIKE %s OR data_sources.record_type ILIKE %s OR data_sources.tags ILIKE %s) AND (agencies.county_name ILIKE %s OR concat(substr(agencies.county_name,3,length(agencies.county_name)-4), ' county') ILIKE %s OR agencies.state_iso ILIKE %s OR agencies.municipality ILIKE %s OR agencies.agency_type ILIKE %s OR agencies.jurisdiction_type ILIKE %s OR agencies.name ILIKE %s OR state_names.state_name ILIKE %s)
-        """
-        print(f"Query parameters: '%{depluralized_search_term}%', '%{location}%'")
-     
-        cursor.execute(sql_query, (f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
+            cursor = self.psycopg2_connection.cursor()
 
-        results = cursor.fetchall()
-        # If altered search term returns no results, try with unaltered search term      
-        if not results:
-            print(f"Query parameters: '%{search}%', '%{location}%'")
-            cursor.execute(sql_query, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'), f'%{location}%'))
-            results = cursor.fetchall()
+            print(f"Query parameters: '%{depluralized_search_term}%', '%{location}%'")
             
-        column_names = ['airtable_uid', 'data_source_name', 'description', 'record_type', 'source_url', 'record_format', 'coverage_start', 'coverage_end', 'agency_supplied', 'agency_name', 'municipality', 'state_iso', 'state_name']
-        data_source_matches = [dict(zip(column_names, result)) for result in results]
+            cursor.execute(self.QUICK_SEARCH_QUERY, (f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
 
-        for item in data_source_matches:
-           convert_dates_to_strings(item)
-           format_arrays(item)
+            results = cursor.fetchall()
+            # If altered search term returns no results, try with unaltered search term      
+            if not results:
+                print(f"Query parameters: '%{search}%', '%{location}%'")
+                cursor.execute(self.QUICK_SEARCH_QUERY, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
+                results = cursor.fetchall()
+                
+            column_names = ['airtable_uid', 'data_source_name', 'description', 'record_type', 'source_url', 'record_format', 'coverage_start', 'coverage_end', 'agency_supplied', 'agency_name', 'municipality', 'state_iso', 'state_name']
+            data_source_matches = [dict(zip(column_names, result)) for result in results]
 
-        data_sources = {
-            "count": len(data_source_matches),
-            "data": data_source_matches
-        }
+            for item in data_source_matches:
+                convert_dates_to_strings(item)
+                format_arrays(item)
 
-        current_datetime = datetime.datetime.now()
-        datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+            data_sources = {
+                "count": len(data_source_matches),
+                "data": data_source_matches
+            }
 
-        query_results = json.dumps(data_sources['data'])
+            current_datetime = datetime.datetime.now()
+            datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
-        cursor_query_log = self.psycopg2_connection.cursor()
-        sql_query_log = "INSERT INTO quick_search_query_logs (search, location, results, result_count, datetime_of_request) VALUES (%s, %s, %s, %s, %s)"
-        cursor_query_log.execute(sql_query_log, (search, location, query_results, data_sources['count'], datetime_string))
-        self.psycopg2_connection.commit()
+            query_results = json.dumps(data_sources['data'])
 
-        return data_sources
-        
-    except Exception as e:
-        self.psycopg2_connection.rollback()
-        print(str(e))
-        webhook_url = os.getenv('WEBHOOK_URL')
-        message = {'content': 'Error during quick search operation: ' + str(e) + "\n" + f"Search term: {search}\n" + f'Location: {location}'}
-        requests.post(webhook_url, data=json.dumps(message), headers={"Content-Type": "application/json"})
-        return data_sources
+            cursor_query_log = self.psycopg2_connection.cursor()
+            sql_query_log = "INSERT INTO quick_search_query_logs (search, location, results, result_count, datetime_of_request) VALUES (%s, %s, %s, %s, %s)"
+            cursor_query_log.execute(sql_query_log, (search, location, query_results, data_sources['count'], datetime_string))
+            self.psycopg2_connection.commit()
+
+            return data_sources
+            
+        except Exception as e:
+            self.psycopg2_connection.rollback()
+            print(str(e))
+            webhook_url = os.getenv('WEBHOOK_URL')
+            message = {'content': 'Error during quick search operation: ' + str(e) + "\n" + f"Search term: {search}\n" + f'Location: {location}'}
+            requests.post(webhook_url, data=json.dumps(message), headers={"Content-Type": "application/json"})
+            return data_sources
