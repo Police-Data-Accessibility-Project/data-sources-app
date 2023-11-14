@@ -1,7 +1,7 @@
 from flask_restful import Resource
 from flask import request, jsonify
 from middleware.security import api_required
-from utilities.convert_dates_to_strings import convert_dates_to_strings
+from utilities.common import convert_dates_to_strings
 import json
 
 approved_columns = [
@@ -56,6 +56,9 @@ class Agencies(Resource):
         
             return agencies
 
-        except:
+        except Exception as e:
+            self.psycopg2_connection.rollback()
+            print(str(e))
             return "There has been an error pulling data!"
+            
 

@@ -1,6 +1,6 @@
 from middleware.security import api_required
 from flask_restful import Resource, request
-from utilities.convert_dates_to_strings import convert_dates_to_strings
+from utilities.common import convert_dates_to_strings
 import json
 
 class Archives(Resource):
@@ -40,6 +40,7 @@ class Archives(Resource):
             return archive_results
         
         except Exception as e:
+            self.psycopg2_connection.rollback()
             print(str(e))
             return "There has been an error pulling data!"
         
@@ -64,4 +65,6 @@ class Archives(Resource):
             return {'status': 'success'}
         
         except Exception as e:
+            self.psycopg2_connection.rollback()
+            print(str(e))
             return {'error': str(e)}

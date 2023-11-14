@@ -33,6 +33,8 @@ class User(Resource):
                 token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm='HS256')
                 return jsonify(token)
         except Exception as e:
+            self.psycopg2_connection.rollback()
+            print(str(e))
             return {'error': str(e)}
     
     # Sign up function: allows a user to sign up by submitting an email and password. The email and a hashed password are stored in the users table and this data is returned to the user upon completion
@@ -50,5 +52,7 @@ class User(Resource):
             return {"data": "Successfully added user"}
 
         except Exception as e:
+            self.psycopg2_connection.rollback()
+            print(str(e))
             return {'error': e}
         

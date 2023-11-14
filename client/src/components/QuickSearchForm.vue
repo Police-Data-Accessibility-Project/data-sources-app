@@ -3,11 +3,11 @@
     <form class="quick-search-form" @submit="handleSubmit">
       <div class="quick-search-input-label">
         <label for="searchTerm">What are you looking for?</label>
-        <input @input="handleChange" placeholder="Complaints" :value="searchTerm" name="searchTerm" />
+        <input @input="handleChange" placeholder="Enter a keyword, type of public records, or 'all'" :value="searchTerm" name="searchTerm" />
       </div>
       <div class="quick-search-input-label">
         <label for="location">From where?</label>
-        <input @input="handleChange" placeholder="Allegheny County" :value="location" name="location" />
+        <input @input="handleChange" placeholder="Enter a state, county, municipality, or 'all'" :value="location" name="location" />
       </div>
       <button class="quick-search-button">Search Data Sources</button>
     </form>

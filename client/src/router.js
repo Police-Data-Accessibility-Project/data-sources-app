@@ -1,6 +1,7 @@
 import { createWebHistory, createRouter } from 'vue-router';
 import QuickSearchPage from '../src/pages/QuickSearchPage';
 import SearchResultPage from '../src/pages/SearchResultPage';
+import DataSourceStaticView from '../src/pages/DataSourceStaticView';
 
 const routes = [
 	{ path: '/', component: QuickSearchPage, name: 'QuickSearchPage' },
@@ -8,6 +9,11 @@ const routes = [
 		path: '/search/:searchTerm/:location',
 		component: SearchResultPage,
 		name: 'SearchResultPage',
+	},
+	{
+		path: '/data-sources/:id',
+		component: DataSourceStaticView,
+		name: 'DataSourceStaticView',
 	},
 ];
 
