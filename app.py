@@ -4,6 +4,7 @@ from flask_cors import CORS
 from resources.User import User
 from resources.QuickSearch import QuickSearch
 from resources.DataSources import DataSources
+from resources.DataSources import DataSourceById
 from resources.Agencies import Agencies
 from resources.Archives import Archives
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
@@ -18,6 +19,7 @@ api.add_resource(User, '/user', resource_class_kwargs={'psycopg2_connection': ps
 api.add_resource(QuickSearch, '/quick-search/<search>/<location>', resource_class_kwargs={'psycopg2_connection': psycopg2_connection})
 api.add_resource(Archives, '/archives', resource_class_kwargs={'psycopg2_connection': psycopg2_connection})
 api.add_resource(DataSources, '/data-sources', resource_class_kwargs={'psycopg2_connection': psycopg2_connection})
+api.add_resource(DataSourceById, '/data-sources/<data_source_id>', resource_class_kwargs={'psycopg2_connection': psycopg2_connection})
 api.add_resource(Agencies, '/agencies/<page>', resource_class_kwargs={'psycopg2_connection': psycopg2_connection})
 
 if __name__ == '__main__':
