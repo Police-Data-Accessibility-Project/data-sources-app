@@ -46,7 +46,6 @@ class User(Resource):
             password_digest = generate_password_hash(password)
             cursor = self.psycopg2_connection.cursor()
             cursor.execute(f"insert into users (email, password_digest) values (%s, %s)", (email, password_digest))
-            #user = self.supabase.table('users').insert({"email": email, "password_digest": password_digest}).execute()
             self.psycopg2_connection.commit()
 
             return {"data": "Successfully added user"}

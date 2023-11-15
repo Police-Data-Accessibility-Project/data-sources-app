@@ -43,11 +43,11 @@ approved_columns = [
     "records_not_online",
     "data_source_request",
     "url_button",
-    "tags_other"
+    "tags_other",
+    "access_notes"
     ]
 
 agency_approved_columns = [
-    "name",
     "homepage_url",
     "count_data_sources",
     "agency_type",
@@ -75,7 +75,7 @@ agency_approved_columns = [
 
 class DataSourceById(Resource):
     def __init__(self, **kwargs):
-        self.psycopg2_connection = kwargs['psycopg2_connection']
+        self.psycopg2_connection = kwargs["psycopg2_connection"]
     
     @api_required
     def get(self, data_source_id):
@@ -85,6 +85,7 @@ class DataSourceById(Resource):
             all_approved_columns = data_source_approved_columns + agencies_approved_columns
             all_approved_columns.append("data_sources.airtable_uid as data_source_id")
             all_approved_columns.append("agencies.airtable_uid as agency_id")
+            all_approved_columns.append("agencies.name as agency_name")
 
             joined_column_names = ", ".join(all_approved_columns)
 
@@ -108,6 +109,7 @@ class DataSourceById(Resource):
                 data_source_and_agency_columns = approved_columns + agency_approved_columns
                 data_source_and_agency_columns.append("data_source_id")
                 data_source_and_agency_columns.append("agency_id")
+                data_source_and_agency_columns.append("agency_name")
                 data_source_details = dict(zip(data_source_and_agency_columns, result))
                 convert_dates_to_strings(data_source_details)
                 format_arrays(data_source_details)
@@ -121,13 +123,13 @@ class DataSourceById(Resource):
     
 class DataSources(Resource):
     def __init__(self, **kwargs):
-        self.psycopg2_connection = kwargs['psycopg2_connection']
+        self.psycopg2_connection = kwargs["psycopg2_connection"]
 
     @api_required 
     def get(self):
         try:
             data_source_approved_columns = [f"data_sources.{approved_column}" for approved_column in approved_columns]
-            data_source_approved_columns.append('agencies.name as agency_name')
+            data_source_approved_columns.append("agencies.name as agency_name")
 
             joined_column_names = ", ".join(data_source_approved_columns)
 
@@ -147,7 +149,7 @@ class DataSources(Resource):
             cursor.execute(sql_query)
             results = cursor.fetchall()
 
-            data_source_output_columns = approved_columns + ['agency_name']
+            data_source_output_columns = approved_columns + ["agency_name"]
             data_source_matches = [dict(zip(data_source_output_columns, result)) for result in results]
 
             for item in data_source_matches:
