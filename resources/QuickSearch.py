@@ -8,26 +8,8 @@ import os
 import datetime
 
 class QuickSearch(Resource):
-  def __init__(self, **kwargs):
-    self.psycopg2_connection = kwargs['psycopg2_connection']
-  
-  # api_required decorator requires the request's header to include an "Authorization" key with the value formatted as "Bearer [api_key]"
-  # A user can get an API key by signing up and logging in (see User.py)
-  @api_required
-  def get(self, search, location):
-    try:
-        data_sources = {'count': 0, 'data': []}
-        
-        search = "" if search == "all" else search
-        location = "" if location == "all" else location
-
-        # Depluralize search term to increase match potential
-        nlp = spacy.load("en_core_web_sm")
-        search = search.strip()
-        doc = nlp(search)
-        lemmatized_tokens = [token.lemma_ for token in doc]
-        depluralized_search_term = " ".join(lemmatized_tokens)
-        location = location.strip()
+    def __init__(self, **kwargs):
+        self.psycopg2_connection = kwargs['psycopg2_connection']
 
     # api_required decorator requires the request's header to include an "Authorization" key with the value formatted as "Bearer [api_key]"
     # A user can get an API key by signing up and logging in (see User.py)
