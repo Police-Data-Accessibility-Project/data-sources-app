@@ -9,7 +9,7 @@ import json
 
 load_dotenv()
 
-API_KEY = os.getenv("API_KEY")
+API_KEY = os.getenv("VUE_APP_PDAP_API_KEY")
 
 @pytest.fixture()
 def test_app():
