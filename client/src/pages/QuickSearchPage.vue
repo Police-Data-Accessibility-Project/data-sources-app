@@ -1,7 +1,7 @@
 <template>
   <div class="quick-search-card">
     <div class="quick-search-description-div">
-      <p class="quick-search-description">Our mission is to help people locate, understand, and share public records about every U.S. police system. Try giving our database a search to see if we can help you find public records.</p>
+      <p class="quick-search-description">We maintain a catalog of public records about police, court, and jail systems across the United States.</p>
     </div>
     <QuickSearchForm :searchTerm="searchTerm" :location="location" @handleChange="handleChange" @handleSubmit="handleSubmit"/>
     <!-- <div class="advanced-search-button-div">

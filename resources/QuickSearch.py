@@ -8,9 +8,26 @@ import os
 import datetime
 
 class QuickSearch(Resource):
-    def __init__(self, **kwargs):
-        self.psycopg2_connection = kwargs['psycopg2_connection']
-        self.QUICK_SEARCH_QUERY = kwargs['QUICK_SEARCH_QUERY']
+  def __init__(self, **kwargs):
+    self.psycopg2_connection = kwargs['psycopg2_connection']
+  
+  # api_required decorator requires the request's header to include an "Authorization" key with the value formatted as "Bearer [api_key]"
+  # A user can get an API key by signing up and logging in (see User.py)
+  @api_required
+  def get(self, search, location):
+    try:
+        data_sources = {'count': 0, 'data': []}
+        
+        search = "" if search == "all" else search
+        location = "" if location == "all" else location
+
+        # Depluralize search term to increase match potential
+        nlp = spacy.load("en_core_web_sm")
+        search = search.strip()
+        doc = nlp(search)
+        lemmatized_tokens = [token.lemma_ for token in doc]
+        depluralized_search_term = " ".join(lemmatized_tokens)
+        location = location.strip()
 
     # api_required decorator requires the request's header to include an "Authorization" key with the value formatted as "Bearer [api_key]"
     # A user can get an API key by signing up and logging in (see User.py)
@@ -39,7 +56,7 @@ class QuickSearch(Resource):
                 cursor.execute(self.QUICK_SEARCH_QUERY, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
                 results = cursor.fetchall()
                 
-            column_names = ['airtable_uid', 'data_source_name', 'description', 'record_type', 'source_url', 'record_format', 'coverage_start', 'coverage_end', 'agency_supplied', 'agency_name', 'municipality', 'state_iso', 'state_name']
+            column_names = ['airtable_uid', 'data_source_name', 'description', 'record_type', 'source_url', 'record_format', 'coverage_start', 'coverage_end', 'agency_supplied', 'agency_name', 'municipality', 'state_iso']
             data_source_matches = [dict(zip(column_names, result)) for result in results]
 
             for item in data_source_matches:
