@@ -37,7 +37,7 @@ approved_columns = [
     "last_approval_editor",
     "agency_described_submitted",
     "agency_described_not_in_database",
-    "approved",
+    "approval_status",
     "record_type_other",
     "data_portal_type_other",
     "records_not_online",
@@ -142,7 +142,7 @@ class DataSources(Resource):
                 INNER JOIN
                     agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
                 WHERE
-                    data_sources.approved = 'TRUE'
+                    data_sources.approval_status = 'approved'
             """.format(joined_column_names)
             cursor.execute(sql_query)
             results = cursor.fetchall()
