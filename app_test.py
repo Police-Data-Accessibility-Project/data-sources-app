@@ -258,9 +258,9 @@ def test_put_archives(client):
 # code issue, will revisit
 # def test_put_archives_brokenasof(client):
 #     current_datetime = datetime.datetime.now()
-#     datetime_string = current_datetime.strftime("%m-%d-%Y")
+#     datetime_string = current_datetime.strftime("%Y-%m-%d")
 #     headers = {"Authorization": f"Bearer {API_KEY}"}
-#     response = client.put("/archives", headers=headers, json=json.dumps({"id": "test", "last_cached": datetime_string, "broken_source_url_as_of": datetime_string}))
+#     response = client.put("/archives", headers=headers, json={"id": "test", "last_cached": datetime_string, "broken_source_url_as_of": datetime_string})
 
 #     assert response.json["status"] == "success"
 

@@ -1,8 +1,5 @@
 import psycopg2
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 QUICK_SEARCH_QUERY = """
     SELECT
@@ -27,9 +24,13 @@ QUICK_SEARCH_QUERY = """
     INNER JOIN
         state_names ON agencies.state_iso = state_names.state_iso
     WHERE
-        (data_sources.name ILIKE %s OR data_sources.description ILIKE %s OR data_sources.record_type ILIKE %s OR data_sources.tags ILIKE %s) AND (agencies.county_name ILIKE %s OR concat(substr(agencies.county_name,3,length(agencies.county_name)-4), ' county') ILIKE %s OR agencies.state_iso ILIKE %s OR agencies.municipality ILIKE %s OR agencies.agency_type ILIKE %s OR agencies.jurisdiction_type ILIKE %s OR agencies.name ILIKE %s OR state_names.state_name ILIKE %s)
-"""
+        (data_sources.name ILIKE %s OR data_sources.description ILIKE %s OR data_sources.record_type ILIKE %s OR data_sources.tags ILIKE %s) 
+        AND (agencies.county_name ILIKE %s OR concat(substr(agencies.county_name,3,length(agencies.county_name)-4), ' county') ILIKE %s 
+            OR agencies.state_iso ILIKE %s OR agencies.municipality ILIKE %s OR agencies.agency_type ILIKE %s OR agencies.jurisdiction_type ILIKE %s 
+            OR agencies.name ILIKE %s OR state_names.state_name ILIKE %s)
+        AND data_sources.approval_status = 'approved'
 
+"""
 
 def initialize_psycopg2_connection():
     try:
