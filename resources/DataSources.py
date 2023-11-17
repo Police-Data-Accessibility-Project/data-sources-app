@@ -37,7 +37,7 @@ approved_columns = [
     "last_approval_editor",
     "agency_described_submitted",
     "agency_described_not_in_database",
-    "approved",
+    "approval_status",
     "record_type_other",
     "data_portal_type_other",
     "records_not_online",

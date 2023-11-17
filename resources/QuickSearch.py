@@ -54,7 +54,12 @@ class QuickSearch(Resource):
             INNER JOIN
                 state_names ON agencies.state_iso = state_names.state_iso
             WHERE
-                (data_sources.name ILIKE %s OR data_sources.description ILIKE %s OR data_sources.record_type ILIKE %s OR data_sources.tags ILIKE %s) AND (agencies.county_name ILIKE %s OR concat(substr(agencies.county_name,3,length(agencies.county_name)-4), ' county') ILIKE %s OR agencies.state_iso ILIKE %s OR agencies.municipality ILIKE %s OR agencies.agency_type ILIKE %s OR agencies.jurisdiction_type ILIKE %s OR agencies.name ILIKE %s OR state_names.state_name ILIKE %s)
+                (data_sources.name ILIKE %s OR data_sources.description ILIKE %s OR data_sources.record_type ILIKE %s OR data_sources.tags ILIKE %s) 
+                AND (agencies.county_name ILIKE %s OR concat(substr(agencies.county_name,3,length(agencies.county_name)-4), ' county') ILIKE %s 
+                    OR agencies.state_iso ILIKE %s OR agencies.municipality ILIKE %s OR agencies.agency_type ILIKE %s OR agencies.jurisdiction_type ILIKE %s 
+                    OR agencies.name ILIKE %s OR state_names.state_name ILIKE %s)
+                AND data_sources.approval_status = 'approved'
+
         """
         print(f"Query parameters: '%{depluralized_search_term}%', '%{location}%'")
      
