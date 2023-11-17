@@ -45,12 +45,12 @@ pip install -r requirements.txt
 
 ```
 
-### 5. Manually export a SUPABASE_DATABASE_URL, SECRET_KEY, and WEBHOOK_URL in the command line
+### 5. Manually export a DO_DATABASE_URL, SECRET_KEY, and WEBHOOK_URL in the command line
 
-The app should have a SUPABASE_DATABASE_URL, SECRET_KEY, and WEBHOOK_URL for PDAP's Data Sources [Supabase](https://supabase.com/). Reach out to contact@pdap.io or make noise in Discord if you'd like access to these keys.
+The app should have a DO_DATABASE_URL, SECRET_KEY, and WEBHOOK_URL for PDAP's Data Sources [Supabase](https://supabase.com/). Reach out to contact@pdap.io or make noise in Discord if you'd like access to these keys.
 
 ```
-export SUPABASE_DATABASE_URL=postgresql://postgres:<password>@db.hgzbfhtjmnpnwdbzluot.supabase.co:5432/postgres
+export DO_DATABASE_URL=postgres://data_sources_app:<password>@db-postgresql-nyc3-38355-do-user-8463429-0.c.db.ondigitalocean.com:25060/defaultdb
 export SECRET_KEY=<secret_key>
 export WEBHOOK_URL=<webhook_url>
 
