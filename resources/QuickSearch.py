@@ -1,6 +1,7 @@
 from flask_restful import Resource
 from middleware.security import api_required
 from utilities.common import convert_dates_to_strings, format_arrays
+from middleware.initialize_psycopg2_connection import QUICK_SEARCH_QUERY
 import spacy
 import requests
 import json
@@ -30,7 +31,6 @@ class QuickSearch(Resource):
             print(f"Query parameters: '%{depluralized_search_term}%', '%{location}%'")
             
             cursor.execute(self.QUICK_SEARCH_QUERY, (f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
-
             results = cursor.fetchall()
             # If altered search term returns no results, try with unaltered search term      
             if not results:
