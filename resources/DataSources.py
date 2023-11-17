@@ -10,7 +10,6 @@ approved_columns = [
     "description",
     "record_type",
     "source_url",
-    "airtable_uid", 
     "agency_supplied",
     "supplying_entity",
     "agency_originated",
@@ -38,7 +37,7 @@ approved_columns = [
     "last_approval_editor",
     "agency_described_submitted",
     "agency_described_not_in_database",
-    "approved",
+    "approval_status",
     "record_type_other",
     "data_portal_type_other",
     "records_not_online",
@@ -71,8 +70,7 @@ agency_approved_columns = [
     "last_approval_editor",
     "agency_created",
     "county_airtable_uid",
-    "defunct_year",
-    "airtable_uid",
+    "defunct_year"
 ]
 
 class DataSourceById(Resource):
@@ -85,6 +83,8 @@ class DataSourceById(Resource):
             data_source_approved_columns = [f"data_sources.{approved_column}" for approved_column in approved_columns]
             agencies_approved_columns = [f"agencies.{field}" for field in agency_approved_columns]
             all_approved_columns = data_source_approved_columns + agencies_approved_columns
+            all_approved_columns.append("data_sources.airtable_uid as data_source_id")
+            all_approved_columns.append("agencies.airtable_uid as agency_id")
 
             joined_column_names = ", ".join(all_approved_columns)
 
@@ -99,13 +99,16 @@ class DataSourceById(Resource):
                 INNER JOIN
                     agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
                 WHERE
-                    data_sources.approved = 'TRUE' AND data_sources.airtable_uid = %s
+                    data_sources.approval_status = 'approved' AND data_sources.airtable_uid = %s
             """.format(joined_column_names)
+            print(sql_query)
             cursor.execute(sql_query, (data_source_id,))
             result = cursor.fetchone()
 
             if result:
                 data_source_and_agency_columns = approved_columns + agency_approved_columns
+                data_source_and_agency_columns.append("data_source_id")
+                data_source_and_agency_columns.append("agency_id")
                 data_source_details = dict(zip(data_source_and_agency_columns, result))
                 convert_dates_to_strings(data_source_details)
                 format_arrays(data_source_details)
@@ -140,7 +143,7 @@ class DataSources(Resource):
                 INNER JOIN
                     agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
                 WHERE
-                    data_sources.approved = 'TRUE'
+                    data_sources.approval_status = 'approved'
             """.format(joined_column_names)
             cursor.execute(sql_query)
             results = cursor.fetchall()

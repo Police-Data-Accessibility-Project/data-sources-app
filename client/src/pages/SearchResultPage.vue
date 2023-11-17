@@ -9,7 +9,10 @@
         <p data-test="search-results-section-header-p">You searched "{{ searchTerm }}" in {{location}} and you got {{ searchResult.count }} results</p>
         <button class="button" data-test="search-results-section-header-button" @click="openForm">Missing something? Request data here</button>
       </div>
-      <div class="search-results-content" data-test="search-results-content" v-if="searchResult.count > 0">
+      <div class="search-results-content" data-test="search-results-content" v-if="searchResult.searchStatusCode === 500">
+        <p>{{searchResult}}</p>
+      </div>
+      <div class="search-results-content" data-test="search-results-content" v-else-if="searchResult.count > 0">
         <SearchResultCard data-test="search-results-cards" :key="dataSource.uuid" v-for="dataSource in searchResult?.data" :dataSource="dataSource"/>
       </div>
       <div data-test="no-search-results" v-else>
@@ -42,12 +45,16 @@ export default {
   methods: {
     async search() {
       try{
-        const res = await axios.get(`${process.env.VUE_APP_BASE_URL}/search-tokens/quick-search/${this.searchTerm}/${this.location}`)
+        const headers = {"Authorization": `Bearer ${process.env.VUE_APP_PDAP_TOKEN}`}
+        const res = await axios.get(`${process.env.VUE_APP_BASE_URL}/quick-search/${this.searchTerm}/${this.location}`, {headers})
         this.searchResult = res.data
         this.searched = true
       }
       catch (error) {
-        console.log(error)
+        this.searchStatusCode = error.response.status
+        this.searchResult = error.response.data.message
+        this.searched = true
+        console.log(error.response.data.message)
       }
     },
     openForm() {

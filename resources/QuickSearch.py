@@ -20,10 +20,16 @@ class QuickSearch(Resource):
         if type(self.psycopg2_connection) == dict:
             return data_sources        
         
+        search = "" if search == "all" else search
+        location = "" if location == "all" else location
+
+        # Depluralize search term to increase match potential
         nlp = spacy.load("en_core_web_sm")
+        search = search.strip()
         doc = nlp(search)
         lemmatized_tokens = [token.lemma_ for token in doc]
         depluralized_search_term = " ".join(lemmatized_tokens)
+        location = location.strip()
 
         cursor = self.psycopg2_connection.cursor()
 
@@ -47,16 +53,28 @@ class QuickSearch(Resource):
                 data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
             INNER JOIN
                 agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+            INNER JOIN
+                state_names ON agencies.state_iso = state_names.state_iso
             WHERE
-                (data_sources.name ILIKE %s OR data_sources.description ILIKE %s OR data_sources.record_type ILIKE %s OR data_sources.tags ILIKE %s) AND (agencies.county_name ILIKE %s OR agencies.state_iso ILIKE %s OR agencies.municipality ILIKE %s OR agencies.agency_type ILIKE %s OR agencies.jurisdiction_type ILIKE %s OR agencies.name ILIKE %s)
-        """
+                (data_sources.name ILIKE %s OR data_sources.description ILIKE %s OR data_sources.record_type ILIKE %s OR data_sources.tags ILIKE %s) 
+                AND (agencies.county_name ILIKE %s OR concat(substr(agencies.county_name,3,length(agencies.county_name)-4), ' county') ILIKE %s 
+                    OR agencies.state_iso ILIKE %s OR agencies.municipality ILIKE %s OR agencies.agency_type ILIKE %s OR agencies.jurisdiction_type ILIKE %s 
+                    OR agencies.name ILIKE %s OR state_names.state_name ILIKE %s)
+                AND data_sources.approval_status = 'approved'
 
-        cursor.execute(sql_query, (f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
+        """
+        print(f"Query parameters: '%{depluralized_search_term}%', '%{location}%'")
+     
+        cursor.execute(sql_query, (f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
 
         results = cursor.fetchall()
-
+        # If altered search term returns no results, try with unaltered search term      
+        if not results:
+            print(f"Query parameters: '%{search}%', '%{location}%'")
+            cursor.execute(sql_query, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
+            results = cursor.fetchall()
+            
         column_names = ['airtable_uid', 'data_source_name', 'description', 'record_type', 'source_url', 'record_format', 'coverage_start', 'coverage_end', 'agency_supplied', 'agency_name', 'municipality', 'state_iso']
-
         data_source_matches = [dict(zip(column_names, result)) for result in results]
 
         for item in data_source_matches:
