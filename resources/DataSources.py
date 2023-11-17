@@ -99,7 +99,7 @@ class DataSourceById(Resource):
                 INNER JOIN
                     agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
                 WHERE
-                    data_sources.approved = 'TRUE' AND data_sources.airtable_uid = %s
+                    data_sources.approval_status = 'approved' AND data_sources.airtable_uid = %s
             """.format(joined_column_names)
             cursor.execute(sql_query, (data_source_id,))
             result = cursor.fetchone()
