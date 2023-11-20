@@ -30,8 +30,9 @@ class User(Resource):
                 user_id = str(user_data['id'])
                 cursor.execute("UPDATE users SET api_key = %s WHERE id = %s", (api_key, user_id))
                 payload = {'api_key': api_key}
-                token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm='HS256')
-                return jsonify(token)
+                self.psycopg2_connection.commit()
+                return payload
+                
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
