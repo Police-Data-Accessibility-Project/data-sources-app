@@ -17,6 +17,8 @@ class QuickSearch(Resource):
   def get(self, search, location):
     try:
         data_sources = {'count': 0, 'data': []}
+        if type(self.psycopg2_connection) == dict:
+            return data_sources        
         
         search = "" if search == "all" else search
         location = "" if location == "all" else location
