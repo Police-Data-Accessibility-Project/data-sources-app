@@ -35,7 +35,7 @@ class SearchTokens(Resource):
                 return r.json()
             
             else:
-                return {"error": "Unknown endpoint"}
+                return {"error": "Unknown endpoint"}, 500
 
         except Exception as e:
             self.psycopg2_connection.rollback()

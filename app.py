@@ -8,7 +8,7 @@ from resources.DataSources import DataSourceById
 from resources.Agencies import Agencies
 from resources.Archives import Archives
 from resources.SearchTokens import SearchTokens
-from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection, QUICK_SEARCH_QUERY
+from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 
 psycopg2_connection = initialize_psycopg2_connection()
 
@@ -17,7 +17,7 @@ api = Api(app)
 CORS(app)
 
 api.add_resource(User, '/user', resource_class_kwargs={'psycopg2_connection': psycopg2_connection})
-api.add_resource(QuickSearch, '/quick-search/<search>/<location>', resource_class_kwargs={'psycopg2_connection': psycopg2_connection, 'QUICK_SEARCH_QUERY': QUICK_SEARCH_QUERY})
+api.add_resource(QuickSearch, '/quick-search/<search>/<location>', resource_class_kwargs={'psycopg2_connection': psycopg2_connection})
 api.add_resource(Archives, '/archives', resource_class_kwargs={'psycopg2_connection': psycopg2_connection})
 api.add_resource(DataSources, '/data-sources', resource_class_kwargs={'psycopg2_connection': psycopg2_connection})
 api.add_resource(DataSourceById, '/data-sources/<data_source_id>', resource_class_kwargs={'psycopg2_connection': psycopg2_connection})
