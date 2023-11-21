@@ -209,8 +209,23 @@ def test_data_sources(client):
     assert len(response.json["data"]) > 0
 
 
-# search-tokens
-# will be added when search-tokens PR is merged
+def test_data_sources_approved(client):
+    headers = {"Authorization": f"Bearer {API_KEY}"}
+    response = client.get("/data-sources", headers=headers)
+    unapproved_url = 'https://joinstatepolice.ny.gov/15-mile-run'
+
+    assert len([d for d in response.json["data"] if d["source_url"] == unapproved_url]) == 0
+
+
+def test_data_source_by_id_approved(client):
+    headers = {"Authorization": f"Bearer {API_KEY}"}
+    response = client.get("/data-sources/rec013MFNfBnrTpZj", headers=headers)
+
+    assert response.json == 'Data source not found.'
+
+
+# search-tokens (WIP)
+
 
 # user
 def test_get_user(client):
@@ -255,14 +270,13 @@ def test_put_archives(client):
     assert response.json["status"] == "success"
 
 
-# code issue, will revisit
-# def test_put_archives_brokenasof(client):
-#     current_datetime = datetime.datetime.now()
-#     datetime_string = current_datetime.strftime("%Y-%m-%d")
-#     headers = {"Authorization": f"Bearer {API_KEY}"}
-#     response = client.put("/archives", headers=headers, json={"id": "test", "last_cached": datetime_string, "broken_source_url_as_of": datetime_string})
+def test_put_archives_brokenasof(client):
+    current_datetime = datetime.datetime.now()
+    datetime_string = current_datetime.strftime("%Y-%m-%d")
+    headers = {"Authorization": f"Bearer {API_KEY}"}
+    response = client.put("/archives", headers=headers, json=json.dumps({"id": "test", "last_cached": datetime_string, "broken_source_url_as_of": datetime_string}))
 
-#     assert response.json["status"] == "success"
+    assert response.json["status"] == "success"
 
 
 # agencies

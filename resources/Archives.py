@@ -53,7 +53,7 @@ class Archives(Resource):
             cursor = self.psycopg2_connection.cursor()
 
             if data["broken_source_url_as_of"]:
-                sql_query = "UPDATE data_sources SET broken_source_url_as_of = %s AND last_cached = %s WHERE airtable_uid = %s"
+                sql_query = "UPDATE data_sources SET broken_source_url_as_of = %s, last_cached = %s WHERE airtable_uid = %s"
                 cursor.execute(sql_query, (data["broken_source_url_as_of"], data["last_cached"], data["id"]))
             else:
                 sql_query = "UPDATE data_sources SET last_cached = %s WHERE airtable_uid = %s"
