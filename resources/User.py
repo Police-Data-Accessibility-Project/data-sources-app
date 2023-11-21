@@ -30,8 +30,9 @@ class User(Resource):
                 user_id = str(user_data['id'])
                 cursor.execute("UPDATE users SET api_key = %s WHERE id = %s", (api_key, user_id))
                 payload = {'api_key': api_key}
-                token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm='HS256')
-                return jsonify(token)
+                self.psycopg2_connection.commit()
+                return payload
+                
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
@@ -46,7 +47,6 @@ class User(Resource):
             password_digest = generate_password_hash(password)
             cursor = self.psycopg2_connection.cursor()
             cursor.execute(f"insert into users (email, password_digest) values (%s, %s)", (email, password_digest))
-            #user = self.supabase.table('users').insert({"email": email, "password_digest": password_digest}).execute()
             self.psycopg2_connection.commit()
 
             return {"data": "Successfully added user"}

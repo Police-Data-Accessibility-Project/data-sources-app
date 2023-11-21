@@ -9,14 +9,16 @@ import datetime
 
 class QuickSearch(Resource):
   def __init__(self, **kwargs):
-    self.psycopg2_connection = kwargs['psycopg2_connection']
+    self.psycopg2_connection = kwargs["psycopg2_connection"]
   
-  # api_required decorator requires the request's header to include an "Authorization" key with the value formatted as "Bearer [api_key]"
+  # api_required decorator requires the request"s header to include an "Authorization" key with the value formatted as "Bearer [api_key]"
   # A user can get an API key by signing up and logging in (see User.py)
   @api_required
   def get(self, search, location):
     try:
-        data_sources = {'count': 0, 'data': []}
+        data_sources = {"count": 0, "data": []}
+        if type(self.psycopg2_connection) == dict:
+            return data_sources        
         
         search = "" if search == "all" else search
         location = "" if location == "all" else location
@@ -72,7 +74,7 @@ class QuickSearch(Resource):
             cursor.execute(sql_query, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
             results = cursor.fetchall()
             
-        column_names = ['airtable_uid', 'data_source_name', 'description', 'record_type', 'source_url', 'record_format', 'coverage_start', 'coverage_end', 'agency_supplied', 'agency_name', 'municipality', 'state_iso']
+        column_names = ["airtable_uid", "data_source_name", "description", "record_type", "source_url", "record_format", "coverage_start", "coverage_end", "agency_supplied", "agency_name", "municipality", "state_iso"]
         data_source_matches = [dict(zip(column_names, result)) for result in results]
 
         for item in data_source_matches:
@@ -87,11 +89,11 @@ class QuickSearch(Resource):
         current_datetime = datetime.datetime.now()
         datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
-        query_results = json.dumps(data_sources['data'])
+        query_results = json.dumps(data_sources["data"])
 
         cursor_query_log = self.psycopg2_connection.cursor()
         sql_query_log = "INSERT INTO quick_search_query_logs (search, location, results, result_count, datetime_of_request) VALUES (%s, %s, %s, %s, %s)"
-        cursor_query_log.execute(sql_query_log, (search, location, query_results, data_sources['count'], datetime_string))
+        cursor_query_log.execute(sql_query_log, (search, location, query_results, data_sources["count"], datetime_string))
         self.psycopg2_connection.commit()
 
         return data_sources
@@ -99,7 +101,11 @@ class QuickSearch(Resource):
     except Exception as e:
         self.psycopg2_connection.rollback()
         print(str(e))
-        webhook_url = os.getenv('WEBHOOK_URL')
-        message = {'content': 'Error during quick search operation: ' + str(e) + "\n" + f"Search term: {search}\n" + f'Location: {location}'}
-        requests.post(webhook_url, data=json.dumps(message), headers={"Content-Type": "application/json"})
-        return data_sources
+        webhook_url = os.getenv("WEBHOOK_URL")
+        user_message = "There was an error during the search operation"
+        discord_message = {"content": user_message + ": " + str(e) + "\n" + f"Search term: {search}\n" + f"Location: {location}"}
+        requests.post(webhook_url, data=json.dumps(discord_message), headers={"Content-Type": "application/json"})
+        data_sources = {"count": 0, "data": {"message": user_message}}
+            
+        print(data_sources)
+        return data_sources, 500

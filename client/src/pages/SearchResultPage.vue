@@ -6,11 +6,11 @@
     </div>
     <div class="search-results-section" data-test="search-results-section" v-else>
       <div class="search-results-section-header small" >
-        <p data-test="search-results-section-header-p">You searched "{{ searchTerm }}" in {{location}} and you got {{ searchResult.count }} results</p>
+        <p data-test="search-results-section-header-p">You searched "{{ searchTerm }}" in {{ location }} and you got {{ searchResult.count }} results</p>
         <button class="button" data-test="search-results-section-header-button" @click="openForm">Missing something? Request data here</button>
       </div>
-      <div class="search-results-content" data-test="search-results-content" v-if="searchResult.searchStatusCode === 500">
-        <p>{{searchResult}}</p>
+      <div class="search-results-content" data-test="search-results-content" v-if="searchStatusCode == 500">
+        <p>{{ searchResult.data.message }}</p>
       </div>
       <div class="search-results-content" data-test="search-results-content" v-else-if="searchResult.count > 0">
         <SearchResultCard data-test="search-results-cards" :key="dataSource.uuid" v-for="dataSource in searchResult?.data" :dataSource="dataSource"/>
@@ -33,6 +33,7 @@ export default {
   },
   data: () => ({
     searched: false,
+    searchStatusCode: 200,
     searchResult: {},
     searchTerm: '',
     location: ''
@@ -47,15 +48,15 @@ export default {
       try{
         const headers = {"Authorization": `Bearer ${process.env.VUE_APP_PDAP_TOKEN}`}
         const res = await axios.get(`${process.env.VUE_APP_BASE_URL}/quick-search/${this.searchTerm}/${this.location}`, {headers})
-        this.searchStatusCode = 200
+        this.searchStatusCode = res.status
         this.searchResult = res.data
         this.searched = true
       }
       catch (error) {
         this.searchStatusCode = error.response.status
-        this.searchResult = error.response.data.message
+        this.searchResult = error.response.data
         this.searched = true
-        console.log(error.response.data.message)
+        console.log(this.searchResult)
       }
     },
     openForm() {
