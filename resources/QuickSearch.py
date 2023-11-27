@@ -1,6 +1,7 @@
 from flask_restful import Resource
 from middleware.security import api_required
 from utilities.common import convert_dates_to_strings, format_arrays
+from middleware.initialize_psycopg2_connection import QUICK_SEARCH_QUERY
 import spacy
 import requests
 import json
@@ -33,53 +34,22 @@ class QuickSearch(Resource):
 
         cursor = self.psycopg2_connection.cursor()
 
-        sql_query = """
-            SELECT
-                data_sources.airtable_uid,
-                data_sources.name AS data_source_name,
-                data_sources.description,
-                data_sources.record_type,
-                data_sources.source_url,
-                data_sources.record_format,
-                data_sources.coverage_start,
-                data_sources.coverage_end,
-                data_sources.agency_supplied,
-                agencies.name AS agency_name,
-                agencies.municipality,
-                agencies.state_iso
-            FROM
-                agency_source_link
-            INNER JOIN
-                data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
-            INNER JOIN
-                agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
-            INNER JOIN
-                state_names ON agencies.state_iso = state_names.state_iso
-            WHERE
-                (data_sources.name ILIKE %s OR data_sources.description ILIKE %s OR data_sources.record_type ILIKE %s OR data_sources.tags ILIKE %s) 
-                AND (agencies.county_name ILIKE %s OR concat(substr(agencies.county_name,3,length(agencies.county_name)-4), ' county') ILIKE %s 
-                    OR agencies.state_iso ILIKE %s OR agencies.municipality ILIKE %s OR agencies.agency_type ILIKE %s OR agencies.jurisdiction_type ILIKE %s 
-                    OR agencies.name ILIKE %s OR state_names.state_name ILIKE %s)
-                AND data_sources.approval_status = 'approved'
-
-        """
         print(f"Query parameters: '%{depluralized_search_term}%', '%{location}%'")
-     
-        cursor.execute(sql_query, (f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
-
+        
+        cursor.execute(QUICK_SEARCH_QUERY, (f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
         results = cursor.fetchall()
+
         # If altered search term returns no results, try with unaltered search term      
         if not results:
             print(f"Query parameters: '%{search}%', '%{location}%'")
-            cursor.execute(sql_query, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
+            cursor.execute(QUICK_SEARCH_QUERY, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
             results = cursor.fetchall()
             
         column_names = ["airtable_uid", "data_source_name", "description", "record_type", "source_url", "record_format", "coverage_start", "coverage_end", "agency_supplied", "agency_name", "municipality", "state_iso"]
-        data_source_matches = [dict(zip(column_names, result)) for result in results]
-
-        for item in data_source_matches:
-           convert_dates_to_strings(item)
-           format_arrays(item)
+        data_source_matches = []
+        for result in results:
+            clean_result = [f.strftime("%Y-%m-%d") if type(f) == datetime.date else f for f in result]
+            data_source_matches.append(dict(zip(column_names, clean_result)))
 
         data_sources = {
             "count": len(data_source_matches),
@@ -103,9 +73,8 @@ class QuickSearch(Resource):
         print(str(e))
         webhook_url = os.getenv("WEBHOOK_URL")
         user_message = "There was an error during the search operation"
-        discord_message = {"content": user_message + ": " + str(e) + "\n" + f"Search term: {search}\n" + f"Location: {location}"}
-        requests.post(webhook_url, data=json.dumps(discord_message), headers={"Content-Type": "application/json"})
-        data_sources = {"count": 0, "data": {"message": user_message}}
-            
-        print(data_sources)
-        return data_sources, 500
+        message = {"content": user_message + ": " + str(e) + "\n" + f"Search term: {search}\n" + f"Location: {location}"}
+        requests.post(webhook_url, data=json.dumps(message), headers={"Content-Type": "application/json"})
+        
+        return {"count": 0, "message": user_message}, 500
+

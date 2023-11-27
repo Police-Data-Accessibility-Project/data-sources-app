@@ -11,7 +11,7 @@ class Archives(Resource):
     def get(self):
         try:
             cursor = self.psycopg2_connection.cursor()
-            sql_query = '''
+            sql_query = """
             SELECT
                 data_sources.airtable_uid,
                 data_sources.source_url,
@@ -26,11 +26,11 @@ class Archives(Resource):
                 agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
             WHERE 
                 (data_sources.last_cached IS NULL OR data_sources.update_frequency IS NOT NULL) AND data_sources.broken_source_url_as_of IS NULL AND data_sources.source_url IS NOT NULL
-            '''
+            """
             cursor.execute(sql_query)
             results = cursor.fetchall()
 
-            column_names = ['id', 'source_url', 'update_frequency', 'last_cached', 'agency_name']
+            column_names = ["id", "source_url", "update_frequency", "last_cached", "agency_name"]
 
             archive_results = [dict(zip(column_names, result)) for result in results]
 
@@ -52,19 +52,19 @@ class Archives(Resource):
 
             cursor = self.psycopg2_connection.cursor()
 
-            if data['broken_source_url_as_of']:
-                sql_query = 'UPDATE data_sources SET broken_source_url_as_of = %s AND last_cached = %s WHERE airtable_uid = %s'
-                cursor.execute(sql_query, (data['broken_source_url_as_of'], data['last_cached'], data['id']))
+            if data["broken_source_url_as_of"]:
+                sql_query = "UPDATE data_sources SET broken_source_url_as_of = %s, last_cached = %s WHERE airtable_uid = %s"
+                cursor.execute(sql_query, (data["broken_source_url_as_of"], data["last_cached"], data["id"]))
             else:
-                sql_query = 'UPDATE data_sources SET last_cached = %s WHERE airtable_uid = %s'
-                cursor.execute(sql_query, (data['last_cached'], data['id']))
+                sql_query = "UPDATE data_sources SET last_cached = %s WHERE airtable_uid = %s"
+                cursor.execute(sql_query, (data["last_cached"], data["id"]))
 
             self.psycopg2_connection.commit()
             cursor.close()
 
-            return {'status': 'success'}
+            return {"status": "success"}
         
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {'error': str(e)}
+            return {"error": str(e)}
