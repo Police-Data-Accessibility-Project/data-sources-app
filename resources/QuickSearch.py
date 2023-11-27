@@ -12,7 +12,7 @@ class QuickSearch(Resource):
   def __init__(self, **kwargs):
     self.psycopg2_connection = kwargs["psycopg2_connection"]
   
-  # api_required decorator requires the request's header to include an "Authorization" key with the value formatted as "Bearer [api_key]"
+  # api_required decorator requires the request"s header to include an "Authorization" key with the value formatted as "Bearer [api_key]"
   # A user can get an API key by signing up and logging in (see User.py)
   @api_required
   def get(self, search, location):
@@ -77,3 +77,4 @@ class QuickSearch(Resource):
         requests.post(webhook_url, data=json.dumps(message), headers={"Content-Type": "application/json"})
         
         return {"count": 0, "message": user_message}, 500
+
