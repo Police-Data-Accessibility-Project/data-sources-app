@@ -3,8 +3,11 @@ import os
 from app import app
 from flask_restful import Api
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection, QUICK_SEARCH_QUERY
+from dotenv import load_dotenv
 import datetime
 import json
+
+load_dotenv()
 
 API_KEY = os.getenv("VUE_APP_PDAP_API_KEY")
 
@@ -224,26 +227,26 @@ def test_data_source_by_id_approved(client):
 # search-tokens (WIP)
 # def test_search_tokens_data_sources(client):
 #     headers = {"Authorization": f"Bearer {API_KEY}"}
-#     response = client.get("/search-tokens/data-sources", headers=headers)
+#     response = client.get("/search-tokens/data-sources/test/test", headers=headers)
 
 #     assert len(response.json["data"]) > 0
 
 
 # def test_search_tokens_data_source_by_id(client):
 #     headers = {"Authorization": f"Bearer {API_KEY}"}
-#     response = client.get("/search-tokens/data-sources/reczwxaH31Wf9gRjS", headers=headers)
+#     response = client.get("/search-tokens/data-sources/reczwxaH31Wf9gRjS/test", headers=headers)
 
 #     assert response.json["data_source_id"] == "reczwxaH31Wf9gRjS"
 
 
-# def test_search_tokens_quicksearch_complaints_allegheny_results(client):
-#     headers = {"Authorization": f"Bearer {API_KEY}"}
-#     response = client.get("/search-tokens/quick-search/complaints/allegheny", headers=headers)
+def test_search_tokens_quick_search_complaints_allegheny_results(client):
+    response = client.get("/search-tokens/quick-search/calls/chicago")
+    print(response)
 
-#     assert len(response.json["data"]) > 0
+    assert len(response.json["data"]) > 0
 
 
-# user
+user
 def test_get_user(client):
     headers = {"Authorization": f"Bearer {API_KEY}"}
     response = client.get("/user", headers=headers, json={"email": "test2", "password": "test"})

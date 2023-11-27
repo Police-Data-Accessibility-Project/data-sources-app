@@ -2,7 +2,6 @@ from flask_restful import Resource
 from middleware.security import api_required
 from utilities.common import convert_dates_to_strings, format_arrays
 from middleware.initialize_psycopg2_connection import QUICK_SEARCH_QUERY
-from dotenv import load_dotenv
 import spacy
 import requests
 import json
