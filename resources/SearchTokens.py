@@ -13,32 +13,34 @@ class SearchTokens(Resource):
         self.psycopg2_connection = kwargs["psycopg2_connection"]
 
 
-    def get(self, endpoint, arg1, arg2=''):        
-        try:
-            data_sources = {"count": 0, "data": []}
-            if type(self.psycopg2_connection) == dict:
-                return data_sources        
+    def get(self, endpoint, arg1='', arg2=''):        
+        # try:
+        print(endpoint, arg1, arg2)
+        data_sources = {"count": 0, "data": []}
+        if type(self.psycopg2_connection) == dict:
+            return data_sources        
 
-            cursor = self.psycopg2_connection.cursor()
-            token = uuid.uuid4().hex
-            expiration = datetime.datetime.now() + datetime.timedelta(minutes=5)
-            cursor.execute(f"insert into access_tokens (token, expiration_date) values (%s, %s)", (token, expiration))         
-            self.psycopg2_connection.commit()
+        cursor = self.psycopg2_connection.cursor()
+        token = uuid.uuid4().hex
+        expiration = datetime.datetime.now() + datetime.timedelta(minutes=5)
+        cursor.execute(f"insert into access_tokens (token, expiration_date) values (%s, %s)", (token, expiration))         
+        self.psycopg2_connection.commit()
 
-            headers = {"Authorization": f"Bearer {token}"}
-            if endpoint == "quick-search":
-                r = requests.get(f"{BASE_URL}/quick-search/{arg1}/{arg2}", headers=headers)
-                return r.json()
-            
-            elif endpoint == "data-sources":
-                r = requests.get(f"{BASE_URL}/data-sources/{arg1}", headers=headers)
-                return r.json()
-            
-            else:
-                return {"error": "Unknown endpoint"}
+        headers = {"Authorization": f"Bearer {token}"}
+        if endpoint == "quick-search":
+            r = requests.get(f"{BASE_URL}/quick-search/{arg1}/{arg2}", headers=headers)
+            return r.json()
+        
+        elif endpoint == "data-sources":
+            print(f"{BASE_URL}/data-sources/{arg1}")
+            r = requests.get(f"{BASE_URL}/data-sources/{arg1}", headers=headers)
+            return r.json()
+        
+        else:
+            return {"error": "Unknown endpoint"}, 500
 
-        except Exception as e:
-            self.psycopg2_connection.rollback()
-            print(str(e))
-            return {"error": e}
+        # except Exception as e:
+        #     self.psycopg2_connection.rollback()
+        #     print(str(e))
+        #     return {"error": e}, 500
         
