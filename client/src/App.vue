@@ -1,18 +1,39 @@
 <template>
-	<AppHeader />
-	<router-view></router-view>
-	<AppFooter />
+	<Header :logo-image-src="lockup" />
+	<router-view :is="main"></router-view>
+	<Footer :logo-image-src="acronym" />
 </template>
 
 <script>
-import AppHeader from './components/AppHeader.vue';
-import AppFooter from './components/AppFooter.vue';
+import { Footer, Header } from 'pdap-design-system';
+import acronym from 'pdap-design-system/images/acronym.svg';
+import lockup from 'pdap-design-system/images/lockup.svg';
+
+const links = [
+	{ href: 'https://airtable.com/shrbFfWk6fjzGnNsk', text: 'Request data', method: 'href' },
+	{
+		href: 'https://airtable.com/shrJafakrcmTxHU2i',
+		text: 'Submit a Data Source',
+		method: 'href',
+	},
+	{ href: 'https://docs.pdap.io/', text: 'Docs', method: 'href' },
+];
 
 export default {
 	name: 'App',
 	components: {
-		AppHeader,
-		AppFooter,
+		Header,
+		Footer,
+	},
+	data() {
+		return {
+			acronym,
+			lockup,
+		};
+	},
+	provide: {
+		navLinks: [...links],
+		footerLinks: [...links],
 	},
 };
 </script>
@@ -20,13 +41,29 @@ export default {
 <style>
 #app {
 	margin: 0;
-	padding: 1rem;
 }
 
-.logo {
-	width: 50px;
-	margin: 1rem;
-	cursor: pointer;
+main,
+main.pdap-flex-container,
+main.pdap-grid-container {
+	/* header height is generally 80px, footer height is (at tallest, on smaller mob devices) 600px. 
+	This will prevent content from taking up too much space, 
+	while also ensuring that the viewport is always full. Adding support 
+	to unset 100% height when flex or grid container passed as main  */
+	min-height: calc(100vh - 80px - 600px);
+	height: auto;
+}
+
+.pdap-footer .pdap-footer-social-link {
+	color: rgba(var(--color-neutral-950) / var(--tw-text-opacity));
+}
+
+/* TODO: Add this to future design system patch as well and remove from here */
+.pdap-footer p,
+.pdap-footer ul,
+.pdap-footer li,
+.pdap-footer .pdap-footer-social-link {
+	max-width: unset;
 }
 
 /* Temporary code to override user agent styles
