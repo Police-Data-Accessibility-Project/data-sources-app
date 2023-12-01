@@ -29,18 +29,18 @@ class DataSources(Resource):
 
     @api_required 
     def get(self):
-        # try:
-        data_source_matches = data_sources_query(self.psycopg2_connection)
+        try:
+            data_source_matches = data_sources_query(self.psycopg2_connection)
 
-        data_sources = {
-            "count": len(data_source_matches),
-            "data": data_source_matches
-        }
-    
-        return data_sources
+            data_sources = {
+                "count": len(data_source_matches),
+                "data": data_source_matches
+            }
         
-        #except Exception as e:
-            # self.psycopg2_connection.rollback()
-            # print(str(e))
-            # return "There has been an error pulling data!"
+            return data_sources
+            
+        except Exception as e:
+            self.psycopg2_connection.rollback()
+            print(str(e))
+            return "There has been an error pulling data!"
 
