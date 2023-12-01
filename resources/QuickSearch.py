@@ -1,12 +1,10 @@
 from flask_restful import Resource
 from middleware.security import api_required
-from utilities.common import convert_dates_to_strings, format_arrays
-from middleware.initialize_psycopg2_connection import QUICK_SEARCH_QUERY
-import spacy
+from middleware.quick_search_query import quick_search_query
 import requests
 import json
 import os
-import datetime
+
 
 class QuickSearch(Resource):
   def __init__(self, **kwargs):
@@ -17,55 +15,8 @@ class QuickSearch(Resource):
   @api_required
   def get(self, search, location):
     try:
-        data_sources = {"count": 0, "data": []}
-        if type(self.psycopg2_connection) == dict:
-            return data_sources        
+        data_sources = quick_search_query(self.psycopg2_connection, search, location)
         
-        search = "" if search == "all" else search
-        location = "" if location == "all" else location
-
-        # Depluralize search term to increase match potential
-        nlp = spacy.load("en_core_web_sm")
-        search = search.strip()
-        doc = nlp(search)
-        lemmatized_tokens = [token.lemma_ for token in doc]
-        depluralized_search_term = " ".join(lemmatized_tokens)
-        location = location.strip()
-
-        cursor = self.psycopg2_connection.cursor()
-
-        print(f"Query parameters: '%{depluralized_search_term}%', '%{location}%'")
-        
-        cursor.execute(QUICK_SEARCH_QUERY, (f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
-        results = cursor.fetchall()
-
-        # If altered search term returns no results, try with unaltered search term      
-        if not results:
-            print(f"Query parameters: '%{search}%', '%{location}%'")
-            cursor.execute(QUICK_SEARCH_QUERY, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
-            results = cursor.fetchall()
-            
-        column_names = ["airtable_uid", "data_source_name", "description", "record_type", "source_url", "record_format", "coverage_start", "coverage_end", "agency_supplied", "agency_name", "municipality", "state_iso"]
-        data_source_matches = []
-        for result in results:
-            clean_result = [f.strftime("%Y-%m-%d") if type(f) == datetime.date else f for f in result]
-            data_source_matches.append(dict(zip(column_names, clean_result)))
-
-        data_sources = {
-            "count": len(data_source_matches),
-            "data": data_source_matches
-        }
-
-        current_datetime = datetime.datetime.now()
-        datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
-
-        query_results = json.dumps(data_sources["data"])
-
-        cursor_query_log = self.psycopg2_connection.cursor()
-        sql_query_log = "INSERT INTO quick_search_query_logs (search, location, results, result_count, datetime_of_request) VALUES (%s, %s, %s, %s, %s)"
-        cursor_query_log.execute(sql_query_log, (search, location, query_results, data_sources["count"], datetime_string))
-        self.psycopg2_connection.commit()
-
         return data_sources
         
     except Exception as e:
