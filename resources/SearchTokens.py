@@ -13,8 +13,12 @@ class SearchTokens(Resource):
         self.psycopg2_connection = kwargs["psycopg2_connection"]
 
 
-    def get(self, endpoint, arg1='', arg2=''):        
+    def get(self):        
         # try:
+        url_params = request.args
+        endpoint = url_params.get("endpoint")
+        arg1 = url_params.get("arg1")
+        arg2 = url_params.get("arg2")
         print(endpoint, arg1, arg2)
         data_sources = {"count": 0, "data": []}
         if type(self.psycopg2_connection) == dict:
@@ -32,8 +36,13 @@ class SearchTokens(Resource):
             return r.json()
         
         elif endpoint == "data-sources":
-            print(f"{BASE_URL}/data-sources/{arg1}")
-            r = requests.get(f"{BASE_URL}/data-sources/{arg1}", headers=headers)
+            print(f"{BASE_URL}/data-sources")
+            r = requests.get(f"{BASE_URL}/data-sources", headers=headers)
+            return r.json()
+
+        elif endpoint == "data-sources-by-id":
+            print(f"{BASE_URL}/data-sources-by-id/{arg1}")
+            r = requests.get(f"{BASE_URL}/data-sources-by-id/{arg1}", headers=headers)
             return r.json()
         
         else:
