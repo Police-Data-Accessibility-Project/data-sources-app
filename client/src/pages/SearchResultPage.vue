@@ -1,113 +1,109 @@
 <template>
-  <div class="search-results-page" data-test="search-results-page">
-    <h2>Search results</h2>
-    <div class="loading-section" data-test="loading-section" v-if="!searched">
-      <p>Loading results...</p>
-    </div>
-    <div class="search-results-section" data-test="search-results-section" v-else>
-      <div class="search-results-section-header small" >
-        <p data-test="search-results-section-header-p">You searched "{{ searchTerm }}" in {{ location }} and you got {{ searchResult.count }} results</p>
-        <button class="button" data-test="search-results-section-header-button" @click="openForm">Missing something? Request data here</button>
-      </div>
-      <div class="search-results-content" data-test="search-results-content" v-if="searchStatusCode == 500">
-        <p>{{ searchResult.data.message }}</p>
-      </div>
-      <div class="search-results-content" data-test="search-results-content" v-else-if="searchResult.count > 0">
-        <SearchResultCard data-test="search-results-cards" :key="dataSource.uuid" v-for="dataSource in searchResult?.data" :dataSource="dataSource"/>
-      </div>
-      <div data-test="no-search-results" v-else>
-        <p>No results found.</p>
-      </div>
-    </div>
-  </div>
+	<GridContainer
+		alignment="center"
+		:columns="3"
+		component="main"
+		class="search-results-page"
+		data-test="search-results-page"
+	>
+		<GridItem component="p" v-if="!searched">Loading results...</GridItem>
+
+		<GridItem :span-column="3" class="small" v-else>
+			<FlexContainer alignment="center">
+				<h2>Search results</h2>
+				<p data-test="search-results-section-header-p">
+					You searched "{{ searchTerm }}" in {{ location }} and you got
+					{{ searchResult.count }} results
+				</p>
+				<Button data-test="search-results-section-header-button" @click="openForm">
+					Missing something? Request data here
+				</Button>
+			</FlexContainer>
+		</GridItem>
+		<GridItem
+			component="p"
+			:span-column="3"
+			v-if="searchStatusCode >= 500 && searchStatusCode < 599"
+		>
+			{{ searchResult.data.message }}
+		</GridItem>
+		<SearchResultCard
+			data-test="search-results-cards"
+			:key="dataSource.uuid"
+			v-else-if="searchResult.count > 0"
+			v-for="dataSource in searchResult?.data"
+			:dataSource="dataSource"
+		/>
+		<GridItem component="p" :span-column="3" data-test="no-search-results" v-else
+			>No results found.</GridItem
+		>
+	</GridContainer>
 </template>
 
 <script>
+import { Button, FlexContainer, GridContainer, GridItem } from 'pdap-design-system';
 import SearchResultCard from '../components/SearchResultCard.vue';
-import axios from 'axios'
+import axios from 'axios';
 
 export default {
-  name: 'SearchResultPage',
-  components: {
-    SearchResultCard
-  },
-  data: () => ({
-    searched: false,
-    searchStatusCode: 200,
-    searchResult: {},
-    searchTerm: '',
-    location: ''
-  }),
-  mounted: function() {
-    this.searchTerm = this.$route.params.searchTerm
-    this.location = this.$route.params.location
-    this.search()
-  },
-  methods: {
-    async search() {
-      try{
-        const headers = {"Authorization": `Bearer ${process.env.VUE_APP_PDAP_TOKEN}`}
-        const res = await axios.get(`${process.env.VUE_APP_BASE_URL}/quick-search/${this.searchTerm}/${this.location}`, {headers})
-        this.searchStatusCode = res.status
-        this.searchResult = res.data
-        this.searched = true
-      }
-      catch (error) {
-        this.searchStatusCode = error.response.status
-        this.searchResult = error.response.data
-        this.searched = true
-        console.log(this.searchResult)
-      }
-    },
-    openForm() {
-      window.open('https://airtable.com/shrbFfWk6fjzGnNsk', '_blank');
-    }
-  }
-}
+	name: 'SearchResultPage',
+	components: {
+		SearchResultCard,
+		Button,
+		GridContainer,
+		GridItem,
+		FlexContainer,
+	},
+	data: () => ({
+		searched: false,
+		searchStatusCode: 200,
+		searchResult: {},
+		searchTerm: '',
+		location: '',
+	}),
+	mounted: function () {
+		this.searchTerm = this.$route.params.searchTerm;
+		this.location = this.$route.params.location;
+		this.search();
+	},
+	methods: {
+		async search() {
+			try {
+				const headers = { Authorization: `Bearer ${process.env.VUE_APP_PDAP_TOKEN}` };
+				const res = await axios.get(
+					`${process.env.VUE_APP_BASE_URL}/quick-search/${this.searchTerm}/${this.location}`,
+					{ headers }
+				);
+				this.searchStatusCode = res.status;
+				this.searchResult = res.data;
+				this.searched = true;
+			} catch (error) {
+				this.searchStatusCode = error?.response?.status ?? 400;
+				this.searchResult = error?.response?.data ?? {};
+				this.searched = true;
+				console.log(this.searchResult);
+			}
+		},
+		openForm() {
+			window.open('https://airtable.com/shrbFfWk6fjzGnNsk', '_blank');
+		},
+	},
+};
 </script>
 
 <style>
-.loading-section {
-  min-height: 75vh;
-  text-align: center;
-  margin: 2rem 0
+.search-results-page h2,
+.search-results-page p {
+	margin: 0 auto;
+	text-align: center;
 }
 
-.search-results-page {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-flow: column wrap;
-  min-height: 75vh;
+.search-results-page .pdap-grid-item,
+.search-results-page .pdap-flex-container {
+	height: max-content;
 }
 
-.search-results-page h2 {
-  width: 75%;
-  min-width: 450px;
+.search-results-page .pdap-flex-container {
+	gap: 24px;
 }
-
-.search-results-section {
-  display: flex;
-  justify-content: center;
-  flex-flow: column wrap;
-  width: 75%;
-  min-width: 450px;
-}
-
-.search-results-section-header {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-}
-
-.search-results-section-header p {
-  margin-right: 2rem;
-}
-
-.search-results-content {
-  display: flex;
-  /* justify-content: space-between; */
-  flex-wrap: wrap;
-}
-
 </style>

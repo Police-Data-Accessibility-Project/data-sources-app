@@ -1,5 +1,5 @@
 <template>
-	<FlexContainer alignment="center" class="quick-search-card">
+	<FlexContainer alignment="center" component="main" class="quick-search-card">
 		<p class="quick-search-description">
 			We maintain a catalog of public records about police, court, and jail systems across the
 			United States.
