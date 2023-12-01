@@ -1,6 +1,6 @@
 <template>
 	<Header :logo-image-src="lockup" />
-	<router-view :is="main"></router-view>
+	<router-view></router-view>
 	<Footer :logo-image-src="acronym" />
 </template>
 
