@@ -81,6 +81,16 @@ npm run serve
 
 ```
 
+## Testing
+
+All tests for the API live in the app_test.py file. It is best practice to add tests for any new feature to ensure it is working as expected and that any future code changes do not affect its functionality. All tests should be run before opening a PR (and when reviewing a PR) in order to ensure any changes do not break current app functionality. If a test fails, it is a sign that the new code should be checked or possibly that the test needs to be updated. Tests are currently run with pytest.
+
+```
+pip install pytest
+pytest
+
+```
+
 ## Other helpful commands
 
 ### Compiles and minifies for production
