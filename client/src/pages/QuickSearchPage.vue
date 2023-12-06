@@ -1,88 +1,106 @@
 <template>
-  <div class="quick-search-card">
-    <div class="quick-search-description-div">
-      <p class="quick-search-description">We maintain a catalog of public records about police, court, and jail systems across the United States.</p>
-    </div>
-    <QuickSearchForm :searchTerm="searchTerm" :location="location" @handleChange="handleChange" @handleSubmit="handleSubmit"/>
-    <!-- <div class="advanced-search-button-div">
-      <button @click="console.log('Clicked advanced search')" class="advanced-search-button">Advanced Search</button>
-    </div> -->
-  </div>
+	<FlexContainer alignment="center" component="main" class="quick-search-card">
+		<p class="quick-search-description">
+			We maintain a catalog of public records about police, court, and jail systems across the
+			United States.
+		</p>
+		<Form
+			class="small"
+			:schema="formSchema"
+			@submit="handleSubmit"
+			id="quick-search-form"
+			name="quickSearchForm"
+		>
+			<Button type="submit">Search Data Sources</Button>
+		</Form>
+	</FlexContainer>
 </template>
 
 <script>
-import QuickSearchForm from '../components/QuickSearchForm.vue';
+import { Button, FlexContainer, Form } from 'pdap-design-system';
 
 export default {
-  name: 'QuickSearchPage',
-  components: {
-    QuickSearchForm
-  },
-  data: () => ({
-    searchTerm: '',
-    location: ''
-  }),
-  methods: {
-    handleChange(name, value) {
-      this[name] = value
-    },
-    async handleSubmit() {
-      let searchTerm = this.searchTerm
-      let location = this.location
-      this.searchTerm = ''
-      this.location = ''
-      this.$router.push(`/search/${searchTerm}/${location}`)
-    }
-  }
-}
+	name: 'QuickSearchPage',
+	components: {
+		Button,
+		FlexContainer,
+		Form,
+	},
+	data: () => ({
+		formSchema: [
+			{
+				id: 'search-term',
+				name: 'searchTerm',
+				label: 'What are you looking for?',
+				type: 'text',
+				placeholder: "Enter a keyword, type of public records, or 'all'",
+				value: '',
+				validators: {
+					required: {
+						message: 'Search term is required',
+						value: true,
+					},
+				},
+			},
+			{
+				id: 'location',
+				name: 'location',
+				label: 'From where?',
+				type: 'text',
+				placeholder: "Enter a state, county, municipality, or 'all'",
+				value: '',
+				validators: {
+					required: {
+						message: 'Location is required',
+						value: true,
+					},
+				},
+			},
+		],
+	}),
+	methods: {
+		async handleSubmit({ location, searchTerm }) {
+			this.$router.push(`/search/${searchTerm}/${location}`);
+		},
+	},
+};
 </script>
 
-<style>
+<style scoped>
 .quick-search-card {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-flow: column wrap;
-  min-height: 75vh;
-}
-
-.quick-search-description-div {
-  display: flex;
-  justify-content: center;
-  width: 100%;
+	height: 100%;
+	max-height: 75vh;
+	max-width: 42rem;
 }
 
 .quick-search-description {
-  text-align: center;
-  width: 50%;
-  min-width: 450px;
+	display: flex;
+	justify-content: center;
+	text-align: center;
+	width: 100%;
+	margin: 0 auto 40px;
+}
+</style>
+
+<style>
+.quick-search-card .pdap-form {
+	display: flex;
+	flex-wrap: wrap;
+	column-gap: 1rem;
 }
 
-.advanced-search-button-div {
-  display: flex;
-  justify-content: center;
+.quick-search-card .pdap-button {
+	flex: 0 0 100%;
+	max-width: unset;
+	margin-top: 32px;
 }
 
-.advanced-search-button {
-  width: 50%;
-  padding: .5rem 1rem;
-  margin: .5rem 0;
-  min-width: 450px;
+.quick-search-card .pdap-input {
+	flex-direction: column;
+	row-gap: 0;
+	flex: 1 0 45%;
 }
-
-@media (max-width: 500px) {
-.quick-search-description {
-    width: 80%;
-    min-width: 50px;
-  }
-
-  .advanced-search-button {
-    width: 80%;
-    min-width: 50px;
-  }
-
-  .advanced-search-button-div {
-    width: 100%;
-  }
+.quick-search-card .pdap-input-label {
+	justify-content: flex-start;
 }
 </style>
