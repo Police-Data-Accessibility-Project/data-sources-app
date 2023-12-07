@@ -1,18 +1,10 @@
 {
 	"root": true,
-	"parser": "vue-eslint-parser",
-	"parserOptions": {
-		"parser": "@typescript-eslint/parser",
-		"project": ["./tsconfig.eslint.json"],
-		"tsConfigRootDir": "./"
-	},
 	"extends": [
-		"plugin:@typescript-eslint/recommended",
 		"eslint:recommended",
 		"plugin:vue/vue3-essential",
 		"plugin:vue/vue3-recommended",
 		"plugin:vue/strongly-recommended",
-		"@vue/typescript/recommended",
 		"@vue/eslint-config-prettier"
 	],
 	"plugins": ["prettier"],
@@ -20,8 +12,6 @@
 		"vue/require-default-prop": "off",
 		// Switch base eslint indent rule off
 		"indent": "off",
-		// Use TS package instead
-		"@typescript-eslint/indent": "off",
 		"vue/html-self-closing": [
 			"error",
 			{
@@ -35,6 +25,7 @@
 			}
 		],
 		"prettier/prettier": [
+			// Use prettier indent rule instead
 			"warn",
 			{
 				"indent": ["warn", "tab", { "SwitchCase": 2 }],
