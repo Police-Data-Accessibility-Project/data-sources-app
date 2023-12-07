@@ -1,0 +1,47 @@
+{
+	"root": true,
+	"parser": "vue-eslint-parser",
+	"parserOptions": {
+		"parser": "@typescript-eslint/parser",
+		"project": ["./tsconfig.eslint.json"],
+		"tsConfigRootDir": "./"
+	},
+	"extends": [
+		"plugin:@typescript-eslint/recommended",
+		"eslint:recommended",
+		"plugin:vue/vue3-essential",
+		"plugin:vue/vue3-recommended",
+		"plugin:vue/strongly-recommended",
+		"@vue/typescript/recommended",
+		"@vue/eslint-config-prettier"
+	],
+	"plugins": ["prettier"],
+	"rules": {
+		"vue/require-default-prop": "off",
+		// Switch base eslint indent rule off
+		"indent": "off",
+		// Use TS package instead
+		"@typescript-eslint/indent": "off",
+		"vue/html-self-closing": [
+			"error",
+			{
+				"html": {
+					"void": "always",
+					"normal": "always",
+					"component": "always"
+				},
+				"svg": "always",
+				"math": "always"
+			}
+		],
+		"prettier/prettier": [
+			"warn",
+			{
+				"indent": ["warn", "tab", { "SwitchCase": 2 }],
+				"tabWidth": 2,
+				"useTabs": true
+			}
+		],
+		"vue/no-multiple-template-root": "off"
+	}
+}
