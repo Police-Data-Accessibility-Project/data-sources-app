@@ -77,7 +77,7 @@ npm install
 
 ```
 
-npm run serve
+npm run dev
 
 ```
 
@@ -91,7 +91,15 @@ npm run build
 
 ```
 
-### Lints and fixes files
+### Serves production build locally
+
+```
+
+npm run preview
+
+```
+
+### Lints files
 
 ```
 
@@ -99,10 +107,14 @@ npm run lint
 
 ```
 
+### Lints and fixes any fixable errors
+
+```
+
+npm run lint:fix
+
+```
+
 ### Customize configuration
 
 See [Configuration Reference](https://cli.vuejs.org/config/).
-
-```
-
-```
