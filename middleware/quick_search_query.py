@@ -1,6 +1,7 @@
 import spacy
 import json
 import datetime
+from utilities.common import convert_dates_to_strings, format_arrays
 
 QUICK_SEARCH_SQL = """
     SELECT
@@ -63,14 +64,15 @@ def quick_search_query(conn, search, location):
         results = cursor.fetchall()
         
     column_names = ["airtable_uid", "data_source_name", "description", "record_type", "source_url", "record_format", "coverage_start", "coverage_end", "agency_supplied", "agency_name", "municipality", "state_iso"]
-    data_source_matches = []
-    for result in results:
-        clean_result = [f.strftime("%Y-%m-%d") if type(f) == datetime.date else f for f in result]
-        data_source_matches.append(dict(zip(column_names, clean_result)))
+    data_source_matches = [dict(zip(column_names, result)) for result in results]
+    data_source_matches_converted = []
+    for data_source_match in data_source_matches:
+        data_source_match = convert_dates_to_strings(data_source_match)
+        data_source_matches_converted.append(format_arrays(data_source_match))
 
     data_sources = {
-        "count": len(data_source_matches),
-        "data": data_source_matches
+        "count": len(data_source_matches_converted),
+        "data": data_source_matches_converted
     }
 
     current_datetime = datetime.datetime.now()
