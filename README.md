@@ -62,7 +62,7 @@ export DO_DATABASE_URL=postgres://data_sources_app:<password>@db-postgresql-nyc3
 
 ### 6. Allow your IP address
 
-To connect to the database, your IP address will need to be added to the "allow" list in DigitalOcean. Reach out to someone with admin access.
+To connect to the database, your IP address will need to be added to the "allow" list in DigitalOcean database settings. Reach out to someone with admin access to get your IP address added.
 
 ### 7. Run the Python app.
 
