@@ -45,18 +45,26 @@ pip install -r requirements.txt
 
 ```
 
-### 5. Manually export a DO_DATABASE_URL, SECRET_KEY, and WEBHOOK_URL in the command line
+### 5. Add environment secrets
 
-The app should have a DO_DATABASE_URL, SECRET_KEY, and WEBHOOK_URL for PDAP's Data Sources [DigitalOcean](https://digitalocean.com/). Reach out to contact@pdap.io or make noise in Discord if you'd like access to these keys.
+Either add a `.env` file to this directory or manually export these secrets: `DO_DATABASE_URL`, `SECRET_KEY`, and `WEBHOOK_URL`. Reach out to contact@pdap.io or make noise in Discord if you'd like access to these keys.
+
+```
+DO_DATABASE_URL="postgres://data_sources_app:<password>@db-postgresql-nyc3-38355-do-user-8463429-0.c.db.ondigitalocean.com:25060/defaultdb"
+SECRET_KEY="<secret_key>"
+..
+```
 
 ```
 export DO_DATABASE_URL=postgres://data_sources_app:<password>@db-postgresql-nyc3-38355-do-user-8463429-0.c.db.ondigitalocean.com:25060/defaultdb
-export SECRET_KEY=<secret_key>
-export WEBHOOK_URL=<webhook_url>
-
+..
 ```
 
-### 6. Run the Python app.
+### 6. Allow your IP address
+
+To connect to the database, your IP address will need to be added to the "allow" list in DigitalOcean. Reach out to someone with admin access.
+
+### 7. Run the Python app.
 
 ```
 
@@ -64,7 +72,7 @@ python3 app.py
 
 ```
 
-### 7. In a new terminal window, install the Vue app.
+### 8. In a new terminal window, install the Vue app.
 
 ```
 
@@ -73,7 +81,7 @@ npm install
 
 ```
 
-### 8. Run the development server.
+### 9. Run the development server.
 
 ```
 
