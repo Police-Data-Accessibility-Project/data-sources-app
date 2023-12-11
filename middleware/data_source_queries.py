@@ -133,13 +133,13 @@ def data_sources_query(conn):
     cursor.execute(sql_query)
     results = cursor.fetchall()
 
-    print(len(results))
     data_source_output_columns = APPROVED_COLUMNS + ["agency_name"]
     
     data_source_matches = [dict(zip(data_source_output_columns, result)) for result in results]
     data_source_matches_converted = []
 
-    for item in data_source_matches:
-        data_source_matches_converted.append(convert_dates_to_strings(item))
+    for data_source_match in data_source_matches:
+        data_source_match = convert_dates_to_strings(data_source_match)
+        data_source_matches_converted.append(format_arrays(data_source_match))
     
     return data_source_matches_converted

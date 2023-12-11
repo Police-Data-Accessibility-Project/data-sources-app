@@ -149,6 +149,12 @@ def test_quicksearch_officer_involved_shootings_philadelphia_results(client):
     response = client.get("/quick-search/officer involved shootings/Philadelphia", headers=headers)
 
     assert len(response.json["data"]) > 0
+
+def test_quicksearch_format_available_formatting(client):
+    headers = {"Authorization": f"Bearer {API_KEY}"}
+    response = client.get("/quick-search/reviews/allegheny", headers=headers)
+
+    assert type(response.json["data"][0]["record_format"]) == list
         
         
 # data-sources
@@ -239,7 +245,6 @@ def test_search_tokens_data_source_by_id(client):
 
 def test_search_tokens_quick_search_complaints_allegheny_results(client):
     response = client.get("/search-tokens?endpoint=quick-search&arg1=calls&arg2=chicago")
-    print(response)
 
     assert len(response.json["data"]) > 0
 
