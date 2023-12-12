@@ -8,19 +8,17 @@
 		<GridItem v-if="!searched" component="p">Loading results...</GridItem>
 
 		<GridItem v-else :span-column="3" class="small">
-			<FlexContainer alignment="center">
-				<h2>Search results</h2>
-				<p data-test="search-results-section-header-p">
-					You searched "{{ searchTerm }}" in {{ location }} and you got
-					{{ searchResult.count }} results
-				</p>
-				<Button
-					data-test="search-results-section-header-button"
-					@click="openForm"
-				>
-					Missing something? Request data here
-				</Button>
-			</FlexContainer>
+			<h2>Search results</h2>
+			<p data-test="search-results-section-header-p">
+				Searching for <span class="font-semibold">"{{ searchTerm }}"</span> in <span class="font-semibold">"{{ location }}"</span>.
+				Found 	{{ typeof searchResult.count !== 'undefined' ? (searchResult.count === 0 ? '0 results' : (searchResult.count === 1 ? '1 result' : searchResult.count + ' results')) : '0 results' }}.
+			</p>
+			<p>
+				If you don't see what you need, 
+				<a href="https://airtable.com/shrbFfWk6fjzGnNsk">
+					make a request <i class="fa fa-external-link"></i>
+				</a>
+			</p>
 		</GridItem>
 		<GridItem
 			v-if="searchStatusCode >= 500 && searchStatusCode < 599"
@@ -94,9 +92,6 @@ export default {
 				this.searched = true;
 				console.log(this.searchResult);
 			}
-		},
-		openForm() {
-			window.open("https://airtable.com/shrbFfWk6fjzGnNsk", "_blank");
 		},
 	},
 };
