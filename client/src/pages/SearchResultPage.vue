@@ -3,7 +3,6 @@
 		alignment="center"
 		:columns="3"
 		component="main"
-		class="search-results-page"
 		data-test="search-results-page"
 	>
 		<GridItem v-if="!searched" component="p">Loading results...</GridItem>
@@ -102,20 +101,3 @@ export default {
 	},
 };
 </script>
-
-<style>
-.search-results-page h2,
-.search-results-page p {
-	margin: 0 auto;
-	text-align: center;
-}
-
-.search-results-page .pdap-grid-item,
-.search-results-page .pdap-flex-container {
-	height: max-content;
-}
-
-.search-results-page .pdap-flex-container {
-	gap: 24px;
-}
-</style>
