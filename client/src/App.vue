@@ -46,33 +46,4 @@ export default {
 #app {
 	margin: 0;
 }
-
-main,
-main.pdap-flex-container,
-main.pdap-grid-container {
-	/* header height is generally 80px, footer height is (at tallest, on smaller mob devices) 600px. 
-	This will prevent content from taking up too much space, 
-	while also ensuring that the viewport is always full. Adding support 
-	to unset 100% height when flex or grid container passed as main  */
-	min-height: calc(100vh - 80px - 600px);
-	height: auto;
-}
-
-.pdap-footer .pdap-footer-social-link {
-	color: rgba(var(--color-neutral-950) / var(--tw-text-opacity));
-}
-
-/* TODO: Add this to future design system patch as well and remove from here */
-.pdap-footer p,
-.pdap-footer ul,
-.pdap-footer li,
-.pdap-footer .pdap-footer-social-link {
-	max-width: unset;
-}
-
-/* Temporary code to override user agent styles
-    TODO: remove when https://github.com/Police-Data-Accessibility-Project/design-system/issues/19 is addressed and released */
-.pdap-button-primary[type="submit"] {
-	background-color: rgba(var(--color-brand-gold) / var(--tw-bg-opacity));
-}
 </style>
