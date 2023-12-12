@@ -1,39 +1,43 @@
 <template>
 	<Header :logo-image-src="lockup" />
-	<router-view></router-view>
+	<router-view />
 	<Footer :logo-image-src="acronym" />
 </template>
 
 <script>
-import { Footer, Header } from 'pdap-design-system';
-import acronym from 'pdap-design-system/images/acronym.svg';
-import lockup from 'pdap-design-system/images/lockup.svg';
+import { Footer, Header } from "pdap-design-system";
+import acronym from "pdap-design-system/images/acronym.svg";
+import lockup from "pdap-design-system/images/lockup.svg";
 
 const links = [
-	{ href: 'https://airtable.com/shrbFfWk6fjzGnNsk', text: 'Request data', method: 'href' },
 	{
-		href: 'https://airtable.com/shrJafakrcmTxHU2i',
-		text: 'Submit a Data Source',
-		method: 'href',
+		href: "https://airtable.com/shrbFfWk6fjzGnNsk",
+		text: "Request data",
+		method: "href",
 	},
-	{ href: 'https://docs.pdap.io/', text: 'Docs', method: 'href' },
+	{
+		href: "https://airtable.com/shrJafakrcmTxHU2i",
+		text: "Submit a Data Source",
+		method: "href",
+	},
+	{ href: "https://docs.pdap.io/", text: "Docs", method: "href" },
 ];
 
 export default {
-	name: 'App',
+	name: "App",
 	components: {
 		Header,
 		Footer,
+	},
+	provide: {
+		navLinks: [...links],
+		footerLinks: [...links],
 	},
 	data() {
 		return {
 			acronym,
 			lockup,
 		};
-	},
-	provide: {
-		navLinks: [...links],
-		footerLinks: [...links],
 	},
 };
 </script>
@@ -68,7 +72,7 @@ main.pdap-grid-container {
 
 /* Temporary code to override user agent styles
     TODO: remove when https://github.com/Police-Data-Accessibility-Project/design-system/issues/19 is addressed and released */
-.pdap-button-primary[type='submit'] {
+.pdap-button-primary[type="submit"] {
 	background-color: rgba(var(--color-brand-gold) / var(--tw-bg-opacity));
 }
 </style>

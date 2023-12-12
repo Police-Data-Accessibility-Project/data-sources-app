@@ -1,11 +1,12 @@
-import { defineConfig } from 'vitest/config';
-import Vue from '@vitejs/plugin-vue';
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import svgLoader from "vite-svg-loader";
 
 export default defineConfig({
-	plugins: [Vue()],
-	test: {
-		globals: true,
-		environment: 'jsdom',
+	plugins: [vue(), svgLoader({ defaultImport: "url" })],
+	resolve: {
+		paths: {
+			"@/*": ["src/*"],
+		},
 	},
-	root: '.', //Define the root
 });
