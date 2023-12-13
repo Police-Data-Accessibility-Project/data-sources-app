@@ -6,7 +6,9 @@
 		class="search-results-page"
 		data-test="search-results-page"
 	>
-		<GridItem v-if="!searched" component="p">Loading results...</GridItem>
+		<GridItem v-if="!searched && !searchResult?.data" component="p"
+			>Loading results...</GridItem
+		>
 
 		<GridItem v-else :span-column="3" class="small">
 			<FlexContainer alignment="center">
@@ -80,12 +82,14 @@ export default {
 	},
 	methods: {
 		async search() {
-			try {
-				const res = await axios.get(
-					// eslint-disable-next-line no-undef
-					`${process.env.VUE_APP_BASE_URL}/search-tokens?endpoint=quick-search&arg1=${this.searchTerm}&arg2=${this.location}`,
-				);
+			const url = `${
+				import.meta.env.VITE_VUE_APP_BASE_URL
+			}/search-tokens?endpoint=quick-search&arg1=${this.searchTerm}&arg2=${
+				this.location
+			}`;
 
+			try {
+				const res = await axios.get(url);
 				this.searchStatusCode = res.status;
 				this.searchResult = res.data;
 				this.searched = true;
@@ -93,7 +97,7 @@ export default {
 				this.searchStatusCode = error?.response?.status ?? 400;
 				this.searchResult = error?.response?.data ?? {};
 				this.searched = true;
-				console.log(this.searchResult);
+				console.error(error);
 			}
 		},
 		openForm() {
