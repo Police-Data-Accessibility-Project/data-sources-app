@@ -22,6 +22,32 @@ class DataSourceById(Resource):
         except Exception as e:
             print(str(e))
             return "There has been an error pulling data!"
+        
+    @api_required
+    def put(self, data_source_id):
+        try:
+            json_data = request.get_json()
+            data = json.loads(json_data)
+
+            data_to_update = ""
+
+            for key, value in data.items():
+                data_to_update += f"{key} = {value}"
+
+            cursor = self.psycopg2_connection.cursor()
+            sql_query = """
+            UPDATE data_sources 
+            SET %s
+            WHERE airtable_uid = %s
+            """
+            cursor.execute(sql_query, data_to_update, data["id"])
+            self.psycopg2_connection.commit()
+            return {"status": "success"}
+
+        except Exception as e:
+            print(str(e))
+            return "There has been an error updating the data source"
+
     
 class DataSources(Resource):
     def __init__(self, **kwargs):
@@ -43,4 +69,25 @@ class DataSources(Resource):
             self.psycopg2_connection.rollback()
             print(str(e))
             return "There has been an error pulling data!"
+        
+    @api_required
+    def post(self):
+        try:
+            data = request.get_json()
+            cursor = self.psycopg2_connection.cursor()
 
+            column_names = ", ".join(data.keys())
+            column_values = ", ".join(data.values())
+
+            sql_query = f"INSERT INTO data_sources ({column_names}) VALUES ({column_values}) RETURNING *"
+            print(sql_query)
+
+            cursor.execute(sql_query)
+            self.psycopg2_connection.commit()
+
+            return True
+        except Exception as e:
+            self.psycopg2_connection.rollback()
+            print(str(e))
+            return False
+    
