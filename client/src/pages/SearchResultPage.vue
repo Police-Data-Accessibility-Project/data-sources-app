@@ -5,6 +5,7 @@
 		component="section"
 		data-test="search-results-page"
 	>
+  
 	<GridItem :span-column="3">
 		<h1>Search results</h1>
 	</GridItem>
@@ -30,21 +31,40 @@
 					make a request <i class="fa fa-external-link"></i>
 				</a>
 			</p>
+      </GridItem>
+      
+		<GridItem v-if="!searched" component="p" :span-column="3">
+			Loading results...
 		</GridItem>
+
+
 		<GridItem
-			v-if="searchStatusCode >= 500 && searchStatusCode < 599"
-			component="p"
+			v-else-if="searched && searchResult?.data?.length > 1"
 			:span-column="3"
+			class="small"
 		>
-			{{ searchResult.data.message }}
+			<FlexContainer alignment="center">
+				<h2>Search results</h2>
+				<p data-test="search-results-section-header-p">
+					You searched "{{ searchTerm }}" in {{ location }} and you got
+					{{ searchResult.count }} results
+				</p>
+				<Button
+					data-test="search-results-section-header-button"
+					@click="openForm"
+				>
+					Missing something? Request data here
+				</Button>
+			</FlexContainer>
+
+			<SearchResultCard
+				v-for="dataSource in searchResult?.data"
+				:key="dataSource.uuid"
+				data-test="search-results-cards"
+				:data-source="dataSource"
+			/>
 		</GridItem>
-		<SearchResultCard
-			v-for="dataSource in searchResult?.data"
-			v-else-if="searchResult.count > 0"
-			:key="dataSource.uuid"
-			data-test="search-results-cards"
-			:data-source="dataSource"
-		/>
+
 		<GridItem
 			v-else
 			:span-column="3"
@@ -52,15 +72,11 @@
 			><p>No results found.</p></GridItem
 		>
 	</GridContainer>
+
 </template>
 
 <script>
-import {
-	Button,
-	FlexContainer,
-	GridContainer,
-	GridItem,
-} from "pdap-design-system";
+import { Button, GridContainer, GridItem } from "pdap-design-system";
 import SearchResultCard from "../components/SearchResultCard.vue";
 import axios from "axios";
 
@@ -71,7 +87,6 @@ export default {
 		Button,
 		GridContainer,
 		GridItem,
-		FlexContainer,
 	},
 	data: () => ({
 		searched: false,
@@ -87,12 +102,14 @@ export default {
 	},
 	methods: {
 		async search() {
-			try {
-				const res = await axios.get(
-					// eslint-disable-next-line no-undef
-					`${process.env.VUE_APP_BASE_URL}/search-tokens?endpoint=quick-search&arg1=${this.searchTerm}&arg2=${this.location}`,
-				);
+			const url = `${
+				import.meta.env.VITE_VUE_APP_BASE_URL
+			}/search-tokens?endpoint=quick-search&arg1=${this.searchTerm}&arg2=${
+				this.location
+			}`;
 
+			try {
+				const res = await axios.get(url);
 				this.searchStatusCode = res.status;
 				this.searchResult = res.data;
 				this.searched = true;
@@ -100,9 +117,9 @@ export default {
 				this.searchStatusCode = error?.response?.status ?? 400;
 				this.searchResult = error?.response?.data ?? {};
 				this.searched = true;
-				console.log(this.searchResult);
+				console.error(error);
 			}
 		},
 	},
 };
-</script>
+</script
