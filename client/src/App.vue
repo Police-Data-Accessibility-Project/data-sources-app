@@ -11,16 +11,35 @@ import lockup from "pdap-design-system/images/lockup.svg";
 
 const links = [
 	{
-		href: "https://airtable.com/shrbFfWk6fjzGnNsk",
-		text: "Request data",
+		path: "/",
+		text: "Search",
+		method: "route",
+	},
+	{
+		href: "https://pdap.io/data",
+		text: "Data",
 		method: "href",
 	},
 	{
-		href: "https://airtable.com/shrJafakrcmTxHU2i",
-		text: "Submit a Data Source",
+		href: "https://pdap.io/volunteer",
+		text: "Volunteer",
 		method: "href",
 	},
-	{ href: "https://docs.pdap.io/", text: "Docs", method: "href" },
+	{
+		href: "https://pdap.io/about",
+		text: "About",
+		method: "href",
+	},
+	{
+		href: "https://pdap.io/donate",
+		text: "Donate",
+		method: "href",
+	},
+	{ 
+		href: "https://docs.pdap.io/", 
+		text: "Docs", 
+		method: "href" 
+	},
 ];
 
 export default {
