@@ -34,11 +34,12 @@ QUICK_SEARCH_SQL = """
 
 """
 
+
 def quick_search_query(conn, search, location):
     data_sources = {"count": 0, "data": []}
     if type(conn) == dict:
-        return data_sources        
-    
+        return data_sources
+
     search = "" if search == "all" else search
     location = "" if location == "all" else location
 
@@ -53,18 +54,22 @@ def quick_search_query(conn, search, location):
     cursor = conn.cursor()
 
     print(f"Query parameters: '%{depluralized_search_term}%', '%{location}%'")
-    
-    cursor.execute(QUICK_SEARCH_SQL, (f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
+
+    cursor.execute(QUICK_SEARCH_SQL, (f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%',
+                   f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
     results = cursor.fetchall()
 
-    # If altered search term returns no results, try with unaltered search term      
+    # If altered search term returns no results, try with unaltered search term
     if not results:
         print(f"Query parameters: '%{search}%', '%{location}%'")
-        cursor.execute(QUICK_SEARCH_SQL, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
+        cursor.execute(QUICK_SEARCH_SQL, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{location}%',
+                       f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
         results = cursor.fetchall()
-        
-    column_names = ["airtable_uid", "data_source_name", "description", "record_type", "source_url", "record_format", "coverage_start", "coverage_end", "agency_supplied", "agency_name", "municipality", "state_iso"]
-    data_source_matches = [dict(zip(column_names, result)) for result in results]
+
+    column_names = ["airtable_uid", "data_source_name", "description", "record_type", "source_url", "record_format",
+                    "coverage_start", "coverage_end", "agency_supplied", "agency_name", "municipality", "state_iso"]
+    data_source_matches = [dict(zip(column_names, result))
+                           for result in results]
     data_source_matches_converted = []
     for data_source_match in data_source_matches:
         data_source_match = convert_dates_to_strings(data_source_match)
@@ -82,7 +87,8 @@ def quick_search_query(conn, search, location):
 
     cursor_query_log = conn.cursor()
     sql_query_log = "INSERT INTO quick_search_query_logs (search, location, results, result_count, datetime_of_request) VALUES (%s, %s, %s, %s, %s)"
-    cursor_query_log.execute(sql_query_log, (search, location, query_results, data_sources["count"], datetime_string))
+    cursor_query_log.execute(sql_query_log, (search, location,
+                             query_results, data_sources["count"], datetime_string))
     conn.commit()
 
     return data_sources

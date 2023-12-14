@@ -54,7 +54,7 @@ main.pdap-grid-container {
 	This will prevent content from taking up too much space, 
 	while also ensuring that the viewport is always full. Adding support 
 	to unset 100% height when flex or grid container passed as main  */
-	min-height: calc(100vh - 80px - 600px);
+	min-height: calc(100vh - 80px - 450px);
 	height: auto;
 }
 
