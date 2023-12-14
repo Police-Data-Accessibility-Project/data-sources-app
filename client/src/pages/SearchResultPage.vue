@@ -1,19 +1,30 @@
 <template>
 	<GridContainer
-		alignment="center"
 		:columns="3"
-		component="main"
+		templateRows="auto auto 1fr"
+		component="section"
 		data-test="search-results-page"
 	>
-		<GridItem v-if="!searched" component="p">Loading results...</GridItem>
-
-		<GridItem v-else :span-column="3" class="small">
-			<h2>Search results</h2>
-			<p data-test="search-results-section-header-p">
-				Searching for <span class="font-semibold">"{{ searchTerm }}"</span> in <span class="font-semibold">"{{ location }}"</span>.
-				Found 	{{ typeof searchResult.count !== 'undefined' ? (searchResult.count === 0 ? '0 results' : (searchResult.count === 1 ? '1 result' : searchResult.count + ' results')) : '0 results' }}.
+	<GridItem :span-column="3">
+		<h1>Search results</h1>
+	</GridItem>
+		<GridItem 
+			v-if="!searched" 
+			component="p"
+			:span-column="3"
+		>
+			Loading results...
+		</GridItem>
+		<GridItem 
+			v-else 
+			:span-column="3"
+		>
+			<p data-test="search-results-section-header-p" class="text-xl">
+				Searching for <span class="font-semibold">"{{ searchTerm }}"</span> 
+				in <span class="font-semibold">"{{ location }}"</span>.
+				Found {{ typeof searchResult.count !== 'undefined' ? (searchResult.count === 0 ? '0 results' : (searchResult.count === 1 ? '1 result' : searchResult.count + ' results')) : '0 results' }}.
 			</p>
-			<p>
+			<p class="text-xl">
 				If you don't see what you need, 
 				<a href="https://airtable.com/shrbFfWk6fjzGnNsk">
 					make a request <i class="fa fa-external-link"></i>
@@ -36,10 +47,9 @@
 		/>
 		<GridItem
 			v-else
-			component="p"
 			:span-column="3"
 			data-test="no-search-results"
-			>No results found.</GridItem
+			><p>No results found.</p></GridItem
 		>
 	</GridContainer>
 </template>
