@@ -47,7 +47,7 @@ pip install -r requirements.txt
 
 ### 5. Add environment secrets
 
-Either add a `.env` file to this directory or manually export these secrets: `DO_DATABASE_URL`, `SECRET_KEY`, and `WEBHOOK_URL`. Reach out to contact@pdap.io or make noise in Discord if you'd like access to these keys.
+Either add a `.env` file to this directory or manually export these secrets: `DO_DATABASE_URL` and `WEBHOOK_URL`. Reach out to contact@pdap.io or make noise in Discord if you'd like access to these keys.
 
 ```
 DO_DATABASE_URL="postgres://data_sources_app:<password>@db-postgresql-nyc3-38355-do-user-8463429-0.c.db.ondigitalocean.com:25060/defaultdb"
