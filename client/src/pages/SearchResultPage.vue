@@ -1,52 +1,29 @@
 <template>
-	<GridContainer
-		alignment="center"
-		:columns="3"
-		component="main"
-		class="search-results-page"
-		data-test="search-results-page"
-	>
+	<GridContainer alignment="center" :columns="3" component="main" class="search-results-page"
+		data-test="search-results-page">
 		<GridItem v-if="!searched" component="p" :span-column="3">
 			Loading results...
 		</GridItem>
 
 
-		<GridItem
-			v-else-if="searched && searchResult?.data?.length > 1"
-			:span-column="3"
-			class="small"
-		>
+		<GridItem v-else-if="searched && searchResult?.data?.length > 0" :span-column="3" class="small">
 			<FlexContainer alignment="center">
 				<h2>Search results</h2>
 				<p data-test="search-results-section-header-p">
 					You searched "{{ searchTerm }}" in {{ location }} and you got
 					{{ searchResult.count }} results
 				</p>
-				<Button
-					data-test="search-results-section-header-button"
-					@click="openForm"
-				>
+				<Button data-test="search-results-section-header-button" @click="openForm">
 					Missing something? Request data here
 				</Button>
 			</FlexContainer>
 
-			<SearchResultCard
-				v-for="dataSource in searchResult?.data"
-				:key="dataSource.uuid"
-				data-test="search-results-cards"
-				:data-source="dataSource"
-			/>
+			<SearchResultCard v-for="dataSource in searchResult?.data" :key="dataSource.uuid"
+				data-test="search-results-cards" :data-source="dataSource" />
 		</GridItem>
 
-		<GridItem
-			v-else
-			component="p"
-			:span-column="3"
-			data-test="no-search-results"
-			>No results found.</GridItem
-		>
+		<GridItem v-else component="p" :span-column="3" data-test="no-search-results">No results found.</GridItem>
 	</GridContainer>
-
 </template>
 
 <script>
@@ -76,11 +53,9 @@ export default {
 	},
 	methods: {
 		async search() {
-			const url = `${
-				import.meta.env.VITE_VUE_APP_BASE_URL
-			}/search-tokens?endpoint=quick-search&arg1=${this.searchTerm}&arg2=${
-				this.location
-			}`;
+			const url = `${import.meta.env.VITE_VUE_APP_BASE_URL
+				}/search-tokens?endpoint=quick-search&arg1=${this.searchTerm}&arg2=${this.location
+				}`;
 
 			try {
 				const res = await axios.get(url);
