@@ -5,58 +5,27 @@
 		component="section"
 		data-test="search-results-page"
 	>
-  
-	<GridItem :span-column="3">
-		<h1>Search results</h1>
-	</GridItem>
-		<GridItem 
-			v-if="!searched" 
-			component="p"
-			:span-column="3"
-		>
-			Loading results...
-		</GridItem>
-		<GridItem 
-			v-else 
-			:span-column="3"
-		>
+		<GridItem :span-column="3">
+			<h1>Search results</h1>
 			<p data-test="search-results-section-header-p" class="text-xl">
-				Searching for <span class="font-semibold">"{{ searchTerm }}"</span> 
-				in <span class="font-semibold">"{{ location }}"</span>.
-				Found {{ typeof searchResult.count !== 'undefined' ? (searchResult.count === 0 ? '0 results' : (searchResult.count === 1 ? '1 result' : searchResult.count + ' results')) : '0 results' }}.
-			</p>
-			<p class="text-xl">
-				If you don't see what you need, 
-				<a href="https://airtable.com/shrbFfWk6fjzGnNsk">
-					make a request <i class="fa fa-external-link"></i>
-				</a>
-			</p>
-      </GridItem>
-      
+					Searching for <span class="font-semibold">"{{ searchTerm }}"</span> 
+					in <span class="font-semibold">"{{ location }}"</span>.
+					Found {{ typeof searchResult.count !== 'undefined' ? (searchResult.count === 0 ? '0 results' : (searchResult.count === 1 ? '1 result' : searchResult.count + ' results')) : '0 results' }}.
+				</p>
+				<p class="text-xl">
+					If you don't see what you need, 
+					<a href="https://airtable.com/shrbFfWk6fjzGnNsk">
+						make a request <i class="fa fa-external-link"></i>
+					</a>
+				</p>
+		</GridItem>      
 		<GridItem v-if="!searched" component="p" :span-column="3">
 			Loading results...
 		</GridItem>
-
-
 		<GridItem
 			v-else-if="searched && searchResult?.data?.length > 1"
 			:span-column="3"
-			class="small"
 		>
-			<FlexContainer alignment="center">
-				<h2>Search results</h2>
-				<p data-test="search-results-section-header-p">
-					You searched "{{ searchTerm }}" in {{ location }} and you got
-					{{ searchResult.count }} results
-				</p>
-				<Button
-					data-test="search-results-section-header-button"
-					@click="openForm"
-				>
-					Missing something? Request data here
-				</Button>
-			</FlexContainer>
-
 			<SearchResultCard
 				v-for="dataSource in searchResult?.data"
 				:key="dataSource.uuid"
@@ -64,7 +33,6 @@
 				:data-source="dataSource"
 			/>
 		</GridItem>
-
 		<GridItem
 			v-else
 			:span-column="3"
@@ -122,4 +90,4 @@ export default {
 		},
 	},
 };
-</script
+</script>
