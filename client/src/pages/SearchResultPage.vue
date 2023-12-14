@@ -12,7 +12,7 @@
 
 
 		<GridItem
-			v-else-if="searched && searchResult.data.length > 1"
+			v-else-if="searched && searchResult?.data?.length > 1"
 			:span-column="3"
 			class="small"
 		>
