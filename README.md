@@ -51,7 +51,7 @@ Either add a `.env` file to this directory or manually export these secrets: `DO
 
 ```
 DO_DATABASE_URL="postgres://data_sources_app:<password>@db-postgresql-nyc3-38355-do-user-8463429-0.c.db.ondigitalocean.com:25060/defaultdb"
-SECRET_KEY="<secret_key>"
+VITE_VUE_APP_BASE_URL="url"
 ..
 ```
 
