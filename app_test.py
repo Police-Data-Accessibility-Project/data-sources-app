@@ -9,15 +9,14 @@ import json
 
 API_KEY = os.getenv("VUE_APP_PDAP_API_KEY")
 
+
 @pytest.fixture()
 def test_app():
-    
     yield app
 
 
 @pytest.fixture()
 def client(test_app):
-
     return test_app.test_client()
 
 
@@ -37,7 +36,23 @@ def test_data_sources_query(client):
         cursor = psycopg2_connection.cursor()
         search = "calls"
         location = "chicago"
-        cursor.execute(QUICK_SEARCH_SQL, (f"%{search}%", f"%{search}%", f"%{search}%", f"%{search}%", f"%{location}%", f"%{location}%", f"%{location}%", f"%{location}%", f"%{location}%", f"%{location}%", f"%{location}%", f"%{location}%"))
+        cursor.execute(
+            QUICK_SEARCH_SQL,
+            (
+                f"%{search}%",
+                f"%{search}%",
+                f"%{search}%",
+                f"%{search}%",
+                f"%{location}%",
+                f"%{location}%",
+                f"%{location}%",
+                f"%{location}%",
+                f"%{location}%",
+                f"%{location}%",
+                f"%{location}%",
+                f"%{location}%",
+            ),
+        )
 
         assert len(cursor.fetchall()) > 0
 
@@ -49,13 +64,19 @@ def test_quick_search_logging(client):
 
         cursor_query_log = psycopg2_connection.cursor()
         sql_query_log = "INSERT INTO quick_search_query_logs (search, location, results, result_count, datetime_of_request) VALUES (%s, %s, %s, %s, %s)"
-        cursor_query_log.execute(sql_query_log, ("test", "test", [], 0, datetime_string))
+        cursor_query_log.execute(
+            sql_query_log, ("test", "test", [], 0, datetime_string)
+        )
         psycopg2_connection.commit()
 
-        cursor_query_log.execute(f"SELECT * FROM quick_search_query_logs WHERE datetime_of_request = '{datetime_string}'")
+        cursor_query_log.execute(
+            f"SELECT * FROM quick_search_query_logs WHERE datetime_of_request = '{datetime_string}'"
+        )
         results = cursor_query_log.fetchall()
 
-        cursor_query_log.execute(f"DELETE FROM quick_search_query_logs WHERE datetime_of_request = '{datetime_string}'")
+        cursor_query_log.execute(
+            f"DELETE FROM quick_search_query_logs WHERE datetime_of_request = '{datetime_string}'"
+        )
         psycopg2_connection.commit()
 
     assert len(results) > 0
@@ -73,19 +94,19 @@ def test_quicksearch_columns(client):
     headers = {"Authorization": f"Bearer {API_KEY}"}
     response = client.get("/quick-search/complaints/allegheny", headers=headers)
     column_names = [
-        "airtable_uid", 
-        "data_source_name", 
-        "record_type", 
-        "source_url", 
-        "record_format", 
-        "coverage_start", 
+        "airtable_uid",
+        "data_source_name",
+        "record_type",
+        "source_url",
+        "record_format",
+        "coverage_start",
         "coverage_end",
-        "agency_name", 
-        "municipality", 
-        "state_iso"
+        "agency_name",
+        "municipality",
+        "state_iso",
     ]
 
-    assert not set(column_names).difference(response.json["data"][0].keys()) 
+    assert not set(column_names).difference(response.json["data"][0].keys())
 
 
 def test_quicksearch_complaints_allegheny_county_results(client):
@@ -97,28 +118,36 @@ def test_quicksearch_complaints_allegheny_county_results(client):
 
 def test_quicksearch_officer_involved_shootings_philadelphia_results(client):
     headers = {"Authorization": f"Bearer {API_KEY}"}
-    response = client.get("/quick-search/Officer Involved Shootings/philadelphia", headers=headers)
+    response = client.get(
+        "/quick-search/Officer Involved Shootings/philadelphia", headers=headers
+    )
 
     assert len(response.json["data"]) > 0
 
 
 def test_quicksearch_officer_involved_shootings_philadelphia_county_results(client):
     headers = {"Authorization": f"Bearer {API_KEY}"}
-    response = client.get("/quick-search/Officer Involved Shootings/philadelphia county", headers=headers)
+    response = client.get(
+        "/quick-search/Officer Involved Shootings/philadelphia county", headers=headers
+    )
 
     assert len(response.json["data"]) > 0
 
 
 def test_quicksearch_officer_involved_shootings_kings_results(client):
     headers = {"Authorization": f"Bearer {API_KEY}"}
-    response = client.get("/quick-search/Officer Involved Shootings/kings", headers=headers)
+    response = client.get(
+        "/quick-search/Officer Involved Shootings/kings", headers=headers
+    )
 
     assert len(response.json["data"]) > 0
 
 
 def test_quicksearch_officer_involved_shootings_kings_county_results(client):
     headers = {"Authorization": f"Bearer {API_KEY}"}
-    response = client.get("/quick-search/Officer Involved Shootings/kings county", headers=headers)
+    response = client.get(
+        "/quick-search/Officer Involved Shootings/kings county", headers=headers
+    )
 
     assert len(response.json["data"]) > 0
 
@@ -146,17 +175,20 @@ def test_quicksearch_media_bulletin_pennsylvania_results(client):
 
 def test_quicksearch_officer_involved_shootings_philadelphia_results(client):
     headers = {"Authorization": f"Bearer {API_KEY}"}
-    response = client.get("/quick-search/officer involved shootings/Philadelphia", headers=headers)
+    response = client.get(
+        "/quick-search/officer involved shootings/Philadelphia", headers=headers
+    )
 
     assert len(response.json["data"]) > 0
+
 
 def test_quicksearch_format_available_formatting(client):
     headers = {"Authorization": f"Bearer {API_KEY}"}
     response = client.get("/quick-search/reviews/allegheny", headers=headers)
 
     assert type(response.json["data"][0]["record_format"]) == list
-        
-        
+
+
 # data-sources
 def test_data_source_by_id(client):
     headers = {"Authorization": f"Bearer {API_KEY}"}
@@ -200,10 +232,10 @@ def test_data_source_by_id_columns(client):
         "scraper_url",
         "data_source_created",
         "data_source_id",
-        "agency_id"
+        "agency_id",
     ]
 
-    assert not set(column_names).difference(response.json.keys()) 
+    assert not set(column_names).difference(response.json.keys())
 
 
 def test_data_sources(client):
@@ -216,16 +248,19 @@ def test_data_sources(client):
 def test_data_sources_approved(client):
     headers = {"Authorization": f"Bearer {API_KEY}"}
     response = client.get("/data-sources", headers=headers)
-    unapproved_url = 'https://joinstatepolice.ny.gov/15-mile-run'
+    unapproved_url = "https://joinstatepolice.ny.gov/15-mile-run"
 
-    assert len([d for d in response.json["data"] if d["source_url"] == unapproved_url]) == 0
+    assert (
+        len([d for d in response.json["data"] if d["source_url"] == unapproved_url])
+        == 0
+    )
 
 
 def test_data_source_by_id_approved(client):
     headers = {"Authorization": f"Bearer {API_KEY}"}
     response = client.get("/data-sources-by-id/rec013MFNfBnrTpZj", headers=headers)
 
-    assert response.json == 'Data source not found.'
+    assert response.json == "Data source not found."
 
 
 # search-tokens
@@ -238,13 +273,18 @@ def test_search_tokens_data_sources(client):
 
 def test_search_tokens_data_source_by_id(client):
     headers = {"Authorization": f"Bearer {API_KEY}"}
-    response = client.get("/search-tokens?endpoint=data-sources-by-id&arg1=reczwxaH31Wf9gRjS", headers=headers)
+    response = client.get(
+        "/search-tokens?endpoint=data-sources-by-id&arg1=reczwxaH31Wf9gRjS",
+        headers=headers,
+    )
 
     assert response.json["data_source_id"] == "reczwxaH31Wf9gRjS"
 
 
 def test_search_tokens_quick_search_complaints_allegheny_results(client):
-    response = client.get("/search-tokens?endpoint=quick-search&arg1=calls&arg2=chicago")
+    response = client.get(
+        "/search-tokens?endpoint=quick-search&arg1=calls&arg2=chicago"
+    )
 
     assert len(response.json["data"]) > 0
 
@@ -252,13 +292,18 @@ def test_search_tokens_quick_search_complaints_allegheny_results(client):
 # user
 def test_get_user(client):
     headers = {"Authorization": f"Bearer {API_KEY}"}
-    response = client.get("/user", headers=headers, json={"email": "test2", "password": "test"})
+    response = client.get(
+        "/user", headers=headers, json={"email": "test2", "password": "test"}
+    )
 
     assert response
 
+
 def test_post_user(client):
     headers = {"Authorization": f"Bearer {API_KEY}"}
-    response = client.post("/user", headers=headers, json={"email": "test", "password": "test"})
+    response = client.post(
+        "/user", headers=headers, json={"email": "test", "password": "test"}
+    )
 
     with initialize_psycopg2_connection() as psycopg2_connection:
         cursor = psycopg2_connection.cursor()
@@ -266,6 +311,7 @@ def test_post_user(client):
         psycopg2_connection.commit()
 
     assert response.json["data"] == "Successfully added user"
+
 
 # archives
 def test_get_archives(client):
@@ -279,15 +325,32 @@ def test_get_archives_columns(client):
     headers = {"Authorization": f"Bearer {API_KEY}"}
     response = client.get("/archives", headers=headers)
 
-    column_names = ["id", "source_url", "update_frequency", "last_cached", "agency_name"]
-    
+    column_names = [
+        "id",
+        "source_url",
+        "update_frequency",
+        "last_cached",
+        "agency_name",
+    ]
+
     assert not set(column_names).difference(response.json[0].keys())
+
 
 def test_put_archives(client):
     current_datetime = datetime.datetime.now()
     datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
     headers = {"Authorization": f"Bearer {API_KEY}"}
-    response = client.put("/archives", headers=headers, json=json.dumps({"id": "test", "last_cached": datetime_string, "broken_source_url_as_of": ""}))
+    response = client.put(
+        "/archives",
+        headers=headers,
+        json=json.dumps(
+            {
+                "id": "test",
+                "last_cached": datetime_string,
+                "broken_source_url_as_of": "",
+            }
+        ),
+    )
 
     assert response.json["status"] == "success"
 
@@ -296,7 +359,17 @@ def test_put_archives_brokenasof(client):
     current_datetime = datetime.datetime.now()
     datetime_string = current_datetime.strftime("%Y-%m-%d")
     headers = {"Authorization": f"Bearer {API_KEY}"}
-    response = client.put("/archives", headers=headers, json=json.dumps({"id": "test", "last_cached": datetime_string, "broken_source_url_as_of": datetime_string}))
+    response = client.put(
+        "/archives",
+        headers=headers,
+        json=json.dumps(
+            {
+                "id": "test",
+                "last_cached": datetime_string,
+                "broken_source_url_as_of": datetime_string,
+            }
+        ),
+    )
 
     assert response.json["status"] == "success"
 
