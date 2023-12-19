@@ -113,7 +113,7 @@
 			class="text-lg w-full px-4 py-1 lg:mx-0"
 			data-test="search-result-source-details-button"
 		>
-			More details
+			View details
 		</Button>
 	</GridItem>
 </template>
