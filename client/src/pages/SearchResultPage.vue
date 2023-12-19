@@ -5,7 +5,7 @@
 		class="h-auto md:px-0"
 	>
 		<div>
-			<h1>Search results</h1>
+			<h1>Data Sources Search results</h1>
 			<p data-test="search-results-section-header-p" class="text-2xl">
 					Searching for <span class="font-semibold">"{{ searchTerm }}"</span> 
 					in <span class="font-semibold">"{{ location }}"</span>.

@@ -16,7 +16,7 @@
 		<div
 			data-test="search-result-record-type"
 			v-if="dataSource.record_type"
-			class="mt-1 py-1 px-3 rounded-full bg-brand-wine/10 w-fit"
+			class="mt-1 py-[.125rem] px-3 rounded-full bg-brand-wine/10 w-fit"
 		>
 			{{ dataSource.record_type }}
 		</div>
@@ -83,19 +83,20 @@
 			Unknown
 		</p>
 		<p class="text-brand-wine font-semibold text-sm uppercase tracking-wider mb-0 mt-4" data-test="search-result-label-formats">Formats available</p>
-		<FlexContainer 
+		<ul
 			v-if="dataSource.record_format" 
 			data-test="search-result-formats"
-			class="p-0 h-auto"
+			class="mb-4"
 		>
-			<p
+			<li
 				:key="recordFormat"
 				v-for="recordFormat in dataSource.record_format"
 				data-test="search-result-format"
+				class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 w-fit"
 			>
 				{{ recordFormat }}
-			</p>
-		</FlexContainer>
+			</li>
+		</ul>
 		<p data-test="search-result-format-unknown" v-else>
 			Unknown
 		</p>
