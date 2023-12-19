@@ -47,7 +47,7 @@ describe('SearchResultCard with all data', () => {
 			dataSource.agency_name
 		);
 	});
-
+/* hiding place for now
 	it('search result card contains a place section', () => {
 		expect(wrapper.find('[data-test="search-result-place"]').exists()).toBe(
 			true
@@ -59,7 +59,7 @@ describe('SearchResultCard with all data', () => {
 			wrapper.get('[data-test="search-result-place-state-municipality"]').text()
 		).toBe(`${dataSource.municipality}, ${dataSource.state_iso}`);
 	});
-
+*/
 	it('search result card contains a record section', () => {
 		expect(
 			wrapper.find('[data-test="search-result-record-label"]').exists()

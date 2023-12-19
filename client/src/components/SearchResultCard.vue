@@ -17,6 +17,7 @@
 		</div>
 
 		<FlexContainer class="search-result-place" data-test="search-result-place">
+<!-- hiding place for now
 			<p
 				v-if="dataSource.municipality && dataSource.state_iso"
 				data-test="search-result-place-state-municipality"
@@ -32,6 +33,7 @@
 			<p v-else data-test="search-result-place-unknown">Location Unknown</p>
 		</FlexContainer>
 
+-->
 		<p
 			class="search-result-label"
 			v-if="dataSource.record_type"
