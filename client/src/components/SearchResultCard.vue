@@ -1,7 +1,6 @@
 <template>
 	<GridItem
-		class="border border-neutral-400 p-3 text-lg leading-snug"
-		alignment="center"
+		class="flex flex-col border border-neutral-400 p-3 text-lg leading-snug"
 		data-test="search-result-card"
 	>
 		<h2 class="text-xl font-semibold line-clamp-2" data-test="search-result-title">
@@ -100,21 +99,23 @@
 		<p data-test="search-result-format-unknown" v-else>
 			Unknown
 		</p>
-		<Button
-			@click="openSource"
-			:href="dataSource.source_url"
-			class="text-lg px-4 py-1 mb-2 lg:mx-0 w-full"
-			data-test="search-result-source-button"
-		>
-			Visit data source <i class="fa fa-external-link"></i>
-		</Button>
-		<Button
-			@click="showDetails"
-			class="text-lg w-full px-4 py-1 lg:mx-0"
-			data-test="search-result-source-details-button"
-		>
-			View details
-		</Button>
+		<div class="mt-auto flex flex-col">
+			<Button
+				@click="openSource"
+				class="text-lg font-medium px-4 py-1 mt-4 mb-2 lg:mx-0 max-w-full"
+				data-test="search-result-source-button"
+			>
+				Visit data source <i class="fa fa-external-link"></i>
+			</Button>
+			<Button
+				@click="showDetails"
+				intent="secondary"
+				class="text-lg font-medium px-4 py-1 lg:mx-0 max-w-full"
+				data-test="search-result-source-details-button"
+			>
+				View details
+			</Button>
+		</div>
 	</GridItem>
 </template>
 
