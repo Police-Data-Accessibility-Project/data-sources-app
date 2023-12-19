@@ -8,7 +8,7 @@
 			{{ dataSource.data_source_name }}
 		</h2>
 		<p
-			class="text-brand-wine font-semibold text-sm uppercase tracking-wider mb-0 mt-4"
+			class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"
 			data-test="search-result-record-label"
 		>
 			Record type
@@ -16,7 +16,7 @@
 		<div
 			data-test="search-result-record-type"
 			v-if="dataSource.record_type"
-			class="mt-1 py-[.125rem] px-3 rounded-full bg-brand-wine/10 w-fit"
+			class="mt-1 py-[.125rem] px-3 rounded-full bg-brand-wine/10 dark:bg-brand-wine dark:text-white w-fit"
 		>
 			{{ dataSource.record_type }}
 		</div>
@@ -28,7 +28,7 @@
 		</p>
 		<div class="search-result-agency" data-test="search-result-agency">
 			<p
-			class="text-brand-wine font-semibold text-sm uppercase tracking-wider mb-0 mt-4"
+			class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"
 			data-test="search-result-record-label"
 			>
 			Agency
@@ -56,7 +56,7 @@
 		</div>
 -->
 		<p
-			class="text-brand-wine font-semibold text-sm uppercase tracking-wider mb-0 mt-4"
+			class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"
 			data-test="search-result-label-coverage"
 		>
 			Time range
@@ -82,7 +82,7 @@
 		<p v-else data-test="search-result-coverage-unknown">
 			Unknown
 		</p>
-		<p class="text-brand-wine font-semibold text-sm uppercase tracking-wider mb-0 mt-4" data-test="search-result-label-formats">Formats available</p>
+		<p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4" data-test="search-result-label-formats">Formats available</p>
 		<ul
 			v-if="dataSource.record_format" 
 			data-test="search-result-formats"
@@ -92,7 +92,7 @@
 				:key="recordFormat"
 				v-for="recordFormat in dataSource.record_format"
 				data-test="search-result-format"
-				class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 w-fit"
+				class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit"
 			>
 				{{ recordFormat }}
 			</li>
