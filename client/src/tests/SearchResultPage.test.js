@@ -95,12 +95,20 @@ describe('SearchResultPage successfully renders components', () => {
 	test('renders search results section header properly', () => {
 		const searchTerm = wrapper.vm.searchTerm;
 		const location = wrapper.vm.location;
-		const count = wrapper.vm.searchResult.count;
 	  
 		expect(
 			wrapper.get('[data-test="search-results-section-header-p"]').text()
 		).toBe(
-			`Searching for "${searchTerm}" in "${location}". Found ${
+			`Searching for "${searchTerm}" in "${location}".`
+		);
+	});
+
+	test('renders search result count properly', () => {
+		const count = wrapper.vm.searchResult.count;
+
+		expect(wrapper.get('[data-test="search-results-count"]').text()
+		).toBe(
+			` Found ${
 				typeof count !== 'undefined'
 					? count === 0
 						? '0 results'

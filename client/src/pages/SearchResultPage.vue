@@ -25,8 +25,8 @@
 				v-else-if="searched && searchResult?.data?.length > 0"
 				:span-column="3"
 			>
-				<p class="text-xl max-w-none">
-					Found {{ typeof searchResult.count !== 'undefined' ? (searchResult.count === 0 ? '0 results' : (searchResult.count === 1 ? '1 result' : searchResult.count + ' results')) : '0 results' }}.
+				<p class="text-xl">
+					<span data-test="search-results-count">Found {{ typeof searchResult.count !== 'undefined' ? (searchResult.count === 0 ? '0 results' : (searchResult.count === 1 ? '1 result' : searchResult.count + ' results')) : '0 results' }}.</span>
 					If you don't see what you need, 
 					<a href="https://airtable.com/shrbFfWk6fjzGnNsk">
 						make a request&nbsp;<i class="fa fa-external-link"></i>
