@@ -9,6 +9,7 @@
 			<p data-test="search-results-section-header-p" class="text-2xl">
 					Searching for <span class="font-semibold">"{{ searchTerm }}"</span> 
 					in <span class="font-semibold">"{{ location }}"</span>.
+					<span v-if="searched && searchResult?.data?.length > 0" data-test="search-results-count">Found {{ typeof searchResult.count !== 'undefined' ? (searchResult.count === 0 ? '0 results' : (searchResult.count === 1 ? '1 result' : searchResult.count + ' results')) : '0 results' }}.</span>
 			</p>
 		</div>      
 		<GridContainer
@@ -26,10 +27,15 @@
 				:span-column="3"
 			>
 				<p class="text-xl max-w-full">
-					<span data-test="search-results-count">Found {{ typeof searchResult.count !== 'undefined' ? (searchResult.count === 0 ? '0 results' : (searchResult.count === 1 ? '1 result' : searchResult.count + ' results')) : '0 results' }}.</span>
 					If you don't see what you need, 
 					<a href="https://airtable.com/shrbFfWk6fjzGnNsk">
 						make a request&nbsp;<i class="fa fa-external-link"></i>
+					</a>
+				</p>
+				<p class="text-xl max-w-full">
+					To see these results in a table, 
+					<a href="https://airtable.com/shrUAtA8qYasEaepI">
+						view the full database&nbsp;<i class="fa fa-external-link"></i>
 					</a>
 				</p>
 			</GridItem>
