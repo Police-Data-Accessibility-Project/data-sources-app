@@ -13,7 +13,6 @@
 	},
 	"dependencies": {
 		"axios": "^1.6.0",
-		"pdap-design-system": "^2.1.4",
 		"vue": "^3.3.10",
 		"vue-router": "^4.2.4"
 	},
@@ -25,7 +24,7 @@
 		"eslint": "^8.0.0",
 		"eslint-plugin-vue": "^8.0.3",
 		"jsdom": "^22.1.0",
-		"pdap-design-system": "^2.0.5",
+		"pdap-design-system": "^2.1.4",
 		"postcss": "^8.4.32",
 		"tailwindcss": "^3.3.6",
 		"vite": "^4.5.1",
