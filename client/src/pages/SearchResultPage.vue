@@ -2,6 +2,7 @@
 	<FlexContainer
 		component="main"
 		data-test="search-results-page"
+		class="h-auto"
 	>
 		<div>
 			<h1>Search results</h1>
@@ -38,14 +39,12 @@
 				data-test="no-search-results"
 				><p>No results found.</p></GridItem
 			>
-			<GridItem>
-				<SearchResultCard
-					v-for="dataSource in searchResult?.data"
-					:key="dataSource.uuid"
-					data-test="search-results-cards"
-					:data-source="dataSource"
-				/>
-			</GridItem>
+			<SearchResultCard
+				v-for="dataSource in searchResult?.data"
+				:key="dataSource.uuid"
+				data-test="search-results-cards"
+				:data-source="dataSource"
+			/>
 		</GridContainer>
 	</FlexContainer>
 
