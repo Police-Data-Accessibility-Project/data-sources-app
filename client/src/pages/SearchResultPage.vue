@@ -2,11 +2,11 @@
 	<FlexContainer
 		component="main"
 		data-test="search-results-page"
-		class="h-auto"
+		class="h-auto md:px-0"
 	>
 		<div>
 			<h1>Search results</h1>
-			<p data-test="search-results-section-header-p" class="text-xl">
+			<p data-test="search-results-section-header-p" class="text-2xl">
 					Searching for <span class="font-semibold">"{{ searchTerm }}"</span> 
 					in <span class="font-semibold">"{{ location }}"</span>.
 			</p>
@@ -16,7 +16,7 @@
 			templateRows="auto auto 1fr"
 			component="section"
 			data-test="search"
-			class="p-0"
+			class="p-0 gap-6"
 		>
 			<GridItem v-if="!searched" component="p" :span-column="3">
 				Loading results...
@@ -25,7 +25,7 @@
 				v-else-if="searched && searchResult?.data?.length > 0"
 				:span-column="3"
 			>
-				<p class="text-xl">
+				<p class="text-xl max-w-full">
 					<span data-test="search-results-count">Found {{ typeof searchResult.count !== 'undefined' ? (searchResult.count === 0 ? '0 results' : (searchResult.count === 1 ? '1 result' : searchResult.count + ' results')) : '0 results' }}.</span>
 					If you don't see what you need, 
 					<a href="https://airtable.com/shrbFfWk6fjzGnNsk">
@@ -36,9 +36,11 @@
 			<GridItem
 				v-else
 				:span-column="3"
+				component="p"
 				data-test="no-search-results"
-				><p>No results found.</p></GridItem
 			>
+				No results found.
+			</GridItem>
 			<SearchResultCard
 				v-for="dataSource in searchResult?.data"
 				:key="dataSource.uuid"
