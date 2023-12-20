@@ -25,6 +25,31 @@ def runner(test_app):
     return test_app.test_cli_runner()
 
 
+@pytest.fixture
+def session():
+    connection = sqlite3.connect("file::memory:?cache=shared", uri=True)
+    db_session = connection.cursor()
+    with open("do_db_ddl_clean.sql", "r") as f:
+        sql_file = f.read()
+    sql_queries = sql_file.split(";")
+    for query in sql_queries:
+        cur.execute(query.replace("\n", ""))
+
+    rows = [{'airtable_uid': 'rec00T2YLS2jU7Tbn', 'data_source_name': 'Calls for Service for Chicago Police Department - IL', 'description': None, 'record_type': 'Calls for Service', 'source_url': 'https://informationportal.igchicago.org/911-calls-for-cpd-service/', 'record_format': None, 'coverage_start': '2019-01-01', 'coverage_end': None, 'agency_supplied': True, 'agency_name': 'Chicago Police Department - IL', 'municipality': 'Chicago', 'state_iso': 'IL'}, {'airtable_uid': 'recUGIoPQbJ6laBmr', 'data_source_name': '311 Calls for City of Chicago', 'description': '311 Service Requests received by the City of Chicago. This dataset includes requests created after the launch of the new 311 system on 12/18/2018 and some records from the previous system, indicated in the LEGACY\\_RECORD column.\n\nIncluded as a Data Source because in some cities 311 calls lead to police response; that does not appear to be the case in Chicago.\n', 'record_type': 'Calls for Service', 'source_url': 'https://data.cityofchicago.org/Service-Requests/311-Service-Requests/v6vf-nfxy', 'record_format': ['CSV', 'XML', 'RDF', 'RSS'], 'coverage_start': '2018-12-18', 'coverage_end': None, 'agency_supplied': False, 'agency_name': 'Chicago Police Department - IL', 'municipality': 'Chicago', 'state_iso': 'IL'}]
+    clean_row = [r if r is not None else "" for r in rows[0].values()]
+    fully_clean_row = [r if r is not True else 'True' for r in clean_row]
+    fully_clean_row_str = "'" + "', '".join(fully_clean_row) + "'"
+    col_str = ", ".join(rows[0].keys())
+    cur.execute(f"insert into data_sources ({col_str}) values ({fully_clean_row_str})")
+    # sqlite3.OperationalError: table data_sources has no column named data_source_name
+
+    yield db_session
+    connection.close()
+
+
+@pytest.fixture
+def setup_db(session):
+
 # unit tests
 def test_psycopg2_connection(client):
     with initialize_psycopg2_connection() as psycopg2_connection:
