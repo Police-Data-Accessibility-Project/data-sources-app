@@ -108,6 +108,7 @@
 			>
 				Visit data source <i class="fa fa-external-link"></i>
 			</Button>
+<!-- we'll put this back once we close #151 and #150 in this repo
 			<Button
 				@click="showDetails"
 				intent="secondary"
@@ -116,6 +117,7 @@
 			>
 				View details
 			</Button>
+-->
 		</div>
 	</GridItem>
 </template>
