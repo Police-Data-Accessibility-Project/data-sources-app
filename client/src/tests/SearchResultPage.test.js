@@ -93,19 +93,31 @@ describe('SearchResultPage successfully renders components', () => {
 	});
 
 	test('renders search results section header properly', () => {
+		const searchTerm = wrapper.vm.searchTerm;
+		const location = wrapper.vm.location;
+	  
 		expect(
 			wrapper.get('[data-test="search-results-section-header-p"]').text()
 		).toBe(
-			`You searched "${wrapper.vm.searchTerm}" in ${wrapper.vm.location} and you got ${wrapper.vm.searchResult.count} results`
+			`Searching for "${searchTerm}" in "${location}".`
 		);
 	});
 
-	test('renders request data button properly', () => {
-		expect(
-			wrapper
-				.find('[data-test="search-results-section-header-button"]')
-				.exists()
-		).toBe(true);
+	test('renders search result count properly', () => {
+		const count = wrapper.vm.searchResult.count;
+
+		expect(wrapper.get('[data-test="search-results-count"]').text()
+		).toBe(
+			` Found ${
+				typeof count !== 'undefined'
+					? count === 0
+						? '0 results'
+						: count === 1
+						? '1 result'
+						: count + ' results'
+					: '0 results'
+			}.`
+		);
 	});
 
 	test('request data button opens form', () => {
