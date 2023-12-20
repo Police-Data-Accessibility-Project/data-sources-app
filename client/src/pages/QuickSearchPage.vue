@@ -1,5 +1,5 @@
 <template>
-	<main class="md:pb-[60vh] md:mt-24">
+	<main class="p-4 md:p-0 md:pb-[60vh] md:mt-24">
 		<QuickSearchForm />
 	</main>
 </template>
