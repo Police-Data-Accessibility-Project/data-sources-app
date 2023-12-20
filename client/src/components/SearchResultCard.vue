@@ -101,12 +101,14 @@
 		</p>
 		<div class="mt-auto flex flex-col">
 			<Button
-				@click="openSource"
-				class="text-lg font-medium px-4 py-1 mt-4 mb-2 lg:mx-0 max-w-full"
+				:class="['text-lg font-medium px-4 py-1 mt-4 mb-2 lg:mx-0 max-w-full']"
+				:disabled="!dataSource.source_url || dataSource.url_status === 'broken' || dataSource.url_status === 'not found'"
+				@click="dataSource.source_url && dataSource.url_status !== 'broken' && dataSource.url_status !== 'not found' ? openSource() : null"
 				data-test="search-result-source-button"
 			>
 				Visit data source <i class="fa fa-external-link"></i>
 			</Button>
+<!-- we'll put this back once we close #151 and #150 in this repo
 			<Button
 				@click="showDetails"
 				intent="secondary"
@@ -115,6 +117,7 @@
 			>
 				View details
 			</Button>
+-->
 		</div>
 	</GridItem>
 </template>
