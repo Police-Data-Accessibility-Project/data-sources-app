@@ -31,6 +31,7 @@ QUICK_SEARCH_SQL = """
             OR agencies.state_iso ILIKE %s OR agencies.municipality ILIKE %s OR agencies.agency_type ILIKE %s OR agencies.jurisdiction_type ILIKE %s 
             OR agencies.name ILIKE %s OR state_names.state_name ILIKE %s)
         AND data_sources.approval_status = 'approved'
+        AND data_sources.url_status not in ('broken', 'none found')
 
 """
 
