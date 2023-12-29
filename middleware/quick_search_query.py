@@ -87,18 +87,67 @@ def quick_search_query(conn, search, location):
     cursor = conn.cursor()
 
     print(f"Query parameters: '%{depluralized_search_term}%', '%{location}%'")
-    
-    cursor.execute(QUICK_SEARCH_SQL, (f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{depluralized_search_term}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
+
+    cursor.execute(
+        QUICK_SEARCH_SQL,
+        (
+            f"%{depluralized_search_term}%",
+            f"%{depluralized_search_term}%",
+            f"%{depluralized_search_term}%",
+            f"%{depluralized_search_term}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+        ),
+    )
     spacy_results = cursor.fetchall()
 
-    # Compare altered search term results with unaltered search term results, return the longer list      
+    # Compare altered search term results with unaltered search term results, return the longer list
     print(f"Query parameters: '%{search}%', '%{location}%'")
-    cursor.execute(QUICK_SEARCH_SQL, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%', f'%{location}%'))
+    cursor.execute(
+        QUICK_SEARCH_SQL,
+        (
+            f"%{search}%",
+            f"%{search}%",
+            f"%{search}%",
+            f"%{search}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+        ),
+    )
     unaltered_results = cursor.fetchall()
 
-    results = spacy_results if len(spacy_results) > len(unaltered_results) else unaltered_results
-        
-    column_names = ["airtable_uid", "data_source_name", "description", "record_type", "source_url", "record_format", "coverage_start", "coverage_end", "agency_supplied", "agency_name", "municipality", "state_iso"]
+    results = (
+        spacy_results
+        if len(spacy_results) > len(unaltered_results)
+        else unaltered_results
+    )
+
+    column_names = [
+        "airtable_uid",
+        "data_source_name",
+        "description",
+        "record_type",
+        "source_url",
+        "record_format",
+        "coverage_start",
+        "coverage_end",
+        "agency_supplied",
+        "agency_name",
+        "municipality",
+        "state_iso",
+    ]
 
     data_source_matches = [dict(zip(column_names, result)) for result in results]
     data_source_matches_converted = []
