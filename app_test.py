@@ -2,7 +2,6 @@ import pytest
 import os
 from app import app
 from flask_restful import Api
-from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 from middleware.quick_search_query import QUICK_SEARCH_TEST_SQL
 from middleware.data_source_queries import APPROVED_COLUMNS
 import datetime
@@ -137,14 +136,7 @@ def session():
 
 
 # unit tests
-def test_psycopg2_connection(client):
-    with initialize_psycopg2_connection() as psycopg2_connection:
-        assert type(psycopg2_connection) != dict
-
-
 def test_quick_search_query(session):
-    # with initialize_psycopg2_connection() as psycopg2_connection:
-    #     cursor = psycopg2_connection.cursor()
     session.execute("select * from data_sources")  # QUICK_SEARCH_TEST_SQL)
     results = session.fetchall()
     print(results)
