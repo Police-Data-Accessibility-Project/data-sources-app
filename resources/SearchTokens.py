@@ -31,8 +31,8 @@ class SearchTokens(Resource):
             cursor = self.psycopg2_connection.cursor()
             token = uuid.uuid4().hex
             expiration = datetime.datetime.now() + datetime.timedelta(minutes=5)
-            cursor.execute(f"insert into access_tokens (token, expiration_date) values (%s, %s)", (token, expiration))         
-            self.psycopg2_connection.commit()
+            # cursor.execute(f"insert into access_tokens (token, expiration_date) values (%s, %s)", (token, expiration))         
+            # self.psycopg2_connection.commit()
 
             headers = {"Authorization": f"Bearer {token}"}
             if endpoint == "quick-search":
