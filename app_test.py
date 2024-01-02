@@ -69,6 +69,7 @@ def session():
             "municipality": "Chicago",
             "state_iso": "IL",
         },
+        {'airtable_uid': 'rec8zJuEOvhAZCfAD', 'data_source_name': 'Pittsburgh Police Complaints and Disciplinary Actions 2013-2022', 'description': 'This news article contains several data tables. Most useful are the two near the bottom. "Pittsburgh Police Disciplinary Action Report data 2013-2022" and "Pittsburgh Office of Municipal Investigations police-related complaint data 2013-2022". Both are in paginated HTML tables and can be downloaded as a CSV by clicking a "Get the data" link.\n', 'record_type': 'Complaints & Misconduct', 'source_url': 'https://www.publicsource.org/pittsburgh-bureau-police-discipline-complaints-disciplinary-matrix-new-chief/', 'record_format': ['CSV', 'HTML table'], 'coverage_start': '2013-01-01', 'coverage_end': '2022-12-31', 'agency_supplied': False, 'agency_name': 'Pittsburgh Bureau of Police - PA', 'municipality': 'Pittsburgh', 'state_iso': 'PA'}
     ]
     all_columns = APPROVED_COLUMNS + ["airtable_uid"]
     valid_row = {k: v for k, v in data_source_rows[0].items() if k in all_columns}
@@ -123,6 +124,7 @@ def session():
 
     db_session.execute(f"insert into agencies values ({fully_clean_row_str})")
     db_session.execute(f"insert into state_names values (1, 'IL', 'Illinois')")
+    db_session.execute(f"insert into state_names values (2, 'PA', 'Pennsylvania')")
 
     sql_query_log = f"INSERT INTO quick_search_query_logs (id, search, location, results, result_count, datetime_of_request, created_at) VALUES (1, 'test', 'test', '', 0, '{DATETIME_STRING}', '{DATETIME_STRING}')"
     db_session.execute(sql_query_log)
