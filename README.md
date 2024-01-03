@@ -47,17 +47,22 @@ pip install -r requirements.txt
 
 ### 5. Add environment secrets
 
-Either add a `.env` file to this directory or manually export these secrets: `DO_DATABASE_URL` and `WEBHOOK_URL`. Reach out to contact@pdap.io or make noise in Discord if you'd like access to these keys.
+Either add a `.env` file to your local root directory or manually export these secrets: `DO_DATABASE_URL` and `VITE_VUE_APP_BASE_URL`.  
+
+Reach out to contact@pdap.io or make noise in Discord if you'd like access to these keys.
 
 ```
+# .env
+
 DO_DATABASE_URL="postgres://data_sources_app:<password>@db-postgresql-nyc3-38355-do-user-8463429-0.c.db.ondigitalocean.com:25060/defaultdb"
-VITE_VUE_APP_BASE_URL="url"
-..
+VITE_VUE_APP_BASE_URL="http://localhost:5000"
 ```
 
 ```
+# shell
+
 export DO_DATABASE_URL=postgres://data_sources_app:<password>@db-postgresql-nyc3-38355-do-user-8463429-0.c.db.ondigitalocean.com:25060/defaultdb
-..
+export VITE_VUE_APP_BASE_URL="http://localhost:5000"
 ```
 
 ### 6. Allow your IP address
@@ -71,6 +76,7 @@ To connect to the database, your IP address will need to be added to the "allow"
 python3 app.py
 
 ```
+
 
 ### 8. In a new terminal window, install the Vue app.
 
@@ -99,38 +105,36 @@ pytest
 
 ```
 
-## Other helpful commands
+## Other helpful commands for the client app
 
 ### Compiles and minifies for production
-
 ```
-
 npm run build
-
 ```
 
 ### Serves production build locally
-
 ```
-
 npm run preview
-
 ```
 
 ### Lints files
-
 ```
-
 npm run lint
-
 ```
 
 ### Lints and fixes any fixable errors
-
+```
+npm run lint:fix
 ```
 
-npm run lint:fix
+### Runs tests quietly
+```
+npm run test
+```
 
+### Runs tests and outputs coverage reports
+```
+npm run coverage
 ```
 
 ### Customize configuration
