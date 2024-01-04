@@ -11,7 +11,7 @@ from flask import request, jsonify
 from middleware.data_source_queries import data_source_by_id_query, data_sources_query
 from middleware.quick_search_query import quick_search_query
 
-BASE_URL = os.getenv("VUE_APP_BASE_URL")
+BASE_URL = os.getenv("VITE_VUE_APP_BASE_URL")
 
 
 class SearchTokens(Resource):
