@@ -113,7 +113,7 @@ export default {
 			const headers = { Authorization: `Bearer ${process.env.VUE_APP_PDAP_TOKEN}` };
 			try {
 				const res = await axios.get(
-					`${process.env.VUE_APP_BASE_URL}/search-tokens?endpoint=data-sources-by-id&arg1=${this.id}`,
+					`${process.env.VITE_VUE_APP_BASE_URL}/search-tokens?endpoint=data-sources-by-id&arg1=${this.id}`,
 					{ headers }
 				);
 				this.dataSource = res.data;
