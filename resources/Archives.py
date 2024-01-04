@@ -3,11 +3,12 @@ from flask_restful import Resource, request
 from utilities.common import convert_dates_to_strings
 import json
 
+
 class Archives(Resource):
     def __init__(self, **kwargs):
-        self.psycopg2_connection = kwargs['psycopg2_connection']
-    
-    @api_required 
+        self.psycopg2_connection = kwargs["psycopg2_connection"]
+
+    @api_required
     def get(self):
         try:
             cursor = self.psycopg2_connection.cursor()
@@ -30,7 +31,13 @@ class Archives(Resource):
             cursor.execute(sql_query)
             results = cursor.fetchall()
 
-            column_names = ["id", "source_url", "update_frequency", "last_cached", "agency_name"]
+            column_names = [
+                "id",
+                "source_url",
+                "update_frequency",
+                "last_cached",
+                "agency_name",
+            ]
 
             archive_results = [dict(zip(column_names, result)) for result in results]
 
@@ -38,13 +45,13 @@ class Archives(Resource):
                 convert_dates_to_strings(item)
 
             return archive_results
-        
+
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
             return "There has been an error pulling data!"
-        
-    @api_required 
+
+    @api_required
     def put(self):
         try:
             json_data = request.get_json()
@@ -54,16 +61,21 @@ class Archives(Resource):
 
             if data["broken_source_url_as_of"]:
                 sql_query = "UPDATE data_sources SET broken_source_url_as_of = %s, last_cached = %s WHERE airtable_uid = %s"
-                cursor.execute(sql_query, (data["broken_source_url_as_of"], data["last_cached"], data["id"]))
+                cursor.execute(
+                    sql_query,
+                    (data["broken_source_url_as_of"], data["last_cached"], data["id"]),
+                )
             else:
-                sql_query = "UPDATE data_sources SET last_cached = %s WHERE airtable_uid = %s"
+                sql_query = (
+                    "UPDATE data_sources SET last_cached = %s WHERE airtable_uid = %s"
+                )
                 cursor.execute(sql_query, (data["last_cached"], data["id"]))
 
             self.psycopg2_connection.commit()
             cursor.close()
 
             return {"status": "success"}
-        
+
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
