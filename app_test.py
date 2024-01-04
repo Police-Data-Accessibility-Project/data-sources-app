@@ -69,7 +69,20 @@ def session():
             "municipality": "Chicago",
             "state_iso": "IL",
         },
-        {'airtable_uid': 'rec8zJuEOvhAZCfAD', 'data_source_name': 'Pittsburgh Police Complaints and Disciplinary Actions 2013-2022', 'description': 'This news article contains several data tables. Most useful are the two near the bottom. "Pittsburgh Police Disciplinary Action Report data 2013-2022" and "Pittsburgh Office of Municipal Investigations police-related complaint data 2013-2022". Both are in paginated HTML tables and can be downloaded as a CSV by clicking a "Get the data" link.\n', 'record_type': 'Complaints & Misconduct', 'source_url': 'https://www.publicsource.org/pittsburgh-bureau-police-discipline-complaints-disciplinary-matrix-new-chief/', 'record_format': ['CSV', 'HTML table'], 'coverage_start': '2013-01-01', 'coverage_end': '2022-12-31', 'agency_supplied': False, 'agency_name': 'Pittsburgh Bureau of Police - PA', 'municipality': 'Pittsburgh', 'state_iso': 'PA'}
+        {
+            "airtable_uid": "rec8zJuEOvhAZCfAD",
+            "data_source_name": "Pittsburgh Police Complaints and Disciplinary Actions 2013-2022",
+            "description": 'This news article contains several data tables. Most useful are the two near the bottom. "Pittsburgh Police Disciplinary Action Report data 2013-2022" and "Pittsburgh Office of Municipal Investigations police-related complaint data 2013-2022". Both are in paginated HTML tables and can be downloaded as a CSV by clicking a "Get the data" link.\n',
+            "record_type": "Complaints & Misconduct",
+            "source_url": "https://www.publicsource.org/pittsburgh-bureau-police-discipline-complaints-disciplinary-matrix-new-chief/",
+            "record_format": ["CSV", "HTML table"],
+            "coverage_start": "2013-01-01",
+            "coverage_end": "2022-12-31",
+            "agency_supplied": False,
+            "agency_name": "Pittsburgh Bureau of Police - PA",
+            "municipality": "Pittsburgh",
+            "state_iso": "PA",
+        },
     ]
     all_columns = APPROVED_COLUMNS + ["airtable_uid"]
     valid_row = {k: v for k, v in data_source_rows[0].items() if k in all_columns}
@@ -83,8 +96,10 @@ def session():
 
     agency_link_rows = [("rec00T2YLS2jU7Tbn", "recv9fMNEQTbVarj2")]
     db_session.execute(
-        "insert into agency_source_link (link_id, airtable_uid, agency_described_linked_uid) values (1, 'rec00T2YLS2jU7Tbn', 'recv9fMNEQTbVarj2')")
-    db_session.execute("insert into agency_source_link (link_id, airtable_uid, agency_described_linked_uid) values (2, 'rec8zJuEOvhAZCfAD', 'recxUlLdt3Wwov6P1')"
+        "insert into agency_source_link (link_id, airtable_uid, agency_described_linked_uid) values (1, 'rec00T2YLS2jU7Tbn', 'recv9fMNEQTbVarj2')"
+    )
+    db_session.execute(
+        "insert into agency_source_link (link_id, airtable_uid, agency_described_linked_uid) values (2, 'rec8zJuEOvhAZCfAD', 'recxUlLdt3Wwov6P1')"
     )
 
     agencies_rows = [
@@ -116,13 +131,37 @@ def session():
             datetime.datetime(2022, 8, 18, 18, 50, 7, tzinfo=datetime.timezone.utc),
             "recuhY2ud60V41j0w",
         ),
-        ('Pittsburgh Bureau of Police - PA', 'Pittsburgh Bureau of Police', 'http://pittsburghpa.gov/police/', 'local', 'PA', 'Pittsburgh', '42003', '["Allegheny"]', 40.450523, -80.02128, None, 'recxUlLdt3Wwov6P1', 46, 'law enforcement/police', None, '15233', '["recJK8P5rWlLjSzgc", "recCkota2A2S7Z33q", "recAD4tPHp4IndO2c", "recIwxfj2Ko77ySMD", "recF3bBivp59xdVBW", "recwj8eU8vdTNSEEu", "rec4G2iyEb1UiYfh2", "recJOzE2fe0Srdn4X", "recOlNMNivWF9sumN", "recEFwKevbY7P5DPS", "recvfbfIwGJeKH1OB", "recCvmgUInsKZpP3k", "recrm2fG7gztK7Tfg", "recwHAhLNsz52XvqX", "recX0ez0i7fcDQDx1", "recuvx89h9QZpRSZV", "recEFNJB8aOIF7ucx", "rec8ILhFGC9694CMS", "rec3Oc64eiYe0Cphx", "recLsGQ6yBEvJXTc3", "recRIejFKCgQgsX3l", "recd4qlLMmoLb4Rds", "recmhO1J5gh9pzgUP", "recJ46NmxuyjkoonW", "recmMakoz1eKO6rdC", "recAGF2VxFsOSZHqb", "recBSLCZXuVj1Zy0R", "recV3HCVPrqP31sqp", "rec1LIccYrPQVAdgL", "recgyEBNyh7VNyrAH", "recBjOdBK3XuSCTZy", "recUIXIJKuWleztqy", "recw9GbEslgN5w6zt", "recSQKpHfaj15B249", "recjeyUxVgQh2gqUj", "recbv6UOuUesjrXgI", "rec5E9yiFbuY3dWEc", "recFcv4IvAkcrlTdF", "recP5qX2qNlsuv7Np", "reckDUGoOgKx3yjqf", "rectnkXtlHLV26ZQP", "recrVIpgDHsFbB8Jn", "receW1cbs1sDMQvRl", "recQY7IEhVIIFL7wv", "recsIealZCldEKOlX", "rec7OiCCI6XxDy6ti", "rec2doMHsYVl5i6Y7", "rec8zJuEOvhAZCfAD", "recORxPfDzvYoBO4E", "recwDqMgD47XqrkbK", "rec40yyKK0f5lua4Z"]', None, datetime.datetime(2023, 3, 23, 18, 0, 3, tzinfo=datetime.timezone.utc), datetime.date(2023, 11, 3), True, None, '{"id": "usrtLIB4Vr3jTH8Ro", "email": "josh.chamberlain@pdap.io", "name": "Josh Chamberlain"}', None, datetime.datetime(2022, 8, 18, 18, 49, 27, tzinfo=datetime.timezone.utc), 'recACF0SHugE9icVH'
-        )
+        (
+            "Pittsburgh Bureau of Police - PA",
+            "Pittsburgh Bureau of Police",
+            "http://pittsburghpa.gov/police/",
+            "local",
+            "PA",
+            "Pittsburgh",
+            "42003",
+            '["Allegheny"]',
+            40.450523,
+            -80.02128,
+            None,
+            "recxUlLdt3Wwov6P1",
+            46,
+            "law enforcement/police",
+            None,
+            "15233",
+            '["recJK8P5rWlLjSzgc", "recCkota2A2S7Z33q", "recAD4tPHp4IndO2c", "recIwxfj2Ko77ySMD", "recF3bBivp59xdVBW", "recwj8eU8vdTNSEEu", "rec4G2iyEb1UiYfh2", "recJOzE2fe0Srdn4X", "recOlNMNivWF9sumN", "recEFwKevbY7P5DPS", "recvfbfIwGJeKH1OB", "recCvmgUInsKZpP3k", "recrm2fG7gztK7Tfg", "recwHAhLNsz52XvqX", "recX0ez0i7fcDQDx1", "recuvx89h9QZpRSZV", "recEFNJB8aOIF7ucx", "rec8ILhFGC9694CMS", "rec3Oc64eiYe0Cphx", "recLsGQ6yBEvJXTc3", "recRIejFKCgQgsX3l", "recd4qlLMmoLb4Rds", "recmhO1J5gh9pzgUP", "recJ46NmxuyjkoonW", "recmMakoz1eKO6rdC", "recAGF2VxFsOSZHqb", "recBSLCZXuVj1Zy0R", "recV3HCVPrqP31sqp", "rec1LIccYrPQVAdgL", "recgyEBNyh7VNyrAH", "recBjOdBK3XuSCTZy", "recUIXIJKuWleztqy", "recw9GbEslgN5w6zt", "recSQKpHfaj15B249", "recjeyUxVgQh2gqUj", "recbv6UOuUesjrXgI", "rec5E9yiFbuY3dWEc", "recFcv4IvAkcrlTdF", "recP5qX2qNlsuv7Np", "reckDUGoOgKx3yjqf", "rectnkXtlHLV26ZQP", "recrVIpgDHsFbB8Jn", "receW1cbs1sDMQvRl", "recQY7IEhVIIFL7wv", "recsIealZCldEKOlX", "rec7OiCCI6XxDy6ti", "rec2doMHsYVl5i6Y7", "rec8zJuEOvhAZCfAD", "recORxPfDzvYoBO4E", "recwDqMgD47XqrkbK", "rec40yyKK0f5lua4Z"]',
+            None,
+            datetime.datetime(2023, 3, 23, 18, 0, 3, tzinfo=datetime.timezone.utc),
+            datetime.date(2023, 11, 3),
+            True,
+            None,
+            '{"id": "usrtLIB4Vr3jTH8Ro", "email": "josh.chamberlain@pdap.io", "name": "Josh Chamberlain"}',
+            None,
+            datetime.datetime(2022, 8, 18, 18, 49, 27, tzinfo=datetime.timezone.utc),
+            "recACF0SHugE9icVH",
+        ),
     ]
     clean_row = [r if r is not None else "" for r in agencies_rows[0]]
-    fully_clean_row = [
-        str(r) for r in clean_row
-    ]
+    fully_clean_row = [str(r) for r in clean_row]
     fully_clean_row_str = "'" + "', '".join(fully_clean_row) + "'"
 
     db_session.execute(f"insert into agencies values ({fully_clean_row_str})")
@@ -160,7 +199,6 @@ def test_quick_search_logging(session):
 
 # quick-search
 def test_quicksearch_complaints_allegheny_results(client):
-
     response = client.get("/quick-search/complaints/allegheny", headers=HEADERS)
 
     assert len(response.json["data"]) > 0
@@ -337,20 +375,26 @@ def test_quicksearch_all_allgeheny_results(client):
 
 
 def test_search_tokens_quick_search_complaints_allegheny_results(client):
-    response = client.get("/search-tokens?endpoint=quick-search&arg1=calls&arg2=chicago")
+    response = client.get(
+        "/search-tokens?endpoint=quick-search&arg1=calls&arg2=chicago"
+    )
 
     assert len(response.json["data"]) > 0
 
 
 # user
 def test_get_user(client):
-    response = client.get("/user", headers=HEADERS, json={"email": "test2", "password": "test"})
+    response = client.get(
+        "/user", headers=HEADERS, json={"email": "test2", "password": "test"}
+    )
 
     assert response
 
 
 def test_post_user(client):
-    response = client.post("/user", headers=HEADERS, json={"email": "test", "password": "test"})
+    response = client.post(
+        "/user", headers=HEADERS, json={"email": "test", "password": "test"}
+    )
 
     # with initialize_psycopg2_connection() as psycopg2_connection:
     #     cursor = psycopg2_connection.cursor()

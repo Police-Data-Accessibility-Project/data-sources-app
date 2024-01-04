@@ -6,7 +6,8 @@ import os
 def initialize_psycopg2_connection():
     try:
         DO_DATABASE_URL = os.getenv("DO_DATABASE_URL")
-        if DO_DATABASE_URL == 'file::memory:?cache=shared':
+        print(DO_DATABASE_URL)
+        if DO_DATABASE_URL == "file::memory:?cache=shared":
             return sqlite3.connect(DO_DATABASE_URL, uri=True)
         return psycopg2.connect(DO_DATABASE_URL)
 
