@@ -21,8 +21,8 @@ const links = [
 		method: "href",
 	},
 	{
-		href: "https://pdap.io/volunteer",
-		text: "Volunteer",
+		href: "https://pdap.io/community",
+		text: "Community",
 		method: "href",
 	},
 	{
