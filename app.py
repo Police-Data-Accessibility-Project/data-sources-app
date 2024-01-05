@@ -16,13 +16,39 @@ app = Flask(__name__)
 api = Api(app)
 CORS(app)
 
-api.add_resource(User, "/user", resource_class_kwargs={"psycopg2_connection": psycopg2_connection})
-api.add_resource(QuickSearch, "/quick-search/<search>/<location>", resource_class_kwargs={"psycopg2_connection": psycopg2_connection})
-api.add_resource(Archives, "/archives", resource_class_kwargs={"psycopg2_connection": psycopg2_connection})
-api.add_resource(DataSources, "/data-sources", resource_class_kwargs={"psycopg2_connection": psycopg2_connection})
-api.add_resource(DataSourceById, "/data-sources-by-id/<data_source_id>", resource_class_kwargs={"psycopg2_connection": psycopg2_connection})
-api.add_resource(Agencies, "/agencies/<page>", resource_class_kwargs={"psycopg2_connection": psycopg2_connection})
-api.add_resource(SearchTokens, "/search-tokens", resource_class_kwargs={"psycopg2_connection": psycopg2_connection})
+api.add_resource(
+    User, "/user", resource_class_kwargs={"psycopg2_connection": psycopg2_connection}
+)
+api.add_resource(
+    QuickSearch,
+    "/quick-search/<search>/<location>",
+    resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
+)
+api.add_resource(
+    Archives,
+    "/archives",
+    resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
+)
+api.add_resource(
+    DataSources,
+    "/data-sources",
+    resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
+)
+api.add_resource(
+    DataSourceById,
+    "/data-sources-by-id/<data_source_id>",
+    resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
+)
+api.add_resource(
+    Agencies,
+    "/agencies/<page>",
+    resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
+)
+api.add_resource(
+    SearchTokens,
+    "/search-tokens",
+    resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
+)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")

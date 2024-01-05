@@ -110,11 +110,15 @@ export default {
 	},
 	methods: {
 		async getDataSourceDetails() {
-			const headers = { Authorization: `Bearer ${process.env.VUE_APP_PDAP_TOKEN}` };
+			const headers = {
+				Authorization: `Bearer ${import.meta.env.VUE_APP_PDAP_TOKEN}`,
+			};
 			try {
 				const res = await axios.get(
-					`${process.env.VUE_APP_BASE_URL}/search-tokens?endpoint=data-sources-by-id&arg1=${this.id}`,
-					{ headers }
+					`${
+						import.meta.env.VITE_VUE_APP_BASE_URL
+					}/search-tokens?endpoint=data-sources-by-id&arg1=${this.id}`,
+					{ headers },
 				);
 				this.dataSource = res.data;
 				this.noData = false;
