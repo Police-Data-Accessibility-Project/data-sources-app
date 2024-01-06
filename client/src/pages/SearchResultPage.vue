@@ -14,7 +14,7 @@
 		</div>      
 		<GridContainer
 			:columns="3"
-			templateRows="auto auto 1fr"
+			template-rows="auto auto 1fr"
 			component="section"
 			data-test="search"
 			class="p-0 gap-6"
@@ -59,7 +59,7 @@
 </template>
 
 <script>
-import { Button, GridContainer, GridItem } from "pdap-design-system";
+import { GridContainer, GridItem } from "pdap-design-system";
 import SearchResultCard from "../components/SearchResultCard.vue";
 import axios from "axios";
 
@@ -67,7 +67,6 @@ export default {
 	name: "SearchResultPage",
 	components: {
 		SearchResultCard,
-		Button,
 		GridContainer,
 		GridItem,
 	},

@@ -108,7 +108,6 @@
 			>
 				Visit data source <i class="fa fa-external-link"></i>
 			</Button>
-<!-- we'll put this back once we close #151 and #150 in this repo
 			<Button
 				@click="showDetails"
 				intent="secondary"
@@ -117,19 +116,18 @@
 			>
 				View details
 			</Button>
--->
 		</div>
 	</GridItem>
 </template>
 
 <script>
-import { Button, FlexContainer, GridItem } from 'pdap-design-system';
+import { Button, GridItem } from 'pdap-design-system';
+import formatDateForSearchResults from '../util/formatDate'
 
 export default {
 	name: 'SearchResultCard',
 	components: {
 		Button,
-		FlexContainer,
 		GridItem,
 	},
 	props: {
@@ -142,13 +140,7 @@ export default {
 		openSource() {
 			window.open(this.dataSource.source_url, '_blank');
 		},
-		formatDate(date) {
-			let newDate = date.split('-');
-			let year = newDate.shift();
-			newDate.push(year);
-			let formattedDate = newDate.join('/');
-			return formattedDate;
-		},
+		formatDate: formatDateForSearchResults
 	},
 };
 </script>
