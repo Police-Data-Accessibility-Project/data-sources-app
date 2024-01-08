@@ -4,6 +4,8 @@ from middleware.quick_search_query import quick_search_query
 import requests
 import json
 import os
+from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
+
 
 
 class QuickSearch(Resource):
@@ -16,6 +18,9 @@ class QuickSearch(Resource):
   def get(self, search, location):
     try:
         data_sources = quick_search_query(self.psycopg2_connection, search, location)
+        if data_sources["count"] == 0:
+            self.psycopg2_connection = initialize_psycopg2_connection()
+            data_sources = quick_search_query(self.psycopg2_connection, search, location)
         
         return data_sources
         
