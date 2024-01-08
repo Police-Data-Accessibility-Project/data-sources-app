@@ -24,13 +24,24 @@ class QuickSearch(Resource):
         
         return data_sources
         
-    except Exception as e:
-        self.psycopg2_connection.rollback()
-        print(str(e))
-        webhook_url = os.getenv("WEBHOOK_URL")
-        user_message = "There was an error during the search operation"
-        message = {"content": user_message + ": " + str(e) + "\n" + f"Search term: {search}\n" + f"Location: {location}"}
-        requests.post(webhook_url, data=json.dumps(message), headers={"Content-Type": "application/json"})
-        
-        return {"count": 0, "message": user_message}, 500
 
+    except Exception as e:
+            self.psycopg2_connection.rollback()
+            print(str(e))
+            webhook_url = os.getenv("WEBHOOK_URL")
+            user_message = "There was an error during the search operation"
+            message = {
+                "content": user_message
+                + ": "
+                + str(e)
+                + "\n"
+                + f"Search term: {search}\n"
+                + f"Location: {location}"
+            }
+            requests.post(
+                webhook_url,
+                data=json.dumps(message),
+                headers={"Content-Type": "application/json"},
+            )
+
+            return {"count": 0, "message": user_message}, 500
