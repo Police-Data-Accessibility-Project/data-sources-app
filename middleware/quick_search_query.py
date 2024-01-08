@@ -169,7 +169,9 @@ def quick_search_query(conn, search, location):
 
     cursor_query_log = conn.cursor()
     cursor_query_log.execute(
-        INSERT_LOG_QUERY.format(search, location, query_results, data_sources["count"], datetime_string),
+        INSERT_LOG_QUERY.format(
+            search, location, query_results, data_sources["count"], datetime_string
+        ),
     )
     conn.commit()
 

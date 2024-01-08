@@ -71,7 +71,7 @@ def session():
             "municipality": "Chicago",
             "state_iso": "IL",
             "url_status": "ok",
-            "approval_status": "approved",            
+            "approval_status": "approved",
         },
         {
             "airtable_uid": "rec8zJuEOvhAZCfAD",
@@ -87,9 +87,22 @@ def session():
             "municipality": "Pittsburgh",
             "state_iso": "PA",
             "url_status": "ok",
-            "approval_status": "approved",            
+            "approval_status": "approved",
         },
-        {'airtable_uid': 'rec8gO2K86yk9mQIU', 'name': 'Officer Involved Shootings for Philadelphia Police Department - PA', 'description': None, 'record_type': 'Officer Involved Shootings', 'source_url': 'https://www.phillypolice.com/ois/', 'record_format': None, 'coverage_start': '2015-01-01', 'coverage_end': None, 'agency_supplied': True, 'agency_name': 'Philadelphia Police Department - PA', 'municipality': 'Philadelphia', 'state_iso': 'PA'},
+        {
+            "airtable_uid": "rec8gO2K86yk9mQIU",
+            "name": "Officer Involved Shootings for Philadelphia Police Department - PA",
+            "description": None,
+            "record_type": "Officer Involved Shootings",
+            "source_url": "https://www.phillypolice.com/ois/",
+            "record_format": None,
+            "coverage_start": "2015-01-01",
+            "coverage_end": None,
+            "agency_supplied": True,
+            "agency_name": "Philadelphia Police Department - PA",
+            "municipality": "Philadelphia",
+            "state_iso": "PA",
+        },
     ]
     all_columns = APPROVED_COLUMNS + ["airtable_uid"]
     for row in data_source_rows:
@@ -173,7 +186,34 @@ def session():
             datetime.datetime(2022, 8, 18, 18, 49, 27, tzinfo=datetime.timezone.utc),
             "recACF0SHugE9icVH",
         ),
-        ('Philadelphia Police Department - PA', 'Philadelphia Police Department', 'https://www.phillypolice.com/districts/22nd/index.html', 'local', 'PA', 'Philadelphia', '42101', '["Philadelphia"]', 39.980556, -75.16209, None, 'recRvBpZqXM8mjddz', 17, 'law enforcement/police', None, '19121', '["recXlFbG4J6pkBdKn", "recHd6j7LT6iMWWzf", "rec7IloZhaAsjpGwt", "recnKS6MwvODb4okj", "recgsrvT60fwJK2zv", "rec8gO2K86yk9mQIU", "recsvkVLs3NHh6fEk", "recIWjgyMq9umFWdv", "recIZvrJ1JJQddfGP", "recVcjF6jZJ7bkujw", "rec8r19ChbuSwpSpJ", "recPSQHatnNFV7H29", "recNH6V5a4TpINhMj", "recwbcrNqdutfgrE7", "rec5RlBXnQOEpGJQz", "recAbsBlvWEsCifvz", "recanjxF6Ph3SNA5P", "recX4kQbeRFch59DU", "recpqSEq8bYcNvIv9", "recVyLpoO48utQuq6"]', None, datetime.datetime(2023, 5, 16, 17, 37, 6, tzinfo=datetime.timezone.utc), datetime.date(2023, 5, 2), True, None, '{"id": "usrtLIB4Vr3jTH8Ro", "email": "josh.chamberlain@pdap.io", "name": "Josh Chamberlain"}', None, datetime.datetime(2022, 8, 18, 18, 50, 49, tzinfo=datetime.timezone.utc), 'rec6tZ0VTIMmKXCkH'),
+        (
+            "Philadelphia Police Department - PA",
+            "Philadelphia Police Department",
+            "https://www.phillypolice.com/districts/22nd/index.html",
+            "local",
+            "PA",
+            "Philadelphia",
+            "42101",
+            '["Philadelphia"]',
+            39.980556,
+            -75.16209,
+            None,
+            "recRvBpZqXM8mjddz",
+            17,
+            "law enforcement/police",
+            None,
+            "19121",
+            '["recXlFbG4J6pkBdKn", "recHd6j7LT6iMWWzf", "rec7IloZhaAsjpGwt", "recnKS6MwvODb4okj", "recgsrvT60fwJK2zv", "rec8gO2K86yk9mQIU", "recsvkVLs3NHh6fEk", "recIWjgyMq9umFWdv", "recIZvrJ1JJQddfGP", "recVcjF6jZJ7bkujw", "rec8r19ChbuSwpSpJ", "recPSQHatnNFV7H29", "recNH6V5a4TpINhMj", "recwbcrNqdutfgrE7", "rec5RlBXnQOEpGJQz", "recAbsBlvWEsCifvz", "recanjxF6Ph3SNA5P", "recX4kQbeRFch59DU", "recpqSEq8bYcNvIv9", "recVyLpoO48utQuq6"]',
+            None,
+            datetime.datetime(2023, 5, 16, 17, 37, 6, tzinfo=datetime.timezone.utc),
+            datetime.date(2023, 5, 2),
+            True,
+            None,
+            '{"id": "usrtLIB4Vr3jTH8Ro", "email": "josh.chamberlain@pdap.io", "name": "Josh Chamberlain"}',
+            None,
+            datetime.datetime(2022, 8, 18, 18, 50, 49, tzinfo=datetime.timezone.utc),
+            "rec6tZ0VTIMmKXCkH",
+        ),
     ]
     clean_row = [r if r is not None else "" for r in agencies_rows[0]]
     fully_clean_row = [str(r) for r in clean_row]
@@ -205,7 +245,9 @@ def test_quick_search_queries(session):
 
     results_str = json.dumps(results)
     print(INSERT_LOG_QUERY.format("calls", "chicago", results_str, 2, DATETIME_STRING))
-    session.execute(INSERT_LOG_QUERY.format("calls", "chicago", results_str, 2, DATETIME_STRING))
+    session.execute(
+        INSERT_LOG_QUERY.format("calls", "chicago", results_str, 2, DATETIME_STRING)
+    )
     session.execute(
         f"SELECT * FROM quick_search_query_logs WHERE datetime_of_request = '{DATETIME_STRING}'"
     )
@@ -386,7 +428,9 @@ def test_search_tokens_data_sources(client):
 
 
 def test_search_tokens_data_source_by_id(client):
-    response = client.get("/search-tokens?endpoint=data-sources-by-id&arg1=reczwxaH31Wf9gRjS")
+    response = client.get(
+        "/search-tokens?endpoint=data-sources-by-id&arg1=reczwxaH31Wf9gRjS"
+    )
 
     assert response.json["data_source_id"] == "reczwxaH31Wf9gRjS"
 
