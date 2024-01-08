@@ -165,7 +165,7 @@ def quick_search_query(conn, search, location):
     current_datetime = datetime.datetime.now()
     datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
-    query_results = json.dumps(data_sources["data"])
+    query_results = json.dumps(data_sources["data"]).replace("'", "")
 
     cursor_query_log = conn.cursor()
     cursor_query_log.execute(

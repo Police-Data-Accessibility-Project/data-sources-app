@@ -215,34 +215,34 @@ def test_quick_search_queries(session):
 
 
 # quick-search
-# def test_quicksearch_complaints_allegheny_results(client):
-#     response = client.get("/quick-search/complaints/allegheny", headers=HEADERS)
+def test_quicksearch_complaints_allegheny_results(client):
+    response = client.get("/quick-search/complaints/allegheny", headers=HEADERS)
 
-#     assert len(response.json["data"]) > 0
-
-
-# def test_quicksearch_columns(client):
-#     response = client.get("/quick-search/complaints/allegheny", headers=HEADERS)
-#     column_names = [
-#         "airtable_uid",
-#         "data_source_name",
-#         "record_type",
-#         "source_url",
-#         "record_format",
-#         "coverage_start",
-#         "coverage_end",
-#         "agency_name",
-#         "municipality",
-#         "state_iso",
-#     ]
-
-#     assert not set(column_names).difference(response.json["data"][0].keys())
+    assert len(response.json["data"]) > 0
 
 
-# def test_quicksearch_complaints_allegheny_county_results(client):
-#     response = client.get("/quick-search/complaints/allegheny county", headers=HEADERS)
+def test_quicksearch_columns(client):
+    response = client.get("/quick-search/complaints/allegheny", headers=HEADERS)
+    column_names = [
+        "airtable_uid",
+        "data_source_name",
+        "record_type",
+        "source_url",
+        "record_format",
+        "coverage_start",
+        "coverage_end",
+        "agency_name",
+        "municipality",
+        "state_iso",
+    ]
 
-#     assert len(response.json["data"]) > 0
+    assert not set(column_names).difference(response.json["data"][0].keys())
+
+
+def test_quicksearch_complaints_allegheny_county_results(client):
+    response = client.get("/quick-search/complaints/allegheny county", headers=HEADERS)
+
+    assert len(response.json["data"]) > 0
 
 
 def test_quicksearch_officer_involved_shootings_philadelphia_results(client):
