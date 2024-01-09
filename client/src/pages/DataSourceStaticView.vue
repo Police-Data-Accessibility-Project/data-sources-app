@@ -1,171 +1,150 @@
 <template>
-	<div v-if="!noData">
-		<FlexContainer component="header" alignment="center" class="data-details-header">
-			<h2>{{ dataSource.name }}</h2>
-			<Button>Edit</Button>
-		</FlexContainer>
-		<FlexContainer alignment="center" class="data-details-container">
-			<div v-for="(section, index) in dataToRender" :key="index" class="data-detail-section">
-				<h2>{{ section.header }}</h2>
-				<div v-for="(record, recordIndex) in section.records" :key="recordIndex">
-					<p class="large">{{ record.title }}</p>
-					<div v-if="Array.isArray(dataSource[record.key])">
-						<p v-for="item in dataSource[record.key]" :key="item" class="small">{{ item }}</p>
+	<main v-if="!noData" class="flex flex-col p-8">
+		<h1 class="flex justify-start mt-2 w-full">
+			{{ dataSource.name }}
+		</h1>
+		<PButton intent="secondary" @click="() => $router.push('/')"
+			>Search for more Data Sources</PButton
+		>
+		<div
+			alignment="center"
+			class="grid grid-cols-[auto] auto-rows-auto gap-4 mx-auto w-full items-start md:grid-cols-2 lg:grid-cols-3"
+		>
+			<!-- Each card -->
+			<div
+				v-for="(section, index) in dataToRender"
+				:key="index"
+				class="flex self-stretch flex-col text-lg"
+			>
+				<div class="border border-neutral-400 h-full leading-snug p-3 mt-8">
+					<h2 class="text-xl font-semibold line-clamp-2">
+						{{ section.header }}
+					</h2>
+
+					<!-- Within each card, the items listed -->
+					<div
+						v-for="(record, recordIndex) in section.records"
+						:key="recordIndex"
+					>
+						<!-- Title -->
+						<p
+							class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"
+						>
+							{{ record.title }}
+						</p>
+
+						<!-- If no data for this key, em-dash -->
+						<div v-if="!dataSource[record.key]" class="text-neutral-500">
+							&mdash;
+						</div>
+
+						<!-- If data is an array, loop over it and render each -->
+						<div v-if="Array.isArray(dataSource[record.key])">
+							<component
+								:is="record.component ?? 'p'"
+								v-for="item in dataSource[record.key]"
+								:key="item"
+								:class="item?.classNames || small"
+								:href="dataSource[record.key]"
+								:target="attributesByComponent[record.component]?.target"
+								:rel="attributesByComponent[record.component]?.target"
+								@click="onClick(record.key, dataSource[record.key])"
+							>
+								{{ record.isDate ? formatDate(item) : item }}
+							</component>
+						</div>
+
+						<!-- Otherwise, render single item -->
+						<component
+							:is="record.component ?? 'p'"
+							v-else
+							:class="(dataSource[record.key] && record.classNames) || small"
+							:href="dataSource[record.key]"
+							:target="attributesByComponent[record.component]?.target"
+							:rel="attributesByComponent[record.component]?.target"
+							@click="onClick(record.key, dataSource[record.key])"
+						>
+							{{
+								record.isDate && dataSource[record.key]
+									? formatDate(dataSource[record.key])
+									: dataSource[record.key]
+							}}
+						</component>
 					</div>
-					<p class="small" v-else>
-						{{ dataSource[record.key] || 'null' }}
-					</p>
 				</div>
 			</div>
-		</FlexContainer>
-	</div>
-	<div v-else>
+		</div>
+	</main>
+	<main v-else>
 		<h2>{{ errorMessage }}</h2>
-	</div>
+	</main>
 </template>
 
 <script>
-import { Button, FlexContainer } from 'pdap-design-system';
-import axios from 'axios';
+import axios from "axios";
+/* Updating local button name because it's conflicting with native `<button>` when registered.
+ * TODO: add `intent="tertiary"` to design-system, in order to allow unstyled button usage */
+import { Button as PButton } from "pdap-design-system";
+import formatDateForSearchResults from "../util/formatDate";
+import { STATIC_VIEW_UI_SHAPE } from "./util";
 
 export default {
-	name: 'DataSourceStaticView',
+	name: "DataSourceStaticView",
 	components: {
-		Button,
-		FlexContainer,
+		PButton,
 	},
-	data: () => ({
-		dataSource: {},
-		id: null,
-		dataToRender: [
-			{
-				header: 'Data Type',
-				records: [
-					{ title: 'Record type', key: 'record_type' },
-					{ title: 'Description', key: 'description' },
-					{ title: 'Tags', key: 'tags' },
-				],
+	data: function () {
+		return {
+			dataSource: {},
+			id: null,
+			attributesByComponent: {
+				a: {
+					target: "_blank",
+					rel: "noreferrer",
+				},
 			},
-			{
-				header: 'Agency',
-				records: [
-					{ title: 'Name', key: 'agency_name' },
-					{ title: 'State', key: 'state_iso' },
-					{ title: 'County', key: 'county_name' },
-					{ title: 'Municipality', key: 'municipality' },
-					{ title: 'Agency Type', key: 'agency_type' },
-					{ title: 'Jurisdiction Type', key: 'jurisdiction_type' },
-				],
-			},
-			{
-				header: 'Access & format',
-				records: [
-					{ title: 'Source URL', key: 'source_url' },
-					{ title: 'ReadMe URL', key: 'readme_url' },
-					{ title: 'Access Type', key: 'access_type' },
-					{ title: 'Record Formats', key: 'record_format' },
-					{ title: 'Detail Level', key: 'detail_level' },
-					{ title: 'Size', key: 'size' },
-					{ title: 'Access Notes', key: 'access_notes' },
-					{ title: 'Records Not Online', key: 'records_not_online' },
-				],
-			},
-			{
-				header: 'Provenace',
-				records: [
-					{ title: 'Agency Supplied', key: 'agency_supplied' },
-					{ title: 'Supplying Entity', key: 'supplying_entity' },
-					{ title: 'Agency Originated', key: 'agency_originated' },
-					{ title: 'Originating Entity', key: 'originating_entity' },
-				],
-			},
-			{
-				header: 'Coverage & retention',
-				records: [
-					{ title: 'Coverage Start Date', key: 'coverage_start' },
-					{ title: 'Coverage End Date', key: 'coverage_end' },
-					{ title: 'Source Last Updated', key: 'source_last_updated' },
-					{ title: 'Update Frequency', key: 'update_frequency' },
-					{ title: 'Update Method', key: 'update_method' },
-					{ title: 'Retention Schedule', key: 'retention_schedule' },
-					{ title: 'Number of Records Available', key: 'number_of_records_available' },
-				],
-			},
-			{
-				header: 'Data Source Meta',
-				records: [
-					{ title: 'Scraper URL', key: 'scraper_url' },
-					{ title: 'Created', key: 'data_source_created' },
-					{ title: 'Agency ID', key: 'agency_id' },
-					{ title: 'Data Source ID', key: 'data_source_id' },
-				],
-			},
-		],
-		noData: true,
-		errorMessage: '',
-	}),
+			dataToRender: STATIC_VIEW_UI_SHAPE,
+			noData: true,
+			errorMessage: "",
+		};
+	},
 	mounted: function () {
 		this.id = this.$route.params.id;
 		this.getDataSourceDetails();
 	},
 	methods: {
+		searchAgain(searchTerm, location) {
+			this.$router.push(`/search/${searchTerm}/${location}`);
+		},
+		onClick(key, value) {
+			switch (key) {
+				case "record_type":
+					return this.searchAgain(value, "all");
+				case "agency_name":
+					return this.searchAgain("all", value);
+				default:
+					return () => undefined;
+			}
+		},
 		async getDataSourceDetails() {
-			const headers = { Authorization: `Bearer ${process.env.VUE_APP_PDAP_TOKEN}` };
+			const headers = {
+				Authorization: `Bearer ${import.meta.env.VUE_APP_PDAP_TOKEN}`,
+			};
 			try {
 				const res = await axios.get(
-					`${process.env.VUE_APP_BASE_URL}/search-tokens?endpoint=data-sources-by-id&arg1=${this.id}`,
-					{ headers }
+					`${
+						import.meta.env.VITE_VUE_APP_BASE_URL
+					}/search-tokens?endpoint=data-sources-by-id&arg1=${this.id}`,
+					{ headers },
 				);
 				this.dataSource = res.data;
+				console.log({ data: res.data });
 				this.noData = false;
 			} catch (error) {
 				this.errorMessage = error.response.data;
 			}
 		},
+		formatDate: formatDateForSearchResults,
 	},
 };
 </script>
-
-<style scoped>
-.data-details-header {
-	justify-content: space-between;
-	margin: 0 1rem;
-}
-
-.data-details-header .pdap-button {
-	height: 50%;
-}
-
-.data-details-container {
-	flex-flow: row wrap;
-	align-items: stretch;
-	gap: 2%;
-	margin: 4rem 0;
-}
-
-.data-detail-section h2 {
-	position: absolute;
-	top: -1.75em;
-	z-index: 1;
-	padding: 0 0.5em;
-	background-color: #fffbfa;
-}
-
-.data-detail-section {
-	border: #000 1px solid;
-	width: 45%;
-	padding: 1%;
-	position: relative;
-	margin: 1% 0;
-}
-
-@media (prefers-color-scheme: dark) {
-	.data-detail-section {
-		border: #fffbfa 1px solid;
-	}
-
-	.data-detail-section h2 {
-		background-color: #000;
-	}
-}
-</style>
