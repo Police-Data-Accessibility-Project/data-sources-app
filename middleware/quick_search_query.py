@@ -70,14 +70,30 @@ QUICK_SEARCH_TEST_SQL = """
 INSERT_LOG_QUERY = "INSERT INTO quick_search_query_logs (search, location, results, result_count, created_at, datetime_of_request) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{4}')"
 
 
-def quick_search_query(conn, search, location):
-    data_sources = {"count": 0, "data": []}
-    if type(conn) == dict:
-        return data_sources
+def unaltered_search_query(cursor, search, location):
+    print(f"Query parameters: '%{search}%', '%{location}%'")
+    cursor.execute(
+        QUICK_SEARCH_SQL,
+        (
+            f"%{search}%",
+            f"%{search}%",
+            f"%{search}%",
+            f"%{search}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+        ),
+    )
 
-    search = "" if search == "all" else search
-    location = "" if location == "all" else location
+    return cursor.fetchall()
 
+
+def spacy_search_query(cursor, search, location):
     # Depluralize search term to increase match potential
     nlp = spacy.load("en_core_web_sm")
     search = search.strip()
@@ -85,8 +101,6 @@ def quick_search_query(conn, search, location):
     lemmatized_tokens = [token.lemma_ for token in doc]
     depluralized_search_term = " ".join(lemmatized_tokens)
     location = location.strip()
-
-    cursor = conn.cursor()
 
     print(f"Query parameters: '%{depluralized_search_term}%', '%{location}%'")
 
@@ -107,29 +121,24 @@ def quick_search_query(conn, search, location):
             f"%{location}%",
         ),
     )
-    spacy_results = cursor.fetchall()
+
+    return cursor.fetchall()
+
+
+def quick_search_query(search, location, test_query_results=[], conn={}):
+    data_sources = {"count": 0, "data": []}
+    if "data" in conn:
+        return data_sources
+
+    search = "" if search == "all" else search
+    location = "" if location == "all" else location
+    if conn:
+        cursor = conn.cursor()
+
+    unaltered_results = unaltered_search_query(cursor, search, location) if not test_query_results else test_query_results
+    spacy_results = spacy_search_query(cursor, search, location) if not test_query_results else test_query_results
 
     # Compare altered search term results with unaltered search term results, return the longer list
-    print(f"Query parameters: '%{search}%', '%{location}%'")
-    cursor.execute(
-        QUICK_SEARCH_SQL,
-        (
-            f"%{search}%",
-            f"%{search}%",
-            f"%{search}%",
-            f"%{search}%",
-            f"%{location}%",
-            f"%{location}%",
-            f"%{location}%",
-            f"%{location}%",
-            f"%{location}%",
-            f"%{location}%",
-            f"%{location}%",
-            f"%{location}%",
-        ),
-    )
-    unaltered_results = cursor.fetchall()
-
     results = (
         spacy_results
         if len(spacy_results) > len(unaltered_results)
@@ -162,17 +171,17 @@ def quick_search_query(conn, search, location):
         "data": data_source_matches_converted,
     }
 
-    current_datetime = datetime.datetime.now()
-    datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+    if not test_query_results:
+        current_datetime = datetime.datetime.now()
+        datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
-    query_results = json.dumps(data_sources["data"]).replace("'", "")
+        query_results = json.dumps(data_sources["data"]).replace("'", "")
 
-    cursor_query_log = conn.cursor()
-    cursor_query_log.execute(
-        INSERT_LOG_QUERY.format(
-            search, location, query_results, data_sources["count"], datetime_string
-        ),
-    )
-    conn.commit()
+        cursor.execute(
+            INSERT_LOG_QUERY.format(
+                search, location, query_results, data_sources["count"], datetime_string
+            ),
+        )
+        conn.commit()
 
     return data_sources

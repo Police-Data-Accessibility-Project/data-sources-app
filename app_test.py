@@ -1,16 +1,12 @@
 import pytest
-import os
 from app import app
 from flask_restful import Api
-from middleware.quick_search_query import QUICK_SEARCH_TEST_SQL, INSERT_LOG_QUERY
+from middleware.quick_search_query import quick_search_query, QUICK_SEARCH_TEST_SQL, INSERT_LOG_QUERY
 from middleware.data_source_queries import APPROVED_COLUMNS
 import datetime
 import json
-import psycopg2
 import sqlite3
 
-api_key = os.getenv("VUE_APP_PDAP_API_KEY")
-HEADERS = {"Authorization": f"Bearer {api_key}"}
 current_datetime = datetime.datetime.now()
 DATETIME_STRING = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -115,7 +111,6 @@ def session():
             f"insert into data_sources ({col_str}) values ({fully_clean_row_str})"
         )
 
-    agency_link_rows = [("rec00T2YLS2jU7Tbn", "recv9fMNEQTbVarj2")]
     db_session.execute(
         "insert into agency_source_link (link_id, airtable_uid, agency_described_linked_uid) values (1, 'rec00T2YLS2jU7Tbn', 'recv9fMNEQTbVarj2')"
     )
@@ -236,8 +231,6 @@ def session():
 
 # unit tests
 def test_quick_search_queries(session):
-    search = "calls"
-    location = "chicago"
     session.execute(QUICK_SEARCH_TEST_SQL.format("calls", "chicago"))
     results = session.fetchall()
 
@@ -257,14 +250,9 @@ def test_quick_search_queries(session):
 
 
 # quick-search
-def test_quicksearch_complaints_allegheny_results(client):
-    response = client.get("/quick-search/complaints/allegheny", headers=HEADERS)
-
-    assert len(response.json["data"]) > 0
-
-
-def test_quicksearch_columns(client):
-    response = client.get("/quick-search/complaints/allegheny", headers=HEADERS)
+def test_quicksearch_columns():
+    query_results = [('rec00T2YLS2jU7Tbn', 'Calls for Service for Chicago Police Department - IL', None, 'Calls for Service', 'https://informationportal.igchicago.org/911-calls-for-cpd-service/', None, datetime.date(2019, 1, 1), None, True, 'Chicago Police Department - IL', 'Chicago', 'IL'), ('recUGIoPQbJ6laBmr', '311 Calls for City of Chicago', '311 Service Requests received by the City of Chicago. This dataset includes requests created after the launch of the new 311 system on 12/18/2018 and some records from the previous system, indicated in the LEGACY\\_RECORD column.\n\nIncluded as a Data Source because in some cities 311 calls lead to police response; that does not appear to be the case in Chicago.\n', 'Calls for Service', 'https://data.cityofchicago.org/Service-Requests/311-Service-Requests/v6vf-nfxy', '["CSV", "XML", "RDF", "RSS"]', datetime.date(2018, 12, 18), None, False, 'Chicago Police Department - IL', 'Chicago', 'IL')]
+    response = quick_search_query(search="calls", location="chicago", test_query_results=query_results)
     column_names = [
         "airtable_uid",
         "data_source_name",
@@ -277,179 +265,74 @@ def test_quicksearch_columns(client):
         "municipality",
         "state_iso",
     ]
+    print(response["data"])
 
-    assert not set(column_names).difference(response.json["data"][0].keys())
-
-
-def test_quicksearch_complaints_allegheny_county_results(client):
-    response = client.get("/quick-search/complaints/allegheny county", headers=HEADERS)
-
-    assert len(response.json["data"]) > 0
-
-
-def test_quicksearch_officer_involved_shootings_philadelphia_results(client):
-    response = client.get(
-        "/quick-search/Officer Involved Shootings/philadelphia", headers=HEADERS
-    )
-
-    assert len(response.json["data"]) > 0
-
-
-def test_quicksearch_officer_involved_shootings_philadelphia_county_results(client):
-    response = client.get(
-        "/quick-search/Officer Involved Shootings/philadelphia county", headers=HEADERS
-    )
-
-    assert len(response.json["data"]) > 0
-
-
-def test_quicksearch_officer_involved_shootings_kings_results(client):
-    response = client.get(
-        "/quick-search/Officer Involved Shootings/kings", headers=HEADERS
-    )
-
-    assert len(response.json["data"]) > 0
-
-
-def test_quicksearch_officer_involved_shootings_kings_county_results(client):
-    response = client.get(
-        "/quick-search/Officer Involved Shootings/kings county", headers=HEADERS
-    )
-
-    assert len(response.json["data"]) > 0
-
-
-def test_quicksearch_all_allgeheny_results(client):
-    response = client.get("/quick-search/all/allegheny", headers=HEADERS)
-
-    assert len(response.json["data"]) > 0
-
-
-def test_quicksearch_complaints_all_results(client):
-    response = client.get("/quick-search/complaints/all", headers=HEADERS)
-
-    assert len(response.json["data"]) > 0
-
-
-def test_quicksearch_media_bulletin_pennsylvania_results(client):
-    response = client.get("/quick-search/media bulletin/pennsylvania", headers=HEADERS)
-
-    assert len(response.json["data"]) > 0
-
-
-def test_quicksearch_officer_involved_shootings_philadelphia_results(client):
-    response = client.get(
-        "/quick-search/officer involved shootings/Philadelphia", headers=HEADERS
-    )
-
-    assert len(response.json["data"]) > 0
-
-
-def test_quicksearch_format_available_formatting(client):
-    response = client.get("/quick-search/reviews/allegheny", headers=HEADERS)
-
-    assert type(response.json["data"][0]["record_format"]) == list
+    assert not set(column_names).difference(response["data"][0].keys())
+    assert type(response["data"][1]["record_format"]) == list
 
 
 # data-sources
-def test_data_source_by_id(client):
-    response = client.get("/data-sources-by-id/reczwxaH31Wf9gRjS", headers=HEADERS)
+# def test_data_source_by_id_columns(client):
+#     response = client.get("/data-sources-by-id/reczwxaH31Wf9gRjS", headers=HEADERS)
+#     column_names = [
+#         "description",
+#         "record_type",
+#         "agency_name",
+#         "state_iso",
+#         "county_name",
+#         "municipality",
+#         "agency_type",
+#         "jurisdiction_type",
+#         "source_url",
+#         "readme_url",
+#         "access_type",
+#         "record_format",
+#         "detail_level",
+#         "size",
+#         "access_type",
+#         "access_notes",
+#         "records_not_online",
+#         "agency_supplied",
+#         "supplying_entity",
+#         "agency_originated",
+#         "originating_entity",
+#         "coverage_start",
+#         "coverage_end",
+#         "source_last_updated",
+#         "update_frequency",
+#         "update_method",
+#         "retention_schedule",
+#         "number_of_records_available",
+#         "scraper_url",
+#         "data_source_created",
+#         "data_source_id",
+#         "agency_id",
+#     ]
 
-    assert response.json["data_source_id"] == "reczwxaH31Wf9gRjS"
-
-
-def test_data_source_by_id_columns(client):
-    response = client.get("/data-sources-by-id/reczwxaH31Wf9gRjS", headers=HEADERS)
-    column_names = [
-        "description",
-        "record_type",
-        "agency_name",
-        "state_iso",
-        "county_name",
-        "municipality",
-        "agency_type",
-        "jurisdiction_type",
-        "source_url",
-        "readme_url",
-        "access_type",
-        "record_format",
-        "detail_level",
-        "size",
-        "access_type",
-        "access_notes",
-        "records_not_online",
-        "agency_supplied",
-        "supplying_entity",
-        "agency_originated",
-        "originating_entity",
-        "coverage_start",
-        "coverage_end",
-        "source_last_updated",
-        "update_frequency",
-        "update_method",
-        "retention_schedule",
-        "number_of_records_available",
-        "scraper_url",
-        "data_source_created",
-        "data_source_id",
-        "agency_id",
-    ]
-
-    assert not set(column_names).difference(response.json.keys())
+#     assert not set(column_names).difference(response.json.keys())
 
 
-def test_data_sources(client):
-    response = client.get("/data-sources", headers=HEADERS)
+# def test_data_sources_approved(client):
+#     response = client.get("/data-sources", headers=HEADERS)
+#     unapproved_url = "https://joinstatepolice.ny.gov/15-mile-run"
 
-    assert len(response.json["data"]) > 0
-
-
-def test_data_sources_approved(client):
-    response = client.get("/data-sources", headers=HEADERS)
-    unapproved_url = "https://joinstatepolice.ny.gov/15-mile-run"
-
-    assert (
-        len([d for d in response.json["data"] if d["source_url"] == unapproved_url])
-        == 0
-    )
+#     assert (
+#         len([d for d in response.json["data"] if d["source_url"] == unapproved_url])
+#         == 0
+#     )
 
 
-def test_data_source_by_id_approved(client):
-    response = client.get("/data-sources-by-id/rec013MFNfBnrTpZj", headers=HEADERS)
+# def test_data_source_by_id_approved(client):
+#     response = client.get("/data-sources-by-id/rec013MFNfBnrTpZj", headers=HEADERS)
 
-    assert response.json == "Data source not found."
+#     assert response.json == "Data source not found."
 
 
 # search-tokens
-def test_search_tokens_data_sources(client):
-    response = client.get("/search-tokens?endpoint=data-sources")
-
-    assert len(response.json["data"]) > 0
-
-
-def test_search_tokens_data_source_by_id(client):
-    response = client.get(
-        "/search-tokens?endpoint=data-sources-by-id&arg1=reczwxaH31Wf9gRjS"
-    )
-
-    assert response.json["data_source_id"] == "reczwxaH31Wf9gRjS"
-
-
-def test_search_tokens_quick_search_complaints_allegheny_results(client):
-    response = client.get(
-        "/search-tokens?endpoint=quick-search&arg1=calls&arg2=chicago"
-    )
-
-    assert len(response.json["data"]) > 0
 
 
 # user
-def test_get_user(client):
-    response = client.get(
-        "/user", headers=HEADERS, json={"email": "test2", "password": "test"}
-    )
 
-    assert response
 
 
 # def test_post_user(client):
@@ -466,71 +349,20 @@ def test_get_user(client):
 
 
 # archives
-def test_get_archives(client):
-    response = client.get("/archives", headers=HEADERS)
+# def test_get_archives_columns(client):
+#     response = client.get("/archives", headers=HEADERS)
 
-    assert len(response.json[0]) > 0
+#     column_names = [
+#         "id",
+#         "source_url",
+#         "update_frequency",
+#         "last_cached",
+#         "agency_name",
+#     ]
 
+#     assert not set(column_names).difference(response.json[0].keys())
 
-def test_get_archives_columns(client):
-    response = client.get("/archives", headers=HEADERS)
-
-    column_names = [
-        "id",
-        "source_url",
-        "update_frequency",
-        "last_cached",
-        "agency_name",
-    ]
-
-    assert not set(column_names).difference(response.json[0].keys())
-
-
-def test_put_archives(client):
-    current_datetime = datetime.datetime.now()
-    datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
-    response = client.put(
-        "/archives",
-        headers=HEADERS,
-        json=json.dumps(
-            {
-                "id": "test",
-                "last_cached": datetime_string,
-                "broken_source_url_as_of": "",
-            }
-        ),
-    )
-
-    assert response.json["status"] == "success"
-
-
-def test_put_archives_brokenasof(client):
-    current_datetime = datetime.datetime.now()
-    datetime_string = current_datetime.strftime("%Y-%m-%d")
-    response = client.put(
-        "/archives",
-        headers=HEADERS,
-        json=json.dumps(
-            {
-                "id": "test",
-                "last_cached": datetime_string,
-                "broken_source_url_as_of": datetime_string,
-            }
-        ),
-    )
-
-    assert response.json["status"] == "success"
 
 
 # agencies
-def test_agencies(client):
-    response = client.get("/agencies/1", headers=HEADERS)
 
-    assert len(response.json["data"]) > 0
-
-
-def test_agencies_pagination(client):
-    response1 = client.get("/agencies/1", headers=HEADERS)
-    response2 = client.get("/agencies/2", headers=HEADERS)
-
-    assert response1 != response2

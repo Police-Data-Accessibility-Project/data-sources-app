@@ -16,7 +16,7 @@ class QuickSearch(Resource):
     def get(self, search, location):
         try:
             data_sources = quick_search_query(
-                self.psycopg2_connection, search, location
+                search, location, self.psycopg2_connection
             )
 
             return data_sources
