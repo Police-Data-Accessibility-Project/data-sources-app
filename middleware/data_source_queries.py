@@ -40,8 +40,8 @@ APPROVED_COLUMNS = [
     "data_source_request",
     "url_button",
     "tags_other",
-    "access_notes"
-    ]
+    "access_notes",
+]
 
 AGENCY_APPROVED_COLUMNS = [
     "homepage_url",
@@ -66,12 +66,17 @@ AGENCY_APPROVED_COLUMNS = [
     "last_approval_editor",
     "agency_created",
     "county_airtable_uid",
-    "defunct_year"
+    "defunct_year",
 ]
 
+
 def data_source_by_id_query(conn, data_source_id):
-    data_source_approved_columns = [f"data_sources.{approved_column}" for approved_column in APPROVED_COLUMNS]
-    agencies_approved_columns = [f"agencies.{field}" for field in AGENCY_APPROVED_COLUMNS]
+    data_source_approved_columns = [
+        f"data_sources.{approved_column}" for approved_column in APPROVED_COLUMNS
+    ]
+    agencies_approved_columns = [
+        f"agencies.{field}" for field in AGENCY_APPROVED_COLUMNS
+    ]
     all_approved_columns = data_source_approved_columns + agencies_approved_columns
     all_approved_columns.append("data_sources.airtable_uid as data_source_id")
     all_approved_columns.append("agencies.airtable_uid as agency_id")
@@ -91,7 +96,9 @@ def data_source_by_id_query(conn, data_source_id):
             agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
         WHERE
             data_sources.approval_status = 'approved' AND data_sources.airtable_uid = %s
-    """.format(joined_column_names)
+    """.format(
+        joined_column_names
+    )
     print(sql_query)
     cursor.execute(sql_query, (data_source_id,))
     result = cursor.fetchone()
@@ -112,7 +119,9 @@ def data_source_by_id_query(conn, data_source_id):
 
 
 def data_sources_query(conn):
-    data_source_approved_columns = [f"data_sources.{approved_column}" for approved_column in APPROVED_COLUMNS]
+    data_source_approved_columns = [
+        f"data_sources.{approved_column}" for approved_column in APPROVED_COLUMNS
+    ]
     data_source_approved_columns.append("agencies.name as agency_name")
 
     joined_column_names = ", ".join(data_source_approved_columns)
@@ -129,17 +138,21 @@ def data_sources_query(conn):
             agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
         WHERE
             data_sources.approval_status = 'approved'
-    """.format(joined_column_names)
+    """.format(
+        joined_column_names
+    )
     cursor.execute(sql_query)
     results = cursor.fetchall()
 
     data_source_output_columns = APPROVED_COLUMNS + ["agency_name"]
-    
-    data_source_matches = [dict(zip(data_source_output_columns, result)) for result in results]
+
+    data_source_matches = [
+        dict(zip(data_source_output_columns, result)) for result in results
+    ]
     data_source_matches_converted = []
 
     for data_source_match in data_source_matches:
         data_source_match = convert_dates_to_strings(data_source_match)
         data_source_matches_converted.append(format_arrays(data_source_match))
-    
+
     return data_source_matches_converted

@@ -45,18 +45,31 @@ pip install -r requirements.txt
 
 ```
 
-### 5. Manually export a DO_DATABASE_URL, SECRET_KEY, and WEBHOOK_URL in the command line
+### 5. Add environment secrets
 
-The app should have a DO_DATABASE_URL, SECRET_KEY, and WEBHOOK_URL for PDAP's Data Sources [DigitalOcean](https://digitalocean.com/). Reach out to contact@pdap.io or make noise in Discord if you'd like access to these keys.
+Either add a `.env` file to your local root directory or manually export these secrets: `DO_DATABASE_URL` and `VITE_VUE_APP_BASE_URL`.  
+
+Reach out to contact@pdap.io or make noise in Discord if you'd like access to these keys.
 
 ```
+# .env
+
+DO_DATABASE_URL="postgres://data_sources_app:<password>@db-postgresql-nyc3-38355-do-user-8463429-0.c.db.ondigitalocean.com:25060/defaultdb"
+VITE_VUE_APP_BASE_URL="http://localhost:5000"
+```
+
+```
+# shell
+
 export DO_DATABASE_URL=postgres://data_sources_app:<password>@db-postgresql-nyc3-38355-do-user-8463429-0.c.db.ondigitalocean.com:25060/defaultdb
-export SECRET_KEY=<secret_key>
-export WEBHOOK_URL=<webhook_url>
-
+export VITE_VUE_APP_BASE_URL="http://localhost:5000"
 ```
 
-### 6. Run the Python app.
+### 6. Allow your IP address
+
+To connect to the database, your IP address will need to be added to the "allow" list in DigitalOcean database settings. Reach out to someone with admin access to get your IP address added.
+
+### 7. Run the Python app.
 
 ```
 
@@ -64,7 +77,8 @@ python3 app.py
 
 ```
 
-### 7. In a new terminal window, install the Vue app.
+
+### 8. In a new terminal window, install the Vue app.
 
 ```
 
@@ -73,7 +87,7 @@ npm install
 
 ```
 
-### 8. Run the development server.
+### 9. Run the development server.
 
 ```
 
@@ -91,38 +105,36 @@ pytest
 
 ```
 
-## Other helpful commands
+## Other helpful commands for the client app
 
 ### Compiles and minifies for production
-
 ```
-
 npm run build
-
 ```
 
 ### Serves production build locally
-
 ```
-
 npm run preview
-
 ```
 
 ### Lints files
-
 ```
-
 npm run lint
-
 ```
 
 ### Lints and fixes any fixable errors
-
+```
+npm run lint:fix
 ```
 
-npm run lint:fix
+### Runs tests quietly
+```
+npm run test
+```
 
+### Runs tests and outputs coverage reports
+```
+npm run coverage
 ```
 
 ### Customize configuration
