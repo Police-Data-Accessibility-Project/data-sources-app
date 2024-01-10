@@ -359,6 +359,16 @@ def test_quicksearch_all_allgeheny_results(client):
 #     response = client.get("/data-sources-by-id/rec013MFNfBnrTpZj", headers=HEADERS)
 
 #     assert response.json == "Data source not found."
+    
+def test_create_data_source(client):
+    response = client.post("/data-sources", headers=HEADERS, json={"name": "test", "record_type": "test"})
+
+    assert response == True
+
+def test_update_data_source(client):
+    response = client.put("/data-sources/rec00T2YLS2jU7Tbn", headers=HEADERS, json={"description": "test"})
+
+    assert response["status"] == "success"
 
 
 # # search-tokens
