@@ -363,12 +363,12 @@ def test_quicksearch_all_allgeheny_results(client):
 def test_create_data_source(client):
     response = client.post("/data-sources", headers=HEADERS, json={"name": "test", "record_type": "test"})
 
-    assert response == True
+    assert response.json == True
 
 def test_update_data_source(client):
-    response = client.put("/data-sources/rec00T2YLS2jU7Tbn", headers=HEADERS, json={"description": "test"})
+    response = client.put("/data-sources-by-id/rec00T2YLS2jU7Tbn", headers=HEADERS, json={"description": "test"})
 
-    assert response["status"] == "success"
+    assert response.json["status"] == "success"
 
 
 # # search-tokens
