@@ -1,8 +1,17 @@
 import pytest
 from app import app
 from flask_restful import Api
-from middleware.quick_search_query import unaltered_search_query, quick_search_query, QUICK_SEARCH_TEST_SQL, INSERT_LOG_QUERY
-from middleware.data_source_queries import data_source_by_id_query, data_source_by_id_results, APPROVED_COLUMNS
+from middleware.quick_search_query import (
+    unaltered_search_query,
+    quick_search_query,
+    QUICK_SEARCH_TEST_SQL,
+    INSERT_LOG_QUERY,
+)
+from middleware.data_source_queries import (
+    data_source_by_id_query,
+    data_source_by_id_results,
+    APPROVED_COLUMNS,
+)
 import datetime
 import json
 import sqlite3
@@ -251,8 +260,39 @@ def test_quick_search_queries(session):
 
 # quick-search
 def test_quicksearch_columns():
-    query_results = [('rec00T2YLS2jU7Tbn', 'Calls for Service for Chicago Police Department - IL', None, 'Calls for Service', 'https://informationportal.igchicago.org/911-calls-for-cpd-service/', None, datetime.date(2019, 1, 1), None, True, 'Chicago Police Department - IL', 'Chicago', 'IL'), ('recUGIoPQbJ6laBmr', '311 Calls for City of Chicago', '311 Service Requests received by the City of Chicago. This dataset includes requests created after the launch of the new 311 system on 12/18/2018 and some records from the previous system, indicated in the LEGACY\\_RECORD column.\n\nIncluded as a Data Source because in some cities 311 calls lead to police response; that does not appear to be the case in Chicago.\n', 'Calls for Service', 'https://data.cityofchicago.org/Service-Requests/311-Service-Requests/v6vf-nfxy', '["CSV", "XML", "RDF", "RSS"]', datetime.date(2018, 12, 18), None, False, 'Chicago Police Department - IL', 'Chicago', 'IL')]
-    response = quick_search_query(search="", location="", test_query_results=query_results)
+    query_results = [
+        (
+            "rec00T2YLS2jU7Tbn",
+            "Calls for Service for Chicago Police Department - IL",
+            None,
+            "Calls for Service",
+            "https://informationportal.igchicago.org/911-calls-for-cpd-service/",
+            None,
+            datetime.date(2019, 1, 1),
+            None,
+            True,
+            "Chicago Police Department - IL",
+            "Chicago",
+            "IL",
+        ),
+        (
+            "recUGIoPQbJ6laBmr",
+            "311 Calls for City of Chicago",
+            "311 Service Requests received by the City of Chicago. This dataset includes requests created after the launch of the new 311 system on 12/18/2018 and some records from the previous system, indicated in the LEGACY\\_RECORD column.\n\nIncluded as a Data Source because in some cities 311 calls lead to police response; that does not appear to be the case in Chicago.\n",
+            "Calls for Service",
+            "https://data.cityofchicago.org/Service-Requests/311-Service-Requests/v6vf-nfxy",
+            '["CSV", "XML", "RDF", "RSS"]',
+            datetime.date(2018, 12, 18),
+            None,
+            False,
+            "Chicago Police Department - IL",
+            "Chicago",
+            "IL",
+        ),
+    ]
+    response = quick_search_query(
+        search="", location="", test_query_results=query_results
+    )
     column_names = [
         "airtable_uid",
         "data_source_name",
@@ -273,7 +313,74 @@ def test_quicksearch_columns():
 
 # data-sources
 def test_data_source_by_id_columns(client):
-    query_results = ('Calls for Service for Asheville Police Department - NC', None, None, 'Calls for Service', 'https://services.arcgis.com/aJ16ENn1AaqdFlqx/arcgis/rest/services/APD_CAD_911_Calls_2006/FeatureServer/0', True, None, None, None, None, datetime.date(2006, 1, 1), datetime.date(2006, 12, 31), None, None, None, None, None, '["API", "Download"]', 'ArcGIS', '["GIS / Shapefile"]', None, None, None, 'https://docs.google.com/document/d/143a0LoGwNwmmHxJu1msxjOFAfAXPk7otQSWkrLtUDk0/edit?usp=sharing', 'https://pypi.org/project/openpolicedata/', datetime.datetime(2023, 3, 2, 18, 36, 27, tzinfo=datetime.timezone.utc), datetime.datetime(2023, 11, 8, 19, 6, 38, tzinfo=datetime.timezone.utc), 'ok', None, '{"id": "usrtLIB4Vr3jTH8Ro", "email": "josh.chamberlain@pdap.io", "name": "Josh Chamberlain"}', None, None, 'approved', None, None, None, None, None, None, None, 'https://www.ashevillenc.gov/department/police', 18, 'law enforcement/police', None, 'Asheville Police Department', 'local', 'NC', 'Asheville', '28801', '37021', '["Buncombe"]', 35.594677, -82.54986, '["recpWxJ9JVa6BtLi5", "reczwxaH31Wf9gRjS", "recBd7NrWsvfTyDk0", "recy24QB6I8FCVrQr", "recW6aQGuNyzedIDl", "recmrXPvQn9Gtfpba", "recsojoTxJ3g08qKl", "recTUW1QUZpsGVxoJ", "reckqhpMEvDgiDGXF", "recjnLeosesVTaW2r", "reccrwbvTL6Ttd8XT", "reckiy2nuY5iRptBm", "recyJMD6eYF9Ln98B", "recLdzmQMXC3XuPWU", "recRNvjKBo5LkUBS9", "recKFoiPMOmWFZvqM", "recordd7DcM3raQF7", "recV35fyFlof4pQXP"]', None, datetime.datetime(2023, 5, 16, 17, 37, 6, tzinfo=datetime.timezone.utc), datetime.date(2023, 3, 2), True, None, '{"id": "usrtLIB4Vr3jTH8Ro", "email": "josh.chamberlain@pdap.io", "name": "Josh Chamberlain"}', datetime.datetime(2022, 8, 18, 18, 50, 38, tzinfo=datetime.timezone.utc), 'recrCy8hHYuxC8ZhU', None, 'reczwxaH31Wf9gRjS', 'recJDGmbd7UMFcfa0', 'Asheville Police Department - NC')
+    query_results = (
+        "Calls for Service for Asheville Police Department - NC",
+        None,
+        None,
+        "Calls for Service",
+        "https://services.arcgis.com/aJ16ENn1AaqdFlqx/arcgis/rest/services/APD_CAD_911_Calls_2006/FeatureServer/0",
+        True,
+        None,
+        None,
+        None,
+        None,
+        datetime.date(2006, 1, 1),
+        datetime.date(2006, 12, 31),
+        None,
+        None,
+        None,
+        None,
+        None,
+        '["API", "Download"]',
+        "ArcGIS",
+        '["GIS / Shapefile"]',
+        None,
+        None,
+        None,
+        "https://docs.google.com/document/d/143a0LoGwNwmmHxJu1msxjOFAfAXPk7otQSWkrLtUDk0/edit?usp=sharing",
+        "https://pypi.org/project/openpolicedata/",
+        datetime.datetime(2023, 3, 2, 18, 36, 27, tzinfo=datetime.timezone.utc),
+        datetime.datetime(2023, 11, 8, 19, 6, 38, tzinfo=datetime.timezone.utc),
+        "ok",
+        None,
+        '{"id": "usrtLIB4Vr3jTH8Ro", "email": "josh.chamberlain@pdap.io", "name": "Josh Chamberlain"}',
+        None,
+        None,
+        "approved",
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        "https://www.ashevillenc.gov/department/police",
+        18,
+        "law enforcement/police",
+        None,
+        "Asheville Police Department",
+        "local",
+        "NC",
+        "Asheville",
+        "28801",
+        "37021",
+        '["Buncombe"]',
+        35.594677,
+        -82.54986,
+        '["recpWxJ9JVa6BtLi5", "reczwxaH31Wf9gRjS", "recBd7NrWsvfTyDk0", "recy24QB6I8FCVrQr", "recW6aQGuNyzedIDl", "recmrXPvQn9Gtfpba", "recsojoTxJ3g08qKl", "recTUW1QUZpsGVxoJ", "reckqhpMEvDgiDGXF", "recjnLeosesVTaW2r", "reccrwbvTL6Ttd8XT", "reckiy2nuY5iRptBm", "recyJMD6eYF9Ln98B", "recLdzmQMXC3XuPWU", "recRNvjKBo5LkUBS9", "recKFoiPMOmWFZvqM", "recordd7DcM3raQF7", "recV35fyFlof4pQXP"]',
+        None,
+        datetime.datetime(2023, 5, 16, 17, 37, 6, tzinfo=datetime.timezone.utc),
+        datetime.date(2023, 3, 2),
+        True,
+        None,
+        '{"id": "usrtLIB4Vr3jTH8Ro", "email": "josh.chamberlain@pdap.io", "name": "Josh Chamberlain"}',
+        datetime.datetime(2022, 8, 18, 18, 50, 38, tzinfo=datetime.timezone.utc),
+        "recrCy8hHYuxC8ZhU",
+        None,
+        "reczwxaH31Wf9gRjS",
+        "recJDGmbd7UMFcfa0",
+        "Asheville Police Department - NC",
+    )
     response = data_source_by_id_query("", query_results, {})
     column_names = [
         "description",
@@ -335,7 +442,6 @@ def test_data_source_by_id_columns(client):
 # user
 
 
-
 # def test_post_user(client):
 #     response = client.post(
 #         "/user", headers=HEADERS, json={"email": "test", "password": "test"}
@@ -364,6 +470,4 @@ def test_data_source_by_id_columns(client):
 #     assert not set(column_names).difference(response.json[0].keys())
 
 
-
 # agencies
-

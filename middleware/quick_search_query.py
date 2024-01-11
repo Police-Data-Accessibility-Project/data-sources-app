@@ -136,8 +136,16 @@ def quick_search_query(search="", location="", test_query_results=[], conn={}):
     if conn:
         cursor = conn.cursor()
 
-    unaltered_results = unaltered_search_query(cursor, search, location) if not test_query_results else test_query_results
-    spacy_results = spacy_search_query(cursor, search, location) if not test_query_results else test_query_results
+    unaltered_results = (
+        unaltered_search_query(cursor, search, location)
+        if not test_query_results
+        else test_query_results
+    )
+    spacy_results = (
+        spacy_search_query(cursor, search, location)
+        if not test_query_results
+        else test_query_results
+    )
 
     # Compare altered search term results with unaltered search term results, return the longer list
     results = (

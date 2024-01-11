@@ -69,9 +69,10 @@ AGENCY_APPROVED_COLUMNS = [
     "defunct_year",
 ]
 
+
 def data_source_by_id_results(conn, data_source_id):
     cursor = conn.cursor()
-    
+
     data_source_approved_columns = [
         f"data_sources.{approved_column}" for approved_column in APPROVED_COLUMNS
     ]
@@ -102,6 +103,7 @@ def data_source_by_id_results(conn, data_source_id):
     cursor.execute(sql_query, (data_source_id,))
 
     return cursor.fetchone()
+
 
 def data_source_by_id_query(data_source_id="", test_query_results=[], conn={}):
     if conn:
