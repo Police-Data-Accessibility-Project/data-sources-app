@@ -20,30 +20,30 @@ class QuickSearch(Resource):
                 search, location, [], self.psycopg2_connection
             )
 
-        if data_sources["count"] == 0:
-            self.psycopg2_connection = initialize_psycopg2_connection()
-            data_sources = quick_search_query(self.psycopg2_connection, search, location)
-        
-        return data_sources
+            if data_sources["count"] == 0:
+                self.psycopg2_connection = initialize_psycopg2_connection()
+                data_sources = quick_search_query(self.psycopg2_connection, search, location)
+            
+            return data_sources
         
 
         except Exception as e:
-                self.psycopg2_connection.rollback()
-                print(str(e))
-                webhook_url = os.getenv("WEBHOOK_URL")
-                user_message = "There was an error during the search operation"
-                message = {
-                    "content": user_message
-                    + ": "
-                    + str(e)
-                    + "\n"
-                    + f"Search term: {search}\n"
-                    + f"Location: {location}"
-                }
-                requests.post(
-                    webhook_url,
-                    data=json.dumps(message),
-                    headers={"Content-Type": "application/json"},
-                )
+            self.psycopg2_connection.rollback()
+            print(str(e))
+            webhook_url = os.getenv("WEBHOOK_URL")
+            user_message = "There was an error during the search operation"
+            message = {
+                "content": user_message
+                + ": "
+                + str(e)
+                + "\n"
+                + f"Search term: {search}\n"
+                + f"Location: {location}"
+            }
+            requests.post(
+                webhook_url,
+                data=json.dumps(message),
+                headers={"Content-Type": "application/json"},
+            )
 
-             return {"count": 0, "message": user_message}, 500
+            return {"count": 0, "message": user_message}, 500
