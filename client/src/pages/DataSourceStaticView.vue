@@ -3,9 +3,9 @@
 		<h1 class="flex justify-start mt-2 w-full">
 			{{ dataSource.name }}
 		</h1>
-		<PButton intent="secondary" @click="() => $router.push('/')"
-			>Search for more Data Sources</PButton
-		>
+		<PButton intent="secondary" @click="() => $router.push('/')">
+			<i class="fa fa-plus" /> New search
+		</PButton>
 		<div
 			alignment="center"
 			class="grid grid-cols-[auto] auto-rows-auto gap-4 mx-auto w-full items-start md:grid-cols-2 lg:grid-cols-3"
