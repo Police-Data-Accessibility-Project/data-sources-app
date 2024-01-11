@@ -66,8 +66,7 @@ class SearchTokens(Resource):
 
             elif endpoint == "data-sources":
                 try:
-                    data_source_matches = data_sources_query(
-                        self.psycopg2_connection)
+                    data_source_matches = data_sources_query(self.psycopg2_connection)
 
                     data_sources = {
                         "count": len(data_source_matches),
