@@ -16,7 +16,7 @@
 				>
 			</p>
 
-			<Button intent="secondary" @click="() => $router.push('/')">
+			<Button class="my-4" intent="secondary" @click="() => $router.push('/')">
 				<i class="fa fa-plus" /> New search
 			</Button>
 		</div>
