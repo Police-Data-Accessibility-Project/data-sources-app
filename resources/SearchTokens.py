@@ -1,3 +1,7 @@
+from middleware.quick_search_query import quick_search_query
+from middleware.data_source_queries import data_source_by_id_query, data_sources_query
+from flask import request, jsonify
+from flask_restful import Resource
 import datetime
 import uuid
 import os
@@ -6,12 +10,8 @@ import sys
 import json
 
 sys.path.append("..")
-from flask_restful import Resource
-from flask import request
-from middleware.data_source_queries import data_source_by_id_query, data_sources_query
-from middleware.quick_search_query import quick_search_query
 
-BASE_URL = os.getenv("VUE_APP_BASE_URL")
+BASE_URL = os.getenv("VITE_VUE_APP_BASE_URL")
 
 
 class SearchTokens(Resource):
@@ -32,11 +32,8 @@ class SearchTokens(Resource):
             cursor = self.psycopg2_connection.cursor()
             token = uuid.uuid4().hex
             expiration = datetime.datetime.now() + datetime.timedelta(minutes=5)
-            cursor.execute(
-                f"insert into access_tokens (token, expiration_date) values (%s, %s)",
-                (token, expiration),
-            )
-            self.psycopg2_connection.commit()
+            # cursor.execute(f"insert into access_tokens (token, expiration_date) values (%s, %s)", (token, expiration))
+            # self.psycopg2_connection.commit()
 
             if endpoint == "quick-search":
                 try:
@@ -69,7 +66,8 @@ class SearchTokens(Resource):
 
             elif endpoint == "data-sources":
                 try:
-                    data_source_matches = data_sources_query(self.psycopg2_connection)
+                    data_source_matches = data_sources_query(
+                        self.psycopg2_connection)
 
                     data_sources = {
                         "count": len(data_source_matches),

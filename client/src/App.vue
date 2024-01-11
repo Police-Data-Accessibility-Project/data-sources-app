@@ -21,8 +21,8 @@ const links = [
 		method: "href",
 	},
 	{
-		href: "https://pdap.io/volunteer",
-		text: "Volunteer",
+		href: "https://pdap.io/community",
+		text: "Community",
 		method: "href",
 	},
 	{
@@ -35,10 +35,10 @@ const links = [
 		text: "Donate",
 		method: "href",
 	},
-	{ 
-		href: "https://docs.pdap.io/", 
-		text: "Docs", 
-		method: "href" 
+	{
+		href: "https://docs.pdap.io/",
+		text: "Docs",
+		method: "href",
 	},
 ];
 
@@ -64,5 +64,9 @@ export default {
 <style>
 #app {
 	margin: 0;
+}
+
+main {
+	min-height: calc(100% - 80px - 500px);
 }
 </style>
