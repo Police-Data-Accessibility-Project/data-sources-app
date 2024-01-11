@@ -125,13 +125,14 @@ def spacy_search_query(cursor, search, location):
     return cursor.fetchall()
 
 
-def quick_search_query(search, location, test_query_results=[], conn={}):
+def quick_search_query(search="", location="", test_query_results=[], conn={}):
     data_sources = {"count": 0, "data": []}
-    if "data" in conn:
+    if type(conn) == dict and "data" in conn:
         return data_sources
 
     search = "" if search == "all" else search
     location = "" if location == "all" else location
+
     if conn:
         cursor = conn.cursor()
 

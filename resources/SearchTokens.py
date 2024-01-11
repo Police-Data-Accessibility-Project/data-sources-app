@@ -3,11 +3,11 @@ import uuid
 import os
 import requests
 import sys
+import json
 
 sys.path.append("..")
-from werkzeug.security import generate_password_hash, check_password_hash
 from flask_restful import Resource
-from flask import request, jsonify
+from flask import request
 from middleware.data_source_queries import data_source_by_id_query, data_sources_query
 from middleware.quick_search_query import quick_search_query
 
@@ -38,11 +38,10 @@ class SearchTokens(Resource):
             )
             self.psycopg2_connection.commit()
 
-            headers = {"Authorization": f"Bearer {token}"}
             if endpoint == "quick-search":
                 try:
                     data_sources = quick_search_query(
-                        self.psycopg2_connection, arg1, arg2
+                        arg1, arg2, [], self.psycopg2_connection
                     )
 
                     return data_sources
@@ -87,7 +86,7 @@ class SearchTokens(Resource):
             elif endpoint == "data-sources-by-id":
                 try:
                     data_source_details = data_source_by_id_query(
-                        self.psycopg2_connection, arg1
+                        arg1, [], self.psycopg2_connection
                     )
                     if data_source_details:
                         return data_source_details
