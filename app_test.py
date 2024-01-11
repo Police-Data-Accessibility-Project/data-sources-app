@@ -366,7 +366,7 @@ def test_create_data_source(client):
     assert response.json == True
 
 def test_update_data_source(client):
-    response = client.put("/data-sources-by-id/rec00T2YLS2jU7Tbn", headers=HEADERS, json={"description": "test"})
+    response = client.put("/data-sources-by-id/test", headers=HEADERS, json={"description": "test"})
 
     assert response.json["status"] == "success"
 
