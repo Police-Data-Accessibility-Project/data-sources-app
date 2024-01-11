@@ -58,24 +58,42 @@ QUICK_SEARCH_TEST_SQL = """
     INNER JOIN
         state_names ON agencies.state_iso = state_names.state_iso
     WHERE
-        (data_sources.name LIKE '%Calls%' OR data_sources.description LIKE '%Calls%' OR data_sources.record_type LIKE '%Calls%' OR data_sources.tags LIKE '%Calls%') 
-        AND (agencies.county_name LIKE '%Chicago%' OR substr(agencies.county_name,3,length(agencies.county_name)-4) || ' county' LIKE '%Chicago%' 
-            OR agencies.state_iso LIKE '%Chicago%' OR agencies.municipality LIKE '%Chicago%' OR agencies.agency_type LIKE '%Chicago%' OR agencies.jurisdiction_type LIKE '%Chicago%' 
-            OR agencies.name LIKE '%Chicago%' OR state_names.state_name LIKE '%Chicago%')
+        (data_sources.name LIKE '%{0}%' OR data_sources.description LIKE '%{0}%' OR data_sources.record_type LIKE '%{0}%' OR data_sources.tags LIKE '%{0}%') 
+        AND (agencies.county_name LIKE '%{1}%' OR substr(agencies.county_name,3,length(agencies.county_name)-4) || ' county' LIKE '%{1}%' 
+            OR agencies.state_iso LIKE '%{1}%' OR agencies.municipality LIKE '%{1}%' OR agencies.agency_type LIKE '%{1}%' OR agencies.jurisdiction_type LIKE '%{1}%' 
+            OR agencies.name LIKE '%{1}%' OR state_names.state_name LIKE '%{1}%')
         AND data_sources.approval_status = 'approved'
         AND data_sources.url_status not in ('broken', 'none found')
 
 """
 
+INSERT_LOG_QUERY = "INSERT INTO quick_search_query_logs (search, location, results, result_count, created_at, datetime_of_request) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{4}')"
 
-def quick_search_query(conn, search, location):
-    data_sources = {"count": 0, "data": []}
-    if type(conn) == dict:
-        return data_sources
 
-    search = "" if search == "all" else search
-    location = "" if location == "all" else location
+def unaltered_search_query(cursor, search, location):
+    print(f"Query parameters: '%{search}%', '%{location}%'")
+    cursor.execute(
+        QUICK_SEARCH_SQL,
+        (
+            f"%{search}%",
+            f"%{search}%",
+            f"%{search}%",
+            f"%{search}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+            f"%{location}%",
+        ),
+    )
 
+    return cursor.fetchall()
+
+
+def spacy_search_query(cursor, search, location):
     # Depluralize search term to increase match potential
     nlp = spacy.load("en_core_web_sm")
     search = search.strip()
@@ -83,8 +101,6 @@ def quick_search_query(conn, search, location):
     lemmatized_tokens = [token.lemma_ for token in doc]
     depluralized_search_term = " ".join(lemmatized_tokens)
     location = location.strip()
-
-    cursor = conn.cursor()
 
     print(f"Query parameters: '%{depluralized_search_term}%', '%{location}%'")
 
@@ -105,29 +121,33 @@ def quick_search_query(conn, search, location):
             f"%{location}%",
         ),
     )
-    spacy_results = cursor.fetchall()
+
+    return cursor.fetchall()
+
+
+def quick_search_query(search="", location="", test_query_results=[], conn={}):
+    data_sources = {"count": 0, "data": []}
+    if type(conn) == dict and "data" in conn:
+        return data_sources
+
+    search = "" if search == "all" else search
+    location = "" if location == "all" else location
+
+    if conn:
+        cursor = conn.cursor()
+
+    unaltered_results = (
+        unaltered_search_query(cursor, search, location)
+        if not test_query_results
+        else test_query_results
+    )
+    spacy_results = (
+        spacy_search_query(cursor, search, location)
+        if not test_query_results
+        else test_query_results
+    )
 
     # Compare altered search term results with unaltered search term results, return the longer list
-    print(f"Query parameters: '%{search}%', '%{location}%'")
-    cursor.execute(
-        QUICK_SEARCH_SQL,
-        (
-            f"%{search}%",
-            f"%{search}%",
-            f"%{search}%",
-            f"%{search}%",
-            f"%{location}%",
-            f"%{location}%",
-            f"%{location}%",
-            f"%{location}%",
-            f"%{location}%",
-            f"%{location}%",
-            f"%{location}%",
-            f"%{location}%",
-        ),
-    )
-    unaltered_results = cursor.fetchall()
-
     results = (
         spacy_results
         if len(spacy_results) > len(unaltered_results)
@@ -160,17 +180,17 @@ def quick_search_query(conn, search, location):
         "data": data_source_matches_converted,
     }
 
-    current_datetime = datetime.datetime.now()
-    datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+    if not test_query_results:
+        current_datetime = datetime.datetime.now()
+        datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
-    query_results = json.dumps(data_sources["data"])
+        query_results = json.dumps(data_sources["data"]).replace("'", "")
 
-    cursor_query_log = conn.cursor()
-    sql_query_log = "INSERT INTO quick_search_query_logs (search, location, results, result_count, datetime_of_request) VALUES (%s, %s, %s, %s, %s)"
-    cursor_query_log.execute(
-        sql_query_log,
-        (search, location, query_results, data_sources["count"], datetime_string),
-    )
-    conn.commit()
+        cursor.execute(
+            INSERT_LOG_QUERY.format(
+                search, location, query_results, data_sources["count"], datetime_string
+            ),
+        )
+        conn.commit()
 
     return data_sources
