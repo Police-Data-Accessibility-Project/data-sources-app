@@ -7,11 +7,19 @@
 		<div>
 			<h1>Data Sources Search results</h1>
 			<p data-test="search-results-section-header-p" class="text-2xl">
-					Searching for <span class="font-semibold">"{{ searchTerm }}"</span> 
-					in <span class="font-semibold">"{{ location }}"</span>.
-					<span v-if="searched && searchResult?.data?.length > 0" data-test="search-results-count">Found {{ typeof searchResult.count !== 'undefined' ? (searchResult.count === 0 ? '0 results' : (searchResult.count === 1 ? '1 result' : searchResult.count + ' results')) : '0 results' }}.</span>
+				Searching for <span class="font-semibold">"{{ searchTerm }}"</span> in
+				<span class="font-semibold">"{{ location }}"</span>.
+				<span
+					v-if="searched && searchResult?.data?.length > 0"
+					data-test="search-results-count"
+					>Found {{ getResultsCopy() }}.</span
+				>
 			</p>
-		</div>      
+
+			<Button class="my-4" intent="secondary" @click="() => $router.push('/')">
+				<i class="fa fa-plus" /> New search
+			</Button>
+		</div>
 		<GridContainer
 			:columns="3"
 			template-rows="auto auto 1fr"
@@ -27,15 +35,15 @@
 				:span-column="3"
 			>
 				<p class="text-xl max-w-full">
-					If you don't see what you need, 
+					If you don't see what you need,
 					<a href="https://airtable.com/shrbFfWk6fjzGnNsk">
-						make a request&nbsp;<i class="fa fa-external-link"></i>
+						make a request&nbsp;<i class="fa fa-external-link" />
 					</a>
 				</p>
 				<p class="text-xl max-w-full">
-					To see these results in a table, 
+					To see these results in a table,
 					<a href="https://airtable.com/shrUAtA8qYasEaepI">
-						view the full database&nbsp;<i class="fa fa-external-link"></i>
+						view the full database&nbsp;<i class="fa fa-external-link" />
 					</a>
 				</p>
 			</GridItem>
@@ -55,17 +63,18 @@
 			/>
 		</GridContainer>
 	</FlexContainer>
-
 </template>
 
 <script>
-import { GridContainer, GridItem } from "pdap-design-system";
+import { Button, GridContainer, GridItem } from "pdap-design-system";
 import SearchResultCard from "../components/SearchResultCard.vue";
 import axios from "axios";
+import pluralize from "../util/pluralize";
 
 export default {
 	name: "SearchResultPage",
 	components: {
+		Button,
 		SearchResultCard,
 		GridContainer,
 		GridItem,
@@ -83,6 +92,10 @@ export default {
 		this.search();
 	},
 	methods: {
+		getResultsCopy() {
+			const count = this.searchResult?.data?.length;
+			return `${count} ${pluralize("result", count)}`;
+		},
 		async search() {
 			const url = `${
 				import.meta.env.VITE_VUE_APP_BASE_URL
@@ -94,15 +107,14 @@ export default {
 				const res = await axios.get(url);
 				this.searchStatusCode = res.status;
 				this.searchResult = res.data;
-				this.searched = true;
 			} catch (error) {
 				this.searchStatusCode = error?.response?.status ?? 400;
 				this.searchResult = error?.response?.data ?? {};
-				this.searched = true;
 				console.error(error);
+			} finally {
+				this.searched = true;
 			}
 		},
 	},
 };
-
 </script>
