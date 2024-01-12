@@ -87,7 +87,7 @@ def data_source_by_id_results(conn, data_source_id):
     joined_column_names = ", ".join(all_approved_columns)
     sql_query = """
         SELECT
-            {}
+            {0}
         FROM
             agency_source_link
         INNER JOIN
@@ -95,12 +95,10 @@ def data_source_by_id_results(conn, data_source_id):
         INNER JOIN
             agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
         WHERE
-            data_sources.approval_status = 'approved' AND data_sources.airtable_uid = %s
-    """.format(
-        joined_column_names
-    )
+            data_sources.approval_status = 'approved' AND data_sources.airtable_uid = '{1}'
+    """.format(joined_column_names, data_source_id)
 
-    cursor.execute(sql_query, (data_source_id,))
+    cursor.execute(sql_query)
 
     return cursor.fetchone()
 
@@ -126,7 +124,8 @@ def data_source_by_id_query(data_source_id="", test_query_results=[], conn={}):
     return data_source_details
 
 
-def data_sources_query(conn):
+def data_sources_results(conn):
+    cursor = conn.cursor()
     data_source_approved_columns = [
         f"data_sources.{approved_column}" for approved_column in APPROVED_COLUMNS
     ]
@@ -134,7 +133,6 @@ def data_sources_query(conn):
 
     joined_column_names = ", ".join(data_source_approved_columns)
 
-    cursor = conn.cursor()
     sql_query = """
         SELECT
             {}
@@ -150,7 +148,12 @@ def data_sources_query(conn):
         joined_column_names
     )
     cursor.execute(sql_query)
-    results = cursor.fetchall()
+
+    return cursor.fetchall()
+
+
+def data_sources_query(conn={}, test_query_results=[]):
+    results = data_sources_results(conn, "", "") if conn else test_query_results
 
     data_source_output_columns = APPROVED_COLUMNS + ["agency_name"]
 

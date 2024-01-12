@@ -8,6 +8,7 @@ from middleware.quick_search_query import (
     INSERT_LOG_QUERY,
 )
 from middleware.data_source_queries import (
+    data_sources_query,
     data_source_by_id_query,
     data_source_by_id_results,
     APPROVED_COLUMNS,
@@ -19,6 +20,36 @@ import sqlite3
 current_datetime = datetime.datetime.now()
 DATETIME_STRING = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
+DATA_SOURCES_QUERY_RESULTS = [
+        (
+            "rec00T2YLS2jU7Tbn",
+            "Calls for Service for Chicago Police Department - IL",
+            None,
+            "Calls for Service",
+            "https://informationportal.igchicago.org/911-calls-for-cpd-service/",
+            None,
+            datetime.date(2019, 1, 1),
+            None,
+            True,
+            "Chicago Police Department - IL",
+            "Chicago",
+            "IL",
+        ),
+        (
+            "recUGIoPQbJ6laBmr",
+            "311 Calls for City of Chicago",
+            "311 Service Requests received by the City of Chicago. This dataset includes requests created after the launch of the new 311 system on 12/18/2018 and some records from the previous system, indicated in the LEGACY\\_RECORD column.\n\nIncluded as a Data Source because in some cities 311 calls lead to police response; that does not appear to be the case in Chicago.\n",
+            "Calls for Service",
+            "https://data.cityofchicago.org/Service-Requests/311-Service-Requests/v6vf-nfxy",
+            '["CSV", "XML", "RDF", "RSS"]',
+            datetime.date(2018, 12, 18),
+            None,
+            False,
+            "Chicago Police Department - IL",
+            "Chicago",
+            "IL",
+        ),
+    ]
 
 @pytest.fixture()
 def test_app():
@@ -230,7 +261,7 @@ def session():
     # sql_query_log = f"INSERT INTO quick_search_query_logs (id, search, location, results, result_count, datetime_of_request, created_at) VALUES (1, 'test', 'test', '', 0, '{DATETIME_STRING}', '{DATETIME_STRING}')"
     # db_session.execute(sql_query_log)
 
-    yield db_session
+    yield connection
     connection.close()
 
 
@@ -240,58 +271,35 @@ def session():
 
 # unit tests
 def test_quick_search_queries(session):
-    session.execute(QUICK_SEARCH_TEST_SQL.format("calls", "chicago"))
-    results = session.fetchall()
+    cursor = session.cursor()
+    cursor.execute(QUICK_SEARCH_TEST_SQL.format("calls", "chicago"))
+    results = cursor.fetchall()
 
     assert len(results) > 0
 
     results_str = json.dumps(results)
     print(INSERT_LOG_QUERY.format("calls", "chicago", results_str, 2, DATETIME_STRING))
-    session.execute(
+    cursor.execute(
         INSERT_LOG_QUERY.format("calls", "chicago", results_str, 2, DATETIME_STRING)
     )
-    session.execute(
+    cursor.execute(
         f"SELECT * FROM quick_search_query_logs WHERE datetime_of_request = '{DATETIME_STRING}'"
     )
-    logs = session.fetchall()
+    logs = cursor.fetchall()
 
     assert len(logs) > 0
 
 
+def test_data_source_by_id_approved(session):
+    response = data_source_by_id_results(data_source_id="rec013MFNfBnrTpZj", conn=session)
+
+    assert not response
+
+
 # quick-search
 def test_quicksearch_columns():
-    query_results = [
-        (
-            "rec00T2YLS2jU7Tbn",
-            "Calls for Service for Chicago Police Department - IL",
-            None,
-            "Calls for Service",
-            "https://informationportal.igchicago.org/911-calls-for-cpd-service/",
-            None,
-            datetime.date(2019, 1, 1),
-            None,
-            True,
-            "Chicago Police Department - IL",
-            "Chicago",
-            "IL",
-        ),
-        (
-            "recUGIoPQbJ6laBmr",
-            "311 Calls for City of Chicago",
-            "311 Service Requests received by the City of Chicago. This dataset includes requests created after the launch of the new 311 system on 12/18/2018 and some records from the previous system, indicated in the LEGACY\\_RECORD column.\n\nIncluded as a Data Source because in some cities 311 calls lead to police response; that does not appear to be the case in Chicago.\n",
-            "Calls for Service",
-            "https://data.cityofchicago.org/Service-Requests/311-Service-Requests/v6vf-nfxy",
-            '["CSV", "XML", "RDF", "RSS"]',
-            datetime.date(2018, 12, 18),
-            None,
-            False,
-            "Chicago Police Department - IL",
-            "Chicago",
-            "IL",
-        ),
-    ]
     response = quick_search_query(
-        search="", location="", test_query_results=query_results
+        search="", location="", test_query_results=DATA_SOURCES_QUERY_RESULTS
     )
     column_names = [
         "airtable_uid",
@@ -312,7 +320,7 @@ def test_quicksearch_columns():
 
 
 # data-sources
-def test_data_source_by_id_columns(client):
+def test_data_source_by_id_columns():
     query_results = (
         "Calls for Service for Asheville Police Department - NC",
         None,
@@ -420,20 +428,14 @@ def test_data_source_by_id_columns(client):
     assert not set(column_names).difference(response.keys())
 
 
-# def test_data_sources_approved(client):
-#     response = client.get("/data-sources", headers=HEADERS)
+# def test_data_sources_approved():
+#     response = data_sources_query(conn={}, test_query_results=DATA_SOURCES_QUERY_RESULTS)
 #     unapproved_url = "https://joinstatepolice.ny.gov/15-mile-run"
 
 #     assert (
-#         len([d for d in response.json["data"] if d["source_url"] == unapproved_url])
+#         len([d for d in response["data"] if d["source_url"] == unapproved_url])
 #         == 0
 #     )
-
-
-# def test_data_source_by_id_approved(client):
-#     response = client.get("/data-sources-by-id/rec013MFNfBnrTpZj", headers=HEADERS)
-
-#     assert response.json == "Data source not found."
 
 
 # search-tokens
