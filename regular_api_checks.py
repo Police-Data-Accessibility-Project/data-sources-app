@@ -79,13 +79,19 @@ def test_data_sources():
 
 
 def test_create_data_source():
-    response = requests.post("/data-sources", headers=HEADERS, json={"name": "test", "record_type": "test"})
+    response = requests.post(
+        "/data-sources", headers=HEADERS, json={"name": "test", "record_type": "test"}
+    )
 
     assert response.json() == True
 
 
 def test_update_data_source():
-    response = requests.put("/data-sources-by-id/45a4cd5d-26da-473a-a98e-a39fbcf4a96c", headers=HEADERS, json={"description": "test"})
+    response = requests.put(
+        "/data-sources-by-id/45a4cd5d-26da-473a-a98e-a39fbcf4a96c",
+        headers=HEADERS,
+        json={"description": "test"},
+    )
 
     assert response.json()["status"] == "success"
 
