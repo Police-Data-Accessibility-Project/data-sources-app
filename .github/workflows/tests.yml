@@ -1,11 +1,11 @@
-name: Mirror Airtable data
+name: Automated Tests
 
 on:
   schedule:  
   - cron: "*/15 * * * *" #update every 15 minutes
 
 jobs:
-  scrape:
+  test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
