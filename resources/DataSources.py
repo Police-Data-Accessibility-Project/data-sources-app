@@ -27,13 +27,19 @@ class DataSourceById(Resource):
         except Exception as e:
             print(str(e))
             return "There has been an error pulling data!"
-        
+
     @api_required
     def put(self, data_source_id):
         try:
             data = request.get_json()
 
-            restricted_columns = ["rejection_note", "data_source_request", "approval_status", "airtable_uid", "airtable_source_last_modified"]
+            restricted_columns = [
+                "rejection_note",
+                "data_source_request",
+                "approval_status",
+                "airtable_uid",
+                "airtable_source_last_modified",
+            ]
 
             data_to_update = ""
 
@@ -64,7 +70,7 @@ class DataSourceById(Resource):
             print(str(e))
             return "There has been an error updating the data source", 400
 
-    
+
 class DataSources(Resource):
     def __init__(self, **kwargs):
         self.psycopg2_connection = kwargs["psycopg2_connection"]
@@ -85,14 +91,20 @@ class DataSources(Resource):
             self.psycopg2_connection.rollback()
             print(str(e))
             return "There has been an error pulling data!"
-        
+
     @api_required
     def post(self):
         try:
             data = request.get_json()
             cursor = self.psycopg2_connection.cursor()
 
-            restricted_columns = ["rejection_note", "data_source_request", "approval_status", "airtable_uid", "airtable_source_last_modified"]
+            restricted_columns = [
+                "rejection_note",
+                "data_source_request",
+                "approval_status",
+                "airtable_uid",
+                "airtable_source_last_modified",
+            ]
 
             column_names = ""
             column_values = ""
@@ -103,11 +115,13 @@ class DataSources(Resource):
                         column_values += f"'{value}', "
                     else:
                         column_values += f"{value}, "
-            
+
             now = datetime.now().strftime("%Y-%m-%d")
             airtable_uid = str(uuid.uuid4())
-            
-            column_names += "approval_status, url_status, data_source_created, airtable_uid"
+
+            column_names += (
+                "approval_status, url_status, data_source_created, airtable_uid"
+            )
             column_values += f"False, '[\"ok\"]', '{now}', '{airtable_uid}'"
 
             sql_query = f"INSERT INTO data_sources ({column_names}) VALUES ({column_values}) RETURNING *"
@@ -116,9 +130,8 @@ class DataSources(Resource):
             self.psycopg2_connection.commit()
 
             return True
-        
+
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
             return False
-    

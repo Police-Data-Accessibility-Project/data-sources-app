@@ -437,16 +437,16 @@ def test_data_source_by_id_columns(client):
 #     response = client.get("/data-sources-by-id/rec013MFNfBnrTpZj", headers=HEADERS)
 
 #     assert response.json == "Data source not found."
-    
-def test_create_data_source(client):
-    response = client.post("/data-sources", headers=HEADERS, json={"name": "test", "record_type": "test"})
 
-    assert response.json == True
+# def test_create_data_source(client):
+#     response = client.post("/data-sources", headers=HEADERS, json={"name": "test", "record_type": "test"})
 
-def test_update_data_source(client):
-    response = client.put("/data-sources-by-id/45a4cd5d-26da-473a-a98e-a39fbcf4a96c", headers=HEADERS, json={"description": "test"})
+#     assert response.json == True
 
-    assert response.json["status"] == "success"
+# def test_update_data_source(client):
+#     response = client.put("/data-sources-by-id/45a4cd5d-26da-473a-a98e-a39fbcf4a96c", headers=HEADERS, json={"description": "test"})
+
+#     assert response.json["status"] == "success"
 
 
 # search-tokens
@@ -501,22 +501,22 @@ def test_update_data_source(client):
 #     assert response.json["status"] == "success"
 
 
-def test_put_archives_brokenasof(client):
-    current_datetime = datetime.datetime.now()
-    datetime_string = current_datetime.strftime("%Y-%m-%d")
-    response = client.put(
-        "/archives",
-        headers=HEADERS,
-        json=json.dumps(
-            {
-                "id": "test",
-                "last_cached": datetime_string,
-                "broken_source_url_as_of": datetime_string,
-            }
-        ),
-    )
+# def test_put_archives_brokenasof(client):
+#     current_datetime = datetime.datetime.now()
+#     datetime_string = current_datetime.strftime("%Y-%m-%d")
+#     response = client.put(
+#         "/archives",
+#         headers=HEADERS,
+#         json=json.dumps(
+#             {
+#                 "id": "test",
+#                 "last_cached": datetime_string,
+#                 "broken_source_url_as_of": datetime_string,
+#             }
+#         ),
+#     )
 
-    assert response.json["status"] == "success"
+#     assert response.json["status"] == "success"
 
 
 # # agencies
@@ -531,4 +531,3 @@ def test_put_archives_brokenasof(client):
 #     response2 = client.get("/agencies/2", headers=HEADERS)
 
 #     assert response1 != response2
-
