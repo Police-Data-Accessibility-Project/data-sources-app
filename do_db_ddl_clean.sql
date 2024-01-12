@@ -118,7 +118,7 @@ CREATE TABLE if not exists data_sources (
 );
 
 CREATE TABLE if not exists quick_search_query_logs (
-    id bigint NOT NULL,
+    id serial primary key,
     search character varying,
     location character varying,
     result_count bigint,

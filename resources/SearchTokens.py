@@ -2,12 +2,12 @@ from middleware.quick_search_query import quick_search_query
 from middleware.data_source_queries import data_source_by_id_query, data_sources_query
 from flask import request, jsonify
 from flask_restful import Resource
-from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 import uuid
 import os
 import requests
 import sys
+import json
 
 sys.path.append("..")
 
@@ -35,11 +35,10 @@ class SearchTokens(Resource):
             # cursor.execute(f"insert into access_tokens (token, expiration_date) values (%s, %s)", (token, expiration))
             # self.psycopg2_connection.commit()
 
-            headers = {"Authorization": f"Bearer {token}"}
             if endpoint == "quick-search":
                 try:
                     data_sources = quick_search_query(
-                        self.psycopg2_connection, arg1, arg2
+                        arg1, arg2, [], self.psycopg2_connection
                     )
 
                     return data_sources
@@ -67,8 +66,7 @@ class SearchTokens(Resource):
 
             elif endpoint == "data-sources":
                 try:
-                    data_source_matches = data_sources_query(
-                        self.psycopg2_connection)
+                    data_source_matches = data_sources_query(self.psycopg2_connection)
 
                     data_sources = {
                         "count": len(data_source_matches),
@@ -85,7 +83,7 @@ class SearchTokens(Resource):
             elif endpoint == "data-sources-by-id":
                 try:
                     data_source_details = data_source_by_id_query(
-                        self.psycopg2_connection, arg1
+                        arg1, [], self.psycopg2_connection
                     )
                     if data_source_details:
                         return data_source_details
