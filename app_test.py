@@ -9,6 +9,7 @@ from middleware.quick_search_query import (
 )
 from middleware.data_source_queries import (
     data_sources_query,
+    data_sources_results,
     data_source_by_id_query,
     data_source_by_id_results,
     APPROVED_COLUMNS,
@@ -265,29 +266,23 @@ def session():
     connection.close()
 
 
-# @pytest.fixture
-# def setup_db(session):
-
-
 # unit tests
-def test_quick_search_queries(session):
-    cursor = session.cursor()
-    cursor.execute(QUICK_SEARCH_TEST_SQL.format("calls", "chicago"))
-    results = cursor.fetchall()
+def test_data_sources(session):
+    response = data_sources_results(conn=session)
 
-    assert len(results) > 0
+    assert response
 
-    results_str = json.dumps(results)
-    print(INSERT_LOG_QUERY.format("calls", "chicago", results_str, 2, DATETIME_STRING))
-    cursor.execute(
-        INSERT_LOG_QUERY.format("calls", "chicago", results_str, 2, DATETIME_STRING)
-    )
-    cursor.execute(
-        f"SELECT * FROM quick_search_query_logs WHERE datetime_of_request = '{DATETIME_STRING}'"
-    )
-    logs = cursor.fetchall()
 
-    assert len(logs) > 0
+def test_data_sources_approved(session):
+    response = data_sources_results(conn=session)
+
+    assert len([d for d in response if 'https://joinstatepolice.ny.gov/15-mile-run' in d]) == 0
+
+
+def test_data_source_by_id_results(session):
+    response = data_source_by_id_results(data_source_id="rec00T2YLS2jU7Tbn", conn=session)
+
+    assert response
 
 
 def test_data_source_by_id_approved(session):
@@ -320,6 +315,13 @@ def test_quicksearch_columns():
 
 
 # data-sources
+def test_data_sources_columns():
+    response = data_sources_query(conn={}, test_query_results=DATA_SOURCES_QUERY_RESULTS)
+    column_names = APPROVED_COLUMNS + ["agency_name"]
+    
+    assert not set(column_names).difference(response[0].keys())
+
+
 def test_data_source_by_id_columns():
     query_results = (
         "Calls for Service for Asheville Police Department - NC",
@@ -426,19 +428,6 @@ def test_data_source_by_id_columns():
     ]
 
     assert not set(column_names).difference(response.keys())
-
-
-# def test_data_sources_approved():
-#     response = data_sources_query(conn={}, test_query_results=DATA_SOURCES_QUERY_RESULTS)
-#     unapproved_url = "https://joinstatepolice.ny.gov/15-mile-run"
-
-#     assert (
-#         len([d for d in response["data"] if d["source_url"] == unapproved_url])
-#         == 0
-#     )
-
-
-# search-tokens
 
 
 # user
