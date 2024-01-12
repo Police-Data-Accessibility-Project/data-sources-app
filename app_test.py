@@ -1,4 +1,5 @@
 import pytest
+import os
 from app import app
 from flask_restful import Api
 from middleware.quick_search_query import (
@@ -16,6 +17,8 @@ import datetime
 import json
 import sqlite3
 
+api_key = os.getenv("VUE_APP_PDAP_API_KEY")
+HEADERS = {"Authorization": f"Bearer {api_key}"}
 current_datetime = datetime.datetime.now()
 DATETIME_STRING = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
