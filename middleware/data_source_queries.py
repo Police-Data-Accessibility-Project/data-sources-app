@@ -41,6 +41,7 @@ APPROVED_COLUMNS = [
     "url_button",
     "tags_other",
     "access_notes",
+    "last_cached"
 ]
 
 AGENCY_APPROVED_COLUMNS = [

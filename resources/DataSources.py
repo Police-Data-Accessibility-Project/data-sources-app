@@ -13,7 +13,7 @@ class DataSourceById(Resource):
     def get(self, data_source_id):
         try:
             data_source_details = data_source_by_id_query(
-                self.psycopg2_connection, data_source_id
+                data_source_id=data_source_id, conn=self.psycopg2_connection
             )
             if data_source_details:
                 return data_source_details
