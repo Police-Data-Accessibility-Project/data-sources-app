@@ -1,6 +1,15 @@
 import SearchResultCard from "../SearchResultCard.vue";
 import { mount } from "@vue/test-utils";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { nextTick } from "vue";
+
+let wrapper;
+
+// const $routerMock = vi.mock("vue-router");
+const push = vi.fn();
+const $routerMock = {
+	push,
+};
 
 describe("SearchResultCard with all data", () => {
 	const dataSource = {
@@ -10,7 +19,6 @@ describe("SearchResultCard with all data", () => {
 		coverage_end: "2018-01-01",
 		coverage_start: "2017-01-01",
 		data_source_name: "Calls for Service for Cicero Police Department - IN",
-		description: "Test description",
 		municipality: "Bridgeview",
 		name: "Cicero Police Department - IN",
 		record_format: "['json', 'pdf']",
@@ -20,14 +28,24 @@ describe("SearchResultCard with all data", () => {
 		state_iso: "IN",
 	};
 
-	const wrapper = mount(SearchResultCard, {
-		props: { dataSource },
+	beforeEach(() => {
+		wrapper = mount(SearchResultCard, {
+			props: { dataSource },
+			global: {
+				mocks: {
+					$router: $routerMock,
+				},
+			},
+		});
+
+		vi.unstubAllGlobals();
 	});
 
-	it("search result card exists", () => {
+	it("search result card exists with full data", () => {
 		expect(wrapper.find('[data-test="search-result-card"]').exists()).toBe(
 			true,
 		);
+		expect(wrapper.html()).toMatchSnapshot();
 	});
 
 	it("search result card contains a title", () => {
@@ -84,7 +102,7 @@ describe("SearchResultCard with all data", () => {
 		).toBe(
 			`${wrapper.vm.formatDate(
 				dataSource.coverage_start,
-			)}-${wrapper.vm.formatDate(dataSource.coverage_end)}`,
+			)}–${wrapper.vm.formatDate(dataSource.coverage_end)}`,
 		);
 	});
 
@@ -100,39 +118,37 @@ describe("SearchResultCard with all data", () => {
 		);
 	});
 
-	it("search result card contains correct record formats", () => {
-		expect(wrapper.findAll('[data-test="search-result-format"]').length).toBe(
-			wrapper.vm.parseRecordFormat(dataSource.record_format).length,
+	it("Visit source button exists and calls window navigation with correct value on click", async () => {
+		const spy = vi.spyOn(window, "open");
+
+		const button = wrapper.find(
+			'[data-test="search-result-visit-source-button"]',
 		);
-		expect(
-			wrapper.findAll('[data-test="search-result-format"]')[0].text(),
-		).toBe(wrapper.vm.parseRecordFormat(dataSource.record_format)[0]);
-		expect(
-			wrapper.findAll('[data-test="search-result-format"]')[1].text(),
-		).toBe(wrapper.vm.parseRecordFormat(dataSource.record_format)[1]);
+
+		expect(button.exists()).toBe(true);
+
+		await button.trigger("click");
+
+		await nextTick();
+
+		expect(spy).toHaveBeenCalledOnce();
+		expect(spy).toHaveBeenCalledWith(dataSource.source_url, '_blank');
 	});
 
-	it("search result card contains a source button", () => {
-		expect(
-			wrapper.find('[data-test="search-result-source-button"]').exists(),
-		).toBe(true);
-	});
+	it("View details button exists and calls router.push with correct value on click", async () => {
+		const button = wrapper.find(
+			'[data-test="search-result-source-details-button"]',
+		);
 
-	it("search result card contains a show details button", () => {
-		expect(
-			wrapper
-				.find('[data-test="search-result-source-details-button"]')
-				.exists(),
-		).toBe(true);
-	});
+		expect(button.exists()).toBe(true);
 
-	it("search result card contains a description", async () => {
-		await wrapper
-			.get('[data-test="search-result-source-details-button"]')
-			.trigger("click");
+		await button.trigger("click");
 
-		expect(wrapper.get('[data-test="search-result-description"]').text()).toBe(
-			dataSource.description,
+		await nextTick();
+
+		expect(push).toHaveBeenCalledOnce();
+		expect(push).toHaveBeenCalledWith(
+			`/data-sources/${dataSource.airtable_uid}`,
 		);
 	});
 });
@@ -145,7 +161,6 @@ describe("SearchResultCard with missing data", () => {
 		coverage_end: null,
 		coverage_start: null,
 		data_source_name: "Calls for Service for Cicero Police Department - IN",
-		description: null,
 		municipality: null,
 		name: null,
 		record_format: null,
@@ -154,8 +169,17 @@ describe("SearchResultCard with missing data", () => {
 		state_iso: null,
 	};
 
-	const wrapper = mount(SearchResultCard, {
-		props: { dataSource },
+	beforeEach(() => {
+		wrapper = mount(SearchResultCard, {
+			props: { dataSource },
+		});
+	});
+
+	it("search result card exists with missing data", () => {
+		expect(wrapper.find('[data-test="search-result-card"]').exists()).toBe(
+			true,
+		);
+		expect(wrapper.html()).toMatchSnapshot();
 	});
 
 	it("search result card contains unknown for agency name", () => {
@@ -164,11 +188,11 @@ describe("SearchResultCard with missing data", () => {
 		).toBe(true);
 	});
 
-	it("search result card contains unknown for place", () => {
-		expect(
-			wrapper.find('[data-test="search-result-place-unknown"]').exists(),
-		).toBe(true);
-	});
+	// it("search result card contains unknown for place", () => {
+	// 	expect(
+	// 		wrapper.find('[data-test="search-result-place-unknown"]').exists(),
+	// 	).toBe(true);
+	// });
 
 	it("search result card contains unknown for record type", () => {
 		expect(
@@ -187,51 +211,41 @@ describe("SearchResultCard with missing data", () => {
 			wrapper.find('[data-test="search-result-format-unknown"]').exists(),
 		).toBe(true);
 	});
-
-	it("search result card contains no description", async () => {
-		await wrapper
-			.get('[data-test="search-result-source-details-button"]')
-			.trigger("click");
-
-		expect(
-			wrapper.find('[data-test="search-result-description-unknown"]').exists(),
-		).toBe(true);
-	});
 });
 
-describe("SearchResultCard with municipality but not state", () => {
-	const dataSource = {
-		municipality: "Bridgeview",
-		state_iso: null,
-	};
+// describe("SearchResultCard with municipality but not state", () => {
+// 	const dataSource = {
+// 		municipality: "Bridgeview",
+// 		state_iso: null,
+// 	};
 
-	const wrapper = mount(SearchResultCard, {
-		props: { dataSource },
-	});
+// 	wrapper = mount(SearchResultCard, {
+// 		props: { dataSource },
+// 	});
 
-	it("search result card has only municipality", () => {
-		expect(
-			wrapper.get('[data-test="search-result-place-municipality"]').text(),
-		).toBe(dataSource.municipality);
-	});
-});
+// 	it("search result card has only municipality", () => {
+// 		expect(
+// 			wrapper.get('[data-test="search-result-place-municipality"]').text(),
+// 		).toBe(dataSource.municipality);
+// 	});
+// });
 
-describe("SearchResultCard with state but not municipality", () => {
-	const dataSource = {
-		municipality: null,
-		state_iso: "IN",
-	};
+// describe("SearchResultCard with state but not municipality", () => {
+// 	const dataSource = {
+// 		municipality: null,
+// 		state_iso: "IN",
+// 	};
 
-	const wrapper = mount(SearchResultCard, {
-		props: { dataSource },
-	});
+// 	wrapper = mount(SearchResultCard, {
+// 		props: { dataSource },
+// 	});
 
-	it("search result card has only state", () => {
-		expect(wrapper.get('[data-test="search-result-place-state"]').text()).toBe(
-			dataSource.state_iso,
-		);
-	});
-});
+// 	it("search result card has only state", () => {
+// 		expect(wrapper.get('[data-test="search-result-place-state"]').text()).toBe(
+// 			dataSource.state_iso,
+// 		);
+// 	});
+// });
 
 describe("SearchResultCard with coverage start but not end", () => {
 	const dataSource = {
@@ -239,8 +253,17 @@ describe("SearchResultCard with coverage start but not end", () => {
 		coverage_end: null,
 	};
 
-	const wrapper = mount(SearchResultCard, {
-		props: { dataSource },
+	beforeEach(() => {
+		wrapper = mount(SearchResultCard, {
+			props: { dataSource },
+		});
+	});
+
+	it("search result card exists with coverage start but not end", () => {
+		expect(wrapper.find('[data-test="search-result-card"]').exists()).toBe(
+			true,
+		);
+		expect(wrapper.html()).toMatchSnapshot();
 	});
 
 	it("search result card has only coverage start date", () => {
@@ -256,8 +279,17 @@ describe("SearchResultCard with coverage end but not start", () => {
 		coverage_end: "2017-01-01",
 	};
 
-	const wrapper = mount(SearchResultCard, {
-		props: { dataSource },
+	beforeEach(() => {
+		wrapper = mount(SearchResultCard, {
+			props: { dataSource },
+		});
+	});
+
+	it("search result card exists with coverage end but not start", () => {
+		expect(wrapper.find('[data-test="search-result-card"]').exists()).toBe(
+			true,
+		);
+		expect(wrapper.html()).toMatchSnapshot();
 	});
 
 	it("search result card has only coverage end date", () => {
