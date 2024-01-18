@@ -1,4 +1,5 @@
 import pytest
+import os
 from app import app
 from flask_restful import Api
 from middleware.quick_search_query import (
@@ -32,6 +33,8 @@ from app_test_data import (
 import datetime
 import sqlite3
 
+api_key = os.getenv("VUE_APP_PDAP_API_KEY")
+HEADERS = {"Authorization": f"Bearer {api_key}"}
 current_datetime = datetime.datetime.now()
 DATETIME_STRING = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -204,4 +207,51 @@ def test_archives_get_columns():
     assert not set(ARCHIVES_GET_COLUMNS).difference(response[0].keys())
 
 
-# agencies
+# def test_put_archives(client):
+#     current_datetime = datetime.datetime.now()
+#     datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+#     response = client.put(
+#         "/archives",
+#         headers=HEADERS,
+#         json=json.dumps(
+#             {
+#                 "id": "test",
+#                 "last_cached": datetime_string,
+#                 "broken_source_url_as_of": "",
+#             }
+#         ),
+#     )
+
+#     assert response.json["status"] == "success"
+
+
+# def test_put_archives_brokenasof(client):
+#     current_datetime = datetime.datetime.now()
+#     datetime_string = current_datetime.strftime("%Y-%m-%d")
+#     response = client.put(
+#         "/archives",
+#         headers=HEADERS,
+#         json=json.dumps(
+#             {
+#                 "id": "test",
+#                 "last_cached": datetime_string,
+#                 "broken_source_url_as_of": datetime_string,
+#             }
+#         ),
+#     )
+
+#     assert response.json["status"] == "success"
+
+
+# # agencies
+# def test_agencies(client):
+#     response = client.get("/agencies/1", headers=HEADERS)
+
+#     assert len(response.json["data"]) > 0
+
+
+# def test_agencies_pagination(client):
+#     response1 = client.get("/agencies/1", headers=HEADERS)
+#     response2 = client.get("/agencies/2", headers=HEADERS)
+
+#     assert response1 != response2

@@ -118,7 +118,7 @@ def test_search_tokens_data_source_by_id():
 
 def test_search_tokens_quick_search_complaints_allegheny_results():
     response = requests.get(
-        "https://data-sources.pdap.io/api/search-tokens?endpoint=quick-search&arg1=calls&arg2=chicago"
+        "https://data-sources.pdap.io/api/search-tokens?endpoint=quick-search&arg1=complaints&arg2=allegheny"
     )
 
     return len(response.json()["data"]) > 0
