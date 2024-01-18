@@ -1,0 +1,278 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`DataSourceStaticView > Calls API and renders search results 1`] = `
+<main class="flex flex-col p-8">
+  <h1 class="flex justify-start mt-2 w-full">Calls for Service for Chicago Police Department - IL</h1>
+  <button class="pdap-button pdap-button-secondary">
+    <i class="fa fa-plus"></i> New search
+  </button>
+  <div alignment="center" class="grid grid-cols-[auto] auto-rows-auto gap-4 mx-auto w-full items-start md:grid-cols-2 lg:grid-cols-3">
+    <!-- Each card -->
+    <div class="flex self-stretch flex-col text-lg">
+      <div class="border border-neutral-400 h-full leading-snug p-3 mt-8">
+        <h2 class="text-xl font-semibold line-clamp-2">Data Type</h2><!-- Within each card, the items listed -->
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Record type</p><!-- If no data for this key, em-dash -->
+          <!--v-if-->
+          <!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <button class="mt-1 py-[.125rem] px-3 rounded-full bg-brand-wine/10 dark:bg-brand-wine dark:text-white w-fit small" href="Calls for Service">Calls for Service</button>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Description</p><!-- If no data for this key, em-dash -->
+          <div class="text-neutral-500"> — </div><!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class></p>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Tags</p><!-- If no data for this key, em-dash -->
+          <div class="text-neutral-500"> — </div><!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class></p>
+        </div>
+      </div>
+    </div>
+    <div class="flex self-stretch flex-col text-lg">
+      <div class="border border-neutral-400 h-full leading-snug p-3 mt-8">
+        <h2 class="text-xl font-semibold line-clamp-2">Access & format</h2><!-- Within each card, the items listed -->
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Source URL</p><!-- If no data for this key, em-dash -->
+          <!--v-if-->
+          <!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <a class href="https://informationportal.igchicago.org/911-calls-for-cpd-service/" rel="_blank" target="_blank">https://informationportal.igchicago.org/911-calls-for-cpd-service/</a>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">ReadMe URL</p><!-- If no data for this key, em-dash -->
+          <div class="text-neutral-500"> — </div><!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class></p>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Access Type</p><!-- If no data for this key, em-dash -->
+          <!--v-if-->
+          <!-- If data is an array, loop over it and render each -->
+          <div>
+            <p class href="Web page">Web page</p>
+          </div>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Record Formats</p><!-- If no data for this key, em-dash -->
+          <div class="text-neutral-500"> — </div><!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class></p>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Detail Level</p><!-- If no data for this key, em-dash -->
+          <!--v-if-->
+          <!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class href="Summarized totals">Summarized totals</p>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Size</p><!-- If no data for this key, em-dash -->
+          <div class="text-neutral-500"> — </div><!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class></p>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Access Notes</p><!-- If no data for this key, em-dash -->
+          <div class="text-neutral-500"> — </div><!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class></p>
+        </div>
+      </div>
+    </div>
+    <div class="flex self-stretch flex-col text-lg">
+      <div class="border border-neutral-400 h-full leading-snug p-3 mt-8">
+        <h2 class="text-xl font-semibold line-clamp-2">Agency</h2><!-- Within each card, the items listed -->
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Name</p><!-- If no data for this key, em-dash -->
+          <!--v-if-->
+          <!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <button class="decoration-solid decoration-[6%] text-brand-gold  underline-offset-[5%] hover:brightness-85 small" href="Chicago Police Department - IL">Chicago Police Department - IL</button>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">State</p><!-- If no data for this key, em-dash -->
+          <!--v-if-->
+          <!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class href="IL">IL</p>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">County</p><!-- If no data for this key, em-dash -->
+          <!--v-if-->
+          <!-- If data is an array, loop over it and render each -->
+          <div>
+            <p class href="Cook">Cook</p>
+          </div>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Municipality</p><!-- If no data for this key, em-dash -->
+          <!--v-if-->
+          <!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class href="Chicago">Chicago</p>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Agency Type</p><!-- If no data for this key, em-dash -->
+          <!--v-if-->
+          <!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class href="law enforcement/police">law enforcement/police</p>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Jurisdiction Type</p><!-- If no data for this key, em-dash -->
+          <!--v-if-->
+          <!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class href="local">local</p>
+        </div>
+      </div>
+    </div>
+    <div class="flex self-stretch flex-col text-lg">
+      <div class="border border-neutral-400 h-full leading-snug p-3 mt-8">
+        <h2 class="text-xl font-semibold line-clamp-2">Provenance</h2><!-- Within each card, the items listed -->
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Agency Supplied</p><!-- If no data for this key, em-dash -->
+          <!--v-if-->
+          <!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class href="true">true</p>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Supplying Entity</p><!-- If no data for this key, em-dash -->
+          <div class="text-neutral-500"> — </div><!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class></p>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Agency Originated</p><!-- If no data for this key, em-dash -->
+          <div class="text-neutral-500"> — </div><!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class></p>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Originating Entity</p><!-- If no data for this key, em-dash -->
+          <div class="text-neutral-500"> — </div><!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class></p>
+        </div>
+      </div>
+    </div>
+    <div class="flex self-stretch flex-col text-lg">
+      <div class="border border-neutral-400 h-full leading-snug p-3 mt-8">
+        <h2 class="text-xl font-semibold line-clamp-2">Coverage & retention</h2><!-- Within each card, the items listed -->
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Coverage Start Date</p><!-- If no data for this key, em-dash -->
+          <!--v-if-->
+          <!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class href="2019-01-01">12/31/2018</p>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Coverage End Date</p><!-- If no data for this key, em-dash -->
+          <div class="text-neutral-500"> — </div><!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class></p>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Source Last Updated</p><!-- If no data for this key, em-dash -->
+          <div class="text-neutral-500"> — </div><!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class></p>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Update Frequency</p><!-- If no data for this key, em-dash -->
+          <!--v-if-->
+          <!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class href="Bi-weekly">Bi-weekly</p>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Update Method</p><!-- If no data for this key, em-dash -->
+          <div class="text-neutral-500"> — </div><!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class></p>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Retention Schedule</p><!-- If no data for this key, em-dash -->
+          <div class="text-neutral-500"> — </div><!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class></p>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Number of Records Available</p><!-- If no data for this key, em-dash -->
+          <div class="text-neutral-500"> — </div><!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class></p>
+        </div>
+      </div>
+    </div>
+    <div class="flex self-stretch flex-col text-lg">
+      <div class="border border-neutral-400 h-full leading-snug p-3 mt-8">
+        <h2 class="text-xl font-semibold line-clamp-2">Data Source Meta</h2><!-- Within each card, the items listed -->
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Scraper URL</p><!-- If no data for this key, em-dash -->
+          <div class="text-neutral-500"> — </div><!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class></p>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Created</p><!-- If no data for this key, em-dash -->
+          <!--v-if-->
+          <!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class href="2022-09-28">09/27/2022</p>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Agency ID</p><!-- If no data for this key, em-dash -->
+          <!--v-if-->
+          <!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class href="recv9fMNEQTbVarj2">recv9fMNEQTbVarj2</p>
+        </div>
+        <div>
+          <!-- Title -->
+          <p class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Data Source ID</p><!-- If no data for this key, em-dash -->
+          <!--v-if-->
+          <!-- If data is an array, loop over it and render each -->
+          <!-- Otherwise, render single item -->
+          <p class href="rec00T2YLS2jU7Tbn">rec00T2YLS2jU7Tbn</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+`;
