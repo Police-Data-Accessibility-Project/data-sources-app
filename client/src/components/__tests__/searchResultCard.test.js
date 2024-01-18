@@ -132,7 +132,7 @@ describe("SearchResultCard with all data", () => {
 		await nextTick();
 
 		expect(spy).toHaveBeenCalledOnce();
-		expect(spy).toHaveBeenCalledWith(dataSource.source_url, '_blank');
+		expect(spy).toHaveBeenCalledWith(dataSource.source_url, "_blank");
 	});
 
 	it("View details button exists and calls router.push with correct value on click", async () => {

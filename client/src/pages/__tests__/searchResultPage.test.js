@@ -48,6 +48,7 @@ describe("SearchResultPage renders with data", () => {
 		await wrapper.vm.search();
 		await flushPromises();
 
+		// TODO: figure out why this is called twice
 		expect(axios.get).toHaveBeenCalledTimes(2);
 		expect(axios.get).toHaveBeenCalledWith(
 			`https://data-sources.pdap.io/search-tokens?endpoint=quick-search&arg1=${searchTerm}&arg2=${location}`,
