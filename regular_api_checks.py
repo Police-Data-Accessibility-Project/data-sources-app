@@ -152,7 +152,7 @@ def test_put_archives():
         headers=HEADERS,
         json=json.dumps(
             {
-                "id": "test",
+                "id": "45a4cd5d-26da-473a-a98e-a39fbcf4a96c",
                 "last_cached": datetime_string,
                 "broken_source_url_as_of": "",
             }
@@ -170,7 +170,7 @@ def test_put_archives_brokenasof():
         headers=HEADERS,
         json=json.dumps(
             {
-                "id": "test",
+                "id": "45a4cd5d-26da-473a-a98e-a39fbcf4a96c",
                 "last_cached": datetime_string,
                 "broken_source_url_as_of": datetime_string,
             }
