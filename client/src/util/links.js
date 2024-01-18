@@ -1,5 +1,3 @@
-// Ignore coverage because this is static data
-/* c8 ignore start */
 export const links = [
 	{
 		path: "/",
@@ -32,4 +30,3 @@ export const links = [
 		method: "href",
 	},
 ];
-/* c8 ignore stop */
