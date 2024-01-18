@@ -27,7 +27,12 @@
 			data-test="search"
 			class="p-0 gap-6"
 		>
-			<GridItem v-if="!searched" component="p" :span-column="3">
+			<GridItem
+				v-if="!searched"
+				component="p"
+				data-test="loading"
+				:span-column="3"
+			>
 				Loading results...
 			</GridItem>
 			<GridItem
@@ -36,7 +41,10 @@
 			>
 				<p class="text-xl max-w-full">
 					If you don't see what you need,
-					<a href="https://airtable.com/shrbFfWk6fjzGnNsk">
+					<a
+						href="https://airtable.com/shrbFfWk6fjzGnNsk"
+						data-test="search-results-request-link"
+					>
 						make a request&nbsp;<i class="fa fa-external-link" />
 					</a>
 				</p>

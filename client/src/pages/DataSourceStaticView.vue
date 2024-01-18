@@ -1,9 +1,17 @@
 <template>
-	<main v-if="!noData" class="flex flex-col p-8">
+	<main
+		v-if="!noData"
+		class="flex flex-col p-8"
+		data-test="data-source-static-view"
+	>
 		<h1 class="flex justify-start mt-2 w-full">
 			{{ dataSource.name }}
 		</h1>
-		<PButton intent="secondary" @click="() => $router.push('/')">
+		<PButton
+			data-test="new-search-button"
+			intent="secondary"
+			@click="() => $router.push('/')"
+		>
 			<i class="fa fa-plus" /> New search
 		</PButton>
 		<div
@@ -45,6 +53,7 @@
 								v-for="item in dataSource[record.key]"
 								:key="item"
 								:class="item?.classNames || small"
+								:data-test="record['data-test']"
 								:href="dataSource[record.key]"
 								:target="attributesByComponent[record.component]?.target"
 								:rel="attributesByComponent[record.component]?.target"
@@ -59,6 +68,7 @@
 							:is="record.component ?? 'p'"
 							v-else
 							:class="(dataSource[record.key] && record.classNames) || small"
+							:data-test="record['data-test']"
 							:href="dataSource[record.key]"
 							:target="attributesByComponent[record.component]?.target"
 							:rel="attributesByComponent[record.component]?.target"
@@ -127,21 +137,16 @@ export default {
 			}
 		},
 		async getDataSourceDetails() {
-			const headers = {
-				Authorization: `Bearer ${import.meta.env.VUE_APP_PDAP_TOKEN}`,
-			};
 			try {
 				const res = await axios.get(
 					`${
 						import.meta.env.VITE_VUE_APP_BASE_URL
 					}/search-tokens?endpoint=data-sources-by-id&arg1=${this.id}`,
-					{ headers },
 				);
 				this.dataSource = res.data;
-				console.log({ data: res.data });
 				this.noData = false;
 			} catch (error) {
-				this.errorMessage = error.response.data;
+				this.errorMessage = error?.message;
 			}
 		},
 		formatDate: formatDateForSearchResults,
