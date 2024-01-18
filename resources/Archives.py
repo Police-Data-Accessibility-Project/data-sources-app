@@ -1,6 +1,7 @@
 from middleware.security import api_required
+from middleware.archives_queries import archives_get_query, archives_put_query
 from flask_restful import Resource, request
-from utilities.common import convert_dates_to_strings
+
 import json
 
 
@@ -11,40 +12,11 @@ class Archives(Resource):
     @api_required
     def get(self):
         try:
-            cursor = self.psycopg2_connection.cursor()
-            sql_query = """
-            SELECT
-                data_sources.airtable_uid,
-                data_sources.source_url,
-                data_sources.update_frequency,
-                data_sources.last_cached,
-                agencies.name
-            FROM
-                agency_source_link
-            INNER JOIN
-                data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
-            INNER JOIN
-                agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
-            WHERE 
-                (data_sources.last_cached IS NULL OR data_sources.update_frequency IS NOT NULL) AND data_sources.broken_source_url_as_of IS NULL AND data_sources.source_url IS NOT NULL
-            """
-            cursor.execute(sql_query)
-            results = cursor.fetchall()
+            archives_combined_results_clean = archives_get_query(
+                test_query_results=[], conn=self.psycopg2_connection
+            )
 
-            column_names = [
-                "id",
-                "source_url",
-                "update_frequency",
-                "last_cached",
-                "agency_name",
-            ]
-
-            archive_results = [dict(zip(column_names, result)) for result in results]
-
-            for item in archive_results:
-                convert_dates_to_strings(item)
-
-            return archive_results
+            return archives_combined_results_clean
 
         except Exception as e:
             self.psycopg2_connection.rollback()
@@ -56,23 +28,20 @@ class Archives(Resource):
         try:
             json_data = request.get_json()
             data = json.loads(json_data)
+            id = data["id"] if "id" in data else None
+            broken_as_of = (
+                data["broken_source_url_as_of"]
+                if "broken_source_url_as_of" in data
+                else None
+            )
+            last_cached = data["last_cached"] if "last_cached" in data else None
 
-            cursor = self.psycopg2_connection.cursor()
-
-            if data["broken_source_url_as_of"]:
-                sql_query = "UPDATE data_sources SET broken_source_url_as_of = %s, last_cached = %s WHERE airtable_uid = %s"
-                cursor.execute(
-                    sql_query,
-                    (data["broken_source_url_as_of"], data["last_cached"], data["id"]),
-                )
-            else:
-                sql_query = (
-                    "UPDATE data_sources SET last_cached = %s WHERE airtable_uid = %s"
-                )
-                cursor.execute(sql_query, (data["last_cached"], data["id"]))
-
-            self.psycopg2_connection.commit()
-            cursor.close()
+            archives_put_query(
+                id=id,
+                broken_as_of=broken_as_of,
+                last_cached=last_cached,
+                conn=self.psycopg2_connection,
+            )
 
             return {"status": "success"}
 

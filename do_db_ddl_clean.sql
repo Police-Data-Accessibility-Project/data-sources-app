@@ -158,3 +158,9 @@ CREATE TABLE if not exists volunteers (
     created timestamp without time zone NOT NULL
 );
 
+INSERT INTO agency_source_link (link_id, airtable_uid, agency_described_linked_uid) VALUES (1, 'rec00T2YLS2jU7Tbn', 'recv9fMNEQTbVarj2');
+INSERT INTO agency_source_link (link_id, airtable_uid, agency_described_linked_uid) VALUES (2, 'rec8zJuEOvhAZCfAD', 'recxUlLdt3Wwov6P1');
+INSERT INTO agency_source_link (link_id, airtable_uid, agency_described_linked_uid) VALUES (3, 'recUGIoPQbJ6laBmr', 'recv9fMNEQTbVarj2');
+INSERT INTO agency_source_link (link_id, airtable_uid, agency_described_linked_uid) VALUES (4, 'rec8gO2K86yk9mQIU', 'recRvBpZqXM8mjddz');
+INSERT INTO state_names VALUES (1, 'IL', 'Illinois');
+INSERT INTO state_names VALUES (2, 'PA', 'Pennsylvania');

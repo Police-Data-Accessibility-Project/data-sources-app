@@ -1,6 +1,6 @@
 from utilities.common import convert_dates_to_strings, format_arrays
 
-APPROVED_COLUMNS = [
+DATA_SOURCES_APPROVED_COLUMNS = [
     "name",
     "submitted_name",
     "description",
@@ -74,7 +74,8 @@ def data_source_by_id_results(conn, data_source_id):
     cursor = conn.cursor()
 
     data_source_approved_columns = [
-        f"data_sources.{approved_column}" for approved_column in APPROVED_COLUMNS
+        f"data_sources.{approved_column}"
+        for approved_column in DATA_SOURCES_APPROVED_COLUMNS
     ]
     agencies_approved_columns = [
         f"agencies.{field}" for field in AGENCY_APPROVED_COLUMNS
@@ -87,7 +88,7 @@ def data_source_by_id_results(conn, data_source_id):
     joined_column_names = ", ".join(all_approved_columns)
     sql_query = """
         SELECT
-            {}
+            {0}
         FROM
             agency_source_link
         INNER JOIN
@@ -95,14 +96,16 @@ def data_source_by_id_results(conn, data_source_id):
         INNER JOIN
             agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
         WHERE
-            data_sources.approval_status = 'approved' AND data_sources.airtable_uid = %s
+            data_sources.approval_status = 'approved' AND data_sources.airtable_uid = '{1}'
     """.format(
-        joined_column_names
+        joined_column_names, data_source_id
     )
 
-    cursor.execute(sql_query, (data_source_id,))
+    cursor.execute(sql_query)
+    result = cursor.fetchone()
+    cursor.close()
 
-    return cursor.fetchone()
+    return result
 
 
 def data_source_by_id_query(data_source_id="", test_query_results=[], conn={}):
@@ -112,7 +115,9 @@ def data_source_by_id_query(data_source_id="", test_query_results=[], conn={}):
         result = test_query_results
 
     if result:
-        data_source_and_agency_columns = APPROVED_COLUMNS + AGENCY_APPROVED_COLUMNS
+        data_source_and_agency_columns = (
+            DATA_SOURCES_APPROVED_COLUMNS + AGENCY_APPROVED_COLUMNS
+        )
         data_source_and_agency_columns.append("data_source_id")
         data_source_and_agency_columns.append("agency_id")
         data_source_and_agency_columns.append("agency_name")
@@ -126,15 +131,16 @@ def data_source_by_id_query(data_source_id="", test_query_results=[], conn={}):
     return data_source_details
 
 
-def data_sources_query(conn):
+def data_sources_results(conn):
+    cursor = conn.cursor()
     data_source_approved_columns = [
-        f"data_sources.{approved_column}" for approved_column in APPROVED_COLUMNS
+        f"data_sources.{approved_column}"
+        for approved_column in DATA_SOURCES_APPROVED_COLUMNS
     ]
     data_source_approved_columns.append("agencies.name as agency_name")
 
     joined_column_names = ", ".join(data_source_approved_columns)
 
-    cursor = conn.cursor()
     sql_query = """
         SELECT
             {}
@@ -151,8 +157,15 @@ def data_sources_query(conn):
     )
     cursor.execute(sql_query)
     results = cursor.fetchall()
+    cursor.close()
 
-    data_source_output_columns = APPROVED_COLUMNS + ["agency_name"]
+    return results
+
+
+def data_sources_query(conn={}, test_query_results=[]):
+    results = data_sources_results(conn, "", "") if conn else test_query_results
+
+    data_source_output_columns = DATA_SOURCES_APPROVED_COLUMNS + ["agency_name"]
 
     data_source_matches = [
         dict(zip(data_source_output_columns, result)) for result in results
