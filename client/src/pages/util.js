@@ -8,6 +8,7 @@ export const STATIC_VIEW_UI_SHAPE = [
 				classNames:
 					"mt-1 py-[.125rem] px-3 rounded-full bg-brand-wine/10 dark:bg-brand-wine dark:text-white w-fit small",
 				component: "button",
+				["data-test"]: "record-type-button",
 			},
 			{ title: "Description", key: "description" },
 			{ title: "Tags", key: "tags" },
@@ -41,6 +42,7 @@ export const STATIC_VIEW_UI_SHAPE = [
 				component: "button",
 				classNames:
 					"decoration-solid decoration-[6%] text-brand-gold  underline-offset-[5%] hover:brightness-85 small",
+				["data-test"]: "agency-name-button",
 			},
 			{ title: "State", key: "state_iso" },
 			{ title: "County", key: "county_name" },

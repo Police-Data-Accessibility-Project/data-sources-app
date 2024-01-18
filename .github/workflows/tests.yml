@@ -1,13 +1,11 @@
-name: Mirror Airtable data
+name: Automated Tests
 
 on:
-  schedule:
-    
+  schedule:  
   - cron: "*/15 * * * *" #update every 15 minutes
-  workflow_dispatch:
 
 jobs:
-  scrape:
+  test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -19,4 +17,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Run tests
+      env:
+        VUE_APP_PDAP_API_KEY: ${{ secrets.VUE_APP_PDAP_API_KEY }}
+
       run: python regular_api_checks.py
