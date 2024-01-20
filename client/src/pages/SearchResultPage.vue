@@ -1,9 +1,5 @@
 <template>
-	<FlexContainer
-		component="main"
-		data-test="search-results-page"
-		class="h-auto md:px-0"
-	>
+	<main data-test="search-results-page" class="flex flex-col p-8 h-auto">
 		<div>
 			<h1>Data Sources Search results</h1>
 			<p data-test="search-results-section-header-p" class="text-2xl">
@@ -25,7 +21,7 @@
 			template-rows="auto auto 1fr"
 			component="section"
 			data-test="search"
-			class="p-0 gap-6"
+			class="p-0 w-full md:max-w-[unset] lg:max-w-[unset]"
 		>
 			<GridItem
 				v-if="!searched"
@@ -70,7 +66,7 @@
 				:data-source="dataSource"
 			/>
 		</GridContainer>
-	</FlexContainer>
+	</main>
 </template>
 
 <script>
