@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`SearchResultPage renders with data > Calls API and renders search results 1`] = `
-<main class="h-auto md:px-0" component="main">
+<main class="flex flex-col p-8 h-auto">
   <div>
     <h1>Data Sources Search results</h1>
     <p class="text-2xl"> Searching for <span class="font-semibold">"calls"</span> in <span class="font-semibold">"Cook"</span>. <span>Found 3 results.</span>
@@ -10,7 +10,7 @@ exports[`SearchResultPage renders with data > Calls API and renders search resul
       <i class="fa fa-plus"></i> New search
     </button>
   </div>
-  <section class="pdap-grid-container pdap-grid-container-column-3 p-0 gap-6" style="grid-template-rows: auto auto 1fr;">
+  <section class="pdap-grid-container pdap-grid-container-column-3 p-0 w-full md:max-w-[unset] lg:max-w-[unset]" style="grid-template-rows: auto auto 1fr;">
     <div class="pdap-grid-item pdap-grid-item-span-column-3">
       <p class="text-xl max-w-full"> If you don't see what you need, <a href="https://airtable.com/shrbFfWk6fjzGnNsk"> make a request <i class="fa fa-external-link"></i>
         </a>
