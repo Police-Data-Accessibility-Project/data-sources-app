@@ -164,9 +164,11 @@ def data_sources_results(conn):
 
 
 def data_sources_query(conn={}, test_query_results=[]):
-    results = data_sources_results(conn, "", "") if conn else test_query_results
+    results = data_sources_results(
+        conn, "", "") if conn else test_query_results
 
-    data_source_output_columns = DATA_SOURCES_APPROVED_COLUMNS + ["agency_name"]
+    data_source_output_columns = DATA_SOURCES_APPROVED_COLUMNS + \
+        ["agency_name"]
 
     data_source_matches = [
         dict(zip(data_source_output_columns, result)) for result in results
