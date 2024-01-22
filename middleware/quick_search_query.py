@@ -57,7 +57,7 @@ def unaltered_search_query(cursor, search, location):
     print(f"Query parameters: '%{search}%', '%{location}%'")
     cursor.execute(QUICK_SEARCH_SQL.format(search.title(), location.title()))
     results = cursor.fetchall()
-    
+
     return results
 
 
@@ -76,7 +76,7 @@ def spacy_search_query(cursor, search, location):
         QUICK_SEARCH_SQL.format(depluralized_search_term.title(), location.title())
     )
     results = cursor.fetchall()
-    
+
     return results
 
 
