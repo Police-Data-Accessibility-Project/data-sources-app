@@ -8,6 +8,10 @@
 		"preview": "vite preview",
 		"lint": "eslint src --ext .js .",
 		"lint:fix": "npm run lint -- --fix",
+		"test": "vitest --dom --run",
+		"test:ci": "test --watchAll=false",
+		"test:changed": "vitest --dom --changed",
+		"coverage": "npm run test -- --coverage"
 	},
 	"dependencies": {
 		"axios": "^1.6.0",
