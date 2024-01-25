@@ -18,6 +18,6 @@ export default function formatDateForSearchResults(date) {
 		return date.getFullYear();
 	} else {
 		// Otherwise, return date formatted MM/DD/YYYY
-		return date.toLocaleDateString("es-pa");
+		return date.toLocaleDateString('es-pa');
 	}
 }
