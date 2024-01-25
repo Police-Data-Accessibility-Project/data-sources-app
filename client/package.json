@@ -37,21 +37,6 @@
 		"vite-svg-loader": "^5.1.0",
 		"vitest": "1.0"
 	},
-	"eslintConfig": {
-		"root": true,
-		"env": {
-			"node": true
-		},
-		"extends": [
-			"plugin:vue/vue3-essential",
-			"eslint:recommended"
-		],
-		"parserOptions": {
-			"parser": "@babel/eslint-parser",
-			"requireConfigFile": false
-		},
-		"rules": {}
-	},
 	"browserslist": [
 		"> 1%",
 		"last 2 versions",
