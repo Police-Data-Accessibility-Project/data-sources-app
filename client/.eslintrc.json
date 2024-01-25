@@ -1,13 +1,11 @@
 {
 	"root": true,
 	"extends": [
-		"eslint:recommended",
-		"plugin:vue/vue3-essential",
-		"plugin:vue/vue3-recommended",
-		"plugin:vue/strongly-recommended",
-		"@vue/eslint-config-prettier"
+		"@pdap-design-system/eslint-config"
 	],
-	"plugins": ["prettier"],
+	"plugins": [
+		"prettier"
+	],
 	"rules": {
 		"vue/require-default-prop": "off",
 		// Switch base eslint indent rule off
@@ -28,7 +26,13 @@
 			// Use prettier indent rule instead
 			"warn",
 			{
-				"indent": ["warn", "tab", { "SwitchCase": 2 }],
+				"indent": [
+					"warn",
+					"tab",
+					{
+						"SwitchCase": 2
+					}
+				],
 				"tabWidth": 2,
 				"useTabs": true
 			}
