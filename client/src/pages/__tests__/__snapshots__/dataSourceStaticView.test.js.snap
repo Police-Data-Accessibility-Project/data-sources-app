@@ -190,7 +190,7 @@ exports[`DataSourceStaticView > Calls API and renders search results 1`] = `
           <!--v-if-->
           <!-- If data is an array, loop over it and render each -->
           <!-- Otherwise, render single item -->
-          <p class href="2019-01-01">12/31/2018</p>
+          <p class href="2019-01-01">2018</p>
         </div>
         <div>
           <!-- Title -->
