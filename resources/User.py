@@ -1,9 +1,6 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_restful import Resource
-from flask import request, jsonify
-import uuid
-import os
-import jwt
+from flask import request
 
 
 class User(Resource):
@@ -29,14 +26,15 @@ class User(Resource):
             else:
                 return {"error": "no match"}
             if check_password_hash(user_data["password_digest"], password):
-                api_key = uuid.uuid4().hex
-                user_id = str(user_data["id"])
-                cursor.execute(
-                    "UPDATE users SET api_key = %s WHERE id = %s", (api_key, user_id)
-                )
-                payload = {"api_key": api_key}
-                self.psycopg2_connection.commit()
-                return payload
+                return {"data": "Successfully logged in"}
+                # api_key = uuid.uuid4().hex
+                # user_id = str(user_data["id"])
+                # cursor.execute(
+                #     "UPDATE users SET api_key = %s WHERE id = %s", (api_key, user_id)
+                # )
+                # payload = {"api_key": api_key}
+                # self.psycopg2_connection.commit()
+                # return payload
 
         except Exception as e:
             self.psycopg2_connection.rollback()
@@ -58,6 +56,25 @@ class User(Resource):
             self.psycopg2_connection.commit()
 
             return {"data": "Successfully added user"}
+
+        except Exception as e:
+            self.psycopg2_connection.rollback()
+            print(str(e))
+            return {"error": e}
+
+    # Endpoint for updating a user's password
+    def put(self):
+        try:
+            data = request.get_json()
+            email = data.get("email")
+            password = data.get("password")
+            password_digest = generate_password_hash(password)
+            cursor = self.psycopg2_connection.cursor()
+            cursor.execute(
+                f"update users set password_digest = '{password_digest}' where email = '{email}'"
+            )
+            self.psycopg2_connection.commit()
+            return {"data": "Successfully updated password"}
 
         except Exception as e:
             self.psycopg2_connection.rollback()

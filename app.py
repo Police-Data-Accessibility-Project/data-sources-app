@@ -2,12 +2,14 @@ from flask import Flask
 from flask_restful import Api
 from flask_cors import CORS
 from resources.User import User
+from resources.ApiKey import ApiKey
 from resources.QuickSearch import QuickSearch
 from resources.DataSources import DataSources
 from resources.DataSources import DataSourceById
 from resources.Agencies import Agencies
 from resources.Archives import Archives
 from resources.SearchTokens import SearchTokens
+from resources.AirtableWebhook import AirtableWebhook
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 
 psycopg2_connection = initialize_psycopg2_connection()
@@ -18,6 +20,11 @@ CORS(app)
 
 api.add_resource(
     User, "/user", resource_class_kwargs={"psycopg2_connection": psycopg2_connection}
+)
+api.add_resource(
+    ApiKey,
+    "/api_key",
+    resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
 )
 api.add_resource(
     QuickSearch,
@@ -49,6 +56,7 @@ api.add_resource(
     "/search-tokens",
     resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
 )
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
