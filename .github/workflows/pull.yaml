@@ -65,6 +65,7 @@ jobs:
         with:
           node-version: '18.x'
           cache: 'npm'
+          cache-dependency-path: 'client/package-lock.json'
       - name: Install deps
         run: npm ci
         
