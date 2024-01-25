@@ -45,7 +45,7 @@ exports[`SearchResultPage renders with data > Calls API and renders search resul
 		</div>
 -->
       <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Time range </p>
-      <p>2016–Unknown end </p>
+      <p>12/31/2016–Unknown end </p>
       <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Formats available</p>
       <ul class="mb-4">
         <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">[</li>
@@ -83,7 +83,7 @@ exports[`SearchResultPage renders with data > Calls API and renders search resul
 		</div>
 -->
       <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Time range </p>
-      <p>2018–Unknown end </p>
+      <p>12/31/2018–Unknown end </p>
       <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Formats available</p>
       <ul class="mb-4">
         <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">[</li>
