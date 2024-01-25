@@ -85,6 +85,7 @@ jobs:
         with:
           node-version: '18.x'
           cache: 'npm'
+          cache-dependency-path: 'client/package-lock.json'
       - run: npm ci
       - name: Lint JS and Vue
         run: npm run lint
@@ -102,6 +103,7 @@ jobs:
         with:
           node-version: '18.x'
           cache: 'npm'
+          cache-dependency-path: 'client/package-lock.json'
       - run: npm ci
       - name: Run tests
         run: npm run test:ci
@@ -119,6 +121,7 @@ jobs:
         with:
           node-version: '18.x'
           cache: 'npm'
+          cache-dependency-path: 'client/package-lock.json'
       - run: npm ci
       - name: Build app
         run: npm run build
