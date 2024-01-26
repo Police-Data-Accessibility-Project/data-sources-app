@@ -18,7 +18,7 @@ exports[`DataSourceStaticView > Calls API and renders search results 1`] = `
           <!-- If data is an array and returned from API, loop over it and render each -->
           <!-- Otherwise, if single item returned from API, render that item  -->
           <!-- TODO: Abstract this duplicate logic into a render function (https://vuejs.org/guide/extras/render-function) to decrease repetition  -->
-          <button class="mt-1 py-[.125rem] px-3 rounded-full bg-brand-wine/10 dark:bg-brand-wine dark:text-white w-fit" href="Calls for Service">Calls for Service</button>
+          <button class="mt-1 py-[.125rem] px-3 rounded-full bg-brand-wine/10 dark:bg-brand-wine dark:text-white w-fit small" href="Calls for Service">Calls for Service</button>
         </div>
         <div>
           <!-- Title -->
@@ -118,7 +118,7 @@ exports[`DataSourceStaticView > Calls API and renders search results 1`] = `
           <!-- If data is an array and returned from API, loop over it and render each -->
           <!-- Otherwise, if single item returned from API, render that item  -->
           <!-- TODO: Abstract this duplicate logic into a render function (https://vuejs.org/guide/extras/render-function) to decrease repetition  -->
-          <button class="decoration-solid decoration-[6%] text-brand-gold  underline-offset-[5%] hover:brightness-85 text-left" href="Chicago Police Department - IL">Chicago Police Department - IL</button>
+          <button class="decoration-solid decoration-[6%] text-brand-gold  underline-offset-[5%] hover:brightness-85 small" href="Chicago Police Department - IL">Chicago Police Department - IL</button>
         </div>
         <div>
           <!-- Title -->
