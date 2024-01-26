@@ -89,6 +89,22 @@ describe('DataSourceStaticView', () => {
 		expect(push).toHaveBeenLastCalledWith(`/search/all/${name}`);
 	});
 
+	it('Opens link on archive button click.', async () => {
+		const spy = vi.spyOn(window, 'open');
+		const button = wrapper.find('[data-test="view-archives-button"]');
+
+		expect(button.exists()).toBe(true);
+
+		button.trigger('click');
+
+		await nextTick();
+
+		expect(spy).toHaveBeenLastCalledWith(
+			`https://web.archive.org/web/*/${dataSourceMock.source_url}`,
+			'_blank',
+		);
+	});
+
 	// it("renders correctly when there is no data", () => {
 	// 	const wrapper = mount(DataSourceStaticView, {
 	// 		data() {

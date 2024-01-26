@@ -17,8 +17,35 @@ export const STATIC_VIEW_UI_SHAPE = [
 	{
 		header: 'Access & format',
 		records: [
-			{ title: 'Source URL', key: 'source_url', component: 'a' },
-			{ title: 'ReadMe URL', key: 'readme_url' },
+			{
+				title: 'Source URL',
+				key: 'source_url',
+				component: 'a',
+				attributes: { target: '_blank', rel: 'noreferrer' },
+				classNames: 'w-full inline-block truncate-text',
+			},
+			{
+				key: 'source_url_cache',
+				attributes: { intent: 'secondary' },
+				component: 'PButton',
+				classNames: 'flex gap-4 items-center',
+				['data-test']: 'view-archives-button',
+				text: 'View Archives',
+				renderIf: 'last_cached',
+				icon: 'fa-external-link',
+			},
+			{
+				title: 'Last Archived',
+				key: 'last_cached',
+				isDate: true,
+			},
+			{
+				title: 'ReadMe URL',
+				key: 'readme_url',
+				component: 'a',
+				classNames: 'w-full inline-block truncate-text',
+				attributes: { target: '_blank', rel: 'noreferrer' },
+			},
 			{ title: 'Access Type', key: 'access_type' },
 			{
 				title: 'Record Formats',

@@ -4,6 +4,9 @@
  * @returns {string} Date formatted MM/DD/YYYY | YYYY (if first or last day of year)
  */
 export default function formatDateForSearchResults(date) {
+	if (typeof date !== 'string' && !(date instanceof Date)) {
+		return undefined;
+	}
 	// Whether string or Date, convert to date object
 	date = new Date(date);
 
@@ -15,7 +18,7 @@ export default function formatDateForSearchResults(date) {
 
 	// If first or last day of year, return year only
 	if (isFirstDayOfYear || isLastDayOfYear) {
-		return date.getFullYear();
+		return date.getFullYear().toString();
 	} else {
 		// Otherwise, return date formatted MM/DD/YYYY
 		return date.toLocaleDateString('es-pa');
