@@ -2,9 +2,7 @@ from werkzeug.security import generate_password_hash
 
 
 def user_get_results(cursor, email):
-    cursor.execute(
-        f"select id, password_digest from users where email = '{email}'"
-    )
+    cursor.execute(f"select id, password_digest from users where email = '{email}'")
     results = cursor.fetchall()
     if len(results) > 0:
         user_data = {"id": results[0][0], "password_digest": results[0][1]}
