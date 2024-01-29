@@ -150,7 +150,28 @@ def test_get_user():
         json={"email": "test2", "password": "test"},
     )
 
-    return response
+    return response.json()["data"] == "Successfully logged in"
+
+
+def test_put_user():
+    response = requests.get(
+        "https://data-sources.pdap.io/api/user",
+        headers=HEADERS,
+        json={"email": "test2", "password": "test"},
+    )
+
+    return response.json()["data"] == "Successfully updated password"
+
+
+# api-key
+def test_get_api_key():
+    response = requests.get(
+        "https://data-sources.pdap.io/api/api_key",
+        headers=HEADERS,
+        json={"email": "test2", "password": "test"},
+    )
+
+    return len(response.json()["api_key"]) > 0
 
 
 # archives
@@ -228,12 +249,14 @@ def main():
         "test_quicksearch_media_bulletin_pennsylvania_results",
         "test_data_source_by_id",
         "test_data_sources",
+        "test_update_data_source",
         "test_data_sources_approved",
         "test_data_source_by_id_approved",
         "test_search_tokens_data_sources",
         "test_search_tokens_data_source_by_id",
         "test_search_tokens_quick_search_complaints_allegheny_results",
-        # "test_get_user",
+        "test_get_user",
+        "test_get_api_key",
         "test_get_archives",
         "test_put_archives",
         "test_put_archives_brokenasof",

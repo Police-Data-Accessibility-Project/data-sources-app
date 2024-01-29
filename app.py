@@ -9,7 +9,6 @@ from resources.DataSources import DataSourceById
 from resources.Agencies import Agencies
 from resources.Archives import Archives
 from resources.SearchTokens import SearchTokens
-from resources.AirtableWebhook import AirtableWebhook
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 
 psycopg2_connection = initialize_psycopg2_connection()

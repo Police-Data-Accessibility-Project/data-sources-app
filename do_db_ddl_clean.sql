@@ -135,7 +135,7 @@ CREATE TABLE if not exists state_names (
 );
 
 CREATE TABLE if not exists users (
-    id bigint NOT NULL,
+    id serial primary key,
     created_at timestamp with time zone,
     updated_at timestamp with time zone,
     email text NOT NULL,
@@ -164,3 +164,4 @@ INSERT INTO agency_source_link (link_id, airtable_uid, agency_described_linked_u
 INSERT INTO agency_source_link (link_id, airtable_uid, agency_described_linked_uid) VALUES (4, 'rec8gO2K86yk9mQIU', 'recRvBpZqXM8mjddz');
 INSERT INTO state_names VALUES (1, 'IL', 'Illinois');
 INSERT INTO state_names VALUES (2, 'PA', 'Pennsylvania');
+INSERT INTO users (email, password_digest) VALUES ("test", "test");
