@@ -6,7 +6,7 @@ export const STATIC_VIEW_UI_SHAPE = [
 				title: 'Record type',
 				key: 'record_type',
 				classNames:
-					'mt-1 py-[.125rem] px-3 rounded-full bg-brand-wine/10 dark:bg-brand-wine dark:text-white w-fit small',
+					'mt-1 py-[.125rem] px-3 rounded-full bg-brand-wine/10 dark:bg-brand-wine dark:text-white w-fit small font-normal text-lg',
 				component: 'Button',
 				attributes: { intent: 'tertiary' },
 				['data-test']: 'record-type-button',
@@ -69,7 +69,7 @@ export const STATIC_VIEW_UI_SHAPE = [
 				key: 'agency_name',
 				component: 'Button',
 				classNames:
-					'decoration-solid decoration-[6%] text-brand-gold  underline-offset-[5%] hover:brightness-85 small',
+					'decoration-solid decoration-[6%] text-brand-gold  underline-offset-[5%] hover:brightness-85 small p-0 font-normal text-lg',
 				attributes: { intent: 'tertiary' },
 				['data-test']: 'agency-name-button',
 			},
