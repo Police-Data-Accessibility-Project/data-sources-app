@@ -7,14 +7,14 @@
 		<h1 class="flex justify-start mt-2 w-full">
 			{{ dataSource.name }}
 		</h1>
-		<PButton
+		<Button
 			data-test="new-search-button"
 			class="new-search"
 			intent="secondary"
 			@click="() => $router.push('/')"
 		>
 			<i class="fa fa-plus" /> New search
-		</PButton>
+		</Button>
 		<div
 			alignment="center"
 			class="grid grid-cols-1 w-full auto-rows-auto gap-4 mx-auto w-full items-start md:grid-cols-2 lg:grid-cols-3"
@@ -130,14 +130,14 @@
 import axios from "axios";
 /* Updating local button name because it's conflicting with native `<button>` when registered.
  * TODO: add `intent="tertiary"` to design-system, in order to allow unstyled button usage */
-import { Button as PButton } from "pdap-design-system";
+import { Button } from "pdap-design-system";
 import formatDateForSearchResults from "../util/formatDate";
 import { STATIC_VIEW_UI_SHAPE } from "./util";
 
 export default {
 	name: "DataSourceStaticView",
 	components: {
-		PButton,
+		Button,
 	},
 	data: function () {
 		return {

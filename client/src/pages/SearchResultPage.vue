@@ -94,6 +94,7 @@ export default {
 		this.searchTerm = this.$route.params.searchTerm;
 		this.location = this.$route.params.location;
 		this.search();
+		console.log({base: import.meta.env.VITE_VUE_APP_BASE_URL, term: this.searchTerm, location: this.location});
 	},
 	methods: {
 		getResultsCopy() {
