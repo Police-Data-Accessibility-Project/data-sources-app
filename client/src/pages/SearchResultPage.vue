@@ -70,13 +70,13 @@
 </template>
 
 <script>
-import { Button, GridContainer, GridItem } from "pdap-design-system";
-import SearchResultCard from "../components/SearchResultCard.vue";
-import axios from "axios";
-import pluralize from "../util/pluralize";
+import { Button, GridContainer, GridItem } from 'pdap-design-system';
+import SearchResultCard from '../components/SearchResultCard.vue';
+import axios from 'axios';
+import pluralize from '../util/pluralize';
 
 export default {
-	name: "SearchResultPage",
+	name: 'SearchResultPage',
 	components: {
 		Button,
 		SearchResultCard,
@@ -87,19 +87,18 @@ export default {
 		searched: false,
 		searchStatusCode: 200,
 		searchResult: {},
-		searchTerm: "",
-		location: "",
+		searchTerm: '',
+		location: '',
 	}),
 	mounted: function () {
 		this.searchTerm = this.$route.params.searchTerm;
 		this.location = this.$route.params.location;
 		this.search();
-		console.log({base: import.meta.env.VITE_VUE_APP_BASE_URL, term: this.searchTerm, location: this.location});
 	},
 	methods: {
 		getResultsCopy() {
 			const count = this.searchResult?.data?.length;
-			return `${count} ${pluralize("result", count)}`;
+			return `${count} ${pluralize('result', count)}`;
 		},
 		async search() {
 			const url = `${
