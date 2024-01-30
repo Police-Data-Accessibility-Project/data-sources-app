@@ -6,7 +6,7 @@ exports[`DataSourceStaticView > Calls API and renders search results 1`] = `
   <button class="pdap-button pdap-button-secondary new-search">
     <i class="fa fa-plus"></i> New search
   </button>
-  <div alignment="center" class="grid grid-cols-1 w-full auto-rows-auto gap-4 mx-auto w-full items-start md:grid-cols-2 lg:grid-cols-3">
+  <div alignment="center" class="grid grid-cols-1 w-full auto-rows-auto gap-4 mx-auto items-start md:grid-cols-2 lg:grid-cols-3">
     <!-- Each card -->
     <div class="flex self-stretch flex-col text-lg">
       <div class="border border-neutral-400 h-full leading-snug p-3 mt-8">
