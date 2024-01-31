@@ -5,7 +5,6 @@ ARCHIVES_GET_COLUMNS = [
     "source_url",
     "update_frequency",
     "last_cached",
-    "agency_name",
 ]
 
 
