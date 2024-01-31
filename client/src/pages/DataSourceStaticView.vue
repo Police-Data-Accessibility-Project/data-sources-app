@@ -7,17 +7,17 @@
 		<h1 class="flex justify-start mt-2 w-full">
 			{{ dataSource.name }}
 		</h1>
-		<PButton
+		<Button
 			data-test="new-search-button"
 			class="new-search"
 			intent="secondary"
 			@click="() => $router.push('/')"
 		>
 			<i class="fa fa-plus" /> New search
-		</PButton>
+		</Button>
 		<div
 			alignment="center"
-			class="grid grid-cols-1 w-full auto-rows-auto gap-4 mx-auto w-full items-start md:grid-cols-2 lg:grid-cols-3"
+			class="grid grid-cols-1 w-full auto-rows-auto gap-4 mx-auto items-start md:grid-cols-2 lg:grid-cols-3"
 		>
 			<!-- Each card -->
 			<div
@@ -127,17 +127,15 @@
 </template>
 
 <script>
-import axios from "axios";
-/* Updating local button name because it's conflicting with native `<button>` when registered.
- * TODO: add `intent="tertiary"` to design-system, in order to allow unstyled button usage */
-import { Button as PButton } from "pdap-design-system";
-import formatDateForSearchResults from "../util/formatDate";
-import { STATIC_VIEW_UI_SHAPE } from "./util";
+import axios from 'axios';
+import { Button } from 'pdap-design-system';
+import formatDateForSearchResults from '../util/formatDate';
+import { STATIC_VIEW_UI_SHAPE } from './util';
 
 export default {
-	name: "DataSourceStaticView",
+	name: 'DataSourceStaticView',
 	components: {
-		PButton,
+		Button
 	},
 	data: function () {
 		return {
@@ -145,7 +143,7 @@ export default {
 			id: null,
 			dataToRender: STATIC_VIEW_UI_SHAPE,
 			noData: true,
-			errorMessage: "",
+			errorMessage: '',
 		};
 	},
 	mounted: function () {
@@ -157,15 +155,15 @@ export default {
 			this.$router.push(`/search/${searchTerm}/${location}`);
 		},
 		navigateTo(to) {
-			window.open(to, "_blank");
+			window.open(to, '_blank');
 		},
 		onClick(key, value) {
 			switch (key) {
-				case "record_type":
-					return this.searchAgain(value, "all");
-				case "agency_name":
-					return this.searchAgain("all", value);
-				case "source_url_cache":
+				case 'record_type':
+					return this.searchAgain(value, 'all');
+				case 'agency_name':
+					return this.searchAgain('all', value);
+				case 'source_url_cache':
 					return this.navigateTo(
 						`https://web.archive.org/web/*/${this.dataSource.source_url}`,
 					);

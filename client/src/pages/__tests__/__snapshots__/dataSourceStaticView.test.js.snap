@@ -6,7 +6,7 @@ exports[`DataSourceStaticView > Calls API and renders search results 1`] = `
   <button class="pdap-button pdap-button-secondary new-search">
     <i class="fa fa-plus"></i> New search
   </button>
-  <div alignment="center" class="grid grid-cols-1 w-full auto-rows-auto gap-4 mx-auto w-full items-start md:grid-cols-2 lg:grid-cols-3">
+  <div alignment="center" class="grid grid-cols-1 w-full auto-rows-auto gap-4 mx-auto items-start md:grid-cols-2 lg:grid-cols-3">
     <!-- Each card -->
     <div class="flex self-stretch flex-col text-lg">
       <div class="border border-neutral-400 h-full leading-snug p-3 mt-8">
@@ -18,7 +18,7 @@ exports[`DataSourceStaticView > Calls API and renders search results 1`] = `
           <!-- If data is an array and returned from API, loop over it and render each -->
           <!-- Otherwise, if single item returned from API, render that item  -->
           <!-- TODO: Abstract this duplicate logic into a render function (https://vuejs.org/guide/extras/render-function) to decrease repetition  -->
-          <button class="mt-1 py-[.125rem] px-3 rounded-full bg-brand-wine/10 dark:bg-brand-wine dark:text-white w-fit small" href="Calls for Service">Calls for Service</button>
+          <button class="pdap-button pdap-button-tertiary mt-1 py-[.125rem] px-3 rounded-full bg-brand-wine/10 dark:bg-brand-wine dark:text-white w-fit small font-normal text-lg" href="Calls for Service">Calls for Service</button>
         </div>
         <div>
           <!-- Title -->
@@ -52,8 +52,8 @@ exports[`DataSourceStaticView > Calls API and renders search results 1`] = `
           <!--v-if-->
           <!-- If data is an array and returned from API, loop over it and render each -->
           <!-- Otherwise, this isn't returned from API, we need to do it ourselves -->
-          <button class="pdap-button pdap-button-secondary flex gap-4 items-center">View Archives <i class="fa fa-external-link"></i>
-          </button>
+          <pbutton class="flex gap-4 items-center" intent="secondary">View Archives <i class="fa fa-external-link"></i>
+          </pbutton>
         </div>
         <div>
           <!-- Title -->
@@ -118,7 +118,7 @@ exports[`DataSourceStaticView > Calls API and renders search results 1`] = `
           <!-- If data is an array and returned from API, loop over it and render each -->
           <!-- Otherwise, if single item returned from API, render that item  -->
           <!-- TODO: Abstract this duplicate logic into a render function (https://vuejs.org/guide/extras/render-function) to decrease repetition  -->
-          <button class="decoration-solid decoration-[6%] text-brand-gold  underline-offset-[5%] hover:brightness-85 small" href="Chicago Police Department - IL">Chicago Police Department - IL</button>
+          <button class="pdap-button pdap-button-tertiary decoration-solid decoration-[6%] text-brand-gold  underline-offset-[5%] hover:brightness-85 small p-0 font-normal text-lg" href="Chicago Police Department - IL">Chicago Police Department - IL</button>
         </div>
         <div>
           <!-- Title -->
