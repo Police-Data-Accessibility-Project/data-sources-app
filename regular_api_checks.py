@@ -256,6 +256,7 @@ def main():
         "test_search_tokens_data_source_by_id",
         "test_search_tokens_quick_search_complaints_allegheny_results",
         "test_get_user",
+        "test_put_user",
         "test_get_api_key",
         "test_get_archives",
         "test_put_archives",
