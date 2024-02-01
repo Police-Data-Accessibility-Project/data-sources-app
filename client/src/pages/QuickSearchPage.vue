@@ -5,10 +5,10 @@
 </template>
 
 <script>
-import { QuickSearchForm } from "pdap-design-system";
+import { QuickSearchForm } from 'pdap-design-system';
 
 export default {
-	name: "QuickSearchPage",
+	name: 'QuickSearchPage',
 	components: {
 		QuickSearchForm,
 	},

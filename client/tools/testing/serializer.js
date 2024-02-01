@@ -1,14 +1,14 @@
-import { print as _print } from "jest-serializer-vue-tjw";
+import { print as _print } from 'jest-serializer-vue-tjw';
 
 const helpers = {
 	isHtmlString: function (received) {
 		return (
-			typeof received === "string" &&
-			(received.startsWith("<") || received.startsWith('"<'))
+			typeof received === 'string' &&
+			(received.startsWith('<') || received.startsWith('"<'))
 		);
 	},
 	isVueWrapper: function (received) {
-		return typeof received === "object" && typeof received.html === "function";
+		return typeof received === 'object' && typeof received.html === 'function';
 	},
 };
 

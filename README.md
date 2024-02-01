@@ -137,9 +137,19 @@ npm run lint
 npm run lint:fix
 ```
 
-### Runs tests quietly
+### Runs tests with debug output
 ```
 npm run test
+```
+
+### Runs tests quietly for CI
+```
+npm run test:ci
+```
+
+### Runs tests only on changed files
+```
+npm run test:changed
 ```
 
 ### Runs tests and outputs coverage reports
