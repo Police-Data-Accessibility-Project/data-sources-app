@@ -78,7 +78,7 @@ class SearchTokens(Resource):
                 except Exception as e:
                     self.psycopg2_connection.rollback()
                     print(str(e))
-                    return "There has been an error pulling data!"
+                    return {"message": "There has been an error pulling data!"}, 500
 
             elif endpoint == "data-sources-by-id":
                 try:
@@ -89,16 +89,16 @@ class SearchTokens(Resource):
                         return data_source_details
 
                     else:
-                        return "Data source not found.", 404
+                        return {"message": "Data source not found."}, 404
 
                 except Exception as e:
                     print(str(e))
                     return "There has been an error pulling data!"
 
             else:
-                return {"error": "Unknown endpoint"}, 500
+                return {"message": "Unknown endpoint"}, 500
 
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {"error": e}, 500
+            return {"message": e}, 500
