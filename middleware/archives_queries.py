@@ -5,7 +5,6 @@ ARCHIVES_GET_COLUMNS = [
     "source_url",
     "update_frequency",
     "last_cached",
-    "agency_name",
 ]
 
 
@@ -13,20 +12,15 @@ def archives_get_results(conn):
     cursor = conn.cursor()
     sql_query = """
     SELECT
-    data_sources.airtable_uid,
-    data_sources.source_url,
-    data_sources.update_frequency,
-    data_sources.last_cached,
-    data_sources.broken_source_url_as_of,
-    agencies.name
+        airtable_uid,
+        source_url,
+        update_frequency,
+        last_cached,
+        broken_source_url_as_of
     FROM
-        agency_source_link
-    INNER JOIN
-        data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
-    INNER JOIN
-        agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+        data_sources
     WHERE 
-        (data_sources.last_cached IS NULL OR data_sources.update_frequency IS NOT NULL) AND data_sources.broken_source_url_as_of IS NULL AND data_sources.source_url IS NOT NULL
+        (last_cached IS NULL OR update_frequency IS NOT NULL) AND broken_source_url_as_of IS NULL AND url_status <> 'broken' AND source_url IS NOT NULL
     """
     cursor.execute(sql_query)
 
@@ -49,7 +43,7 @@ def archives_get_query(test_query_results=[], conn={}):
 
 def archives_put_broken_as_of_results(id, broken_as_of, last_cached, conn):
     cursor = conn.cursor()
-    sql_query = "UPDATE data_sources SET broken_source_url_as_of = '{0}', last_cached = '{1}' WHERE airtable_uid = '{2}'"
+    sql_query = "UPDATE data_sources SET url_status = 'broken', broken_source_url_as_of = '{0}', last_cached = '{1}' WHERE airtable_uid = '{2}'"
     cursor.execute(sql_query.format(broken_as_of, last_cached, id))
     cursor.close()
 
