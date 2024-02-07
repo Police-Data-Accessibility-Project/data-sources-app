@@ -385,13 +385,11 @@ ARCHIVES_GET_QUERY_RESULTS = [
         "https://informationportal.igchicago.org/911-calls-for-cpd-service/",
         "Bi-weekly",
         "NULL",
-        "Chicago Police Department - IL",
     ),
     (
         "rec04V1oMa6Dxt0Sl",
         "https://www.columbus.gov/police-annualreports/",
         "Annually",
         datetime.date(2023, 9, 16),
-        "Columbus Division of Police - OH",
     ),
 ]

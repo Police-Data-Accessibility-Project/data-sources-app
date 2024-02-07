@@ -1,27 +1,27 @@
-import SearchResultPage from "../SearchResultPage.vue";
+import SearchResultPage from '../SearchResultPage.vue';
 // import { FlexContainer } from "pdap-design-system";
-import { flushPromises, mount } from "@vue/test-utils";
-import { describe, expect, vi, test, beforeEach, beforeAll } from "vitest";
-import axios from "axios";
-import { resultsMock } from "../__mocks__";
-import { nextTick } from "vue";
+import { flushPromises, mount } from '@vue/test-utils';
+import { describe, expect, vi, test, beforeEach, beforeAll } from 'vitest';
+import axios from 'axios';
+import { resultsMock } from '../__mocks__';
+import { nextTick } from 'vue';
 
-vi.mock("axios");
+vi.mock('axios');
 
 const $routeMock = {
 	params: {
-		searchTerm: "calls",
-		location: "Cook",
+		searchTerm: 'calls',
+		location: 'Cook',
 	},
 };
 
 let wrapper;
 
 beforeAll(() => {
-	import.meta.env.VITE_VUE_APP_BASE_URL = "https://data-sources.pdap.io";
+	import.meta.env.VITE_VUE_APP_BASE_URL = 'https://data-sources.pdap.io';
 });
 
-describe("SearchResultPage renders with data", () => {
+describe('SearchResultPage renders with data', () => {
 	beforeEach(() => {
 		wrapper = mount(SearchResultPage, {
 			global: {
@@ -30,7 +30,7 @@ describe("SearchResultPage renders with data", () => {
 				},
 				stubs: {
 					FlexContainer: {
-						template: "<main><slot /></main>",
+						template: '<main><slot /></main>',
 					},
 				},
 			},
@@ -41,7 +41,7 @@ describe("SearchResultPage renders with data", () => {
 		});
 	});
 
-	test("Calls API and renders search results", async () => {
+	test('Calls API and renders search results', async () => {
 		const searchTerm = wrapper.vm.searchTerm;
 		const location = wrapper.vm.location;
 
@@ -62,7 +62,7 @@ describe("SearchResultPage renders with data", () => {
 		expect(wrapper.html()).toMatchSnapshot();
 	});
 
-	test("renders search results section header properly", () => {
+	test('renders search results section header properly', () => {
 		axios.get.mockResolvedValue({
 			data: resultsMock,
 		});
@@ -78,7 +78,7 @@ describe("SearchResultPage renders with data", () => {
 		);
 	});
 
-	test("renders search result count properly", () => {
+	test('renders search result count properly', () => {
 		// const count = wrapper.vm.searchResult.count;
 
 		expect(wrapper.get('[data-test="search-results-count"]').text()).toBe(
@@ -86,22 +86,22 @@ describe("SearchResultPage renders with data", () => {
 		);
 	});
 
-	test("request data link has correct href value", () => {
+	test('request data link has correct href value', () => {
 		expect(
 			wrapper.get('[data-test="search-results-request-link"]').attributes()
 				.href,
-		).toBe("https://airtable.com/shrbFfWk6fjzGnNsk");
+		).toBe('https://airtable.com/shrbFfWk6fjzGnNsk');
 	});
 
-	test("search results card count matches search results returned in data", () => {
+	test('search results card count matches search results returned in data', () => {
 		expect(wrapper.findAll('[data-test="search-results-cards"]').length).toBe(
 			wrapper.vm.searchResult.count,
 		);
 	});
 });
 
-describe("SearchResultPage shows no results found when no data returns", () => {
-	test("search results page shows no results properly", async () => {
+describe('SearchResultPage shows no results found when no data returns', () => {
+	test('search results page shows no results properly', async () => {
 		axios.get.mockResolvedValue({
 			data: {
 				count: 0,

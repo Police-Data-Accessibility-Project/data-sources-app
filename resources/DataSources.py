@@ -16,17 +16,17 @@ class DataSourceById(Resource):
     def get(self, data_source_id):
         try:
             data_source_details = data_source_by_id_query(
-                self.psycopg2_connection, data_source_id
+                conn=self.psycopg2_connection, data_source_id=data_source_id
             )
             if data_source_details:
                 return data_source_details
 
             else:
-                return "Data source not found.", 404
+                return {"message": "Data source not found."}, 404
 
         except Exception as e:
             print(str(e))
-            return "There has been an error pulling data!"
+            return {"message": "There has been an error pulling data!"}, 500
 
     @api_required
     def put(self, data_source_id):
@@ -64,11 +64,11 @@ class DataSourceById(Resource):
 
             cursor.execute(sql_query)
             self.psycopg2_connection.commit()
-            return {"status": "success"}
+            return {"message": "Data source updated successfully."}
 
         except Exception as e:
             print(str(e))
-            return "There has been an error updating the data source", 400
+            return {"message": "There has been an error updating the data source"}, 500
 
 
 class DataSources(Resource):
@@ -90,7 +90,7 @@ class DataSources(Resource):
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return "There has been an error pulling data!"
+            return {"message": "There has been an error pulling data!"}, 500
 
     @api_required
     def post(self):
@@ -129,9 +129,9 @@ class DataSources(Resource):
             cursor.execute(sql_query)
             self.psycopg2_connection.commit()
 
-            return True
+            return {"message": "Data source added successfully."}
 
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return False
+            return {"message": "There has been an error adding the data source"}, 500

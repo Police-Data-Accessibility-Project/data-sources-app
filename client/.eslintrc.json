@@ -1,38 +1,9 @@
 {
 	"root": true,
 	"extends": [
-		"eslint:recommended",
-		"plugin:vue/vue3-essential",
-		"plugin:vue/vue3-recommended",
-		"plugin:vue/strongly-recommended",
-		"@vue/eslint-config-prettier"
+		"@pdap-design-system/eslint-config"
 	],
-	"plugins": ["prettier"],
-	"rules": {
-		"vue/require-default-prop": "off",
-		// Switch base eslint indent rule off
-		"indent": "off",
-		"vue/html-self-closing": [
-			"error",
-			{
-				"html": {
-					"void": "always",
-					"normal": "always",
-					"component": "always"
-				},
-				"svg": "always",
-				"math": "always"
-			}
-		],
-		"prettier/prettier": [
-			// Use prettier indent rule instead
-			"warn",
-			{
-				"indent": ["warn", "tab", { "SwitchCase": 2 }],
-				"tabWidth": 2,
-				"useTabs": true
-			}
-		],
-		"vue/no-multiple-template-root": "off"
-	}
+	"plugins": [
+		"prettier"
+	]
 }
