@@ -1,22 +1,23 @@
 <template>
 	<main
 		v-if="!noData"
-		class="flex flex-col p-8"
+		class="flex flex-col p-8 w-full"
 		data-test="data-source-static-view"
 	>
 		<h1 class="flex justify-start mt-2 w-full">
 			{{ dataSource.name }}
 		</h1>
-		<PButton
+		<Button
 			data-test="new-search-button"
+			class="new-search"
 			intent="secondary"
 			@click="() => $router.push('/')"
 		>
 			<i class="fa fa-plus" /> New search
-		</PButton>
+		</Button>
 		<div
 			alignment="center"
-			class="grid grid-cols-[auto] auto-rows-auto gap-4 mx-auto w-full items-start md:grid-cols-2 lg:grid-cols-3"
+			class="grid grid-cols-1 w-full auto-rows-auto gap-4 mx-auto items-start md:grid-cols-2 lg:grid-cols-3"
 		>
 			<!-- Each card -->
 			<div
@@ -36,42 +37,61 @@
 					>
 						<!-- Title -->
 						<p
+							v:if="record.title"
 							class="large text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"
 						>
 							{{ record.title }}
 						</p>
 
 						<!-- If no data for this key, em-dash -->
-						<div v-if="!dataSource[record.key]" class="text-neutral-500">
+						<div
+							v-if="!dataSource[record.key] && !dataSource[record.renderIf]"
+							class="text-neutral-500"
+						>
 							&mdash;
 						</div>
 
-						<!-- If data is an array, loop over it and render each -->
+						<!-- If data is an array and returned from API, loop over it and render each -->
 						<div v-if="Array.isArray(dataSource[record.key])">
 							<component
-								:is="record.component ?? 'p'"
+								:is="
+									dataSource[record.key] && record.component
+										? record.component
+										: 'p'
+								"
 								v-for="item in dataSource[record.key]"
 								:key="item"
-								:class="item?.classNames || small"
+								:class="record?.classNames"
 								:data-test="record['data-test']"
 								:href="dataSource[record.key]"
-								:target="attributesByComponent[record.component]?.target"
-								:rel="attributesByComponent[record.component]?.target"
+								:intent="record?.attributes?.intent"
+								:target="record?.attributes?.target"
+								:rel="record?.attributes?.target"
 								@click="onClick(record.key, dataSource[record.key])"
 							>
-								{{ record.isDate ? formatDate(item) : item }}
+								{{
+									record.isDate && dataSource[record.key]
+										? formatDate(item)
+										: item
+								}}
 							</component>
 						</div>
 
-						<!-- Otherwise, render single item -->
+						<!-- Otherwise, if single item returned from API, render that item  -->
+						<!-- TODO: Abstract this duplicate logic into a render function (https://vuejs.org/guide/extras/render-function) to decrease repetition  -->
 						<component
-							:is="record.component ?? 'p'"
-							v-else
-							:class="(dataSource[record.key] && record.classNames) || small"
+							:is="
+								dataSource[record.key] && record.component
+									? record.component
+									: 'p'
+							"
+							v-else-if="dataSource[record.key]"
+							:class="record?.classNames"
 							:data-test="record['data-test']"
 							:href="dataSource[record.key]"
-							:target="attributesByComponent[record.component]?.target"
-							:rel="attributesByComponent[record.component]?.target"
+							:intent="record?.attributes?.intent"
+							:target="record?.attributes?.target"
+							:rel="record?.attributes?.target"
 							@click="onClick(record.key, dataSource[record.key])"
 						>
 							{{
@@ -79,6 +99,22 @@
 									? formatDate(dataSource[record.key])
 									: dataSource[record.key]
 							}}
+						</component>
+
+						<!-- Otherwise, this isn't returned from API, we need to do it ourselves -->
+						<component
+							:is="record.component ? record.component : 'p'"
+							v-else-if="dataSource[record.renderIf]"
+							:class="record?.classNames"
+							:data-test="record['data-test']"
+							:href="record?.href"
+							:intent="record?.attributes?.intent"
+							:target="record?.attributes?.target"
+							:rel="record?.attributes?.target"
+							@click="onClick(record.key, dataSource[record.key])"
+						>
+							{{ record.isDate ? formatDate(record.text) : record.text }}
+							<i v-if="record.icon" :class="'fa' + ' ' + record.icon" />
 						</component>
 					</div>
 				</div>
@@ -91,31 +127,23 @@
 </template>
 
 <script>
-import axios from "axios";
-/* Updating local button name because it's conflicting with native `<button>` when registered.
- * TODO: add `intent="tertiary"` to design-system, in order to allow unstyled button usage */
-import { Button as PButton } from "pdap-design-system";
-import formatDateForSearchResults from "../util/formatDate";
-import { STATIC_VIEW_UI_SHAPE } from "./util";
+import axios from 'axios';
+import { Button } from 'pdap-design-system';
+import formatDateForSearchResults from '../util/formatDate';
+import { STATIC_VIEW_UI_SHAPE } from './util';
 
 export default {
-	name: "DataSourceStaticView",
+	name: 'DataSourceStaticView',
 	components: {
-		PButton,
+		Button
 	},
 	data: function () {
 		return {
 			dataSource: {},
 			id: null,
-			attributesByComponent: {
-				a: {
-					target: "_blank",
-					rel: "noreferrer",
-				},
-			},
 			dataToRender: STATIC_VIEW_UI_SHAPE,
 			noData: true,
-			errorMessage: "",
+			errorMessage: '',
 		};
 	},
 	mounted: function () {
@@ -126,12 +154,19 @@ export default {
 		searchAgain(searchTerm, location) {
 			this.$router.push(`/search/${searchTerm}/${location}`);
 		},
+		navigateTo(to) {
+			window.open(to, '_blank');
+		},
 		onClick(key, value) {
 			switch (key) {
-				case "record_type":
-					return this.searchAgain(value, "all");
-				case "agency_name":
-					return this.searchAgain("all", value);
+				case 'record_type':
+					return this.searchAgain(value, 'all');
+				case 'agency_name':
+					return this.searchAgain('all', value);
+				case 'source_url_cache':
+					return this.navigateTo(
+						`https://web.archive.org/web/*/${this.dataSource.source_url}`,
+					);
 				default:
 					return () => undefined;
 			}
@@ -153,3 +188,13 @@ export default {
 	},
 };
 </script>
+
+<style scoped>
+/* Reset secondary button horizontal margin. TODO: update this in design-system */
+.pdap-button-secondary {
+	@apply mx-0;
+}
+.pdap-button-secondary:not(.new-search) {
+	@apply my-2;
+}
+</style>

@@ -26,6 +26,12 @@ class QuickSearch(Resource):
                     self.psycopg2_connection, search, location
                 )
 
+            if data_sources["count"] == 0:
+                return {
+                    "count": 0,
+                    message: "No results found. Please considering requesting a new data source.",
+                }, 404
+
             return data_sources
 
         except Exception as e:

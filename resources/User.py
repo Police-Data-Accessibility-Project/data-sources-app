@@ -27,21 +27,27 @@ class User(Resource):
             if len(results) > 0:
                 user_data = {"id": results[0][0], "password_digest": results[0][1]}
             else:
-                return {"error": "no match"}
+                return {
+                    "message": "There username or password is incorrect. Please try again."
+                }, 400
+
             if check_password_hash(user_data["password_digest"], password):
                 api_key = uuid.uuid4().hex
                 user_id = str(user_data["id"])
                 cursor.execute(
                     "UPDATE users SET api_key = %s WHERE id = %s", (api_key, user_id)
                 )
-                payload = {"api_key": api_key}
+                payload = {
+                    "message": "API key successfully created",
+                    "api_key": api_key,
+                }
                 self.psycopg2_connection.commit()
                 return payload
 
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {"error": str(e)}
+            return {"message": str(e)}, 500
 
     # Sign up function: allows a user to sign up by submitting an email and password. The email and a hashed password are stored in the users table and this data is returned to the user upon completion
     def post(self):
@@ -57,9 +63,9 @@ class User(Resource):
             )
             self.psycopg2_connection.commit()
 
-            return {"data": "Successfully added user"}
+            return {"message": "Successfully added user"}
 
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {"error": e}
+            return {"message": e}, 500
