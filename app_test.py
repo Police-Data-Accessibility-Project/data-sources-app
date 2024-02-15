@@ -14,13 +14,22 @@ from middleware.data_source_queries import (
     data_source_by_id_results,
     DATA_SOURCES_APPROVED_COLUMNS,
 )
-from middleware.user_queries import user_get_results, user_post_results
+from middleware.user_queries import (
+    user_get_results,
+    user_post_results,
+    user_check_email,
+)
 from middleware.archives_queries import (
     archives_get_results,
     archives_get_query,
     archives_put_broken_as_of_results,
     archives_put_last_cached_results,
     ARCHIVES_GET_COLUMNS,
+)
+from middleware.reset_token_queries import (
+    check_reset_token,
+    add_reset_token,
+    delete_reset_token,
 )
 from app_test_data import (
     DATA_SOURCES_ROWS,
@@ -141,6 +150,42 @@ def test_user_post_query(session):
     ).fetchone()[0]
 
     assert email_check == "unit_test"
+
+
+def test_user_check_email(session):
+    curs = session.cursor()
+    user_data = user_check_email(curs, "test")
+
+    assert user_data["id"]
+
+
+def test_check_reset_token(session):
+    curs = session.cursor()
+    reset_token = check_reset_token(curs, "test")
+
+    assert reset_token["id"]
+
+
+def test_add_reset_token(session):
+    curs = session.cursor()
+    add_reset_token(curs, "unit_test", "unit_test")
+
+    email_check = curs.execute(
+        f"SELECT email FROM reset_tokens WHERE email = 'unit_test'"
+    ).fetchone()[0]
+
+    assert email_check == "unit_test"
+
+
+def test_delete_reset_token(session):
+    curs = session.cursor()
+    delete_reset_token(curs, "test", "test")
+
+    email_check = curs.execute(
+        f"SELECT email FROM reset_tokens WHERE email = 'test'"
+    ).fetchone()
+
+    assert not email_check
 
 
 def test_archives_get_results(session):

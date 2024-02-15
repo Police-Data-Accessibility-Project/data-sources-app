@@ -150,7 +150,7 @@ def test_get_user():
         json={"email": "test2", "password": "test"},
     )
 
-    return response.json()["data"] == "Successfully logged in"
+    return response.json()["message"] == "Successfully logged in"
 
 
 def test_put_user():
@@ -160,7 +160,23 @@ def test_put_user():
         json={"email": "test2", "password": "test"},
     )
 
-    return response.json()["data"] == "Successfully updated password"
+    return response.json()["message"] == "Successfully updated password"
+
+
+# reset-password
+def test_request_reset_password():
+    reset_token = requests.get(
+        "https://data-sources.pdap.io/api/request-reset-password",
+        headers=HEADERS,
+        json={"email": "test"},
+    )
+
+    response = requests.get(
+        f"https://data-sources.pdap.io/api/reset-password{reset_token['token']}",
+        headers=HEADERS,
+    )
+
+    return response.json()["message"] == "Successfully requested password reset"
 
 
 # api-key
@@ -257,6 +273,7 @@ def main():
         "test_search_tokens_quick_search_complaints_allegheny_results",
         "test_get_user",
         "test_put_user",
+        "test_request_reset_password",
         "test_get_api_key",
         "test_get_archives",
         "test_put_archives",

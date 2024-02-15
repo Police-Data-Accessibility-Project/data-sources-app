@@ -3,6 +3,8 @@ from flask_restful import Api
 from flask_cors import CORS
 from resources.User import User
 from resources.ApiKey import ApiKey
+from resources.RequestResetPassword import RequestResetPassword
+from resources.ResetPassword import ResetPassword
 from resources.QuickSearch import QuickSearch
 from resources.DataSources import DataSources
 from resources.DataSources import DataSourceById
@@ -23,6 +25,16 @@ api.add_resource(
 api.add_resource(
     ApiKey,
     "/api_key",
+    resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
+)
+api.add_resource(
+    RequestResetPassword,
+    "/request-reset-password",
+    resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
+)
+api.add_resource(
+    ResetPassword,
+    "/reset-password/<token>",
     resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
 )
 api.add_resource(

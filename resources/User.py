@@ -22,12 +22,15 @@ class User(Resource):
 
             user_data = user_get_results(cursor, email)
             if check_password_hash(user_data["password_digest"], password):
-                return {"data": "Successfully logged in"}
+                return {
+                    "message": "Successfully logged in",
+                    "data": user_data["api_key"],
+                }
 
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {"error": str(e)}
+            return {"message": str(e)}, 500
 
     def post(self):
         """
@@ -42,12 +45,12 @@ class User(Resource):
             user_post_results(cursor, email, password)
             self.psycopg2_connection.commit()
 
-            return {"data": "Successfully added user"}
+            return {"message": "Successfully added user"}
 
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {"error": e}
+            return {"message": e}, 500
 
     # Endpoint for updating a user's password
     def put(self):
@@ -61,9 +64,9 @@ class User(Resource):
                 f"update users set password_digest = '{password_digest}' where email = '{email}'"
             )
             self.psycopg2_connection.commit()
-            return {"data": "Successfully updated password"}
+            return {"message": "Successfully updated password"}
 
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {"error": e}
+            return {"message": e}, 500
