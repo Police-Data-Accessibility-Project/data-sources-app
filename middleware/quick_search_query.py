@@ -80,7 +80,9 @@ def spacy_search_query(cursor, search, location):
     return results
 
 
-def quick_search_query(search="", location="", test_query_results=[], conn={}):
+def quick_search_query(
+    search="", location="", test_query_results=[], conn={}, test=False
+):
     data_sources = {"count": 0, "data": []}
     if type(conn) == dict and "data" in conn:
         return data_sources
@@ -122,7 +124,7 @@ def quick_search_query(search="", location="", test_query_results=[], conn={}):
         "data": data_source_matches_converted,
     }
 
-    if not test_query_results:
+    if not test_query_results and not test:
         current_datetime = datetime.datetime.now()
         datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 

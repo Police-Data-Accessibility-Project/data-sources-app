@@ -19,7 +19,10 @@ class DataSourceById(Resource):
                 conn=self.psycopg2_connection, data_source_id=data_source_id
             )
             if data_source_details:
-                return data_source_details
+                return {
+                    "message": "Successfully found data source",
+                    "data": data_source_details,
+                }
 
             else:
                 return {"message": "Data source not found."}, 404

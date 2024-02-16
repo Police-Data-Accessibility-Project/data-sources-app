@@ -13,6 +13,7 @@ def test_quicksearch_officer_involved_shootings_philadelphia_results():
     response = requests.get(
         f"{BASE_URL}/quick-search/Officer Involved Shootings/philadelphia",
         headers=HEADERS,
+        json={"test_flag": True},
     )
 
     return len(response.json()["data"]) > 0
@@ -22,6 +23,7 @@ def test_quicksearch_officer_involved_shootings_lowercase_philadelphia_results()
     response = requests.get(
         f"{BASE_URL}/quick-search/officer involved shootings/Philadelphia",
         headers=HEADERS,
+        json={"test_flag": True},
     )
 
     return len(response.json()["data"]) > 0
@@ -31,19 +33,28 @@ def test_quicksearch_officer_involved_shootings_philadelphia_county_results():
     response = requests.get(
         f"{BASE_URL}/quick-search/Officer Involved Shootings/philadelphia county",
         headers=HEADERS,
+        json={"test_flag": True},
     )
 
     return len(response.json()["data"]) > 0
 
 
 def test_quicksearch_all_allgeheny_results():
-    response = requests.get(f"{BASE_URL}/quick-search/all/allegheny", headers=HEADERS)
+    response = requests.get(
+        f"{BASE_URL}/quick-search/all/allegheny",
+        headers=HEADERS,
+        json={"test_flag": True},
+    )
 
     return len(response.json()["data"]) > 0
 
 
 def test_quicksearch_complaints_all_results():
-    response = requests.get(f"{BASE_URL}/quick-search/complaints/all", headers=HEADERS)
+    response = requests.get(
+        f"{BASE_URL}/quick-search/complaints/all",
+        headers=HEADERS,
+        json={"test_flag": True},
+    )
 
     return len(response.json()["data"]) > 0
 
@@ -52,6 +63,7 @@ def test_quicksearch_media_bulletin_pennsylvania_results():
     response = requests.get(
         f"{BASE_URL}/quick-search/media bulletin/pennsylvania",
         headers=HEADERS,
+        json={"test_flag": True},
     )
 
     return len(response.json()["data"]) > 0

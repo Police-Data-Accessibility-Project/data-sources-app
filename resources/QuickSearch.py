@@ -5,6 +5,7 @@ import requests
 import json
 import os
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
+from flask import request
 
 
 class QuickSearch(Resource):
@@ -16,8 +17,14 @@ class QuickSearch(Resource):
     @api_required
     def get(self, search, location):
         try:
+            data = request.get_json()
+            test = data.get("test_flag")
+        except:
+            test = False
+
+        try:
             data_sources = quick_search_query(
-                search, location, [], self.psycopg2_connection
+                search, location, [], self.psycopg2_connection, test
             )
 
             if data_sources["count"] == 0:
@@ -29,10 +36,13 @@ class QuickSearch(Resource):
             if data_sources["count"] == 0:
                 return {
                     "count": 0,
-                    message: "No results found. Please considering requesting a new data source.",
+                    "message": "No results found. Please considering requesting a new data source.",
                 }, 404
 
-            return data_sources
+            return {
+                "message": "Results for search successfully retrieved",
+                "data": data_sources,
+            }
 
         except Exception as e:
             self.psycopg2_connection.rollback()
