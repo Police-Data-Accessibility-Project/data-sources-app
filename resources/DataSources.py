@@ -60,8 +60,6 @@ class DataSourceById(Resource):
             WHERE airtable_uid = '{data_source_id}'
             """
 
-            print(sql_query)
-
             cursor.execute(sql_query)
             self.psycopg2_connection.commit()
             return {"message": "Data source updated successfully."}

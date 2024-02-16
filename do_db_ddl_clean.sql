@@ -143,6 +143,13 @@ CREATE TABLE if not exists users (
     api_key character varying
 );
 
+CREATE TABLE if not exists reset_tokens (
+    id serial primary key,
+    email text NOT NULL,
+    token text varying NOT NULL,
+    create_date timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE if not exists volunteers (
     discord text,
     email text,
@@ -164,4 +171,5 @@ INSERT INTO agency_source_link (link_id, airtable_uid, agency_described_linked_u
 INSERT INTO agency_source_link (link_id, airtable_uid, agency_described_linked_uid) VALUES (4, 'rec8gO2K86yk9mQIU', 'recRvBpZqXM8mjddz');
 INSERT INTO state_names VALUES (1, 'IL', 'Illinois');
 INSERT INTO state_names VALUES (2, 'PA', 'Pennsylvania');
-INSERT INTO users (email, password_digest) VALUES ("test", "test");
+INSERT INTO users (id, email, password_digest) VALUES (1, "test", "test");
+INSERT INTO reset_tokens (id, email, token) VALUES (1, "test", "test");

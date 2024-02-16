@@ -155,6 +155,7 @@ def test_user_post_query(session):
 def test_user_check_email(session):
     curs = session.cursor()
     user_data = user_check_email(curs, "test")
+    print(user_data)
 
     assert user_data["id"]
 
@@ -162,6 +163,7 @@ def test_user_check_email(session):
 def test_check_reset_token(session):
     curs = session.cursor()
     reset_token = check_reset_token(curs, "test")
+    print(reset_token)
 
     assert reset_token["id"]
 
