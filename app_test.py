@@ -15,10 +15,10 @@ from middleware.data_source_queries import (
     DATA_SOURCES_APPROVED_COLUMNS,
 )
 from middleware.user_queries import (
-    user_get_results,
     user_post_results,
     user_check_email,
 )
+from middleware.login_queries import login_results
 from middleware.archives_queries import (
     archives_get_results,
     archives_get_query,
@@ -134,13 +134,6 @@ def test_data_source_by_id_approved(session):
     assert not response
 
 
-def test_user_get_query(session):
-    curs = session.cursor()
-    user_data = user_get_results(curs, "test")
-
-    assert user_data["password_digest"]
-
-
 def test_user_post_query(session):
     curs = session.cursor()
     user_post_results(curs, "unit_test", "unit_test")
@@ -150,6 +143,13 @@ def test_user_post_query(session):
     ).fetchone()[0]
 
     assert email_check == "unit_test"
+
+
+def test_login_query(session):
+    curs = session.cursor()
+    user_data = login_results(curs, "test")
+
+    assert user_data["password_digest"]
 
 
 def test_user_check_email(session):

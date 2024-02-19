@@ -1,36 +1,12 @@
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash
 from flask_restful import Resource
 from flask import request
-from middleware.user_queries import user_get_results, user_post_results
+from middleware.user_queries import user_post_results
 
 
 class User(Resource):
     def __init__(self, **kwargs):
         self.psycopg2_connection = kwargs["psycopg2_connection"]
-
-    def get(self):
-        """
-        Login function: allows a user to login using their email and password as credentials
-        The password is compared to the hashed password stored in the users table
-        Once the password is verified, an API key is generated, which is stored in the users table and sent to the verified user
-        """
-        try:
-            data = request.get_json()
-            email = data.get("email")
-            password = data.get("password")
-            cursor = self.psycopg2_connection.cursor()
-
-            user_data = user_get_results(cursor, email)
-            if check_password_hash(user_data["password_digest"], password):
-                return {
-                    "message": "Successfully logged in",
-                    "data": user_data["api_key"],
-                }
-
-        except Exception as e:
-            self.psycopg2_connection.rollback()
-            print(str(e))
-            return {"message": str(e)}, 500
 
     def post(self):
         """

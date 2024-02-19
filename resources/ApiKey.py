@@ -1,7 +1,7 @@
 from werkzeug.security import check_password_hash
 from flask_restful import Resource
 from flask import request
-from middleware.user_queries import user_get_results
+from middleware.login_queries import login_results
 import uuid
 
 
@@ -18,7 +18,7 @@ class ApiKey(Resource):
             email = data.get("email")
             password = data.get("password")
             cursor = self.psycopg2_connection.cursor()
-            user_data = user_get_results(cursor, email)
+            user_data = login_results(cursor, email)
 
             if check_password_hash(user_data["password_digest"], password):
                 api_key = uuid.uuid4().hex

@@ -148,16 +148,6 @@ def test_search_tokens_quick_search_complaints_allegheny_results():
 
 
 # user
-def test_get_user():
-    response = requests.get(
-        f"{BASE_URL}/user",
-        headers=HEADERS,
-        json={"email": "test2", "password": "test"},
-    )
-
-    return response.json()["message"] == "Successfully logged in"
-
-
 def test_put_user():
     response = requests.put(
         f"{BASE_URL}/user",
@@ -166,6 +156,17 @@ def test_put_user():
     )
 
     return response.json()["message"] == "Successfully updated password"
+
+
+# login
+def test_login():
+    response = requests.post(
+        f"{BASE_URL}/login",
+        headers=HEADERS,
+        json={"email": "test2", "password": "test"},
+    )
+
+    return response.json()["message"] == "Successfully logged in"
 
 
 # reset-password
@@ -268,8 +269,8 @@ def main():
         "test_search_tokens_data_sources",
         "test_search_tokens_data_source_by_id",
         "test_search_tokens_quick_search_complaints_allegheny_results",
-        "test_get_user",
         "test_put_user",
+        "test_login",
         "test_request_reset_password",
         "test_get_api_key",
         "test_get_archives",
