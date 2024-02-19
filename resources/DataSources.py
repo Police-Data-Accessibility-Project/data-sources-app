@@ -4,7 +4,7 @@ from middleware.security import api_required
 from middleware.data_source_queries import data_source_by_id_query, data_sources_query
 import json
 from datetime import datetime
-from utilities.common import convert_dates_to_strings
+
 import uuid
 
 
@@ -78,7 +78,16 @@ class DataSources(Resource):
     @api_required
     def get(self):
         try:
-            data_source_matches = data_sources_query(self.psycopg2_connection)
+            try:
+                data = request.get_json()
+                approved = data.get("approved")
+                print("status", approved)
+            except:
+                approved = True
+
+            data_source_matches = data_sources_query(
+                self.psycopg2_connection, [], approved
+            )
 
             data_sources = {
                 "count": len(data_source_matches),

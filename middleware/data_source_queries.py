@@ -163,8 +163,39 @@ def data_sources_results(conn):
     return results
 
 
-def data_sources_query(conn={}, test_query_results=[]):
-    results = data_sources_results(conn, "", "") if conn else test_query_results
+def needs_identification_results(conn):
+    cursor = conn.cursor()
+    data_source_approved_columns = [
+        f"data_sources.{approved_column}"
+        for approved_column in DATA_SOURCES_APPROVED_COLUMNS
+    ]
+
+    joined_column_names = ", ".join(data_source_approved_columns)
+
+    sql_query = """
+        SELECT
+            {}
+        FROM
+            data_sources
+        WHERE
+            data_sources.approval_status = 'needs identification'
+    """.format(
+        joined_column_names
+    )
+    cursor.execute(sql_query)
+    results = cursor.fetchall()
+    cursor.close()
+
+    return results
+
+
+def data_sources_query(conn={}, test_query_results=[], approved=True):
+    if conn and approved:
+        results = data_sources_results(conn)
+    elif conn:
+        results = needs_identification_results(conn)
+    else:
+        results = test_query_results
 
     data_source_output_columns = DATA_SOURCES_APPROVED_COLUMNS + ["agency_name"]
 
