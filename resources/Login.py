@@ -2,6 +2,9 @@ from werkzeug.security import check_password_hash
 from flask_restful import Resource
 from flask import request
 from middleware.login_queries import login_results
+import jwt
+import os
+import datetime
 
 
 class Login(Resource):
@@ -25,9 +28,18 @@ class Login(Resource):
             if "password_digest" in user_data and check_password_hash(
                 user_data["password_digest"], password
             ):
+                payload = {
+                    "exp": datetime.datetime.utcnow()
+                    + datetime.timedelta(days=0, seconds=300),
+                    "iat": datetime.datetime.utcnow(),
+                    "sub": 1,
+                }
+                session_token = jwt.encode(
+                    payload, os.getenv("SECRET_KEY"), algorithm="HS256"
+                )
                 return {
                     "message": "Successfully logged in",
-                    "data": user_data["api_key"],
+                    "data": session_token,
                 }
 
         except Exception as e:
