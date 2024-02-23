@@ -6,7 +6,7 @@ import ChangePassword from './pages/ChangePassword.vue';
 import LogIn from './pages/LogIn.vue';
 import { useAuthStore } from './stores/auth';
 
-export const PUBLIC_PAGES = ['/login', '/', '/data-sources', '/search'];
+export const PRIVATE_ROUTES = ['/change-password'];
 
 const routes = [
 	{ path: '/', component: QuickSearchPage, name: 'QuickSearchPage' },
@@ -42,7 +42,8 @@ router.beforeEach(async (to) => {
 	const auth = useAuthStore();
 
 	if (
-		!PUBLIC_PAGES.some((path) => path.startsWith(to.fullPath)) &&
+		to.fullPath.length > 1 &&
+		PRIVATE_ROUTES.includes(to.fullPath) &&
 		!auth.userId
 	) {
 		auth.returnUrl = to.path;

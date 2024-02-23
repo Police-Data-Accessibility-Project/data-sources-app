@@ -8,7 +8,7 @@
 import debounce from 'lodash/debounce';
 import { useAuthStore } from '../stores/auth';
 import { useRoute } from 'vue-router';
-import { PUBLIC_PAGES } from '../router';
+import { PRIVATE_ROUTES } from '../router';
 
 const route = useRoute();
 const auth = useAuthStore();
@@ -30,7 +30,7 @@ const handlers = {
 };
 
 function handleAuthRefresh() {
-	const isAuthRoute = !PUBLIC_PAGES.some((path) => path.startsWith(route));
+	const isAuthRoute = PRIVATE_ROUTES.includes(route);
 
 	const now = Date.now();
 	const difference = auth.accessToken.expires - now;
