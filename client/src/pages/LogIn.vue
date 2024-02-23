@@ -123,7 +123,7 @@ export default {
 				[FORM_TYPES.signup]: SIGNUP_SCHEMA,
 			},
 			// Adding enum-like obj for use in markup
-			FORM_TYPES: FORM_TYPES,
+			FORM_TYPES,
 			loading: false,
 			success: undefined,
 			url: `${import.meta.env.VITE_VUE_APP_BASE_URL}/user`,
@@ -142,6 +142,7 @@ export default {
 				this.handlePasswordValidation(formValues);
 			}
 		},
+
 		/**
 		 * When signing up: validates that passwords match
 		 * @returns {boolean} `false` if passwords do not match, `true` if they do
@@ -157,11 +158,13 @@ export default {
 				return true;
 			}
 		},
+
 		async login(data) {
 			return await axios.get(this.url, data, {
 				headers: { 'Content-Type': 'application/json' },
 			});
 		},
+
 		async signup(data) {
 			// Destructure to remove "confirmPassword" field — backend doesn't need it.
 			const { email, password } = data;
@@ -177,6 +180,7 @@ export default {
 				},
 			);
 		},
+
 		/**
 		 * Logs user in or signs user up
 		 */
@@ -201,6 +205,7 @@ export default {
 				this.loading = false;
 			}
 		},
+
 		/**
 		 * Toggles between login and signup actions
 		 */
