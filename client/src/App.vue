@@ -1,19 +1,23 @@
 <template>
-	<Header :logo-image-src="lockup" />
-	<router-view />
-	<Footer :logo-image-src="acronym" />
+	<AuthWrapper>
+		<Header :logo-image-src="lockup" />
+		<router-view />
+		<Footer :logo-image-src="acronym" />
+	</AuthWrapper>
 </template>
 
 <script>
-import { Footer, Header } from "pdap-design-system";
-import acronym from "pdap-design-system/images/acronym.svg";
-import lockup from "pdap-design-system/images/lockup.svg";
+import { Footer, Header } from 'pdap-design-system';
+import AuthWrapper from './components/AuthWrapper.vue';
+import acronym from 'pdap-design-system/images/acronym.svg';
+import lockup from 'pdap-design-system/images/lockup.svg';
 
-import { links } from "./util/links";
+import { links } from './util/links';
 
 export default {
-	name: "App",
+	name: 'App',
 	components: {
+		AuthWrapper,
 		Header,
 		Footer,
 	},
