@@ -6,20 +6,19 @@ import router from '../router';
 const HEADERS = {
 	headers: { 'Content-Type': 'application/json' },
 };
-const INITIAL_STATE = {
-	userId: null,
-	accessToken: {
-		value: null,
-		expires: Date.now(),
-	},
-	returnUrl: null,
-};
 const LOGIN_URL = `${import.meta.env.VITE_VUE_APP_BASE_URL}/login`;
 const SIGNUP_URL = `${import.meta.env.VITE_VUE_APP_BASE_URL}/user`;
 const REFRESH_SESSION_URL = `${import.meta.env.VITE_VUE_APP_BASE_URL}/refresh-session`;
 
 export const useAuthStore = defineStore('auth', {
-	state: () => ({ ...INITIAL_STATE }),
+	state: () => ({
+		userId: null,
+		accessToken: {
+			value: null,
+			expires: Date.now(),
+		},
+		returnUrl: null,
+	}),
 	persist: true,
 	actions: {
 		async login(email, password) {
@@ -38,7 +37,10 @@ export const useAuthStore = defineStore('auth', {
 		},
 
 		logout(isAuthRoute) {
-			this.$patch({ ...INITIAL_STATE });
+			this.$patch({
+				userId: null,
+				accessToken: { value: null, expires: Date.now() },
+			});
 			if (isAuthRoute) router.push('/login');
 		},
 
