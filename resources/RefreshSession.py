@@ -34,6 +34,8 @@ class RefreshSession(Resource):
                     "data": token,
                 }
 
+            return {"message": "Invalid session token"}, 403
+
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
