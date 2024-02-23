@@ -40,6 +40,7 @@ export const useAuthStore = defineStore('auth', {
 			this.$patch({
 				userId: null,
 				accessToken: { value: null, expires: Date.now() },
+				returnUrl: null,
 			});
 			if (isAuthRoute) router.push('/login');
 		},
