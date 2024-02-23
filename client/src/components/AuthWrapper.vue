@@ -35,6 +35,7 @@ function handleAuthRefresh() {
 	const now = Date.now();
 	const difference = auth.accessToken.expires - now;
 
+	/* c8 ignore next 6 */
 	if (difference > 0) {
 		console.debug({
 			secondsUntilRefreshOnUserActivity: (difference - 60000) / 1000,
@@ -49,7 +50,5 @@ function handleAuthRefresh() {
 	} else if (difference <= 0 && auth.userId) {
 		return auth.logout(isAuthRoute);
 	}
-	// Otherwise, return nothing.
-	return;
 }
 </script>
