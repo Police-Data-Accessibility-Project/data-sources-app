@@ -46,7 +46,7 @@ router.beforeEach(async (to) => {
 		!auth.userId
 	) {
 		auth.returnUrl = to.path;
-		return '/login';
+		router.push('/login');
 	}
 });
 
