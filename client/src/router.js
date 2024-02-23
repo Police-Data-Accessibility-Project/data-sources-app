@@ -4,6 +4,9 @@ import SearchResultPage from '../src/pages/SearchResultPage.vue';
 import DataSourceStaticView from '../src/pages/DataSourceStaticView.vue';
 import ChangePassword from './pages/ChangePassword.vue';
 import LogIn from './pages/LogIn.vue';
+import { useAuthStore } from './stores/auth';
+
+export const PUBLIC_PAGES = ['/login', '/', '/data-sources', '/search'];
 
 const routes = [
 	{ path: '/', component: QuickSearchPage, name: 'QuickSearchPage' },
@@ -32,6 +35,19 @@ const routes = [
 const router = createRouter({
 	history: createWebHistory(),
 	routes,
+});
+
+router.beforeEach(async (to) => {
+	// redirect to login page if not logged in and trying to access a restricted page
+	const auth = useAuthStore();
+
+	if (
+		!PUBLIC_PAGES.some((path) => path.startsWith(to.fullPath)) &&
+		!auth.userId
+	) {
+		auth.returnUrl = to.path;
+		return '/login';
+	}
 });
 
 export default router;
