@@ -2,6 +2,7 @@ import { mount, RouterLinkStub, RouterViewStub } from '@vue/test-utils';
 import App from '../../App.vue';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { links } from '../../util/links';
+import { createTestingPinia } from '@pinia/testing';
 
 let wrapper;
 
@@ -9,6 +10,7 @@ describe('App', () => {
 	beforeEach(() => {
 		wrapper = mount(App, {
 			global: {
+				plugins: [createTestingPinia()],
 				provide: {
 					navLinks: links,
 					footerLinks: links,
