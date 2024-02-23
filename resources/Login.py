@@ -14,25 +14,25 @@ class Login(Resource):
         The password is compared to the hashed password stored in the users table
         Once the password is verified, an API key is generated, which is stored in the users table and sent to the verified user
         """
-        # try:
-        data = request.get_json()
-        email = data.get("email")
-        password = data.get("password")
-        cursor = self.psycopg2_connection.cursor()
+        try:
+            data = request.get_json()
+            email = data.get("email")
+            password = data.get("password")
+            cursor = self.psycopg2_connection.cursor()
 
-        user_data = login_results(cursor, email)
+            user_data = login_results(cursor, email)
 
-        if "password_digest" in user_data and check_password_hash(
-            user_data["password_digest"], password
-        ):
-            token = create_session_token(cursor, user_data["id"], email)
-            self.psycopg2_connection.commit()
-            return {
-                "message": "Successfully logged in",
-                "data": token,
-            }
+            if "password_digest" in user_data and check_password_hash(
+                user_data["password_digest"], password
+            ):
+                token = create_session_token(cursor, user_data["id"], email)
+                self.psycopg2_connection.commit()
+                return {
+                    "message": "Successfully logged in",
+                    "data": token,
+                }
 
-        # except Exception as e:
-        #     self.psycopg2_connection.rollback()
-        #     print(str(e))
-        #     return {"message": str(e)}, 500
+        except Exception as e:
+            self.psycopg2_connection.rollback()
+            print(str(e))
+            return {"message": str(e)}, 500

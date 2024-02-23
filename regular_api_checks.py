@@ -162,11 +162,25 @@ def test_put_user():
 def test_login():
     response = requests.post(
         f"{BASE_URL}/login",
-        headers=HEADERS,
         json={"email": "test2", "password": "test"},
     )
 
     return response.json()["message"] == "Successfully logged in"
+
+
+# refresh-session
+def test_refresh_session():
+    response = requests.post(
+        f"{BASE_URL}/login",
+        json={"email": "test2", "password": "test"},
+    )
+    token = response.json()["data"]
+
+    response = requests.post(
+        f"{BASE_URL}/refresh-session", json={"session_token": token}
+    )
+
+    return response.json()["message"] == "Successfully refreshed session token"
 
 
 # reset-password
