@@ -140,7 +140,8 @@ CREATE TABLE if not exists users (
     updated_at timestamp with time zone,
     email text NOT NULL,
     password_digest text,
-    api_key character varying
+    api_key character varying,
+    role text
 );
 
 CREATE TABLE if not exists reset_tokens (
@@ -163,6 +164,13 @@ CREATE TABLE if not exists volunteers (
     github text,
     created_by text,
     created timestamp without time zone NOT NULL
+);
+
+CREATE TABLE if not exists session_tokens (
+    id serial primary key,
+    token text NOT NULL,
+    email text NOT NULL,
+    expiration_date timestamp with time zone NOT NULL
 );
 
 INSERT INTO agency_source_link (link_id, airtable_uid, agency_described_linked_uid) VALUES (1, 'rec00T2YLS2jU7Tbn', 'recv9fMNEQTbVarj2');

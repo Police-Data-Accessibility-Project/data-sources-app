@@ -18,7 +18,12 @@ from middleware.user_queries import (
     user_post_results,
     user_check_email,
 )
-from middleware.login_queries import login_results
+from middleware.login_queries import (
+    login_results,
+    create_session_token,
+    token_results,
+    is_admin,
+)
 from middleware.archives_queries import (
     archives_get_results,
     archives_get_query,
@@ -150,6 +155,30 @@ def test_login_query(session):
     user_data = login_results(curs, "test")
 
     assert user_data["password_digest"]
+
+
+def test_create_session_token_results(session):
+    curs = session.cursor()
+    token = create_session_token(curs, 1, "test")
+
+    curs = session.cursor()
+    new_token = token_results(curs, token)
+
+    assert new_token["email"]
+
+
+def test_is_admin(session):
+    curs = session.cursor()
+    admin = is_admin(curs, "mbodenator@gmail.com")
+
+    assert admin
+
+
+def test_not_admin(session):
+    curs = session.cursor()
+    admin = is_admin(curs, "test")
+
+    assert not admin
 
 
 def test_user_check_email(session):
