@@ -2,7 +2,6 @@
 	<main v-if="success" class="pdap-flex-container">
 		<h1>Success</h1>
 		<p>Your password has been successfully updated</p>
-		<RouterLink to="/login">Click here to log in </RouterLink>
 	</main>
 	<main v-else class="pdap-flex-container mx-auto max-w-2xl">
 		<h1>Change your password</h1>
@@ -26,7 +25,6 @@
 import { Button, Form } from 'pdap-design-system';
 import { useUserStore } from '../stores/user';
 import { ref } from 'vue';
-import { RouterLink } from 'vue-router';
 
 // Constants
 const FORM_SCHEMA = [

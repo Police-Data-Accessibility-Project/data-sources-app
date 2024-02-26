@@ -31,8 +31,10 @@ export const useUserStore = defineStore('user', {
 		},
 
 		async changePassword(email, password) {
+			const auth = useAuthStore();
 			try {
 				await axios.put(CHANGE_PASSWORD_URL, { email, password }, HEADERS);
+				return await auth.login(email, password);
 			} catch (error) {
 				throw new Error(error.response.data.message);
 			}
