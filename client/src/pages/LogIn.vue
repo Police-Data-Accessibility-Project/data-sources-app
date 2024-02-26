@@ -60,7 +60,7 @@
 <script setup>
 // Imports
 import { Button, Form } from 'pdap-design-system';
-import { ref } from 'vue';
+import { ref, watchEffect } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { useUserStore } from '../stores/user';
 
@@ -140,6 +140,12 @@ const loading = ref(false);
 const success = ref(undefined);
 const type = ref(FORM_TYPES.login);
 
+// Effects
+// Clear error on success
+watchEffect(() => {
+	if (success.value) error.value = undefined;
+});
+
 // Functions
 // Handlers
 /**
@@ -189,8 +195,8 @@ async function onSubmit(formValues) {
 				: await auth.login(email, password);
 
 		success.value = SUCCESS_COPY[type.value] ?? response.message;
-	} catch (error) {
-		error.value = error;
+	} catch (err) {
+		error.value = err.message;
 	} finally {
 		loading.value = false;
 	}

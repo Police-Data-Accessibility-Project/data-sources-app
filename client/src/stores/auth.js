@@ -37,7 +37,7 @@ export const useAuthStore = defineStore('auth', {
 				this.parseTokenAndSetData(response);
 				if (this.returnUrl) router.push(this.returnUrl);
 			} catch (error) {
-				throw new Error(error.response.data.message);
+				throw new Error(error.response?.data?.message);
 			}
 		},
 
@@ -66,7 +66,7 @@ export const useAuthStore = defineStore('auth', {
 				);
 				return this.parseTokenAndSetData(response);
 			} catch (error) {
-				throw new Error(error.response.data.message);
+				throw new Error(error.response?.data?.message);
 			}
 		},
 
