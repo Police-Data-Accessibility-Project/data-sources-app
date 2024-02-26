@@ -26,7 +26,7 @@ export const useUserStore = defineStore('user', {
 				// Log users in after signup and return that response
 				return await auth.login(email, password);
 			} catch (error) {
-				throw new Error(error.message);
+				throw new Error(error.response.data.message);
 			}
 		},
 
@@ -34,7 +34,7 @@ export const useUserStore = defineStore('user', {
 			try {
 				await axios.put(CHANGE_PASSWORD_URL, { email, password }, HEADERS);
 			} catch (error) {
-				throw new Error(error.message);
+				throw new Error(error.response.data.message);
 			}
 		},
 
@@ -42,13 +42,13 @@ export const useUserStore = defineStore('user', {
 			try {
 				await axios.get(REQUEST_PASSWORD_RESET_URL, { email }, HEADERS);
 			} catch (error) {
-				throw new Error(error.message);
+				throw new Error(error.response.data.message);
 			}
 		},
 
 		async resetPassword(email, password, token) {
 			try {
-				const resetResponse = await axios.put(
+				const resetResponse = await axios.get(
 					`${PASSWORD_RESET_URL}/${token}`,
 					HEADERS,
 				);
@@ -57,7 +57,7 @@ export const useUserStore = defineStore('user', {
 					return await this.changePassword(email, password);
 				}
 			} catch (error) {
-				throw new Error(error.message);
+				throw new Error(error.response.data.message);
 			}
 		},
 	},

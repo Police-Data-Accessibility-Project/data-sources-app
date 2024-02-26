@@ -37,15 +37,21 @@ export const useAuthStore = defineStore('auth', {
 				this.parseTokenAndSetData(response);
 				if (this.returnUrl) router.push(this.returnUrl);
 			} catch (error) {
-				throw new Error(error.message);
+				throw new Error(error.response.data.message);
 			}
 		},
 
 		logout(isAuthRoute) {
+			const user = useUserStore();
+
 			this.$patch({
 				userId: null,
 				accessToken: { value: null, expires: Date.now() },
 				returnUrl: null,
+			});
+
+			user.$patch({
+				email: '',
 			});
 			if (isAuthRoute) router.push('/login');
 		},
@@ -60,7 +66,7 @@ export const useAuthStore = defineStore('auth', {
 				);
 				return this.parseTokenAndSetData(response);
 			} catch (error) {
-				throw new Error(error.message);
+				throw new Error(error.response.data.message);
 			}
 		},
 
