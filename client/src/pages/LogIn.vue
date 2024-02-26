@@ -1,65 +1,57 @@
 <template>
-	<main class="pdap-flex-container">
-		<!-- User is already logged in -->
-		<div v-if="!success && auth.userId">
-			<h1>You're already logged in</h1>
-			<p>Enjoy the data sources app!</p>
-		</div>
+	<!-- User is already logged in -->
+	<main v-if="auth.userId" class="pdap-flex-container">
+		<h1>{{ success ? 'Success' : "You're already logged in" }}</h1>
+		<p>{{ success ? success : 'Enjoy the data sources app!' }}</p>
 
-		<!-- User has logged in / signed up successfully, display success message -->
-		<div v-else-if="success && auth.userId">
-			<h1>Success</h1>
-			<p>{{ success }}</p>
-		</div>
+		<Button
+			class="mt-6"
+			@click="
+				() => {
+					auth.logout();
+					success = '';
+				}
+			"
+			>Log out</Button
+		>
+	</main>
 
-		<!-- Otherwise, the form (form handles error UI on its own) -->
-		<div v-else>
-			<h1>Sign In</h1>
-			<Form
-				id="login"
-				class="flex flex-col"
-				name="login"
-				:error="error"
-				:schema="FORM_SCHEMAS[type]"
-				@change="handleChangeOnError"
-				@submit="onSubmit"
-			>
-				<ul v-if="type === FORM_TYPES.signup" class="text-med mb-8">
-					Passwords must be at least 8 characters and include:
-					<li>1 uppercase letter</li>
-					<li>1 lowercase letter</li>
-					<li>1 number</li>
-					<li>1 special character</li>
-				</ul>
+	<!-- Otherwise, the form (form handles error UI on its own) -->
+	<main v-else class="pdap-flex-container mx-auto max-w-2xl">
+		<h1>Sign In</h1>
+		<Form
+			id="login"
+			class="flex flex-col"
+			name="login"
+			:error="error"
+			:schema="FORM_SCHEMAS[type]"
+			@change="handleChangeOnError"
+			@submit="onSubmit"
+		>
+			<ul v-if="type === FORM_TYPES.signup" class="text-med mb-8">
+				Passwords must be at least 8 characters and include:
+				<li>1 uppercase letter</li>
+				<li>1 lowercase letter</li>
+				<li>1 number</li>
+				<li>1 special character</li>
+			</ul>
 
-				<Button class="max-w-full" type="submit">{{
-					type === FORM_TYPES.signup ? 'Sign Up' : 'Log In'
-				}}</Button>
-			</Form>
-			<p>
-				{{
-					type === FORM_TYPES.login
-						? "Don't have an account?"
-						: 'Already have an account?'
-				}}
-				<Button intent="tertiary" @click="toggleType">{{
-					type === FORM_TYPES.login ? 'Sign Up' : 'Log In'
-				}}</Button>
-			</p>
-		</div>
-
-		<div>
-			Log out (for testing)
-			<Button
-				@click="
-					() => {
-						auth.logout();
-						success = '';
-					}
-				"
-				>Log out</Button
-			>
-		</div>
+			<Button class="max-w-full" type="submit">
+				{{ getSubmitButtonCopy() }}
+			</Button>
+		</Form>
+		<p
+			class="flex xs:flex-col xs:items-start sm:flex-row sm:items-center sm:gap-4"
+		>
+			{{
+				type === FORM_TYPES.login
+					? "Don't have an account?"
+					: 'Already have an account?'
+			}}
+			<Button class="xs:px-0 w-auto" intent="tertiary" @click="toggleType">
+				{{ type === FORM_TYPES.login ? 'Sign Up' : 'Log In' }}
+			</Button>
+		</p>
 	</main>
 </template>
 
@@ -68,6 +60,7 @@
 import { Button, Form } from 'pdap-design-system';
 import { ref } from 'vue';
 import { useAuthStore } from '../stores/auth';
+import { useUserStore } from '../stores/user';
 
 // Constants
 const LOGIN_SCHEMA = [
@@ -137,6 +130,7 @@ const FORM_SCHEMAS = {
 
 // Store
 const auth = useAuthStore();
+const user = useUserStore();
 
 // Reactive vars
 const error = ref(undefined);
@@ -144,6 +138,8 @@ const loading = ref(false);
 const success = ref(undefined);
 const type = ref(FORM_TYPES.login);
 
+// Functions
+// Handlers
 /**
  * When signing up: handles clearing pw-match form errors on change if they exist
  */
@@ -187,7 +183,7 @@ async function onSubmit(formValues) {
 
 		const response =
 			type.value === FORM_TYPES.signup
-				? await auth.signup(email, password)
+				? await user.signup(email, password)
 				: await auth.login(email, password);
 
 		success.value = SUCCESS_COPY[type.value] ?? response.message;
@@ -198,6 +194,7 @@ async function onSubmit(formValues) {
 	}
 }
 
+// Utils
 /**
  * Toggles between login and signup actions
  */
@@ -211,6 +208,18 @@ function toggleType() {
 			break;
 		default:
 			return;
+	}
+}
+
+function getSubmitButtonCopy() {
+	switch (true) {
+		case loading:
+			return 'Loading...';
+		case type.value === FORM_TYPES.signup:
+			return 'Sign up';
+		case type.value === FORM_TYPES.login:
+		default:
+			return 'Login';
 	}
 }
 </script>

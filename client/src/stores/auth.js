@@ -2,12 +2,12 @@ import axios from 'axios';
 import { defineStore } from 'pinia';
 import parseJwt from '../util/parseJwt';
 import router from '../router';
+import { useUserStore } from './user';
 
 const HEADERS = {
 	headers: { 'Content-Type': 'application/json' },
 };
 const LOGIN_URL = `${import.meta.env.VITE_VUE_APP_BASE_URL}/login`;
-const SIGNUP_URL = `${import.meta.env.VITE_VUE_APP_BASE_URL}/user`;
 const REFRESH_SESSION_URL = `${import.meta.env.VITE_VUE_APP_BASE_URL}/refresh-session`;
 
 export const useAuthStore = defineStore('auth', {
@@ -22,12 +22,17 @@ export const useAuthStore = defineStore('auth', {
 	persist: true,
 	actions: {
 		async login(email, password) {
+			const user = useUserStore();
+
 			try {
 				const response = await axios.post(
 					LOGIN_URL,
 					{ email, password },
 					HEADERS,
 				);
+
+				// Update user store with email
+				user.$patch({ email });
 
 				this.parseTokenAndSetData(response);
 				if (this.returnUrl) router.push(this.returnUrl);
@@ -54,24 +59,6 @@ export const useAuthStore = defineStore('auth', {
 					HEADERS,
 				);
 				return this.parseTokenAndSetData(response);
-			} catch (error) {
-				throw new Error(error.message);
-			}
-		},
-
-		// We may eventually want to move signup to a separate "User" store, but as of now it would be the only thing in that store, so we'll wait for the time being
-		async signup(email, password) {
-			try {
-				await axios.post(
-					SIGNUP_URL,
-					{ email, password },
-					{
-						headers: { 'Content-Type': 'application/json' },
-					},
-				);
-
-				// Log users in after signup and return that response
-				return await this.login(email, password);
 			} catch (error) {
 				throw new Error(error.message);
 			}
