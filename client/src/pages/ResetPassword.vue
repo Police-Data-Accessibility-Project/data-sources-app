@@ -24,7 +24,7 @@
 				to="/reset-password"
 				@click="
 					isExpiredToken = false;
-					error = null;
+					error = undefined;
 					token = undefined;
 				"
 			>
@@ -68,7 +68,7 @@
 <script setup>
 import { Button, Form } from 'pdap-design-system';
 import { useUserStore } from '../stores/user';
-import { ref } from 'vue';
+import { ref, watchEffect } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 
 // Constants
@@ -132,6 +132,12 @@ const error = ref(undefined);
 const isExpiredToken = ref(false);
 const loading = ref(false);
 const success = ref(false);
+
+// Effects
+// Clear error on success
+watchEffect(() => {
+	if (success.value) error.value = undefined;
+});
 
 // Functions
 // Handlers

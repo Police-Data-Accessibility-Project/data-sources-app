@@ -105,8 +105,8 @@ async function onSubmit(formValues) {
 		await user.changePassword(user.email, password);
 
 		success.value = true;
-	} catch (error) {
-		error.value = error;
+	} catch (err) {
+		error.value = err.message;
 	} finally {
 		loading.value = false;
 	}
