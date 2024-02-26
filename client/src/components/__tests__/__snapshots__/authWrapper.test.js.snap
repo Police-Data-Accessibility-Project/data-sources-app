@@ -1,0 +1,3 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AuthWrapper > renders auth wrapper 1`] = `<div class="h-full w-full" id="wrapper"></div>`;

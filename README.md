@@ -108,14 +108,17 @@ pip install pytest
 pytest
 
 ```
-
 ## Linting
 Linting is enforced with black on PR creation. You can use black to automatically reformat your files before commiting them, this will allow your PR to pass this check. Any files that require reformatting will be listed on any failed checks on the PR.
 ```
 black app_test.py
 ```
 
-## Other helpful commands for the client app
+## Client App
+
+A few things to know:
+
+- We use Vue3. This allows for using either the options or composition APIs. Feel free to use whichever you are most fluent in. One caveat to this: We use `pinia` for state management. This works much better with the composition API than with options, so it is recommended to use the composition API if you need data from one of the `pinia` stores.
 
 ### Compiles and minifies for production
 ```
