@@ -5,10 +5,10 @@ import { useAuthStore } from './auth';
 const HEADERS = {
 	headers: { 'Content-Type': 'application/json' },
 };
-const SIGNUP_URL = `${import.meta.env.VITE_VUE_APP_BASE_URL}/user`;
-const CHANGE_PASSWORD_URL = `${import.meta.env.VITE_VUE_APP_BASE_URL}/user`;
-const REQUEST_PASSWORD_RESET_URL = `${import.meta.env.VITE_VUE_APP_BASE_URL}/request-reset-password`;
-const PASSWORD_RESET_URL = `${import.meta.env.VITE_VUE_APP_BASE_URL}/reset-password`;
+const SIGNUP_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/user`;
+const CHANGE_PASSWORD_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/user`;
+const REQUEST_PASSWORD_RESET_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/request-reset-password`;
+const PASSWORD_RESET_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/reset-password`;
 
 export const useUserStore = defineStore('user', {
 	state: () => ({
@@ -51,22 +51,15 @@ export const useUserStore = defineStore('user', {
 
 		async requestPasswordReset(email) {
 			try {
-				await axios.get(REQUEST_PASSWORD_RESET_URL, { email }, HEADERS);
+				await axios.post(REQUEST_PASSWORD_RESET_URL, { email }, HEADERS);
 			} catch (error) {
 				throw new Error(error.response?.data?.message);
 			}
 		},
 
-		async resetPassword(email, password, token) {
+		async resetPassword(password, token) {
 			try {
-				const resetResponse = await axios.get(
-					`${PASSWORD_RESET_URL}/${token}`,
-					HEADERS,
-				);
-
-				if (400 > resetResponse.status > 200) {
-					return await this.changePassword(email, password);
-				}
+				await axios.post(`${PASSWORD_RESET_URL}`, { password, token }, HEADERS);
 			} catch (error) {
 				throw new Error(error.response?.data?.message);
 			}

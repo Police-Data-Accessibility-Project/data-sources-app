@@ -4,7 +4,7 @@ import json
 import requests
 
 API_KEY = os.getenv("VUE_APP_PDAP_API_KEY")
-BASE_URL = os.getenv("VITE_VUE_APP_BASE_URL")
+BASE_URL = os.getenv("VITE_VUE_API_BASE_URL")
 HEADERS = {"Authorization": f"Bearer {API_KEY}"}
 
 

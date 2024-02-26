@@ -135,7 +135,7 @@ import { STATIC_VIEW_UI_SHAPE } from './util';
 export default {
 	name: 'DataSourceStaticView',
 	components: {
-		Button
+		Button,
 	},
 	data: function () {
 		return {
@@ -175,7 +175,7 @@ export default {
 			try {
 				const res = await axios.get(
 					`${
-						import.meta.env.VITE_VUE_APP_BASE_URL
+						import.meta.env.VITE_VUE_API_BASE_URL
 					}/search-tokens?endpoint=data-sources-by-id&arg1=${this.id}`,
 				);
 				this.dataSource = res.data;

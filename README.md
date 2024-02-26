@@ -47,7 +47,7 @@ pip install -r requirements.txt
 
 ### 5. Add environment secrets
 
-Either add a `.env` file to your local root directory or manually export these secrets: `DO_DATABASE_URL` and `VITE_VUE_APP_BASE_URL`.  
+Either add a `.env` file to your local root directory or manually export these secrets: `DO_DATABASE_URL` and `VITE_VUE_API_BASE_URL`.  
 
 Reach out to contact@pdap.io or make noise in Discord if you'd like access to these keys.
 
@@ -55,14 +55,14 @@ Reach out to contact@pdap.io or make noise in Discord if you'd like access to th
 # .env
 
 DO_DATABASE_URL="postgres://data_sources_app:<password>@db-postgresql-nyc3-38355-do-user-8463429-0.c.db.ondigitalocean.com:25060/defaultdb"
-VITE_VUE_APP_BASE_URL="http://localhost:5000"
+VITE_VUE_API_BASE_URL="http://localhost:5000"
 ```
 
 ```
 # shell
 
 export DO_DATABASE_URL=postgres://data_sources_app:<password>@db-postgresql-nyc3-38355-do-user-8463429-0.c.db.ondigitalocean.com:25060/defaultdb
-export VITE_VUE_APP_BASE_URL="http://localhost:5000"
+export VITE_VUE_API_BASE_URL="http://localhost:5000"
 ```
 
 ### 6. Allow your IP address

@@ -7,8 +7,8 @@ import { useUserStore } from './user';
 const HEADERS = {
 	headers: { 'Content-Type': 'application/json' },
 };
-const LOGIN_URL = `${import.meta.env.VITE_VUE_APP_BASE_URL}/login`;
-const REFRESH_SESSION_URL = `${import.meta.env.VITE_VUE_APP_BASE_URL}/refresh-session`;
+const LOGIN_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/login`;
+const REFRESH_SESSION_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/refresh-session`;
 
 export const useAuthStore = defineStore('auth', {
 	state: () => ({

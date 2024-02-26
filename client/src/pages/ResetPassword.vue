@@ -175,7 +175,7 @@ async function onSubmitChangePassword(formValues) {
 	try {
 		loading.value = true;
 		const { password } = formValues;
-		await user.resetPassword(user.email, password, token);
+		await user.resetPassword(password, token);
 
 		success.value = true;
 	} catch (err) {

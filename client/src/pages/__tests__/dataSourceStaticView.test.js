@@ -19,7 +19,7 @@ const $routeMock = {
 vi.mock('axios');
 
 beforeAll(() => {
-	import.meta.env.VITE_VUE_APP_BASE_URL = 'https://data-sources.pdap.io';
+	import.meta.env.VITE_VUE_API_BASE_URL = 'https://data-sources.pdap.io';
 });
 
 describe('DataSourceStaticView', () => {

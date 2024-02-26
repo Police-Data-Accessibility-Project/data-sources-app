@@ -102,7 +102,7 @@ export default {
 		},
 		async search() {
 			const url = `${
-				import.meta.env.VITE_VUE_APP_BASE_URL
+				import.meta.env.VITE_VUE_API_BASE_URL
 			}/search-tokens?endpoint=quick-search&arg1=${this.searchTerm}&arg2=${
 				this.location
 			}`;
