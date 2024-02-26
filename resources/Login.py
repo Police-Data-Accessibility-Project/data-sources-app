@@ -32,6 +32,8 @@ class Login(Resource):
                     "data": token,
                 }
 
+            return {"message": "Invalid email or password"}, 401
+
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))

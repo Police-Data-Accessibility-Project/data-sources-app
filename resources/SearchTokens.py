@@ -11,7 +11,7 @@ import json
 
 sys.path.append("..")
 
-BASE_URL = os.getenv("VITE_VUE_APP_BASE_URL")
+BASE_URL = os.getenv("VITE_VUE_API_BASE_URL")
 
 
 class SearchTokens(Resource):

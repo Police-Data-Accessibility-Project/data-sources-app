@@ -2,6 +2,7 @@ from werkzeug.security import generate_password_hash
 from flask_restful import Resource
 from flask import request
 from middleware.user_queries import user_post_results
+from middleware.security import api_required
 
 
 class User(Resource):
@@ -29,6 +30,7 @@ class User(Resource):
             return {"message": e}, 500
 
     # Endpoint for updating a user's password
+    @api_required
     def put(self):
         try:
             data = request.get_json()
