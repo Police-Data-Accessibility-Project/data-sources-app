@@ -55,7 +55,7 @@ export const useUserStore = defineStore('user', {
 					HEADERS,
 				);
 
-				if (400 < resetResponse.status > 200) {
+				if (400 > resetResponse.status > 200) {
 					return await this.changePassword(email, password);
 				}
 			} catch (error) {
