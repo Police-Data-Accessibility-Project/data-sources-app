@@ -13,10 +13,14 @@ class ResetPassword(Resource):
     def __init__(self, **kwargs):
         self.psycopg2_connection = kwargs["psycopg2_connection"]
 
-    def get(self, token):
+    def post(self):
         try:
+            data = request.get_json()
+            token = data.get("token")
+            password = data.get("password")
             cursor = self.psycopg2_connection.cursor()
             token_data = check_reset_token(cursor, token)
+            email = token_data.get("email")
             if "create_date" not in token_data:
                 return {"message": "The submitted token is invalid"}, 400
 
@@ -26,7 +30,14 @@ class ResetPassword(Resource):
             if token_expired:
                 return {"message": "The submitted token is invalid"}, 400
 
-            return {"message": "The submitted token is valid"}
+            password_digest = generate_password_hash(password)
+            cursor = self.psycopg2_connection.cursor()
+            cursor.execute(
+                f"update users set password_digest = '{password_digest}' where email = '{email}'"
+            )
+            self.psycopg2_connection.commit()
+
+            return {"message": "Successfully updated password"}
 
         except Exception as e:
             self.psycopg2_connection.rollback()

@@ -44,7 +44,7 @@ api.add_resource(
 )
 api.add_resource(
     ResetPassword,
-    "/reset-password/<token>",
+    "/reset-password",
     resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
 )
 api.add_resource(

@@ -185,18 +185,19 @@ def test_refresh_session():
 
 # reset-password
 def test_request_reset_password():
-    reset_token = requests.get(
+    reset_token = requests.post(
         f"{BASE_URL}/request-reset-password",
         headers=HEADERS,
         json={"email": "test"},
     )
 
-    response = requests.get(
-        f"{BASE_URL}/reset-password/{reset_token.json()['token']}",
+    response = requests.post(
+        f"{BASE_URL}/reset-password",
         headers=HEADERS,
+        json={"token": reset_token.json()["token"], "password": "test"},
     )
 
-    return response.json()["message"] == "The submitted token is valid"
+    return response.json()["message"] == "Successfully updated password"
 
 
 # api-key

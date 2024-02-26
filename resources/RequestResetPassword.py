@@ -12,7 +12,7 @@ class RequestResetPassword(Resource):
     def __init__(self, **kwargs):
         self.psycopg2_connection = kwargs["psycopg2_connection"]
 
-    def get(self):
+    def post(self):
         try:
             data = request.get_json()
             email = data.get("email")
