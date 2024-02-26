@@ -40,17 +40,19 @@
 				{{ getSubmitButtonCopy() }}
 			</Button>
 		</Form>
-		<p
-			class="flex xs:flex-col xs:items-start sm:flex-row sm:items-center sm:gap-4"
-		>
+		<p class="flex flex-col items-start sm:flex-row sm:items-center sm:gap-4">
 			{{
 				type === FORM_TYPES.login
 					? "Don't have an account?"
 					: 'Already have an account?'
 			}}
-			<Button class="xs:px-0 w-auto" intent="tertiary" @click="toggleType">
+			<Button class="px-0 w-auto" intent="tertiary" @click="toggleType">
 				{{ type === FORM_TYPES.login ? 'Sign Up' : 'Log In' }}
 			</Button>
+		</p>
+		<p class="flex flex-col items-start sm:flex-row sm:items-center sm:gap-4">
+			Forgot your password?
+			<RouterLink to="/reset-password"> Click here to reset it </RouterLink>
 		</p>
 	</main>
 </template>
