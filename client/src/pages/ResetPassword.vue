@@ -179,7 +179,6 @@ async function onSubmitChangePassword(formValues) {
 
 		success.value = true;
 	} catch (err) {
-		console.log({ err });
 		if (err.message === 'The submitted token is invalid') {
 			isExpiredToken.value = true;
 		}
