@@ -6,6 +6,7 @@
 
 		<Button
 			class="mt-6"
+			data-test="logout-button"
 			@click="
 				() => {
 					auth.logout();
@@ -22,6 +23,7 @@
 		<Form
 			id="login"
 			class="flex flex-col"
+			data-test="login-form"
 			name="login"
 			:error="error"
 			:schema="FORM_SCHEMAS[type]"
@@ -36,18 +38,24 @@
 				<li>1 special character</li>
 			</ul>
 
-			<Button class="max-w-full" type="submit">
+			<Button class="max-w-full" type="submit" data-test="submit-button">
 				{{ getSubmitButtonCopy() }}
 			</Button>
 		</Form>
 		<div
 			class="flex flex-col items-start sm:flex-row sm:items-center sm:gap-4 w-full"
 		>
-			<Button class="flex-1 max-w-full" intent="secondary" @click="toggleType">
+			<Button
+				class="flex-1 max-w-full"
+				intent="secondary"
+				data-test="toggle-button"
+				@click="toggleType"
+			>
 				{{ type === FORM_TYPES.login ? 'Create Account' : 'Log In' }}
 			</Button>
 			<RouterLink
 				class="pdap-button-secondary flex-1 max-w-full"
+				data-test="reset-link"
 				to="/reset-password"
 				>Reset Password</RouterLink
 			>
@@ -65,6 +73,7 @@ import { useUserStore } from '../stores/user';
 // Constants
 const LOGIN_SCHEMA = [
 	{
+		'data-test': 'email',
 		id: 'email',
 		name: 'email',
 		label: 'Email',
@@ -79,6 +88,7 @@ const LOGIN_SCHEMA = [
 		},
 	},
 	{
+		'data-test': 'password',
 		id: 'password',
 		name: 'password',
 		label: 'Password',
@@ -96,6 +106,7 @@ const LOGIN_SCHEMA = [
 
 // Signing up we want to validate that PW matches, so we add that field
 const SIGNUP_SCHEMA = LOGIN_SCHEMA.concat({
+	'data-test': 'confirm-password',
 	id: 'confirmPassword',
 	name: 'confirmPassword',
 	label: 'Confirm Password',
@@ -206,14 +217,13 @@ async function onSubmit(formValues) {
  */
 function toggleType() {
 	switch (type.value) {
-		case FORM_TYPES.signup:
-			type.value = FORM_TYPES.login;
-			break;
 		case FORM_TYPES.login:
 			type.value = FORM_TYPES.signup;
 			break;
+		case FORM_TYPES.signup:
 		default:
-			return;
+			type.value = FORM_TYPES.login;
+			break;
 	}
 }
 
