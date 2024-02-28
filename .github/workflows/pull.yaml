@@ -12,7 +12,7 @@ jobs:
       uses: styfle/cancel-workflow-action@0.11.0
       with:
         access_token: ${{ secrets.GITHUB_TOKEN }}
-	SECRET_KEY: ${{ secrets.SECRET_KEY }}        
+	secret_key: ${{ secrets.SECRET_KEY }}        
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v4
       with:
