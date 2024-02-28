@@ -33,7 +33,6 @@ describe('AuthWrapper', () => {
 		auth.$patch({
 			userId: 42,
 			accessToken: {
-				value: 'asdfasdfas',
 				expires: NOW_PLUS_THIRTY,
 			},
 		});
@@ -48,7 +47,6 @@ describe('AuthWrapper', () => {
 		auth.$patch({
 			userId: 42,
 			accessToken: {
-				value: 'asdfasdfas',
 				expires: NOW_MINUS_THIRTY,
 			},
 		});

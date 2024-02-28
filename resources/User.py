@@ -48,3 +48,4 @@ class User(Resource):
             self.psycopg2_connection.rollback()
             print(str(e))
             return {"message": e}, 500
+            return {"message": e}, 500
