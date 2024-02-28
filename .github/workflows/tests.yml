@@ -19,5 +19,5 @@ jobs:
     - name: Run tests
       env:
         VUE_APP_PDAP_API_KEY: ${{ secrets.VUE_APP_PDAP_API_KEY }}
-	SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
       run: python regular_api_checks.py
