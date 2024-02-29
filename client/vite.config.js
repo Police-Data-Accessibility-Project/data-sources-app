@@ -1,25 +1,28 @@
-import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
-import svgLoader from "vite-svg-loader";
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import svgLoader from 'vite-svg-loader';
 
 export default defineConfig({
-	plugins: [vue(), svgLoader({ defaultImport: "url" })],
+	plugins: [vue(), svgLoader({ defaultImport: 'url' })],
 	resolve: {
 		paths: {
-			"@/*": ["src/*"],
+			'@/*': ['src/*'],
 		},
+	},
+	server: {
+		port: 8888,
 	},
 	test: {
 		coverage: {
 			all: true,
-			include: ["src/**/*.vue", "src/util/**/*.js"],
-			provider: "v8",
-			reportsDirectory: "./coverage",
+			include: ['src/**/*.vue', 'src/util/**/*.js'],
+			provider: 'v8',
+			reportsDirectory: './coverage',
 		},
-		environment: "happy-dom",
-		exclude: ["node_modules"],
+		environment: 'happy-dom',
+		exclude: ['node_modules'],
 		globals: true,
-		include: ["src/**/{__tests__,__spec__}/*.test.js"],
-		setupFiles: ["tools/testing/setup.js"],
+		include: ['src/**/{__tests__,__spec__}/*.test.js'],
+		setupFiles: ['tools/testing/setup.js'],
 	},
 });
