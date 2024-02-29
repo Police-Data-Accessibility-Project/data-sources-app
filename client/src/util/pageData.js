@@ -122,3 +122,81 @@ export const STATIC_VIEW_UI_SHAPE = [
 		],
 	},
 ];
+
+export const SEARCH_RESULTS_UI_SHAPE = [
+	{
+		header: 'Police & public interactions',
+		records: [
+			{ type: 'Accident Reports' },
+			{ type: 'Arrest Records' },
+			{ type: 'Calls for Service' },
+			{ type: 'Car GPS' },
+			{ type: 'Citations' },
+			{ type: 'Dispatch Logs' },
+			{ type: 'Dispatch Recordings' },
+			{ type: 'Field Contacts' },
+			{ type: 'Incident Reports' },
+			{ type: 'Misc Police Activity' },
+			{ type: 'Officer Involved Shootings' },
+			{ type: 'Stops' },
+			{ type: 'Surveys' },
+			{ type: 'Use of Force Reports' },
+			{ type: 'Vehicle Pursuits' },
+		],
+	},
+	{
+		header: 'Info about officers',
+		records: [
+			{ type: 'Complaints & Misconduct' },
+			{ type: 'Daily Activity Logs' },
+			{ type: 'Training & Hiring Info' },
+			{ type: 'Personnel Records' },
+		],
+	},
+	{
+		header: 'Info about agencies',
+		records: [
+			{ type: 'Annual & Monthly Reports' },
+			{ type: 'Budgets & Finances' },
+			{ type: 'Contact Info & Agency Meta' },
+			{ type: 'Geographic' },
+			{ type: 'List of Data Sources' },
+			{ type: 'Policies & Contracts' },
+		],
+	},
+	{
+		header: 'Agency-published resources',
+		records: [
+			{ type: 'Crime Maps & Reports' },
+			{ type: 'Crime Statistics' },
+			{ type: 'Records Request Info' },
+			{ type: 'Resources' },
+			{ type: 'Sex Offender Registry' },
+			{ type: 'Wanted Persons' },
+		],
+	},
+	{
+		header: 'Jails & Courts specific',
+		records: [
+			{ type: 'Booking Reports' },
+			{ type: 'Court Cases' },
+			{ type: 'Incarceration Records' },
+		],
+	},
+];
+
+// example obj:
+// {
+//   "airtable_uid": "rec00T2YLS2jU7Tbn",
+//   "data_source_name": "Calls for Service for Chicago Police Department - IL",
+//   "description": null,
+//   "record_type": "Calls for Service",
+//   "source_url": "https://informationportal.igchicago.org/911-calls-for-cpd-service/",
+//   "record_format": null,
+//   "coverage_start": "2019-01-01",
+//   "coverage_end": null,
+//   "agency_supplied": true,
+//   "agency_name": "Chicago Police Department - IL",
+//   "municipality": "Chicago",
+//   "state_iso": "IL"
+// }

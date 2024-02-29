@@ -130,7 +130,7 @@
 import axios from 'axios';
 import { Button } from 'pdap-design-system';
 import formatDateForSearchResults from '../util/formatDate';
-import { STATIC_VIEW_UI_SHAPE } from './util';
+import { STATIC_VIEW_UI_SHAPE } from '../util/pageData.js';
 
 export default {
 	name: 'DataSourceStaticView',
@@ -198,3 +198,4 @@ export default {
 	@apply my-2;
 }
 </style>
+./pageData
