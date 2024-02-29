@@ -184,19 +184,3 @@ export const SEARCH_RESULTS_UI_SHAPE = [
 		],
 	},
 ];
-
-// example obj:
-// {
-//   "airtable_uid": "rec00T2YLS2jU7Tbn",
-//   "data_source_name": "Calls for Service for Chicago Police Department - IL",
-//   "description": null,
-//   "record_type": "Calls for Service",
-//   "source_url": "https://informationportal.igchicago.org/911-calls-for-cpd-service/",
-//   "record_format": null,
-//   "coverage_start": "2019-01-01",
-//   "coverage_end": null,
-//   "agency_supplied": true,
-//   "agency_name": "Chicago Police Department - IL",
-//   "municipality": "Chicago",
-//   "state_iso": "IL"
-// }
