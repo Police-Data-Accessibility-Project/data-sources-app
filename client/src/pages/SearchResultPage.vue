@@ -16,56 +16,58 @@
 				<i class="fa fa-plus" /> New search
 			</Button>
 		</div>
-		<GridContainer
-			:columns="3"
-			template-rows="auto auto 1fr"
-			component="section"
-			data-test="search"
-			class="p-0 w-full md:max-w-[unset] lg:max-w-[unset]"
+
+		<p v-if="!searched" component="p" data-test="loading" :span-column="3">
+			Loading results...
+		</p>
+
+		<div v-else-if="searched && searchResult?.data?.length > 0">
+			<p class="text-xl max-w-full">
+				If you don't see what you need,
+				<a
+					href="https://airtable.com/shrbFfWk6fjzGnNsk"
+					data-test="search-results-request-link"
+				>
+					make a request&nbsp;<i class="fa fa-external-link" />
+				</a>
+			</p>
+			<p class="text-xl max-w-full">
+				To see these results in a table,
+				<a href="https://airtable.com/shrUAtA8qYasEaepI">
+					view the full database&nbsp;<i class="fa fa-external-link" />
+				</a>
+			</p>
+		</div>
+
+		<p
+			v-else-if="searched && searchResult?.data?.length === 0"
+			data-test="no-search-results"
 		>
-			<GridItem
-				v-if="!searched"
-				component="p"
-				data-test="loading"
-				:span-column="3"
+			No results found.
+		</p>
+
+		<div data-test="search-results">
+			<GridContainer
+				v-for="section in uiShape"
+				:key="section.header"
+				:columns="3"
+				template-rows="auto auto 1fr"
+				component="section"
+				data-test="search"
+				class="p-0 w-full md:max-w-[unset] lg:max-w-[unset]"
 			>
-				Loading results...
-			</GridItem>
-			<GridItem
-				v-else-if="searched && searchResult?.data?.length > 0"
-				:span-column="3"
-			>
-				<p class="text-xl max-w-full">
-					If you don't see what you need,
-					<a
-						href="https://airtable.com/shrbFfWk6fjzGnNsk"
-						data-test="search-results-request-link"
-					>
-						make a request&nbsp;<i class="fa fa-external-link" />
-					</a>
-				</p>
-				<p class="text-xl max-w-full">
-					To see these results in a table,
-					<a href="https://airtable.com/shrUAtA8qYasEaepI">
-						view the full database&nbsp;<i class="fa fa-external-link" />
-					</a>
-				</p>
-			</GridItem>
-			<GridItem
-				v-else
-				:span-column="3"
-				component="p"
-				data-test="no-search-results"
-			>
-				No results found.
-			</GridItem>
-			<SearchResultCard
-				v-for="dataSource in searchResult?.data"
-				:key="dataSource.uuid"
-				data-test="search-results-cards"
-				:data-source="dataSource"
-			/>
-		</GridContainer>
+				<GridItem class="section-subheading" component="h2" :span-column="3">
+					{{ section.header }}
+				</GridItem>
+
+				<SearchResultCard
+					v-for="record in section.records"
+					:key="record.type"
+					data-test="search-results-cards"
+					:data-source="searchResult[record.type]"
+				/>
+			</GridContainer>
+		</div>
 	</main>
 </template>
 
@@ -74,6 +76,7 @@ import { Button, GridContainer, GridItem } from 'pdap-design-system';
 import SearchResultCard from '../components/SearchResultCard.vue';
 import axios from 'axios';
 import pluralize from '../util/pluralize';
+import { SEARCH_RESULTS_UI_SHAPE } from '../util/pageData';
 
 export default {
 	name: 'SearchResultPage',
@@ -89,6 +92,7 @@ export default {
 		searchResult: {},
 		searchTerm: '',
 		location: '',
+		uiShape: {},
 	}),
 	mounted: function () {
 		this.searchTerm = this.$route.params.searchTerm;
@@ -109,8 +113,25 @@ export default {
 
 			try {
 				const res = await axios.get(url);
+
+				// Format results into object keyed by record_type
+				const resultFormatted = res.data.data.reduce((acc, cur) => {
+					return { ...acc, [cur.record_type]: cur };
+				}, {});
+
+				// Modify ui shape object to exclude any sections / data sources that do not have records returned by API
+				this.uiShape = SEARCH_RESULTS_UI_SHAPE.reduce((acc, cur) => {
+					const recordsFiltered = cur.records.filter(
+						(record) => resultFormatted[record.type],
+					);
+					return recordsFiltered.length > 0
+						? [...acc, { header: cur.header, records: recordsFiltered }]
+						: acc;
+				}, []);
+
+				// Set data and away we go
 				this.searchStatusCode = res.status;
-				this.searchResult = res.data;
+				this.searchResult = resultFormatted;
 			} catch (error) {
 				this.searchStatusCode = error?.response?.status ?? 400;
 				this.searchResult = error?.response?.data ?? {};
@@ -122,3 +143,9 @@ export default {
 	},
 };
 </script>
+
+<style scoped>
+.section-subheading {
+	@apply mt-4;
+}
+</style>
