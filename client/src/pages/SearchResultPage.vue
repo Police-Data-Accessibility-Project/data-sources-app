@@ -5,9 +5,7 @@
 			<p data-test="search-results-section-header-p" class="text-2xl">
 				Searching for <span class="font-semibold">"{{ searchTerm }}"</span> in
 				<span class="font-semibold">"{{ location }}"</span>.
-				<span
-					v-if="searched && searchResult?.data?.length > 0"
-					data-test="search-results-count"
+				<span v-if="searched && count > 0" data-test="search-results-count"
 					>Found {{ getResultsCopy() }}.</span
 				>
 			</p>
@@ -21,7 +19,11 @@
 			Loading results...
 		</p>
 
-		<div v-else-if="searched && searchResult?.data?.length > 0">
+		<p v-else-if="searched && count === 0" data-test="no-search-results">
+			No results found.
+		</p>
+
+		<div v-else>
 			<p class="text-xl max-w-full">
 				If you don't see what you need,
 				<a
@@ -38,13 +40,6 @@
 				</a>
 			</p>
 		</div>
-
-		<p
-			v-else-if="searched && searchResult?.data?.length === 0"
-			data-test="no-search-results"
-		>
-			No results found.
-		</p>
 
 		<div data-test="search-results">
 			<GridContainer
@@ -87,6 +82,7 @@ export default {
 		GridItem,
 	},
 	data: () => ({
+		count: 0,
 		searched: false,
 		searchStatusCode: 200,
 		searchResult: {},
@@ -101,8 +97,7 @@ export default {
 	},
 	methods: {
 		getResultsCopy() {
-			const count = this.searchResult?.data?.length;
-			return `${count} ${pluralize('result', count)}`;
+			return `${this.count} ${pluralize('result', this.count)}`;
 		},
 		async search() {
 			const url = `${
@@ -132,6 +127,7 @@ export default {
 				// Set data and away we go
 				this.searchStatusCode = res.status;
 				this.searchResult = resultFormatted;
+				this.count = Object.entries(this.searchResult).length;
 			} catch (error) {
 				this.searchStatusCode = error?.response?.status ?? 400;
 				this.searchResult = error?.response?.data ?? {};
