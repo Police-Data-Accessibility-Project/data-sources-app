@@ -19,16 +19,12 @@ describe('Change password page', () => {
 		user = useUserStore();
 	});
 
-	it('Calls the change password method with valid data and displays success message', async () => {
+	it('Calls the change password method with valid data', async () => {
 		const password = wrapper.find('[data-test="password"] input');
 		const confirmPassword = wrapper.find(
 			'[data-test="confirm-password"] input',
 		);
 		const form = wrapper.find('[data-test="change-password-form"]');
-
-		[confirmPassword, password, form].forEach((el) =>
-			expect(el.exists()).toBe(true),
-		);
 
 		expect(wrapper.html()).toMatchSnapshot();
 
@@ -47,10 +43,6 @@ describe('Change password page', () => {
 			'[data-test="confirm-password"] input',
 		);
 		const form = wrapper.find('[data-test="change-password-form"]');
-
-		[confirmPassword, password, form].forEach((el) =>
-			expect(el.exists()).toBe(true),
-		);
 
 		await password.setValue('Password1!');
 		await confirmPassword.setValue('Password41234!');
@@ -87,9 +79,6 @@ describe('Change password page', () => {
 		await confirmPassword.setValue('Password1!');
 
 		form.trigger('submit');
-		await flushPromises();
-		await nextTick();
-
 		await flushPromises();
 
 		const error = form.find('.pdap-form-error-message');

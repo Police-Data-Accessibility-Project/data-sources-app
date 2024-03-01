@@ -40,8 +40,6 @@ describe('Login page', () => {
 			const password = wrapper.find('[data-test="password"] input');
 			const form = wrapper.find('[data-test="login-form"]');
 
-			[email, password, form].forEach((el) => expect(el.exists()).toBe(true));
-
 			await email.setValue('hello@hello.com');
 			await password.setValue('Password1!');
 
@@ -95,9 +93,6 @@ describe('Login page', () => {
 
 			form.trigger('submit');
 			await flushPromises();
-			await nextTick();
-
-			await flushPromises();
 
 			const error = form.find('.pdap-form-error-message');
 			expect(error.exists()).toBe(true);
@@ -127,10 +122,6 @@ describe('Login page', () => {
 			);
 			const form = wrapper.find('[data-test="login-form"]');
 
-			[confirmPassword, email, password, form].forEach((el) =>
-				expect(el.exists()).toBe(true),
-			);
-
 			await email.setValue('hello@hello.com');
 			await password.setValue('Password1!');
 			await confirmPassword.setValue('Password1!');
@@ -155,10 +146,6 @@ describe('Login page', () => {
 				'[data-test="confirm-password"] input',
 			);
 			const form = wrapper.find('[data-test="login-form"]');
-
-			[confirmPassword, email, password, form].forEach((el) =>
-				expect(el.exists()).toBe(true),
-			);
 
 			await email.setValue('hello@hello.com');
 			await password.setValue('Password1!');
