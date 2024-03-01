@@ -1,8 +1,12 @@
 <template>
 	<!-- User is already logged in -->
 	<main v-if="auth.userId" class="pdap-flex-container">
-		<h1>{{ success ? 'Success' : "You're already logged in" }}</h1>
-		<p>{{ success ? success : 'Enjoy the data sources app!' }}</p>
+		<h1 data-test="success-heading">
+			{{ success ? 'Success' : "You're already logged in" }}
+		</h1>
+		<p data-test="success-subheading">
+			{{ success ? success : 'Enjoy the data sources app!' }}
+		</p>
 
 		<Button
 			class="mt-6"
@@ -198,12 +202,11 @@ async function onSubmit(formValues) {
 		loading.value = true;
 		const { email, password } = formValues;
 
-		const response =
-			type.value === FORM_TYPES.signup
-				? await user.signup(email, password)
-				: await auth.login(email, password);
+		type.value === FORM_TYPES.signup
+			? await user.signup(email, password)
+			: await auth.login(email, password);
 
-		success.value = SUCCESS_COPY[type.value] ?? response.message;
+		success.value = SUCCESS_COPY[type.value];
 	} catch (err) {
 		error.value = err.message;
 	} finally {
@@ -229,7 +232,7 @@ function toggleType() {
 
 function getSubmitButtonCopy() {
 	switch (true) {
-		case loading:
+		case loading.value:
 			return 'Loading...';
 		case type.value === FORM_TYPES.signup:
 			return 'Create account';

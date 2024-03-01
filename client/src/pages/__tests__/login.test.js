@@ -52,17 +52,34 @@ describe('Login page', () => {
 			expect(wrapper.html()).toMatchSnapshot();
 		});
 
-		it('Calls the logout method', async () => {
-			auth.userId = 42;
-			await nextTick();
+		describe('Success and already logged in states', async () => {
+			beforeEach(() => {
+				auth.userId = 42;
+			});
 
-			const logout = wrapper.find('[data-test="logout-button"]');
-			expect(logout.exists()).toBe(true);
+			it('Displays success copy', async () => {
+				wrapper.vm.success = "You're now logged in!";
+				await nextTick();
 
-			logout.trigger('click');
-			await flushPromises();
+				const heading = await wrapper.find('[data-test="success-heading"]');
+				const subheading = await wrapper.find(
+					'[data-test="success-subheading"]',
+				);
 
-			expect(auth.logout).toHaveBeenCalledOnce();
+				expect(heading.text()).toBe('Success');
+				expect(subheading.text()).toBe("You're now logged in!");
+			});
+
+			it('Logs user out', async () => {
+				const logout = await wrapper.find('[data-test="logout-button"]');
+
+				expect(logout.exists()).toBe(true);
+
+				logout.trigger('click');
+				await flushPromises();
+
+				expect(auth.logout).toHaveBeenCalledOnce();
+			});
 		});
 
 		it('Handles API error', async () => {
@@ -120,6 +137,7 @@ describe('Login page', () => {
 
 			form.trigger('submit');
 			await flushPromises();
+			await nextTick();
 
 			expect(user.signup).toHaveBeenCalledOnce();
 			expect(wrapper.html()).toMatchSnapshot();
@@ -164,25 +182,27 @@ describe('Login page', () => {
 		});
 	});
 
-	it('Toggles form type', async () => {
-		const toggle = wrapper.find('[data-test="toggle-button"]');
-		const submit = wrapper.find('[data-test="submit-button"]');
+	describe('Miscellaneous states', () => {
+		it('Toggles form type', async () => {
+			const toggle = wrapper.find('[data-test="toggle-button"]');
+			const submit = wrapper.find('[data-test="submit-button"]');
 
-		toggle.trigger('click');
-		await nextTick();
+			toggle.trigger('click');
+			await nextTick();
 
-		expect(submit.text()).toBe('Create account');
+			expect(submit.text()).toBe('Create account');
 
-		toggle.trigger('click');
-		await nextTick();
+			toggle.trigger('click');
+			await nextTick();
 
-		expect(submit.text()).toBe('Login');
+			expect(submit.text()).toBe('Login');
+		});
+
+		it('Renders button loading copy', async () => {
+			wrapper.vm.loading = true;
+			wrapper.vm.$forceUpdate();
+
+			expect(wrapper.vm.getSubmitButtonCopy()).toBe('Loading...');
+		});
 	});
-
-	// TODO: figure out how to test loading state
-	// it('Renders button loading copy', () => {
-	// 	const submit = wrapper.find('[data-test="submit-button"]');
-
-	// 	expect(submit.text()).toBe('Loading...');
-	// });
 });
