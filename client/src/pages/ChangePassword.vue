@@ -8,6 +8,7 @@
 		<Form
 			id="change-password"
 			class="flex flex-col"
+			data-test="change-password-form"
 			name="change-password"
 			:error="error"
 			:schema="FORM_SCHEMA"
@@ -29,6 +30,7 @@ import { ref } from 'vue';
 // Constants
 const FORM_SCHEMA = [
 	{
+		'data-test': 'password',
 		id: 'password',
 		name: 'password',
 		label: 'Password',
@@ -43,6 +45,7 @@ const FORM_SCHEMA = [
 		},
 	},
 	{
+		'data-test': 'confirm-password',
 		id: 'confirmPassword',
 		name: 'confirmPassword',
 		label: 'Confirm Password',
