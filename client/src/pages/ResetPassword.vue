@@ -1,7 +1,7 @@
 <template>
 	<main v-if="success" class="pdap-flex-container">
 		<h1>Success</h1>
-		<p>
+		<p data-test="success-subheading">
 			{{
 				token
 					? 'Your password has been successfully updated'
@@ -17,10 +17,12 @@
 		<h1>Change your password</h1>
 		<p
 			v-if="isExpiredToken"
+			data-test="token-expired"
 			class="flex flex-col items-start sm:flex-row sm:items-center sm:gap-4"
 		>
 			Sorry, that token has expired.
 			<RouterLink
+				data-test="re-request-link"
 				to="/reset-password"
 				@click="
 					isExpiredToken = false;
@@ -35,6 +37,7 @@
 		<Form
 			v-else
 			id="reset-password"
+			data-test="reset-password-form"
 			class="flex flex-col"
 			name="reset-password"
 			:error="error"
@@ -52,6 +55,7 @@
 		<h1>Request a link to reset your password</h1>
 		<Form
 			id="reset-password"
+			data-test="reset-password-form"
 			class="flex flex-col"
 			name="reset-password"
 			:error="error"
@@ -74,6 +78,7 @@ import { RouterLink, useRoute } from 'vue-router';
 // Constants
 const FORM_SCHEMA_CHANGE_PASSWORD = [
 	{
+		'data-test': 'password',
 		id: 'password',
 		name: 'password',
 		label: 'Password',
@@ -88,6 +93,7 @@ const FORM_SCHEMA_CHANGE_PASSWORD = [
 		},
 	},
 	{
+		'data-test': 'confirm-password',
 		id: 'confirmPassword',
 		name: 'confirmPassword',
 		label: 'Confirm Password',
@@ -105,6 +111,7 @@ const FORM_SCHEMA_CHANGE_PASSWORD = [
 
 const FORM_SCHEMA_REQUEST_PASSWORD = [
 	{
+		'data-test': 'email',
 		id: 'email',
 		name: 'email',
 		label: 'Email',
