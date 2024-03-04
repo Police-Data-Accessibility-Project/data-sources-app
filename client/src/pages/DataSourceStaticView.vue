@@ -62,7 +62,7 @@
 								v-for="item in dataSource[record.key]"
 								:key="item"
 								:class="record?.classNames"
-								:data-test="record['data-test']"
+								:data-test="record['data-test'] ?? 'data-source-item'"
 								:href="dataSource[record.key]"
 								:intent="record?.attributes?.intent"
 								:target="record?.attributes?.target"
@@ -87,7 +87,7 @@
 							"
 							v-else-if="dataSource[record.key]"
 							:class="record?.classNames"
-							:data-test="record['data-test']"
+							:data-test="record['data-test'] ?? 'data-source-item'"
 							:href="dataSource[record.key]"
 							:intent="record?.attributes?.intent"
 							:target="record?.attributes?.target"
@@ -106,7 +106,7 @@
 							:is="record.component ? record.component : 'p'"
 							v-else-if="dataSource[record.renderIf]"
 							:class="record?.classNames"
-							:data-test="record['data-test']"
+							:data-test="record['data-test'] ?? 'data-source-item'"
 							:href="record?.href"
 							:intent="record?.attributes?.intent"
 							:target="record?.attributes?.target"
@@ -168,7 +168,7 @@ export default {
 						`https://web.archive.org/web/*/${this.dataSource.source_url}`,
 					);
 				default:
-					return () => undefined;
+					return undefined;
 			}
 		},
 		async getDataSourceDetails() {
