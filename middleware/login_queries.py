@@ -39,7 +39,7 @@ def create_session_token(cursor, id, email):
         "iat": datetime.datetime.utcnow(),
         "sub": id,
     }
-    session_token = jwt.encode(payload, os.getenv("secret_key"), algorithm="HS256")
+    session_token = jwt.encode(payload, os.getenv("SECRET_KEY"), algorithm="HS256")
     cursor.execute(
         f"insert into session_tokens (token, email, expiration_date) values ('{session_token}', '{email}', '{expiration}')"
     )
