@@ -1,6 +1,6 @@
 import SearchResultCard from '../SearchResultCard.vue';
 import { mount } from '@vue/test-utils';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { nextTick } from 'vue';
 
 let wrapper;
@@ -175,6 +175,10 @@ describe('SearchResultCard with missing data', () => {
 		});
 	});
 
+	afterEach(() => {
+		vi.resetAllMocks();
+	});
+
 	it('search result card exists with missing data', () => {
 		expect(wrapper.find('[data-test="search-result-card"]').exists()).toBe(
 			true,
@@ -210,6 +214,16 @@ describe('SearchResultCard with missing data', () => {
 		expect(
 			wrapper.find('[data-test="search-result-format-unknown"]').exists(),
 		).toBe(true);
+	});
+
+	it('Does not call openSource when data is missing', async () => {
+		const button = wrapper.find(
+			'[data-test="search-result-visit-source-button"]',
+		);
+
+		await button.trigger('click');
+
+		expect(push).not.toHaveBeenCalled();
 	});
 });
 

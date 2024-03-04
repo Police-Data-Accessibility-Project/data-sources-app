@@ -28,7 +28,7 @@ exports[`SearchResultCard with all data > search result card exists with full da
 -->
   <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Time range </p>
   <p>2016–2017</p>
-  <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Formats available</p>
+  <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Formats available </p>
   <ul class="mb-4">
     <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">[</li>
     <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">'</li>
@@ -58,7 +58,7 @@ exports[`SearchResultCard with coverage end but not start > search result card e
 <div class="pdap-grid-item flex flex-col border border-neutral-400 p-3 text-lg leading-snug">
   <h2 class="text-xl font-semibold line-clamp-2"></h2>
   <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Record type </p>
-  <p> Unknown </p>
+  <p>Unknown</p>
   <div class="search-result-agency">
     <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Agency </p>
     <p>Unknown</p>
@@ -82,8 +82,8 @@ exports[`SearchResultCard with coverage end but not start > search result card e
 -->
   <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Time range </p>
   <p> Unknown start–2016</p>
-  <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Formats available</p>
-  <p> Unknown </p>
+  <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Formats available </p>
+  <p>Unknown</p>
   <div class="mt-auto flex flex-col">
     <button class="pdap-button pdap-button-primary text-lg font-medium px-4 py-1 mt-4 mb-2 lg:mx-0 max-w-full" disabled> Visit data source <i class="fa fa-external-link"></i>
     </button>
@@ -96,7 +96,7 @@ exports[`SearchResultCard with coverage start but not end > search result card e
 <div class="pdap-grid-item flex flex-col border border-neutral-400 p-3 text-lg leading-snug">
   <h2 class="text-xl font-semibold line-clamp-2"></h2>
   <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Record type </p>
-  <p> Unknown </p>
+  <p>Unknown</p>
   <div class="search-result-agency">
     <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Agency </p>
     <p>Unknown</p>
@@ -120,8 +120,8 @@ exports[`SearchResultCard with coverage start but not end > search result card e
 -->
   <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Time range </p>
   <p>2016–Unknown end </p>
-  <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Formats available</p>
-  <p> Unknown </p>
+  <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Formats available </p>
+  <p>Unknown</p>
   <div class="mt-auto flex flex-col">
     <button class="pdap-button pdap-button-primary text-lg font-medium px-4 py-1 mt-4 mb-2 lg:mx-0 max-w-full" disabled> Visit data source <i class="fa fa-external-link"></i>
     </button>
@@ -134,7 +134,7 @@ exports[`SearchResultCard with missing data > search result card exists with mis
 <div class="pdap-grid-item flex flex-col border border-neutral-400 p-3 text-lg leading-snug">
   <h2 class="text-xl font-semibold line-clamp-2">Calls for Service for Cicero Police Department - IN</h2>
   <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Record type </p>
-  <p> Unknown </p>
+  <p>Unknown</p>
   <div class="search-result-agency">
     <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Agency </p>
     <p>Unknown</p>
@@ -157,9 +157,9 @@ exports[`SearchResultCard with missing data > search result card exists with mis
 		</div>
 -->
   <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Time range </p>
-  <p> Unknown </p>
-  <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4">Formats available</p>
-  <p> Unknown </p>
+  <p>Unknown</p>
+  <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Formats available </p>
+  <p>Unknown</p>
   <div class="mt-auto flex flex-col">
     <button class="pdap-button pdap-button-primary text-lg font-medium px-4 py-1 mt-4 mb-2 lg:mx-0 max-w-full" disabled> Visit data source <i class="fa fa-external-link"></i>
     </button>
