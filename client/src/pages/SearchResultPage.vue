@@ -84,7 +84,6 @@ export default {
 	data: () => ({
 		count: 0,
 		searched: false,
-		searchStatusCode: 200,
 		searchResult: {},
 		searchTerm: '',
 		location: '',
@@ -125,12 +124,9 @@ export default {
 				}, []);
 
 				// Set data and away we go
-				this.searchStatusCode = res.status;
 				this.searchResult = resultFormatted;
 				this.count = Object.entries(this.searchResult).length;
 			} catch (error) {
-				this.searchStatusCode = error?.response?.status ?? 400;
-				this.searchResult = error?.response?.data ?? {};
 				console.error(error);
 			} finally {
 				this.searched = true;
