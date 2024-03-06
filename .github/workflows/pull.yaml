@@ -12,7 +12,7 @@ jobs:
       uses: styfle/cancel-workflow-action@0.11.0
       with:
         access_token: ${{ secrets.GITHUB_TOKEN }}
- 
+
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v4
       with:
@@ -30,6 +30,8 @@ jobs:
     - uses: psf/black@stable
 
   test_api:
+    env:
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
     name: Test API
     runs-on: ubuntu-latest
     steps:
@@ -37,7 +39,6 @@ jobs:
     - uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-        secret_key: ${{ secrets.SECRET_KEY }}
         
     - name: Install dependencies
       run: |
