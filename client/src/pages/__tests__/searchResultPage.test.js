@@ -69,18 +69,15 @@ describe('SearchResultPage renders with data', () => {
 
 		const searchTerm = wrapper.vm.searchTerm;
 		const location = wrapper.vm.location;
-		const count = wrapper.vm.searchResult.count;
 
 		expect(
 			wrapper.get('[data-test="search-results-section-header-p"]').text(),
 		).toBe(
-			`Searching for "${searchTerm}" in "${location}". Found ${count} results.`,
+			`Searching for "${searchTerm}" in "${location}". Found ${wrapper.vm.getResultsCopy()}.`,
 		);
 	});
 
 	test('renders search result count properly', () => {
-		// const count = wrapper.vm.searchResult.count;
-
 		expect(wrapper.get('[data-test="search-results-count"]').text()).toBe(
 			`Found ${wrapper.vm.getResultsCopy()}.`,
 		);
@@ -95,7 +92,7 @@ describe('SearchResultPage renders with data', () => {
 
 	test('search results card count matches search results returned in data', () => {
 		expect(wrapper.findAll('[data-test="search-results-cards"]').length).toBe(
-			wrapper.vm.searchResult.count,
+			wrapper.vm.count,
 		);
 	});
 });

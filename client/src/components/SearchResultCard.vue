@@ -3,12 +3,32 @@
 		class="flex flex-col border border-neutral-400 p-3 text-lg leading-snug"
 		data-test="search-result-card"
 	>
-		<h2
-			class="text-xl font-semibold line-clamp-2"
+		<h3
+			class="text-xl font-semibold line-clamp-2 normal-case tracking-normal min-h-[50px]"
 			data-test="search-result-title"
 		>
 			{{ dataSource.data_source_name }}
-		</h2>
+		</h3>
+
+		<Button
+			:class="['text-lg font-medium px-4 py-1 mt-4 mb-2 lg:mx-0 max-w-full']"
+			:disabled="
+				!dataSource.source_url ||
+				dataSource.url_status === 'broken' ||
+				dataSource.url_status === 'not found'
+			"
+			data-test="search-result-visit-source-button"
+			@click="
+				dataSource.source_url &&
+				dataSource.url_status !== 'broken' &&
+				dataSource.url_status !== 'not found'
+					? openSource()
+					: null
+			"
+		>
+			Visit data source <i class="fa fa-external-link" />
+		</Button>
+
 		<p
 			class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"
 			data-test="search-result-record-label"
@@ -100,36 +120,14 @@
 			</li>
 		</ul>
 		<p v-else data-test="search-result-format-unknown">Unknown</p>
-		<div class="mt-auto flex flex-col">
-			<Button
-				:class="['text-lg font-medium px-4 py-1 mt-4 mb-2 lg:mx-0 max-w-full']"
-				:disabled="
-					!dataSource.source_url ||
-					dataSource.url_status === 'broken' ||
-					dataSource.url_status === 'not found'
-				"
-				data-test="search-result-visit-source-button"
-				@click="
-					Boolean(
-						dataSource.source_url &&
-							dataSource.url_status !== 'broken' &&
-							dataSource.url_status !== 'not found',
-					)
-						? openSource()
-						: null
-				"
-			>
-				Visit data source <i class="fa fa-external-link" />
-			</Button>
-			<Button
-				intent="secondary"
-				class="text-lg font-medium px-4 py-1 lg:mx-0 max-w-full"
-				data-test="search-result-source-details-button"
-				@click="showDetails"
-			>
-				View details
-			</Button>
-		</div>
+		<Button
+			intent="secondary"
+			class="text-lg font-medium px-4 py-1 lg:mx-0 max-w-full mt-auto"
+			data-test="search-result-source-details-button"
+			@click="showDetails"
+		>
+			More details
+		</Button>
 	</GridItem>
 </template>
 

@@ -5,9 +5,7 @@
 			<p data-test="search-results-section-header-p" class="text-2xl">
 				Searching for <span class="font-semibold">"{{ searchTerm }}"</span> in
 				<span class="font-semibold">"{{ location }}"</span>.
-				<span
-					v-if="searched && searchResult?.data?.length > 0"
-					data-test="search-results-count"
+				<span v-if="searched && count > 0" data-test="search-results-count"
 					>Found {{ getResultsCopy() }}.</span
 				>
 			</p>
@@ -16,56 +14,55 @@
 				<i class="fa fa-plus" /> New search
 			</Button>
 		</div>
-		<GridContainer
-			:columns="3"
-			template-rows="auto auto 1fr"
-			component="section"
-			data-test="search"
-			class="p-0 w-full md:max-w-[unset] lg:max-w-[unset]"
-		>
-			<GridItem
-				v-if="!searched"
-				component="p"
-				data-test="loading"
-				:span-column="3"
+
+		<p v-if="!searched" component="p" data-test="loading" :span-column="3">
+			Loading results...
+		</p>
+
+		<p v-else-if="searched && count === 0" data-test="no-search-results">
+			No results found.
+		</p>
+
+		<div v-else>
+			<p class="text-xl max-w-full">
+				If you don't see what you need,
+				<a
+					href="https://airtable.com/shrbFfWk6fjzGnNsk"
+					data-test="search-results-request-link"
+				>
+					make a request&nbsp;<i class="fa fa-external-link" />
+				</a>
+			</p>
+			<p class="text-xl max-w-full">
+				To see these results in a table,
+				<a href="https://airtable.com/shrUAtA8qYasEaepI">
+					view the full database&nbsp;<i class="fa fa-external-link" />
+				</a>
+			</p>
+		</div>
+
+		<div data-test="search-results">
+			<GridContainer
+				v-for="section in uiShape"
+				:key="section.header"
+				:columns="3"
+				template-rows="auto auto 1fr"
+				component="section"
+				data-test="search"
+				class="p-0 w-full md:max-w-[unset] lg:max-w-[unset]"
 			>
-				Loading results...
-			</GridItem>
-			<GridItem
-				v-else-if="searched && searchResult?.data?.length > 0"
-				:span-column="3"
-			>
-				<p class="text-xl max-w-full">
-					If you don't see what you need,
-					<a
-						href="https://airtable.com/shrbFfWk6fjzGnNsk"
-						data-test="search-results-request-link"
-					>
-						make a request&nbsp;<i class="fa fa-external-link" />
-					</a>
-				</p>
-				<p class="text-xl max-w-full">
-					To see these results in a table,
-					<a href="https://airtable.com/shrUAtA8qYasEaepI">
-						view the full database&nbsp;<i class="fa fa-external-link" />
-					</a>
-				</p>
-			</GridItem>
-			<GridItem
-				v-else
-				:span-column="3"
-				component="p"
-				data-test="no-search-results"
-			>
-				No results found.
-			</GridItem>
-			<SearchResultCard
-				v-for="dataSource in searchResult?.data"
-				:key="dataSource.uuid"
-				data-test="search-results-cards"
-				:data-source="dataSource"
-			/>
-		</GridContainer>
+				<GridItem class="section-subheading" component="h2" :span-column="3">
+					{{ section.header }}
+				</GridItem>
+
+				<SearchResultCard
+					v-for="record in section.records"
+					:key="record.type"
+					data-test="search-results-cards"
+					:data-source="searchResult[record.type]"
+				/>
+			</GridContainer>
+		</div>
 	</main>
 </template>
 
@@ -74,6 +71,7 @@ import { Button, GridContainer, GridItem } from 'pdap-design-system';
 import SearchResultCard from '../components/SearchResultCard.vue';
 import axios from 'axios';
 import pluralize from '../util/pluralize';
+import { SEARCH_RESULTS_UI_SHAPE } from '../util/pageData';
 
 export default {
 	name: 'SearchResultPage',
@@ -84,11 +82,12 @@ export default {
 		GridItem,
 	},
 	data: () => ({
+		count: 0,
 		searched: false,
-		searchStatusCode: 200,
 		searchResult: {},
 		searchTerm: '',
 		location: '',
+		uiShape: {},
 	}),
 	mounted: function () {
 		this.searchTerm = this.$route.params.searchTerm;
@@ -97,8 +96,7 @@ export default {
 	},
 	methods: {
 		getResultsCopy() {
-			const count = this.searchResult?.data?.length;
-			return `${count} ${pluralize('result', count)}`;
+			return `${this.count} ${pluralize('result', this.count)}`;
 		},
 		async search() {
 			const url = `${
@@ -109,11 +107,26 @@ export default {
 
 			try {
 				const res = await axios.get(url);
-				this.searchStatusCode = res.status;
-				this.searchResult = res.data;
+
+				// Format results into object keyed by record_type
+				const resultFormatted = res.data.data.reduce((acc, cur) => {
+					return { ...acc, [cur.record_type]: cur };
+				}, {});
+
+				// Modify ui shape object to exclude any sections / data sources that do not have records returned by API
+				this.uiShape = SEARCH_RESULTS_UI_SHAPE.reduce((acc, cur) => {
+					const recordsFiltered = cur.records.filter(
+						(record) => resultFormatted[record.type],
+					);
+					return recordsFiltered.length > 0
+						? [...acc, { header: cur.header, records: recordsFiltered }]
+						: acc;
+				}, []);
+
+				// Set data and away we go
+				this.searchResult = resultFormatted;
+				this.count = Object.entries(this.searchResult).length;
 			} catch (error) {
-				this.searchStatusCode = error?.response?.status ?? 400;
-				this.searchResult = error?.response?.data ?? {};
 				console.error(error);
 			} finally {
 				this.searched = true;
@@ -122,3 +135,9 @@ export default {
 	},
 };
 </script>
+
+<style scoped>
+.section-subheading {
+	@apply mt-4;
+}
+</style>

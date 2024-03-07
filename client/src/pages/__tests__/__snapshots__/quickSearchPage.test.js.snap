@@ -2,28 +2,6 @@
 
 exports[`QuickSearchPage > is a Vue instance 1`] = `
 <main class="p-4 md:p-0 md:my-24">
-  <div class="pdap-flex-container pdap-flex-container-start p-0">
-    <h2 class="mt-0">Search our database</h2>
-    <p class="pb-4 md:pb-8"> If you have a question to answer, we may already know about helpful data in your area. <a href="https://pdap.io/data">Learn more about the data here.</a>
-    </p>
-  </div>
-  <div class="pdap-flex-container pdap-flex-container-center pdap-quick-search-form h-full max-h-[75-vh] justify-start p-0">
-    <form class="pdap-form flex flex-wrap gap-x-4" id="quick-search-form" name="quickSearchForm">
-      <!---->
-      <div class="pdap-grid-container pdap-input">
-        <input id="search-term" name="searchTerm" placeholder="Enter a keyword, or 'all'" type="text">
-        <!---->
-        <!---->
-        <label class="pdap-input-label" for="search-term">What are you looking for?</label>
-      </div>
-      <div class="pdap-grid-container pdap-input">
-        <input id="location" name="location" placeholder="Enter a place, or 'all'" type="text">
-        <!---->
-        <!---->
-        <label class="pdap-input-label" for="location">From where?</label>
-      </div>
-      <button class="pdap-button pdap-button-primary flex-grow-0 flex-shrink-0 basis-full max-w-[unset] mt-4" type="submit">Search Data Sources</button>
-    </form>
-  </div>
+  <quick-search-form-stub baseurlforredirect="https://data-sources.pdap.io"></quick-search-form-stub>
 </main>
 `;
