@@ -3,8 +3,11 @@ from flask_restful import Api
 from flask_cors import CORS
 from resources.User import User
 from resources.QuickSearch import QuickSearch
-from resources.DataSources import DataSources
-from resources.DataSources import DataSourceById
+from resources.DataSources import (
+    DataSources,
+    DataSourcesNeedsIdentification,
+    DataSourceById,
+)
 from resources.Agencies import Agencies
 from resources.Archives import Archives
 from resources.SearchTokens import SearchTokens
@@ -32,6 +35,11 @@ api.add_resource(
 api.add_resource(
     DataSources,
     "/data-sources",
+    resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
+)
+api.add_resource(
+    DataSourcesNeedsIdentification,
+    "/data-sources-needs-identification",
     resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
 )
 api.add_resource(

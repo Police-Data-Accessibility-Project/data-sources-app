@@ -78,15 +78,8 @@ class DataSources(Resource):
     @api_required
     def get(self):
         try:
-            try:
-                data = request.get_json()
-                approved = data.get("approved")
-                print("status", approved)
-            except:
-                approved = True
-
             data_source_matches = data_sources_query(
-                self.psycopg2_connection, [], approved
+                self.psycopg2_connection, [], "approved"
             )
 
             data_sources = {
@@ -144,3 +137,27 @@ class DataSources(Resource):
             self.psycopg2_connection.rollback()
             print(str(e))
             return {"message": "There has been an error adding the data source"}, 500
+
+
+class DataSourcesNeedsIdentification(Resource):
+    def __init__(self, **kwargs):
+        self.psycopg2_connection = kwargs["psycopg2_connection"]
+
+    @api_required
+    def get(self):
+        try:
+            data_source_matches = data_sources_query(
+                self.psycopg2_connection, [], "needs_identification"
+            )
+
+            data_sources = {
+                "count": len(data_source_matches),
+                "data": data_source_matches,
+            }
+
+            return data_sources
+
+        except Exception as e:
+            self.psycopg2_connection.rollback()
+            print(str(e))
+            return {"message": "There has been an error pulling data!"}, 500
