@@ -19,7 +19,10 @@ class DataSourceById(Resource):
                 conn=self.psycopg2_connection, data_source_id=data_source_id
             )
             if data_source_details:
-                return data_source_details
+                return {
+                    "message": "Successfully found data source",
+                    "data": data_source_details,
+                }
 
             else:
                 return {"message": "Data source not found."}, 404
@@ -59,8 +62,6 @@ class DataSourceById(Resource):
             SET {data_to_update}
             WHERE airtable_uid = '{data_source_id}'
             """
-
-            print(sql_query)
 
             cursor.execute(sql_query)
             self.psycopg2_connection.commit()

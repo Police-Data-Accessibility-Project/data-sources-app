@@ -135,12 +135,20 @@ CREATE TABLE if not exists state_names (
 );
 
 CREATE TABLE if not exists users (
-    id bigint NOT NULL,
+    id serial primary key,
     created_at timestamp with time zone,
     updated_at timestamp with time zone,
     email text NOT NULL,
     password_digest text,
-    api_key character varying
+    api_key character varying,
+    role text
+);
+
+CREATE TABLE if not exists reset_tokens (
+    id serial primary key,
+    email text NOT NULL,
+    token text varying NOT NULL,
+    create_date timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE if not exists volunteers (
@@ -158,9 +166,18 @@ CREATE TABLE if not exists volunteers (
     created timestamp without time zone NOT NULL
 );
 
+CREATE TABLE if not exists session_tokens (
+    id serial primary key,
+    token text NOT NULL,
+    email text NOT NULL,
+    expiration_date timestamp with time zone NOT NULL
+);
+
 INSERT INTO agency_source_link (link_id, airtable_uid, agency_described_linked_uid) VALUES (1, 'rec00T2YLS2jU7Tbn', 'recv9fMNEQTbVarj2');
 INSERT INTO agency_source_link (link_id, airtable_uid, agency_described_linked_uid) VALUES (2, 'rec8zJuEOvhAZCfAD', 'recxUlLdt3Wwov6P1');
 INSERT INTO agency_source_link (link_id, airtable_uid, agency_described_linked_uid) VALUES (3, 'recUGIoPQbJ6laBmr', 'recv9fMNEQTbVarj2');
 INSERT INTO agency_source_link (link_id, airtable_uid, agency_described_linked_uid) VALUES (4, 'rec8gO2K86yk9mQIU', 'recRvBpZqXM8mjddz');
 INSERT INTO state_names VALUES (1, 'IL', 'Illinois');
 INSERT INTO state_names VALUES (2, 'PA', 'Pennsylvania');
+INSERT INTO users (id, email, password_digest) VALUES (1, "test", "test");
+INSERT INTO reset_tokens (id, email, token) VALUES (1, "test", "test");

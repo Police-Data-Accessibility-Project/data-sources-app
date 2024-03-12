@@ -19,7 +19,7 @@ const $routeMock = {
 vi.mock('axios');
 
 beforeAll(() => {
-	import.meta.env.VITE_VUE_APP_BASE_URL = 'https://data-sources.pdap.io';
+	import.meta.env.VITE_VUE_API_BASE_URL = 'https://data-sources.pdap.io';
 });
 
 describe('DataSourceStaticView', () => {
@@ -76,9 +76,10 @@ describe('DataSourceStaticView', () => {
 	});
 
 	it('Routes back to /search on Agency Name button click with correct parameters', async () => {
-		const button = wrapper.find('[data-test="agency-name-button"]');
+		const button = wrapper.findComponent('[data-test="agency-name-button"]');
 
 		expect(button.exists()).toBe(true);
+		expect(button.props('intent')).toBe('tertiary');
 
 		const name = button.text();
 
@@ -103,6 +104,15 @@ describe('DataSourceStaticView', () => {
 			`https://web.archive.org/web/*/${dataSourceMock.source_url}`,
 			'_blank',
 		);
+	});
+
+	it('Does nothing on click of non-button item.', async () => {
+		const spy = vi.spyOn(window, 'open');
+		const item = wrapper.find('[data-test="data-source-item"]');
+
+		item.trigger('click');
+
+		expect(spy).not.toHaveBeenLastCalledWith();
 	});
 
 	// it("renders correctly when there is no data", () => {
