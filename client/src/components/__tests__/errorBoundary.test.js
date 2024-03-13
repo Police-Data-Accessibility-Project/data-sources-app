@@ -5,7 +5,7 @@ import { nextTick } from 'vue';
 
 let wrapper;
 
-describe('AuthWrapper', () => {
+describe('ErrorBoundary', () => {
 	beforeEach(() => {
 		wrapper = mount(ErrorBoundary, {
 			slots: {
