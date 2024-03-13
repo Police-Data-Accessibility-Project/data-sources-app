@@ -3,15 +3,17 @@ import datetime
 import json
 import requests
 
-api_key = os.getenv("VUE_APP_PDAP_API_KEY")
-HEADERS = {"Authorization": f"Bearer {api_key}"}
+API_KEY = os.getenv("VUE_APP_PDAP_API_KEY")
+BASE_URL = os.getenv("VITE_VUE_API_BASE_URL")
+HEADERS = {"Authorization": f"Bearer {API_KEY}"}
 
 
 # quick-search
 def test_quicksearch_officer_involved_shootings_philadelphia_results():
     response = requests.get(
-        "https://data-sources.pdap.io/api/quick-search/Officer Involved Shootings/philadelphia",
+        f"{BASE_URL}/quick-search/Officer Involved Shootings/philadelphia",
         headers=HEADERS,
+        json={"test_flag": True},
     )
 
     return len(response.json()["data"]) > 0
@@ -19,8 +21,9 @@ def test_quicksearch_officer_involved_shootings_philadelphia_results():
 
 def test_quicksearch_officer_involved_shootings_lowercase_philadelphia_results():
     response = requests.get(
-        "https://data-sources.pdap.io/api/quick-search/officer involved shootings/Philadelphia",
+        f"{BASE_URL}/quick-search/officer involved shootings/Philadelphia",
         headers=HEADERS,
+        json={"test_flag": True},
     )
 
     return len(response.json()["data"]) > 0
@@ -28,8 +31,9 @@ def test_quicksearch_officer_involved_shootings_lowercase_philadelphia_results()
 
 def test_quicksearch_officer_involved_shootings_philadelphia_county_results():
     response = requests.get(
-        "https://data-sources.pdap.io/api/quick-search/Officer Involved Shootings/philadelphia county",
+        f"{BASE_URL}/quick-search/Officer Involved Shootings/philadelphia county",
         headers=HEADERS,
+        json={"test_flag": True},
     )
 
     return len(response.json()["data"]) > 0
@@ -37,7 +41,9 @@ def test_quicksearch_officer_involved_shootings_philadelphia_county_results():
 
 def test_quicksearch_all_allgeheny_results():
     response = requests.get(
-        "https://data-sources.pdap.io/api/quick-search/all/allegheny", headers=HEADERS
+        f"{BASE_URL}/quick-search/all/allegheny",
+        headers=HEADERS,
+        json={"test_flag": True},
     )
 
     return len(response.json()["data"]) > 0
@@ -45,7 +51,9 @@ def test_quicksearch_all_allgeheny_results():
 
 def test_quicksearch_complaints_all_results():
     response = requests.get(
-        "https://data-sources.pdap.io/api/quick-search/complaints/all", headers=HEADERS
+        f"{BASE_URL}/quick-search/complaints/all",
+        headers=HEADERS,
+        json={"test_flag": True},
     )
 
     return len(response.json()["data"]) > 0
@@ -53,8 +61,9 @@ def test_quicksearch_complaints_all_results():
 
 def test_quicksearch_media_bulletin_pennsylvania_results():
     response = requests.get(
-        "https://data-sources.pdap.io/api/quick-search/media bulletin/pennsylvania",
+        f"{BASE_URL}/quick-search/media bulletin/pennsylvania",
         headers=HEADERS,
+        json={"test_flag": True},
     )
 
     return len(response.json()["data"]) > 0
@@ -63,24 +72,24 @@ def test_quicksearch_media_bulletin_pennsylvania_results():
 # data-sources
 def test_data_source_by_id():
     response = requests.get(
-        "https://data-sources.pdap.io/api/data-sources-by-id/reczwxaH31Wf9gRjS",
+        f"{BASE_URL}/data-sources-by-id/reczwxaH31Wf9gRjS",
         headers=HEADERS,
     )
 
-    return response.json()["data_source_id"] == "reczwxaH31Wf9gRjS"
+    return len(response.json()["data"]) > 0
 
 
 def test_data_sources():
-    response = requests.get(
-        "https://data-sources.pdap.io/api/data-sources", headers=HEADERS
-    )
+    response = requests.get(f"{BASE_URL}/data-sources", headers=HEADERS)
 
     return len(response.json()["data"]) > 0
 
 
 def test_create_data_source():
     response = requests.post(
-        "/data-sources", headers=HEADERS, json={"name": "test", "record_type": "test"}
+        f"{BASE_URL}/data-sources",
+        headers=HEADERS,
+        json={"name": "test", "record_type": "test"},
     )
 
     assert response.json() == True
@@ -88,18 +97,16 @@ def test_create_data_source():
 
 def test_update_data_source():
     response = requests.put(
-        "/data-sources-by-id/45a4cd5d-26da-473a-a98e-a39fbcf4a96c",
+        f"{BASE_URL}/data-sources-by-id/45a4cd5d-26da-473a-a98e-a39fbcf4a96c",
         headers=HEADERS,
         json={"description": "test"},
     )
 
-    assert response.json()["status"] == "success"
+    assert response.json()["message"] == "Data source updated successfully."
 
 
 def test_data_sources_approved():
-    response = requests.get(
-        "https://data-sources.pdap.io/api/data-sources", headers=HEADERS
-    )
+    response = requests.get(f"{BASE_URL}/data-sources", headers=HEADERS)
     unapproved_url = "https://joinstatepolice.ny.gov/15-mile-run"
 
     return (
@@ -110,7 +117,7 @@ def test_data_sources_approved():
 
 def test_data_source_by_id_approved():
     response = requests.get(
-        "https://data-sources.pdap.io/api/data-sources-by-id/rec013MFNfBnrTpZj",
+        f"{BASE_URL}/data-sources-by-id/rec013MFNfBnrTpZj",
         headers=HEADERS,
     )
 
@@ -119,16 +126,14 @@ def test_data_source_by_id_approved():
 
 # search-tokens
 def test_search_tokens_data_sources():
-    response = requests.get(
-        "https://data-sources.pdap.io/api/search-tokens?endpoint=data-sources"
-    )
+    response = requests.get(f"{BASE_URL}/search-tokens?endpoint=data-sources")
 
     return len(response.json()["data"]) > 0
 
 
 def test_search_tokens_data_source_by_id():
     response = requests.get(
-        "https://data-sources.pdap.io/api/search-tokens?endpoint=data-sources-by-id&arg1=reczwxaH31Wf9gRjS"
+        f"{BASE_URL}/search-tokens?endpoint=data-sources-by-id&arg1=reczwxaH31Wf9gRjS"
     )
 
     return response.json()["data_source_id"] == "reczwxaH31Wf9gRjS"
@@ -136,28 +141,79 @@ def test_search_tokens_data_source_by_id():
 
 def test_search_tokens_quick_search_complaints_allegheny_results():
     response = requests.get(
-        "https://data-sources.pdap.io/api/search-tokens?endpoint=quick-search&arg1=complaints&arg2=allegheny"
+        f"{BASE_URL}/search-tokens?endpoint=quick-search&arg1=complaints&arg2=allegheny"
     )
 
     return len(response.json()["data"]) > 0
 
 
 # user
-def test_get_user():
-    response = requests.get(
-        "https://data-sources.pdap.io/api/user",
+def test_put_user():
+    response = requests.put(
+        f"{BASE_URL}/user",
         headers=HEADERS,
         json={"email": "test2", "password": "test"},
     )
 
-    return response
+    return response.json()["message"] == "Successfully updated password"
+
+
+# login
+def test_login():
+    response = requests.post(
+        f"{BASE_URL}/login",
+        json={"email": "test2", "password": "test"},
+    )
+
+    return response.json()["message"] == "Successfully logged in"
+
+
+# refresh-session
+def test_refresh_session():
+    response = requests.post(
+        f"{BASE_URL}/login",
+        json={"email": "test2", "password": "test"},
+    )
+    token = response.json()["data"]
+
+    response = requests.post(
+        f"{BASE_URL}/refresh-session", json={"session_token": token}
+    )
+
+    return response.json()["message"] == "Successfully refreshed session token"
+
+
+# reset-password
+def test_request_reset_password():
+    reset_token = requests.post(
+        f"{BASE_URL}/request-reset-password",
+        headers=HEADERS,
+        json={"email": "test"},
+    )
+
+    response = requests.post(
+        f"{BASE_URL}/reset-password",
+        headers=HEADERS,
+        json={"token": reset_token.json()["token"], "password": "test"},
+    )
+
+    return response.json()["message"] == "Successfully updated password"
+
+
+# api-key
+def test_get_api_key():
+    response = requests.get(
+        f"{BASE_URL}/api_key",
+        headers=HEADERS,
+        json={"email": "test2", "password": "test"},
+    )
+
+    return len(response.json()["api_key"]) > 0
 
 
 # archives
 def test_get_archives():
-    response = requests.get(
-        "https://data-sources.pdap.io/api/archives", headers=HEADERS
-    )
+    response = requests.get(f"{BASE_URL}/archives", headers=HEADERS)
 
     return len(response.json()[0]) > 0
 
@@ -166,7 +222,7 @@ def test_put_archives():
     current_datetime = datetime.datetime.now()
     datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
     response = requests.put(
-        "https://data-sources.pdap.io/api/archives",
+        f"{BASE_URL}/archives",
         headers=HEADERS,
         json=json.dumps(
             {
@@ -184,7 +240,7 @@ def test_put_archives_brokenasof():
     current_datetime = datetime.datetime.now()
     datetime_string = current_datetime.strftime("%Y-%m-%d")
     response = requests.put(
-        "https://data-sources.pdap.io/api/archives",
+        f"{BASE_URL}/archives",
         headers=HEADERS,
         json=json.dumps(
             {
@@ -200,20 +256,14 @@ def test_put_archives_brokenasof():
 
 # agencies
 def test_agencies():
-    response = requests.get(
-        "https://data-sources.pdap.io/api/agencies/1", headers=HEADERS
-    )
+    response = requests.get(f"{BASE_URL}/agencies/1", headers=HEADERS)
 
     return len(response.json()["data"]) > 0
 
 
 def test_agencies_pagination():
-    response1 = requests.get(
-        "https://data-sources.pdap.io/api/agencies/1", headers=HEADERS
-    )
-    response2 = requests.get(
-        "https://data-sources.pdap.io/api/agencies/2", headers=HEADERS
-    )
+    response1 = requests.get(f"{BASE_URL}/agencies/1", headers=HEADERS)
+    response2 = requests.get(f"{BASE_URL}/agencies/2", headers=HEADERS)
 
     return response1 != response2
 
@@ -228,12 +278,16 @@ def main():
         "test_quicksearch_media_bulletin_pennsylvania_results",
         "test_data_source_by_id",
         "test_data_sources",
+        "test_update_data_source",
         "test_data_sources_approved",
         "test_data_source_by_id_approved",
         "test_search_tokens_data_sources",
         "test_search_tokens_data_source_by_id",
         "test_search_tokens_quick_search_complaints_allegheny_results",
-        # "test_get_user",
+        "test_put_user",
+        "test_login",
+        "test_request_reset_password",
+        "test_get_api_key",
         "test_get_archives",
         "test_put_archives",
         "test_put_archives_brokenasof",

@@ -3,38 +3,70 @@ from hmac import compare_digest
 from flask import request, jsonify
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 from datetime import datetime as dt
+from middleware.login_queries import is_admin
 import os
 
 
-def is_valid(api_key):
+def is_valid(api_key, endpoint, method):
+    """
+    Get the user data that matches the API key from the request
+    """
+    if not api_key:
+        return False, False
+
     psycopg2_connection = initialize_psycopg2_connection()
-    # Get the user data that matches the API key from the request
     cursor = psycopg2_connection.cursor()
-    cursor.execute(f"select id, api_key from users where api_key = '{api_key}'")
+    cursor.execute(f"select id, api_key, role from users where api_key = '{api_key}'")
     results = cursor.fetchall()
-    user_data = {}
+    if len(results) > 0:
+        role = results[0][2]
+
     if not results:
         cursor.execute(
-            f"delete from access_tokens where expiration_date < '{dt.now()}'"
+            f"select email, expiration_date from session_tokens where token = '{api_key}'"
         )
-        psycopg2_connection.commit()
+        results = cursor.fetchall()
+        if len(results) > 0:
+            email = results[0][0]
+            expiration_date = results[0][1]
+            print(expiration_date, dt.utcnow())
+
+            if expiration_date < dt.utcnow():
+                return False, True
+
+            if is_admin(cursor, email):
+                role = "admin"
+
+    if not results:
         cursor.execute(f"select id, token from access_tokens where token = '{api_key}'")
         results = cursor.fetchall()
+        cursor.execute(
+            f"delete from access_tokens where expiration_date < '{dt.utcnow()}'"
+        )
+        psycopg2_connection.commit()
+        role = "user"
 
         if not results:
-            return False
+            return False, False
 
-    user_data = dict(zip(("id", "api_key"), results[0]))
-    # Compare the API key in the user table to the API in the request header and proceed through the protected route if it's valid. Otherwise, compare_digest will return False and api_required will send an error message to provide a valid API key
-    if compare_digest(user_data.get("api_key"), api_key):
-        return True
+    if endpoint in ("datasources", "datasourcebyid") and method in ("PUT", "POST"):
+        if role != "admin":
+            return False, False
+
+    # Compare the API key in the user table to the API in the request header and proceed
+    # through the protected route if it's valid. Otherwise, compare_digest will return False
+    # and api_required will send an error message to provide a valid API key
+    return True, False
 
 
-# The api_required decorator can be added to protect a route so that only authenticated users can access the information
-# To protect a route with this decorator, add @api_required on the line above a given route
-# The request header for a protected route must include an "Authorization" key with the value formatted as "Bearer [api_key]"
-# A user can get an API key by signing up and logging in (see User.py)
 def api_required(func):
+    """
+    The api_required decorator can be added to protect a route so that only authenticated users can access the information
+    To protect a route with this decorator, add @api_required on the line above a given route
+    The request header for a protected route must include an "Authorization" key with the value formatted as "Bearer [api_key]"
+    A user can get an API key by signing up and logging in (see User.py)
+    """
+
     @functools.wraps(func)
     def decorator(*args, **kwargs):
         api_key = None
@@ -53,9 +85,12 @@ def api_required(func):
                 "message": "Please provide an 'Authorization' key in the request header"
             }, 400
         # Check if API key is correct and valid
-        if is_valid(api_key):
+        valid, expired = is_valid(api_key, request.endpoint, request.method)
+        if valid:
             return func(*args, **kwargs)
         else:
+            if expired:
+                return {"message": "The provided API key has expired"}, 401
             return {"message": "The provided API key is not valid"}, 403
 
     return decorator
