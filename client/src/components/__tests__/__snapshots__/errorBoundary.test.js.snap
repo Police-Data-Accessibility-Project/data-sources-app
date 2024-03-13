@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`AuthWrapper > renders error content with error 1`] = `
+exports[`ErrorBoundary > renders error content with error 1`] = `
 <div>
   <main class="pdap-flex-container-center">
     <h1>Oops, something went wrong!</h1>
@@ -9,7 +9,7 @@ exports[`AuthWrapper > renders error content with error 1`] = `
 </div>
 `;
 
-exports[`AuthWrapper > renders slot content with no error 1`] = `
+exports[`ErrorBoundary > renders slot content with no error 1`] = `
 <div>
   <div></div>
 </div>
