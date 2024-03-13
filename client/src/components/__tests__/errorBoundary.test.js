@@ -26,5 +26,6 @@ describe('AuthWrapper', () => {
 		expect(wrapper.find('[data-test="error-boundary-message"]').exists()).toBe(
 			true,
 		);
+		expect(wrapper.html()).toMatchSnapshot();
 	});
 });
