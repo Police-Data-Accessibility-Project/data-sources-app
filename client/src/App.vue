@@ -1,7 +1,7 @@
 <template>
 	<AuthWrapper>
 		<Header :logo-image-src="lockup" />
-		<ErrorBoundary>
+		<ErrorBoundary component="main">
 			<router-view />
 		</ErrorBoundary>
 		<Footer :logo-image-src="acronym" />
