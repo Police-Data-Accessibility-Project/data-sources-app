@@ -4,7 +4,7 @@ from middleware.security import api_required
 from middleware.data_source_queries import data_source_by_id_query, data_sources_query
 import json
 from datetime import datetime
-from utilities.common import convert_dates_to_strings
+
 import uuid
 
 
@@ -19,7 +19,10 @@ class DataSourceById(Resource):
                 conn=self.psycopg2_connection, data_source_id=data_source_id
             )
             if data_source_details:
-                return data_source_details
+                return {
+                    "message": "Successfully found data source",
+                    "data": data_source_details,
+                }
 
             else:
                 return {"message": "Data source not found."}, 404
@@ -60,8 +63,6 @@ class DataSourceById(Resource):
             WHERE airtable_uid = '{data_source_id}'
             """
 
-            print(sql_query)
-
             cursor.execute(sql_query)
             self.psycopg2_connection.commit()
             return {"message": "Data source updated successfully."}
@@ -78,7 +79,9 @@ class DataSources(Resource):
     @api_required
     def get(self):
         try:
-            data_source_matches = data_sources_query(self.psycopg2_connection)
+            data_source_matches = data_sources_query(
+                self.psycopg2_connection, [], "approved"
+            )
 
             data_sources = {
                 "count": len(data_source_matches),
@@ -135,3 +138,27 @@ class DataSources(Resource):
             self.psycopg2_connection.rollback()
             print(str(e))
             return {"message": "There has been an error adding the data source"}, 500
+
+
+class DataSourcesNeedsIdentification(Resource):
+    def __init__(self, **kwargs):
+        self.psycopg2_connection = kwargs["psycopg2_connection"]
+
+    @api_required
+    def get(self):
+        try:
+            data_source_matches = data_sources_query(
+                self.psycopg2_connection, [], "needs_identification"
+            )
+
+            data_sources = {
+                "count": len(data_source_matches),
+                "data": data_source_matches,
+            }
+
+            return data_sources
+
+        except Exception as e:
+            self.psycopg2_connection.rollback()
+            print(str(e))
+            return {"message": "There has been an error pulling data!"}, 500

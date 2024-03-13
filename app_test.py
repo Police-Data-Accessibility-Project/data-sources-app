@@ -9,18 +9,33 @@ from middleware.quick_search_query import (
 )
 from middleware.data_source_queries import (
     data_sources_query,
-    data_sources_results,
+    approved_data_sources,
+    needs_identification_data_sources,
     data_source_by_id_query,
     data_source_by_id_results,
     DATA_SOURCES_APPROVED_COLUMNS,
 )
-
+from middleware.user_queries import (
+    user_post_results,
+    user_check_email,
+)
+from middleware.login_queries import (
+    login_results,
+    create_session_token,
+    token_results,
+    is_admin,
+)
 from middleware.archives_queries import (
     archives_get_results,
     archives_get_query,
     archives_put_broken_as_of_results,
     archives_put_last_cached_results,
     ARCHIVES_GET_COLUMNS,
+)
+from middleware.reset_token_queries import (
+    check_reset_token,
+    add_reset_token,
+    delete_reset_token,
 )
 from app_test_data import (
     DATA_SOURCES_ROWS,
@@ -95,13 +110,19 @@ def test_unaltered_search_query(session):
 
 
 def test_data_sources(session):
-    response = data_sources_results(conn=session)
+    response = approved_data_sources(conn=session)
+
+    assert response
+
+
+def test_needs_identification(session):
+    response = needs_identification_data_sources(conn=session)
 
     assert response
 
 
 def test_data_sources_approved(session):
-    response = data_sources_results(conn=session)
+    response = approved_data_sources(conn=session)
 
     assert (
         len([d for d in response if "https://joinstatepolice.ny.gov/15-mile-run" in d])
@@ -123,6 +144,86 @@ def test_data_source_by_id_approved(session):
     )
 
     assert not response
+
+
+def test_user_post_query(session):
+    curs = session.cursor()
+    user_post_results(curs, "unit_test", "unit_test")
+
+    email_check = curs.execute(
+        f"SELECT email FROM users WHERE email = 'unit_test'"
+    ).fetchone()[0]
+
+    assert email_check == "unit_test"
+
+
+def test_login_query(session):
+    curs = session.cursor()
+    user_data = login_results(curs, "test")
+
+    assert user_data["password_digest"]
+
+
+def test_create_session_token_results(session):
+    curs = session.cursor()
+    token = create_session_token(curs, 1, "test")
+
+    curs = session.cursor()
+    new_token = token_results(curs, token)
+
+    assert new_token["email"]
+
+
+def test_is_admin(session):
+    curs = session.cursor()
+    admin = is_admin(curs, "mbodenator@gmail.com")
+
+    assert admin
+
+
+def test_not_admin(session):
+    curs = session.cursor()
+    admin = is_admin(curs, "test")
+
+    assert not admin
+
+
+def test_user_check_email(session):
+    curs = session.cursor()
+    user_data = user_check_email(curs, "test")
+    print(user_data)
+
+    assert user_data["id"]
+
+
+def test_check_reset_token(session):
+    curs = session.cursor()
+    reset_token = check_reset_token(curs, "test")
+    print(reset_token)
+
+    assert reset_token["id"]
+
+
+def test_add_reset_token(session):
+    curs = session.cursor()
+    add_reset_token(curs, "unit_test", "unit_test")
+
+    email_check = curs.execute(
+        f"SELECT email FROM reset_tokens WHERE email = 'unit_test'"
+    ).fetchone()[0]
+
+    assert email_check == "unit_test"
+
+
+def test_delete_reset_token(session):
+    curs = session.cursor()
+    delete_reset_token(curs, "test", "test")
+
+    email_check = curs.execute(
+        f"SELECT email FROM reset_tokens WHERE email = 'test'"
+    ).fetchone()
+
+    assert not email_check
 
 
 def test_archives_get_results(session):

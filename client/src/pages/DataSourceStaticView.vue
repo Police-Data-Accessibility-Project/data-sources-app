@@ -62,7 +62,7 @@
 								v-for="item in dataSource[record.key]"
 								:key="item"
 								:class="record?.classNames"
-								:data-test="record['data-test']"
+								:data-test="record['data-test'] ?? 'data-source-item'"
 								:href="dataSource[record.key]"
 								:intent="record?.attributes?.intent"
 								:target="record?.attributes?.target"
@@ -87,7 +87,7 @@
 							"
 							v-else-if="dataSource[record.key]"
 							:class="record?.classNames"
-							:data-test="record['data-test']"
+							:data-test="record['data-test'] ?? 'data-source-item'"
 							:href="dataSource[record.key]"
 							:intent="record?.attributes?.intent"
 							:target="record?.attributes?.target"
@@ -106,7 +106,7 @@
 							:is="record.component ? record.component : 'p'"
 							v-else-if="dataSource[record.renderIf]"
 							:class="record?.classNames"
-							:data-test="record['data-test']"
+							:data-test="record['data-test'] ?? 'data-source-item'"
 							:href="record?.href"
 							:intent="record?.attributes?.intent"
 							:target="record?.attributes?.target"
@@ -130,12 +130,12 @@
 import axios from 'axios';
 import { Button } from 'pdap-design-system';
 import formatDateForSearchResults from '../util/formatDate';
-import { STATIC_VIEW_UI_SHAPE } from './util';
+import { STATIC_VIEW_UI_SHAPE } from '../util/pageData.js';
 
 export default {
 	name: 'DataSourceStaticView',
 	components: {
-		Button
+		Button,
 	},
 	data: function () {
 		return {
@@ -168,14 +168,14 @@ export default {
 						`https://web.archive.org/web/*/${this.dataSource.source_url}`,
 					);
 				default:
-					return () => undefined;
+					return undefined;
 			}
 		},
 		async getDataSourceDetails() {
 			try {
 				const res = await axios.get(
 					`${
-						import.meta.env.VITE_VUE_APP_BASE_URL
+						import.meta.env.VITE_VUE_API_BASE_URL
 					}/search-tokens?endpoint=data-sources-by-id&arg1=${this.id}`,
 				);
 				this.dataSource = res.data;
@@ -198,3 +198,4 @@ export default {
 	@apply my-2;
 }
 </style>
+./pageData

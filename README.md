@@ -47,7 +47,7 @@ pip install -r requirements.txt
 
 ### 5. Add environment secrets
 
-Either add a `.env` file to your local root directory or manually export these secrets: `DO_DATABASE_URL` and `VITE_VUE_APP_BASE_URL`.  
+Either add a `.env` file to your local root directory or manually export these secrets: `DO_DATABASE_URL` and `VITE_VUE_API_BASE_URL`.  
 
 Reach out to contact@pdap.io or make noise in Discord if you'd like access to these keys.
 
@@ -55,14 +55,16 @@ Reach out to contact@pdap.io or make noise in Discord if you'd like access to th
 # .env
 
 DO_DATABASE_URL="postgres://data_sources_app:<password>@db-postgresql-nyc3-38355-do-user-8463429-0.c.db.ondigitalocean.com:25060/defaultdb"
-VITE_VUE_APP_BASE_URL="http://localhost:5000"
+VITE_VUE_API_BASE_URL="http://localhost:5000"
+VITE_VUE_APP_BASE_URL="http://localhost:8888"
 ```
 
 ```
 # shell
 
 export DO_DATABASE_URL=postgres://data_sources_app:<password>@db-postgresql-nyc3-38355-do-user-8463429-0.c.db.ondigitalocean.com:25060/defaultdb
-export VITE_VUE_APP_BASE_URL="http://localhost:5000"
+export VITE_VUE_API_BASE_URL="http://localhost:5000"
+export VITE_VUE_APP_BASE_URL="http://localhost:8888"
 ```
 
 ### 6. Allow your IP address
@@ -108,14 +110,18 @@ pip install pytest
 pytest
 
 ```
-
 ## Linting
 Linting is enforced with black on PR creation. You can use black to automatically reformat your files before commiting them, this will allow your PR to pass this check. Any files that require reformatting will be listed on any failed checks on the PR.
 ```
 black app_test.py
 ```
 
-## Other helpful commands for the client app
+## Client App
+
+A few things to know:
+
+- We use Vue3. This allows for using either the options or composition APIs. Feel free to use whichever you are most fluent in.
+- We use `pinia` for state management. This works much better with the composition API than with options, so it is recommended to use the composition API if you need data from one of the `pinia` stores.
 
 ### Compiles and minifies for production
 ```
