@@ -132,7 +132,10 @@ def data_source_by_id_query(data_source_id="", test_query_results=[], conn={}):
     return data_source_details
 
 
-def data_sources_results(conn):
+def approved_data_sources(conn) -> list:
+    """
+    Returns a list of approved data sources for which there is a corresponding agency
+    """
     cursor = conn.cursor()
     data_source_approved_columns = [
         f"data_sources.{approved_column}"
@@ -163,8 +166,42 @@ def data_sources_results(conn):
     return results
 
 
-def data_sources_query(conn={}, test_query_results=[]):
-    results = data_sources_results(conn) if conn else test_query_results
+def needs_identification_data_sources(conn) -> list:
+    """
+    Returns a list of data sources that need identification
+    """
+    cursor = conn.cursor()
+    joined_column_names = ", ".join(DATA_SOURCES_APPROVED_COLUMNS)
+
+    sql_query = """
+        SELECT
+            {}
+        FROM
+            data_sources
+        WHERE
+            approval_status = 'needs identification'
+    """.format(
+        joined_column_names
+    )
+    cursor.execute(sql_query)
+    results = cursor.fetchall()
+    cursor.close()
+
+    return results
+
+
+def data_sources_query(
+    conn={}, test_query_results=[], approval_status="approved"
+) -> list:
+    """
+    Returns results from the approriate data sources query
+    """
+    if conn and approval_status == "approved":
+        results = approved_data_sources(conn)
+    elif conn:
+        results = needs_identification_data_sources(conn)
+    else:
+        results = test_query_results
 
     data_source_output_columns = DATA_SOURCES_APPROVED_COLUMNS + ["agency_name"]
 
