@@ -14,7 +14,6 @@ const NOW_PLUS_THIRTY = NOW + 30 * 1000;
 describe('AuthWrapper', () => {
 	beforeEach(() => {
 		wrapper = mount(AuthWrapper, {
-			// props: { dataSource },
 			global: {
 				plugins: [createTestingPinia()],
 			},
