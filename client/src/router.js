@@ -2,11 +2,12 @@ import { createWebHistory, createRouter } from 'vue-router';
 import { useAuthStore } from './stores/auth';
 
 import ChangePassword from './pages/ChangePassword.vue';
-import DataSourceStaticView from '../src/pages/DataSourceStaticView.vue';
+import DataSourceStaticView from './pages/DataSourceStaticView.vue';
 import LogIn from './pages/LogIn.vue';
-import QuickSearchPage from '../src/pages/QuickSearchPage.vue';
+import QuickSearchPage from './pages/QuickSearchPage.vue';
 import ResetPassword from './pages/ResetPassword.vue';
-import SearchResultPage from '../src/pages/SearchResultPage.vue';
+import SearchResultPage from './pages/SearchResultPage.vue';
+import NotFound from './pages/NotFound.vue';
 
 export const PRIVATE_ROUTES = ['/change-password'];
 
@@ -37,6 +38,7 @@ const routes = [
 		component: ResetPassword,
 		name: 'ResetPassword',
 	},
+	{ path: '/:pathMatch(.*)*', name: 'not-found', component: NotFound },
 ];
 
 const router = createRouter({
