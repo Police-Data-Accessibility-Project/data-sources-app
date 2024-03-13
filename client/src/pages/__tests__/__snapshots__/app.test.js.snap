@@ -38,9 +38,7 @@ exports[`App > renders the App 1`] = `
       </li>
     </nav>
   </header>
-  <div>
-    <!---->
-  </div>
+  <!---->
   <footer class="pdap-footer">
     <div class="pdap-flex-container pdap-flex-container-center">
       <ul class="pdap-footer-social-links">
