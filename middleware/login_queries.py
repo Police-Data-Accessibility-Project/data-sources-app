@@ -30,8 +30,6 @@ def login_results(cursor, email: str) -> Dict[str, Union[int, str]]:
         return {"error": "no match"}
 
 
-def is_admin(cursor, email):
-    cursor.execute(f"select role from users where email = '{email}'")
 def is_admin(cursor, email: str) -> Union[bool, Dict[str, str]]:
     """
     Check if a user is an admin based on email.
@@ -43,6 +41,7 @@ def is_admin(cursor, email: str) -> Union[bool, Dict[str, str]]:
     Returns:
     - True if the user is an admin, False if not, or a dictionary with an error message.
     """
+    cursor.execute(f"SELECT role FROM users WHERE email = '{email}'")
     results = cursor.fetchall()
     if len(results) > 0:
         role = results[0][0]
