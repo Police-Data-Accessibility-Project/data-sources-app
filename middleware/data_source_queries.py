@@ -125,8 +125,6 @@ def data_source_by_id_query(data_source_id: str = "", test_query_results: Option
     """
     Processes a query to fetch details for a specific data source by its ID, optionally using test data for the results.
 
-def data_source_by_id_query(data_source_id="", test_query_results=[], conn={}):
-    if conn:
     Parameters:
     - data_source_id: The unique identifier for the data source. Used if test_query_results is not provided.
     - test_query_results: Optional; predefined results for testing purposes.
@@ -135,6 +133,7 @@ def data_source_by_id_query(data_source_id="", test_query_results=[], conn={}):
     Returns:
     - A dictionary with the details of the data source and its associated agency.
     """
+    if conn and not test_query_results:
         result = data_source_by_id_results(conn, data_source_id)
     else:
         result = test_query_results
@@ -196,8 +195,6 @@ def data_sources_results(conn: sqlite3.Connection) -> List[Dict[str, Any]]:
     return results
 
 
-def data_sources_query(conn={}, test_query_results=[]):
-    results = data_sources_results(conn) if conn else test_query_results
 def data_sources_query(conn: Optional[sqlite3.Connection] = None,
                        test_query_results: Optional[List[Dict[str, Any]]] = None) -> List[Dict[str, Any]]:
     """
@@ -210,6 +207,7 @@ def data_sources_query(conn: Optional[sqlite3.Connection] = None,
     Returns:
     - A list of dictionaries, each containing details of an approved data source and its associated agency name.
     """
+    results = data_sources_results(conn) if conn and not test_query_results else test_query_results
 
     data_source_output_columns = DATA_SOURCES_APPROVED_COLUMNS + ["agency_name"]
 

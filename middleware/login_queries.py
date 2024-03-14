@@ -32,6 +32,17 @@ def login_results(cursor, email: str) -> Dict[str, Union[int, str]]:
 
 def is_admin(cursor, email):
     cursor.execute(f"select role from users where email = '{email}'")
+def is_admin(cursor, email: str) -> Union[bool, Dict[str, str]]:
+    """
+    Check if a user is an admin based on email.
+
+    Parameters:
+    - cursor: Database cursor to execute the query.
+    - email: User's email.
+
+    Returns:
+    - True if the user is an admin, False if not, or a dictionary with an error message.
+    """
     results = cursor.fetchall()
     if len(results) > 0:
         role = results[0][0]
@@ -69,8 +80,6 @@ def create_session_token(cursor, id: int, email: str) -> str:
     return session_token
 
 
-def token_results(cursor, token):
-    cursor.execute(f"select id, email from session_tokens where token = '{token}'")
 def token_results(cursor, token: str) -> Dict[str, Union[int, str]]:
     """
     Query user data by session token.

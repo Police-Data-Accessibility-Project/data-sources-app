@@ -15,6 +15,7 @@ def user_check_email(cursor, email):
     Returns:
     - A dictionary with user ID if the user exists, or an error message if no match is found.
     """
+    cursor.execute(f"SELECT id FROM users WHERE email = '{email}'")
     results = cursor.fetchall()
     if len(results) > 0:
         user_data = {"id": results[0][0]}
