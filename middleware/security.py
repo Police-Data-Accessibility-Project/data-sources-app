@@ -1,15 +1,25 @@
 import functools
 from hmac import compare_digest
 from flask import request, jsonify
+from typing import Tuple, Callable, Any
+from psycopg2.extensions import cursor as PgCursor, connection as PgConnection
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 from datetime import datetime as dt
 from middleware.login_queries import is_admin
 import os
 
 
-def is_valid(api_key, endpoint, method):
+def is_valid(api_key: str, endpoint: str, method: str) -> Tuple[bool, bool]:
     """
-    Get the user data that matches the API key from the request
+    Validates the provided API key against various security checks and determines if it matches a user, session, or access token.
+
+    Parameters:
+    - api_key: The API key to validate.
+    - endpoint: The endpoint being requested.
+    - method: The HTTP method of the request.
+
+    Returns:
+    - A tuple of two booleans. The first indicates if the API key is valid, the second if the API key has expired.
     """
     if not api_key:
         return False, False
@@ -59,12 +69,15 @@ def is_valid(api_key, endpoint, method):
     return True, False
 
 
-def api_required(func):
+def api_required(func: Callable[..., Any]) -> Callable[..., Any]:
     """
-    The api_required decorator can be added to protect a route so that only authenticated users can access the information
-    To protect a route with this decorator, add @api_required on the line above a given route
-    The request header for a protected route must include an "Authorization" key with the value formatted as "Bearer [api_key]"
-    A user can get an API key by signing up and logging in (see User.py)
+    Decorator to protect a route, ensuring it can only be accessed with a valid and non-expired API key.
+
+    Parameters:
+    - func: The function to decorate.
+
+    Returns:
+    - The decorator function.
     """
 
     @functools.wraps(func)

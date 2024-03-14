@@ -1,3 +1,5 @@
+from typing import Any, Dict, List, Optional
+import sqlite3
 from utilities.common import convert_dates_to_strings, format_arrays
 
 DATA_SOURCES_APPROVED_COLUMNS = [
@@ -71,7 +73,17 @@ AGENCY_APPROVED_COLUMNS = [
 ]
 
 
-def data_source_by_id_results(conn, data_source_id):
+def data_source_by_id_results(conn: sqlite3.Connection, data_source_id: str) -> Optional[Dict[str, Any]]:
+    """
+    Retrieves detailed information for a specific data source by its ID, combining fields from both the data_sources and agencies tables.
+
+    Parameters:
+    - conn: sqlite3.Connection object to execute the query on the database.
+    - data_source_id: The unique identifier for the data source.
+
+    Returns:
+    - A dictionary containing the combined details of the data source and its associated agency, if found; otherwise, None.
+    """
     cursor = conn.cursor()
 
     data_source_approved_columns = [
@@ -108,9 +120,21 @@ def data_source_by_id_results(conn, data_source_id):
 
     return result
 
+def data_source_by_id_query(data_source_id: str = "", test_query_results: Optional[List[Dict[str, Any]]] = None,
+                            conn: Optional[sqlite3.Connection] = None) -> Dict[str, Any]:
+    """
+    Processes a query to fetch details for a specific data source by its ID, optionally using test data for the results.
 
 def data_source_by_id_query(data_source_id="", test_query_results=[], conn={}):
     if conn:
+    Parameters:
+    - data_source_id: The unique identifier for the data source. Used if test_query_results is not provided.
+    - test_query_results: Optional; predefined results for testing purposes.
+    - conn: Optional; sqlite3.Connection object for database access if test_query_results is not provided.
+
+    Returns:
+    - A dictionary with the details of the data source and its associated agency.
+    """
         result = data_source_by_id_results(conn, data_source_id)
     else:
         result = test_query_results
@@ -132,7 +156,16 @@ def data_source_by_id_query(data_source_id="", test_query_results=[], conn={}):
     return data_source_details
 
 
-def data_sources_results(conn):
+def data_sources_results(conn: sqlite3.Connection) -> List[Dict[str, Any]]:
+    """
+    Fetches approved data sources from the database, including related agency information.
+
+    Parameters:
+    - conn: sqlite3.Connection object to execute the query on the database.
+
+    Returns:
+    - A list of dictionaries, each representing an approved data source with its associated agency name.
+    """
     cursor = conn.cursor()
     data_source_approved_columns = [
         f"data_sources.{approved_column}"
@@ -165,6 +198,18 @@ def data_sources_results(conn):
 
 def data_sources_query(conn={}, test_query_results=[]):
     results = data_sources_results(conn) if conn else test_query_results
+def data_sources_query(conn: Optional[sqlite3.Connection] = None,
+                       test_query_results: Optional[List[Dict[str, Any]]] = None) -> List[Dict[str, Any]]:
+    """
+    Queries and processes a list of approved data sources, optionally using test data.
+
+    Parameters:
+    - conn: Optional; sqlite3.Connection object for database access if test_query_results is not provided.
+    - test_query_results: Optional; predefined results for testing purposes.
+
+    Returns:
+    - A list of dictionaries, each containing details of an approved data source and its associated agency name.
+    """
 
     data_source_output_columns = DATA_SOURCES_APPROVED_COLUMNS + ["agency_name"]
 

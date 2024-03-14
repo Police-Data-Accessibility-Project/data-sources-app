@@ -2,6 +2,9 @@ import spacy
 import json
 import datetime
 from utilities.common import convert_dates_to_strings, format_arrays
+from typing import Any, Dict, List, Union, Optional
+from psycopg2.extensions import cursor as PgCursor
+from psycopg2.extensions import connection as PgConnection
 
 QUICK_SEARCH_COLUMNS = [
     "airtable_uid",
@@ -52,16 +55,36 @@ QUICK_SEARCH_SQL = """
 
 INSERT_LOG_QUERY = "INSERT INTO quick_search_query_logs (search, location, results, result_count, created_at, datetime_of_request) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{4}')"
 
+def unaltered_search_query(cursor: PgCursor, search: str, location: str) -> List[Dict[str, Any]]:
+    """
+    Execute a search query without altering the search terms.
 
-def unaltered_search_query(cursor, search, location):
+    Parameters:
+    - cursor: Database cursor.
+    - search: Search term.
+    - location: Location term.
+
+    Returns:
+    - List of dictionaries containing the query results.
+    """
     print(f"Query parameters: '%{search}%', '%{location}%'")
     cursor.execute(QUICK_SEARCH_SQL.format(search.title(), location.title()))
     results = cursor.fetchall()
 
     return results
 
+def spacy_search_query(cursor: PgCursor, search: str, location: str) -> List[Dict[str, Any]]:
+    """
+    Execute a search query with the search term processed by SpaCy to increase match potential.
 
-def spacy_search_query(cursor, search, location):
+    Parameters:
+    - cursor: Database cursor.
+    - search: Search term.
+    - location: Location term.
+
+    Returns:
+    - List of dictionaries containing the query results.
+    """
     # Depluralize search term to increase match potential
     nlp = spacy.load("en_core_web_sm")
     search = search.strip()
@@ -79,10 +102,26 @@ def spacy_search_query(cursor, search, location):
 
     return results
 
-
 def quick_search_query(
-    search="", location="", test_query_results=[], conn={}, test=False
-):
+    search: str = "",
+    location: str = "",
+    test_query_results: List[Dict[str, Any]] = [],
+    conn: Union[Dict[str, Any], PgConnection] = {},
+    test: bool = False
+) -> Dict[str, Union[int, List[Dict[str, Any]]]]:
+    """
+    Conducts a quick search query, optionally using test results or a live database connection.
+
+    Parameters:
+    - search: The search term.
+    - location: The location term.
+    - test_query_results: Pre-defined test query results.
+    - conn: Database connection or mock connection.
+    - test: Flag to use test mode.
+
+    Returns:
+    - Dictionary with count of matches and data of the matches.
+    """
     data_sources = {"count": 0, "data": []}
     if type(conn) == dict and "data" in conn:
         return data_sources
