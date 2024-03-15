@@ -19,9 +19,17 @@ const routes = [
 		// meta: { title: 'Police Data Accessibility Project - Search', metaTags: [{ property: 'og:title', title: 'Police Data Accessibility Project - Search' }] },
 	},
 	{
+		path: '/search',
+		component: SearchResultPage,
+		name: 'SearchResultPage',
+	},
+	{
 		path: '/search/:searchTerm/:location',
 		component: SearchResultPage,
 		name: 'SearchResultPage',
+		meta: {
+			metaTags: [{ property: 'og:type', content: 'test' }],
+		},
 	},
 	{
 		path: '/data-sources/:id',
@@ -50,7 +58,7 @@ const router = createRouter({
 	routes,
 });
 
-router.beforeEach(async (to) => {
+router.beforeEach(async (to, _, next) => {
 	// Update meta tags per route
 	refreshMetaTagsByRoute(to);
 
@@ -60,6 +68,8 @@ router.beforeEach(async (to) => {
 		auth.returnUrl = to.path;
 		router.push('/login');
 	}
+
+	next();
 });
 
 // Util
@@ -87,27 +97,36 @@ const META_PROPERTIES = [...DEFAULT_META_TAGS.keys(), 'og:url'];
  * @param {RouteLocationNormalized} to Vue router route location
  */
 function refreshMetaTagsByRoute(to) {
-	document.title = to.meta.title ?? DEFAULT_META_TAGS.get('title');
-	Array.from(document.querySelectorAll('[data-vue-router-controlled]')).map(
-		(el) => el.parentNode.removeChild(el),
+	const nearestRouteWithTitle = [...to.matched]
+		.reverse()
+		.find((r) => r.meta && r.meta.title);
+
+	const nearestRouteWithMeta = [...to.matched]
+		.reverse()
+		.find((r) => r.meta && r.meta.metaTags);
+
+	document.title =
+		nearestRouteWithTitle?.meta?.title ?? DEFAULT_META_TAGS.get('title');
+	Array.from(document.querySelectorAll('[data-controlled-meta]')).map((el) =>
+		el.parentNode.removeChild(el),
 	);
 
 	META_PROPERTIES.filter((prop) => prop !== 'title')
 		.map((prop) => {
-			const tagInRouteMetaData = to?.meta?.metaTags?.find(
+			const tagInRouteMetaData = nearestRouteWithMeta?.meta?.metaTags?.find(
 				(tag) => tag.property === prop,
 			);
 			const content =
 				prop === 'og:url'
 					? `${import.meta.env.VITE_VUE_APP_BASE_URL}${to.fullPath}`
 					: tagInRouteMetaData
-						? tagInRouteMetaData
+						? tagInRouteMetaData.content
 						: DEFAULT_META_TAGS.get(prop);
 
 			const tag = document.createElement('meta');
-			tag.setAttribute('property', prop);
+			tag.setAttribute(prop.includes(':') ? 'property' : 'name', prop);
 			tag.setAttribute('content', content);
-			tag.setAttribute('data-vue-router-controlled', '');
+			tag.setAttribute('data-controlled-meta', true);
 			return tag;
 		})
 		.forEach((tag) => document.head.appendChild(tag));
