@@ -27,9 +27,6 @@ const routes = [
 		path: '/search/:searchTerm/:location',
 		component: SearchResultPage,
 		name: 'SearchResultPage',
-		meta: {
-			metaTags: [{ property: 'og:type', content: 'test' }],
-		},
 	},
 	{
 		path: '/data-sources/:id',
@@ -120,12 +117,18 @@ function refreshMetaTagsByRoute(to) {
 			const tagInRouteMetaData = nearestRouteWithMeta?.meta?.metaTags?.find(
 				(tag) => tag.property === prop,
 			);
-			const content =
-				prop === 'og:url'
-					? `${import.meta.env.VITE_VUE_APP_BASE_URL}${to.fullPath}`
-					: tagInRouteMetaData
-						? tagInRouteMetaData.content
-						: DEFAULT_META_TAGS.get(prop);
+
+			let content;
+			switch (true) {
+				case prop === 'og:url':
+					content = `${import.meta.env.VITE_VUE_APP_BASE_URL}${to.fullPath}`;
+					break;
+				case Boolean(tagInRouteMetaData):
+					content = tagInRouteMetaData.content;
+					break;
+				default:
+					content = DEFAULT_META_TAGS.get(prop);
+			}
 
 			const tag = document.createElement('meta');
 			tag.setAttribute(prop.includes(':') ? 'property' : 'name', prop);
