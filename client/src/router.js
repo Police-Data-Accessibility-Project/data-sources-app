@@ -97,18 +97,22 @@ const META_PROPERTIES = [...DEFAULT_META_TAGS.keys(), 'og:url'];
  * @param {RouteLocationNormalized} to Vue router route location
  */
 function refreshMetaTagsByRoute(to) {
+	// Get nearest matched route that has title / meta tag overrides
 	const nearestRouteWithTitle = [...to.matched]
 		.reverse()
-		.find((r) => r.meta && r.meta.title);
+		.find((route) => route?.meta?.title);
 
 	const nearestRouteWithMeta = [...to.matched]
 		.reverse()
-		.find((r) => r.meta && r.meta.metaTags);
+		.find((route) => route?.meta?.metaTags);
 
+	// Update document title
 	document.title =
 		nearestRouteWithTitle?.meta?.title ?? DEFAULT_META_TAGS.get('title');
-	Array.from(document.querySelectorAll('[data-controlled-meta]')).map((el) =>
-		el.parentNode.removeChild(el),
+
+	// Update meta tags
+	Array.from(document.querySelectorAll('[data-controlled-meta]')).forEach(
+		(el) => el.parentNode.removeChild(el),
 	);
 
 	META_PROPERTIES.filter((prop) => prop !== 'title')
