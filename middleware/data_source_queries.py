@@ -133,7 +133,7 @@ def data_source_by_id_query(data_source_id: str = "", test_query_results: Option
     Returns:
     - A dictionary with the details of the data source and its associated agency.
     """
-    if conn and not test_query_results:
+    if conn:
         result = data_source_by_id_results(conn, data_source_id)
     else:
         result = test_query_results
@@ -207,7 +207,7 @@ def data_sources_query(conn: Optional[sqlite3.Connection] = None,
     Returns:
     - A list of dictionaries, each containing details of an approved data source and its associated agency name.
     """
-    results = data_sources_results(conn) if conn and not test_query_results else test_query_results
+    results = data_sources_results(conn, "", "") if conn else test_query_results
 
     data_source_output_columns = DATA_SOURCES_APPROVED_COLUMNS + ["agency_name"]
 
