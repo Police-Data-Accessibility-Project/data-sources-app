@@ -194,20 +194,54 @@ def data_sources_results(conn: sqlite3.Connection) -> List[Dict[str, Any]]:
 
     return results
 
-
-def data_sources_query(conn: Optional[sqlite3.Connection] = None,
-                       test_query_results: Optional[List[Dict[str, Any]]] = None) -> List[Dict[str, Any]]:
+  def needs_identification_data_sources(conn) -> list:
     """
+    Returns a list of data sources that need identification
+    """
+    cursor = conn.cursor()
+    joined_column_names = ", ".join(DATA_SOURCES_APPROVED_COLUMNS)
+
+    sql_query = """
+        SELECT
+            {}
+        FROM
+            data_sources
+        WHERE
+            approval_status = 'needs identification'
+    """.format(
+        joined_column_names
+    )
+    cursor.execute(sql_query)
+    results = cursor.fetchall()
+    cursor.close()
+
+    return results
+  
+
+
+
+def data_sources_query(
+  conn: Optional[sqlite3.Connection] = None
+  test_query_results: Optional[List[Dict[str, Any]]] = [], 
+  approval_status="approved"
+) -> List[Dict[str, Any]]:
+ """
     Queries and processes a list of approved data sources, optionally using test data.
 
     Parameters:
     - conn: Optional; sqlite3.Connection object for database access if test_query_results is not provided.
     - test_query_results: Optional; predefined results for testing purposes.
+    - approval_status: Whether to get approved data sources or not. Defaults to "approved"
 
     Returns:
     - A list of dictionaries, each containing details of an approved data source and its associated agency name.
     """
-    results = data_sources_results(conn, "", "") if conn else test_query_results
+    if conn and approval_status == "approved":
+        results = approved_data_sources(conn)
+    elif conn:
+        results = needs_identification_data_sources(conn)
+    else:
+        results = test_query_results
 
     data_source_output_columns = DATA_SOURCES_APPROVED_COLUMNS + ["agency_name"]
 
