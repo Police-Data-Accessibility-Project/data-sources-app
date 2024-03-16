@@ -1,9 +1,21 @@
 import jwt
 import os
 import datetime
+from typing import Union, Dict
+from psycopg2.extensions import cursor as PgCursor
 
 
-def login_results(cursor, email):
+def login_results(
+        cursor: PgCursor,
+        email: str) \
+        -> Dict[str, Union[int, str]]:
+    """
+    Retrieves user data by email.
+
+    :param cursor: A cursor object from a psycopg2 connection.
+    :param email: User's email.
+    :return: A dictionary containing user data or an error message.
+    """
     cursor.execute(
         f"select id, password_digest, api_key from users where email = '{email}'"
     )
@@ -19,7 +31,17 @@ def login_results(cursor, email):
         return {"error": "no match"}
 
 
-def is_admin(cursor, email):
+def is_admin(
+        cursor: PgCursor,
+        email: str) \
+        -> Union[bool, Dict[str, str]]:
+    """
+    Checks if a user has an admin role.
+
+    :param cursor: A cursor object from a psycopg2 connection.
+    :param email: User's email.
+    :return: True if user is an admin, False if not, or an error message.
+    """
     cursor.execute(f"select role from users where email = '{email}'")
     results = cursor.fetchall()
     if len(results) > 0:
@@ -32,7 +54,19 @@ def is_admin(cursor, email):
         return {"error": "no match"}
 
 
-def create_session_token(cursor, id, email):
+def create_session_token(
+        cursor: PgCursor,
+        user_id: int,
+        email: str) \
+        -> str:
+    """
+    Generates a session token for a user and inserts it into the session_tokens table.
+
+    :param cursor: A cursor object from a psycopg2 connection.
+    :param user_id: The user's ID.
+    :param email: User's email.
+    :return: A session token.
+    """
     expiration = datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=300)
     payload = {
         "exp": expiration,
@@ -47,7 +81,17 @@ def create_session_token(cursor, id, email):
     return session_token
 
 
-def token_results(cursor, token):
+def token_results(
+        cursor: PgCursor,
+        token: str) \
+        -> Dict[str, Union[int, str]]:
+    """
+    Retrieves session token data.
+
+    :param cursor: A cursor object from a psycopg2 connection.
+    :param token: The session token.
+    :return: A dictionary containing session token data or an error message.
+    """
     cursor.execute(f"select id, email from session_tokens where token = '{token}'")
     results = cursor.fetchall()
     if len(results) > 0:
