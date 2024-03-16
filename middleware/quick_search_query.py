@@ -163,7 +163,7 @@ def quick_search_query(
         "data": data_source_matches_converted,
     }
 
-    if not test_query_results and not test:
+    if not test_query_results:
         current_datetime = datetime.datetime.now()
         datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
