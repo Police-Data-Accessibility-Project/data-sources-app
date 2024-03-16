@@ -41,7 +41,7 @@ def is_admin(cursor, email: str) -> Union[bool, Dict[str, str]]:
     Returns:
     - True if the user is an admin, False if not, or a dictionary with an error message.
     """
-    cursor.execute(f"SELECT role FROM users WHERE email = '{email}'")
+    cursor.execute(f"select role from users where email = '{email}'")
     results = cursor.fetchall()
     if len(results) > 0:
         role = results[0][0]
@@ -90,6 +90,7 @@ def token_results(cursor, token: str) -> Dict[str, Union[int, str]]:
     Returns:
     - A dictionary containing user data if found, else returns a dictionary with an error message.
     """
+    cursor.execute(f"select id, email from session_tokens where token = '{token}'")
     results = cursor.fetchall()
     if len(results) > 0:
         user_data = {
