@@ -48,9 +48,15 @@ def archives_get_query(test_query_results: List[Dict[str, Any]] = [], conn: Unio
     Returns:
     - A list of dictionaries with clean archive data, including date conversion to string.
     """
-    results = archives_get_results(conn) if not test_query_results else test_query_results
-    archives_combined_results = [dict(zip(ARCHIVES_GET_COLUMNS, result)) for result in results]
-    archives_combined_results_clean = [convert_dates_to_strings(item) for item in archives_combined_results]
+    results = (
+        archives_get_results(conn) if not test_query_results else test_query_results
+    )
+    archives_combined_results = [
+        dict(zip(ARCHIVES_GET_COLUMNS, result)) for result in results
+    ]
+    archives_combined_results_clean = []
+    for item in archives_combined_results:
+        archives_combined_results_clean.append(convert_dates_to_strings(item))
 
     return archives_combined_results_clean
 
