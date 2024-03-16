@@ -1,4 +1,6 @@
+from typing import List, Dict, Any, Optional, Tuple
 from utilities.common import convert_dates_to_strings, format_arrays
+from psycopg2.extensions import connection as PgConnection
 
 DATA_SOURCES_APPROVED_COLUMNS = [
     "name",
@@ -71,7 +73,17 @@ AGENCY_APPROVED_COLUMNS = [
 ]
 
 
-def data_source_by_id_results(conn, data_source_id):
+def data_source_by_id_results(
+        conn: PgConnection,
+        data_source_id: str) \
+        -> tuple[Any, ...] | None:
+    """
+    Fetches a single data source by its ID, including related agency information, from a PostgreSQL database.
+
+    :param conn: A psycopg2 connection object to a PostgreSQL database.
+    :param data_source_id: The unique identifier for the data source.
+    :return: A dictionary containing the data source and its related agency details.
+    """
     cursor = conn.cursor()
 
     data_source_approved_columns = [
@@ -109,7 +121,15 @@ def data_source_by_id_results(conn, data_source_id):
     return result
 
 
-def data_source_by_id_query(data_source_id="", test_query_results=[], conn={}):
+def data_source_by_id_query(data_source_id: str = "", test_query_results: Optional[List[Dict[str, Any]]] = None, conn: Optional[PgConnection] = None) -> Dict[str, Any]:
+    """
+    Processes a request to fetch data source details by ID, either from the database or provided test results.
+
+    :param data_source_id: The unique identifier for the data source.
+    :param test_query_results: A list of dictionaries representing test query results, if provided.
+    :param conn: A psycopg2 connection object to a PostgreSQL database.
+    :return: A dictionary with the data source details after processing.
+    """
     if conn:
         result = data_source_by_id_results(conn, data_source_id)
     else:
@@ -132,7 +152,13 @@ def data_source_by_id_query(data_source_id="", test_query_results=[], conn={}):
     return data_source_details
 
 
-def data_sources_results(conn):
+def data_sources_results(conn: PgConnection) -> list[tuple[Any, ...]]:
+    """
+    Fetches all approved data sources and their related agency information from a PostgreSQL database.
+
+    :param conn: A psycopg2 connection object to a PostgreSQL database.
+    :return: A list of dictionaries, each containing details of a data source and its related agency.
+    """
     cursor = conn.cursor()
     data_source_approved_columns = [
         f"data_sources.{approved_column}"
@@ -163,7 +189,17 @@ def data_sources_results(conn):
     return results
 
 
-def data_sources_query(conn={}, test_query_results=[]):
+def data_sources_query(
+        conn: Optional[PgConnection] = None,
+        test_query_results: Optional[List[Dict[str, Any]]] = None) \
+        -> List[Dict[str, Any]]:
+    """
+    Processes and formats a list of approved data sources, with an option to use test query results.
+
+    :param conn: Optional psycopg2 connection object to a PostgreSQL database.
+    :param test_query_results: Optional list of test query results to use instead of querying the database.
+    :return: A list of dictionaries, each formatted with details of a data source and its associated agency.
+    """
     results = data_sources_results(conn) if conn else test_query_results
 
     data_source_output_columns = DATA_SOURCES_APPROVED_COLUMNS + ["agency_name"]
