@@ -2,6 +2,8 @@ import spacy
 import json
 import datetime
 from utilities.common import convert_dates_to_strings, format_arrays
+from typing import List, Dict, Any, Optional
+from psycopg2.extensions import connection as PgConnection, cursor as PgCursor
 
 QUICK_SEARCH_COLUMNS = [
     "airtable_uid",
@@ -53,7 +55,20 @@ QUICK_SEARCH_SQL = """
 INSERT_LOG_QUERY = "INSERT INTO quick_search_query_logs (search, location, results, result_count, created_at, datetime_of_request) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{4}')"
 
 
-def unaltered_search_query(cursor, search, location):
+
+def unaltered_search_query(
+        cursor: PgCursor,
+        search: str,
+        location: str
+) -> List[Dict[str, Any]]:
+    """
+    Executes the quick search SQL query with unaltered search and location terms.
+
+    :param cursor: A cursor object from a psycopg2 connection.
+    :param search: The search term entered by the user.
+    :param location: The location term entered by the user.
+    :return: A list of dictionaries representing the search results.
+    """
     print(f"Query parameters: '%{search}%', '%{location}%'")
     cursor.execute(QUICK_SEARCH_SQL.format(search.title(), location.title()))
     results = cursor.fetchall()
@@ -61,7 +76,19 @@ def unaltered_search_query(cursor, search, location):
     return results
 
 
-def spacy_search_query(cursor, search, location):
+def spacy_search_query(
+        cursor: PgCursor,
+        search: str,
+        location: str
+) -> List[Dict[str, Any]]:
+    """
+    Executes the quick search SQL query with depluralized (lemmatized) search and location terms using spaCy.
+
+    :param cursor: A cursor object from a psycopg2 connection.
+    :param search: The search term entered by the user.
+    :param location: The location term entered by the user.
+    :return: A list of dictionaries representing the search results.
+    """
     # Depluralize search term to increase match potential
     nlp = spacy.load("en_core_web_sm")
     search = search.strip()
@@ -81,8 +108,22 @@ def spacy_search_query(cursor, search, location):
 
 
 def quick_search_query(
-    search="", location="", test_query_results=[], conn={}, test=False
-):
+    search: str = "",
+    location: str = "",
+    test_query_results: Optional[List[Dict[str, Any]]] = None,
+    conn: Optional[PgConnection] = None,
+    test: bool = False
+) -> Dict[str, Any]:
+    """
+    Performs a quick search using both unaltered and lemmatized search terms, returning the more fruitful result set.
+
+    :param search: The search term.
+    :param location: The location term.
+    :param test_query_results: Predefined results for testing purposes.
+    :param conn: A psycopg2 connection to the database.
+    :param test: Flag indicating whether the function is being called in a test context.
+    :return: A dictionary with the count of results and the data itself.
+    """
     data_sources = {"count": 0, "data": []}
     if type(conn) == dict and "data" in conn:
         return data_sources
