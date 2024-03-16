@@ -106,8 +106,7 @@ def quick_search_query(
     search: str = "",
     location: str = "",
     test_query_results: List[Dict[str, Any]] = [],
-    conn: Union[Dict[str, Any], PgConnection] = {},
-    test: bool = False
+    conn: Union[Dict[str, Any], PgConnection] = {}
 ) -> Dict[str, Union[int, List[Dict[str, Any]]]]:
     """
     Conducts a quick search query, optionally using test results or a live database connection.
