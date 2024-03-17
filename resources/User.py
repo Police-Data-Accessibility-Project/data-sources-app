@@ -3,16 +3,30 @@ from flask_restful import Resource
 from flask import request
 from middleware.user_queries import user_post_results
 from middleware.security import api_required
-
+from typing import Dict, Any
 
 class User(Resource):
+    """
+    A resource for user management, allowing new users to sign up and existing users to update their passwords.
+    """
     def __init__(self, **kwargs):
+        """
+        Initializes the User resource with a database connection.
+
+        Parameters:
+        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
+        """
         self.psycopg2_connection = kwargs["psycopg2_connection"]
 
-    def post(self):
+    def post(self) -> Dict[str, Any]:
         """
-        Sign up function: allows a user to sign up by submitting an email and password.
-        The email and a hashed password are stored in the users table and this data is returned to the user upon completion
+        Allows a new user to sign up by providing an email and password.
+
+        The email and a hashed password are stored in the database. Upon successful registration,
+        a message is returned to the user.
+
+        Returns:
+        - A dictionary containing a success message or an error message if the operation fails.
         """
         try:
             data = request.get_json()
@@ -31,7 +45,16 @@ class User(Resource):
 
     # Endpoint for updating a user's password
     @api_required
-    def put(self):
+    def put(self) -> Dict[str, Any]:
+        """
+        Allows an existing user to update their password.
+
+        The user's new password is hashed and updated in the database based on their email.
+        Upon successful password update, a message is returned to the user.
+
+        Returns:
+        - A dictionary containing a success message or an error message if the operation fails.
+        """
         try:
             data = request.get_json()
             email = data.get("email")
