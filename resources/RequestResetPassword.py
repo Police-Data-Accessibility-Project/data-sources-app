@@ -6,13 +6,31 @@ from middleware.reset_token_queries import add_reset_token
 import os
 import uuid
 import requests
-
+from typing import Dict, Any
 
 class RequestResetPassword(Resource):
+    """
+    Provides a resource for users to request a password reset. Generates a reset token
+    and sends an email to the user with instructions on how to reset their password.
+    """
+
     def __init__(self, **kwargs):
+        """
+        Initializes the RequestResetPassword resource with a database connection.
+
+        Parameters:
+        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
+        """
         self.psycopg2_connection = kwargs["psycopg2_connection"]
 
-    def post(self):
+    def post(self) -> Dict[str, Any]:
+        """
+        Processes a password reset request. Checks if the user's email exists in the database,
+        generates a reset token, and sends an email with the reset link.
+
+        Returns:
+        - A dictionary containing a success message and the reset token, or an error message if an exception occurs.
+        """
         try:
             data = request.get_json()
             email = data.get("email")
