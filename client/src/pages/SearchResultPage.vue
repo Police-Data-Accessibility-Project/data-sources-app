@@ -46,19 +46,15 @@
 				v-for="section in uiShape"
 				:key="section.header"
 				data-test="search"
-				class="p-0 w-full"
+				class="mt-8 p-0 w-full"
 			>
 				<h2 class="section-subheading w-full">
 					{{ section.header }}
 				</h2>
 
-				<div
-					v-for="record in section.records"
-					:key="record.type"
-					class="grid pdap-grid-container-column-3 gap-4"
-				>
+				<div class="grid pdap-grid-container-column-3 gap-4">
 					<SearchResultCard
-						v-for="result in searchResult[record.type]"
+						v-for="result in [...getAllRecordsFromSection(section)]"
 						:key="result.record"
 						data-test="search-results-cards"
 						:data-source="result"
@@ -96,6 +92,11 @@ export default {
 		this.search();
 	},
 	methods: {
+		getAllRecordsFromSection(section) {
+			return section.records.reduce((acc, cur) => {
+				return [...acc, ...this.searchResult[cur.type]];
+			}, []);
+		},
 		getResultsCopy() {
 			return `${this.count} ${pluralize('result', this.count)}`;
 		},
