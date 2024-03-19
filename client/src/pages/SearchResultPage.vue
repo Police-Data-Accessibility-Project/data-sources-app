@@ -42,32 +42,38 @@
 		</div>
 
 		<div data-test="search-results">
-			<GridContainer
+			<div
 				v-for="section in uiShape"
 				:key="section.header"
 				:columns="3"
-				template-rows="auto auto 1fr"
+				template-rows="auto"
 				component="section"
 				data-test="search"
-				class="p-0 w-full md:max-w-[unset] lg:max-w-[unset]"
+				class="p-0 w-full"
 			>
-				<GridItem class="section-subheading" component="h2" :span-column="3">
+				<h2 class="section-subheading w-full">
 					{{ section.header }}
-				</GridItem>
+				</h2>
 
-				<SearchResultCard
+				<div
 					v-for="record in section.records"
 					:key="record.type"
-					data-test="search-results-cards"
-					:data-source="searchResult[record.type]"
-				/>
-			</GridContainer>
+					class="grid pdap-grid-container-column-3 gap-4"
+				>
+					<SearchResultCard
+						v-for="result in searchResult[record.type]"
+						:key="result.record"
+						data-test="search-results-cards"
+						:data-source="result"
+					/>
+				</div>
+			</div>
 		</div>
 	</main>
 </template>
 
 <script>
-import { Button, GridContainer, GridItem } from 'pdap-design-system';
+import { Button } from 'pdap-design-system';
 import SearchResultCard from '../components/SearchResultCard.vue';
 import axios from 'axios';
 import pluralize from '../util/pluralize';
@@ -78,8 +84,6 @@ export default {
 	components: {
 		Button,
 		SearchResultCard,
-		GridContainer,
-		GridItem,
 	},
 	data: () => ({
 		count: 0,
@@ -110,7 +114,12 @@ export default {
 
 				// Format results into object keyed by record_type
 				const resultFormatted = res.data.data.reduce((acc, cur) => {
-					return { ...acc, [cur.record_type]: cur };
+					return {
+						...acc,
+						[cur.record_type]: Array.isArray(acc[cur.record_type])
+							? [...acc[cur.record_type], cur]
+							: [cur],
+					};
 				}, {});
 
 				// Modify ui shape object to exclude any sections / data sources that do not have records returned by API
@@ -135,9 +144,3 @@ export default {
 	},
 };
 </script>
-
-<style scoped>
-.section-subheading {
-	@apply mt-4;
-}
-</style>
