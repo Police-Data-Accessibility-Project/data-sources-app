@@ -19,7 +19,7 @@ exports[`SearchResultPage renders with data > Calls API and renders search resul
     </p>
   </div>
   <div>
-    <section class="p-0 w-full">
+    <section class="mt-8 p-0 w-full">
       <h2 class="section-subheading w-full">Police & public interactions</h2>
       <div class="grid pdap-grid-container-column-3 gap-4">
         <div class="pdap-grid-item flex flex-col border border-neutral-400 p-3 text-lg leading-snug">
