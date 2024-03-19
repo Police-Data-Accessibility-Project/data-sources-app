@@ -42,12 +42,9 @@
 		</div>
 
 		<div data-test="search-results">
-			<div
+			<section
 				v-for="section in uiShape"
 				:key="section.header"
-				:columns="3"
-				template-rows="auto"
-				component="section"
 				data-test="search"
 				class="p-0 w-full"
 			>
@@ -67,7 +64,7 @@
 						:data-source="result"
 					/>
 				</div>
-			</div>
+			</section>
 		</div>
 	</main>
 </template>
@@ -134,7 +131,7 @@ export default {
 
 				// Set data and away we go
 				this.searchResult = resultFormatted;
-				this.count = Object.entries(this.searchResult).length;
+				this.count = res.data.count;
 			} catch (error) {
 				console.error(error);
 			} finally {
