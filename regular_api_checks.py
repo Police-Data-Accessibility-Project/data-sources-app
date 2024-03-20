@@ -200,6 +200,23 @@ def test_request_reset_password():
     return response.json()["message"] == "Successfully updated password"
 
 
+def test_reset_token_validation():
+    reset_token = requests.post(
+        f"{BASE_URL}/request-reset-password",
+        headers=HEADERS,
+        json={"email": "test2"},
+    )
+
+    response = requests.post(
+        f"{BASE_URL}/reset-token-validation",
+        headers=HEADERS,
+        json={"token": reset_token.json()["token"], "password": "test"},
+    )
+
+    return response.json()["message"] == "Token is valid"
+
+
+
 # api-key
 def test_get_api_key():
     response = requests.get(
