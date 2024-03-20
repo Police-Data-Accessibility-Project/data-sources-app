@@ -52,15 +52,13 @@
 					{{ section.header }}
 				</h2>
 
-				<div class="grid pdap-grid-container-column-3 gap-4">
+				<ErrorBoundary v-for="record in section.records" :key="record.type">
 					<SearchResultCard
-						v-for="result in [...getAllRecordsFromSection(section)]"
-						:key="result.record"
 						data-test="search-results-cards"
-						:data-source="result"
+						:data-source="searchResult[record.type]"
 					/>
-				</div>
-			</section>
+				</ErrorBoundary>
+			</GridContainer>
 		</div>
 	</main>
 </template>
@@ -68,6 +66,7 @@
 <script>
 import { Button } from 'pdap-design-system';
 import SearchResultCard from '../components/SearchResultCard.vue';
+import ErrorBoundary from '../components/ErrorBoundary.vue';
 import axios from 'axios';
 import pluralize from '../util/pluralize';
 import { SEARCH_RESULTS_UI_SHAPE } from '../util/pageData';
@@ -76,6 +75,7 @@ export default {
 	name: 'SearchResultPage',
 	components: {
 		Button,
+		ErrorBoundary,
 		SearchResultCard,
 	},
 	data: () => ({
