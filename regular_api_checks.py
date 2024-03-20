@@ -216,7 +216,6 @@ def test_reset_token_validation():
     return response.json()["message"] == "Token is valid"
 
 
-
 # api-key
 def test_get_api_key():
     response = requests.get(
