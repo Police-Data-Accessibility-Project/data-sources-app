@@ -15,8 +15,11 @@
 		class="pdap-flex-container mx-auto max-w-2xl"
 	>
 		<h1>Change your password</h1>
+		<p v-if="!hasValidatedToken" class="flex flex-col items-start sm:gap-4">
+			Loading...
+		</p>
 		<p
-			v-if="isExpiredToken"
+			v-else-if="hasValidatedToken && isExpiredToken"
 			data-test="token-expired"
 			class="flex flex-col items-start sm:gap-4"
 		>
@@ -72,7 +75,7 @@
 <script setup>
 import { Button, Form } from 'pdap-design-system';
 import { useUserStore } from '../stores/user';
-import { ref, watchEffect } from 'vue';
+import { onMounted, ref, watchEffect } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 
 // Constants
@@ -137,6 +140,7 @@ const user = useUserStore();
 // Reactive vars
 const error = ref(undefined);
 const isExpiredToken = ref(false);
+const hasValidatedToken = ref(false);
 const loading = ref(false);
 const success = ref(false);
 
@@ -147,7 +151,25 @@ watchEffect(() => {
 });
 
 // Functions
+// Lifecycle methods
+onMounted(validateToken);
+
 // Handlers
+async function validateToken() {
+	if (!token) return;
+
+	try {
+		const response = await user.validateResetPasswordToken(token);
+
+		if (300 < response.status >= 200) {
+			isExpiredToken.value = false;
+		}
+	} catch (error) {
+		isExpiredToken.value = true;
+	} finally {
+		hasValidatedToken.value = true;
+	}
+}
 /**
  * Handles clearing pw-match form errors on change if they exist
  */
