@@ -9,6 +9,7 @@ const SIGNUP_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/user`;
 const CHANGE_PASSWORD_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/user`;
 const REQUEST_PASSWORD_RESET_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/request-reset-password`;
 const PASSWORD_RESET_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/reset-password`;
+const VALIDATE_PASSWORD_RESET_TOKEN_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/reset-token-validation`;
 
 export const useUserStore = defineStore('user', {
 	state: () => ({
@@ -42,11 +43,19 @@ export const useUserStore = defineStore('user', {
 		},
 
 		async requestPasswordReset(email) {
-			await axios.post(REQUEST_PASSWORD_RESET_URL, { email }, HEADERS);
+			return await axios.post(REQUEST_PASSWORD_RESET_URL, { email }, HEADERS);
 		},
 
 		async resetPassword(password, token) {
-			await axios.post(`${PASSWORD_RESET_URL}`, { password, token }, HEADERS);
+			return await axios.post(PASSWORD_RESET_URL, { password, token }, HEADERS);
+		},
+
+		async validateResetPasswordToken(token) {
+			return await axios.post(
+				VALIDATE_PASSWORD_RESET_TOKEN_URL,
+				{ token },
+				HEADERS,
+			);
 		},
 	},
 });
