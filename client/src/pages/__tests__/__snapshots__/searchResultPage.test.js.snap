@@ -4,7 +4,7 @@ exports[`SearchResultPage renders with data > Calls API and renders search resul
 <main class="flex flex-col p-8 h-auto">
   <div>
     <h1>Data Sources Search results</h1>
-    <p class="text-2xl"> Searching for <span class="font-semibold">"calls"</span> in <span class="font-semibold">"Cook"</span>. <span>Found 3 results.</span>
+    <p class="text-2xl"> Searching for <span class="font-semibold">"calls"</span> in <span class="font-semibold">"Cook"</span>. <span>Found 1 result.</span>
     </p>
     <button class="pdap-button pdap-button-secondary my-4">
       <i class="fa fa-plus"></i> New search
@@ -19,20 +19,19 @@ exports[`SearchResultPage renders with data > Calls API and renders search resul
     </p>
   </div>
   <div>
-    <section class="mt-8 p-0 w-full">
-      <h2 class="section-subheading w-full">Police & public interactions</h2>
-      <div class="grid pdap-grid-container-column-3 gap-4">
-        <div class="pdap-grid-item flex flex-col border border-neutral-400 p-3 text-lg leading-snug">
-          <h3 class="text-xl font-semibold line-clamp-2 normal-case tracking-normal min-h-[50px]">Calls for Service for Cicero Police Department - IN</h3>
-          <button class="pdap-button pdap-button-primary text-lg font-medium px-4 py-1 mt-4 mb-2 lg:mx-0 max-w-full"> Visit data source <i class="fa fa-external-link"></i>
-          </button>
-          <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Record type </p>
-          <div class="mt-1 py-[.125rem] px-3 rounded-full bg-brand-wine/10 dark:bg-brand-wine dark:text-white w-fit">Calls for Service</div>
-          <div class="search-result-agency">
-            <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Agency </p>
-            <p>Cicero Police Department - IN</p>
-          </div>
-          <!-- hiding place for now
+    <section class="pdap-grid-container pdap-grid-container-column-3 p-0 w-full md:max-w-[unset] lg:max-w-[unset]" style="grid-template-rows: auto auto 1fr;">
+      <h2 class="pdap-grid-item pdap-grid-item-span-column-3 section-subheading">Police & public interactions</h2>
+      <div class="pdap-grid-item flex flex-col border border-neutral-400 p-3 text-lg leading-snug">
+        <h3 class="text-xl font-semibold line-clamp-2 normal-case tracking-normal min-h-[50px]">311 Calls for City of Chicago</h3>
+        <button class="pdap-button pdap-button-primary text-lg font-medium px-4 py-1 mt-4 mb-2 lg:mx-0 max-w-full"> Visit data source <i class="fa fa-external-link"></i>
+        </button>
+        <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Record type </p>
+        <div class="mt-1 py-[.125rem] px-3 rounded-full bg-brand-wine/10 dark:bg-brand-wine dark:text-white w-fit">Calls for Service</div>
+        <div class="search-result-agency">
+          <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Agency </p>
+          <p>Chicago Police Department - IL</p>
+        </div>
+        <!-- hiding place for now
 		<div data-test="search-result-place">
 			<p
 				v-if="dataSource.municipality && dataSource.state_iso"
@@ -49,113 +48,40 @@ exports[`SearchResultPage renders with data > Calls API and renders search resul
 			<p v-else data-test="search-result-place-unknown">Location Unknown</p>
 		</div>
 -->
-          <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Time range </p>
-          <p>2016–Unknown end </p>
-          <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Formats available </p>
-          <ul class="mb-4">
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">[</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">]</li>
-          </ul>
-          <button class="pdap-button pdap-button-secondary text-lg font-medium px-4 py-1 lg:mx-0 max-w-full mt-auto"> More details </button>
-        </div>
-        <div class="pdap-grid-item flex flex-col border border-neutral-400 p-3 text-lg leading-snug">
-          <h3 class="text-xl font-semibold line-clamp-2 normal-case tracking-normal min-h-[50px]">Calls for Service for Chicago Police Department - IL</h3>
-          <button class="pdap-button pdap-button-primary text-lg font-medium px-4 py-1 mt-4 mb-2 lg:mx-0 max-w-full"> Visit data source <i class="fa fa-external-link"></i>
-          </button>
-          <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Record type </p>
-          <div class="mt-1 py-[.125rem] px-3 rounded-full bg-brand-wine/10 dark:bg-brand-wine dark:text-white w-fit">Calls for Service</div>
-          <div class="search-result-agency">
-            <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Agency </p>
-            <p>Chicago Police Department - IL</p>
-          </div>
-          <!-- hiding place for now
-		<div data-test="search-result-place">
-			<p
-				v-if="dataSource.municipality && dataSource.state_iso"
-				data-test="search-result-place-state-municipality"
-			>
-				{{ dataSource.municipality }}, {{ dataSource.state_iso }}
-			</p>
-			<p v-else-if="dataSource.municipality" data-test="search-result-place-municipality">
-				{{ dataSource.municipality }}
-			</p>
-			<p v-else-if="dataSource.state_iso" data-test="search-result-place-state">
-				{{ dataSource.state_iso }}
-			</p>
-			<p v-else data-test="search-result-place-unknown">Location Unknown</p>
-		</div>
--->
-          <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Time range </p>
-          <p>2018–Unknown end </p>
-          <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Formats available </p>
-          <ul class="mb-4">
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">[</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">]</li>
-          </ul>
-          <button class="pdap-button pdap-button-secondary text-lg font-medium px-4 py-1 lg:mx-0 max-w-full mt-auto"> More details </button>
-        </div>
-        <div class="pdap-grid-item flex flex-col border border-neutral-400 p-3 text-lg leading-snug">
-          <h3 class="text-xl font-semibold line-clamp-2 normal-case tracking-normal min-h-[50px]">311 Calls for City of Chicago</h3>
-          <button class="pdap-button pdap-button-primary text-lg font-medium px-4 py-1 mt-4 mb-2 lg:mx-0 max-w-full"> Visit data source <i class="fa fa-external-link"></i>
-          </button>
-          <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Record type </p>
-          <div class="mt-1 py-[.125rem] px-3 rounded-full bg-brand-wine/10 dark:bg-brand-wine dark:text-white w-fit">Calls for Service</div>
-          <div class="search-result-agency">
-            <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Agency </p>
-            <p>Chicago Police Department - IL</p>
-          </div>
-          <!-- hiding place for now
-		<div data-test="search-result-place">
-			<p
-				v-if="dataSource.municipality && dataSource.state_iso"
-				data-test="search-result-place-state-municipality"
-			>
-				{{ dataSource.municipality }}, {{ dataSource.state_iso }}
-			</p>
-			<p v-else-if="dataSource.municipality" data-test="search-result-place-municipality">
-				{{ dataSource.municipality }}
-			</p>
-			<p v-else-if="dataSource.state_iso" data-test="search-result-place-state">
-				{{ dataSource.state_iso }}
-			</p>
-			<p v-else data-test="search-result-place-unknown">Location Unknown</p>
-		</div>
--->
-          <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Time range </p>
-          <p>12/17/2018–Unknown end </p>
-          <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Formats available </p>
-          <ul class="mb-4">
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">[</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">'</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">C</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">S</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">V</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">'</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">,</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit"> </li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">'</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">X</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">M</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">L</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">'</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">,</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit"> </li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">'</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">R</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">D</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">F</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">'</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">,</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit"> </li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">'</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">R</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">S</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">S</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">'</li>
-            <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">]</li>
-          </ul>
-          <button class="pdap-button pdap-button-secondary text-lg font-medium px-4 py-1 lg:mx-0 max-w-full mt-auto"> More details </button>
-        </div>
+        <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Time range </p>
+        <p>12/17/2018–Unknown end </p>
+        <p class="text-brand-wine dark:text-white font-semibold text-sm uppercase tracking-wider mb-0 mt-4"> Formats available </p>
+        <ul class="mb-4">
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">[</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">'</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">C</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">S</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">V</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">'</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">,</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit"> </li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">'</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">X</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">M</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">L</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">'</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">,</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit"> </li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">'</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">R</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">D</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">F</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">'</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">,</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit"> </li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">'</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">R</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">S</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">S</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">'</li>
+          <li class="mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit">]</li>
+        </ul>
+        <button class="pdap-button pdap-button-secondary text-lg font-medium px-4 py-1 lg:mx-0 max-w-full mt-auto"> More details </button>
       </div>
     </section>
   </div>
