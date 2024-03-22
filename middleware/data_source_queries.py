@@ -221,6 +221,7 @@ def data_sources_query(
     """
     Processes and formats a list of approved data sources, with an option to use test query results.
 
+    :param approval_status: The approval status of the data sources to query.
     :param conn: Optional psycopg2 connection object to a PostgreSQL database.
     :param test_query_results: Optional list of test query results to use instead of querying the database.
     :return: A list of dictionaries, each formatted with details of a data source and its associated agency.
