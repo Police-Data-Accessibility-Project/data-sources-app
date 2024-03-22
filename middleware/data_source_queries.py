@@ -226,7 +226,7 @@ def data_sources_query(
     :return: A list of dictionaries, each formatted with details of a data source and its associated agency.
     """
     if conn and approval_status == "approved":
-        results = approved_data_sources(conn)
+        results = data_sources_results(conn)
     elif conn:
         results = needs_identification_data_sources(conn)
     else:
