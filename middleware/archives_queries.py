@@ -13,7 +13,7 @@ ARCHIVES_GET_COLUMNS = [
 
 def archives_get_results(conn: PgConnection) -> list[tuple[Any, ...]]:
     """
-    Fetches results from the data_sources table based on specific conditions.
+    Pulls data sources for the automatic archives script that performs caching
 
     :param conn: A psycopg2 connection object to a PostgreSQL database.
     :return: A list of dictionaries representing the rows matching the query conditions.
