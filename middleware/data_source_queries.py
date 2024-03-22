@@ -215,8 +215,9 @@ def needs_identification_data_sources(conn) -> list:
   
 def data_sources_query(
         conn: Optional[PgConnection] = None,
-        test_query_results: Optional[List[Dict[str, Any]]] = None) \
-        -> List[Dict[str, Any]]:
+        test_query_results: Optional[List[Dict[str, Any]]] = None,
+        approval_status: str = "approved"
+) -> List[Dict[str, Any]]:
     """
     Processes and formats a list of approved data sources, with an option to use test query results.
 
