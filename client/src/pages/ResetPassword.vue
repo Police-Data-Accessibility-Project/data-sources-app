@@ -18,7 +18,7 @@
 		<p
 			v-if="isExpiredToken"
 			data-test="token-expired"
-			class="flex flex-col items-start sm:flex-row sm:items-center sm:gap-4"
+			class="flex flex-col items-start sm:gap-4"
 		>
 			Sorry, that token has expired.
 			<RouterLink

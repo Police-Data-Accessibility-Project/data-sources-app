@@ -208,7 +208,7 @@ async function onSubmit(formValues) {
 
 		success.value = SUCCESS_COPY[type.value];
 	} catch (err) {
-		error.value = err.message;
+		error.value = 'Something went wrong, please try again.';
 	} finally {
 		loading.value = false;
 	}

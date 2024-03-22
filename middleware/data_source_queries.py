@@ -189,6 +189,30 @@ def data_sources_results(conn: PgConnection) -> list[tuple[Any, ...]]:
     return results
 
 
+def needs_identification_data_sources(conn) -> list:
+    """
+    Returns a list of data sources that need identification
+    """
+    cursor = conn.cursor()
+    joined_column_names = ", ".join(DATA_SOURCES_APPROVED_COLUMNS)
+
+    sql_query = """
+        SELECT
+            {}
+        FROM
+            data_sources
+        WHERE
+            approval_status = 'needs identification'
+    """.format(
+        joined_column_names
+    )
+    cursor.execute(sql_query)
+    results = cursor.fetchall()
+    cursor.close()
+
+    return results
+  
+  
 def data_sources_query(
         conn: Optional[PgConnection] = None,
         test_query_results: Optional[List[Dict[str, Any]]] = None) \
@@ -200,7 +224,13 @@ def data_sources_query(
     :param test_query_results: Optional list of test query results to use instead of querying the database.
     :return: A list of dictionaries, each formatted with details of a data source and its associated agency.
     """
-    results = data_sources_results(conn) if conn else test_query_results
+    if conn and approval_status == "approved":
+        results = approved_data_sources(conn)
+    elif conn:
+        results = needs_identification_data_sources(conn)
+    else:
+        results = test_query_results
+
 
     data_source_output_columns = DATA_SOURCES_APPROVED_COLUMNS + ["agency_name"]
 
