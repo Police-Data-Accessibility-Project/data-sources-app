@@ -2,10 +2,8 @@ from werkzeug.security import generate_password_hash
 from psycopg2.extensions import cursor as PgCursor
 from typing import Dict
 
-def user_check_email(
-        cursor: PgCursor,
-        email: str
-) -> Dict[str, str]:
+
+def user_check_email(cursor: PgCursor, email: str) -> Dict[str, str]:
     """
     Checks if a user with the given email exists in the database.
 
@@ -22,11 +20,7 @@ def user_check_email(
         return {"error": "no match"}
 
 
-def user_post_results(
-        cursor: PgCursor,
-        email: str,
-        password: str
-) -> None:
+def user_post_results(cursor: PgCursor, email: str, password: str) -> None:
     """
     Creates a new user with the provided email and password.
 

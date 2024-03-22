@@ -74,9 +74,8 @@ AGENCY_APPROVED_COLUMNS = [
 
 
 def data_source_by_id_results(
-        conn: PgConnection,
-        data_source_id: str) \
-        -> tuple[Any, ...] | None:
+    conn: PgConnection, data_source_id: str
+) -> tuple[Any, ...] | None:
     """
     Fetches a single data source by its ID, including related agency information, from a PostgreSQL database.
 
@@ -121,7 +120,11 @@ def data_source_by_id_results(
     return result
 
 
-def data_source_by_id_query(data_source_id: str = "", test_query_results: Optional[List[Dict[str, Any]]] = None, conn: Optional[PgConnection] = None) -> Dict[str, Any]:
+def data_source_by_id_query(
+    data_source_id: str = "",
+    test_query_results: Optional[List[Dict[str, Any]]] = None,
+    conn: Optional[PgConnection] = None,
+) -> Dict[str, Any]:
     """
     Processes a request to fetch data source details by ID, either from the database or provided test results.
 
@@ -211,12 +214,12 @@ def needs_identification_data_sources(conn) -> list:
     cursor.close()
 
     return results
-  
-  
+
+
 def data_sources_query(
-        conn: Optional[PgConnection] = None,
-        test_query_results: Optional[List[Dict[str, Any]]] = None,
-        approval_status: str = "approved"
+    conn: Optional[PgConnection] = None,
+    test_query_results: Optional[List[Dict[str, Any]]] = None,
+    approval_status: str = "approved",
 ) -> List[Dict[str, Any]]:
     """
     Processes and formats a list of approved data sources, with an option to use test query results.
@@ -232,7 +235,6 @@ def data_sources_query(
         results = needs_identification_data_sources(conn)
     else:
         results = test_query_results
-
 
     data_source_output_columns = DATA_SOURCES_APPROVED_COLUMNS + ["agency_name"]
 

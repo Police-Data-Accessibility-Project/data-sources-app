@@ -12,7 +12,8 @@ from middleware.data_source_queries import (
     needs_identification_data_sources,
     data_source_by_id_query,
     data_source_by_id_results,
-    DATA_SOURCES_APPROVED_COLUMNS, data_sources_results,
+    DATA_SOURCES_APPROVED_COLUMNS,
+    data_sources_results,
 )
 from middleware.user_queries import (
     user_post_results,

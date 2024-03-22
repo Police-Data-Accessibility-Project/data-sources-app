@@ -37,9 +37,9 @@ def archives_get_results(conn: PgConnection) -> list[tuple[Any, ...]]:
 
 
 def archives_get_query(
-        test_query_results: Optional[List[Dict[str, Any]]] = None,
-        conn: Optional[PgConnection] = None) \
-        -> List[Dict[str, Any]]:
+    test_query_results: Optional[List[Dict[str, Any]]] = None,
+    conn: Optional[PgConnection] = None,
+) -> List[Dict[str, Any]]:
     """
     Processes the archives get results, either from the database or a provided set of test results, and converts dates to strings.
 
@@ -61,10 +61,8 @@ def archives_get_query(
 
 
 def archives_put_broken_as_of_results(
-        id: str,
-        broken_as_of: str,
-        last_cached: str,
-        conn: PgConnection) -> None:
+    id: str, broken_as_of: str, last_cached: str, conn: PgConnection
+) -> None:
     """
     Updates the data_sources table setting the url_status to 'broken' for a given id.
 
@@ -80,10 +78,8 @@ def archives_put_broken_as_of_results(
 
 
 def archives_put_last_cached_results(
-        id: str,
-        last_cached: str,
-        conn: PgConnection) \
-        -> None:
+    id: str, last_cached: str, conn: PgConnection
+) -> None:
     """
     Updates the last_cached field in the data_sources table for a given id.
 
@@ -97,7 +93,12 @@ def archives_put_last_cached_results(
     cursor.close()
 
 
-def archives_put_query(id: str = "", broken_as_of: str = "", last_cached: str = "", conn: Optional[PgConnection] = None) -> None:
+def archives_put_query(
+    id: str = "",
+    broken_as_of: str = "",
+    last_cached: str = "",
+    conn: Optional[PgConnection] = None,
+) -> None:
     """
     Updates the data_sources table based on the provided parameters, marking sources as broken or updating the last cached date.
 

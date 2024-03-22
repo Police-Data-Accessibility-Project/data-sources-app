@@ -5,10 +5,7 @@ from typing import Union, Dict
 from psycopg2.extensions import cursor as PgCursor
 
 
-def login_results(
-        cursor: PgCursor,
-        email: str) \
-        -> Dict[str, Union[int, str]]:
+def login_results(cursor: PgCursor, email: str) -> Dict[str, Union[int, str]]:
     """
     Retrieves user data by email.
 
@@ -31,10 +28,7 @@ def login_results(
         return {"error": "no match"}
 
 
-def is_admin(
-        cursor: PgCursor,
-        email: str) \
-        -> Union[bool, Dict[str, str]]:
+def is_admin(cursor: PgCursor, email: str) -> Union[bool, Dict[str, str]]:
     """
     Checks if a user has an admin role.
 
@@ -54,11 +48,7 @@ def is_admin(
         return {"error": "no match"}
 
 
-def create_session_token(
-        cursor: PgCursor,
-        user_id: int,
-        email: str) \
-        -> str:
+def create_session_token(cursor: PgCursor, user_id: int, email: str) -> str:
     """
     Generates a session token for a user and inserts it into the session_tokens table.
 
@@ -81,10 +71,7 @@ def create_session_token(
     return session_token
 
 
-def token_results(
-        cursor: PgCursor,
-        token: str) \
-        -> Dict[str, Union[int, str]]:
+def token_results(cursor: PgCursor, token: str) -> Dict[str, Union[int, str]]:
     """
     Retrieves session token data.
 

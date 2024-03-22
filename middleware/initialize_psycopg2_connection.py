@@ -4,7 +4,9 @@ from psycopg2.extensions import connection as PgConnection
 from typing import Union, Dict, List
 
 
-def initialize_psycopg2_connection() -> Union[PgConnection, Dict[str, Union[int, List]]]:
+def initialize_psycopg2_connection() -> (
+    Union[PgConnection, Dict[str, Union[int, List]]]
+):
     """
     Initializes a connection to a PostgreSQL database using psycopg2 with connection parameters
     obtained from an environment variable. If the connection fails, it returns a default dictionary

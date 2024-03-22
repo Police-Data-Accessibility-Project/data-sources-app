@@ -55,11 +55,8 @@ QUICK_SEARCH_SQL = """
 INSERT_LOG_QUERY = "INSERT INTO quick_search_query_logs (search, location, results, result_count, created_at, datetime_of_request) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{4}')"
 
 
-
 def unaltered_search_query(
-        cursor: PgCursor,
-        search: str,
-        location: str
+    cursor: PgCursor, search: str, location: str
 ) -> List[Dict[str, Any]]:
     """
     Executes the quick search SQL query with unaltered search and location terms.
@@ -77,9 +74,7 @@ def unaltered_search_query(
 
 
 def spacy_search_query(
-        cursor: PgCursor,
-        search: str,
-        location: str
+    cursor: PgCursor, search: str, location: str
 ) -> List[Dict[str, Any]]:
     """
     Executes the quick search SQL query with depluralized (lemmatized) search and location terms using spaCy.
@@ -112,7 +107,7 @@ def quick_search_query(
     location: str = "",
     test_query_results: Optional[List[Dict[str, Any]]] = None,
     conn: Optional[PgConnection] = None,
-    test: bool = False
+    test: bool = False,
 ) -> Dict[str, Any]:
     """
     Performs a quick search using both unaltered and lemmatized search terms, returning the more fruitful result set.
