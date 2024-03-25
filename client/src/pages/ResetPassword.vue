@@ -48,6 +48,14 @@
 			@change="handleChangeOnError"
 			@submit="onSubmitChangePassword"
 		>
+			<ul class="text-med mb-8">
+				Passwords must be at least 8 characters and include:
+				<li>1 uppercase letter</li>
+				<li>1 lowercase letter</li>
+				<li>1 number</li>
+				<li>1 special character</li>
+			</ul>
+
 			<Button class="max-w-full" type="submit">
 				{{ loading ? 'Loading...' : 'Change password' }}
 			</Button>
