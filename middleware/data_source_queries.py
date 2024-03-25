@@ -155,7 +155,7 @@ def data_source_by_id_query(
     return data_source_details
 
 
-def data_sources_results(conn: PgConnection) -> list[tuple[Any, ...]]:
+def get_approved_data_sources(conn: PgConnection) -> list[tuple[Any, ...]]:
     """
     Fetches all approved data sources and their related agency information from a PostgreSQL database.
 
@@ -230,7 +230,7 @@ def data_sources_query(
     :return: A list of dictionaries, each formatted with details of a data source and its associated agency.
     """
     if conn and approval_status == "approved":
-        results = data_sources_results(conn)
+        results = get_approved_data_sources(conn)
     elif conn:
         results = needs_identification_data_sources(conn)
     else:
