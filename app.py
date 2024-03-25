@@ -7,6 +7,7 @@ from resources.RefreshSession import RefreshSession
 from resources.ApiKey import ApiKey
 from resources.RequestResetPassword import RequestResetPassword
 from resources.ResetPassword import ResetPassword
+from resources.ResetTokenValidation import ResetTokenValidation
 from resources.QuickSearch import QuickSearch
 from resources.DataSources import (
     DataSources,
@@ -48,6 +49,11 @@ api.add_resource(
 api.add_resource(
     ResetPassword,
     "/reset-password",
+    resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
+)
+api.add_resource(
+    ResetTokenValidation,
+    "/reset-token-validation",
     resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
 )
 api.add_resource(
