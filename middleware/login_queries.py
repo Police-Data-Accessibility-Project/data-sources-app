@@ -61,7 +61,7 @@ def create_session_token(cursor: PgCursor, user_id: int, email: str) -> str:
     payload = {
         "exp": expiration,
         "iat": datetime.datetime.utcnow(),
-        "sub": id,
+        "sub": user_id,
     }
     session_token = jwt.encode(payload, os.getenv("SECRET_KEY"), algorithm="HS256")
     cursor.execute(
