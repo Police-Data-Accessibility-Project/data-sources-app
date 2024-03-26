@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Optional, Tuple, Union
 from utilities.common import convert_dates_to_strings, format_arrays
 from psycopg2.extensions import connection as PgConnection
 
@@ -75,7 +75,7 @@ AGENCY_APPROVED_COLUMNS = [
 
 def data_source_by_id_results(
     conn: PgConnection, data_source_id: str
-) -> tuple[Any, ...] | None:
+) -> Union[tuple[Any, ...], None]:
     """
     Fetches a single data source by its ID, including related agency information, from a PostgreSQL database.
 
