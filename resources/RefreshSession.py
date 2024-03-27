@@ -4,11 +4,13 @@ from middleware.login_queries import token_results, create_session_token
 from datetime import datetime as dt
 from typing import Dict, Any
 
+
 class RefreshSession(Resource):
     """
     Provides a resource for refreshing a user's session token.
     If the provided session token is valid and not expired, it is replaced with a new one.
     """
+
     def __init__(self, **kwargs):
         """
         Initializes the RefreshSession resource with a database connection.

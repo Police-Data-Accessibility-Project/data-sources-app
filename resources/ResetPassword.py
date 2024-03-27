@@ -8,11 +8,13 @@ from middleware.reset_token_queries import (
 from datetime import datetime as dt
 from typing import Dict, Any
 
+
 class ResetPassword(Resource):
     """
     Provides a resource for users to reset their password using a valid reset token.
     If the token is valid and not expired, allows the user to set a new password.
     """
+
     def __init__(self, **kwargs):
         """
         Initializes the ResetPassword resource with a database connection.

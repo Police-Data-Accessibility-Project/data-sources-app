@@ -5,10 +5,12 @@ from flask_restful import Resource, request
 import json
 from typing import Dict, Any, List
 
+
 class Archives(Resource):
     """
     A resource for managing archive data, allowing retrieval and update of archived data sources.
     """
+
     def __init__(self, **kwargs):
         """
         Initializes the Archives resource with a database connection.

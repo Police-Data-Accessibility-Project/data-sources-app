@@ -5,6 +5,7 @@ from middleware.login_queries import login_results
 import uuid
 from typing import Dict, Any, Optional
 
+
 class ApiKey(Resource):
     """Represents a resource for generating an API key for authenticated users."""
 

@@ -4,6 +4,7 @@ from flask import request
 from middleware.login_queries import login_results, create_session_token
 from typing import Dict, Any
 
+
 class Login(Resource):
     """
     A resource for authenticating users. Allows users to log in using their email and password.

@@ -8,6 +8,7 @@ import uuid
 import requests
 from typing import Dict, Any
 
+
 class RequestResetPassword(Resource):
     """
     Provides a resource for users to request a password reset. Generates a reset token

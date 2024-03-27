@@ -9,6 +9,7 @@ import requests
 import sys
 import json
 from typing import Dict, Any
+
 sys.path.append("..")
 
 BASE_URL = os.getenv("VITE_VUE_API_BASE_URL")
@@ -19,6 +20,7 @@ class SearchTokens(Resource):
     A resource that provides various search functionalities based on the specified endpoint.
     It supports quick search, data source retrieval by ID, and listing all data sources.
     """
+
     def __init__(self, **kwargs):
         """
         Initializes the SearchTokens resource with a database connection.

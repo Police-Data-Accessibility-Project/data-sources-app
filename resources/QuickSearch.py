@@ -8,11 +8,13 @@ from middleware.initialize_psycopg2_connection import initialize_psycopg2_connec
 from flask import request
 from typing import Dict, Any, Optional
 
+
 class QuickSearch(Resource):
     """
     Provides a resource for performing quick searches in the database for data sources
     based on user-provided search terms and location.
     """
+
     def __init__(self, **kwargs):
         """
         Initializes the QuickSearch resource with a database connection.

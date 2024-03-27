@@ -5,10 +5,12 @@ from middleware.user_queries import user_post_results
 from middleware.security import api_required
 from typing import Dict, Any
 
+
 class User(Resource):
     """
     A resource for user management, allowing new users to sign up and existing users to update their passwords.
     """
+
     def __init__(self, **kwargs):
         """
         Initializes the User resource with a database connection.

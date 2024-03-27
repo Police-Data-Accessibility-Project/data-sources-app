@@ -8,11 +8,13 @@ from datetime import datetime
 import uuid
 from typing import Dict, Any, Tuple
 
+
 class DataSourceById(Resource):
     """
     A resource for managing data source entities by their unique identifier.
     Provides methods for retrieving and updating data source details.
     """
+
     def __init__(self, **kwargs):
         """
         Initializes the DataSourceById resource with a database connection.
@@ -108,10 +110,10 @@ class DataSources(Resource):
 
     def __init__(self, **kwargs):
         """
-                Initializes the DataSources resource with a database connection.
+        Initializes the DataSources resource with a database connection.
 
-                Parameters:
-                - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
+        Parameters:
+        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
         """
         self.psycopg2_connection = kwargs["psycopg2_connection"]
 
