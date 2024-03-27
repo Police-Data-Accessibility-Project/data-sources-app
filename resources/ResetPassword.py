@@ -6,13 +6,32 @@ from middleware.reset_token_queries import (
     delete_reset_token,
 )
 from datetime import datetime as dt
+from typing import Dict, Any
 
 
 class ResetPassword(Resource):
+    """
+    Provides a resource for users to reset their password using a valid reset token.
+    If the token is valid and not expired, allows the user to set a new password.
+    """
+
     def __init__(self, **kwargs):
+        """
+        Initializes the ResetPassword resource with a database connection.
+
+        Parameters:
+        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
+        """
         self.psycopg2_connection = kwargs["psycopg2_connection"]
 
-    def post(self):
+    def post(self) -> Dict[str, Any]:
+        """
+        Processes a password reset request. Validates the provided reset token and,
+        if valid, updates the user's password with the new password provided in the request.
+
+        Returns:
+        - A dictionary containing a message indicating whether the password was successfully updated or an error occurred.
+        """
         try:
             data = request.get_json()
             token = data.get("token")

@@ -3,6 +3,8 @@ from flask import request, jsonify
 from middleware.security import api_required
 from utilities.common import convert_dates_to_strings
 import json
+from typing import Dict, Any, List
+
 
 approved_columns = [
     "name",
@@ -34,11 +36,28 @@ approved_columns = [
 
 
 class Agencies(Resource):
+    """Represents a resource for fetching approved agency data from the database."""
+
     def __init__(self, **kwargs):
+        """
+        Initializes the Agencies resource with a database connection.
+
+        Parameters:
+        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
+        """
         self.psycopg2_connection = kwargs["psycopg2_connection"]
 
     @api_required
-    def get(self, page):
+    def get(self, page: str) -> Dict[str, Any]:
+        """
+        Retrieves a paginated list of approved agencies from the database.
+
+        Parameters:
+        - page (str): The page number of results to return.
+
+        Returns:
+        - dict: A dictionary containing the count of returned agencies and their data.
+        """
         try:
             cursor = self.psycopg2_connection.cursor()
             joined_column_names = ", ".join(approved_columns)
