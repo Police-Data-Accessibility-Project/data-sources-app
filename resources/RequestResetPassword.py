@@ -54,7 +54,7 @@ class RequestResetPassword(Resource):
             )
 
             return {
-                "message": "An email has been sent to your email address with a link to reset your password.",
+                "message": "An email has been sent to your email address with a link to reset your password. It will be valid for 15 minutes.",
                 "token": token,
             }
 

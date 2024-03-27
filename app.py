@@ -7,9 +7,13 @@ from resources.RefreshSession import RefreshSession
 from resources.ApiKey import ApiKey
 from resources.RequestResetPassword import RequestResetPassword
 from resources.ResetPassword import ResetPassword
+from resources.ResetTokenValidation import ResetTokenValidation
 from resources.QuickSearch import QuickSearch
-from resources.DataSources import DataSources
-from resources.DataSources import DataSourceById
+from resources.DataSources import (
+    DataSources,
+    DataSourcesNeedsIdentification,
+    DataSourceById,
+)
 from resources.Agencies import Agencies
 from resources.Archives import Archives
 from resources.SearchTokens import SearchTokens
@@ -48,6 +52,11 @@ api.add_resource(
     resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
 )
 api.add_resource(
+    ResetTokenValidation,
+    "/reset-token-validation",
+    resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
+)
+api.add_resource(
     QuickSearch,
     "/quick-search/<search>/<location>",
     resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
@@ -60,6 +69,11 @@ api.add_resource(
 api.add_resource(
     DataSources,
     "/data-sources",
+    resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
+)
+api.add_resource(
+    DataSourcesNeedsIdentification,
+    "/data-sources-needs-identification",
     resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
 )
 api.add_resource(

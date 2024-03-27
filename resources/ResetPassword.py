@@ -3,7 +3,6 @@ from flask_restful import Resource
 from flask import request
 from middleware.reset_token_queries import (
     check_reset_token,
-    add_reset_token,
     delete_reset_token,
 )
 from datetime import datetime as dt
@@ -42,7 +41,7 @@ class ResetPassword(Resource):
                 return {"message": "The submitted token is invalid"}, 400
 
             token_create_date = token_data["create_date"]
-            token_expired = (dt.utcnow() - token_create_date).total_seconds() > 300
+            token_expired = (dt.utcnow() - token_create_date).total_seconds() > 900
             delete_reset_token(cursor, token_data["email"], token)
             if token_expired:
                 return {"message": "The submitted token is invalid"}, 400
