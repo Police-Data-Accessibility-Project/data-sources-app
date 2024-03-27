@@ -25,7 +25,7 @@ Then run the following command to create a virtual environment:
 
 ```
 
-virtualenv -p python3.9 venv
+virtualenv -p python3.11 venv
 
 ```
 
