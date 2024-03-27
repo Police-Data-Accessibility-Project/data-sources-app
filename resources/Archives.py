@@ -7,7 +7,7 @@ from typing import Dict, Any, List
 
 class Archives(Resource):
     """
-    A resource for managing archive data, allowing retrieval and update of archived items.
+    A resource for managing archive data, allowing retrieval and update of archived data sources.
     """
     def __init__(self, **kwargs):
         """
@@ -21,7 +21,7 @@ class Archives(Resource):
     @api_required
     def get(self) -> Any:
         """
-        Retrieves archived items from the database.
+        Retrieves archived data sources from the database.
 
         Uses an API-required middleware for security and a database connection to fetch archived data.
 
@@ -45,7 +45,7 @@ class Archives(Resource):
         """
         Updates the archive data based on the provided JSON payload.
 
-        Expects a JSON payload with archive item identifiers and updates them in the database.
+        Expects a JSON payload with archive data source identifiers and updates them in the database.
 
         Returns:
         - dict: A status message indicating success or an error message if an exception occurs.
