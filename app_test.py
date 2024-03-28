@@ -48,7 +48,9 @@ from app_test_data import (
 import datetime
 import sqlite3
 import pytest
-from resources.ApiKey import ApiKey  # Adjust the import according to your project structure
+from resources.ApiKey import (
+    ApiKey,
+)  # Adjust the import according to your project structure
 from werkzeug.security import check_password_hash
 from unittest.mock import patch, MagicMock
 
@@ -77,7 +79,7 @@ def runner(test_app):
 @pytest.fixture()
 def test_app_with_mock():
     # Patch the initialize_psycopg2_connection function so it returns a MagicMock
-    with patch('app.initialize_psycopg2_connection') as mock_init:
+    with patch("app.initialize_psycopg2_connection") as mock_init:
         mock_connection = MagicMock()
         mock_init.return_value = mock_connection
 
@@ -159,8 +161,8 @@ def test_data_sources_approved(session):
     response = get_approved_data_sources(conn=session)
 
     assert (
-            len([d for d in response if "https://joinstatepolice.ny.gov/15-mile-run" in d])
-            == 0
+        len([d for d in response if "https://joinstatepolice.ny.gov/15-mile-run" in d])
+        == 0
     )
 
 
@@ -393,6 +395,7 @@ def test_archives_get_columns():
 
 # region Resources
 
+
 def test_get_api_key(client_with_mock, mocker, test_app_with_mock):
     mock_request_data = {"email": "user@example.com", "password": "password"}
     mock_user_data = {"id": 1, "password_digest": "hashed_password"}
@@ -403,10 +406,12 @@ def test_get_api_key(client_with_mock, mocker, test_app_with_mock):
     mocker.patch("resources.ApiKey.check_password_hash", return_value=True)
 
     with client_with_mock:
-        response = client_with_mock.get('/api_key', json=mock_request_data)
+        response = client_with_mock.get("/api_key", json=mock_request_data)
         json_data = response.get_json()
         assert "api_key" in json_data
         assert response.status_code == 200
         test_app_with_mock.mock_connection.cursor().execute.assert_called_once()
         test_app_with_mock.mock_connection.commit.assert_called_once()
+
+
 # endregion
