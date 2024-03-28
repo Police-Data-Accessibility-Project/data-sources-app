@@ -7,6 +7,7 @@ from resources.RefreshSession import RefreshSession
 from resources.ApiKey import ApiKey
 from resources.RequestResetPassword import RequestResetPassword
 from resources.ResetPassword import ResetPassword
+from resources.ResetTokenValidation import ResetTokenValidation
 from resources.QuickSearch import QuickSearch
 from resources.DataSources import (
     DataSources,
@@ -54,7 +55,11 @@ def create_app() -> Flask:
         resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
     )
     api.add_resource(
-        QuickSearch,
+        ResetTokenValidation,
+    "/reset-token-validation",
+    resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
+    )
+    api.add_resource(QuickSearch,
         "/quick-search/<search>/<location>",
         resource_class_kwargs={"psycopg2_connection": psycopg2_connection},
     )

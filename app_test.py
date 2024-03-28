@@ -9,11 +9,11 @@ from middleware.quick_search_query import (
 )
 from middleware.data_source_queries import (
     data_sources_query,
-    approved_data_sources,
     needs_identification_data_sources,
     data_source_by_id_query,
     data_source_by_id_results,
     DATA_SOURCES_APPROVED_COLUMNS,
+    get_approved_data_sources,
 )
 from middleware.user_queries import (
     user_post_results,
@@ -144,7 +144,7 @@ def test_unaltered_search_query(session):
 
 
 def test_data_sources(session):
-    response = approved_data_sources(conn=session)
+    response = get_approved_data_sources(conn=session)
 
     assert response
 
@@ -156,7 +156,7 @@ def test_needs_identification(session):
 
 
 def test_data_sources_approved(session):
-    response = approved_data_sources(conn=session)
+    response = get_approved_data_sources(conn=session)
 
     assert (
             len([d for d in response if "https://joinstatepolice.ny.gov/15-mile-run" in d])

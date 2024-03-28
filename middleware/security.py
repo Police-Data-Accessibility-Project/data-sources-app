@@ -5,11 +5,19 @@ from middleware.initialize_psycopg2_connection import initialize_psycopg2_connec
 from datetime import datetime as dt
 from middleware.login_queries import is_admin
 import os
+from typing import Tuple
+from flask.wrappers import Response
+from psycopg2.extensions import cursor as PgCursor
 
 
-def is_valid(api_key, endpoint, method):
+def is_valid(api_key: str, endpoint: str, method: str) -> Tuple[bool, bool]:
     """
-    Get the user data that matches the API key from the request
+    Validates the API key and checks if the user has the required role to access a specific endpoint.
+
+    :param api_key: The API key provided by the user.
+    :param endpoint: The endpoint the user is trying to access.
+    :param method: The HTTP method of the request.
+    :return: A tuple (isValid, isExpired) indicating whether the API key is valid and not expired.
     """
     if not api_key:
         return False, False
