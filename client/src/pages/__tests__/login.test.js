@@ -96,7 +96,7 @@ describe('Login page', () => {
 
 			const error = form.find('.pdap-form-error-message');
 			expect(error.exists()).toBe(true);
-			expect(error.text()).toBe('foo');
+			expect(error.text()).toBe('Something went wrong, please try again.');
 		});
 	});
 

@@ -24,21 +24,17 @@ export const useAuthStore = defineStore('auth', {
 		async login(email, password) {
 			const user = useUserStore();
 
-			try {
-				const response = await axios.post(
-					LOGIN_URL,
-					{ email, password },
-					HEADERS,
-				);
+			const response = await axios.post(
+				LOGIN_URL,
+				{ email, password },
+				HEADERS,
+			);
 
-				// Update user store with email
-				user.$patch({ email });
+			// Update user store with email
+			user.$patch({ email });
 
-				this.parseTokenAndSetData(response);
-				if (this.returnUrl) router.push(this.returnUrl);
-			} catch (error) {
-				throw new Error(error.response?.data?.message);
-			}
+			this.parseTokenAndSetData(response);
+			if (this.returnUrl) router.push(this.returnUrl);
 		},
 
 		logout(isAuthRoute) {

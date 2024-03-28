@@ -2,17 +2,30 @@ from werkzeug.security import check_password_hash
 from flask_restful import Resource
 from flask import request
 from middleware.login_queries import login_results, create_session_token
+from typing import Dict, Any
 
 
 class Login(Resource):
+    """
+    A resource for authenticating users. Allows users to log in using their email and password.
+    """
+
     def __init__(self, **kwargs):
+        """
+        Initializes the Login resource with a database connection.
+
+        Parameters:
+        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
+        """
         self.psycopg2_connection = kwargs["psycopg2_connection"]
 
     def post(self):
         """
-        Login function: allows a user to login using their email and password as credentials
-        The password is compared to the hashed password stored in the users table
-        Once the password is verified, an API key is generated, which is stored in the users table and sent to the verified user
+        Processes the login request. Validates user credentials against the stored hashed password and,
+        if successful, generates a session token for the user.
+
+        Returns:
+        - A dictionary containing a message of success or failure, and the session token if successful.
         """
         try:
             data = request.get_json()
