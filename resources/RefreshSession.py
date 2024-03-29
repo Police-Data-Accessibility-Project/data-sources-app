@@ -2,17 +2,31 @@ from flask_restful import Resource
 from flask import request
 from middleware.login_queries import token_results, create_session_token
 from datetime import datetime as dt
+from typing import Dict, Any
 
 
 class RefreshSession(Resource):
+    """
+    Provides a resource for refreshing a user's session token.
+    If the provided session token is valid and not expired, it is replaced with a new one.
+    """
+
     def __init__(self, **kwargs):
+        """
+        Initializes the RefreshSession resource with a database connection.
+
+        Parameters:
+        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
+        """
         self.psycopg2_connection = kwargs["psycopg2_connection"]
 
-    def post(self):
+    def post(self) -> Dict[str, Any]:
         """
-        Login function: allows a user to login using their email and password as credentials
-        The password is compared to the hashed password stored in the users table
-        Once the password is verified, an API key is generated, which is stored in the users table and sent to the verified user
+        Processes the session token refresh request. If the provided session token is valid,
+        it generates a new session token, invalidates the old one, and returns the new token.
+
+        Returns:
+        - A dictionary containing a message of success or failure, and the new session token if successful.
         """
         try:
             data = request.get_json()

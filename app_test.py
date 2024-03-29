@@ -1,6 +1,6 @@
 import pytest
 import os
-from app import app
+from app import create_app
 from flask_restful import Api
 from middleware.quick_search_query import (
     unaltered_search_query,
@@ -9,11 +9,11 @@ from middleware.quick_search_query import (
 )
 from middleware.data_source_queries import (
     data_sources_query,
-    approved_data_sources,
     needs_identification_data_sources,
     data_source_by_id_query,
     data_source_by_id_results,
     DATA_SOURCES_APPROVED_COLUMNS,
+    get_approved_data_sources,
 )
 from middleware.user_queries import (
     user_post_results,
@@ -47,6 +47,12 @@ from app_test_data import (
 )
 import datetime
 import sqlite3
+import pytest
+from resources.ApiKey import (
+    ApiKey,
+)  # Adjust the import according to your project structure
+from werkzeug.security import check_password_hash
+from unittest.mock import patch, MagicMock
 
 api_key = os.getenv("VUE_APP_PDAP_API_KEY")
 HEADERS = {"Authorization": f"Bearer {api_key}"}
@@ -56,6 +62,7 @@ DATETIME_STRING = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
 @pytest.fixture()
 def test_app():
+    app = create_app()
     yield app
 
 
@@ -67,6 +74,35 @@ def client(test_app):
 @pytest.fixture()
 def runner(test_app):
     return test_app.test_cli_runner()
+
+
+@pytest.fixture()
+def test_app_with_mock():
+    # Patch the initialize_psycopg2_connection function so it returns a MagicMock
+    with patch("app.initialize_psycopg2_connection") as mock_init:
+        mock_connection = MagicMock()
+        mock_init.return_value = mock_connection
+
+        app = create_app()
+        # If your app stores the connection in a global or app context,
+        # you can also directly assign the mock_connection there
+
+        # Provide access to the mock within the app for assertions in tests
+        app.mock_connection = mock_connection
+
+        yield app
+
+
+@pytest.fixture()
+def client_with_mock(test_app_with_mock):
+    # Use the app with the mocked database connection to get the test client
+    return test_app_with_mock.test_client()
+
+
+@pytest.fixture()
+def runner_with_mock(test_app_with_mock):
+    # Use the app with the mocked database connection for the test CLI runner
+    return test_app_with_mock.test_cli_runner()
 
 
 @pytest.fixture
@@ -110,7 +146,7 @@ def test_unaltered_search_query(session):
 
 
 def test_data_sources(session):
-    response = approved_data_sources(conn=session)
+    response = get_approved_data_sources(conn=session)
 
     assert response
 
@@ -122,7 +158,7 @@ def test_needs_identification(session):
 
 
 def test_data_sources_approved(session):
-    response = approved_data_sources(conn=session)
+    response = get_approved_data_sources(conn=session)
 
     assert (
         len([d for d in response if "https://joinstatepolice.ny.gov/15-mile-run" in d])
@@ -356,3 +392,26 @@ def test_archives_get_columns():
 #     response2 = client.get("/agencies/2", headers=HEADERS)
 
 #     assert response1 != response2
+
+# region Resources
+
+
+def test_get_api_key(client_with_mock, mocker, test_app_with_mock):
+    mock_request_data = {"email": "user@example.com", "password": "password"}
+    mock_user_data = {"id": 1, "password_digest": "hashed_password"}
+
+    # Mock login_results function to return mock_user_data
+    mocker.patch("resources.ApiKey.login_results", return_value=mock_user_data)
+    # Mock check_password_hash based on the valid_login parameter
+    mocker.patch("resources.ApiKey.check_password_hash", return_value=True)
+
+    with client_with_mock:
+        response = client_with_mock.get("/api_key", json=mock_request_data)
+        json_data = response.get_json()
+        assert "api_key" in json_data
+        assert response.status_code == 200
+        test_app_with_mock.mock_connection.cursor().execute.assert_called_once()
+        test_app_with_mock.mock_connection.commit.assert_called_once()
+
+
+# endregion
