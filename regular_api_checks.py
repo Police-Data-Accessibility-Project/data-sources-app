@@ -188,7 +188,7 @@ def test_request_reset_password():
     reset_token = requests.post(
         f"{BASE_URL}/request-reset-password",
         headers=HEADERS,
-        json={"email": "test"},
+        json={"email": "test2"},
     )
 
     response = requests.post(
