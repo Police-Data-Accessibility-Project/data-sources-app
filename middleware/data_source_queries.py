@@ -228,7 +228,9 @@ def get_data_sources_for_map(conn) -> list:
             agencies.airtable_uid as agency_id,
             agencies.submitted_name as agency_name,
             agencies.state_iso,
-            agencies.municipality
+            agencies.municipality,
+            agencies.lat,
+            agencies.lng
         FROM
             agency_source_link
         INNER JOIN
@@ -278,6 +280,8 @@ def data_sources_query(
             "agency_name",
             "state_iso",
             "municipality",
+            "lat",
+            "lng"
         ]
 
     data_source_matches = [
