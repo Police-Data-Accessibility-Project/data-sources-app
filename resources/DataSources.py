@@ -215,3 +215,44 @@ class DataSourcesNeedsIdentification(Resource):
             self.psycopg2_connection.rollback()
             print(str(e))
             return {"message": "There has been an error pulling data!"}, 500
+
+
+class DataSourcesMap(Resource):
+    """
+    A resource for managing collections of data sources for mapping.
+    Provides a method for retrieving all data sources.
+    """
+
+    def __init__(self, **kwargs):
+        """
+        Initializes the DataSources resource with a database connection.
+
+        Parameters:
+        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
+        """
+        self.psycopg2_connection = kwargs["psycopg2_connection"]
+
+    @api_required
+    def get(self) -> Dict[str, Any]:
+        """
+        Retrieves location relevant columns for data sources.
+
+        Returns:
+        - A dictionary containing the count of data sources and their details.
+        """
+        try:
+            data_source_matches = data_sources_query(
+                self.psycopg2_connection, [], "approved", True
+            )
+
+            data_sources = {
+                "count": len(data_source_matches),
+                "data": data_source_matches,
+            }
+
+            return data_sources
+
+        except Exception as e:
+            self.psycopg2_connection.rollback()
+            print(str(e))
+            return {"message": "There has been an error pulling data!"}, 500

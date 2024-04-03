@@ -216,10 +216,40 @@ def needs_identification_data_sources(conn) -> list:
     return results
 
 
+def get_data_sources_for_map(conn) -> list:
+    """
+    Returns a list of data sources with relevant info for the map
+    """
+    cursor = conn.cursor()
+    sql_query = """
+        SELECT
+            data_sources.airtable_uid as data_source_id,
+            data_sources.name,
+            agencies.airtable_uid as agency_id,
+            agencies.submitted_name as agency_name,
+            agencies.state_iso,
+            agencies.municipality
+        FROM
+            agency_source_link
+        INNER JOIN
+            data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
+        INNER JOIN
+            agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+        WHERE
+            data_sources.approval_status = 'approved'
+    """
+    cursor.execute(sql_query)
+    results = cursor.fetchall()
+    cursor.close()
+
+    return results
+
+
 def data_sources_query(
     conn: Optional[PgConnection] = None,
     test_query_results: Optional[List[Dict[str, Any]]] = None,
     approval_status: str = "approved",
+    for_map: bool = False,
 ) -> List[Dict[str, Any]]:
     """
     Processes and formats a list of approved data sources, with an option to use test query results.
@@ -229,14 +259,26 @@ def data_sources_query(
     :param test_query_results: Optional list of test query results to use instead of querying the database.
     :return: A list of dictionaries, each formatted with details of a data source and its associated agency.
     """
-    if conn and approval_status == "approved":
+    if for_map:
+        results = get_data_sources_for_map(conn)
+    elif conn and approval_status == "approved":
         results = get_approved_data_sources(conn)
-    elif conn:
+    elif conn and not for_map:
         results = needs_identification_data_sources(conn)
     else:
         results = test_query_results
 
-    data_source_output_columns = DATA_SOURCES_APPROVED_COLUMNS + ["agency_name"]
+    if not for_map:
+        data_source_output_columns = DATA_SOURCES_APPROVED_COLUMNS + ["agency_name"]
+    else:
+        data_source_output_columns = [
+            "data_source_id",
+            "name",
+            "agency_id",
+            "agency_name",
+            "state_iso",
+            "municipality",
+        ]
 
     data_source_matches = [
         dict(zip(data_source_output_columns, result)) for result in results
