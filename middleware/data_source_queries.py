@@ -281,7 +281,7 @@ def data_sources_query(
             "state_iso",
             "municipality",
             "lat",
-            "lng"
+            "lng",
         ]
 
     data_source_matches = [
