@@ -1,5 +1,9 @@
 from middleware.quick_search_query import quick_search_query
-from middleware.data_source_queries import data_source_by_id_query, data_sources_query
+from middleware.data_source_queries import (
+    data_source_by_id_query,
+    data_sources_query,
+    get_data_sources_for_map,
+)
 from flask import request, jsonify
 from flask_restful import Resource
 import datetime
@@ -119,8 +123,22 @@ class SearchTokens(Resource):
 
                 except Exception as e:
                     print(str(e))
-                    return "There has been an error pulling data!"
+                    return {"message": "There has been an error pulling data!"}, 500
 
+            elif endpoint == "data-sources-map":
+                try:
+                    data_source_details = get_data_sources_for_map(
+                        self.psycopg2_connection
+                    )
+                    if data_source_details:
+                        return data_source_details
+
+                    else:
+                        return {"message": "There has been an error pulling data!"}, 500
+
+                except Exception as e:
+                    print(str(e))
+                    return {"message": "There has been an error pulling data!"}, 500
             else:
                 return {"message": "Unknown endpoint"}, 500
 
