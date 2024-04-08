@@ -127,11 +127,15 @@ class SearchTokens(Resource):
 
             elif endpoint == "data-sources-map":
                 try:
-                    data_source_details = get_data_sources_for_map(
-                        self.psycopg2_connection
+                    data_source_details = data_sources_query(
+                        self.psycopg2_connection, [], "approved", True
                     )
                     if data_source_details:
-                        return data_source_details
+                        data_sources = {
+                            "count": len(data_source_details),
+                            "data": data_source_details,
+                        }
+                        return data_sources
 
                     else:
                         return {"message": "There has been an error pulling data!"}, 500
