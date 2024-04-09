@@ -2,6 +2,27 @@ import os
 import json
 import requests
 
+"""
+This module is designed to interact with GitHub's API, specifically the section responsible for handling issue 
+comments. 
+
+Among the functions it provides is the ability to post comments on an issue using the issue's number, a repository 
+token for authentication and the comment content itself. It demonstrates how to make an authenticated request to 
+the GitHub API and handle responses from the server, raising an exception if the request was unsuccessful.
+
+It also includes an example of usage where it reads the output of the tools `mypy` and `pydocstyle` from text files, 
+and formats them into a comment that is then posted to a GitHub issue corresponding to the current Git reference of 
+the repository that the script is being run in. The script expects certain environment variables to be present 
+(GITHUB_REF and GITHUB_TOKEN) and fails if they're not set.
+
+Functions included:
+
+- post_comment(issue_number: str, repo_token: str, message: str): Posts a comment to a specific GitHub issue.
+
+Exceptions raised:
+- requests.HTTPError: If the request to the GitHub API fails for any reason.
+
+"""
 
 def post_comment(issue_number: str, repo_token: str, message: str):
     """
