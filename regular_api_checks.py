@@ -124,6 +124,12 @@ def test_data_source_by_id_approved():
     return response.json() == "Data source not found."
 
 
+def test_data_sources():
+    response = requests.get(f"{BASE_URL}/data-sources-map", headers=HEADERS)
+
+    return len(response.json()["data"]) > 0
+
+
 # search-tokens
 def test_search_tokens_data_sources():
     response = requests.get(f"{BASE_URL}/search-tokens?endpoint=data-sources")

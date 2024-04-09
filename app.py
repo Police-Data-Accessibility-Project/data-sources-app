@@ -13,6 +13,7 @@ from resources.DataSources import (
     DataSources,
     DataSourcesNeedsIdentification,
     DataSourceById,
+    DataSourcesMap,
 )
 from resources.Agencies import Agencies
 from resources.Archives import Archives
@@ -42,6 +43,7 @@ def create_app() -> Flask:
         (QuickSearch, "/quick-search/<search>/<location>"),
         (Archives, "/archives"),
         (DataSources, "/data-sources"),
+        (DataSourcesMap, "/data-sources-map"),
         (DataSourcesNeedsIdentification, "/data-sources-needs-identification"),
         (DataSourceById, "/data-sources-by-id/<data_source_id>"),
         (Agencies, "/agencies/<page>"),

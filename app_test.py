@@ -14,6 +14,7 @@ from middleware.data_source_queries import (
     data_source_by_id_results,
     DATA_SOURCES_APPROVED_COLUMNS,
     get_approved_data_sources,
+    get_data_sources_for_map,
 )
 from middleware.user_queries import (
     user_post_results,
@@ -180,6 +181,12 @@ def test_data_source_by_id_approved(session):
     )
 
     assert not response
+
+
+def test_data_sources(session):
+    response = get_data_sources_for_map(conn=session)
+
+    assert response
 
 
 def test_user_post_query(session):
