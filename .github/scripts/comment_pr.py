@@ -3,7 +3,20 @@ import json
 import requests
 
 
-def post_comment(issue_number, repo_token, message):
+def post_comment(issue_number: str, repo_token: str, message: str):
+    """
+    :param issue_number: The number of the issue to which the comment will be posted.
+    :param repo_token: The access token required to authorize the request to the GitHub API.
+    :param message: The body of the comment to be posted.
+    :return: None
+
+    This method posts a comment to a specific GitHub issue identified by `issue_number`.
+    The comment is created using the provided `message`. The `repo_token` is necessary to authorize the
+    * request to the GitHub API.
+
+    Raises:
+        requests.HTTPError: If the request to the GitHub API fails for any reason.
+    """
     url = f"https://api.github.com/repos/{os.getenv('GITHUB_REPOSITORY')}/issues/{issue_number}/comments"
     headers = {"Authorization": f"token {repo_token}"}
     data = {"body": message}
