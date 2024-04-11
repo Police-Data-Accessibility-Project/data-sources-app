@@ -42,6 +42,7 @@ class SearchTokens(Resource):
         - quick-search: Performs a quick search with specified search terms and location.
         - data-sources: Retrieves a list of all data sources.
         - data-sources-by-id: Retrieves details of a data source by its ID.
+        - data-sources-map: Retrieves data sources for the map.
 
         Returns:
         - A dictionary with the search results or an error message.
