@@ -67,8 +67,13 @@ class SearchTokens(Resource):
 
             if endpoint == "quick-search":
                 try:
+                    data = request.get_json()
+                    test = data.get("test_flag")
+                except:
+                    test = False
+                try:
                     data_sources = quick_search_query(
-                        arg1, arg2, [], self.psycopg2_connection
+                        arg1, arg2, [], self.psycopg2_connection, test
                     )
 
                     return data_sources

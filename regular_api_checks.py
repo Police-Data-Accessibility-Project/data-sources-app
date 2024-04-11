@@ -147,7 +147,8 @@ def test_search_tokens_data_source_by_id():
 
 def test_search_tokens_quick_search_complaints_allegheny_results():
     response = requests.get(
-        f"{BASE_URL}/search-tokens?endpoint=quick-search&arg1=complaints&arg2=allegheny"
+        f"{BASE_URL}/search-tokens?endpoint=quick-search&arg1=complaints&arg2=allegheny",
+        json={"test_flag": True},
     )
 
     return len(response.json()["data"]) > 0
