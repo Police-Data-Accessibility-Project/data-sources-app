@@ -124,7 +124,7 @@ def test_data_source_by_id_approved():
     return response.json() == "Data source not found."
 
 
-def test_data_sources():
+def test_data_sources_map():
     response = requests.get(f"{BASE_URL}/data-sources-map", headers=HEADERS)
 
     return len(response.json()["data"]) > 0
@@ -304,6 +304,7 @@ def main():
         "test_update_data_source",
         "test_data_sources_approved",
         "test_data_source_by_id_approved",
+        "test_data_sources_map",
         "test_search_tokens_data_sources",
         "test_search_tokens_data_source_by_id",
         "test_search_tokens_quick_search_complaints_allegheny_results",
