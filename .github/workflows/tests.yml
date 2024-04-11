@@ -21,3 +21,20 @@ jobs:
         VUE_APP_PDAP_API_KEY: ${{ secrets.VUE_APP_PDAP_API_KEY }}
         VITE_VUE_API_BASE_URL: ${{ secrets.VITE_VUE_API_BASE_URL }}
       run: python regular_api_checks.py
+
+  notify:
+    runs-on: ubuntu-latest
+    if: ${{ failure() }} # Trigger only on failure ${{ failure() }} 
+
+    steps:
+      - name: Notify Discord
+        uses: nobrayner/discord-webhook@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          discord-webhook: ${{ secrets.DISCORD_ALERT_WEBHOOK }}
+          username: 'GitHub Action Pipeline Failure Notification'
+          avatar-url: 'https://pdap.io/assets/acronym-4d931b2f.svg'
+          title: '${{ github.repository }}: {{Status}}'
+          description: 'The repository ${{ github.repository }} had an event: ${{ github.event_name }} which trigged this {{STATUS}}!'
+          include-details: false
+          color-failure: 'eb4034'

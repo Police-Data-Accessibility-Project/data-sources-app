@@ -124,7 +124,7 @@ def test_data_source_by_id_approved():
     return response.json() == "Data source not found."
 
 
-def test_data_sources():
+def test_data_sources_map():
     response = requests.get(f"{BASE_URL}/data-sources-map", headers=HEADERS)
 
     return len(response.json()["data"]) > 0
@@ -147,7 +147,8 @@ def test_search_tokens_data_source_by_id():
 
 def test_search_tokens_quick_search_complaints_allegheny_results():
     response = requests.get(
-        f"{BASE_URL}/search-tokens?endpoint=quick-search&arg1=complaints&arg2=allegheny"
+        f"{BASE_URL}/search-tokens?endpoint=quick-search&arg1=complaints&arg2=allegheny",
+        json={"test_flag": True},
     )
 
     return len(response.json()["data"]) > 0
@@ -303,6 +304,7 @@ def main():
         "test_update_data_source",
         "test_data_sources_approved",
         "test_data_source_by_id_approved",
+        "test_data_sources_map",
         "test_search_tokens_data_sources",
         "test_search_tokens_data_source_by_id",
         "test_search_tokens_quick_search_complaints_allegheny_results",
