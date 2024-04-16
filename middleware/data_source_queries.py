@@ -229,6 +229,7 @@ def get_data_sources_for_map(conn) -> list:
             agencies.submitted_name as agency_name,
             agencies.state_iso,
             agencies.municipality,
+            agencies.county_name,
             agencies.lat,
             agencies.lng
         FROM
@@ -280,6 +281,7 @@ def data_sources_query(
             "agency_name",
             "state_iso",
             "municipality",
+            "county_name",
             "lat",
             "lng",
         ]
