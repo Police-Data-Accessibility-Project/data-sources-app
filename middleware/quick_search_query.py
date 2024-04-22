@@ -123,8 +123,8 @@ def quick_search_query(
     if type(conn) == dict and "data" in conn:
         return data_sources
 
-    search = "" if search == "all" else search
-    location = "" if location == "all" else location
+    search = "" if search == "all" else search.replace("'", "")
+    location = "" if location == "all" else location.replace("'", "")
 
     if conn:
         cursor = conn.cursor()
