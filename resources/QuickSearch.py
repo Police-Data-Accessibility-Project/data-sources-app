@@ -85,6 +85,6 @@ class QuickSearch(Resource):
                 webhook_url,
                 data=json.dumps(message),
                 headers={"Content-Type": "application/json"},
-            )
+            timeout=60)
 
             return {"count": 0, "message": user_message}, 500

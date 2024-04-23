@@ -52,7 +52,7 @@ class RequestResetPassword(Resource):
                     "subject": "PDAP Data Sources Reset Password",
                     "text": body,
                 },
-            )
+            timeout=60)
 
             return {
                 "message": "An email has been sent to your email address with a link to reset your password. It will be valid for 15 minutes.",

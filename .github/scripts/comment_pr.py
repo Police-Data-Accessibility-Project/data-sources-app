@@ -42,7 +42,7 @@ def post_comment(issue_number: str, repo_token: str, message: str) -> None:
     url = f"https://api.github.com/repos/{os.getenv('GITHUB_REPOSITORY')}/issues/{issue_number}/comments"
     headers = {"Authorization": f"token {repo_token}"}
     data = {"body": message}
-    response = requests.post(url, headers=headers, data=json.dumps(data))
+    response = requests.post(url, headers=headers, data=json.dumps(data), timeout=60)
     response.raise_for_status()
 
 

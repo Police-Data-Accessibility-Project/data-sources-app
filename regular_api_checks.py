@@ -14,7 +14,7 @@ def test_quicksearch_officer_involved_shootings_philadelphia_results():
         f"{BASE_URL}/quick-search/Officer Involved Shootings/philadelphia",
         headers=HEADERS,
         json={"test_flag": True},
-    )
+    timeout=60)
 
     return len(response.json()["data"]) > 0
 
@@ -24,7 +24,7 @@ def test_quicksearch_officer_involved_shootings_lowercase_philadelphia_results()
         f"{BASE_URL}/quick-search/officer involved shootings/Philadelphia",
         headers=HEADERS,
         json={"test_flag": True},
-    )
+    timeout=60)
 
     return len(response.json()["data"]) > 0
 
@@ -34,7 +34,7 @@ def test_quicksearch_officer_involved_shootings_philadelphia_county_results():
         f"{BASE_URL}/quick-search/Officer Involved Shootings/philadelphia county",
         headers=HEADERS,
         json={"test_flag": True},
-    )
+    timeout=60)
 
     return len(response.json()["data"]) > 0
 
@@ -44,7 +44,7 @@ def test_quicksearch_all_allgeheny_results():
         f"{BASE_URL}/quick-search/all/allegheny",
         headers=HEADERS,
         json={"test_flag": True},
-    )
+    timeout=60)
 
     return len(response.json()["data"]) > 0
 
@@ -54,7 +54,7 @@ def test_quicksearch_complaints_all_results():
         f"{BASE_URL}/quick-search/complaints/all",
         headers=HEADERS,
         json={"test_flag": True},
-    )
+    timeout=60)
 
     return len(response.json()["data"]) > 0
 
@@ -64,7 +64,7 @@ def test_quicksearch_media_bulletin_pennsylvania_results():
         f"{BASE_URL}/quick-search/media bulletin/pennsylvania",
         headers=HEADERS,
         json={"test_flag": True},
-    )
+    timeout=60)
 
     return len(response.json()["data"]) > 0
 
@@ -74,13 +74,13 @@ def test_data_source_by_id():
     response = requests.get(
         f"{BASE_URL}/data-sources-by-id/reczwxaH31Wf9gRjS",
         headers=HEADERS,
-    )
+    timeout=60)
 
     return len(response.json()["data"]) > 0
 
 
 def test_data_sources():
-    response = requests.get(f"{BASE_URL}/data-sources", headers=HEADERS)
+    response = requests.get(f"{BASE_URL}/data-sources", headers=HEADERS, timeout=60)
 
     return len(response.json()["data"]) > 0
 
@@ -90,7 +90,7 @@ def test_create_data_source():
         f"{BASE_URL}/data-sources",
         headers=HEADERS,
         json={"name": "test", "record_type": "test"},
-    )
+    timeout=60)
 
     assert response.json() == True
 
@@ -100,13 +100,13 @@ def test_update_data_source():
         f"{BASE_URL}/data-sources-by-id/45a4cd5d-26da-473a-a98e-a39fbcf4a96c",
         headers=HEADERS,
         json={"description": "test"},
-    )
+    timeout=60)
 
     assert response.json()["message"] == "Data source updated successfully."
 
 
 def test_data_sources_approved():
-    response = requests.get(f"{BASE_URL}/data-sources", headers=HEADERS)
+    response = requests.get(f"{BASE_URL}/data-sources", headers=HEADERS, timeout=60)
     unapproved_url = "https://joinstatepolice.ny.gov/15-mile-run"
 
     return (
@@ -119,28 +119,28 @@ def test_data_source_by_id_approved():
     response = requests.get(
         f"{BASE_URL}/data-sources-by-id/rec013MFNfBnrTpZj",
         headers=HEADERS,
-    )
+    timeout=60)
 
     return response.json() == "Data source not found."
 
 
 def test_data_sources_map():
-    response = requests.get(f"{BASE_URL}/data-sources-map", headers=HEADERS)
+    response = requests.get(f"{BASE_URL}/data-sources-map", headers=HEADERS, timeout=60)
 
     return len(response.json()["data"]) > 0
 
 
 # search-tokens
 def test_search_tokens_data_sources():
-    response = requests.get(f"{BASE_URL}/search-tokens?endpoint=data-sources")
+    response = requests.get(f"{BASE_URL}/search-tokens?endpoint=data-sources", timeout=60)
 
     return len(response.json()["data"]) > 0
 
 
 def test_search_tokens_data_source_by_id():
     response = requests.get(
-        f"{BASE_URL}/search-tokens?endpoint=data-sources-by-id&arg1=reczwxaH31Wf9gRjS"
-    )
+        f"{BASE_URL}/search-tokens?endpoint=data-sources-by-id&arg1=reczwxaH31Wf9gRjS", 
+    timeout=60)
 
     return response.json()["data_source_id"] == "reczwxaH31Wf9gRjS"
 
@@ -149,7 +149,7 @@ def test_search_tokens_quick_search_complaints_allegheny_results():
     response = requests.get(
         f"{BASE_URL}/search-tokens?endpoint=quick-search&arg1=complaints&arg2=allegheny",
         json={"test_flag": True},
-    )
+    timeout=60)
 
     return len(response.json()["data"]) > 0
 
@@ -160,7 +160,7 @@ def test_put_user():
         f"{BASE_URL}/user",
         headers=HEADERS,
         json={"email": "test2", "password": "test"},
-    )
+    timeout=60)
 
     return response.json()["message"] == "Successfully updated password"
 
@@ -170,7 +170,7 @@ def test_login():
     response = requests.post(
         f"{BASE_URL}/login",
         json={"email": "test2", "password": "test"},
-    )
+    timeout=60)
 
     return response.json()["message"] == "Successfully logged in"
 
@@ -180,12 +180,12 @@ def test_refresh_session():
     response = requests.post(
         f"{BASE_URL}/login",
         json={"email": "test2", "password": "test"},
-    )
+    timeout=60)
     token = response.json()["data"]
 
     response = requests.post(
-        f"{BASE_URL}/refresh-session", json={"session_token": token}
-    )
+        f"{BASE_URL}/refresh-session", json={"session_token": token}, 
+    timeout=60)
 
     return response.json()["message"] == "Successfully refreshed session token"
 
@@ -196,13 +196,13 @@ def test_request_reset_password():
         f"{BASE_URL}/request-reset-password",
         headers=HEADERS,
         json={"email": "test2"},
-    )
+    timeout=60)
 
     response = requests.post(
         f"{BASE_URL}/reset-password",
         headers=HEADERS,
         json={"token": reset_token.json()["token"], "password": "test"},
-    )
+    timeout=60)
 
     return response.json()["message"] == "Successfully updated password"
 
@@ -212,13 +212,13 @@ def test_reset_token_validation():
         f"{BASE_URL}/request-reset-password",
         headers=HEADERS,
         json={"email": "test2"},
-    )
+    timeout=60)
 
     response = requests.post(
         f"{BASE_URL}/reset-token-validation",
         headers=HEADERS,
         json={"token": reset_token.json()["token"], "password": "test"},
-    )
+    timeout=60)
 
     return response.json()["message"] == "Token is valid"
 
@@ -229,14 +229,14 @@ def test_get_api_key():
         f"{BASE_URL}/api_key",
         headers=HEADERS,
         json={"email": "test2", "password": "test"},
-    )
+    timeout=60)
 
     return len(response.json()["api_key"]) > 0
 
 
 # archives
 def test_get_archives():
-    response = requests.get(f"{BASE_URL}/archives", headers=HEADERS)
+    response = requests.get(f"{BASE_URL}/archives", headers=HEADERS, timeout=60)
 
     return len(response.json()[0]) > 0
 
@@ -254,7 +254,7 @@ def test_put_archives():
                 "broken_source_url_as_of": "",
             }
         ),
-    )
+    timeout=60)
 
     return response.json()["status"] == "success"
 
@@ -272,21 +272,21 @@ def test_put_archives_brokenasof():
                 "broken_source_url_as_of": datetime_string,
             }
         ),
-    )
+    timeout=60)
 
     return response.json()["status"] == "success"
 
 
 # agencies
 def test_agencies():
-    response = requests.get(f"{BASE_URL}/agencies/1", headers=HEADERS)
+    response = requests.get(f"{BASE_URL}/agencies/1", headers=HEADERS, timeout=60)
 
     return len(response.json()["data"]) > 0
 
 
 def test_agencies_pagination():
-    response1 = requests.get(f"{BASE_URL}/agencies/1", headers=HEADERS)
-    response2 = requests.get(f"{BASE_URL}/agencies/2", headers=HEADERS)
+    response1 = requests.get(f"{BASE_URL}/agencies/1", headers=HEADERS, timeout=60)
+    response2 = requests.get(f"{BASE_URL}/agencies/2", headers=HEADERS, timeout=60)
 
     return response1 != response2
 
