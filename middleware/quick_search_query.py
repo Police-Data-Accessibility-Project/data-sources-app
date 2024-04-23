@@ -44,7 +44,7 @@ QUICK_SEARCH_SQL = """
         state_names ON agencies.state_iso = state_names.state_iso
     WHERE
         (data_sources.name LIKE '%{0}%' OR data_sources.description LIKE '%{0}%' OR data_sources.record_type LIKE '%{0}%' OR data_sources.tags LIKE '%{0}%') 
-        AND (agencies.county_name LIKE '%{1}%' OR substr(agencies.county_name,3,length(agencies.county_name)-4) || ' county' LIKE '%{1}%' 
+        AND (agencies.county_name LIKE '%{1}%' OR substr(agencies.county_name,3,length(agencies.county_name)-4) || ' County' LIKE '%{1}%' 
             OR agencies.state_iso LIKE '%{1}%' OR agencies.municipality LIKE '%{1}%' OR agencies.agency_type LIKE '%{1}%' OR agencies.jurisdiction_type LIKE '%{1}%' 
             OR agencies.name LIKE '%{1}%' OR state_names.state_name LIKE '%{1}%')
         AND data_sources.approval_status = 'approved'
