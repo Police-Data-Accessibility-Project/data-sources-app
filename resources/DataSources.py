@@ -1,28 +1,19 @@
-from flask_restful import Resource
-from flask import request, jsonify
+from flask import request
 from middleware.security import api_required
 from middleware.data_source_queries import data_source_by_id_query, data_sources_query
-import json
 from datetime import datetime
 
 import uuid
 from typing import Dict, Any, Tuple
 
+from resources.PsycopgResource import PsycopgResource
 
-class DataSourceById(Resource):
+
+class DataSourceById(PsycopgResource):
     """
     A resource for managing data source entities by their unique identifier.
     Provides methods for retrieving and updating data source details.
     """
-
-    def __init__(self, **kwargs):
-        """
-        Initializes the DataSourceById resource with a database connection.
-
-        Parameters:
-        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
-        """
-        self.psycopg2_connection = kwargs["psycopg2_connection"]
 
     @api_required
     def get(self, data_source_id: str) -> Tuple[Dict[str, Any], int]:
@@ -102,20 +93,11 @@ class DataSourceById(Resource):
             return {"message": "There has been an error updating the data source"}, 500
 
 
-class DataSources(Resource):
+class DataSources(PsycopgResource):
     """
     A resource for managing collections of data sources.
     Provides methods for retrieving all data sources and adding new ones.
     """
-
-    def __init__(self, **kwargs):
-        """
-        Initializes the DataSources resource with a database connection.
-
-        Parameters:
-        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
-        """
-        self.psycopg2_connection = kwargs["psycopg2_connection"]
 
     @api_required
     def get(self) -> Dict[str, Any]:
@@ -193,9 +175,7 @@ class DataSources(Resource):
             return {"message": "There has been an error adding the data source"}, 500
 
 
-class DataSourcesNeedsIdentification(Resource):
-    def __init__(self, **kwargs):
-        self.psycopg2_connection = kwargs["psycopg2_connection"]
+class DataSourcesNeedsIdentification(PsycopgResource):
 
     @api_required
     def get(self):
@@ -217,20 +197,11 @@ class DataSourcesNeedsIdentification(Resource):
             return {"message": "There has been an error pulling data!"}, 500
 
 
-class DataSourcesMap(Resource):
+class DataSourcesMap(PsycopgResource):
     """
     A resource for managing collections of data sources for mapping.
     Provides a method for retrieving all data sources.
     """
-
-    def __init__(self, **kwargs):
-        """
-        Initializes the DataSources resource with a database connection.
-
-        Parameters:
-        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
-        """
-        self.psycopg2_connection = kwargs["psycopg2_connection"]
 
     @api_required
     def get(self) -> Dict[str, Any]:

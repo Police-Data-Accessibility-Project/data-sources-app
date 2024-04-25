@@ -1,24 +1,16 @@
 from werkzeug.security import generate_password_hash
-from flask_restful import Resource
 from flask import request
 from middleware.user_queries import user_post_results
 from middleware.security import api_required
 from typing import Dict, Any
 
+from resources.PsycopgResource import PsycopgResource
 
-class User(Resource):
+
+class User(PsycopgResource):
     """
     A resource for user management, allowing new users to sign up and existing users to update their passwords.
     """
-
-    def __init__(self, **kwargs):
-        """
-        Initializes the User resource with a database connection.
-
-        Parameters:
-        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
-        """
-        self.psycopg2_connection = kwargs["psycopg2_connection"]
 
     def post(self) -> Dict[str, Any]:
         """

@@ -1,5 +1,3 @@
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_restful import Resource
 from flask import request
 from middleware.user_queries import user_check_email
 from middleware.reset_token_queries import add_reset_token
@@ -8,21 +6,14 @@ import uuid
 import requests
 from typing import Dict, Any
 
+from resources.PsycopgResource import PsycopgResource
 
-class RequestResetPassword(Resource):
+
+class RequestResetPassword(PsycopgResource):
     """
     Provides a resource for users to request a password reset. Generates a reset token
     and sends an email to the user with instructions on how to reset their password.
     """
-
-    def __init__(self, **kwargs):
-        """
-        Initializes the RequestResetPassword resource with a database connection.
-
-        Parameters:
-        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
-        """
-        self.psycopg2_connection = kwargs["psycopg2_connection"]
 
     def post(self) -> Dict[str, Any]:
         """

@@ -1,23 +1,13 @@
 from werkzeug.security import check_password_hash
-from flask_restful import Resource
 from flask import request
 from middleware.login_queries import login_results, create_session_token
-from typing import Dict, Any
+from resources.PsycopgResource import PsycopgResource
 
 
-class Login(Resource):
+class Login(PsycopgResource):
     """
     A resource for authenticating users. Allows users to log in using their email and password.
     """
-
-    def __init__(self, **kwargs):
-        """
-        Initializes the Login resource with a database connection.
-
-        Parameters:
-        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
-        """
-        self.psycopg2_connection = kwargs["psycopg2_connection"]
 
     def post(self):
         """

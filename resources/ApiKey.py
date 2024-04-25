@@ -1,22 +1,14 @@
 from werkzeug.security import check_password_hash
-from flask_restful import Resource
 from flask import request
 from middleware.login_queries import login_results
 import uuid
 from typing import Dict, Any, Optional
 
+from resources.PsycopgResource import PsycopgResource
 
-class ApiKey(Resource):
+
+class ApiKey(PsycopgResource):
     """Represents a resource for generating an API key for authenticated users."""
-
-    def __init__(self, **kwargs):
-        """
-        Initializes the ApiKey resource with a database connection.
-
-        Parameters:
-        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
-        """
-        self.psycopg2_connection = kwargs["psycopg2_connection"]
 
     def get(self) -> Optional[Dict[str, Any]]:
         """
