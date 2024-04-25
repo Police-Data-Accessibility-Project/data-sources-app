@@ -2,7 +2,7 @@ from flask import Flask
 from flask_restful import Api
 from flask_cors import CORS
 
-from resources.SavedSearches import SavedSearches
+from resources.SavedSearches import SavedSearches, ExecuteSavedSearch
 from resources.User import User
 from resources.Login import Login
 from resources.RefreshSession import RefreshSession
@@ -50,7 +50,8 @@ def create_app() -> Flask:
         (DataSourceById, "/data-sources-by-id/<data_source_id>"),
         (Agencies, "/agencies/<page>"),
         (SearchTokens, "/search-tokens"),
-        (SavedSearches, '/saved-searches/<string:user_id>'),
+        (SavedSearches, "/saved-searches/<string:user_id>"),
+        (ExecuteSavedSearch, "/search/<string:search_id>"),
     ]
 
     for resource, endpoint in resources:
