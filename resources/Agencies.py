@@ -1,9 +1,7 @@
-from flask_restful import Resource
-from flask import request, jsonify
 from middleware.security import api_required
+from resources.PsycopgResource import PsycopgResource
 from utilities.common import convert_dates_to_strings
-import json
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 
 approved_columns = [
@@ -35,17 +33,8 @@ approved_columns = [
 ]
 
 
-class Agencies(Resource):
+class Agencies(PsycopgResource):
     """Represents a resource for fetching approved agency data from the database."""
-
-    def __init__(self, **kwargs):
-        """
-        Initializes the Agencies resource with a database connection.
-
-        Parameters:
-        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
-        """
-        self.psycopg2_connection = kwargs["psycopg2_connection"]
 
     @api_required
     def get(self, page: str) -> Dict[str, Any]:

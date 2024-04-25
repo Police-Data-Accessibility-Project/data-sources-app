@@ -1,14 +1,13 @@
-from flask_restful import Resource
 from flask import request
 from middleware.reset_token_queries import (
     check_reset_token,
 )
 from datetime import datetime as dt
 
+from resources.PsycopgResource import PsycopgResource
 
-class ResetTokenValidation(Resource):
-    def __init__(self, **kwargs):
-        self.psycopg2_connection = kwargs["psycopg2_connection"]
+
+class ResetTokenValidation(PsycopgResource):
 
     def post(self):
         try:

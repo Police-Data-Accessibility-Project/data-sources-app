@@ -1,4 +1,3 @@
-from flask_restful import Resource
 from middleware.security import api_required
 from middleware.quick_search_query import quick_search_query
 import requests
@@ -6,23 +5,16 @@ import json
 import os
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 from flask import request
-from typing import Dict, Any, Optional
+from typing import Dict, Any
+
+from resources.PsycopgResource import PsycopgResource
 
 
-class QuickSearch(Resource):
+class QuickSearch(PsycopgResource):
     """
     Provides a resource for performing quick searches in the database for data sources
     based on user-provided search terms and location.
     """
-
-    def __init__(self, **kwargs):
-        """
-        Initializes the QuickSearch resource with a database connection.
-
-        Parameters:
-        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
-        """
-        self.psycopg2_connection = kwargs["psycopg2_connection"]
 
     # api_required decorator requires the request"s header to include an "Authorization" key with the value formatted as "Bearer [api_key]"
     # A user can get an API key by signing up and logging in (see User.py)

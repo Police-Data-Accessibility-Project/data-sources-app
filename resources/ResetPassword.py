@@ -1,5 +1,4 @@
 from werkzeug.security import generate_password_hash
-from flask_restful import Resource
 from flask import request
 from middleware.reset_token_queries import (
     check_reset_token,
@@ -8,21 +7,14 @@ from middleware.reset_token_queries import (
 from datetime import datetime as dt
 from typing import Dict, Any
 
+from resources.PsycopgResource import PsycopgResource
 
-class ResetPassword(Resource):
+
+class ResetPassword(PsycopgResource):
     """
     Provides a resource for users to reset their password using a valid reset token.
     If the token is valid and not expired, allows the user to set a new password.
     """
-
-    def __init__(self, **kwargs):
-        """
-        Initializes the ResetPassword resource with a database connection.
-
-        Parameters:
-        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
-        """
-        self.psycopg2_connection = kwargs["psycopg2_connection"]
 
     def post(self) -> Dict[str, Any]:
         """
