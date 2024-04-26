@@ -1,6 +1,8 @@
 from flask import Flask
-from flask_restful import Api
+from flask_restx import Api
 from flask_cors import CORS
+
+from resources.Search import Search
 from resources.User import User
 from resources.Login import Login
 from resources.RefreshSession import RefreshSession
@@ -41,6 +43,7 @@ def create_app() -> Flask:
         (ResetPassword, "/reset-password"),
         (ResetTokenValidation, "/reset-token-validation"),
         (QuickSearch, "/quick-search/<search>/<location>"),
+        (Search, "/search/<string:coarse_record_type>/<string:location>"),
         (Archives, "/archives"),
         (DataSources, "/data-sources"),
         (DataSourcesMap, "/data-sources-map"),
