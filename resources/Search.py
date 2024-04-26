@@ -15,11 +15,10 @@ class Search(PsycopgResource):
     Provides a resource for performing quick searches in the database for data sources
     based on user-provided search terms and location.
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.engine = SearchQueryEngine(
-            connection=self.psycopg2_connection
-        )
+        self.engine = SearchQueryEngine(connection=self.psycopg2_connection)
 
     # api_required decorator requires the request"s header to include an "Authorization" key with the value formatted as "Bearer [api_key]"
     # A user can get an API key by signing up and logging in (see User.py)
@@ -46,15 +45,11 @@ class Search(PsycopgResource):
         if isinstance(coarse_record_types, str):
             course_record_types = [coarse_record_types]
         try:
-            data_sources = self.engine.quick_search(
-                course_record_types, location, test
-            )
+            data_sources = self.engine.quick_search(course_record_types, location, test)
 
             if data_sources["count"] == 0:
                 self.psycopg2_connection = initialize_psycopg2_connection()
-                data_sources = self.engine.quick_search(
-                    course_record_types, location
-                )
+                data_sources = self.engine.quick_search(course_record_types, location)
 
             if data_sources["count"] == 0:
                 return {
@@ -74,11 +69,11 @@ class Search(PsycopgResource):
             user_message = "There was an error during the search operation"
             message = {
                 "content": user_message
-                           + ": "
-                           + str(e)
-                           + "\n"
-                           + f"Record Types: {course_record_types}\n"
-                           + f"Location: {location}"
+                + ": "
+                + str(e)
+                + "\n"
+                + f"Record Types: {course_record_types}\n"
+                + f"Location: {location}"
             }
             requests.post(
                 webhook_url,
