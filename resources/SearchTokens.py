@@ -2,10 +2,8 @@ from middleware.quick_search_query import quick_search_query
 from middleware.data_source_queries import (
     data_source_by_id_query,
     data_sources_query,
-    get_data_sources_for_map,
 )
-from flask import request, jsonify
-from flask_restful import Resource
+from flask import request
 import datetime
 import uuid
 import os
@@ -14,25 +12,18 @@ import sys
 import json
 from typing import Dict, Any
 
+from resources.PsycopgResource import PsycopgResource
+
 sys.path.append("..")
 
 BASE_URL = os.getenv("VITE_VUE_API_BASE_URL")
 
 
-class SearchTokens(Resource):
+class SearchTokens(PsycopgResource):
     """
     A resource that provides various search functionalities based on the specified endpoint.
     It supports quick search, data source retrieval by ID, and listing all data sources.
     """
-
-    def __init__(self, **kwargs):
-        """
-        Initializes the SearchTokens resource with a database connection.
-
-        Parameters:
-        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
-        """
-        self.psycopg2_connection = kwargs["psycopg2_connection"]
 
     def get(self) -> Dict[str, Any]:
         """

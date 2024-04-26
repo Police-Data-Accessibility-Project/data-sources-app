@@ -1,24 +1,16 @@
-from flask_restful import Resource
 from flask import request
 from middleware.login_queries import token_results, create_session_token
 from datetime import datetime as dt
 from typing import Dict, Any
 
+from resources.PsycopgResource import PsycopgResource
 
-class RefreshSession(Resource):
+
+class RefreshSession(PsycopgResource):
     """
     Provides a resource for refreshing a user's session token.
     If the provided session token is valid and not expired, it is replaced with a new one.
     """
-
-    def __init__(self, **kwargs):
-        """
-        Initializes the RefreshSession resource with a database connection.
-
-        Parameters:
-        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
-        """
-        self.psycopg2_connection = kwargs["psycopg2_connection"]
 
     def post(self) -> Dict[str, Any]:
         """

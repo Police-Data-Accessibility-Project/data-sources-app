@@ -1,24 +1,17 @@
 from middleware.security import api_required
 from middleware.archives_queries import archives_get_query, archives_put_query
-from flask_restful import Resource, request
+from flask_restful import request
 
 import json
-from typing import Dict, Any, List
+from typing import Dict, Any
+
+from resources.PsycopgResource import PsycopgResource
 
 
-class Archives(Resource):
+class Archives(PsycopgResource):
     """
     A resource for managing archive data, allowing retrieval and update of archived data sources.
     """
-
-    def __init__(self, **kwargs):
-        """
-        Initializes the Archives resource with a database connection.
-
-        Parameters:
-        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
-        """
-        self.psycopg2_connection = kwargs["psycopg2_connection"]
 
     @api_required
     def get(self) -> Any:
