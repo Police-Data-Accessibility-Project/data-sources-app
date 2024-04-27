@@ -59,4 +59,3 @@ class Archives(PsycopgResource):
         )
 
         return {"status": "success"}
-

@@ -3,6 +3,7 @@ from typing import Callable, Any, Union, Tuple, Dict
 
 from flask_restful import Resource
 
+
 def handle_exceptions(
     func: Callable[..., Any]
 ) -> Callable[..., Union[Any, Tuple[Dict[str, str], int]]]:
@@ -25,6 +26,7 @@ def handle_exceptions(
         # code goes here
     ```
     """
+
     @functools.wraps(func)
     def wrapper(
         self, *args: Any, **kwargs: Any

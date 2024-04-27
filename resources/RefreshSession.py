@@ -31,9 +31,7 @@ class RefreshSession(PsycopgResource):
         self.psycopg2_connection.commit()
 
         if "id" in user_data:
-            token = create_session_token(
-                cursor, user_data["id"], user_data["email"]
-            )
+            token = create_session_token(cursor, user_data["id"], user_data["email"])
             self.psycopg2_connection.commit()
             return {
                 "message": "Successfully refreshed session token",
@@ -41,4 +39,3 @@ class RefreshSession(PsycopgResource):
             }
 
         return {"message": "Invalid session token"}, 403
-

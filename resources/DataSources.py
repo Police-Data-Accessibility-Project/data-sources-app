@@ -111,7 +111,6 @@ class DataSources(PsycopgResource):
 
         return data_sources
 
-
     @handle_exceptions
     @api_required
     def post(self) -> Dict[str, str]:
@@ -145,9 +144,7 @@ class DataSources(PsycopgResource):
         now = datetime.now().strftime("%Y-%m-%d")
         airtable_uid = str(uuid.uuid4())
 
-        column_names += (
-            "approval_status, url_status, data_source_created, airtable_uid"
-        )
+        column_names += "approval_status, url_status, data_source_created, airtable_uid"
         column_values += f"False, '[\"ok\"]', '{now}', '{airtable_uid}'"
 
         sql_query = f"INSERT INTO data_sources ({column_names}) VALUES ({column_values}) RETURNING *"
@@ -175,7 +172,6 @@ class DataSourcesNeedsIdentification(PsycopgResource):
         return data_sources
 
 
-
 class DataSourcesMap(PsycopgResource):
     """
     A resource for managing collections of data sources for mapping.
@@ -201,4 +197,3 @@ class DataSourcesMap(PsycopgResource):
         }
 
         return data_sources
-
