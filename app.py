@@ -19,6 +19,7 @@ from resources.Agencies import Agencies
 from resources.Archives import Archives
 from resources.SearchTokens import SearchTokens
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
+from resources.UserStarDatasource import UserStarDatasource
 
 
 def add_resource(api, resource, endpoint, **kwargs):
@@ -48,6 +49,7 @@ def create_app() -> Flask:
         (DataSourceById, "/data-sources-by-id/<data_source_id>"),
         (Agencies, "/agencies/<page>"),
         (SearchTokens, "/search-tokens"),
+        (UserStarDatasource, "/user-star"),
     ]
 
     for resource, endpoint in resources:
