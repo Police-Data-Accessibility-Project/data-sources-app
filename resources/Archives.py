@@ -5,7 +5,7 @@ from flask_restful import request
 import json
 from typing import Dict, Any
 
-from resources.PsycopgResource import PsycopgResource
+from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
 
 class Archives(PsycopgResource):
@@ -13,6 +13,7 @@ class Archives(PsycopgResource):
     A resource for managing archive data, allowing retrieval and update of archived data sources.
     """
 
+    @handle_exceptions
     @api_required
     def get(self) -> Any:
         """
@@ -23,18 +24,13 @@ class Archives(PsycopgResource):
         Returns:
         - Any: The cleaned results of archives combined from the database query, or an error message if an exception occurs.
         """
-        try:
-            archives_combined_results_clean = archives_get_query(
-                test_query_results=[], conn=self.psycopg2_connection
-            )
+        archives_combined_results_clean = archives_get_query(
+            test_query_results=[], conn=self.psycopg2_connection
+        )
 
-            return archives_combined_results_clean
+        return archives_combined_results_clean
 
-        except Exception as e:
-            self.psycopg2_connection.rollback()
-            print(str(e))
-            return "There has been an error pulling data!"
-
+    @handle_exceptions
     @api_required
     def put(self) -> Dict[str, str]:
         """
@@ -45,27 +41,22 @@ class Archives(PsycopgResource):
         Returns:
         - dict: A status message indicating success or an error message if an exception occurs.
         """
-        try:
-            json_data = request.get_json()
-            data = json.loads(json_data)
-            id = data["id"] if "id" in data else None
-            broken_as_of = (
-                data["broken_source_url_as_of"]
-                if "broken_source_url_as_of" in data
-                else None
-            )
-            last_cached = data["last_cached"] if "last_cached" in data else None
+        json_data = request.get_json()
+        data = json.loads(json_data)
+        id = data["id"] if "id" in data else None
+        broken_as_of = (
+            data["broken_source_url_as_of"]
+            if "broken_source_url_as_of" in data
+            else None
+        )
+        last_cached = data["last_cached"] if "last_cached" in data else None
 
-            archives_put_query(
-                id=id,
-                broken_as_of=broken_as_of,
-                last_cached=last_cached,
-                conn=self.psycopg2_connection,
-            )
+        archives_put_query(
+            id=id,
+            broken_as_of=broken_as_of,
+            last_cached=last_cached,
+            conn=self.psycopg2_connection,
+        )
 
-            return {"status": "success"}
+        return {"status": "success"}
 
-        except Exception as e:
-            self.psycopg2_connection.rollback()
-            print(str(e))
-            return {"error": str(e)}
