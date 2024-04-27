@@ -1,4 +1,19 @@
+import functools
+
 from flask_restful import Resource
+
+
+def handle_exceptions(func):
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        try:
+            return func(self, *args, **kwargs)
+        except Exception as e:
+            self.psycopg2_connection.rollback()
+            print(str(e))
+            return {"message": str(e)}, 500
+
+    return wrapper
 
 
 class PsycopgResource(Resource):
