@@ -49,7 +49,7 @@ def create_app() -> Flask:
         (DataSourceById, "/data-sources-by-id/<data_source_id>"),
         (Agencies, "/agencies/<page>"),
         (SearchTokens, "/search-tokens"),
-        (UserStarDatasource, "/user-star")
+        (UserStarDatasource, "/user-star"),
     ]
 
     for resource, endpoint in resources:
