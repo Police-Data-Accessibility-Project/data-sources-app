@@ -35,10 +35,11 @@ class DataRequest(PsycopgResource):
 
     @api_required
     @handle_exceptions
-    def get(self, request_id: int) -> tuple[dict, int]:
+    def get(self) -> tuple[dict, int]:
         """
         Retrieves a data request by ID.
         """
+        request_id = request.json["request_id"]
         data = self.data_manager.read_request(request_id)
         if data:
             return {"data": data}, 200
@@ -47,20 +48,22 @@ class DataRequest(PsycopgResource):
 
     @api_required
     @handle_exceptions
-    def put(self, request_id: int) -> tuple[dict, int]:
+    def put(self) -> tuple[dict, int]:
         """
         Updates an existing data request.
         Expects any of the updatable fields in the request body.
         """
+        request_id = request.json["request_id"]
         updates = request.json
         self.data_manager.update_request(request_id, **updates)
         return {"message": "Updated successfully"}, 200
 
     @api_required
     @handle_exceptions
-    def delete(self, request_id: int) -> tuple[dict, int]:
+    def delete(self) -> tuple[dict, int]:
         """
         Deletes a data request by ID.
         """
+        request_id = request.json["request_id"]
         self.data_manager.delete_request(request_id)
         return {"message": "Deleted successfully"}, 200
