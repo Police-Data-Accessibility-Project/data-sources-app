@@ -1,0 +1,22 @@
+name: Sync Production to Development
+
+on:
+  schedule:
+    # Runs at 00:00 every Monday
+    - cron: '0 0 * * 1'
+
+jobs:
+  sync-database:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run shell script to dump and restore database
+        run: |
+          chmod +x ./github/scripts/dump_prod_to_dev.sh
+          ./github/scripts/dump_prod_to_dev.sh
+        env:
+          PROD_DB_CONN_STRING: ${{ secrets.PROD_DB_CONN_STRING }}
+          DEV_ADMIN_DB_CONN_STRING: ${{ secrets.DEV_ADMIN_DB_CONN_STRING }}
+          DEV_DB_CONN_STRING: ${{ secrets.DEV_DB_CONN_STRING }}
