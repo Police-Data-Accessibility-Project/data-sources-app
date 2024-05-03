@@ -4,7 +4,6 @@ This module runs pytests on functions interacting directly with the database -- 
 
 import os
 import uuid
-from collections import namedtuple
 from unittest.mock import patch
 
 import psycopg2
@@ -23,13 +22,19 @@ from middleware.login_queries import (
     token_results,
     is_admin,
 )
-from middleware.quick_search_query import unaltered_search_query
+from middleware.quick_search_query import unaltered_search_query, quick_search_query
 from middleware.reset_token_queries import (
     check_reset_token,
     add_reset_token,
     delete_reset_token,
 )
 from middleware.user_queries import user_post_results, user_check_email
+from tests.helper_test_middleware import (
+    get_reset_tokens_for_email,
+    create_reset_token,
+    create_test_user,
+    insert_test_agencies_and_sources,
+)
 
 
 @pytest.fixture()
@@ -128,37 +133,6 @@ def test_user_post_query(db_cursor):
     assert email_check == "unit_test"
 
 
-TestUser = namedtuple("TestUser", ["id", "email", "password_hash"])
-
-
-def create_test_user(
-    cursor,
-    email="example@example.com",
-    password_hash="hashed_password_here",
-    api_key="api_key_here",
-    role=None,
-) -> TestUser:
-    """
-    Creates test user and returns the id of the test user
-    :param cursor:
-    :return: user id
-    """
-    cursor.execute(
-        """
-        INSERT INTO users (email, password_digest, api_key, role)
-        VALUES
-        (%s, %s, %s, %s)
-        RETURNING id;
-        """,
-        (email, password_hash, api_key, role),
-    )
-    return TestUser(
-        id=cursor.fetchone()[0],
-        email=email,
-        password_hash=password_hash,
-    )
-
-
 def test_login_query(db_cursor):
     test_user = create_test_user(db_cursor)
 
@@ -197,24 +171,6 @@ def test_user_check_email(db_cursor):
     assert user_data["id"] == user.id
 
 
-TestTokenInsert = namedtuple("TestTokenInsert", ["id", "email", "token"])
-
-
-def create_reset_token(cursor) -> TestTokenInsert:
-    user = create_test_user(cursor)
-    token = uuid.uuid4().hex
-    cursor.execute(
-        """
-        INSERT INTO reset_tokens(email, token) 
-        VALUES (%s, %s)
-        RETURNING id
-        """,
-        (user.email, token),
-    )
-    id = cursor.fetchone()[0]
-    return TestTokenInsert(id=id, email=user.email, token=token)
-
-
 def test_check_reset_token(db_cursor):
     """
     Checks if a token existing in the database
@@ -247,17 +203,6 @@ def test_add_reset_token(db_cursor):
     assert results[0][1] == token
 
 
-def get_reset_tokens_for_email(db_cursor, reset_token_insert):
-    db_cursor.execute(
-        """
-        SELECT email from RESET_TOKENS where email = %s
-        """,
-        (reset_token_insert.email,),
-    )
-    results = db_cursor.fetchall()
-    return results
-
-
 def test_delete_reset_token(db_cursor):
     """
     Checks if token previously inserted is deleted
@@ -270,6 +215,7 @@ def test_delete_reset_token(db_cursor):
     results = get_reset_tokens_for_email(db_cursor, reset_token_insert)
     assert len(results) == 0
 
+
 def test_archives_get_results(dev_db_connection, db_cursor):
     """
     Checks if archives_get_results picks up an added valid datasource
@@ -280,9 +226,32 @@ def test_archives_get_results(dev_db_connection, db_cursor):
         INSERT INTO data_sources(airtable_uid, source_url, name, update_frequency, url_status) 
         VALUES (%s, %s, %s, %s, %s)
         """,
-        ('fake_uid', 'https://www.fake_source_url.com', 'fake_name', 'Annually', 'unbroken')
+        (
+            "fake_uid",
+            "https://www.fake_source_url.com",
+            "fake_name",
+            "Annually",
+            "unbroken",
+        ),
     )
     new_results = archives_get_results(dev_db_connection)
     assert len(new_results) == len(original_results) + 1
 
 
+def test_quicksearch_columns(dev_db_connection):
+    try:
+        insert_test_agencies_and_sources(dev_db_connection.cursor())
+    except psycopg2.errors.UniqueViolation:
+        dev_db_connection.rollback()
+    # TODO: Something about the quick_search_query might be mucking up the savepoints. Address once you fix quick_search's logic issues
+    results = quick_search_query(
+        search="Source 1", location="City A", conn=dev_db_connection
+    )
+    # "Source 3" was listed as pending and shouldn't show up
+    assert len(results['data']) == 1
+    results = quick_search_query(
+        search="Source 3", location="City C", conn=dev_db_connection
+    )
+    assert len(results['data']) == 0
+
+    # Test that query inserted into log
