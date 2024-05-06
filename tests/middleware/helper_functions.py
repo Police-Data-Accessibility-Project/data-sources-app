@@ -1,9 +1,9 @@
 import uuid
 from collections import namedtuple
 
-
 TestTokenInsert = namedtuple("TestTokenInsert", ["id", "email", "token"])
 TestUser = namedtuple("TestUser", ["id", "email", "password_hash"])
+
 
 def insert_test_agencies_and_sources(cursor):
     """
@@ -26,14 +26,14 @@ def insert_test_agencies_and_sources(cursor):
         )
         VALUES
         ('SOURCE_UID_1','Source 1','Description of src1','Type A','http://src1.com','approved','available'),
-        ('SOURCE_UID_2','Source 2','Description of src2','Type B','http://src2.com','approved','available'),
+        ('SOURCE_UID_2','Source 2','Description of src2','Type B','http://src2.com','needs identification','available'),
         ('SOURCE_UID_3','Source 3', 'Description of src3', 'Type C', 'http://src3.com', 'pending', 'available');
         
-        INSERT INTO public.agencies (airtable_uid, name, municipality, state_iso, county_name, count_data_sources)
+        INSERT INTO public.agencies (airtable_uid, name, municipality, state_iso, county_name, count_data_sources, lat, lng)
         VALUES 
-            ('Agency_UID_1', 'Agency A', 'City A', 'CA', 'County X', 3),
-            ('Agency_UID_2', 'Agency B', 'City B', 'NY', 'County Y', 2),
-            ('Agency_UID_3', 'Agency C', 'City C', 'TX', 'County Z', 1);
+            ('Agency_UID_1', 'Agency A', 'City A', 'CA', 'County X', 3, 30, 20),
+            ('Agency_UID_2', 'Agency B', 'City B', 'NY', 'County Y', 2, 40, 50),
+            ('Agency_UID_3', 'Agency C', 'City C', 'TX', 'County Z', 1, 90, 60);
             
         INSERT INTO public.agency_source_link (airtable_uid, agency_described_linked_uid)
         VALUES 
@@ -53,8 +53,6 @@ def get_reset_tokens_for_email(db_cursor, reset_token_insert):
     )
     results = db_cursor.fetchall()
     return results
-
-
 
 
 def create_reset_token(cursor) -> TestTokenInsert:
@@ -98,3 +96,42 @@ def create_test_user(
         email=email,
         password_hash=password_hash,
     )
+
+
+QuickSearchQueryLogResult = namedtuple(
+    "QuickSearchQueryLogResult", ["result_count", "updated_at"]
+)
+
+
+def get_most_recent_quick_search_query_log(cursor, search: str, location: str):
+    cursor.execute(
+        """
+        SELECT RESULT_COUNT, UPDATED_AT FROM QUICK_SEARCH_QUERY_LOGS WHERE
+        search = %s AND location = %s ORDER BY CREATED_AT DESC LIMIT 1
+        """,
+        (search, location),
+    )
+    result = cursor.fetchone()
+    return QuickSearchQueryLogResult(result_count=result[0], updated_at=result[1])
+
+
+def has_expected_keys(result_keys: list, expected_keys: list) -> bool:
+    """
+    Check that given result includes expected keys
+    :param result:
+    :param expected_keys:
+    :return: True if has expected keys, false otherwise
+    """
+    return not set(expected_keys).difference(result_keys)
+
+
+def get_boolean_dictionary(keys: tuple) -> dict:
+    """
+    Creates dictionary of booleans, all set to false
+    :param keys:
+    :return: dictionary of booleans
+    """
+    d = {}
+    for key in keys:
+        d[key] = False
+    return d
