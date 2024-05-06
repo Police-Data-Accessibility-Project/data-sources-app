@@ -1,5 +1,8 @@
 import uuid
 from collections import namedtuple
+from typing import Optional
+
+import psycopg2.extensions
 
 TestTokenInsert = namedtuple("TestTokenInsert", ["id", "email", "token"])
 TestUser = namedtuple("TestUser", ["id", "email", "password_hash"])
@@ -103,7 +106,19 @@ QuickSearchQueryLogResult = namedtuple(
 )
 
 
-def get_most_recent_quick_search_query_log(cursor, search: str, location: str):
+def get_most_recent_quick_search_query_log(
+        cursor: psycopg2.extensions.cursor,
+        search: str,
+        location: str
+) -> Optional[QuickSearchQueryLogResult]:
+    """
+    Retrieve the most recent quick search query log for a specific search and location.
+
+    :param cursor: The Cursor object of the database connection.
+    :param search: The search query string.
+    :param location: The location string.
+    :return: A QuickSearchQueryLogResult object containing the result count and updated timestamp.
+    """
     cursor.execute(
         """
         SELECT RESULT_COUNT, UPDATED_AT FROM QUICK_SEARCH_QUERY_LOGS WHERE
@@ -112,6 +127,8 @@ def get_most_recent_quick_search_query_log(cursor, search: str, location: str):
         (search, location),
     )
     result = cursor.fetchone()
+    if result is None:
+        return result
     return QuickSearchQueryLogResult(result_count=result[0], updated_at=result[1])
 
 
