@@ -4,8 +4,10 @@ import psycopg2
 import pytest
 from dotenv import load_dotenv
 
+from tests.middleware.helper_functions import insert_test_agencies_and_sources
 
-@pytest.fixture()
+
+@pytest.fixture
 def dev_db_connection() -> psycopg2.extensions.cursor:
     """
     Sets up connection to development database
@@ -32,7 +34,7 @@ def dev_db_connection() -> psycopg2.extensions.cursor:
     connection.close()
 
 
-@pytest.fixture()
+@pytest.fixture
 def db_cursor(dev_db_connection: psycopg2.extensions.connection) -> psycopg2.extensions.cursor:
     """
     Create a cursor to execute database operations, with savepoint management.
@@ -48,3 +50,19 @@ def db_cursor(dev_db_connection: psycopg2.extensions.connection) -> psycopg2.ext
     # Rollback to the savepoint to ignore commits within the test
     cur.execute("ROLLBACK TO SAVEPOINT test_savepoint")
     cur.close()
+
+
+@pytest.fixture
+def connection_with_test_data(
+    dev_db_connection: psycopg2.extensions.connection,
+) -> psycopg2.extensions.connection:
+    """
+    Insert test agencies and sources into test data, rolling back in case of error
+    :param dev_db_connection:
+    :return:
+    """
+    try:
+        insert_test_agencies_and_sources(dev_db_connection.cursor())
+    except psycopg2.errors.UniqueViolation:
+        dev_db_connection.rollback()
+    return dev_db_connection

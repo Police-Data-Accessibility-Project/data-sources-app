@@ -12,11 +12,10 @@ from middleware.data_source_queries import (
     get_data_sources_for_map,
 )
 from tests.middleware.helper_functions import (
-    insert_test_agencies_and_sources,
     has_expected_keys,
     get_boolean_dictionary,
 )
-from tests.middleware.fixtures import dev_db_connection, db_cursor
+from tests.middleware.fixtures import connection_with_test_data, dev_db_connection
 
 
 @pytest.fixture
@@ -27,22 +26,6 @@ def inserted_data_sources_found():
         all values initialized to false
     """
     return get_boolean_dictionary(("Source 1", "Source 2", "Source 3"))
-
-
-@pytest.fixture
-def connection_with_test_data(
-    dev_db_connection: psycopg2.extensions.connection,
-) -> psycopg2.extensions.connection:
-    """
-    Insert test agencies and sources into test data, rolling back in case of error
-    :param dev_db_connection:
-    :return:
-    """
-    try:
-        insert_test_agencies_and_sources(dev_db_connection.cursor())
-    except psycopg2.errors.UniqueViolation:
-        dev_db_connection.rollback()
-    return dev_db_connection
 
 
 def test_get_approved_data_sources(
