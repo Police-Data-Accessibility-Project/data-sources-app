@@ -1,58 +1,14 @@
-import pytest
+
 import os
 from app import create_app
-from flask_restful import Api
-from middleware.quick_search_query import (
-    unaltered_search_query,
-    quick_search_query,
-    QUICK_SEARCH_COLUMNS,
-)
-from middleware.data_source_queries import (
-    data_sources_query,
-    needs_identification_data_sources,
-    data_source_by_id_query,
-    data_source_by_id_results,
-    DATA_SOURCES_APPROVED_COLUMNS,
-    get_approved_data_sources,
-    get_data_sources_for_map,
-)
-from middleware.user_queries import (
-    user_post_results,
-    user_check_email,
-)
-from middleware.login_queries import (
-    login_results,
-    create_session_token,
-    token_results,
-    is_admin,
-)
-from middleware.archives_queries import (
-    archives_get_results,
-    archives_get_query,
-    archives_put_broken_as_of_results,
-    archives_put_last_cached_results,
-    ARCHIVES_GET_COLUMNS,
-)
-from middleware.reset_token_queries import (
-    check_reset_token,
-    add_reset_token,
-    delete_reset_token,
-)
-from app_test_data import (
+from tests.resources.app_test_data import (
     DATA_SOURCES_ROWS,
-    DATA_SOURCE_QUERY_RESULTS,
-    QUICK_SEARCH_QUERY_RESULTS,
     AGENCIES_ROWS,
-    DATA_SOURCES_ID_QUERY_RESULTS,
-    ARCHIVES_GET_QUERY_RESULTS,
+
 )
 import datetime
 import sqlite3
 import pytest
-from resources.ApiKey import (
-    ApiKey,
-)  # Adjust the import according to your project structure
-from werkzeug.security import check_password_hash
 from unittest.mock import patch, MagicMock
 
 api_key = os.getenv("VUE_APP_PDAP_API_KEY")
