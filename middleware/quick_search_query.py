@@ -52,7 +52,11 @@ QUICK_SEARCH_SQL = """
 
 """
 
-INSERT_LOG_QUERY = "INSERT INTO quick_search_query_logs (search, location, results, result_count, created_at, datetime_of_request) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{4}')"
+INSERT_LOG_QUERY = """
+    INSERT INTO quick_search_query_logs 
+    (search, location, results, result_count, created_at, datetime_of_request) 
+    VALUES (%s, %s, %s, %s, %s, %s)
+    """
 
 
 def unaltered_search_query(
@@ -151,9 +155,12 @@ def quick_search_query(
         dict(zip(QUICK_SEARCH_COLUMNS, result)) for result in results
     ]
     data_source_matches_converted = []
+    data_source_matches_ids = []
     for data_source_match in data_source_matches:
         data_source_match = convert_dates_to_strings(data_source_match)
         data_source_matches_converted.append(format_arrays(data_source_match))
+        # Add ids to list for logging
+        data_source_matches_ids.append(data_source_match['airtable_uid'])
 
     data_sources = {
         "count": len(data_source_matches_converted),
@@ -164,12 +171,11 @@ def quick_search_query(
         current_datetime = datetime.datetime.now()
         datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
-        query_results = json.dumps(data_sources["data"]).replace("'", "")
+        query_results = json.dumps(data_source_matches_ids).replace("'", "")
 
         cursor.execute(
-            INSERT_LOG_QUERY.format(
-                search, location, query_results, data_sources["count"], datetime_string
-            ),
+            INSERT_LOG_QUERY,
+            (search, location, query_results, data_sources["count"], datetime_string),
         )
         conn.commit()
         cursor.close()
