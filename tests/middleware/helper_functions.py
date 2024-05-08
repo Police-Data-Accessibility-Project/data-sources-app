@@ -1,6 +1,4 @@
-"""
-This module contains helper functions used by middleware pytests.
-"""
+"""This module contains helper functions used by middleware pytests."""
 
 import uuid
 from collections import namedtuple
@@ -19,7 +17,6 @@ def insert_test_agencies_and_sources(cursor: psycopg2.extensions.cursor) -> None
     :param cursor:
     :return:
     """
-
     cursor.execute(
         """
         INSERT INTO
@@ -37,23 +34,23 @@ def insert_test_agencies_and_sources(cursor: psycopg2.extensions.cursor) -> None
             'Type A','http://src1.com','approved','available'),
         ('SOURCE_UID_2','Source 2','Description of src2',
             'Type B','http://src2.com','needs identification','available'),
-        ('SOURCE_UID_3','Source 3', 'Description of src3', 
+        ('SOURCE_UID_3','Source 3', 'Description of src3',
             'Type C', 'http://src3.com', 'pending', 'available');
 
-        INSERT INTO public.agencies 
-        (airtable_uid, name, municipality, state_iso, 
+        INSERT INTO public.agencies
+        (airtable_uid, name, municipality, state_iso,
             county_name, count_data_sources, lat, lng)
         VALUES 
-            ('Agency_UID_1', 'Agency A', 'City A', 
+            ('Agency_UID_1', 'Agency A', 'City A',
                 'CA', 'County X', 3, 30, 20),
-            ('Agency_UID_2', 'Agency B', 'City B', 
+            ('Agency_UID_2', 'Agency B', 'City B',
                 'NY', 'County Y', 2, 40, 50),
-            ('Agency_UID_3', 'Agency C', 'City C', 
+            ('Agency_UID_3', 'Agency C', 'City C',
                 'TX', 'County Z', 1, 90, 60);
 
-        INSERT INTO public.agency_source_link 
+        INSERT INTO public.agency_source_link
         (airtable_uid, agency_described_linked_uid)
-        VALUES 
+        VALUES
             ('SOURCE_UID_1', 'Agency_UID_1'),
             ('SOURCE_UID_2', 'Agency_UID_2'),
             ('SOURCE_UID_3', 'Agency_UID_3');

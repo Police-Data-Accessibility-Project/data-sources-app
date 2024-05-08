@@ -1,6 +1,4 @@
-"""
-This module contains pytest fixtures employed by middleware tests
-"""
+"""This module contains pytest fixtures employed by middleware tests."""
 
 import os
 
