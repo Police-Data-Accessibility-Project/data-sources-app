@@ -1,3 +1,7 @@
+"""
+This module contains pytest fixtures employed by middleware tests
+"""
+
 import os
 
 import psycopg2
@@ -10,6 +14,8 @@ from tests.middleware.helper_functions import insert_test_agencies_and_sources
 @pytest.fixture
 def dev_db_connection() -> psycopg2.extensions.cursor:
     """
+    Create reversible connection to dev database.
+
     Sets up connection to development database
     and creates a session that is rolled back after the test completes
     to undo any operations performed during the test.
@@ -35,8 +41,12 @@ def dev_db_connection() -> psycopg2.extensions.cursor:
 
 
 @pytest.fixture
-def db_cursor(dev_db_connection: psycopg2.extensions.connection) -> psycopg2.extensions.cursor:
+def db_cursor(
+    dev_db_connection: psycopg2.extensions.connection,
+) -> psycopg2.extensions.cursor:
     """
+    Create cursor for reversible database operations.
+
     Create a cursor to execute database operations, with savepoint management.
     This is to ensure that changes made during the test can be rolled back.
     """
@@ -57,7 +67,10 @@ def connection_with_test_data(
     dev_db_connection: psycopg2.extensions.connection,
 ) -> psycopg2.extensions.connection:
     """
-    Insert test agencies and sources into test data, rolling back in case of error
+    Insert test agencies and sources into test data.
+
+    Will roll back in case of error.
+
     :param dev_db_connection:
     :return:
     """

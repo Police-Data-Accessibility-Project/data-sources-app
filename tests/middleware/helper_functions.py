@@ -1,3 +1,7 @@
+"""
+This module contains helper functions used by middleware pytests.
+"""
+
 import uuid
 from collections import namedtuple
 from typing import Optional
@@ -8,8 +12,9 @@ TestTokenInsert = namedtuple("TestTokenInsert", ["id", "email", "token"])
 TestUser = namedtuple("TestUser", ["id", "email", "password_hash"])
 
 
-def insert_test_agencies_and_sources(cursor):
+def insert_test_agencies_and_sources(cursor: psycopg2.extensions.cursor) -> None:
     """
+    Insert test agencies and sources into database.
 
     :param cursor:
     :return:
@@ -28,17 +33,26 @@ def insert_test_agencies_and_sources(cursor):
             URL_STATUS
         )
         VALUES
-        ('SOURCE_UID_1','Source 1','Description of src1','Type A','http://src1.com','approved','available'),
-        ('SOURCE_UID_2','Source 2','Description of src2','Type B','http://src2.com','needs identification','available'),
-        ('SOURCE_UID_3','Source 3', 'Description of src3', 'Type C', 'http://src3.com', 'pending', 'available');
-        
-        INSERT INTO public.agencies (airtable_uid, name, municipality, state_iso, county_name, count_data_sources, lat, lng)
+        ('SOURCE_UID_1','Source 1','Description of src1',
+            'Type A','http://src1.com','approved','available'),
+        ('SOURCE_UID_2','Source 2','Description of src2',
+            'Type B','http://src2.com','needs identification','available'),
+        ('SOURCE_UID_3','Source 3', 'Description of src3', 
+            'Type C', 'http://src3.com', 'pending', 'available');
+
+        INSERT INTO public.agencies 
+        (airtable_uid, name, municipality, state_iso, 
+            county_name, count_data_sources, lat, lng)
         VALUES 
-            ('Agency_UID_1', 'Agency A', 'City A', 'CA', 'County X', 3, 30, 20),
-            ('Agency_UID_2', 'Agency B', 'City B', 'NY', 'County Y', 2, 40, 50),
-            ('Agency_UID_3', 'Agency C', 'City C', 'TX', 'County Z', 1, 90, 60);
-            
-        INSERT INTO public.agency_source_link (airtable_uid, agency_described_linked_uid)
+            ('Agency_UID_1', 'Agency A', 'City A', 
+                'CA', 'County X', 3, 30, 20),
+            ('Agency_UID_2', 'Agency B', 'City B', 
+                'NY', 'County Y', 2, 40, 50),
+            ('Agency_UID_3', 'Agency C', 'City C', 
+                'TX', 'County Z', 1, 90, 60);
+
+        INSERT INTO public.agency_source_link 
+        (airtable_uid, agency_described_linked_uid)
         VALUES 
             ('SOURCE_UID_1', 'Agency_UID_1'),
             ('SOURCE_UID_2', 'Agency_UID_2'),
@@ -47,7 +61,16 @@ def insert_test_agencies_and_sources(cursor):
     )
 
 
-def get_reset_tokens_for_email(db_cursor, reset_token_insert):
+def get_reset_tokens_for_email(
+    db_cursor: psycopg2.extensions.cursor, reset_token_insert: TestTokenInsert
+) -> tuple:
+    """
+    Get all reset tokens associated with an email.
+
+    :param db_cursor:
+    :param reset_token_insert:
+    :return:
+    """
     db_cursor.execute(
         """
         SELECT email from RESET_TOKENS where email = %s
@@ -58,12 +81,18 @@ def get_reset_tokens_for_email(db_cursor, reset_token_insert):
     return results
 
 
-def create_reset_token(cursor) -> TestTokenInsert:
+def create_reset_token(cursor: psycopg2.extensions.cursor) -> TestTokenInsert:
+    """
+    Create a test user and associated reset token.
+
+    :param cursor:
+    :return:
+    """
     user = create_test_user(cursor)
     token = uuid.uuid4().hex
     cursor.execute(
         """
-        INSERT INTO reset_tokens(email, token) 
+        INSERT INTO reset_tokens(email, token)
         VALUES (%s, %s)
         RETURNING id
         """,
@@ -81,7 +110,8 @@ def create_test_user(
     role=None,
 ) -> TestUser:
     """
-    Creates test user and returns the id of the test user
+    Create test user and return the id of the test user.
+
     :param cursor:
     :return: user id
     """
@@ -107,17 +137,16 @@ QuickSearchQueryLogResult = namedtuple(
 
 
 def get_most_recent_quick_search_query_log(
-        cursor: psycopg2.extensions.cursor,
-        search: str,
-        location: str
+    cursor: psycopg2.extensions.cursor, search: str, location: str
 ) -> Optional[QuickSearchQueryLogResult]:
     """
-    Retrieve the most recent quick search query log for a specific search and location.
+    Retrieve most recent quick search query log for a search and location.
 
     :param cursor: The Cursor object of the database connection.
     :param search: The search query string.
     :param location: The location string.
-    :return: A QuickSearchQueryLogResult object containing the result count and updated timestamp.
+    :return: A QuickSearchQueryLogResult object
+        containing the result count and updated timestamp.
     """
     cursor.execute(
         """
@@ -134,7 +163,8 @@ def get_most_recent_quick_search_query_log(
 
 def has_expected_keys(result_keys: list, expected_keys: list) -> bool:
     """
-    Check that given result includes expected keys
+    Check that given result includes expected keys.
+
     :param result:
     :param expected_keys:
     :return: True if has expected keys, false otherwise
@@ -144,7 +174,8 @@ def has_expected_keys(result_keys: list, expected_keys: list) -> bool:
 
 def get_boolean_dictionary(keys: tuple) -> dict:
     """
-    Creates dictionary of booleans, all set to false
+    Creates dictionary of booleans, all set to false.
+
     :param keys:
     :return: dictionary of booleans
     """
