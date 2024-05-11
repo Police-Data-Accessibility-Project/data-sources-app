@@ -4,8 +4,18 @@ from psycopg2.extensions import connection as PgConnection
 from typing import Union, Dict, List
 
 
+class DatabaseInitializationError(Exception):
+    """
+    Custom Exception to be raised when psycopg2 connection initialization fails.
+    """
+
+    def __init__(self, message="Failed to initialize psycopg2 connection."):
+        self.message = message
+        super().__init__(self.message)
+
+
 def initialize_psycopg2_connection() -> (
-    Union[PgConnection, Dict[str, Union[int, List]]]
+    PgConnection
 ):
     """
     Initializes a connection to a PostgreSQL database using psycopg2 with connection parameters
@@ -27,8 +37,5 @@ def initialize_psycopg2_connection() -> (
             keepalives_count=5,
         )
 
-    except:
-        print("Error while initializing the DigitalOcean client with psycopg2.")
-        data_sources = {"count": 0, "data": []}
-
-        return data_sources
+    except psycopg2.OperationalError as e:
+        raise DatabaseInitializationError(e) from e
