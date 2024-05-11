@@ -3,7 +3,7 @@ from hmac import compare_digest
 from flask import request, jsonify
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 from datetime import datetime as dt
-from middleware.login_queries import is_admin
+from middleware.login_queries import is_admin, UserNotFoundError
 import os
 from typing import Tuple
 from flask.wrappers import Response
@@ -93,7 +93,10 @@ def api_required(func):
                 "message": "Please provide an 'Authorization' key in the request header"
             }, 400
         # Check if API key is correct and valid
-        valid, expired = is_valid(api_key, request.endpoint, request.method)
+        try:
+            valid, expired = is_valid(api_key, request.endpoint, request.method)
+        except UserNotFoundError as e:
+            return {"message": str(e)}, 401
         if valid:
             return func(*args, **kwargs)
         else:

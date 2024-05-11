@@ -5,6 +5,16 @@ from typing import Union, Dict
 from psycopg2.extensions import cursor as PgCursor
 
 
+class UserNotFoundError(Exception):
+    """Exception raised for errors in the input."""
+
+    def __init__(self, email, message=""):
+        if message == "":
+            message = f"User with email {email} not found"
+        self.email = email
+        self.message = message.format(email=self.email)
+        super().__init__(self.message)
+
 def login_results(cursor: PgCursor, email: str) -> Dict[str, Union[int, str]]:
     """
     Retrieves user data by email.
@@ -28,7 +38,7 @@ def login_results(cursor: PgCursor, email: str) -> Dict[str, Union[int, str]]:
         return {"error": "no match"}
 
 
-def is_admin(cursor: PgCursor, email: str) -> Union[bool, Dict[str, str]]:
+def is_admin(cursor: PgCursor, email: str) -> bool:
     """
     Checks if a user has an admin role.
 
@@ -38,14 +48,14 @@ def is_admin(cursor: PgCursor, email: str) -> Union[bool, Dict[str, str]]:
     """
     cursor.execute(f"select role from users where email = '{email}'")
     results = cursor.fetchall()
-    if len(results) > 0:
+    try:
         role = results[0][0]
         if role == "admin":
             return True
         return False
 
-    else:
-        return {"error": "no match"}
+    except IndexError:
+        raise UserNotFoundError(email)
 
 
 def create_session_token(cursor: PgCursor, user_id: int, email: str) -> str:
