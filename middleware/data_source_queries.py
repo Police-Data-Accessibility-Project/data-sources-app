@@ -46,6 +46,8 @@ DATA_SOURCES_APPROVED_COLUMNS = [
     "last_cached",
 ]
 
+DATA_SOURCES_OUTPUT_COLUMNS = DATA_SOURCES_APPROVED_COLUMNS + ["agency_name"]
+
 AGENCY_APPROVED_COLUMNS = [
     "homepage_url",
     "count_data_sources",
@@ -71,6 +73,19 @@ AGENCY_APPROVED_COLUMNS = [
     "county_airtable_uid",
     "defunct_year",
 ]
+
+DATA_SOURCES_MAP_COLUMN = [
+            "data_source_id",
+            "name",
+            "agency_id",
+            "agency_name",
+            "state_iso",
+            "municipality",
+            "county_name",
+            "record_type",
+            "lat",
+            "lng",
+        ]
 
 
 def data_source_by_id_results(
@@ -189,7 +204,7 @@ def get_approved_data_sources(conn: PgConnection) -> list[tuple[Any, ...]]:
     results = cursor.fetchall()
     cursor.close()
 
-    return results
+    return convert_data_source_matches(DATA_SOURCES_OUTPUT_COLUMNS, results)
 
 
 def needs_identification_data_sources(conn) -> list:
@@ -213,7 +228,7 @@ def needs_identification_data_sources(conn) -> list:
     results = cursor.fetchall()
     cursor.close()
 
-    return results
+    return convert_data_source_matches(DATA_SOURCES_OUTPUT_COLUMNS, results)
 
 
 def get_data_sources_for_map(conn) -> list:
@@ -246,55 +261,15 @@ def get_data_sources_for_map(conn) -> list:
     results = cursor.fetchall()
     cursor.close()
 
-    return results
+    return convert_data_source_matches(DATA_SOURCES_MAP_COLUMN, results)
 
 
-def data_sources_query(
-    conn: Optional[PgConnection] = None,
-    test_query_results: Optional[List[Dict[str, Any]]] = None,
-    approval_status: str = "approved",
-    for_map: bool = False,
-) -> List[Dict[str, Any]]:
-    """
-    Processes and formats a list of approved data sources, with an option to use test query results.
-
-    :param approval_status: The approval status of the data sources to query.
-    :param conn: Optional psycopg2 connection object to a PostgreSQL database.
-    :param test_query_results: Optional list of test query results to use instead of querying the database.
-    :return: A list of dictionaries, each formatted with details of a data source and its associated agency.
-    """
-    if for_map:
-        results = get_data_sources_for_map(conn)
-    elif conn and approval_status == "approved":
-        results = get_approved_data_sources(conn)
-    elif conn and not for_map:
-        results = needs_identification_data_sources(conn)
-    else:
-        results = test_query_results
-
-    if not for_map:
-        data_source_output_columns = DATA_SOURCES_APPROVED_COLUMNS + ["agency_name"]
-    else:
-        data_source_output_columns = [
-            "data_source_id",
-            "name",
-            "agency_id",
-            "agency_name",
-            "state_iso",
-            "municipality",
-            "county_name",
-            "record_type",
-            "lat",
-            "lng",
-        ]
-
+def convert_data_source_matches(data_source_output_columns, results):
     data_source_matches = [
         dict(zip(data_source_output_columns, result)) for result in results
     ]
     data_source_matches_converted = []
-
     for data_source_match in data_source_matches:
         data_source_match = convert_dates_to_strings(data_source_match)
         data_source_matches_converted.append(format_arrays(data_source_match))
-
     return data_source_matches_converted
