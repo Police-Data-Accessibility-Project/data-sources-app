@@ -89,10 +89,20 @@ def test_create_data_source():
     response = requests.post(
         f"{BASE_URL}/data-sources",
         headers=HEADERS,
-        json={"name": "test", "record_type": "test"},
+        json={"name": "test", "record_type": "test", "test_flag": True},
     )
 
-    assert response.json() == True
+    assert response.json()["message"] == "Data source added successfully."
+
+
+def test_create_user_data_source():
+    response = requests.post(
+        f"{BASE_URL}/data-sources",
+        headers=HEADERS,
+        json={"name": "test", "record_type": "test", "approval_status": "intake"},
+    )
+
+    assert response.json()["message"] == "Data source added successfully."
 
 
 def test_update_data_source():
@@ -301,6 +311,8 @@ def main():
         "test_quicksearch_media_bulletin_pennsylvania_results",
         "test_data_source_by_id",
         "test_data_sources",
+        "test_create_data_source",
+        "test_create_user_data_source",
         "test_update_data_source",
         "test_data_sources_approved",
         "test_data_source_by_id_approved",

@@ -142,6 +142,7 @@ class DataSources(PsycopgResource):
                 "approval_status",
                 "airtable_uid",
                 "airtable_source_last_modified",
+                "test_flag",
             ]
 
             column_names = ""
@@ -157,15 +158,17 @@ class DataSources(PsycopgResource):
             now = datetime.now().strftime("%Y-%m-%d")
             airtable_uid = str(uuid.uuid4())
 
-            column_names += (
-                "approval_status, url_status, data_source_created, airtable_uid"
-            )
-            column_values += f"False, '[\"ok\"]', '{now}', '{airtable_uid}'"
+            if "approval_status" not in data:
+                column_names += "approval_status, "
+                column_values += "'intake', "
+            column_names += "url_status, data_source_created, airtable_uid"
+            column_values += f"'[\"ok\"]', '{now}', '{airtable_uid}'"
 
             sql_query = f"INSERT INTO data_sources ({column_names}) VALUES ({column_values}) RETURNING *"
 
-            cursor.execute(sql_query)
-            self.psycopg2_connection.commit()
+            if "test_flag" not in data:
+                cursor.execute(sql_query)
+                self.psycopg2_connection.commit()
 
             return {"message": "Data source added successfully."}
 
