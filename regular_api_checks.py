@@ -92,7 +92,7 @@ def test_create_data_source():
         json={"name": "test", "record_type": "test", "test_flag": True},
     )
 
-    assert response.json()['message'] == 'Data source added successfully.'
+    assert response.json()["message"] == "Data source added successfully."
 
 
 def test_create_user_data_source():
