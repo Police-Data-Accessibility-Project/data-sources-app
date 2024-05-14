@@ -1,12 +1,24 @@
 import psycopg2
 
-from middleware.archives_queries import archives_get_results, archives_get_query, ARCHIVES_GET_COLUMNS
-from tests.middleware.helper_functions import insert_test_agencies_and_sources, has_expected_keys
-from tests.middleware.fixtures import dev_db_connection, db_cursor, connection_with_test_data
+from middleware.archives_queries import (
+    archives_get_results,
+    archives_get_query,
+    ARCHIVES_GET_COLUMNS,
+)
+from tests.middleware.helper_functions import (
+    insert_test_agencies_and_sources,
+    has_expected_keys,
+)
+from tests.middleware.fixtures import (
+    dev_db_connection,
+    db_cursor,
+    connection_with_test_data,
+)
+
 
 def test_archives_get_results(
-        dev_db_connection: psycopg2.extensions.connection,
-        db_cursor: psycopg2.extensions.cursor
+    dev_db_connection: psycopg2.extensions.connection,
+    db_cursor: psycopg2.extensions.cursor,
 ) -> None:
     """
     :param dev_db_connection: A connection to the development database.
@@ -36,7 +48,9 @@ def test_archives_get_results(
     assert len(new_results) == len(original_results) + 1
 
 
-def test_archives_get_columns(connection_with_test_data: psycopg2.extensions.connection) -> None:
+def test_archives_get_columns(
+    connection_with_test_data: psycopg2.extensions.connection,
+) -> None:
     """
     Test the archives_get_columns method, ensuring it properly returns an inserted source
     :param connection_with_test_data: A connection object to the database with test data.

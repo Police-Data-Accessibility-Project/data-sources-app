@@ -2,9 +2,15 @@ from unittest.mock import patch
 
 import psycopg2
 
-from middleware.login_queries import login_results, create_session_token, token_results, is_admin
+from middleware.login_queries import (
+    login_results,
+    create_session_token,
+    token_results,
+    is_admin,
+)
 from tests.middleware.helper_functions import create_test_user
 from tests.middleware.fixtures import dev_db_connection, db_cursor
+
 
 def test_login_query(db_cursor: psycopg2.extensions.cursor) -> None:
     """

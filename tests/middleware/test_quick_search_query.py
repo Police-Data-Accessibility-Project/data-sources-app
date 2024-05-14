@@ -20,20 +20,25 @@ from tests.middleware.fixtures import (
 )
 
 
-def test_unaltered_search_query(connection_with_test_data: psycopg2.extensions.connection) -> None:
+def test_unaltered_search_query(
+    connection_with_test_data: psycopg2.extensions.connection,
+) -> None:
     """
     :param connection_with_test_data: A connection object that is connected to the test database containing the test data.
     :return: None
     Test the unaltered_search_query method properly returns only one result
     """
-    response = unaltered_search_query(connection_with_test_data.cursor(), search="Source 1", location="City A")
+    response = unaltered_search_query(
+        connection_with_test_data.cursor(), search="Source 1", location="City A"
+    )
 
     assert len(response) == 1
     assert response[0][3] == "Type A"  # Record Type
 
 
-
-def test_quick_search_query_logging(connection_with_test_data: psycopg2.extensions.connection) -> None:
+def test_quick_search_query_logging(
+    connection_with_test_data: psycopg2.extensions.connection,
+) -> None:
     """
     Tests that quick_search_query properly creates a log of the query
 
@@ -46,7 +51,6 @@ def test_quick_search_query_logging(connection_with_test_data: psycopg2.extensio
         result = cursor.fetchone()
         test_datetime = result[0]
 
-
     quick_search_query(
         search="Source 1", location="City A", conn=connection_with_test_data
     )
@@ -58,7 +62,9 @@ def test_quick_search_query_logging(connection_with_test_data: psycopg2.extensio
     assert result.updated_at >= test_datetime
 
 
-def test_quick_search_query_results(connection_with_test_data: psycopg2.extensions.connection) -> None:
+def test_quick_search_query_results(
+    connection_with_test_data: psycopg2.extensions.connection,
+) -> None:
     """
     Test the `quick_search_query` method returns expected test data
 
