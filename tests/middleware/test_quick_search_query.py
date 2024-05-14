@@ -41,11 +41,13 @@ def test_quick_search_query_logging(connection_with_test_data: psycopg2.extensio
     :return: None
     """
     # Get datetime of test
-    test_datetime = datetime.now(pytz.timezone("UTC"))
-    # Round to the nearest minute
-    test_datetime = test_datetime.replace(second=0, microsecond=0)
+    with connection_with_test_data.cursor() as cursor:
+        cursor.execute("SELECT NOW()")
+        result = cursor.fetchone()
+        test_datetime = result[0]
 
-    results = quick_search_query(
+
+    quick_search_query(
         search="Source 1", location="City A", conn=connection_with_test_data
     )
 
@@ -53,9 +55,7 @@ def test_quick_search_query_logging(connection_with_test_data: psycopg2.extensio
     # Test that query inserted into log
     result = get_most_recent_quick_search_query_log(cursor, "Source 1", "City A")
     assert result.result_count == 1
-    # Round both datetimes to the nearest minute and compare, to ensure log was created during this test
-    result_datetime = result.updated_at.replace(second=0, microsecond=0)
-    assert result_datetime >= test_datetime
+    assert result.updated_at >= test_datetime
 
 
 def test_quick_search_query_results(connection_with_test_data: psycopg2.extensions.connection) -> None:

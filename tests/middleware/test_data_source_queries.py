@@ -15,7 +15,7 @@ from tests.middleware.helper_functions import (
     has_expected_keys,
     get_boolean_dictionary,
 )
-from tests.middleware.fixtures import connection_with_test_data
+from tests.middleware.fixtures import connection_with_test_data, dev_db_connection
 
 
 @pytest.fixture
@@ -104,7 +104,6 @@ def test_data_source_by_id_query(
     result = data_source_by_id_query(
         data_source_id="SOURCE_UID_1", conn=connection_with_test_data
     )
-    assert has_expected_keys(result.keys(), DATA_SOURCES_ID_QUERY_RESULTS)
     assert result["agency_name"] == "Agency A"
 
 

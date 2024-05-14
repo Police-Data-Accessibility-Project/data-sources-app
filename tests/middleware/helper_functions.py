@@ -147,8 +147,8 @@ def get_most_recent_quick_search_query_log(
     """
     cursor.execute(
         """
-        SELECT RESULT_COUNT, UPDATED_AT FROM QUICK_SEARCH_QUERY_LOGS WHERE
-        search = %s AND location = %s ORDER BY CREATED_AT DESC LIMIT 1
+        SELECT RESULT_COUNT, DATETIME_OF_REQUEST FROM QUICK_SEARCH_QUERY_LOGS WHERE
+        search = %s AND location = %s ORDER BY DATETIME_OF_REQUEST DESC LIMIT 1
         """,
         (search, location),
     )
