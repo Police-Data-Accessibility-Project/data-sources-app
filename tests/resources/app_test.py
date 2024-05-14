@@ -1,10 +1,8 @@
-
 import os
 from app import create_app
 from tests.resources.app_test_data import (
     DATA_SOURCES_ROWS,
     AGENCIES_ROWS,
-
 )
 import datetime
 import sqlite3
@@ -93,9 +91,6 @@ def session():
 
     yield connection
     connection.close()
-
-
-
 
 
 # def test_post_user(client):
