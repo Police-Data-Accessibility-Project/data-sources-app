@@ -264,7 +264,15 @@ def get_data_sources_for_map(conn) -> list:
     return convert_data_source_matches(DATA_SOURCES_MAP_COLUMN, results)
 
 
-def convert_data_source_matches(data_source_output_columns, results):
+def convert_data_source_matches(data_source_output_columns: list[str], results: list[tuple]) -> dict:
+    """
+    Combine a list of output columns with a list of results,
+    and produce a list of dictionaries where the keys correspond
+    to the output columns and the values correspond to the results
+    :param data_source_output_columns:
+    :param results:
+    :return:
+    """
     data_source_matches = [
         dict(zip(data_source_output_columns, result)) for result in results
     ]
