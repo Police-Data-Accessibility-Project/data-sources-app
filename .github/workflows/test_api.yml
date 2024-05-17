@@ -21,4 +21,5 @@ jobs:
         pip install -r requirements.txt
         python -m spacy download en_core_web_sm
         pip install pytest pytest-cov
-        pytest tests --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
+    - name: Run tests
+      run: pytest tests --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
