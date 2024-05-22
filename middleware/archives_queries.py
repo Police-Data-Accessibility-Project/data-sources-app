@@ -91,25 +91,3 @@ def archives_put_last_cached_results(
     sql_query = "UPDATE data_sources SET last_cached = '{0}' WHERE airtable_uid = '{1}'"
     cursor.execute(sql_query.format(last_cached, id))
     cursor.close()
-
-
-def archives_put_query(
-    id: str = "",
-    broken_as_of: str = "",
-    last_cached: str = "",
-    conn: Optional[PgConnection] = None,
-) -> None:
-    """
-    Updates the data_sources table based on the provided parameters, marking sources as broken or updating the last cached date.
-
-    :param id: The airtable_uid of the data source.
-    :param broken_as_of: The date when the source was identified as broken, if applicable.
-    :param last_cached: The last cached date to be updated.
-    :param conn: A psycopg2 connection object to a PostgreSQL database.
-    """
-    if broken_as_of:
-        archives_put_broken_as_of_results(id, broken_as_of, last_cached, conn)
-    else:
-        archives_put_last_cached_results(id, last_cached, conn)
-
-    conn.commit()
