@@ -1,7 +1,6 @@
 from middleware.quick_search_query import quick_search_query
 from middleware.data_source_queries import (
     data_source_by_id_query,
-    data_sources_query,
 )
 from flask import request
 import datetime
