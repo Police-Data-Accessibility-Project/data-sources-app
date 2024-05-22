@@ -25,4 +25,3 @@ class User(Base):
     password_digest = Column(Text)
     api_key = Column(String)
     role = Column(Text)
-
