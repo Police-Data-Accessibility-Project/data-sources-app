@@ -40,7 +40,7 @@ pathy==0.10.2
 pluggy==1.2.0
 postgrest==0.10.8
 preshed==3.0.8
-psycopg2==2.9.7
+psycopg2-binary==2.9.7
 py==1.11.0
 pycparser==2.21
 pydantic==2.2.1
