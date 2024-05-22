@@ -1,6 +1,8 @@
 from middleware.quick_search_query import quick_search_query
 from middleware.data_source_queries import (
     data_source_by_id_query,
+    get_data_sources_for_map,
+    get_approved_data_sources,
 )
 from flask import request
 import datetime
@@ -92,7 +94,9 @@ class SearchTokens(PsycopgResource):
 
         elif endpoint == "data-sources":
             try:
-                data_source_matches = data_sources_query(self.psycopg2_connection)
+                data_source_matches = get_approved_data_sources(
+                    self.psycopg2_connection
+                )
 
                 data_sources = {
                     "count": len(data_source_matches),
@@ -123,9 +127,7 @@ class SearchTokens(PsycopgResource):
 
         elif endpoint == "data-sources-map":
             try:
-                data_source_details = data_sources_query(
-                    self.psycopg2_connection, [], "approved", True
-                )
+                data_source_details = get_data_sources_for_map(self.psycopg2_connection)
                 if data_source_details:
                     data_sources = {
                         "count": len(data_source_details),
