@@ -75,17 +75,17 @@ AGENCY_APPROVED_COLUMNS = [
 ]
 
 DATA_SOURCES_MAP_COLUMN = [
-            "data_source_id",
-            "name",
-            "agency_id",
-            "agency_name",
-            "state_iso",
-            "municipality",
-            "county_name",
-            "record_type",
-            "lat",
-            "lng",
-        ]
+    "data_source_id",
+    "name",
+    "agency_id",
+    "agency_name",
+    "state_iso",
+    "municipality",
+    "county_name",
+    "record_type",
+    "lat",
+    "lng",
+]
 
 
 def data_source_by_id_results(
@@ -264,7 +264,9 @@ def get_data_sources_for_map(conn) -> list:
     return convert_data_source_matches(DATA_SOURCES_MAP_COLUMN, results)
 
 
-def convert_data_source_matches(data_source_output_columns: list[str], results: list[tuple]) -> dict:
+def convert_data_source_matches(
+    data_source_output_columns: list[str], results: list[tuple]
+) -> dict:
     """
     Combine a list of output columns with a list of results,
     and produce a list of dictionaries where the keys correspond

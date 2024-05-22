@@ -91,4 +91,3 @@ def archives_put_last_cached_results(
     sql_query = "UPDATE data_sources SET last_cached = '{0}' WHERE airtable_uid = '{1}'"
     cursor.execute(sql_query.format(last_cached, id))
     cursor.close()
-
