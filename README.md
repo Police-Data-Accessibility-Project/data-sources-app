@@ -1,4 +1,6 @@
-# data-sources-app
+# data-sources-app-v2
+
+Development of the next big iteration of the data sources app according to https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/248
 
 An API and UI for searching, using, and maintaining Data Sources. 
 
