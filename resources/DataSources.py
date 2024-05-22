@@ -190,8 +190,7 @@ class DataSourcesMap(PsycopgResource):
         Returns:
         - A dictionary containing the count of data sources and their details.
         """
-        try:
-            data_source_matches = get_data_sources_for_map(self.psycopg2_connection)
+        data_source_matches = get_data_sources_for_map(self.psycopg2_connection)
 
         data_sources = {
             "count": len(data_source_matches),

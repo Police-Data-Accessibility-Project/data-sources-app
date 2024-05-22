@@ -2,17 +2,14 @@ import psycopg2
 import pytest
 
 from middleware import data_source_queries
-from tests.resources.app_test_data import DATA_SOURCES_ID_QUERY_RESULTS
 from middleware.data_source_queries import (
     get_approved_data_sources,
     needs_identification_data_sources,
     data_source_by_id_results,
-    DATA_SOURCES_APPROVED_COLUMNS,
     data_source_by_id_query,
     get_data_sources_for_map,
 )
 from tests.middleware.helper_functions import (
-    has_expected_keys,
     get_boolean_dictionary,
 )
 from tests.middleware.fixtures import connection_with_test_data, dev_db_connection
