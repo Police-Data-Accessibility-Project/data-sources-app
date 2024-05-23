@@ -5,7 +5,7 @@ from middleware.data_source_queries import (
     data_source_by_id_wrapper,
     get_data_sources_for_map_wrapper,
 )
-from flask import request
+from flask import request, make_response
 import os
 import sys
 from typing import Dict, Any
@@ -16,6 +16,10 @@ sys.path.append("..")
 
 BASE_URL = os.getenv("VITE_VUE_API_BASE_URL")
 
+class UnknownEndpointError(Exception):
+    def __init__(self, endpoint):
+        self.message = f"Unknown endpoint: {endpoint}"
+        super().__init__(self.message)
 
 class SearchTokens(PsycopgResource):
     """
@@ -46,13 +50,15 @@ class SearchTokens(PsycopgResource):
         insert_access_token(cursor)
         self.psycopg2_connection.commit()
 
+        return self.perform_endpoint_logic(arg1, arg2, endpoint)
+
+    def perform_endpoint_logic(self, arg1, arg2, endpoint):
         if endpoint == "quick-search":
             return quick_search_query_wrapper(arg1, arg2, self.psycopg2_connection)
-        elif endpoint == "data-sources":
+        if endpoint == "data-sources":
             return get_approved_data_sources_wrapper(self.psycopg2_connection)
-        elif endpoint == "data-sources-by-id":
+        if endpoint == "data-sources-by-id":
             return data_source_by_id_wrapper(arg1, self.psycopg2_connection)
-        elif endpoint == "data-sources-map":
+        if endpoint == "data-sources-map":
             return get_data_sources_for_map_wrapper(self.psycopg2_connection)
-        else:
-            return {"message": "Unknown endpoint"}, 500
+        raise UnknownEndpointError(endpoint)
