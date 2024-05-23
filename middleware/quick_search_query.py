@@ -2,6 +2,7 @@ import spacy
 import json
 import datetime
 
+from flask import make_response
 from sqlalchemy.dialects.postgresql import psycopg2
 
 from middleware.webhook_logic import post_to_webhook
@@ -187,7 +188,7 @@ def quick_search_query_wrapper(arg1, arg2, conn: PgConnection):
             arg1, arg2, conn=conn
         )
 
-        return data_sources, 200
+        return make_response(data_sources, 200)
 
     except Exception as e:
         conn.rollback()
