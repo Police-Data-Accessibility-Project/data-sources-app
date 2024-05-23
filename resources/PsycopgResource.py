@@ -49,4 +49,3 @@ class PsycopgResource(Resource):
         - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
         """
         self.psycopg2_connection = kwargs["psycopg2_connection"]
-

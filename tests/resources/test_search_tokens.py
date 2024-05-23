@@ -144,12 +144,14 @@ def test_endpoints(search_tokens, mocker, app, test_case, mock_dependencies):
         mock_dependencies,
     )
 
+
 def test_search_tokens_unknown_endpoint(app, mocker, search_tokens):
     url = generate_url("test_endpoint", {"test_param": "test_value"})
     with app.test_request_context(url):
         response = search_tokens.get()
         assert response.status_code == 500
-        assert response.json == {'message': 'Unknown endpoint: test_endpoint'}
+        assert response.json == {"message": "Unknown endpoint: test_endpoint"}
+
 
 def test_search_tokens_get_exception(app, mocker, search_tokens):
     mocker.patch(

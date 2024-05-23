@@ -95,10 +95,13 @@ DATA_SOURCES_MAP_COLUMN = [
 def get_approved_data_sources_wrapper(conn: PgConnection):
     data_source_matches = get_approved_data_sources(conn)
 
-    return make_response({
-        "count": len(data_source_matches),
-        "data": data_source_matches,
-    }, 200)
+    return make_response(
+        {
+            "count": len(data_source_matches),
+            "data": data_source_matches,
+        },
+        200,
+    )
 
 
 def data_source_by_id_wrapper(arg, conn: PgConnection):
@@ -112,10 +115,14 @@ def data_source_by_id_wrapper(arg, conn: PgConnection):
 
 def get_data_sources_for_map_wrapper(conn: PgConnection):
     data_source_details = get_data_sources_for_map(conn)
-    return make_response({
-        "count": len(data_source_details),
-        "data": data_source_details,
-    }, 200)
+    return make_response(
+        {
+            "count": len(data_source_details),
+            "data": data_source_details,
+        },
+        200,
+    )
+
 
 def data_source_by_id_results(
     conn: PgConnection, data_source_id: str
