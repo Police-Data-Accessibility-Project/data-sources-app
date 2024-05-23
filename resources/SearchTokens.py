@@ -1,15 +1,11 @@
+from middleware.access_token_logic import insert_access_token
 from middleware.quick_search_query import quick_search_query_wrapper
 from middleware.data_source_queries import (
-    data_source_by_id_query,
-    get_data_sources_for_map,
-    get_approved_data_sources,
     get_approved_data_sources_wrapper,
     data_source_by_id_wrapper,
     get_data_sources_for_map_wrapper,
 )
 from flask import request
-import datetime
-import uuid
 import os
 import sys
 from typing import Dict, Any
@@ -19,15 +15,6 @@ from resources.PsycopgResource import PsycopgResource, handle_exceptions
 sys.path.append("..")
 
 BASE_URL = os.getenv("VITE_VUE_API_BASE_URL")
-
-
-def insert_access_token(cursor):
-    token = uuid.uuid4().hex
-    expiration = datetime.datetime.now() + datetime.timedelta(minutes=5)
-    cursor.execute(
-        f"insert into access_tokens (token, expiration_date) values (%s, %s)",
-        (token, expiration),
-    )
 
 
 class SearchTokens(PsycopgResource):
