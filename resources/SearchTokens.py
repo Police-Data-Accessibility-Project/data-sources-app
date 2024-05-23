@@ -66,6 +66,6 @@ class SearchTokens(PsycopgResource):
         elif endpoint == "data-sources-by-id":
             return data_source_by_id_wrapper(arg1, self.psycopg2_connection)
         elif endpoint == "data-sources-map":
-            get_data_sources_for_map_wrapper(self.psycopg2_connection)
+            return get_data_sources_for_map_wrapper(self.psycopg2_connection)
         else:
             return {"message": "Unknown endpoint"}, 500
