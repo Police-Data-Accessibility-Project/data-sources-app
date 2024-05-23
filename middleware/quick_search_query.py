@@ -184,9 +184,7 @@ def quick_search_query(
 
 def quick_search_query_wrapper(arg1, arg2, conn: PgConnection):
     try:
-        data_sources = quick_search_query(
-            arg1, arg2, conn=conn
-        )
+        data_sources = quick_search_query(arg1, arg2, conn=conn)
 
         return make_response(data_sources, 200)
 
@@ -195,11 +193,11 @@ def quick_search_query_wrapper(arg1, arg2, conn: PgConnection):
         user_message = "There was an error during the search operation"
         message = {
             "content": user_message
-                       + ": "
-                       + str(e)
-                       + "\n"
-                       + f"Search term: {arg1}\n"
-                       + f"Location: {arg2}"
+            + ": "
+            + str(e)
+            + "\n"
+            + f"Search term: {arg1}\n"
+            + f"Location: {arg2}"
         }
         post_to_webhook(json.dumps(message))
 
