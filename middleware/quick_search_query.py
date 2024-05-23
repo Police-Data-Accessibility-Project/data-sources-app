@@ -181,7 +181,7 @@ def quick_search_query(
     return data_sources
 
 
-def quick_search_query_wrapper(arg1, arg2, conn: psycopg2.extensions.connection):
+def quick_search_query_wrapper(arg1, arg2, conn: PgConnection):
     try:
         data_sources = quick_search_query(
             arg1, arg2, conn=conn
