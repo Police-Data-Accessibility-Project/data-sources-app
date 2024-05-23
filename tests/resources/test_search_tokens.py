@@ -6,6 +6,7 @@ from flask import Flask
 
 from resources.SearchTokens import SearchTokens
 
+
 class MockPsycopgConnection:
     def cursor(self):
         return MockCursor()
@@ -118,7 +119,6 @@ test_cases = [
     TestCase("data-sources", {"result": "data_sources"}, None),
     TestCase("data-sources-by-id", {"result": "data_source_by_id"}, {"arg1": "1"}),
     TestCase("data-sources-map", {"result": "data_sources_map"}, None),
-    TestCase("unknown", ({"message": "Unknown endpoint"}, 500), None),
 ]
 
 
@@ -143,3 +143,22 @@ def test_endpoints(search_tokens, mocker, app, test_case, mock_dependencies):
         test_case.params,
         mock_dependencies,
     )
+
+def test_search_tokens_unknown_endpoint(app, mocker, search_tokens):
+    url = generate_url("test_endpoint", {"test_param": "test_value"})
+    with app.test_request_context(url):
+        response = search_tokens.get()
+        assert response.status_code == 500
+        assert response.json == {'message': 'Unknown endpoint: test_endpoint'}
+
+def test_search_tokens_get_exception(app, mocker, search_tokens):
+    mocker.patch(
+        "resources.SearchTokens.insert_access_token",
+        side_effect=Exception("Test exception"),
+    )
+
+    url = generate_url("test_endpoint", {"test_param": "test_value"})
+    with app.test_request_context(url):
+        response = search_tokens.get()
+        assert response.status_code == 500
+        assert response.json == {"message": "Test exception"}
