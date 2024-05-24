@@ -20,7 +20,6 @@ def user_check_email(cursor: PgCursor, email: str) -> Dict[str, str]:
     return {"id": results[0][0]}
 
 
-
 def user_post_results(cursor: PgCursor, email: str, password: str) -> None:
     """
     Creates a new user with the provided email and password.

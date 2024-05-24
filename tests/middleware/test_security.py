@@ -1,4 +1,3 @@
-
 def test_api_required_user_not_found():
     """
     Test that the api_required decorator properly returns

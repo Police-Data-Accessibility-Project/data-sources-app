@@ -14,9 +14,7 @@ class DatabaseInitializationError(Exception):
         super().__init__(self.message)
 
 
-def initialize_psycopg2_connection() -> (
-    PgConnection
-):
+def initialize_psycopg2_connection() -> PgConnection:
     """
     Initializes a connection to a PostgreSQL database using psycopg2 with connection parameters
     obtained from an environment variable. If the connection fails, it returns a default dictionary

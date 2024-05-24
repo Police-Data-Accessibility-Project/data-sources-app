@@ -28,7 +28,6 @@ def login_results(cursor: PgCursor, email: str) -> Dict[str, Union[int, str]]:
     }
 
 
-
 def is_admin(cursor: PgCursor, email: str) -> bool:
     """
     Checks if a user has an admin role.

@@ -25,7 +25,6 @@ def check_reset_token(cursor: PgCursor, token: str) -> Dict[str, Union[int, str]
     }
 
 
-
 def add_reset_token(cursor: PgCursor, email: str, token: str) -> None:
     """
     Inserts a new reset token into the database for a specified email.

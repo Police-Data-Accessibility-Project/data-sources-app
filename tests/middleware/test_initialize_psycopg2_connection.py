@@ -1,4 +1,3 @@
-
 def test_initialize_psycopg2_connection_success():
     """
     Test that function properly initializes psycopg2 connection
@@ -7,6 +6,7 @@ def test_initialize_psycopg2_connection_success():
     :return:
     """
     pass
+
 
 def test_initialize_psycopg2_connection_failure():
     """

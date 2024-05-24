@@ -34,6 +34,9 @@ def test_user_check_email(db_cursor: psycopg2.extensions.cursor) -> None:
     user_data = user_check_email(db_cursor, user.email)
     assert user_data["id"] == user.id
 
-def test_user_check_email_raises_user_not_found_error(db_cursor: psycopg2.extensions) -> None:
+
+def test_user_check_email_raises_user_not_found_error(
+    db_cursor: psycopg2.extensions,
+) -> None:
     with pytest.raises(UserNotFoundError):
         user_check_email(db_cursor, "nonexistent@example.com")
