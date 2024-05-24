@@ -12,7 +12,7 @@ from tests.middleware.helper_functions import (
     create_test_user,
     get_reset_tokens_for_email,
 )
-from tests.middleware.fixtures import dev_db_connection, db_cursor
+from tests.fixtures import db_cursor, dev_db_connection
 
 
 def test_check_reset_token(db_cursor: psycopg2.extensions.cursor) -> None:

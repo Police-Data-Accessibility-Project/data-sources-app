@@ -2,7 +2,7 @@ import psycopg2
 
 from middleware.user_queries import user_post_results, user_check_email
 from tests.middleware.helper_functions import create_test_user
-from tests.middleware.fixtures import dev_db_connection, db_cursor
+from tests.fixtures import db_cursor, dev_db_connection
 
 
 def test_user_post_query(db_cursor: psycopg2.extensions.cursor) -> None:
