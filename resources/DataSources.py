@@ -1,6 +1,11 @@
 from flask import request
 from middleware.security import api_required
-from middleware.data_source_queries import data_source_by_id_query, data_sources_query
+from middleware.data_source_queries import (
+    data_source_by_id_query,
+    get_data_sources_for_map,
+    get_approved_data_sources,
+    needs_identification_data_sources,
+)
 from datetime import datetime
 
 import uuid
@@ -100,9 +105,7 @@ class DataSources(PsycopgResource):
         Returns:
         - A dictionary containing the count of data sources and their details.
         """
-        data_source_matches = data_sources_query(
-            self.psycopg2_connection, [], "approved"
-        )
+        data_source_matches = get_approved_data_sources(self.psycopg2_connection)
 
         data_sources = {
             "count": len(data_source_matches),
@@ -160,8 +163,8 @@ class DataSourcesNeedsIdentification(PsycopgResource):
     @handle_exceptions
     @api_required
     def get(self):
-        data_source_matches = data_sources_query(
-            self.psycopg2_connection, [], "needs_identification"
+        data_source_matches = needs_identification_data_sources(
+            self.psycopg2_connection
         )
 
         data_sources = {
@@ -187,9 +190,7 @@ class DataSourcesMap(PsycopgResource):
         Returns:
         - A dictionary containing the count of data sources and their details.
         """
-        data_source_matches = data_sources_query(
-            self.psycopg2_connection, [], "approved", True
-        )
+        data_source_matches = get_data_sources_for_map(self.psycopg2_connection)
 
         data_sources = {
             "count": len(data_source_matches),

@@ -1,18 +1,15 @@
 import psycopg2
 import pytest
 
-from tests.resources.app_test_data import DATA_SOURCES_ID_QUERY_RESULTS
+from middleware import data_source_queries
 from middleware.data_source_queries import (
     get_approved_data_sources,
     needs_identification_data_sources,
     data_source_by_id_results,
-    data_sources_query,
-    DATA_SOURCES_APPROVED_COLUMNS,
     data_source_by_id_query,
     get_data_sources_for_map,
 )
 from tests.middleware.helper_functions import (
-    has_expected_keys,
     get_boolean_dictionary,
 )
 from tests.middleware.fixtures import connection_with_test_data, dev_db_connection
@@ -41,7 +38,7 @@ def test_get_approved_data_sources(
     results = get_approved_data_sources(conn=connection_with_test_data)
 
     for result in results:
-        name = result[0]
+        name = result["name"]
         if name in inserted_data_sources_found:
             inserted_data_sources_found[name] = True
 
@@ -62,7 +59,7 @@ def test_needs_identification(
     """
     results = needs_identification_data_sources(conn=connection_with_test_data)
     for result in results:
-        name = result[0]
+        name = result["name"]
         if name in inserted_data_sources_found:
             inserted_data_sources_found[name] = True
 
@@ -107,30 +104,6 @@ def test_data_source_by_id_query(
     assert result["agency_name"] == "Agency A"
 
 
-def test_data_sources_query(
-    connection_with_test_data: psycopg2.extensions.connection,
-    inserted_data_sources_found: dict[str, bool],
-) -> None:
-    """
-    Test that data sources query properly returns data for an inserted data source
-    marked as 'approved', and none others.
-    :param connection_with_test_data:
-    :param inserted_data_sources_found:
-    :return:
-    """
-    results = data_sources_query(connection_with_test_data)
-    # Check that results include expected keys
-    assert has_expected_keys(results[0].keys(), DATA_SOURCES_APPROVED_COLUMNS)
-    for result in results:
-        name = result["name"]
-        if name in inserted_data_sources_found:
-            inserted_data_sources_found[name] = True
-
-    assert inserted_data_sources_found["Source 1"]
-    assert not inserted_data_sources_found["Source 2"]
-    assert not inserted_data_sources_found["Source 3"]
-
-
 def test_get_data_sources_for_map(
     connection_with_test_data: psycopg2.extensions.connection,
     inserted_data_sources_found: dict[str, bool],
@@ -144,14 +117,39 @@ def test_get_data_sources_for_map(
     """
     results = get_data_sources_for_map(conn=connection_with_test_data)
     for result in results:
-        name = result[1]
+        name = result["name"]
         if name == "Source 1":
-            lat = result[8]
-            lng = result[9]
-            assert lat == 30 and lng == 20
+            assert result["lat"] == 30 and result["lng"] == 20
 
         if name in inserted_data_sources_found:
             inserted_data_sources_found[name] = True
     assert inserted_data_sources_found["Source 1"]
     assert not inserted_data_sources_found["Source 2"]
     assert not inserted_data_sources_found["Source 3"]
+
+
+def test_convert_data_source_matches():
+    """
+    Convert_data_source_matches should output a list of
+    dictionaries based on the provided list of columns
+    and the list of tuples
+    """
+
+    # Define Test case Input and Output data
+    testcases = [
+        {
+            "data_source_output_columns": ["name", "age"],
+            "results": [("Joe", 20), ("Annie", 30)],
+            "output": [{"name": "Joe", "age": 20}, {"name": "Annie", "age": 30}],
+        },
+        # You can add more tests here as per requirement.
+    ]
+
+    # Execute the tests
+    for testcase in testcases:
+        assert (
+            data_source_queries.convert_data_source_matches(
+                testcase["data_source_output_columns"], testcase["results"]
+            )
+            == testcase["output"]
+        )
