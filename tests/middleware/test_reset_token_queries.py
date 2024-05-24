@@ -1,7 +1,9 @@
 import uuid
 
 import psycopg2.extensions
+import pytest
 
+from middleware.custom_exceptions import TokenNotFoundError
 from middleware.reset_token_queries import (
     check_reset_token,
     add_reset_token,
@@ -26,6 +28,13 @@ def test_check_reset_token(db_cursor: psycopg2.extensions.cursor) -> None:
 
     user_data = check_reset_token(db_cursor, test_token_insert.token)
     assert test_token_insert.id == user_data["id"]
+
+
+def test_check_reset_token_raises_token_not_found_error(
+    db_cursor: psycopg2.extensions,
+) -> None:
+    with pytest.raises(TokenNotFoundError):
+        check_reset_token(db_cursor, token=str(uuid.uuid4()))
 
 
 def test_add_reset_token(db_cursor: psycopg2.extensions.cursor) -> None:

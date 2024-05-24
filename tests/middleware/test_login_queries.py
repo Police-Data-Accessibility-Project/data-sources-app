@@ -9,8 +9,8 @@ from middleware.login_queries import (
     create_session_token,
     token_results,
     is_admin,
-    UserNotFoundError,
 )
+from middleware.custom_exceptions import UserNotFoundError, TokenNotFoundError
 from tests.middleware.helper_functions import create_test_user
 from tests.middleware.fixtures import dev_db_connection, db_cursor
 
@@ -28,6 +28,12 @@ def test_login_query(db_cursor: psycopg2.extensions.cursor) -> None:
     user_data = login_results(db_cursor, "example@example.com")
 
     assert user_data["password_digest"] == test_user.password_hash
+
+
+def test_login_results_user_not_found(db_cursor: psycopg2.extensions.cursor) -> None:
+    """UserNotFoundError should be raised if the user does not exist in the database"""
+    with pytest.raises(UserNotFoundError):
+        login_results(cursor=db_cursor, email="nonexistent@example.com")
 
 
 def test_create_session_token_results(db_cursor: psycopg2.extensions.cursor) -> None:
@@ -70,3 +76,9 @@ def test_is_admin_raises_user_not_logged_in_error(db_cursor):
     """
     with pytest.raises(UserNotFoundError):
         is_admin(cursor=db_cursor, email=str(uuid.uuid4()))
+
+
+def test_token_results_raises_token_not_found_error(db_cursor):
+    """token_results() should raise TokenNotFoundError for nonexistent token"""
+    with pytest.raises(TokenNotFoundError):
+        token_results(cursor=db_cursor, token=str(uuid.uuid4()))
