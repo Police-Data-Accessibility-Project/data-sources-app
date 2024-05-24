@@ -2,6 +2,8 @@ from werkzeug.security import generate_password_hash
 from psycopg2.extensions import cursor as PgCursor
 from typing import Dict
 
+from middleware.custom_exceptions import UserNotFoundError
+
 
 def user_check_email(cursor: PgCursor, email: str) -> Dict[str, str]:
     """
@@ -13,11 +15,10 @@ def user_check_email(cursor: PgCursor, email: str) -> Dict[str, str]:
     """
     cursor.execute(f"select id from users where email = '{email}'")
     results = cursor.fetchall()
-    if len(results) > 0:
-        user_data = {"id": results[0][0]}
-        return user_data
-    else:
-        return {"error": "no match"}
+    if len(results) == 0:
+        raise UserNotFoundError(email)
+    return {"id": results[0][0]}
+
 
 
 def user_post_results(cursor: PgCursor, email: str, password: str) -> None:

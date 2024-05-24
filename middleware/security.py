@@ -1,13 +1,10 @@
 import functools
-from hmac import compare_digest
 from flask import request, jsonify
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 from datetime import datetime as dt
-from middleware.login_queries import is_admin, UserNotFoundError
-import os
+from middleware.login_queries import is_admin
+from middleware.custom_exceptions import UserNotFoundError
 from typing import Tuple
-from flask.wrappers import Response
-from psycopg2.extensions import cursor as PgCursor
 
 
 def is_valid(api_key: str, endpoint: str, method: str) -> Tuple[bool, bool]:

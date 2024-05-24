@@ -4,16 +4,8 @@ import datetime
 from typing import Union, Dict
 from psycopg2.extensions import cursor as PgCursor
 
+from middleware.custom_exceptions import UserNotFoundError, TokenNotFoundError
 
-class UserNotFoundError(Exception):
-    """Exception raised for errors in the input."""
-
-    def __init__(self, email, message=""):
-        if message == "":
-            message = f"User with email {email} not found"
-        self.email = email
-        self.message = message.format(email=self.email)
-        super().__init__(self.message)
 
 def login_results(cursor: PgCursor, email: str) -> Dict[str, Union[int, str]]:
     """
@@ -27,15 +19,14 @@ def login_results(cursor: PgCursor, email: str) -> Dict[str, Union[int, str]]:
         f"select id, password_digest, api_key from users where email = '{email}'"
     )
     results = cursor.fetchall()
-    if len(results) > 0:
-        user_data = {
-            "id": results[0][0],
-            "password_digest": results[0][1],
-            "api_key": results[0][2],
-        }
-        return user_data
-    else:
-        return {"error": "no match"}
+    if len(results) == 0:
+        raise UserNotFoundError(email)
+    return {
+        "id": results[0][0],
+        "password_digest": results[0][1],
+        "api_key": results[0][2],
+    }
+
 
 
 def is_admin(cursor: PgCursor, email: str) -> bool:
@@ -53,7 +44,6 @@ def is_admin(cursor: PgCursor, email: str) -> bool:
         if role == "admin":
             return True
         return False
-
     except IndexError:
         raise UserNotFoundError(email)
 
@@ -91,11 +81,9 @@ def token_results(cursor: PgCursor, token: str) -> Dict[str, Union[int, str]]:
     """
     cursor.execute(f"select id, email from session_tokens where token = '{token}'")
     results = cursor.fetchall()
-    if len(results) > 0:
-        user_data = {
-            "id": results[0][0],
-            "email": results[0][1],
-        }
-        return user_data
-    else:
-        return {"error": "no match"}
+    if len(results) == 0:
+        raise TokenNotFoundError("The specified token was not found.")
+    return {
+        "id": results[0][0],
+        "email": results[0][1],
+    }
