@@ -4,6 +4,8 @@ import datetime
 from typing import Union, Dict
 from psycopg2.extensions import cursor as PgCursor
 
+from middleware.custom_exceptions import UserNotFoundError, TokenNotFoundError
+
 
 def login_results(cursor: PgCursor, email: str) -> Dict[str, Union[int, str]]:
     """
@@ -17,18 +19,16 @@ def login_results(cursor: PgCursor, email: str) -> Dict[str, Union[int, str]]:
         f"select id, password_digest, api_key from users where email = '{email}'"
     )
     results = cursor.fetchall()
-    if len(results) > 0:
-        user_data = {
-            "id": results[0][0],
-            "password_digest": results[0][1],
-            "api_key": results[0][2],
-        }
-        return user_data
-    else:
-        return {"error": "no match"}
+    if len(results) == 0:
+        raise UserNotFoundError(email)
+    return {
+        "id": results[0][0],
+        "password_digest": results[0][1],
+        "api_key": results[0][2],
+    }
 
 
-def is_admin(cursor: PgCursor, email: str) -> Union[bool, Dict[str, str]]:
+def is_admin(cursor: PgCursor, email: str) -> bool:
     """
     Checks if a user has an admin role.
 
@@ -38,14 +38,13 @@ def is_admin(cursor: PgCursor, email: str) -> Union[bool, Dict[str, str]]:
     """
     cursor.execute(f"select role from users where email = '{email}'")
     results = cursor.fetchall()
-    if len(results) > 0:
+    try:
         role = results[0][0]
         if role == "admin":
             return True
         return False
-
-    else:
-        return {"error": "no match"}
+    except IndexError:
+        raise UserNotFoundError(email)
 
 
 def create_session_token(cursor: PgCursor, user_id: int, email: str) -> str:
@@ -81,11 +80,9 @@ def token_results(cursor: PgCursor, token: str) -> Dict[str, Union[int, str]]:
     """
     cursor.execute(f"select id, email from session_tokens where token = '{token}'")
     results = cursor.fetchall()
-    if len(results) > 0:
-        user_data = {
-            "id": results[0][0],
-            "email": results[0][1],
-        }
-        return user_data
-    else:
-        return {"error": "no match"}
+    if len(results) == 0:
+        raise TokenNotFoundError("The specified token was not found.")
+    return {
+        "id": results[0][0],
+        "email": results[0][1],
+    }

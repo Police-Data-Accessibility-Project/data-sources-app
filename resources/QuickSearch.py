@@ -3,7 +3,10 @@ from middleware.quick_search_query import quick_search_query
 import requests
 import json
 import os
-from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
+from middleware.initialize_psycopg2_connection import (
+    initialize_psycopg2_connection,
+    DatabaseInitializationError,
+)
 from flask import request
 from typing import Dict, Any
 
@@ -60,7 +63,7 @@ class QuickSearch(PsycopgResource):
                 "data": data_sources,
             }
 
-        except Exception as e:
+        except DatabaseInitializationError as e:
             self.psycopg2_connection.rollback()
             print(str(e))
             webhook_url = os.getenv("WEBHOOK_URL")
