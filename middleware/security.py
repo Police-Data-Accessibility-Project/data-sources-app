@@ -1,4 +1,6 @@
 import functools
+from collections import namedtuple
+
 from flask import request, jsonify
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 from datetime import datetime as dt
@@ -6,8 +8,10 @@ from middleware.login_queries import is_admin
 from middleware.custom_exceptions import UserNotFoundError
 from typing import Tuple
 
+APIKeyStatus = namedtuple("APIKeyStatus", ["is_valid", "is_expired"])
 
-def is_valid(api_key: str, endpoint: str, method: str) -> Tuple[bool, bool]:
+
+def is_valid(api_key: str, endpoint: str, method: str) -> APIKeyStatus:
     """
     Validates the API key and checks if the user has the required role to access a specific endpoint.
 
@@ -17,7 +21,7 @@ def is_valid(api_key: str, endpoint: str, method: str) -> Tuple[bool, bool]:
     :return: A tuple (isValid, isExpired) indicating whether the API key is valid and not expired.
     """
     if not api_key:
-        return False, False
+        return APIKeyStatus(is_valid=False, is_expired=False)
 
     psycopg2_connection = initialize_psycopg2_connection()
     cursor = psycopg2_connection.cursor()
@@ -37,7 +41,7 @@ def is_valid(api_key: str, endpoint: str, method: str) -> Tuple[bool, bool]:
             print(expiration_date, dt.utcnow())
 
             if expiration_date < dt.utcnow():
-                return False, True
+                return APIKeyStatus(False, is_expired=True)
 
             if is_admin(cursor, email):
                 role = "admin"
@@ -52,16 +56,16 @@ def is_valid(api_key: str, endpoint: str, method: str) -> Tuple[bool, bool]:
         role = "user"
 
         if not results:
-            return False, False
+            return APIKeyStatus(is_valid=False, is_expired=False)
 
     if endpoint in ("datasources", "datasourcebyid") and method in ("PUT", "POST"):
         if role != "admin":
-            return False, False
+            return APIKeyStatus(is_valid=False, is_expired=False)
 
     # Compare the API key in the user table to the API in the request header and proceed
     # through the protected route if it's valid. Otherwise, compare_digest will return False
     # and api_required will send an error message to provide a valid API key
-    return True, False
+    return APIKeyStatus(is_valid=True, is_expired=False)
 
 
 def api_required(func):
@@ -91,13 +95,13 @@ def api_required(func):
             }, 400
         # Check if API key is correct and valid
         try:
-            valid, expired = is_valid(api_key, request.endpoint, request.method)
+            api_key_status = is_valid(api_key, request.endpoint, request.method)
         except UserNotFoundError as e:
             return {"message": str(e)}, 401
-        if valid:
+        if api_key_status.is_valid:
             return func(*args, **kwargs)
         else:
-            if expired:
+            if api_key_status.is_expired:
                 return {"message": "The provided API key has expired"}, 401
             return {"message": "The provided API key is not valid"}, 403
 
