@@ -1,13 +1,10 @@
 import functools
-from hmac import compare_digest
 from flask import request, jsonify
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 from datetime import datetime as dt
 from middleware.login_queries import is_admin
-import os
+from middleware.custom_exceptions import UserNotFoundError
 from typing import Tuple
-from flask.wrappers import Response
-from psycopg2.extensions import cursor as PgCursor
 
 
 def is_valid(api_key: str, endpoint: str, method: str) -> Tuple[bool, bool]:
@@ -93,7 +90,10 @@ def api_required(func):
                 "message": "Please provide an 'Authorization' key in the request header"
             }, 400
         # Check if API key is correct and valid
-        valid, expired = is_valid(api_key, request.endpoint, request.method)
+        try:
+            valid, expired = is_valid(api_key, request.endpoint, request.method)
+        except UserNotFoundError as e:
+            return {"message": str(e)}, 401
         if valid:
             return func(*args, **kwargs)
         else:
