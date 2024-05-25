@@ -1,13 +1,12 @@
 from middleware.security import api_required
-from middleware.quick_search_query import quick_search_query
+from middleware.quick_search_query import quick_search_query, SearchParameters
 import requests
 import json
 import os
-from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
-from flask import request
-from typing import Dict, Any
+from flask import make_response, Response
 
 from resources.PsycopgResource import PsycopgResource
+from utilities.managed_cursor import managed_cursor
 
 
 class QuickSearch(PsycopgResource):
@@ -19,7 +18,7 @@ class QuickSearch(PsycopgResource):
     # api_required decorator requires the request"s header to include an "Authorization" key with the value formatted as "Bearer [api_key]"
     # A user can get an API key by signing up and logging in (see User.py)
     @api_required
-    def get(self, search: str, location: str) -> Dict[str, Any]:
+    def get(self, search: str, location: str) -> Response:
         """
         Performs a quick search using the provided search terms and location. It attempts to find relevant
         data sources in the database. If no results are found initially, it re-initializes the database
@@ -33,32 +32,28 @@ class QuickSearch(PsycopgResource):
         - A dictionary containing a message about the search results and the data found, if any.
         """
         try:
-            data = request.get_json()
-            test = data.get("test_flag")
-        except:
-            test = False
 
-        try:
-            data_sources = quick_search_query(
-                search, location, [], self.psycopg2_connection, test
-            )
-
-            if data_sources["count"] == 0:
-                self.psycopg2_connection = initialize_psycopg2_connection()
+            with managed_cursor(self.psycopg2_connection) as cursor:
                 data_sources = quick_search_query(
-                    search, location, [], self.psycopg2_connection
+                    SearchParameters(search, location), cursor
                 )
 
             if data_sources["count"] == 0:
-                return {
-                    "count": 0,
-                    "message": "No results found. Please considering requesting a new data source.",
-                }, 404
+                return make_response(
+                    {
+                        "count": 0,
+                        "message": "No results found. Please considering requesting a new data source.",
+                    },
+                    200,
+                )
 
-            return {
-                "message": "Results for search successfully retrieved",
-                "data": data_sources,
-            }
+            return make_response(
+                {
+                    "message": "Results for search successfully retrieved",
+                    "data": data_sources,
+                },
+                200,
+            )
 
         except Exception as e:
             self.psycopg2_connection.rollback()
