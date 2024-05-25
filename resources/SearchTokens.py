@@ -1,4 +1,4 @@
-from middleware.quick_search_query import quick_search_query
+from middleware.quick_search_query import quick_search_query, SearchParameters
 from middleware.data_source_queries import (
     data_source_by_id_query,
     get_data_sources_for_map,
@@ -14,6 +14,7 @@ import json
 from typing import Dict, Any
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
+from utilities.managed_cursor import managed_cursor
 
 sys.path.append("..")
 
@@ -65,9 +66,10 @@ class SearchTokens(PsycopgResource):
             except:
                 test = False
             try:
-                data_sources = quick_search_query(
-                    arg1, arg2, [], self.psycopg2_connection, test
-                )
+                with managed_cursor(self.psycopg2_connection) as cursor:
+                    data_sources = quick_search_query(
+                        SearchParameters(arg1, arg2), cursor
+                    )
 
                 return data_sources
 
