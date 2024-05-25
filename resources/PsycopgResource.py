@@ -1,8 +1,7 @@
 import functools
 from typing import Callable, Any, Union, Tuple, Dict
 
-from flask_restful import Resource
-from flask_restx import abort
+from flask_restx import abort, Resource
 
 
 def handle_exceptions(
@@ -43,11 +42,12 @@ def handle_exceptions(
 
 
 class PsycopgResource(Resource):
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         """
         Initializes the resource with a database connection.
         - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
         """
+        super().__init__(*args, **kwargs)
         self.psycopg2_connection = kwargs["psycopg2_connection"]
 
     def get(self):
