@@ -1,4 +1,6 @@
 from flask import request
+from flask_restx import abort
+
 from middleware.reset_token_queries import (
     check_reset_token,
 )
@@ -22,6 +24,6 @@ class ResetTokenValidation(PsycopgResource):
         token_expired = (dt.utcnow() - token_create_date).total_seconds() > 900
 
         if token_expired:
-            return {"message": "The submitted token is invalid"}, 400
+            abort(code=400, message="The submitted token is invalid")
 
         return {"message": "Token is valid"}

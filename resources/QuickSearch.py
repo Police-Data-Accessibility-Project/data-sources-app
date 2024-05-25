@@ -1,3 +1,5 @@
+from flask_restx import abort
+
 from middleware.security import api_required
 from middleware.quick_search_query import quick_search_query
 import requests
@@ -53,10 +55,10 @@ class QuickSearch(PsycopgResource):
                 )
 
             if data_sources["count"] == 0:
-                return {
-                    "count": 0,
-                    "message": "No results found. Please considering requesting a new data source.",
-                }, 404
+                abort(
+                    code=404,
+                    message="No results found. Please considering requesting a new data source.",
+                )
 
             return {
                 "message": "Results for search successfully retrieved",
@@ -82,4 +84,4 @@ class QuickSearch(PsycopgResource):
                 headers={"Content-Type": "application/json"},
             )
 
-            return {"count": 0, "message": user_message}, 500
+            abort(code=500, message=user_message)

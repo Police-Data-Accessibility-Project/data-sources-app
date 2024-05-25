@@ -2,6 +2,7 @@ import functools
 from typing import Callable, Any, Union, Tuple, Dict
 
 from flask_restful import Resource
+from flask_restx import abort
 
 
 def handle_exceptions(
@@ -36,7 +37,7 @@ def handle_exceptions(
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {"message": str(e)}, 500
+            abort(http_status_code=500, message=str(e))
 
     return wrapper
 

@@ -1,3 +1,4 @@
+from flask_restx import abort
 from werkzeug.security import generate_password_hash
 from flask import request
 from middleware.reset_token_queries import (
@@ -32,13 +33,13 @@ class ResetPassword(PsycopgResource):
         token_data = check_reset_token(cursor, token)
         email = token_data.get("email")
         if "create_date" not in token_data:
-            return {"message": "The submitted token is invalid"}, 400
+            abort(code=400, message="The submitted token is invalid")
 
         token_create_date = token_data["create_date"]
         token_expired = (dt.utcnow() - token_create_date).total_seconds() > 900
         delete_reset_token(cursor, token_data["email"], token)
         if token_expired:
-            return {"message": "The submitted token is invalid"}, 400
+            abort(code=400, message="The submitted token is invalid")
 
         password_digest = generate_password_hash(password)
         cursor = self.psycopg2_connection.cursor()

@@ -1,5 +1,7 @@
 import functools
 from flask import request, jsonify
+from flask_restx import abort
+
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 from datetime import datetime as dt
 from middleware.login_queries import is_admin
@@ -80,25 +82,27 @@ def api_required(func):
             if len(authorization_header) >= 2 and authorization_header[0] == "Bearer":
                 api_key = request.headers["Authorization"].split(" ")[1]
                 if api_key == "undefined":
-                    return {"message": "Please provide an API key"}, 400
+                    abort(code=400, message="Please provide an API key")
             else:
-                return {
-                    "message": "Please provide a properly formatted bearer token and API key"
-                }, 400
+                abort(
+                    code=400,
+                    message="Please provide a properly formatted bearer token and API key",
+                )
         else:
-            return {
-                "message": "Please provide an 'Authorization' key in the request header"
-            }, 400
+            abort(
+                code=400,
+                message="Please provide an 'Authorization' key in the request header",
+            )
         # Check if API key is correct and valid
         try:
             valid, expired = is_valid(api_key, request.endpoint, request.method)
         except UserNotFoundError as e:
-            return {"message": str(e)}, 401
+            abort(code=401, message=str(e))
         if valid:
             return func(*args, **kwargs)
         else:
             if expired:
-                return {"message": "The provided API key has expired"}, 401
-            return {"message": "The provided API key is not valid"}, 403
+                abort(code=401, message="The provided API key has expired")
+            return abort(code=403, message="The provided API key is not valid")
 
     return decorator

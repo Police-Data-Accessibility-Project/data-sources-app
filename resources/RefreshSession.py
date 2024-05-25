@@ -1,4 +1,6 @@
 from flask import request
+from flask_restx import abort
+
 from middleware.login_queries import token_results, create_session_token
 from datetime import datetime as dt
 from typing import Dict, Any
@@ -38,4 +40,4 @@ class RefreshSession(PsycopgResource):
                 "data": token,
             }
 
-        return {"message": "Invalid session token"}, 403
+        abort(code=403, message="Invalid session token")
