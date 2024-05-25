@@ -71,7 +71,6 @@ def test_quick_search_query_results(
     :return: None
     """
     with connection_with_test_data.cursor() as cursor:
-        # TODO: Something about the quick_search_query might be mucking up the savepoints. Address once you fix quick_search's logic issues
         results = quick_search_query(
             SearchParameters(search="Source 1", location="City A"), cursor=cursor
         )
