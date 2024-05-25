@@ -155,7 +155,9 @@ def get_most_recent_quick_search_query_log(
     result = cursor.fetchone()
     if result is None:
         return result
-    return QuickSearchQueryLogResult(result_count=result[0], updated_at=result[1], results=result[2])
+    return QuickSearchQueryLogResult(
+        result_count=result[0], updated_at=result[1], results=result[2]
+    )
 
 
 def has_expected_keys(result_keys: list, expected_keys: list) -> bool:

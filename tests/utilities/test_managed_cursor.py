@@ -1,6 +1,7 @@
 from utilities.managed_cursor import managed_cursor
 import uuid
 from tests.fixtures import dev_db_connection
+
 SQL_TEST = """
     INSERT INTO test_table (name) VALUES (%s)
 """
@@ -19,13 +20,13 @@ def test_managed_cursor_rollback(dev_db_connection):
     name = str(uuid.uuid4())
     try:
         with managed_cursor(dev_db_connection) as cursor:
-            cursor.execute(SQL_TEST, (name, ))
+            cursor.execute(SQL_TEST, (name,))
             raise TestException
     except TestException:
         pass
     assert cursor.closed == 1, "Cursor should be closed after exiting context manager"
     cursor = dev_db_connection.cursor()
-    cursor.execute("SELECT * FROM test_table WHERE name = %s", (name, ))
+    cursor.execute("SELECT * FROM test_table WHERE name = %s", (name,))
     result = cursor.fetchall()
     cursor.close()
     assert (
@@ -42,7 +43,7 @@ def test_managed_cursors_happy_path(dev_db_connection):
     """
     name = str(uuid.uuid4())
     with managed_cursor(dev_db_connection) as cursor:
-        cursor.execute(SQL_TEST, (name, ))
+        cursor.execute(SQL_TEST, (name,))
     assert cursor.closed == 1, "Cursor should be closed after exiting context manager"
     cursor = dev_db_connection.cursor()
     cursor.execute("SELECT * FROM test_table WHERE name = %s", (name,))

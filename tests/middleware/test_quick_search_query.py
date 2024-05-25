@@ -127,7 +127,6 @@ def test_process_data_source_matches(sample_data_source_matches):
     assert result.ids == expected_ids
 
 
-
 def test_depluralize_with_plural_words():
     term = "apples oranges boxes"
     expected = "apple orange box"
@@ -144,6 +143,7 @@ def test_depluralize_with_mixed_words():
     term = "apples orange box"
     expected = "apple orange box"
     assert depluralize(term) == expected
+
 
 def test_depluralize_with_empty_string():
     term = ""

@@ -144,12 +144,22 @@ def quick_search_query(
         "data": processed_data_source_matches.converted,
     }
 
-    log_query(cursor, data_sources["count"], processed_data_source_matches, processed_search_parameters)
+    log_query(
+        cursor,
+        data_sources["count"],
+        processed_data_source_matches,
+        processed_search_parameters,
+    )
 
     return data_sources
 
 
-def log_query(cursor, data_sources_count, processed_data_source_matches, processed_search_parameters):
+def log_query(
+    cursor,
+    data_sources_count,
+    processed_data_source_matches,
+    processed_search_parameters,
+):
     query_results = json.dumps(processed_data_source_matches.ids).replace("'", "")
     cursor.execute(
         INSERT_LOG_QUERY,
@@ -170,6 +180,7 @@ def process_search_parameters(raw_sp: SearchParameters) -> SearchParameters:
 
 
 DataSourceMatches = namedtuple("DataSourceMatches", ["converted", "ids"])
+
 
 def process_data_source_matches(data_source_matches: List[dict]) -> DataSourceMatches:
     data_source_matches_converted = []
