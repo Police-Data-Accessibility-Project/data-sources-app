@@ -23,10 +23,10 @@ jobs:
     - name: Run Bandit
       run: |
         bandit -r middleware resources app.py -f txt -o bandit_output.txt
-        cat bandit_output.txt
 
     - name: Upload Bandit results
       uses: actions/upload-artifact@v2
       with:
         name: bandit-report
         path: bandit_output.txt
+
