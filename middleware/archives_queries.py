@@ -72,8 +72,15 @@ def archives_put_broken_as_of_results(
     :param conn: A psycopg2 connection object to a PostgreSQL database.
     """
     cursor = conn.cursor()
-    sql_query = "UPDATE data_sources SET url_status = 'broken', broken_source_url_as_of = '{0}', last_cached = '{1}' WHERE airtable_uid = '{2}'"
-    cursor.execute(sql_query.format(broken_as_of, last_cached, id))
+    sql_query = """
+    UPDATE data_sources 
+    SET 
+        url_status = 'broken', 
+        broken_source_url_as_of = %s, 
+        last_cached = %s 
+        WHERE airtable_uid = %s
+    """
+    cursor.execute(sql_query, (broken_as_of, last_cached, id))
     cursor.close()
 
 
@@ -88,6 +95,6 @@ def archives_put_last_cached_results(
     :param conn: A psycopg2 connection object to a PostgreSQL database.
     """
     cursor = conn.cursor()
-    sql_query = "UPDATE data_sources SET last_cached = '{0}' WHERE airtable_uid = '{1}'"
-    cursor.execute(sql_query.format(last_cached, id))
+    sql_query = "UPDATE data_sources SET last_cached = %s WHERE airtable_uid = %s"
+    cursor.execute(sql_query, (last_cached, id))
     cursor.close()

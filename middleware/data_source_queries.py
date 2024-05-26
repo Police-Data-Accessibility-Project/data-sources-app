@@ -123,12 +123,12 @@ def data_source_by_id_results(
         INNER JOIN
             agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
         WHERE
-            data_sources.approval_status = 'approved' AND data_sources.airtable_uid = '{1}'
+            data_sources.approval_status = 'approved' AND data_sources.airtable_uid = %s
     """.format(
-        joined_column_names, data_source_id
+        joined_column_names
     )
 
-    cursor.execute(sql_query)
+    cursor.execute(sql_query, (data_source_id,))
     result = cursor.fetchone()
     cursor.close()
 
