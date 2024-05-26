@@ -22,7 +22,7 @@ jobs:
 
     - name: Run Bandit
       run: |
-        bandit -r middleware -f txt -o bandit_output.txt
+        bandit -r middleware
 
     - name: Upload Bandit results
       uses: actions/upload-artifact@v2
