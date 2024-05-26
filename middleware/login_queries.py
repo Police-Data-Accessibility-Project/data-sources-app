@@ -16,7 +16,7 @@ def login_results(cursor: PgCursor, email: str) -> Dict[str, Union[int, str]]:
     :return: A dictionary containing user data or an error message.
     """
     cursor.execute(
-        f"select id, password_digest, api_key from users where email = '{email}'"
+        f"select id, password_digest, api_key from users where email = %s", (email,)
     )
     results = cursor.fetchall()
     if len(results) == 0:
@@ -36,7 +36,7 @@ def is_admin(cursor: PgCursor, email: str) -> bool:
     :param email: User's email.
     :return: True if user is an admin, False if not, or an error message.
     """
-    cursor.execute(f"select role from users where email = '{email}'")
+    cursor.execute(f"select role from users where email = %s", (email,))
     results = cursor.fetchall()
     try:
         role = results[0][0]
@@ -64,7 +64,8 @@ def create_session_token(cursor: PgCursor, user_id: int, email: str) -> str:
     }
     session_token = jwt.encode(payload, os.getenv("SECRET_KEY"), algorithm="HS256")
     cursor.execute(
-        f"insert into session_tokens (token, email, expiration_date) values ('{session_token}', '{email}', '{expiration}')"
+        f"insert into session_tokens (token, email, expiration_date) values (%s, %s, %s)",
+        (session_token, email, expiration),
     )
 
     return session_token
@@ -78,7 +79,7 @@ def token_results(cursor: PgCursor, token: str) -> Dict[str, Union[int, str]]:
     :param token: The session token.
     :return: A dictionary containing session token data or an error message.
     """
-    cursor.execute(f"select id, email from session_tokens where token = '{token}'")
+    cursor.execute(f"select id, email from session_tokens where token = %s", (token,))
     results = cursor.fetchall()
     if len(results) == 0:
         raise TokenNotFoundError("The specified token was not found.")
