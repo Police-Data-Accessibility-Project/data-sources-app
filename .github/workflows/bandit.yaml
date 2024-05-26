@@ -22,7 +22,7 @@ jobs:
 
     - name: Run Bandit
       run: |
-        bandit -r middleware resources app.py -f txt -o bandit_output.txt || exit 1
+        bandit -r middleware resources app.py -f txt -o bandit_output.txt
         cat bandit_output.txt
 
     - name: Upload Bandit results
