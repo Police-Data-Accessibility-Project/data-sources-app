@@ -36,20 +36,14 @@ class QuickSearch(PsycopgResource):
         - A dictionary containing a message about the search results and the data found, if any.
         """
         try:
-            data = request.get_json()
-            test = data.get("test_flag")
-        except:
-            test = False
-
-        try:
             data_sources = quick_search_query(
-                search, location, [], self.psycopg2_connection, test
+                search, location, self.psycopg2_connection
             )
 
             if data_sources["count"] == 0:
                 self.psycopg2_connection = initialize_psycopg2_connection()
                 data_sources = quick_search_query(
-                    search, location, [], self.psycopg2_connection
+                    search, location, self.psycopg2_connection
                 )
 
             if data_sources["count"] == 0:

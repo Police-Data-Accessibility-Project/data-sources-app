@@ -137,35 +137,28 @@ def data_source_by_id_results(
 
 def data_source_by_id_query(
     data_source_id: str = "",
-    test_query_results: Optional[List[Dict[str, Any]]] = None,
     conn: Optional[PgConnection] = None,
 ) -> Dict[str, Any]:
     """
-    Processes a request to fetch data source details by ID, either from the database or provided test results.
+    Processes a request to fetch data source details by ID from the database
 
     :param data_source_id: The unique identifier for the data source.
-    :param test_query_results: A list of dictionaries representing test query results, if provided.
     :param conn: A psycopg2 connection object to a PostgreSQL database.
     :return: A dictionary with the data source details after processing.
     """
-    if conn:
-        result = data_source_by_id_results(conn, data_source_id)
-    else:
-        result = test_query_results
+    result = data_source_by_id_results(conn, data_source_id)
+    if not result:
+        return []
 
-    if result:
-        data_source_and_agency_columns = (
-            DATA_SOURCES_APPROVED_COLUMNS + AGENCY_APPROVED_COLUMNS
-        )
-        data_source_and_agency_columns.append("data_source_id")
-        data_source_and_agency_columns.append("agency_id")
-        data_source_and_agency_columns.append("agency_name")
-        data_source_details = dict(zip(data_source_and_agency_columns, result))
-        data_source_details = convert_dates_to_strings(data_source_details)
-        data_source_details = format_arrays(data_source_details)
-
-    else:
-        data_source_details = []
+    data_source_and_agency_columns = (
+        DATA_SOURCES_APPROVED_COLUMNS + AGENCY_APPROVED_COLUMNS
+    )
+    data_source_and_agency_columns.append("data_source_id")
+    data_source_and_agency_columns.append("agency_id")
+    data_source_and_agency_columns.append("agency_name")
+    data_source_details = dict(zip(data_source_and_agency_columns, result))
+    data_source_details = convert_dates_to_strings(data_source_details)
+    data_source_details = format_arrays(data_source_details)
 
     return data_source_details
 
