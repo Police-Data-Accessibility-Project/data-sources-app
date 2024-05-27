@@ -11,7 +11,7 @@ from middleware.login_queries import (
     is_admin,
 )
 from middleware.custom_exceptions import UserNotFoundError, TokenNotFoundError
-from tests.middleware.helper_functions import create_test_user
+from tests.helper_functions import create_test_user
 from tests.fixtures import db_cursor, dev_db_connection
 
 

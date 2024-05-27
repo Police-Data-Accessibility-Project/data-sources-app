@@ -5,13 +5,12 @@ from middleware.quick_search_query import (
     quick_search_query,
     QUICK_SEARCH_COLUMNS,
 )
-from tests.middleware.helper_functions import (
+from tests.helper_functions import (
     has_expected_keys,
     get_most_recent_quick_search_query_log,
 )
 from tests.fixtures import (
-    connection_with_test_data,
-    dev_db_connection
+    connection_with_test_data, dev_db_connection
 )
 
 

@@ -10,7 +10,7 @@ from middleware.archives_queries import (
     archives_put_broken_as_of_results,
     archives_put_last_cached_results,
 )
-from tests.middleware.helper_functions import (
+from tests.helper_functions import (
     has_expected_keys,
 )
 from tests.fixtures import (

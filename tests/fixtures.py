@@ -5,8 +5,10 @@ import os
 import psycopg2
 import pytest
 from dotenv import load_dotenv
+from flask.testing import FlaskClient
 
-from tests.middleware.helper_functions import insert_test_agencies_and_sources
+from app import create_app
+from tests.helper_functions import insert_test_agencies_and_sources
 
 
 @pytest.fixture
@@ -77,3 +79,26 @@ def connection_with_test_data(
     except psycopg2.errors.UniqueViolation:
         dev_db_connection.rollback()
     return dev_db_connection
+
+
+@pytest.fixture
+def client_with_mock_db(mocker) -> FlaskClient:
+    """
+    Create a client with a mocked database connection
+    :param mocker:
+    :return:
+    """
+    app = create_app(mocker.MagicMock())
+    with app.test_client() as client:
+        yield client
+
+@pytest.fixture
+def client_with_db(dev_db_connection: psycopg2.extensions.connection):
+    """
+    Creates a client with database connection
+    :param dev_db_connection:
+    :return:
+    """
+    app = create_app(dev_db_connection)
+    with app.test_client() as client:
+        yield client
