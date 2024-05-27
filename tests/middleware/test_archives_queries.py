@@ -11,10 +11,9 @@ from middleware.archives_queries import (
     archives_put_last_cached_results,
 )
 from tests.middleware.helper_functions import (
-    insert_test_agencies_and_sources,
     has_expected_keys,
 )
-from tests.middleware.fixtures import (
+from tests.fixtures import (
     dev_db_connection,
     db_cursor,
     connection_with_test_data,

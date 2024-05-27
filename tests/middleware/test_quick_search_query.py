@@ -1,7 +1,4 @@
-from datetime import datetime
-
 import psycopg2
-import pytz
 
 from middleware.quick_search_query import (
     unaltered_search_query,
@@ -9,14 +6,12 @@ from middleware.quick_search_query import (
     QUICK_SEARCH_COLUMNS,
 )
 from tests.middleware.helper_functions import (
-    insert_test_agencies_and_sources,
     has_expected_keys,
     get_most_recent_quick_search_query_log,
 )
-from tests.middleware.fixtures import (
-    dev_db_connection,
-    db_cursor,
+from tests.fixtures import (
     connection_with_test_data,
+    dev_db_connection
 )
 
 
