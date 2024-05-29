@@ -37,19 +37,15 @@ def archives_get_results(conn: PgConnection) -> list[tuple[Any, ...]]:
 
 
 def archives_get_query(
-    test_query_results: Optional[List[Dict[str, Any]]] = None,
     conn: Optional[PgConnection] = None,
 ) -> List[Dict[str, Any]]:
     """
-    Processes the archives get results, either from the database or a provided set of test results, and converts dates to strings.
+    Processes the archives get results, either from the database and converts dates to strings.
 
-    :param test_query_results: A list of dictionaries representing test query results, if any.
     :param conn: A psycopg2 connection object to a PostgreSQL database.
     :return: A list of dictionaries with the query results after processing and date conversion.
     """
-    results = (
-        archives_get_results(conn) if not test_query_results else test_query_results
-    )
+    results = archives_get_results(conn)
     archives_combined_results = [
         dict(zip(ARCHIVES_GET_COLUMNS, result)) for result in results
     ]

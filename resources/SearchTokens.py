@@ -60,14 +60,7 @@ class SearchTokens(PsycopgResource):
 
         if endpoint == "quick-search":
             try:
-                data = request.get_json()
-                test = data.get("test_flag")
-            except:
-                test = False
-            try:
-                data_sources = quick_search_query(
-                    arg1, arg2, [], self.psycopg2_connection, test
-                )
+                data_sources = quick_search_query(arg1, arg2, self.psycopg2_connection)
 
                 return data_sources
 
@@ -113,7 +106,7 @@ class SearchTokens(PsycopgResource):
         elif endpoint == "data-sources-by-id":
             try:
                 data_source_details = data_source_by_id_query(
-                    arg1, [], self.psycopg2_connection
+                    arg1, self.psycopg2_connection
                 )
                 if data_source_details:
                     return data_source_details

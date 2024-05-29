@@ -29,7 +29,7 @@ class Archives(PsycopgResource):
         - Any: The cleaned results of archives combined from the database query, or an error message if an exception occurs.
         """
         archives_combined_results_clean = archives_get_query(
-            test_query_results=[], conn=self.psycopg2_connection
+            conn=self.psycopg2_connection
         )
 
         return archives_combined_results_clean
