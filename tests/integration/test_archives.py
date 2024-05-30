@@ -45,8 +45,11 @@ def test_archives_put(
     broken_as_of = datetime.date(year=1993, month=11, day=13)
     response = client_with_db.put(
         "/archives",
-        headers={"Authorization": f"Bearer {api_key}"},
-        data=json.dumps(
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        json=json.dumps(
             {
                 "id": data_source_id,
                 "last_cached": str(last_cached),
