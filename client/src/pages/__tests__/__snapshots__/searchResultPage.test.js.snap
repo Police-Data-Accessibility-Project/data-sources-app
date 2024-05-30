@@ -10,14 +10,12 @@ exports[`SearchResultPage renders with data > Calls API and renders search resul
       <i class="fa fa-plus"></i> New search
     </button>
   </div>
-  <div>
-    <p class="text-xl max-w-full"> If you don't see what you need, <a href="https://airtable.com/shrbFfWk6fjzGnNsk"> make a request <i class="fa fa-external-link"></i>
-      </a>
-    </p>
-    <p class="text-xl max-w-full"> To see these results in a table, <a href="https://airtable.com/shrUAtA8qYasEaepI"> view the full database <i class="fa fa-external-link"></i>
-      </a>
-    </p>
-  </div>
+  <p class="text-xl max-w-full"> To see this data in table form, <a href="https://airtable.com/shrUAtA8qYasEaepI"> view the full database <i class="fa fa-external-link"></i>
+    </a>
+  </p>
+  <p class="text-xl max-w-full"> If you don't see what you need, <a href="https://airtable.com/shrbFfWk6fjzGnNsk"> make a request <i class="fa fa-external-link"></i>
+    </a>
+  </p>
   <div>
     <section class="mt-8 p-0 w-full">
       <h2 class="section-subheading w-full">Police & public interactions</h2>
