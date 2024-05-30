@@ -9,10 +9,10 @@ from middleware.data_source_queries import (
     data_source_by_id_query,
     get_data_sources_for_map,
 )
-from tests.middleware.helper_functions import (
+from tests.helper_functions import (
     get_boolean_dictionary,
 )
-from tests.middleware.fixtures import connection_with_test_data, dev_db_connection
+from tests.fixtures import connection_with_test_data, dev_db_connection
 
 
 @pytest.fixture

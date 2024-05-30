@@ -10,11 +10,11 @@ from middleware.archives_queries import (
     archives_put_broken_as_of_results,
     archives_put_last_cached_results,
 )
-from tests.middleware.helper_functions import (
-    insert_test_agencies_and_sources,
+from tests.helper_functions import (
     has_expected_keys,
+    insert_test_data_source,
 )
-from tests.middleware.fixtures import (
+from tests.fixtures import (
     dev_db_connection,
     db_cursor,
     connection_with_test_data,
@@ -66,34 +66,6 @@ def test_archives_get_columns(
     for result in results:
         if result["id"] == "SOURCE_UID_1":
             return
-
-
-def insert_test_data_source(cursor: psycopg2.extensions.cursor) -> str:
-    """
-    Insert test data source and return id
-    :param cursor:
-    :return: randomly generated uuid
-    """
-    test_uid = str(uuid.uuid4())
-    cursor.execute(
-        """
-        INSERT INTO
-        PUBLIC.DATA_SOURCES (
-            airtable_uid,
-            NAME,
-            DESCRIPTION,
-            RECORD_TYPE,
-            SOURCE_URL,
-            APPROVAL_STATUS,
-            URL_STATUS
-        )
-        VALUES
-        (%s,'Example Data Source', 'Example Description',
-            'Type A','http://src1.com','approved','available')
-        """,
-        (test_uid,),
-    )
-    return test_uid
 
 
 def get_data_sources_archives_info(cursor, test_uid):

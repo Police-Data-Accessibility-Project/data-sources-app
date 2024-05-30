@@ -4,7 +4,6 @@ the appropriate methods in their supporting classes
 """
 
 from collections import namedtuple
-from typing import Type, Any, List
 
 import pytest
 from unittest.mock import patch
@@ -12,7 +11,6 @@ from unittest.mock import patch
 from flask.testing import FlaskClient
 from flask_restful import Resource
 
-from app import create_app
 from resources.Agencies import Agencies
 from resources.ApiKey import ApiKey
 from resources.Archives import Archives
@@ -30,25 +28,13 @@ from resources.ResetPassword import ResetPassword
 from resources.ResetTokenValidation import ResetTokenValidation
 from resources.SearchTokens import SearchTokens
 from resources.User import User
-
+from tests.fixtures import client_with_mock_db
 
 # Define constants for HTTP methods
 GET = "get"
 POST = "post"
 PUT = "put"
 DELETE = "delete"
-
-
-@pytest.fixture
-def client(mocker) -> FlaskClient:
-    """
-    Create a client with a mocked database connection
-    :param mocker:
-    :return:
-    """
-    app = create_app(mocker.MagicMock())
-    with app.test_client() as client:
-        yield client
 
 
 def run_endpoint_tests(
@@ -95,7 +81,7 @@ test_parameters = [
 
 
 @pytest.mark.parametrize("test_parameter", test_parameters)
-def test_endpoints(client: FlaskClient, test_parameter) -> None:
+def test_endpoints(client_with_mock_db: FlaskClient, test_parameter) -> None:
     """
     Using the test_parameters list, this tests all endpoints to ensure that
     only the appropriate methods can be called from the endpoints
@@ -106,7 +92,7 @@ def test_endpoints(client: FlaskClient, test_parameter) -> None:
     :return:
     """
     run_endpoint_tests(
-        client,
+        client_with_mock_db,
         test_parameter.endpoint,
         test_parameter.class_type,
         test_parameter.allowed_methods,
