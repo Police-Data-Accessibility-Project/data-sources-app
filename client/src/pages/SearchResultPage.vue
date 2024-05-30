@@ -23,8 +23,14 @@
 			No results found.
 		</p>
 
-		<div v-else>
-			<p class="text-xl max-w-full">
+		<p v-else class="text-xl max-w-full">
+			If you'd prefer to use a spreadsheet,
+			<a href="https://airtable.com/shrUAtA8qYasEaepI">
+				view the full database&nbsp;<i class="fa fa-external-link" />
+			</a>
+		</p>
+
+		<p class="text-xl max-w-full">
 				If you don't see what you need,
 				<a
 					href="https://airtable.com/shrbFfWk6fjzGnNsk"
@@ -32,14 +38,7 @@
 				>
 					make a request&nbsp;<i class="fa fa-external-link" />
 				</a>
-			</p>
-			<p class="text-xl max-w-full">
-				To see these results in a table,
-				<a href="https://airtable.com/shrUAtA8qYasEaepI">
-					view the full database&nbsp;<i class="fa fa-external-link" />
-				</a>
-			</p>
-		</div>
+		</p>
 
 		<div data-test="search-results">
 			<section
