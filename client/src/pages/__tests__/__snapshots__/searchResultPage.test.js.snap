@@ -11,10 +11,10 @@ exports[`SearchResultPage renders with data > Calls API and renders search resul
     </button>
   </div>
   <div>
-    <p class="text-xl max-w-full"> To see these results in table form, <a href="https://airtable.com/shrUAtA8qYasEaepI"> view the full database <i class="fa fa-external-link"></i>
+    <p class="text-xl max-w-full"> If you don't see what you need, <a href="https://airtable.com/shrbFfWk6fjzGnNsk"> make a request <i class="fa fa-external-link"></i>
       </a>
     </p>
-    <p class="text-xl max-w-full"> If you don't see what you need, <a href="https://airtable.com/shrbFfWk6fjzGnNsk"> make a request <i class="fa fa-external-link"></i>
+    <p class="text-xl max-w-full"> To see these results in a table, <a href="https://airtable.com/shrUAtA8qYasEaepI"> view the full database <i class="fa fa-external-link"></i>
       </a>
     </p>
   </div>
