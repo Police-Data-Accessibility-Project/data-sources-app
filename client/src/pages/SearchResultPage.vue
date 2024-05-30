@@ -23,23 +23,22 @@
 			No results found.
 		</p>
 
-		<div v-else>
-			<p class="text-xl max-w-full">
-				If you don't see what you need,
-				<a
-					href="https://airtable.com/shrbFfWk6fjzGnNsk"
-					data-test="search-results-request-link"
-				>
-					make a request&nbsp;<i class="fa fa-external-link" />
-				</a>
-			</p>
-			<p class="text-xl max-w-full">
-				To see these results in a table,
-				<a href="https://airtable.com/shrUAtA8qYasEaepI">
-					view the full database&nbsp;<i class="fa fa-external-link" />
-				</a>
-			</p>
-		</div>
+		<p v-else class="text-xl max-w-full">
+			To see this data in table form,
+			<a href="https://airtable.com/shrUAtA8qYasEaepI">
+				view the full database&nbsp;<i class="fa fa-external-link" />
+			</a>
+		</p>
+
+		<p class="text-xl max-w-full">
+			If you don't see what you need,
+			<a
+				href="https://airtable.com/shrbFfWk6fjzGnNsk"
+				data-test="search-results-request-link"
+			>
+				make a request&nbsp;<i class="fa fa-external-link" />
+			</a>
+		</p>
 
 		<div data-test="search-results">
 			<section
