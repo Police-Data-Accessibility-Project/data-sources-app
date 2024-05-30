@@ -188,6 +188,11 @@ UserInfo = namedtuple("UserInfo", ["email", "password"])
 
 
 def create_test_user_api(client: FlaskClient) -> UserInfo:
+    """
+    Create a test user through calling the /user endpoint via the Flask API
+    :param client:
+    :return:
+    """
     email = str(uuid.uuid4())
     password = str(uuid.uuid4())
     response = client.post(
@@ -201,6 +206,13 @@ def create_test_user_api(client: FlaskClient) -> UserInfo:
 def login_and_return_session_token(
     client_with_db: FlaskClient, user_info: UserInfo
 ) -> str:
+    """
+    Login as a given user and return the associated session token,
+    using the /login endpoint of the Flask API
+    :param client_with_db:
+    :param user_info:
+    :return:
+    """
     response = client_with_db.post(
         "/login",
         json={"email": user_info.email, "password": user_info.password},
@@ -211,6 +223,12 @@ def login_and_return_session_token(
 
 
 def get_user_password_digest(cursor: psycopg2.extensions.cursor, user_info):
+    """
+    Get the associated password digest of a user (given their email) from the database
+    :param cursor:
+    :param user_info:
+    :return:
+    """
     cursor.execute(
         """
         SELECT password_digest from users where email = %s
@@ -221,6 +239,14 @@ def get_user_password_digest(cursor: psycopg2.extensions.cursor, user_info):
 
 
 def request_reset_password_api(client_with_db, mocker, user_info):
+    """
+    Send a request to reset password via a Flask call to the /request-reset-password endpoint
+    and return the reset token
+    :param client_with_db:
+    :param mocker:
+    :param user_info:
+    :return:
+    """
     mocker.patch("resources.RequestResetPassword.requests.post")
     response = client_with_db.post(
         "/request-reset-password", json={"email": user_info.email}
@@ -230,6 +256,12 @@ def request_reset_password_api(client_with_db, mocker, user_info):
 
 
 def create_api_key(client_with_db, user_info):
+    """
+    Obtain an api key for the given user, via a Flask call to the /api-key endpoint
+    :param client_with_db:
+    :param user_info:
+    :return:
+    """
     response = client_with_db.get(
         "/api_key", json={"email": user_info.email, "password": user_info.password}
     )
@@ -269,9 +301,14 @@ def insert_test_data_source(cursor: psycopg2.extensions.cursor) -> str:
 def give_user_admin_role(
     connection: psycopg2.extensions.connection, user_info: UserInfo
 ):
+    """
+    Give the given user an admin role.
+    :param connection:
+    :param user_info:
+    :return:
+    """
     cursor = connection.cursor()
 
-    # User requires admin privileges
     cursor.execute(
         """
     UPDATE users

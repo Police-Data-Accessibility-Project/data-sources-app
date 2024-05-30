@@ -1,4 +1,4 @@
-import uuid
+"""Integration tests for /login endpoint"""
 
 import psycopg2.extensions
 
@@ -7,7 +7,9 @@ from tests.helper_functions import create_test_user_api, login_and_return_sessio
 
 
 def test_login_post(client_with_db, dev_db_connection: psycopg2.extensions.connection):
-
+    """
+    Test that POST call to /login endpoint successfully logs in a user, creates a session token, and verifies the session token exists only once in the database with the correct email
+    """
     # Create user
     user_info = create_test_user_api(client_with_db)
     session_token = login_and_return_session_token(client_with_db, user_info)

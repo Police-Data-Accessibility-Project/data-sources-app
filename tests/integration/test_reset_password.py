@@ -1,3 +1,5 @@
+"""Integration tests for /reset-password endpoint."""
+
 import uuid
 
 import psycopg2
@@ -15,6 +17,10 @@ from tests.helper_functions import (
 def test_reset_password_post(
     client_with_db, dev_db_connection: psycopg2.extensions.connection, mocker
 ):
+    """
+    Test that POST call to /reset-password endpoint successfully resets the user's password, and verifies the new password digest is distinct from the old one in the database
+    """
+
     user_info = create_test_user_api(client_with_db)
     cursor = dev_db_connection.cursor()
     old_password_digest = get_user_password_digest(cursor, user_info)

@@ -1,5 +1,6 @@
+"""Integration tests for /data-sources-needs-identification endpoint"""
+
 import psycopg2
-import pytest
 from tests.fixtures import connection_with_test_data, dev_db_connection, client_with_db
 from tests.helper_functions import (
     get_boolean_dictionary,
@@ -11,6 +12,9 @@ from tests.helper_functions import (
 def test_data_sources_needs_identification(
     client_with_db, connection_with_test_data: psycopg2.extensions.connection
 ):
+    """
+    Test that GET call to /data-sources-needs-identification endpoint retrieves data sources that need identification and correctly identifies specific sources by name
+    """
     inserted_data_sources_found = get_boolean_dictionary(
         ("Source 1", "Source 2", "Source 3")
     )

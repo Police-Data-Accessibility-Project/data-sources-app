@@ -1,3 +1,5 @@
+"""Integration tests for /archives endpoint"""
+
 import datetime
 import json
 
@@ -17,6 +19,9 @@ from tests.helper_functions import (
 def test_archives_get(
     client_with_db, dev_db_connection: psycopg2.extensions.connection
 ):
+    """
+    Test that GET call to /archives endpoint successfully retrieves a non-zero amount of data
+    """
     user_info = create_test_user_api(client_with_db)
     api_key = create_api_key(client_with_db, user_info)
     response = client_with_db.get(
@@ -30,6 +35,9 @@ def test_archives_get(
 def test_archives_put(
     client_with_db, dev_db_connection: psycopg2.extensions.connection
 ):
+    """
+    Test that PUT call to /archives endpoint successfully updates the data source with last_cached and broken_source_url_as_of fields
+    """
     user_info = create_test_user_api(client_with_db)
     api_key = create_api_key(client_with_db, user_info)
     data_source_id = insert_test_data_source(dev_db_connection.cursor())
@@ -38,18 +46,23 @@ def test_archives_put(
     response = client_with_db.put(
         "/archives",
         headers={"Authorization": f"Bearer {api_key}"},
-        data=json.dumps({
-            "id": data_source_id,
-            "last_cached": str(last_cached),
-            "broken_source_url_as_of": str(broken_as_of)
-        })
+        data=json.dumps(
+            {
+                "id": data_source_id,
+                "last_cached": str(last_cached),
+                "broken_source_url_as_of": str(broken_as_of),
+            }
+        ),
     )
     assert response.status_code == 200, "Endpoint returned non-200"
 
     cursor = dev_db_connection.cursor()
-    cursor.execute("""
+    cursor.execute(
+        """
     SELECT last_cached, broken_source_url_as_of FROM data_sources where airtable_uid = %s
-    """, (data_source_id, ))
+    """,
+        (data_source_id,),
+    )
     row = cursor.fetchone()
     assert row[0] == last_cached
     assert row[1] == broken_as_of

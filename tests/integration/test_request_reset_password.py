@@ -1,3 +1,5 @@
+"""Integration tests for /request-reset-password endpoint."""
+
 import psycopg2
 
 from tests.fixtures import dev_db_connection, client_with_db
@@ -7,6 +9,9 @@ from tests.helper_functions import create_test_user_api
 def test_request_reset_password_post(
     client_with_db, dev_db_connection: psycopg2.extensions.connection, mocker
 ):
+    """
+    Test that POST call to /request-reset-password endpoint successfully initiates a password reset request, sends a single email via Mailgun, and verifies the reset token is correctly associated with the user's email in the database
+    """
 
     user_info = create_test_user_api(client_with_db)
 
@@ -22,7 +27,6 @@ def test_request_reset_password_post(
     assert (
         mock_post.call_args[0][0] == "https://api.mailgun.net/v3/mail.pdap.io/messages"
     )
-
 
     cursor = dev_db_connection.cursor()
     cursor.execute(

@@ -1,9 +1,7 @@
-import json
-import uuid
-from urllib.parse import quote
+"""Integration tests for /data-sources-by-id endpoint"""
 
+import uuid
 import psycopg2
-import pytest
 from tests.fixtures import connection_with_test_data, dev_db_connection, client_with_db
 from tests.helper_functions import (
     create_test_user_api,
@@ -15,6 +13,10 @@ from tests.helper_functions import (
 def test_data_sources_by_id_get(
     client_with_db, connection_with_test_data: psycopg2.extensions.connection
 ):
+    """
+    Test that GET call to /data-sources-by-id/<data_source_id> endpoint retrieves the data source with the correct homepage URL
+    """
+
     user_info = create_test_user_api(client_with_db)
     api_key = create_api_key(client_with_db, user_info)
     response = client_with_db.get(
@@ -28,6 +30,9 @@ def test_data_sources_by_id_get(
 def test_data_sources_by_id_put(
     client_with_db, connection_with_test_data: psycopg2.extensions.connection
 ):
+    """
+    Test that PUT call to /data-sources-by-id/<data_source_id> endpoint successfully updates the description of the data source and verifies the change in the database
+    """
     user_info = create_test_user_api(client_with_db)
     give_user_admin_role(connection_with_test_data, user_info)
     api_key = create_api_key(client_with_db, user_info)
