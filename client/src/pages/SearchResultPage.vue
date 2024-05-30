@@ -24,7 +24,7 @@
 		</p>
 
 		<p v-else class="text-xl max-w-full">
-			If you'd prefer to use a spreadsheet,
+			To see this data in table form,
 			<a href="https://airtable.com/shrUAtA8qYasEaepI">
 				view the full database&nbsp;<i class="fa fa-external-link" />
 			</a>
