@@ -2,9 +2,11 @@
 
 import uuid
 from collections import namedtuple
+from datetime import datetime, timedelta
 from typing import Optional
 
 import psycopg2.extensions
+from flask.testing import FlaskClient
 
 TestTokenInsert = namedtuple("TestTokenInsert", ["id", "email", "token"])
 TestUser = namedtuple("TestUser", ["id", "email", "password_hash"])
@@ -180,3 +182,101 @@ def get_boolean_dictionary(keys: tuple) -> dict:
     for key in keys:
         d[key] = False
     return d
+
+
+UserInfo = namedtuple("UserInfo", ["email", "password"])
+
+
+def create_test_user_api(client: FlaskClient) -> UserInfo:
+    email = str(uuid.uuid4())
+    password = str(uuid.uuid4())
+    response = client.post(
+        "/user",
+        json={"email": email, "password": password},
+    )
+    assert response.status_code == 200, "User creation not successful"
+    return UserInfo(email=email, password=password)
+
+
+def login_and_return_session_token(
+    client_with_db: FlaskClient, user_info: UserInfo
+) -> str:
+    response = client_with_db.post(
+        "/login",
+        json={"email": user_info.email, "password": user_info.password},
+    )
+    assert response.status_code == 200, "User login unsuccessful"
+    session_token = response.json.get("data")
+    return session_token
+
+
+def get_user_password_digest(cursor: psycopg2.extensions.cursor, user_info):
+    cursor.execute(
+        """
+        SELECT password_digest from users where email = %s
+    """,
+        (user_info.email,),
+    )
+    return cursor.fetchone()[0]
+
+
+def request_reset_password_api(client_with_db, mocker, user_info):
+    mocker.patch("resources.RequestResetPassword.requests.post")
+    response = client_with_db.post(
+        "/request-reset-password", json={"email": user_info.email}
+    )
+    token = response.json.get("token")
+    return token
+
+
+def create_api_key(client_with_db, user_info):
+    response = client_with_db.get(
+        "/api_key", json={"email": user_info.email, "password": user_info.password}
+    )
+    assert response.status_code == 200, "API key creation not successful"
+    api_key = response.json.get("api_key")
+    return api_key
+
+
+def insert_test_data_source(cursor: psycopg2.extensions.cursor) -> str:
+    """
+    Insert test data source and return id
+    :param cursor:
+    :return: randomly generated uuid
+    """
+    test_uid = str(uuid.uuid4())
+    cursor.execute(
+        """
+        INSERT INTO
+        PUBLIC.DATA_SOURCES (
+            airtable_uid,
+            NAME,
+            DESCRIPTION,
+            RECORD_TYPE,
+            SOURCE_URL,
+            APPROVAL_STATUS,
+            URL_STATUS
+        )
+        VALUES
+        (%s,'Example Data Source', 'Example Description',
+            'Type A','http://src1.com','approved','available')
+        """,
+        (test_uid,),
+    )
+    return test_uid
+
+
+def give_user_admin_role(
+    connection: psycopg2.extensions.connection, user_info: UserInfo
+):
+    cursor = connection.cursor()
+
+    # User requires admin privileges
+    cursor.execute(
+        """
+    UPDATE users
+    SET role = 'admin'
+    WHERE email = %s
+    """,
+        (user_info.email,),
+    )
