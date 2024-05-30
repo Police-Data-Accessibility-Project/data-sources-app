@@ -31,13 +31,13 @@
 		</p>
 
 		<p class="text-xl max-w-full">
-				If you don't see what you need,
-				<a
-					href="https://airtable.com/shrbFfWk6fjzGnNsk"
-					data-test="search-results-request-link"
-				>
-					make a request&nbsp;<i class="fa fa-external-link" />
-				</a>
+			If you don't see what you need,
+			<a
+				href="https://airtable.com/shrbFfWk6fjzGnNsk"
+				data-test="search-results-request-link"
+			>
+				make a request&nbsp;<i class="fa fa-external-link" />
+			</a>
 		</p>
 
 		<div data-test="search-results">
