@@ -42,7 +42,7 @@ class DataSourceById(PsycopgResource):
             }
 
         else:
-            return {"message": "Data source not found."}, 404
+            return {"message": "Data source not found."}, 200
 
     @handle_exceptions
     @api_required
