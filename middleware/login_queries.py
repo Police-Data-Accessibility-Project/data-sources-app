@@ -1,3 +1,5 @@
+from datetime import datetime as dt
+
 import jwt
 import os
 import datetime
@@ -87,3 +89,9 @@ def token_results(cursor: PgCursor, token: str) -> Dict[str, Union[int, str]]:
         "id": results[0][0],
         "email": results[0][1],
     }
+
+
+def delete_session_token(cursor, old_token):
+    cursor.execute(
+        f"delete from session_tokens where token = '{old_token}'"
+    )
