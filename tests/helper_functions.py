@@ -103,7 +103,7 @@ def create_reset_token(cursor: psycopg2.extensions.cursor) -> TestTokenInsert:
 
 def create_test_user(
     cursor,
-    email="example@example.com",
+    email="",
     password_hash="hashed_password_here",
     api_key="api_key_here",
     role=None,
@@ -114,6 +114,8 @@ def create_test_user(
     :param cursor:
     :return: user id
     """
+    if email == "":
+        email = uuid.uuid4().hex + "@test.com"
     cursor.execute(
         """
         INSERT INTO users (email, password_digest, api_key, role)
