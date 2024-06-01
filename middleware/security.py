@@ -23,21 +23,17 @@ def is_valid(api_key: str, endpoint: str, method: str) -> APIKeyStatus:
     if not api_key:
         return APIKeyStatus(is_valid=False, is_expired=False)
 
+    session_token_results = None
     psycopg2_connection = initialize_psycopg2_connection()
     cursor = psycopg2_connection.cursor()
-    cursor.execute(f"select id, api_key, role from users where api_key = '{api_key}'")
-    results = cursor.fetchall()
-    if len(results) > 0:
-        role = results[0][2]
-
-    if not results:
-        cursor.execute(
-            f"select email, expiration_date from session_tokens where token = '{api_key}'"
+    role = get_role(api_key, cursor)
+    if role is None:
+        session_token_results = get_session_token(
+            api_key, cursor, session_token_results
         )
-        results = cursor.fetchall()
-        if len(results) > 0:
-            email = results[0][0]
-            expiration_date = results[0][1]
+        if len(session_token_results) > 0:
+            email = session_token_results[0][0]
+            expiration_date = session_token_results[0][1]
             print(expiration_date, dt.utcnow())
 
             if expiration_date < dt.utcnow():
@@ -46,26 +42,57 @@ def is_valid(api_key: str, endpoint: str, method: str) -> APIKeyStatus:
             if is_admin(cursor, email):
                 role = "admin"
 
-    if not results:
-        cursor.execute(f"select id, token from access_tokens where token = '{api_key}'")
-        results = cursor.fetchall()
-        cursor.execute(
-            f"delete from access_tokens where expiration_date < '{dt.utcnow()}'"
-        )
-        psycopg2_connection.commit()
+    if not session_token_results and role is None:
+        delete_expired_access_tokens(cursor, psycopg2_connection)
+        access_token = get_access_token(api_key, cursor)
         role = "user"
 
-        if not results:
+        if not access_token:
             return APIKeyStatus(is_valid=False, is_expired=False)
 
-    if endpoint in ("datasources", "datasourcebyid") and method in ("PUT", "POST"):
-        if role != "admin":
-            return APIKeyStatus(is_valid=False, is_expired=False)
+    if is_admin_only_action(endpoint, method) and role != "admin":
+        return APIKeyStatus(is_valid=False, is_expired=False)
 
     # Compare the API key in the user table to the API in the request header and proceed
     # through the protected route if it's valid. Otherwise, compare_digest will return False
     # and api_required will send an error message to provide a valid API key
     return APIKeyStatus(is_valid=True, is_expired=False)
+
+
+def get_role(api_key, cursor):
+    cursor.execute(f"select id, api_key, role from users where api_key = '{api_key}'")
+    user_results = cursor.fetchall()
+    if len(user_results) > 0:
+        role = user_results[0][2]
+        if role is None:
+            return "user"
+        return role
+    return None
+
+
+def get_session_token(api_key, cursor, session_token_results):
+    cursor.execute(
+        f"select email, expiration_date from session_tokens where token = '{api_key}'"
+    )
+    session_token_results = cursor.fetchall()
+    return session_token_results
+
+
+def get_access_token(api_key, cursor):
+    cursor.execute(f"select id, token from access_tokens where token = '{api_key}'")
+    results = cursor.fetchone()
+    if results:
+        return results[1]
+    return None
+
+
+def delete_expired_access_tokens(cursor, psycopg2_connection):
+    cursor.execute(f"delete from access_tokens where expiration_date < '{dt.utcnow()}'")
+    psycopg2_connection.commit()
+
+
+def is_admin_only_action(endpoint, method):
+    return endpoint in ("datasources", "datasourcebyid") and method in ("PUT", "POST")
 
 
 def api_required(func):
