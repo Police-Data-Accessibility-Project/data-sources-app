@@ -103,7 +103,7 @@ def create_reset_token(cursor: psycopg2.extensions.cursor) -> TestTokenInsert:
 
 def create_test_user(
     cursor,
-    email="example@example.com",
+    email="",
     password_hash="hashed_password_here",
     api_key="api_key_here",
     role=None,
@@ -114,6 +114,8 @@ def create_test_user(
     :param cursor:
     :return: user id
     """
+    if email == "":
+        email = f"testuser{uuid.uuid4().hex}@example.com"
     cursor.execute(
         """
         INSERT INTO users (email, password_digest, api_key, role)
@@ -267,6 +269,13 @@ def create_api_key(client_with_db, user_info):
     )
     assert response.status_code == 200, "API key creation not successful"
     api_key = response.json.get("api_key")
+    return api_key
+
+def create_api_key_db(cursor, user_id: str):
+    api_key = uuid.uuid4().hex
+    cursor.execute(
+        "UPDATE users SET api_key = %s WHERE id = %s", (api_key, user_id)
+    )
     return api_key
 
 
