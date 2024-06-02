@@ -24,7 +24,7 @@ def test_data_sources_by_id_get(
         headers={"Authorization": f"Bearer {api_key}"},
     )
     assert response.status_code == 200
-    assert response.json["data"]["source_url"] == "http://src1.com"
+    assert response.json["source_url"] == "http://src1.com"
 
 
 def test_data_sources_by_id_put(

@@ -6,6 +6,7 @@ from tests.fixtures import dev_db_connection, client_with_db, connection_with_te
 from tests.helper_functions import (
     create_test_user_api,
     create_api_key,
+    check_response_status,
 )
 
 
@@ -28,7 +29,7 @@ def test_quick_search_get(client_with_db, connection_with_test_data):
         f"/quick-search/{encoded_search_term}/{encoded_location}",
         headers={"Authorization": f"Bearer {api_key}"},
     )
-    assert response.status_code == 200, "Quick Search endpoint call was not successful"
+    check_response_status(response, 200)
     data = response.json.get("data")
     assert (
         data["count"] == 1
