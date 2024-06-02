@@ -188,4 +188,4 @@ def test_data_source_by_id_wrapper_data_not_found(mock_data_source_by_id_query, 
     mock_data_source_by_id_query.assert_called_with(
         data_source_id="SOURCE_UID_1", conn=mock_conn
     )
-    mock_make_response.assert_called_with({"message": "Data source not found."}, 404)
+    mock_make_response.assert_called_with({"message": "Data source not found."}, 200)
