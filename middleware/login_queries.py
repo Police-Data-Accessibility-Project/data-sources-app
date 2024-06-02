@@ -1,3 +1,4 @@
+from collections import namedtuple
 from datetime import datetime as dt
 
 import jwt
@@ -73,25 +74,23 @@ def create_session_token(cursor: PgCursor, user_id: int, email: str) -> str:
     return session_token
 
 
-def token_results(cursor: PgCursor, token: str) -> Dict[str, Union[int, str]]:
+SessionTokenUserData = namedtuple("SessionTokenUserData", ["id", "email"])
+
+
+def get_session_token_user_data(cursor: PgCursor, token: str) -> SessionTokenUserData:
     """
     Retrieves session token data.
 
     :param cursor: A cursor object from a psycopg2 connection.
     :param token: The session token.
-    :return: A dictionary containing session token data or an error message.
+    :return: Session token data or an error message.
     """
     cursor.execute(f"select id, email from session_tokens where token = %s", (token,))
     results = cursor.fetchall()
     if len(results) == 0:
         raise TokenNotFoundError("The specified token was not found.")
-    return {
-        "id": results[0][0],
-        "email": results[0][1],
-    }
+    return SessionTokenUserData(id=results[0][0], email=results[0][1])
 
 
 def delete_session_token(cursor, old_token):
-    cursor.execute(
-        f"delete from session_tokens where token = '{old_token}'"
-    )
+    cursor.execute(f"delete from session_tokens where token = '{old_token}'")
