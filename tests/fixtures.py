@@ -1,6 +1,7 @@
 """This module contains pytest fixtures employed by middleware tests."""
 
 import os
+from collections import namedtuple
 
 import psycopg2
 import pytest
@@ -80,17 +81,18 @@ def connection_with_test_data(
         dev_db_connection.rollback()
     return dev_db_connection
 
-
+ClientWithMockDB = namedtuple("ClientWithMockDB", ["client", "mock_db"])
 @pytest.fixture
-def client_with_mock_db(mocker) -> FlaskClient:
+def client_with_mock_db(mocker) -> ClientWithMockDB:
     """
     Create a client with a mocked database connection
     :param mocker:
     :return:
     """
-    app = create_app(mocker.MagicMock())
+    mock_db = mocker.MagicMock()
+    app = create_app(mock_db)
     with app.test_client() as client:
-        yield client
+        yield ClientWithMockDB(client, mock_db)
 
 @pytest.fixture
 def client_with_db(dev_db_connection: psycopg2.extensions.connection):
