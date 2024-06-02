@@ -1,6 +1,11 @@
 import spacy
 import json
 import datetime
+
+from flask import make_response
+from sqlalchemy.dialects.postgresql import psycopg2
+
+from middleware.webhook_logic import post_to_webhook
 from utilities.common import convert_dates_to_strings, format_arrays
 from typing import List, Dict, Any, Optional
 from psycopg2.extensions import connection as PgConnection, cursor as PgCursor
@@ -159,3 +164,25 @@ def quick_search_query(
     cursor.close()
 
     return data_sources
+
+
+def quick_search_query_wrapper(arg1, arg2, conn: PgConnection):
+    try:
+        data_sources = quick_search_query(arg1, arg2, conn=conn)
+
+        return make_response(data_sources, 200)
+
+    except Exception as e:
+        conn.rollback()
+        user_message = "There was an error during the search operation"
+        message = {
+            "content": user_message
+            + ": "
+            + str(e)
+            + "\n"
+            + f"Search term: {arg1}\n"
+            + f"Location: {arg2}"
+        }
+        post_to_webhook(json.dumps(message))
+
+        return {"count": 0, "message": user_message}, 500

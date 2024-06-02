@@ -1,6 +1,7 @@
 import functools
 from typing import Callable, Any, Union, Tuple, Dict
 
+from flask import make_response
 from flask_restful import Resource
 
 
@@ -36,7 +37,7 @@ def handle_exceptions(
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {"message": str(e)}, 500
+            return make_response({"message": str(e)}, 500)
 
     return wrapper
 

@@ -1,4 +1,8 @@
 from typing import List, Dict, Any, Optional, Tuple, Union
+
+from flask import make_response
+from sqlalchemy.dialects.postgresql import psycopg2
+
 from utilities.common import convert_dates_to_strings, format_arrays
 from psycopg2.extensions import connection as PgConnection
 
@@ -86,6 +90,38 @@ DATA_SOURCES_MAP_COLUMN = [
     "lat",
     "lng",
 ]
+
+
+def get_approved_data_sources_wrapper(conn: PgConnection):
+    data_source_matches = get_approved_data_sources(conn)
+
+    return make_response(
+        {
+            "count": len(data_source_matches),
+            "data": data_source_matches,
+        },
+        200,
+    )
+
+
+def data_source_by_id_wrapper(arg, conn: PgConnection):
+    data_source_details = data_source_by_id_query(arg, conn=conn)
+    if data_source_details:
+        return make_response(data_source_details, 200)
+
+    else:
+        return make_response({"message": "Data source not found."}, 404)
+
+
+def get_data_sources_for_map_wrapper(conn: PgConnection):
+    data_source_details = get_data_sources_for_map(conn)
+    return make_response(
+        {
+            "count": len(data_source_details),
+            "data": data_source_details,
+        },
+        200,
+    )
 
 
 def data_source_by_id_results(
