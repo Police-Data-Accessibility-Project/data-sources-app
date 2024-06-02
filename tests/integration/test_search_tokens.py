@@ -3,7 +3,11 @@
 import psycopg2
 import pytest
 from tests.fixtures import connection_with_test_data, dev_db_connection, client_with_db
-from tests.helper_functions import create_test_user_api, create_api_key
+from tests.helper_functions import (
+    create_test_user_api,
+    create_api_key,
+    check_response_status,
+)
 
 
 def test_search_tokens_get(
@@ -19,11 +23,11 @@ def test_search_tokens_get(
         headers={"Authorization": f"Bearer {api_key}"},
         query_string={"endpoint": "quick-search", "arg1": "Source 1", "arg2": "City A"},
     )
-    assert response.status_code == 200
+    check_response_status(response, 200)
     data = response.json.get("data")
     assert (
-        data["count"] == 1
+        len(data) == 1
     ), "Quick Search endpoint response should return only one entry"
-    entry = data["data"][0]
+    entry = data[0]
     assert entry["agency_name"] == "Agency A"
     assert entry["airtable_uid"] == "SOURCE_UID_1"

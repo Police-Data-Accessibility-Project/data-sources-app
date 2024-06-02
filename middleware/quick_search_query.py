@@ -1,6 +1,11 @@
 import spacy
 import json
 import datetime
+
+from flask import make_response, Response
+from sqlalchemy.dialects.postgresql import psycopg2
+
+from middleware.webhook_logic import post_to_webhook
 from utilities.common import convert_dates_to_strings, format_arrays
 from typing import List, Dict, Any, Optional
 from psycopg2.extensions import connection as PgConnection, cursor as PgCursor
@@ -52,7 +57,7 @@ QUICK_SEARCH_SQL = """
 
 """
 
-INSERT_LOG_QUERY = "INSERT INTO quick_search_query_logs (search, location, results, result_count, created_at, datetime_of_request) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{4}')"
+INSERT_LOG_QUERY = "INSERT INTO quick_search_query_logs (search, location, results, result_count) VALUES ('{0}', '{1}', '{2}', '{3}')"
 
 
 def unaltered_search_query(
@@ -148,17 +153,34 @@ def quick_search_query(
         "data": data_source_matches_converted,
     }
 
-    current_datetime = datetime.datetime.now()
-    datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
-
     query_results = json.dumps(data_sources["data"]).replace("'", "")
 
     cursor.execute(
-        INSERT_LOG_QUERY.format(
-            search, location, query_results, data_sources["count"], datetime_string
-        ),
+        INSERT_LOG_QUERY.format(search, location, query_results, data_sources["count"]),
     )
     conn.commit()
     cursor.close()
 
     return data_sources
+
+
+def quick_search_query_wrapper(arg1, arg2, conn: PgConnection) -> Response:
+    try:
+        data_sources = quick_search_query(search=arg1, location=arg2, conn=conn)
+
+        return make_response(data_sources, 200)
+
+    except Exception as e:
+        conn.rollback()
+        user_message = "There was an error during the search operation"
+        message = {
+            "content": user_message
+            + ": "
+            + str(e)
+            + "\n"
+            + f"Search term: {arg1}\n"
+            + f"Location: {arg2}"
+        }
+        post_to_webhook(json.dumps(message))
+
+        return make_response({"count": 0, "message": user_message}, 500)

@@ -115,7 +115,7 @@ def create_test_user(
     :return: user id
     """
     if email == "":
-        email = f"testuser{uuid.uuid4().hex}@example.com"
+        email = uuid.uuid4().hex + "@test.com"
     cursor.execute(
         """
         INSERT INTO users (email, password_digest, api_key, role)
@@ -151,8 +151,8 @@ def get_most_recent_quick_search_query_log(
     """
     cursor.execute(
         """
-        SELECT RESULT_COUNT, DATETIME_OF_REQUEST FROM QUICK_SEARCH_QUERY_LOGS WHERE
-        search = %s AND location = %s ORDER BY DATETIME_OF_REQUEST DESC LIMIT 1
+        SELECT RESULT_COUNT, CREATED_AT FROM QUICK_SEARCH_QUERY_LOGS WHERE
+        search = %s AND location = %s ORDER BY CREATED_AT DESC LIMIT 1
         """,
         (search, location),
     )
@@ -326,3 +326,6 @@ def give_user_admin_role(
     """,
         (user_info.email,),
     )
+
+def check_response_status(response, status_code):
+    assert response.status_code == status_code, f"Expected status code {status_code}, got {response.status_code}: {response.text}"
