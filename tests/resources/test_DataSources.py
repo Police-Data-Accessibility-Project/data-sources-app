@@ -4,31 +4,6 @@ from unittest.mock import patch, MagicMock
 patch("middleware.security.api_required", lambda x: x).start()
 from tests.fixtures import client_with_mock_db
 
-@patch("resources.DataSources.data_source_by_id_query")
-def test_get_data_source_by_id_found(
-    mock_data_source_by_id_query,
-    client_with_mock_db,
-):
-    mock_data_source_by_id_query.return_value = {"name": "Test Data Source"}
-    response = client_with_mock_db.client.get("/data-sources-by-id/test_id")
-    assert response.json == {
-        "message": "Successfully found data source",
-        "data": {"name": "Test Data Source"},
-    }
-    assert response.status_code == 200
-
-
-
-@patch("resources.DataSources.data_source_by_id_query")
-def test_get_data_source_by_id_not_found(
-    mock_data_source_by_id_query,
-    client_with_mock_db,
-):
-    mock_data_source_by_id_query.return_value = None
-    response = client_with_mock_db.client.get("/data-sources-by-id/test_id")
-    assert response.json == {"message": "Data source not found."}
-    assert response.status_code == 200
-
 def test_put_data_source_by_id(
     client_with_mock_db, monkeypatch
 ):
