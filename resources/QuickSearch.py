@@ -1,10 +1,6 @@
 from middleware.security import api_required
-from middleware.quick_search_query import quick_search_query, quick_search_query_wrapper
-import requests
-import json
-import os
-from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
-from flask import request
+from middleware.quick_search_query import quick_search_query_wrapper
+
 from typing import Dict, Any
 
 from resources.PsycopgResource import PsycopgResource

@@ -110,18 +110,14 @@ def spacy_search_query(
 def quick_search_query(
     search: str = "",
     location: str = "",
-    test_query_results: Optional[List[Dict[str, Any]]] = None,
     conn: Optional[PgConnection] = None,
-    test: bool = False,
 ) -> Dict[str, Any]:
     """
     Performs a quick search using both unaltered and lemmatized search terms, returning the more fruitful result set.
 
     :param search: The search term.
     :param location: The location term.
-    :param test_query_results: Predefined results for testing purposes.
     :param conn: A psycopg2 connection to the database.
-    :param test: Flag indicating whether the function is being called in a test context.
     :return: A dictionary with the count of results and the data itself.
     """
     data_sources = {"count": 0, "data": []}
@@ -134,16 +130,8 @@ def quick_search_query(
     if conn:
         cursor = conn.cursor()
 
-    unaltered_results = (
-        unaltered_search_query(cursor, search, location)
-        if not test_query_results
-        else test_query_results
-    )
-    spacy_results = (
-        spacy_search_query(cursor, search, location)
-        if not test_query_results
-        else test_query_results
-    )
+    unaltered_results = unaltered_search_query(cursor, search, location)
+    spacy_results = spacy_search_query(cursor, search, location)
 
     # Compare altered search term results with unaltered search term results, return the longer list
     results = (
@@ -165,19 +153,18 @@ def quick_search_query(
         "data": data_source_matches_converted,
     }
 
-    if not test_query_results and not test:
-        current_datetime = datetime.datetime.now()
-        datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+    current_datetime = datetime.datetime.now()
+    datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
-        query_results = json.dumps(data_sources["data"]).replace("'", "")
+    query_results = json.dumps(data_sources["data"]).replace("'", "")
 
-        cursor.execute(
-            INSERT_LOG_QUERY.format(
-                search, location, query_results, data_sources["count"], datetime_string
-            ),
-        )
-        conn.commit()
-        cursor.close()
+    cursor.execute(
+        INSERT_LOG_QUERY.format(
+            search, location, query_results, data_sources["count"], datetime_string
+        ),
+    )
+    conn.commit()
+    cursor.close()
 
     return data_sources
 
