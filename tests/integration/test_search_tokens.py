@@ -26,8 +26,8 @@ def test_search_tokens_get(
     check_response_status(response, 200)
     data = response.json.get("data")
     assert (
-        data["count"] == 1
+        len(data) == 1
     ), "Quick Search endpoint response should return only one entry"
-    entry = data["data"][0]
+    entry = data[0]
     assert entry["agency_name"] == "Agency A"
     assert entry["airtable_uid"] == "SOURCE_UID_1"
