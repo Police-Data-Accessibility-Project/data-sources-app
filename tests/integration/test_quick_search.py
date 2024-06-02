@@ -31,9 +31,7 @@ def test_quick_search_get(client_with_db, connection_with_test_data):
     )
     check_response_status(response, 200)
     data = response.json.get("data")
-    assert (
-        data["count"] == 1
-    ), "Quick Search endpoint response should return only one entry"
-    entry = data["data"][0]
+    assert len(data) == 1, "Quick Search endpoint response should return only one entry"
+    entry = data[0]
     assert entry["agency_name"] == "Agency A"
     assert entry["airtable_uid"] == "SOURCE_UID_1"
