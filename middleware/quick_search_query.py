@@ -2,7 +2,7 @@ import spacy
 import json
 import datetime
 
-from flask import make_response
+from flask import make_response, Response
 from sqlalchemy.dialects.postgresql import psycopg2
 
 from middleware.webhook_logic import post_to_webhook
@@ -156,9 +156,7 @@ def quick_search_query(
     query_results = json.dumps(data_sources["data"]).replace("'", "")
 
     cursor.execute(
-        INSERT_LOG_QUERY.format(
-            search, location, query_results, data_sources["count"]
-        ),
+        INSERT_LOG_QUERY.format(search, location, query_results, data_sources["count"]),
     )
     conn.commit()
     cursor.close()
@@ -166,9 +164,9 @@ def quick_search_query(
     return data_sources
 
 
-def quick_search_query_wrapper(arg1, arg2, conn: PgConnection):
+def quick_search_query_wrapper(arg1, arg2, conn: PgConnection) -> Response:
     try:
-        data_sources = quick_search_query(arg1, arg2, conn=conn)
+        data_sources = quick_search_query(search=arg1, location=arg2, conn=conn)
 
         return make_response(data_sources, 200)
 
@@ -185,4 +183,4 @@ def quick_search_query_wrapper(arg1, arg2, conn: PgConnection):
         }
         post_to_webhook(json.dumps(message))
 
-        return {"count": 0, "message": user_message}, 500
+        return make_response({"count": 0, "message": user_message}, 500)
