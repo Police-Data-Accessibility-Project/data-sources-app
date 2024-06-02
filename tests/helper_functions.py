@@ -319,3 +319,6 @@ def give_user_admin_role(
     """,
         (user_info.email,),
     )
+
+def check_response_status(response, status_code):
+    assert response.status_code == status_code, f"Expected status code {status_code}, got {response.status_code}: {response.text}"
