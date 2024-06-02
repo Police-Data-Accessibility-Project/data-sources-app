@@ -52,7 +52,7 @@ QUICK_SEARCH_SQL = """
 
 """
 
-INSERT_LOG_QUERY = "INSERT INTO quick_search_query_logs (search, location, results, result_count, created_at, datetime_of_request) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{4}')"
+INSERT_LOG_QUERY = "INSERT INTO quick_search_query_logs (search, location, results, result_count) VALUES ('{0}', '{1}', '{2}', '{3}')"
 
 
 def unaltered_search_query(
@@ -148,14 +148,11 @@ def quick_search_query(
         "data": data_source_matches_converted,
     }
 
-    current_datetime = datetime.datetime.now()
-    datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
-
     query_results = json.dumps(data_sources["data"]).replace("'", "")
 
     cursor.execute(
         INSERT_LOG_QUERY.format(
-            search, location, query_results, data_sources["count"], datetime_string
+            search, location, query_results, data_sources["count"]
         ),
     )
     conn.commit()
