@@ -41,12 +41,6 @@ class QuickSearch(PsycopgResource):
             )
 
             if data_sources["count"] == 0:
-                self.psycopg2_connection = initialize_psycopg2_connection()
-                data_sources = quick_search_query(
-                    search, location, self.psycopg2_connection
-                )
-
-            if data_sources["count"] == 0:
                 return {
                     "count": 0,
                     "message": "No results found. Please considering requesting a new data source.",
