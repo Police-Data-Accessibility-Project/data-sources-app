@@ -28,7 +28,7 @@ from resources.ResetPassword import ResetPassword
 from resources.ResetTokenValidation import ResetTokenValidation
 from resources.SearchTokens import SearchTokens
 from resources.User import User
-from tests.fixtures import client_with_mock_db
+from tests.fixtures import client_with_mock_db, ClientWithMockDB
 
 # Define constants for HTTP methods
 GET = "get"
@@ -81,7 +81,7 @@ test_parameters = [
 
 
 @pytest.mark.parametrize("test_parameter", test_parameters)
-def test_endpoints(client_with_mock_db: FlaskClient, test_parameter) -> None:
+def test_endpoints(client_with_mock_db: ClientWithMockDB, test_parameter) -> None:
     """
     Using the test_parameters list, this tests all endpoints to ensure that
     only the appropriate methods can be called from the endpoints
@@ -92,7 +92,7 @@ def test_endpoints(client_with_mock_db: FlaskClient, test_parameter) -> None:
     :return:
     """
     run_endpoint_tests(
-        client_with_mock_db,
+        client_with_mock_db.client,
         test_parameter.endpoint,
         test_parameter.class_type,
         test_parameter.allowed_methods,
