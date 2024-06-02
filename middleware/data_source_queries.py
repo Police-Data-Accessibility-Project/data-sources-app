@@ -110,7 +110,7 @@ def data_source_by_id_wrapper(arg, conn: PgConnection) -> Response:
         return make_response(data_source_details, 200)
 
     else:
-        return make_response({"message": "Data source not found."}, 404)
+        return make_response({"message": "Data source not found."}, 200)
 
 
 def get_data_sources_for_map_wrapper(conn: PgConnection):
