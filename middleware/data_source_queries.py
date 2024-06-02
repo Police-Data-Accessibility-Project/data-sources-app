@@ -1,6 +1,6 @@
 from typing import List, Dict, Any, Optional, Tuple, Union
 
-from flask import make_response
+from flask import make_response, Response
 from sqlalchemy.dialects.postgresql import psycopg2
 
 from utilities.common import convert_dates_to_strings, format_arrays
@@ -104,8 +104,8 @@ def get_approved_data_sources_wrapper(conn: PgConnection):
     )
 
 
-def data_source_by_id_wrapper(arg, conn: PgConnection):
-    data_source_details = data_source_by_id_query(arg, conn=conn)
+def data_source_by_id_wrapper(arg, conn: PgConnection) -> Response:
+    data_source_details = data_source_by_id_query(data_source_id=arg, conn=conn)
     if data_source_details:
         return make_response(data_source_details, 200)
 
