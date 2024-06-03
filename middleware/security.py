@@ -1,17 +1,33 @@
 import functools
 from collections import namedtuple
 
-from flask import request, jsonify
+from http import HTTPStatus
+from flask import request
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 from datetime import datetime as dt
 from middleware.login_queries import is_admin
-from middleware.custom_exceptions import UserNotFoundError
-from typing import Tuple
+from typing import Tuple, Optional
 
 APIKeyStatus = namedtuple("APIKeyStatus", ["is_valid", "is_expired"])
 
 
-def is_valid(api_key: str, endpoint: str, method: str) -> APIKeyStatus:
+class NoAPIKeyError(Exception):
+    pass
+
+
+class ExpiredAPIKeyError(Exception):
+    pass
+
+
+class InvalidAPIKeyError(Exception):
+    pass
+
+
+class InvalidRoleError(Exception):
+    pass
+
+
+def validate_api_key(api_key: str, endpoint: str, method: str):
     """
     Validates the API key and checks if the user has the required role to access a specific endpoint.
 
@@ -21,42 +37,43 @@ def is_valid(api_key: str, endpoint: str, method: str) -> APIKeyStatus:
     :return: A tuple (isValid, isExpired) indicating whether the API key is valid and not expired.
     """
     if not api_key:
-        return APIKeyStatus(is_valid=False, is_expired=False)
+        raise NoAPIKeyError("API key not provided")
 
-    session_token_results = None
     psycopg2_connection = initialize_psycopg2_connection()
     cursor = psycopg2_connection.cursor()
     role = get_role(api_key, cursor)
-    if role is None:
-        session_token_results = get_session_token(
-            api_key, cursor, session_token_results
-        )
-        if len(session_token_results) > 0:
-            email = session_token_results[0][0]
-            expiration_date = session_token_results[0][1]
-            print(expiration_date, dt.utcnow())
+    if role:
+        validate_role(role, endpoint, method)
+        return
 
-            if expiration_date < dt.utcnow():
-                return APIKeyStatus(False, is_expired=True)
+    session_token_results = get_session_token(api_key, cursor)
+    if session_token_results:
 
-            if is_admin(cursor, email):
-                role = "admin"
+        if session_token_results.expiration_date < dt.utcnow():
+            raise ExpiredAPIKeyError("Session token expired")
 
-    if not session_token_results and role is None:
+        if is_admin(cursor, session_token_results.email):
+            validate_role(role="admin", endpoint=endpoint, method=method)
+            return
+
+    if not session_token_results:
         delete_expired_access_tokens(cursor, psycopg2_connection)
         access_token = get_access_token(api_key, cursor)
         role = "user"
 
         if not access_token:
-            return APIKeyStatus(is_valid=False, is_expired=False)
+            raise InvalidAPIKeyError("API Key not found")
 
-    if is_admin_only_action(endpoint, method) and role != "admin":
-        return APIKeyStatus(is_valid=False, is_expired=False)
+    validate_role(role, endpoint, method)
 
+
+def validate_role(role: str, endpoint: str, method: str):
     # Compare the API key in the user table to the API in the request header and proceed
     # through the protected route if it's valid. Otherwise, compare_digest will return False
     # and api_required will send an error message to provide a valid API key
-    return APIKeyStatus(is_valid=True, is_expired=False)
+    if is_admin_only_action(endpoint, method) and role != "admin":
+        raise InvalidRoleError("You do not have permission to access this endpoint")
+
 
 
 def get_role(api_key, cursor):
@@ -70,16 +87,25 @@ def get_role(api_key, cursor):
     return None
 
 
-def get_session_token(api_key, cursor, session_token_results):
+SessionTokenResults = namedtuple("SessionTokenResults", ["email", "expiration_date"])
+
+
+def get_session_token(api_key, cursor) -> Optional[SessionTokenResults]:
     cursor.execute(
-        f"select email, expiration_date from session_tokens where token = '{api_key}'"
+        f"select email, expiration_date from session_tokens where token = %s",
+        (api_key,),
     )
     session_token_results = cursor.fetchall()
-    return session_token_results
+    if len(session_token_results) > 0:
+        return SessionTokenResults(
+            email=session_token_results[0][0],
+            expiration_date=session_token_results[0][1],
+        )
+    return None
 
 
 def get_access_token(api_key, cursor):
-    cursor.execute(f"select id, token from access_tokens where token = '{api_key}'")
+    cursor.execute(f"select id, token from access_tokens where token = %s", (api_key,))
     results = cursor.fetchone()
     if results:
         return results[1]
@@ -87,12 +113,62 @@ def get_access_token(api_key, cursor):
 
 
 def delete_expired_access_tokens(cursor, psycopg2_connection):
-    cursor.execute(f"delete from access_tokens where expiration_date < '{dt.utcnow()}'")
+    cursor.execute(f"delete from access_tokens where expiration_date < NOW()")
     psycopg2_connection.commit()
 
 
 def is_admin_only_action(endpoint, method):
     return endpoint in ("datasources", "datasourcebyid") and method in ("PUT", "POST")
+
+
+class InvalidHeader(Exception):
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+def validate_header() -> str:
+    """
+    Validates the API key and checks if the user has the required role to access a specific endpoint.
+    :return:
+    """
+    if not request.headers or "Authorization" not in request.headers:
+        raise InvalidHeader(
+            "Please provide an 'Authorization' key in the request header"
+        )
+
+    authorization_header = request.headers["Authorization"].split(" ")
+    if len(authorization_header) < 2 or authorization_header[0] != "Bearer":
+        raise InvalidHeader(
+            "Please provide a properly formatted bearer token and API key"
+        )
+
+    api_key = authorization_header[1]
+    if api_key == "undefined":
+        raise InvalidHeader("Please provide an API key")
+    return api_key
+
+
+def validate_token() -> Optional[Tuple[dict, int]]:
+    """
+    Validates the API key and checks if the user has the required role to access a specific endpoint.
+    :return:
+    """
+    try:
+        api_key = validate_header()
+    except InvalidHeader as e:
+        return {"message": str(e)}, HTTPStatus.BAD_REQUEST.value
+    # Check if API key is correct and valid
+    try:
+        validate_api_key(api_key, request.endpoint, request.method)
+    except NoAPIKeyError as e:
+        return {"message": str(e)}, HTTPStatus.BAD_REQUEST.value
+    except ExpiredAPIKeyError as e:
+        return {"message": str(e)}, HTTPStatus.UNAUTHORIZED.value
+    except InvalidRoleError as e:
+        return {"message": str(e)}, HTTPStatus.FORBIDDEN.value
+
+    return None
 
 
 def api_required(func):
@@ -105,31 +181,9 @@ def api_required(func):
 
     @functools.wraps(func)
     def decorator(*args, **kwargs):
-        api_key = None
-        if request.headers and "Authorization" in request.headers:
-            authorization_header = request.headers["Authorization"].split(" ")
-            if len(authorization_header) >= 2 and authorization_header[0] == "Bearer":
-                api_key = request.headers["Authorization"].split(" ")[1]
-                if api_key == "undefined":
-                    return {"message": "Please provide an API key"}, 400
-            else:
-                return {
-                    "message": "Please provide a properly formatted bearer token and API key"
-                }, 400
-        else:
-            return {
-                "message": "Please provide an 'Authorization' key in the request header"
-            }, 400
-        # Check if API key is correct and valid
-        try:
-            api_key_status = is_valid(api_key, request.endpoint, request.method)
-        except UserNotFoundError as e:
-            return {"message": str(e)}, 401
-        if api_key_status.is_valid:
-            return func(*args, **kwargs)
-        else:
-            if api_key_status.is_expired:
-                return {"message": "The provided API key has expired"}, 401
-            return {"message": "The provided API key is not valid"}, 403
+        validation_error = validate_token()
+        if validation_error:
+            return validation_error
+        return func(*args, **kwargs)
 
     return decorator
