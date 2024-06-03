@@ -36,8 +36,6 @@ def validate_api_key(api_key: str, endpoint: str, method: str):
     :param method: The HTTP method of the request.
     :return: A tuple (isValid, isExpired) indicating whether the API key is valid and not expired.
     """
-    if not api_key:
-        raise NoAPIKeyError("API key not provided")
 
     psycopg2_connection = initialize_psycopg2_connection()
     cursor = psycopg2_connection.cursor()
@@ -161,8 +159,6 @@ def validate_token() -> Optional[Tuple[dict, int]]:
     # Check if API key is correct and valid
     try:
         validate_api_key(api_key, request.endpoint, request.method)
-    except NoAPIKeyError as e:
-        return {"message": str(e)}, HTTPStatus.BAD_REQUEST.value
     except ExpiredAPIKeyError as e:
         return {"message": str(e)}, HTTPStatus.UNAUTHORIZED.value
     except InvalidRoleError as e:

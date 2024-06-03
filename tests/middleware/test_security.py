@@ -31,11 +31,6 @@ from tests.helper_functions import (
 from tests.fixtures import dev_db_connection
 
 
-def test_no_api_key_provided():
-    with pytest.raises(NoAPIKeyError) as e:
-        result = validate_api_key(api_key="", endpoint="", method="")
-
-
 def test_api_key_exists_in_users_table_with_admin_role(dev_db_connection):
     cursor = dev_db_connection.cursor()
     test_user = create_test_user(cursor)
@@ -138,7 +133,6 @@ def test_admin_only_action_with_admin_role(dev_db_connection):
     dev_db_connection.commit()
     result = validate_api_key(api_key, "datasources", "PUT")
     assert result is None
-
 
 @pytest.fixture
 def app() -> Flask:
