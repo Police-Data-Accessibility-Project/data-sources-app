@@ -271,6 +271,13 @@ def create_api_key(client_with_db, user_info):
     api_key = response.json.get("api_key")
     return api_key
 
+def create_api_key_db(cursor, user_id: str):
+    api_key = uuid.uuid4().hex
+    cursor.execute(
+        "UPDATE users SET api_key = %s WHERE id = %s", (api_key, user_id)
+    )
+    return api_key
+
 
 def insert_test_data_source(cursor: psycopg2.extensions.cursor) -> str:
     """
