@@ -4,6 +4,7 @@ import uuid
 from collections import namedtuple
 from datetime import datetime, timedelta
 from typing import Optional
+from unittest.mock import MagicMock
 
 import psycopg2.extensions
 from flask.testing import FlaskClient
@@ -249,7 +250,7 @@ def request_reset_password_api(client_with_db, mocker, user_info):
     :param user_info:
     :return:
     """
-    mocker.patch("resources.RequestResetPassword.requests.post")
+    mocker.patch("middleware.reset_token_queries.send_password_reset_link")
     response = client_with_db.post(
         "/request-reset-password", json={"email": user_info.email}
     )
@@ -320,5 +321,41 @@ def give_user_admin_role(
         (user_info.email,),
     )
 
+
 def check_response_status(response, status_code):
-    assert response.status_code == status_code, f"Expected status code {status_code}, got {response.status_code}: {response.text}"
+    assert (
+        response.status_code == status_code
+    ), f"Expected status code {status_code}, got {response.status_code}: {response.text}"
+
+
+class DynamicMagicMock:
+    """
+    A helper class to create a large number of MagicMock objects dynamically,
+    all connected to the same instance
+
+    Example Usage:
+    --------------
+    class UpdateArchivesDataMocks(DynamicMagicMock):
+        cursor: MagicMock
+        data_id: MagicMock
+        last_cached: MagicMock
+        broken_as_of: MagicMock
+        archives_put_broken_as_of_results: MagicMock
+        archives_put_last_cached_results: MagicMock
+        make_response: MagicMock
+
+    mock = UpdateArchivesDataMocks()
+
+    """
+    def __init__(self):
+        self.__post_init__()
+
+
+    def __post_init__(self) -> None:
+        for attribute, attr_type in self.__annotations__.items():
+            setattr(self, attribute, MagicMock())
+
+    def __getattr__(self, name: str) -> MagicMock:
+        mock = MagicMock()
+        setattr(self, name, mock)
+        return mock

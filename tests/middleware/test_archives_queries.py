@@ -1,7 +1,10 @@
 import datetime
 import uuid
+from http import HTTPStatus
+from unittest.mock import MagicMock
 
 import psycopg2
+import pytest
 
 from middleware.archives_queries import (
     archives_get_results,
@@ -9,10 +12,11 @@ from middleware.archives_queries import (
     ARCHIVES_GET_COLUMNS,
     archives_put_broken_as_of_results,
     archives_put_last_cached_results,
+    update_archives_data,
 )
 from tests.helper_functions import (
     has_expected_keys,
-    insert_test_data_source,
+    insert_test_data_source, DynamicMagicMock,
 )
 from tests.fixtures import (
     dev_db_connection,
@@ -100,7 +104,7 @@ def test_archives_put_broken_as_of_results(
         id=test_uid,
         broken_as_of=broken_as_of_date,
         last_cached=last_cached,
-        conn=dev_db_connection,
+        cursor=cursor,
     )
 
     row = get_data_sources_archives_info(cursor, test_uid)
@@ -123,9 +127,70 @@ def test_archives_put_last_cached_results(
 
     last_cached = datetime.datetime(year=1999, month=5, day=30).strftime("%Y-%m-%d")
     archives_put_last_cached_results(
-        id=test_uid, last_cached=last_cached, conn=dev_db_connection
+        id=test_uid, last_cached=last_cached, cursor=cursor
     )
     row = get_data_sources_archives_info(cursor, test_uid)
     assert row[0] == "available"
     assert row[1] is None
     assert str(row[2]) == last_cached
+
+
+class UpdateArchivesDataMocks(DynamicMagicMock):
+    cursor: MagicMock
+    data_id: MagicMock
+    last_cached: MagicMock
+    broken_as_of: MagicMock
+    archives_put_broken_as_of_results: MagicMock
+    archives_put_last_cached_results: MagicMock
+    make_response: MagicMock
+
+
+@pytest.fixture
+def setup_update_archives_data_mocks(monkeypatch):
+    mock = UpdateArchivesDataMocks()
+
+    monkeypatch.setattr(
+        "middleware.archives_queries.archives_put_broken_as_of_results",
+        mock.archives_put_broken_as_of_results,
+    )
+    monkeypatch.setattr(
+        "middleware.archives_queries.archives_put_last_cached_results",
+        mock.archives_put_last_cached_results,
+    )
+    monkeypatch.setattr(
+        "middleware.archives_queries.make_response", mock.make_response
+    )
+    return mock
+
+def test_update_archives_data_broken_as_of(setup_update_archives_data_mocks):
+    mock = setup_update_archives_data_mocks
+
+    update_archives_data(mock.cursor, mock.data_id, mock.last_cached, mock.broken_as_of)
+
+    mock.archives_put_broken_as_of_results.assert_called_with(
+        mock.data_id,
+        mock.broken_as_of,
+        mock.last_cached,
+        mock.cursor
+    )
+    mock.archives_put_last_cached_results.assert_not_called()
+    mock.make_response.assert_called_with(
+        {"status": "success"}, HTTPStatus.OK
+    )
+
+def test_update_archives_data_not_broken_as_of(setup_update_archives_data_mocks):
+    mock = setup_update_archives_data_mocks
+
+    update_archives_data(mock.cursor, mock.data_id, mock.last_cached, None)
+
+    mock.archives_put_broken_as_of_results.assert_not_called()
+    mock.archives_put_last_cached_results.assert_called_with(
+        mock.data_id,
+        mock.last_cached,
+        mock.cursor
+    )
+    mock.make_response.assert_called_with(
+        {"status": "success"}, HTTPStatus.OK
+    )
+
+
