@@ -129,37 +129,3 @@ def session():
 
 #     assert response.json["status"] == "success"
 
-
-# # agencies
-# def test_agencies(client):
-#     response = client.get("/agencies/1", headers=HEADERS)
-
-#     assert len(response.json["data"]) > 0
-
-
-# def test_agencies_pagination(client):
-#     response1 = client.get("/agencies/1", headers=HEADERS)
-#     response2 = client.get("/agencies/2", headers=HEADERS)
-
-#     assert response1 != response2
-
-# region Resources
-
-
-def test_get_api_key(client_with_mock, mocker, test_app_with_mock):
-    mock_request_data = {"email": "user@example.com", "password": "password"}
-    mock_user_data = {"id": 1, "password_digest": "hashed_password"}
-
-    # Mock login_results function to return mock_user_data
-    mocker.patch("resources.ApiKey.login_results", return_value=mock_user_data)
-    # Mock check_password_hash based on the valid_login parameter
-    mocker.patch("resources.ApiKey.check_password_hash", return_value=True)
-
-    with client_with_mock:
-        response = client_with_mock.get("/api_key", json=mock_request_data)
-        json_data = response.get_json()
-        assert "api_key" in json_data
-        assert response.status_code == 200
-
-
-# endregion
