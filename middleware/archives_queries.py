@@ -1,4 +1,9 @@
+from http import HTTPStatus
 from typing import List, Dict, Any, Optional, Tuple
+
+import psycopg2
+from flask import make_response
+
 from utilities.common import convert_dates_to_strings
 from psycopg2.extensions import connection as PgConnection
 
@@ -57,7 +62,7 @@ def archives_get_query(
 
 
 def archives_put_broken_as_of_results(
-    id: str, broken_as_of: str, last_cached: str, conn: PgConnection
+    id: str, broken_as_of: str, last_cached: str, cursor: psycopg2.extensions.cursor
 ) -> None:
     """
     Updates the data_sources table setting the url_status to 'broken' for a given id.
@@ -67,7 +72,6 @@ def archives_put_broken_as_of_results(
     :param last_cached: The last cached date of the data source.
     :param conn: A psycopg2 connection object to a PostgreSQL database.
     """
-    cursor = conn.cursor()
     sql_query = """
     UPDATE data_sources 
     SET 
@@ -77,20 +81,38 @@ def archives_put_broken_as_of_results(
         WHERE airtable_uid = %s
     """
     cursor.execute(sql_query, (broken_as_of, last_cached, id))
-    cursor.close()
 
 
 def archives_put_last_cached_results(
-    id: str, last_cached: str, conn: PgConnection
+    id: str, last_cached: str, cursor: psycopg2.extensions.cursor
 ) -> None:
     """
     Updates the last_cached field in the data_sources table for a given id.
 
+    :param cursor:
     :param id: The airtable_uid of the data source.
     :param last_cached: The last cached date to be updated.
-    :param conn: A psycopg2 connection object to a PostgreSQL database.
     """
-    cursor = conn.cursor()
     sql_query = "UPDATE data_sources SET last_cached = %s WHERE airtable_uid = %s"
     cursor.execute(sql_query, (last_cached, id))
-    cursor.close()
+
+def update_archives_data(
+    cursor: psycopg2.extensions.cursor, data_id: str, last_cached: str, broken_as_of: str
+):
+    """
+    Processes a request to update the data source
+
+    :param cursor: A psycopg2 cursor object to a PostgreSQL database.
+    :param data_id:
+    :param last_cached:
+    :param broken_as_of:
+    :return: A dictionary containing a message about the update operation
+    """
+    if broken_as_of:
+        archives_put_broken_as_of_results(data_id, broken_as_of, last_cached, cursor)
+    else:
+        archives_put_last_cached_results(data_id, last_cached, cursor)
+
+    return make_response(
+        {"status": "success"}, HTTPStatus.OK
+    )
