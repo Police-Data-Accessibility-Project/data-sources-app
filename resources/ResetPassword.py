@@ -1,8 +1,9 @@
 from werkzeug.security import generate_password_hash
-from flask import request
+from flask import request, Response
 from middleware.reset_token_queries import (
     check_reset_token,
     delete_reset_token,
+    reset_password,
 )
 from datetime import datetime as dt
 from typing import Dict, Any
@@ -17,7 +18,7 @@ class ResetPassword(PsycopgResource):
     """
 
     @handle_exceptions
-    def post(self) -> Dict[str, Any]:
+    def post(self) -> Response:
         """
         Processes a password reset request. Validates the provided reset token and,
         if valid, updates the user's password with the new password provided in the request.
@@ -26,25 +27,12 @@ class ResetPassword(PsycopgResource):
         - A dictionary containing a message indicating whether the password was successfully updated or an error occurred.
         """
         data = request.get_json()
-        token = data.get("token")
-        password = data.get("password")
-        cursor = self.psycopg2_connection.cursor()
-        token_data = check_reset_token(cursor, token)
-        email = token_data.get("email")
-        if "create_date" not in token_data:
-            return {"message": "The submitted token is invalid"}, 400
-
-        token_create_date = token_data["create_date"]
-        token_expired = (dt.utcnow() - token_create_date).total_seconds() > 900
-        delete_reset_token(cursor, token_data["email"], token)
-        if token_expired:
-            return {"message": "The submitted token is invalid"}, 400
-
-        password_digest = generate_password_hash(password)
-        cursor = self.psycopg2_connection.cursor()
-        cursor.execute(
-            f"update users set password_digest = '{password_digest}' where email = '{email}'"
-        )
+        with self.psycopg2_connection.cursor() as cursor:
+            response = reset_password(
+                cursor,
+                token=data.get("token"),
+                password=data.get("password")
+            )
         self.psycopg2_connection.commit()
 
-        return {"message": "Successfully updated password"}
+        return response

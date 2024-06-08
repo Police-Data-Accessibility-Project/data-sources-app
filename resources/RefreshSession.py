@@ -1,7 +1,12 @@
-from flask import request
+from flask import request, Response
 
 from middleware.custom_exceptions import TokenNotFoundError
-from middleware.login_queries import get_session_token_user_data, create_session_token, delete_session_token
+from middleware.login_queries import (
+    get_session_token_user_data,
+    create_session_token,
+    delete_session_token,
+    refresh_session,
+)
 from typing import Dict, Any
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
@@ -14,7 +19,7 @@ class RefreshSession(PsycopgResource):
     """
 
     @handle_exceptions
-    def post(self) -> Dict[str, Any]:
+    def post(self) -> Response:
         """
         Processes the session token refresh request. If the provided session token is valid,
         it generates a new session token, invalidates the old one, and returns the new token.
@@ -24,15 +29,7 @@ class RefreshSession(PsycopgResource):
         """
         data = request.get_json()
         old_token = data.get("session_token")
-        cursor = self.psycopg2_connection.cursor()
-        try:
-            user_data = get_session_token_user_data(cursor, old_token)
-        except TokenNotFoundError:
-            return {"message": "Invalid session token"}, 403
-        delete_session_token(cursor, old_token)
-        token = create_session_token(cursor, user_data.id, user_data.email)
-        self.psycopg2_connection.commit()
-        return {
-            "message": "Successfully refreshed session token",
-            "data": token,
-        }
+        with self.psycopg2_connection.cursor() as cursor:
+            response = refresh_session(cursor, old_token)
+            self.psycopg2_connection.commit()
+        return response
