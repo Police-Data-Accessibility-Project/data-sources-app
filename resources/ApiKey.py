@@ -1,6 +1,6 @@
 from werkzeug.security import check_password_hash
-from flask import request
-from middleware.login_queries import login_results
+from flask import request, Response
+from middleware.login_queries import get_user_info, get_api_key_for_user
 import uuid
 from typing import Dict, Any, Optional
 
@@ -11,7 +11,7 @@ class ApiKey(PsycopgResource):
     """Represents a resource for generating an API key for authenticated users."""
 
     @handle_exceptions
-    def get(self) -> Optional[Dict[str, Any]]:
+    def get(self) -> Response:
         """
         Authenticates a user based on provided credentials and generates an API key.
 
@@ -24,15 +24,7 @@ class ApiKey(PsycopgResource):
         data = request.get_json()
         email = data.get("email")
         password = data.get("password")
-        cursor = self.psycopg2_connection.cursor()
-        user_data = login_results(cursor, email)
-
-        if check_password_hash(user_data["password_digest"], password):
-            api_key = uuid.uuid4().hex
-            user_id = str(user_data["id"])
-            cursor.execute(
-                "UPDATE users SET api_key = %s WHERE id = %s", (api_key, user_id)
-            )
-            payload = {"api_key": api_key}
+        with self.psycopg2_connection.cursor() as cursor:
+            response = get_api_key_for_user(cursor, email, password)
             self.psycopg2_connection.commit()
-            return payload
+        return response
