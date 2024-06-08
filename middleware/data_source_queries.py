@@ -1,3 +1,6 @@
+import uuid
+from datetime import datetime
+from http import HTTPStatus
 from typing import List, Dict, Any, Optional, Tuple, Union
 
 from flask import make_response, Response
@@ -5,6 +8,7 @@ from sqlalchemy.dialects.postgresql import psycopg2
 
 from utilities.common import convert_dates_to_strings, format_arrays
 from psycopg2.extensions import connection as PgConnection
+import psycopg2
 
 DATA_SOURCES_APPROVED_COLUMNS = [
     "name",
@@ -197,6 +201,89 @@ def data_source_by_id_query(
     data_source_details = format_arrays(data_source_details)
 
     return data_source_details
+
+
+def update_data_source(
+    cursor: psycopg2.extensions.cursor, data: dict, data_source_id: str
+) -> Response:
+    """
+    Processes a request to update the data source
+
+    :param data_source_id:
+    :param cursor: A psycopg2 cursor object to a PostgreSQL database.
+    :param data: A dictionary containing the data source details.
+    :return: A dictionary containing a message about the update operation
+    """
+    sql_query = create_data_source_update_query(data, data_source_id)
+    cursor.execute(sql_query)
+    return make_response(
+        {"message": "Data source updated successfully."}, HTTPStatus.OK
+    )
+
+
+def create_data_source_update_query(data: dict, data_source_id: str) -> str:
+    restricted_columns = get_restricted_columns()
+    data_to_update = ""
+    for key, value in data.items():
+        if key not in restricted_columns:
+            if type(value) == str:
+                data_to_update += f"{key} = '{value}', "
+            else:
+                data_to_update += f"{key} = {value}, "
+    data_to_update = data_to_update[:-2]
+    sql_query = f"""
+    UPDATE data_sources 
+    SET {data_to_update}
+    WHERE airtable_uid = '{data_source_id}'
+    """
+    return sql_query
+
+
+def create_new_data_source_query(data: dict) -> str:
+    restricted_columns = get_restricted_columns()
+    column_names = ""
+    column_values = ""
+    for key, value in data.items():
+        if key not in restricted_columns:
+            column_names += f"{key}, "
+            if type(value) == str:
+                column_values += f"'{value}', "
+            else:
+                column_values += f"{value}, "
+
+    now = datetime.now().strftime("%Y-%m-%d")
+    airtable_uid = str(uuid.uuid4())
+
+    column_names += "approval_status, url_status, data_source_created, airtable_uid"
+    column_values += f"False, '[\"ok\"]', '{now}', '{airtable_uid}'"
+
+    sql_query = f"INSERT INTO data_sources ({column_names}) VALUES ({column_values}) RETURNING *"
+
+    return sql_query
+
+
+def add_new_data_source(cursor: psycopg2.extensions.cursor, data: dict) -> Response:
+    """
+    Processes a request to add a new data source
+
+    :param cursor: A psycopg2 cursor object to a PostgreSQL database.
+    :param data: A dictionary containing the data source details.
+    :return: A dictionary containing a message about the addition operation
+    """
+    sql_query = create_new_data_source_query(data)
+    cursor.execute(sql_query)
+    return make_response({"message": "Data source added successfully."}, HTTPStatus.OK)
+
+
+def get_restricted_columns():
+    restricted_columns = [
+        "rejection_note",
+        "data_source_request",
+        "approval_status",
+        "airtable_uid",
+        "airtable_source_last_modified",
+    ]
+    return restricted_columns
 
 
 def get_approved_data_sources(conn: PgConnection) -> list[tuple[Any, ...]]:
