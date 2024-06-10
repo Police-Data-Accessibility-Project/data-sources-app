@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 import psycopg2
 import pytest
 
@@ -8,8 +10,9 @@ from middleware.data_source_queries import (
     data_source_by_id_results,
     data_source_by_id_query,
     get_data_sources_for_map,
+    data_source_by_id_wrapper,
 )
-from tests.middleware.helper_functions import (
+from tests.helper_functions import (
     get_boolean_dictionary,
 )
 from tests.fixtures import connection_with_test_data, dev_db_connection
@@ -153,3 +156,36 @@ def test_convert_data_source_matches():
             )
             == testcase["output"]
         )
+
+
+@pytest.fixture
+def mock_make_response(monkeypatch):
+    mock = MagicMock()
+    monkeypatch.setattr("middleware.data_source_queries.make_response", mock)
+    return mock
+
+
+@pytest.fixture
+def mock_data_source_by_id_query(monkeypatch):
+    mock = MagicMock()
+    monkeypatch.setattr("middleware.data_source_queries.data_source_by_id_query", mock)
+    return mock
+
+
+def test_data_source_by_id_wrapper_data_found(mock_data_source_by_id_query, mock_make_response):
+    mock_data_source_by_id_query.return_value = {"agency_name": "Agency A"}
+    mock_conn = MagicMock()
+    data_source_by_id_wrapper(arg="SOURCE_UID_1", conn=mock_conn)
+    mock_data_source_by_id_query.assert_called_with(
+        data_source_id="SOURCE_UID_1", conn=mock_conn
+    )
+    mock_make_response.assert_called_with({"agency_name": "Agency A"}, 200)
+
+def test_data_source_by_id_wrapper_data_not_found(mock_data_source_by_id_query, mock_make_response):
+    mock_data_source_by_id_query.return_value = None
+    mock_conn = MagicMock()
+    data_source_by_id_wrapper(arg="SOURCE_UID_1", conn=mock_conn)
+    mock_data_source_by_id_query.assert_called_with(
+        data_source_id="SOURCE_UID_1", conn=mock_conn
+    )
+    mock_make_response.assert_called_with({"message": "Data source not found."}, 200)

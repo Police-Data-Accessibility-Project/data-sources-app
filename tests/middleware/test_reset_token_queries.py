@@ -9,7 +9,7 @@ from middleware.reset_token_queries import (
     add_reset_token,
     delete_reset_token,
 )
-from tests.middleware.helper_functions import (
+from tests.helper_functions import (
     create_reset_token,
     create_test_user,
     get_reset_tokens_for_email,

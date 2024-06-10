@@ -1,4 +1,8 @@
 from typing import List, Dict, Any, Optional, Tuple, Union
+
+from flask import make_response, Response
+from sqlalchemy.dialects.postgresql import psycopg2
+
 from utilities.common import convert_dates_to_strings, format_arrays
 from psycopg2.extensions import connection as PgConnection
 
@@ -88,6 +92,38 @@ DATA_SOURCES_MAP_COLUMN = [
 ]
 
 
+def get_approved_data_sources_wrapper(conn: PgConnection):
+    data_source_matches = get_approved_data_sources(conn)
+
+    return make_response(
+        {
+            "count": len(data_source_matches),
+            "data": data_source_matches,
+        },
+        200,
+    )
+
+
+def data_source_by_id_wrapper(arg, conn: PgConnection) -> Response:
+    data_source_details = data_source_by_id_query(data_source_id=arg, conn=conn)
+    if data_source_details:
+        return make_response(data_source_details, 200)
+
+    else:
+        return make_response({"message": "Data source not found."}, 200)
+
+
+def get_data_sources_for_map_wrapper(conn: PgConnection):
+    data_source_details = get_data_sources_for_map(conn)
+    return make_response(
+        {
+            "count": len(data_source_details),
+            "data": data_source_details,
+        },
+        200,
+    )
+
+
 def data_source_by_id_results(
     conn: PgConnection, data_source_id: str
 ) -> Union[tuple[Any, ...], None]:
@@ -123,12 +159,12 @@ def data_source_by_id_results(
         INNER JOIN
             agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
         WHERE
-            data_sources.approval_status = 'approved' AND data_sources.airtable_uid = '{1}'
+            data_sources.approval_status = 'approved' AND data_sources.airtable_uid = %s
     """.format(
-        joined_column_names, data_source_id
+        joined_column_names
     )
 
-    cursor.execute(sql_query)
+    cursor.execute(sql_query, (data_source_id,))
     result = cursor.fetchone()
     cursor.close()
 
@@ -137,35 +173,28 @@ def data_source_by_id_results(
 
 def data_source_by_id_query(
     data_source_id: str = "",
-    test_query_results: Optional[List[Dict[str, Any]]] = None,
     conn: Optional[PgConnection] = None,
 ) -> Dict[str, Any]:
     """
-    Processes a request to fetch data source details by ID, either from the database or provided test results.
+    Processes a request to fetch data source details by ID from the database
 
     :param data_source_id: The unique identifier for the data source.
-    :param test_query_results: A list of dictionaries representing test query results, if provided.
     :param conn: A psycopg2 connection object to a PostgreSQL database.
     :return: A dictionary with the data source details after processing.
     """
-    if conn:
-        result = data_source_by_id_results(conn, data_source_id)
-    else:
-        result = test_query_results
+    result = data_source_by_id_results(conn, data_source_id)
+    if not result:
+        return []
 
-    if result:
-        data_source_and_agency_columns = (
-            DATA_SOURCES_APPROVED_COLUMNS + AGENCY_APPROVED_COLUMNS
-        )
-        data_source_and_agency_columns.append("data_source_id")
-        data_source_and_agency_columns.append("agency_id")
-        data_source_and_agency_columns.append("agency_name")
-        data_source_details = dict(zip(data_source_and_agency_columns, result))
-        data_source_details = convert_dates_to_strings(data_source_details)
-        data_source_details = format_arrays(data_source_details)
-
-    else:
-        data_source_details = []
+    data_source_and_agency_columns = (
+        DATA_SOURCES_APPROVED_COLUMNS + AGENCY_APPROVED_COLUMNS
+    )
+    data_source_and_agency_columns.append("data_source_id")
+    data_source_and_agency_columns.append("agency_id")
+    data_source_and_agency_columns.append("agency_name")
+    data_source_details = dict(zip(data_source_and_agency_columns, result))
+    data_source_details = convert_dates_to_strings(data_source_details)
+    data_source_details = format_arrays(data_source_details)
 
     return data_source_details
 

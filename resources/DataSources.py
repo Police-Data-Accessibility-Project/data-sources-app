@@ -1,10 +1,10 @@
 from flask import request
 from middleware.security import api_required
 from middleware.data_source_queries import (
-    data_source_by_id_query,
-    get_data_sources_for_map,
-    get_approved_data_sources,
     needs_identification_data_sources,
+    get_approved_data_sources_wrapper,
+    data_source_by_id_wrapper,
+    get_data_sources_for_map_wrapper,
 )
 from datetime import datetime
 
@@ -32,17 +32,7 @@ class DataSourceById(PsycopgResource):
         Returns:
         - Tuple containing the response message with data source details if found, and the HTTP status code.
         """
-        data_source_details = data_source_by_id_query(
-            conn=self.psycopg2_connection, data_source_id=data_source_id
-        )
-        if data_source_details:
-            return {
-                "message": "Successfully found data source",
-                "data": data_source_details,
-            }
-
-        else:
-            return {"message": "Data source not found."}, 404
+        return data_source_by_id_wrapper(data_source_id, self.psycopg2_connection)
 
     @handle_exceptions
     @api_required
@@ -105,14 +95,7 @@ class DataSources(PsycopgResource):
         Returns:
         - A dictionary containing the count of data sources and their details.
         """
-        data_source_matches = get_approved_data_sources(self.psycopg2_connection)
-
-        data_sources = {
-            "count": len(data_source_matches),
-            "data": data_source_matches,
-        }
-
-        return data_sources
+        return get_approved_data_sources_wrapper(self.psycopg2_connection)
 
     @handle_exceptions
     @api_required
@@ -190,11 +173,4 @@ class DataSourcesMap(PsycopgResource):
         Returns:
         - A dictionary containing the count of data sources and their details.
         """
-        data_source_matches = get_data_sources_for_map(self.psycopg2_connection)
-
-        data_sources = {
-            "count": len(data_source_matches),
-            "data": data_source_matches,
-        }
-
-        return data_sources
+        return get_data_sources_for_map_wrapper(self.psycopg2_connection)

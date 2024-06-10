@@ -3,7 +3,7 @@ import pytest
 
 from middleware.custom_exceptions import UserNotFoundError
 from middleware.user_queries import user_post_results, user_check_email
-from tests.middleware.helper_functions import create_test_user
+from tests.helper_functions import create_test_user
 from tests.fixtures import db_cursor, dev_db_connection
 
 

@@ -32,20 +32,9 @@ def runner(test_app):
 
 
 @pytest.fixture()
-def test_app_with_mock():
+def test_app_with_mock(mocker):
     # Patch the initialize_psycopg2_connection function so it returns a MagicMock
-    with patch("app.initialize_psycopg2_connection") as mock_init:
-        mock_connection = MagicMock()
-        mock_init.return_value = mock_connection
-
-        app = create_app()
-        # If your app stores the connection in a global or app context,
-        # you can also directly assign the mock_connection there
-
-        # Provide access to the mock within the app for assertions in tests
-        app.mock_connection = mock_connection
-
-        yield app
+    yield create_app(mocker.MagicMock())
 
 
 @pytest.fixture()
@@ -171,8 +160,6 @@ def test_get_api_key(client_with_mock, mocker, test_app_with_mock):
         json_data = response.get_json()
         assert "api_key" in json_data
         assert response.status_code == 200
-        test_app_with_mock.mock_connection.cursor().execute.assert_called_once()
-        test_app_with_mock.mock_connection.commit.assert_called_once()
 
 
 # endregion

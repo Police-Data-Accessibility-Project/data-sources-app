@@ -1,12 +1,18 @@
+import datetime
+import uuid
+
 import psycopg2
 
 from middleware.archives_queries import (
     archives_get_results,
     archives_get_query,
     ARCHIVES_GET_COLUMNS,
+    archives_put_broken_as_of_results,
+    archives_put_last_cached_results,
 )
-from tests.middleware.helper_functions import (
+from tests.helper_functions import (
     has_expected_keys,
+    insert_test_data_source,
 )
 from tests.fixtures import (
     dev_db_connection,
@@ -60,3 +66,66 @@ def test_archives_get_columns(
     for result in results:
         if result["id"] == "SOURCE_UID_1":
             return
+
+
+def get_data_sources_archives_info(cursor, test_uid):
+    cursor.execute(
+        """
+    SELECT URL_STATUS, BROKEN_SOURCE_URL_AS_OF, LAST_CACHED
+    FROM PUBLIC.DATA_SOURCES
+    WHERE AIRTABLE_UID = %s
+    """,
+        (test_uid,),
+    )
+    row = cursor.fetchone()
+    return row
+
+
+def test_archives_put_broken_as_of_results(
+    dev_db_connection: psycopg2.extensions.connection,
+) -> None:
+    cursor = dev_db_connection.cursor()
+    test_uid = insert_test_data_source(cursor)
+
+    # Check data properly inserted
+    row = get_data_sources_archives_info(cursor, test_uid)
+    assert row[0] == "available"
+    assert row[1] is None
+    assert row[2] is None
+
+    broken_as_of_date = datetime.datetime.now().strftime("%Y-%m-%d")
+    last_cached = datetime.datetime.now().strftime("%Y-%m-%d")
+
+    archives_put_broken_as_of_results(
+        id=test_uid,
+        broken_as_of=broken_as_of_date,
+        last_cached=last_cached,
+        conn=dev_db_connection,
+    )
+
+    row = get_data_sources_archives_info(cursor, test_uid)
+    assert row[0] == "broken"
+    assert str(row[1]) == broken_as_of_date
+    assert str(row[2]) == last_cached
+
+
+def test_archives_put_last_cached_results(
+    dev_db_connection: psycopg2.extensions.connection,
+):
+    cursor = dev_db_connection.cursor()
+    test_uid = insert_test_data_source(cursor)
+
+    # Check data properly inserted
+    row = get_data_sources_archives_info(cursor, test_uid)
+    assert row[0] == "available"
+    assert row[1] is None
+    assert row[2] is None
+
+    last_cached = datetime.datetime(year=1999, month=5, day=30).strftime("%Y-%m-%d")
+    archives_put_last_cached_results(
+        id=test_uid, last_cached=last_cached, conn=dev_db_connection
+    )
+    row = get_data_sources_archives_info(cursor, test_uid)
+    assert row[0] == "available"
+    assert row[1] is None
+    assert str(row[2]) == last_cached
