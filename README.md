@@ -55,25 +55,32 @@ Either add a `.env` file to your local root directory or manually export these s
 #### Sample `.env` file
 ```
 # Local development
-VITE_VUE_API_BASE_URL='http://localhost:5000'
-VITE_VUE_APP_BASE_URL='http://localhost:8888'
+VITE_VUE_API_BASE_URL=http://localhost:5000
+VITE_VUE_APP_BASE_URL=http://localhost:8888
 
 # Deployed app
-# VITE_VUE_API_BASE_URL='https://data-sources.pdap.io/api'
-# VITE_VUE_APP_BASE_URL='https://data-sources.pdap.io/'
+# VITE_VUE_API_BASE_URL=https://data-sources.pdap.io/api
+# VITE_VUE_APP_BASE_URL=https://data-sources.pdap.io/
 
 # Production database and API
-DO_DATABASE_URL='secret'
-SECRET_KEY='secret'
+DO_DATABASE_URL=secret
+SECRET_KEY=secret
 
 # Mailgun key for notifications
-MAILGUN_KEY='secret'
+MAILGUN_KEY=secret
+
+# Discord key for #dev-alerts channel
+WEBHOOK_URL=secret
 ```
 
+#### shell
 ```
-# shell
-
-export DO_DATABASE_URL=postgres://data_sources_app:<password>@db-postgresql-nyc3-38355-do-user-8463429-0.c.db.ondigitalocean.com:25060/defaultdb
+export VITE_VUE_API_BASE_URL=http://localhost:5000
+export VITE_VUE_APP_BASE_URL=http://localhost:8888
+export DO_DATABASE_URL=secret
+export SECRET_KEY=secret
+export MAILGUN_KEY=secret
+export WEBHOOK_URL=secret
 ```
 
 ### 6. Allow your IP address
