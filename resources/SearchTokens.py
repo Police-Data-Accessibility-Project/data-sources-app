@@ -56,7 +56,7 @@ class SearchTokens(PsycopgResource):
 
     def perform_endpoint_logic(self, arg1, arg2, endpoint):
         if endpoint == "quick-search":
-            return quick_search_query_wrapper(arg1, arg2, self.psycopg2_connection)
+            return quick_search_query_wrapper(arg1, arg2, self.psycopg2_connection.cursor())
         if endpoint == "data-sources":
             return get_approved_data_sources_wrapper(self.psycopg2_connection)
         if endpoint == "data-sources-by-id":

@@ -1,3 +1,5 @@
+from flask import Response
+
 from middleware.security import api_required
 from middleware.quick_search_query import quick_search_query_wrapper
 
@@ -28,4 +30,4 @@ class QuickSearch(PsycopgResource):
         Returns:
         - A dictionary containing a message about the search results and the data found, if any.
         """
-        return quick_search_query_wrapper(search, location, self.psycopg2_connection)
+        return quick_search_query_wrapper(search, location, self.psycopg2_connection.cursor())

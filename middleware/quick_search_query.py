@@ -1,11 +1,11 @@
 from collections import namedtuple
 
+import psycopg2
 import spacy
 import json
 import datetime
 
 from flask import make_response, Response
-from sqlalchemy.dialects.postgresql import psycopg2
 
 from middleware.webhook_logic import post_to_webhook
 from utilities.common import convert_dates_to_strings, format_arrays
@@ -216,14 +216,13 @@ def get_data_source_matches(
     return data_source_matches
 
 
-def quick_search_query_wrapper(arg1, arg2, conn: PgConnection) -> Response:
+def quick_search_query_wrapper(arg1, arg2, cursor: psycopg2.extensions.cursor) -> Response:
     try:
-        data_sources = quick_search_query(search=arg1, location=arg2, conn=conn)
+        data_sources = quick_search_query(SearchParameters(search=arg1, location=arg2), cursor=cursor)
 
         return make_response(data_sources, 200)
 
     except Exception as e:
-        conn.rollback()
         user_message = "There was an error during the search operation"
         message = {
             "content": user_message

@@ -16,7 +16,6 @@ from middleware.quick_search_query import (
     depluralize,
 )
 from tests.helper_functions import (
-from tests.middleware.helper_functions import (
     has_expected_keys,
     get_most_recent_quick_search_query_log,
 )
@@ -99,9 +98,11 @@ def test_quick_search_query_no_results(
     :return: None
     """
     results = quick_search_query(
-        search="Nonexistent Source",
-        location="Nonexistent Location",
-        conn=connection_with_test_data,
+        SearchParameters(
+            search="Nonexistent Source",
+            location="Nonexistent Location",
+        ),
+        cursor=connection_with_test_data.cursor(),
     )
     assert len(results["data"]) == 0
 
@@ -131,10 +132,10 @@ def test_quick_search_query_wrapper_happy_path(
     mock_quick_search_query, mock_make_response
 ):
     mock_quick_search_query.return_value = [{"record_type": "Type A"}]
-    mock_conn = MagicMock()
-    quick_search_query_wrapper(arg1="Source 1", arg2="City A", conn=mock_conn)
+    mock_cursor = MagicMock()
+    quick_search_query_wrapper(arg1="Source 1", arg2="City A", cursor=mock_cursor)
     mock_quick_search_query.assert_called_with(
-        search="Source 1", location="City A", conn=mock_conn
+        SearchParameters(search="Source 1", location="City A"), cursor=mock_cursor
     )
     mock_make_response.assert_called_with([{"record_type": "Type A"}], 200)
 
@@ -145,12 +146,11 @@ def test_quick_search_query_wrapper_exception(
     mock_quick_search_query.side_effect = Exception("Test Exception")
     arg1 = "Source 1"
     arg2 = "City A"
-    mock_conn = MagicMock()
-    quick_search_query_wrapper(arg1=arg1, arg2=arg2, conn=mock_conn)
+    mock_cursor = MagicMock()
+    quick_search_query_wrapper(arg1=arg1, arg2=arg2, cursor=mock_cursor)
     mock_quick_search_query.assert_called_with(
-        search=arg1, location=arg2, conn=mock_conn
+        SearchParameters(search=arg1, location=arg2), cursor=mock_cursor
     )
-    mock_conn.rollback.assert_called_once()
     user_message = "There was an error during the search operation"
     mock_post_to_webhook.assert_called_with(
         json.dumps({'content': 'There was an error during the search operation: Test Exception\nSearch term: Source 1\nLocation: City A'})
