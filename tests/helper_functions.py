@@ -273,11 +273,10 @@ def create_api_key(client_with_db, user_info):
     api_key = response.json.get("api_key")
     return api_key
 
+
 def create_api_key_db(cursor, user_id: str):
     api_key = uuid.uuid4().hex
-    cursor.execute(
-        "UPDATE users SET api_key = %s WHERE id = %s", (api_key, user_id)
-    )
+    cursor.execute("UPDATE users SET api_key = %s WHERE id = %s", (api_key, user_id))
     return api_key
 
 
@@ -329,5 +328,8 @@ def give_user_admin_role(
         (user_info.email,),
     )
 
+
 def check_response_status(response, status_code):
-    assert response.status_code == status_code, f"Expected status code {status_code}, got {response.status_code}: {response.text}"
+    assert (
+        response.status_code == status_code
+    ), f"Expected status code {status_code}, got {response.status_code}: {response.text}"

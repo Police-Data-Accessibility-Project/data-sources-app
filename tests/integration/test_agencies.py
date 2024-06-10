@@ -1,4 +1,5 @@
 """Integration tests for /agencies endpoint"""
+
 import psycopg2
 import pytest
 from tests.fixtures import connection_with_test_data, dev_db_connection, client_with_db
@@ -20,4 +21,3 @@ def test_agencies_get(
     )
     assert response.status_code == 200
     assert len(response.json["data"]) > 0
-

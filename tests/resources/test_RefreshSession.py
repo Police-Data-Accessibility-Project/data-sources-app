@@ -114,7 +114,9 @@ def test_post_refresh_session_unexpected_error(
     :param client_with_mock_db:
     :return:
     """
-    mock_get_session_token_user_data.side_effect = Exception("An unexpected error occurred")
+    mock_get_session_token_user_data.side_effect = Exception(
+        "An unexpected error occurred"
+    )
     response = client_with_mock_db.client.post(
         "/refresh-session",
         json={

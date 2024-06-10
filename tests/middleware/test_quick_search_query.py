@@ -153,11 +153,13 @@ def test_quick_search_query_wrapper_exception(
     )
     user_message = "There was an error during the search operation"
     mock_post_to_webhook.assert_called_with(
-        json.dumps({'content': 'There was an error during the search operation: Test Exception\nSearch term: Source 1\nLocation: City A'})
+        json.dumps(
+            {
+                "content": "There was an error during the search operation: Test Exception\nSearch term: Source 1\nLocation: City A"
+            }
+        )
     )
-    mock_make_response.assert_called_with(
-        {"count": 0, "message": user_message}, 500
-    )
+    mock_make_response.assert_called_with({"count": 0, "message": user_message}, 500)
 
 
 # Test cases

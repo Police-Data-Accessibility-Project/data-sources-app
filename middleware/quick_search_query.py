@@ -216,9 +216,13 @@ def get_data_source_matches(
     return data_source_matches
 
 
-def quick_search_query_wrapper(arg1, arg2, cursor: psycopg2.extensions.cursor) -> Response:
+def quick_search_query_wrapper(
+    arg1, arg2, cursor: psycopg2.extensions.cursor
+) -> Response:
     try:
-        data_sources = quick_search_query(SearchParameters(search=arg1, location=arg2), cursor=cursor)
+        data_sources = quick_search_query(
+            SearchParameters(search=arg1, location=arg2), cursor=cursor
+        )
 
         return make_response(data_sources, 200)
 
