@@ -71,6 +71,11 @@ MAILGUN_KEY=secret
 
 # Discord key for #dev-alerts channel
 WEBHOOK_URL=secret
+
+# Possibly deprecated
+VUE_APP_PDAP_API_KEY=secret
+VUE_APP_PDAP_TOKEN=secret
+
 ```
 
 #### shell
