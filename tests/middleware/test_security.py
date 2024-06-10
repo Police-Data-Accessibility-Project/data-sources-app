@@ -134,6 +134,7 @@ def test_admin_only_action_with_admin_role(dev_db_connection):
     result = validate_api_key(api_key, "datasources", "PUT")
     assert result is None
 
+
 @pytest.fixture
 def app() -> Flask:
     app = Flask(__name__)
@@ -180,16 +181,23 @@ def test_api_required_happy_path(
 def test_api_required_api_key_expired(
     app, client, mock_request_headers, mock_validate_api_key, dummy_route: Callable
 ):
-    mock_validate_api_key.side_effect = ExpiredAPIKeyError("The provided API key has expired")
+    mock_validate_api_key.side_effect = ExpiredAPIKeyError(
+        "The provided API key has expired"
+    )
     with app.test_request_context(headers={"Authorization": "Bearer valid_api_key"}):
         response = dummy_route()
-        assert response == ({"message": "The provided API key has expired"}, HTTPStatus.UNAUTHORIZED.value)
+        assert response == (
+            {"message": "The provided API key has expired"},
+            HTTPStatus.UNAUTHORIZED.value,
+        )
 
 
 def test_api_required_expired_api_key(
     app, client, mock_request_headers, mock_validate_api_key, dummy_route: Callable
 ):
-    mock_validate_api_key.side_effect = ExpiredAPIKeyError("The provided API key has expired")
+    mock_validate_api_key.side_effect = ExpiredAPIKeyError(
+        "The provided API key has expired"
+    )
     with app.test_request_context(headers={"Authorization": "Bearer expired_api_key"}):
         response = dummy_route()
         assert response == (
