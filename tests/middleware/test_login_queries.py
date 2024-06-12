@@ -7,12 +7,12 @@ import pytest
 from middleware.login_queries import (
     login_results,
     create_session_token,
-    token_results,
+    get_session_token_user_data,
     is_admin,
 )
 from middleware.custom_exceptions import UserNotFoundError, TokenNotFoundError
-from tests.middleware.helper_functions import create_test_user
-from tests.middleware.fixtures import dev_db_connection, db_cursor
+from tests.helper_functions import create_test_user
+from tests.fixtures import db_cursor, dev_db_connection
 
 
 def test_login_query(db_cursor: psycopg2.extensions.cursor) -> None:
@@ -25,7 +25,7 @@ def test_login_query(db_cursor: psycopg2.extensions.cursor) -> None:
     """
     test_user = create_test_user(db_cursor)
 
-    user_data = login_results(db_cursor, "example@example.com")
+    user_data = login_results(db_cursor, test_user.email)
 
     assert user_data["password_digest"] == test_user.password_hash
 
@@ -48,9 +48,9 @@ def test_create_session_token_results(db_cursor: psycopg2.extensions.cursor) -> 
     test_user = create_test_user(db_cursor)
     with patch("os.getenv", return_value="mysecretkey") as mock_getenv:
         token = create_session_token(db_cursor, test_user.id, test_user.email)
-    new_token = token_results(db_cursor, token)
+    new_token = get_session_token_user_data(db_cursor, token)
 
-    assert new_token["email"] == test_user.email
+    assert new_token.email == test_user.email
 
 
 def test_is_admin(db_cursor: psycopg2.extensions.cursor) -> None:
@@ -81,4 +81,4 @@ def test_is_admin_raises_user_not_logged_in_error(db_cursor):
 def test_token_results_raises_token_not_found_error(db_cursor):
     """token_results() should raise TokenNotFoundError for nonexistent token"""
     with pytest.raises(TokenNotFoundError):
-        token_results(cursor=db_cursor, token=str(uuid.uuid4()))
+        get_session_token_user_data(cursor=db_cursor, token=str(uuid.uuid4()))

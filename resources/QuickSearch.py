@@ -1,15 +1,8 @@
 from flask_restx import abort
 
 from middleware.security import api_required
-from middleware.quick_search_query import quick_search_query
-import requests
-import json
-import os
-from middleware.initialize_psycopg2_connection import (
-    initialize_psycopg2_connection,
-    DatabaseInitializationError,
-)
-from flask import request
+from middleware.quick_search_query import quick_search_query_wrapper
+
 from typing import Dict, Any
 
 from resources.PsycopgResource import PsycopgResource
@@ -37,51 +30,4 @@ class QuickSearch(PsycopgResource):
         Returns:
         - A dictionary containing a message about the search results and the data found, if any.
         """
-        try:
-            data = request.get_json()
-            test = data.get("test_flag")
-        except:
-            test = False
-
-        try:
-            data_sources = quick_search_query(
-                search, location, [], self.psycopg2_connection, test
-            )
-
-            if data_sources["count"] == 0:
-                self.psycopg2_connection = initialize_psycopg2_connection()
-                data_sources = quick_search_query(
-                    search, location, [], self.psycopg2_connection
-                )
-
-            if data_sources["count"] == 0:
-                abort(
-                    code=404,
-                    message="No results found. Please considering requesting a new data source.",
-                )
-
-            return {
-                "message": "Results for search successfully retrieved",
-                "data": data_sources,
-            }
-
-        except DatabaseInitializationError as e:
-            self.psycopg2_connection.rollback()
-            print(str(e))
-            webhook_url = os.getenv("WEBHOOK_URL")
-            user_message = "There was an error during the search operation"
-            message = {
-                "content": user_message
-                + ": "
-                + str(e)
-                + "\n"
-                + f"Search term: {search}\n"
-                + f"Location: {location}"
-            }
-            requests.post(
-                webhook_url,
-                data=json.dumps(message),
-                headers={"Content-Type": "application/json"},
-            )
-
-            abort(code=500, message=user_message)
+        return quick_search_query_wrapper(search, location, self.psycopg2_connection)
