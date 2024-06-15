@@ -52,7 +52,9 @@ pip install -r requirements.txt
 
 ### 5. Add environment secrets
 
-Either add a `.env` file to your local root directory or manually export these secrets: `DO_DATABASE_URL` and `VITE_VUE_API_BASE_URL`.  
+In both the local root directory and the `/client` directory, either:
+1. Either add a `.env` file to your local root directory 
+2. or manually export these secrets: `DO_DATABASE_URL`, `VITE_VUE_APP_BASE_URL`, `VITE_VUE_API_BASE_URL`.  
 
 Reach out to contact@pdap.io or make noise in Discord if you'd like access to these keys.
 
