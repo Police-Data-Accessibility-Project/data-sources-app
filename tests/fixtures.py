@@ -86,25 +86,27 @@ ClientWithMockDB = namedtuple("ClientWithMockDB", ["client", "mock_db"])
 
 
 @pytest.fixture
-def client_with_mock_db(mocker) -> ClientWithMockDB:
+def client_with_mock_db(mocker, monkeypatch) -> ClientWithMockDB:
     """
     Create a client with a mocked database connection
     :param mocker:
     :return:
     """
     mock_db = mocker.MagicMock()
-    app = create_app(mock_db)
+    monkeypatch.setattr("app.initialize_psycopg2_connection", lambda: mock_db)
+    app = create_app()
     with app.test_client() as client:
         yield ClientWithMockDB(client, mock_db)
 
 
 @pytest.fixture
-def client_with_db(dev_db_connection: psycopg2.extensions.connection):
+def client_with_db(dev_db_connection: psycopg2.extensions.connection, monkeypatch):
     """
     Creates a client with database connection
     :param dev_db_connection:
     :return:
     """
-    app = create_app(dev_db_connection)
+    monkeypatch.setattr("app.initialize_psycopg2_connection", lambda: dev_db_connection)
+    app = create_app()
     with app.test_client() as client:
         yield client
