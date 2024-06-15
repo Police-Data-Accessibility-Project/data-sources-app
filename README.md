@@ -74,6 +74,8 @@ export VITE_VUE_API_BASE_URL="http://localhost:5000"
 export VITE_VUE_APP_BASE_URL="http://localhost:8888"
 ```
 
+Additionally, if you are testing the email functionality, you will need to also provide the `MAILGUN_KEY` environment variable as well (also obtainable from the sources mentioned above).
+
 ### 6. Allow your IP address
 
 To connect to the database, your IP address will need to be added to the "allow" list in DigitalOcean database settings. Reach out to someone with admin access to get your IP address added.
