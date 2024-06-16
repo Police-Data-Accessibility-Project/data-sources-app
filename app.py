@@ -25,7 +25,8 @@ def add_resource(api, resource, endpoint, **kwargs):
     api.add_resource(resource, endpoint, resource_class_kwargs=kwargs)
 
 
-def create_app(psycopg2_connection) -> Flask:
+def create_app() -> Flask:
+    psycopg2_connection = initialize_psycopg2_connection()
     app = Flask(__name__)
     api = Api(app)
     CORS(app)
@@ -55,5 +56,5 @@ def create_app(psycopg2_connection) -> Flask:
 
 
 if __name__ == "__main__":
-    app = create_app(initialize_psycopg2_connection())
+    app = create_app()
     app.run(debug=True, host="0.0.0.0")
