@@ -106,7 +106,7 @@ All unit tests for the API live in the app_test.py file. It is best practice to 
 
 Endpoints are structured for simplified testing and debugging. Code for interacting with the database is contained in a function suffixed with "_results" and tested against a local sqlite database instance. Limited rows (stored in the DATA_SOURCES_ROWS and AGENCIES_ROWS variables in app_test_data.py) are inserted into this local instance on setup, you may need to add additional rows to test other functionality fully. 
 
-Remaining API code is stored in functions suffixed with "_query" tested against static query results stored in app_test_data.py. Tests for hitting the endpoint directly should be included in regular_api_checks.py, makes sure to add the test function name in the list at the bottom so it is included in the Github actions run every 15 minutes.
+Remaining API code is stored in functions suffixed with "_query" tested against static query results stored in app_test_data.py.
 
 ```
 pip install pytest
