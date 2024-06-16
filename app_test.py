@@ -327,6 +327,8 @@ def test_archives_get_columns():
 
     assert not set(ARCHIVES_GET_COLUMNS).difference(response[0].keys())
 
+# region Resources
+
 
 def test_get_api_key(client_with_mock, mocker, test_app_with_mock):
     mock_request_data = {"email": "user@example.com", "password": "password"}
