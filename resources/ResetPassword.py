@@ -6,6 +6,7 @@ from middleware.reset_token_queries import (
 )
 from datetime import datetime as dt
 from typing import Dict, Any
+from http import HTTPStatus
 
 from resources.PsycopgResource import PsycopgResource
 
@@ -32,13 +33,13 @@ class ResetPassword(PsycopgResource):
             token_data = check_reset_token(cursor, token)
             email = token_data.get("email")
             if "create_date" not in token_data:
-                return {"message": "The submitted token is invalid"}, 400
+                return {"message": "The submitted token is invalid"}, HTTPStatus.BAD_REQUEST
 
             token_create_date = token_data["create_date"]
             token_expired = (dt.utcnow() - token_create_date).total_seconds() > 900
             delete_reset_token(cursor, token_data["email"], token)
             if token_expired:
-                return {"message": "The submitted token is invalid"}, 400
+                return {"message": "The submitted token is invalid"}, HTTPStatus.BAD_REQUEST
 
             password_digest = generate_password_hash(password)
             cursor = self.psycopg2_connection.cursor()
@@ -52,4 +53,4 @@ class ResetPassword(PsycopgResource):
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {"message": str(e)}, 500
+            return {"message": str(e)}, HTTPStatus.INTERNAL_SERVER_ERROR

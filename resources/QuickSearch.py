@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from middleware.security import api_required
 from middleware.quick_search_query import quick_search_query
 import requests
@@ -53,7 +54,7 @@ class QuickSearch(PsycopgResource):
                 return {
                     "count": 0,
                     "message": "No results found. Please considering requesting a new data source.",
-                }, 404
+                }, HTTPStatus.NOT_FOUND
 
             return {
                 "message": "Results for search successfully retrieved",
@@ -79,4 +80,4 @@ class QuickSearch(PsycopgResource):
                 headers={"Content-Type": "application/json"},
             )
 
-            return {"count": 0, "message": user_message}, 500
+            return {"count": 0, "message": user_message}, HTTPStatus.INTERNAL_SERVER_ERROR

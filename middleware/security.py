@@ -8,6 +8,7 @@ import os
 from typing import Tuple
 from flask.wrappers import Response
 from psycopg2.extensions import cursor as PgCursor
+from http import HTTPStatus
 
 
 def is_valid(api_key: str, endpoint: str, method: str) -> Tuple[bool, bool]:
@@ -83,22 +84,22 @@ def api_required(func):
             if len(authorization_header) >= 2 and authorization_header[0] == "Bearer":
                 api_key = request.headers["Authorization"].split(" ")[1]
                 if api_key == "undefined":
-                    return {"message": "Please provide an API key"}, 400
+                    return {"message": "Please provide an API key"}, HTTPStatus.BAD_REQUEST
             else:
                 return {
                     "message": "Please provide a properly formatted bearer token and API key"
-                }, 400
+                }, HTTPStatus.BAD_REQUEST
         else:
             return {
                 "message": "Please provide an 'Authorization' key in the request header"
-            }, 400
+            }, HTTPStatus.BAD_REQUEST
         # Check if API key is correct and valid
         valid, expired = is_valid(api_key, request.endpoint, request.method)
         if valid:
             return func(*args, **kwargs)
         else:
             if expired:
-                return {"message": "The provided API key has expired"}, 401
-            return {"message": "The provided API key is not valid"}, 403
+                return {"message": "The provided API key has expired"}, HTTPStatus.UNAUTHORIZED
+            return {"message": "The provided API key is not valid"}, HTTPStatus.FORBIDDEN
 
     return decorator

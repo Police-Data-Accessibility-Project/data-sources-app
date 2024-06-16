@@ -1,4 +1,5 @@
 from flask import request
+from http import HTTPStatus
 from middleware.security import api_required
 from middleware.data_source_queries import data_source_by_id_query, data_sources_query
 from datetime import datetime
@@ -37,11 +38,11 @@ class DataSourceById(PsycopgResource):
                 }
 
             else:
-                return {"message": "Data source not found."}, 404
+                return {"message": "Data source not found."}, HTTPStatus.NOT_FOUND
 
         except Exception as e:
             print(str(e))
-            return {"message": "There has been an error pulling data!"}, 500
+            return {"message": "There has been an error pulling data!"}, HTTPStatus.INTERNAL_SERVER_ERROR
 
     @api_required
     def put(self, data_source_id: str) -> Dict[str, str]:
@@ -90,7 +91,7 @@ class DataSourceById(PsycopgResource):
 
         except Exception as e:
             print(str(e))
-            return {"message": "There has been an error updating the data source"}, 500
+            return {"message": "There has been an error updating the data source"}, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
 class DataSources(PsycopgResource):
@@ -122,7 +123,7 @@ class DataSources(PsycopgResource):
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {"message": "There has been an error pulling data!"}, 500
+            return {"message": "There has been an error pulling data!"}, HTTPStatus.INTERNAL_SERVER_ERROR
 
     @api_required
     def post(self) -> Dict[str, str]:
@@ -172,7 +173,7 @@ class DataSources(PsycopgResource):
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {"message": "There has been an error adding the data source"}, 500
+            return {"message": "There has been an error adding the data source"}, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
 class DataSourcesNeedsIdentification(PsycopgResource):
@@ -194,7 +195,7 @@ class DataSourcesNeedsIdentification(PsycopgResource):
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {"message": "There has been an error pulling data!"}, 500
+            return {"message": "There has been an error pulling data!"}, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
 class DataSourcesMap(PsycopgResource):
@@ -226,4 +227,4 @@ class DataSourcesMap(PsycopgResource):
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {"message": "There has been an error pulling data!"}, 500
+            return {"message": "There has been an error pulling data!"}, HTTPStatus.INTERNAL_SERVER_ERROR

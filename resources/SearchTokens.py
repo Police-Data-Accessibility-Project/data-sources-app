@@ -11,6 +11,7 @@ import requests
 import sys
 import json
 from typing import Dict, Any
+from http import HTTPStatus
 
 from resources.PsycopgResource import PsycopgResource
 
@@ -89,7 +90,7 @@ class SearchTokens(PsycopgResource):
                         headers={"Content-Type": "application/json"},
                     )
 
-                    return {"count": 0, "message": user_message}, 500
+                    return {"count": 0, "message": user_message}, HTTPStatus.INTERNAL_SERVER_ERROR
 
             elif endpoint == "data-sources":
                 try:
@@ -105,7 +106,7 @@ class SearchTokens(PsycopgResource):
                 except Exception as e:
                     self.psycopg2_connection.rollback()
                     print(str(e))
-                    return {"message": "There has been an error pulling data!"}, 500
+                    return {"message": "There has been an error pulling data!"}, HTTPStatus.INTERNAL_SERVER_ERROR
 
             elif endpoint == "data-sources-by-id":
                 try:
@@ -116,11 +117,11 @@ class SearchTokens(PsycopgResource):
                         return data_source_details
 
                     else:
-                        return {"message": "Data source not found."}, 404
+                        return {"message": "Data source not found."}, HTTPStatus.NOT_FOUND
 
                 except Exception as e:
                     print(str(e))
-                    return {"message": "There has been an error pulling data!"}, 500
+                    return {"message": "There has been an error pulling data!"}, HTTPStatus.INTERNAL_SERVER_ERROR
 
             elif endpoint == "data-sources-map":
                 try:
@@ -135,15 +136,15 @@ class SearchTokens(PsycopgResource):
                         return data_sources
 
                     else:
-                        return {"message": "There has been an error pulling data!"}, 500
+                        return {"message": "There has been an error pulling data!"}, HTTPStatus.INTERNAL_SERVER_ERROR
 
                 except Exception as e:
                     print(str(e))
-                    return {"message": "There has been an error pulling data!"}, 500
+                    return {"message": "There has been an error pulling data!"}, HTTPStatus.INTERNAL_SERVER_ERROR
             else:
-                return {"message": "Unknown endpoint"}, 500
+                return {"message": "Unknown endpoint"}, HTTPStatus.INTERNAL_SERVER_ERROR
 
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {"message": e}, 500
+            return {"message": e}, HTTPStatus.INTERNAL_SERVER_ERROR

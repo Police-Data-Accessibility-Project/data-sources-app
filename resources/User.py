@@ -3,6 +3,7 @@ from flask import request
 from middleware.user_queries import user_post_results
 from middleware.security import api_required
 from typing import Dict, Any
+from http import HTTPStatus
 
 from resources.PsycopgResource import PsycopgResource
 
@@ -35,7 +36,7 @@ class User(PsycopgResource):
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {"message": e}, 500
+            return {"message": e}, HTTPStatus.INTERNAL_SERVER_ERROR
 
     # Endpoint for updating a user's password
     @api_required
@@ -64,5 +65,4 @@ class User(PsycopgResource):
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {"message": e}, 500
-            return {"message": e}, 500
+            return {"message": e}, HTTPStatus.INTERNAL_SERVER_ERROR

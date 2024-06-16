@@ -2,7 +2,7 @@ from werkzeug.security import check_password_hash
 from flask import request
 from middleware.login_queries import login_results, create_session_token
 from resources.PsycopgResource import PsycopgResource
-
+from http import HTTPStatus
 
 class Login(PsycopgResource):
     """
@@ -35,9 +35,9 @@ class Login(PsycopgResource):
                     "data": token,
                 }
 
-            return {"message": "Invalid email or password"}, 401
+            return {"message": "Invalid email or password"}, HTTPStatus.UNAUTHORIZED
 
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {"message": str(e)}, 500
+            return {"message": str(e)}, HTTPStatus.INTERNAL_SERVER_ERROR

@@ -5,6 +5,7 @@ import os
 import uuid
 import requests
 from typing import Dict, Any
+from http import HTTPStatus
 
 from resources.PsycopgResource import PsycopgResource
 
@@ -53,4 +54,4 @@ class RequestResetPassword(PsycopgResource):
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {"error": str(e)}, 500
+            return {"error": str(e)}, HTTPStatus.INTERNAL_SERVER_ERROR

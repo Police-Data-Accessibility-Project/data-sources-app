@@ -2,6 +2,7 @@ from flask import request
 from middleware.login_queries import token_results, create_session_token
 from datetime import datetime as dt
 from typing import Dict, Any
+from http import HTTPStatus
 
 from resources.PsycopgResource import PsycopgResource
 
@@ -40,9 +41,9 @@ class RefreshSession(PsycopgResource):
                     "data": token,
                 }
 
-            return {"message": "Invalid session token"}, 403
+            return {"message": "Invalid session token"}, HTTPStatus.FORBIDDEN
 
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {"message": str(e)}, 500
+            return {"message": str(e)}, HTTPStatus.INTERNAL_SERVER_ERROR
