@@ -55,8 +55,6 @@ from resources.ApiKey import (
 from werkzeug.security import check_password_hash
 from unittest.mock import patch, MagicMock
 
-api_key = os.getenv("VUE_APP_PDAP_API_KEY")
-HEADERS = {"Authorization": f"Bearer {api_key}"}
 current_datetime = datetime.datetime.now()
 DATETIME_STRING = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -117,8 +115,6 @@ def session():
             db_session.execute(query.replace("\n", ""))
 
     for row in DATA_SOURCES_ROWS:
-        # valid_row = {k: v for k, v in row.items() if k in all_columns}
-        # clean_row = [r if r is not None else "" for r in row]
         fully_clean_row = [str(r) for r in row]
         fully_clean_row_str = "'" + "', '".join(fully_clean_row) + "'"
         db_session.execute(f"insert into data_sources values ({fully_clean_row_str})")
@@ -131,9 +127,6 @@ def session():
         fully_clean_row = [str(r) for r in clean_row]
         fully_clean_row_str = "'" + "', '".join(fully_clean_row) + "'"
         db_session.execute(f"insert into agencies values ({fully_clean_row_str})")
-
-    # sql_query_log = f"INSERT INTO quick_search_query_logs (id, search, location, results, result_count, datetime_of_request, created_at) VALUES (1, 'test', 'test', '', 0, '{DATETIME_STRING}', '{DATETIME_STRING}')"
-    # db_session.execute(sql_query_log)
 
     yield connection
     connection.close()
@@ -326,22 +319,6 @@ def test_data_source_by_id_columns():
     assert not set(DATA_SOURCES_APPROVED_COLUMNS).difference(response.keys())
 
 
-# user
-
-
-# def test_post_user(client):
-#     response = client.post(
-#         "/user", headers=HEADERS, json={"email": "test", "password": "test"}
-#     )
-
-#     # with initialize_psycopg2_connection() as psycopg2_connection:
-#     #     cursor = psycopg2_connection.cursor()
-#     #     cursor.execute(f"DELETE FROM users WHERE email = 'test'")
-#     #     psycopg2_connection.commit()
-
-#     assert response.json["data"] == "Successfully added user"
-
-
 # archives
 def test_archives_get_columns():
     response = archives_get_query(
@@ -349,58 +326,6 @@ def test_archives_get_columns():
     )
 
     assert not set(ARCHIVES_GET_COLUMNS).difference(response[0].keys())
-
-
-# def test_put_archives(client):
-#     current_datetime = datetime.datetime.now()
-#     datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
-#     response = client.put(
-#         "/archives",
-#         headers=HEADERS,
-#         json=json.dumps(
-#             {
-#                 "id": "test",
-#                 "last_cached": datetime_string,
-#                 "broken_source_url_as_of": "",
-#             }
-#         ),
-#     )
-
-#     assert response.json["status"] == "success"
-
-
-# def test_put_archives_brokenasof(client):
-#     current_datetime = datetime.datetime.now()
-#     datetime_string = current_datetime.strftime("%Y-%m-%d")
-#     response = client.put(
-#         "/archives",
-#         headers=HEADERS,
-#         json=json.dumps(
-#             {
-#                 "id": "test",
-#                 "last_cached": datetime_string,
-#                 "broken_source_url_as_of": datetime_string,
-#             }
-#         ),
-#     )
-
-#     assert response.json["status"] == "success"
-
-
-# # agencies
-# def test_agencies(client):
-#     response = client.get("/agencies/1", headers=HEADERS)
-
-#     assert len(response.json["data"]) > 0
-
-
-# def test_agencies_pagination(client):
-#     response1 = client.get("/agencies/1", headers=HEADERS)
-#     response2 = client.get("/agencies/2", headers=HEADERS)
-
-#     assert response1 != response2
-
-# region Resources
 
 
 def test_get_api_key(client_with_mock, mocker, test_app_with_mock):
