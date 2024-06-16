@@ -81,7 +81,10 @@ def connection_with_test_data(
         dev_db_connection.rollback()
     return dev_db_connection
 
+
 ClientWithMockDB = namedtuple("ClientWithMockDB", ["client", "mock_db"])
+
+
 @pytest.fixture
 def client_with_mock_db(mocker) -> ClientWithMockDB:
     """
@@ -93,6 +96,7 @@ def client_with_mock_db(mocker) -> ClientWithMockDB:
     app = create_app(mock_db)
     with app.test_client() as client:
         yield ClientWithMockDB(client, mock_db)
+
 
 @pytest.fixture
 def client_with_db(dev_db_connection: psycopg2.extensions.connection):

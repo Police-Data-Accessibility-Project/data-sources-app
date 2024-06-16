@@ -77,7 +77,6 @@ def validate_role(role: str, endpoint: str, method: str):
         raise InvalidRoleError("You do not have permission to access this endpoint")
 
 
-
 def get_role(api_key, cursor):
     cursor.execute(f"select id, api_key, role from users where api_key = '{api_key}'")
     user_results = cursor.fetchall()

@@ -172,7 +172,9 @@ def mock_data_source_by_id_query(monkeypatch):
     return mock
 
 
-def test_data_source_by_id_wrapper_data_found(mock_data_source_by_id_query, mock_make_response):
+def test_data_source_by_id_wrapper_data_found(
+    mock_data_source_by_id_query, mock_make_response
+):
     mock_data_source_by_id_query.return_value = {"agency_name": "Agency A"}
     mock_conn = MagicMock()
     data_source_by_id_wrapper(arg="SOURCE_UID_1", conn=mock_conn)
@@ -181,7 +183,10 @@ def test_data_source_by_id_wrapper_data_found(mock_data_source_by_id_query, mock
     )
     mock_make_response.assert_called_with({"agency_name": "Agency A"}, 200)
 
-def test_data_source_by_id_wrapper_data_not_found(mock_data_source_by_id_query, mock_make_response):
+
+def test_data_source_by_id_wrapper_data_not_found(
+    mock_data_source_by_id_query, mock_make_response
+):
     mock_data_source_by_id_query.return_value = None
     mock_conn = MagicMock()
     data_source_by_id_wrapper(arg="SOURCE_UID_1", conn=mock_conn)

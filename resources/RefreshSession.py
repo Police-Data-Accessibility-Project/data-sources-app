@@ -3,7 +3,11 @@ from flask import request
 from flask_restx import abort
 
 from middleware.custom_exceptions import TokenNotFoundError
-from middleware.login_queries import get_session_token_user_data, create_session_token, delete_session_token
+from middleware.login_queries import (
+    get_session_token_user_data,
+    create_session_token,
+    delete_session_token,
+)
 from typing import Dict, Any
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
