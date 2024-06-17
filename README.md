@@ -121,7 +121,7 @@ To ensure such tests properly connect to the database, create or amend an `.env`
 
 Tests are currently run with pytest and can be run locally with the `pytest` command.
 
-Remaining API code is stored in functions suffixed with "_query" tested against static query results stored in app_test_data.py. Tests for hitting the endpoint directly should be included in regular_api_checks.py, makes sure to add the test function name in the list at the bottom so it is included in the Github actions run every 15 minutes.
+Remaining API code is stored in functions suffixed with "_query" tested against static query results stored in app_test_data.py.
 
 ```
 pip install pytest
