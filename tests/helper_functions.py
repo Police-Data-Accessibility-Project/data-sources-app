@@ -134,7 +134,7 @@ def create_test_user(
 
 
 QuickSearchQueryLogResult = namedtuple(
-    "QuickSearchQueryLogResult", ["result_count", "updated_at"]
+    "QuickSearchQueryLogResult", ["result_count", "updated_at", "results"]
 )
 
 
@@ -152,7 +152,7 @@ def get_most_recent_quick_search_query_log(
     """
     cursor.execute(
         """
-        SELECT RESULT_COUNT, CREATED_AT FROM QUICK_SEARCH_QUERY_LOGS WHERE
+        SELECT RESULT_COUNT, CREATED_AT, RESULTS FROM QUICK_SEARCH_QUERY_LOGS WHERE
         search = %s AND location = %s ORDER BY CREATED_AT DESC LIMIT 1
         """,
         (search, location),
@@ -160,7 +160,9 @@ def get_most_recent_quick_search_query_log(
     result = cursor.fetchone()
     if result is None:
         return result
-    return QuickSearchQueryLogResult(result_count=result[0], updated_at=result[1])
+    return QuickSearchQueryLogResult(
+        result_count=result[0], updated_at=result[1], results=result[2]
+    )
 
 
 def has_expected_keys(result_keys: list, expected_keys: list) -> bool:
@@ -273,6 +275,12 @@ def create_api_key(client_with_db, user_info):
     return api_key
 
 
+def create_api_key_db(cursor, user_id: str):
+    api_key = uuid.uuid4().hex
+    cursor.execute("UPDATE users SET api_key = %s WHERE id = %s", (api_key, user_id))
+    return api_key
+
+
 def insert_test_data_source(cursor: psycopg2.extensions.cursor) -> str:
     """
     Insert test data source and return id
@@ -320,7 +328,6 @@ def give_user_admin_role(
     """,
         (user_info.email,),
     )
-
 
 def check_response_status(response, status_code):
     assert (

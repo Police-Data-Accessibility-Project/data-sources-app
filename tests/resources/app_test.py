@@ -9,8 +9,6 @@ import sqlite3
 import pytest
 from unittest.mock import patch, MagicMock
 
-api_key = os.getenv("VUE_APP_PDAP_API_KEY")
-HEADERS = {"Authorization": f"Bearer {api_key}"}
 current_datetime = datetime.datetime.now()
 DATETIME_STRING = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -32,9 +30,10 @@ def runner(test_app):
 
 
 @pytest.fixture()
-def test_app_with_mock(mocker):
+def test_app_with_mock(mocker, monkeypatch):
     # Patch the initialize_psycopg2_connection function so it returns a MagicMock
-    yield create_app(mocker.MagicMock())
+    monkeypatch.setattr("app.initialize_psycopg2_connection", lambda: mocker.MagicMock())
+    yield create_app()
 
 
 @pytest.fixture()
@@ -60,8 +59,6 @@ def session():
             db_session.execute(query.replace("\n", ""))
 
     for row in DATA_SOURCES_ROWS:
-        # valid_row = {k: v for k, v in row.items() if k in all_columns}
-        # clean_row = [r if r is not None else "" for r in row]
         fully_clean_row = [str(r) for r in row]
         fully_clean_row_str = "'" + "', '".join(fully_clean_row) + "'"
         db_session.execute(f"insert into data_sources values ({fully_clean_row_str})")
@@ -75,57 +72,26 @@ def session():
         fully_clean_row_str = "'" + "', '".join(fully_clean_row) + "'"
         db_session.execute(f"insert into agencies values ({fully_clean_row_str})")
 
-    # sql_query_log = f"INSERT INTO quick_search_query_logs (id, search, location, results, result_count, datetime_of_request, created_at) VALUES (1, 'test', 'test', '', 0, '{DATETIME_STRING}', '{DATETIME_STRING}')"
-    # db_session.execute(sql_query_log)
-
     yield connection
     connection.close()
 
-
-# def test_post_user(client):
-#     response = client.post(
-#         "/user", headers=HEADERS, json={"email": "test", "password": "test"}
-#     )
-
-#     # with initialize_psycopg2_connection() as psycopg2_connection:
-#     #     cursor = psycopg2_connection.cursor()
-#     #     cursor.execute(f"DELETE FROM users WHERE email = 'test'")
-#     #     psycopg2_connection.commit()
-
-#     assert response.json["data"] == "Successfully added user"
-
-# def test_put_archives(client):
-#     current_datetime = datetime.datetime.now()
-#     datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
-#     response = client.put(
-#         "/archives",
-#         headers=HEADERS,
-#         json=json.dumps(
-#             {
-#                 "id": "test",
-#                 "last_cached": datetime_string,
-#                 "broken_source_url_as_of": "",
-#             }
-#         ),
-#     )
-
-#     assert response.json["status"] == "success"
+# region Resources
 
 
-# def test_put_archives_brokenasof(client):
-#     current_datetime = datetime.datetime.now()
-#     datetime_string = current_datetime.strftime("%Y-%m-%d")
-#     response = client.put(
-#         "/archives",
-#         headers=HEADERS,
-#         json=json.dumps(
-#             {
-#                 "id": "test",
-#                 "last_cached": datetime_string,
-#                 "broken_source_url_as_of": datetime_string,
-#             }
-#         ),
-#     )
+def test_get_api_key(client_with_mock, mocker, test_app_with_mock):
+    mock_request_data = {"email": "user@example.com", "password": "password"}
+    mock_user_data = {"id": 1, "password_digest": "hashed_password"}
 
-#     assert response.json["status"] == "success"
+    # Mock login_results function to return mock_user_data
+    mocker.patch("resources.ApiKey.login_results", return_value=mock_user_data)
+    # Mock check_password_hash based on the valid_login parameter
+    mocker.patch("resources.ApiKey.check_password_hash", return_value=True)
 
+    with client_with_mock:
+        response = client_with_mock.get("/api_key", json=mock_request_data)
+        json_data = response.get_json()
+        assert "api_key" in json_data
+        assert response.status_code == 200
+
+
+# endregion

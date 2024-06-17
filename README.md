@@ -52,7 +52,9 @@ pip install -r requirements.txt
 
 ### 5. Add environment secrets
 
-Either add a `.env` file to your local root directory or manually export these secrets: `DO_DATABASE_URL` and `VITE_VUE_API_BASE_URL`.  
+In both the local root directory and the `/client` directory, either:
+1. Either add a `.env` file to your local root directory 
+2. or manually export these secrets: `DO_DATABASE_URL`, `VITE_VUE_APP_BASE_URL`, `VITE_VUE_API_BASE_URL`.  
 
 Reach out to contact@pdap.io or make noise in Discord if you'd like access to these keys.
 
@@ -71,6 +73,8 @@ export DO_DATABASE_URL=postgres://data_sources_app:<password>@db-postgresql-nyc3
 export VITE_VUE_API_BASE_URL="http://localhost:5000"
 export VITE_VUE_APP_BASE_URL="http://localhost:8888"
 ```
+
+Additionally, if you are testing the email functionality, you will need to also provide the `MAILGUN_KEY` environment variable as well (also obtainable from the sources mentioned above).
 
 ### 6. Allow your IP address
 
@@ -117,7 +121,7 @@ To ensure such tests properly connect to the database, create or amend an `.env`
 
 Tests are currently run with pytest and can be run locally with the `pytest` command.
 
-Remaining API code is stored in functions suffixed with "_query" tested against static query results stored in app_test_data.py. Tests for hitting the endpoint directly should be included in regular_api_checks.py, makes sure to add the test function name in the list at the bottom so it is included in the Github actions run every 15 minutes.
+Remaining API code is stored in functions suffixed with "_query" tested against static query results stored in app_test_data.py.
 
 ```
 pip install pytest

@@ -1,3 +1,5 @@
+from flask import Response
+
 from middleware.security import api_required
 from middleware.quick_search_query import quick_search_query_wrapper
 
@@ -15,7 +17,7 @@ class QuickSearch(PsycopgResource):
     # api_required decorator requires the request"s header to include an "Authorization" key with the value formatted as "Bearer [api_key]"
     # A user can get an API key by signing up and logging in (see User.py)
     @api_required
-    def get(self, search: str, location: str) -> Dict[str, Any]:
+    def get(self, search: str, location: str) -> Response:
         """
         Performs a quick search using the provided search terms and location. It attempts to find relevant
         data sources in the database. If no results are found initially, it re-initializes the database
@@ -28,4 +30,6 @@ class QuickSearch(PsycopgResource):
         Returns:
         - A dictionary containing a message about the search results and the data found, if any.
         """
-        return quick_search_query_wrapper(search, location, self.psycopg2_connection)
+        return quick_search_query_wrapper(
+            search, location, self.psycopg2_connection.cursor()
+        )

@@ -1,5 +1,7 @@
 from flask import request, Response
 
+from flask_restx import abort
+
 from middleware.custom_exceptions import TokenNotFoundError
 from middleware.login_queries import (
     get_session_token_user_data,
