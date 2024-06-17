@@ -125,9 +125,7 @@ def test_post_refresh_session_unexpected_error(
     )
 
     check_response_status(response, 500)
-    assert response.json == {
-        "message": "An unexpected error occurred",
-    }
+    assert response.json["message"] == "An unexpected error occurred"
     mock_get_session_token_user_data.assert_called_once_with(
         mock_cursor, "old_test_session_token"
     )

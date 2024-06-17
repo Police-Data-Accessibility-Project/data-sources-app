@@ -1,5 +1,7 @@
 from flask import request
 
+from flask_restx import abort
+
 from middleware.custom_exceptions import TokenNotFoundError
 from middleware.login_queries import (
     get_session_token_user_data,
@@ -40,3 +42,5 @@ class RefreshSession(PsycopgResource):
             "message": "Successfully refreshed session token",
             "data": token,
         }
+
+        abort(code=403, message="Invalid session token")
