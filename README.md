@@ -1,4 +1,6 @@
-# data-sources-app
+# data-sources-app-v2
+
+Development of the next big iteration of the data sources app according to https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/248
 
 An API and UI for searching, using, and maintaining Data Sources. 
 
@@ -50,7 +52,9 @@ pip install -r requirements.txt
 
 ### 5. Add environment secrets
 
-Either add a `.env` file to your local root directory or manually export these secrets: `DO_DATABASE_URL` and `VITE_VUE_API_BASE_URL`.  
+In both the local root directory and the `/client` directory, either:
+1. Either add a `.env` file to your local root directory 
+2. or manually export these secrets: `DO_DATABASE_URL`, `VITE_VUE_APP_BASE_URL`, `VITE_VUE_API_BASE_URL`.  
 
 Reach out to contact@pdap.io or make noise in Discord if you'd like access to these keys.
 
@@ -69,6 +73,8 @@ export DO_DATABASE_URL=postgres://data_sources_app:<password>@db-postgresql-nyc3
 export VITE_VUE_API_BASE_URL="http://localhost:5000"
 export VITE_VUE_APP_BASE_URL="http://localhost:8888"
 ```
+
+Additionally, if you are testing the email functionality, you will need to also provide the `MAILGUN_KEY` environment variable as well (also obtainable from the sources mentioned above).
 
 ### 6. Allow your IP address
 
@@ -102,9 +108,18 @@ npm run dev
 
 ## Testing
 
-All unit tests for the API live in the app_test.py file. It is best practice to add tests for any new feature to ensure it is working as expected and that any future code changes do not affect its functionality. All tests will be automatically run when a PR into dev is opened in order to ensure any changes do not break current app functionality. If a test fails, it is a sign that the new code should be checked or possibly that the test needs to be updated. Tests are currently run with pytest and can be run locally with the `pytest` command.
+### Location
+All unit and integration tests for the API live in the `tests` folder
 
-Endpoints are structured for simplified testing and debugging. Code for interacting with the database is contained in a function suffixed with "_results" and tested against a local sqlite database instance. Limited rows (stored in the DATA_SOURCES_ROWS and AGENCIES_ROWS variables in app_test_data.py) are inserted into this local instance on setup, you may need to add additional rows to test other functionality fully. 
+It is best practice to add tests for any new feature to ensure it is working as expected and that any future code changes do not affect its functionality. All tests will be automatically run when a PR into dev is opened in order to ensure any changes do not break current app functionality. If a test fails, it is a sign that the new code should be checked or possibly that the test needs to be updated. 
+
+
+### How to run tests
+Some tests involve interfacing with the development database, which copies the production database's data and schema daily.
+
+To ensure such tests properly connect to the database, create or amend an `.env` file in the root direct of the project with the environment variable `DEV_DB_CONN_STRING`. Provide as a value a connection string giving you access to the `data_sources_app` user. If you do not have this connection string, DM a database administrator.
+
+Tests are currently run with pytest and can be run locally with the `pytest` command.
 
 Remaining API code is stored in functions suffixed with "_query" tested against static query results stored in app_test_data.py.
 

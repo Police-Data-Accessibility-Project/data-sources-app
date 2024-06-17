@@ -1,6 +1,8 @@
 from psycopg2.extensions import cursor as PgCursor
 from typing import Dict, Union
 
+from middleware.custom_exceptions import TokenNotFoundError
+
 
 def check_reset_token(cursor: PgCursor, token: str) -> Dict[str, Union[int, str]]:
     """
@@ -11,18 +13,16 @@ def check_reset_token(cursor: PgCursor, token: str) -> Dict[str, Union[int, str]
     :return: A dictionary containing the user's ID, token creation date, and email if the token exists; otherwise, an error message.
     """
     cursor.execute(
-        f"select id, create_date, email from reset_tokens where token = '{token}'"
+        f"select id, create_date, email from reset_tokens where token = %s", (token,)
     )
     results = cursor.fetchall()
-    if len(results) > 0:
-        user_data = {
-            "id": results[0][0],
-            "create_date": results[0][1],
-            "email": results[0][2],
-        }
-        return user_data
-    else:
-        return {"error": "no match"}
+    if len(results) == 0:
+        raise TokenNotFoundError("The specified token was not found.")
+    return {
+        "id": results[0][0],
+        "create_date": results[0][1],
+        "email": results[0][2],
+    }
 
 
 def add_reset_token(cursor: PgCursor, email: str, token: str) -> None:
@@ -34,7 +34,7 @@ def add_reset_token(cursor: PgCursor, email: str, token: str) -> None:
     :param token: The reset token to add.
     """
     cursor.execute(
-        f"insert into reset_tokens (email, token) values ('{email}', '{token}')"
+        f"insert into reset_tokens (email, token) values (%s, %s)", (email, token)
     )
 
     return
@@ -49,7 +49,7 @@ def delete_reset_token(cursor: PgCursor, email: str, token: str) -> None:
     :param token: The reset token to delete.
     """
     cursor.execute(
-        f"delete from reset_tokens where email = '{email}' and token = '{token}'"
+        f"delete from reset_tokens where email = %s and token = %s", (email, token)
     )
 
     return
