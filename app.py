@@ -1,8 +1,6 @@
 from flask import Flask
 from flask_restx import Api
 from flask_cors import CORS
-
-from resources.HomepageSearchCache import HomepageSearchCache
 from resources.User import User
 from resources.Login import Login
 from resources.RefreshSession import RefreshSession
@@ -49,7 +47,6 @@ def create_app() -> Flask:
         (DataSourceById, "/data-sources-by-id/<data_source_id>"),
         (Agencies, "/agencies/<page>"),
         (SearchTokens, "/search-tokens"),
-        (HomepageSearchCache, "/homepage-search-cache"),
     ]
 
     for resource, endpoint in resources:
