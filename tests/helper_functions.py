@@ -4,6 +4,7 @@ import uuid
 from collections import namedtuple
 from datetime import datetime, timedelta
 from typing import Optional
+from http import HTTPStatus
 
 import psycopg2.extensions
 from flask.testing import FlaskClient
@@ -203,7 +204,7 @@ def create_test_user_api(client: FlaskClient) -> UserInfo:
         "/user",
         json={"email": email, "password": password},
     )
-    assert response.status_code == 200, "User creation not successful"
+    assert response.status_code == HTTPStatus.OK.value, "User creation not successful"
     return UserInfo(email=email, password=password)
 
 
@@ -221,7 +222,7 @@ def login_and_return_session_token(
         "/login",
         json={"email": user_info.email, "password": user_info.password},
     )
-    assert response.status_code == 200, "User login unsuccessful"
+    assert response.status_code == HTTPStatus.OK.value, "User login unsuccessful"
     session_token = response.json.get("data")
     return session_token
 
@@ -269,7 +270,7 @@ def create_api_key(client_with_db, user_info):
     response = client_with_db.get(
         "/api_key", json={"email": user_info.email, "password": user_info.password}
     )
-    assert response.status_code == 200, "API key creation not successful"
+    assert response.status_code == HTTPStatus.OK.value, "API key creation not successful"
     api_key = response.json.get("api_key")
     return api_key
 

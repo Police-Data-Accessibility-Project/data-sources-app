@@ -1,5 +1,6 @@
 """Integration tests for /data-sources-by-id endpoint"""
 
+from http import HTTPStatus
 import uuid
 import psycopg2
 from tests.fixtures import connection_with_test_data, dev_db_connection, client_with_db
@@ -23,7 +24,7 @@ def test_data_sources_by_id_get(
         "/data-sources-by-id/SOURCE_UID_1",
         headers={"Authorization": f"Bearer {api_key}"},
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK.value
     assert response.json["source_url"] == "http://src1.com"
 
 
@@ -42,7 +43,7 @@ def test_data_sources_by_id_put(
         headers={"Authorization": f"Bearer {api_key}"},
         json={"description": desc},
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK.value
     cursor = connection_with_test_data.cursor()
     cursor.execute(
         """

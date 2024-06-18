@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 
 import pytest
+from http import HTTPStatus
 
 from middleware.custom_exceptions import TokenNotFoundError
 from middleware.login_queries import SessionTokenUserData
@@ -53,7 +54,7 @@ def test_post_refresh_session_happy_path(
             "session_token": "old_test_session_token",
         },
     )
-    check_response_status(response, 200)
+    check_response_status(response, HTTPStatus.OK.value)
     assert response.json == {
         "message": "Successfully refreshed session token",
         "data": "new_test_session_token",
@@ -90,7 +91,7 @@ def test_post_refresh_session_token_not_found(
         },
     )
 
-    check_response_status(response, 403)
+    check_response_status(response, HTTPStatus.FORBIDDEN.value)
     assert response.json == {
         "message": "Invalid session token",
     }
@@ -124,7 +125,7 @@ def test_post_refresh_session_unexpected_error(
         },
     )
 
-    check_response_status(response, 500)
+    check_response_status(response, HTTPStatus.INTERNAL_SERVER_ERROR.value)
     assert response.json["message"] == "An unexpected error occurred"
     mock_get_session_token_user_data.assert_called_once_with(
         mock_cursor, "old_test_session_token"

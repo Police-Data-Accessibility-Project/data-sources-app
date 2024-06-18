@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import psycopg2
@@ -181,7 +182,7 @@ def test_data_source_by_id_wrapper_data_found(
     mock_data_source_by_id_query.assert_called_with(
         data_source_id="SOURCE_UID_1", conn=mock_conn
     )
-    mock_make_response.assert_called_with({"agency_name": "Agency A"}, 200)
+    mock_make_response.assert_called_with({"agency_name": "Agency A"}, HTTPStatus.OK.value)
 
 
 def test_data_source_by_id_wrapper_data_not_found(
@@ -193,4 +194,4 @@ def test_data_source_by_id_wrapper_data_not_found(
     mock_data_source_by_id_query.assert_called_with(
         data_source_id="SOURCE_UID_1", conn=mock_conn
     )
-    mock_make_response.assert_called_with({"message": "Data source not found."}, 200)
+    mock_make_response.assert_called_with({"message": "Data source not found."}, HTTPStatus.OK.value)

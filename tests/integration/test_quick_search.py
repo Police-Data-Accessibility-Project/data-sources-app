@@ -1,6 +1,7 @@
 """Integration tests for /quick-search/<search>/<location>" endpoint"""
 
 from urllib.parse import quote
+from http import HTTPStatus
 
 from tests.fixtures import dev_db_connection, client_with_db, connection_with_test_data
 from tests.helper_functions import (
@@ -29,7 +30,7 @@ def test_quick_search_get(client_with_db, connection_with_test_data):
         f"/quick-search/{encoded_search_term}/{encoded_location}",
         headers={"Authorization": f"Bearer {api_key}"},
     )
-    check_response_status(response, 200)
+    check_response_status(response, HTTPStatus.OK.value)
     data = response.json.get("data")
     assert len(data) == 1, "Quick Search endpoint response should return only one entry"
     entry = data[0]

@@ -1,5 +1,6 @@
 """Integration tests for /reset-token-validation endpoint."""
 
+from http import HTTPStatus
 from pytest_mock import mocker
 
 from tests.helper_functions import (
@@ -17,7 +18,7 @@ def test_reset_token_validation(client_with_db, dev_db_connection, mocker):
     token = request_reset_password_api(client_with_db, mocker, user_info)
     response = client_with_db.post("/reset-token-validation", json={"token": token})
     assert (
-        response.status_code == 200
+        response.status_code == HTTPStatus.OK.value
     ), "reset-token-validation endpoint call unsuccessful"
     assert (
         response.json.get("message") == "Token is valid"

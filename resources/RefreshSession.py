@@ -1,4 +1,5 @@
 from flask import request
+from http import HTTPStatus
 
 from flask_restx import abort
 
@@ -34,7 +35,7 @@ class RefreshSession(PsycopgResource):
         try:
             user_data = get_session_token_user_data(cursor, old_token)
         except TokenNotFoundError:
-            return {"message": "Invalid session token"}, 403
+            return {"message": "Invalid session token"}, HTTPStatus.FORBIDDEN.value
         delete_session_token(cursor, old_token)
         token = create_session_token(cursor, user_data.id, user_data.email)
         self.psycopg2_connection.commit()
@@ -43,4 +44,4 @@ class RefreshSession(PsycopgResource):
             "data": token,
         }
 
-        abort(code=403, message="Invalid session token")
+        abort(code=HTTPStatus.FORBIDDEN.value, message="Invalid session token")

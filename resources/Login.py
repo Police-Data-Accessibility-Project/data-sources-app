@@ -1,6 +1,7 @@
 from flask_restx import abort
 from werkzeug.security import check_password_hash
 from flask import request
+from http import HTTPStatus
 from middleware.login_queries import login_results, create_session_token
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
@@ -36,4 +37,4 @@ class Login(PsycopgResource):
                 "data": token,
             }
 
-        abort(code=401, message="Invalid email or password")
+        abort(code=HTTPStatus.UNAUTHORIZED.value, message="Invalid email or password")
