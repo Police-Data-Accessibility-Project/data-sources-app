@@ -7,12 +7,7 @@ from tests.fixtures import client_with_mock_db
 from tests.helper_functions import check_response_status
 
 
-
-
-def test_post_refresh_session(
-        client_with_mock_db,
-        monkeypatch
-):
+def test_post_refresh_session(client_with_mock_db, monkeypatch):
 
     mock_request = MagicMock()
     mock_data = MagicMock()
@@ -22,7 +17,9 @@ def test_post_refresh_session(
 
     # Patch
     monkeypatch.setattr("resources.RefreshSession.request", mock_request)
-    monkeypatch.setattr("resources.RefreshSession.refresh_session", mock_refresh_session)
+    monkeypatch.setattr(
+        "resources.RefreshSession.refresh_session", mock_refresh_session
+    )
 
     # Call endpoint
     response = client_with_mock_db.client.post("/refresh-session")

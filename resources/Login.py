@@ -26,4 +26,3 @@ class Login(PsycopgResource):
             response = try_logging_in(cursor, email, password)
             self.psycopg2_connection.commit()
         return response
-

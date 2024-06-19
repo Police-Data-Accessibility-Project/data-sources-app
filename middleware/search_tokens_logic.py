@@ -1,8 +1,11 @@
 import psycopg2.extensions
 from flask import Response
 
-from middleware.data_source_queries import get_approved_data_sources_wrapper, data_source_by_id_wrapper, \
-    get_data_sources_for_map_wrapper
+from middleware.data_source_queries import (
+    get_approved_data_sources_wrapper,
+    data_source_by_id_wrapper,
+    get_data_sources_for_map_wrapper,
+)
 from middleware.quick_search_query import quick_search_query_wrapper
 
 
@@ -14,11 +17,13 @@ class UnknownEndpointError(Exception):
 
 from enum import Enum
 
+
 class Endpoint(Enum):
     QUICK_SEARCH = "quick-search"
     DATA_SOURCES = "data-sources"
     DATA_SOURCES_BY_ID = "data-sources-by-id"
     DATA_SOURCES_MAP = "data-sources-map"
+
 
 def perform_endpoint_logic(
     arg1: str, arg2: str, endpoint_str: str, conn: psycopg2.extensions.connection

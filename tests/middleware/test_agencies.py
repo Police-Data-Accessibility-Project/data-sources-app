@@ -91,7 +91,7 @@ def test_get_agencies(monkeypatch):
     mock_agencies_matches = [MagicMock() for _ in range(3)]
     mock_get_agencies_matches = MagicMock(return_value=mock_agencies_matches)
     mock_response = MagicMock()
-    mock_make_response = MagicMock(return_value = mock_response)
+    mock_make_response = MagicMock(return_value=mock_response)
 
     # Use monkeypatch to set mock values
     monkeypatch.setattr(
@@ -105,7 +105,7 @@ def test_get_agencies(monkeypatch):
     # Check results
     assert response == mock_response
     mock_get_agencies_matches.assert_called_once_with(mock_cursor, mock_page)
-    mock_make_response.assert_called_once_with({
-        "count": len(mock_agencies_matches),
-        "data": mock_agencies_matches
-    }, HTTPStatus.OK)
+    mock_make_response.assert_called_once_with(
+        {"count": len(mock_agencies_matches), "data": mock_agencies_matches},
+        HTTPStatus.OK,
+    )

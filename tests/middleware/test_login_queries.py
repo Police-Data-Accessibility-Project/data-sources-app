@@ -11,7 +11,8 @@ from middleware.login_queries import (
     get_session_token_user_data,
     is_admin,
     generate_api_key,
-    get_api_key_for_user, refresh_session,
+    get_api_key_for_user,
+    refresh_session,
 )
 from middleware.custom_exceptions import UserNotFoundError, TokenNotFoundError
 from tests.helper_functions import create_test_user, DynamicMagicMock
@@ -104,7 +105,7 @@ def test_get_api_key_for_user_success(monkeypatch):
         mock_password,
         mock_password_digest,
         mock_update_api_key,
-        mock_user_id
+        mock_user_id,
     ) = setup_mocks(monkeypatch)
     mock_check_password_hash.return_value = True
     mock_api_key = MagicMock()
@@ -129,7 +130,7 @@ def test_get_api_key_for_user_failure(monkeypatch):
         mock_password,
         mock_password_digest,
         mock_update_api_key,
-        mock_user_id
+        mock_user_id,
     ) = setup_mocks(monkeypatch)
 
     mock_check_password_hash.return_value = False
@@ -180,8 +181,9 @@ def setup_mocks(monkeypatch):
         mock_password,
         mock_password_digest,
         mock_update_api_key,
-        mock_user_id
+        mock_user_id,
     )
+
 
 class RefreshSessionMocks(DynamicMagicMock):
     cursor: MagicMock
@@ -195,6 +197,7 @@ class RefreshSessionMocks(DynamicMagicMock):
     mock_user_id: MagicMock
     mock_email: MagicMock
 
+
 @pytest.fixture
 def setup_refresh_session_mocks(monkeypatch):
     mock = RefreshSessionMocks()
@@ -203,22 +206,33 @@ def setup_refresh_session_mocks(monkeypatch):
     mock.user_data.id = mock.mock_user_id
     mock.user_data.email = mock.mock_email
 
-    monkeypatch.setattr("middleware.login_queries.get_session_token_user_data", mock.get_session_token_user_data)
-    monkeypatch.setattr("middleware.login_queries.delete_session_token", mock.delete_session_token)
+    monkeypatch.setattr(
+        "middleware.login_queries.get_session_token_user_data",
+        mock.get_session_token_user_data,
+    )
+    monkeypatch.setattr(
+        "middleware.login_queries.delete_session_token", mock.delete_session_token
+    )
     monkeypatch.setattr("middleware.login_queries.make_response", mock.make_response)
-    monkeypatch.setattr("middleware.login_queries.create_session_token", mock.create_session_token)
+    monkeypatch.setattr(
+        "middleware.login_queries.create_session_token", mock.create_session_token
+    )
     return mock
+
 
 def test_refresh_session_happy_path(setup_refresh_session_mocks):
     mock = setup_refresh_session_mocks
     refresh_session(mock.cursor, mock.old_token)
     mock.get_session_token_user_data.assert_called_with(mock.cursor, mock.old_token)
     mock.delete_session_token.assert_called_with(mock.cursor, mock.old_token)
-    mock.create_session_token.assert_called_with(mock.cursor, mock.user_data.id, mock.user_data.email)
+    mock.create_session_token.assert_called_with(
+        mock.cursor, mock.user_data.id, mock.user_data.email
+    )
     mock.make_response.assert_called_with(
         {"message": "Successfully refreshed session token", "data": mock.new_token},
-        HTTPStatus.OK
+        HTTPStatus.OK,
     )
+
 
 def test_refresh_session_token_not_found_error(setup_refresh_session_mocks):
     mock = setup_refresh_session_mocks
@@ -228,6 +242,5 @@ def test_refresh_session_token_not_found_error(setup_refresh_session_mocks):
     mock.delete_session_token.assert_not_called()
     mock.create_session_token.assert_not_called()
     mock.make_response.assert_called_with(
-        {"message": "Invalid session token"},
-        HTTPStatus.FORBIDDEN
+        {"message": "Invalid session token"}, HTTPStatus.FORBIDDEN
     )

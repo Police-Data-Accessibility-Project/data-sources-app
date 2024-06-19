@@ -54,5 +54,7 @@ class Agencies(PsycopgResource):
         Returns:
         - dict: A dictionary containing the count of returned agencies and their data.
         """
-        with self.psycopg2_connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+        with self.psycopg2_connection.cursor(
+            cursor_factory=psycopg2.extras.RealDictCursor
+        ) as cursor:
             return get_agencies(cursor, int(page))

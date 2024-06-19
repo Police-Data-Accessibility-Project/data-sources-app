@@ -161,5 +161,5 @@ def refresh_session(cursor: PgCursor, old_token: str) -> Response:
     token = create_session_token(cursor, user_data.id, user_data.email)
     return make_response(
         {"message": "Successfully refreshed session token", "data": token},
-        HTTPStatus.OK
+        HTTPStatus.OK,
     )

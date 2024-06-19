@@ -266,7 +266,10 @@ class ResetTokenValidationMocks(DynamicMagicMock):
     make_response: MagicMock
     invalid_token_response: MagicMock
 
-def monkeypatch_reset_token_validation(monkeypatch: pytest.MonkeyPatch, mock: ResetTokenValidationMocks) -> None:
+
+def monkeypatch_reset_token_validation(
+    monkeypatch: pytest.MonkeyPatch, mock: ResetTokenValidationMocks
+) -> None:
     monkeypatch.setattr(
         "middleware.reset_token_queries.make_response", mock.make_response
     )
@@ -279,6 +282,7 @@ def monkeypatch_reset_token_validation(monkeypatch: pytest.MonkeyPatch, mock: Re
         mock.invalid_token_response,
     )
 
+
 def test_reset_token_validation_happy_path(monkeypatch):
     mocks = ResetTokenValidationMocks()
     monkeypatch_reset_token_validation(monkeypatch, mocks)
@@ -289,6 +293,7 @@ def test_reset_token_validation_happy_path(monkeypatch):
     mocks.make_response.assert_called_once_with(
         {"message": "Token is valid"}, HTTPStatus.OK
     )
+
 
 def test_reset_token_validation_invalid_token(monkeypatch):
     mocks = ResetTokenValidationMocks()
@@ -324,6 +329,7 @@ def test_validate_token_token_not_found(monkeypatch):
     mock.check_reset_token.assert_called_once_with(mock.cursor, mock.token)
     mock.token_is_expired.assert_not_called()
     mock.delete_reset_token.assert_not_called()
+
 
 def test_validate_token_token_is_expired(monkeypatch):
     mock = ResetPasswordMocks()

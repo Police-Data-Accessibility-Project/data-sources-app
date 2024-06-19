@@ -15,7 +15,9 @@ def test_request_reset_password_post(
 
     user_info = create_test_user_api(client_with_db)
 
-    mock_send_password_reset_link = mocker.patch("middleware.reset_token_queries.send_password_reset_link")
+    mock_send_password_reset_link = mocker.patch(
+        "middleware.reset_token_queries.send_password_reset_link"
+    )
     response = client_with_db.post(
         "/request-reset-password", json={"email": user_info.email}
     )
@@ -23,9 +25,7 @@ def test_request_reset_password_post(
     assert (
         response.status_code == 200
     ), "Request to Reset Password request was not returned successfully"
-    assert mock_send_password_reset_link.called_once_with(
-        user_info.email, reset_token
-    )
+    assert mock_send_password_reset_link.called_once_with(user_info.email, reset_token)
 
     cursor = dev_db_connection.cursor()
     cursor.execute(

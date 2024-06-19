@@ -19,4 +19,3 @@ def test_put_user(client_with_mock_db, monkeypatch):
     assert response.json == {"message": "Successfully updated password"}
 
     mock_set_user_password.assert_called()
-

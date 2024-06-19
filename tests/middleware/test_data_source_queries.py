@@ -134,25 +134,34 @@ def setup_try_logging_in_mocks(monkeypatch, check_password_hash_return_value):
         "middleware.login_queries.create_session_token",
         mock_create_session_token,
     )
-    monkeypatch.setattr(
-        "middleware.login_queries.make_response", mock_make_response
-    )
-    monkeypatch.setattr(
-        "middleware.login_queries.get_user_info", mock_get_user_info
-    )
+    monkeypatch.setattr("middleware.login_queries.make_response", mock_make_response)
+    monkeypatch.setattr("middleware.login_queries.get_user_info", mock_get_user_info)
     monkeypatch.setattr(
         "middleware.login_queries.check_password_hash", mock_check_password_hash
     )
 
     return (
-        mock_cursor, mock_email, mock_password, mock_user_id, mock_session_token,
-        mock_get_user_info, mock_make_response, mock_create_session_token
+        mock_cursor,
+        mock_email,
+        mock_password,
+        mock_user_id,
+        mock_session_token,
+        mock_get_user_info,
+        mock_make_response,
+        mock_create_session_token,
     )
+
 
 def test_try_logging_in_successful(monkeypatch):
     (
-        mock_cursor, mock_email, mock_password, mock_user_id, mock_session_token,
-        mock_get_user_info, mock_make_response, mock_create_session_token
+        mock_cursor,
+        mock_email,
+        mock_password,
+        mock_user_id,
+        mock_session_token,
+        mock_get_user_info,
+        mock_make_response,
+        mock_create_session_token,
     ) = setup_try_logging_in_mocks(monkeypatch, check_password_hash_return_value=True)
 
     # Call function
@@ -165,10 +174,17 @@ def test_try_logging_in_successful(monkeypatch):
         {"message": "Successfully logged in", "data": mock_session_token}, HTTPStatus.OK
     )
 
+
 def test_try_logging_in_unsuccessful(monkeypatch):
     (
-        mock_cursor, mock_email, mock_password, mock_user_id, mock_session_token,
-        mock_get_user_info, mock_make_response, mock_create_session_token
+        mock_cursor,
+        mock_email,
+        mock_password,
+        mock_user_id,
+        mock_session_token,
+        mock_get_user_info,
+        mock_make_response,
+        mock_create_session_token,
     ) = setup_try_logging_in_mocks(monkeypatch, check_password_hash_return_value=False)
 
     # Call function
@@ -180,6 +196,7 @@ def test_try_logging_in_unsuccessful(monkeypatch):
     mock_make_response.assert_called_with(
         {"message": "Invalid email or password"}, HTTPStatus.UNAUTHORIZED
     )
+
 
 def test_add_new_data_source(monkeypatch):
     # Create Mock values

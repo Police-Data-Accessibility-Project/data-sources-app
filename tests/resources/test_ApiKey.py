@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 from tests.fixtures import client_with_mock_db
 from tests.helper_functions import check_response_status
 
+
 def test_get_api_key(client_with_mock_db, monkeypatch):
     mock_request = MagicMock()
     mock_data = {

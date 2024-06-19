@@ -32,7 +32,9 @@ def runner(test_app):
 @pytest.fixture()
 def test_app_with_mock(mocker, monkeypatch):
     # Patch the initialize_psycopg2_connection function so it returns a MagicMock
-    monkeypatch.setattr("app.initialize_psycopg2_connection", lambda: mocker.MagicMock())
+    monkeypatch.setattr(
+        "app.initialize_psycopg2_connection", lambda: mocker.MagicMock()
+    )
     yield create_app()
 
 
@@ -74,6 +76,7 @@ def session():
 
     yield connection
     connection.close()
+
 
 # region Resources
 

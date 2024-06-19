@@ -29,9 +29,7 @@ class ResetPassword(PsycopgResource):
         data = request.get_json()
         with self.psycopg2_connection.cursor() as cursor:
             response = reset_password(
-                cursor,
-                token=data.get("token"),
-                password=data.get("password")
+                cursor, token=data.get("token"), password=data.get("password")
             )
         self.psycopg2_connection.commit()
 

@@ -96,8 +96,12 @@ def archives_put_last_cached_results(
     sql_query = "UPDATE data_sources SET last_cached = %s WHERE airtable_uid = %s"
     cursor.execute(sql_query, (last_cached, id))
 
+
 def update_archives_data(
-    cursor: psycopg2.extensions.cursor, data_id: str, last_cached: str, broken_as_of: str
+    cursor: psycopg2.extensions.cursor,
+    data_id: str,
+    last_cached: str,
+    broken_as_of: str,
 ):
     """
     Processes a request to update the data source
@@ -113,6 +117,4 @@ def update_archives_data(
     else:
         archives_put_last_cached_results(data_id, last_cached, cursor)
 
-    return make_response(
-        {"status": "success"}, HTTPStatus.OK
-    )
+    return make_response({"status": "success"}, HTTPStatus.OK)

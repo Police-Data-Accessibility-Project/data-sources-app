@@ -36,6 +36,7 @@ AGENCY_SELECT_QUERY = """
     FROM agencies where approved = 'TRUE' limit 1000 offset %s
     """
 
+
 def get_agencies(cursor: psycopg2.extras.RealDictCursor, page: int) -> Response:
     """
     Retrieves a paginated list of approved agencies from the database.
@@ -77,7 +78,10 @@ def process_results(results: list[dict]) -> list[dict]:
 
 def execute_agency_query(cursor: psycopg2.extras.RealDictCursor, page: int):
     offset = get_offset(page)
-    cursor.execute(AGENCY_SELECT_QUERY, (offset,), )
+    cursor.execute(
+        AGENCY_SELECT_QUERY,
+        (offset,),
+    )
     results = cursor.fetchall()
     return results
 

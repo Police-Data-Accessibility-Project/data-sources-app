@@ -329,6 +329,7 @@ def give_user_admin_role(
         (user_info.email,),
     )
 
+
 def check_response_status(response, status_code):
     assert (
         response.status_code == status_code
@@ -354,9 +355,9 @@ class DynamicMagicMock:
     mock = UpdateArchivesDataMocks()
 
     """
+
     def __init__(self):
         self.__post_init__()
-
 
     def __post_init__(self) -> None:
         for attribute, attr_type in self.__annotations__.items():
