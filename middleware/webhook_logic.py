@@ -13,6 +13,7 @@ def post_to_webhook(data: str):
         webhook_url,
         data=data,
         headers={"Content-Type": "application/json"},
+        timeout=5,
     )
 
 
@@ -30,4 +31,5 @@ def send_password_reset_link(email, token):
             "subject": "PDAP Data Sources Reset Password",
             "text": body,
         },
+        timeout=5
     )
