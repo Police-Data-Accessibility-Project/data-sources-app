@@ -39,5 +39,3 @@ def test_send_password_reset_link(mock_env_variable, mock_requests_post):
     mock_env_variable.assert_any_call("MAILGUN_KEY")
     mock_env_variable.assert_any_call("VITE_VUE_APP_BASE_URL")
     mock_requests_post.assert_called_once()
-
-

@@ -17,8 +17,10 @@ def post_to_webhook(data: str):
 
 
 def send_password_reset_link(email, token):
-    body = (f"To reset your password, click the following link: "
-            f"{get_env_variable('VITE_VUE_APP_BASE_URL')}/reset-password/{token}")
+    body = (
+        f"To reset your password, click the following link: "
+        f"{get_env_variable('VITE_VUE_APP_BASE_URL')}/reset-password/{token}"
+    )
     r = requests.post(
         "https://api.mailgun.net/v3/mail.pdap.io/messages",
         auth=("api", get_env_variable("MAILGUN_KEY")),
