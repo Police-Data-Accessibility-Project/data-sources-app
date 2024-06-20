@@ -13,6 +13,7 @@ from psycopg2.extensions import cursor as PgCursor
 from werkzeug.security import check_password_hash
 
 from middleware.custom_exceptions import UserNotFoundError, TokenNotFoundError
+from middleware.util import get_env_variable
 
 
 def get_user_info(cursor: PgCursor, email: str) -> Dict[str, Union[int, str]]:
@@ -90,7 +91,9 @@ def create_session_token(cursor: PgCursor, user_id: int, email: str) -> str:
         "iat": datetime.datetime.utcnow(),
         "sub": user_id,
     }
-    session_token = jwt.encode(payload, os.getenv("SECRET_KEY"), algorithm="HS256")
+    session_token = jwt.encode(
+        payload, get_env_variable("SECRET_KEY"), algorithm="HS256"
+    )
     cursor.execute(
         f"insert into session_tokens (token, email, expiration_date) values (%s, %s, %s)",
         (session_token, email, expiration),

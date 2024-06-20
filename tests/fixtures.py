@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from flask.testing import FlaskClient
 
 from app import create_app
+from middleware.util import get_env_variable
 from tests.helper_functions import insert_test_agencies_and_sources
 
 
@@ -23,7 +24,7 @@ def dev_db_connection() -> psycopg2.extensions.cursor:
     :return:
     """
     load_dotenv()
-    dev_db_connection_string = os.getenv("DEV_DB_CONN_STRING")
+    dev_db_connection_string = get_env_variable("DEV_DB_CONN_STRING")
     connection = psycopg2.connect(
         dev_db_connection_string,
         keepalives=1,

@@ -3,6 +3,8 @@ import os
 from psycopg2.extensions import connection as PgConnection
 from typing import Union, Dict, List
 
+from middleware.util import get_env_variable
+
 
 class DatabaseInitializationError(Exception):
     """
@@ -25,7 +27,7 @@ def initialize_psycopg2_connection() -> PgConnection:
     :return: A psycopg2 connection object if successful, or a dictionary with a count of 0 and an empty data list upon failure.
     """
     try:
-        DO_DATABASE_URL = os.getenv("DO_DATABASE_URL")
+        DO_DATABASE_URL = get_env_variable("DO_DATABASE_URL")
 
         return psycopg2.connect(
             DO_DATABASE_URL,
