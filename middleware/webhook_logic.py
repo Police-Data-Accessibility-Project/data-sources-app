@@ -31,5 +31,5 @@ def send_password_reset_link(email, token):
             "subject": "PDAP Data Sources Reset Password",
             "text": body,
         },
-        timeout=5
+        timeout=5,
     )
