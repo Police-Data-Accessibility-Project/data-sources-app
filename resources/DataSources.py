@@ -1,10 +1,13 @@
-from flask import request
+from flask import request, Response
 from middleware.security import api_required
 from middleware.data_source_queries import (
     needs_identification_data_sources,
     get_approved_data_sources_wrapper,
     data_source_by_id_wrapper,
     get_data_sources_for_map_wrapper,
+    update_data_source,
+    get_restricted_columns,
+    add_new_data_source,
 )
 from datetime import datetime
 
@@ -36,7 +39,7 @@ class DataSourceById(PsycopgResource):
 
     @handle_exceptions
     @api_required
-    def put(self, data_source_id: str) -> Dict[str, str]:
+    def put(self, data_source_id: str) -> Response:
         """
         Updates a data source by its ID based on the provided JSON payload.
 
@@ -47,37 +50,11 @@ class DataSourceById(PsycopgResource):
         - A dictionary containing a message about the update operation.
         """
         data = request.get_json()
+        with self.psycopg2_connection.cursor() as cursor:
+            result = update_data_source(cursor, data, data_source_id)
+            self.psycopg2_connection.commit()
 
-        restricted_columns = [
-            "rejection_note",
-            "data_source_request",
-            "approval_status",
-            "airtable_uid",
-            "airtable_source_last_modified",
-        ]
-
-        data_to_update = ""
-
-        for key, value in data.items():
-            if key not in restricted_columns:
-                if type(value) == str:
-                    data_to_update += f"{key} = '{value}', "
-                else:
-                    data_to_update += f"{key} = {value}, "
-
-        data_to_update = data_to_update[:-2]
-
-        cursor = self.psycopg2_connection.cursor()
-
-        sql_query = f"""
-        UPDATE data_sources 
-        SET {data_to_update}
-        WHERE airtable_uid = '{data_source_id}'
-        """
-
-        cursor.execute(sql_query)
-        self.psycopg2_connection.commit()
-        return {"message": "Data source updated successfully."}
+        return result
 
 
 class DataSources(PsycopgResource):
@@ -99,7 +76,7 @@ class DataSources(PsycopgResource):
 
     @handle_exceptions
     @api_required
-    def post(self) -> Dict[str, str]:
+    def post(self) -> Response:
         """
         Adds a new data source based on the provided JSON payload.
 
@@ -107,38 +84,11 @@ class DataSources(PsycopgResource):
         - A dictionary containing a message about the addition operation.
         """
         data = request.get_json()
-        cursor = self.psycopg2_connection.cursor()
+        with self.psycopg2_connection.cursor() as cursor:
+            result = add_new_data_source(cursor, data)
+            self.psycopg2_connection.commit()
 
-        restricted_columns = [
-            "rejection_note",
-            "data_source_request",
-            "approval_status",
-            "airtable_uid",
-            "airtable_source_last_modified",
-        ]
-
-        column_names = ""
-        column_values = ""
-        for key, value in data.items():
-            if key not in restricted_columns:
-                column_names += f"{key}, "
-                if type(value) == str:
-                    column_values += f"'{value}', "
-                else:
-                    column_values += f"{value}, "
-
-        now = datetime.now().strftime("%Y-%m-%d")
-        airtable_uid = str(uuid.uuid4())
-
-        column_names += "approval_status, url_status, data_source_created, airtable_uid"
-        column_values += f"False, '[\"ok\"]', '{now}', '{airtable_uid}'"
-
-        sql_query = f"INSERT INTO data_sources ({column_names}) VALUES ({column_values}) RETURNING *"
-
-        cursor.execute(sql_query)
-        self.psycopg2_connection.commit()
-
-        return {"message": "Data source added successfully."}
+        return result
 
 
 class DataSourcesNeedsIdentification(PsycopgResource):

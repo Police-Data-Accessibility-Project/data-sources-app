@@ -1,26 +1,14 @@
 from middleware.access_token_logic import insert_access_token
-from middleware.quick_search_query import quick_search_query_wrapper
-from middleware.data_source_queries import (
-    get_approved_data_sources_wrapper,
-    data_source_by_id_wrapper,
-    get_data_sources_for_map_wrapper,
-)
-from flask import request, make_response
+from flask import request, Response
 import os
 import sys
-from typing import Dict, Any
 
+from middleware.search_tokens_logic import perform_endpoint_logic
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
 sys.path.append("..")
 
 BASE_URL = os.getenv("VITE_VUE_API_BASE_URL")
-
-
-class UnknownEndpointError(Exception):
-    def __init__(self, endpoint):
-        self.message = f"Unknown endpoint: {endpoint}"
-        super().__init__(self.message)
 
 
 class SearchTokens(PsycopgResource):
@@ -30,7 +18,7 @@ class SearchTokens(PsycopgResource):
     """
 
     @handle_exceptions
-    def get(self) -> Dict[str, Any]:
+    def get(self) -> Response:
         """
         Handles GET requests by performing a search operation based on the specified endpoint and arguments.
 
@@ -51,18 +39,4 @@ class SearchTokens(PsycopgResource):
         cursor = self.psycopg2_connection.cursor()
         insert_access_token(cursor)
         self.psycopg2_connection.commit()
-
-        return self.perform_endpoint_logic(arg1, arg2, endpoint)
-
-    def perform_endpoint_logic(self, arg1, arg2, endpoint):
-        if endpoint == "quick-search":
-            return quick_search_query_wrapper(
-                arg1, arg2, self.psycopg2_connection.cursor()
-            )
-        if endpoint == "data-sources":
-            return get_approved_data_sources_wrapper(self.psycopg2_connection)
-        if endpoint == "data-sources-by-id":
-            return data_source_by_id_wrapper(arg1, self.psycopg2_connection)
-        if endpoint == "data-sources-map":
-            return get_data_sources_for_map_wrapper(self.psycopg2_connection)
-        raise UnknownEndpointError(endpoint)
+        return perform_endpoint_logic(arg1, arg2, endpoint, self.psycopg2_connection)

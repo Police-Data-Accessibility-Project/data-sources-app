@@ -3,6 +3,7 @@ from middleware.archives_queries import (
     archives_get_query,
     archives_put_broken_as_of_results,
     archives_put_last_cached_results,
+    update_archives_data,
 )
 from flask_restful import request
 
@@ -49,17 +50,14 @@ class Archives(PsycopgResource):
         data = json.loads(json_data)
         id = data["id"] if "id" in data else None
         last_cached = data["last_cached"] if "last_cached" in data else None
+        broken_as_of = (
+            data["broken_source_url_as_of"]
+            if "broken_source_url_as_of" in data
+            else None
+        )
 
-        if "broken_source_url_as_of" in data:
-            archives_put_broken_as_of_results(
-                id=id,
-                broken_as_of=data["broken_source_url_as_of"],
-                last_cached=last_cached,
-                conn=self.psycopg2_connection,
-            )
-        else:
-            archives_put_last_cached_results(id, last_cached, self.psycopg2_connection)
+        with self.psycopg2_connection.cursor() as cursor:
+            response = update_archives_data(cursor, id, last_cached, broken_as_of)
+            self.psycopg2_connection.commit()
 
-        self.psycopg2_connection.commit()
-
-        return {"status": "success"}
+        return response

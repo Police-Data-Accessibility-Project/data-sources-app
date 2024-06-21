@@ -21,4 +21,6 @@ def test_agencies_get(
         headers={"Authorization": f"Bearer {api_key}"},
     )
     assert response.status_code == HTTPStatus.OK.value
-    assert len(response.json["data"]) > 0
+    data = response.json["data"]
+    assert len(data) > 0
+    assert isinstance(data[0], dict)
