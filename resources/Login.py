@@ -1,7 +1,7 @@
 from flask_restx import abort
 from werkzeug.security import check_password_hash
-from flask import request
-from middleware.login_queries import login_results, create_session_token
+from flask import request, Response
+from middleware.login_queries import get_user_info, create_session_token, try_logging_in
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
@@ -26,5 +26,4 @@ class Login(PsycopgResource):
         with self.psycopg2_connection.cursor() as cursor:
             response = try_logging_in(cursor, email, password)
             self.psycopg2_connection.commit()
-
         return response

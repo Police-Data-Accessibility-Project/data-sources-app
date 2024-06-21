@@ -2,7 +2,6 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from http import HTTPStatus
 
 from tests.fixtures import client_with_mock_db
 from tests.helper_functions import check_response_status

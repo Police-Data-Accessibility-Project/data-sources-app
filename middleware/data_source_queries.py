@@ -5,7 +5,6 @@ from typing import List, Dict, Any, Optional, Tuple, Union
 
 from flask import make_response, Response
 from sqlalchemy.dialects.postgresql import psycopg2
-from http import HTTPStatus
 
 from utilities.common import convert_dates_to_strings, format_arrays
 from psycopg2.extensions import connection as PgConnection

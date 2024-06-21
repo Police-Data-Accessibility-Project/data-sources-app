@@ -16,3 +16,4 @@ class ResetTokenValidation(PsycopgResource):
         with self.psycopg2_connection.cursor() as cursor:
             response = reset_token_validation(cursor, token=data.get("token"))
         self.psycopg2_connection.commit()
+        return response
