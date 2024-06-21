@@ -65,6 +65,7 @@ DO_DATABASE_URL="postgres://data_sources_app:<password>@db-postgresql-nyc3-38355
 DEV_DB_CONN_STRING="postgresql://data_sources_app_v2:<password>@pdap-db-dev-do-user-8463429-0.c.db.ondigitalocean.com:25060/pdap_dev_db?sslmode=require"
 VITE_VUE_API_BASE_URL="http://localhost:5000"
 VITE_VUE_APP_BASE_URL="http://localhost:8888"
+SECRET_KEY="mySecretKey"
 ```
 
 ```
@@ -74,6 +75,7 @@ export DO_DATABASE_URL=postgres://data_sources_app:<password>@db-postgresql-nyc3
 export DEV_DB_CONN_STRING="postgresql://data_sources_app_v2:<password>@pdap-db-dev-do-user-8463429-0.c.db.ondigitalocean.com:25060/pdap_dev_db?sslmode=require"
 export VITE_VUE_API_BASE_URL="http://localhost:5000"
 export VITE_VUE_APP_BASE_URL="http://localhost:8888"
+export SECRET_KEY="mySecretKey"
 ```
 Additionally, if you are testing the email functionality, you will need to also provide the `MAILGUN_KEY` environment variable as well (also obtainable from the sources mentioned above).
 
