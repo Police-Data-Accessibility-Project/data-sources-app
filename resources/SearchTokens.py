@@ -38,5 +38,6 @@ class SearchTokens(PsycopgResource):
 
         cursor = self.psycopg2_connection.cursor()
         insert_access_token(cursor)
+        response = perform_endpoint_logic(arg1, arg2, endpoint, cursor)
         self.psycopg2_connection.commit()
-        return perform_endpoint_logic(arg1, arg2, endpoint, self.psycopg2_connection)
+        return response
