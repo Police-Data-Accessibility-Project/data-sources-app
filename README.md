@@ -53,8 +53,8 @@ pip install -r requirements.txt
 ### 5. Add environment secrets
 
 In both the local root directory and the `/client` directory, either:
-1. Either add a `.env` file to your local root directory 
-2. or manually export these secrets: `DO_DATABASE_URL`, `VITE_VUE_APP_BASE_URL`, `VITE_VUE_API_BASE_URL`.  
+1. Either add a `.env` file to your local root directory with the below secrets
+2. or manually export the below secrets
 
 Reach out to contact@pdap.io or make noise in Discord if you'd like access to these keys.
 
@@ -62,6 +62,7 @@ Reach out to contact@pdap.io or make noise in Discord if you'd like access to th
 # .env
 
 DO_DATABASE_URL="postgres://data_sources_app:<password>@db-postgresql-nyc3-38355-do-user-8463429-0.c.db.ondigitalocean.com:25060/defaultdb"
+DEV_DB_CONN_STRING="postgresql://data_sources_app_v2:<password>@pdap-db-dev-do-user-8463429-0.c.db.ondigitalocean.com:25060/pdap_dev_db?sslmode=require"
 VITE_VUE_API_BASE_URL="http://localhost:5000"
 VITE_VUE_APP_BASE_URL="http://localhost:8888"
 ```
@@ -70,10 +71,10 @@ VITE_VUE_APP_BASE_URL="http://localhost:8888"
 # shell
 
 export DO_DATABASE_URL=postgres://data_sources_app:<password>@db-postgresql-nyc3-38355-do-user-8463429-0.c.db.ondigitalocean.com:25060/defaultdb
+export DEV_DB_CONN_STRING="postgresql://data_sources_app_v2:<password>@pdap-db-dev-do-user-8463429-0.c.db.ondigitalocean.com:25060/pdap_dev_db?sslmode=require"
 export VITE_VUE_API_BASE_URL="http://localhost:5000"
 export VITE_VUE_APP_BASE_URL="http://localhost:8888"
 ```
-
 Additionally, if you are testing the email functionality, you will need to also provide the `MAILGUN_KEY` environment variable as well (also obtainable from the sources mentioned above).
 
 ### 6. Allow your IP address
