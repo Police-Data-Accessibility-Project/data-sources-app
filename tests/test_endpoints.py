@@ -4,6 +4,7 @@ the appropriate methods in their supporting classes
 """
 
 from collections import namedtuple
+from http import HTTPStatus
 
 import pytest
 from unittest.mock import patch
@@ -48,13 +49,13 @@ def run_endpoint_tests(
             ) as mock_method:
                 response = getattr(client, method)(endpoint)
                 assert (
-                    response.status_code == 200
+                    response.status_code == HTTPStatus.OK.value
                 ), f"{method.upper()} {endpoint} failed with status code {response.status_code}, expected 200"
                 mock_method.assert_called_once(), f"{method.upper()} {endpoint} should have called the {method} method on {class_type.__name__}"
         else:
             response = getattr(client, method)(endpoint)
             assert (
-                response.status_code == 405
+                response.status_code == HTTPStatus.METHOD_NOT_ALLOWED.value
             ), f"{method.upper()} {endpoint} failed with status code {response.status_code}, expected 405"
 
 

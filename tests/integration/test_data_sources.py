@@ -1,5 +1,6 @@
 """Integration tests for /data-sources endpoint"""
 
+from http import HTTPStatus
 import uuid
 
 import psycopg2
@@ -33,7 +34,7 @@ def test_data_sources_get(
         "/data-sources",
         headers={"Authorization": f"Bearer {api_key}"},
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK.value
     data = response.get_json()["data"]
     for result in data:
         name = result["name"]
@@ -61,7 +62,7 @@ def test_data_sources_post(
         json={"name": name},
         headers={"Authorization": f"Bearer {api_key}"},
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK.value
     cursor = dev_db_connection.cursor()
     cursor.execute(
         """

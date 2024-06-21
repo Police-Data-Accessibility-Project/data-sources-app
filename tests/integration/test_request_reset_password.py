@@ -1,5 +1,6 @@
 """Integration tests for /request-reset-password endpoint."""
 
+from http import HTTPStatus
 import psycopg2
 
 from tests.fixtures import dev_db_connection, client_with_db
@@ -23,7 +24,7 @@ def test_request_reset_password_post(
     )
     reset_token = response.json.get("token")
     assert (
-        response.status_code == 200
+        response.status_code == HTTPStatus.OK.value
     ), "Request to Reset Password request was not returned successfully"
     assert mock_send_password_reset_link.called_once_with(user_info.email, reset_token)
 

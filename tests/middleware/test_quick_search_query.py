@@ -1,3 +1,4 @@
+from http import HTTPStatus
 import json
 from unittest.mock import MagicMock
 from datetime import datetime
@@ -137,7 +138,7 @@ def test_quick_search_query_wrapper_happy_path(
     mock_quick_search_query.assert_called_with(
         SearchParameters(search="Source 1", location="City A"), cursor=mock_cursor
     )
-    mock_make_response.assert_called_with([{"record_type": "Type A"}], 200)
+    mock_make_response.assert_called_with([{"record_type": "Type A"}], HTTPStatus.OK.value)
 
 
 def test_quick_search_query_wrapper_exception(
@@ -159,7 +160,7 @@ def test_quick_search_query_wrapper_exception(
             }
         )
     )
-    mock_make_response.assert_called_with({"count": 0, "message": user_message}, 500)
+    mock_make_response.assert_called_with({"count": 0, "message": user_message}, HTTPStatus.INTERNAL_SERVER_ERROR.value)
 
 
 # Test cases

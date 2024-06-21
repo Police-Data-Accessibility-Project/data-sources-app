@@ -104,17 +104,17 @@ def get_approved_data_sources_wrapper(conn: PgConnection):
             "count": len(data_source_matches),
             "data": data_source_matches,
         },
-        200,
+        HTTPStatus.OK.value,
     )
 
 
 def data_source_by_id_wrapper(arg, conn: PgConnection) -> Response:
     data_source_details = data_source_by_id_query(data_source_id=arg, conn=conn)
     if data_source_details:
-        return make_response(data_source_details, 200)
+        return make_response(data_source_details, HTTPStatus.OK.value)
 
     else:
-        return make_response({"message": "Data source not found."}, 200)
+        return make_response({"message": "Data source not found."}, HTTPStatus.OK.value)
 
 
 def get_data_sources_for_map_wrapper(conn: PgConnection):
@@ -124,7 +124,7 @@ def get_data_sources_for_map_wrapper(conn: PgConnection):
             "count": len(data_source_details),
             "data": data_source_details,
         },
-        200,
+        HTTPStatus.OK.value,
     )
 
 

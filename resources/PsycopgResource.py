@@ -1,3 +1,4 @@
+from http import HTTPStatus
 import functools
 from typing import Callable, Any, Union, Tuple, Dict
 
@@ -36,7 +37,7 @@ def handle_exceptions(
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            abort(http_status_code=500, message=str(e))
+            abort(http_status_code=HTTPStatus.INTERNAL_SERVER_ERROR.value, message=str(e))
 
     return wrapper
 

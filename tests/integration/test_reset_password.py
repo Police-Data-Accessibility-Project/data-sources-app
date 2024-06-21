@@ -1,5 +1,6 @@
 """Integration tests for /reset-password endpoint."""
 
+from http import HTTPStatus
 import uuid
 
 import psycopg2
@@ -31,7 +32,7 @@ def test_reset_password_post(
         "/reset-password",
         json={"email": user_info.email, "token": token, "password": new_password},
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK.value
     new_password_digest = get_user_password_digest(cursor, user_info)
     assert (
         new_password_digest != old_password_digest

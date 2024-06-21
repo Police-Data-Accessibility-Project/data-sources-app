@@ -2,6 +2,7 @@
 
 import psycopg2
 import pytest
+from http import HTTPStatus
 from tests.fixtures import connection_with_test_data, dev_db_connection, client_with_db
 from tests.helper_functions import (
     create_test_user_api,
@@ -23,7 +24,7 @@ def test_search_tokens_get(
         headers={"Authorization": f"Bearer {api_key}"},
         query_string={"endpoint": "quick-search", "arg1": "Source 1", "arg2": "City A"},
     )
-    check_response_status(response, 200)
+    check_response_status(response, HTTPStatus.OK.value)
     data = response.json.get("data")
     assert len(data) == 1, "Quick Search endpoint response should return only one entry"
     entry = data[0]

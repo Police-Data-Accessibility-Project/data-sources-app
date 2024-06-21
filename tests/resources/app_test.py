@@ -1,3 +1,4 @@
+from http import HTTPStatus
 import os
 from app import create_app
 from tests.resources.app_test_data import (
@@ -94,7 +95,7 @@ def test_get_api_key(client_with_mock, mocker, test_app_with_mock):
         response = client_with_mock.get("/api_key", json=mock_request_data)
         json_data = response.get_json()
         assert "api_key" in json_data
-        assert response.status_code == 200
+        assert response.status_code == HTTPStatus.OK.value
 
 
 # endregion

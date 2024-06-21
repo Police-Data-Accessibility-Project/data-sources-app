@@ -4,6 +4,7 @@ import psycopg2
 import spacy
 import json
 import datetime
+from http import HTTPStatus
 
 from flask import make_response, Response
 
@@ -224,7 +225,7 @@ def quick_search_query_wrapper(
             SearchParameters(search=arg1, location=arg2), cursor=cursor
         )
 
-        return make_response(data_sources, 200)
+        return make_response(data_sources, HTTPStatus.OK.value)
 
     except Exception as e:
         user_message = "There was an error during the search operation"
@@ -238,4 +239,4 @@ def quick_search_query_wrapper(
         }
         post_to_webhook(json.dumps(message))
 
-        return make_response({"count": 0, "message": user_message}, 500)
+        return make_response({"count": 0, "message": user_message}, HTTPStatus.INTERNAL_SERVER_ERROR.value)

@@ -1,6 +1,7 @@
 """Integration tests for /archives endpoint"""
 
 import datetime
+from http import HTTPStatus
 import json
 
 import psycopg2
@@ -28,7 +29,7 @@ def test_archives_get(
         "/archives",
         headers={"Authorization": f"Bearer {api_key}"},
     )
-    assert response.status_code == 200, "Archives endpoint returned non-200"
+    assert response.status_code == HTTPStatus.OK.value, "Archives endpoint returned non-200"
     assert len(response.json) > 0, "Endpoint should return more than 0 results"
 
 
@@ -57,7 +58,7 @@ def test_archives_put(
             }
         ),
     )
-    assert response.status_code == 200, "Endpoint returned non-200"
+    assert response.status_code == HTTPStatus.OK.value, "Endpoint returned non-200"
 
     cursor = dev_db_connection.cursor()
     cursor.execute(

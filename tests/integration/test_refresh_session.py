@@ -1,5 +1,6 @@
 """Integration tests for /refresh-session endpoint."""
 
+from http import HTTPStatus
 import psycopg2.extensions
 
 from tests.fixtures import dev_db_connection, client_with_db
@@ -18,7 +19,7 @@ def test_refresh_session_post(
     response = client_with_db.post(
         "/refresh-session", json={"session_token": old_session_token}
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK.value
     new_session_token = response.json.get("data")
 
     assert (
