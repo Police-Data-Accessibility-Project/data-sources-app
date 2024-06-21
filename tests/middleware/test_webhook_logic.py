@@ -18,14 +18,16 @@ def mock_requests_post():
 
 
 def test_post_to_webhook(mock_env_variable, mock_requests_post):
-    mock_env_variable.return_value = "https://example.com/webhook"
+    mock_env_variable.side_effect = ["https://base_app.com","https://example.com/webhook"]
     data = '{"key": "value"}'
     post_to_webhook(data)
 
-    mock_env_variable.assert_called_once_with("WEBHOOK_URL")
+    assert mock_env_variable.call_count == 2
+    mock_env_variable.assert_any_call("VITE_VUE_APP_BASE_URL")
+    mock_env_variable.assert_any_call("WEBHOOK_URL")
     mock_requests_post.assert_called_once_with(
-        "https://example.com/webhook",
-        data=data,
+        url="https://example.com/webhook",
+        data="(https://base_app.com) " + data,
         headers={"Content-Type": "application/json"},
         timeout=5,
     )
