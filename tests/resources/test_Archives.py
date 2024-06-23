@@ -9,6 +9,7 @@ import json
 from http import HTTPStatus
 from tests.fixtures import client_with_mock_db
 
+
 def test_get_agencies(client_with_mock_db, monkeypatch):
     mock_get_agencies = MagicMock(
         return_value=({"message": "Test Response"}, HTTPStatus.IM_A_TEAPOT)

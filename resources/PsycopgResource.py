@@ -37,7 +37,9 @@ def handle_exceptions(
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            abort(http_status_code=HTTPStatus.INTERNAL_SERVER_ERROR.value, message=str(e))
+            abort(
+                http_status_code=HTTPStatus.INTERNAL_SERVER_ERROR.value, message=str(e)
+            )
 
     return wrapper
 

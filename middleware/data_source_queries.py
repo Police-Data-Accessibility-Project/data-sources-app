@@ -284,7 +284,9 @@ def get_restricted_columns():
     return restricted_columns
 
 
-def get_approved_data_sources(cursor: psycopg2.extensions.cursor) -> list[tuple[Any, ...]]:
+def get_approved_data_sources(
+    cursor: psycopg2.extensions.cursor,
+) -> list[tuple[Any, ...]]:
     """
     Fetches all approved data sources and their related agency information from a PostgreSQL database.
 

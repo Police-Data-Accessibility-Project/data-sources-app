@@ -15,7 +15,8 @@ from tests.helper_functions import (
     get_boolean_dictionary,
     create_test_user_api,
     create_api_key,
-    give_user_admin_role, check_response_status,
+    give_user_admin_role,
+    check_response_status,
 )
 
 

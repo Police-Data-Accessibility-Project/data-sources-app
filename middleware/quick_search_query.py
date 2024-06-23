@@ -239,4 +239,7 @@ def quick_search_query_wrapper(
         }
         post_to_webhook(json.dumps(message))
 
-        return make_response({"count": 0, "message": user_message}, HTTPStatus.INTERNAL_SERVER_ERROR.value)
+        return make_response(
+            {"count": 0, "message": user_message},
+            HTTPStatus.INTERNAL_SERVER_ERROR.value,
+        )

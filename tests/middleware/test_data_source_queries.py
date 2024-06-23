@@ -256,7 +256,9 @@ def test_needs_identification(
     :param inserted_data_sources_found:
     :return:
     """
-    results = needs_identification_data_sources(cursor=connection_with_test_data.cursor())
+    results = needs_identification_data_sources(
+        cursor=connection_with_test_data.cursor()
+    )
     for result in results:
         name = result["name"]
         if name in inserted_data_sources_found:
@@ -318,14 +320,10 @@ def test_data_source_by_id_results(
     """
     # Insert other data sources as well with different id
     cursor = connection_with_test_data.cursor()
-    result = data_source_by_id_results(
-        data_source_id="SOURCE_UID_1", cursor=cursor
-    )
+    result = data_source_by_id_results(data_source_id="SOURCE_UID_1", cursor=cursor)
     assert result
     # Check that a data source which was not inserted is not pulled
-    result = data_source_by_id_results(
-        data_source_id="SOURCE_UID_4", cursor=cursor
-    )
+    result = data_source_by_id_results(data_source_id="SOURCE_UID_4", cursor=cursor)
     assert not result
 
 
@@ -418,7 +416,9 @@ def test_data_source_by_id_wrapper_data_found(
     mock_data_source_by_id_query.assert_called_with(
         data_source_id="SOURCE_UID_1", cursor=cursor
     )
-    mock_make_response.assert_called_with({"agency_name": "Agency A"}, HTTPStatus.OK.value)
+    mock_make_response.assert_called_with(
+        {"agency_name": "Agency A"}, HTTPStatus.OK.value
+    )
 
 
 def test_data_source_by_id_wrapper_data_not_found(
@@ -430,4 +430,6 @@ def test_data_source_by_id_wrapper_data_not_found(
     mock_data_source_by_id_query.assert_called_with(
         data_source_id="SOURCE_UID_1", cursor=cursor
     )
-    mock_make_response.assert_called_with({"message": "Data source not found."}, HTTPStatus.OK.value)
+    mock_make_response.assert_called_with(
+        {"message": "Data source not found."}, HTTPStatus.OK.value
+    )

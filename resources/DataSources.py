@@ -99,9 +99,7 @@ class DataSourcesNeedsIdentification(PsycopgResource):
     @api_required
     def get(self):
         with self.psycopg2_connection.cursor() as cursor:
-            data_source_matches = needs_identification_data_sources(
-                cursor
-            )
+            data_source_matches = needs_identification_data_sources(cursor)
 
         data_sources = {
             "count": len(data_source_matches),

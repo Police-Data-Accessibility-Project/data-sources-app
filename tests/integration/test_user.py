@@ -52,7 +52,9 @@ def test_user_put(client_with_db, dev_db_connection: psycopg2.extensions.connect
         headers={"Authorization": f"Bearer {api_key}"},
         json={"email": user_info.email, "password": new_password},
     )
-    assert response.status_code == HTTPStatus.OK.value, "User password update not successful"
+    assert (
+        response.status_code == HTTPStatus.OK.value
+    ), "User password update not successful"
 
     new_password_hash = get_user_password_digest(cursor, user_info)
 
