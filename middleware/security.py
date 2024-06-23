@@ -48,8 +48,8 @@ def validate_api_key(api_key: str, endpoint: str, method: str):
         validate_role(role, endpoint, method)
         return
 
-    session_token_results = get_session_token(api_key, cursor)
-    if session_token_results:
+    try:
+        session_token_results = get_session_token(api_key, cursor)
 
         if session_token_results.expiration_date < dt.utcnow():
             raise ExpiredAPIKeyError("Session token expired")
@@ -58,12 +58,12 @@ def validate_api_key(api_key: str, endpoint: str, method: str):
             validate_role(role="admin", endpoint=endpoint, method=method)
             return
 
-    if not session_token_results:
+    except SessionTokenNotFoundError:
         delete_expired_access_tokens(cursor, psycopg2_connection)
-        access_token = get_access_token(api_key, cursor)
-        role = "user"
-
-        if not access_token:
+        try:
+            get_access_token(api_key, cursor)
+            role = "user"
+        except AccessTokenNotFoundError:
             raise InvalidAPIKeyError("API Key not found")
 
     validate_role(role, endpoint, method)
@@ -91,26 +91,34 @@ def get_role(api_key, cursor):
 SessionTokenResults = namedtuple("SessionTokenResults", ["email", "expiration_date"])
 
 
-def get_session_token(api_key, cursor) -> Optional[SessionTokenResults]:
+class SessionTokenNotFoundError(Exception):
+    pass
+
+
+def get_session_token(api_key, cursor) -> SessionTokenResults:
     cursor.execute(
         f"select email, expiration_date from session_tokens where token = %s",
         (api_key,),
     )
     session_token_results = cursor.fetchall()
-    if len(session_token_results) > 0:
-        return SessionTokenResults(
-            email=session_token_results[0][0],
-            expiration_date=session_token_results[0][1],
-        )
-    return None
+    if len(session_token_results) == 0:
+        raise SessionTokenNotFoundError("Session token not found")
+    return SessionTokenResults(
+        email=session_token_results[0][0],
+        expiration_date=session_token_results[0][1],
+    )
 
 
-def get_access_token(api_key, cursor):
+class AccessTokenNotFoundError(Exception):
+    pass
+
+
+def get_access_token(api_key, cursor) -> str:
     cursor.execute(f"select id, token from access_tokens where token = %s", (api_key,))
     results = cursor.fetchone()
-    if results:
-        return results[1]
-    return None
+    if not results:
+        raise AccessTokenNotFoundError("Access token not found")
+    return results[1]
 
 
 def delete_expired_access_tokens(cursor, psycopg2_connection):
