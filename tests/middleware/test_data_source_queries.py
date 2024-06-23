@@ -234,7 +234,7 @@ def test_get_approved_data_sources(
     :param inserted_data_sources_found:
     :return:
     """
-    results = get_approved_data_sources(conn=connection_with_test_data)
+    results = get_approved_data_sources(cursor=connection_with_test_data.cursor())
 
     for result in results:
         name = result["name"]
@@ -256,7 +256,7 @@ def test_needs_identification(
     :param inserted_data_sources_found:
     :return:
     """
-    results = needs_identification_data_sources(conn=connection_with_test_data)
+    results = needs_identification_data_sources(cursor=connection_with_test_data.cursor())
     for result in results:
         name = result["name"]
         if name in inserted_data_sources_found:
@@ -317,13 +317,14 @@ def test_data_source_by_id_results(
     :return:
     """
     # Insert other data sources as well with different id
+    cursor = connection_with_test_data.cursor()
     result = data_source_by_id_results(
-        data_source_id="SOURCE_UID_1", conn=connection_with_test_data
+        data_source_id="SOURCE_UID_1", cursor=cursor
     )
     assert result
     # Check that a data source which was not inserted is not pulled
     result = data_source_by_id_results(
-        data_source_id="SOURCE_UID_4", conn=connection_with_test_data
+        data_source_id="SOURCE_UID_4", cursor=cursor
     )
     assert not result
 
@@ -338,7 +339,7 @@ def test_data_source_by_id_query(
     :return:
     """
     result = data_source_by_id_query(
-        data_source_id="SOURCE_UID_1", conn=connection_with_test_data
+        data_source_id="SOURCE_UID_1", cursor=connection_with_test_data.cursor()
     )
     assert result["agency_name"] == "Agency A"
 
@@ -354,7 +355,7 @@ def test_get_data_sources_for_map(
     :param inserted_data_sources_found:
     :return:
     """
-    results = get_data_sources_for_map(conn=connection_with_test_data)
+    results = get_data_sources_for_map(cursor=connection_with_test_data.cursor())
     for result in results:
         name = result["name"]
         if name == "Source 1":
@@ -412,10 +413,10 @@ def test_data_source_by_id_wrapper_data_found(
     mock_data_source_by_id_query, mock_make_response
 ):
     mock_data_source_by_id_query.return_value = {"agency_name": "Agency A"}
-    mock_conn = MagicMock()
-    data_source_by_id_wrapper(arg="SOURCE_UID_1", conn=mock_conn)
+    cursor = MagicMock()
+    data_source_by_id_wrapper(arg="SOURCE_UID_1", cursor=cursor)
     mock_data_source_by_id_query.assert_called_with(
-        data_source_id="SOURCE_UID_1", conn=mock_conn
+        data_source_id="SOURCE_UID_1", cursor=cursor
     )
     mock_make_response.assert_called_with({"agency_name": "Agency A"}, HTTPStatus.OK.value)
 
@@ -424,9 +425,9 @@ def test_data_source_by_id_wrapper_data_not_found(
     mock_data_source_by_id_query, mock_make_response
 ):
     mock_data_source_by_id_query.return_value = None
-    mock_conn = MagicMock()
-    data_source_by_id_wrapper(arg="SOURCE_UID_1", conn=mock_conn)
+    cursor = MagicMock()
+    data_source_by_id_wrapper(arg="SOURCE_UID_1", cursor=cursor)
     mock_data_source_by_id_query.assert_called_with(
-        data_source_id="SOURCE_UID_1", conn=mock_conn
+        data_source_id="SOURCE_UID_1", cursor=cursor
     )
     mock_make_response.assert_called_with({"message": "Data source not found."}, HTTPStatus.OK.value)

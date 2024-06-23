@@ -40,7 +40,7 @@ def test_archives_get_results(
     and verifying that the number of results returned * by `archives_get_results`
     increases by 1.
     """
-    original_results = archives_get_results(dev_db_connection)
+    original_results = archives_get_results(db_cursor)
     db_cursor.execute(
         """
         INSERT INTO data_sources(airtable_uid, source_url, name, update_frequency, url_status) 
@@ -54,7 +54,7 @@ def test_archives_get_results(
             "unbroken",
         ),
     )
-    new_results = archives_get_results(dev_db_connection)
+    new_results = archives_get_results(db_cursor)
     assert len(new_results) == len(original_results) + 1
 
 
@@ -66,7 +66,7 @@ def test_archives_get_columns(
     :param connection_with_test_data: A connection object to the database with test data.
     :return: None
     """
-    results = archives_get_query(conn=connection_with_test_data)
+    results = archives_get_query(cursor=connection_with_test_data.cursor())
     assert has_expected_keys(ARCHIVES_GET_COLUMNS, results[0].keys())
     for result in results:
         if result["id"] == "SOURCE_UID_1":

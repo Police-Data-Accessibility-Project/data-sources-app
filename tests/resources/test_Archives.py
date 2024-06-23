@@ -5,11 +5,19 @@ from unittest.mock import patch, MagicMock
 from tests.helper_functions import check_response_status
 
 patch("middleware.security.api_required", lambda x: x).start()
-import datetime
 import json
-import uuid
 from http import HTTPStatus
 from tests.fixtures import client_with_mock_db
+
+def test_get_agencies(client_with_mock_db, monkeypatch):
+    mock_get_agencies = MagicMock(
+        return_value=({"message": "Test Response"}, HTTPStatus.IM_A_TEAPOT)
+    )
+    monkeypatch.setattr("resources.Archives.archives_get_query", mock_get_agencies)
+
+    response = client_with_mock_db.client.get("/archives")
+    check_response_status(response, HTTPStatus.IM_A_TEAPOT)
+    assert response.json == {"message": "Test Response"}
 
 
 def test_put_agencies(client_with_mock_db, monkeypatch):

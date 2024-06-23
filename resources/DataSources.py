@@ -25,7 +25,7 @@ class DataSourceById(PsycopgResource):
 
     @handle_exceptions
     @api_required
-    def get(self, data_source_id: str) -> Tuple[Dict[str, Any], int]:
+    def get(self, data_source_id: str) -> Response:
         """
         Retrieves details of a specific data source by its ID.
 
@@ -35,7 +35,8 @@ class DataSourceById(PsycopgResource):
         Returns:
         - Tuple containing the response message with data source details if found, and the HTTP status code.
         """
-        return data_source_by_id_wrapper(data_source_id, self.psycopg2_connection)
+        with self.psycopg2_connection.cursor() as cursor:
+            return data_source_by_id_wrapper(data_source_id, cursor)
 
     @handle_exceptions
     @api_required
@@ -65,14 +66,15 @@ class DataSources(PsycopgResource):
 
     @handle_exceptions
     @api_required
-    def get(self) -> Dict[str, Any]:
+    def get(self) -> Response:
         """
         Retrieves all data sources.
 
         Returns:
         - A dictionary containing the count of data sources and their details.
         """
-        return get_approved_data_sources_wrapper(self.psycopg2_connection)
+        with self.psycopg2_connection.cursor() as cursor:
+            return get_approved_data_sources_wrapper(cursor)
 
     @handle_exceptions
     @api_required
@@ -96,9 +98,10 @@ class DataSourcesNeedsIdentification(PsycopgResource):
     @handle_exceptions
     @api_required
     def get(self):
-        data_source_matches = needs_identification_data_sources(
-            self.psycopg2_connection
-        )
+        with self.psycopg2_connection.cursor() as cursor:
+            data_source_matches = needs_identification_data_sources(
+                cursor
+            )
 
         data_sources = {
             "count": len(data_source_matches),
@@ -116,11 +119,12 @@ class DataSourcesMap(PsycopgResource):
 
     @handle_exceptions
     @api_required
-    def get(self) -> Dict[str, Any]:
+    def get(self) -> Response:
         """
         Retrieves location relevant columns for data sources.
 
         Returns:
         - A dictionary containing the count of data sources and their details.
         """
-        return get_data_sources_for_map_wrapper(self.psycopg2_connection)
+        with self.psycopg2_connection.cursor() as cursor:
+            return get_data_sources_for_map_wrapper(cursor)
