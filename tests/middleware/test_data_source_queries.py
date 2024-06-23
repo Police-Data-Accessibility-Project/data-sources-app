@@ -17,6 +17,7 @@ from middleware.data_source_queries import (
     update_data_source,
     create_new_data_source_query,
     add_new_data_source,
+    DataSourceNotFoundError,
 )
 from middleware.login_queries import try_logging_in
 from tests.helper_functions import (
@@ -424,7 +425,7 @@ def test_data_source_by_id_wrapper_data_found(
 def test_data_source_by_id_wrapper_data_not_found(
     mock_data_source_by_id_query, mock_make_response
 ):
-    mock_data_source_by_id_query.return_value = None
+    mock_data_source_by_id_query.side_effect = DataSourceNotFoundError
     cursor = MagicMock()
     data_source_by_id_wrapper(arg="SOURCE_UID_1", cursor=cursor)
     mock_data_source_by_id_query.assert_called_with(

@@ -10,6 +10,11 @@ from utilities.common import convert_dates_to_strings, format_arrays
 from psycopg2.extensions import connection as PgConnection
 import psycopg2
 
+
+class DataSourceNotFoundError(Exception):
+    pass
+
+
 DATA_SOURCES_APPROVED_COLUMNS = [
     "name",
     "submitted_name",
@@ -109,11 +114,10 @@ def get_approved_data_sources_wrapper(cursor: psycopg2.extensions.cursor) -> Res
 
 
 def data_source_by_id_wrapper(arg, cursor: psycopg2.extensions.cursor) -> Response:
-    data_source_details = data_source_by_id_query(data_source_id=arg, cursor=cursor)
-    if data_source_details:
+    try:
+        data_source_details = data_source_by_id_query(data_source_id=arg, cursor=cursor)
         return make_response(data_source_details, HTTPStatus.OK.value)
-
-    else:
+    except DataSourceNotFoundError:
         return make_response({"message": "Data source not found."}, HTTPStatus.OK.value)
 
 
@@ -186,7 +190,7 @@ def data_source_by_id_query(
     """
     result = data_source_by_id_results(cursor, data_source_id)
     if not result:
-        return []
+        raise DataSourceNotFoundError("The specified data source was not found.")
 
     data_source_and_agency_columns = (
         DATA_SOURCES_APPROVED_COLUMNS + AGENCY_APPROVED_COLUMNS
