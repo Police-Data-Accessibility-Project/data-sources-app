@@ -271,7 +271,9 @@ def create_api_key(client_with_db, user_info):
     response = client_with_db.get(
         "/api_key", json={"email": user_info.email, "password": user_info.password}
     )
-    assert response.status_code == HTTPStatus.OK.value, "API key creation not successful"
+    assert (
+        response.status_code == HTTPStatus.OK.value
+    ), "API key creation not successful"
     api_key = response.json.get("api_key")
     return api_key
 

@@ -26,7 +26,7 @@ class Endpoint(Enum):
 
 
 def perform_endpoint_logic(
-    arg1: str, arg2: str, endpoint_str: str, conn: psycopg2.extensions.connection
+    arg1: str, arg2: str, endpoint_str: str, cursor: psycopg2.extensions.cursor
 ) -> Response:
     try:
         endpoint = Endpoint(endpoint_str)
@@ -34,10 +34,10 @@ def perform_endpoint_logic(
         raise UnknownEndpointError(endpoint_str)
 
     if endpoint == Endpoint.QUICK_SEARCH:
-        return quick_search_query_wrapper(arg1, arg2, conn)
+        return quick_search_query_wrapper(arg1, arg2, cursor)
     if endpoint == Endpoint.DATA_SOURCES:
-        return get_approved_data_sources_wrapper(conn)
+        return get_approved_data_sources_wrapper(cursor)
     if endpoint == Endpoint.DATA_SOURCES_BY_ID:
-        return data_source_by_id_wrapper(arg1, conn)
+        return data_source_by_id_wrapper(arg1, cursor)
     if endpoint == Endpoint.DATA_SOURCES_MAP:
-        return get_data_sources_for_map_wrapper(conn)
+        return get_data_sources_for_map_wrapper(cursor)

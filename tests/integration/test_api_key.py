@@ -20,7 +20,9 @@ def test_api_key_get(client_with_db, dev_db_connection: psycopg2.extensions.conn
         "/api_key",
         json={"email": user_info.email, "password": user_info.password},
     )
-    assert response.status_code == HTTPStatus.OK.value, "API key creation not successful"
+    assert (
+        response.status_code == HTTPStatus.OK.value
+    ), "API key creation not successful"
 
     # Check that API key aligned with user
     cursor = dev_db_connection.cursor()

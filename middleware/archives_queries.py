@@ -16,14 +16,13 @@ ARCHIVES_GET_COLUMNS = [
 ]
 
 
-def archives_get_results(conn: PgConnection) -> list[tuple[Any, ...]]:
+def archives_get_results(cursor: psycopg2.extensions.cursor) -> list[tuple[Any, ...]]:
     """
     Pulls data sources for the automatic archives script that performs caching
 
-    :param conn: A psycopg2 connection object to a PostgreSQL database.
+    :param cursor: A psycopg2 cursor object to a PostgreSQL database.
     :return: A list of dictionaries representing the rows matching the query conditions.
     """
-    cursor = conn.cursor()
     sql_query = """
     SELECT
         airtable_uid,
@@ -42,15 +41,15 @@ def archives_get_results(conn: PgConnection) -> list[tuple[Any, ...]]:
 
 
 def archives_get_query(
-    conn: Optional[PgConnection] = None,
+    cursor: psycopg2.extensions.cursor,
 ) -> List[Dict[str, Any]]:
     """
     Processes the archives get results, either from the database and converts dates to strings.
 
-    :param conn: A psycopg2 connection object to a PostgreSQL database.
+    :param cursor: A psycopg2 cursor object to a PostgreSQL database.
     :return: A list of dictionaries with the query results after processing and date conversion.
     """
-    results = archives_get_results(conn)
+    results = archives_get_results(cursor)
     archives_combined_results = [
         dict(zip(ARCHIVES_GET_COLUMNS, result)) for result in results
     ]

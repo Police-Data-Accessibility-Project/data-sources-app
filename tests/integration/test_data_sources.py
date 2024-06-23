@@ -16,6 +16,7 @@ from tests.helper_functions import (
     create_test_user_api,
     create_api_key,
     give_user_admin_role,
+    check_response_status,
 )
 
 
@@ -34,7 +35,7 @@ def test_data_sources_get(
         "/data-sources",
         headers={"Authorization": f"Bearer {api_key}"},
     )
-    assert response.status_code == HTTPStatus.OK.value
+    check_response_status(response, HTTPStatus.OK.value)
     data = response.get_json()["data"]
     for result in data:
         name = result["name"]

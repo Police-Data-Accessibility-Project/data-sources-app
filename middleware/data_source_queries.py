@@ -96,8 +96,8 @@ DATA_SOURCES_MAP_COLUMN = [
 ]
 
 
-def get_approved_data_sources_wrapper(conn: PgConnection):
-    data_source_matches = get_approved_data_sources(conn)
+def get_approved_data_sources_wrapper(cursor: psycopg2.extensions.cursor) -> Response:
+    data_source_matches = get_approved_data_sources(cursor)
 
     return make_response(
         {
@@ -108,8 +108,8 @@ def get_approved_data_sources_wrapper(conn: PgConnection):
     )
 
 
-def data_source_by_id_wrapper(arg, conn: PgConnection) -> Response:
-    data_source_details = data_source_by_id_query(data_source_id=arg, conn=conn)
+def data_source_by_id_wrapper(arg, cursor: psycopg2.extensions.cursor) -> Response:
+    data_source_details = data_source_by_id_query(data_source_id=arg, cursor=cursor)
     if data_source_details:
         return make_response(data_source_details, HTTPStatus.OK.value)
 
@@ -117,8 +117,8 @@ def data_source_by_id_wrapper(arg, conn: PgConnection) -> Response:
         return make_response({"message": "Data source not found."}, HTTPStatus.OK.value)
 
 
-def get_data_sources_for_map_wrapper(conn: PgConnection):
-    data_source_details = get_data_sources_for_map(conn)
+def get_data_sources_for_map_wrapper(cursor: psycopg2.extensions.cursor) -> Response:
+    data_source_details = get_data_sources_for_map(cursor)
     return make_response(
         {
             "count": len(data_source_details),
@@ -129,16 +129,15 @@ def get_data_sources_for_map_wrapper(conn: PgConnection):
 
 
 def data_source_by_id_results(
-    conn: PgConnection, data_source_id: str
+    cursor: psycopg2.extensions.cursor, data_source_id: str
 ) -> Union[tuple[Any, ...], None]:
     """
     Fetches a single data source by its ID, including related agency information, from a PostgreSQL database.
 
-    :param conn: A psycopg2 connection object to a PostgreSQL database.
+    :param cursor: A psycopg2 cursor object to a PostgreSQL database.
     :param data_source_id: The unique identifier for the data source.
     :return: A dictionary containing the data source and its related agency details.
     """
-    cursor = conn.cursor()
 
     data_source_approved_columns = [
         f"data_sources.{approved_column}"
@@ -170,23 +169,22 @@ def data_source_by_id_results(
 
     cursor.execute(sql_query, (data_source_id,))
     result = cursor.fetchone()
-    cursor.close()
 
     return result
 
 
 def data_source_by_id_query(
-    data_source_id: str = "",
-    conn: Optional[PgConnection] = None,
+    data_source_id: str,
+    cursor: psycopg2.extensions.cursor,
 ) -> Dict[str, Any]:
     """
     Processes a request to fetch data source details by ID from the database
 
     :param data_source_id: The unique identifier for the data source.
-    :param conn: A psycopg2 connection object to a PostgreSQL database.
+    :param cursor: A psycopg2 cursor object to a PostgreSQL database.
     :return: A dictionary with the data source details after processing.
     """
-    result = data_source_by_id_results(conn, data_source_id)
+    result = data_source_by_id_results(cursor, data_source_id)
     if not result:
         return []
 
@@ -286,14 +284,15 @@ def get_restricted_columns():
     return restricted_columns
 
 
-def get_approved_data_sources(conn: PgConnection) -> list[tuple[Any, ...]]:
+def get_approved_data_sources(
+    cursor: psycopg2.extensions.cursor,
+) -> list[tuple[Any, ...]]:
     """
     Fetches all approved data sources and their related agency information from a PostgreSQL database.
 
-    :param conn: A psycopg2 connection object to a PostgreSQL database.
+    :param cursor: A psycopg2 connection object to a PostgreSQL database.
     :return: A list of dictionaries, each containing details of a data source and its related agency.
     """
-    cursor = conn.cursor()
     data_source_approved_columns = [
         f"data_sources.{approved_column}"
         for approved_column in DATA_SOURCES_APPROVED_COLUMNS
@@ -318,16 +317,14 @@ def get_approved_data_sources(conn: PgConnection) -> list[tuple[Any, ...]]:
     )
     cursor.execute(sql_query)
     results = cursor.fetchall()
-    cursor.close()
 
     return convert_data_source_matches(DATA_SOURCES_OUTPUT_COLUMNS, results)
 
 
-def needs_identification_data_sources(conn) -> list:
+def needs_identification_data_sources(cursor: psycopg2.extensions.cursor) -> dict:
     """
     Returns a list of data sources that need identification
     """
-    cursor = conn.cursor()
     joined_column_names = ", ".join(DATA_SOURCES_APPROVED_COLUMNS)
 
     sql_query = """
@@ -342,16 +339,14 @@ def needs_identification_data_sources(conn) -> list:
     )
     cursor.execute(sql_query)
     results = cursor.fetchall()
-    cursor.close()
 
     return convert_data_source_matches(DATA_SOURCES_OUTPUT_COLUMNS, results)
 
 
-def get_data_sources_for_map(conn) -> list:
+def get_data_sources_for_map(cursor: psycopg2.extensions.cursor) -> list:
     """
     Returns a list of data sources with relevant info for the map
     """
-    cursor = conn.cursor()
     sql_query = """
         SELECT
             data_sources.airtable_uid as data_source_id,
@@ -375,7 +370,6 @@ def get_data_sources_for_map(conn) -> list:
     """
     cursor.execute(sql_query)
     results = cursor.fetchall()
-    cursor.close()
 
     return convert_data_source_matches(DATA_SOURCES_MAP_COLUMN, results)
 
