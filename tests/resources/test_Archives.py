@@ -1,16 +1,12 @@
-# The below line is required to bypass the api_required decorator,
-# and must be positioned prior to other imports in order to work.
 from unittest.mock import patch, MagicMock
-
 from tests.helper_functions import check_response_status
 
-patch("middleware.security.api_required", lambda x: x).start()
 import json
 from http import HTTPStatus
-from tests.fixtures import client_with_mock_db
+from tests.fixtures import client_with_mock_db, bypass_api_required
 
 
-def test_get_agencies(client_with_mock_db, monkeypatch):
+def test_get_agencies(client_with_mock_db, monkeypatch, bypass_api_required):
     mock_get_agencies = MagicMock(
         return_value=({"message": "Test Response"}, HTTPStatus.IM_A_TEAPOT)
     )
@@ -21,7 +17,7 @@ def test_get_agencies(client_with_mock_db, monkeypatch):
     assert response.json == {"message": "Test Response"}
 
 
-def test_put_agencies(client_with_mock_db, monkeypatch):
+def test_put_agencies(client_with_mock_db, monkeypatch, bypass_api_required):
     mock_data = {
         "id": "test_id",
         "last_cached": "2019-01-01",
