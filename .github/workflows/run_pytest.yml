@@ -27,5 +27,5 @@ jobs:
         pytest tests/integration
         pytest tests/middleware
         pytest tests/resources
-        pytest test_endpoints.py
+        pytest tests/test_endpoints.py
       
