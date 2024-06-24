@@ -1,0 +1,31 @@
+name: Test using Pytest
+
+on:
+  pull_request:
+
+jobs:
+  run_tests:
+    env:
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      DEV_DB_CONN_STRING: ${{secrets.DEV_DB_CONN_STRING}}
+      DO_DATABASE_URL: ${{secrets.DEV_DB_CONN_STRING}}  # TODO: Ideally, won't need both for testing, but this is for safety for now
+    name: Test API
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        python -m spacy download en_core_web_sm
+        pip install pytest pytest-cov
+    - name: Run tests
+      run: |
+        pytest tests/integration
+        pytest tests/middleware
+        pytest tests/resources
+        pytest test_endpoints
+      
