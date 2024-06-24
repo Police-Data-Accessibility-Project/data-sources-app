@@ -111,3 +111,8 @@ def client_with_db(dev_db_connection: psycopg2.extensions.connection, monkeypatc
     app = create_app()
     with app.test_client() as client:
         yield client
+
+
+@pytest.fixture
+def bypass_api_required(monkeypatch):
+    monkeypatch.setattr("middleware.security.validate_token", lambda: None)

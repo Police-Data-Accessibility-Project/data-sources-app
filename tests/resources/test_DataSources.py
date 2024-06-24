@@ -1,10 +1,8 @@
-# The below line is required to bypass the api_required decorator,
-# and must be positioned prior to other imports in order to work.
+
 from unittest.mock import patch, MagicMock
 from http import HTTPStatus
 
-patch("middleware.security.api_required", lambda x: x).start()
-from tests.fixtures import client_with_mock_db
+from tests.fixtures import client_with_mock_db, bypass_api_required
 from http import HTTPStatus
 
 from flask import Response
@@ -12,7 +10,7 @@ from flask import Response
 from tests.helper_functions import check_response_status
 
 
-def test_put_data_source_by_id(client_with_mock_db, monkeypatch):
+def test_put_data_source_by_id(client_with_mock_db, monkeypatch, bypass_api_required):
 
     monkeypatch.setattr("resources.DataSources.request", MagicMock())
     # mock_request.get_json.return_value = {"name": "Updated Data Source"}
@@ -21,7 +19,7 @@ def test_put_data_source_by_id(client_with_mock_db, monkeypatch):
     assert response.json == {"message": "Data source updated successfully."}
 
 
-def test_put_data_source_by_id(client_with_mock_db, monkeypatch):
+def test_put_data_source_by_id(client_with_mock_db, monkeypatch, bypass_api_required):
 
     # Create
     mock_request = MagicMock()
@@ -47,7 +45,7 @@ def test_put_data_source_by_id(client_with_mock_db, monkeypatch):
     assert response.json == {"message": "Test Response"}
 
 
-def test_post_data_sources(client_with_mock_db, monkeypatch):
+def test_post_data_sources(client_with_mock_db, monkeypatch, bypass_api_required):
     mock_request = MagicMock()
     mock_data = MagicMock()
     mock_request.get_json.return_value = mock_data
