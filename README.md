@@ -5,7 +5,7 @@ An API and UI for searching, using, and maintaining Data Sources.
 #### [Live app](https://data-sources.pdap.io/)
 #### [API docs](https://docs.pdap.io/api/introduction)
 
-## Installation
+## Running the app for local development
 
 ### 1. Clone this repository and navigate to the root directory.
 
@@ -50,24 +50,37 @@ pip install -r requirements.txt
 
 ### 5. Add environment secrets
 
-Either add a `.env` file to your local root directory or manually export these secrets: `DO_DATABASE_URL` and `VITE_VUE_API_BASE_URL`.  
+Either add a `.env` file to your local root directory or manually export these secrets. Reach out to contact@pdap.io or make noise in Discord if you'd like access. 
 
-Reach out to contact@pdap.io or make noise in Discord if you'd like access to these keys.
-
+#### Sample `.env` file
 ```
-# .env
+# Local development
+VITE_VUE_API_BASE_URL=http://localhost:5000
+VITE_VUE_APP_BASE_URL=http://localhost:8888
 
-DO_DATABASE_URL="postgres://data_sources_app:<password>@db-postgresql-nyc3-38355-do-user-8463429-0.c.db.ondigitalocean.com:25060/defaultdb"
-VITE_VUE_API_BASE_URL="http://localhost:5000"
-VITE_VUE_APP_BASE_URL="http://localhost:8888"
+# Deployed app
+# VITE_VUE_API_BASE_URL=https://data-sources.pdap.io/api
+# VITE_VUE_APP_BASE_URL=https://data-sources.pdap.io/
+
+# Production database and API
+DO_DATABASE_URL=secret
+SECRET_KEY=secret
+
+# Mailgun key for notifications
+MAILGUN_KEY=secret
+
+# Discord key for #dev-alerts channel
+WEBHOOK_URL=secret
 ```
 
+#### shell
 ```
-# shell
-
-export DO_DATABASE_URL=postgres://data_sources_app:<password>@db-postgresql-nyc3-38355-do-user-8463429-0.c.db.ondigitalocean.com:25060/defaultdb
-export VITE_VUE_API_BASE_URL="http://localhost:5000"
-export VITE_VUE_APP_BASE_URL="http://localhost:8888"
+export VITE_VUE_API_BASE_URL=http://localhost:5000
+export VITE_VUE_APP_BASE_URL=http://localhost:8888
+export DO_DATABASE_URL=secret
+export SECRET_KEY=secret
+export MAILGUN_KEY=secret
+export WEBHOOK_URL=secret
 ```
 
 ### 6. Allow your IP address
