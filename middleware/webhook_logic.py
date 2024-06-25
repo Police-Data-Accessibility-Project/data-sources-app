@@ -6,12 +6,13 @@ import requests
 from middleware.util import get_env_variable
 
 
-def post_to_webhook(data: str):
+def post_to_webhook(msg: str):
+    vite_vue_app_base_url = get_env_variable("VITE_VUE_APP_BASE_URL")
     webhook_url = get_env_variable("WEBHOOK_URL")
 
     requests.post(
-        webhook_url,
-        data=data,
+        url=webhook_url,
+        data=f"({vite_vue_app_base_url}) {msg}",
         headers={"Content-Type": "application/json"},
         timeout=5,
     )
