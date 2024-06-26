@@ -12,6 +12,7 @@ from flask import Response, make_response
 from psycopg2.extensions import cursor as PgCursor
 from werkzeug.security import check_password_hash
 
+from database_client.database_client import DatabaseClient
 from middleware.custom_exceptions import UserNotFoundError, TokenNotFoundError
 from middleware.util import get_env_variable
 
@@ -57,7 +58,7 @@ def try_logging_in(cursor: PgCursor, email: str, password: str) -> Response:
     )
 
 
-def is_admin(cursor: PgCursor, email: str) -> bool:
+def is_admin(db_client: DatabaseClient, email: str) -> bool:
     """
     Checks if a user has an admin role.
 
@@ -142,6 +143,7 @@ def get_api_key_for_user(cursor: PgCursor, email: str, password: str) -> Respons
     if check_password_hash(user_data["password_digest"], password):
         api_key = generate_api_key()
         user_id = str(user_data["id"])
+        # TODO: Replace with DatabaseClient.update_user_api_key()
         update_api_key(cursor, api_key, user_id)
         payload = {"api_key": api_key}
         return make_response(payload, HTTPStatus.OK)

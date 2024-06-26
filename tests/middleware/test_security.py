@@ -51,6 +51,7 @@ def test_api_key_exists_in_users_table_with_non_admin_role(dev_db_connection):
 
 
 def test_api_key_not_in_users_table_but_in_session_tokens_table(dev_db_connection):
+    # TODO: REWORK
     cursor = dev_db_connection.cursor()
     test_user = create_test_user(cursor)
     token = create_session_token(cursor, test_user.id, test_user.email)
@@ -72,6 +73,7 @@ def test_expired_session_token(dev_db_connection):
 
 
 def test_session_token_with_admin_role(dev_db_connection):
+    # TODO: REWORK
     cursor = dev_db_connection.cursor()
     test_user = create_test_user(cursor)
     give_user_admin_role(dev_db_connection, UserInfo(test_user.email, ""))
