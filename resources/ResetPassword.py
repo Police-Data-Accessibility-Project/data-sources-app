@@ -1,8 +1,6 @@
 from werkzeug.security import generate_password_hash
 from flask import request, Response
 from middleware.reset_token_queries import (
-    check_reset_token,
-    delete_reset_token,
     reset_password,
 )
 from datetime import datetime as dt
@@ -27,10 +25,9 @@ class ResetPassword(PsycopgResource):
         - A dictionary containing a message indicating whether the password was successfully updated or an error occurred.
         """
         data = request.get_json()
-        with self.psycopg2_connection.cursor() as cursor:
+        with self.setup_database_client() as db_client:
             response = reset_password(
-                cursor, token=data.get("token"), password=data.get("password")
+                db_client, token=data.get("token"), password=data.get("password")
             )
-        self.psycopg2_connection.commit()
 
         return response

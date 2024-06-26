@@ -21,7 +21,6 @@ class RequestResetPassword(PsycopgResource):
         """
         data = request.get_json()
         email = data.get("email")
-        with self.psycopg2_connection.cursor() as cursor:
-            response = request_reset_password(cursor, email)
-            self.psycopg2_connection.commit()
+        with self.setup_database_client() as db_client:
+            response = request_reset_password(db_client, email)
         return response
