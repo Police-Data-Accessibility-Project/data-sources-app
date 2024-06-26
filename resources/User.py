@@ -30,9 +30,8 @@ class User(PsycopgResource):
         data = request.get_json()
         email = data.get("email")
         password = data.get("password")
-        cursor = self.psycopg2_connection.cursor()
-        user_post_results(cursor, email, password)
-        self.psycopg2_connection.commit()
+        with self.setup_database_client() as db_client:
+            user_post_results(db_client, email, password)
 
         return {"message": "Successfully added user"}
 
@@ -52,7 +51,7 @@ class User(PsycopgResource):
         data = request.get_json()
         email = data.get("email")
         password = data.get("password")
-        with self.psycopg2_connection.cursor() as cursor:
-            set_user_password(cursor, email, password)
+        with self.setup_database_client() as db_client:
+            set_user_password(db_client, email, password)
         self.psycopg2_connection.commit()
         return {"message": "Successfully updated password"}, HTTPStatus.OK
