@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from flask.testing import FlaskClient
 
 from app import create_app
+from database_client.database_client import DatabaseClient
 from middleware.util import get_env_variable
 from tests.helper_functions import insert_test_agencies_and_sources
 
@@ -116,3 +117,12 @@ def client_with_db(dev_db_connection: psycopg2.extensions.connection, monkeypatc
 @pytest.fixture
 def bypass_api_required(monkeypatch):
     monkeypatch.setattr("middleware.security.validate_token", lambda: None)
+
+@pytest.fixture
+def live_database_client(db_cursor) -> DatabaseClient:
+    """
+    Returns a database client with a live connection to the database
+    :param db_cursor:
+    :return:
+    """
+    return DatabaseClient(db_cursor)
