@@ -208,7 +208,7 @@ class DatabaseClient:
     ]
 
 
-    def get_data_source_by_id(self, data_source_id: str) -> Optional[dict]:
+    def get_data_source_by_id(self, data_source_id: str) -> tuple[Any, ...]:
         """
         Get a data source by its ID, including related agency information.
 
@@ -241,7 +241,40 @@ class DatabaseClient:
                 data_sources.approval_status = 'approved' AND data_sources.airtable_uid = %s
         """
 
-        self.cursor.execute(sql_query, (joined_column_names, data_source_id,),)
+        self.cursor.execute(sql_query, (joined_column_names, data_source_id,))
         result = self.cursor.fetchone()
-        # NOTE: Very big dictionary, perhaps very long NamedTuple to be implemented later
+        # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return result
+
+
+    def get_approved_data_sources(self) -> list[tuple[Any, ...]]:
+        """
+        Fetches all approved data sources and their related agency information.
+
+        :return: A list of tuples, each containing details of a data source and its related agency.
+        """
+        data_source_approved_columns = [
+            f"data_sources.{approved_column}"
+            for approved_column in DATA_SOURCES_APPROVED_COLUMNS
+        ]
+        data_source_approved_columns.append("agencies.name as agency_name")
+
+        joined_column_names = ", ".join(data_source_approved_columns)
+
+        sql_query = """
+            SELECT
+                %s
+            FROM
+                agency_source_link
+            INNER JOIN
+                data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
+            INNER JOIN
+                agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+            WHERE
+                data_sources.approval_status = 'approved'
+        """
+
+        self.cursor.execute(sql_query, (joined_column_names))
+        results = self.cursor.fetchall()
+        # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
+        return results

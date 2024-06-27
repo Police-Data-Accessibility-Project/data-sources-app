@@ -102,6 +102,8 @@ DATA_SOURCES_MAP_COLUMN = [
 
 
 def get_approved_data_sources_wrapper(cursor: psycopg2.extensions.cursor) -> Response:
+    # TODO: Replace with DatabaseClient method get_approved_data_sources()
+    # NOTE: Original method converted to dictionary, logic not yet carried over
     data_source_matches = get_approved_data_sources(cursor)
 
     return make_response(
