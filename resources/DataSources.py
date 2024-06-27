@@ -99,6 +99,8 @@ class DataSourcesNeedsIdentification(PsycopgResource):
     @api_required
     def get(self):
         with self.psycopg2_connection.cursor() as cursor:
+            # TODO: Replace with DatabaseClient method get_needs_identification_data_sources()
+            # NOTE: Original method converted return to a dictionary, logic not yet carried over
             data_source_matches = needs_identification_data_sources(cursor)
 
         data_sources = {

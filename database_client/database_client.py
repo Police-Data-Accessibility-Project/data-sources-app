@@ -278,3 +278,26 @@ class DatabaseClient:
         results = self.cursor.fetchall()
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return results
+
+    
+    def get_needs_identification_data_sources(self) -> list[tuple[Any, ...]]:
+        """
+        Returns a list of data sources that need identification.
+
+        :return: A list of tuples, each containing details of a data source.
+        """
+        joined_column_names = ", ".join(DATA_SOURCES_APPROVED_COLUMNS)
+
+        sql_query = """
+            SELECT
+                %s
+            FROM
+                data_sources
+            WHERE
+                approval_status = 'needs identification'
+        """
+
+        self.cursor.execute(sql_query, (joined_column_names))
+        results = self.cursor.fetchall()
+
+        return results
