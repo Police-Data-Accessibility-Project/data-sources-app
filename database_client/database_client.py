@@ -135,3 +135,113 @@ class DatabaseClient:
             f"update users set api_key = %s where id = %s",
             (api_key, user_id),
         )
+    
+
+    DATA_SOURCES_APPROVED_COLUMNS = [
+        "name",
+        "submitted_name",
+        "description",
+        "record_type",
+        "source_url",
+        "agency_supplied",
+        "supplying_entity",
+        "agency_originated",
+        "originating_entity",
+        "agency_aggregation",
+        "coverage_start",
+        "coverage_end",
+        "source_last_updated",
+        "retention_schedule",
+        "detail_level",
+        "number_of_records_available",
+        "size",
+        "access_type",
+        "data_portal_type",
+        "record_format",
+        "update_frequency",
+        "update_method",
+        "tags",
+        "readme_url",
+        "scraper_url",
+        "data_source_created",
+        "airtable_source_last_modified",
+        "url_status",
+        "rejection_note",
+        "last_approval_editor",
+        "agency_described_submitted",
+        "agency_described_not_in_database",
+        "approval_status",
+        "record_type_other",
+        "data_portal_type_other",
+        "records_not_online",
+        "data_source_request",
+        "url_button",
+        "tags_other",
+        "access_notes",
+        "last_cached",
+    ]
+
+    AGENCY_APPROVED_COLUMNS = [
+        "homepage_url",
+        "count_data_sources",
+        "agency_type",
+        "multi_agency",
+        "submitted_name",
+        "jurisdiction_type",
+        "state_iso",
+        "municipality",
+        "zip_code",
+        "county_fips",
+        "county_name",
+        "lat",
+        "lng",
+        "data_sources",
+        "no_web_presence",
+        "airtable_agency_last_modified",
+        "data_sources_last_updated",
+        "approved",
+        "rejection_reason",
+        "last_approval_editor",
+        "agency_created",
+        "county_airtable_uid",
+        "defunct_year",
+    ]
+
+
+    def get_data_source_by_id(self, data_source_id: str) -> Optional[dict]:
+        """
+        Get a data source by its ID, including related agency information.
+
+        :param data_source_id: The unique identifier for the data source.
+        :return: A dictionary containing the data source and its related agency details. None if not found.
+        """
+        data_source_approved_columns = [
+            f"data_sources.{approved_column}"
+            for approved_column in DATA_SOURCES_APPROVED_COLUMNS
+        ]
+        agencies_approved_columns = [
+            f"agencies.{field}" for field in AGENCY_APPROVED_COLUMNS
+        ]
+        all_approved_columns = data_source_approved_columns + agencies_approved_columns
+        all_approved_columns.append("data_sources.airtable_uid as data_source_id")
+        all_approved_columns.append("agencies.airtable_uid as agency_id")
+        all_approved_columns.append("agencies.name as agency_name")
+
+        joined_column_names = ", ".join(all_approved_columns)
+        sql_query = """
+            SELECT
+                %s
+            FROM
+                agency_source_link
+            INNER JOIN
+                data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
+            INNER JOIN
+                agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+            WHERE
+                data_sources.approval_status = 'approved' AND data_sources.airtable_uid = %s
+        """
+
+        self.cursor.execute(sql_query, (joined_column_names, data_source_id,),)
+        result = self.cursor.fetchone()
+        # NOTE: Very big dictionary, perhaps very long NamedTuple to be implemented later
+        return result

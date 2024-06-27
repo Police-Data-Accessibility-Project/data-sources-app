@@ -188,6 +188,7 @@ def data_source_by_id_query(
     :param cursor: A psycopg2 cursor object to a PostgreSQL database.
     :return: A dictionary with the data source details after processing.
     """
+    # TODO: Replace with DatabaseClient method get_data_source_by_id()
     result = data_source_by_id_results(cursor, data_source_id)
     if not result:
         raise DataSourceNotFoundError("The specified data source was not found.")
