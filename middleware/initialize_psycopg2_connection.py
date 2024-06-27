@@ -2,6 +2,7 @@ import psycopg2
 import os
 from psycopg2.extensions import connection as PgConnection
 from typing import Union, Dict, List
+from dotenv import load_dotenv
 
 
 def initialize_psycopg2_connection() -> (
@@ -17,6 +18,7 @@ def initialize_psycopg2_connection() -> (
     :return: A psycopg2 connection object if successful, or a dictionary with a count of 0 and an empty data list upon failure.
     """
     try:
+        load_dotenv()
         DO_DATABASE_URL = os.getenv("DO_DATABASE_URL")
 
         return psycopg2.connect(
