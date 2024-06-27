@@ -149,7 +149,17 @@ export default {
 			this.$router.push(`/data-sources/${this.dataSource.airtable_uid}`);
 		},
 		openSource() {
-			window.open(this.dataSource.source_url, '_blank');
+	        	let url = this.dataSource.source_url;
+			// ensure URL is treated as an absolute path
+			url = this.prepend_protocol_if_none(url)
+			window.open(url, '_blank');
+		},
+                prepend_protocol_if_none(url) {
+			// add 'https://' if the URL does not have a protocol
+			if (!/^https?:\/\//i.test(url)) {
+				return url = 'https://' + url;
+			}
+			return url;
 		},
 		formatDate: formatDateForSearchResults,
 	},
