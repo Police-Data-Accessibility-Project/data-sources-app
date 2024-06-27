@@ -82,3 +82,13 @@ def test_get_approved_data_sources(live_database_client):
     # Confirm only all approved data sources are retrieved
 
     pytest.fail("Test not implemented")
+
+
+def test_get_needs_identification_data_sources(live_database_client):
+    # Add new data sources to the database, at least two labeled 'needs identification' and one not
+
+    # Fetch the data sources with the DatabaseClient method
+
+    # Confirm only all data sources labeled 'needs identification' are retrieved
+
+    pytest.fail("Test not implemented")
