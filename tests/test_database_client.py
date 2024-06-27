@@ -62,3 +62,13 @@ def test_update_user_api_key(live_database_client):
     # Fetch the user's API key from the database to confirm the change
 
     pytest.fail("Test not implemented")
+
+
+def test_get_data_source_by_id(live_database_client):
+    # Add a new data source and agency to the database
+
+    # Fetch the data source using its id with the DatabaseClint Method
+
+    # Confirm the data source and agency are retrieved successfully
+
+    pytest.fail("Test not implemented")
