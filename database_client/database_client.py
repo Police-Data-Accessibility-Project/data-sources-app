@@ -461,7 +461,7 @@ class DatabaseClient:
             FROM agencies where approved = 'TRUE' limit 1000 offset %s
         """
         self.cursor.execute(sql_query, (offset,),)
-        results = cursor.fetchall()
+        results = self.cursor.fetchall()
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return results
 
@@ -479,3 +479,36 @@ class DatabaseClient:
         """
         return (page - 1) * 1000
 
+
+    ArchiveInfo = namedtuple("ArchiveInfo", ["id", "url", "update_frequency", "last_cached", "broken_url_as_of"])
+
+
+    def get_data_sources_to_archive(self) -> list[ArchiveInfo]:
+        """
+        Pulls data sources to be archived by the automatic archives script.
+
+        A data source is selected for archival if:
+        (the data source has not been archived previously OR the data source is updated regularly)
+        AND the source url is not broken 
+        AND the source url is not null.
+
+        :return: A list of ArchiveInfo namedtuples, each containing archive details of a data source.
+        """
+        sql_query = """
+        SELECT
+            airtable_uid,
+            source_url,
+            update_frequency,
+            last_cached,
+            broken_source_url_as_of
+        FROM
+            data_sources
+        WHERE 
+            (last_cached IS NULL OR update_frequency IS NOT NULL) AND broken_source_url_as_of IS NULL AND url_status <> 'broken' AND source_url IS NOT NULL
+        """
+        self.cursor.execute(sql_query)
+        data_sources = self.cursor.fetchall()
+
+        results = [self.ArchiveInfo(id=row[0], url=row[1], update_frequency=row[2], last_cached=row[3], broken_url_as_of=row[4]) for row in data_sources]
+
+        return results

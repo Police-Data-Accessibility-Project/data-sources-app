@@ -16,6 +16,7 @@ ARCHIVES_GET_COLUMNS = [
 ]
 
 
+# DatabaseClient.get_data_sources_to_archive()
 def archives_get_results(cursor: psycopg2.extensions.cursor) -> list[tuple[Any, ...]]:
     """
     Pulls data sources for the automatic archives script that performs caching
@@ -49,6 +50,7 @@ def archives_get_query(
     :param cursor: A psycopg2 cursor object to a PostgreSQL database.
     :return: A list of dictionaries with the query results after processing and date conversion.
     """
+    # TODO: replace with DatabaseClient method get_data_sources_to_archive()
     results = archives_get_results(cursor)
     archives_combined_results = [
         dict(zip(ARCHIVES_GET_COLUMNS, result)) for result in results
