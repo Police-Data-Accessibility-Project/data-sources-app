@@ -221,7 +221,7 @@ class DatabaseClient:
 
     def get_data_source_by_id(self, data_source_id: str) -> tuple[Any, ...]:
         """
-        Get a data source by its ID, including related agency information.
+        Get a data source by its ID, including related agency information from the database.
 
         :param data_source_id: The unique identifier for the data source.
         :return: A dictionary containing the data source and its related agency details. None if not found.
@@ -260,7 +260,7 @@ class DatabaseClient:
 
     def get_approved_data_sources(self) -> list[tuple[Any, ...]]:
         """
-        Fetches all approved data sources and their related agency information.
+        Fetches all approved data sources and their related agency information from the database.
 
         :return: A list of tuples, each containing details of a data source and its related agency.
         """
@@ -293,7 +293,7 @@ class DatabaseClient:
     
     def get_needs_identification_data_sources(self) -> list[tuple[Any, ...]]:
         """
-        Returns a list of data sources that need identification.
+        Returns a list of data sources that need identification from the database.
 
         :return: A list of tuples, each containing details of a data source.
         """
@@ -310,7 +310,7 @@ class DatabaseClient:
 
         self.cursor.execute(sql_query, (joined_column_names,))
         results = self.cursor.fetchall()
-
+        # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return results
 
 
@@ -383,3 +383,41 @@ class DatabaseClient:
         WHERE airtable_uid = '{data_source_id}'
         """
         return sql_query
+
+
+    MapInfo = namedtuple("MapInfo", ["data_source_id", "data_source_name", "agency_id", "agency_name", "state_iso", "municipality", "county", "record_type", "lat", "lng"])
+
+
+    def get_data_sources_for_map(self) -> list[MapInfo]:
+        """
+        Returns a list of data sources with relevant info for the map from the database.
+
+        :return: A list of MapInfo namedtuples, each containing details of a data source.
+        """
+        sql_query = """
+            SELECT
+                data_sources.airtable_uid as data_source_id,
+                data_sources.name,
+                agencies.airtable_uid as agency_id,
+                agencies.submitted_name as agency_name,
+                agencies.state_iso,
+                agencies.municipality,
+                agencies.county_name,
+                data_sources.record_type,
+                agencies.lat,
+                agencies.lng
+            FROM
+                agency_source_link
+            INNER JOIN
+                data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
+            INNER JOIN
+                agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+            WHERE
+                data_sources.approval_status = 'approved'
+        """
+        self.cursor.execute(sql_query)
+        data_sources = self.cursor.fetchall()
+
+        results = [self.MapInfo(data_source_id=row[0], data_source_name=row[1], agency_id=row[2], agency_name=row[3], state_iso=row[4], municipality=row[5], county=row[6], record_type=row[7], lat=row[8], lng=row[9]) for row in data_sources]
+
+        return results
