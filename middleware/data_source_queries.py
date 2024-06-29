@@ -124,6 +124,8 @@ def data_source_by_id_wrapper(arg, cursor: psycopg2.extensions.cursor) -> Respon
 
 
 def get_data_sources_for_map_wrapper(cursor: psycopg2.extensions.cursor) -> Response:
+    # TODO: Replace with DatabaseClient function get_data_sources_for_map()
+    # NOTE: 
     data_source_details = get_data_sources_for_map(cursor)
     return make_response(
         {
@@ -357,6 +359,7 @@ def needs_identification_data_sources(cursor: psycopg2.extensions.cursor) -> dic
     return convert_data_source_matches(DATA_SOURCES_OUTPUT_COLUMNS, results)
 
 
+# DatabaseClient.get_data_sources_for_map()
 def get_data_sources_for_map(cursor: psycopg2.extensions.cursor) -> list:
     """
     Returns a list of data sources with relevant info for the map

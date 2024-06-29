@@ -108,3 +108,13 @@ def test_add_new_data_source(live_database_client):
     # Confirm that the data source was added successfully
 
     pytest.fail("Test not implemented")
+
+
+def test_get_data_sources_for_map(live_database_client):
+    # Add at least two new data sources to the database
+
+    # Fetch the data source with the DatabaseClient method
+
+    # Confirm both data sources are retrieved and only the proper columns are returned
+
+    pytest.fail("Test not implemented")
