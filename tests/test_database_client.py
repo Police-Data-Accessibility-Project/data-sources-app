@@ -105,7 +105,17 @@ def test_create_new_data_source_query():
 def test_add_new_data_source(live_database_client):
     # Add a new data source to the database with the DatabaseClient method
 
-    # Confirm that the data source was added successfully
+    # Fetch the data source from the database to confirm that it was added successfully
+
+    pytest.fail("Test not implemented")
+
+
+def test_update_data_source(live_database_client):
+    # Add a new data source to the database
+
+    # Update the data source with the DatabaseClient method
+
+    # Fetch the data source from the database to confirm the change
 
     pytest.fail("Test not implemented")
 
