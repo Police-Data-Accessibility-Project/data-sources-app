@@ -94,6 +94,14 @@ def test_get_needs_identification_data_sources(live_database_client):
     pytest.fail("Test not implemented")
 
 
+def test_create_new_data_source_query():
+    # Send a data source dictionary to the DatabaseClient method
+
+    # Confirm that the result is the expected query string
+
+    pytest.fail("Test not implemented")
+
+
 def test_add_new_data_source(live_database_client):
     # Add a new data source to the database with the DatabaseClient method
 
