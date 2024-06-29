@@ -154,3 +154,13 @@ def test_get_offset():
     # Confirm that the correct offset is returned
 
     pytest.fail("Test not implemented")
+
+
+def test_get_data_sources_to_archive(live_database_client):
+    # Add multiple data sources to the database, some that should be archived and some that should not
+
+    # Fetch the data sources using the DatabaseClient method
+
+    # Confirm that only the data sources that should be archived are returned
+
+    pytest.fail("Test not implemented")
