@@ -320,11 +320,10 @@ class DatabaseClient:
 
         :param data: A dictionary containing the data source details.
         """
-        restricted_columns = RESTRICTED_COLUMNS
         column_names = ""
         column_values = ""
         for key, value in data.items():
-            if key not in restricted_columns:
+            if key not in RESTRICTED_COLUMNS:
                 column_names += f"{key}, "
                 if type(value) == str:
                     column_values += f"'{value}', "
@@ -346,7 +345,41 @@ class DatabaseClient:
         """
         Processes a request to add a new data source.
 
-        :param data: A dictionary containing the data source details.
+        :param data: A dictionary containing the updated data source details.
         """
         sql_query = self.create_new_data_source_query(data)
         self.cursor.execute(sql_query)
+
+
+    def update_data_source(self, data: dict, data_source_id: str) -> None:
+        """
+        Processes a request to update a data source.
+
+        :param data_source_id: The data source's ID.
+        :param data: A dictionary containing the data source details.
+        """
+        sql_query = self.create_data_source_update_query(data, data_source_id)
+        self.cursor.execute(sql_query)
+
+
+    def create_data_source_update_query(self, data: dict, data_source_id: str) -> str:
+        """
+        Creates a query to update a data source in the database.
+
+        :param data: A dictionary containing the updated data source details.
+        :param data_source_id: The ID of the data source to be updated.
+        """
+        data_to_update = ""
+        for key, value in data.items():
+            if key not in RESTRICTED_COLUMNS:
+                if type(value) == str:
+                    data_to_update += f"{key} = '{value}', "
+                else:
+                    data_to_update += f"{key} = {value}, "
+        data_to_update = data_to_update[:-2]
+        sql_query = f"""
+        UPDATE data_sources 
+        SET {data_to_update}
+        WHERE airtable_uid = '{data_source_id}'
+        """
+        return sql_query

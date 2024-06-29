@@ -52,6 +52,7 @@ class DataSourceById(PsycopgResource):
         """
         data = request.get_json()
         with self.psycopg2_connection.cursor() as cursor:
+            # TODO: Replace with DataaseClient method update_data_source()
             result = update_data_source(cursor, data, data_source_id)
             self.psycopg2_connection.commit()
 
@@ -87,6 +88,7 @@ class DataSources(PsycopgResource):
         """
         data = request.get_json()
         with self.psycopg2_connection.cursor() as cursor:
+            # TODO: Replace with DatabaseClient method add_new_data_source()
             result = add_new_data_source(cursor, data)
             self.psycopg2_connection.commit()
 
