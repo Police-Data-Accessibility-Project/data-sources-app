@@ -52,8 +52,7 @@ class DataSourceById(PsycopgResource):
         """
         data = request.get_json()
         with self.psycopg2_connection.cursor() as cursor:
-            # TODO: Replace with DataaseClient method update_data_source()
-            # NOTE: Original method converted return to a dictionary, logic not yet carried over
+            # TODO: Replace with DatabaseClient method update_data_source()
             result = update_data_source(cursor, data, data_source_id)
             self.psycopg2_connection.commit()
 

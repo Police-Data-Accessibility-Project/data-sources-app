@@ -421,3 +421,61 @@ class DatabaseClient:
         results = [self.MapInfo(data_source_id=row[0], data_source_name=row[1], agency_id=row[2], agency_name=row[3], state_iso=row[4], municipality=row[5], county=row[6], record_type=row[7], lat=row[8], lng=row[9]) for row in data_sources]
 
         return results
+
+
+    def get_agencies_from_page(self, page: int) -> list[tuple[Any, ...]]:
+        """
+        Returns a list of up to 1000 agencies from the database from a given page.
+
+        :param page: The page number to pull the agencies from.
+        :return: A list of agency tuples.
+        """
+        offset = self.get_offset(page)
+        sql_query = """
+            SELECT 
+                name,
+                homepage_url,
+                count_data_sources,
+                agency_type,
+                multi_agency,
+                submitted_name,
+                jurisdiction_type,
+                state_iso,
+                municipality,
+                zip_code,
+                county_fips,
+                county_name,
+                lat,
+                lng,
+                data_sources,
+                no_web_presence,
+                airtable_agency_last_modified,
+                data_sources_last_updated,
+                approved,
+                rejection_reason,
+                last_approval_editor,
+                agency_created,
+                county_airtable_uid,
+                defunct_year,
+                airtable_uid
+            FROM agencies where approved = 'TRUE' limit 1000 offset %s
+        """
+        self.cursor.execute(sql_query, (offset,),)
+        results = cursor.fetchall()
+        # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
+        return results
+
+
+    def get_offset(page: int) -> int:
+        """
+        Calculates the offset value for pagination based on the given page number.
+        Args:
+            page (int): The page number for which the offset is to be calculated.
+        Returns:
+            int: The calculated offset value.
+        Example:
+            >>> get_offset(3)
+            2000
+        """
+        return (page - 1) * 1000
+

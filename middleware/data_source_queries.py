@@ -125,7 +125,7 @@ def data_source_by_id_wrapper(arg, cursor: psycopg2.extensions.cursor) -> Respon
 
 def get_data_sources_for_map_wrapper(cursor: psycopg2.extensions.cursor) -> Response:
     # TODO: Replace with DatabaseClient function get_data_sources_for_map()
-    # NOTE: 
+    # NOTE: Original method converted return to a dictionary, logic not yet carried over
     data_source_details = get_data_sources_for_map(cursor)
     return make_response(
         {

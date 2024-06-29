@@ -59,6 +59,7 @@ def get_agencies_matches(cursor: psycopg2.extras.RealDictCursor, page: int):
     Returns:
         list: A list of dictionaries containing the relevant agency information.
     """
+    # TODO: replace with DatabaseClient method get_agencies_from_page()
     results = execute_agency_query(cursor, page)
     return process_results(results)
 
@@ -76,6 +77,7 @@ def process_results(results: list[dict]) -> list[dict]:
     return results
 
 
+# DatabaseClient.get_agencies_from_page()
 def execute_agency_query(cursor: psycopg2.extras.RealDictCursor, page: int):
     offset = get_offset(page)
     cursor.execute(
@@ -86,6 +88,7 @@ def execute_agency_query(cursor: psycopg2.extras.RealDictCursor, page: int):
     return results
 
 
+# DatabaseClient.get_offset()
 def get_offset(page: int) -> int:
     """
     Calculates the offset value for pagination based on the given page number.
