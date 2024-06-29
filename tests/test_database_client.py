@@ -174,3 +174,13 @@ def test_update_url_status_to_broken(live_database_client):
     # Fetch the data source from the database to confirm the change
 
     pytest.fail("Test not implemented")
+
+
+def test_update_last_cached():
+    # Add a new data source to the database
+
+    # Update the data source's last_cached value with the DatabaseClient method
+
+    # Fetch the data source from the database to confirm the change
+
+    pytest.fail("Test not implemented")
