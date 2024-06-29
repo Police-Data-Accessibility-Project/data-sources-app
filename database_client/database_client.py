@@ -1,7 +1,89 @@
 from collections import namedtuple
+from datetime import datetime
+from http import HTTPStatus
 from typing import Union, Optional
 
 import psycopg2
+import uuid
+
+
+DATA_SOURCES_APPROVED_COLUMNS = [
+    "name",
+    "submitted_name",
+    "description",
+    "record_type",
+    "source_url",
+    "agency_supplied",
+    "supplying_entity",
+    "agency_originated",
+    "originating_entity",
+    "agency_aggregation",
+    "coverage_start",
+    "coverage_end",
+    "source_last_updated",
+    "retention_schedule",
+    "detail_level",
+    "number_of_records_available",
+    "size",
+    "access_type",
+    "data_portal_type",
+    "record_format",
+    "update_frequency",
+    "update_method",
+    "tags",
+    "readme_url",
+    "scraper_url",
+    "data_source_created",
+    "airtable_source_last_modified",
+    "url_status",
+    "rejection_note",
+    "last_approval_editor",
+    "agency_described_submitted",
+    "agency_described_not_in_database",
+    "approval_status",
+    "record_type_other",
+    "data_portal_type_other",
+    "records_not_online",
+    "data_source_request",
+    "url_button",
+    "tags_other",
+    "access_notes",
+    "last_cached",
+]
+
+AGENCY_APPROVED_COLUMNS = [
+    "homepage_url",
+    "count_data_sources",
+    "agency_type",
+    "multi_agency",
+    "submitted_name",
+    "jurisdiction_type",
+    "state_iso",
+    "municipality",
+    "zip_code",
+    "county_fips",
+    "county_name",
+    "lat",
+    "lng",
+    "data_sources",
+    "no_web_presence",
+    "airtable_agency_last_modified",
+    "data_sources_last_updated",
+    "approved",
+    "rejection_reason",
+    "last_approval_editor",
+    "agency_created",
+    "county_airtable_uid",
+    "defunct_year",
+]
+
+RESTRICTED_COLUMNS = [
+    "rejection_note",
+    "data_source_request",
+    "approval_status",
+    "airtable_uid",
+    "airtable_source_last_modified",
+]
 
 
 class DatabaseClient:
@@ -135,77 +217,6 @@ class DatabaseClient:
             f"update users set api_key = %s where id = %s",
             (api_key, user_id),
         )
-    
-
-    DATA_SOURCES_APPROVED_COLUMNS = [
-        "name",
-        "submitted_name",
-        "description",
-        "record_type",
-        "source_url",
-        "agency_supplied",
-        "supplying_entity",
-        "agency_originated",
-        "originating_entity",
-        "agency_aggregation",
-        "coverage_start",
-        "coverage_end",
-        "source_last_updated",
-        "retention_schedule",
-        "detail_level",
-        "number_of_records_available",
-        "size",
-        "access_type",
-        "data_portal_type",
-        "record_format",
-        "update_frequency",
-        "update_method",
-        "tags",
-        "readme_url",
-        "scraper_url",
-        "data_source_created",
-        "airtable_source_last_modified",
-        "url_status",
-        "rejection_note",
-        "last_approval_editor",
-        "agency_described_submitted",
-        "agency_described_not_in_database",
-        "approval_status",
-        "record_type_other",
-        "data_portal_type_other",
-        "records_not_online",
-        "data_source_request",
-        "url_button",
-        "tags_other",
-        "access_notes",
-        "last_cached",
-    ]
-
-    AGENCY_APPROVED_COLUMNS = [
-        "homepage_url",
-        "count_data_sources",
-        "agency_type",
-        "multi_agency",
-        "submitted_name",
-        "jurisdiction_type",
-        "state_iso",
-        "municipality",
-        "zip_code",
-        "county_fips",
-        "county_name",
-        "lat",
-        "lng",
-        "data_sources",
-        "no_web_presence",
-        "airtable_agency_last_modified",
-        "data_sources_last_updated",
-        "approved",
-        "rejection_reason",
-        "last_approval_editor",
-        "agency_created",
-        "county_airtable_uid",
-        "defunct_year",
-    ]
 
 
     def get_data_source_by_id(self, data_source_id: str) -> tuple[Any, ...]:
@@ -274,7 +285,7 @@ class DatabaseClient:
                 data_sources.approval_status = 'approved'
         """
 
-        self.cursor.execute(sql_query, (joined_column_names))
+        self.cursor.execute(sql_query, (joined_column_names,))
         results = self.cursor.fetchall()
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return results
@@ -297,7 +308,45 @@ class DatabaseClient:
                 approval_status = 'needs identification'
         """
 
-        self.cursor.execute(sql_query, (joined_column_names))
+        self.cursor.execute(sql_query, (joined_column_names,))
         results = self.cursor.fetchall()
 
         return results
+
+
+    def create_new_data_source_query(self, data: dict) -> str:
+        """
+        Creates a query to add a new data source to the database.
+
+        :param data: A dictionary containing the data source details.
+        """
+        restricted_columns = RESTRICTED_COLUMNS
+        column_names = ""
+        column_values = ""
+        for key, value in data.items():
+            if key not in restricted_columns:
+                column_names += f"{key}, "
+                if type(value) == str:
+                    column_values += f"'{value}', "
+                else:
+                    column_values += f"{value}, "
+
+        now = datetime.now().strftime("%Y-%m-%d")
+        airtable_uid = str(uuid.uuid4())
+
+        column_names += "approval_status, url_status, data_source_created, airtable_uid"
+        column_values += f"False, '[\"ok\"]', '{now}', '{airtable_uid}'"
+
+        sql_query = f"INSERT INTO data_sources ({column_names}) VALUES ({column_values}) RETURNING *"
+
+        return sql_query
+
+
+    def add_new_data_source(self, data: dict) -> None:
+        """
+        Processes a request to add a new data source.
+
+        :param data: A dictionary containing the data source details.
+        """
+        sql_query = self.create_new_data_source_query(data)
+        self.cursor.execute(sql_query)
