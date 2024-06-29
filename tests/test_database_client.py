@@ -120,6 +120,14 @@ def test_update_data_source(live_database_client):
     pytest.fail("Test not implemented")
 
 
+def test_create_data_source_update_query(live_database_client):
+    # Send a data source dictionary to the DatabaseClient method
+
+    # Confirm that the result is the expected query string
+
+    pytest.fail("Test not implemented")
+
+
 def test_get_data_sources_for_map(live_database_client):
     # Add at least two new data sources to the database
 
