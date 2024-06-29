@@ -128,3 +128,11 @@ def test_get_agencies_from_page(live_database_client):
     # Confirm that the correct list of agencies is returned for a given page
 
     pytest.fail("Test not implemented")
+
+
+def test_get_offset():
+    # Send a page number to the DatabaseClient method
+
+    # Confirm that the correct offset is returned
+
+    pytest.fail("Test not implemented")
