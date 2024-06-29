@@ -531,3 +531,14 @@ class DatabaseClient:
             WHERE airtable_uid = %s
         """
         self.cursor.execute(sql_query, (broken_as_of, last_cached, id))
+
+
+    def update_last_cached(self, id: str, last_cached: str) -> None:
+        """
+        Updates the last_cached field in the data_sources table for a given id.
+
+        :param id: The airtable_uid of the data source.
+        :param last_cached: The last cached date to be updated.
+        """
+        sql_query = "UPDATE data_sources SET last_cached = %s WHERE airtable_uid = %s"
+        self.cursor.execute(sql_query, (last_cached, id))

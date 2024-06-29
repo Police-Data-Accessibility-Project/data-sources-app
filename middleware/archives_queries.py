@@ -85,6 +85,7 @@ def archives_put_broken_as_of_results(
     cursor.execute(sql_query, (broken_as_of, last_cached, id))
 
 
+# DatabaseClient.update_last_cached()
 def archives_put_last_cached_results(
     id: str, last_cached: str, cursor: psycopg2.extensions.cursor
 ) -> None:
@@ -118,6 +119,7 @@ def update_archives_data(
         # TODO: replace with DatabaseClient method update_url_status_to_broken()
         archives_put_broken_as_of_results(data_id, broken_as_of, last_cached, cursor)
     else:
+        # TODO: replace with DatabaseClient method update_last_cached()
         archives_put_last_cached_results(data_id, last_cached, cursor)
 
     return make_response({"status": "success"}, HTTPStatus.OK)
