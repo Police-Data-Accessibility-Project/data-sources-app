@@ -62,6 +62,7 @@ def archives_get_query(
     return archives_combined_results_clean
 
 
+# DatabaseClient.update_url_status_to_broken()
 def archives_put_broken_as_of_results(
     id: str, broken_as_of: str, last_cached: str, cursor: psycopg2.extensions.cursor
 ) -> None:
@@ -114,6 +115,7 @@ def update_archives_data(
     :return: A dictionary containing a message about the update operation
     """
     if broken_as_of:
+        # TODO: replace with DatabaseClient method update_url_status_to_broken()
         archives_put_broken_as_of_results(data_id, broken_as_of, last_cached, cursor)
     else:
         archives_put_last_cached_results(data_id, last_cached, cursor)

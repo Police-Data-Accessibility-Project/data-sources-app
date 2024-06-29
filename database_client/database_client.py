@@ -512,3 +512,22 @@ class DatabaseClient:
         results = [self.ArchiveInfo(id=row[0], url=row[1], update_frequency=row[2], last_cached=row[3], broken_url_as_of=row[4]) for row in data_sources]
 
         return results
+
+
+    def update_url_status_to_broken(self, id: str, broken_as_of: str, last_cached: str) -> None:
+        """
+        Updates the data_sources table setting the url_status to 'broken' for a given id.
+
+        :param id: The airtable_uid of the data source.
+        :param broken_as_of: The date when the source was identified as broken.
+        :param last_cached: The last cached date of the data source.
+        """
+        sql_query = """
+            UPDATE data_sources 
+            SET 
+                url_status = 'broken', 
+                broken_source_url_as_of = %s, 
+                last_cached = %s 
+            WHERE airtable_uid = %s
+        """
+        self.cursor.execute(sql_query, (broken_as_of, last_cached, id))
