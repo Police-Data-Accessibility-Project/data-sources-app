@@ -118,3 +118,13 @@ def test_get_data_sources_for_map(live_database_client):
     # Confirm both data sources are retrieved and only the proper columns are returned
 
     pytest.fail("Test not implemented")
+
+
+def test_get_agencies_from_page(live_database_client):
+    # Add at least two new agencies to the database, if possible add enough to make multiple pages (>1000)
+
+    # Fetch the page of agencies with the DatabaseClient method
+
+    # Confirm that the correct list of agencies is returned for a given page
+
+    pytest.fail("Test not implemented")
