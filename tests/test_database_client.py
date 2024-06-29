@@ -92,3 +92,11 @@ def test_get_needs_identification_data_sources(live_database_client):
     # Confirm only all data sources labeled 'needs identification' are retrieved
 
     pytest.fail("Test not implemented")
+
+
+def test_add_new_data_source(live_database_client):
+    # Add a new data source to the database with the DatabaseClient method
+
+    # Confirm that the data source was added successfully
+
+    pytest.fail("Test not implemented")
