@@ -164,3 +164,13 @@ def test_get_data_sources_to_archive(live_database_client):
     # Confirm that only the data sources that should be archived are returned
 
     pytest.fail("Test not implemented")
+
+
+def test_update_url_status_to_broken(live_database_client):
+    # Add a new data source to the database
+
+    # Update the data source's status with the DatabaseClient method
+
+    # Fetch the data source from the database to confirm the change
+
+    pytest.fail("Test not implemented")
