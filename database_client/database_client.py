@@ -85,6 +85,37 @@ RESTRICTED_COLUMNS = [
     "airtable_source_last_modified",
 ]
 
+QUICK_SEARCH_SQL = """
+    SELECT
+        data_sources.airtable_uid,
+        data_sources.name AS data_source_name,
+        data_sources.description,
+        data_sources.record_type,
+        data_sources.source_url,
+        data_sources.record_format,
+        data_sources.coverage_start,
+        data_sources.coverage_end,
+        data_sources.agency_supplied,
+        agencies.name AS agency_name,
+        agencies.municipality,
+        agencies.state_iso
+    FROM
+        agency_source_link
+    INNER JOIN
+        data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
+    INNER JOIN
+        agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+    INNER JOIN
+        state_names ON agencies.state_iso = state_names.state_iso
+    WHERE
+        (data_sources.name LIKE '%{0}%' OR data_sources.description LIKE '%{0}%' OR data_sources.record_type LIKE '%{0}%' OR data_sources.tags LIKE '%{0}%') 
+        AND (agencies.county_name LIKE '%{1}%' OR substr(agencies.county_name,3,length(agencies.county_name)-4) || ' County' LIKE '%{1}%' 
+            OR agencies.state_iso LIKE '%{1}%' OR agencies.municipality LIKE '%{1}%' OR agencies.agency_type LIKE '%{1}%' OR agencies.jurisdiction_type LIKE '%{1}%' 
+            OR agencies.name LIKE '%{1}%' OR state_names.state_name LIKE '%{1}%')
+        AND data_sources.approval_status = 'approved'
+        AND data_sources.url_status not in ('broken', 'none found')
+
+"""
 
 class DatabaseClient:
 
@@ -385,7 +416,7 @@ class DatabaseClient:
         return sql_query
 
 
-    MapInfo = namedtuple("MapInfo", ["data_source_id", "data_source_name", "agency_id", "agency_name", "state_iso", "municipality", "county", "record_type", "lat", "lng"])
+    MapInfo = namedtuple("MapInfo", ["data_source_id", "data_source_name", "agency_id", "agency_name", "state", "municipality", "county", "record_type", "lat", "lng"])
 
 
     def get_data_sources_for_map(self) -> list[MapInfo]:
@@ -418,7 +449,7 @@ class DatabaseClient:
         self.cursor.execute(sql_query)
         data_sources = self.cursor.fetchall()
 
-        results = [self.MapInfo(data_source_id=row[0], data_source_name=row[1], agency_id=row[2], agency_name=row[3], state_iso=row[4], municipality=row[5], county=row[6], record_type=row[7], lat=row[8], lng=row[9]) for row in data_sources]
+        results = [self.MapInfo(data_source_id=row[0], data_source_name=row[1], agency_id=row[2], agency_name=row[3], state=row[4], municipality=row[5], county=row[6], record_type=row[7], lat=row[8], lng=row[9]) for row in data_sources]
 
         return results
 
@@ -542,3 +573,25 @@ class DatabaseClient:
         """
         sql_query = "UPDATE data_sources SET last_cached = %s WHERE airtable_uid = %s"
         self.cursor.execute(sql_query, (last_cached, id))
+    
+
+    QuickSearchResult = namedtuple("QuickSearchResults", ["id", "data_source_name", "description", "record_type", "url", "format", "coverage_start", "coverage_end", "agency_supplied", "agency_name", "municipality", "state"])
+
+
+    def unaltered_quick_search(self, search: str, location: str) -> Optional[list[QuickSearchResults]]:
+        """
+        Executes the quick search SQL query with unaltered search and location terms.
+
+        :param search: The search term entered by the user.
+        :param location: The location term entered by the user.
+        :return: A list of QuickSearchResult namedtuples, each containing information of a data source resulting from the search. None if nothing is found.
+        """
+        print(f"Query parameters: '%{search}%', '%{location}%'")
+        sql_query = QUICK_SEARCH_SQL.format(search.title(), location.title())
+
+        self.cursor.execute(sql_query)
+        data_sources = self.cursor.fetchall()
+
+        results = [self.QuickSearchResult(id=row[0], data_source_name=row[1], description=row[2], record_type=row[3], url=row[4], format=row[5], coverage_start=row[6], coverage_end=row[7], agency_supplied=row[8], agency_name=row[9], municipality=row[10], state=row[11]) for row in data_sources]
+
+        return results

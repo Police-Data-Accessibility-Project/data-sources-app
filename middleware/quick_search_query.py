@@ -67,6 +67,7 @@ INSERT_LOG_QUERY = """
     """
 
 
+# DatabaseClient.unaltered_quick_search()
 def unaltered_search_query(
     cursor: PgCursor, search: str, location: str
 ) -> List[Dict[str, Any]]:
@@ -203,6 +204,7 @@ def process_data_source_matches(data_source_matches: List[dict]) -> DataSourceMa
 def get_data_source_matches(
     cursor: PgCursor, sp: SearchParameters
 ) -> List[Dict[str, Any]]:
+    # TODO: replace with DatabaseClient method unaltered_quick_search()
     unaltered_results = unaltered_search_query(cursor, sp.search, sp.location)
     spacy_results = spacy_search_query(cursor, sp.search, sp.location)
     # Compare altered search term results with unaltered search term results, return the longer list
