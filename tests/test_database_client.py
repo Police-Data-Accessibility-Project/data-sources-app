@@ -210,3 +210,13 @@ def test_add_new_access_token(live_database_client):
     # Fetch the new access token from the database to confirm it was added successfully
 
     pytest.fail("Test not implemented")
+
+
+def test_get_user_info(live_database_client):
+    # Add a new user to the database
+
+    # Fetch the user using its email with the DatabaseClient method
+
+    # Confirm the user is retrieved successfully
+
+    pytest.fail("Test not implemented")
