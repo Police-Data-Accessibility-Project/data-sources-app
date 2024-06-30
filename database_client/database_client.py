@@ -7,6 +7,7 @@ import uuid
 import psycopg2
 
 from middleware.quick_search_query import DataSourceMatches, SearchParameters
+from middleware.custom_exceptions import UserNotFoundError, TokenNotFoundError
 
 
 DATA_SOURCES_APPROVED_COLUMNS = [
@@ -634,15 +635,33 @@ class DatabaseClient:
 
         :param email: User's email.
         :raises UserNotFoundError: If no user is found.
-        :return: A dictionary containing user data or an error message.
+        :return: UserInfo namedtuple containing the user's information.
         """
         self.cursor.execute(
             f"select id, password_digest, api_key from users where email = %s", (email,)
         )
-        results = self.cursor.fetchall()
+        results = self.cursor.fetchone()
         if len(results) == 0:
             raise UserNotFoundError(email)
+
         return self.UserInfo(
-            id=results[0][0], password_digest=results[0][1], api_key=results[0][2],
+            id=results[0], password_digest=results[1], api_key=results[2],
         )
 
+
+    def get_role_by_email(self, email: str) -> RoleInfo:
+        """
+        Retrieves a user's role from the database using a given email.
+
+        :param email: User's email.
+        :raises UserNotFoundError: If no user is found.
+        :return: RoleInfo namedtuple containing the user's role.
+        """
+        self.cursor.execute(f"select role from users where email = %s", (email,))
+        results = cursor.fetchone()
+        if len(results) == 0:
+            raise UserNotFoundError(email)
+        
+        return self.RoleInfo(
+            id=None, role=results[0]
+        )

@@ -60,6 +60,9 @@ def try_logging_in(cursor: PgCursor, email: str, password: str) -> Response:
     )
 
 
+# DatabaseClient.get_role_by_email()
+# TODO: refactor this logic to call get_role_by_email() to retrieve the user's role,
+#       then determine if the user is an admin based on the return
 def is_admin(db_client: DatabaseClient, email: str) -> bool:
     """
     Checks if a user has an admin role.
