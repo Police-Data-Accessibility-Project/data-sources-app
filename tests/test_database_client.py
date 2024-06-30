@@ -194,3 +194,11 @@ def test_quick_search(live_database_client):
     # Confirm that all data sources that satisfy the search criteria are returned and those that don't are not returned
 
     pytest.fail("Test not implemented")
+
+
+def test_log_quick_search():
+    # Add a quick search log to the database using the DatabaseClient method
+
+    # Fetch the quick search logs to confirm it was added successfully
+
+    pytest.fail("Test not implemented")
