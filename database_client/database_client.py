@@ -615,7 +615,7 @@ class DatabaseClient:
         self.cursor.execute(sql_query, (processed_search_parameters.search, processed_search_parameters.location, query_results, data_sources_count,),)
 
 
-    def insert_access_token(self) -> None:
+    def add_new_access_token(self) -> None:
         """Inserts a new access token into the database."""
         token = uuid.uuid4().hex
         expiration = datetime.now() + datetime.timedelta(minutes=5)

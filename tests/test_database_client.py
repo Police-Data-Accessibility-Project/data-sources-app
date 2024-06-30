@@ -176,7 +176,7 @@ def test_update_url_status_to_broken(live_database_client):
     pytest.fail("Test not implemented")
 
 
-def test_update_last_cached():
+def test_update_last_cached(live_database_client):
     # Add a new data source to the database
 
     # Update the data source's last_cached value with the DatabaseClient method
@@ -196,9 +196,17 @@ def test_get_quick_search_results(live_database_client):
     pytest.fail("Test not implemented")
 
 
-def test_insert_quick_search_log():
+def test_insert_quick_search_log(live_database_client):
     # Add a quick search log to the database using the DatabaseClient method
 
     # Fetch the quick search logs to confirm it was added successfully
+
+    pytest.fail("Test not implemented")
+
+
+def test_add_new_access_token(live_database_client):
+    # Call the DatabaseClient method to generate and add a new access token to the database
+
+    # Fetch the new access token from the database to confirm it was added successfully
 
     pytest.fail("Test not implemented")
