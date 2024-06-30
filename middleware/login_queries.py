@@ -17,6 +17,7 @@ from middleware.custom_exceptions import UserNotFoundError, TokenNotFoundError
 from middleware.util import get_env_variable
 
 
+# DatabaseClient.get_user_info()
 def get_user_info(cursor: PgCursor, email: str) -> Dict[str, Union[int, str]]:
     """
     Retrieves user data by email.
@@ -47,6 +48,7 @@ def try_logging_in(cursor: PgCursor, email: str, password: str) -> Response:
     :param password: User's password.
     :return: A response object with a message and status code.
     """
+    # TODO: replace with DatabaseClient method get_user_info()
     user_info = get_user_info(cursor, email)
     if check_password_hash(user_info["password_digest"], password):
         token = create_session_token(cursor, user_info["id"], email)
@@ -138,6 +140,9 @@ def get_api_key_for_user(cursor: PgCursor, email: str, password: str) -> Respons
     :param password: User's password.
     :return: A response object with a message and status code.
     """
+    # TODO: replace with DatabaseClient method get_user_info()
+    # NOTE: original method returned a dictionary, 
+    #       parts of this method should be updated to work with namedtuple
     user_data = get_user_info(cursor, email)
 
     if check_password_hash(user_data["password_digest"], password):

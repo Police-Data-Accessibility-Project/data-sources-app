@@ -623,3 +623,26 @@ class DatabaseClient:
             f"insert into access_tokens (token, expiration_date) values (%s, %s)",
             (token, expiration),
         )
+
+
+    UserInfo = namedtuple("UserInfo", ["id", "password_digest", "api_key"])
+
+
+    def get_user_info(self, email: str) -> UserInfo:
+        """
+        Retrieves user data by email.
+
+        :param email: User's email.
+        :raises UserNotFoundError: If no user is found.
+        :return: A dictionary containing user data or an error message.
+        """
+        self.cursor.execute(
+            f"select id, password_digest, api_key from users where email = %s", (email,)
+        )
+        results = self.cursor.fetchall()
+        if len(results) == 0:
+            raise UserNotFoundError(email)
+        return self.UserInfo(
+            id=results[0][0], password_digest=results[0][1], api_key=results[0][2],
+        )
+
