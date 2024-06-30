@@ -67,7 +67,7 @@ INSERT_LOG_QUERY = """
     """
 
 
-# DatabaseClient.unaltered_quick_search()
+# DatabaseClient.quick_search()
 def unaltered_search_query(
     cursor: PgCursor, search: str, location: str
 ) -> List[Dict[str, Any]]:
@@ -86,6 +86,7 @@ def unaltered_search_query(
     return results
 
 
+# DatabaseClient.quick_search()
 def spacy_search_query(
     cursor: PgCursor, search: str, location: str
 ) -> List[Dict[str, Any]]:
@@ -204,8 +205,11 @@ def process_data_source_matches(data_source_matches: List[dict]) -> DataSourceMa
 def get_data_source_matches(
     cursor: PgCursor, sp: SearchParameters
 ) -> List[Dict[str, Any]]:
-    # TODO: replace with DatabaseClient method unaltered_quick_search()
+    # TODO: replace with DatabaseClient method quick_search()
     unaltered_results = unaltered_search_query(cursor, sp.search, sp.location)
+    # TODO: replace with DatabaseClient method quick_search()
+    # NOTE: functionality of unaltered_search_query() and spacy_search_query() combined into one function,
+    # search should be depluralized and location should be stripped before being passed
     spacy_results = spacy_search_query(cursor, sp.search, sp.location)
     # Compare altered search term results with unaltered search term results, return the longer list
     results = (

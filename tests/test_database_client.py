@@ -186,7 +186,7 @@ def test_update_last_cached():
     pytest.fail("Test not implemented")
 
 
-def test_unaltered_quick_search(live_database_client):
+def test_quick_search(live_database_client):
     # Add new data sources to the database, some that satisfy the search criteria and some that don't
 
     # Fetch the search results using the DatabaseClient method

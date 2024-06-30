@@ -578,7 +578,7 @@ class DatabaseClient:
     QuickSearchResult = namedtuple("QuickSearchResults", ["id", "data_source_name", "description", "record_type", "url", "format", "coverage_start", "coverage_end", "agency_supplied", "agency_name", "municipality", "state"])
 
 
-    def unaltered_quick_search(self, search: str, location: str) -> Optional[list[QuickSearchResults]]:
+    def quick_search(self, search: str, location: str) -> Optional[list[QuickSearchResults]]:
         """
         Executes the quick search SQL query with unaltered search and location terms.
 
@@ -595,3 +595,4 @@ class DatabaseClient:
         results = [self.QuickSearchResult(id=row[0], data_source_name=row[1], description=row[2], record_type=row[3], url=row[4], format=row[5], coverage_start=row[6], coverage_end=row[7], agency_supplied=row[8], agency_name=row[9], municipality=row[10], state=row[11]) for row in data_sources]
 
         return results
+
