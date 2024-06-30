@@ -220,3 +220,13 @@ def test_get_user_info(live_database_client):
     # Confirm the user is retrieved successfully
 
     pytest.fail("Test not implemented")
+
+
+def test_get_role_by_email(live_database_client):
+    # Add a new user to the database
+
+    # Fetch the user using its email with the DatabaseClient method
+
+    # Confirm the role is retrieved successfully
+
+    pytest.fail("Test not implemented")

@@ -241,6 +241,25 @@ class DatabaseClient:
             id=row[0], role=row[1]
         )
 
+
+    def get_role_by_email(self, email: str) -> RoleInfo:
+        """
+        Retrieves a user's role from the database using a given email.
+
+        :param email: User's email.
+        :raises UserNotFoundError: If no user is found.
+        :return: RoleInfo namedtuple containing the user's role.
+        """
+        self.cursor.execute(f"select role from users where email = %s", (email,))
+        results = cursor.fetchone()
+        if len(results) == 0:
+            raise UserNotFoundError(email)
+        
+        return self.RoleInfo(
+            id=None, role=results[0]
+        )
+
+
     def update_user_api_key(self, api_key: str, user_id: int):
         """
         Update the api key for a user
@@ -649,19 +668,4 @@ class DatabaseClient:
         )
 
 
-    def get_role_by_email(self, email: str) -> RoleInfo:
-        """
-        Retrieves a user's role from the database using a given email.
 
-        :param email: User's email.
-        :raises UserNotFoundError: If no user is found.
-        :return: RoleInfo namedtuple containing the user's role.
-        """
-        self.cursor.execute(f"select role from users where email = %s", (email,))
-        results = cursor.fetchone()
-        if len(results) == 0:
-            raise UserNotFoundError(email)
-        
-        return self.RoleInfo(
-            id=None, role=results[0]
-        )
