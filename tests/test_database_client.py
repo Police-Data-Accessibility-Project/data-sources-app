@@ -230,3 +230,13 @@ def test_get_role_by_email(live_database_client):
     # Confirm the role is retrieved successfully
 
     pytest.fail("Test not implemented")
+
+
+def test_add_new_session_token(live_database_client):
+    # Create a new session token locally
+
+    # Call the DatabaseClient method add the session token to the database
+
+    # Fetch the new session token from the database to confirm it was added successfully
+
+    pytest.fail("Test not implemented")
