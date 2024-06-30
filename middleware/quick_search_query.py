@@ -67,7 +67,7 @@ INSERT_LOG_QUERY = """
     """
 
 
-# DatabaseClient.quick_search()
+# DatabaseClient.get_quick_search_results()
 def unaltered_search_query(
     cursor: PgCursor, search: str, location: str
 ) -> List[Dict[str, Any]]:
@@ -86,7 +86,7 @@ def unaltered_search_query(
     return results
 
 
-# DatabaseClient.quick_search()
+# DatabaseClient.get_quick_search_results()
 def spacy_search_query(
     cursor: PgCursor, search: str, location: str
 ) -> List[Dict[str, Any]]:
@@ -152,7 +152,7 @@ def quick_search_query(
         "count": len(processed_data_source_matches.converted),
         "data": processed_data_source_matches.converted,
     }
-    # TODO: replace with DatabaseClient method log_quick_search()
+    # TODO: replace with DatabaseClient method insert_quick_search_log()
     log_query(
         cursor,
         data_sources["count"],
@@ -163,7 +163,7 @@ def quick_search_query(
     return data_sources
 
 
-# DatabaseClient.log_quick_search()
+# DatabaseClient.insert_quick_search_log()
 def log_query(
     cursor,
     data_sources_count,
@@ -206,11 +206,11 @@ def process_data_source_matches(data_source_matches: List[dict]) -> DataSourceMa
 def get_data_source_matches(
     cursor: PgCursor, sp: SearchParameters
 ) -> List[Dict[str, Any]]:
-    # TODO: replace with DatabaseClient method quick_search()
+    # TODO: replace with DatabaseClient method get_quick_search_results()
     unaltered_results = unaltered_search_query(cursor, sp.search, sp.location)
-    # TODO: replace with DatabaseClient method quick_search()
+    # TODO: replace with DatabaseClient method get_quick_search_results()
     # NOTE: functionality of unaltered_search_query() and spacy_search_query() combined into one function,
-    #       search should be depluralized and location should be stripped before being passed to quick_search()
+    #       search should be depluralized and location should be stripped before being passed to get_quick_search_results()
     spacy_results = spacy_search_query(cursor, sp.search, sp.location)
     # Compare altered search term results with unaltered search term results, return the longer list
     results = (

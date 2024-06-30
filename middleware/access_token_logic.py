@@ -2,6 +2,7 @@ import datetime
 import uuid
 
 
+# DatabaseClient.insert_access_token()
 def insert_access_token(cursor):
     token = uuid.uuid4().hex
     expiration = datetime.datetime.now() + datetime.timedelta(minutes=5)

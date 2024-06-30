@@ -2,9 +2,9 @@ from collections import namedtuple
 from datetime import datetime
 from http import HTTPStatus
 from typing import Union, Optional
+import uuid
 
 import psycopg2
-import uuid
 
 from middleware.quick_search_query import DataSourceMatches, SearchParameters
 
@@ -580,9 +580,9 @@ class DatabaseClient:
     QuickSearchResult = namedtuple("QuickSearchResults", ["id", "data_source_name", "description", "record_type", "url", "format", "coverage_start", "coverage_end", "agency_supplied", "agency_name", "municipality", "state"])
 
 
-    def quick_search(self, search: str, location: str) -> Optional[list[QuickSearchResults]]:
+    def get_quick_search_results(self, search: str, location: str) -> Optional[list[QuickSearchResults]]:
         """
-        Executes the quick search SQL query with unaltered search and location terms.
+        Executes the quick search SQL query with search and location terms.
 
         :param search: The search term entered by the user.
         :param location: The location term entered by the user.
@@ -599,7 +599,7 @@ class DatabaseClient:
         return results
 
 
-    def log_quick_search(self, data_sources_count: int, processed_data_source_matches: DataSourceMatches, processed_search_parameters: SearchParameters) -> None:
+    def insert_quick_search_log(self, data_sources_count: int, processed_data_source_matches: DataSourceMatches, processed_search_parameters: SearchParameters) -> None:
         """
         Logs a quick search query in the database.
 
@@ -613,3 +613,13 @@ class DatabaseClient:
             VALUES (%s, %s, %s, %s)
         """
         self.cursor.execute(sql_query, (processed_search_parameters.search, processed_search_parameters.location, query_results, data_sources_count,),)
+
+
+    def insert_access_token(self) -> None:
+        """Inserts a new access token into the database."""
+        token = uuid.uuid4().hex
+        expiration = datetime.now() + datetime.timedelta(minutes=5)
+        self.cursor.execute(
+            f"insert into access_tokens (token, expiration_date) values (%s, %s)",
+            (token, expiration),
+        )

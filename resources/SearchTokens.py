@@ -37,6 +37,7 @@ class SearchTokens(PsycopgResource):
         arg2 = url_params.get("arg2")
 
         cursor = self.psycopg2_connection.cursor()
+        # TODO: replace with DatabaseClient method insert_access_token()
         insert_access_token(cursor)
         response = perform_endpoint_logic(arg1, arg2, endpoint, cursor)
         self.psycopg2_connection.commit()
