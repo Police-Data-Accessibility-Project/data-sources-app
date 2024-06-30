@@ -581,4 +581,15 @@ class DatabaseClient:
         )
 
 
+    def add_new_session_token(self, session_token, email: str, expiration) -> None:
+        """
+        Inserts a session token into the database.
 
+        :param session_token: The session token.
+        :param email: User's email.
+        :param expiration: The session token's expiration.
+        """
+        self.cursor.execute(
+            f"insert into session_tokens (token, email, expiration_date) values (%s, %s, %s)",
+            (session_token, email, expiration),
+        )

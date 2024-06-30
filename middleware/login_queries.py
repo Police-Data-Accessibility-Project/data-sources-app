@@ -48,7 +48,7 @@ def try_logging_in(cursor: PgCursor, email: str, password: str) -> Response:
     :param password: User's password.
     :return: A response object with a message and status code.
     """
-    # TODO: replace with DatabaseClient method get_user_info()
+    # TODO: Replace with DatabaseClient method get_user_info()
     user_info = get_user_info(cursor, email)
     if check_password_hash(user_info["password_digest"], password):
         token = create_session_token(cursor, user_info["id"], email)
@@ -61,7 +61,7 @@ def try_logging_in(cursor: PgCursor, email: str, password: str) -> Response:
 
 
 # DatabaseClient.get_role_by_email()
-# TODO: refactor this logic to call get_role_by_email() to retrieve the user's role,
+# TODO: Refactor this logic to call get_role_by_email() to retrieve the user's role,
 #       then determine if the user is an admin based on the return
 def is_admin(db_client: DatabaseClient, email: str) -> bool:
     """
@@ -82,6 +82,8 @@ def is_admin(db_client: DatabaseClient, email: str) -> bool:
         raise UserNotFoundError(email)
 
 
+# DatabaseClient.add_new_session_token()
+# TODO: Call add_new_session_token() instead of using cursor.execute()
 def create_session_token(cursor: PgCursor, user_id: int, email: str) -> str:
     """
     Generates a session token for a user and inserts it into the session_tokens table.
