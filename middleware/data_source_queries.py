@@ -104,6 +104,8 @@ DATA_SOURCES_MAP_COLUMN = [
 def get_approved_data_sources_wrapper(cursor: psycopg2.extensions.cursor) -> Response:
     # TODO: Replace with DatabaseClient method get_approved_data_sources()
     # NOTE: Original method converted return to a dictionary, logic not yet carried over
+    # NOTE: Functionality changed, columns should be calculated beforehand
+    #       and sent to the function as a list of strings 
     data_source_matches = get_approved_data_sources(cursor)
 
     return make_response(
@@ -194,6 +196,8 @@ def data_source_by_id_query(
     :return: A dictionary with the data source details after processing.
     """
     # TODO: Replace with DatabaseClient method get_data_source_by_id()
+    # NOTE: Functionality changed, columns should be calculated beforehand
+    #       and sent to the function as a list of strings
     result = data_source_by_id_results(cursor, data_source_id)
     if not result:
         raise DataSourceNotFoundError("The specified data source was not found.")

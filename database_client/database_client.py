@@ -6,79 +6,10 @@ import uuid
 
 import psycopg2
 
-from middleware.quick_search_query import DataSourceMatches, SearchParameters
 from middleware.custom_exceptions import UserNotFoundError, TokenNotFoundError
+from middleware.data_source_queries import DATA_SOURCES_APPROVED_COLUMNS
+from middleware.quick_search_query import DataSourceMatches, SearchParameters
 
-
-DATA_SOURCES_APPROVED_COLUMNS = [
-    "name",
-    "submitted_name",
-    "description",
-    "record_type",
-    "source_url",
-    "agency_supplied",
-    "supplying_entity",
-    "agency_originated",
-    "originating_entity",
-    "agency_aggregation",
-    "coverage_start",
-    "coverage_end",
-    "source_last_updated",
-    "retention_schedule",
-    "detail_level",
-    "number_of_records_available",
-    "size",
-    "access_type",
-    "data_portal_type",
-    "record_format",
-    "update_frequency",
-    "update_method",
-    "tags",
-    "readme_url",
-    "scraper_url",
-    "data_source_created",
-    "airtable_source_last_modified",
-    "url_status",
-    "rejection_note",
-    "last_approval_editor",
-    "agency_described_submitted",
-    "agency_described_not_in_database",
-    "approval_status",
-    "record_type_other",
-    "data_portal_type_other",
-    "records_not_online",
-    "data_source_request",
-    "url_button",
-    "tags_other",
-    "access_notes",
-    "last_cached",
-]
-
-AGENCY_APPROVED_COLUMNS = [
-    "homepage_url",
-    "count_data_sources",
-    "agency_type",
-    "multi_agency",
-    "submitted_name",
-    "jurisdiction_type",
-    "state_iso",
-    "municipality",
-    "zip_code",
-    "county_fips",
-    "county_name",
-    "lat",
-    "lng",
-    "data_sources",
-    "no_web_presence",
-    "airtable_agency_last_modified",
-    "data_sources_last_updated",
-    "approved",
-    "rejection_reason",
-    "last_approval_editor",
-    "agency_created",
-    "county_airtable_uid",
-    "defunct_year",
-]
 
 RESTRICTED_COLUMNS = [
     "rejection_note",
@@ -272,26 +203,15 @@ class DatabaseClient:
         )
 
 
-    def get_data_source_by_id(self, data_source_id: str) -> tuple[Any, ...]:
+    def get_data_source_by_id(self, columns: list[str], data_source_id: str) -> Optional[tuple[Any, ...]]:
         """
         Get a data source by its ID, including related agency information from the database.
 
         :param data_source_id: The unique identifier for the data source.
+        :param columns: List of column names to use in the SELECT statement.
         :return: A dictionary containing the data source and its related agency details. None if not found.
         """
-        data_source_approved_columns = [
-            f"data_sources.{approved_column}"
-            for approved_column in DATA_SOURCES_APPROVED_COLUMNS
-        ]
-        agencies_approved_columns = [
-            f"agencies.{field}" for field in AGENCY_APPROVED_COLUMNS
-        ]
-        all_approved_columns = data_source_approved_columns + agencies_approved_columns
-        all_approved_columns.append("data_sources.airtable_uid as data_source_id")
-        all_approved_columns.append("agencies.airtable_uid as agency_id")
-        all_approved_columns.append("agencies.name as agency_name")
-
-        joined_column_names = ", ".join(all_approved_columns)
+        joined_column_names = ", ".join(columns)
         sql_query = """
             SELECT
                 %s
@@ -311,20 +231,14 @@ class DatabaseClient:
         return result
 
 
-    def get_approved_data_sources(self) -> list[tuple[Any, ...]]:
+    def get_approved_data_sources(self, columns: list[str]) -> list[tuple[Any, ...]]:
         """
         Fetches all approved data sources and their related agency information from the database.
 
+        :param columns: List of column names to use in the SELECT statement.
         :return: A list of tuples, each containing details of a data source and its related agency.
         """
-        data_source_approved_columns = [
-            f"data_sources.{approved_column}"
-            for approved_column in DATA_SOURCES_APPROVED_COLUMNS
-        ]
-        data_source_approved_columns.append("agencies.name as agency_name")
-
-        joined_column_names = ", ".join(data_source_approved_columns)
-
+        joined_column_names = ", ".join(columns)
         sql_query = """
             SELECT
                 %s
@@ -351,7 +265,6 @@ class DatabaseClient:
         :return: A list of tuples, each containing details of a data source.
         """
         joined_column_names = ", ".join(DATA_SOURCES_APPROVED_COLUMNS)
-
         sql_query = """
             SELECT
                 %s
