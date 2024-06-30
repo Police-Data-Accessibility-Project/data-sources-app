@@ -152,7 +152,7 @@ def quick_search_query(
         "count": len(processed_data_source_matches.converted),
         "data": processed_data_source_matches.converted,
     }
-
+    # TODO: replace with DatabaseClient method log_quick_search()
     log_query(
         cursor,
         data_sources["count"],
@@ -163,6 +163,7 @@ def quick_search_query(
     return data_sources
 
 
+# DatabaseClient.log_quick_search()
 def log_query(
     cursor,
     data_sources_count,
@@ -209,7 +210,7 @@ def get_data_source_matches(
     unaltered_results = unaltered_search_query(cursor, sp.search, sp.location)
     # TODO: replace with DatabaseClient method quick_search()
     # NOTE: functionality of unaltered_search_query() and spacy_search_query() combined into one function,
-    # search should be depluralized and location should be stripped before being passed
+    #       search should be depluralized and location should be stripped before being passed to quick_search()
     spacy_results = spacy_search_query(cursor, sp.search, sp.location)
     # Compare altered search term results with unaltered search term results, return the longer list
     results = (

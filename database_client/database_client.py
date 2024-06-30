@@ -6,6 +6,8 @@ from typing import Union, Optional
 import psycopg2
 import uuid
 
+from middleware.quick_search_query import DataSourceMatches, SearchParameters
+
 
 DATA_SOURCES_APPROVED_COLUMNS = [
     "name",
@@ -596,3 +598,18 @@ class DatabaseClient:
 
         return results
 
+
+    def log_quick_search(self, data_sources_count: int, processed_data_source_matches: DataSourceMatches, processed_search_parameters: SearchParameters) -> None:
+        """
+        Logs a quick search query in the database.
+
+        :param data_sources_count: Number of data sources in the search results.
+        :param processed_data_source_matches: DataSourceMatches namedtuple with a list of data sources processed so that the dates are converted to strings, and a list of resulting IDs.
+        :param processed_search_parameters: SearchParameters namedtuple with the search and location parameters
+        """
+        query_results = json.dumps(processed_data_source_matches.ids).replace("'", "")
+        sql_query = """
+            INSERT INTO quick_search_query_logs (search, location, results, result_count) 
+            VALUES (%s, %s, %s, %s)
+        """
+        self.cursor.execute(sql_query, (processed_search_parameters.search, processed_search_parameters.location, query_results, data_sources_count,),)
