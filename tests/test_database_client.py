@@ -184,3 +184,13 @@ def test_update_last_cached():
     # Fetch the data source from the database to confirm the change
 
     pytest.fail("Test not implemented")
+
+
+def test_unaltered_quick_search(live_database_client):
+    # Add new data sources to the database, some that satisfy the search criteria and some that don't
+
+    # Fetch the search results using the DatabaseClient method
+
+    # Confirm that all data sources that satisfy the search criteria are returned and those that don't are not returned
+
+    pytest.fail("Test not implemented")
