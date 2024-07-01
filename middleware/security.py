@@ -64,6 +64,7 @@ def validate_api_key(api_key: str, endpoint: str, method: str):
     except SessionTokenNotFoundError:
         delete_expired_access_tokens(cursor, psycopg2_connection)
         try:
+            # TODO: Replace with DatabaseClient method get_access_token()
             get_access_token(api_key, cursor)
             role = "user"
         except AccessTokenNotFoundError:
@@ -108,6 +109,7 @@ class AccessTokenNotFoundError(Exception):
     pass
 
 
+# DatabaseClient.get_access_token()
 def get_access_token(api_key, cursor) -> str:
     cursor.execute(f"select id, token from access_tokens where token = %s", (api_key,))
     results = cursor.fetchone()

@@ -9,6 +9,7 @@ import psycopg2
 from middleware.custom_exceptions import UserNotFoundError, TokenNotFoundError
 from middleware.data_source_queries import DATA_SOURCES_APPROVED_COLUMNS
 from middleware.quick_search_query import DataSourceMatches, SearchParameters
+from middleware.security import AccessTokenNotFoundError
 
 
 RESTRICTED_COLUMNS = [
@@ -568,7 +569,7 @@ class DatabaseClient:
         Retrieves user data by email.
 
         :param email: User's email.
-        :raises UserNotFoundError: If no user is found.
+        :raise UserNotFoundError: If no user is found.
         :return: UserInfo namedtuple containing the user's information.
         """
         self.cursor.execute(
@@ -622,3 +623,21 @@ class DatabaseClient:
         :param old_token: The session token.
         """
         self.cursor.execute(f"delete from session_tokens where token = '%s'", (old_token,))
+
+
+    AccessToken = namedtuple("AccessToken", ["id", "token"])
+
+
+    def get_access_token(self, api_key: str) -> AccessToken:
+        """
+        Retrieves an access token from the database.
+
+        :param api_key: The access token.
+        :raise AccessTokenNotFoundError: If the access token is not found.
+        :returns: AccessToken namedtuple with the ID and the access token.
+        """
+        self.cursor.execute(f"select id, token from access_tokens where token = %s", (api_key,))
+        results = self.cursor.fetchone()
+        if not results:
+            raise AccessTokenNotFoundError("Access token not found")
+        return self.AccessToken(id=results[0], token=results[1])
