@@ -557,7 +557,7 @@ class DatabaseClient:
 
     def get_quick_search_results(
         self, search: str, location: str
-    ) -> Optional[list[QuickSearchResults]]:
+    ) -> Optional[list[QuickSearchResult]]:
         """
         Executes the quick search SQL query with search and location terms.
 
