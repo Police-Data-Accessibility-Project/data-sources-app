@@ -219,6 +219,10 @@ def test_get_user_info(live_database_client):
 
     # Confirm the user is retrieved successfully
 
+    # Attempt to fetch non-existant user
+
+    # Assert UserNotFoundError is raised
+
     pytest.fail("Test not implemented")
 
 
@@ -238,5 +242,21 @@ def test_add_new_session_token(live_database_client):
     # Call the DatabaseClient method add the session token to the database
 
     # Fetch the new session token from the database to confirm it was added successfully
+
+    pytest.fail("Test not implemented")
+
+
+def test_get_user_info_by_session_token(live_database_client):
+    # Add a new user to the database
+
+    # Add a session token to the database associated with the user
+
+    # Fetch the user info using its session token with the DatabaseClient method
+
+    # Confirm the user is retrieved successfully
+
+    # Attempt to fetch user using non-existant token
+
+    # Assert TokenNotFoundError error is raised
 
     pytest.fail("Test not implemented")
