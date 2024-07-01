@@ -52,6 +52,7 @@ QUICK_SEARCH_SQL = """
 
 """
 
+
 class DatabaseClient:
 
     def __init__(self, cursor: psycopg2.extensions.cursor):
@@ -108,9 +109,7 @@ class DatabaseClient:
         row = self.cursor.fetchone()
         if row is None:
             return None
-        return self.ResetTokenInfo(
-            id=row[0], email=row[1], create_date=row[2]
-        )
+        return self.ResetTokenInfo(id=row[0], email=row[1], create_date=row[2])
 
     def add_reset_token(self, email: str, token: str):
         """
@@ -150,9 +149,7 @@ class DatabaseClient:
         row = self.cursor.fetchone()
         if row is None:
             return None
-        return self.SessionTokenInfo(
-            email=row[0], expiration_date=row[1]
-        )
+        return self.SessionTokenInfo(email=row[0], expiration_date=row[1])
 
     RoleInfo = namedtuple("RoleInfo", ["id", "role"])
 
@@ -169,10 +166,7 @@ class DatabaseClient:
         row = self.cursor.fetchone()
         if row is None:
             return None
-        return self.RoleInfo(
-            id=row[0], role=row[1]
-        )
-
+        return self.RoleInfo(id=row[0], role=row[1])
 
     def get_role_by_email(self, email: str) -> RoleInfo:
         """
@@ -186,11 +180,8 @@ class DatabaseClient:
         results = cursor.fetchone()
         if len(results) == 0:
             raise UserNotFoundError(email)
-        
-        return self.RoleInfo(
-            id=None, role=results[0]
-        )
 
+        return self.RoleInfo(id=None, role=results[0])
 
     def update_user_api_key(self, api_key: str, user_id: int):
         """
@@ -203,8 +194,9 @@ class DatabaseClient:
             (api_key, user_id),
         )
 
-
-    def get_data_source_by_id(self, columns: list[str], data_source_id: str) -> Optional[tuple[Any, ...]]:
+    def get_data_source_by_id(
+        self, columns: list[str], data_source_id: str
+    ) -> Optional[tuple[Any, ...]]:
         """
         Get a data source by its ID, including related agency information from the database.
 
@@ -226,11 +218,16 @@ class DatabaseClient:
                 data_sources.approval_status = 'approved' AND data_sources.airtable_uid = %s
         """
 
-        self.cursor.execute(sql_query, (joined_column_names, data_source_id,))
+        self.cursor.execute(
+            sql_query,
+            (
+                joined_column_names,
+                data_source_id,
+            ),
+        )
         result = self.cursor.fetchone()
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return result
-
 
     def get_approved_data_sources(self, columns: list[str]) -> list[tuple[Any, ...]]:
         """
@@ -258,7 +255,6 @@ class DatabaseClient:
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return results
 
-    
     def get_needs_identification_data_sources(self) -> list[tuple[Any, ...]]:
         """
         Returns a list of data sources that need identification from the database.
@@ -279,7 +275,6 @@ class DatabaseClient:
         results = self.cursor.fetchall()
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return results
-
 
     def create_new_data_source_query(self, data: dict) -> str:
         """
@@ -307,7 +302,6 @@ class DatabaseClient:
 
         return sql_query
 
-
     def add_new_data_source(self, data: dict) -> None:
         """
         Processes a request to add a new data source.
@@ -316,7 +310,6 @@ class DatabaseClient:
         """
         sql_query = self.create_new_data_source_query(data)
         self.cursor.execute(sql_query)
-
 
     def update_data_source(self, data: dict, data_source_id: str) -> None:
         """
@@ -327,7 +320,6 @@ class DatabaseClient:
         """
         sql_query = self.create_data_source_update_query(data, data_source_id)
         self.cursor.execute(sql_query)
-
 
     def create_data_source_update_query(self, data: dict, data_source_id: str) -> str:
         """
@@ -351,9 +343,21 @@ class DatabaseClient:
         """
         return sql_query
 
-
-    MapInfo = namedtuple("MapInfo", ["data_source_id", "data_source_name", "agency_id", "agency_name", "state", "municipality", "county", "record_type", "lat", "lng"])
-
+    MapInfo = namedtuple(
+        "MapInfo",
+        [
+            "data_source_id",
+            "data_source_name",
+            "agency_id",
+            "agency_name",
+            "state",
+            "municipality",
+            "county",
+            "record_type",
+            "lat",
+            "lng",
+        ],
+    )
 
     def get_data_sources_for_map(self) -> list[MapInfo]:
         """
@@ -385,10 +389,23 @@ class DatabaseClient:
         self.cursor.execute(sql_query)
         data_sources = self.cursor.fetchall()
 
-        results = [self.MapInfo(data_source_id=row[0], data_source_name=row[1], agency_id=row[2], agency_name=row[3], state=row[4], municipality=row[5], county=row[6], record_type=row[7], lat=row[8], lng=row[9]) for row in data_sources]
+        results = [
+            self.MapInfo(
+                data_source_id=row[0],
+                data_source_name=row[1],
+                agency_id=row[2],
+                agency_name=row[3],
+                state=row[4],
+                municipality=row[5],
+                county=row[6],
+                record_type=row[7],
+                lat=row[8],
+                lng=row[9],
+            )
+            for row in data_sources
+        ]
 
         return results
-
 
     def get_agencies_from_page(self, page: int) -> list[tuple[Any, ...]]:
         """
@@ -427,11 +444,13 @@ class DatabaseClient:
                 airtable_uid
             FROM agencies where approved = 'TRUE' limit 1000 offset %s
         """
-        self.cursor.execute(sql_query, (offset,),)
+        self.cursor.execute(
+            sql_query,
+            (offset,),
+        )
         results = self.cursor.fetchall()
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return results
-
 
     def get_offset(page: int) -> int:
         """
@@ -446,9 +465,10 @@ class DatabaseClient:
         """
         return (page - 1) * 1000
 
-
-    ArchiveInfo = namedtuple("ArchiveInfo", ["id", "url", "update_frequency", "last_cached", "broken_url_as_of"])
-
+    ArchiveInfo = namedtuple(
+        "ArchiveInfo",
+        ["id", "url", "update_frequency", "last_cached", "broken_url_as_of"],
+    )
 
     def get_data_sources_to_archive(self) -> list[ArchiveInfo]:
         """
@@ -456,7 +476,7 @@ class DatabaseClient:
 
         A data source is selected for archival if:
         (the data source has not been archived previously OR the data source is updated regularly)
-        AND the source url is not broken 
+        AND the source url is not broken
         AND the source url is not null.
 
         :return: A list of ArchiveInfo namedtuples, each containing archive details of a data source.
@@ -476,12 +496,22 @@ class DatabaseClient:
         self.cursor.execute(sql_query)
         data_sources = self.cursor.fetchall()
 
-        results = [self.ArchiveInfo(id=row[0], url=row[1], update_frequency=row[2], last_cached=row[3], broken_url_as_of=row[4]) for row in data_sources]
+        results = [
+            self.ArchiveInfo(
+                id=row[0],
+                url=row[1],
+                update_frequency=row[2],
+                last_cached=row[3],
+                broken_url_as_of=row[4],
+            )
+            for row in data_sources
+        ]
 
         return results
 
-
-    def update_url_status_to_broken(self, id: str, broken_as_of: str, last_cached: str) -> None:
+    def update_url_status_to_broken(
+        self, id: str, broken_as_of: str, last_cached: str
+    ) -> None:
         """
         Updates the data_sources table setting the url_status to 'broken' for a given id.
 
@@ -499,7 +529,6 @@ class DatabaseClient:
         """
         self.cursor.execute(sql_query, (broken_as_of, last_cached, id))
 
-
     def update_last_cached(self, id: str, last_cached: str) -> None:
         """
         Updates the last_cached field in the data_sources table for a given id.
@@ -509,12 +538,28 @@ class DatabaseClient:
         """
         sql_query = "UPDATE data_sources SET last_cached = %s WHERE airtable_uid = %s"
         self.cursor.execute(sql_query, (last_cached, id))
-    
 
-    QuickSearchResult = namedtuple("QuickSearchResults", ["id", "data_source_name", "description", "record_type", "url", "format", "coverage_start", "coverage_end", "agency_supplied", "agency_name", "municipality", "state"])
+    QuickSearchResult = namedtuple(
+        "QuickSearchResults",
+        [
+            "id",
+            "data_source_name",
+            "description",
+            "record_type",
+            "url",
+            "format",
+            "coverage_start",
+            "coverage_end",
+            "agency_supplied",
+            "agency_name",
+            "municipality",
+            "state",
+        ],
+    )
 
-
-    def get_quick_search_results(self, search: str, location: str) -> Optional[list[QuickSearchResults]]:
+    def get_quick_search_results(
+        self, search: str, location: str
+    ) -> Optional[list[QuickSearchResults]]:
         """
         Executes the quick search SQL query with search and location terms.
 
@@ -528,12 +573,32 @@ class DatabaseClient:
         self.cursor.execute(sql_query)
         data_sources = self.cursor.fetchall()
 
-        results = [self.QuickSearchResult(id=row[0], data_source_name=row[1], description=row[2], record_type=row[3], url=row[4], format=row[5], coverage_start=row[6], coverage_end=row[7], agency_supplied=row[8], agency_name=row[9], municipality=row[10], state=row[11]) for row in data_sources]
+        results = [
+            self.QuickSearchResult(
+                id=row[0],
+                data_source_name=row[1],
+                description=row[2],
+                record_type=row[3],
+                url=row[4],
+                format=row[5],
+                coverage_start=row[6],
+                coverage_end=row[7],
+                agency_supplied=row[8],
+                agency_name=row[9],
+                municipality=row[10],
+                state=row[11],
+            )
+            for row in data_sources
+        ]
 
         return results
 
-
-    def add_quick_search_log(self, data_sources_count: int, processed_data_source_matches: DataSourceMatches, processed_search_parameters: SearchParameters) -> None:
+    def add_quick_search_log(
+        self,
+        data_sources_count: int,
+        processed_data_source_matches: DataSourceMatches,
+        processed_search_parameters: SearchParameters,
+    ) -> None:
         """
         Logs a quick search query in the database.
 
@@ -546,8 +611,15 @@ class DatabaseClient:
             INSERT INTO quick_search_query_logs (search, location, results, result_count) 
             VALUES (%s, %s, %s, %s)
         """
-        self.cursor.execute(sql_query, (processed_search_parameters.search, processed_search_parameters.location, query_results, data_sources_count,),)
-
+        self.cursor.execute(
+            sql_query,
+            (
+                processed_search_parameters.search,
+                processed_search_parameters.location,
+                query_results,
+                data_sources_count,
+            ),
+        )
 
     def add_new_access_token(self) -> None:
         """Inserts a new access token into the database."""
@@ -560,9 +632,7 @@ class DatabaseClient:
             (token, expiration),
         )
 
-
     UserInfo = namedtuple("UserInfo", ["id", "password_digest", "api_key"])
-
 
     def get_user_info(self, email: str) -> UserInfo:
         """
@@ -580,9 +650,10 @@ class DatabaseClient:
             raise UserNotFoundError(email)
 
         return self.UserInfo(
-            id=results[0], password_digest=results[1], api_key=results[2],
+            id=results[0],
+            password_digest=results[1],
+            api_key=results[2],
         )
-
 
     def add_new_session_token(self, session_token, email: str, expiration) -> None:
         """
@@ -596,10 +667,8 @@ class DatabaseClient:
             f"insert into session_tokens (token, email, expiration_date) values (%s, %s, %s)",
             (session_token, email, expiration),
         )
-    
 
     SessionTokenUserData = namedtuple("SessionTokenUserData", ["id", "email"])
-
 
     def get_user_info_by_session_token(self, token: str) -> SessionTokenUserData:
         """
@@ -609,12 +678,13 @@ class DatabaseClient:
         :raise TokenNotFoundError: If the session token is not found.
         :return: SessionTokenUserData namedtuple with the user's ID and email.
         """
-        self.cursor.execute(f"select id, email from session_tokens where token = %s", (token,))
+        self.cursor.execute(
+            f"select id, email from session_tokens where token = %s", (token,)
+        )
         results = self.cursor.fetchone()
         if len(results) == 0:
             raise TokenNotFoundError("The specified token was not found.")
         return self.SessionTokenUserData(id=results[0], email=results[1])
-
 
     def delete_session_token(self, old_token: str) -> None:
         """
@@ -622,11 +692,11 @@ class DatabaseClient:
 
         :param old_token: The session token.
         """
-        self.cursor.execute(f"delete from session_tokens where token = '%s'", (old_token,))
-
+        self.cursor.execute(
+            f"delete from session_tokens where token = '%s'", (old_token,)
+        )
 
     AccessToken = namedtuple("AccessToken", ["id", "token"])
-
 
     def get_access_token(self, api_key: str) -> AccessToken:
         """
@@ -636,12 +706,13 @@ class DatabaseClient:
         :raise AccessTokenNotFoundError: If the access token is not found.
         :returns: AccessToken namedtuple with the ID and the access token.
         """
-        self.cursor.execute(f"select id, token from access_tokens where token = %s", (api_key,))
+        self.cursor.execute(
+            f"select id, token from access_tokens where token = %s", (api_key,)
+        )
         results = self.cursor.fetchone()
         if not results:
             raise AccessTokenNotFoundError("Access token not found")
         return self.AccessToken(id=results[0], token=results[1])
-
 
     def delete_expired_access_tokens(self) -> None:
         """Deletes all expired access tokens from the database."""
