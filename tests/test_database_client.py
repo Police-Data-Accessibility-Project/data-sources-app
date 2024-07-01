@@ -270,3 +270,17 @@ def test_delete_session_token(live_database_client):
     # Confirm the session token was deleted by attempting to fetch it
 
     pytest.fail("Test not implemented")
+
+
+def test_get_access_token(live_database_client):
+    # Add a new access token to the database
+
+    # Fetch the access token using the DatabaseClient method
+
+    # Confirm that the access token is retrieved
+
+    # Attempt to fetch a non-existant access token
+
+    # Assert AccessTokenNotFoundError is raised
+
+    pytest.fail("Test not implemented")
