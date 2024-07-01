@@ -52,6 +52,7 @@ class DataSourceById(PsycopgResource):
         """
         data = request.get_json()
         with self.psycopg2_connection.cursor() as cursor:
+            # TODO: Replace with DatabaseClient method update_data_source()
             result = update_data_source(cursor, data, data_source_id)
             self.psycopg2_connection.commit()
 
@@ -87,6 +88,7 @@ class DataSources(PsycopgResource):
         """
         data = request.get_json()
         with self.psycopg2_connection.cursor() as cursor:
+            # TODO: Replace with DatabaseClient method add_new_data_source()
             result = add_new_data_source(cursor, data)
             self.psycopg2_connection.commit()
 
@@ -99,6 +101,9 @@ class DataSourcesNeedsIdentification(PsycopgResource):
     @api_required
     def get(self):
         with self.psycopg2_connection.cursor() as cursor:
+            # TODO: Replace with DatabaseClient method get_needs_identification_data_sources()
+            # NOTE: Original method converted return to a dictionary, logic not yet carried over
+            # NOTE: Columns to return should be passed to method as a list of stringgs
             data_source_matches = needs_identification_data_sources(cursor)
 
         data_sources = {

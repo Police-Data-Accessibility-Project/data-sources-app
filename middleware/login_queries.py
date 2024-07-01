@@ -17,6 +17,7 @@ from middleware.custom_exceptions import UserNotFoundError, TokenNotFoundError
 from middleware.util import get_env_variable
 
 
+# DatabaseClient.get_user_info()
 def get_user_info(cursor: PgCursor, email: str) -> Dict[str, Union[int, str]]:
     """
     Retrieves user data by email.
@@ -47,6 +48,7 @@ def try_logging_in(cursor: PgCursor, email: str, password: str) -> Response:
     :param password: User's password.
     :return: A response object with a message and status code.
     """
+    # TODO: Replace with DatabaseClient method get_user_info()
     user_info = get_user_info(cursor, email)
     if check_password_hash(user_info["password_digest"], password):
         token = create_session_token(cursor, user_info["id"], email)
@@ -58,6 +60,9 @@ def try_logging_in(cursor: PgCursor, email: str, password: str) -> Response:
     )
 
 
+# DatabaseClient.get_role_by_email()
+# TODO: Refactor this logic to call get_role_by_email() to retrieve the user's role,
+#       then determine if the user is an admin based on the return
 def is_admin(db_client: DatabaseClient, email: str) -> bool:
     """
     Checks if a user has an admin role.
@@ -77,6 +82,8 @@ def is_admin(db_client: DatabaseClient, email: str) -> bool:
         raise UserNotFoundError(email)
 
 
+# DatabaseClient.add_new_session_token()
+# TODO: Call add_new_session_token() instead of using cursor.execute()
 def create_session_token(cursor: PgCursor, user_id: int, email: str) -> str:
     """
     Generates a session token for a user and inserts it into the session_tokens table.
@@ -106,6 +113,7 @@ def create_session_token(cursor: PgCursor, user_id: int, email: str) -> str:
 SessionTokenUserData = namedtuple("SessionTokenUserData", ["id", "email"])
 
 
+# DatabaseClient.get_user_info_by_session_token()
 def get_session_token_user_data(cursor: PgCursor, token: str) -> SessionTokenUserData:
     """
     Retrieves session token data.
@@ -121,6 +129,7 @@ def get_session_token_user_data(cursor: PgCursor, token: str) -> SessionTokenUse
     return SessionTokenUserData(id=results[0][0], email=results[0][1])
 
 
+# DatabaseClient.delete_session_token()
 def delete_session_token(cursor, old_token):
     cursor.execute(f"delete from session_tokens where token = '{old_token}'")
 
@@ -138,12 +147,15 @@ def get_api_key_for_user(cursor: PgCursor, email: str, password: str) -> Respons
     :param password: User's password.
     :return: A response object with a message and status code.
     """
+    # TODO: Replace with DatabaseClient method get_user_info()
+    # NOTE: Original method returned a dictionary, 
+    #       parts of this method should be updated to work with namedtuple
     user_data = get_user_info(cursor, email)
 
     if check_password_hash(user_data["password_digest"], password):
         api_key = generate_api_key()
         user_id = str(user_data["id"])
-        # TODO: Replace with DatabaseClient.update_user_api_key()
+        # TODO: Replace with DatabaseClient method update_user_api_key()
         update_api_key(cursor, api_key, user_id)
         payload = {"api_key": api_key}
         return make_response(payload, HTTPStatus.OK)
@@ -153,15 +165,18 @@ def get_api_key_for_user(cursor: PgCursor, email: str, password: str) -> Respons
     )
 
 
+# DatabaseClient.update_user_api_key()
 def update_api_key(cursor, api_key, user_id):
     cursor.execute("UPDATE users SET api_key = %s WHERE id = %s", (api_key, user_id))
 
 
 def refresh_session(cursor: PgCursor, old_token: str) -> Response:
     try:
+        # TODO: Replace with DatabaseClient method get_user_info_by_session_token()
         user_data = get_session_token_user_data(cursor, old_token)
     except TokenNotFoundError:
         return make_response({"message": "Invalid session token"}, HTTPStatus.FORBIDDEN)
+        # TODO: Replace with DatabaseClient method delete_session_token()
     delete_session_token(cursor, old_token)
     token = create_session_token(cursor, user_data.id, user_data.email)
     return make_response(

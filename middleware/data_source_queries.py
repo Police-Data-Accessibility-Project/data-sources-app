@@ -102,6 +102,10 @@ DATA_SOURCES_MAP_COLUMN = [
 
 
 def get_approved_data_sources_wrapper(cursor: psycopg2.extensions.cursor) -> Response:
+    # TODO: Replace with DatabaseClient method get_approved_data_sources()
+    # NOTE: Original method converted return to a dictionary, logic not yet carried over
+    # NOTE: Functionality changed, columns should be calculated beforehand
+    #       and sent to the function as a list of strings 
     data_source_matches = get_approved_data_sources(cursor)
 
     return make_response(
@@ -122,6 +126,8 @@ def data_source_by_id_wrapper(arg, cursor: psycopg2.extensions.cursor) -> Respon
 
 
 def get_data_sources_for_map_wrapper(cursor: psycopg2.extensions.cursor) -> Response:
+    # TODO: Replace with DatabaseClient function get_data_sources_for_map()
+    # NOTE: Original method converted return to a dictionary, logic not yet carried over
     data_source_details = get_data_sources_for_map(cursor)
     return make_response(
         {
@@ -132,6 +138,7 @@ def get_data_sources_for_map_wrapper(cursor: psycopg2.extensions.cursor) -> Resp
     )
 
 
+# DatabaseClient.get_data_source_by_id()
 def data_source_by_id_results(
     cursor: psycopg2.extensions.cursor, data_source_id: str
 ) -> Union[tuple[Any, ...], None]:
@@ -188,6 +195,9 @@ def data_source_by_id_query(
     :param cursor: A psycopg2 cursor object to a PostgreSQL database.
     :return: A dictionary with the data source details after processing.
     """
+    # TODO: Replace with DatabaseClient method get_data_source_by_id()
+    # NOTE: Functionality changed, columns should be calculated beforehand
+    #       and sent to the function as a list of strings
     result = data_source_by_id_results(cursor, data_source_id)
     if not result:
         raise DataSourceNotFoundError("The specified data source was not found.")
@@ -205,6 +215,7 @@ def data_source_by_id_query(
     return data_source_details
 
 
+# DatabaseClient.update_data_source()
 def update_data_source(
     cursor: psycopg2.extensions.cursor, data: dict, data_source_id: str
 ) -> Response:
@@ -223,6 +234,7 @@ def update_data_source(
     )
 
 
+# DatabaseClient.create_data_source_update_query()
 def create_data_source_update_query(data: dict, data_source_id: str) -> str:
     restricted_columns = get_restricted_columns()
     data_to_update = ""
@@ -241,6 +253,7 @@ def create_data_source_update_query(data: dict, data_source_id: str) -> str:
     return sql_query
 
 
+# DatabaseClient.create_new_data_source_query()
 def create_new_data_source_query(data: dict) -> str:
     restricted_columns = get_restricted_columns()
     column_names = ""
@@ -264,6 +277,7 @@ def create_new_data_source_query(data: dict) -> str:
     return sql_query
 
 
+# DatabaseClient.add_new_data_source()
 def add_new_data_source(cursor: psycopg2.extensions.cursor, data: dict) -> Response:
     """
     Processes a request to add a new data source
@@ -288,6 +302,7 @@ def get_restricted_columns():
     return restricted_columns
 
 
+# DatabaseClient.get_approved_data_sources()
 def get_approved_data_sources(
     cursor: psycopg2.extensions.cursor,
 ) -> list[tuple[Any, ...]]:
@@ -325,6 +340,7 @@ def get_approved_data_sources(
     return convert_data_source_matches(DATA_SOURCES_OUTPUT_COLUMNS, results)
 
 
+# DatabaseClient.get_needs_identification_data_ources()
 def needs_identification_data_sources(cursor: psycopg2.extensions.cursor) -> dict:
     """
     Returns a list of data sources that need identification
@@ -347,6 +363,7 @@ def needs_identification_data_sources(cursor: psycopg2.extensions.cursor) -> dic
     return convert_data_source_matches(DATA_SOURCES_OUTPUT_COLUMNS, results)
 
 
+# DatabaseClient.get_data_sources_for_map()
 def get_data_sources_for_map(cursor: psycopg2.extensions.cursor) -> list:
     """
     Returns a list of data sources with relevant info for the map

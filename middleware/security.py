@@ -62,8 +62,11 @@ def validate_api_key(api_key: str, endpoint: str, method: str):
             return
 
     except SessionTokenNotFoundError:
+        # TODO: Replace with DatabaseClient method delete_expired_access_tokens
+        # NOTE: Should call psycopg2_connection.commit() after doing so
         delete_expired_access_tokens(cursor, psycopg2_connection)
         try:
+            # TODO: Replace with DatabaseClient method get_access_token()
             get_access_token(api_key, cursor)
             role = "user"
         except AccessTokenNotFoundError:
@@ -104,10 +107,12 @@ def get_session_token(api_key, db_client: DatabaseClient) -> SessionTokenResults
     return session_token_results
 
 
+# middleware.custom_exceptions.AccessTokenNotFoundError
 class AccessTokenNotFoundError(Exception):
     pass
 
 
+# DatabaseClient.get_access_token()
 def get_access_token(api_key, cursor) -> str:
     cursor.execute(f"select id, token from access_tokens where token = %s", (api_key,))
     results = cursor.fetchone()
@@ -116,6 +121,7 @@ def get_access_token(api_key, cursor) -> str:
     return results[1]
 
 
+# DatabaseClient.delete_expired_access_tokens()
 def delete_expired_access_tokens(cursor, psycopg2_connection):
     cursor.execute(f"delete from access_tokens where expiration_date < NOW()")
     psycopg2_connection.commit()
