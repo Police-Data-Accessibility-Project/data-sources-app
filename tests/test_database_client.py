@@ -196,7 +196,7 @@ def test_get_quick_search_results(live_database_client):
     pytest.fail("Test not implemented")
 
 
-def test_insert_quick_search_log(live_database_client):
+def test_add_quick_search_log(live_database_client):
     # Add a quick search log to the database using the DatabaseClient method
 
     # Fetch the quick search logs to confirm it was added successfully

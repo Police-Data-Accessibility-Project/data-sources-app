@@ -165,6 +165,7 @@ def get_api_key_for_user(cursor: PgCursor, email: str, password: str) -> Respons
     )
 
 
+# DatabaseClient.update_user_api_key()
 def update_api_key(cursor, api_key, user_id):
     cursor.execute("UPDATE users SET api_key = %s WHERE id = %s", (api_key, user_id))
 

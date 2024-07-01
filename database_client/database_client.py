@@ -532,7 +532,7 @@ class DatabaseClient:
         return results
 
 
-    def insert_quick_search_log(self, data_sources_count: int, processed_data_source_matches: DataSourceMatches, processed_search_parameters: SearchParameters) -> None:
+    def add_quick_search_log(self, data_sources_count: int, processed_data_source_matches: DataSourceMatches, processed_search_parameters: SearchParameters) -> None:
         """
         Logs a quick search query in the database.
 
