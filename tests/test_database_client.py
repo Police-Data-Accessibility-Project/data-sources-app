@@ -284,3 +284,13 @@ def test_get_access_token(live_database_client):
     # Assert AccessTokenNotFoundError is raised
 
     pytest.fail("Test not implemented")
+
+
+def test_delete_expired_access_tokens(live_database_client):
+    # Add new access tokens to the database, at least two expired and one unexpired
+
+    # Delete the expired access tokens using the DatabaseClient method
+
+    # Confirm that only the expired access tokens were deleted and that all expired tokens were deleted
+
+    pytest.fail("Test not implemented")
