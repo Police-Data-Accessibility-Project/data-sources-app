@@ -107,6 +107,7 @@ def get_session_token(api_key, db_client: DatabaseClient) -> SessionTokenResults
     return session_token_results
 
 
+# middleware.custom_exceptions.AccessTokenNotFoundError
 class AccessTokenNotFoundError(Exception):
     pass
 

@@ -13,3 +13,7 @@ class TokenNotFoundError(Exception):
     """Raised when the token is not found in the database."""
 
     pass
+
+
+class AccessTokenNotFoundError(Exception):
+    pass

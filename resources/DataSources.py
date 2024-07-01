@@ -103,6 +103,7 @@ class DataSourcesNeedsIdentification(PsycopgResource):
         with self.psycopg2_connection.cursor() as cursor:
             # TODO: Replace with DatabaseClient method get_needs_identification_data_sources()
             # NOTE: Original method converted return to a dictionary, logic not yet carried over
+            # NOTE: Columns to return should be passed to method as a list of stringgs
             data_source_matches = needs_identification_data_sources(cursor)
 
         data_sources = {

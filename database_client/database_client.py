@@ -6,10 +6,7 @@ import uuid
 
 import psycopg2
 
-from middleware.custom_exceptions import UserNotFoundError, TokenNotFoundError
-from middleware.data_source_queries import DATA_SOURCES_APPROVED_COLUMNS
-from middleware.quick_search_query import DataSourceMatches, SearchParameters
-from middleware.security import AccessTokenNotFoundError
+from middleware.custom_exceptions import UserNotFoundError, TokenNotFoundError, AccessTokenNotFoundError
 
 
 RESTRICTED_COLUMNS = [
@@ -255,13 +252,14 @@ class DatabaseClient:
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return results
 
-    def get_needs_identification_data_sources(self) -> list[tuple[Any, ...]]:
+    def get_needs_identification_data_sources(self, columns: list[str]) -> list[tuple[Any, ...]]:
         """
         Returns a list of data sources that need identification from the database.
 
+        :param columns: List of column names to use in the SELECT statement.
         :return: A list of tuples, each containing details of a data source.
         """
-        joined_column_names = ", ".join(DATA_SOURCES_APPROVED_COLUMNS)
+        joined_column_names = ", ".join(columns)
         sql_query = """
             SELECT
                 %s
@@ -592,6 +590,9 @@ class DatabaseClient:
         ]
 
         return results
+
+    DataSourceMatches = namedtuple("DataSourceMatches", ["converted", "ids"])
+    SearchParameters = namedtuple("SearchParameters", ["search", "location"])
 
     def add_quick_search_log(
         self,
