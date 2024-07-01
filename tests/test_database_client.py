@@ -260,3 +260,13 @@ def test_get_user_info_by_session_token(live_database_client):
     # Assert TokenNotFoundError error is raised
 
     pytest.fail("Test not implemented")
+
+
+def test_delete_session_token(live_database_client):
+    # Add a new session token to the database
+
+    # Delete the session token with the DatabaseClient method
+
+    # Confirm the session token was deleted by attempting to fetch it
+
+    pytest.fail("Test not implemented")
