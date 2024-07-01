@@ -641,3 +641,8 @@ class DatabaseClient:
         if not results:
             raise AccessTokenNotFoundError("Access token not found")
         return self.AccessToken(id=results[0], token=results[1])
+
+
+    def delete_expired_access_tokens(self) -> None:
+        """Deletes all expired access tokens from the database."""
+        self.cursor.execute(f"delete from access_tokens where expiration_date < NOW()")
