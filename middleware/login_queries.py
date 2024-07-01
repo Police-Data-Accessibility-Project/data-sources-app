@@ -113,6 +113,7 @@ def create_session_token(cursor: PgCursor, user_id: int, email: str) -> str:
 SessionTokenUserData = namedtuple("SessionTokenUserData", ["id", "email"])
 
 
+# DatabaseClient.get_user_info_by_session_token()
 def get_session_token_user_data(cursor: PgCursor, token: str) -> SessionTokenUserData:
     """
     Retrieves session token data.
@@ -169,6 +170,7 @@ def update_api_key(cursor, api_key, user_id):
 
 def refresh_session(cursor: PgCursor, old_token: str) -> Response:
     try:
+        # TODO: Replace with DatabaseClient.get_user_info_by_session_token()
         user_data = get_session_token_user_data(cursor, old_token)
     except TokenNotFoundError:
         return make_response({"message": "Invalid session token"}, HTTPStatus.FORBIDDEN)

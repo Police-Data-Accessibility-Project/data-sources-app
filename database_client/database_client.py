@@ -593,3 +593,21 @@ class DatabaseClient:
             f"insert into session_tokens (token, email, expiration_date) values (%s, %s, %s)",
             (session_token, email, expiration),
         )
+    
+
+    SessionTokenUserData = namedtuple("SessionTokenUserData", ["id", "email"])
+
+
+    def get_user_info_by_session_token(self, token: str) -> SessionTokenUserData:
+        """
+        Retrieves user info from the database using a session token.
+
+        :param token: The session token.
+        :raise TokenNotFoundError: If the session token is not found.
+        :return: SessionTokenUserData namedtuple with the user's ID and email.
+        """
+        self.cursor.execute(f"select id, email from session_tokens where token = %s", (token,))
+        results = self.cursor.fetchone()
+        if len(results) == 0:
+            raise TokenNotFoundError("The specified token was not found.")
+        return self.SessionTokenUserData(id=results[0], email=results[1])
