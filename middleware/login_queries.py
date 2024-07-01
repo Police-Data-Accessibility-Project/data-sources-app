@@ -129,6 +129,7 @@ def get_session_token_user_data(cursor: PgCursor, token: str) -> SessionTokenUse
     return SessionTokenUserData(id=results[0][0], email=results[0][1])
 
 
+# DatabaseClient.delete_session_token()
 def delete_session_token(cursor, old_token):
     cursor.execute(f"delete from session_tokens where token = '{old_token}'")
 
@@ -146,15 +147,15 @@ def get_api_key_for_user(cursor: PgCursor, email: str, password: str) -> Respons
     :param password: User's password.
     :return: A response object with a message and status code.
     """
-    # TODO: replace with DatabaseClient method get_user_info()
-    # NOTE: original method returned a dictionary, 
+    # TODO: Replace with DatabaseClient method get_user_info()
+    # NOTE: Original method returned a dictionary, 
     #       parts of this method should be updated to work with namedtuple
     user_data = get_user_info(cursor, email)
 
     if check_password_hash(user_data["password_digest"], password):
         api_key = generate_api_key()
         user_id = str(user_data["id"])
-        # TODO: Replace with DatabaseClient.update_user_api_key()
+        # TODO: Replace with DatabaseClient method update_user_api_key()
         update_api_key(cursor, api_key, user_id)
         payload = {"api_key": api_key}
         return make_response(payload, HTTPStatus.OK)
@@ -170,10 +171,11 @@ def update_api_key(cursor, api_key, user_id):
 
 def refresh_session(cursor: PgCursor, old_token: str) -> Response:
     try:
-        # TODO: Replace with DatabaseClient.get_user_info_by_session_token()
+        # TODO: Replace with DatabaseClient method get_user_info_by_session_token()
         user_data = get_session_token_user_data(cursor, old_token)
     except TokenNotFoundError:
         return make_response({"message": "Invalid session token"}, HTTPStatus.FORBIDDEN)
+        # TODO: Replace with DatabaseClient method delete_session_token()
     delete_session_token(cursor, old_token)
     token = create_session_token(cursor, user_data.id, user_data.email)
     return make_response(

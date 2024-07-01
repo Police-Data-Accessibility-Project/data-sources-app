@@ -550,6 +550,8 @@ class DatabaseClient:
 
     def add_new_access_token(self) -> None:
         """Inserts a new access token into the database."""
+        # NOTE: May refactor next two lines so that the function is sent the
+        #       token and expiration instead of generating it here
         token = uuid.uuid4().hex
         expiration = datetime.now() + datetime.timedelta(minutes=5)
         self.cursor.execute(
@@ -611,3 +613,12 @@ class DatabaseClient:
         if len(results) == 0:
             raise TokenNotFoundError("The specified token was not found.")
         return self.SessionTokenUserData(id=results[0], email=results[1])
+
+
+    def delete_session_token(self, old_token: str) -> None:
+        """
+        Deletes a session token from the database.
+
+        :param old_token: The session token.
+        """
+        self.cursor.execute(f"delete from session_tokens where token = '%s'", (old_token,))
