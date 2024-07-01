@@ -1,7 +1,7 @@
 from collections import namedtuple
 from datetime import datetime
 from http import HTTPStatus
-from typing import Union, Optional
+from typing import Union, Optional, Any
 import uuid
 
 import psycopg2
