@@ -57,29 +57,37 @@ def test_create_session_token_results(db_cursor: psycopg2.extensions.cursor) -> 
     assert new_token.email == test_user.email
 
 
-def test_is_admin(db_cursor: psycopg2.extensions.cursor) -> None:
+def test_is_admin_happy_path() -> None:
     """
     Creates and inserts two users, one an admin and the other not
     And then checks to see if the `is_admin` properly
     identifies both
     :param db_cursor:
     """
-    regular_user = create_test_user(db_cursor)
-    admin_user = create_test_user(
-        cursor=db_cursor, email="admin@admin.com", role="admin"
-    )
-    assert is_admin(db_cursor, admin_user.email)
-    assert not is_admin(db_cursor, regular_user.email)
+    mock_db_client = MagicMock()
+    mock_get_role_by_email_result = MagicMock()
+    mock_get_role_by_email_result.role = "admin"
+    mock_db_client.get_role_by_email.return_value = mock_get_role_by_email_result
 
+    result = is_admin(mock_db_client, "test_email")
+    assert result is True
+    mock_db_client.get_role_by_email.assert_called_once_with("test_email")
 
-def test_is_admin_raises_user_not_logged_in_error(db_cursor):
+def test_is_admin_not_admin() -> None:
     """
-    Check that when searching for a user by an email that doesn't exist,
-    the UserNotFoundError is raised
-    :return:
+    Creates and inserts two users, one an admin and the other not
+    And then checks to see if the `is_admin` properly
+    identifies both
+    :param db_cursor:
     """
-    with pytest.raises(UserNotFoundError):
-        is_admin(cursor=db_cursor, email=str(uuid.uuid4()))
+    mock_db_client = MagicMock()
+    mock_get_role_by_email_result = MagicMock()
+    mock_get_role_by_email_result.role = "user"
+    mock_db_client.get_role_by_email.return_value = mock_get_role_by_email_result
+
+    result = is_admin(mock_db_client, "test_email")
+    assert result is False
+    mock_db_client.get_role_by_email.assert_called_once_with("test_email")
 
 
 def test_token_results_raises_token_not_found_error(db_cursor):

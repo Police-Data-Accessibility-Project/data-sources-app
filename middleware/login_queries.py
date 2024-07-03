@@ -71,16 +71,8 @@ def is_admin(db_client: DatabaseClient, email: str) -> bool:
     :param email: User's email.
     :return: True if user is an admin, False if not, or an error message.
     """
-    cursor.execute(f"select role from users where email = %s", (email,))
-    results = cursor.fetchall()
-    try:
-        role = results[0][0]
-        if role == "admin":
-            return True
-        return False
-    except IndexError:
-        raise UserNotFoundError(email)
-
+    role_info = db_client.get_role_by_email(email)
+    return role_info.role == "admin"
 
 # DatabaseClient.add_new_session_token()
 # TODO: Call add_new_session_token() instead of using cursor.execute()

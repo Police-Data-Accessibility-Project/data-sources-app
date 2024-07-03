@@ -174,7 +174,7 @@ class DatabaseClient:
         :return: RoleInfo namedtuple containing the user's role.
         """
         self.cursor.execute(f"select role from users where email = %s", (email,))
-        results = cursor.fetchone()
+        results = self.cursor.fetchone()
         if len(results) == 0:
             raise UserNotFoundError(email)
 

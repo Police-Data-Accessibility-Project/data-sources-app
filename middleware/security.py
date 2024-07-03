@@ -57,7 +57,7 @@ def validate_api_key(api_key: str, endpoint: str, method: str):
         if session_token_results.expiration_date < dt.utcnow():
             raise ExpiredAPIKeyError("Session token expired")
 
-        if is_admin(cursor, session_token_results.email):
+        if is_admin(db_client, session_token_results.email):
             validate_role(role="admin", endpoint=endpoint, method=method)
             return
 
