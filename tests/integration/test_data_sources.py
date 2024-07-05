@@ -4,11 +4,9 @@ from http import HTTPStatus
 import uuid
 
 import psycopg2
-import pytest
 from tests.fixtures import (
     connection_with_test_data,
     dev_db_connection,
-    connection_with_test_data,
     client_with_db,
 )
 from tests.helper_functions import (

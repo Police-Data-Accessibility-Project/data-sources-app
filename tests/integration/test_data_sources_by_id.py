@@ -35,8 +35,8 @@ def test_data_sources_by_id_put(
     Test that PUT call to /data-sources-by-id/<data_source_id> endpoint successfully updates the description of the data source and verifies the change in the database
     """
     user_info = create_test_user_api(client_with_db)
-    give_user_admin_role(connection_with_test_data, user_info)
     api_key = create_api_key(client_with_db, user_info)
+    give_user_admin_role(connection_with_test_data, user_info)
     desc = str(uuid.uuid4())
     response = client_with_db.put(
         f"/data-sources-by-id/SOURCE_UID_1",
