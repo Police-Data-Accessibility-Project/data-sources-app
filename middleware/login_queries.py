@@ -106,9 +106,8 @@ def get_api_key_for_user(db_client: DatabaseClient, email: str, password: str) -
 
 
 def refresh_session(db_client: DatabaseClient, old_token: str) -> Response:
-    try:
-        user_info = db_client.get_user_info_by_session_token(old_token)
-    except TokenNotFoundError:
+    user_info = db_client.get_session_token_info(old_token)
+    if not user_info:
         return make_response({"message": "Invalid session token"}, HTTPStatus.FORBIDDEN)
     db_client.delete_session_token(old_token)
     token = create_session_token(db_client, user_info.id, user_info.email)
