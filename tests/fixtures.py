@@ -7,6 +7,7 @@ import psycopg2
 import pytest
 from dotenv import load_dotenv
 from flask.testing import FlaskClient
+from psycopg2.extras import DictCursor
 
 from app import create_app
 from database_client.database_client import DatabaseClient
@@ -53,7 +54,7 @@ def db_cursor(
     Create a cursor to execute database operations, with savepoint management.
     This is to ensure that changes made during the test can be rolled back.
     """
-    cur = dev_db_connection.cursor()
+    cur = dev_db_connection.cursor(cursor_factory=DictCursor)
 
     # Start a savepoint
     cur.execute("SAVEPOINT test_savepoint")
