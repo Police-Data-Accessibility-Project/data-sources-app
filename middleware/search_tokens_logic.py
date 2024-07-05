@@ -1,6 +1,7 @@
 import psycopg2.extensions
 from flask import Response
 
+from database_client.database_client import DatabaseClient
 from middleware.data_source_queries import (
     get_approved_data_sources_wrapper,
     data_source_by_id_wrapper,
@@ -33,10 +34,11 @@ def perform_endpoint_logic(
     except ValueError:
         raise UnknownEndpointError(endpoint_str)
 
+    db_client = DatabaseClient(cursor)
     if endpoint == Endpoint.QUICK_SEARCH:
-        return quick_search_query_wrapper(arg1, arg2, cursor)
+        return quick_search_query_wrapper(arg1, arg2, db_client)
     if endpoint == Endpoint.DATA_SOURCES:
-        return get_approved_data_sources_wrapper(cursor)
+        return get_approved_data_sources_wrapper(db_client)
     if endpoint == Endpoint.DATA_SOURCES_BY_ID:
         return data_source_by_id_wrapper(arg1, cursor)
     if endpoint == Endpoint.DATA_SOURCES_MAP:
