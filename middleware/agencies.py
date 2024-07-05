@@ -1,66 +1,33 @@
 from http import HTTPStatus
 
-import psycopg2
-import psycopg2.extras
 from flask import Response, make_response
 
+from database_client.database_client import DatabaseClient
 from utilities.common import convert_dates_to_strings
 
-AGENCY_SELECT_QUERY = """
-    SELECT 
-        name,
-        homepage_url,
-        count_data_sources,
-        agency_type,
-        multi_agency,
-        submitted_name,
-        jurisdiction_type,
-        state_iso,
-        municipality,
-        zip_code,
-        county_fips,
-        county_name,
-        lat,
-        lng,
-        data_sources,
-        no_web_presence,
-        airtable_agency_last_modified,
-        data_sources_last_updated,
-        approved,
-        rejection_reason,
-        last_approval_editor,
-        agency_created,
-        county_airtable_uid,
-        defunct_year,
-        airtable_uid
-    FROM agencies where approved = 'TRUE' limit 1000 offset %s
-    """
-
-
-def get_agencies(cursor: psycopg2.extras.RealDictCursor, page: int) -> Response:
+def get_agencies(db_client: DatabaseClient, page: int) -> Response:
     """
     Retrieves a paginated list of approved agencies from the database.
 
-    :param cursor: A cursor object from a psycopg2 connection.
+    :param db_client: The database client object.
     :param page: The page number of results to return.
     :return: A response object with the relevant agency information and status code.
     """
-    agencies_matches = get_agencies_matches(cursor, page)
+    agencies_matches = get_agencies_matches(db_client, page)
     agencies = {"count": len(agencies_matches), "data": agencies_matches}
     return make_response(agencies, HTTPStatus.OK)
 
 
-def get_agencies_matches(cursor: psycopg2.extras.RealDictCursor, page: int):
+def get_agencies_matches(db_client: DatabaseClient, page: int):
     """
     Retrieves a paginated list of approved agencies from the database.
     Args:
-        cursor (psycopg2.extras.RealDictCursor): A cursor object from a psycopg2 connection.
+        db_client (DatabaseClient): The database client object.
         page (int): The page number of results to return.
     Returns:
         list: A list of dictionaries containing the relevant agency information.
     """
-    # TODO: replace with DatabaseClient method get_agencies_from_page()
-    results = execute_agency_query(cursor, page)
+    results = db_client.get_agencies_from_page(page)
     return process_results(results)
 
 
@@ -72,32 +39,6 @@ def process_results(results: list[dict]) -> list[dict]:
     Returns:
         list[dict]: The processed list of dictionaries with converted dates.
     """
-    for result in results:
-        convert_dates_to_strings(result)
-    return results
+    return [convert_dates_to_strings(dict(result)) for result in results]
 
 
-# DatabaseClient.get_agencies_from_page()
-def execute_agency_query(cursor: psycopg2.extras.RealDictCursor, page: int):
-    offset = get_offset(page)
-    cursor.execute(
-        AGENCY_SELECT_QUERY,
-        (offset,),
-    )
-    results = cursor.fetchall()
-    return results
-
-
-# DatabaseClient.get_offset()
-def get_offset(page: int) -> int:
-    """
-    Calculates the offset value for pagination based on the given page number.
-    Args:
-        page (int): The page number for which the offset is to be calculated.
-    Returns:
-        int: The calculated offset value.
-    Example:
-        >>> get_offset(3)
-        2000
-    """
-    return (page - 1) * 1000

@@ -27,13 +27,6 @@ QUICK_SEARCH_COLUMNS = [
 ]
 
 
-INSERT_LOG_QUERY = """
-    INSERT INTO quick_search_query_logs 
-    (search, location, results, result_count) 
-    VALUES (%s, %s, %s, %s)
-    """
-
-
 def depluralize(term: str):
     """
     Depluralizes a given term using lemmatization.
@@ -79,25 +72,6 @@ def quick_search_query(
     )
 
     return data_sources
-
-
-# DatabaseClient.add_quick_search_log()
-def log_query(
-    cursor,
-    data_sources_count,
-    processed_data_source_matches,
-    processed_search_parameters,
-):
-    query_results = json.dumps(processed_data_source_matches.ids).replace("'", "")
-    cursor.execute(
-        INSERT_LOG_QUERY,
-        (
-            processed_search_parameters.search,
-            processed_search_parameters.location,
-            query_results,
-            data_sources_count,
-        ),
-    )
 
 
 def process_search_parameters(raw_sp: SearchParameters) -> SearchParameters:
