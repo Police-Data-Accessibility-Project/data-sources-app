@@ -5,7 +5,13 @@ from datetime import datetime, timezone, timedelta
 import psycopg2
 import pytest
 
-from middleware.custom_exceptions import AccessTokenNotFoundError
+from database_client.database_client import DatabaseClient
+from database_client.result_formatter import ResultFormatter
+from middleware.custom_exceptions import (
+    AccessTokenNotFoundError,
+    UserNotFoundError,
+    TokenNotFoundError,
+)
 from tests.fixtures import live_database_client, dev_db_connection, db_cursor
 from tests.helper_functions import (
     insert_test_agencies_and_sources,
@@ -67,12 +73,25 @@ def test_reset_token_logic(live_database_client):
 
 def test_update_user_api_key(live_database_client):
     # Add a new user to the database
+    email = uuid.uuid4().hex
+    password_digest = uuid.uuid4().hex
 
-    # Update the user's API key with the DatabaseClint Method
+    live_database_client.add_new_user(
+        email=email,
+        password_digest=password_digest,
+    )
+
+    user_info = live_database_client.get_user_info(email)
+    assert user_info.api_key is None
+
+    # Update the user's API key with the DatabaseClient Method
+    live_database_client.update_user_api_key(
+        api_key="test_api_key", user_id=user_info.id
+    )
 
     # Fetch the user's API key from the database to confirm the change
-
-    pytest.fail("Test not implemented")
+    user_info = live_database_client.get_user_info(email)
+    assert user_info.api_key == "test_api_key"
 
 
 def test_get_data_source_by_id(live_database_client):
@@ -85,9 +104,7 @@ def test_get_data_source_by_id(live_database_client):
     NUMBER_OF_RESULT_COLUMNS = 67
     assert result is not None
     assert len(result) == NUMBER_OF_RESULT_COLUMNS
-    assert result[0] == 'Source 1'
-
-
+    assert result[0] == "Source 1"
 
 
 def test_get_approved_data_sources(live_database_client):
@@ -105,40 +122,38 @@ def test_get_approved_data_sources(live_database_client):
 
 def test_get_needs_identification_data_sources(live_database_client):
     # Add new data sources to the database, at least two labeled 'needs identification' and one not
-
+    insert_test_agencies_and_sources_if_not_exist(live_database_client.cursor)
     # Fetch the data sources with the DatabaseClient method
+    results = live_database_client.get_needs_identification_data_sources()
 
+    found = False
+    for result in results:
+        # Confirm "Source 2" (which was inserted as "needs identification" is retrieved).
+        if result[0] != "Source 2":
+            continue
+        found = True
+    assert found
     # Confirm only all data sources labeled 'needs identification' are retrieved
-
-    pytest.fail("Test not implemented")
-
-
-def test_create_new_data_source_query():
-    # Send a data source dictionary to the DatabaseClient method
-
-    # Confirm that the result is the expected query string
-
-    pytest.fail("Test not implemented")
 
 
 def test_add_new_data_source(live_database_client):
     # Add a new data source to the database with the DatabaseClient method
     name = uuid.uuid4().hex
-    live_database_client.add_new_data_source({
-        "name": name,
-        "source_url": "https://example.com",
-    })
+    live_database_client.add_new_data_source(
+        {
+            "name": name,
+            "source_url": "https://example.com",
+        }
+    )
 
     # Fetch the data source from the database to confirm that it was added successfully
     live_database_client.cursor.execute(
-        "SELECT * FROM data_sources WHERE name = %s",
-        (name,)
+        "SELECT * FROM data_sources WHERE name = %s", (name,)
     )
 
     results = live_database_client.cursor.fetchall()
 
     assert len(results) == 1
-
 
 
 def test_update_data_source(live_database_client):
@@ -147,78 +162,61 @@ def test_update_data_source(live_database_client):
 
     # Update the data source with the DatabaseClient method
     new_description = uuid.uuid4().hex
-    live_database_client.update_data_source({"description": new_description}, 'SOURCE_UID_1' )
+    live_database_client.update_data_source(
+        {"description": new_description}, "SOURCE_UID_1"
+    )
 
     # Fetch the data source from the database to confirm the change
-    result = live_database_client.get_data_source_by_id('SOURCE_UID_1')
+    result = live_database_client.get_data_source_by_id("SOURCE_UID_1")
 
     assert result[2] == new_description
 
 
-def test_create_data_source_update_query(live_database_client):
-    # Send a data source dictionary to the DatabaseClient method
-
-    # Confirm that the result is the expected query string
-
-    pytest.fail("Test not implemented")
-
-
 def test_get_data_sources_for_map(live_database_client):
     # Add at least two new data sources to the database
-
+    insert_test_agencies_and_sources_if_not_exist(live_database_client.cursor)
     # Fetch the data source with the DatabaseClient method
-
+    results = live_database_client.get_data_sources_for_map()
     # Confirm both data sources are retrieved and only the proper columns are returned
-
-    pytest.fail("Test not implemented")
+    found_source = False
+    for result in results:
+        if result.data_source_name != "Source 1":
+            continue
+        found_source = True
+        assert result.lat == 30
+        assert result.lng == 20
+    assert found_source
 
 
 def test_get_agencies_from_page(live_database_client):
-    # Add at least two new agencies to the database, if possible add enough to make multiple pages (>1000)
+    results = live_database_client.get_agencies_from_page(2)
 
-    # Fetch the page of agencies with the DatabaseClient method
-
-    # Confirm that the correct list of agencies is returned for a given page
-
-    pytest.fail("Test not implemented")
+    assert len(results) > 0
 
 
 def test_get_offset():
     # Send a page number to the DatabaseClient method
-
     # Confirm that the correct offset is returned
-
-    pytest.fail("Test not implemented")
+    assert DatabaseClient.get_offset(3) == 2000
 
 
 def test_get_data_sources_to_archive(live_database_client):
-    # Add multiple data sources to the database, some that should be archived and some that should not
-
-    # Fetch the data sources using the DatabaseClient method
-
-    # Confirm that only the data sources that should be archived are returned
-
-    pytest.fail("Test not implemented")
-
-
-def test_update_url_status_to_broken(live_database_client):
-    # Add a new data source to the database
-
-    # Update the data source's status with the DatabaseClient method
-
-    # Fetch the data source from the database to confirm the change
-
-    pytest.fail("Test not implemented")
+    results = live_database_client.get_data_sources_to_archive()
+    assert len(results) > 0
 
 
 def test_update_last_cached(live_database_client):
     # Add a new data source to the database
-
+    insert_test_agencies_and_sources_if_not_exist(live_database_client.cursor)
     # Update the data source's last_cached value with the DatabaseClient method
+    new_last_cached = datetime.now()
+    live_database_client.update_last_cached("SOURCE_UID_1", new_last_cached)
 
     # Fetch the data source from the database to confirm the change
+    result = live_database_client.get_data_source_by_id("SOURCE_UID_1")
+    zipped_results = ResultFormatter.zip_get_data_source_by_id_results(result)
 
-    pytest.fail("Test not implemented")
+    assert zipped_results["last_cached"] == new_last_cached.strftime("%Y-%m-%d")
 
 
 def test_get_quick_search_results(live_database_client):
@@ -288,16 +286,22 @@ def test_add_new_access_token(live_database_client):
 
 def test_get_user_info(live_database_client):
     # Add a new user to the database
+    email = uuid.uuid4().hex
+    password_digest = uuid.uuid4().hex
+
+    live_database_client.add_new_user(
+        email=email,
+        password_digest=password_digest,
+    )
 
     # Fetch the user using its email with the DatabaseClient method
-
+    user_info = live_database_client.get_user_info(email=email)
     # Confirm the user is retrieved successfully
-
+    assert user_info.password_digest == password_digest
     # Attempt to fetch non-existant user
-
     # Assert UserNotFoundError is raised
-
-    pytest.fail("Test not implemented")
+    with pytest.raises(UserNotFoundError):
+        live_database_client.get_user_info(email="invalid_email")
 
 
 def test_get_role_by_email(live_database_client):
@@ -320,39 +324,83 @@ def test_get_role_by_email(live_database_client):
 
 
 def test_add_new_session_token(live_database_client):
+    # Add a new user to the database
+    email = uuid.uuid4().hex
+    live_database_client.add_new_user(
+        email=email,
+        password_digest="test_password",
+    )
+
     # Create a new session token locally
+    session_token = uuid.uuid4().hex
 
     # Call the DatabaseClient method add the session token to the database
+    live_database_client.add_new_session_token(
+        session_token=session_token,
+        email=email,
+        expiration=datetime.now(tz=timezone.utc),
+    )
 
     # Fetch the new session token from the database to confirm it was added successfully
+    result = live_database_client.get_session_token_info(api_key=session_token)
 
-    pytest.fail("Test not implemented")
+    assert result.email == email
 
 
 def test_get_user_info_by_session_token(live_database_client):
     # Add a new user to the database
+    email = uuid.uuid4().hex
+    live_database_client.add_new_user(
+        email=email,
+        password_digest="test_password",
+    )
 
     # Add a session token to the database associated with the user
+    session_token = uuid.uuid4().hex
+    live_database_client.add_new_session_token(
+        session_token=session_token,
+        email=email,
+        expiration=datetime.now(tz=timezone.utc),
+    )
 
     # Fetch the user info using its session token with the DatabaseClient method
+    user_info = live_database_client.get_user_info_by_session_token(token=session_token)
 
     # Confirm the user is retrieved successfully
+    assert user_info.email == email
 
     # Attempt to fetch user using non-existant token
-
-    # Assert TokenNotFoundError error is raised
-
-    pytest.fail("Test not implemented")
+    # Assert TokenNotFoundError is raised
+    with pytest.raises(TokenNotFoundError):
+        live_database_client.get_user_info_by_session_token(token="non_existant_token")
 
 
 def test_delete_session_token(live_database_client):
-    # Add a new session token to the database
+    # Create new user
+    email = uuid.uuid4().hex
+    live_database_client.add_new_user(
+        email=email,
+        password_digest="test_password",
+    )
+
+    # Add a session token to the database associated with the user
+    session_token = uuid.uuid4().hex
+    live_database_client.add_new_session_token(
+        session_token=session_token,
+        email=email,
+        expiration=datetime.now(tz=timezone.utc),
+    )
+
+    # Confirm session token exists beforehand:
+    result = live_database_client.get_session_token_info(api_key=session_token)
+    assert result.email == email
 
     # Delete the session token with the DatabaseClient method
+    live_database_client.delete_session_token(old_token=session_token)
 
     # Confirm the session token was deleted by attempting to fetch it
-
-    pytest.fail("Test not implemented")
+    with pytest.raises(TokenNotFoundError):
+        live_database_client.get_user_info_by_session_token(token=session_token)
 
 
 def test_get_access_token(live_database_client):

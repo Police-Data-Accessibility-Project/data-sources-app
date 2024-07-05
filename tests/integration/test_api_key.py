@@ -6,7 +6,7 @@ import uuid
 import psycopg2.extensions
 
 from tests.fixtures import dev_db_connection, client_with_db
-from tests.helper_functions import create_test_user_api
+from tests.helper_functions import create_test_user_api, check_response_status
 
 
 def test_api_key_get(client_with_db, dev_db_connection: psycopg2.extensions.connection):
@@ -20,9 +20,7 @@ def test_api_key_get(client_with_db, dev_db_connection: psycopg2.extensions.conn
         "/api_key",
         json={"email": user_info.email, "password": user_info.password},
     )
-    assert (
-        response.status_code == HTTPStatus.OK.value
-    ), "API key creation not successful"
+    check_response_status(response, HTTPStatus.OK.value)
 
     # Check that API key aligned with user
     cursor = dev_db_connection.cursor()

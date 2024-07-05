@@ -10,6 +10,7 @@ from unittest.mock import patch, MagicMock
 import requests
 from flask import Flask
 
+from database_client.database_client import DatabaseClient
 from middleware import security
 from middleware.custom_exceptions import UserNotFoundError
 from middleware.login_queries import create_session_token
@@ -54,7 +55,7 @@ def test_api_key_not_in_users_table_but_in_session_tokens_table(dev_db_connectio
     # TODO: REWORK
     cursor = dev_db_connection.cursor()
     test_user = create_test_user(cursor)
-    token = create_session_token(cursor, test_user.id, test_user.email)
+    token = create_session_token(DatabaseClient(cursor), test_user.id, test_user.email)
     dev_db_connection.commit()
     result = validate_api_key(token, "", "")
     assert result is None
@@ -63,7 +64,7 @@ def test_api_key_not_in_users_table_but_in_session_tokens_table(dev_db_connectio
 def test_expired_session_token(dev_db_connection):
     cursor = dev_db_connection.cursor()
     test_user = create_test_user(cursor)
-    token = create_session_token(cursor, test_user.id, test_user.email)
+    token = create_session_token(DatabaseClient(cursor), test_user.id, test_user.email)
     cursor.execute(
         f"UPDATE session_tokens SET expiration_date = '{datetime.date(year=2020, month=3, day=4)}' WHERE token = '{token}'"
     )
@@ -77,7 +78,7 @@ def test_session_token_with_admin_role(dev_db_connection):
     cursor = dev_db_connection.cursor()
     test_user = create_test_user(cursor)
     give_user_admin_role(dev_db_connection, UserInfo(test_user.email, ""))
-    token = create_session_token(cursor, test_user.id, test_user.email)
+    token = create_session_token(DatabaseClient(cursor), test_user.id, test_user.email)
     dev_db_connection.commit()
     result = validate_api_key(token, "", "")
     assert result is None
