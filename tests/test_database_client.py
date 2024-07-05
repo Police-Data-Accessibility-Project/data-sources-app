@@ -347,34 +347,6 @@ def test_add_new_session_token(live_database_client):
     assert result.email == email
 
 
-def test_get_user_info_by_session_token(live_database_client):
-    # Add a new user to the database
-    email = uuid.uuid4().hex
-    live_database_client.add_new_user(
-        email=email,
-        password_digest="test_password",
-    )
-
-    # Add a session token to the database associated with the user
-    session_token = uuid.uuid4().hex
-    live_database_client.add_new_session_token(
-        session_token=session_token,
-        email=email,
-        expiration=datetime.now(tz=timezone.utc),
-    )
-
-    # Fetch the user info using its session token with the DatabaseClient method
-    user_info = live_database_client.get_user_info_by_session_token(token=session_token)
-
-    # Confirm the user is retrieved successfully
-    assert user_info.email == email
-
-    # Attempt to fetch user using non-existant token
-    # Assert TokenNotFoundError is raised
-    with pytest.raises(TokenNotFoundError):
-        live_database_client.get_user_info_by_session_token(token="non_existant_token")
-
-
 def test_delete_session_token(live_database_client):
     # Create new user
     email = uuid.uuid4().hex
@@ -399,8 +371,8 @@ def test_delete_session_token(live_database_client):
     live_database_client.delete_session_token(old_token=session_token)
 
     # Confirm the session token was deleted by attempting to fetch it
-    with pytest.raises(TokenNotFoundError):
-        live_database_client.get_user_info_by_session_token(token=session_token)
+    assert live_database_client.get_session_token_info(session_token) is None
+
 
 
 def test_get_access_token(live_database_client):

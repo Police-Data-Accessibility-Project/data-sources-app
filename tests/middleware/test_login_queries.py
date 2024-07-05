@@ -154,7 +154,7 @@ class RefreshSessionMocks(DynamicMagicMock):
     old_token: MagicMock
     new_token: MagicMock
     get_session_token_user_data: MagicMock
-    user_data: MagicMock
+    session_token_info: MagicMock
     delete_session_token: MagicMock
     make_response: MagicMock
     create_session_token: MagicMock
@@ -165,10 +165,10 @@ class RefreshSessionMocks(DynamicMagicMock):
 @pytest.fixture
 def setup_refresh_session_mocks(monkeypatch):
     mock = RefreshSessionMocks()
-    mock.db_client.get_user_info_by_session_token.return_value = mock.user_data
+    mock.db_client.get_session_token_info.return_value = mock.session_token_info
     mock.create_session_token.return_value = mock.new_token
-    mock.user_data.id = mock.mock_user_id
-    mock.user_data.email = mock.mock_email
+    mock.session_token_info.id = mock.mock_user_id
+    mock.session_token_info.email = mock.mock_email
 
     monkeypatch.setattr("middleware.login_queries.make_response", mock.make_response)
     monkeypatch.setattr(
@@ -180,10 +180,10 @@ def setup_refresh_session_mocks(monkeypatch):
 def test_refresh_session_happy_path(setup_refresh_session_mocks):
     mock = setup_refresh_session_mocks
     refresh_session(mock.db_client, mock.old_token)
-    mock.db_client.get_user_info_by_session_token.assert_called_with(mock.old_token)
+    mock.db_client.get_session_token_info.assert_called_with(mock.old_token)
     mock.db_client.delete_session_token.assert_called_with(mock.old_token)
     mock.create_session_token.assert_called_with(
-        mock.db_client, mock.user_data.id, mock.user_data.email
+        mock.db_client, mock.session_token_info.id, mock.session_token_info.email
     )
     mock.make_response.assert_called_with(
         {"message": "Successfully refreshed session token", "data": mock.new_token},
@@ -193,9 +193,9 @@ def test_refresh_session_happy_path(setup_refresh_session_mocks):
 
 def test_refresh_session_token_not_found_error(setup_refresh_session_mocks):
     mock = setup_refresh_session_mocks
-    mock.db_client.get_user_info_by_session_token.side_effect = TokenNotFoundError
+    mock.db_client.get_session_token_info.return_value = None
     refresh_session(mock.db_client, mock.old_token)
-    mock.db_client.get_user_info_by_session_token.assert_called_with(mock.old_token)
+    mock.db_client.get_session_token_info.assert_called_with(mock.old_token)
     mock.delete_session_token.assert_not_called()
     mock.create_session_token.assert_not_called()
     mock.make_response.assert_called_with(
