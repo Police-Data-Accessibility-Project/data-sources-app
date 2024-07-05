@@ -1,10 +1,12 @@
 import json
 from collections import namedtuple
+from contextlib import contextmanager
 from datetime import datetime
 from typing import Optional, Any
 import uuid
 
 import psycopg2
+from psycopg2.extras import DictCursor
 
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from middleware.custom_exceptions import (
@@ -66,6 +68,8 @@ QUICK_SEARCH_SQL = """
         AND data_sources.url_status not in ('broken', 'none found')
 
 """
+
+
 
 
 class DatabaseClient:
@@ -209,9 +213,7 @@ class DatabaseClient:
             (api_key, user_id),
         )
 
-    def get_data_source_by_id(
-        self, data_source_id: str
-    ) -> Optional[tuple[Any, ...]]:
+    def get_data_source_by_id(self, data_source_id: str) -> Optional[tuple[Any, ...]]:
         """
         Get a data source by its ID, including related agency information from the database.
         :param data_source_id: The unique identifier for the data source.
@@ -241,19 +243,18 @@ class DatabaseClient:
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return results
 
-    def get_needs_identification_data_sources(
-        self
-    ) -> list[tuple[Any, ...]]:
+    def get_needs_identification_data_sources(self) -> list[tuple[Any, ...]]:
         """
         Returns a list of data sources that need identification from the database.
 
         :param columns: List of column names to use in the SELECT statement.
         :return: A list of tuples, each containing details of a data source.
         """
-        sql_query = DynamicQueryConstructor.build_needs_identification_data_source_query()
+        sql_query = (
+            DynamicQueryConstructor.build_needs_identification_data_source_query()
+        )
         self.cursor.execute(sql_query)
         return self.cursor.fetchall()
-
 
     def create_new_data_source_query(self, data: dict) -> str:
         """
@@ -297,7 +298,9 @@ class DatabaseClient:
         :param data_source_id: The data source's ID.
         :param data: A dictionary containing the data source details.
         """
-        sql_query = DynamicQueryConstructor.create_data_source_update_query(data, data_source_id)
+        sql_query = DynamicQueryConstructor.create_data_source_update_query(
+            data, data_source_id
+        )
         self.cursor.execute(sql_query)
 
     MapInfo = namedtuple(
@@ -344,7 +347,9 @@ class DatabaseClient:
                 data_sources.approval_status = 'approved'
         """
         self.cursor.execute(sql_query)
-        return self.cursor.fetchall()
+        results = self.cursor.fetchall()
+
+        return [self.MapInfo(*result) for result in results]
 
     def get_agencies_from_page(self, page: int) -> list[tuple[Any, ...]]:
         """
@@ -391,6 +396,7 @@ class DatabaseClient:
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return results
 
+    @staticmethod
     def get_offset(page: int) -> int:
         """
         Calculates the offset value for pagination based on the given page number.
@@ -458,15 +464,14 @@ class DatabaseClient:
         :param broken_as_of: The date when the source was identified as broken.
         :param last_cached: The last cached date of the data source.
         """
-        sql_query = """
-            UPDATE data_sources 
-            SET 
-                url_status = 'broken', 
-                broken_source_url_as_of = %s, 
-                last_cached = %s 
-            WHERE airtable_uid = %s
-        """
-        self.cursor.execute(sql_query, (broken_as_of, last_cached, id))
+        self.update_data_source(
+            data_source_id=id,
+            data={
+                "url_status": "broken",
+                "broken_source_url_as_of": broken_as_of,
+                "last_cached": last_cached,
+            },
+        )
 
     def update_last_cached(self, id: str, last_cached: str) -> None:
         """
@@ -584,7 +589,7 @@ class DatabaseClient:
             f"select id, password_digest, api_key from users where email = %s", (email,)
         )
         results = self.cursor.fetchone()
-        if len(results) == 0:
+        if results is None:
             raise UserNotFoundError(email)
 
         return self.UserInfo(
@@ -620,7 +625,7 @@ class DatabaseClient:
             f"select id, email from session_tokens where token = %s", (token,)
         )
         results = self.cursor.fetchone()
-        if len(results) == 0:
+        if results is None:
             raise TokenNotFoundError("The specified token was not found.")
         return self.SessionTokenUserData(id=results[0], email=results[1])
 
@@ -631,7 +636,7 @@ class DatabaseClient:
         :param old_token: The session token.
         """
         self.cursor.execute(
-            f"delete from session_tokens where token = '%s'", (old_token,)
+            f"delete from session_tokens where token = %s", (old_token,)
         )
 
     AccessToken = namedtuple("AccessToken", ["id", "token"])
@@ -655,3 +660,21 @@ class DatabaseClient:
     def delete_expired_access_tokens(self) -> None:
         """Deletes all expired access tokens from the database."""
         self.cursor.execute(f"delete from access_tokens where expiration_date < NOW()")
+
+
+@contextmanager
+def setup_database_client(conn: psycopg2.extensions.connection) -> DatabaseClient:
+    """
+    A context manager to setup a database client.
+
+    Yields:
+    - The database client.
+    """
+    with conn.cursor(cursor_factory=DictCursor) as cursor:
+        try:
+            yield DatabaseClient(cursor)
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            conn.commit()
