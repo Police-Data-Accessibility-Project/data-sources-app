@@ -3,8 +3,6 @@ import uuid
 
 from database_client.database_client import DatabaseClient
 
-
-# DatabaseClient.add_new_access_token()
 def insert_access_token(db_client: DatabaseClient):
     token = uuid.uuid4().hex
     expiration = datetime.datetime.now() + datetime.timedelta(minutes=5)
