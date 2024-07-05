@@ -152,7 +152,7 @@ class DatabaseClient:
             f"delete from reset_tokens where email = %s and token = %s", (email, token)
         )
 
-    SessionTokenInfo = namedtuple("SessionTokenInfo", ["email", "expiration_date"])
+    SessionTokenInfo = namedtuple("SessionTokenInfo", ["id", "email", "expiration_date"])
 
     def get_session_token_info(self, api_key: str) -> Optional[SessionTokenInfo]:
         """
@@ -162,13 +162,13 @@ class DatabaseClient:
         :return: SessionTokenInfo if the token exists; otherwise, None.
         """
         self.cursor.execute(
-            f"select email, expiration_date from session_tokens where token = %s",
+            f"select id, email, expiration_date from session_tokens where token = %s",
             (api_key,),
         )
         row = self.cursor.fetchone()
         if row is None:
             return None
-        return self.SessionTokenInfo(email=row[0], expiration_date=row[1])
+        return self.SessionTokenInfo(id=row[0], email=row[1], expiration_date=row[2])
 
     RoleInfo = namedtuple("RoleInfo", ["id", "role"])
 
@@ -393,7 +393,6 @@ class DatabaseClient:
             (offset,),
         )
         results = self.cursor.fetchall()
-        # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return results
 
     @staticmethod
@@ -613,22 +612,6 @@ class DatabaseClient:
 
     SessionTokenUserData = namedtuple("SessionTokenUserData", ["id", "email"])
 
-    def get_user_info_by_session_token(self, token: str) -> SessionTokenUserData:
-        """
-        Retrieves user info from the database using a session token.
-
-        :param token: The session token.
-        :raise TokenNotFoundError: If the session token is not found.
-        :return: SessionTokenUserData namedtuple with the user's ID and email.
-        """
-        self.cursor.execute(
-            f"select id, email from session_tokens where token = %s", (token,)
-        )
-        results = self.cursor.fetchone()
-        if results is None:
-            raise TokenNotFoundError("The specified token was not found.")
-        return self.SessionTokenUserData(id=results[0], email=results[1])
-
     def delete_session_token(self, old_token: str) -> None:
         """
         Deletes a session token from the database.
@@ -661,20 +644,3 @@ class DatabaseClient:
         """Deletes all expired access tokens from the database."""
         self.cursor.execute(f"delete from access_tokens where expiration_date < NOW()")
 
-
-@contextmanager
-def setup_database_client(conn: psycopg2.extensions.connection) -> DatabaseClient:
-    """
-    A context manager to setup a database client.
-
-    Yields:
-    - The database client.
-    """
-    with conn.cursor(cursor_factory=DictCursor) as cursor:
-        try:
-            yield DatabaseClient(cursor)
-        except Exception as e:
-            conn.rollback()
-            raise e
-        finally:
-            conn.commit()
