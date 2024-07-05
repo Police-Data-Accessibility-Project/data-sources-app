@@ -58,10 +58,10 @@ QUICK_SEARCH_SQL = """
     INNER JOIN
         state_names ON agencies.state_iso = state_names.state_iso
     WHERE
-        (data_sources.name LIKE '%{0}%' OR data_sources.description LIKE '%{0}%' OR data_sources.record_type LIKE '%{0}%' OR data_sources.tags LIKE '%{0}%') 
-        AND (agencies.county_name LIKE '%{1}%' OR substr(agencies.county_name,3,length(agencies.county_name)-4) || ' County' LIKE '%{1}%' 
-            OR agencies.state_iso LIKE '%{1}%' OR agencies.municipality LIKE '%{1}%' OR agencies.agency_type LIKE '%{1}%' OR agencies.jurisdiction_type LIKE '%{1}%' 
-            OR agencies.name LIKE '%{1}%' OR state_names.state_name LIKE '%{1}%')
+        (data_sources.name ILIKE '%{0}%' OR data_sources.description ILIKE '%{0}%' OR data_sources.record_type ILIKE '%{0}%' OR data_sources.tags ILIKE '%{0}%') 
+        AND (agencies.county_name ILIKE '%{1}%' OR substr(agencies.county_name,3,length(agencies.county_name)-4) || ' County' ILIKE '%{1}%' 
+            OR agencies.state_iso ILIKE '%{1}%' OR agencies.municipality ILIKE '%{1}%' OR agencies.agency_type ILIKE '%{1}%' OR agencies.jurisdiction_type ILIKE '%{1}%' 
+            OR agencies.name ILIKE '%{1}%' OR state_names.state_name ILIKE '%{1}%')
         AND data_sources.approval_status = 'approved'
         AND data_sources.url_status not in ('broken', 'none found')
 
@@ -507,7 +507,7 @@ class DatabaseClient:
         :return: A list of QuickSearchResult namedtuples, each containing information of a data source resulting from the search. None if nothing is found.
         """
         print(f"Query parameters: '%{search}%', '%{location}%'")
-        sql_query = QUICK_SEARCH_SQL.format(search.title(), location.title())
+        sql_query = QUICK_SEARCH_SQL.format(search, location)
 
         self.cursor.execute(sql_query)
         data_sources = self.cursor.fetchall()
