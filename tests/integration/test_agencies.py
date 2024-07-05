@@ -2,8 +2,7 @@
 
 from http import HTTPStatus
 import psycopg2
-import pytest
-from tests.fixtures import connection_with_test_data, dev_db_connection, client_with_db
+from tests.fixtures import dev_db_connection, client_with_db
 from tests.helper_functions import (
     create_test_user_api,
     create_api_key,
