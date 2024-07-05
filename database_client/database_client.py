@@ -1,13 +1,17 @@
+import json
 from collections import namedtuple
 from datetime import datetime
-from http import HTTPStatus
-from typing import Union, Optional, Any
+from typing import Optional, Any
 import uuid
 
 import psycopg2
 
-from middleware.custom_exceptions import UserNotFoundError, TokenNotFoundError, AccessTokenNotFoundError
-
+from database_client.dynamic_query_constructor import DynamicQueryConstructor
+from middleware.custom_exceptions import (
+    UserNotFoundError,
+    TokenNotFoundError,
+    AccessTokenNotFoundError,
+)
 
 RESTRICTED_COLUMNS = [
     "rejection_note",
@@ -16,6 +20,20 @@ RESTRICTED_COLUMNS = [
     "airtable_uid",
     "airtable_source_last_modified",
 ]
+
+DATA_SOURCES_MAP_COLUMN = [
+    "data_source_id",
+    "name",
+    "agency_id",
+    "agency_name",
+    "state_iso",
+    "municipality",
+    "county_name",
+    "record_type",
+    "lat",
+    "lng",
+]
+
 
 QUICK_SEARCH_SQL = """
     SELECT
@@ -192,87 +210,50 @@ class DatabaseClient:
         )
 
     def get_data_source_by_id(
-        self, columns: list[str], data_source_id: str
+        self, data_source_id: str
     ) -> Optional[tuple[Any, ...]]:
         """
         Get a data source by its ID, including related agency information from the database.
-
         :param data_source_id: The unique identifier for the data source.
-        :param columns: List of column names to use in the SELECT statement.
         :return: A dictionary containing the data source and its related agency details. None if not found.
         """
-        joined_column_names = ", ".join(columns)
-        sql_query = """
-            SELECT
-                %s
-            FROM
-                agency_source_link
-            INNER JOIN
-                data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
-            INNER JOIN
-                agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
-            WHERE
-                data_sources.approval_status = 'approved' AND data_sources.airtable_uid = %s
-        """
-
+        sql_query = DynamicQueryConstructor.build_data_source_by_id_results_query()
         self.cursor.execute(
             sql_query,
-            (
-                joined_column_names,
-                data_source_id,
-            ),
+            (data_source_id,),
         )
         result = self.cursor.fetchone()
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return result
 
-    def get_approved_data_sources(self, columns: list[str]) -> list[tuple[Any, ...]]:
+    def get_approved_data_sources(self) -> list[tuple[Any, ...]]:
         """
         Fetches all approved data sources and their related agency information from the database.
 
         :param columns: List of column names to use in the SELECT statement.
         :return: A list of tuples, each containing details of a data source and its related agency.
         """
-        joined_column_names = ", ".join(columns)
-        sql_query = """
-            SELECT
-                %s
-            FROM
-                agency_source_link
-            INNER JOIN
-                data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
-            INNER JOIN
-                agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
-            WHERE
-                data_sources.approval_status = 'approved'
-        """
 
-        self.cursor.execute(sql_query, (joined_column_names,))
+        sql_query = DynamicQueryConstructor.build_get_approved_data_sources_query()
+
+        self.cursor.execute(sql_query)
         results = self.cursor.fetchall()
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return results
 
-    def get_needs_identification_data_sources(self, columns: list[str]) -> list[tuple[Any, ...]]:
+    def get_needs_identification_data_sources(
+        self
+    ) -> list[tuple[Any, ...]]:
         """
         Returns a list of data sources that need identification from the database.
 
         :param columns: List of column names to use in the SELECT statement.
         :return: A list of tuples, each containing details of a data source.
         """
-        joined_column_names = ", ".join(columns)
-        sql_query = """
-            SELECT
-                %s
-            FROM
-                data_sources
-            WHERE
-                approval_status = 'needs identification'
-        """
+        sql_query = DynamicQueryConstructor.build_needs_identification_data_source_query()
+        self.cursor.execute(sql_query)
+        return self.cursor.fetchall()
 
-        self.cursor.execute(sql_query, (joined_column_names,))
-        results = self.cursor.fetchall()
-        # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
-        return results
 
     def create_new_data_source_query(self, data: dict) -> str:
         """
@@ -316,30 +297,8 @@ class DatabaseClient:
         :param data_source_id: The data source's ID.
         :param data: A dictionary containing the data source details.
         """
-        sql_query = self.create_data_source_update_query(data, data_source_id)
+        sql_query = DynamicQueryConstructor.create_data_source_update_query(data, data_source_id)
         self.cursor.execute(sql_query)
-
-    def create_data_source_update_query(self, data: dict, data_source_id: str) -> str:
-        """
-        Creates a query to update a data source in the database.
-
-        :param data: A dictionary containing the updated data source details.
-        :param data_source_id: The ID of the data source to be updated.
-        """
-        data_to_update = ""
-        for key, value in data.items():
-            if key not in RESTRICTED_COLUMNS:
-                if type(value) == str:
-                    data_to_update += f"{key} = '{value}', "
-                else:
-                    data_to_update += f"{key} = {value}, "
-        data_to_update = data_to_update[:-2]
-        sql_query = f"""
-        UPDATE data_sources 
-        SET {data_to_update}
-        WHERE airtable_uid = '{data_source_id}'
-        """
-        return sql_query
 
     MapInfo = namedtuple(
         "MapInfo",
@@ -385,25 +344,7 @@ class DatabaseClient:
                 data_sources.approval_status = 'approved'
         """
         self.cursor.execute(sql_query)
-        data_sources = self.cursor.fetchall()
-
-        results = [
-            self.MapInfo(
-                data_source_id=row[0],
-                data_source_name=row[1],
-                agency_id=row[2],
-                agency_name=row[3],
-                state=row[4],
-                municipality=row[5],
-                county=row[6],
-                record_type=row[7],
-                lat=row[8],
-                lng=row[9],
-            )
-            for row in data_sources
-        ]
-
-        return results
+        return self.cursor.fetchall()
 
     def get_agencies_from_page(self, page: int) -> list[tuple[Any, ...]]:
         """
@@ -622,12 +563,8 @@ class DatabaseClient:
             ),
         )
 
-    def add_new_access_token(self) -> None:
+    def add_new_access_token(self, token: str, expiration: datetime) -> None:
         """Inserts a new access token into the database."""
-        # NOTE: May refactor next two lines so that the function is sent the
-        #       token and expiration instead of generating it here
-        token = uuid.uuid4().hex
-        expiration = datetime.now() + datetime.timedelta(minutes=5)
         self.cursor.execute(
             f"insert into access_tokens (token, expiration_date) values (%s, %s)",
             (token, expiration),
