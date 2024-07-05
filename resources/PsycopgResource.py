@@ -3,7 +3,9 @@ from http import HTTPStatus
 import functools
 from typing import Callable, Any, Union, Tuple, Dict
 
+import psycopg2
 from flask_restx import abort, Resource
+from psycopg2.extras import DictCursor
 
 from database_client.database_client import DatabaseClient
 
@@ -64,7 +66,7 @@ class PsycopgResource(Resource):
         Yields:
         - The database client.
         """
-        with self.psycopg2_connection.cursor() as cursor:
+        with self.psycopg2_connection.cursor(cursor_factory=DictCursor) as cursor:
             try:
                 yield DatabaseClient(cursor)
             except Exception as e:
