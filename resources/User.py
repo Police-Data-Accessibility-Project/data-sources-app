@@ -53,5 +53,4 @@ class User(PsycopgResource):
         password = data.get("password")
         with self.setup_database_client() as db_client:
             set_user_password(db_client, email, password)
-        self.psycopg2_connection.commit()
         return {"message": "Successfully updated password"}, HTTPStatus.OK

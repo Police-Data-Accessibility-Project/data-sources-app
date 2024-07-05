@@ -38,5 +38,5 @@ class SearchTokens(PsycopgResource):
 
         with self.setup_database_client() as db_client:
             insert_access_token(db_client)
-            response = perform_endpoint_logic(arg1, arg2, endpoint, db_client.cursor)
+            response = perform_endpoint_logic(arg1, arg2, endpoint, db_client)
         return response
