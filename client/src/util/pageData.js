@@ -169,6 +169,7 @@ export const SEARCH_RESULTS_UI_SHAPE = [
 		records: [
 			{ type: 'Crime Maps & Reports' },
 			{ type: 'Crime Statistics' },
+			{ type: 'Media Bulletins'},
 			{ type: 'Records Request Info' },
 			{ type: 'Resources' },
 			{ type: 'Sex Offender Registry' },
@@ -182,5 +183,11 @@ export const SEARCH_RESULTS_UI_SHAPE = [
 			{ type: 'Court Cases' },
 			{ type: 'Incarceration Records' },
 		],
+	},
+	{
+		header: 'Other',
+		records: [
+			{ type: 'Other' },
+		]
 	},
 ];
