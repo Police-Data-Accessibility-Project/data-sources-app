@@ -1,18 +1,15 @@
-from flask import request, Response
+from http import HTTPStatus
+
+from flask import request, Response, make_response
 from middleware.security import api_required
 from middleware.data_source_queries import (
-    needs_identification_data_sources,
     get_approved_data_sources_wrapper,
     data_source_by_id_wrapper,
     get_data_sources_for_map_wrapper,
-    update_data_source,
-    get_restricted_columns,
-    add_new_data_source,
+    add_new_data_source_wrapper,
+    update_data_source_wrapper,
+    needs_identification_data_sources_wrapper,
 )
-from datetime import datetime
-
-import uuid
-from typing import Dict, Any, Tuple
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
@@ -35,8 +32,8 @@ class DataSourceById(PsycopgResource):
         Returns:
         - Tuple containing the response message with data source details if found, and the HTTP status code.
         """
-        with self.psycopg2_connection.cursor() as cursor:
-            return data_source_by_id_wrapper(data_source_id, cursor)
+        with self.setup_database_client() as db_client:
+            return data_source_by_id_wrapper(data_source_id, db_client)
 
     @handle_exceptions
     @api_required
@@ -51,12 +48,8 @@ class DataSourceById(PsycopgResource):
         - A dictionary containing a message about the update operation.
         """
         data = request.get_json()
-        with self.psycopg2_connection.cursor() as cursor:
-            # TODO: Replace with DatabaseClient method update_data_source()
-            result = update_data_source(cursor, data, data_source_id)
-            self.psycopg2_connection.commit()
-
-        return result
+        with self.setup_database_client() as db_client:
+            return update_data_source_wrapper(db_client, data, data_source_id)
 
 
 class DataSources(PsycopgResource):
@@ -74,8 +67,8 @@ class DataSources(PsycopgResource):
         Returns:
         - A dictionary containing the count of data sources and their details.
         """
-        with self.psycopg2_connection.cursor() as cursor:
-            return get_approved_data_sources_wrapper(cursor)
+        with self.setup_database_client() as db_client:
+            return get_approved_data_sources_wrapper(db_client)
 
     @handle_exceptions
     @api_required
@@ -87,12 +80,8 @@ class DataSources(PsycopgResource):
         - A dictionary containing a message about the addition operation.
         """
         data = request.get_json()
-        with self.psycopg2_connection.cursor() as cursor:
-            # TODO: Replace with DatabaseClient method add_new_data_source()
-            result = add_new_data_source(cursor, data)
-            self.psycopg2_connection.commit()
-
-        return result
+        with self.setup_database_client() as db_client:
+            return add_new_data_source_wrapper(db_client, data)
 
 
 class DataSourcesNeedsIdentification(PsycopgResource):
@@ -100,18 +89,8 @@ class DataSourcesNeedsIdentification(PsycopgResource):
     @handle_exceptions
     @api_required
     def get(self):
-        with self.psycopg2_connection.cursor() as cursor:
-            # TODO: Replace with DatabaseClient method get_needs_identification_data_sources()
-            # NOTE: Original method converted return to a dictionary, logic not yet carried over
-            # NOTE: Columns to return should be passed to method as a list of stringgs
-            data_source_matches = needs_identification_data_sources(cursor)
-
-        data_sources = {
-            "count": len(data_source_matches),
-            "data": data_source_matches,
-        }
-
-        return data_sources
+        with self.setup_database_client() as db_client:
+            return needs_identification_data_sources_wrapper(db_client)
 
 
 class DataSourcesMap(PsycopgResource):
@@ -129,5 +108,5 @@ class DataSourcesMap(PsycopgResource):
         Returns:
         - A dictionary containing the count of data sources and their details.
         """
-        with self.psycopg2_connection.cursor() as cursor:
-            return get_data_sources_for_map_wrapper(cursor)
+        with self.setup_database_client() as db_client:
+            return get_data_sources_for_map_wrapper(db_client)
