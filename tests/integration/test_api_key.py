@@ -1,7 +1,6 @@
 """Integration tests for /api_key endpoint"""
 
 from http import HTTPStatus
-import uuid
 
 import psycopg2.extensions
 
