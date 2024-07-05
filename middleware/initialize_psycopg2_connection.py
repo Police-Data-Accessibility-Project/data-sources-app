@@ -1,8 +1,5 @@
 import psycopg2
-import os
 from psycopg2.extensions import connection as PgConnection
-from typing import Union, Dict, List
-
 from middleware.util import get_env_variable
 
 
