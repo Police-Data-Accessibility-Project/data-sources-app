@@ -63,7 +63,7 @@ def test_data_sources_post(
         json={"name": name},
         headers={"Authorization": f"Bearer {api_key}"},
     )
-    assert response.status_code == HTTPStatus.OK.value
+    check_response_status(response, HTTPStatus.OK.value)
     cursor = dev_db_connection.cursor()
     cursor.execute(
         """

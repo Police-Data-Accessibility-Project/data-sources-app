@@ -1,8 +1,16 @@
+import json
 import uuid
+from datetime import datetime, timezone, timedelta
 
+import psycopg2
 import pytest
 
+from middleware.custom_exceptions import AccessTokenNotFoundError
 from tests.fixtures import live_database_client, dev_db_connection, db_cursor
+from tests.helper_functions import (
+    insert_test_agencies_and_sources,
+    insert_test_agencies_and_sources_if_not_exist,
+)
 
 
 def test_add_new_user(live_database_client):
@@ -31,6 +39,7 @@ def test_get_user_id(live_database_client):
     # Compare the two user IDs
     assert result_user_id == direct_user_id
 
+
 def test_set_user_password_digest(live_database_client):
     fake_email = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
@@ -40,6 +49,7 @@ def test_set_user_password_digest(live_database_client):
     password_digest = cursor.fetchone()[0]
 
     assert password_digest == "test_password"
+
 
 def test_reset_token_logic(live_database_client):
     fake_email = uuid.uuid4().hex
@@ -54,6 +64,7 @@ def test_reset_token_logic(live_database_client):
     reset_token_info = live_database_client.get_reset_token_info(fake_token)
     assert reset_token_info is None, "Token not deleted"
 
+
 def test_update_user_api_key(live_database_client):
     # Add a new user to the database
 
@@ -66,22 +77,30 @@ def test_update_user_api_key(live_database_client):
 
 def test_get_data_source_by_id(live_database_client):
     # Add a new data source and agency to the database
-
+    insert_test_agencies_and_sources_if_not_exist(live_database_client.cursor)
     # Fetch the data source using its id with the DatabaseClient method
+    result = live_database_client.get_data_source_by_id("SOURCE_UID_1")
 
     # Confirm the data source and agency are retrieved successfully
+    NUMBER_OF_RESULT_COLUMNS = 67
+    assert result is not None
+    assert len(result) == NUMBER_OF_RESULT_COLUMNS
+    assert result[0] == 'Source 1'
 
-    pytest.fail("Test not implemented")
+
 
 
 def test_get_approved_data_sources(live_database_client):
     # Add new data sources and agencies to the database, at least two approved and one unapproved
+    insert_test_agencies_and_sources_if_not_exist(live_database_client.cursor)
 
     # Fetch the data sources with the DatabaseClient method
+    data_sources = live_database_client.get_approved_data_sources()
 
     # Confirm only all approved data sources are retrieved
-
-    pytest.fail("Test not implemented")
+    NUMBER_OF_DATA_SOURCE_COLUMNS = 42
+    assert len(data_sources) > 0
+    assert len(data_sources[0]) == NUMBER_OF_DATA_SOURCE_COLUMNS
 
 
 def test_get_needs_identification_data_sources(live_database_client):
@@ -104,20 +123,36 @@ def test_create_new_data_source_query():
 
 def test_add_new_data_source(live_database_client):
     # Add a new data source to the database with the DatabaseClient method
+    name = uuid.uuid4().hex
+    live_database_client.add_new_data_source({
+        "name": name,
+        "source_url": "https://example.com",
+    })
 
     # Fetch the data source from the database to confirm that it was added successfully
+    live_database_client.cursor.execute(
+        "SELECT * FROM data_sources WHERE name = %s",
+        (name,)
+    )
 
-    pytest.fail("Test not implemented")
+    results = live_database_client.cursor.fetchall()
+
+    assert len(results) == 1
+
 
 
 def test_update_data_source(live_database_client):
     # Add a new data source to the database
+    insert_test_agencies_and_sources_if_not_exist(live_database_client.cursor)
 
     # Update the data source with the DatabaseClient method
+    new_description = uuid.uuid4().hex
+    live_database_client.update_data_source({"description": new_description}, 'SOURCE_UID_1' )
 
     # Fetch the data source from the database to confirm the change
+    result = live_database_client.get_data_source_by_id('SOURCE_UID_1')
 
-    pytest.fail("Test not implemented")
+    assert result[2] == new_description
 
 
 def test_create_data_source_update_query(live_database_client):
@@ -188,28 +223,67 @@ def test_update_last_cached(live_database_client):
 
 def test_get_quick_search_results(live_database_client):
     # Add new data sources to the database, some that satisfy the search criteria and some that don't
+    insert_test_agencies_and_sources_if_not_exist(live_database_client.cursor)
 
     # Fetch the search results using the DatabaseClient method
+    result = live_database_client.get_quick_search_results(
+        search="Source 1", location="City A"
+    )
 
-    # Confirm that all data sources that satisfy the search criteria are returned and those that don't are not returned
-
-    pytest.fail("Test not implemented")
+    assert len(result) == 1
+    assert result[0].id == "SOURCE_UID_1"
 
 
 def test_add_quick_search_log(live_database_client):
     # Add a quick search log to the database using the DatabaseClient method
+    search = "Source QSL"
+    location = "City QSL"
+    live_database_client.add_quick_search_log(
+        data_sources_count=1,
+        processed_data_source_matches=live_database_client.DataSourceMatches(
+            converted=["Source QSL"],
+            ids=["SOURCE_UID_QSL"],
+        ),
+        processed_search_parameters=live_database_client.SearchParameters(
+            search=search, location=location
+        ),
+    )
 
     # Fetch the quick search logs to confirm it was added successfully
-
-    pytest.fail("Test not implemented")
+    live_database_client.cursor.execute(
+        """
+        select search, location, results, result_count
+        from quick_search_query_logs
+        where search = %s and location = %s
+        """,
+        (search, location),
+    )
+    rows = live_database_client.cursor.fetchall()
+    assert len(rows) == 1
+    assert rows[0][0] == search
+    assert rows[0][1] == location
+    assert rows[0][2][0] == "SOURCE_UID_QSL"
+    assert rows[0][3] == 1
 
 
 def test_add_new_access_token(live_database_client):
     # Call the DatabaseClient method to generate and add a new access token to the database
+    access_token = uuid.uuid4().hex
+    expiration_date = datetime.now(tz=timezone.utc)
+
+    live_database_client.add_new_access_token(
+        token=access_token,
+        expiration=expiration_date,
+    )
+
+    live_database_client.cursor.execute(
+        f"select token, expiration_date from access_tokens where token = '{access_token}'"
+    )
 
     # Fetch the new access token from the database to confirm it was added successfully
-
-    pytest.fail("Test not implemented")
+    results = live_database_client.cursor.fetchone()
+    assert results[0] == access_token
+    assert results[1] == expiration_date
 
 
 def test_get_user_info(live_database_client):
@@ -283,23 +357,42 @@ def test_delete_session_token(live_database_client):
 
 def test_get_access_token(live_database_client):
     # Add a new access token to the database
+    live_database_client.add_new_access_token(
+        token="test_access_token",
+        expiration=datetime.now(tz=timezone.utc),
+    )
 
     # Fetch the access token using the DatabaseClient method
+    access_token = live_database_client.get_access_token(api_key="test_access_token")
 
     # Confirm that the access token is retrieved
+    assert access_token.token == "test_access_token"
 
     # Attempt to fetch a non-existant access token
-
     # Assert AccessTokenNotFoundError is raised
-
-    pytest.fail("Test not implemented")
+    with pytest.raises(AccessTokenNotFoundError):
+        live_database_client.get_access_token(api_key="non_existant_access_token")
 
 
 def test_delete_expired_access_tokens(live_database_client):
     # Add new access tokens to the database, at least two expired and one unexpired
+    expired_tokens = [uuid.uuid4().hex for _ in range(2)]
+    unexpired_token = uuid.uuid4().hex
+    for token in expired_tokens:
+        live_database_client.add_new_access_token(
+            token=token,
+            expiration=datetime.now(tz=timezone.utc) - timedelta(days=1),
+        )
+    live_database_client.add_new_access_token(
+        token=unexpired_token,
+        expiration=datetime.now(tz=timezone.utc) + timedelta(days=1),
+    )
 
     # Delete the expired access tokens using the DatabaseClient method
+    live_database_client.delete_expired_access_tokens()
 
     # Confirm that only the expired access tokens were deleted and that all expired tokens were deleted
-
-    pytest.fail("Test not implemented")
+    for token in expired_tokens:
+        with pytest.raises(AccessTokenNotFoundError):
+            live_database_client.get_access_token(api_key=token)
+    assert live_database_client.get_access_token(api_key=unexpired_token)

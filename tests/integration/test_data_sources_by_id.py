@@ -7,7 +7,7 @@ from tests.fixtures import connection_with_test_data, dev_db_connection, client_
 from tests.helper_functions import (
     create_test_user_api,
     create_api_key,
-    give_user_admin_role,
+    give_user_admin_role, check_response_status,
 )
 
 
@@ -24,7 +24,7 @@ def test_data_sources_by_id_get(
         "/data-sources-by-id/SOURCE_UID_1",
         headers={"Authorization": f"Bearer {api_key}"},
     )
-    assert response.status_code == HTTPStatus.OK.value
+    check_response_status(response, HTTPStatus.OK.value)
     assert response.json["source_url"] == "http://src1.com"
 
 

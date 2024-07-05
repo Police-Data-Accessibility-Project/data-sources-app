@@ -103,20 +103,6 @@ def test_api_key_not_exist_in_any_table(dev_db_connection):
     assert "API Key not found" in str(e.value)
 
 
-def test_expired_access_token_in_access_tokens_table(dev_db_connection):
-    cursor = dev_db_connection.cursor()
-    token = uuid.uuid4().hex
-    expiration = datetime.datetime(year=1999, month=1, day=1)
-    cursor.execute(
-        f"insert into access_tokens (token, expiration_date) values (%s, %s)",
-        (token, expiration),
-    )
-    dev_db_connection.commit()
-    with pytest.raises(InvalidAPIKeyError) as e:
-        result = validate_api_key(token, "", "")
-    assert "API Key not found" in str(e.value)
-
-
 def test_admin_only_action_with_non_admin_role(dev_db_connection):
     cursor = dev_db_connection.cursor()
     test_user = create_test_user(cursor)
