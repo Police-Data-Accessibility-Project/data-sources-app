@@ -30,6 +30,6 @@ class QuickSearch(PsycopgResource):
         Returns:
         - A dictionary containing a message about the search results and the data found, if any.
         """
-        return quick_search_query_wrapper(
-            search, location, self.psycopg2_connection.cursor()
-        )
+        with self.setup_database_client() as db_client:
+            response = quick_search_query_wrapper(search, location, db_client)
+        return response
