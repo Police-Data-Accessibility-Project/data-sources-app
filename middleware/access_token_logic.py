@@ -1,12 +1,12 @@
 import datetime
 import uuid
 
+from database_client.database_client import DatabaseClient
+
 
 # DatabaseClient.add_new_access_token()
-def insert_access_token(cursor):
+def insert_access_token(db_client: DatabaseClient):
     token = uuid.uuid4().hex
     expiration = datetime.datetime.now() + datetime.timedelta(minutes=5)
-    cursor.execute(
-        f"insert into access_tokens (token, expiration_date) values (%s, %s)",
-        (token, expiration),
-    )
+    db_client.add_new_access_token(token, expiration)
+
