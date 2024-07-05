@@ -212,7 +212,7 @@ def create_test_user_api(client: FlaskClient) -> UserInfo:
         "/user",
         json={"email": email, "password": password},
     )
-    assert response.status_code == HTTPStatus.OK.value, "User creation not successful"
+    check_response_status(response, HTTPStatus.OK.value)
     return UserInfo(email=email, password=password)
 
 
