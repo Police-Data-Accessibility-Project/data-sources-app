@@ -9,6 +9,7 @@ from http import HTTPStatus
 from flask import request
 
 from database_client.database_client import DatabaseClient
+from middleware.custom_exceptions import AccessTokenNotFoundError
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 from datetime import datetime as dt
 from middleware.login_queries import is_admin
@@ -44,8 +45,7 @@ def validate_api_key(api_key: str, endpoint: str, method: str):
     """
 
     psycopg2_connection = initialize_psycopg2_connection()
-    cursor = psycopg2_connection.cursor()
-    db_client = DatabaseClient(cursor)
+    db_client = DatabaseClient(psycopg2_connection.cursor())
     role = get_role(api_key, db_client)
     if role:
         validate_role(role, endpoint, method)
@@ -62,12 +62,9 @@ def validate_api_key(api_key: str, endpoint: str, method: str):
             return
 
     except SessionTokenNotFoundError:
-        # TODO: Replace with DatabaseClient method delete_expired_access_tokens
-        # NOTE: Should call psycopg2_connection.commit() after doing so
-        delete_expired_access_tokens(cursor, psycopg2_connection)
+        db_client.delete_expired_access_tokens()
         try:
-            # TODO: Replace with DatabaseClient method get_access_token()
-            get_access_token(api_key, cursor)
+            db_client.get_access_token(api_key)
             role = "user"
         except AccessTokenNotFoundError:
             raise InvalidAPIKeyError("API Key not found")
@@ -92,7 +89,6 @@ def get_role(api_key, db_client: DatabaseClient) -> Optional[str]:
     return role.role
 
 
-
 SessionTokenResults = namedtuple("SessionTokenResults", ["email", "expiration_date"])
 
 
@@ -105,26 +101,6 @@ def get_session_token(api_key, db_client: DatabaseClient) -> SessionTokenResults
     if not session_token_results:
         raise SessionTokenNotFoundError("Session token not found")
     return session_token_results
-
-
-# middleware.custom_exceptions.AccessTokenNotFoundError
-class AccessTokenNotFoundError(Exception):
-    pass
-
-
-# DatabaseClient.get_access_token()
-def get_access_token(api_key, cursor) -> str:
-    cursor.execute(f"select id, token from access_tokens where token = %s", (api_key,))
-    results = cursor.fetchone()
-    if not results:
-        raise AccessTokenNotFoundError("Access token not found")
-    return results[1]
-
-
-# DatabaseClient.delete_expired_access_tokens()
-def delete_expired_access_tokens(cursor, psycopg2_connection):
-    cursor.execute(f"delete from access_tokens where expiration_date < NOW()")
-    psycopg2_connection.commit()
 
 
 def is_admin_only_action(endpoint, method):
