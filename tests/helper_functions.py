@@ -377,3 +377,29 @@ class DynamicMagicMock:
         mock = MagicMock()
         setattr(self, name, mock)
         return mock
+
+def setup_get_typeahead_suggestion_test_data(cursor: psycopg2.extensions.cursor):
+    try:
+        cursor.execute("SAVEPOINT typeahead_suggestion_test_savepoint")
+
+        # State (via state_names table)
+        cursor.execute(
+            "insert into state_names (state_iso, state_name) values ('XY', 'Xylonsylvania')"
+        )
+        # County (via counties table)
+        cursor.execute(
+            "insert into counties(fips, name, state_iso) values ('12345', 'Arxylodon', 'XY')"
+        )
+
+        # Locality (via agencies table)
+        cursor.execute(
+            """insert into agencies 
+            (name, airtable_uid, municipality, state_iso, county_fips, county_name) 
+            values 
+            ('Xylodammerung Police Agency', 'XY_SOURCE_UID', 'Xylodammerung', 'XY', '12345', 'Arxylodon')"""
+        )
+
+        # Refresh materialized view
+        cursor.execute("REFRESH MATERIALIZED VIEW typeahead_suggestions;")
+    except psycopg2.errors.UniqueViolation:
+        cursor.execute("ROLLBACK TO SAVEPOINT typeahead_suggestion_test_savepoint")

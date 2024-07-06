@@ -5,8 +5,11 @@ from typing import Optional
 
 from psycopg2 import sql
 
-from database_client.constants import AGENCY_APPROVED_COLUMNS, DATA_SOURCES_APPROVED_COLUMNS, \
-    RESTRICTED_DATA_SOURCE_COLUMNS
+from database_client.constants import (
+    AGENCY_APPROVED_COLUMNS,
+    DATA_SOURCES_APPROVED_COLUMNS,
+    RESTRICTED_DATA_SOURCE_COLUMNS,
+)
 
 TableColumn = namedtuple("TableColumn", ["table", "column"])
 TableColumnAlias = namedtuple("TableColumnAlias", ["table", "column", "alias"])
@@ -21,7 +24,8 @@ class DynamicQueryConstructor:
 
     @staticmethod
     def build_fields(
-        columns_only: list[TableColumn], columns_and_alias: Optional[list[TableColumnAlias]] = None
+        columns_only: list[TableColumn],
+        columns_and_alias: Optional[list[TableColumnAlias]] = None,
     ):
         # Process columns without alias
         fields_only = [
@@ -140,10 +144,10 @@ class DynamicQueryConstructor:
         return sql_query
 
     @staticmethod
-    def zip_needs_identification_data_source_results(results: list[tuple]) -> list[dict]:
-        return [
-            dict(zip(DATA_SOURCES_APPROVED_COLUMNS, result)) for result in results
-        ]
+    def zip_needs_identification_data_source_results(
+        results: list[tuple],
+    ) -> list[dict]:
+        return [dict(zip(DATA_SOURCES_APPROVED_COLUMNS, result)) for result in results]
 
     @staticmethod
     def create_data_source_update_query(
@@ -225,4 +229,47 @@ class DynamicQueryConstructor:
         """
         ).format(columns=columns_sql, values=values_sql)
 
+        return query
+
+    @staticmethod
+    def generate_new_typeahead_suggestion_query(search_term: str):
+        query = sql.SQL(
+            """
+        WITH combined AS (
+            SELECT 
+                1 AS sort_order,
+                display_name,
+                type,
+                state,
+                county,
+                locality
+            FROM typeahead_suggestions
+            WHERE display_name ILIKE {search_term_prefix}
+            UNION ALL
+            SELECT
+                2 AS sort_order,
+                display_name,
+                type,
+                state,
+                county,
+                locality
+            FROM typeahead_suggestions
+            WHERE display_name ILIKE {search_term_anywhere}
+            AND display_name NOT ILIKE {search_term_prefix}
+        )
+        SELECT DISTINCT 
+            sort_order,
+            display_name,
+            type,
+            state,
+            county,
+            locality
+        FROM combined
+        ORDER BY sort_order, display_name
+        LIMIT 4;
+        """
+        ).format(
+            search_term_prefix=sql.Literal(f"{search_term}%"),
+            search_term_anywhere=sql.Literal(f"%{search_term}%"),
+        )
         return query

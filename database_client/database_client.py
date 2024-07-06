@@ -2,7 +2,7 @@ import json
 from collections import namedtuple
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Optional, Any
+from typing import Optional, Any, List
 import uuid
 
 import psycopg2
@@ -68,8 +68,6 @@ QUICK_SEARCH_SQL = """
         AND data_sources.url_status not in ('broken', 'none found')
 
 """
-
-
 
 
 class DatabaseClient:
@@ -152,7 +150,9 @@ class DatabaseClient:
             f"delete from reset_tokens where email = %s and token = %s", (email, token)
         )
 
-    SessionTokenInfo = namedtuple("SessionTokenInfo", ["id", "email", "expiration_date"])
+    SessionTokenInfo = namedtuple(
+        "SessionTokenInfo", ["id", "email", "expiration_date"]
+    )
 
     def get_session_token_info(self, api_key: str) -> Optional[SessionTokenInfo]:
         """
@@ -644,3 +644,27 @@ class DatabaseClient:
         """Deletes all expired access tokens from the database."""
         self.cursor.execute(f"delete from access_tokens where expiration_date < NOW()")
 
+    TypeaheadSuggestions = namedtuple(
+        "TypeaheadSuggestions", ["display_name", "type", "state", "county", "locality"]
+    )
+    def get_typeahead_suggestions(self, search_term: str) -> List[TypeaheadSuggestions]:
+        """
+        Returns a list of data sources that match the search query.
+
+        :param search_term: The search query.
+        :return: List of data sources that match the search query.
+        """
+        query = DynamicQueryConstructor.generate_new_typeahead_suggestion_query(search_term)
+        self.cursor.execute(query)
+        results = self.cursor.fetchall()
+
+        return [
+            self.TypeaheadSuggestions(
+                display_name=row[1],
+                type=row[2],
+                state=row[3],
+                county=row[4],
+                locality=row[5],
+            )
+            for row in results
+        ]
