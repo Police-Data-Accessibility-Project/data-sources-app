@@ -2,7 +2,7 @@ import json
 from collections import namedtuple
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Optional, Any
+from typing import Optional, Any, List
 import uuid
 
 import psycopg2
@@ -14,6 +14,7 @@ from middleware.custom_exceptions import (
     TokenNotFoundError,
     AccessTokenNotFoundError,
 )
+from utilities.enums import RecordCategories
 
 RESTRICTED_COLUMNS = [
     "rejection_note",
@@ -68,8 +69,6 @@ QUICK_SEARCH_SQL = """
         AND data_sources.url_status not in ('broken', 'none found')
 
 """
-
-
 
 
 class DatabaseClient:
@@ -152,7 +151,9 @@ class DatabaseClient:
             f"delete from reset_tokens where email = %s and token = %s", (email, token)
         )
 
-    SessionTokenInfo = namedtuple("SessionTokenInfo", ["id", "email", "expiration_date"])
+    SessionTokenInfo = namedtuple(
+        "SessionTokenInfo", ["id", "email", "expiration_date"]
+    )
 
     def get_session_token_info(self, api_key: str) -> Optional[SessionTokenInfo]:
         """
@@ -644,3 +645,41 @@ class DatabaseClient:
         """Deletes all expired access tokens from the database."""
         self.cursor.execute(f"delete from access_tokens where expiration_date < NOW()")
 
+    def search_with_location_and_record_type(
+        self,
+        state: str,
+        record_type: Optional[RecordCategories] = None,
+        county: Optional[str] = None,
+        locality: Optional[str] = None,
+    ) -> List[QuickSearchResult]:
+        """
+        Searches for data sources in the database.
+
+        :param state: The state to search for data sources in.
+        :param record_type: The type of data sources to search for. If None, all data sources will be searched for.
+        :param county: The county to search for data sources in. If None, all data sources will be searched for.
+        :param locality: The locality to search for data sources in. If None, all data sources will be searched for.
+        :return: A list of QuickSearchResult objects.
+        """
+        query = DynamicQueryConstructor.create_search_query(
+            state=state, record_type=record_type, county=county, locality=locality
+        )
+        self.cursor.execute(query)
+        results = self.cursor.fetchall()
+        return [
+            self.QuickSearchResult(
+                id=row[0],
+                data_source_name=row[1],
+                description=row[2],
+                record_type=row[3],
+                url=row[4],
+                format=row[5],
+                coverage_start=row[6],
+                coverage_end=row[7],
+                agency_supplied=row[8],
+                agency_name=row[9],
+                municipality=row[10],
+                state=row[11],
+            )
+            for row in results
+        ]

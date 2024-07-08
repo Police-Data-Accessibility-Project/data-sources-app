@@ -17,6 +17,7 @@ from tests.helper_functions import (
     insert_test_agencies_and_sources,
     insert_test_agencies_and_sources_if_not_exist,
 )
+from utilities.enums import RecordCategories
 
 
 def test_add_new_user(live_database_client):
@@ -416,3 +417,55 @@ def test_delete_expired_access_tokens(live_database_client):
         with pytest.raises(AccessTokenNotFoundError):
             live_database_client.get_access_token(api_key=token)
     assert live_database_client.get_access_token(api_key=unexpired_token)
+
+def test_search_with_location_and_record_types(live_database_client):
+    """
+    Due to the large number of combinations, I will refer to tests using certain parameters by their first letter
+    e.g. S=State, R=Record type, L=Locality, C=County
+    In the absence of a large slew of test records, I will begin by testing that
+    1) Each search returns a nonzero result count
+    2) SRLC search returns the fewest results
+    3) S search returns the most results
+    4) SR returns less results than S but more than SRC
+    5) SC returns less results than S but more than SCL
+    :param live_database_client:
+    :return:
+    """
+    state_parameter = "Pennsylvania"
+    record_type_parameter = RecordCategories.AGENCIES
+    county_parameter = "Allegheny"
+    locality_parameter = "Pittsburgh"
+
+    SRLC = len(live_database_client.search_with_location_and_record_type(
+        state=state_parameter,
+        record_type=record_type_parameter,
+        county=county_parameter,
+        locality=locality_parameter
+    ))
+    S = len(live_database_client.search_with_location_and_record_type(
+        state=state_parameter
+    ))
+    SR = len(live_database_client.search_with_location_and_record_type(
+        state=state_parameter,
+        record_type=record_type_parameter
+    ))
+    SRC = len(live_database_client.search_with_location_and_record_type(
+        state=state_parameter,
+        record_type=record_type_parameter,
+        county=county_parameter
+    ))
+    SCL = len(live_database_client.search_with_location_and_record_type(
+        state=state_parameter,
+        county=county_parameter,
+        locality=locality_parameter
+    ))
+    SC = len(live_database_client.search_with_location_and_record_type(
+        state=state_parameter,
+        county=county_parameter
+    ))
+
+    assert SRLC > 0
+    assert SRLC < SRC
+    assert SRLC < SCL
+    assert S > SR > SRC
+    assert S > SC > SCL
