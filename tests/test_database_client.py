@@ -12,11 +12,12 @@ from middleware.custom_exceptions import (
     UserNotFoundError,
     TokenNotFoundError,
 )
-from tests.fixtures import live_database_client, dev_db_connection, db_cursor
+from tests.fixtures import live_database_client, dev_db_connection, db_cursor, xylonslyvania_test_data
 from tests.helper_functions import (
     insert_test_agencies_and_sources,
     insert_test_agencies_and_sources_if_not_exist,
 )
+from tests.helper_scripts.test_data_generator import TestDataGenerator
 from utilities.enums import RecordCategories
 
 
@@ -418,7 +419,7 @@ def test_delete_expired_access_tokens(live_database_client):
             live_database_client.get_access_token(api_key=token)
     assert live_database_client.get_access_token(api_key=unexpired_token)
 
-def test_search_with_location_and_record_types(live_database_client):
+def test_search_with_location_and_record_types_real_data(live_database_client):
     """
     Due to the large number of combinations, I will refer to tests using certain parameters by their first letter
     e.g. S=State, R=Record type, L=Locality, C=County
@@ -469,3 +470,38 @@ def test_search_with_location_and_record_types(live_database_client):
     assert SRLC < SCL
     assert S > SR > SRC
     assert S > SC > SCL
+
+def test_search_with_location_and_record_types_test_data(live_database_client, xylonslyvania_test_data):
+    results = live_database_client.search_with_location_and_record_type(
+        state="Xylonsylvania"
+    )
+    assert len(results) == 8
+
+    results = live_database_client.search_with_location_and_record_type(
+        state="Xylonsylvania",
+        record_type=RecordCategories.JAIL
+    )
+    assert len(results) == 6
+
+    results = live_database_client.search_with_location_and_record_type(
+        state="Xylonsylvania",
+        county="Arxylodon"
+    )
+    assert len(results) == 4
+
+    results = live_database_client.search_with_location_and_record_type(
+        state="Xylonsylvania",
+        county="Qtzylan",
+        locality="Qtzylschlitzl"
+    )
+    assert len(results) == 2
+
+    results = live_database_client.search_with_location_and_record_type(
+        state="Xylonsylvania",
+        record_type=RecordCategories.POLICE,
+        county="Arxylodon",
+        locality="Xylodammerung"
+    )
+
+    assert len(results) == 1
+    assert results[0].data_source_name == 'Xylodammerung Police Department Stops'
