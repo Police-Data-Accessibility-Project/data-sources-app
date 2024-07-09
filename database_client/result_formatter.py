@@ -1,3 +1,4 @@
+from collections import namedtuple
 from typing import Any
 
 from database_client.constants import (
@@ -66,3 +67,6 @@ class ResultFormatter:
         return ResultFormatter.convert_data_source_matches(
             data_source_and_agency_columns, [results]
         )[0]
+
+def dictify_namedtuple(result: list[namedtuple]) -> list[dict[str, Any]]:
+    return [result._asdict() for result in result]
