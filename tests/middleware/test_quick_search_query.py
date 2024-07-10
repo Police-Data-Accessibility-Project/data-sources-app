@@ -7,8 +7,8 @@ from unittest.mock import patch
 import psycopg2
 import pytest
 
+from database_client.database_client import DatabaseClient
 from middleware.quick_search_query import (
-    unaltered_search_query,
     quick_search_query,
     QUICK_SEARCH_COLUMNS,
     quick_search_query_wrapper,
@@ -22,21 +22,6 @@ from tests.helper_functions import (
 )
 from tests.fixtures import connection_with_test_data, dev_db_connection
 
-
-def test_unaltered_search_query(
-    connection_with_test_data: psycopg2.extensions.connection,
-) -> None:
-    """
-    :param connection_with_test_data: A connection object that is connected to the test database containing the test data.
-    :return: None
-    Test the unaltered_search_query method properly returns only one result
-    """
-    response = unaltered_search_query(
-        connection_with_test_data.cursor(), search="Source 1", location="City A"
-    )
-
-    assert len(response) == 1
-    assert response[0][3] == "Type A"  # Record Type
 
 
 def test_quick_search_query_logging(
@@ -55,7 +40,7 @@ def test_quick_search_query_logging(
         test_datetime = result[0]
 
         quick_search_query(
-            SearchParameters(search="Source 1", location="City A"), cursor=cursor
+            SearchParameters(search="Source 1", location="City A"), db_client=DatabaseClient(cursor)
         )
         # Test that query inserted into log
         result = get_most_recent_quick_search_query_log(cursor, "Source 1", "City A")
@@ -74,19 +59,19 @@ def test_quick_search_query_results(
     :param connection_with_test_data: The connection to the test data database.
     :return: None
     """
-    with connection_with_test_data.cursor() as cursor:
-        results = quick_search_query(
-            SearchParameters(search="Source 1", location="City A"), cursor=cursor
-        )
-        # Test that results include expected keys
-        assert has_expected_keys(results["data"][0].keys(), QUICK_SEARCH_COLUMNS)
-        assert len(results["data"]) == 1
-        assert results["data"][0]["record_type"] == "Type A"
-        # "Source 3" was listed as pending and shouldn't show up
-        results = quick_search_query(
-            SearchParameters(search="Source 3", location="City C"), cursor=cursor
-        )
-        assert len(results["data"]) == 0
+    db_client = DatabaseClient(connection_with_test_data.cursor())
+    results = quick_search_query(
+        SearchParameters(search="Source 1", location="City A"), db_client=db_client
+    )
+    # Test that results include expected keys
+    assert has_expected_keys(results["data"][0].keys(), QUICK_SEARCH_COLUMNS)
+    assert len(results["data"]) == 1
+    assert results["data"][0]["record_type"] == "Type A"
+    # "Source 3" was listed as pending and shouldn't show up
+    results = quick_search_query(
+        SearchParameters(search="Source 3", location="City C"), db_client=db_client
+    )
+    assert len(results["data"]) == 0
 
 
 def test_quick_search_query_no_results(
@@ -98,12 +83,13 @@ def test_quick_search_query_no_results(
     :param connection_with_test_data: The connection to the test data database.
     :return: None
     """
+    db_client = DatabaseClient(connection_with_test_data.cursor())
     results = quick_search_query(
         SearchParameters(
             search="Nonexistent Source",
             location="Nonexistent Location",
         ),
-        cursor=connection_with_test_data.cursor(),
+        db_client=db_client,
     )
     assert len(results["data"]) == 0
 
@@ -133,10 +119,10 @@ def test_quick_search_query_wrapper_happy_path(
     mock_quick_search_query, mock_make_response
 ):
     mock_quick_search_query.return_value = [{"record_type": "Type A"}]
-    mock_cursor = MagicMock()
-    quick_search_query_wrapper(arg1="Source 1", arg2="City A", cursor=mock_cursor)
+    mock_db_client = MagicMock()
+    quick_search_query_wrapper(arg1="Source 1", arg2="City A", db_client=mock_db_client)
     mock_quick_search_query.assert_called_with(
-        SearchParameters(search="Source 1", location="City A"), cursor=mock_cursor
+        SearchParameters(search="Source 1", location="City A"), db_client=mock_db_client
     )
     mock_make_response.assert_called_with(
         [{"record_type": "Type A"}], HTTPStatus.OK.value
@@ -149,10 +135,10 @@ def test_quick_search_query_wrapper_exception(
     mock_quick_search_query.side_effect = Exception("Test Exception")
     arg1 = "Source 1"
     arg2 = "City A"
-    mock_cursor = MagicMock()
-    quick_search_query_wrapper(arg1=arg1, arg2=arg2, cursor=mock_cursor)
+    mock_db_client = MagicMock()
+    quick_search_query_wrapper(arg1=arg1, arg2=arg2, db_client=mock_db_client)
     mock_quick_search_query.assert_called_with(
-        SearchParameters(search=arg1, location=arg2), cursor=mock_cursor
+        SearchParameters(search=arg1, location=arg2), db_client=mock_db_client
     )
     user_message = "There was an error during the search operation"
     mock_post_to_webhook.assert_called_with(

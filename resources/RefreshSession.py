@@ -4,9 +4,6 @@ from flask_restx import abort
 
 from middleware.custom_exceptions import TokenNotFoundError
 from middleware.login_queries import (
-    get_session_token_user_data,
-    create_session_token,
-    delete_session_token,
     refresh_session,
 )
 from typing import Dict, Any
@@ -31,7 +28,6 @@ class RefreshSession(PsycopgResource):
         """
         data = request.get_json()
         old_token = data.get("session_token")
-        with self.psycopg2_connection.cursor() as cursor:
-            response = refresh_session(cursor, old_token)
-            self.psycopg2_connection.commit()
+        with self.setup_database_client() as db_client:
+            response = refresh_session(db_client, old_token)
         return response

@@ -7,8 +7,10 @@ import psycopg2
 import pytest
 from dotenv import load_dotenv
 from flask.testing import FlaskClient
+from psycopg2.extras import DictCursor
 
 from app import create_app
+from database_client.database_client import DatabaseClient
 from middleware.util import get_env_variable
 from tests.helper_functions import insert_test_agencies_and_sources
 
@@ -52,7 +54,7 @@ def db_cursor(
     Create a cursor to execute database operations, with savepoint management.
     This is to ensure that changes made during the test can be rolled back.
     """
-    cur = dev_db_connection.cursor()
+    cur = dev_db_connection.cursor(cursor_factory=DictCursor)
 
     # Start a savepoint
     cur.execute("SAVEPOINT test_savepoint")
@@ -116,3 +118,12 @@ def client_with_db(dev_db_connection: psycopg2.extensions.connection, monkeypatc
 @pytest.fixture
 def bypass_api_required(monkeypatch):
     monkeypatch.setattr("middleware.security.validate_token", lambda: None)
+
+@pytest.fixture
+def live_database_client(db_cursor) -> DatabaseClient:
+    """
+    Returns a database client with a live connection to the database
+    :param db_cursor:
+    :return:
+    """
+    return DatabaseClient(db_cursor)

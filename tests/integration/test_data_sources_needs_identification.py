@@ -7,6 +7,7 @@ from tests.helper_functions import (
     get_boolean_dictionary,
     create_test_user_api,
     create_api_key,
+    check_response_status,
 )
 
 
@@ -25,7 +26,7 @@ def test_data_sources_needs_identification(
         "/data-sources-needs-identification",
         headers={"Authorization": f"Bearer {api_key}"},
     )
-    assert response.status_code == HTTPStatus.OK.value
+    check_response_status(response, HTTPStatus.OK.value)
 
     for result in response.json["data"]:
         name = result["name"]

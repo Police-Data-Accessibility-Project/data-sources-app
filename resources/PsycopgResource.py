@@ -1,8 +1,13 @@
+from contextlib import contextmanager
 from http import HTTPStatus
 import functools
 from typing import Callable, Any, Union, Tuple, Dict
 
+import psycopg2
 from flask_restx import abort, Resource
+from psycopg2.extras import DictCursor
+
+from database_client.database_client import DatabaseClient
 
 
 def handle_exceptions(
@@ -52,3 +57,20 @@ class PsycopgResource(Resource):
         """
         super().__init__(*args, **kwargs)
         self.psycopg2_connection = kwargs["psycopg2_connection"]
+
+    @contextmanager
+    def setup_database_client(self) -> DatabaseClient:
+        """
+        A context manager to setup a database client.
+
+        Yields:
+        - The database client.
+        """
+        with self.psycopg2_connection.cursor(cursor_factory=DictCursor) as cursor:
+            try:
+                yield DatabaseClient(cursor)
+            except Exception as e:
+                self.psycopg2_connection.rollback()
+                raise e
+            finally:
+                self.psycopg2_connection.commit()

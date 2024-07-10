@@ -61,6 +61,13 @@ def insert_test_agencies_and_sources(cursor: psycopg2.extensions.cursor) -> None
         """
     )
 
+def insert_test_agencies_and_sources_if_not_exist(cursor: psycopg2.extensions.cursor):
+    try:
+        cursor.execute("SAVEPOINT my_savepoint")
+        insert_test_agencies_and_sources(cursor)
+    except psycopg2.errors.UniqueViolation:  # Data already inserted
+        cursor.execute("ROLLBACK TO SAVEPOINT my_savepoint")
+
 
 def get_reset_tokens_for_email(
     db_cursor: psycopg2.extensions.cursor, reset_token_insert: TestTokenInsert
@@ -205,7 +212,7 @@ def create_test_user_api(client: FlaskClient) -> UserInfo:
         "/user",
         json={"email": email, "password": password},
     )
-    assert response.status_code == HTTPStatus.OK.value, "User creation not successful"
+    check_response_status(response, HTTPStatus.OK.value)
     return UserInfo(email=email, password=password)
 
 

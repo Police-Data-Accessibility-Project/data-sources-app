@@ -1,28 +1,36 @@
+from unittest.mock import MagicMock
+
 import psycopg2
 import pytest
 
 from middleware.custom_exceptions import UserNotFoundError
 from middleware.user_queries import user_post_results, user_check_email
-from tests.helper_functions import create_test_user
+from tests.helper_functions import create_test_user, DynamicMagicMock
 from tests.fixtures import db_cursor, dev_db_connection
 
 
-def test_user_post_query(db_cursor: psycopg2.extensions.cursor) -> None:
-    """
-    Test the `user_post_query` method, ensuring it properly returns the expected results
+def test_user_post_query(monkeypatch):
 
-    :param db_cursor: The database cursor.
-    :return: None.
-    """
-    user_post_results(db_cursor, "unit_test", "unit_test")
+    mock_db_client = MagicMock()
+    mock_generate_password_hash = MagicMock()
+    mock_generate_password_hash.return_value = "password_digest"
 
-    db_cursor.execute(f"SELECT email FROM users WHERE email = 'unit_test'")
-    email_check = db_cursor.fetchone()[0]
+    monkeypatch.setattr(
+        "middleware.user_queries.generate_password_hash", mock_generate_password_hash
+    )
 
-    assert email_check == "unit_test"
+    user_post_results(mock_db_client, "test_email", "test_password")
+
+    mock_generate_password_hash.assert_called_once_with("test_password")
+    mock_db_client.add_new_user.assert_called_once_with("test_email", "password_digest")
 
 
-def test_user_check_email(db_cursor: psycopg2.extensions.cursor) -> None:
+class TestUserMagicMock(DynamicMagicMock):
+    db_client: MagicMock
+    user_id: MagicMock
+    email: MagicMock
+
+def test_user_check_email(monkeypatch) -> None:
     """
     Verify the functionality of the `user_check_email` method.
 
@@ -30,13 +38,19 @@ def test_user_check_email(db_cursor: psycopg2.extensions.cursor) -> None:
     :return: None
 
     """
-    user = create_test_user(db_cursor)
-    user_data = user_check_email(db_cursor, user.email)
-    assert user_data["id"] == user.id
+    mock = TestUserMagicMock()
+    mock.db_client.get_user_id.return_value = mock.user_id
+
+    user_check_email(mock.db_client, mock.email)
+    mock.db_client.get_user_id.assert_called_once_with(mock.email)
 
 
 def test_user_check_email_raises_user_not_found_error(
-    db_cursor: psycopg2.extensions,
+    monkeypatch
 ) -> None:
+    mock = TestUserMagicMock()
+    mock.db_client.get_user_id.return_value = None
+
     with pytest.raises(UserNotFoundError):
-        user_check_email(db_cursor, "nonexistent@example.com")
+        user_check_email(mock.db_client, mock.email)
+    mock.db_client.get_user_id.assert_called_once_with(mock.email)

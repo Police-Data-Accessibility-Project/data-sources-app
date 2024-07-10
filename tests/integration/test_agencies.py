@@ -2,9 +2,12 @@
 
 from http import HTTPStatus
 import psycopg2
-import pytest
-from tests.fixtures import connection_with_test_data, dev_db_connection, client_with_db
-from tests.helper_functions import create_test_user_api, create_api_key
+from tests.fixtures import dev_db_connection, client_with_db
+from tests.helper_functions import (
+    create_test_user_api,
+    create_api_key,
+    check_response_status,
+)
 
 
 def test_agencies_get(
@@ -20,7 +23,7 @@ def test_agencies_get(
         "/agencies/2",
         headers={"Authorization": f"Bearer {api_key}"},
     )
-    assert response.status_code == HTTPStatus.OK.value
+    check_response_status(response, HTTPStatus.OK.value)
     data = response.json["data"]
     assert len(data) > 0
     assert isinstance(data[0], dict)

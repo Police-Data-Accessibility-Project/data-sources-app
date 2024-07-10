@@ -4,7 +4,7 @@ from http import HTTPStatus
 import psycopg2
 
 from tests.fixtures import dev_db_connection, client_with_db
-from tests.helper_functions import create_test_user_api
+from tests.helper_functions import create_test_user_api, check_response_status
 
 
 def test_request_reset_password_post(
@@ -23,9 +23,7 @@ def test_request_reset_password_post(
         "/request-reset-password", json={"email": user_info.email}
     )
     reset_token = response.json.get("token")
-    assert (
-        response.status_code == HTTPStatus.OK.value
-    ), "Request to Reset Password request was not returned successfully"
+    check_response_status(response, HTTPStatus.OK.value)
     assert mock_send_password_reset_link.called_once_with(user_info.email, reset_token)
 
     cursor = dev_db_connection.cursor()

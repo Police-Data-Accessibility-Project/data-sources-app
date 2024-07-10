@@ -1,8 +1,6 @@
 from werkzeug.security import check_password_hash
 from flask import request, Response
-from middleware.login_queries import get_user_info, get_api_key_for_user
-import uuid
-from typing import Dict, Any, Optional
+from middleware.login_queries import get_api_key_for_user
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
@@ -24,7 +22,7 @@ class ApiKey(PsycopgResource):
         data = request.get_json()
         email = data.get("email")
         password = data.get("password")
-        with self.psycopg2_connection.cursor() as cursor:
-            response = get_api_key_for_user(cursor, email, password)
+        with self.setup_database_client() as db_client:
+            response = get_api_key_for_user(db_client, email, password)
             self.psycopg2_connection.commit()
         return response

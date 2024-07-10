@@ -9,9 +9,6 @@ import psycopg2
 from tests.fixtures import dev_db_connection, client_with_db
 from tests.helper_functions import (
     create_test_user_api,
-    login_and_return_session_token,
-    get_user_password_digest,
-    request_reset_password_api,
     create_api_key,
     insert_test_data_source,
 )

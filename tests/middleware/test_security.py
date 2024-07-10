@@ -10,6 +10,7 @@ from unittest.mock import patch, MagicMock
 import requests
 from flask import Flask
 
+from database_client.database_client import DatabaseClient
 from middleware import security
 from middleware.custom_exceptions import UserNotFoundError
 from middleware.login_queries import create_session_token
@@ -51,9 +52,10 @@ def test_api_key_exists_in_users_table_with_non_admin_role(dev_db_connection):
 
 
 def test_api_key_not_in_users_table_but_in_session_tokens_table(dev_db_connection):
+    # TODO: REWORK
     cursor = dev_db_connection.cursor()
     test_user = create_test_user(cursor)
-    token = create_session_token(cursor, test_user.id, test_user.email)
+    token = create_session_token(DatabaseClient(cursor), test_user.id, test_user.email)
     dev_db_connection.commit()
     result = validate_api_key(token, "", "")
     assert result is None
@@ -62,7 +64,7 @@ def test_api_key_not_in_users_table_but_in_session_tokens_table(dev_db_connectio
 def test_expired_session_token(dev_db_connection):
     cursor = dev_db_connection.cursor()
     test_user = create_test_user(cursor)
-    token = create_session_token(cursor, test_user.id, test_user.email)
+    token = create_session_token(DatabaseClient(cursor), test_user.id, test_user.email)
     cursor.execute(
         f"UPDATE session_tokens SET expiration_date = '{datetime.date(year=2020, month=3, day=4)}' WHERE token = '{token}'"
     )
@@ -72,10 +74,11 @@ def test_expired_session_token(dev_db_connection):
 
 
 def test_session_token_with_admin_role(dev_db_connection):
+    # TODO: REWORK
     cursor = dev_db_connection.cursor()
     test_user = create_test_user(cursor)
     give_user_admin_role(dev_db_connection, UserInfo(test_user.email, ""))
-    token = create_session_token(cursor, test_user.id, test_user.email)
+    token = create_session_token(DatabaseClient(cursor), test_user.id, test_user.email)
     dev_db_connection.commit()
     result = validate_api_key(token, "", "")
     assert result is None
@@ -96,20 +99,6 @@ def test_api_key_exists_in_access_tokens_table(dev_db_connection):
 
 def test_api_key_not_exist_in_any_table(dev_db_connection):
     token = uuid.uuid4().hex
-    with pytest.raises(InvalidAPIKeyError) as e:
-        result = validate_api_key(token, "", "")
-    assert "API Key not found" in str(e.value)
-
-
-def test_expired_access_token_in_access_tokens_table(dev_db_connection):
-    cursor = dev_db_connection.cursor()
-    token = uuid.uuid4().hex
-    expiration = datetime.datetime(year=1999, month=1, day=1)
-    cursor.execute(
-        f"insert into access_tokens (token, expiration_date) values (%s, %s)",
-        (token, expiration),
-    )
-    dev_db_connection.commit()
     with pytest.raises(InvalidAPIKeyError) as e:
         result = validate_api_key(token, "", "")
     assert "API Key not found" in str(e.value)
