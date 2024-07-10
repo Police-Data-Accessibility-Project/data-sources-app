@@ -29,12 +29,12 @@ class Search(PsycopgResource):
         state = request.args.get("state")
         county = request.args.get("county")
         locality = request.args.get("locality")
-        record_type = RecordCategories(request.args.get("record_type"))
+        record_category = RecordCategories(request.args.get("record_category"))
 
         with self.setup_database_client() as db_client:
             response = search_wrapper(
                 db_client=db_client,
-                record_type=record_type,
+                record_category=record_category,
                 state=state,
                 county=county,
                 locality=locality

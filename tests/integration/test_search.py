@@ -2,7 +2,7 @@ from tests.helper_functions import check_response_status
 from tests.fixtures import client_with_db, dev_db_connection, bypass_api_required
 
 def test_search_get(client_with_db, bypass_api_required):
-    response = client_with_db.get("/search?state=Pennsylvania&county=Allegheny&locality=Pittsburgh&record_type=Police%20%26%20Public%20Interactions")
+    response = client_with_db.get("/search?state=Pennsylvania&county=Allegheny&locality=Pittsburgh&record_category=Police%20%26%20Public%20Interactions")
     check_response_status(response, 200)
     data = response.json
 

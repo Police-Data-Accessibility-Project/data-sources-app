@@ -11,12 +11,12 @@ from utilities.enums import RecordCategories
 def search_wrapper(
     db_client: DatabaseClient,
     state: str,
-    record_type: Optional[RecordCategories] = None,
+    record_category: Optional[RecordCategories] = None,
     county: Optional[str] = None,
     locality: Optional[str] = None,
 ) -> Response:
     search_results = db_client.search_with_location_and_record_type(
-        state=state, record_type=record_type, county=county, locality=locality
+        state=state, record_type=record_category, county=county, locality=locality
     )
 
     dict_results = dictify_namedtuple(search_results)
