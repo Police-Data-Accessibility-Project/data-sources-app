@@ -29,7 +29,11 @@ class Search(PsycopgResource):
         state = request.args.get("state")
         county = request.args.get("county")
         locality = request.args.get("locality")
-        record_category = RecordCategories(request.args.get("record_category"))
+        record_category_raw = request.args.get("record_category")
+        if record_category_raw is not None:
+            record_category = RecordCategories(record_category_raw)
+        else:
+            record_category = None
 
         with self.setup_database_client() as db_client:
             response = search_wrapper(
