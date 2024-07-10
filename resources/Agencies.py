@@ -1,5 +1,11 @@
+import psycopg2
+import psycopg2.extras
+from flask import Response
+
+from middleware.agencies import get_agencies
 from middleware.security import api_required
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
+
 from utilities.common import convert_dates_to_strings
 from typing import Dict, Any
 
@@ -38,7 +44,7 @@ class Agencies(PsycopgResource):
 
     @handle_exceptions
     @api_required
-    def get(self, page: str) -> Dict[str, Any]:
+    def get(self, page: str) -> Response:
         """
         Retrieves a paginated list of approved agencies from the database.
 
@@ -48,18 +54,5 @@ class Agencies(PsycopgResource):
         Returns:
         - dict: A dictionary containing the count of returned agencies and their data.
         """
-        cursor = self.psycopg2_connection.cursor()
-        joined_column_names = ", ".join(approved_columns)
-        offset = (int(page) - 1) * 1000
-        cursor.execute(
-            f"select {joined_column_names} from agencies where approved = 'TRUE' limit 1000 offset {offset}"
-        )
-        results = cursor.fetchall()
-        agencies_matches = [dict(zip(approved_columns, result)) for result in results]
-
-        for item in agencies_matches:
-            convert_dates_to_strings(item)
-
-        agencies = {"count": len(agencies_matches), "data": agencies_matches}
-
-        return agencies
+        with self.setup_database_client() as db_client:
+            return get_agencies(db_client, int(page))

@@ -1,10 +1,15 @@
-from flask import request
-from middleware.security import api_required
-from middleware.data_source_queries import data_source_by_id_query, data_sources_query
-from datetime import datetime
+from http import HTTPStatus
 
-import uuid
-from typing import Dict, Any, Tuple
+from flask import request, Response, make_response
+from middleware.security import api_required
+from middleware.data_source_queries import (
+    get_approved_data_sources_wrapper,
+    data_source_by_id_wrapper,
+    get_data_sources_for_map_wrapper,
+    add_new_data_source_wrapper,
+    update_data_source_wrapper,
+    needs_identification_data_sources_wrapper,
+)
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
@@ -17,7 +22,7 @@ class DataSourceById(PsycopgResource):
 
     @handle_exceptions
     @api_required
-    def get(self, data_source_id: str) -> Tuple[Dict[str, Any], int]:
+    def get(self, data_source_id: str) -> Response:
         """
         Retrieves details of a specific data source by its ID.
 
@@ -27,21 +32,12 @@ class DataSourceById(PsycopgResource):
         Returns:
         - Tuple containing the response message with data source details if found, and the HTTP status code.
         """
-        data_source_details = data_source_by_id_query(
-            conn=self.psycopg2_connection, data_source_id=data_source_id
-        )
-        if data_source_details:
-            return {
-                "message": "Successfully found data source",
-                "data": data_source_details,
-            }
-
-        else:
-            return {"message": "Data source not found."}, 404
+        with self.setup_database_client() as db_client:
+            return data_source_by_id_wrapper(data_source_id, db_client)
 
     @handle_exceptions
     @api_required
-    def put(self, data_source_id: str) -> Dict[str, str]:
+    def put(self, data_source_id: str) -> Response:
         """
         Updates a data source by its ID based on the provided JSON payload.
 
@@ -52,37 +48,8 @@ class DataSourceById(PsycopgResource):
         - A dictionary containing a message about the update operation.
         """
         data = request.get_json()
-
-        restricted_columns = [
-            "rejection_note",
-            "data_source_request",
-            "approval_status",
-            "airtable_uid",
-            "airtable_source_last_modified",
-        ]
-
-        data_to_update = ""
-
-        for key, value in data.items():
-            if key not in restricted_columns:
-                if type(value) == str:
-                    data_to_update += f"{key} = '{value}', "
-                else:
-                    data_to_update += f"{key} = {value}, "
-
-        data_to_update = data_to_update[:-2]
-
-        cursor = self.psycopg2_connection.cursor()
-
-        sql_query = f"""
-        UPDATE data_sources 
-        SET {data_to_update}
-        WHERE airtable_uid = '{data_source_id}'
-        """
-
-        cursor.execute(sql_query)
-        self.psycopg2_connection.commit()
-        return {"message": "Data source updated successfully."}
+        with self.setup_database_client() as db_client:
+            return update_data_source_wrapper(db_client, data, data_source_id)
 
 
 class DataSources(PsycopgResource):
@@ -93,27 +60,19 @@ class DataSources(PsycopgResource):
 
     @handle_exceptions
     @api_required
-    def get(self) -> Dict[str, Any]:
+    def get(self) -> Response:
         """
         Retrieves all data sources.
 
         Returns:
         - A dictionary containing the count of data sources and their details.
         """
-        data_source_matches = data_sources_query(
-            self.psycopg2_connection, [], "approved"
-        )
-
-        data_sources = {
-            "count": len(data_source_matches),
-            "data": data_source_matches,
-        }
-
-        return data_sources
+        with self.setup_database_client() as db_client:
+            return get_approved_data_sources_wrapper(db_client)
 
     @handle_exceptions
     @api_required
-    def post(self) -> Dict[str, str]:
+    def post(self) -> Response:
         """
         Adds a new data source based on the provided JSON payload.
 
@@ -121,38 +80,8 @@ class DataSources(PsycopgResource):
         - A dictionary containing a message about the addition operation.
         """
         data = request.get_json()
-        cursor = self.psycopg2_connection.cursor()
-
-        restricted_columns = [
-            "rejection_note",
-            "data_source_request",
-            "approval_status",
-            "airtable_uid",
-            "airtable_source_last_modified",
-        ]
-
-        column_names = ""
-        column_values = ""
-        for key, value in data.items():
-            if key not in restricted_columns:
-                column_names += f"{key}, "
-                if type(value) == str:
-                    column_values += f"'{value}', "
-                else:
-                    column_values += f"{value}, "
-
-        now = datetime.now().strftime("%Y-%m-%d")
-        airtable_uid = str(uuid.uuid4())
-
-        column_names += "approval_status, url_status, data_source_created, airtable_uid"
-        column_values += f"False, '[\"ok\"]', '{now}', '{airtable_uid}'"
-
-        sql_query = f"INSERT INTO data_sources ({column_names}) VALUES ({column_values}) RETURNING *"
-
-        cursor.execute(sql_query)
-        self.psycopg2_connection.commit()
-
-        return {"message": "Data source added successfully."}
+        with self.setup_database_client() as db_client:
+            return add_new_data_source_wrapper(db_client, data)
 
 
 class DataSourcesNeedsIdentification(PsycopgResource):
@@ -160,16 +89,8 @@ class DataSourcesNeedsIdentification(PsycopgResource):
     @handle_exceptions
     @api_required
     def get(self):
-        data_source_matches = data_sources_query(
-            self.psycopg2_connection, [], "needs_identification"
-        )
-
-        data_sources = {
-            "count": len(data_source_matches),
-            "data": data_source_matches,
-        }
-
-        return data_sources
+        with self.setup_database_client() as db_client:
+            return needs_identification_data_sources_wrapper(db_client)
 
 
 class DataSourcesMap(PsycopgResource):
@@ -180,20 +101,12 @@ class DataSourcesMap(PsycopgResource):
 
     @handle_exceptions
     @api_required
-    def get(self) -> Dict[str, Any]:
+    def get(self) -> Response:
         """
         Retrieves location relevant columns for data sources.
 
         Returns:
         - A dictionary containing the count of data sources and their details.
         """
-        data_source_matches = data_sources_query(
-            self.psycopg2_connection, [], "approved", True
-        )
-
-        data_sources = {
-            "count": len(data_source_matches),
-            "data": data_source_matches,
-        }
-
-        return data_sources
+        with self.setup_database_client() as db_client:
+            return get_data_sources_for_map_wrapper(db_client)

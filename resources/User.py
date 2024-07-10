@@ -1,5 +1,9 @@
+from http import HTTPStatus
+
 from werkzeug.security import generate_password_hash
 from flask import request
+
+from middleware.reset_token_queries import set_user_password
 from middleware.user_queries import user_post_results
 from middleware.security import api_required
 from typing import Dict, Any
@@ -26,9 +30,8 @@ class User(PsycopgResource):
         data = request.get_json()
         email = data.get("email")
         password = data.get("password")
-        cursor = self.psycopg2_connection.cursor()
-        user_post_results(cursor, email, password)
-        self.psycopg2_connection.commit()
+        with self.setup_database_client() as db_client:
+            user_post_results(db_client, email, password)
 
         return {"message": "Successfully added user"}
 
@@ -48,10 +51,6 @@ class User(PsycopgResource):
         data = request.get_json()
         email = data.get("email")
         password = data.get("password")
-        password_digest = generate_password_hash(password)
-        cursor = self.psycopg2_connection.cursor()
-        cursor.execute(
-            f"update users set password_digest = '{password_digest}' where email = '{email}'"
-        )
-        self.psycopg2_connection.commit()
-        return {"message": "Successfully updated password"}
+        with self.setup_database_client() as db_client:
+            set_user_password(db_client, email, password)
+        return {"message": "Successfully updated password"}, HTTPStatus.OK

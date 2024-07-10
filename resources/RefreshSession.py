@@ -1,6 +1,11 @@
-from flask import request
-from middleware.login_queries import token_results, create_session_token
-from datetime import datetime as dt
+from flask import request, Response
+
+from flask_restx import abort
+
+from middleware.custom_exceptions import TokenNotFoundError
+from middleware.login_queries import (
+    refresh_session,
+)
 from typing import Dict, Any
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
@@ -13,7 +18,7 @@ class RefreshSession(PsycopgResource):
     """
 
     @handle_exceptions
-    def post(self) -> Dict[str, Any]:
+    def post(self) -> Response:
         """
         Processes the session token refresh request. If the provided session token is valid,
         it generates a new session token, invalidates the old one, and returns the new token.
@@ -23,19 +28,6 @@ class RefreshSession(PsycopgResource):
         """
         data = request.get_json()
         old_token = data.get("session_token")
-        cursor = self.psycopg2_connection.cursor()
-        user_data = token_results(cursor, old_token)
-        cursor.execute(
-            f"delete from session_tokens where token = '{old_token}' and expiration_date < '{dt.utcnow()}'"
-        )
-        self.psycopg2_connection.commit()
-
-        if "id" in user_data:
-            token = create_session_token(cursor, user_data["id"], user_data["email"])
-            self.psycopg2_connection.commit()
-            return {
-                "message": "Successfully refreshed session token",
-                "data": token,
-            }
-
-        return {"message": "Invalid session token"}, 403
+        with self.setup_database_client() as db_client:
+            response = refresh_session(db_client, old_token)
+        return response

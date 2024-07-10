@@ -3,7 +3,7 @@ import re
 import json
 
 
-def convert_dates_to_strings(data_dict):
+def convert_dates_to_strings(data_dict: dict) -> dict:
     for key, value in data_dict.items():
         if isinstance(value, datetime.date):
             data_dict[key] = value.strftime("%Y-%m-%d")

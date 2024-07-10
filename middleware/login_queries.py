@@ -1,34 +1,45 @@
+import uuid
+from collections import namedtuple
+from datetime import datetime as dt
+from http import HTTPStatus
+
 import jwt
 import os
 import datetime
 from typing import Union, Dict
+
+from flask import Response, make_response
 from psycopg2.extensions import cursor as PgCursor
+from werkzeug.security import check_password_hash
+
+from database_client.database_client import DatabaseClient
+from middleware.custom_exceptions import UserNotFoundError, TokenNotFoundError
+from middleware.util import get_env_variable
 
 
-def login_results(cursor: PgCursor, email: str) -> Dict[str, Union[int, str]]:
+
+
+def try_logging_in(db_client: DatabaseClient, email: str, password: str) -> Response:
     """
-    Retrieves user data by email.
+    Tries to log in a user.
 
-    :param cursor: A cursor object from a psycopg2 connection.
+    :param db_client: DatabaseClient object.
     :param email: User's email.
-    :return: A dictionary containing user data or an error message.
+    :param password: User's password.
+    :return: A response object with a message and status code.
     """
-    cursor.execute(
-        f"select id, password_digest, api_key from users where email = '{email}'"
+    user_info = db_client.get_user_info(email)
+    if check_password_hash(user_info.password_digest, password):
+        token = create_session_token(db_client, user_info.id, email)
+        return make_response(
+            {"message": "Successfully logged in", "data": token}, HTTPStatus.OK
+        )
+    return make_response(
+        {"message": "Invalid email or password"}, HTTPStatus.UNAUTHORIZED
     )
-    results = cursor.fetchall()
-    if len(results) > 0:
-        user_data = {
-            "id": results[0][0],
-            "password_digest": results[0][1],
-            "api_key": results[0][2],
-        }
-        return user_data
-    else:
-        return {"error": "no match"}
 
 
-def is_admin(cursor: PgCursor, email: str) -> Union[bool, Dict[str, str]]:
+def is_admin(db_client: DatabaseClient, email: str) -> bool:
     """
     Checks if a user has an admin role.
 
@@ -36,23 +47,14 @@ def is_admin(cursor: PgCursor, email: str) -> Union[bool, Dict[str, str]]:
     :param email: User's email.
     :return: True if user is an admin, False if not, or an error message.
     """
-    cursor.execute(f"select role from users where email = '{email}'")
-    results = cursor.fetchall()
-    if len(results) > 0:
-        role = results[0][0]
-        if role == "admin":
-            return True
-        return False
+    role_info = db_client.get_role_by_email(email)
+    return role_info.role == "admin"
 
-    else:
-        return {"error": "no match"}
-
-
-def create_session_token(cursor: PgCursor, user_id: int, email: str) -> str:
+def create_session_token(db_client: DatabaseClient, user_id: int, email: str) -> str:
     """
     Generates a session token for a user and inserts it into the session_tokens table.
 
-    :param cursor: A cursor object from a psycopg2 connection.
+    :param db_client: A DatabaseClient object.
     :param user_id: The user's ID.
     :param email: User's email.
     :return: A session token.
@@ -63,29 +65,53 @@ def create_session_token(cursor: PgCursor, user_id: int, email: str) -> str:
         "iat": datetime.datetime.utcnow(),
         "sub": user_id,
     }
-    session_token = jwt.encode(payload, os.getenv("SECRET_KEY"), algorithm="HS256")
-    cursor.execute(
-        f"insert into session_tokens (token, email, expiration_date) values ('{session_token}', '{email}', '{expiration}')"
+    session_token = jwt.encode(
+        payload, get_env_variable("SECRET_KEY"), algorithm="HS256"
+    )
+    db_client.add_new_session_token(
+        session_token=session_token, email=email, expiration=expiration
     )
 
     return session_token
 
 
-def token_results(cursor: PgCursor, token: str) -> Dict[str, Union[int, str]]:
-    """
-    Retrieves session token data.
+SessionTokenUserData = namedtuple("SessionTokenUserData", ["id", "email"])
 
-    :param cursor: A cursor object from a psycopg2 connection.
-    :param token: The session token.
-    :return: A dictionary containing session token data or an error message.
+def generate_api_key() -> str:
+    return uuid.uuid4().hex
+
+
+def get_api_key_for_user(db_client: DatabaseClient, email: str, password: str) -> Response:
     """
-    cursor.execute(f"select id, email from session_tokens where token = '{token}'")
-    results = cursor.fetchall()
-    if len(results) > 0:
-        user_data = {
-            "id": results[0][0],
-            "email": results[0][1],
-        }
-        return user_data
-    else:
-        return {"error": "no match"}
+    Tries to log in a user. If successful, generates API key
+
+    :param db_client: A DatabaseClient object.
+    :param email: User's email.
+    :param password: User's password.
+    :return: A response object with a message and status code.
+    """
+    user_data = db_client.get_user_info(email)
+
+    if check_password_hash(user_data.password_digest, password):
+        api_key = generate_api_key()
+        db_client.update_user_api_key(
+            user_id=user_data.id, api_key=api_key
+        )
+        payload = {"api_key": api_key}
+        return make_response(payload, HTTPStatus.OK)
+
+    return make_response(
+        {"message": "Invalid email or password"}, HTTPStatus.UNAUTHORIZED
+    )
+
+
+def refresh_session(db_client: DatabaseClient, old_token: str) -> Response:
+    user_info = db_client.get_session_token_info(old_token)
+    if not user_info:
+        return make_response({"message": "Invalid session token"}, HTTPStatus.FORBIDDEN)
+    db_client.delete_session_token(old_token)
+    token = create_session_token(db_client, user_info.id, user_info.email)
+    return make_response(
+        {"message": "Successfully refreshed session token", "data": token},
+        HTTPStatus.OK,
+    )

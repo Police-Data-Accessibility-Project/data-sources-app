@@ -1,12 +1,19 @@
 import psycopg2
-import os
 from psycopg2.extensions import connection as PgConnection
-from typing import Union, Dict, List
+from middleware.util import get_env_variable
 
 
-def initialize_psycopg2_connection() -> (
-    Union[PgConnection, Dict[str, Union[int, List]]]
-):
+class DatabaseInitializationError(Exception):
+    """
+    Custom Exception to be raised when psycopg2 connection initialization fails.
+    """
+
+    def __init__(self, message="Failed to initialize psycopg2 connection."):
+        self.message = message
+        super().__init__(self.message)
+
+
+def initialize_psycopg2_connection() -> PgConnection:
     """
     Initializes a connection to a PostgreSQL database using psycopg2 with connection parameters
     obtained from an environment variable. If the connection fails, it returns a default dictionary
@@ -17,7 +24,7 @@ def initialize_psycopg2_connection() -> (
     :return: A psycopg2 connection object if successful, or a dictionary with a count of 0 and an empty data list upon failure.
     """
     try:
-        DO_DATABASE_URL = os.getenv("DO_DATABASE_URL")
+        DO_DATABASE_URL = get_env_variable("DO_DATABASE_URL")
 
         return psycopg2.connect(
             DO_DATABASE_URL,
@@ -27,8 +34,5 @@ def initialize_psycopg2_connection() -> (
             keepalives_count=5,
         )
 
-    except:
-        print("Error while initializing the DigitalOcean client with psycopg2.")
-        data_sources = {"count": 0, "data": []}
-
-        return data_sources
+    except psycopg2.OperationalError as e:
+        raise DatabaseInitializationError(e) from e

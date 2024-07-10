@@ -1,5 +1,8 @@
 from middleware.security import api_required
-from middleware.archives_queries import archives_get_query, archives_put_query
+from middleware.archives_queries import (
+    archives_get_query,
+    update_archives_data,
+)
 from flask_restful import request
 
 import json
@@ -24,9 +27,10 @@ class Archives(PsycopgResource):
         Returns:
         - Any: The cleaned results of archives combined from the database query, or an error message if an exception occurs.
         """
-        archives_combined_results_clean = archives_get_query(
-            test_query_results=[], conn=self.psycopg2_connection
-        )
+        with self.setup_database_client() as db_client:
+            archives_combined_results_clean = archives_get_query(
+                db_client=db_client,
+            )
 
         return archives_combined_results_clean
 
@@ -44,18 +48,14 @@ class Archives(PsycopgResource):
         json_data = request.get_json()
         data = json.loads(json_data)
         id = data["id"] if "id" in data else None
+        last_cached = data["last_cached"] if "last_cached" in data else None
         broken_as_of = (
             data["broken_source_url_as_of"]
             if "broken_source_url_as_of" in data
             else None
         )
-        last_cached = data["last_cached"] if "last_cached" in data else None
 
-        archives_put_query(
-            id=id,
-            broken_as_of=broken_as_of,
-            last_cached=last_cached,
-            conn=self.psycopg2_connection,
-        )
+        with self.setup_database_client() as db_client:
+            response = update_archives_data(db_client, id, last_cached, broken_as_of)
 
-        return {"status": "success"}
+        return response

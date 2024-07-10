@@ -1,7 +1,13 @@
+from contextlib import contextmanager
+from http import HTTPStatus
 import functools
 from typing import Callable, Any, Union, Tuple, Dict
 
-from flask_restful import Resource
+import psycopg2
+from flask_restx import abort, Resource
+from psycopg2.extras import DictCursor
+
+from database_client.database_client import DatabaseClient
 
 
 def handle_exceptions(
@@ -36,27 +42,35 @@ def handle_exceptions(
         except Exception as e:
             self.psycopg2_connection.rollback()
             print(str(e))
-            return {"message": str(e)}, 500
+            abort(
+                http_status_code=HTTPStatus.INTERNAL_SERVER_ERROR.value, message=str(e)
+            )
 
     return wrapper
 
 
 class PsycopgResource(Resource):
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         """
         Initializes the resource with a database connection.
         - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
         """
+        super().__init__(*args, **kwargs)
         self.psycopg2_connection = kwargs["psycopg2_connection"]
 
-    def get(self):
+    @contextmanager
+    def setup_database_client(self) -> DatabaseClient:
         """
-        Base implementation of GET. Override in subclasses as needed.
-        """
-        raise NotImplementedError("This method should be overridden by subclasses")
+        A context manager to setup a database client.
 
-    def post(self):
+        Yields:
+        - The database client.
         """
-        Base implementation of POST. Override in subclasses as needed.
-        """
-        raise NotImplementedError("This method should be overridden by subclasses")
+        with self.psycopg2_connection.cursor(cursor_factory=DictCursor) as cursor:
+            try:
+                yield DatabaseClient(cursor)
+            except Exception as e:
+                self.psycopg2_connection.rollback()
+                raise e
+            finally:
+                self.psycopg2_connection.commit()

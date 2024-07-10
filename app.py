@@ -1,5 +1,5 @@
 from flask import Flask
-from flask_restful import Api
+from flask_restx import Api
 from flask_cors import CORS
 from resources.User import User
 from resources.Login import Login
@@ -27,7 +27,6 @@ def add_resource(api, resource, endpoint, **kwargs):
 
 def create_app() -> Flask:
     psycopg2_connection = initialize_psycopg2_connection()
-
     app = Flask(__name__)
     api = Api(app)
     CORS(app)
