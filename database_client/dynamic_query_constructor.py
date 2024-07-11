@@ -5,8 +5,12 @@ from typing import Optional
 
 from psycopg2 import sql
 
-from database_client.constants import AGENCY_APPROVED_COLUMNS, DATA_SOURCES_APPROVED_COLUMNS, \
-    RESTRICTED_DATA_SOURCE_COLUMNS
+from database_client.constants import (
+    AGENCY_APPROVED_COLUMNS,
+    DATA_SOURCES_APPROVED_COLUMNS,
+    RESTRICTED_DATA_SOURCE_COLUMNS,
+    RESTRICTED_COLUMNS,
+)
 
 TableColumn = namedtuple("TableColumn", ["table", "column"])
 TableColumnAlias = namedtuple("TableColumnAlias", ["table", "column", "alias"])
@@ -21,7 +25,8 @@ class DynamicQueryConstructor:
 
     @staticmethod
     def build_fields(
-        columns_only: list[TableColumn], columns_and_alias: Optional[list[TableColumnAlias]] = None
+        columns_only: list[TableColumn],
+        columns_and_alias: Optional[list[TableColumnAlias]] = None,
     ):
         # Process columns without alias
         fields_only = [
@@ -140,10 +145,10 @@ class DynamicQueryConstructor:
         return sql_query
 
     @staticmethod
-    def zip_needs_identification_data_source_results(results: list[tuple]) -> list[dict]:
-        return [
-            dict(zip(DATA_SOURCES_APPROVED_COLUMNS, result)) for result in results
-        ]
+    def zip_needs_identification_data_source_results(
+        results: list[tuple],
+    ) -> list[dict]:
+        return [dict(zip(DATA_SOURCES_APPROVED_COLUMNS, result)) for result in results]
 
     @staticmethod
     def create_data_source_update_query(
@@ -224,5 +229,45 @@ class DynamicQueryConstructor:
             RETURNING *
         """
         ).format(columns=columns_sql, values=values_sql)
+
+        return query
+
+    @staticmethod
+    def create_new_data_source_query(data: dict) -> sql.Composed:
+        """
+        Creates a query to add a new data source to the database.
+
+        :param data: A dictionary containing the data source details.
+        """
+        columns = []
+        values = []
+        for key, value in data.items():
+            if key not in RESTRICTED_COLUMNS:
+                columns.append(sql.Identifier(key))
+                values.append(sql.Literal(value))
+
+        now = datetime.now().strftime("%Y-%m-%d")
+        airtable_uid = str(uuid.uuid4())
+
+        columns.extend(
+            [
+                sql.Identifier("approval_status"),
+                sql.Identifier("url_status"),
+                sql.Identifier("data_source_created"),
+                sql.Identifier("airtable_uid"),
+            ]
+        )
+        values.extend(
+            [
+                sql.Literal(False),
+                sql.Literal(["ok"]),
+                sql.Literal(now),
+                sql.Literal(airtable_uid),
+            ]
+        )
+
+        query = sql.SQL("INSERT INTO data_sources ({}) VALUES ({}) RETURNING *").format(
+            sql.SQL(", ").join(columns), sql.SQL(", ").join(values)
+        )
 
         return query
