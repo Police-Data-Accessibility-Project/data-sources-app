@@ -12,6 +12,7 @@ from utilities.common import convert_dates_to_strings, format_arrays
 class DataSourceNotFoundError(Exception):
     pass
 
+
 def get_approved_data_sources_wrapper(db_client: DatabaseClient) -> Response:
     raw_results = db_client.get_approved_data_sources()
     zipped_results = ResultFormatter.zip_get_approved_data_sources_results(raw_results)
@@ -22,6 +23,7 @@ def get_approved_data_sources_wrapper(db_client: DatabaseClient) -> Response:
         },
         HTTPStatus.OK.value,
     )
+
 
 def data_source_by_id_wrapper(arg, db_client: DatabaseClient) -> Response:
     try:
@@ -72,6 +74,7 @@ def get_restricted_columns():
         "airtable_source_last_modified",
     ]
     return restricted_columns
+
 
 def update_data_source_wrapper(
     db_client: DatabaseClient, data: dict, data_source_id: str

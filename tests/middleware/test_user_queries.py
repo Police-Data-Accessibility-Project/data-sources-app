@@ -30,6 +30,7 @@ class TestUserMagicMock(DynamicMagicMock):
     user_id: MagicMock
     email: MagicMock
 
+
 def test_user_check_email(monkeypatch) -> None:
     """
     Verify the functionality of the `user_check_email` method.
@@ -45,9 +46,7 @@ def test_user_check_email(monkeypatch) -> None:
     mock.db_client.get_user_id.assert_called_once_with(mock.email)
 
 
-def test_user_check_email_raises_user_not_found_error(
-    monkeypatch
-) -> None:
+def test_user_check_email_raises_user_not_found_error(monkeypatch) -> None:
     mock = TestUserMagicMock()
     mock.db_client.get_user_id.return_value = None
 

@@ -36,6 +36,7 @@ def archives_get_query(
 
     return archives_combined_results_clean
 
+
 def update_archives_data(
     db_client: DatabaseClient,
     data_id: str,

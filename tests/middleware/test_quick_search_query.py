@@ -23,7 +23,6 @@ from tests.helper_functions import (
 from tests.fixtures import connection_with_test_data, dev_db_connection
 
 
-
 def test_quick_search_query_logging(
     connection_with_test_data: psycopg2.extensions.connection,
 ) -> None:
@@ -40,7 +39,8 @@ def test_quick_search_query_logging(
         test_datetime = result[0]
 
         quick_search_query(
-            SearchParameters(search="Source 1", location="City A"), db_client=DatabaseClient(cursor)
+            SearchParameters(search="Source 1", location="City A"),
+            db_client=DatabaseClient(cursor),
         )
         # Test that query inserted into log
         result = get_most_recent_quick_search_query_log(cursor, "Source 1", "City A")
