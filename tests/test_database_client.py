@@ -374,7 +374,6 @@ def test_delete_session_token(live_database_client):
     assert live_database_client.get_session_token_info(session_token) is None
 
 
-
 def test_get_access_token(live_database_client):
     # Add a new access token to the database
     live_database_client.add_new_access_token(

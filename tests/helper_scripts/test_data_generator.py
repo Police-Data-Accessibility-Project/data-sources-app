@@ -1,6 +1,7 @@
 import psycopg2
 from psycopg2 import sql
 
+
 class TestDataGenerator:
     """
     A class for generating test data.
@@ -13,13 +14,17 @@ class TestDataGenerator:
     def build_savepoint(self, savepoint_name: str = "test_savepoint"):
         # Build savepoint using SQL composed
         raw_query = f"SAVEPOINT {savepoint_name}"
-        sql_query = sql.SQL(raw_query).format(savepoint_name=sql.Identifier(savepoint_name))
+        sql_query = sql.SQL(raw_query).format(
+            savepoint_name=sql.Identifier(savepoint_name)
+        )
         self.cursor.execute(sql_query)
         self.savepoint = savepoint_name
 
     def rollback_savepoint(self):
         raw_query = f"ROLLBACK TO SAVEPOINT {self.savepoint}"
-        sql_query = sql.SQL(raw_query).format(savepoint_name=sql.Identifier(self.savepoint))
+        sql_query = sql.SQL(raw_query).format(
+            savepoint_name=sql.Identifier(self.savepoint)
+        )
         self.cursor.execute(sql_query)
 
     def build_xylonslvania(self):
@@ -31,7 +36,8 @@ class TestDataGenerator:
         and test data sources
         :return:
         """
-        self.cursor.execute("""
+        self.cursor.execute(
+            """
             INSERT INTO state_names (state_iso, state_name) 
             VALUES ('XY', 'Xylonsylvania');
             
@@ -75,4 +81,5 @@ class TestDataGenerator:
             WHERE ds.record_type = rt.name;
 
         
-        """)
+        """
+        )

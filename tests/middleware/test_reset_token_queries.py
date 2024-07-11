@@ -183,7 +183,6 @@ def test_validate_token_token_is_expired(monkeypatch, setup_validate_token_mocks
     mock.db_client.delete_reset_token.assert_called_once_with(mock.email, mock.token)
 
 
-
 def test_set_new_user_password_happy_path(monkeypatch):
     mock_db_client = MagicMock()
     mock_email = MagicMock()

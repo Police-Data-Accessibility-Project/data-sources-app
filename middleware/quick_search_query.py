@@ -58,7 +58,9 @@ def quick_search_query(
 
     processed_search_parameters = process_search_parameters(search_parameters)
 
-    data_source_matches = get_data_source_matches(db_client, processed_search_parameters)
+    data_source_matches = get_data_source_matches(
+        db_client, processed_search_parameters
+    )
     processed_data_source_matches = process_data_source_matches(data_source_matches)
 
     data_sources = {
@@ -102,7 +104,8 @@ def get_data_source_matches(
     unaltered_results = db_client.get_quick_search_results(sp.search, sp.location)
 
     spacy_results = db_client.get_quick_search_results(
-        search=depluralize(sp.search), location=sp.location.strip())
+        search=depluralize(sp.search), location=sp.location.strip()
+    )
 
     # Compare altered search term results with unaltered search term results, return the longer list
     results = (
@@ -116,9 +119,7 @@ def get_data_source_matches(
     return data_source_matches
 
 
-def quick_search_query_wrapper(
-    arg1, arg2, db_client: DatabaseClient
-) -> Response:
+def quick_search_query_wrapper(arg1, arg2, db_client: DatabaseClient) -> Response:
     try:
         data_sources = quick_search_query(
             SearchParameters(search=arg1, location=arg2), db_client=db_client

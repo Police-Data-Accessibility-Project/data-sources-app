@@ -12,8 +12,6 @@ from tests.helper_functions import (
 )
 
 
-
-
 class UpdateArchivesDataMocks(DynamicMagicMock):
     db_client: MagicMock
     data_id: MagicMock
@@ -35,7 +33,9 @@ def test_update_archives_data_broken_as_of(setup_update_archives_data_mocks):
     mock = setup_update_archives_data_mocks
 
     # Call function
-    update_archives_data(mock.db_client, mock.data_id, mock.last_cached, mock.broken_as_of)
+    update_archives_data(
+        mock.db_client, mock.data_id, mock.last_cached, mock.broken_as_of
+    )
 
     mock.db_client.update_url_status_to_broken.assert_called_with(
         mock.data_id, mock.broken_as_of, mock.last_cached
