@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask
 from flask_restx import Api
 from flask_cors import CORS
@@ -57,4 +59,4 @@ def create_app() -> Flask:
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(debug=True, host="0.0.0.0")
+    app.run(host=os.getenv('FLASK_RUN_HOST', '127.0.0.1'))
