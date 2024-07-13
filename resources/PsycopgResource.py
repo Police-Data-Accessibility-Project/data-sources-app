@@ -7,6 +7,7 @@ import psycopg2
 from flask_restx import abort, Resource
 from psycopg2.extras import DictCursor
 
+from config import config
 from database_client.database_client import DatabaseClient
 
 
@@ -40,7 +41,7 @@ def handle_exceptions(
         try:
             return func(self, *args, **kwargs)
         except Exception as e:
-            self.psycopg2_connection.rollback()
+            self.get_connection().rollback()
             print(str(e))
             abort(
                 http_status_code=HTTPStatus.INTERNAL_SERVER_ERROR.value, message=str(e)
@@ -56,7 +57,9 @@ class PsycopgResource(Resource):
         - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
         """
         super().__init__(*args, **kwargs)
-        self.psycopg2_connection = kwargs["psycopg2_connection"]
+
+    def get_connection(self):
+        return config.connection
 
     @contextmanager
     def setup_database_client(self) -> DatabaseClient:
@@ -66,11 +69,12 @@ class PsycopgResource(Resource):
         Yields:
         - The database client.
         """
-        with self.psycopg2_connection.cursor(cursor_factory=DictCursor) as cursor:
+        conn = self.get_connection()
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
             try:
                 yield DatabaseClient(cursor)
             except Exception as e:
-                self.psycopg2_connection.rollback()
+                conn.rollback()
                 raise e
             finally:
-                self.psycopg2_connection.commit()
+                conn.commit()

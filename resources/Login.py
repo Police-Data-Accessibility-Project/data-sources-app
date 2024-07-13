@@ -1,11 +1,13 @@
-from flask_restx import abort
-from werkzeug.security import check_password_hash
 from flask import request, Response
+
 from middleware.login_queries import try_logging_in
+from utilities.namespace import create_namespace
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
+namespace_login = create_namespace()
 
+@namespace_login.route("/login")
 class Login(PsycopgResource):
     """
     A resource for authenticating users. Allows users to log in using their email and password.
@@ -25,5 +27,4 @@ class Login(PsycopgResource):
         password = data.get("password")
         with self.setup_database_client() as db_client:
             response = try_logging_in(db_client, email, password)
-            self.psycopg2_connection.commit()
         return response

@@ -1,6 +1,6 @@
-from http import HTTPStatus
 
-from flask import request, Response, make_response
+from flask import request, Response
+
 from middleware.security import api_required
 from middleware.data_source_queries import (
     get_approved_data_sources_wrapper,
@@ -10,10 +10,12 @@ from middleware.data_source_queries import (
     update_data_source_wrapper,
     needs_identification_data_sources_wrapper,
 )
-
+from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
+namespace_data_source = create_namespace()
 
+@namespace_data_source.route("/data-sources-by-id/<data_source_id>")
 class DataSourceById(PsycopgResource):
     """
     A resource for managing data source entities by their unique identifier.
@@ -51,7 +53,7 @@ class DataSourceById(PsycopgResource):
         with self.setup_database_client() as db_client:
             return update_data_source_wrapper(db_client, data, data_source_id)
 
-
+@namespace_data_source.route("/data-sources")
 class DataSources(PsycopgResource):
     """
     A resource for managing collections of data sources.
@@ -83,7 +85,7 @@ class DataSources(PsycopgResource):
         with self.setup_database_client() as db_client:
             return add_new_data_source_wrapper(db_client, data)
 
-
+@namespace_data_source.route("/data-sources-needs-identification")
 class DataSourcesNeedsIdentification(PsycopgResource):
 
     @handle_exceptions
@@ -92,7 +94,7 @@ class DataSourcesNeedsIdentification(PsycopgResource):
         with self.setup_database_client() as db_client:
             return needs_identification_data_sources_wrapper(db_client)
 
-
+@namespace_data_source.route("/data-sources-map")
 class DataSourcesMap(PsycopgResource):
     """
     A resource for managing collections of data sources for mapping.

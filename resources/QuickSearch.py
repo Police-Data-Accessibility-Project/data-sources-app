@@ -3,11 +3,12 @@ from flask import Response
 from middleware.security import api_required
 from middleware.quick_search_query import quick_search_query_wrapper
 
-from typing import Dict, Any
-
+from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource
 
+namespace_quick_search = create_namespace()
 
+@namespace_quick_search.route("/quick-search/<search>/<location>")
 class QuickSearch(PsycopgResource):
     """
     Provides a resource for performing quick searches in the database for data sources

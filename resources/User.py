@@ -1,6 +1,5 @@
 from http import HTTPStatus
 
-from werkzeug.security import generate_password_hash
 from flask import request
 
 from middleware.reset_token_queries import set_user_password
@@ -8,9 +7,11 @@ from middleware.user_queries import user_post_results
 from middleware.security import api_required
 from typing import Dict, Any
 
+from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
+namespace_user = create_namespace()
 
-
+@namespace_user.route("/user")
 class User(PsycopgResource):
     """
     A resource for user management, allowing new users to sign up and existing users to update their passwords.

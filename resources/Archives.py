@@ -8,9 +8,12 @@ from flask_restful import request
 import json
 from typing import Dict, Any
 
+from utilities.namespace import create_namespace
+
+namespace_archives = create_namespace()
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
-
+@namespace_archives.route("/archives")
 class Archives(PsycopgResource):
     """
     A resource for managing archive data, allowing retrieval and update of archived data sources.
