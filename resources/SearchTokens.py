@@ -4,13 +4,16 @@ import os
 import sys
 
 from middleware.search_tokens_logic import perform_endpoint_logic
+from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
 sys.path.append("..")
 
 BASE_URL = os.getenv("VITE_VUE_API_BASE_URL")
 
+namespace_search_tokens = create_namespace()
 
+@namespace_search_tokens.route("/search-tokens")
 class SearchTokens(PsycopgResource):
     """
     A resource that provides various search functionalities based on the specified endpoint.

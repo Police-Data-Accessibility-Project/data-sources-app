@@ -1,10 +1,13 @@
-from werkzeug.security import check_password_hash
 from flask import request, Response
+
 from middleware.login_queries import get_api_key_for_user
+from utilities.namespace import create_namespace
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
+namespace_api_key = create_namespace()
 
+@namespace_api_key.route("/api_key")
 class ApiKey(PsycopgResource):
     """Represents a resource for generating an API key for authenticated users."""
 
@@ -24,5 +27,4 @@ class ApiKey(PsycopgResource):
         password = data.get("password")
         with self.setup_database_client() as db_client:
             response = get_api_key_for_user(db_client, email, password)
-            self.psycopg2_connection.commit()
         return response

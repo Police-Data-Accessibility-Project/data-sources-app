@@ -1,14 +1,15 @@
-from werkzeug.security import generate_password_hash
 from flask import request, Response
+
 from middleware.reset_token_queries import (
     reset_password,
 )
-from datetime import datetime as dt
-from typing import Dict, Any
+from utilities.namespace import create_namespace
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
+namespace_reset_password = create_namespace()
 
+@namespace_reset_password.route("/reset-password")
 class ResetPassword(PsycopgResource):
     """
     Provides a resource for users to reset their password using a valid reset token.

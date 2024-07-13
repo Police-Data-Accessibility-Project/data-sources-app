@@ -1,16 +1,16 @@
 from flask import request, Response
 
-from flask_restx import abort
 
-from middleware.custom_exceptions import TokenNotFoundError
 from middleware.login_queries import (
     refresh_session,
 )
-from typing import Dict, Any
 
+from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
+namespace_refresh_session = create_namespace()
 
+@namespace_refresh_session.route("/refresh-session")
 class RefreshSession(PsycopgResource):
     """
     Provides a resource for refreshing a user's session token.

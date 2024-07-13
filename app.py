@@ -1,62 +1,53 @@
 import os
 
 from flask import Flask
-from flask_restx import Api
 from flask_cors import CORS
-from resources.User import User
-from resources.Login import Login
-from resources.RefreshSession import RefreshSession
-from resources.ApiKey import ApiKey
-from resources.RequestResetPassword import RequestResetPassword
-from resources.ResetPassword import ResetPassword
-from resources.ResetTokenValidation import ResetTokenValidation
-from resources.QuickSearch import QuickSearch
-from resources.DataSources import (
-    DataSources,
-    DataSourcesNeedsIdentification,
-    DataSourceById,
-    DataSourcesMap,
-)
-from resources.Agencies import Agencies
-from resources.Archives import Archives
-from resources.SearchTokens import SearchTokens
+from flask_restx import Api
+
+from config import config
+
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
+from resources.Agencies import namespace_agencies
+from resources.ApiKey import namespace_api_key
+from resources.Archives import namespace_archives
+from resources.DataSources import namespace_data_source
+from resources.Login import namespace_login
+from resources.QuickSearch import namespace_quick_search
+from resources.RefreshSession import namespace_refresh_session
+from resources.RequestResetPassword import namespace_request_reset_password
+from resources.ResetPassword import namespace_reset_password
+from resources.ResetTokenValidation import namespace_reset_token_validation
+from resources.SearchTokens import namespace_search_tokens
+from resources.User import namespace_user
 
-
-def add_resource(api, resource, endpoint, **kwargs):
-    api.add_resource(resource, endpoint, resource_class_kwargs=kwargs)
-
+NAMESPACES = [
+    namespace_api_key,
+    namespace_request_reset_password,
+    namespace_user,
+    namespace_reset_token_validation,
+    namespace_archives,
+    namespace_agencies,
+    namespace_data_source,
+    namespace_search_tokens,
+    namespace_login,
+    namespace_refresh_session,
+    namespace_reset_password,
+    namespace_quick_search
+]
 
 def create_app() -> Flask:
     psycopg2_connection = initialize_psycopg2_connection()
+    config.connection = psycopg2_connection
+    api = Api()
+    for namespace in NAMESPACES:
+        api.add_namespace(namespace)
     app = Flask(__name__)
-    api = Api(app)
     CORS(app)
-
-    resources = [
-        (User, "/user"),
-        (Login, "/login"),
-        (RefreshSession, "/refresh-session"),
-        (ApiKey, "/api_key"),
-        (RequestResetPassword, "/request-reset-password"),
-        (ResetPassword, "/reset-password"),
-        (ResetTokenValidation, "/reset-token-validation"),
-        (QuickSearch, "/quick-search/<search>/<location>"),
-        (Archives, "/archives"),
-        (DataSources, "/data-sources"),
-        (DataSourcesMap, "/data-sources-map"),
-        (DataSourcesNeedsIdentification, "/data-sources-needs-identification"),
-        (DataSourceById, "/data-sources-by-id/<data_source_id>"),
-        (Agencies, "/agencies/<page>"),
-        (SearchTokens, "/search-tokens"),
-    ]
-
-    for resource, endpoint in resources:
-        add_resource(api, resource, endpoint, psycopg2_connection=psycopg2_connection)
+    api.init_app(app)
 
     return app
 
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(host=os.getenv('FLASK_RUN_HOST', '127.0.0.1'))
+    app.run(host=os.getenv("FLASK_RUN_HOST", "127.0.0.1"))

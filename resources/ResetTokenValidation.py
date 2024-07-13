@@ -1,12 +1,15 @@
 from flask import request, Response
+
 from middleware.reset_token_queries import (
     reset_token_validation,
 )
-from datetime import datetime as dt
 
+from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
+namespace_reset_token_validation = create_namespace()
 
+@namespace_reset_token_validation.route("/reset-token-validation")
 class ResetTokenValidation(PsycopgResource):
 
     @handle_exceptions

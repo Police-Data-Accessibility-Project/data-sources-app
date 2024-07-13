@@ -1,13 +1,10 @@
-import psycopg2
-import psycopg2.extras
+
 from flask import Response
 
 from middleware.agencies import get_agencies
 from middleware.security import api_required
+from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
-
-from utilities.common import convert_dates_to_strings
-from typing import Dict, Any
 
 
 approved_columns = [
@@ -37,8 +34,9 @@ approved_columns = [
     "defunct_year",
     "airtable_uid",
 ]
+namespace_agencies = create_namespace()
 
-
+@namespace_agencies.route("/agencies/<page>")
 class Agencies(PsycopgResource):
     """Represents a resource for fetching approved agency data from the database."""
 
