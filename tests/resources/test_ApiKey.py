@@ -18,7 +18,7 @@ def test_get_api_key(client_with_mock_db, monkeypatch):
     monkeypatch.setattr("resources.ApiKey.get_api_key_for_user", mock_get_api_key)
 
     # Call endpoint
-    response = client_with_mock_db.client.get("/api_key", json=mock_data)
+    response = client_with_mock_db.client.get("/api/api_key", json=mock_data)
 
     # Check
     check_response_status(response, HTTPStatus.IM_A_TEAPOT)

@@ -27,7 +27,7 @@ def test_quick_search_get(client_with_db, connection_with_test_data):
     encoded_location = quote(location)
 
     response = client_with_db.get(
-        f"/quick-search/{encoded_search_term}/{encoded_location}",
+        f"/api/quick-search/{encoded_search_term}/{encoded_location}",
         headers={"Authorization": f"Bearer {api_key}"},
     )
     check_response_status(response, HTTPStatus.OK.value)

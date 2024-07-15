@@ -17,7 +17,7 @@ def test_refresh_session_post(
     test_user = create_test_user_api(client_with_db)
     old_session_token = login_and_return_session_token(client_with_db, test_user)
     response = client_with_db.post(
-        "/refresh-session", json={"session_token": old_session_token}
+        "/api/refresh-session", json={"session_token": old_session_token}
     )
     assert response.status_code == HTTPStatus.OK.value
     new_session_token = response.json.get("data")

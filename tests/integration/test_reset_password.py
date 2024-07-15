@@ -30,7 +30,7 @@ def test_reset_password_post(
     token = request_reset_password_api(client_with_db, mocker, user_info)
     new_password = str(uuid.uuid4())
     response = client_with_db.post(
-        "/reset-password",
+        "/api/reset-password",
         json={"email": user_info.email, "token": token, "password": new_password},
     )
     check_response_status(response, HTTPStatus.OK.value)

@@ -210,7 +210,7 @@ def create_test_user_api(client: FlaskClient) -> UserInfo:
     email = str(uuid.uuid4())
     password = str(uuid.uuid4())
     response = client.post(
-        "/user",
+        "user",
         json={"email": email, "password": password},
     )
     check_response_status(response, HTTPStatus.OK.value)
@@ -228,7 +228,7 @@ def login_and_return_session_token(
     :return:
     """
     response = client_with_db.post(
-        "/login",
+        "/api/login",
         json={"email": user_info.email, "password": user_info.password},
     )
     assert response.status_code == HTTPStatus.OK.value, "User login unsuccessful"
@@ -263,7 +263,7 @@ def request_reset_password_api(client_with_db, mocker, user_info):
     """
     mocker.patch("middleware.reset_token_queries.send_password_reset_link")
     response = client_with_db.post(
-        "/request-reset-password", json={"email": user_info.email}
+        "/api/request-reset-password", json={"email": user_info.email}
     )
     token = response.json.get("token")
     return token
@@ -277,7 +277,7 @@ def create_api_key(client_with_db, user_info):
     :return:
     """
     response = client_with_db.get(
-        "/api_key", json={"email": user_info.email, "password": user_info.password}
+        "/api/api_key", json={"email": user_info.email, "password": user_info.password}
     )
     assert (
         response.status_code == HTTPStatus.OK.value
