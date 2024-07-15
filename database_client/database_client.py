@@ -261,7 +261,6 @@ class DatabaseClient:
         self.cursor.execute(sql_query)
         return self.cursor.fetchall()
 
-
     def add_new_data_source(self, data: dict) -> None:
         """
         Processes a request to add a new data source.

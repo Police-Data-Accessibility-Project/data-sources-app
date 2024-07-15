@@ -5,6 +5,7 @@ from flask import Response, make_response
 from database_client.database_client import DatabaseClient
 from utilities.common import convert_dates_to_strings
 
+
 def get_agencies(db_client: DatabaseClient, page: int) -> Response:
     """
     Retrieves a paginated list of approved agencies from the database.
@@ -40,5 +41,3 @@ def process_results(results: list[dict]) -> list[dict]:
         list[dict]: The processed list of dictionaries with converted dates.
     """
     return [convert_dates_to_strings(dict(result)) for result in results]
-
-

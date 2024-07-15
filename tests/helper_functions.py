@@ -61,6 +61,7 @@ def insert_test_agencies_and_sources(cursor: psycopg2.extensions.cursor) -> None
         """
     )
 
+
 def insert_test_agencies_and_sources_if_not_exist(cursor: psycopg2.extensions.cursor):
     try:
         cursor.execute("SAVEPOINT my_savepoint")

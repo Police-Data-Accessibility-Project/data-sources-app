@@ -18,7 +18,10 @@ def mock_requests_post():
 
 
 def test_post_to_webhook(mock_env_variable, mock_requests_post):
-    mock_env_variable.side_effect = ["https://base_app.com","https://example.com/webhook"]
+    mock_env_variable.side_effect = [
+        "https://base_app.com",
+        "https://example.com/webhook",
+    ]
     data = '{"key": "value"}'
     post_to_webhook(data)
 

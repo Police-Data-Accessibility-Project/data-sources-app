@@ -7,7 +7,8 @@ from tests.fixtures import connection_with_test_data, dev_db_connection, client_
 from tests.helper_functions import (
     create_test_user_api,
     create_api_key,
-    give_user_admin_role, check_response_status,
+    give_user_admin_role,
+    check_response_status,
 )
 
 
