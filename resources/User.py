@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 from flask import request
+from flask_restx import fields
 
 from middleware.reset_token_queries import set_user_password
 from middleware.user_queries import user_post_results
@@ -9,7 +10,18 @@ from typing import Dict, Any
 
 from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
+
 namespace_user = create_namespace()
+
+# Define the user model for request parsing and validation
+user_model = namespace_user.model(
+    "User",
+    {
+        "email": fields.String(required=True, description="The user email"),
+        "password": fields.String(required=True, description="The user password"),
+    },
+)
+
 
 @namespace_user.route("/user")
 class User(PsycopgResource):
@@ -18,6 +30,10 @@ class User(PsycopgResource):
     """
 
     @handle_exceptions
+    @namespace_user.expect(user_model)
+    @namespace_user.response(201, "Success: User created")
+    @namespace_user.response(500, "Error: Internal server error")
+    @namespace_user.response(401, "Error: Unauthorized login failed.")
     def post(self) -> Dict[str, Any]:
         """
         Allows a new user to sign up by providing an email and password.
@@ -39,6 +55,13 @@ class User(PsycopgResource):
     # Endpoint for updating a user's password
     @handle_exceptions
     @api_required
+    @namespace_user.expect(user_model)
+    @namespace_user.response(201, "Success: User password successfully updated")
+    @namespace_user.response(500, "Error: Internal server error")
+    @namespace_user.doc(
+        description="Update user password.",
+        security="apikey",
+    )
     def put(self) -> Dict[str, Any]:
         """
         Allows an existing user to update their password.

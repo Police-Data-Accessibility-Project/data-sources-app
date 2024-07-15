@@ -10,6 +10,7 @@ from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
 namespace_refresh_session = create_namespace()
 
+
 @namespace_refresh_session.route("/refresh-session")
 class RefreshSession(PsycopgResource):
     """
@@ -18,6 +19,23 @@ class RefreshSession(PsycopgResource):
     """
 
     @handle_exceptions
+    @namespace_refresh_session.param(
+        name="session_token",
+        description="The session token to validate and refresh",
+        _in="query",
+        type="string",
+        required=True,
+    )
+    @namespace_refresh_session.response(
+        200, "OK; Successful session refresh"
+    )
+    @namespace_refresh_session.response(500, "Internal server error")
+    @namespace_refresh_session.response(
+        403, "Forbidden invalid old session token"
+    )
+    @namespace_refresh_session.doc(
+        description="Allows a user to refresh their session token."
+    )
     def post(self) -> Response:
         """
         Processes the session token refresh request. If the provided session token is valid,

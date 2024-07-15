@@ -17,6 +17,23 @@ class ResetPassword(PsycopgResource):
     """
 
     @handle_exceptions
+    @namespace_reset_password.param(
+        name="token",
+        description="The Reset password token to validate",
+        _in="query",
+        type="string",
+    )
+    @namespace_reset_password.param(
+        name="password",
+        description="The new password to set",
+        _in="query",
+        type="string",
+    )
+    @namespace_reset_password.response(200, "OK; Password reset successful")
+    @namespace_reset_password.response(500, "Internal server error")
+    @namespace_reset_password.doc(
+        description="Allows a user to reset their password using a valid reset token."
+    )
     def post(self) -> Response:
         """
         Processes a password reset request. Validates the provided reset token and,

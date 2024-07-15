@@ -15,6 +15,18 @@ class RequestResetPassword(PsycopgResource):
     """
 
     @handle_exceptions
+    @namespace_request_reset_password.param(
+        name="email",
+        description="The email of the user",
+        _in="query",
+        type="string",
+        required=True
+    )
+    @namespace_request_reset_password.response(200, "OK; Password reset request successful")
+    @namespace_request_reset_password.response(500, "Internal server error")
+    @namespace_request_reset_password.doc(
+        description="Allows a user to request a password reset. Generates a reset token and sends an email with instructions on how to reset their password."
+    )
     def post(self) -> Response:
         """
         Processes a password reset request. Checks if the user's email exists in the database,

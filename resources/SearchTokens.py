@@ -14,6 +14,7 @@ BASE_URL = os.getenv("VITE_VUE_API_BASE_URL")
 namespace_search_tokens = create_namespace()
 
 @namespace_search_tokens.route("/search-tokens")
+@namespace_search_tokens.deprecated
 class SearchTokens(PsycopgResource):
     """
     A resource that provides various search functionalities based on the specified endpoint.
