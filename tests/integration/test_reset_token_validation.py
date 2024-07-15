@@ -17,7 +17,7 @@ def test_reset_token_validation(client_with_db, dev_db_connection, mocker):
     """
     user_info = create_test_user_api(client_with_db)
     token = request_reset_password_api(client_with_db, mocker, user_info)
-    response = client_with_db.post("/reset-token-validation", json={"token": token})
+    response = client_with_db.post("/api/reset-token-validation", json={"token": token})
     check_response_status(response, HTTPStatus.OK.value)
     assert (
         response.json.get("message") == "Token is valid"

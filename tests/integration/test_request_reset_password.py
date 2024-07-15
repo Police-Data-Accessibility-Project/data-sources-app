@@ -20,7 +20,7 @@ def test_request_reset_password_post(
         "middleware.reset_token_queries.send_password_reset_link"
     )
     response = client_with_db.post(
-        "/request-reset-password", json={"email": user_info.email}
+        "/api/request-reset-password", json={"email": user_info.email}
     )
     reset_token = response.json.get("token")
     check_response_status(response, HTTPStatus.OK.value)

@@ -20,7 +20,7 @@ def test_agencies_get(
     user_info = create_test_user_api(client_with_db)
     api_key = create_api_key(client_with_db, user_info)
     response = client_with_db.get(
-        "/agencies/2",
+        "/api/agencies/2",
         headers={"Authorization": f"Bearer {api_key}"},
     )
     check_response_status(response, HTTPStatus.OK.value)
