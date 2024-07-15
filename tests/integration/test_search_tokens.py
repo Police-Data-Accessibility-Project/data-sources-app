@@ -20,7 +20,7 @@ def test_search_tokens_get(
     user_info = create_test_user_api(client_with_db)
     api_key = create_api_key(client_with_db, user_info)
     response = client_with_db.get(
-        "/search-tokens",
+        "/api/search-tokens",
         headers={"Authorization": f"Bearer {api_key}"},
         query_string={"endpoint": "quick-search", "arg1": "Source 1", "arg2": "City A"},
     )
