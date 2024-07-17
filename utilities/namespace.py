@@ -1,6 +1,6 @@
 from flask_restx import Namespace
 
-def create_namespace():
+def create_namespace() -> Namespace:
     """
     Create a default namespace to be used with Flask_restx resources.
     Each namespace can contain the route definitions and other documentation about the resource
