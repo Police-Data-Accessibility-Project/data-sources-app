@@ -2,18 +2,13 @@ from flask import request, Response
 from flask_restx import fields
 
 from middleware.login_queries import try_logging_in
+from resources.resource_helpers import create_user_model
 from utilities.namespace import create_namespace
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
 namespace_login = create_namespace()
-user_model = namespace_login.model(
-    "User",
-    {
-        "email": fields.String(required=True, description="The user email"),
-        "password": fields.String(required=True, description="The user password"),
-    },
-)
+user_model = create_user_model(namespace_login)
 
 @namespace_login.route("/login")
 class Login(PsycopgResource):

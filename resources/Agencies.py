@@ -3,6 +3,7 @@ from flask_restx import fields
 
 from middleware.agencies import get_agencies
 from middleware.security import api_required
+from resources.resource_helpers import add_api_key_header_arg
 from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
@@ -67,26 +68,27 @@ output_model = namespace_agencies.model(
     },
 )
 
+parser = namespace_agencies.parser()
+parser.add_argument(
+    "page",
+    type=int,
+    required=True,
+    location="args",
+    help="The page number of results to return.",
+    default=1,
+)
+add_api_key_header_arg(parser)
 
 @namespace_agencies.route("/agencies/<page>")
+@namespace_agencies.expect(parser)
 @namespace_agencies.doc(
     description="Get a paginated list of approved agencies from the database.",
-    params={
-        "page": {
-            "in": "path",
-            "description": "The page number of results to return.",
-            "type": fields.Integer(min=1),
-            "required": True,
-            "example": 1,
-        }
-    },
     responses={
         200: "Success. Returns a paginated list of approved agencies.",
         500: "Internal server error.",
         403: "Unauthorized. Forbidden or an invalid API key.",
         400: "Bad request. Missing or bad API key",
     },
-    security="apikey",
 )
 class Agencies(PsycopgResource):
     """Represents a resource for fetching approved agency data from the database."""
@@ -98,7 +100,7 @@ class Agencies(PsycopgResource):
         "Success. Returns a paginated list of approved agencies.",
         model=output_model,
     )
-    @namespace_agencies.marshal_with(output_model)
+    # @namespace_agencies.marshal_with(output_model)
     def get(self, page: int) -> Response:
         """
         Retrieves a paginated list of approved agencies from the database.

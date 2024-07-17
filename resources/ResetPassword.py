@@ -1,13 +1,31 @@
 from flask import request, Response
+from flask_restx import fields
 
 from middleware.reset_token_queries import (
     reset_password,
 )
+from resources.resource_helpers import create_user_model
 from utilities.namespace import create_namespace
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
 namespace_reset_password = create_namespace()
+
+reset_password_model = namespace_reset_password.model(
+    "ResetPassword",
+    {
+        "token": fields.String(
+            required=True,
+            description="The Reset password token to validate",
+            example="2bd77a1d7ef24a1dad3365b8a5c6994e"
+        ),
+        "password": fields.String(
+            required=True,
+            description="The new password to set",
+            example="newpassword"
+        ),
+    },
+)
 
 @namespace_reset_password.route("/reset-password")
 class ResetPassword(PsycopgResource):
@@ -17,18 +35,7 @@ class ResetPassword(PsycopgResource):
     """
 
     @handle_exceptions
-    @namespace_reset_password.param(
-        name="token",
-        description="The Reset password token to validate",
-        _in="query",
-        type="string",
-    )
-    @namespace_reset_password.param(
-        name="password",
-        description="The new password to set",
-        _in="query",
-        type="string",
-    )
+    @namespace_reset_password.expect(reset_password_model)
     @namespace_reset_password.response(200, "OK; Password reset successful")
     @namespace_reset_password.response(500, "Internal server error")
     @namespace_reset_password.doc(

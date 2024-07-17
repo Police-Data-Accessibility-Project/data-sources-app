@@ -10,7 +10,9 @@ from flask_restful import request
 import json
 from typing import Dict, Any
 
+from resources.resource_helpers import add_api_key_header_arg
 from utilities.namespace import create_namespace
+from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
 namespace_archives = create_namespace()
 
@@ -24,7 +26,18 @@ archives_get_model = namespace_archives.model(
     },
 )
 
-from resources.PsycopgResource import PsycopgResource, handle_exceptions
+archives_post_model = namespace_archives.model(
+    "ArchivesPost",
+    {
+        "id": fields.String(description="The ID of the data source", required=True),
+        "last_cached": fields.Date(description="The last date the data was cached"),
+        "broken_source_url_as_of": fields.Date(description="The date the source was marked as broken"),
+    },
+)
+
+archives_header_parser = namespace_archives.parser()
+add_api_key_header_arg(archives_header_parser)
+
 
 @namespace_archives.route("/archives")
 class Archives(PsycopgResource):
@@ -34,14 +47,13 @@ class Archives(PsycopgResource):
 
     @handle_exceptions
     @api_required
-    @namespace_archives.marshal_with(archives_get_model)
     @namespace_archives.response(200, "Success: Returns a list of archived data sources", archives_get_model)
     @namespace_archives.response(400, "Error: Bad request missing or bad API key")
     @namespace_archives.response(403, "Error: Unauthorized. Forbidden or an invalid API key")
     @namespace_archives.doc(
         description="Retrieves archived data sources from the database.",
-        security="apikey",
     )
+    @namespace_archives.expect(archives_header_parser)
     def get(self) -> Any:
         """
         Retrieves archived data sources from the database.
@@ -66,29 +78,10 @@ class Archives(PsycopgResource):
             200: "Success: Returns a status message indicating success or an error message if an exception occurs.",
             400: "Error: Bad request missing or bad API key",
             403: "Error: Unauthorized. Forbidden or an invalid API key",
-        },
-        security="apikey",
-        params={
-            "id": {
-                "in": "query",
-                "description": "The airtable uid for the data source that was cached",
-                "type": "string",
-                "required": True,
-            },
-            "last_cached": {
-                "in": "query",
-                "description": "The current date since the data source url was just cached in the Internet Archive",
-                "type": "string",
-                "required": False,
-            },
-            "broken_source_url_as_of": {
-                "in": "query",
-                "description": "The current date if the url is no longer active, otherwise None",
-                "type": "string",
-                "required": False,
-            },
+            500: "Error: Internal server error",
         }
     )
+    @namespace_archives.expect(archives_header_parser, archives_post_model)
     def put(self) -> Dict[str, str]:
         """
         Updates the archive data based on the provided JSON payload.

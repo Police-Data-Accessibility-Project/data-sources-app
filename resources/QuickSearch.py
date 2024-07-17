@@ -4,6 +4,7 @@ from flask_restx import fields
 from middleware.security import api_required
 from middleware.quick_search_query import quick_search_query_wrapper
 from resources.DataSources import namespace_data_source
+from resources.resource_helpers import add_api_key_header_arg
 
 from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource
@@ -31,6 +32,9 @@ main_model = namespace_quick_search.model('MainModel', {
     'data': fields.List(fields.Nested(data_item_model, required=True, description='List of data items'), attribute='data')
 })
 
+authorization_parser = namespace_quick_search.parser()
+add_api_key_header_arg(authorization_parser)
+
 @namespace_quick_search.route("/quick-search/<search>/<location>")
 class QuickSearch(PsycopgResource):
     """
@@ -47,8 +51,8 @@ class QuickSearch(PsycopgResource):
     @namespace_data_source.response(403, "Forbidden; invalid API key")
     @namespace_data_source.doc(
         description="Retrieves all data sources needing identification.",
-        security="apikey",
     )
+    @namespace_quick_search.expect(authorization_parser)
     @namespace_quick_search.param(
         name="search",
         description="The search term provided by the user. Checks partial matches on any of the following properties on the data_source table: \"name\", \"description\", \"record_type\", and \"tags\". The search term is case insensitive and will match singular and pluralized versions of the term.",

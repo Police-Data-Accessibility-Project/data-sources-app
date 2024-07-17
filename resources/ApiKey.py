@@ -2,6 +2,7 @@ from flask import request, Response
 from flask_restx import fields
 
 from middleware.login_queries import get_api_key_for_user
+from resources.resource_helpers import create_user_model
 from utilities.namespace import create_namespace
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
@@ -19,21 +20,12 @@ api_key_model = namespace_api_key.model(
     },
 )
 
+user = create_user_model(namespace_api_key)
+
 @namespace_api_key.route("/api_key")
+@namespace_api_key.expect(user)
 @namespace_api_key.doc(
     description="Generates an API key for authenticated users.",
-    params={
-        "email": {
-            "in": "query",
-            "type": "string",
-            "description": "The email of the user.",
-        },
-        "password": {
-            "in": "query",
-            "type": "string",
-            "description": "The password of the user. Checked against the password_digest for the user with the matching \"email\" property using werkzeug.security’s check_password_hash function",
-        },
-    },
     responses={
         200: "Success",
         401: "Invalid email or password",
