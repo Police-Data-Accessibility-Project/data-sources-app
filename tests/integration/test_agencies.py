@@ -27,3 +27,4 @@ def test_agencies_get(
     data = response.json["data"]
     assert len(data) > 0
     assert isinstance(data[0], dict)
+    assert data[0]["airtable_uid"] is not None
