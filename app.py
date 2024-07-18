@@ -2,10 +2,14 @@ import os
 
 from flask import Flask
 from flask_cors import CORS
+
+from resources.TypeaheadSuggestions import (
+    TypeaheadSuggestions,
+    namespace_typeahead_suggestions,
+)
 from flask_restx import Api
 
 from config import config
-
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 from resources.Agencies import namespace_agencies
 from resources.ApiKey import namespace_api_key
@@ -33,6 +37,7 @@ NAMESPACES = [
     namespace_refresh_session,
     namespace_reset_password,
     namespace_quick_search,
+    namespace_typeahead_suggestions,
 ]
 
 MY_PREFIX = "/api"

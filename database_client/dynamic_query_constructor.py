@@ -190,55 +190,6 @@ class DynamicQueryConstructor:
 
         :param data: A dictionary containing the data source details.
         """
-        column_names = []
-        column_values = []
-
-        for key, value in data.items():
-            if key not in RESTRICTED_DATA_SOURCE_COLUMNS:
-                column_names.append(sql.Identifier(key))
-                column_values.append(sql.Literal(value))
-
-        # Add additional columns and their values
-        now = datetime.now().strftime("%Y-%m-%d")
-        airtable_uid = str(uuid.uuid4())
-
-        additional_columns = [
-            sql.Identifier("approval_status"),
-            sql.Identifier("url_status"),
-            sql.Identifier("data_source_created"),
-            sql.Identifier("airtable_uid"),
-        ]
-        additional_values = [
-            sql.Literal(False),
-            sql.Literal('["ok"]'),
-            sql.Literal(now),
-            sql.Literal(airtable_uid),
-        ]
-
-        column_names.extend(additional_columns)
-        column_values.extend(additional_values)
-
-        # Join column names and values
-        columns_sql = sql.SQL(", ").join(column_names)
-        values_sql = sql.SQL(", ").join(column_values)
-
-        query = sql.SQL(
-            """
-            INSERT INTO data_sources ({columns})
-            VALUES ({values})
-            RETURNING *
-        """
-        ).format(columns=columns_sql, values=values_sql)
-
-        return query
-
-    @staticmethod
-    def create_new_data_source_query(data: dict) -> sql.Composed:
-        """
-        Creates a query to add a new data source to the database.
-
-        :param data: A dictionary containing the data source details.
-        """
         columns = []
         values = []
         for key, value in data.items():
@@ -270,4 +221,48 @@ class DynamicQueryConstructor:
             sql.SQL(", ").join(columns), sql.SQL(", ").join(values)
         )
 
+        return query
+
+
+    @staticmethod
+    def generate_new_typeahead_suggestion_query(search_term: str):
+        query = sql.SQL(
+            """
+        WITH combined AS (
+            SELECT 
+                1 AS sort_order,
+                display_name,
+                type,
+                state,
+                county,
+                locality
+            FROM typeahead_suggestions
+            WHERE display_name ILIKE {search_term_prefix}
+            UNION ALL
+            SELECT
+                2 AS sort_order,
+                display_name,
+                type,
+                state,
+                county,
+                locality
+            FROM typeahead_suggestions
+            WHERE display_name ILIKE {search_term_anywhere}
+            AND display_name NOT ILIKE {search_term_prefix}
+        )
+        SELECT DISTINCT 
+            sort_order,
+            display_name,
+            type,
+            state,
+            county,
+            locality
+        FROM combined
+        ORDER BY sort_order, display_name
+        LIMIT 4;
+        """
+        ).format(
+            search_term_prefix=sql.Literal(f"{search_term}%"),
+            search_term_anywhere=sql.Literal(f"%{search_term}%"),
+        )
         return query

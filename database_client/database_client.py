@@ -2,7 +2,7 @@ import json
 from collections import namedtuple
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Optional, Any
+from typing import Optional, Any, List
 import uuid
 
 import psycopg2
@@ -632,3 +632,28 @@ class DatabaseClient:
     def delete_expired_access_tokens(self) -> None:
         """Deletes all expired access tokens from the database."""
         self.cursor.execute("delete from access_tokens where expiration_date < NOW()")
+
+    TypeaheadSuggestions = namedtuple(
+        "TypeaheadSuggestions", ["display_name", "type", "state", "county", "locality"]
+    )
+    def get_typeahead_suggestions(self, search_term: str) -> List[TypeaheadSuggestions]:
+        """
+        Returns a list of data sources that match the search query.
+
+        :param search_term: The search query.
+        :return: List of data sources that match the search query.
+        """
+        query = DynamicQueryConstructor.generate_new_typeahead_suggestion_query(search_term)
+        self.cursor.execute(query)
+        results = self.cursor.fetchall()
+
+        return [
+            self.TypeaheadSuggestions(
+                display_name=row[1],
+                type=row[2],
+                state=row[3],
+                county=row[4],
+                locality=row[5],
+            )
+            for row in results
+        ]
