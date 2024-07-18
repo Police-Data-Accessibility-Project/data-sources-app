@@ -86,3 +86,10 @@ DATA_SOURCES_MAP_COLUMN = [
     "lat",
     "lng",
 ]
+RESTRICTED_COLUMNS = [
+    "rejection_note",
+    "data_source_request",
+    "approval_status",
+    "airtable_uid",
+    "airtable_source_last_modified",
+]

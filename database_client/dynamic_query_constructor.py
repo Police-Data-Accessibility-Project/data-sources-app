@@ -9,6 +9,7 @@ from database_client.constants import (
     AGENCY_APPROVED_COLUMNS,
     DATA_SOURCES_APPROVED_COLUMNS,
     RESTRICTED_DATA_SOURCE_COLUMNS,
+    RESTRICTED_COLUMNS,
 )
 
 TableColumn = namedtuple("TableColumn", ["table", "column"])
@@ -189,47 +190,39 @@ class DynamicQueryConstructor:
 
         :param data: A dictionary containing the data source details.
         """
-        column_names = []
-        column_values = []
-
+        columns = []
+        values = []
         for key, value in data.items():
-            if key not in RESTRICTED_DATA_SOURCE_COLUMNS:
-                column_names.append(sql.Identifier(key))
-                column_values.append(sql.Literal(value))
+            if key not in RESTRICTED_COLUMNS:
+                columns.append(sql.Identifier(key))
+                values.append(sql.Literal(value))
 
-        # Add additional columns and their values
         now = datetime.now().strftime("%Y-%m-%d")
         airtable_uid = str(uuid.uuid4())
 
-        additional_columns = [
-            sql.Identifier("approval_status"),
-            sql.Identifier("url_status"),
-            sql.Identifier("data_source_created"),
-            sql.Identifier("airtable_uid"),
-        ]
-        additional_values = [
-            sql.Literal(False),
-            sql.Literal('["ok"]'),
-            sql.Literal(now),
-            sql.Literal(airtable_uid),
-        ]
+        columns.extend(
+            [
+                sql.Identifier("approval_status"),
+                sql.Identifier("url_status"),
+                sql.Identifier("data_source_created"),
+                sql.Identifier("airtable_uid"),
+            ]
+        )
+        values.extend(
+            [
+                sql.Literal(False),
+                sql.Literal(["ok"]),
+                sql.Literal(now),
+                sql.Literal(airtable_uid),
+            ]
+        )
 
-        column_names.extend(additional_columns)
-        column_values.extend(additional_values)
-
-        # Join column names and values
-        columns_sql = sql.SQL(", ").join(column_names)
-        values_sql = sql.SQL(", ").join(column_values)
-
-        query = sql.SQL(
-            """
-            INSERT INTO data_sources ({columns})
-            VALUES ({values})
-            RETURNING *
-        """
-        ).format(columns=columns_sql, values=values_sql)
+        query = sql.SQL("INSERT INTO data_sources ({}) VALUES ({}) RETURNING *").format(
+            sql.SQL(", ").join(columns), sql.SQL(", ").join(values)
+        )
 
         return query
+
 
     @staticmethod
     def generate_new_typeahead_suggestion_query(search_term: str):

@@ -23,7 +23,7 @@ def test_data_sources_needs_identification(
     user_info = create_test_user_api(client_with_db)
     api_key = create_api_key(client_with_db, user_info)
     response = client_with_db.get(
-        "/data-sources-needs-identification",
+        "/api/data-sources-needs-identification",
         headers={"Authorization": f"Bearer {api_key}"},
     )
     check_response_status(response, HTTPStatus.OK.value)

@@ -48,7 +48,7 @@ def test_user_put(client_with_db, dev_db_connection: psycopg2.extensions.connect
     new_password = str(uuid.uuid4())
 
     response = client_with_db.put(
-        "/user",
+        "/api/user",
         headers={"Authorization": f"Bearer {api_key}"},
         json={"email": user_info.email, "password": new_password},
     )

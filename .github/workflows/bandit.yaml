@@ -22,7 +22,7 @@ jobs:
 
     - name: Run Bandit
       run: |
-        bandit -r middleware resources app.py
+        bandit -r middleware resources app.py database_client
 
     - name: Upload Bandit results
       uses: actions/upload-artifact@v2

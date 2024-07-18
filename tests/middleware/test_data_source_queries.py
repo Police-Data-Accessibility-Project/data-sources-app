@@ -37,9 +37,7 @@ def setup_try_logging_in_mocks(monkeypatch, check_password_hash_return_value):
     mock_user_id = MagicMock()
     mock_session_token = MagicMock()
     mock_user_info = DatabaseClient.UserInfo(
-        password_digest=mock_password_digest,
-        id=mock_user_id,
-        api_key=None
+        password_digest=mock_password_digest, id=mock_user_id, api_key=None
     )
     mock_db_client.get_user_info = MagicMock(return_value=mock_user_info)
     mock_make_response = MagicMock()
@@ -85,7 +83,9 @@ def test_try_logging_in_successful(monkeypatch):
 
     # Assert
     mock_db_client.get_user_info.assert_called_with(mock_email)
-    mock_create_session_token.assert_called_with(mock_db_client, mock_user_id, mock_email)
+    mock_create_session_token.assert_called_with(
+        mock_db_client, mock_user_id, mock_email
+    )
     mock_make_response.assert_called_with(
         {"message": "Successfully logged in", "data": mock_session_token}, HTTPStatus.OK
     )

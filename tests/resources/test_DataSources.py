@@ -1,4 +1,3 @@
-
 from unittest.mock import MagicMock
 
 from tests.fixtures import client_with_mock_db, bypass_api_required
@@ -50,12 +49,15 @@ def test_post_data_sources(client_with_mock_db, monkeypatch, bypass_api_required
         {"message": "Test Response"},
         HTTPStatus.IM_A_TEAPOT,
     )
-    mock_add_new_data_source_wrapper = MagicMock(return_value=mock_add_new_data_source_result)
+    mock_add_new_data_source_wrapper = MagicMock(
+        return_value=mock_add_new_data_source_result
+    )
 
     # Patch
     monkeypatch.setattr("resources.DataSources.request", mock_request)
     monkeypatch.setattr(
-        "resources.DataSources.add_new_data_source_wrapper", mock_add_new_data_source_wrapper
+        "resources.DataSources.add_new_data_source_wrapper",
+        mock_add_new_data_source_wrapper,
     )
 
     # Call endpoint
@@ -65,6 +67,7 @@ def test_post_data_sources(client_with_mock_db, monkeypatch, bypass_api_required
     check_response_status(response, HTTPStatus.IM_A_TEAPOT)
     assert response.json == {"message": "Test Response"}
 
+
 def test_get_data_sources_map(client_with_mock_db, monkeypatch, bypass_api_required):
     mock_request = MagicMock()
     mock_data = MagicMock()
@@ -73,12 +76,15 @@ def test_get_data_sources_map(client_with_mock_db, monkeypatch, bypass_api_requi
         {"message": "Test Response"},
         HTTPStatus.IM_A_TEAPOT,
     )
-    mock_get_data_sources_for_map_wrapper = MagicMock(return_value=mock_get_data_sources_for_map_result)
+    mock_get_data_sources_for_map_wrapper = MagicMock(
+        return_value=mock_get_data_sources_for_map_result
+    )
 
     # Patch
     monkeypatch.setattr("resources.DataSources.request", mock_request)
     monkeypatch.setattr(
-        "resources.DataSources.get_data_sources_for_map_wrapper", mock_get_data_sources_for_map_wrapper
+        "resources.DataSources.get_data_sources_for_map_wrapper",
+        mock_get_data_sources_for_map_wrapper,
     )
 
     # Call endpoint

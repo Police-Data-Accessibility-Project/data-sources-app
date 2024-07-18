@@ -23,13 +23,15 @@ def test_archives_get(
     user_info = create_test_user_api(client_with_db)
     api_key = create_api_key(client_with_db, user_info)
     response = client_with_db.get(
-        "/archives",
+        "/api/archives",
         headers={"Authorization": f"Bearer {api_key}"},
     )
     assert (
         response.status_code == HTTPStatus.OK.value
     ), "Archives endpoint returned non-200"
     assert len(response.json) > 0, "Endpoint should return more than 0 results"
+    assert response.json[0]["id"] is not None
+
 
 
 def test_archives_put(
