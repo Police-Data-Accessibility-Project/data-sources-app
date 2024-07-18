@@ -8,13 +8,20 @@ from tests.fixtures import client_with_mock_db, bypass_api_required
 
 def test_get_agencies(client_with_mock_db, monkeypatch, bypass_api_required):
     mock_get_agencies = MagicMock(
-        return_value=({"message": "Test Response"}, HTTPStatus.IM_A_TEAPOT)
+        return_value=(
+            {
+                "id": None,
+                "last_cached": None,
+                "source_url": None,
+                "update_frequency": None,
+             },
+            HTTPStatus.IM_A_TEAPOT)
     )
     monkeypatch.setattr("resources.Archives.archives_get_query", mock_get_agencies)
 
     response = client_with_mock_db.client.get("/archives")
     check_response_status(response, HTTPStatus.IM_A_TEAPOT)
-    assert response.json == {"message": "Test Response"}
+    assert response.json == mock_get_agencies.return_value[0]
 
 
 def test_put_agencies(client_with_mock_db, monkeypatch, bypass_api_required):

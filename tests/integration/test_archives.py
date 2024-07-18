@@ -30,6 +30,8 @@ def test_archives_get(
         response.status_code == HTTPStatus.OK.value
     ), "Archives endpoint returned non-200"
     assert len(response.json) > 0, "Endpoint should return more than 0 results"
+    assert response.json[0]["id"] is not None
+
 
 
 def test_archives_put(
