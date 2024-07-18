@@ -13,9 +13,9 @@ def test_typeahead_suggestions(client_with_db, dev_db_connection):
     """
     setup_get_typeahead_suggestion_test_data(dev_db_connection.cursor())
     dev_db_connection.commit()
-    response = client_with_db.get("/typeahead-suggestions", json={"query": "xyl"})
+    response = client_with_db.get("/search/typeahead-suggestions?query=xyl")
     check_response_status(response, HTTPStatus.OK.value)
-    results = response.json
+    results = response.json["suggestions"]
     assert results[0]["display_name"] == "Xylodammerung"
     assert results[0]["locality"] == "Xylodammerung"
     assert results[0]["county"] == "Arxylodon"

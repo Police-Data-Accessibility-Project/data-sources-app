@@ -13,4 +13,5 @@ def get_typeahead_suggestions_wrapper(
 ) -> Response:
     suggestions = db_client.get_typeahead_suggestions(query)
     dict_results = get_typeahead_dict_results(suggestions)
-    return make_response(dict_results, HTTPStatus.OK)
+    return make_response(
+        {"suggestions": dict_results}, HTTPStatus.OK)
