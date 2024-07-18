@@ -20,10 +20,11 @@ def test_agencies_get(
     user_info = create_test_user_api(client_with_db)
     api_key = create_api_key(client_with_db, user_info)
     response = client_with_db.get(
-        "/agencies/2",
+        "/api/agencies/2",
         headers={"Authorization": f"Bearer {api_key}"},
     )
     check_response_status(response, HTTPStatus.OK.value)
     data = response.json["data"]
     assert len(data) > 0
     assert isinstance(data[0], dict)
+    assert data[0]["airtable_uid"] is not None

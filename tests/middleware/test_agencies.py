@@ -7,10 +7,12 @@ from middleware.agencies import (
 )
 from tests.helper_functions import DynamicMagicMock
 
+
 class AgenciesMocks(DynamicMagicMock):
     db_client: MagicMock
     page: MagicMock
     results: MagicMock
+
 
 def test_get_agencies_matches(monkeypatch):
     mock = AgenciesMocks()
@@ -37,7 +39,9 @@ def test_get_agencies(monkeypatch):
     mock_get_agencies_matches = MagicMock(return_value=mock_agencies_matches)
     mock_make_response = MagicMock(return_value=mock.response)
 
-    monkeypatch.setattr("middleware.agencies.get_agencies_matches", mock_get_agencies_matches)
+    monkeypatch.setattr(
+        "middleware.agencies.get_agencies_matches", mock_get_agencies_matches
+    )
     monkeypatch.setattr("middleware.agencies.make_response", mock_make_response)
 
     # Call function

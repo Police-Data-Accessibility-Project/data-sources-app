@@ -16,6 +16,7 @@ from tests.fixtures import live_database_client, dev_db_connection, db_cursor, x
 from tests.helper_functions import (
     insert_test_agencies_and_sources,
     insert_test_agencies_and_sources_if_not_exist,
+    setup_get_typeahead_suggestion_test_data,
 )
 from tests.helper_scripts.test_data_generator import TestDataGenerator
 from utilities.enums import RecordCategories
@@ -376,7 +377,6 @@ def test_delete_session_token(live_database_client):
     assert live_database_client.get_session_token_info(session_token) is None
 
 
-
 def test_get_access_token(live_database_client):
     # Add a new access token to the database
     live_database_client.add_new_access_token(
@@ -418,6 +418,36 @@ def test_delete_expired_access_tokens(live_database_client):
         with pytest.raises(AccessTokenNotFoundError):
             live_database_client.get_access_token(api_key=token)
     assert live_database_client.get_access_token(api_key=unexpired_token)
+
+
+def test_get_typeahead_suggestion(live_database_client):
+    # Insert test data into the database
+    cursor = live_database_client.cursor
+    setup_get_typeahead_suggestion_test_data(cursor)
+
+    # Call the get_typeahead_suggestion function
+    results = live_database_client.get_typeahead_suggestions(search_term="xyl")
+
+    # Check that the results are as expected
+    assert len(results) == 3
+
+    assert results[0].display_name == "Xylodammerung"
+    assert results[0].type == "Locality"
+    assert results[0].state == "Xylonsylvania"
+    assert results[0].county == "Arxylodon"
+    assert results[0].locality == "Xylodammerung"
+
+    assert results[1].display_name == "Xylonsylvania"
+    assert results[1].type == "State"
+    assert results[1].state == "Xylonsylvania"
+    assert results[1].county is None
+    assert results[1].locality is None
+
+    assert results[2].display_name == "Arxylodon"
+    assert results[2].type == "County"
+    assert results[2].state == "Xylonsylvania"
+    assert results[2].county == "Arxylodon"
+    assert results[2].locality is None
 
 def test_search_with_location_and_record_types_real_data(live_database_client):
     """

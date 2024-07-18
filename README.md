@@ -1,3 +1,5 @@
+![Python Version](https://img.shields.io/badge/python-3.11-blue?style=for-the-badge&logo=python&logoColor=ffdd54)
+
 # data-sources-app-v2
 
 Development of the next big iteration of the data sources app according to https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/248

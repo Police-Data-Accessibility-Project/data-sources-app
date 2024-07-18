@@ -7,7 +7,8 @@ from tests.fixtures import connection_with_test_data, dev_db_connection, client_
 from tests.helper_functions import (
     create_test_user_api,
     create_api_key,
-    give_user_admin_role, check_response_status,
+    give_user_admin_role,
+    check_response_status,
 )
 
 
@@ -21,7 +22,7 @@ def test_data_sources_by_id_get(
     user_info = create_test_user_api(client_with_db)
     api_key = create_api_key(client_with_db, user_info)
     response = client_with_db.get(
-        "/data-sources-by-id/SOURCE_UID_1",
+        "/api/data-sources-by-id/SOURCE_UID_1",
         headers={"Authorization": f"Bearer {api_key}"},
     )
     check_response_status(response, HTTPStatus.OK.value)
@@ -39,7 +40,7 @@ def test_data_sources_by_id_put(
     give_user_admin_role(connection_with_test_data, user_info)
     desc = str(uuid.uuid4())
     response = client_with_db.put(
-        f"/data-sources-by-id/SOURCE_UID_1",
+        f"/api/data-sources-by-id/SOURCE_UID_1",
         headers={"Authorization": f"Bearer {api_key}"},
         json={"description": desc},
     )

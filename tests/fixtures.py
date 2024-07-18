@@ -120,6 +120,7 @@ def client_with_db(dev_db_connection: psycopg2.extensions.connection, monkeypatc
 def bypass_api_required(monkeypatch):
     monkeypatch.setattr("middleware.security.validate_token", lambda: None)
 
+
 @pytest.fixture
 def live_database_client(db_cursor) -> DatabaseClient:
     """
@@ -139,3 +140,4 @@ def xylonslyvania_test_data(db_cursor):
     tcg.build_xylonslvania()
     yield
     tcg.rollback_savepoint()
+

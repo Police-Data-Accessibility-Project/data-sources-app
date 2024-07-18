@@ -29,6 +29,7 @@ from resources.ResetPassword import ResetPassword
 from resources.ResetTokenValidation import ResetTokenValidation
 from resources.Search import Search
 from resources.SearchTokens import SearchTokens
+from resources.TypeaheadSuggestions import TypeaheadSuggestions
 from resources.User import User
 from tests.fixtures import client_with_mock_db, ClientWithMockDB
 
@@ -65,7 +66,7 @@ test_parameters = [
     TestParameters(User, "/user", [POST, PUT]),
     TestParameters(Login, "/login", [POST]),
     TestParameters(RefreshSession, "/refresh-session", [POST]),
-    TestParameters(ApiKey, "/api_key", [GET]),
+    TestParameters(ApiKey, "/api/api_key", [GET]),
     TestParameters(RequestResetPassword, "/request-reset-password", [POST]),
     TestParameters(ResetPassword, "/reset-password", [POST]),
     TestParameters(ResetTokenValidation, "/reset-token-validation", [POST]),
@@ -80,6 +81,7 @@ test_parameters = [
     TestParameters(Agencies, "/agencies/<page>", [GET]),
     TestParameters(SearchTokens, "/search-tokens", [GET]),
     TestParameters(Search, "/search", [GET]),
+    TestParameters(TypeaheadSuggestions, "/search/typeahead-suggestions", [GET]),
 ]
 
 

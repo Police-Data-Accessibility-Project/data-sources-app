@@ -62,7 +62,9 @@ class ResultFormatter:
         data_source_and_agency_columns = (
             DATA_SOURCES_APPROVED_COLUMNS + AGENCY_APPROVED_COLUMNS
         )
-        data_source_and_agency_columns.extend(['data_source_id', 'agency_id', 'agency_name'])
+        data_source_and_agency_columns.extend(
+            ["data_source_id", "agency_id", "agency_name"]
+        )
         # Convert to a list and only return the first (and only)
         return ResultFormatter.convert_data_source_matches(
             data_source_and_agency_columns, [results]

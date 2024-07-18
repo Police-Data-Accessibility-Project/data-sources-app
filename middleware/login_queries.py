@@ -17,8 +17,6 @@ from middleware.custom_exceptions import UserNotFoundError, TokenNotFoundError
 from middleware.util import get_env_variable
 
 
-
-
 def try_logging_in(db_client: DatabaseClient, email: str, password: str) -> Response:
     """
     Tries to log in a user.
@@ -50,6 +48,7 @@ def is_admin(db_client: DatabaseClient, email: str) -> bool:
     role_info = db_client.get_role_by_email(email)
     return role_info.role == "admin"
 
+
 def create_session_token(db_client: DatabaseClient, user_id: int, email: str) -> str:
     """
     Generates a session token for a user and inserts it into the session_tokens table.
@@ -77,11 +76,14 @@ def create_session_token(db_client: DatabaseClient, user_id: int, email: str) ->
 
 SessionTokenUserData = namedtuple("SessionTokenUserData", ["id", "email"])
 
+
 def generate_api_key() -> str:
     return uuid.uuid4().hex
 
 
-def get_api_key_for_user(db_client: DatabaseClient, email: str, password: str) -> Response:
+def get_api_key_for_user(
+    db_client: DatabaseClient, email: str, password: str
+) -> Response:
     """
     Tries to log in a user. If successful, generates API key
 
@@ -94,9 +96,7 @@ def get_api_key_for_user(db_client: DatabaseClient, email: str, password: str) -
 
     if check_password_hash(user_data.password_digest, password):
         api_key = generate_api_key()
-        db_client.update_user_api_key(
-            user_id=user_data.id, api_key=api_key
-        )
+        db_client.update_user_api_key(user_id=user_data.id, api_key=api_key)
         payload = {"api_key": api_key}
         return make_response(payload, HTTPStatus.OK)
 

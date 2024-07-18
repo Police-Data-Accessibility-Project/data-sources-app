@@ -6,7 +6,7 @@ from typing import Optional, Any, List
 import uuid
 
 import psycopg2
-from psycopg2.extras import DictCursor
+from psycopg2 import sql
 
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from middleware.custom_exceptions import (
@@ -15,14 +15,6 @@ from middleware.custom_exceptions import (
     AccessTokenNotFoundError,
 )
 from utilities.enums import RecordCategories
-
-RESTRICTED_COLUMNS = [
-    "rejection_note",
-    "data_source_request",
-    "approval_status",
-    "airtable_uid",
-    "airtable_source_last_modified",
-]
 
 DATA_SOURCES_MAP_COLUMN = [
     "data_source_id",
@@ -83,10 +75,13 @@ class DatabaseClient:
         :param password_digest:
         :return:
         """
-        self.cursor.execute(
-            f"insert into users (email, password_digest) values (%s, %s)",
-            (email, password_digest),
+        query = sql.SQL(
+            "insert into users (email, password_digest) values ({}, {})"
+        ).format(
+            sql.Literal(email),
+            sql.Literal(password_digest),
         )
+        self.cursor.execute(query)
 
     def get_user_id(self, email: str) -> Optional[int]:
         """
@@ -94,7 +89,10 @@ class DatabaseClient:
         :param email:
         :return:
         """
-        self.cursor.execute(f"select id from users where email = %s", (email,))
+        query = sql.SQL("select id from users where email = {}").format(
+            sql.Literal(email)
+        )
+        self.cursor.execute(query)
         if self.cursor.rowcount == 0:
             return None
         return self.cursor.fetchone()[0]
@@ -106,10 +104,13 @@ class DatabaseClient:
         :param password_digest:
         :return:
         """
-        self.cursor.execute(
-            f"update users set password_digest = %s where email = %s",
-            (password_digest, email),
+        query = sql.SQL(
+            "update users set password_digest = {} where email = {}"
+        ).format(
+            sql.Literal(password_digest),
+            sql.Literal(email),
         )
+        self.cursor.execute(query)
 
     ResetTokenInfo = namedtuple("ResetTokenInfo", ["id", "email", "create_date"])
 
@@ -120,10 +121,10 @@ class DatabaseClient:
         :param token: The reset token to check.
         :return: ResetTokenInfo if the token exists; otherwise, None.
         """
-        self.cursor.execute(
-            f"select id, email, create_date from reset_tokens where token = %s",
-            (token,),
-        )
+        query = sql.SQL(
+            "select id, email, create_date from reset_tokens where token = {}"
+        ).format(sql.Literal(token))
+        self.cursor.execute(query)
         row = self.cursor.fetchone()
         if row is None:
             return None
@@ -136,9 +137,10 @@ class DatabaseClient:
         :param email: The email to associate with the reset token.
         :param token: The reset token to add.
         """
-        self.cursor.execute(
-            f"insert into reset_tokens (email, token) values (%s, %s)", (email, token)
-        )
+        query = sql.SQL(
+            "insert into reset_tokens (email, token) values ({}, {})"
+        ).format(sql.Literal(email), sql.Literal(token))
+        self.cursor.execute(query)
 
     def delete_reset_token(self, email: str, token: str):
         """
@@ -147,9 +149,10 @@ class DatabaseClient:
         :param email: The email associated with the reset token to delete.
         :param token: The reset token to delete.
         """
-        self.cursor.execute(
-            f"delete from reset_tokens where email = %s and token = %s", (email, token)
-        )
+        query = sql.SQL(
+            "delete from reset_tokens where email = {} and token = {}"
+        ).format(sql.Literal(email), sql.Literal(token))
+        self.cursor.execute(query)
 
     SessionTokenInfo = namedtuple(
         "SessionTokenInfo", ["id", "email", "expiration_date"]
@@ -162,10 +165,10 @@ class DatabaseClient:
         :param api_key: The session token to check.
         :return: SessionTokenInfo if the token exists; otherwise, None.
         """
-        self.cursor.execute(
-            f"select id, email, expiration_date from session_tokens where token = %s",
-            (api_key,),
-        )
+        query = sql.SQL(
+            "select id, email, expiration_date from session_tokens where token = {}"
+        ).format(sql.Literal(api_key))
+        self.cursor.execute(query)
         row = self.cursor.fetchone()
         if row is None:
             return None
@@ -179,10 +182,10 @@ class DatabaseClient:
         :param api_key: The api key to check.
         :return: RoleInfo if the token exists; otherwise, None.
         """
-        self.cursor.execute(
-            f"select id, role from users where api_key = %s",
-            (api_key,),
+        query = sql.SQL("select id, role from users where api_key = {}").format(
+            sql.Literal(api_key)
         )
+        self.cursor.execute(query)
         row = self.cursor.fetchone()
         if row is None:
             return None
@@ -196,7 +199,9 @@ class DatabaseClient:
         :raises UserNotFoundError: If no user is found.
         :return: RoleInfo namedtuple containing the user's role.
         """
-        self.cursor.execute(f"select role from users where email = %s", (email,))
+        query = sql.SQL("select role from users where email = {}")
+        query = query.format(sql.Literal(email))
+        self.cursor.execute(query)
         results = self.cursor.fetchone()
         if len(results) == 0:
             raise UserNotFoundError(email)
@@ -209,10 +214,10 @@ class DatabaseClient:
         :param api_key: The api key to check.
         :param user_id: The user id to update.
         """
-        self.cursor.execute(
-            f"update users set api_key = %s where id = %s",
-            (api_key, user_id),
-        )
+        query = sql.SQL("update users set api_key = {} where id = {}")
+        query = query.format(sql.Literal(api_key), sql.Literal(user_id))
+
+        self.cursor.execute(query)
 
     def get_data_source_by_id(self, data_source_id: str) -> Optional[tuple[Any, ...]]:
         """
@@ -257,39 +262,13 @@ class DatabaseClient:
         self.cursor.execute(sql_query)
         return self.cursor.fetchall()
 
-    def create_new_data_source_query(self, data: dict) -> str:
-        """
-        Creates a query to add a new data source to the database.
-
-        :param data: A dictionary containing the data source details.
-        """
-        column_names = ""
-        column_values = ""
-        for key, value in data.items():
-            if key not in RESTRICTED_COLUMNS:
-                column_names += f"{key}, "
-                if type(value) == str:
-                    column_values += f"'{value}', "
-                else:
-                    column_values += f"{value}, "
-
-        now = datetime.now().strftime("%Y-%m-%d")
-        airtable_uid = str(uuid.uuid4())
-
-        column_names += "approval_status, url_status, data_source_created, airtable_uid"
-        column_values += f"False, '[\"ok\"]', '{now}', '{airtable_uid}'"
-
-        sql_query = f"INSERT INTO data_sources ({column_names}) VALUES ({column_values}) RETURNING *"
-
-        return sql_query
-
     def add_new_data_source(self, data: dict) -> None:
         """
         Processes a request to add a new data source.
 
         :param data: A dictionary containing the updated data source details.
         """
-        sql_query = self.create_new_data_source_query(data)
+        sql_query = DynamicQueryConstructor.create_new_data_source_query(data)
         self.cursor.execute(sql_query)
 
     def update_data_source(self, data: dict, data_source_id: str) -> None:
@@ -570,10 +549,13 @@ class DatabaseClient:
 
     def add_new_access_token(self, token: str, expiration: datetime) -> None:
         """Inserts a new access token into the database."""
-        self.cursor.execute(
-            f"insert into access_tokens (token, expiration_date) values (%s, %s)",
-            (token, expiration),
+        query = sql.SQL(
+            "insert into access_tokens (token, expiration_date) values ({token}, {expiration})"
+        ).format(
+            token=sql.Literal(token),
+            expiration=sql.Literal(expiration),
         )
+        self.cursor.execute(query)
 
     UserInfo = namedtuple("UserInfo", ["id", "password_digest", "api_key"])
 
@@ -585,9 +567,10 @@ class DatabaseClient:
         :raise UserNotFoundError: If no user is found.
         :return: UserInfo namedtuple containing the user's information.
         """
-        self.cursor.execute(
-            f"select id, password_digest, api_key from users where email = %s", (email,)
-        )
+        query = sql.SQL(
+            "select id, password_digest, api_key from users where email = {email}"
+        ).format(email=sql.Literal(email))
+        self.cursor.execute(query)
         results = self.cursor.fetchone()
         if results is None:
             raise UserNotFoundError(email)
@@ -606,10 +589,14 @@ class DatabaseClient:
         :param email: User's email.
         :param expiration: The session token's expiration.
         """
-        self.cursor.execute(
-            f"insert into session_tokens (token, email, expiration_date) values (%s, %s, %s)",
-            (session_token, email, expiration),
+        query = sql.SQL(
+            "insert into session_tokens (token, email, expiration_date) values ({token}, {email}, {expiration})"
+        ).format(
+            token=sql.Literal(session_token),
+            email=sql.Literal(email),
+            expiration=sql.Literal(expiration),
         )
+        self.cursor.execute(query)
 
     SessionTokenUserData = namedtuple("SessionTokenUserData", ["id", "email"])
 
@@ -619,9 +606,10 @@ class DatabaseClient:
 
         :param old_token: The session token.
         """
-        self.cursor.execute(
-            f"delete from session_tokens where token = %s", (old_token,)
+        query = sql.SQL("delete from session_tokens where token = {token}").format(
+            token=sql.Literal(old_token)
         )
+        self.cursor.execute(query)
 
     AccessToken = namedtuple("AccessToken", ["id", "token"])
 
@@ -633,9 +621,10 @@ class DatabaseClient:
         :raise AccessTokenNotFoundError: If the access token is not found.
         :returns: AccessToken namedtuple with the ID and the access token.
         """
-        self.cursor.execute(
-            f"select id, token from access_tokens where token = %s", (api_key,)
-        )
+        query = sql.SQL(
+            "select id, token from access_tokens where token = {token}"
+        ).format(token=sql.Literal(api_key))
+        self.cursor.execute(query)
         results = self.cursor.fetchone()
         if not results:
             raise AccessTokenNotFoundError("Access token not found")
@@ -643,7 +632,32 @@ class DatabaseClient:
 
     def delete_expired_access_tokens(self) -> None:
         """Deletes all expired access tokens from the database."""
-        self.cursor.execute(f"delete from access_tokens where expiration_date < NOW()")
+        self.cursor.execute("delete from access_tokens where expiration_date < NOW()")
+
+    TypeaheadSuggestions = namedtuple(
+        "TypeaheadSuggestions", ["display_name", "type", "state", "county", "locality"]
+    )
+    def get_typeahead_suggestions(self, search_term: str) -> List[TypeaheadSuggestions]:
+        """
+        Returns a list of data sources that match the search query.
+
+        :param search_term: The search query.
+        :return: List of data sources that match the search query.
+        """
+        query = DynamicQueryConstructor.generate_new_typeahead_suggestion_query(search_term)
+        self.cursor.execute(query)
+        results = self.cursor.fetchall()
+
+        return [
+            self.TypeaheadSuggestions(
+                display_name=row[1],
+                type=row[2],
+                state=row[3],
+                county=row[4],
+                locality=row[5],
+            )
+            for row in results
+        ]
 
     def search_with_location_and_record_type(
         self,
