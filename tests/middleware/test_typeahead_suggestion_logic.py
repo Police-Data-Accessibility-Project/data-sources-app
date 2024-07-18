@@ -81,4 +81,4 @@ def test_get_typeahead_suggestions_wrapper(monkeypatch):
     get_typeahead_suggestions_wrapper(mock_db_client, mock_query)
     mock_db_client.get_typeahead_suggestions.assert_called_with(mock_query)
     mock_get_typeahead_dict_results.assert_called_with(mock_suggestions)
-    mock_make_response.assert_called_with(mock_dict_results, HTTPStatus.OK)
+    mock_make_response.assert_called_with({"suggestions": mock_dict_results}, HTTPStatus.OK)
