@@ -3,6 +3,7 @@ import os
 from flask import Flask
 from flask_cors import CORS
 
+from resources.Search import namespace_search
 from resources.TypeaheadSuggestions import (
     TypeaheadSuggestions,
     namespace_typeahead_suggestions,
@@ -38,6 +39,7 @@ NAMESPACES = [
     namespace_reset_password,
     namespace_quick_search,
     namespace_typeahead_suggestions,
+    namespace_search
 ]
 
 MY_PREFIX = "/api"

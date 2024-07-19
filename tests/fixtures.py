@@ -13,6 +13,7 @@ from app import create_app
 from database_client.database_client import DatabaseClient
 from middleware.util import get_env_variable
 from tests.helper_functions import insert_test_agencies_and_sources
+from tests.helper_scripts.test_data_generator import TestDataGenerator
 
 
 @pytest.fixture
@@ -128,3 +129,15 @@ def live_database_client(db_cursor) -> DatabaseClient:
     :return:
     """
     return DatabaseClient(db_cursor)
+
+@pytest.fixture
+def xylonslyvania_test_data(db_cursor):
+    """
+    Adds XylonsLyvania data to the database, then rolls back the transaction.
+    """
+    tcg = TestDataGenerator(db_cursor)
+    tcg.build_savepoint("xylonslyvania_test_data")
+    tcg.build_xylonslvania()
+    yield
+    tcg.rollback_savepoint()
+
