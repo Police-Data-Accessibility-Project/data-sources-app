@@ -6,6 +6,7 @@ from flask import Response, make_response
 from database_client.database_client import DatabaseClient
 from database_client.result_formatter import ResultFormatter, dictify_namedtuple
 from utilities.enums import RecordCategories
+from middleware.util import format_list_response
 
 
 def search_wrapper(
@@ -20,9 +21,4 @@ def search_wrapper(
     )
 
     dict_results = dictify_namedtuple(search_results)
-    # TODO: This is shared by other search routes such as quick-search. Consolidate i
-    body = {
-        "count": len(dict_results),
-        "data": dict_results
-    }
-    return make_response(body, HTTPStatus.OK)
+    return make_response(format_list_response(dict_results), HTTPStatus.OK)

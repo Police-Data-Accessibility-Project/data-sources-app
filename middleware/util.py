@@ -18,3 +18,14 @@ def get_env_variable(name: str) -> str:
     if value is None or value == "":
         raise ValueError(f"Environment variable '{name}' is not set or is empty.")
     return value
+
+
+def format_list_response(data: list) -> dict:
+    """
+    Format a list of dictionaries into a dictionary with the count and data keys.
+    Args:
+        data (list): A list of dictionaries to format.
+    Returns:
+        dict: A dictionary with the count and data keys.
+    """
+    return {"count": len(data), "data": data}
