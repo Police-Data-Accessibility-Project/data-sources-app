@@ -10,7 +10,7 @@ from middleware.data_source_queries import (
     update_data_source_wrapper,
     needs_identification_data_sources_wrapper,
 )
-from resources.resource_helpers import add_api_key_header_arg
+from resources.resource_helpers import add_api_key_header_arg, create_outer_model
 from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
@@ -28,23 +28,18 @@ data_sources_inner_model = namespace_data_source.model(
         "attribute_3": fields.String(
             description="Continue for as many attributes as you intend to modify",
         ),
-    }
+    },
 )
 
 
-data_sources_outer_model = namespace_data_source.model(
-    "DataSourcesOuter",
-    {
-        "count": fields.Integer(required=True, description="The count of data objects"),
-        "data": fields.List(
-            fields.Nested(data_sources_inner_model),
-        )
-    },
+data_sources_outer_model = create_outer_model(
+    namespace_data_source, data_sources_inner_model, "DataSourcesOuter"
 )
 
 
 authorization_parser = namespace_data_source.parser()
 add_api_key_header_arg(authorization_parser)
+
 
 @namespace_data_source.route("/data-sources-by-id/<data_source_id>")
 @namespace_data_source.param(
@@ -160,7 +155,6 @@ class DataSources(PsycopgResource):
 @namespace_data_source.route("/data-sources-needs-identification")
 class DataSourcesNeedsIdentification(PsycopgResource):
 
-
     @namespace_data_source.response(200, "Success", data_sources_outer_model)
     @namespace_data_source.response(500, "Internal server error")
     @namespace_data_source.response(400, "Bad request; missing or bad API key")
@@ -174,7 +168,6 @@ class DataSourcesNeedsIdentification(PsycopgResource):
     def get(self):
         with self.setup_database_client() as db_client:
             return needs_identification_data_sources_wrapper(db_client)
-
 
 
 @namespace_data_source.route("/data-sources-map")

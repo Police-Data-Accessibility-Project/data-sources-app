@@ -52,20 +52,27 @@ def create_search_model(namespace: Namespace) -> Model:
         },
     )
 
-    search_result_outer_model = namespace.model(
-        "SearchResultOuter",
+    search_result_outer_model = create_outer_model(
+        namespace, search_result_inner_model, "SearchResultOuter"
+    )
+
+    return search_result_outer_model
+
+
+def create_outer_model(namespace: Namespace, inner_model: Model, name: str) -> Model:
+    return namespace.model(
+        name,
         {
             "count": fields.Integer(
-                required=True, description="Count of data items", attribute="count"
+                required=True, description=f"Count of {inner_model.name} items", attribute="count"
             ),
             "data": fields.List(
                 fields.Nested(
-                    search_result_inner_model,
+                    inner_model,
                     required=True,
-                    description="List of data items",
+                    description=f"List of {inner_model.name} items",
                 ),
                 attribute="data",
             ),
         },
     )
-    return search_result_outer_model
