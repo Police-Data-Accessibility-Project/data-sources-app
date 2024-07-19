@@ -3,6 +3,7 @@ from flask_restx import fields, reqparse
 
 from middleware.typeahead_suggestion_logic import get_typeahead_suggestions_wrapper
 from resources.PsycopgResource import handle_exceptions, PsycopgResource
+from resources.resource_helpers import create_outer_model
 
 from utilities.namespace import create_namespace, AppNamespaces
 
@@ -49,14 +50,10 @@ typeahead_suggestions_inner_model = namespace_typeahead_suggestions.model(
     },
 )
 
-typeahead_suggestions_outer_model = namespace_typeahead_suggestions.model(
+typeahead_suggestions_outer_model = create_outer_model(
+    namespace_typeahead_suggestions,
+    typeahead_suggestions_inner_model,
     "TypeaheadSuggestionsOuter",
-    {
-        "suggestions": fields.List(
-            fields.Nested(typeahead_suggestions_inner_model),
-            description="A list of suggestions",
-        ),
-    },
 )
 
 
