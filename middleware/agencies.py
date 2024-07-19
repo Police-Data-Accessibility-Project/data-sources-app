@@ -4,6 +4,7 @@ from flask import Response, make_response
 
 from database_client.database_client import DatabaseClient
 from utilities.common import convert_dates_to_strings
+from middleware.util import format_list_response
 
 
 def get_agencies(db_client: DatabaseClient, page: int) -> Response:
@@ -15,8 +16,9 @@ def get_agencies(db_client: DatabaseClient, page: int) -> Response:
     :return: A response object with the relevant agency information and status code.
     """
     agencies_matches = get_agencies_matches(db_client, page)
-    agencies = {"count": len(agencies_matches), "data": agencies_matches}
-    return make_response(agencies, HTTPStatus.OK)
+    return make_response(
+        format_list_response(agencies_matches),
+        HTTPStatus.OK)
 
 
 def get_agencies_matches(db_client: DatabaseClient, page: int):
