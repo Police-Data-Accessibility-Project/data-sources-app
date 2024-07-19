@@ -28,7 +28,7 @@ def test_search_get_all_parameters(client_with_mock_db, monkeypatch, bypass_api_
     monkeypatch.setattr("resources.Search.search_wrapper", mock_search_wrapper_all_parameters)
 
     response = client_with_mock_db.client.get(
-        "/search?state=Pennsylvania&county=Allegheny&locality=Pittsburgh&record_category=Police%20%26%20Public%20Interactions"
+        "/search/search-location-and-record-type?state=Pennsylvania&county=Allegheny&locality=Pittsburgh&record_category=Police%20%26%20Public%20Interactions"
     )
     check_response_status(response, HTTPStatus.IM_A_TEAPOT)
     assert response.json == {"message": "Test Response"}
@@ -53,6 +53,6 @@ def test_search_get_minimal_parameters(client_with_mock_db, monkeypatch, bypass_
 
     monkeypatch.setattr("resources.Search.search_wrapper", mock_search_wrapper_minimal_parameters)
 
-    response = client_with_mock_db.client.get("/search?state=Pennsylvania")
+    response = client_with_mock_db.client.get("/search/search-location-and-record-type?state=Pennsylvania")
     check_response_status(response, HTTPStatus.IM_A_TEAPOT)
     assert response.json == {"message": "Test Response"}

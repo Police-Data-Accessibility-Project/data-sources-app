@@ -80,7 +80,7 @@ test_parameters = [
     TestParameters(DataSourceById, "/data-sources-by-id/<data_source_id>", [GET, PUT]),
     TestParameters(Agencies, "/agencies/<page>", [GET]),
     TestParameters(SearchTokens, "/search-tokens", [GET]),
-    TestParameters(Search, "/search", [GET]),
+    TestParameters(Search, "/search/search-location-and-record-type", [GET]),
     TestParameters(TypeaheadSuggestions, "/search/typeahead-suggestions", [GET]),
 ]
 
