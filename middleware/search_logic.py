@@ -20,4 +20,9 @@ def search_wrapper(
     )
 
     dict_results = dictify_namedtuple(search_results)
-    return make_response(dict_results, HTTPStatus.OK)
+    # TODO: This is shared by other search routes such as quick-search. Consolidate i
+    body = {
+        "count": len(dict_results),
+        "data": dict_results
+    }
+    return make_response(body, HTTPStatus.OK)
