@@ -399,7 +399,8 @@ class DatabaseClient:
         Pulls data sources to be archived by the automatic archives script.
 
         A data source is selected for archival if:
-        (the data source has not been archived previously OR the data source is updated regularly)
+        The data source has been approved
+        AND (the data source has not been archived previously OR the data source is updated regularly)
         AND the source url is not broken
         AND the source url is not null.
 
@@ -412,6 +413,8 @@ class DatabaseClient:
             data_sources_archive_info.update_frequency as update_frequency,
             data_sources_archive_info.last_cached as last_cached,
             data_sources.broken_source_url_as_of as broken_source_url_as_of
+            data_sources.url_status as url_status
+            data_sources.approval_status as approval_status
         FROM
             data_sources
         FULL JOIN
@@ -419,7 +422,7 @@ class DatabaseClient:
         ON
             data_sources.airtable_uid = data_sources_archive_info.airtable_uid
         WHERE 
-            (last_cached IS NULL OR update_frequency IS NOT NULL) AND broken_source_url_as_of IS NULL AND url_status <> 'broken' AND source_url IS NOT NULL
+            approval_status = 'approved' AND (last_cached IS NULL OR update_frequency IS NOT NULL) AND broken_source_url_as_of IS NULL AND url_status <> 'broken' AND source_url IS NOT NULL
         """
         self.cursor.execute(sql_query)
         data_sources = self.cursor.fetchall()
