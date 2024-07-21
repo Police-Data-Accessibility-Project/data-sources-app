@@ -406,13 +406,17 @@ class DatabaseClient:
         """
         sql_query = """
         SELECT
-            airtable_uid,
-            source_url,
-            update_frequency,
-            last_cached,
-            broken_source_url_as_of
+            data_sources.airtable_uid,
+            data_sources.source_url as source_url,
+            data_sources_archive_info.update_frequency as update_frequency,
+            data_sources_archive_info.last_cached as last_cached,
+            data_sources.broken_source_url_as_of as broken_source_url_as_of
         FROM
             data_sources
+        FULL JOIN
+            data_sources_archive_info
+        ON
+            data_sources.airtable_uid = data_sources_archive_info.airtable_uid
         WHERE 
             (last_cached IS NULL OR update_frequency IS NOT NULL) AND broken_source_url_as_of IS NULL AND url_status <> 'broken' AND source_url IS NOT NULL
         """
@@ -447,18 +451,17 @@ class DatabaseClient:
             data={
                 "url_status": "broken",
                 "broken_source_url_as_of": broken_as_of,
-                "last_cached": last_cached,
             },
         )
 
     def update_last_cached(self, id: str, last_cached: str) -> None:
         """
-        Updates the last_cached field in the data_sources table for a given id.
+        Updates the last_cached field in the data_sources_archive_info table for a given id.
 
         :param id: The airtable_uid of the data source.
         :param last_cached: The last cached date to be updated.
         """
-        sql_query = "UPDATE data_sources SET last_cached = %s WHERE airtable_uid = %s"
+        sql_query = "UPDATE data_sources_archive_info SET last_cached = %s WHERE airtable_uid = %s"
         self.cursor.execute(sql_query, (last_cached, id))
 
     QuickSearchResult = namedtuple(
