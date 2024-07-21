@@ -11,6 +11,7 @@ from database_client.constants import (
     RESTRICTED_DATA_SOURCE_COLUMNS,
     RESTRICTED_COLUMNS,
 )
+from utilities.enums import RecordCategories
 
 TableColumn = namedtuple("TableColumn", ["table", "column"])
 TableColumnAlias = namedtuple("TableColumnAlias", ["table", "column", "alias"])
@@ -266,3 +267,76 @@ class DynamicQueryConstructor:
             search_term_anywhere=sql.Literal(f"%{search_term}%"),
         )
         return query
+
+    @staticmethod
+    def create_search_query(
+        state: str,
+        record_type: Optional[RecordCategories] = None,
+        county: Optional[str] = None,
+        locality: Optional[str] = None
+    ) ->sql.Composed:
+
+        base_query = sql.SQL("""
+            SELECT
+                data_sources.airtable_uid,
+                data_sources.name AS data_source_name,
+                data_sources.description,
+                data_sources.record_type,
+                data_sources.source_url,
+                data_sources.record_format,
+                data_sources.coverage_start,
+                data_sources.coverage_end,
+                data_sources.agency_supplied,
+                agencies.name AS agency_name,
+                agencies.municipality,
+                agencies.state_iso
+            FROM
+                agency_source_link
+            INNER JOIN
+                data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
+            INNER JOIN
+                agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+            INNER JOIN
+                state_names ON agencies.state_iso = state_names.state_iso
+            INNER JOIN
+                counties ON agencies.county_fips = counties.fips
+        """)
+
+        join_conditions = []
+        where_conditions = [
+            sql.SQL("state_names.state_name = {state_name}").format(state_name=sql.Literal(state)),
+            sql.SQL("data_sources.approval_status = 'approved'"),
+            sql.SQL("data_sources.url_status NOT IN ('broken', 'none found')")
+        ]
+
+        if record_type is not None:
+            join_conditions.append(sql.SQL("""
+                INNER JOIN
+                    record_types ON data_sources.record_type_id = record_types.id
+                INNER JOIN
+                    record_categories ON record_types.category_id = record_categories.id
+            """))
+
+            where_conditions.append(sql.SQL(
+                "record_categories.name = {record_type}"
+            ).format(record_type=sql.Literal(record_type.value)))
+
+        if county is not None:
+            where_conditions.append(sql.SQL(
+                "counties.name = {county_name}"
+            ).format(county_name=sql.Literal(county)))
+
+        if locality is not None:
+            where_conditions.append(sql.SQL(
+                "agencies.municipality = {locality}"
+            ).format(locality=sql.Literal(locality)))
+
+        query = sql.Composed([
+            base_query,
+            sql.SQL(' ').join(join_conditions),
+            sql.SQL(" WHERE "),
+            sql.SQL(' AND ').join(where_conditions)
+        ])
+
+        return query
+

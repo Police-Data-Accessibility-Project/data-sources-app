@@ -10,6 +10,7 @@ from database_client.database_client import DatabaseClient
 from middleware.webhook_logic import post_to_webhook
 from utilities.common import convert_dates_to_strings, format_arrays
 from typing import List, Dict, Any
+from middleware.util import format_list_response
 
 QUICK_SEARCH_COLUMNS = [
     "airtable_uid",
@@ -63,10 +64,7 @@ def quick_search_query(
     )
     processed_data_source_matches = process_data_source_matches(data_source_matches)
 
-    data_sources = {
-        "count": len(processed_data_source_matches.converted),
-        "data": processed_data_source_matches.converted,
-    }
+    data_sources = format_list_response(processed_data_source_matches.converted)
     db_client.add_quick_search_log(
         data_sources["count"],
         processed_data_source_matches,

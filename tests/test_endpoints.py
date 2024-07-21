@@ -27,6 +27,7 @@ from resources.RefreshSession import RefreshSession
 from resources.RequestResetPassword import RequestResetPassword
 from resources.ResetPassword import ResetPassword
 from resources.ResetTokenValidation import ResetTokenValidation
+from resources.Search import Search
 from resources.SearchTokens import SearchTokens
 from resources.TypeaheadSuggestions import TypeaheadSuggestions
 from resources.User import User
@@ -79,6 +80,7 @@ test_parameters = [
     TestParameters(DataSourceById, "/data-sources-by-id/<data_source_id>", [GET, PUT]),
     TestParameters(Agencies, "/agencies/<page>", [GET]),
     TestParameters(SearchTokens, "/search-tokens", [GET]),
+    TestParameters(Search, "/search/search-location-and-record-type", [GET]),
     TestParameters(TypeaheadSuggestions, "/search/typeahead-suggestions", [GET]),
 ]
 

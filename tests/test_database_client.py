@@ -12,12 +12,14 @@ from middleware.custom_exceptions import (
     UserNotFoundError,
     TokenNotFoundError,
 )
-from tests.fixtures import live_database_client, dev_db_connection, db_cursor
+from tests.fixtures import live_database_client, dev_db_connection, db_cursor, xylonslyvania_test_data
 from tests.helper_functions import (
     insert_test_agencies_and_sources,
     insert_test_agencies_and_sources_if_not_exist,
     setup_get_typeahead_suggestion_test_data,
 )
+from tests.helper_scripts.test_data_generator import TestDataGenerator
+from utilities.enums import RecordCategories
 
 
 def test_add_new_user(live_database_client):
@@ -446,3 +448,91 @@ def test_get_typeahead_suggestion(live_database_client):
     assert results[2].state == "Xylonsylvania"
     assert results[2].county == "Arxylodon"
     assert results[2].locality is None
+
+def test_search_with_location_and_record_types_real_data(live_database_client):
+    """
+    Due to the large number of combinations, I will refer to tests using certain parameters by their first letter
+    e.g. S=State, R=Record type, L=Locality, C=County
+    In the absence of a large slew of test records, I will begin by testing that
+    1) Each search returns a nonzero result count
+    2) SRLC search returns the fewest results
+    3) S search returns the most results
+    4) SR returns less results than S but more than SRC
+    5) SC returns less results than S but more than SCL
+    :param live_database_client:
+    :return:
+    """
+    state_parameter = "Pennsylvania"
+    record_type_parameter = RecordCategories.AGENCIES
+    county_parameter = "Allegheny"
+    locality_parameter = "Pittsburgh"
+
+    SRLC = len(live_database_client.search_with_location_and_record_type(
+        state=state_parameter,
+        record_type=record_type_parameter,
+        county=county_parameter,
+        locality=locality_parameter
+    ))
+    S = len(live_database_client.search_with_location_and_record_type(
+        state=state_parameter
+    ))
+    SR = len(live_database_client.search_with_location_and_record_type(
+        state=state_parameter,
+        record_type=record_type_parameter
+    ))
+    SRC = len(live_database_client.search_with_location_and_record_type(
+        state=state_parameter,
+        record_type=record_type_parameter,
+        county=county_parameter
+    ))
+    SCL = len(live_database_client.search_with_location_and_record_type(
+        state=state_parameter,
+        county=county_parameter,
+        locality=locality_parameter
+    ))
+    SC = len(live_database_client.search_with_location_and_record_type(
+        state=state_parameter,
+        county=county_parameter
+    ))
+
+    assert SRLC > 0
+    assert SRLC < SRC
+    assert SRLC < SCL
+    assert S > SR > SRC
+    assert S > SC > SCL
+
+# TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts
+# def test_search_with_location_and_record_types_test_data(live_database_client, xylonslyvania_test_data):
+#     results = live_database_client.search_with_location_and_record_type(
+#         state="Xylonsylvania"
+#     )
+#     assert len(results) == 8
+#
+#     results = live_database_client.search_with_location_and_record_type(
+#         state="Xylonsylvania",
+#         record_type=RecordCategories.JAIL
+#     )
+#     assert len(results) == 6
+#
+#     results = live_database_client.search_with_location_and_record_type(
+#         state="Xylonsylvania",
+#         county="Arxylodon"
+#     )
+#     assert len(results) == 4
+#
+#     results = live_database_client.search_with_location_and_record_type(
+#         state="Xylonsylvania",
+#         county="Qtzylan",
+#         locality="Qtzylschlitzl"
+#     )
+#     assert len(results) == 2
+#
+#     results = live_database_client.search_with_location_and_record_type(
+#         state="Xylonsylvania",
+#         record_type=RecordCategories.POLICE,
+#         county="Arxylodon",
+#         locality="Xylodammerung"
+#     )
+#
+#     assert len(results) == 1
+#     assert results[0].data_source_name == 'Xylodammerung Police Department Stops'
