@@ -219,7 +219,7 @@ def test_update_last_cached(live_database_client):
     result = live_database_client.get_data_source_by_id("SOURCE_UID_1")
     zipped_results = ResultFormatter.zip_get_data_source_by_id_results(result)
 
-    assert zipped_results["last_cached"] == new_last_cached.strftime("%Y-%m-%d")
+    assert zipped_results["last_cached"] == new_last_cached.strftime("%Y-%m-%d %H:%M:%S")
 
 
 def test_get_quick_search_results(live_database_client):
