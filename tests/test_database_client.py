@@ -212,7 +212,7 @@ def test_update_last_cached(live_database_client):
     # Add a new data source to the database
     insert_test_agencies_and_sources_if_not_exist(live_database_client.cursor)
     # Update the data source's last_cached value with the DatabaseClient method
-    new_last_cached = datetime.now()
+    new_last_cached = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     live_database_client.update_last_cached("SOURCE_UID_1", new_last_cached)
 
     # Fetch the data source from the database to confirm the change
