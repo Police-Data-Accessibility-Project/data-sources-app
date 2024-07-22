@@ -128,7 +128,7 @@ class DynamicQueryConstructor:
                 data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
             INNER JOIN
                 agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
-            FULL JOIN
+            INNER JOIN
                 data_sources_archive_info ON data_sources.airtable_uid = data_sources_archive_info.airtable_uid
             WHERE
                 data_sources.approval_status = 'approved' AND data_sources.airtable_uid = %s

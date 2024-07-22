@@ -417,7 +417,7 @@ class DatabaseClient:
             data_sources.approval_status as approval_status
         FROM
             data_sources
-        FULL JOIN
+        INNER JOIN
             data_sources_archive_info
         ON
             data_sources.airtable_uid = data_sources_archive_info.airtable_uid

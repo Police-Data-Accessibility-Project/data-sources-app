@@ -67,7 +67,7 @@ def test_archives_put(
     SELECT last_cached, broken_source_url_as_of 
     FROM data_sources 
     INNER JOIN data_sources_archive_info ON data_sources.airtable_uid = data_sources_archive_info.airtable_uid 
-    WHERE airtable_uid = %s
+    WHERE data_sources.airtable_uid = %s
     """,
         (data_source_id,),
     )
