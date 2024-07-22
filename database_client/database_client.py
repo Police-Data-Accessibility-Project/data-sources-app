@@ -409,12 +409,10 @@ class DatabaseClient:
         sql_query = """
         SELECT
             data_sources.airtable_uid,
-            data_sources.source_url as source_url,
-            data_sources_archive_info.update_frequency as update_frequency,
-            data_sources_archive_info.last_cached as last_cached,
-            data_sources.broken_source_url_as_of as broken_source_url_as_of
-            data_sources.url_status as url_status
-            data_sources.approval_status as approval_status
+            source_url,
+            update_frequency,
+            last_cached,
+            broken_source_url_as_of
         FROM
             data_sources
         INNER JOIN
