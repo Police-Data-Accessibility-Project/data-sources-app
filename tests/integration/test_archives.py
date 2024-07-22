@@ -43,7 +43,7 @@ def test_archives_put(
     user_info = create_test_user_api(client_with_db)
     api_key = create_api_key(client_with_db, user_info)
     data_source_id = insert_test_data_source(dev_db_connection.cursor())
-    last_cached = datetime.date(year=2020, month=3, day=4)
+    last_cached = datetime.datetime(year=2020, month=3, day=4)
     broken_as_of = datetime.date(year=1993, month=11, day=13)
     response = client_with_db.put(
         "/archives",
