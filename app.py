@@ -3,6 +3,7 @@ import os
 from flask import Flask
 from flask_cors import CORS
 
+from resources.Auth import namespace_auth
 from resources.Search import namespace_search
 from resources.TypeaheadSuggestions import (
     TypeaheadSuggestions,
@@ -10,7 +11,7 @@ from resources.TypeaheadSuggestions import (
 )
 from flask_restx import Api
 
-from config import config
+from config import config, oauth
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 from resources.Agencies import namespace_agencies
 from resources.ApiKey import namespace_api_key
@@ -39,7 +40,8 @@ NAMESPACES = [
     namespace_reset_password,
     namespace_quick_search,
     namespace_typeahead_suggestions,
-    namespace_search
+    namespace_search,
+    namespace_auth,
 ]
 
 MY_PREFIX = "/api"
@@ -77,9 +79,11 @@ def create_app() -> Flask:
     for namespace in NAMESPACES:
         api.add_namespace(namespace)
     app = Flask(__name__)
+    app.secret_key = os.getenv("FLASK_APP_SECRET_KEY")
     app.wsgi_app = ReverseProxied(app.wsgi_app)
     CORS(app)
     api.init_app(app)
+    oauth.init_app(app)
 
     return app
 
