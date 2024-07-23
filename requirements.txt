@@ -78,3 +78,4 @@ websockets==10.4
 Werkzeug==3.0.1
 zipp==3.16.2
 pytest-mock~=3.12.0
+Authlib~=1.3.1
