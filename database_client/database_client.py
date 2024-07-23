@@ -14,6 +14,7 @@ from middleware.custom_exceptions import (
     TokenNotFoundError,
     AccessTokenNotFoundError,
 )
+from middleware.permissions_logic import UserPermissions
 from utilities.enums import RecordCategories
 
 DATA_SOURCES_MAP_COLUMN = [
@@ -697,3 +698,11 @@ class DatabaseClient:
             )
             for row in results
         ]
+
+    def get_user_permissions(self, user_id: str) -> UserPermissions:
+        """
+
+        :param user_id:
+        :return: A UserPermissions object.
+        """
+        pass
