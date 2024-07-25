@@ -1,6 +1,6 @@
 <template>
-	<GridItem
-		class="flex flex-col border border-neutral-400 p-3 text-lg leading-snug"
+	<div
+		class="col-span-1 row-span-1 flex flex-col border border-neutral-400 p-3 text-lg leading-snug"
 		data-test="search-result-card"
 	>
 		<h3
@@ -128,18 +128,17 @@
 		>
 			More details
 		</Button>
-	</GridItem>
+	</div>
 </template>
 
 <script>
-import { Button, GridItem } from 'pdap-design-system';
+import { Button } from 'pdap-design-system';
 import formatDateForSearchResults from '../util/formatDate';
 
 export default {
 	name: 'SearchResultCard',
 	components: {
 		Button,
-		GridItem,
 	},
 	props: {
 		dataSource: Object,
@@ -149,15 +148,15 @@ export default {
 			this.$router.push(`/data-sources/${this.dataSource.airtable_uid}`);
 		},
 		openSource() {
-	        	let url = this.dataSource.source_url;
+			let url = this.dataSource.source_url;
 			// ensure URL is treated as an absolute path
-			url = this.prepend_protocol_if_none(url)
+			url = this.prepend_protocol_if_none(url);
 			window.open(url, '_blank');
 		},
-                prepend_protocol_if_none(url) {
+		prepend_protocol_if_none(url) {
 			// add 'https://' if the URL does not have a protocol
 			if (!/^https?:\/\//i.test(url)) {
-				return url = 'https://' + url;
+				return (url = 'https://' + url);
 			}
 			return url;
 		},
