@@ -12,6 +12,11 @@ def test_auth_get(
     """
     Test that GET call to /auth endpoint successfully retrieves a non-zero amount of data
     """
-    response = client_with_db.get("/api/auth/authorize")
-    check_response_status(response, HTTPStatus.OK.value)
+    response = client_with_db.get(
+        "/api/auth/authorize",
+        follow_redirects=True,
+    )
+    check_response_status(response, HTTPStatus.FOUND.value)
+
+    response = client_with_db.get(response.location)
     assert len(response.json) > 0

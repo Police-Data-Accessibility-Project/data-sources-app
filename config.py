@@ -9,7 +9,6 @@ from middleware.util import get_env_variable
 class Config:
     connection = None
 
-
 config = Config()
 
 oauth = OAuth()
