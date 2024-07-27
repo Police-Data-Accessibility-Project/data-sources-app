@@ -20,7 +20,7 @@ archives_get_model = namespace_archives.model(
     "ArchivesResponse",
     {
         "id": fields.String(description="The ID of the data source"),
-        "last_cached": fields.Date(description="The last date the data was cached"),
+        "last_cached": fields.DateTime(description="The last date the data was cached"),
         "source_url": fields.String(description="The URL of the data source"),
         "update_frequency": fields.String(description="The archive update frequency of the data source"),
     },
@@ -30,7 +30,7 @@ archives_post_model = namespace_archives.model(
     "ArchivesPost",
     {
         "id": fields.String(description="The ID of the data source", required=True),
-        "last_cached": fields.Date(description="The last date the data was cached"),
+        "last_cached": fields.DateTime(description="The last date the data was cached"),
         "broken_source_url_as_of": fields.Date(description="The date the source was marked as broken"),
     },
 )

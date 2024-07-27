@@ -54,7 +54,7 @@ def update_archives_data(
     """
     if broken_as_of:
         db_client.update_url_status_to_broken(data_id, broken_as_of, last_cached)
-    else:
-        db_client.update_last_cached(data_id, last_cached)
+    
+    db_client.update_last_cached(data_id, last_cached)
 
     return make_response({"status": "success"}, HTTPStatus.OK)

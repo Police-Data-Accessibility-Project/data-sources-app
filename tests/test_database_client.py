@@ -212,14 +212,14 @@ def test_update_last_cached(live_database_client):
     # Add a new data source to the database
     insert_test_agencies_and_sources_if_not_exist(live_database_client.cursor)
     # Update the data source's last_cached value with the DatabaseClient method
-    new_last_cached = datetime.now()
+    new_last_cached = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     live_database_client.update_last_cached("SOURCE_UID_1", new_last_cached)
 
     # Fetch the data source from the database to confirm the change
     result = live_database_client.get_data_source_by_id("SOURCE_UID_1")
     zipped_results = ResultFormatter.zip_get_data_source_by_id_results(result)
 
-    assert zipped_results["last_cached"] == new_last_cached.strftime("%Y-%m-%d")
+    assert zipped_results["last_cached"] == new_last_cached
 
 
 def test_get_quick_search_results(live_database_client):

@@ -8,6 +8,7 @@ from psycopg2 import sql
 from database_client.constants import (
     AGENCY_APPROVED_COLUMNS,
     DATA_SOURCES_APPROVED_COLUMNS,
+    ARCHIVE_INFO_APPROVED_COLUMNS,
     RESTRICTED_DATA_SOURCE_COLUMNS,
     RESTRICTED_COLUMNS,
 )
@@ -65,9 +66,12 @@ class DynamicQueryConstructor:
         data_sources_columns = DynamicQueryConstructor.create_table_columns(
             table="data_sources", columns=DATA_SOURCES_APPROVED_COLUMNS
         )
+        archive_info_columns = DynamicQueryConstructor.create_table_columns(
+            table="data_sources_archive_info", columns=ARCHIVE_INFO_APPROVED_COLUMNS
+        )
 
         fields = DynamicQueryConstructor.build_fields(
-            columns_only=data_sources_columns,
+            columns_only=data_sources_columns + archive_info_columns,
             columns_and_alias=[
                 TableColumnAlias(table="agencies", column="name", alias="agency_name")
             ],
@@ -82,6 +86,8 @@ class DynamicQueryConstructor:
                 data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
             INNER JOIN
                 agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+            INNER JOIN
+                data_sources_archive_info ON data_sources.airtable_uid = data_sources_archive_info.airtable_uid
             WHERE
                 data_sources.approval_status = 'approved'
         """
@@ -96,6 +102,9 @@ class DynamicQueryConstructor:
         agencies_approved_columns = DynamicQueryConstructor.create_table_columns(
             table="agencies", columns=AGENCY_APPROVED_COLUMNS
         )
+        archive_info_columns = DynamicQueryConstructor.create_table_columns(
+            table="data_sources_archive_info", columns=ARCHIVE_INFO_APPROVED_COLUMNS
+        )
         alias_columns = [
             TableColumnAlias(table="agencies", column="name", alias="agency_name"),
             TableColumnAlias(
@@ -106,7 +115,7 @@ class DynamicQueryConstructor:
             ),
         ]
         fields = DynamicQueryConstructor.build_fields(
-            columns_only=data_sources_columns + agencies_approved_columns,
+            columns_only=data_sources_columns + agencies_approved_columns + archive_info_columns,
             columns_and_alias=alias_columns,
         )
         sql_query = sql.SQL(
@@ -119,6 +128,8 @@ class DynamicQueryConstructor:
                 data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
             INNER JOIN
                 agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+            INNER JOIN
+                data_sources_archive_info ON data_sources.airtable_uid = data_sources_archive_info.airtable_uid
             WHERE
                 data_sources.approval_status = 'approved' AND data_sources.airtable_uid = %s
         """
@@ -130,6 +141,9 @@ class DynamicQueryConstructor:
         data_sources_columns = DynamicQueryConstructor.create_table_columns(
             table="data_sources", columns=DATA_SOURCES_APPROVED_COLUMNS
         )
+        archive_info_columns = DynamicQueryConstructor.create_table_columns(
+            table="data_sources_archive_info", columns=ARCHIVE_INFO_APPROVED_COLUMNS
+        )
         fields = DynamicQueryConstructor.build_fields(
             columns_only=data_sources_columns,
         )
@@ -139,6 +153,8 @@ class DynamicQueryConstructor:
                 {fields}
             FROM
                 data_sources
+            INNER JOIN
+                data_sources_archive_info ON data_sources.airtable_uid = data_sources_archive_info.airtable_uid
             WHERE
                 approval_status = 'needs identification'
         """
@@ -149,7 +165,7 @@ class DynamicQueryConstructor:
     def zip_needs_identification_data_source_results(
         results: list[tuple],
     ) -> list[dict]:
-        return [dict(zip(DATA_SOURCES_APPROVED_COLUMNS, result)) for result in results]
+        return [dict(zip(DATA_SOURCES_APPROVED_COLUMNS + ARCHIVE_INFO_APPROVED_COLUMNS, result)) for result in results]
 
     @staticmethod
     def create_data_source_update_query(

@@ -400,7 +400,8 @@ class DatabaseClient:
         Pulls data sources to be archived by the automatic archives script.
 
         A data source is selected for archival if:
-        (the data source has not been archived previously OR the data source is updated regularly)
+        The data source has been approved
+        AND (the data source has not been archived previously OR the data source is updated regularly)
         AND the source url is not broken
         AND the source url is not null.
 
@@ -408,15 +409,19 @@ class DatabaseClient:
         """
         sql_query = """
         SELECT
-            airtable_uid,
+            data_sources.airtable_uid,
             source_url,
             update_frequency,
             last_cached,
             broken_source_url_as_of
         FROM
             data_sources
+        INNER JOIN
+            data_sources_archive_info
+        ON
+            data_sources.airtable_uid = data_sources_archive_info.airtable_uid
         WHERE 
-            (last_cached IS NULL OR update_frequency IS NOT NULL) AND broken_source_url_as_of IS NULL AND url_status <> 'broken' AND source_url IS NOT NULL
+            approval_status = 'approved' AND (last_cached IS NULL OR update_frequency IS NOT NULL) AND broken_source_url_as_of IS NULL AND url_status <> 'broken' AND source_url IS NOT NULL
         """
         self.cursor.execute(sql_query)
         data_sources = self.cursor.fetchall()
@@ -449,18 +454,17 @@ class DatabaseClient:
             data={
                 "url_status": "broken",
                 "broken_source_url_as_of": broken_as_of,
-                "last_cached": last_cached,
             },
         )
 
     def update_last_cached(self, id: str, last_cached: str) -> None:
         """
-        Updates the last_cached field in the data_sources table for a given id.
+        Updates the last_cached field in the data_sources_archive_info table for a given id.
 
         :param id: The airtable_uid of the data source.
         :param last_cached: The last cached date to be updated.
         """
-        sql_query = "UPDATE data_sources SET last_cached = %s WHERE airtable_uid = %s"
+        sql_query = "UPDATE data_sources_archive_info SET last_cached = %s WHERE airtable_uid = %s"
         self.cursor.execute(sql_query, (last_cached, id))
 
     QuickSearchResult = namedtuple(
