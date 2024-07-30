@@ -3,10 +3,12 @@ import os
 from flask import Flask
 from flask_cors import CORS
 
-from resources.Auth import namespace_auth
+from resources.Callback import namespace_auth
+from resources.CreateUserWithGithub import namespace_create_user_with_github
+from resources.LinkToGithub import namespace_link_to_github
+from resources.LoginWithGithub import namespace_login_with_github
 from resources.Search import namespace_search
 from resources.TypeaheadSuggestions import (
-    TypeaheadSuggestions,
     namespace_typeahead_suggestions,
 )
 from flask_restx import Api
@@ -42,6 +44,9 @@ NAMESPACES = [
     namespace_typeahead_suggestions,
     namespace_search,
     namespace_auth,
+    namespace_link_to_github,
+    namespace_login_with_github,
+    namespace_create_user_with_github
 ]
 
 MY_PREFIX = "/api"

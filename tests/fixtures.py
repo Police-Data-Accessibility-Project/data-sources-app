@@ -17,7 +17,7 @@ from tests.helper_scripts.test_data_generator import TestDataGenerator
 
 
 @pytest.fixture
-def dev_db_connection() -> psycopg2.extensions.cursor:
+def dev_db_connection() -> psycopg2.extensions.connection:
     """
     Create reversible connection to dev database.
 

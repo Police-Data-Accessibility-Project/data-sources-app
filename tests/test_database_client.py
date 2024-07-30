@@ -6,6 +6,7 @@ import psycopg2
 import pytest
 
 from database_client.database_client import DatabaseClient
+from database_client.enums import ExternalAccountTypeEnum
 from database_client.result_formatter import ResultFormatter
 from middleware.custom_exceptions import (
     AccessTokenNotFoundError,
@@ -48,6 +49,36 @@ def test_get_user_id(live_database_client):
     # Compare the two user IDs
     assert result_user_id == direct_user_id
 
+
+def test_link_external_account(live_database_client):
+    fake_email = uuid.uuid4().hex
+    fake_external_account_id = uuid.uuid4().hex
+    live_database_client.add_new_user(fake_email, "test_password")
+    user_id = live_database_client.get_user_id(fake_email)
+    live_database_client.link_external_account(
+        user_id=str(user_id),
+        external_account_id=fake_external_account_id,
+        external_account_type=ExternalAccountTypeEnum.GITHUB
+    )
+    cursor = live_database_client.cursor
+    cursor.execute(f"SELECT user_id, account_type FROM external_accounts WHERE account_identifier = %s", (fake_external_account_id,))
+    row = cursor.fetchone()
+
+    assert row[0] == user_id
+    assert row[1] == ExternalAccountTypeEnum.GITHUB.value
+
+def test_get_user_info_by_external_account_id(live_database_client):
+    fake_email = uuid.uuid4().hex
+    fake_external_account_id = uuid.uuid4().hex
+    live_database_client.add_new_user(fake_email, "test_password")
+    user_id = live_database_client.get_user_id(fake_email)
+    live_database_client.link_external_account(
+        user_id=str(user_id),
+        external_account_id=fake_external_account_id,
+        external_account_type=ExternalAccountTypeEnum.GITHUB
+    )
+    user_info = live_database_client.get_user_info_by_external_account_id(fake_external_account_id, ExternalAccountTypeEnum.GITHUB)
+    assert user_info.email == fake_email
 
 def test_set_user_password_digest(live_database_client):
     fake_email = uuid.uuid4().hex
