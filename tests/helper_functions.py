@@ -8,7 +8,15 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import psycopg2.extensions
+from flask import Response
 from flask.testing import FlaskClient
+
+from middleware.dataclasses import (
+    GithubUserInfo,
+    OAuthCallbackInfo,
+    FlaskSessionCallbackInfo,
+)
+from middleware.enums import CallbackFunctionsEnum
 
 TestTokenInsert = namedtuple("TestTokenInsert", ["id", "email", "token"])
 TestUser = namedtuple("TestUser", ["id", "email", "password_hash"])
@@ -269,12 +277,12 @@ def request_reset_password_api(client_with_db, mocker, user_info):
     return token
 
 
-def create_api_key(client_with_db, user_info):
+def create_api_key(client_with_db, user_info) -> str:
     """
     Obtain an api key for the given user, via a Flask call to the /api-key endpoint
     :param client_with_db:
     :param user_info:
-    :return:
+    :return: api_key
     """
     response = client_with_db.get(
         "/api/api_key", json={"email": user_info.email, "password": user_info.password}
@@ -379,6 +387,7 @@ class DynamicMagicMock:
         setattr(self, name, mock)
         return mock
 
+
 def setup_get_typeahead_suggestion_test_data(cursor: psycopg2.extensions.cursor):
     try:
         cursor.execute("SAVEPOINT typeahead_suggestion_test_savepoint")
@@ -404,3 +413,79 @@ def setup_get_typeahead_suggestion_test_data(cursor: psycopg2.extensions.cursor)
         cursor.execute("CALL refresh_typeahead_suggestions();")
     except psycopg2.errors.UniqueViolation:
         cursor.execute("ROLLBACK TO SAVEPOINT typeahead_suggestion_test_savepoint")
+
+
+def assert_is_oauth_redirect_link(text: str):
+    assert "https://github.com/login/oauth/authorize?response_type=code" in text, (
+        "Expected OAuth authorize link, got: " + text
+    )
+
+
+def patch_post_callback_functions(
+    monkeypatch,
+    github_user_info: GithubUserInfo,
+    callback_functions_enum: CallbackFunctionsEnum,
+    callback_params: dict,
+):
+    mock_get_oauth_callback_info = MagicMock(
+        return_value=OAuthCallbackInfo(github_user_info)
+    )
+    mock_get_flask_session_callback_info = MagicMock(
+        return_value=FlaskSessionCallbackInfo(
+            callback_functions_enum=callback_functions_enum,
+            callback_params=callback_params,
+        )
+    )
+    monkeypatch.setattr(
+        "middleware.callback_primary_logic.get_oauth_callback_info",
+        mock_get_oauth_callback_info,
+    )
+    monkeypatch.setattr(
+        "middleware.callback_primary_logic.get_flask_session_callback_info",
+        mock_get_flask_session_callback_info,
+    )
+
+
+def patch_setup_callback_session(
+    monkeypatch,
+    resources_module_name: str,
+) -> MagicMock:
+    mock_setup_callback_session = MagicMock()
+    monkeypatch.setattr(
+        f"resources.{resources_module_name}.setup_callback_session",
+        mock_setup_callback_session,
+    )
+    return mock_setup_callback_session
+
+
+def create_fake_github_user_info(email: Optional[str] = None) -> GithubUserInfo:
+    return GithubUserInfo(
+        user_id=uuid.uuid4().hex,
+        user_email=uuid.uuid4().hex if email is None else email,
+    )
+
+
+def assert_expected_pre_callback_response(response):
+    check_response_status(response, HTTPStatus.FOUND)
+    response_text = response.text
+    assert_is_oauth_redirect_link(response_text)
+
+
+def assert_session_token_exists_for_email(
+    cursor: psycopg2.extensions.cursor, session_token: str, email: str
+):
+    cursor.execute(
+        """
+    SELECT email
+    FROM session_tokens
+    WHERE token = %s
+    """,
+        (session_token,)
+    )
+    rows = cursor.fetchall()
+    assert len(rows) == 1, "Session token should only exist once in database"
+
+    row = rows[0]
+    assert (
+        row[0] == email
+    ), "Email in session_tokens table does not match user email"
