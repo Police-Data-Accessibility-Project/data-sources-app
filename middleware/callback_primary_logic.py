@@ -121,7 +121,6 @@ def link_github_account(
     github_user_info: GithubUserInfo,
     pdap_account_email: str
 ):
-    assert pdap_account_email == github_user_info.user_email, "Github account email and PDAP email do not match"
     user_info = db_client.get_user_info(email=pdap_account_email)
     db_client.link_external_account(
         user_id=user_info.id,
