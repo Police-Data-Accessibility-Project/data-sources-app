@@ -4,14 +4,17 @@ from unittest.mock import patch, MagicMock
 
 import psycopg2
 import pytest
+from flask import Response
 
 from database_client.database_client import DatabaseClient
+from database_client.enums import ExternalAccountTypeEnum
 from middleware.login_queries import (
     create_session_token,
     is_admin,
     generate_api_key,
     get_api_key_for_user,
     refresh_session,
+    try_logging_in_with_github_id,
 )
 from middleware.custom_exceptions import UserNotFoundError, TokenNotFoundError
 from tests.helper_functions import create_test_user, DynamicMagicMock
@@ -122,6 +125,7 @@ def setup_mocks(monkeypatch):
         id=mock_user_id,
         password_digest=mock_password_digest,
         api_key=None,
+        email=mock_email,
     )
     mock_db_client.get_user_info.return_value = mock_user_data
     mock_check_password_hash = MagicMock()
@@ -201,3 +205,61 @@ def test_refresh_session_token_not_found_error(setup_refresh_session_mocks):
     mock.make_response.assert_called_with(
         {"message": "Invalid session token"}, HTTPStatus.FORBIDDEN
     )
+
+
+class TryLoggingInWithGithubIdMocks(DynamicMagicMock):
+    db_client: MagicMock
+    github_user_info: MagicMock
+    github_user_id: MagicMock
+    unauthorized_response: MagicMock
+    login_response: MagicMock
+    user_info: MagicMock
+
+
+PATCH_PREFIX = "middleware.login_queries."
+
+TRY_LOGGING_IN_WITH_GITHUB_ID_PATCH_PATHS = {
+    "unauthorized_response": f"{PATCH_PREFIX}unauthorized_response",
+    "login_response": f"{PATCH_PREFIX}login_response",
+}
+
+TRY_LOGGING_IN_WITH_GITHUB_ID_RETURN_VALUES = {
+    "unauthorized_response": MagicMock(spec=Response),
+    "login_response": MagicMock(spec=Response),
+}
+
+
+def test_try_logging_in_with_github_id_happy_path():
+    mock = TryLoggingInWithGithubIdMocks(
+        patch_paths=TRY_LOGGING_IN_WITH_GITHUB_ID_PATCH_PATHS,
+    )
+    mock.github_user_info.user_id = mock.github_user_id
+    mock.db_client.get_user_info_by_external_account_id.return_value = mock.user_info
+
+    result = try_logging_in_with_github_id(mock.db_client, mock.github_user_info)
+
+    assert result == mock.login_response.return_value
+
+    mock.db_client.get_user_info_by_external_account_id.assert_called_with(
+        external_account_id=mock.github_user_id,
+        external_account_type=ExternalAccountTypeEnum.GITHUB
+    )
+    mock.login_response.assert_called_once_with(mock.db_client, mock.user_info)
+
+def test_try_logging_in_with_github_id_unauthorized():
+    mock = TryLoggingInWithGithubIdMocks(
+        patch_paths=TRY_LOGGING_IN_WITH_GITHUB_ID_PATCH_PATHS,
+        return_values=TRY_LOGGING_IN_WITH_GITHUB_ID_RETURN_VALUES
+    )
+    mock.github_user_info.user_id = mock.github_user_id
+    mock.db_client.get_user_info_by_external_account_id.return_value = None
+
+    result = try_logging_in_with_github_id(mock.db_client, mock.github_user_info)
+
+    assert result == mock.unauthorized_response.return_value
+
+    mock.db_client.get_user_info_by_external_account_id.assert_called_with(
+        external_account_id=mock.github_user_id,
+        external_account_type=ExternalAccountTypeEnum.GITHUB
+    )
+    mock.unauthorized_response.assert_called_once()

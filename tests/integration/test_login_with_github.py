@@ -1,19 +1,10 @@
-import datetime
-import uuid
 from http import HTTPStatus
-import json
 from unittest.mock import MagicMock
 
-import psycopg2
 from psycopg2.extras import DictCursor
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
-from middleware.dataclasses import (
-    OAuthCallbackInfo,
-    GithubUserInfo,
-    FlaskSessionCallbackInfo,
-)
 from middleware.enums import CallbackFunctionsEnum
 from tests.fixtures import dev_db_connection, client_with_db
 from tests.helper_functions import (
@@ -26,7 +17,6 @@ from tests.helper_functions import (
     assert_expected_pre_callback_response,
     assert_session_token_exists_for_email,
 )
-
 
 def test_login_with_github_post(client_with_db, dev_db_connection, monkeypatch):
     test_user_info = create_test_user_api(client_with_db)

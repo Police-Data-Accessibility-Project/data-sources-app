@@ -1,3 +1,7 @@
+"""
+Module for testing database client functionality against a live database
+"""
+
 import json
 import uuid
 from datetime import datetime, timezone, timedelta

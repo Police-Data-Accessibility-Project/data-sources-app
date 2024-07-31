@@ -54,6 +54,9 @@ def callback_outer_wrapper(
     )
 
 
+def create_random_password() -> str:
+    return uuid.uuid4().hex
+
 def create_user_with_github(
         db_client: DatabaseClient,
         github_user_info: GithubUserInfo
@@ -63,7 +66,7 @@ def create_user_with_github(
         db_client=db_client,
         email=github_user_info.user_email,
         # Create a random password. Will need to be reset if not logging in via Github
-        password=uuid.uuid4().hex,
+        password=create_random_password(),
     )
     link_github_account(
         db_client=db_client,
@@ -86,15 +89,17 @@ def callback_inner_wrapper(
 
     if callback_function_enum == CallbackFunctionsEnum.LOGIN_WITH_GITHUB:
         return try_logging_in_with_github_id(
-            db_client,
-            github_user_info
+            db_client=db_client,
+            github_user_info=github_user_info
         )
     elif callback_function_enum == CallbackFunctionsEnum.CREATE_USER_WITH_GITHUB:
-        return create_user_with_github(db_client, github_user_info)
+        return create_user_with_github(
+            db_client=db_client,
+            github_user_info=github_user_info)
     elif callback_function_enum == CallbackFunctionsEnum.LINK_TO_GITHUB:
         return link_github_account_request(
-            db_client,
-            github_user_info,
+            db_client=db_client,
+            github_user_info=github_user_info,
             pdap_account_email=callback_params["user_email"]
         )
     raise ValueError(f"Invalid callback function: {callback_function_enum}")
@@ -132,7 +137,8 @@ def get_github_user_info(access_token: str) -> GithubUserInfo:
     :return: The user information
     """
     return GithubUserInfo(
-        user_id=get_github_user_id(access_token), user_email=get_github_user_email(access_token)
+        user_id=get_github_user_id(access_token),
+        user_email=get_github_user_email(access_token)
     )
 
 
