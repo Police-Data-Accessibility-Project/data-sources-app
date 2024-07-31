@@ -22,5 +22,9 @@ class Callback(PsycopgResource):
             """
     )
     def get(self):
+        """
+        Receive the Callback from Github
+        :return:
+        """
         with self.setup_database_client() as db_client:
             return callback_outer_wrapper(db_client)
