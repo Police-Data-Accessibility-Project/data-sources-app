@@ -1,7 +1,5 @@
 import acronym from 'pdap-design-system/images/acronym.svg';
 
-export const PRIVATE_ROUTES = ['/change-password'];
-
 const DEFAULT_META_TAGS = new Map([
 	[
 		'description',

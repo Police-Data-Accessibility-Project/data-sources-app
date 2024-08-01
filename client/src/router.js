@@ -2,11 +2,14 @@ import { createWebHistory, createRouter } from 'vue-router';
 import { useAuthStore } from './stores/auth';
 import { routes, handleHotUpdate } from 'vue-router/auto-routes';
 import { refreshMetaTagsByRoute } from '@/util/routes.js';
-import { PRIVATE_ROUTES } from '@/util/routes.js';
 
 const router = createRouter({
 	history: createWebHistory(),
 	routes,
+	scrollBehavior(_to, _from, savedPosition) {
+		if (savedPosition) return savedPosition;
+		return { top: 0 };
+	},
 });
 
 if (import.meta.hot && !import.meta.test) {
@@ -19,7 +22,7 @@ router.beforeEach(async (to, _, next) => {
 
 	// redirect to login page if not logged in and trying to access a restricted page
 	const auth = useAuthStore();
-	if (PRIVATE_ROUTES.includes(to.fullPath) && !auth.userId) {
+	if (to.meta.auth && !auth.userId) {
 		auth.returnUrl = to.path;
 		router.push('/login');
 	}
