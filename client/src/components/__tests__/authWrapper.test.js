@@ -5,6 +5,8 @@ import { createTestingPinia } from '@pinia/testing';
 import { useAuthStore } from '../../stores/auth';
 import { nextTick } from 'vue';
 
+vi.mock('vue-router/auto-routes');
+
 let wrapper;
 
 const NOW = Date.now();

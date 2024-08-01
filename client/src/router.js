@@ -9,7 +9,7 @@ const router = createRouter({
 	routes,
 });
 
-if (import.meta.hot) {
+if (import.meta.hot && !import.meta.test) {
 	handleHotUpdate(router);
 }
 
