@@ -6,6 +6,21 @@ import { useAuthStore } from '../../stores/auth';
 import { nextTick } from 'vue';
 
 vi.mock('vue-router/auto-routes');
+vi.mock('vue-router', async () => {
+	const actual = await vi.importActual('vue-router');
+	return {
+		...actual,
+		useRoute: vi.fn(() => {
+			return routeMock;
+		}),
+	};
+});
+
+const routeMock = {
+	meta: {
+		auth: true,
+	},
+};
 
 let wrapper;
 
