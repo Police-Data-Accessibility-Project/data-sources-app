@@ -6,9 +6,9 @@
 
 <script setup>
 import debounce from 'lodash/debounce';
-import { useAuthStore } from '../stores/auth';
+import { useAuthStore } from '@/stores/auth';
 import { useRoute } from 'vue-router';
-import { PRIVATE_ROUTES } from '../router';
+import { PRIVATE_ROUTES } from '@/util/routes.js';
 
 const route = useRoute();
 const auth = useAuthStore();
