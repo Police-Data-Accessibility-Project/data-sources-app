@@ -2,6 +2,7 @@
 
 import os
 from collections import namedtuple
+from unittest.mock import MagicMock
 
 import psycopg2
 import pytest
@@ -110,7 +111,9 @@ def client_with_db(dev_db_connection: psycopg2.extensions.connection, monkeypatc
     :param dev_db_connection:
     :return:
     """
+    mock_get_flask_app_secret_key = MagicMock(return_value='test')
     monkeypatch.setattr("app.initialize_psycopg2_connection", lambda: dev_db_connection)
+    monkeypatch.setattr("app.get_flask_app_secret_key", mock_get_flask_app_secret_key)
     app = create_app()
     with app.test_client() as client:
         yield client

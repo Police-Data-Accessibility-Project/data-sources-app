@@ -76,6 +76,8 @@ class ReverseProxied(object):
             environ["wsgi.url_scheme"] = scheme
         return self.app(environ, start_response)
 
+def get_flask_app_secret_key() -> str:
+    return os.getenv("FLASK_APP_SECRET_KEY")
 
 def create_app() -> Flask:
     psycopg2_connection = initialize_psycopg2_connection()
@@ -84,7 +86,7 @@ def create_app() -> Flask:
     for namespace in NAMESPACES:
         api.add_namespace(namespace)
     app = Flask(__name__)
-    app.secret_key = os.getenv("FLASK_APP_SECRET_KEY")
+    app.secret_key = get_flask_app_secret_key()
     app.wsgi_app = ReverseProxied(app.wsgi_app)
     CORS(app)
     api.init_app(app)
