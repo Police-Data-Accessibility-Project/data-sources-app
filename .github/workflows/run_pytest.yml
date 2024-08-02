@@ -11,6 +11,7 @@ jobs:
       DO_DATABASE_URL: ${{secrets.DEV_DB_CONN_STRING}}  # TODO: Ideally, won't need both for testing, but this is for safety for now
       GITHUB_CLIENT_ID: ${{secrets.GH_CLIENT_ID}}
       GITHUB_CLIENT_SECRET: ${{secrets.GH_CLIENT_SECRET}}
+      FLASK_APP_SECRET_KEY: ${{ secrets.FLASK_APP_SECRET_KEY }}
     name: Run Pytest
     runs-on: ubuntu-latest
     steps:
