@@ -5,5 +5,13 @@
 	],
 	"plugins": [
 		"prettier"
-	]
+	],
+	"settings": {
+		"import/core-modules": ["vue-router/auto-routes"]
+	},
+	"rules": {
+		"vue/multi-word-component-names": ["error", {
+			"ignores": ["login"]
+		}]	
+	}
 }

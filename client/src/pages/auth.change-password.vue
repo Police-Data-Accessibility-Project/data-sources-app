@@ -24,7 +24,7 @@
 
 <script setup>
 import { Button, Form } from 'pdap-design-system';
-import { useUserStore } from '../stores/user';
+import { useUserStore } from '@/stores/user';
 import { ref } from 'vue';
 
 // Constants

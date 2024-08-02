@@ -71,8 +71,8 @@
 // Imports
 import { Button, Form } from 'pdap-design-system';
 import { ref, watchEffect } from 'vue';
-import { useAuthStore } from '../stores/auth';
-import { useUserStore } from '../stores/user';
+import { useAuthStore } from '@/stores/auth';
+import { useUserStore } from '@/stores/user';
 
 // Constants
 const LOGIN_SCHEMA = [

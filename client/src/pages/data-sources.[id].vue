@@ -129,8 +129,8 @@
 <script>
 import axios from 'axios';
 import { Button } from 'pdap-design-system';
-import formatDateForSearchResults from '../util/formatDate';
-import { STATIC_VIEW_UI_SHAPE } from '../util/pageData.js';
+import formatDateForSearchResults from '@/util/formatDate';
+import { STATIC_VIEW_UI_SHAPE } from '@/util/pageData.js';
 
 export default {
 	name: 'DataSourceStaticView',
