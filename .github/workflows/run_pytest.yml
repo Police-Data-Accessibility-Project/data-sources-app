@@ -9,8 +9,8 @@ jobs:
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       DEV_DB_CONN_STRING: ${{secrets.DEV_DB_CONN_STRING}}
       DO_DATABASE_URL: ${{secrets.DEV_DB_CONN_STRING}}  # TODO: Ideally, won't need both for testing, but this is for safety for now
-      GITHUB_CLIENT_ID: ${{secrets.GITHUB_CLIENT_ID}}
-      GITHUB_CLIENT_SECRET: ${{secrets.GITHUB_CLIENT_SECRET}}
+      GITHUB_CLIENT_ID: ${{secrets.GH_CLIENT_ID}}
+      GITHUB_CLIENT_SECRET: ${{secrets.GH_CLIENT_SECRET}}
     name: Run Pytest
     runs-on: ubuntu-latest
     steps:
