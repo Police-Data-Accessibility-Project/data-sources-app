@@ -3,14 +3,17 @@ import os
 from flask import Flask
 from flask_cors import CORS
 
+from resources.Callback import namespace_auth
+from resources.CreateUserWithGithub import namespace_create_user_with_github
+from resources.LinkToGithub import namespace_link_to_github
+from resources.LoginWithGithub import namespace_login_with_github
 from resources.Search import namespace_search
 from resources.TypeaheadSuggestions import (
-    TypeaheadSuggestions,
     namespace_typeahead_suggestions,
 )
 from flask_restx import Api
 
-from config import config
+from config import config, oauth
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 from resources.Agencies import namespace_agencies
 from resources.ApiKey import namespace_api_key
@@ -39,7 +42,11 @@ NAMESPACES = [
     namespace_reset_password,
     namespace_quick_search,
     namespace_typeahead_suggestions,
-    namespace_search
+    namespace_search,
+    namespace_auth,
+    namespace_link_to_github,
+    namespace_login_with_github,
+    namespace_create_user_with_github
 ]
 
 MY_PREFIX = "/api"
@@ -69,6 +76,8 @@ class ReverseProxied(object):
             environ["wsgi.url_scheme"] = scheme
         return self.app(environ, start_response)
 
+def get_flask_app_secret_key() -> str:
+    return os.getenv("FLASK_APP_SECRET_KEY")
 
 def create_app() -> Flask:
     psycopg2_connection = initialize_psycopg2_connection()
@@ -77,9 +86,11 @@ def create_app() -> Flask:
     for namespace in NAMESPACES:
         api.add_namespace(namespace)
     app = Flask(__name__)
+    app.secret_key = get_flask_app_secret_key()
     app.wsgi_app = ReverseProxied(app.wsgi_app)
     CORS(app)
     api.init_app(app)
+    oauth.init_app(app)
 
     return app
 

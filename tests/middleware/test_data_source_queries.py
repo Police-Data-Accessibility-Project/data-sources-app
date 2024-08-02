@@ -37,7 +37,7 @@ def setup_try_logging_in_mocks(monkeypatch, check_password_hash_return_value):
     mock_user_id = MagicMock()
     mock_session_token = MagicMock()
     mock_user_info = DatabaseClient.UserInfo(
-        password_digest=mock_password_digest, id=mock_user_id, api_key=None
+        password_digest=mock_password_digest, id=mock_user_id, api_key=None, email=mock_email
     )
     mock_db_client.get_user_info = MagicMock(return_value=mock_user_info)
     mock_make_response = MagicMock()
