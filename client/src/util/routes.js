@@ -23,19 +23,35 @@ const META_PROPERTIES = [...DEFAULT_META_TAGS.keys(), 'og:url'];
  */
 export function refreshMetaTagsByRoute(to) {
 	// Get nearest matched route that has title / meta tag overrides
-	const nearestRouteWithTitle = [...to.matched]
-		.reverse()
-		.find((route) => route?.meta?.title);
-
-	const nearestRouteWithMeta = [...to.matched]
-		.reverse()
-		.find((route) => route?.meta?.metaTags);
+	const nearestRouteWithTitle = getNearestRouteByMetaProperty(to, 'title');
+	const nearestRouteWithMeta = getNearestRouteByMetaProperty(to, 'metaTags');
 
 	// Update document title
 	document.title =
 		nearestRouteWithTitle?.meta?.title ?? DEFAULT_META_TAGS.get('title');
 
-	// Update meta tags
+	refreshMetaTags(to, nearestRouteWithMeta);
+}
+
+/**
+ * Gets closest route of matching routes that has a particular meta property
+ *
+ * @param {RouteLocationNormalized} to route navigating to
+ * @param {string} property meta property to find
+ * @returns {RouteLocationNormalized} nearest matching route
+ */
+function getNearestRouteByMetaProperty(to, property) {
+	return [...to.matched].reverse().find((route) => route?.meta?.[property]);
+}
+
+/**
+ * appends meta tags to routes
+ *
+ * @param {RouteLocationNormalized} nearestRouteWithMeta route navigating to
+ * @param {RouteLocationNormalized} nearestRouteWithMeta nearest route to `to` that has a meta tag defined
+ */
+function refreshMetaTags(to, nearestRouteWithMeta) {
+	// Remove current tags
 	Array.from(document.querySelectorAll('[data-controlled-meta]')).forEach(
 		(el) => el.parentNode.removeChild(el),
 	);
