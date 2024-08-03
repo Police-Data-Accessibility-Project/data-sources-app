@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Optional, Any, List
 import uuid
 
+from sqlalchemy import select
 import psycopg2
 from psycopg2 import sql
 
@@ -106,10 +107,8 @@ class DatabaseClient:
         if self.cursor.rowcount == 0:
             return None
         return self.cursor.fetchone()[0]'''
-
-        query = self.db.select(User.id).filter_by(email=email)
-        with self.app.app_context():
-            user_id = self.db.session.execute(query).scalar_one()
+        query = select(User.id).where(User.email == email)
+        user_id = self.session.scalars(query).one_or_none()
         return user_id
 
     def set_user_password_digest(self, email: str, password_digest: str):
