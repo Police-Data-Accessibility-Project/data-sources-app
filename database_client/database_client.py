@@ -14,6 +14,7 @@ from middleware.custom_exceptions import (
     TokenNotFoundError,
     AccessTokenNotFoundError,
 )
+from middleware.models import User
 from utilities.enums import RecordCategories
 
 DATA_SOURCES_MAP_COLUMN = [
@@ -65,8 +66,11 @@ QUICK_SEARCH_SQL = """
 
 class DatabaseClient:
 
-    def __init__(self, cursor: psycopg2.extensions.cursor):
+    def __init__(self, cursor: psycopg2.extensions.cursor, client, session):
         self.cursor = cursor
+        self.client = client
+        self.session = session
+        
 
     def add_new_user(self, email: str, password_digest: str):
         """
@@ -75,13 +79,16 @@ class DatabaseClient:
         :param password_digest:
         :return:
         """
-        query = sql.SQL(
+        '''query = sql.SQL(
             "insert into users (email, password_digest) values ({}, {})"
         ).format(
             sql.Literal(email),
             sql.Literal(password_digest),
         )
-        self.cursor.execute(query)
+        self.cursor.execute(query)'''
+        user = User(email=email, password_digest=password_digest)
+        self.session.add(user)
+        self.session.commit()
 
     def get_user_id(self, email: str) -> Optional[int]:
         """
@@ -89,13 +96,18 @@ class DatabaseClient:
         :param email:
         :return:
         """
-        query = sql.SQL("select id from users where email = {}").format(
+        '''query = sql.SQL("select id from users where email = {}").format(
             sql.Literal(email)
         )
         self.cursor.execute(query)
         if self.cursor.rowcount == 0:
             return None
-        return self.cursor.fetchone()[0]
+        return self.cursor.fetchone()[0]'''
+
+        query = self.db.select(User.id).filter_by(email=email)
+        with self.app.app_context():
+            user_id = self.db.session.execute(query).scalar_one()
+        return user_id
 
     def set_user_password_digest(self, email: str, password_digest: str):
         """
