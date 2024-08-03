@@ -47,9 +47,11 @@ def test_get_user_id(live_database_client):
     live_database_client.add_new_user(fake_email, "test_password")
 
     # Directly fetch the user ID from the database for comparison
-    cursor = live_database_client.cursor
+    '''cursor = live_database_client.cursor
     cursor.execute(f"SELECT id FROM users WHERE email = %s", (fake_email,))
-    direct_user_id = cursor.fetchone()[0]
+    direct_user_id = cursor.fetchone()[0]'''
+    session = live_database_client.session
+    direct_user_id = session.scalars(select(User.id).where(User.email == fake_email)).one_or_none()
 
     # Get the user ID from the live database
     result_user_id = live_database_client.get_user_id(fake_email)
