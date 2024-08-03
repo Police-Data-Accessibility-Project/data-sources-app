@@ -20,6 +20,7 @@ def test_client():
         "DEV_DB_CONN_STRING"
     )  # Connect to pre-existing test database
     app.config["TESTING"] = True
+    app.config["SQLALCHEMY_ECHO"] = True
 
     db.init_app(app)
 
