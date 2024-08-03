@@ -60,6 +60,16 @@ In both the local root directory and the `/client` directory, either:
 
 Reach out to contact@pdap.io or make noise in Discord if you'd like access to these keys.
 
+The environment variables are as follows:
+* DO_DATABASE_URL: Used to connect to the database
+* DEV_DB_CONN_STRING: Used to connect to the dev database
+* VITE_VUE_API_BASE_URL: The base URL for the API
+* VITE_VUE_APP_BASE_URL: The base URL for the UI
+* SECRET_KEY: Used to sign cookies
+* GITHUB_CLIENT_ID: Used to authenticate with GitHub via OAuth
+* GITHUB_CLIENT_SECRET: Used to authenticate with GitHub via OAuth
+
+#### .env Example
 ```
 # .env
 
@@ -68,16 +78,16 @@ DEV_DB_CONN_STRING="postgresql://data_sources_app_v2:<password>@pdap-db-dev-do-u
 VITE_VUE_API_BASE_URL="http://localhost:5000"
 VITE_VUE_APP_BASE_URL="http://localhost:8888"
 SECRET_KEY="mySecretKey"
+GITHUB_CLIENT_ID="myGithubClientId"
+GITHUB_CLIENT_SECRET="myGithubClientSecret"
 ```
 
-```
+#### Shell Example
+```shell
 # shell
 
 export DO_DATABASE_URL=postgres://data_sources_app:<password>@db-postgresql-nyc3-38355-do-user-8463429-0.c.db.ondigitalocean.com:25060/defaultdb
-export DEV_DB_CONN_STRING="postgresql://data_sources_app_v2:<password>@pdap-db-dev-do-user-8463429-0.c.db.ondigitalocean.com:25060/pdap_dev_db?sslmode=require"
-export VITE_VUE_API_BASE_URL="http://localhost:5000"
-export VITE_VUE_APP_BASE_URL="http://localhost:8888"
-export SECRET_KEY="mySecretKey"
+# etc.
 ```
 Additionally, if you are testing the email functionality, you will need to also provide the `MAILGUN_KEY` environment variable as well (also obtainable from the sources mentioned above).
 

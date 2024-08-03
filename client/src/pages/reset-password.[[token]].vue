@@ -82,7 +82,7 @@
 
 <script setup>
 import { Button, Form } from 'pdap-design-system';
-import { useUserStore } from '../stores/user';
+import { useUserStore } from '@/stores/user';
 import { onMounted, ref, watchEffect } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 

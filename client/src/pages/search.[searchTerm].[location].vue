@@ -70,11 +70,11 @@
 
 <script>
 import { Button } from 'pdap-design-system';
-import SearchResultCard from '../components/SearchResultCard.vue';
-import ErrorBoundary from '../components/ErrorBoundary.vue';
+import SearchResultCard from '@/components/SearchResultCard.vue';
+import ErrorBoundary from '@/components/ErrorBoundary.vue';
 import axios from 'axios';
-import pluralize from '../util/pluralize';
-import { SEARCH_RESULTS_UI_SHAPE } from '../util/pageData';
+import pluralize from '@/util/pluralize';
+import { SEARCH_RESULTS_UI_SHAPE } from '@/util/pageData';
 
 export default {
 	name: 'SearchResultPage',

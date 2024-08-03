@@ -1,7 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`QuickSearchPage > is a Vue instance 1`] = `
-<main class="p-4 md:p-0 md:my-24">
-  <quick-search-form-stub baseurlforredirect="https://data-sources.pdap.io"></quick-search-form-stub>
-</main>
-`;

@@ -2,7 +2,11 @@
 	<AuthWrapper>
 		<Header :logo-image-src="lockup" />
 		<ErrorBoundary component="main">
-			<router-view />
+			<router-view v-slot="{ Component }">
+				<transition name="route-fade" mode="out-in">
+					<component :is="Component" />
+				</transition>
+			</router-view>
 		</ErrorBoundary>
 		<Footer :logo-image-src="acronym" />
 	</AuthWrapper>
@@ -45,5 +49,15 @@ export default {
 
 main {
 	min-height: calc(100vh - 80px - 500px);
+}
+
+.route-fade-enter-active,
+.route-fade-leave-active {
+	transition: opacity 300ms ease-in;
+}
+
+.route-fade-enter-from,
+.route-fade-leave-to {
+	opacity: 0;
 }
 </style>
