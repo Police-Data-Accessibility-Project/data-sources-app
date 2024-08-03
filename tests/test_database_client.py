@@ -2,6 +2,7 @@ import json
 import uuid
 from datetime import datetime, timezone, timedelta
 
+from sqlalchemy import select
 import psycopg2
 import pytest
 
@@ -12,6 +13,7 @@ from middleware.custom_exceptions import (
     UserNotFoundError,
     TokenNotFoundError,
 )
+from middleware.models import User
 from tests.fixtures import live_database_client, dev_db_connection, db_cursor, xylonslyvania_test_data
 from tests.helper_functions import (
     insert_test_agencies_and_sources,
@@ -25,9 +27,11 @@ from utilities.enums import RecordCategories
 def test_add_new_user(live_database_client):
     fake_email = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
-    cursor = live_database_client.cursor
-    cursor.execute(f"SELECT password_digest FROM users WHERE email = %s", (fake_email,))
-    password_digest = cursor.fetchone()[0]
+    #cursor = live_database_client.cursor
+    #cursor.execute(f"SELECT password_digest FROM users WHERE email = %s", (fake_email,))
+    #password_digest = cursor.fetchone()[0]
+    session = live_database_client.session
+    password_digest = session.scalars(select(User.password_digest).where(User.email == fake_email)).one_or_none()
 
     assert password_digest == "test_password"
 
