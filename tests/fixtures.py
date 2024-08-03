@@ -122,13 +122,13 @@ def bypass_api_required(monkeypatch):
 
 
 @pytest.fixture
-def live_database_client(db_cursor) -> DatabaseClient:
+def live_database_client(db_cursor, test_client, session) -> DatabaseClient:
     """
     Returns a database client with a live connection to the database
     :param db_cursor:
     :return:
     """
-    return DatabaseClient(db_cursor)
+    return DatabaseClient(db_cursor, test_client, session)
 
 @pytest.fixture
 def xylonslyvania_test_data(db_cursor):
