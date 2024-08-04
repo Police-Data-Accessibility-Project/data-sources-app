@@ -5,25 +5,21 @@ from typing import Callable
 
 import flask
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
 
-import requests
 from flask import Flask
 
 from database_client.database_client import DatabaseClient
 from middleware import security
-from middleware.custom_exceptions import UserNotFoundError
 from middleware.login_queries import create_session_token
 from middleware.security import (
     validate_api_key,
-    APIKeyStatus,
     api_required,
-    NoAPIKeyError,
     ExpiredAPIKeyError,
     InvalidAPIKeyError,
     InvalidRoleError,
 )
-from tests.helper_functions import (
+from tests.helper_scripts.helper_functions import (
     create_test_user,
     UserInfo,
     give_user_admin_role,

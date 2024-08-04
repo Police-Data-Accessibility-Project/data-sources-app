@@ -6,10 +6,11 @@ import uuid
 import psycopg2
 
 from tests.fixtures import dev_db_connection, client_with_db
-from tests.helper_functions import (
+from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     get_user_password_digest,
     create_api_key,
+    create_test_user_setup,
 )
 
 
@@ -39,24 +40,23 @@ def test_user_put(client_with_db, dev_db_connection: psycopg2.extensions.connect
     Test that PUT call to /user endpoint successfully updates the user's password and verifies the new password hash is distinct from both the plain new password and the old password hash in the database
     """
 
-    user_info = create_test_user_api(client_with_db)
+    tus = create_test_user_setup(client_with_db)
     cursor = dev_db_connection.cursor()
 
-    old_password_hash = get_user_password_digest(cursor, user_info)
+    old_password_hash = get_user_password_digest(cursor, tus.user_info)
 
-    api_key = create_api_key(client_with_db, user_info)
     new_password = str(uuid.uuid4())
 
     response = client_with_db.put(
         "/api/user",
-        headers={"Authorization": f"Bearer {api_key}"},
-        json={"email": user_info.email, "password": new_password},
+        headers=tus.authorization_header,
+        json={"email": tus.user_info.email, "password": new_password},
     )
     assert (
         response.status_code == HTTPStatus.OK.value
     ), "User password update not successful"
 
-    new_password_hash = get_user_password_digest(cursor, user_info)
+    new_password_hash = get_user_password_digest(cursor, tus.user_info)
 
     assert (
         new_password != new_password_hash

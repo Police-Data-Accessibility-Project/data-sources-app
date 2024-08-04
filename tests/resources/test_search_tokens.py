@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from unittest.mock import MagicMock
 from tests.fixtures import client_with_mock_db
-from tests.helper_functions import check_response_status
+from tests.helper_scripts.helper_functions import check_response_status
 
 
 def test_get_search_tokens(client_with_mock_db, monkeypatch):

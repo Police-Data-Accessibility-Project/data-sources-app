@@ -3,11 +3,13 @@
 from urllib.parse import quote
 from http import HTTPStatus
 
-from tests.fixtures import dev_db_connection, client_with_db, connection_with_test_data
-from tests.helper_functions import (
+from tests.fixtures import client_with_db, connection_with_test_data, dev_db_connection
+from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     create_api_key,
     check_response_status,
+    create_test_user_setup,
+    get_most_recent_quick_search_query_log,
 )
 
 
@@ -16,8 +18,12 @@ def test_quick_search_get(client_with_db, connection_with_test_data):
     Test that GET call to /quick-search/<search_term>/<location> endpoint successfully retrieves a single entry with the correct agency name and airtable UID
     """
 
-    user_info = create_test_user_api(client_with_db)
-    api_key = create_api_key(client_with_db, user_info)
+    tus = create_test_user_setup(client_with_db)
+
+    cursor = connection_with_test_data.cursor()
+    cursor.execute("SELECT NOW()")
+    result = cursor.fetchone()
+    test_datetime = result[0]
 
     search_term = "Source 1"
     location = "City A"
@@ -28,7 +34,7 @@ def test_quick_search_get(client_with_db, connection_with_test_data):
 
     response = client_with_db.get(
         f"/api/quick-search/{encoded_search_term}/{encoded_location}",
-        headers={"Authorization": f"Bearer {api_key}"},
+        headers=tus.authorization_header,
     )
     check_response_status(response, HTTPStatus.OK.value)
     data = response.json.get("data")
@@ -36,3 +42,11 @@ def test_quick_search_get(client_with_db, connection_with_test_data):
     entry = data[0]
     assert entry["agency_name"] == "Agency A"
     assert entry["airtable_uid"] == "SOURCE_UID_1"
+
+    # Test that query inserted into log
+    result = get_most_recent_quick_search_query_log(cursor, "Source 1", "City A")
+    assert result.result_count == 1
+    assert len(result.results) == 1
+    assert result.results[0] == "SOURCE_UID_1"
+    assert result.updated_at >= test_datetime
+

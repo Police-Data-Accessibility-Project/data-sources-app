@@ -9,12 +9,13 @@ from tests.fixtures import (
     dev_db_connection,
     client_with_db,
 )
-from tests.helper_functions import (
+from tests.helper_scripts.helper_functions import (
     get_boolean_dictionary,
     create_test_user_api,
     create_api_key,
     give_user_admin_role,
     check_response_status,
+    create_test_user_setup,
 )
 
 
@@ -51,15 +52,14 @@ def test_data_sources_post(
     Test that POST call to /data-sources endpoint successfully creates a new data source with a unique name and verifies its existence in the database
     """
 
-    user_info = create_test_user_api(client_with_db)
-    give_user_admin_role(dev_db_connection, user_info)
-    api_key = create_api_key(client_with_db, user_info)
+    tus = create_test_user_setup(client_with_db)
+    give_user_admin_role(dev_db_connection, tus.user_info)
 
     name = str(uuid.uuid4())
     response = client_with_db.post(
         "/data-sources",
         json={"name": name},
-        headers={"Authorization": f"Bearer {api_key}"},
+        headers=tus.authorization_header,
     )
     check_response_status(response, HTTPStatus.OK.value)
     cursor = dev_db_connection.cursor()

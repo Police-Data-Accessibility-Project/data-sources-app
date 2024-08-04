@@ -8,6 +8,7 @@ from middleware.typeahead_suggestion_logic import (
     get_typeahead_dict_results,
     get_typeahead_suggestions_wrapper,
 )
+from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
 
 
 def test_get_typeahead_dict_results():
@@ -61,24 +62,27 @@ def test_get_typeahead_dict_results():
 
     assert get_typeahead_dict_results(mock_suggestions) == expected_results
 
+class GetTypeaheadSuggestionsMocks(DynamicMagicMock):
+    db_client: MagicMock
+    query: MagicMock
+    get_typeahead_dict_results: MagicMock
+    make_response: MagicMock
+    dict_results: MagicMock
 
 def test_get_typeahead_suggestions_wrapper(monkeypatch):
-    mock_db_client = MagicMock()
-    mock_query = MagicMock()
-    mock_suggestions = MagicMock()
-    mock_db_client.get_typeahead_suggestions.return_value = mock_suggestions
-    mock_dict_results = MagicMock()
-    mock_get_typeahead_dict_results = MagicMock(return_value=mock_dict_results)
-    monkeypatch.setattr(
-        "middleware.typeahead_suggestion_logic.get_typeahead_dict_results",
-        mock_get_typeahead_dict_results,
-    )
-    mock_make_response = MagicMock()
-    monkeypatch.setattr(
-        "middleware.typeahead_suggestion_logic.make_response", mock_make_response
+    mock = GetTypeaheadSuggestionsMocks(
+        patch_root="middleware.typeahead_suggestion_logic",
+        mocks_to_patch=[
+            "get_typeahead_dict_results", "make_response"],
     )
 
-    get_typeahead_suggestions_wrapper(mock_db_client, mock_query)
-    mock_db_client.get_typeahead_suggestions.assert_called_with(mock_query)
-    mock_get_typeahead_dict_results.assert_called_with(mock_suggestions)
-    mock_make_response.assert_called_with({"suggestions": mock_dict_results}, HTTPStatus.OK)
+    get_typeahead_suggestions_wrapper(mock.db_client, mock.query)
+
+    mock.db_client.get_typeahead_suggestions.assert_called_with(mock.query)
+    mock.get_typeahead_dict_results.assert_called_with(
+        mock.db_client.get_typeahead_suggestions.return_value
+    )
+    mock.make_response.assert_called_with(
+        {
+            "suggestions": mock.get_typeahead_dict_results.return_value
+        }, HTTPStatus.OK)

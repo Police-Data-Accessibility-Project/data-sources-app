@@ -7,9 +7,12 @@ from middleware.initialize_psycopg2_connection import (
     DatabaseInitializationError,
 )
 
+PATCH_ROOT = "middleware.initialize_psycopg2_connection"
+GET_ENV_PATCH_ROUTE = PATCH_ROOT + ".get_env_variable"
+CONNECT_PATCH_ROUTE = PATCH_ROOT + ".psycopg2.connect"
 
-@patch("middleware.initialize_psycopg2_connection.get_env_variable")
-@patch("middleware.initialize_psycopg2_connection.psycopg2.connect")
+@patch(GET_ENV_PATCH_ROUTE)
+@patch(CONNECT_PATCH_ROUTE)
 def test_initialize_psycopg2_connection_success(mock_connect, mock_get_env_variable):
     mock_get_env_variable.return_value = "test_connection_url"
     mock_connection = MagicMock()
@@ -28,8 +31,8 @@ def test_initialize_psycopg2_connection_success(mock_connect, mock_get_env_varia
     )
 
 
-@patch("middleware.initialize_psycopg2_connection.get_env_variable")
-@patch("middleware.initialize_psycopg2_connection.psycopg2.connect")
+@patch(GET_ENV_PATCH_ROUTE)
+@patch(CONNECT_PATCH_ROUTE)
 def test_initialize_psycopg2_connection_failure(mock_connect, mock_get_env_variable):
     mock_get_env_variable.return_value = "test_connection_url"
     mock_connect.side_effect = psycopg2.OperationalError("Connection failed")
