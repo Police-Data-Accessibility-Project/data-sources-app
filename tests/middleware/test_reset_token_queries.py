@@ -1,11 +1,9 @@
-import uuid
 from datetime import datetime, timedelta
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
 
-from middleware.custom_exceptions import TokenNotFoundError
 from middleware.reset_token_queries import (
     request_reset_password,
     reset_password,
@@ -15,9 +13,7 @@ from middleware.reset_token_queries import (
     validate_token,
     InvalidTokenError,
 )
-from tests.helper_functions import (
-    DynamicMagicMock,
-)
+from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
 
 
 class RequestResetPasswordMocks(DynamicMagicMock):
@@ -29,25 +25,12 @@ class RequestResetPasswordMocks(DynamicMagicMock):
     send_password_reset_link: MagicMock
     make_response: MagicMock
 
-
 def test_request_reset_password(monkeypatch):
-    mock = RequestResetPasswordMocks()
+    mock = RequestResetPasswordMocks(
+        patch_root="middleware.reset_token_queries",
+        mocks_to_patch=["user_check_email", "generate_api_key", "send_password_reset_link", "make_response"],
+    )
     mock.generate_api_key.return_value = mock.token
-
-    monkeypatch.setattr(
-        "middleware.reset_token_queries.user_check_email", mock.user_check_email
-    )
-    monkeypatch.setattr(
-        "middleware.reset_token_queries.generate_api_key", mock.generate_api_key
-    )
-    monkeypatch.setattr(
-        "middleware.reset_token_queries.send_password_reset_link",
-        mock.send_password_reset_link,
-    )
-    monkeypatch.setattr(
-        "middleware.reset_token_queries.make_response", mock.make_response
-    )
-
     request_reset_password(mock.db_client, mock.email)
 
     mock.user_check_email.assert_called_once_with(mock.db_client, mock.email)
@@ -73,28 +56,17 @@ class ResetPasswordMocks(DynamicMagicMock):
     validate_token: MagicMock
 
 
-def set_reset_password_monkeypatches(
-    monkeypatch: pytest.MonkeyPatch, mock: ResetPasswordMocks
-) -> None:
-    monkeypatch.setattr(
-        "middleware.reset_token_queries.validate_token", mock.validate_token
-    )
-    monkeypatch.setattr(
-        "middleware.reset_token_queries.make_response", mock.make_response
-    )
-    monkeypatch.setattr(
-        "middleware.reset_token_queries.set_user_password",
-        mock.set_user_password,
-    )
-    monkeypatch.setattr(
-        "middleware.reset_token_queries.invalid_token_response",
-        mock.invalid_token_response,
-    )
-
-
 def test_reset_password_happy_path(monkeypatch):
-    mock = ResetPasswordMocks()
-    set_reset_password_monkeypatches(monkeypatch, mock)
+    mock = ResetPasswordMocks(
+        patch_root="middleware.reset_token_queries",
+        mocks_to_patch=[
+            "validate_token",
+            "make_response",
+            "set_user_password",
+            "delete_reset_token",
+            "invalid_token_response",
+        ],
+    )
     mock.validate_token.return_value = mock.email
 
     reset_password(mock.db_client, mock.token, mock.password)
@@ -110,11 +82,23 @@ def test_reset_password_happy_path(monkeypatch):
 
 
 def test_reset_password_invalid_token(monkeypatch):
-    mock = ResetPasswordMocks()
-    set_reset_password_monkeypatches(monkeypatch, mock)
+    mock = ResetPasswordMocks(
+        patch_root="middleware.reset_token_queries",
+        mocks_to_patch=[
+            "validate_token",
+            "make_response",
+            "set_user_password",
+            "delete_reset_token",
+            "invalid_token_response",
+        ],
+        return_values={"invalid_token_response": MagicMock()},
+    )
+    # set_reset_password_monkeypatches(monkeypatch, mock)
     mock.validate_token.side_effect = InvalidTokenError
 
-    reset_password(mock.cursor, mock.token, mock.password)
+    mock_response = reset_password(mock.cursor, mock.token, mock.password)
+
+    assert mock_response == mock.invalid_token_response.return_value
 
     mock.invalid_token_response.assert_called_once()
     mock.make_response.assert_not_called()
@@ -131,9 +115,9 @@ class ValidateTokenMocks(DynamicMagicMock):
 
 @pytest.fixture
 def setup_validate_token_mocks(monkeypatch) -> ValidateTokenMocks:
-    mock = ValidateTokenMocks()
-    monkeypatch.setattr(
-        "middleware.reset_token_queries.token_is_expired", mock.token_is_expired
+    mock = ValidateTokenMocks(
+        patch_root="middleware.reset_token_queries",
+        mocks_to_patch=["token_is_expired"],
     )
     return mock
 
@@ -223,25 +207,11 @@ class ResetTokenValidationMocks(DynamicMagicMock):
     invalid_token_response: MagicMock
 
 
-def monkeypatch_reset_token_validation(
-    monkeypatch: pytest.MonkeyPatch, mock: ResetTokenValidationMocks
-) -> None:
-    monkeypatch.setattr(
-        "middleware.reset_token_queries.make_response", mock.make_response
-    )
-    monkeypatch.setattr(
-        "middleware.reset_token_queries.validate_token",
-        mock.validate_token,
-    )
-    monkeypatch.setattr(
-        "middleware.reset_token_queries.invalid_token_response",
-        mock.invalid_token_response,
-    )
-
-
 def test_reset_token_validation_happy_path(monkeypatch):
-    mocks = ResetTokenValidationMocks()
-    monkeypatch_reset_token_validation(monkeypatch, mocks)
+    mocks = ResetTokenValidationMocks(
+        patch_root="middleware.reset_token_queries",
+        mocks_to_patch=["validate_token", "make_response", "invalid_token_response"],
+    )
     mocks.validate_token.return_value = mocks.email
     reset_token_validation(mocks.cursor, mocks.token)
 
@@ -252,8 +222,10 @@ def test_reset_token_validation_happy_path(monkeypatch):
 
 
 def test_reset_token_validation_invalid_token(monkeypatch):
-    mocks = ResetTokenValidationMocks()
-    monkeypatch_reset_token_validation(monkeypatch, mocks)
+    mocks = ResetTokenValidationMocks(
+        patch_root="middleware.reset_token_queries",
+        mocks_to_patch=["validate_token", "make_response", "invalid_token_response"],
+    )
     mocks.validate_token.side_effect = InvalidTokenError
     reset_token_validation(mocks.cursor, mocks.token)
     mocks.validate_token.assert_called_once_with(mocks.cursor, mocks.token)

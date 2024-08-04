@@ -4,8 +4,9 @@ from http import HTTPStatus
 
 import psycopg2.extensions
 
+from database_client.database_client import DatabaseClient
 from tests.fixtures import dev_db_connection, client_with_db
-from tests.helper_functions import create_test_user_api, check_response_status
+from tests.helper_scripts.helper_functions import create_test_user_api, check_response_status
 
 
 def test_api_key_get(client_with_db, dev_db_connection: psycopg2.extensions.connection):
@@ -23,13 +24,8 @@ def test_api_key_get(client_with_db, dev_db_connection: psycopg2.extensions.conn
 
     # Check that API key aligned with user
     cursor = dev_db_connection.cursor()
-    cursor.execute(
-        """
-        SELECT api_key from users where email = %s
-        """,
-        (user_info.email,),
-    )
-    db_api_key = cursor.fetchone()[0]
-    assert db_api_key == response.json.get(
+    db_client = DatabaseClient(cursor)
+    new_user_info = db_client.get_user_info(user_info.email)
+    assert new_user_info.api_key == response.json.get(
         "api_key"
     ), "API key returned not aligned with user API key in database"

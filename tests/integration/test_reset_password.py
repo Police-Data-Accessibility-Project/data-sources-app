@@ -4,12 +4,10 @@ from http import HTTPStatus
 import uuid
 
 import psycopg2
-from pytest_mock import mocker
 
 from tests.fixtures import dev_db_connection, client_with_db
-from tests.helper_functions import (
+from tests.helper_scripts.helper_functions import (
     create_test_user_api,
-    login_and_return_session_token,
     get_user_password_digest,
     request_reset_password_api,
     check_response_status,

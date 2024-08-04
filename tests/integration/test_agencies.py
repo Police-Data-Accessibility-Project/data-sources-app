@@ -3,10 +3,11 @@
 from http import HTTPStatus
 import psycopg2
 from tests.fixtures import dev_db_connection, client_with_db
-from tests.helper_functions import (
+from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     create_api_key,
     check_response_status,
+    create_test_user_setup,
 )
 
 
@@ -17,11 +18,10 @@ def test_agencies_get(
     Test that GET call to /agencies endpoint properly retrieves a nonzero amount of data
     """
 
-    user_info = create_test_user_api(client_with_db)
-    api_key = create_api_key(client_with_db, user_info)
+    tus = create_test_user_setup(client_with_db)
     response = client_with_db.get(
         "/api/agencies/2",
-        headers={"Authorization": f"Bearer {api_key}"},
+        headers=tus.authorization_header,
     )
     check_response_status(response, HTTPStatus.OK.value)
     data = response.json["data"]

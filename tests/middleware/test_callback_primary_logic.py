@@ -21,9 +21,9 @@ from middleware.dataclasses import (
     GithubUserInfo,
 )
 from middleware.enums import CallbackFunctionsEnum
-from tests.helper_functions import DynamicMagicMock
+from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
 
-PATCH_PREFIX = "middleware.callback_primary_logic."
+PATCH_PREFIX = "middleware.callback_primary_logic"
 
 
 class GetFlaskSessionCallbackInfoMocks(DynamicMagicMock):
@@ -33,10 +33,8 @@ class GetFlaskSessionCallbackInfoMocks(DynamicMagicMock):
 
 def test_get_flask_session_callback_info():
     mock = GetFlaskSessionCallbackInfoMocks(
-        patch_paths={
-            "get_callback_params": f"{PATCH_PREFIX}get_callback_params",
-            "get_callback_function": f"{PATCH_PREFIX}get_callback_function",
-        },
+        patch_root=PATCH_PREFIX,
+        mocks_to_patch=["get_callback_params", "get_callback_function"],
         return_values={
             "get_callback_params": MagicMock(),
             "get_callback_function": MagicMock(),
@@ -60,10 +58,8 @@ class GetOauthCallbackInfoMocks(DynamicMagicMock):
 
 def test_get_oauth_callback_info():
     mock = GetOauthCallbackInfoMocks(
-        patch_paths={
-            "get_github_user_info": f"{PATCH_PREFIX}get_github_user_info",
-            "get_github_oauth_access_token": f"{PATCH_PREFIX}get_github_oauth_access_token",
-        },
+        patch_root=PATCH_PREFIX,
+        mocks_to_patch=["get_github_user_info", "get_github_oauth_access_token"],
         return_values={
             "get_github_user_info": MagicMock(),
             "get_github_oauth_access_token": MagicMock(),
@@ -91,11 +87,12 @@ class CallbackOuterWrapperMocks(DynamicMagicMock):
 def test_callback_outer_wrapper():
 
     mock = CallbackOuterWrapperMocks(
-        patch_paths={
-            "callback_inner_wrapper": f"{PATCH_PREFIX}callback_inner_wrapper",
-            "get_oauth_callback_info": f"{PATCH_PREFIX}get_oauth_callback_info",
-            "get_flask_session_callback_info": f"{PATCH_PREFIX}get_flask_session_callback_info",
-        },
+        patch_root=PATCH_PREFIX,
+        mocks_to_patch=[
+            "callback_inner_wrapper",
+            "get_oauth_callback_info",
+            "get_flask_session_callback_info",
+        ],
         return_values={
             "callback_inner_wrapper": MagicMock(spec=Response),
             "get_oauth_callback_info": OAuthCallbackInfo(
@@ -134,12 +131,13 @@ class CreateUserWithGithubMocks(DynamicMagicMock):
 def test_create_user_with_github():
 
     mock = CreateUserWithGithubMocks(
-        patch_paths={
-            "user_post_results": f"{PATCH_PREFIX}user_post_results",
-            "create_random_password": f"{PATCH_PREFIX}create_random_password",
-            "link_github_account": f"{PATCH_PREFIX}link_github_account",
-            "make_response": f"{PATCH_PREFIX}make_response",
-        },
+        patch_root=PATCH_PREFIX,
+        mocks_to_patch=[
+            "user_post_results",
+            "create_random_password",
+            "link_github_account",
+            "make_response",
+        ],
         return_values={
             "create_random_password": MagicMock(),
             "make_response": MagicMock(spec=Response),
@@ -177,26 +175,26 @@ class CallbackInnerWrapperMocks(DynamicMagicMock):
     create_user_with_github: MagicMock
     link_github_account_request: MagicMock
 
-
-CALLBACK_INNER_WRAPPER_PATCH_PATHS = {
-    "try_logging_in_with_github_id": f"{PATCH_PREFIX}try_logging_in_with_github_id",
-    "create_user_with_github": f"{PATCH_PREFIX}create_user_with_github",
-    "link_github_account_request": f"{PATCH_PREFIX}link_github_account_request",
-}
-
-CALLBACK_INNER_WRAPPER_RETURN_VALUES = {
-    "try_logging_in_with_github_id": MagicMock(spec=Response),
-    "create_user_with_github": MagicMock(spec=Response),
-    "link_github_account_request": MagicMock(spec=Response),
-}
-
-
-def test_callback_inner_wrapper_login_with_github():
-
+@pytest.fixture
+def setup_callback_inner_wrapper_mocks():
     mock = CallbackInnerWrapperMocks(
-        patch_paths=CALLBACK_INNER_WRAPPER_PATCH_PATHS,
-        return_values=CALLBACK_INNER_WRAPPER_RETURN_VALUES,
+        patch_root=PATCH_PREFIX,
+        mocks_to_patch=[
+            "try_logging_in_with_github_id",
+            "create_user_with_github",
+            "link_github_account_request",
+        ],
+        return_values={
+            "try_logging_in_with_github_id": MagicMock(spec=Response),
+            "create_user_with_github": MagicMock(spec=Response),
+            "link_github_account_request": MagicMock(spec=Response),
+        },
     )
+    return mock
+
+def test_callback_inner_wrapper_login_with_github(setup_callback_inner_wrapper_mocks):
+
+    mock = setup_callback_inner_wrapper_mocks
 
     result = callback_inner_wrapper(
         db_client=mock.db_client,
@@ -214,12 +212,9 @@ def test_callback_inner_wrapper_login_with_github():
     mock.link_github_account_request.assert_not_called()
 
 
-def test_callback_inner_wrapper_create_user_with_github():
+def test_callback_inner_wrapper_create_user_with_github(setup_callback_inner_wrapper_mocks):
 
-    mock = CallbackInnerWrapperMocks(
-        patch_paths=CALLBACK_INNER_WRAPPER_PATCH_PATHS,
-        return_values=CALLBACK_INNER_WRAPPER_RETURN_VALUES,
-    )
+    mock = setup_callback_inner_wrapper_mocks
 
     result = callback_inner_wrapper(
         db_client=mock.db_client,
@@ -236,12 +231,9 @@ def test_callback_inner_wrapper_create_user_with_github():
     mock.link_github_account_request.assert_not_called()
 
 
-def test_callback_inner_wrapper_link_to_github():
+def test_callback_inner_wrapper_link_to_github(setup_callback_inner_wrapper_mocks):
 
-    mock = CallbackInnerWrapperMocks(
-        patch_paths=CALLBACK_INNER_WRAPPER_PATCH_PATHS,
-        return_values=CALLBACK_INNER_WRAPPER_RETURN_VALUES,
-    )
+    mock = setup_callback_inner_wrapper_mocks
 
     result = callback_inner_wrapper(
         db_client=mock.db_client,
@@ -260,11 +252,8 @@ def test_callback_inner_wrapper_link_to_github():
     )
 
 
-def test_callback_inner_wrapper_invalid_callback_function_enum():
-    mock = CallbackInnerWrapperMocks(
-        patch_paths=CALLBACK_INNER_WRAPPER_PATCH_PATHS,
-        return_values=CALLBACK_INNER_WRAPPER_RETURN_VALUES,
-    )
+def test_callback_inner_wrapper_invalid_callback_function_enum(setup_callback_inner_wrapper_mocks):
+    mock = setup_callback_inner_wrapper_mocks
 
     with pytest.raises(ValueError):
         callback_inner_wrapper(
@@ -296,7 +285,8 @@ LINK_GITHUB_ACCOUNT_REQUESTS_PATCH_PATHS = {
 def test_link_github_account_request():
 
     mock = LinkGithubAccountRequestMocks(
-        patch_paths=LINK_GITHUB_ACCOUNT_REQUESTS_PATCH_PATHS
+        patch_root=PATCH_PREFIX,
+        mocks_to_patch=["link_github_account", "make_response"],
     )
 
     link_github_account_request(
@@ -322,15 +312,12 @@ class LinkGithubAccountMocks(DynamicMagicMock):
     pdap_account_email: MagicMock
     link_github_account: MagicMock
 
-
-LINK_GITHUB_ACCOUNT_PATCH_PATHS = {
-    "link_github_account": f"{PATCH_PREFIX}link_github_account",
-}
-
-
 def test_link_github_account():
 
-    mock = LinkGithubAccountMocks(patch_paths=LINK_GITHUB_ACCOUNT_PATCH_PATHS)
+    mock = LinkGithubAccountMocks(
+        patch_root=PATCH_PREFIX,
+        mocks_to_patch=["link_github_account"]
+    )
     mock.github_user_info.user_email = mock.pdap_account_email
     mock.db_client.get_user_info.return_value = mock.db_client_user_info
     mock.db_client_user_info.id = MagicMock()
@@ -361,16 +348,15 @@ GET_GITHUB_USER_INFO_PATCH_PATHS = {
 }
 
 
-
-
 def test_get_github_user_info():
 
     mock = GetGithubUserInfoMocks(
-        patch_paths=GET_GITHUB_USER_INFO_PATCH_PATHS,
+        patch_root=PATCH_PREFIX,
+        mocks_to_patch=["get_github_user_id", "get_github_user_email"],
         return_values={
             "get_github_user_id": MagicMock(),
             "get_github_user_email": MagicMock(),
-        }
+        },
     )
 
     result = get_github_user_info(access_token=mock.access_token)
@@ -382,4 +368,3 @@ def test_get_github_user_info():
 
     assert result.user_email == mock.get_github_user_email.return_value
     assert result.user_id == mock.get_github_user_id.return_value
-

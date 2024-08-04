@@ -2,7 +2,6 @@ from datetime import datetime
 from http import HTTPStatus
 from unittest.mock import MagicMock, patch
 
-import psycopg2
 import pytest
 
 from database_client.database_client import DatabaseClient
@@ -12,10 +11,10 @@ from middleware.data_source_queries import (
     DataSourceNotFoundError,
 )
 from middleware.login_queries import try_logging_in
-from tests.helper_functions import (
+from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
+from tests.helper_scripts.helper_functions import (
     get_boolean_dictionary,
 )
-from tests.fixtures import connection_with_test_data, dev_db_connection
 
 
 @pytest.fixture
@@ -28,88 +27,64 @@ def inserted_data_sources_found():
     return get_boolean_dictionary(("Source 1", "Source 2", "Source 3"))
 
 
-def setup_try_logging_in_mocks(monkeypatch, check_password_hash_return_value):
+class TryLoggingInMocks(DynamicMagicMock):
+    db_client: MagicMock
+    email: MagicMock
+    password: MagicMock
+    password_digest: MagicMock
+    user_id: MagicMock
+    session_token: MagicMock
+    user_info: MagicMock
+    make_response: MagicMock
+    create_session_token: MagicMock
+    check_password_hash: MagicMock
+
+
+def setup_try_logging_in_mocks(check_password_hash_return_value):
     # Create Mock values
-    mock_db_client = MagicMock()
-    mock_email = MagicMock()
-    mock_password = MagicMock()
-    mock_password_digest = MagicMock()
-    mock_user_id = MagicMock()
-    mock_session_token = MagicMock()
-    mock_user_info = DatabaseClient.UserInfo(
-        password_digest=mock_password_digest, id=mock_user_id, api_key=None, email=mock_email
+    mock = TryLoggingInMocks(
+        patch_root="middleware.login_queries",
+        mocks_to_patch=["make_response", "create_session_token", "check_password_hash"],
     )
-    mock_db_client.get_user_info = MagicMock(return_value=mock_user_info)
-    mock_make_response = MagicMock()
-    mock_create_session_token = MagicMock(return_value=mock_session_token)
-    mock_check_password_hash = MagicMock(return_value=check_password_hash_return_value)
+    mock.user_info = DatabaseClient.UserInfo(
+        password_digest=mock.password_digest,
+        id=mock.user_id,
+        api_key=None,
+        email=mock.email,
+    )
+    mock.db_client.get_user_info = MagicMock(return_value=mock.user_info)
+    mock.create_session_token.return_value = mock.session_token
+    mock.check_password_hash.return_value = check_password_hash_return_value
 
-    # Use monkeypatch to set mock values
-    monkeypatch.setattr(
-        "middleware.login_queries.create_session_token",
-        mock_create_session_token,
-    )
-    monkeypatch.setattr("middleware.login_queries.make_response", mock_make_response)
-    monkeypatch.setattr(
-        "middleware.login_queries.check_password_hash", mock_check_password_hash
-    )
-
-    return (
-        mock_db_client,
-        mock_email,
-        mock_password,
-        mock_user_id,
-        mock_session_token,
-        None,
-        mock_make_response,
-        mock_create_session_token,
-    )
+    return mock
 
 
-def test_try_logging_in_successful(monkeypatch):
-    (
-        mock_db_client,
-        mock_email,
-        mock_password,
-        mock_user_id,
-        mock_session_token,
-        mock_get_user_info,
-        mock_make_response,
-        mock_create_session_token,
-    ) = setup_try_logging_in_mocks(monkeypatch, check_password_hash_return_value=True)
+def test_try_logging_in_successful():
+    mock = setup_try_logging_in_mocks(check_password_hash_return_value=True)
 
     # Call function
-    try_logging_in(mock_db_client, mock_email, mock_password)
+    try_logging_in(mock.db_client, mock.email, mock.password)
 
     # Assert
-    mock_db_client.get_user_info.assert_called_with(mock_email)
-    mock_create_session_token.assert_called_with(
-        mock_db_client, mock_user_id, mock_email
+    mock.db_client.get_user_info.assert_called_with(mock.email)
+    mock.create_session_token.assert_called_with(
+        mock.db_client, mock.user_id, mock.email
     )
-    mock_make_response.assert_called_with(
-        {"message": "Successfully logged in", "data": mock_session_token}, HTTPStatus.OK
+    mock.make_response.assert_called_with(
+        {"message": "Successfully logged in", "data": mock.session_token}, HTTPStatus.OK
     )
 
 
-def test_try_logging_in_unsuccessful(monkeypatch):
-    (
-        mock_db_client,
-        mock_email,
-        mock_password,
-        mock_user_id,
-        mock_session_token,
-        mock_get_user_info,
-        mock_make_response,
-        mock_create_session_token,
-    ) = setup_try_logging_in_mocks(monkeypatch, check_password_hash_return_value=False)
+def test_try_logging_in_unsuccessful():
+    mock = setup_try_logging_in_mocks(check_password_hash_return_value=False)
 
     # Call function
-    try_logging_in(mock_db_client, mock_email, mock_password)
+    try_logging_in(mock.db_client, mock.email, mock.password)
 
     # Assert
-    mock_db_client.get_user_info.assert_called_with(mock_email)
-    mock_create_session_token.assert_not_called()
-    mock_make_response.assert_called_with(
+    mock.db_client.get_user_info.assert_called_with(mock.email)
+    mock.create_session_token.assert_not_called()
+    mock.make_response.assert_called_with(
         {"message": "Invalid email or password"}, HTTPStatus.UNAUTHORIZED
     )
 

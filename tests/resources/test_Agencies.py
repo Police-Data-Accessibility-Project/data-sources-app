@@ -1,8 +1,4 @@
 from http import HTTPStatus
-from unittest.mock import MagicMock
-
-import pytest
-
 from tests.fixtures import client_with_mock_db
 
 

@@ -2,13 +2,11 @@
 
 import uuid
 from collections import namedtuple
-from datetime import datetime, timedelta
 from typing import Optional
 from http import HTTPStatus
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import psycopg2.extensions
-from flask import Response
 from flask.testing import FlaskClient
 
 from middleware.dataclasses import (
@@ -17,6 +15,7 @@ from middleware.dataclasses import (
     FlaskSessionCallbackInfo,
 )
 from middleware.enums import CallbackFunctionsEnum
+from tests.helper_scripts.common_test_data import TEST_RESPONSE
 
 TestTokenInsert = namedtuple("TestTokenInsert", ["id", "email", "token"])
 TestUser = namedtuple("TestUser", ["id", "email", "password_hash"])
@@ -117,6 +116,11 @@ def create_reset_token(cursor: psycopg2.extensions.cursor) -> TestTokenInsert:
     )
     id = cursor.fetchone()[0]
     return TestTokenInsert(id=id, email=user.email, token=token)
+
+
+def check_is_test_response(response):
+    check_response_status(response, TEST_RESPONSE.status_code)
+    assert response.json == TEST_RESPONSE.response
 
 
 def create_test_user(
@@ -355,86 +359,6 @@ def check_response_status(response, status_code):
     ), f"Expected status code {status_code}, got {response.status_code}: {response.text}"
 
 
-class DynamicMagicMock:
-    """
-    A helper class to create a large number of MagicMock objects dynamically,
-    with optional patching of specific attributes and setting of return values.
-
-    Example Usage:
-    --------------
-    class UpdateArchivesDataMocks(DynamicMagicMock):
-        cursor: MagicMock
-        data_id: MagicMock
-        last_cached: MagicMock
-        broken_as_of: MagicMock
-        archives_put_broken_as_of_results: MagicMock
-        archives_put_last_cached_results: MagicMock
-        make_response: MagicMock
-
-    patch_paths = {
-        'cursor': 'module_name.ClassName.method1',
-        'data_id': 'module_name.ClassName.method2'
-    }
-
-    return_values = {
-        'cursor': 'mocked cursor',
-        'data_id': 12345
-    }
-
-    mock = UpdateArchivesDataMocks(patch_paths, return_values)
-
-    Features:
-    ---------
-    - Dynamically creates MagicMock objects for each annotated attribute.
-    - Allows optional patching of specified attributes using provided patch paths.
-    - Allows optional setting of return values for MagicMock objects.
-    - Provides a method to stop all active patches when done.
-
-    Methods:
-    --------
-    - __init__(self, patch_paths=None, return_values=None): Initializes the instance, applies optional patches, and sets return values.
-    - __post_init__(self, patch_paths=None, return_values=None): Sets up MagicMock objects, applies patches, and sets return values if provided.
-    - __getattr__(self, name: str) -> MagicMock: Dynamically creates and returns a MagicMock for undefined attributes.
-    - stop_patches(self): Stops all active patches applied to the attributes.
-    """
-
-    def __init__(self, patch_paths=None, return_values=None):
-        self.__post_init__(patch_paths, return_values)
-
-    def __post_init__(self, patch_paths=None, return_values=None) -> None:
-        self._patchers = {}
-        if return_values is None:
-            return_values = {}
-        if patch_paths:
-            for attribute, attr_type in self.__annotations__.items():
-                if attribute in patch_paths:
-                    patcher = patch(patch_paths[attribute], new_callable=MagicMock)
-                    self._patchers[attribute] = patcher
-                    mock = patcher.start()
-                else:
-                    mock = MagicMock()
-                if attribute in return_values:
-                    mock.return_value = return_values[attribute]
-                setattr(self, attribute, mock)
-        else:
-            for attribute, attr_type in self.__annotations__.items():
-                mock = MagicMock()
-                if attribute in return_values:
-                    mock.return_value = return_values[attribute]
-                setattr(self, attribute, mock)
-
-    def __getattr__(self, name: str) -> MagicMock:
-        mock = MagicMock()
-        setattr(self, name, mock)
-        return mock
-
-    def stop_patches(self):
-        """
-        Stop all active patches.
-        """
-        for patcher in self._patchers.values():
-            patcher.stop()
-
 def setup_get_typeahead_suggestion_test_data(cursor: psycopg2.extensions.cursor):
     try:
         cursor.execute("SAVEPOINT typeahead_suggestion_test_savepoint")
@@ -534,3 +458,14 @@ def assert_session_token_exists_for_email(
 
     row = rows[0]
     assert row[0] == email, "Email in session_tokens table does not match user email"
+
+TestUserSetup = namedtuple(
+    "TestUserSetup", ["user_info", "api_key", "authorization_header"])
+
+def create_test_user_setup(client: FlaskClient) -> TestUserSetup:
+    user_info = create_test_user_api(client)
+    api_key = create_api_key(client, user_info)
+    authorization_header = {
+        "Authorization": f"Bearer {api_key}"
+    }
+    return TestUserSetup(user_info, api_key, authorization_header)

@@ -1,5 +1,4 @@
 from http import HTTPStatus
-from unittest.mock import MagicMock
 
 from psycopg2.extras import DictCursor
 
@@ -7,10 +6,9 @@ from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
 from middleware.enums import CallbackFunctionsEnum
 from tests.fixtures import dev_db_connection, client_with_db
-from tests.helper_functions import (
+from tests.helper_scripts.helper_functions import (
     check_response_status,
     create_test_user_api,
-    assert_is_oauth_redirect_link,
     patch_post_callback_functions,
     patch_setup_callback_session,
     create_fake_github_user_info,

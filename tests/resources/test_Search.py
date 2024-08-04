@@ -1,10 +1,13 @@
-from http import HTTPStatus
 from typing import Optional
-from unittest.mock import MagicMock
+
+import pytest
 
 from database_client.database_client import DatabaseClient
 from tests.fixtures import client_with_mock_db, bypass_api_required
-from tests.helper_functions import check_response_status
+from tests.helper_scripts.common_test_data import TEST_RESPONSE
+from tests.helper_scripts.helper_functions import (
+    check_is_test_response,
+)
 from utilities.enums import RecordCategories
 
 
@@ -20,19 +23,7 @@ def mock_search_wrapper_all_parameters(
     assert county == "Allegheny"
     assert locality == "Pittsburgh"
 
-    mock_response = ({"message": "Test Response"}, HTTPStatus.IM_A_TEAPOT)
-    return mock_response
-
-def test_search_get_all_parameters(client_with_mock_db, monkeypatch, bypass_api_required):
-
-    monkeypatch.setattr("resources.Search.search_wrapper", mock_search_wrapper_all_parameters)
-
-    response = client_with_mock_db.client.get(
-        "/search/search-location-and-record-type?state=Pennsylvania&county=Allegheny&locality=Pittsburgh&record_category=Police%20%26%20Public%20Interactions"
-    )
-    check_response_status(response, HTTPStatus.IM_A_TEAPOT)
-    assert response.json == {"message": "Test Response"}
-
+    return TEST_RESPONSE
 
 def mock_search_wrapper_minimal_parameters(
     db_client: DatabaseClient,
@@ -46,13 +37,29 @@ def mock_search_wrapper_minimal_parameters(
     assert county is None
     assert locality is None
 
-    mock_response = ({"message": "Test Response"}, HTTPStatus.IM_A_TEAPOT)
-    return mock_response
+    return TEST_RESPONSE
 
-def test_search_get_minimal_parameters(client_with_mock_db, monkeypatch, bypass_api_required):
 
-    monkeypatch.setattr("resources.Search.search_wrapper", mock_search_wrapper_minimal_parameters)
+@pytest.mark.parametrize(
+    "url, mock_search_wrapper_function",
+    (
+        (
+            "/search/search-location-and-record-type?state=Pennsylvania&county=Allegheny&locality=Pittsburgh&record_category=Police%20%26%20Public%20Interactions",
+            mock_search_wrapper_all_parameters
+        ),
+        (
+            "/search/search-location-and-record-type?state=Pennsylvania",
+            mock_search_wrapper_minimal_parameters
+        ),
+    )
+)
+def test_search_get_parameters(
+    url, mock_search_wrapper_function,client_with_mock_db, monkeypatch, bypass_api_required,
+):
 
-    response = client_with_mock_db.client.get("/search/search-location-and-record-type?state=Pennsylvania")
-    check_response_status(response, HTTPStatus.IM_A_TEAPOT)
-    assert response.json == {"message": "Test Response"}
+    monkeypatch.setattr(
+        "resources.Search.search_wrapper", mock_search_wrapper_function
+    )
+
+    response = client_with_mock_db.client.get(url)
+    check_is_test_response(response)
