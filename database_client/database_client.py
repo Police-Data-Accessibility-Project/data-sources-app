@@ -235,10 +235,12 @@ class DatabaseClient:
         :param api_key: The api key to check.
         :param user_id: The user id to update.
         """
-        query = sql.SQL("update users set api_key = {} where id = {}")
+        '''query = sql.SQL("update users set api_key = {} where id = {}")
         query = query.format(sql.Literal(api_key), sql.Literal(user_id))
 
-        self.cursor.execute(query)
+        self.cursor.execute(query)'''
+        query = update(User).where(User.id == user_id).values(api_key=api_key)
+        self.session.execute(query)
 
     def get_data_source_by_id(self, data_source_id: str) -> Optional[tuple[Any, ...]]:
         """
