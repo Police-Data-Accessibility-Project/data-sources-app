@@ -1,3 +1,6 @@
+from flask_limiter import ExemptionScope
+
+from config import limiter
 from middleware.callback_primary_logic import (
     callback_inner_wrapper,
     get_github_user_info,
@@ -13,7 +16,6 @@ namespace_auth = create_namespace(AppNamespaces.AUTH)
 
 @namespace_auth.route("/callback")
 class Callback(PsycopgResource):
-
     @namespace_auth.doc(
         description="""
             Callback function for multiple endpoints.
@@ -21,6 +23,7 @@ class Callback(PsycopgResource):
             and not by the user or app directly.
             """
     )
+    @limiter.limit("1000000 per second")
     def get(self):
         """
         Receive the Callback from Github
@@ -28,3 +31,4 @@ class Callback(PsycopgResource):
         """
         with self.setup_database_client() as db_client:
             return callback_outer_wrapper(db_client)
+

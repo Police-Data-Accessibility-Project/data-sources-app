@@ -2,12 +2,15 @@
 import os
 
 from authlib.integrations.flask_client import OAuth
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 from middleware.util import get_env_variable
 
 
 class Config:
     connection = None
+
 
 config = Config()
 
@@ -22,4 +25,10 @@ oauth.register(
     authorize_params=None,
     api_base_url="https://api.github.com/",
     client_kwargs={"scope": "user:email"},
+)
+
+limiter = Limiter(
+    key_func=get_remote_address,
+    default_limits=["100 per hour"],
+    storage_uri="memory://",
 )
