@@ -380,12 +380,12 @@ def test_get_role_by_api_key(live_database_client):
         password_digest="test_password",
     )
 
-    # Add a role to the user
+    # Add a role and api_key to the user
     live_database_client.cursor.execute(
         "update users set role = 'test_role', api_key = 'test_api_key' where email = 'test_user'",
     )
 
-    # Fetch the user using its email with the DatabaseClient method
+    # Fetch the user's role using its api key with the DatabaseClient method
     role_info = live_database_client.get_role_by_api_key(api_key="test_api_key")
 
     # Confirm the role is retrieved successfully
