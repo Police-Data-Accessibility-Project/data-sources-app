@@ -75,7 +75,6 @@ class DatabaseClient:
         self.cursor = cursor
         self.client = client
         self.session = session
-        
 
     def add_new_user(self, email: str, password_digest: str):
         """
@@ -579,9 +578,7 @@ class DatabaseClient:
         )
 
     def get_user_info_by_external_account_id(
-            self,
-            external_account_id: str,
-            external_account_type: ExternalAccountTypeEnum
+        self, external_account_id: str, external_account_type: ExternalAccountTypeEnum
     ) -> UserInfo:
         u = aliased(User)
         ea = aliased(ExternalAccount)
@@ -595,7 +592,7 @@ class DatabaseClient:
             )
         )
         results = self.session.execute(query).mappings().one_or_none()
-        
+
         if results is None:
             raise UserNotFoundError(external_account_id)
 
@@ -662,6 +659,7 @@ class DatabaseClient:
     TypeaheadSuggestions = namedtuple(
         "TypeaheadSuggestions", ["display_name", "type", "state", "county", "locality"]
     )
+
     def get_typeahead_suggestions(self, search_term: str) -> List[TypeaheadSuggestions]:
         """
         Returns a list of data sources that match the search query.
@@ -669,7 +667,9 @@ class DatabaseClient:
         :param search_term: The search query.
         :return: List of data sources that match the search query.
         """
-        query = DynamicQueryConstructor.generate_new_typeahead_suggestion_query(search_term)
+        query = DynamicQueryConstructor.generate_new_typeahead_suggestion_query(
+            search_term
+        )
         self.cursor.execute(query)
         results = self.cursor.fetchall()
 
@@ -724,10 +724,11 @@ class DatabaseClient:
         ]
 
     def link_external_account(
-            self,
-            user_id: str,
-            external_account_id: str,
-            external_account_type: ExternalAccountTypeEnum):
+        self,
+        user_id: str,
+        external_account_id: str,
+        external_account_type: ExternalAccountTypeEnum,
+    ):
         external_account = ExternalAccount(
             user_id=user_id,
             account_type=external_account_type.value,
@@ -735,7 +736,6 @@ class DatabaseClient:
         )
         self.session.add(external_account)
         self.session.commit()
-
 
     def get_user_permissions(self, user_id: str) -> UserPermissions:
         """

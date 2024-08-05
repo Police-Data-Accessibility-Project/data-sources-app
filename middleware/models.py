@@ -46,7 +46,9 @@ class ExternalAccount(Base):
 
     row_id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
-    account_type: Mapped[ExternalAccountType] = mapped_column(Enum(*get_args(ExternalAccountType)), name="account_type")
+    account_type: Mapped[ExternalAccountType] = mapped_column(
+        Enum(*get_args(ExternalAccountType)), name="account_type"
+    )
     account_identifier: Mapped[str] = mapped_column(String(255))
     linked_at: Mapped[Optional[TIMESTAMP]] = mapped_column(
         TIMESTAMP, server_default=text("now()")

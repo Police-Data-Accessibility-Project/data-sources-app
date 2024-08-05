@@ -33,9 +33,6 @@ from utilities.enums import RecordCategories
 def test_add_new_user(live_database_client):
     fake_email = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
-    #cursor = live_database_client.cursor
-    #cursor.execute(f"SELECT password_digest FROM users WHERE email = %s", (fake_email,))
-    #password_digest = cursor.fetchone()[0]
     session = live_database_client.session
     password_digest = session.scalars(
         select(User.password_digest).where(User.email == fake_email)
@@ -73,11 +70,15 @@ def test_link_external_account(live_database_client):
         external_account_type=ExternalAccountTypeEnum.GITHUB,
     )
     session = live_database_client.session
-    row = session.execute(
-        select(ExternalAccount.user_id, ExternalAccount.account_type).where(
-            ExternalAccount.account_identifier == fake_external_account_id
+    row = (
+        session.execute(
+            select(ExternalAccount.user_id, ExternalAccount.account_type).where(
+                ExternalAccount.account_identifier == fake_external_account_id
+            )
         )
-    ).mappings().one_or_none()
+        .mappings()
+        .one_or_none()
+    )
 
     assert row.user_id == user_id
     assert row.account_type == ExternalAccountTypeEnum.GITHUB.value
@@ -107,7 +108,6 @@ def test_set_user_password_digest(live_database_client):
     password_digest = session.scalars(
         select(User.password_digest).where(User.email == fake_email)
     ).one_or_none()
-
 
     assert password_digest == "test_password"
 
