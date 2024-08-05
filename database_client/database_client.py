@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Optional, Any, List
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import aliased
 import psycopg2
 from psycopg2 import sql
@@ -119,13 +119,19 @@ class DatabaseClient:
         :param password_digest:
         :return:
         """
-        query = sql.SQL(
+        '''query = sql.SQL(
             "update users set password_digest = {} where email = {}"
         ).format(
             sql.Literal(password_digest),
             sql.Literal(email),
         )
-        self.cursor.execute(query)
+        self.cursor.execute(query)'''
+        query = (
+            update(User)
+            .where(User.email == email)
+            .values(password_digest=password_digest)
+        )
+        self.session.execute(query)
 
     ResetTokenInfo = namedtuple("ResetTokenInfo", ["id", "email", "create_date"])
 

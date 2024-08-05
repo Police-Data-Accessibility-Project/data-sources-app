@@ -36,7 +36,9 @@ def test_add_new_user(live_database_client):
     #cursor.execute(f"SELECT password_digest FROM users WHERE email = %s", (fake_email,))
     #password_digest = cursor.fetchone()[0]
     session = live_database_client.session
-    password_digest = session.scalars(select(User.password_digest).where(User.email == fake_email)).one_or_none()
+    password_digest = session.scalars(
+        select(User.password_digest).where(User.email == fake_email)
+    ).one_or_none()
 
     assert password_digest == "test_password"
 
@@ -51,7 +53,9 @@ def test_get_user_id(live_database_client):
     cursor.execute(f"SELECT id FROM users WHERE email = %s", (fake_email,))
     direct_user_id = cursor.fetchone()[0]'''
     session = live_database_client.session
-    direct_user_id = session.scalars(select(User.id).where(User.email == fake_email)).one_or_none()
+    direct_user_id = session.scalars(
+        select(User.id).where(User.email == fake_email)
+    ).one_or_none()
 
     # Get the user ID from the live database
     result_user_id = live_database_client.get_user_id(fake_email)
@@ -78,10 +82,10 @@ def test_link_external_account(live_database_client):
         select(ExternalAccount.user_id, ExternalAccount.account_type).where(
             ExternalAccount.account_identifier == fake_external_account_id
         )
-    ).one_or_none()
-    
-    assert row[0] == user_id
-    assert row[1] == ExternalAccountTypeEnum.GITHUB.value
+    ).mappings().one_or_none()
+
+    assert row.user_id == user_id
+    assert row.account_type == ExternalAccountTypeEnum.GITHUB.value
 
 def test_get_user_info_by_external_account_id(live_database_client):
     fake_email = uuid.uuid4().hex
@@ -100,9 +104,14 @@ def test_set_user_password_digest(live_database_client):
     fake_email = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
     live_database_client.set_user_password_digest(fake_email, "test_password")
-    cursor = live_database_client.cursor
+    '''cursor = live_database_client.cursor
     cursor.execute(f"SELECT password_digest FROM users WHERE email = %s", (fake_email,))
-    password_digest = cursor.fetchone()[0]
+    password_digest = cursor.fetchone()[0]'''
+    session = live_database_client.session
+    password_digest = session.scalars(
+        select(User.password_digest).where(User.email == fake_email)
+    ).one_or_none()
+
 
     assert password_digest == "test_password"
 
