@@ -6,6 +6,7 @@ from typing import Optional, Any, List
 import uuid
 
 from sqlalchemy import select
+from sqlalchemy.orm import aliased
 import psycopg2
 from psycopg2 import sql
 
@@ -605,7 +606,7 @@ class DatabaseClient:
             external_account_id: str,
             external_account_type: ExternalAccountTypeEnum
     ) -> UserInfo:
-        query = sql.SQL("""
+        '''query = sql.SQL("""
             SELECT 
                 u.id,
                 u.email,
@@ -624,15 +625,28 @@ class DatabaseClient:
         )
         self.cursor.execute(query)
 
-        results = self.cursor.fetchone()
+        results = self.cursor.fetchone()'''
+        u = aliased(User)
+        ea = aliased(ExternalAccount)
+
+        query = (
+            select(u.id, u.email, u.password_digest, u.api_key)
+            .join(ea, u.id == ea.user_id)
+            .where(
+                ea.account_identifier == external_account_id,
+                ea.account_type == external_account_type.value,
+            )
+        )
+        results = self.session.execute(query).mappings().one_or_none()
+        
         if results is None:
             raise UserNotFoundError(external_account_id)
 
         return self.UserInfo(
-            id=results["id"],
-            password_digest=results["password_digest"],
-            api_key=results["api_key"],
-            email=results["email"],
+            id=results.id,
+            password_digest=results.password_digest,
+            api_key=results.api_key,
+            email=results.email,
         )
 
     def add_new_session_token(self, session_token, email: str, expiration) -> None:
