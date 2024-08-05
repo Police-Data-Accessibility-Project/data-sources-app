@@ -203,14 +203,16 @@ class DatabaseClient:
         :param api_key: The api key to check.
         :return: RoleInfo if the token exists; otherwise, None.
         """
-        query = sql.SQL("select id, role from users where api_key = {}").format(
+        '''query = sql.SQL("select id, role from users where api_key = {}").format(
             sql.Literal(api_key)
         )
         self.cursor.execute(query)
-        row = self.cursor.fetchone()
+        row = self.cursor.fetchone()'''
+        query = select(User.id, User.role).where(User.api_key == api_key)
+        row = self.session.execute(query).mappings().one_or_none()
         if row is None:
             return None
-        return self.RoleInfo(id=row[0], role=row[1])
+        return self.RoleInfo(id=row.id, role=row.role)
 
     def get_role_by_email(self, email: str) -> RoleInfo:
         """
