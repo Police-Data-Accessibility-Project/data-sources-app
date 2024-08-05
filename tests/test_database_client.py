@@ -50,9 +50,6 @@ def test_get_user_id(live_database_client):
     live_database_client.add_new_user(fake_email, "test_password")
 
     # Directly fetch the user ID from the database for comparison
-    '''cursor = live_database_client.cursor
-    cursor.execute(f"SELECT id FROM users WHERE email = %s", (fake_email,))
-    direct_user_id = cursor.fetchone()[0]'''
     session = live_database_client.session
     direct_user_id = session.scalars(
         select(User.id).where(User.email == fake_email)
@@ -75,9 +72,6 @@ def test_link_external_account(live_database_client):
         external_account_id=fake_external_account_id,
         external_account_type=ExternalAccountTypeEnum.GITHUB,
     )
-    '''cursor = live_database_client.cursor
-    cursor.execute(f"SELECT user_id, account_type FROM external_accounts WHERE account_identifier = %s", (fake_external_account_id,))
-    row = cursor.fetchone()'''
     session = live_database_client.session
     row = session.execute(
         select(ExternalAccount.user_id, ExternalAccount.account_type).where(
@@ -109,9 +103,6 @@ def test_set_user_password_digest(live_database_client):
     fake_email = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
     live_database_client.set_user_password_digest(fake_email, "test_password")
-    '''cursor = live_database_client.cursor
-    cursor.execute(f"SELECT password_digest FROM users WHERE email = %s", (fake_email,))
-    password_digest = cursor.fetchone()[0]'''
     session = live_database_client.session
     password_digest = session.scalars(
         select(User.password_digest).where(User.email == fake_email)
@@ -381,9 +372,6 @@ def test_get_role_by_email(live_database_client):
     )
 
     # Add a role to the user
-    '''live_database_client.cursor.execute(
-        "update users set role = 'test_role' where email = 'test_user'",
-    )'''
     live_database_client.session.execute(
         update(User).where(User.email == "test_user").values(role="test_role")
     )
@@ -403,9 +391,6 @@ def test_get_role_by_api_key(live_database_client):
     )
 
     # Add a role and api_key to the user
-    '''live_database_client.cursor.execute(
-        "update users set role = 'test_role', api_key = 'test_api_key' where email = 'test_user'",
-    )'''
     live_database_client.session.execute(
         update(User)
         .where(User.email == "test_user")

@@ -84,13 +84,6 @@ class DatabaseClient:
         :param password_digest:
         :return:
         """
-        '''query = sql.SQL(
-            "insert into users (email, password_digest) values ({}, {})"
-        ).format(
-            sql.Literal(email),
-            sql.Literal(password_digest),
-        )
-        self.cursor.execute(query)'''
         user = User(email=email, password_digest=password_digest)
         self.session.add(user)
         self.session.commit()
@@ -101,13 +94,6 @@ class DatabaseClient:
         :param email:
         :return:
         """
-        '''query = sql.SQL("select id from users where email = {}").format(
-            sql.Literal(email)
-        )
-        self.cursor.execute(query)
-        if self.cursor.rowcount == 0:
-            return None
-        return self.cursor.fetchone()[0]'''
         query = select(User.id).where(User.email == email)
         user_id = self.session.scalars(query).one_or_none()
         return user_id
@@ -119,13 +105,6 @@ class DatabaseClient:
         :param password_digest:
         :return:
         """
-        '''query = sql.SQL(
-            "update users set password_digest = {} where email = {}"
-        ).format(
-            sql.Literal(password_digest),
-            sql.Literal(email),
-        )
-        self.cursor.execute(query)'''
         query = (
             update(User)
             .where(User.email == email)
@@ -203,11 +182,6 @@ class DatabaseClient:
         :param api_key: The api key to check.
         :return: RoleInfo if the token exists; otherwise, None.
         """
-        '''query = sql.SQL("select id, role from users where api_key = {}").format(
-            sql.Literal(api_key)
-        )
-        self.cursor.execute(query)
-        row = self.cursor.fetchone()'''
         query = select(User.id, User.role).where(User.api_key == api_key)
         row = self.session.execute(query).mappings().one_or_none()
         if row is None:
@@ -222,10 +196,6 @@ class DatabaseClient:
         :raises UserNotFoundError: If no user is found.
         :return: RoleInfo namedtuple containing the user's role.
         """
-        '''query = sql.SQL("select role from users where email = {}")
-        query = query.format(sql.Literal(email))
-        self.cursor.execute(query)
-        results = self.cursor.fetchone()'''
         query = select(User.role).where(User.email == email)
         role = self.session.scalars(query).one_or_none()
         if role is None:
@@ -239,10 +209,6 @@ class DatabaseClient:
         :param api_key: The api key to check.
         :param user_id: The user id to update.
         """
-        '''query = sql.SQL("update users set api_key = {} where id = {}")
-        query = query.format(sql.Literal(api_key), sql.Literal(user_id))
-
-        self.cursor.execute(query)'''
         query = update(User).where(User.id == user_id).values(api_key=api_key)
         self.session.execute(query)
 
@@ -598,11 +564,6 @@ class DatabaseClient:
         :raise UserNotFoundError: If no user is found.
         :return: UserInfo namedtuple containing the user's information.
         """
-        '''query = sql.SQL(
-            "select id, password_digest, api_key, email from users where email = {email}"
-        ).format(email=sql.Literal(email))
-        self.cursor.execute(query)
-        results = self.cursor.fetchone()'''
         query = select(User.id, User.password_digest, User.api_key, User.email).where(
             User.email == email
         )
@@ -622,26 +583,6 @@ class DatabaseClient:
             external_account_id: str,
             external_account_type: ExternalAccountTypeEnum
     ) -> UserInfo:
-        '''query = sql.SQL("""
-            SELECT 
-                u.id,
-                u.email,
-                u.password_digest,
-                u.api_key
-            FROM 
-                users u
-            INNER JOIN 
-                external_accounts ea ON u.id = ea.user_id
-            WHERE 
-                ea.account_identifier = {external_account_identifier}
-                and ea.account_type = {external_account_type}
-        """).format(
-            external_account_identifier=sql.Literal(external_account_id),
-            external_account_type=sql.Literal(external_account_type.value)
-        )
-        self.cursor.execute(query)
-
-        results = self.cursor.fetchone()'''
         u = aliased(User)
         ea = aliased(ExternalAccount)
 
@@ -787,15 +728,6 @@ class DatabaseClient:
             user_id: str,
             external_account_id: str,
             external_account_type: ExternalAccountTypeEnum):
-        '''query = sql.SQL("""
-            INSERT INTO external_accounts (user_id, account_type, account_identifier) 
-            VALUES ({user_id}, {account_type}, {account_identifier});
-        """).format(
-            user_id=sql.Literal(user_id),
-            account_type=sql.Literal(external_account_type.value),
-            account_identifier=sql.Literal(external_account_id),
-        )
-        self.cursor.execute(query)'''
         external_account = ExternalAccount(
             user_id=user_id,
             account_type=external_account_type.value,
