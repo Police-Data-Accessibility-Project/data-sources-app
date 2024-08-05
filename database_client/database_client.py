@@ -594,19 +594,23 @@ class DatabaseClient:
         :raise UserNotFoundError: If no user is found.
         :return: UserInfo namedtuple containing the user's information.
         """
-        query = sql.SQL(
+        '''query = sql.SQL(
             "select id, password_digest, api_key, email from users where email = {email}"
         ).format(email=sql.Literal(email))
         self.cursor.execute(query)
-        results = self.cursor.fetchone()
+        results = self.cursor.fetchone()'''
+        query = select(User.id, User.password_digest, User.api_key, User.email).where(
+            User.email == email
+        )
+        results = self.session.execute(query).mappings().one_or_none()
         if results is None:
             raise UserNotFoundError(email)
 
         return self.UserInfo(
-            id=results[0],
-            password_digest=results[1],
-            api_key=results[2],
-            email=results[3],
+            id=results.id,
+            password_digest=results.password_digest,
+            api_key=results.api_key,
+            email=results.email,
         )
 
     def get_user_info_by_external_account_id(
