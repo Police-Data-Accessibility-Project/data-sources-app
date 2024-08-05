@@ -17,7 +17,7 @@ from middleware.custom_exceptions import (
     AccessTokenNotFoundError,
 )
 
-from middleware.models import User
+from middleware.models import User, ExternalAccount
 from middleware.permissions_logic import UserPermissions
 from utilities.enums import RecordCategories
 
@@ -757,7 +757,7 @@ class DatabaseClient:
             user_id: str,
             external_account_id: str,
             external_account_type: ExternalAccountTypeEnum):
-        query = sql.SQL("""
+        '''query = sql.SQL("""
             INSERT INTO external_accounts (user_id, account_type, account_identifier) 
             VALUES ({user_id}, {account_type}, {account_identifier});
         """).format(
@@ -765,7 +765,14 @@ class DatabaseClient:
             account_type=sql.Literal(external_account_type.value),
             account_identifier=sql.Literal(external_account_id),
         )
-        self.cursor.execute(query)
+        self.cursor.execute(query)'''
+        external_account = ExternalAccount(
+            user_id=user_id,
+            account_type=external_account_type.value,
+            account_identifier=external_account_id,
+        )
+        self.session.add(external_account)
+        self.session.commit()
 
 
     def get_user_permissions(self, user_id: str) -> UserPermissions:
