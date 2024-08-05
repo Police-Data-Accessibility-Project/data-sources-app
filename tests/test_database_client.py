@@ -18,7 +18,7 @@ from middleware.custom_exceptions import (
     UserNotFoundError,
     TokenNotFoundError,
 )
-from middleware.models import User
+from middleware.models import User, ExternalAccount
 from tests.fixtures import live_database_client, dev_db_connection, db_cursor, xylonslyvania_test_data
 from tests.helper_functions import (
     insert_test_agencies_and_sources,
@@ -70,10 +70,16 @@ def test_link_external_account(live_database_client):
         external_account_id=fake_external_account_id,
         external_account_type=ExternalAccountTypeEnum.GITHUB
     )
-    cursor = live_database_client.cursor
+    '''cursor = live_database_client.cursor
     cursor.execute(f"SELECT user_id, account_type FROM external_accounts WHERE account_identifier = %s", (fake_external_account_id,))
-    row = cursor.fetchone()
-
+    row = cursor.fetchone()'''
+    session = live_database_client.session
+    row = session.execute(
+        select(ExternalAccount.user_id, ExternalAccount.account_type).where(
+            ExternalAccount.account_identifier == fake_external_account_id
+        )
+    ).one_or_none()
+    
     assert row[0] == user_id
     assert row[1] == ExternalAccountTypeEnum.GITHUB.value
 
