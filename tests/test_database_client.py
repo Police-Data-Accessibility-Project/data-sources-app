@@ -6,7 +6,7 @@ import json
 import uuid
 from datetime import datetime, timezone, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 import psycopg2
 import pytest
 
@@ -371,8 +371,11 @@ def test_get_role_by_email(live_database_client):
     )
 
     # Add a role to the user
-    live_database_client.cursor.execute(
+    '''live_database_client.cursor.execute(
         "update users set role = 'test_role' where email = 'test_user'",
+    )'''
+    live_database_client.session.execute(
+        update(User).where(User.email == "test_user").values(role="test_role")
     )
 
     # Fetch the user using its email with the DatabaseClient method

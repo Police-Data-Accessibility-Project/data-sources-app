@@ -220,14 +220,16 @@ class DatabaseClient:
         :raises UserNotFoundError: If no user is found.
         :return: RoleInfo namedtuple containing the user's role.
         """
-        query = sql.SQL("select role from users where email = {}")
+        '''query = sql.SQL("select role from users where email = {}")
         query = query.format(sql.Literal(email))
         self.cursor.execute(query)
-        results = self.cursor.fetchone()
-        if len(results) == 0:
+        results = self.cursor.fetchone()'''
+        query = select(User.role).where(User.email == email)
+        role = self.session.scalars(query).one_or_none()
+        if role is None:
             raise UserNotFoundError(email)
 
-        return self.RoleInfo(id=None, role=results[0])
+        return self.RoleInfo(id=None, role=role)
 
     def update_user_api_key(self, api_key: str, user_id: int):
         """
