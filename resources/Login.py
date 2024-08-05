@@ -1,6 +1,7 @@
 from flask import request, Response
 from flask_restx import fields
 
+from config import limiter
 from middleware.login_queries import try_logging_in
 from resources.resource_helpers import create_user_model
 from utilities.namespace import create_namespace
@@ -25,6 +26,7 @@ class Login(PsycopgResource):
     @namespace_login.doc(
         description="Allows a user to log in. If successful, returns a session token.",
     )
+    @limiter.limit("5 per minute")
     def post(self) -> Response:
         """
         Processes the login request. Validates user credentials against the stored hashed password and,

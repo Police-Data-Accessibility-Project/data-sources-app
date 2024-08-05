@@ -1,5 +1,6 @@
 from flask_restx import reqparse
 
+from config import limiter
 from middleware.callback_flask_sessions_logic import setup_callback_session
 from middleware.enums import CallbackFunctionsEnum
 from middleware.callback_oauth_logic import redirect_to_github_authorization
@@ -43,6 +44,7 @@ class LinkToGithub(PsycopgResource):
             500: "Internal Server Error",
         },
     )
+    @limiter.limit("5 per minute")
     def post(self):
         """
         Link the user to their Github account
