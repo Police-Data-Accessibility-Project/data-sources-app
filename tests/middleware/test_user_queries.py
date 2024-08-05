@@ -1,12 +1,10 @@
 from unittest.mock import MagicMock
 
-import psycopg2
 import pytest
 
 from middleware.custom_exceptions import UserNotFoundError
 from middleware.user_queries import user_post_results, user_check_email
-from tests.helper_functions import create_test_user, DynamicMagicMock
-from tests.fixtures import db_cursor, dev_db_connection
+from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
 
 
 def test_user_post_query(monkeypatch):

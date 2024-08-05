@@ -1,4 +1,3 @@
-import datetime
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
@@ -7,9 +6,7 @@ import pytest
 from middleware.archives_queries import (
     update_archives_data,
 )
-from tests.helper_functions import (
-    DynamicMagicMock,
-)
+from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
 
 
 class UpdateArchivesDataMocks(DynamicMagicMock):
@@ -24,8 +21,10 @@ class UpdateArchivesDataMocks(DynamicMagicMock):
 
 @pytest.fixture
 def setup_update_archives_data_mocks(monkeypatch):
-    mock = UpdateArchivesDataMocks()
-    monkeypatch.setattr("middleware.archives_queries.make_response", mock.make_response)
+    mock = UpdateArchivesDataMocks(
+        patch_root="middleware.archives_queries",
+        mocks_to_patch=["make_response"],
+    )
     return mock
 
 

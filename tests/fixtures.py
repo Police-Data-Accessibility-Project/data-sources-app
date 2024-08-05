@@ -1,19 +1,17 @@
 """This module contains pytest fixtures employed by middleware tests."""
 
-import os
 from collections import namedtuple
 from unittest.mock import MagicMock
 
 import psycopg2
 import pytest
 from dotenv import load_dotenv
-from flask.testing import FlaskClient
 from psycopg2.extras import DictCursor
 
 from app import create_app
 from database_client.database_client import DatabaseClient
 from middleware.util import get_env_variable
-from tests.helper_functions import insert_test_agencies_and_sources
+from tests.helper_scripts.helper_functions import insert_test_agencies_and_sources
 from tests.helper_scripts.test_data_generator import TestDataGenerator
 
 

@@ -9,6 +9,7 @@ from psycopg2.extras import DictCursor
 
 from config import config
 from database_client.database_client import DatabaseClient
+from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 
 
 def handle_exceptions(
@@ -58,7 +59,23 @@ class PsycopgResource(Resource):
         """
         super().__init__(*args, **kwargs)
 
+    def connection_is_closed(self) -> bool:
+        """
+        Per https://www.psycopg.org/docs/connection.html#connection.closed
+        a connection is open is the integer attribute is 0,
+        closed or broken of the integer attribute is nonzero
+
+        A connection is only determined to be closed after
+        an operation has been tried and failed.
+        Thus, in the case of a closed connection, the operation will fail
+        on the first run, then succeed on the second run.
+        :return:
+        """
+        return config.connection.closed != 0
+
     def get_connection(self):
+        if self.connection_is_closed():
+            config.connection = initialize_psycopg2_connection()
         return config.connection
 
     @contextmanager
