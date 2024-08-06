@@ -129,7 +129,7 @@ def live_database_client(db_cursor, test_client, session) -> DatabaseClient:
     :param db_cursor:
     :return:
     """
-    return DatabaseClient(db_cursor, test_client, session)
+    return DatabaseClient(db_cursor, session)
 
 @pytest.fixture
 def xylonslyvania_test_data(db_cursor):

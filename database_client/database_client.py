@@ -71,9 +71,8 @@ QUICK_SEARCH_SQL = """
 
 class DatabaseClient:
 
-    def __init__(self, cursor: psycopg2.extensions.cursor, client, session):
+    def __init__(self, cursor: psycopg2.extensions.cursor, session):
         self.cursor = cursor
-        self.client = client
         self.session = session
 
     def add_new_user(self, email: str, password_digest: str):
