@@ -58,13 +58,13 @@ def test_rate_limiter_default_limit(client_with_mock_db, monkeypatch):
         f"resources.RefreshSession.refresh_session", MagicMock(return_value=TEST_RESPONSE)
     )
 
-    for i in range(50):
+    for i in range(100):
         response = post_refresh_session_request(client_with_mock_db)
         check_response_status(response, TEST_RESPONSE.status_code)
 
     response = post_refresh_session_request(client_with_mock_db)
     check_response_status(response, HTTPStatus.TOO_MANY_REQUESTS)
-    assert response.json["message"] == "50 per 1 hour"
+    assert response.json["message"] == "100 per 1 hour"
 
     # Test that a different IP address still works
     response = post_refresh_session_request(client_with_mock_db, ip_address="237.84.2.178")
