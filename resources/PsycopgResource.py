@@ -6,12 +6,11 @@ from typing import Callable, Any, Union, Tuple, Dict
 import psycopg2
 from flask_restx import abort, Resource
 from psycopg2.extras import DictCursor
-from sqlalchemy.orm import sessionmaker, scoped_session
 
 from config import config
 from database_client.database_client import DatabaseClient
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
-from middleware.models import db
+from middleware.initialize_sqlalchemy_session import initialize_sqlalchemy_session
 
 def handle_exceptions(
     func: Callable[..., Any]
@@ -79,23 +78,6 @@ class PsycopgResource(Resource):
             config.connection = initialize_psycopg2_connection()
         return config.connection
 
-    def get_db_session(self):
-        connection = db.engine.connect()
-        transaction = connection.begin()
-        session = scoped_session(sessionmaker(bind=connection))
-
-        # Overwrite the db.session with the scoped session
-        db.session = session
-        
-        try:
-            yield session
-        except Exception as e:
-            transaction.rollback()
-            raise e
-        finally:
-            session.close()
-            connection.close()
-
 
     @contextmanager
     def setup_database_client(self) -> DatabaseClient:
@@ -106,7 +88,7 @@ class PsycopgResource(Resource):
         - The database client.
         """
         conn = self.get_connection()
-        session = self.get_db_session()
+        session = initialize_sqlalchemy_session()
         with conn.cursor(cursor_factory=DictCursor) as cursor:
             try:
                 yield DatabaseClient(cursor, session)
