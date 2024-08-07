@@ -1,5 +1,6 @@
 import os
 
+import dotenv
 from flask import Flask
 from flask_cors import CORS
 
@@ -15,6 +16,8 @@ from flask_restx import Api
 
 from config import config, oauth
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
+from middleware.models import db
+from middleware.util import get_env_variable
 from resources.Agencies import namespace_agencies
 from resources.ApiKey import namespace_api_key
 from resources.Archives import namespace_archives
@@ -89,8 +92,13 @@ def create_app() -> Flask:
     app.secret_key = get_flask_app_secret_key()
     app.wsgi_app = ReverseProxied(app.wsgi_app)
     CORS(app)
+    dotenv.load_dotenv()
+    app.config["SQLALCHEMY_DATABASE_URI"] = get_env_variable(
+        "DEV_DB_CONN_STRING"
+    )
     api.init_app(app)
     oauth.init_app(app)
+    db.init_app(app)
 
     return app
 
