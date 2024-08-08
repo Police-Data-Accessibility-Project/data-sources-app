@@ -4,6 +4,7 @@ from middleware.search_logic import search_wrapper
 from middleware.security import api_required
 from resources.PsycopgResource import PsycopgResource
 from resources.resource_helpers import add_api_key_header_arg, create_search_model
+from utilities.common import get_enums_from_string
 from utilities.enums import RecordCategories
 from utilities.namespace import create_namespace, AppNamespaces
 
@@ -38,12 +39,14 @@ request_parser.add_argument(
 )
 
 request_parser.add_argument(
-    "record_category",
+    "record_categories",
     type=str,
     location="args",
     required=False,
-    help="The record category of the search. If empty, all categories will be searched. Must be an exact match.",
+    help="The record categories of the search. If empty, all categories will be searched. Must be an exact match."
+         "Allowable record categories include: " + ", ".join([e.value for e in RecordCategories]),
 )
+# TODO: Check that this description looks as expected.
 
 search_model = create_search_model(namespace_search)
 
@@ -85,14 +88,18 @@ class Search(PsycopgResource):
         locality = request.args.get("locality")
         record_category_raw = request.args.get("record_category")
         if record_category_raw is not None:
-            record_category = RecordCategories(record_category_raw)
+            record_categories = get_enums_from_string(
+                RecordCategories,
+                record_category_raw,
+                case_insensitive=True
+            )
         else:
-            record_category = None
+            record_categories = None
 
         with self.setup_database_client() as db_client:
             response = search_wrapper(
                 db_client=db_client,
-                record_category=record_category,
+                record_categories=record_categories,
                 state=state,
                 county=county,
                 locality=locality,
