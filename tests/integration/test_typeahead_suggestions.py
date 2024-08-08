@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from tests.helper_functions import (
+from tests.helper_scripts.helper_functions import (
     check_response_status,
     setup_get_typeahead_suggestion_test_data,
 )

@@ -3,7 +3,8 @@
 import psycopg2.extensions
 
 from tests.fixtures import dev_db_connection, client_with_db
-from tests.helper_functions import create_test_user_api, login_and_return_session_token
+from tests.helper_scripts.helper_functions import create_test_user_api, login_and_return_session_token, \
+    assert_session_token_exists_for_email
 
 
 def test_login_post(client_with_db, dev_db_connection: psycopg2.extensions.connection):
@@ -14,17 +15,6 @@ def test_login_post(client_with_db, dev_db_connection: psycopg2.extensions.conne
     user_info = create_test_user_api(client_with_db)
     session_token = login_and_return_session_token(client_with_db, user_info)
 
-    cursor = dev_db_connection.cursor()
-    cursor.execute(
-        """
-        SELECT email from session_tokens WHERE token = %s
-        """,
-        (session_token,),
+    assert_session_token_exists_for_email(
+        cursor=dev_db_connection.cursor(), session_token=session_token, email=user_info.email
     )
-    rows = cursor.fetchall()
-    assert len(rows) == 1, "Session token should only exist once in database"
-
-    row = rows[0]
-    assert (
-        row[0] == user_info.email
-    ), "Email in session_tokens table does not match user email"

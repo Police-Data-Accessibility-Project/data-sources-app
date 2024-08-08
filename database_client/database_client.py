@@ -9,11 +9,13 @@ import psycopg2
 from psycopg2 import sql
 
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
+from database_client.enums import ExternalAccountTypeEnum
 from middleware.custom_exceptions import (
     UserNotFoundError,
     TokenNotFoundError,
     AccessTokenNotFoundError,
 )
+from middleware.permissions_logic import UserPermissions
 from utilities.enums import RecordCategories
 
 DATA_SOURCES_MAP_COLUMN = [
@@ -561,7 +563,7 @@ class DatabaseClient:
         )
         self.cursor.execute(query)
 
-    UserInfo = namedtuple("UserInfo", ["id", "password_digest", "api_key"])
+    UserInfo = namedtuple("UserInfo", ["id", "password_digest", "api_key", "email"])
 
     def get_user_info(self, email: str) -> UserInfo:
         """
@@ -572,7 +574,7 @@ class DatabaseClient:
         :return: UserInfo namedtuple containing the user's information.
         """
         query = sql.SQL(
-            "select id, password_digest, api_key from users where email = {email}"
+            "select id, password_digest, api_key, email from users where email = {email}"
         ).format(email=sql.Literal(email))
         self.cursor.execute(query)
         results = self.cursor.fetchone()
@@ -583,6 +585,42 @@ class DatabaseClient:
             id=results[0],
             password_digest=results[1],
             api_key=results[2],
+            email=results[3],
+        )
+
+    def get_user_info_by_external_account_id(
+            self,
+            external_account_id: str,
+            external_account_type: ExternalAccountTypeEnum
+    ) -> UserInfo:
+        query = sql.SQL("""
+            SELECT 
+                u.id,
+                u.email,
+                u.password_digest,
+                u.api_key
+            FROM 
+                users u
+            INNER JOIN 
+                external_accounts ea ON u.id = ea.user_id
+            WHERE 
+                ea.account_identifier = {external_account_identifier}
+                and ea.account_type = {external_account_type}
+        """).format(
+            external_account_identifier=sql.Literal(external_account_id),
+            external_account_type=sql.Literal(external_account_type.value)
+        )
+        self.cursor.execute(query)
+
+        results = self.cursor.fetchone()
+        if results is None:
+            raise UserNotFoundError(external_account_id)
+
+        return self.UserInfo(
+            id=results["id"],
+            password_digest=results["password_digest"],
+            api_key=results["api_key"],
+            email=results["email"],
         )
 
     def add_new_session_token(self, session_token, email: str, expiration) -> None:
@@ -701,3 +739,27 @@ class DatabaseClient:
             )
             for row in results
         ]
+
+    def link_external_account(
+            self,
+            user_id: str,
+            external_account_id: str,
+            external_account_type: ExternalAccountTypeEnum):
+        query = sql.SQL("""
+            INSERT INTO external_accounts (user_id, account_type, account_identifier) 
+            VALUES ({user_id}, {account_type}, {account_identifier});
+        """).format(
+            user_id=sql.Literal(user_id),
+            account_type=sql.Literal(external_account_type.value),
+            account_identifier=sql.Literal(external_account_id),
+        )
+        self.cursor.execute(query)
+
+
+    def get_user_permissions(self, user_id: str) -> UserPermissions:
+        """
+
+        :param user_id:
+        :return: A UserPermissions object.
+        """
+        pass

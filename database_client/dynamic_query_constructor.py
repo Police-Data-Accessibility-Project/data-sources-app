@@ -276,7 +276,7 @@ class DynamicQueryConstructor:
             locality
         FROM combined
         ORDER BY sort_order, display_name
-        LIMIT 4;
+        LIMIT 10;
         """
         ).format(
             search_term_prefix=sql.Literal(f"{search_term}%"),

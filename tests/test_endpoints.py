@@ -15,13 +15,17 @@ from flask_restful import Resource
 from resources.Agencies import Agencies
 from resources.ApiKey import ApiKey
 from resources.Archives import Archives
+from resources.Callback import Callback
+from resources.CreateUserWithGithub import CreateUserWithGithub
 from resources.DataSources import (
     DataSources,
     DataSourcesMap,
     DataSourcesNeedsIdentification,
     DataSourceById,
 )
+from resources.LinkToGithub import LinkToGithub
 from resources.Login import Login
+from resources.LoginWithGithub import LoginWithGithub
 from resources.QuickSearch import QuickSearch
 from resources.RefreshSession import RefreshSession
 from resources.RequestResetPassword import RequestResetPassword
@@ -82,6 +86,10 @@ test_parameters = [
     TestParameters(SearchTokens, "/search-tokens", [GET]),
     TestParameters(Search, "/search/search-location-and-record-type", [GET]),
     TestParameters(TypeaheadSuggestions, "/search/typeahead-suggestions", [GET]),
+    TestParameters(Callback, "auth/callback", [GET]),
+    TestParameters(LinkToGithub, "auth/link-to-github", [POST]),
+    TestParameters(LoginWithGithub, "auth/login-with-github", [POST]),
+    TestParameters(CreateUserWithGithub, "auth/create-user-with-github", [POST]),
 ]
 
 

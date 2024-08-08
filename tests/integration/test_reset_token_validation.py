@@ -1,9 +1,8 @@
 """Integration tests for /reset-token-validation endpoint."""
 
 from http import HTTPStatus
-from pytest_mock import mocker
 
-from tests.helper_functions import (
+from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     request_reset_password_api,
     check_response_status,

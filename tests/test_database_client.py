@@ -1,24 +1,29 @@
-import json
+"""
+Module for testing database client functionality against a live database
+"""
+
 import uuid
 from datetime import datetime, timezone, timedelta
 
-import psycopg2
 import pytest
 
 from database_client.database_client import DatabaseClient
+from database_client.enums import ExternalAccountTypeEnum
 from database_client.result_formatter import ResultFormatter
 from middleware.custom_exceptions import (
     AccessTokenNotFoundError,
     UserNotFoundError,
-    TokenNotFoundError,
 )
-from tests.fixtures import live_database_client, dev_db_connection, db_cursor, xylonslyvania_test_data
-from tests.helper_functions import (
-    insert_test_agencies_and_sources,
+from tests.fixtures import (
+    live_database_client,
+    dev_db_connection,
+    xylonslyvania_test_data,
+    db_cursor,
+)
+from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources_if_not_exist,
     setup_get_typeahead_suggestion_test_data,
 )
-from tests.helper_scripts.test_data_generator import TestDataGenerator
 from utilities.enums import RecordCategories
 
 
@@ -47,6 +52,43 @@ def test_get_user_id(live_database_client):
 
     # Compare the two user IDs
     assert result_user_id == direct_user_id
+
+
+def test_link_external_account(live_database_client):
+    fake_email = uuid.uuid4().hex
+    fake_external_account_id = uuid.uuid4().hex
+    live_database_client.add_new_user(fake_email, "test_password")
+    user_id = live_database_client.get_user_id(fake_email)
+    live_database_client.link_external_account(
+        user_id=str(user_id),
+        external_account_id=fake_external_account_id,
+        external_account_type=ExternalAccountTypeEnum.GITHUB,
+    )
+    cursor = live_database_client.cursor
+    cursor.execute(
+        f"SELECT user_id, account_type FROM external_accounts WHERE account_identifier = %s",
+        (fake_external_account_id,),
+    )
+    row = cursor.fetchone()
+
+    assert row[0] == user_id
+    assert row[1] == ExternalAccountTypeEnum.GITHUB.value
+
+
+def test_get_user_info_by_external_account_id(live_database_client):
+    fake_email = uuid.uuid4().hex
+    fake_external_account_id = uuid.uuid4().hex
+    live_database_client.add_new_user(fake_email, "test_password")
+    user_id = live_database_client.get_user_id(fake_email)
+    live_database_client.link_external_account(
+        user_id=str(user_id),
+        external_account_id=fake_external_account_id,
+        external_account_type=ExternalAccountTypeEnum.GITHUB,
+    )
+    user_info = live_database_client.get_user_info_by_external_account_id(
+        fake_external_account_id, ExternalAccountTypeEnum.GITHUB
+    )
+    assert user_info.email == fake_email
 
 
 def test_set_user_password_digest(live_database_client):
@@ -224,7 +266,12 @@ def test_update_last_cached(live_database_client):
 
 def test_get_quick_search_results(live_database_client):
     # Add new data sources to the database, some that satisfy the search criteria and some that don't
-    insert_test_agencies_and_sources_if_not_exist(live_database_client.cursor)
+    cursor = live_database_client.cursor
+    cursor.execute("SELECT NOW()")
+    result = cursor.fetchone()
+    test_datetime = result[0]
+
+    insert_test_agencies_and_sources_if_not_exist(cursor)
 
     # Fetch the search results using the DatabaseClient method
     result = live_database_client.get_quick_search_results(
@@ -321,6 +368,25 @@ def test_get_role_by_email(live_database_client):
 
     # Fetch the user using its email with the DatabaseClient method
     role_info = live_database_client.get_role_by_email(email="test_user")
+
+    # Confirm the role is retrieved successfully
+    assert role_info.role == "test_role"
+
+
+def test_get_role_by_api_key(live_database_client):
+    # Add a new user to the database
+    live_database_client.add_new_user(
+        email="test_user",
+        password_digest="test_password",
+    )
+
+    # Add a role and api_key to the user
+    live_database_client.cursor.execute(
+        "update users set role = 'test_role', api_key = 'test_api_key' where email = 'test_user'",
+    )
+
+    # Fetch the user's role using its api key with the DatabaseClient method
+    role_info = live_database_client.get_role_by_api_key(api_key="test_api_key")
 
     # Confirm the role is retrieved successfully
     assert role_info.role == "test_role"
@@ -449,6 +515,7 @@ def test_get_typeahead_suggestion(live_database_client):
     assert results[2].county == "Arxylodon"
     assert results[2].locality is None
 
+
 def test_search_with_location_and_record_types_real_data(live_database_client):
     """
     Due to the large number of combinations, I will refer to tests using certain parameters by their first letter
@@ -467,39 +534,46 @@ def test_search_with_location_and_record_types_real_data(live_database_client):
     county_parameter = "Allegheny"
     locality_parameter = "Pittsburgh"
 
-    SRLC = len(live_database_client.search_with_location_and_record_type(
-        state=state_parameter,
-        record_type=record_type_parameter,
-        county=county_parameter,
-        locality=locality_parameter
-    ))
-    S = len(live_database_client.search_with_location_and_record_type(
-        state=state_parameter
-    ))
-    SR = len(live_database_client.search_with_location_and_record_type(
-        state=state_parameter,
-        record_type=record_type_parameter
-    ))
-    SRC = len(live_database_client.search_with_location_and_record_type(
-        state=state_parameter,
-        record_type=record_type_parameter,
-        county=county_parameter
-    ))
-    SCL = len(live_database_client.search_with_location_and_record_type(
-        state=state_parameter,
-        county=county_parameter,
-        locality=locality_parameter
-    ))
-    SC = len(live_database_client.search_with_location_and_record_type(
-        state=state_parameter,
-        county=county_parameter
-    ))
+    SRLC = len(
+        live_database_client.search_with_location_and_record_type(
+            state=state_parameter,
+            record_type=record_type_parameter,
+            county=county_parameter,
+            locality=locality_parameter,
+        )
+    )
+    S = len(
+        live_database_client.search_with_location_and_record_type(state=state_parameter)
+    )
+    SR = len(
+        live_database_client.search_with_location_and_record_type(
+            state=state_parameter, record_type=record_type_parameter
+        )
+    )
+    SRC = len(
+        live_database_client.search_with_location_and_record_type(
+            state=state_parameter,
+            record_type=record_type_parameter,
+            county=county_parameter,
+        )
+    )
+    SCL = len(
+        live_database_client.search_with_location_and_record_type(
+            state=state_parameter, county=county_parameter, locality=locality_parameter
+        )
+    )
+    SC = len(
+        live_database_client.search_with_location_and_record_type(
+            state=state_parameter, county=county_parameter
+        )
+    )
 
     assert SRLC > 0
     assert SRLC < SRC
     assert SRLC < SCL
     assert S > SR > SRC
     assert S > SC > SCL
+
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts
 # def test_search_with_location_and_record_types_test_data(live_database_client, xylonslyvania_test_data):
