@@ -36,3 +36,5 @@ def test_get_search_tokens(client_with_mock_db, monkeypatch):
     # Check
     check_response_status(response, HTTPStatus.IM_A_TEAPOT)
     assert response.json == {"message": "Test Response"}
+
+
