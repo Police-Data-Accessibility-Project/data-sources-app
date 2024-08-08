@@ -8,16 +8,15 @@ from database_client.result_formatter import ResultFormatter, dictify_namedtuple
 from utilities.enums import RecordCategories
 from middleware.util import format_list_response
 
-
 def search_wrapper(
     db_client: DatabaseClient,
     state: str,
-    record_category: Optional[RecordCategories] = None,
+    record_categories: Optional[list[RecordCategories]] = None,
     county: Optional[str] = None,
     locality: Optional[str] = None,
 ) -> Response:
     search_results = db_client.search_with_location_and_record_type(
-        state=state, record_type=record_category, county=county, locality=locality
+        state=state, record_categories=record_categories, county=county, locality=locality
     )
 
     dict_results = dictify_namedtuple(search_results)
