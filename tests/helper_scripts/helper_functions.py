@@ -466,6 +466,6 @@ def create_test_user_setup(client: FlaskClient) -> TestUserSetup:
     user_info = create_test_user_api(client)
     api_key = create_api_key(client, user_info)
     authorization_header = {
-        "Authorization": f"Bearer {api_key}"
+        "Authorization": f"Basic {api_key}"
     }
     return TestUserSetup(user_info, api_key, authorization_header)

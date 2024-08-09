@@ -22,11 +22,10 @@ def test_archives_get(
     """
     Test that GET call to /archives endpoint successfully retrieves a non-zero amount of data
     """
-    user_info = create_test_user_api(client_with_db)
-    api_key = create_api_key(client_with_db, user_info)
+    tus = create_test_user_setup(client_with_db)
     response = client_with_db.get(
         "/api/archives",
-        headers={"Authorization": f"Bearer {api_key}"},
+        headers=tus.authorization_header,
     )
     assert (
         response.status_code == HTTPStatus.OK.value

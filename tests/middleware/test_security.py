@@ -153,12 +153,13 @@ def dummy_route():
 
     return _dummy_route
 
+DUMMY_AUTHORIZATION = {"Authorization": "Basic valid_api_key"}
 
 def test_api_required_happy_path(
     app, client, mock_request_headers, mock_validate_api_key, dummy_route: Callable
 ):
     mock_validate_api_key.return_value = None
-    with app.test_request_context(headers={"Authorization": "Bearer valid_api_key"}):
+    with app.test_request_context(headers=DUMMY_AUTHORIZATION):
         response = dummy_route()
         assert response == ("This is a protected route", HTTPStatus.OK.value)
 
@@ -169,7 +170,7 @@ def test_api_required_api_key_expired(
     mock_validate_api_key.side_effect = ExpiredAPIKeyError(
         "The provided API key has expired"
     )
-    with app.test_request_context(headers={"Authorization": "Bearer valid_api_key"}):
+    with app.test_request_context(headers=DUMMY_AUTHORIZATION):
         response = dummy_route()
         assert response == (
             {"message": "The provided API key has expired"},
@@ -183,24 +184,12 @@ def test_api_required_expired_api_key(
     mock_validate_api_key.side_effect = ExpiredAPIKeyError(
         "The provided API key has expired"
     )
-    with app.test_request_context(headers={"Authorization": "Bearer expired_api_key"}):
+    with app.test_request_context(headers=DUMMY_AUTHORIZATION):
         response = dummy_route()
         assert response == (
             {"message": "The provided API key has expired"},
             HTTPStatus.UNAUTHORIZED.value,
         )
-
-
-def test_api_required_no_api_key_in_request_header(
-    app, client, mock_request_headers, mock_validate_api_key, dummy_route: Callable
-):
-    with app.test_request_context(headers={"Authorization": "Bearer"}):
-        response = dummy_route()
-        assert response == (
-            {"message": "Please provide a properly formatted bearer token and API key"},
-            HTTPStatus.BAD_REQUEST.value,
-        )
-
 
 def test_api_required_invalid_role(
     app, client, mock_request_headers, mock_validate_api_key, dummy_route: Callable
@@ -208,7 +197,7 @@ def test_api_required_invalid_role(
     mock_validate_api_key.side_effect = InvalidRoleError(
         "You do not have permission to access this endpoint"
     )
-    with app.test_request_context(headers={"Authorization": "Bearer valid_api_key"}):
+    with app.test_request_context(headers=DUMMY_AUTHORIZATION):
         response = dummy_route()
         assert response == (
             {"message": "You do not have permission to access this endpoint"},
@@ -230,10 +219,10 @@ def test_api_required_not_authorization_key_in_request_header(
 def test_api_required_improperly_formatted_authorization_key(
     app, client, mock_request_headers, mock_validate_api_key, dummy_route: Callable
 ):
-    with app.test_request_context(headers={"Authorization": "Bearer"}):
+    with app.test_request_context(headers={"Authorization": "Basic"}):
         response = dummy_route()
         assert response == (
-            {"message": "Please provide a properly formatted bearer token and API key"},
+            {"message": "Please provide a properly formatted Basic token and API key"},
             HTTPStatus.BAD_REQUEST.value,
         )
 
@@ -241,7 +230,7 @@ def test_api_required_improperly_formatted_authorization_key(
 def test_api_required_undefined_api_key(
     app, client, mock_request_headers, mock_validate_api_key, dummy_route: Callable
 ):
-    with app.test_request_context(headers={"Authorization": "Bearer undefined"}):
+    with app.test_request_context(headers={"Authorization": "Basic undefined"}):
         response = dummy_route()
         assert response == (
             {"message": "Please provide an API key"},

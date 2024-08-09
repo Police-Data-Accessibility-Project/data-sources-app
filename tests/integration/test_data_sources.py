@@ -28,11 +28,10 @@ def test_data_sources_get(
     inserted_data_sources_found = get_boolean_dictionary(
         ("Source 1", "Source 2", "Source 3")
     )
-    user_info = create_test_user_api(client_with_db)
-    api_key = create_api_key(client_with_db, user_info)
+    tus = create_test_user_setup(client_with_db)
     response = client_with_db.get(
         "/api/data-sources",
-        headers={"Authorization": f"Bearer {api_key}"},
+        headers=tus.authorization_header,
     )
     check_response_status(response, HTTPStatus.OK.value)
     data = response.get_json()["data"]

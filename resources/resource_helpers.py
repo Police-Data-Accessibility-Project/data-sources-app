@@ -13,7 +13,7 @@ def add_api_key_header_arg(parser: RequestParser):
         required=True,
         location="headers",
         help="API key required to access this endpoint",
-        default="Bearer YOUR_API_KEY",
+        default="Basic YOUR_API_KEY",
     )
 
 

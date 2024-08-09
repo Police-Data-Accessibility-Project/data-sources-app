@@ -120,9 +120,9 @@ def validate_header() -> str:
         )
 
     authorization_header = request.headers["Authorization"].split(" ")
-    if len(authorization_header) < 2 or authorization_header[0] != "Bearer":
+    if len(authorization_header) < 2 or authorization_header[0] != "Basic":
         raise InvalidHeader(
-            "Please provide a properly formatted bearer token and API key"
+            "Please provide a properly formatted Basic token and API key"
         )
 
     api_key = authorization_header[1]
