@@ -11,6 +11,7 @@ from flask import request
 from database_client.database_client import DatabaseClient
 from middleware.custom_exceptions import AccessTokenNotFoundError
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
+from middleware.initialize_sqlalchemy_session import SQLAlchemySession
 from datetime import datetime as dt
 from middleware.login_queries import is_admin
 from typing import Tuple, Optional
@@ -34,7 +35,7 @@ class InvalidRoleError(Exception):
     pass
 
 
-def validate_api_key(api_key: str, endpoint: str, method: str):
+def validate_api_key(api_key: str, endpoint: str, method: str, session):
     """
     Validates the API key and checks if the user has the required role to access a specific endpoint.
 
@@ -45,7 +46,8 @@ def validate_api_key(api_key: str, endpoint: str, method: str):
     """
 
     psycopg2_connection = initialize_psycopg2_connection()
-    db_client = DatabaseClient(psycopg2_connection.cursor())
+    #sqlalchemy = SQLAlchemySession()
+    db_client = DatabaseClient(psycopg2_connection.cursor(), session)
     role = get_role(api_key, db_client)
     if role:
         validate_role(role, endpoint, method)
@@ -144,14 +146,19 @@ def validate_token() -> Optional[Tuple[dict, int]]:
         api_key = validate_header()
     except InvalidHeader as e:
         return {"message": str(e)}, HTTPStatus.BAD_REQUEST.value
+
+    sqlalchemy = SQLAlchemySession()
     # Check if API key is correct and valid
     try:
-        validate_api_key(api_key, request.endpoint, request.method)
+        validate_api_key(api_key, request.endpoint, request.method, sqlalchemy.session)
     except ExpiredAPIKeyError as e:
+        sqlalchemy.close()
         return {"message": str(e)}, HTTPStatus.UNAUTHORIZED.value
     except InvalidRoleError as e:
+        sqlalchemy.close()
         return {"message": str(e)}, HTTPStatus.FORBIDDEN.value
 
+    sqlalchemy.close()
     return None
 
 
