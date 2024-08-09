@@ -84,7 +84,6 @@ class DatabaseClient:
         """
         user = User(email=email, password_digest=password_digest)
         self.session.add(user)
-        self.session.commit()
 
     def get_user_id(self, email: str) -> Optional[int]:
         """
@@ -734,7 +733,6 @@ class DatabaseClient:
             account_identifier=external_account_id,
         )
         self.session.add(external_account)
-        self.session.commit()
 
     def get_user_permissions(self, user_id: str) -> UserPermissions:
         """
