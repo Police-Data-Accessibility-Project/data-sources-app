@@ -31,9 +31,12 @@ def test_add_new_user(live_database_client):
     fake_email = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
     cursor = live_database_client.cursor
-    cursor.execute(f"SELECT password_digest FROM users WHERE email = %s", (fake_email,))
-    password_digest = cursor.fetchone()[0]
+    cursor.execute(f"SELECT password_digest, api_key FROM users WHERE email = %s", (fake_email,))
+    result = cursor.fetchone()
+    password_digest = result[0]
+    api_key = result[1]
 
+    assert api_key is not None
     assert password_digest == "test_password"
 
 
@@ -126,16 +129,16 @@ def test_update_user_api_key(live_database_client):
         password_digest=password_digest,
     )
 
-    user_info = live_database_client.get_user_info(email)
-    assert user_info.api_key is None
+    original_user_info = live_database_client.get_user_info(email)
 
     # Update the user's API key with the DatabaseClient Method
     live_database_client.update_user_api_key(
-        api_key="test_api_key", user_id=user_info.id
+        api_key="test_api_key", user_id=original_user_info.id
     )
 
     # Fetch the user's API key from the database to confirm the change
     user_info = live_database_client.get_user_info(email)
+    assert original_user_info.api_key != user_info.api_key
     assert user_info.api_key == "test_api_key"
 
 
