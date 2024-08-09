@@ -118,8 +118,13 @@ def client_with_db(dev_db_connection: psycopg2.extensions.connection, monkeypatc
 
 
 @pytest.fixture
-def bypass_api_required(monkeypatch):
-    monkeypatch.setattr("middleware.security.validate_token", lambda: None)
+def bypass_api_token_required(monkeypatch):
+    """
+    A fixture to bypass the api_key required decorator for testing
+    :param monkeypatch:
+    :return:
+    """
+    monkeypatch.setattr("middleware.decorators.validate_token", lambda: None)
 
 
 @pytest.fixture

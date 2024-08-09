@@ -1,8 +1,3 @@
-import functools
-from flask import request, jsonify
-from flask_restx import abort
-
-
 from collections import namedtuple
 
 from http import HTTPStatus
@@ -10,6 +5,7 @@ from flask import request
 
 from database_client.database_client import DatabaseClient
 from middleware.custom_exceptions import AccessTokenNotFoundError
+from middleware.enums import PermissionsEnum
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 from datetime import datetime as dt
 from middleware.login_queries import is_admin
@@ -155,19 +151,10 @@ def validate_token() -> Optional[Tuple[dict, int]]:
     return None
 
 
-def api_required(func):
-    """
-    The api_required decorator can be added to protect a route so that only authenticated users can access the information
-    To protect a route with this decorator, add @api_required on the line above a given route
-    The request header for a protected route must include an "Authorization" key with the value formatted as "Bearer [api_key]"
-    A user can get an API key by signing up and logging in (see User.py)
-    """
+def check_user_permission(permission: PermissionsEnum) -> bool:
+    pass
 
-    @functools.wraps(func)
-    def decorator(*args, **kwargs):
-        validation_error = validate_token()
-        if validation_error:
-            return validation_error
-        return func(*args, **kwargs)
+def check_api_key(api_key: str, permission: PermissionsEnum) -> bool:
+    pass
 
-    return decorator
+

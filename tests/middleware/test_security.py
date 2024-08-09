@@ -14,11 +14,11 @@ from middleware import security
 from middleware.login_queries import create_session_token
 from middleware.security import (
     validate_api_key,
-    api_required,
     ExpiredAPIKeyError,
     InvalidAPIKeyError,
     InvalidRoleError,
 )
+from middleware.decorators import api_key_required
 from tests.helper_scripts.helper_functions import (
     create_test_user,
     UserInfo,
@@ -147,7 +147,7 @@ def mock_validate_api_key(monkeypatch):
 
 @pytest.fixture
 def dummy_route():
-    @api_required
+    @api_key_required
     def _dummy_route():
         return "This is a protected route", HTTPStatus.OK.value
 

@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from tests.fixtures import client_with_mock_db, bypass_api_required
+from tests.fixtures import client_with_mock_db, bypass_api_token_required
 from http import HTTPStatus
 
 from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
@@ -59,7 +59,7 @@ def test_common_format_resources(
         json_data,
         client_with_mock_db,
         monkeypatch,
-        bypass_api_required
+        bypass_api_token_required
 ):
 
     monkeypatch.setattr(f"resources.{route_to_patch}", MagicMock(

@@ -1,6 +1,6 @@
 from flask_restx import fields
 
-from middleware.security import api_required
+from middleware.decorators import api_key_required
 from middleware.archives_queries import (
     archives_get_query,
     update_archives_data,
@@ -46,7 +46,7 @@ class Archives(PsycopgResource):
     """
 
     @handle_exceptions
-    @api_required
+    @api_key_required
     @namespace_archives.response(200, "Success: Returns a list of archived data sources", archives_get_model)
     @namespace_archives.response(400, "Error: Bad request missing or bad API key")
     @namespace_archives.response(403, "Error: Unauthorized. Forbidden or an invalid API key")
@@ -71,7 +71,7 @@ class Archives(PsycopgResource):
         return archives_combined_results_clean
 
     @handle_exceptions
-    @api_required
+    @api_key_required
     @namespace_archives.doc(
         description="Updates the archive data based on the provided JSON payload.",
         responses={

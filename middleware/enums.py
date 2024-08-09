@@ -9,3 +9,10 @@ class CallbackFunctionsEnum(Enum):
     LOGIN_WITH_GITHUB = "login_user_with_github"
     CREATE_USER_WITH_GITHUB = "register_user"
     LINK_TO_GITHUB = "link_to_github"
+
+class PermissionsEnum(Enum):
+    """
+    Enums for the permissions logic.
+    """
+    DB_WRITE = 'db_write'
+    READ_ALL_USER_INFO = "read_all_user_info"
