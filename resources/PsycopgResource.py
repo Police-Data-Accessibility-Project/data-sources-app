@@ -10,7 +10,7 @@ from psycopg2.extras import DictCursor
 from config import config
 from database_client.database_client import DatabaseClient
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
-from middleware.initialize_sqlalchemy_session import initialize_sqlalchemy_session
+from middleware.initialize_sqlalchemy_session import SQLAlchemySession
 
 def handle_exceptions(
     func: Callable[..., Any]
@@ -88,12 +88,14 @@ class PsycopgResource(Resource):
         - The database client.
         """
         conn = self.get_connection()
-        session = initialize_sqlalchemy_session()
+        sqlalchemy = SQLAlchemySession()
         with conn.cursor(cursor_factory=DictCursor) as cursor:
             try:
-                yield DatabaseClient(cursor, session)
+                yield DatabaseClient(cursor, sqlalchemy.session)
             except Exception as e:
                 conn.rollback()
+                sqlalchemy.rollback_and_close()
                 raise e
             finally:
                 conn.commit()
+                sqlalchemy.commit_and_close()
