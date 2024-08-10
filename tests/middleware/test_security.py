@@ -3,14 +3,17 @@ import uuid
 from http import HTTPStatus
 from typing import Callable
 
+import dotenv
 import flask
 import pytest
 from unittest.mock import MagicMock
 
 from flask import Flask
 
+from conftest import test_client, session
 from database_client.database_client import DatabaseClient
 from middleware import security
+from middleware.models import db
 from middleware.login_queries import create_session_token
 from middleware.security import (
     validate_api_key,
@@ -19,6 +22,7 @@ from middleware.security import (
     InvalidAPIKeyError,
     InvalidRoleError,
 )
+from middleware.util import get_env_variable
 from tests.helper_scripts.helper_functions import (
     create_test_user,
     UserInfo,
@@ -27,60 +31,62 @@ from tests.helper_scripts.helper_functions import (
 )
 from tests.fixtures import dev_db_connection
 
+dotenv.load_dotenv()
 
-def test_api_key_exists_in_users_table_with_admin_role(dev_db_connection):
-    cursor = dev_db_connection.cursor()
-    test_user = create_test_user(cursor)
-    give_user_admin_role(dev_db_connection, UserInfo(test_user.email, ""))
-    api_key = create_api_key_db(cursor, test_user.id)
-    dev_db_connection.commit()
-    result = validate_api_key(api_key, "", "")
+
+def test_api_key_exists_in_users_table_with_admin_role(test_client, session):
+    #cursor = dev_db_connection.cursor()
+    test_user = create_test_user(session)
+    give_user_admin_role(session, UserInfo(test_user.email, ""))
+    api_key = create_api_key_db(session, test_user.id)
+    #dev_db_connection.commit()
+    result = validate_api_key(api_key, "", "", session)
     assert result is None
 
 
-def test_api_key_exists_in_users_table_with_non_admin_role(dev_db_connection):
-    cursor = dev_db_connection.cursor()
-    test_user = create_test_user(cursor)
-    api_key = create_api_key_db(cursor, test_user.id)
-    dev_db_connection.commit()
-    result = validate_api_key(api_key, "", "")
+def test_api_key_exists_in_users_table_with_non_admin_role(test_client, session):
+    #cursor = dev_db_connection.cursor()
+    test_user = create_test_user(session)
+    api_key = create_api_key_db(session, test_user.id)
+    #dev_db_connection.commit()
+    result = validate_api_key(api_key, "", "", session)
     assert result is None
 
 
-def test_api_key_not_in_users_table_but_in_session_tokens_table(dev_db_connection):
+def test_api_key_not_in_users_table_but_in_session_tokens_table(dev_db_connection, test_client, session):
     # TODO: REWORK
     cursor = dev_db_connection.cursor()
-    test_user = create_test_user(cursor)
-    token = create_session_token(DatabaseClient(cursor), test_user.id, test_user.email)
+    test_user = create_test_user(session)
+    token = create_session_token(DatabaseClient(cursor, session), test_user.id, test_user.email)
     dev_db_connection.commit()
-    result = validate_api_key(token, "", "")
+    result = validate_api_key(token, "", "", session)
     assert result is None
 
 
-def test_expired_session_token(dev_db_connection):
+def test_expired_session_token(dev_db_connection, test_client, session):
     cursor = dev_db_connection.cursor()
-    test_user = create_test_user(cursor)
-    token = create_session_token(DatabaseClient(cursor), test_user.id, test_user.email)
+    test_user = create_test_user(session)
+    token = create_session_token(DatabaseClient(cursor, session), test_user.id, test_user.email)
     cursor.execute(
         f"UPDATE session_tokens SET expiration_date = '{datetime.date(year=2020, month=3, day=4)}' WHERE token = '{token}'"
     )
     dev_db_connection.commit()
     with pytest.raises(ExpiredAPIKeyError):
-        result = validate_api_key(token, "", "")
+        result = validate_api_key(token, "", "", session)
 
 
-def test_session_token_with_admin_role(dev_db_connection):
+def test_session_token_with_admin_role(dev_db_connection, test_client, session):
     # TODO: REWORK
     cursor = dev_db_connection.cursor()
-    test_user = create_test_user(cursor)
-    give_user_admin_role(dev_db_connection, UserInfo(test_user.email, ""))
-    token = create_session_token(DatabaseClient(cursor), test_user.id, test_user.email)
+    test_user = create_test_user(session)
+    give_user_admin_role(session, UserInfo(test_user.email, ""))
+    token = create_session_token(DatabaseClient(cursor, session), test_user.id, test_user.email)
     dev_db_connection.commit()
-    result = validate_api_key(token, "", "")
+    result = validate_api_key(token, "", "", session)
     assert result is None
 
 
-def test_api_key_exists_in_access_tokens_table(dev_db_connection):
+def test_api_key_exists_in_access_tokens_table(dev_db_connection, test_client, session):
     cursor = dev_db_connection.cursor()
     token = uuid.uuid4().hex
     expiration = datetime.datetime(year=2030, month=1, day=1)
@@ -89,40 +95,46 @@ def test_api_key_exists_in_access_tokens_table(dev_db_connection):
         (token, expiration),
     )
     dev_db_connection.commit()
-    result = validate_api_key(token, "", "")
+    result = validate_api_key(token, "", "", session)
     assert result is None
 
 
-def test_api_key_not_exist_in_any_table(dev_db_connection):
+def test_api_key_not_exist_in_any_table(dev_db_connection, test_client, session):
     token = uuid.uuid4().hex
     with pytest.raises(InvalidAPIKeyError) as e:
-        result = validate_api_key(token, "", "")
+        result = validate_api_key(token, "", "", session)
     assert "API Key not found" in str(e.value)
 
 
-def test_admin_only_action_with_non_admin_role(dev_db_connection):
-    cursor = dev_db_connection.cursor()
-    test_user = create_test_user(cursor)
-    api_key = create_api_key_db(cursor, test_user.id)
-    dev_db_connection.commit()
+def test_admin_only_action_with_non_admin_role(test_client, session):
+    #cursor = dev_db_connection.cursor()
+    test_user = create_test_user(session)
+    api_key = create_api_key_db(session, test_user.id)
+    #dev_db_connection.commit()
     with pytest.raises(InvalidRoleError) as e:
-        result = validate_api_key(api_key, "datasources", "PUT")
+        result = validate_api_key(api_key, "datasources", "PUT", session)
     assert "You do not have permission to access this endpoint" in str(e.value)
 
 
-def test_admin_only_action_with_admin_role(dev_db_connection):
-    cursor = dev_db_connection.cursor()
-    test_user = create_test_user(cursor)
-    give_user_admin_role(dev_db_connection, UserInfo(test_user.email, ""))
-    api_key = create_api_key_db(cursor, test_user.id)
-    dev_db_connection.commit()
-    result = validate_api_key(api_key, "datasources", "PUT")
+def test_admin_only_action_with_admin_role(test_client, session):
+    #cursor = dev_db_connection.cursor()
+    test_user = create_test_user(session)
+    give_user_admin_role(session, UserInfo(test_user.email, ""))
+    api_key = create_api_key_db(session, test_user.id)
+    #dev_db_connection.commit()
+    result = validate_api_key(api_key, "datasources", "PUT", session)
     assert result is None
 
 
 @pytest.fixture
 def app() -> Flask:
     app = Flask(__name__)
+    app.config["TESTING"] = True
+    app.config["SQLALCHEMY_ECHO"] = True
+    app.config["SQLALCHEMY_DATABASE_URI"] = get_env_variable(
+        "DEV_DB_CONN_STRING"
+    )
+    db.init_app(app)
     return app
 
 
