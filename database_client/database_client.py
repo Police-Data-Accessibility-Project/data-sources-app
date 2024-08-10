@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Optional, Any, List
 import uuid
 
+import sqlalchemy
 from sqlalchemy import select, update
 from sqlalchemy.orm import aliased
 import psycopg2
@@ -71,7 +72,7 @@ QUICK_SEARCH_SQL = """
 
 class DatabaseClient:
 
-    def __init__(self, cursor: psycopg2.extensions.cursor, session):
+    def __init__(self, cursor: psycopg2.extensions.cursor, session: sqlalchemy.orm.scoping.scoped_session):
         self.cursor = cursor
         self.session = session
 

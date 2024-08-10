@@ -127,6 +127,8 @@ def live_database_client(db_cursor, test_client, session) -> DatabaseClient:
     """
     Returns a database client with a live connection to the database
     :param db_cursor:
+    :param test_client:
+    :param session:
     :return:
     """
     return DatabaseClient(db_cursor, session)

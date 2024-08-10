@@ -1,7 +1,7 @@
 import functools
 from flask import request, jsonify
 from flask_restx import abort
-
+import sqlalchemy
 
 from collections import namedtuple
 
@@ -35,18 +35,18 @@ class InvalidRoleError(Exception):
     pass
 
 
-def validate_api_key(api_key: str, endpoint: str, method: str, session):
+def validate_api_key(api_key: str, endpoint: str, method: str, session: sqlalchemy.orm.scoping.scoped_session):
     """
     Validates the API key and checks if the user has the required role to access a specific endpoint.
 
     :param api_key: The API key provided by the user.
     :param endpoint: The endpoint the user is trying to access.
     :param method: The HTTP method of the request.
+    :param session: SQLAlchemy scoped session.
     :return: A tuple (isValid, isExpired) indicating whether the API key is valid and not expired.
     """
 
     psycopg2_connection = initialize_psycopg2_connection()
-    #sqlalchemy = SQLAlchemySession()
     db_client = DatabaseClient(psycopg2_connection.cursor(), session)
     role = get_role(api_key, db_client)
     if role:
