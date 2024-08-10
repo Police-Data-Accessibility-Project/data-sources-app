@@ -26,6 +26,7 @@ from resources.DataSources import (
 from resources.LinkToGithub import LinkToGithub
 from resources.Login import Login
 from resources.LoginWithGithub import LoginWithGithub
+from resources.Permissions import Permissions
 from resources.QuickSearch import QuickSearch
 from resources.RefreshSession import RefreshSession
 from resources.RequestResetPassword import RequestResetPassword
@@ -90,6 +91,7 @@ test_parameters = [
     TestParameters(LinkToGithub, "auth/link-to-github", [POST]),
     TestParameters(LoginWithGithub, "auth/login-with-github", [POST]),
     TestParameters(CreateUserWithGithub, "auth/create-user-with-github", [POST]),
+    TestParameters(Permissions, "auth/permissions", [GET, PUT]),
 ]
 
 

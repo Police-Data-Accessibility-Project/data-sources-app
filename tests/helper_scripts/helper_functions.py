@@ -9,6 +9,7 @@ from unittest.mock import MagicMock
 import psycopg2.extensions
 from flask.testing import FlaskClient
 
+from database_client.database_client import DatabaseClient
 from middleware.dataclasses import (
     GithubUserInfo,
     OAuthCallbackInfo,
@@ -469,3 +470,9 @@ def create_test_user_setup(client: FlaskClient) -> TestUserSetup:
         "Authorization": f"Basic {api_key}"
     }
     return TestUserSetup(user_info, api_key, authorization_header)
+
+def create_test_user_db_client(db_client: DatabaseClient) -> UserInfo:
+    email = uuid.uuid4().hex
+    password_digest = uuid.uuid4().hex
+    db_client.add_new_user(email, password_digest)
+    return UserInfo(email, password_digest)

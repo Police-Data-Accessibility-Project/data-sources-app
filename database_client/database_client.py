@@ -15,6 +15,7 @@ from middleware.custom_exceptions import (
     TokenNotFoundError,
     AccessTokenNotFoundError,
 )
+from middleware.enums import PermissionsEnum
 from utilities.enums import RecordCategories
 
 DATA_SOURCES_MAP_COLUMN = [
@@ -754,3 +755,41 @@ class DatabaseClient:
         )
         self.cursor.execute(query)
 
+    def add_user_permission(self, user_email: str, permission: PermissionsEnum):
+        query = sql.SQL("""
+            INSERT INTO user_permissions (user_id, permission_id) 
+            VALUES (
+                (SELECT id FROM users WHERE email = {email}), 
+                (SELECT permission_id FROM permissions WHERE permission_name = {permission})
+            );
+        """).format(
+            email=sql.Literal(user_email),
+            permission=sql.Literal(permission.value),
+        )
+        self.cursor.execute(query)
+
+    def remove_user_permission(self, user_email: str, permission: PermissionsEnum):
+        query = sql.SQL("""
+            DELETE FROM user_permissions
+            WHERE user_id = (SELECT id FROM users WHERE email = {email})
+            AND permission_id = (SELECT permission_id FROM permissions WHERE permission_name = {permission});
+        """).format(
+            email=sql.Literal(user_email),
+            permission=sql.Literal(permission.value),
+        )
+        self.cursor.execute(query)
+
+    def get_user_permissions(self, user_email: str) -> List[PermissionsEnum]:
+        query = sql.SQL("""
+            SELECT p.permission_name
+            FROM 
+            user_permissions up
+            INNER JOIN permissions p on up.permission_id = p.permission_id
+            INNER JOIN users u on u.id = up.user_id
+            where u.email = {user_email}
+        """).format(
+            user_email=sql.Literal(user_email),
+        )
+        self.cursor.execute(query)
+        results = self.cursor.fetchall()
+        return [PermissionsEnum(row[0]) for row in results]

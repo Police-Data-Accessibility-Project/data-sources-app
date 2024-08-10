@@ -16,3 +16,15 @@ class PermissionsEnum(Enum):
     """
     DB_WRITE = 'db_write'
     READ_ALL_USER_INFO = "read_all_user_info"
+
+    @classmethod
+    def values(cls):
+        return [member.value for member in cls]
+
+class PermissionsActionEnum(Enum):
+    ADD = "add"
+    REMOVE = "remove"
+
+    @classmethod
+    def values(cls):
+        return [member.value for member in cls]

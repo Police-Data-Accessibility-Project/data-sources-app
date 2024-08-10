@@ -14,6 +14,7 @@ from middleware.custom_exceptions import (
     AccessTokenNotFoundError,
     UserNotFoundError,
 )
+from middleware.enums import PermissionsEnum
 from tests.fixtures import (
     live_database_client,
     dev_db_connection,
@@ -23,6 +24,7 @@ from tests.fixtures import (
 from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources_if_not_exist,
     setup_get_typeahead_suggestion_test_data,
+    create_test_user_db_client,
 )
 from utilities.enums import RecordCategories
 
@@ -31,7 +33,9 @@ def test_add_new_user(live_database_client):
     fake_email = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
     cursor = live_database_client.cursor
-    cursor.execute(f"SELECT password_digest, api_key FROM users WHERE email = %s", (fake_email,))
+    cursor.execute(
+        f"SELECT password_digest, api_key FROM users WHERE email = %s", (fake_email,)
+    )
     result = cursor.fetchone()
     password_digest = result[0]
     api_key = result[1]
@@ -577,7 +581,10 @@ def test_search_with_location_and_record_types_real_data(live_database_client):
     assert S > SR > SRC
     assert S > SC > SCL
 
-def test_search_with_location_and_record_types_real_data_multiple_records(live_database_client):
+
+def test_search_with_location_and_record_types_real_data_multiple_records(
+    live_database_client,
+):
     state_parameter = "Pennsylvania"
     record_types = []
     last_count = 0
@@ -596,6 +603,37 @@ def test_search_with_location_and_record_types_real_data_multiple_records(live_d
         state=state_parameter
     )
     assert len(results) == last_count
+
+def test_get_user_permissions_default(live_database_client):
+    test_user = create_test_user_db_client(live_database_client)
+    test_user_permissions = live_database_client.get_user_permissions(test_user.email)
+    assert len(test_user_permissions) == 0
+
+
+def test_add_user_permission(live_database_client):
+
+    # Create test user
+    test_user = create_test_user_db_client(live_database_client)
+
+    # Add permission
+    live_database_client.add_user_permission(test_user.email, PermissionsEnum.DB_WRITE)
+    test_user_permissions = live_database_client.get_user_permissions(test_user.email)
+    assert len(test_user_permissions) == 1
+
+
+def test_remove_user_permission(live_database_client):
+    test_user = create_test_user_db_client(live_database_client)
+
+    # Add permission
+    live_database_client.add_user_permission(test_user.email, PermissionsEnum.READ_ALL_USER_INFO)
+    test_user_permissions = live_database_client.get_user_permissions(test_user.email)
+    assert len(test_user_permissions) == 1
+
+    # Remove permission
+    live_database_client.remove_user_permission(test_user.email, PermissionsEnum.READ_ALL_USER_INFO)
+    test_user_permissions = live_database_client.get_user_permissions(test_user.email)
+    assert len(test_user_permissions) == 0
+
 
 
 

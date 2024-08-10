@@ -29,3 +29,4 @@ def format_list_response(data: list) -> dict:
         dict: A dictionary with the count and data keys.
     """
     return {"count": len(data), "data": data}
+

@@ -7,6 +7,7 @@ from resources.Callback import namespace_auth
 from resources.CreateUserWithGithub import namespace_create_user_with_github
 from resources.LinkToGithub import namespace_link_to_github
 from resources.LoginWithGithub import namespace_login_with_github
+from resources.Permissions import namespace_permissions
 from resources.Search import namespace_search
 from resources.TypeaheadSuggestions import (
     namespace_typeahead_suggestions,
@@ -47,6 +48,7 @@ NAMESPACES = [
     namespace_link_to_github,
     namespace_login_with_github,
     namespace_create_user_with_github,
+    namespace_permissions,
 ]
 
 MY_PREFIX = "/api"
