@@ -9,7 +9,6 @@ from sqlalchemy import select
 
 from conftest import test_client, session
 from middleware.models import User
-from tests.fixtures import dev_db_connection, client_with_db
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     get_user_password_digest,
