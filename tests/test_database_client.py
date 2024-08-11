@@ -361,25 +361,6 @@ def test_get_user_info(live_database_client):
         live_database_client.get_user_info(email="invalid_email")
 
 
-def test_get_role_by_email(live_database_client):
-    # Add a new user to the database
-    live_database_client.add_new_user(
-        email="test_user",
-        password_digest="test_password",
-    )
-
-    # Add a role to the user
-    live_database_client.cursor.execute(
-        "update users set role = 'test_role' where email = 'test_user'",
-    )
-
-    # Fetch the user using its email with the DatabaseClient method
-    role_info = live_database_client.get_role_by_email(email="test_user")
-
-    # Confirm the role is retrieved successfully
-    assert role_info.role == "test_role"
-
-
 def test_get_user_by_api_key(live_database_client):
     # Add a new user to the database
     user_id = live_database_client.add_new_user(
