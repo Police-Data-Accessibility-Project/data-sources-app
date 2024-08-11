@@ -321,26 +321,6 @@ def test_add_quick_search_log(live_database_client):
     assert rows[0][3] == 1
 
 
-def test_add_new_access_token(live_database_client):
-    # Call the DatabaseClient method to generate and add a new access token to the database
-    access_token = uuid.uuid4().hex
-    expiration_date = datetime.now(tz=timezone.utc)
-
-    live_database_client.add_new_access_token(
-        token=access_token,
-        expiration=expiration_date,
-    )
-
-    live_database_client.cursor.execute(
-        f"select token, expiration_date from access_tokens where token = '{access_token}'"
-    )
-
-    # Fetch the new access token from the database to confirm it was added successfully
-    results = live_database_client.cursor.fetchone()
-    assert results[0] == access_token
-    assert results[1] == expiration_date
-
-
 def test_get_user_info(live_database_client):
     # Add a new user to the database
     email = uuid.uuid4().hex
@@ -378,50 +358,6 @@ def test_get_user_by_api_key(live_database_client):
 
     # Confirm the user_id is retrieved successfully
     assert api_key_user_id == user_id
-
-
-def test_get_access_token(live_database_client):
-    # Add a new access token to the database
-    live_database_client.add_new_access_token(
-        token="test_access_token",
-        expiration=datetime.now(tz=timezone.utc),
-    )
-
-    # Fetch the access token using the DatabaseClient method
-    access_token = live_database_client.get_access_token(api_key="test_access_token")
-
-    # Confirm that the access token is retrieved
-    assert access_token.token == "test_access_token"
-
-    # Attempt to fetch a non-existant access token
-    # Assert AccessTokenNotFoundError is raised
-    with pytest.raises(AccessTokenNotFoundError):
-        live_database_client.get_access_token(api_key="non_existant_access_token")
-
-
-def test_delete_expired_access_tokens(live_database_client):
-    # Add new access tokens to the database, at least two expired and one unexpired
-    expired_tokens = [uuid.uuid4().hex for _ in range(2)]
-    unexpired_token = uuid.uuid4().hex
-    for token in expired_tokens:
-        live_database_client.add_new_access_token(
-            token=token,
-            expiration=datetime.now(tz=timezone.utc) - timedelta(days=1),
-        )
-    live_database_client.add_new_access_token(
-        token=unexpired_token,
-        expiration=datetime.now(tz=timezone.utc) + timedelta(days=1),
-    )
-
-    # Delete the expired access tokens using the DatabaseClient method
-    live_database_client.delete_expired_access_tokens()
-
-    # Confirm that only the expired access tokens were deleted and that all expired tokens were deleted
-    for token in expired_tokens:
-        with pytest.raises(AccessTokenNotFoundError):
-            live_database_client.get_access_token(api_key=token)
-    assert live_database_client.get_access_token(api_key=unexpired_token)
-
 
 def test_get_typeahead_suggestion(live_database_client):
     # Insert test data into the database

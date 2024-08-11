@@ -518,16 +518,6 @@ class DatabaseClient:
             ),
         )
 
-    def add_new_access_token(self, token: str, expiration: datetime) -> None:
-        """Inserts a new access token into the database."""
-        query = sql.SQL(
-            "insert into access_tokens (token, expiration_date) values ({token}, {expiration})"
-        ).format(
-            token=sql.Literal(token),
-            expiration=sql.Literal(expiration),
-        )
-        self.cursor.execute(query)
-
     UserInfo = namedtuple("UserInfo", ["id", "password_digest", "api_key", "email"])
 
     def get_user_info(self, email: str) -> UserInfo:
@@ -587,29 +577,6 @@ class DatabaseClient:
             api_key=results["api_key"],
             email=results["email"],
         )
-
-    AccessToken = namedtuple("AccessToken", ["id", "token"])
-
-    def get_access_token(self, api_key: str) -> AccessToken:
-        """
-        Retrieves an access token from the database.
-
-        :param api_key: The access token.
-        :raise AccessTokenNotFoundError: If the access token is not found.
-        :returns: AccessToken namedtuple with the ID and the access token.
-        """
-        query = sql.SQL(
-            "select id, token from access_tokens where token = {token}"
-        ).format(token=sql.Literal(api_key))
-        self.cursor.execute(query)
-        results = self.cursor.fetchone()
-        if not results:
-            raise AccessTokenNotFoundError("Access token not found")
-        return self.AccessToken(id=results[0], token=results[1])
-
-    def delete_expired_access_tokens(self) -> None:
-        """Deletes all expired access tokens from the database."""
-        self.cursor.execute("delete from access_tokens where expiration_date < NOW()")
 
     TypeaheadSuggestions = namedtuple(
         "TypeaheadSuggestions", ["display_name", "type", "state", "county", "locality"]
