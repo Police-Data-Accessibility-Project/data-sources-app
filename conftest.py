@@ -2,6 +2,7 @@ import os
 
 import dotenv
 import pytest
+import sqlalchemy
 from sqlalchemy.orm import sessionmaker, scoped_session
 
 from middleware.models import db
@@ -19,7 +20,7 @@ def test_client():
 
 
 @pytest.fixture
-def session():
+def session() -> sqlalchemy.orm.scoping.scoped_session:
     connection = db.engine.connect()
     transaction = connection.begin()
     session = scoped_session(sessionmaker(bind=connection))
