@@ -7,6 +7,7 @@ import uuid
 
 import sqlalchemy
 from sqlalchemy import select, update
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import aliased
 import psycopg2
 from psycopg2 import sql
@@ -195,8 +196,9 @@ class DatabaseClient:
         :return: RoleInfo namedtuple containing the user's role.
         """
         query = select(User.role).where(User.email == email)
-        role = self.session.scalars(query).one_or_none()
-        if role is None:
+        try:
+            role = self.session.scalars(query).one()
+        except NoResultFound:
             raise UserNotFoundError(email)
 
         return self.RoleInfo(id=None, role=role)
