@@ -9,7 +9,7 @@ from unittest.mock import MagicMock
 import psycopg2.extensions
 from flask.testing import FlaskClient
 import sqlalchemy
-from sqlalchemy import update
+from sqlalchemy import update, select
 
 from middleware.dataclasses import (
     GithubUserInfo,
@@ -245,20 +245,17 @@ def login_and_return_session_token(
     return session_token
 
 
-def get_user_password_digest(cursor: psycopg2.extensions.cursor, user_info):
+def get_user_password_digest(session: sqlalchemy.orm.scoping.scoped_session, user_info):
     """
     Get the associated password digest of a user (given their email) from the database
-    :param cursor:
+    :param session:
     :param user_info:
     :return:
     """
-    cursor.execute(
-        """
-        SELECT password_digest from users where email = %s
-    """,
-        (user_info.email,),
-    )
-    return cursor.fetchone()[0]
+    password_digest = session.scalars(
+        select(User.password_digest).where(User.email == user_info.email)
+    ).one_or_none()
+    return password_digest
 
 
 def request_reset_password_api(client_with_db, mocker, user_info):

@@ -4,7 +4,11 @@ from http import HTTPStatus
 import uuid
 
 import psycopg2
+import sqlalchemy
+from sqlalchemy import select
 
+from conftest import test_client, session
+from middleware.models import User
 from tests.fixtures import dev_db_connection, client_with_db
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
@@ -14,40 +18,39 @@ from tests.helper_scripts.helper_functions import (
 )
 
 
-def test_user_post(client_with_db, dev_db_connection: psycopg2.extensions.connection):
+def test_user_post(test_client, session: sqlalchemy.orm.scoping.scoped_session):
     """
     Test that POST call to /user endpoint successfully creates a new user and verifies the user's email and password digest in the database
     """
 
-    user_info = create_test_user_api(client_with_db)
-    cursor = dev_db_connection.cursor()
-    cursor.execute(
-        f"SELECT email, password_digest FROM users WHERE email = %s", (user_info.email,)
+    user_info = create_test_user_api(test_client)
+    row = (
+        session.execute(
+            select(User.email, User.password_digest).where(
+                User.email == user_info.email
+            )
+        )
+        .mappings()
+        .one()
     )
-    rows = cursor.fetchall()
 
-    assert len(rows) == 1, "One row should be returned by user query"
-    email = rows[0][0]
-    password_digest = rows[0][1]
-    assert user_info.email == email, "DB user email and original email do not match"
+    assert user_info.email == row.email, "DB user email and original email do not match"
     assert (
-        user_info.password != password_digest
+        user_info.password != row.password_digest
     ), "DB user password digest should not match password"
 
 
-def test_user_put(client_with_db, dev_db_connection: psycopg2.extensions.connection):
+def test_user_put(test_client, session: sqlalchemy.orm.scoping.scoped_session):
     """
     Test that PUT call to /user endpoint successfully updates the user's password and verifies the new password hash is distinct from both the plain new password and the old password hash in the database
     """
+    tus = create_test_user_setup(test_client)
 
-    tus = create_test_user_setup(client_with_db)
-    cursor = dev_db_connection.cursor()
-
-    old_password_hash = get_user_password_digest(cursor, tus.user_info)
+    old_password_hash = get_user_password_digest(session, tus.user_info)
 
     new_password = str(uuid.uuid4())
 
-    response = client_with_db.put(
+    response = test_client.put(
         "/api/user",
         headers=tus.authorization_header,
         json={"email": tus.user_info.email, "password": new_password},
@@ -56,7 +59,7 @@ def test_user_put(client_with_db, dev_db_connection: psycopg2.extensions.connect
         response.status_code == HTTPStatus.OK.value
     ), "User password update not successful"
 
-    new_password_hash = get_user_password_digest(cursor, tus.user_info)
+    new_password_hash = get_user_password_digest(session, tus.user_info)
 
     assert (
         new_password != new_password_hash
