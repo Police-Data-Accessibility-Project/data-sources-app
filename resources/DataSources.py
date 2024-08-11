@@ -54,7 +54,7 @@ class DataSourceById(PsycopgResource):
     """
 
     @handle_exceptions
-    @api_key_required
+    @api_key_required()
     @namespace_data_source.response(200, "Success", data_sources_outer_model)
     @namespace_data_source.response(400, "Missing or bad API key")
     @namespace_data_source.response(403, "Forbidden Invalid API key")
@@ -78,7 +78,7 @@ class DataSourceById(PsycopgResource):
             return data_source_by_id_wrapper(data_source_id, db_client)
 
     @handle_exceptions
-    @api_key_required
+    @api_key_required()
     @namespace_data_source.expect(authorization_parser, data_sources_inner_model)
     @namespace_data_source.doc(
         description="Update details of a specific data source by its ID.",
@@ -110,7 +110,7 @@ class DataSources(PsycopgResource):
     """
 
     @handle_exceptions
-    @api_key_required
+    @api_key_required()
     @namespace_data_source.response(200, "Success", data_sources_outer_model)
     @namespace_data_source.response(500, "Internal server error")
     @namespace_data_source.response(400, "Bad request; missing or bad API key")
@@ -131,7 +131,7 @@ class DataSources(PsycopgResource):
             return get_approved_data_sources_wrapper(db_client)
 
     @handle_exceptions
-    @api_key_required
+    @api_key_required()
     @namespace_data_source.expect(authorization_parser, data_sources_inner_model)
     @namespace_data_source.response(200, "Successful operation")
     @namespace_data_source.response(500, "Internal server error")
@@ -163,7 +163,7 @@ class DataSourcesNeedsIdentification(PsycopgResource):
         description="Retrieves all data sources needing identification.",
     )
     @handle_exceptions
-    @api_key_required
+    @api_key_required()
     @namespace_data_source.expect(authorization_parser)
     def get(self):
         with self.setup_database_client() as db_client:
@@ -178,7 +178,7 @@ class DataSourcesMap(PsycopgResource):
     """
 
     @handle_exceptions
-    @api_key_required
+    @api_key_required()
     @namespace_data_source.response(200, "Success", data_sources_outer_model)
     @namespace_data_source.response(500, "Internal server error")
     @namespace_data_source.response(400, "Bad request; missing or bad API key")

@@ -1,21 +1,16 @@
 import uuid
 from collections import namedtuple
-from datetime import datetime as dt
 from http import HTTPStatus
 
 import jwt
-import os
 import datetime
-from typing import Union, Dict
 
 from flask import Response, make_response
-from psycopg2.extensions import cursor as PgCursor
 from werkzeug.security import check_password_hash
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
 from middleware.dataclasses import GithubUserInfo
-from middleware.custom_exceptions import UserNotFoundError, TokenNotFoundError
 from middleware.util import get_env_variable
 
 
@@ -70,32 +65,20 @@ def login_response(
     :param user_info: The user's information.
     :return: A response object with a message and status code.
     """
-    token = create_session_token(db_client, user_info.id, user_info.email)
+    db_user_info = db_client.get_user_info(user_info.email)
+    token = db_user_info.api_key
     return make_response(
         {"message": "Successfully logged in", "data": token}, HTTPStatus.OK
     )
 
-def is_admin(db_client: DatabaseClient, email: str) -> bool:
+def create_session_token(user_id: int) -> str:
     """
-    Checks if a user has an admin role.
+    Generates a session token for a user
 
-    :param cursor: A cursor object from a psycopg2 connection.
-    :param email: User's email.
-    :return: True if user is an admin, False if not, or an error message.
-    """
-    role_info = db_client.get_role_by_email(email)
-    return role_info.role == "admin"
-
-
-def create_session_token(db_client: DatabaseClient, user_id: int, email: str) -> str:
-    """
-    Generates a session token for a user and inserts it into the session_tokens table.
-
-    :param db_client: A DatabaseClient object.
     :param user_id: The user's ID.
-    :param email: User's email.
     :return: A session token.
     """
+    # NOTE: Deprecated but will remain for future JWT use
     expiration = datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=300)
     payload = {
         "exp": expiration,
@@ -105,15 +88,8 @@ def create_session_token(db_client: DatabaseClient, user_id: int, email: str) ->
     session_token = jwt.encode(
         payload, get_env_variable("SECRET_KEY"), algorithm="HS256"
     )
-    db_client.add_new_session_token(
-        session_token=session_token, email=email, expiration=expiration
-    )
 
     return session_token
-
-
-SessionTokenUserData = namedtuple("SessionTokenUserData", ["id", "email"])
-
 
 def generate_api_key() -> str:
     return uuid.uuid4().hex
@@ -143,12 +119,8 @@ def get_api_key_for_user(
     )
 
 
-def refresh_session(db_client: DatabaseClient, old_token: str) -> Response:
-    user_info = db_client.get_session_token_info(old_token)
-    if not user_info:
-        return make_response({"message": "Invalid session token"}, HTTPStatus.FORBIDDEN)
-    db_client.delete_session_token(old_token)
-    token = create_session_token(db_client, user_info.id, user_info.email)
+def refresh_session(old_token: str) -> Response:
+    raise NotImplementedError
     return make_response(
         {"message": "Successfully refreshed session token", "data": token},
         HTTPStatus.OK,

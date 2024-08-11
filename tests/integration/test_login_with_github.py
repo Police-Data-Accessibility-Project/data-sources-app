@@ -13,8 +13,9 @@ from tests.helper_scripts.helper_functions import (
     patch_setup_callback_session,
     create_fake_github_user_info,
     assert_expected_pre_callback_response,
-    assert_session_token_exists_for_email,
+    assert_api_key_exists_for_email,
 )
+
 
 def test_login_with_github_post(client_with_db, dev_db_connection, monkeypatch):
     test_user_info = create_test_user_api(client_with_db)
@@ -48,7 +49,6 @@ def test_login_with_github_post(client_with_db, dev_db_connection, monkeypatch):
 
     api_key = response.json["data"]
 
-    assert_session_token_exists_for_email(
-        cursor=db_client.cursor, session_token=api_key, email=user_info.email
+    assert_api_key_exists_for_email(
+        db_client=db_client, api_key=api_key, email=user_info.email
     )
-

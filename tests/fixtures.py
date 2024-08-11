@@ -124,7 +124,7 @@ def bypass_api_token_required(monkeypatch):
     :param monkeypatch:
     :return:
     """
-    monkeypatch.setattr("middleware.decorators.validate_token", lambda: None)
+    monkeypatch.setattr("middleware.decorators.check_api_key", lambda x: None)
 
 
 @pytest.fixture

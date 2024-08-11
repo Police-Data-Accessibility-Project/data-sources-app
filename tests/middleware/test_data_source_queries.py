@@ -33,18 +33,17 @@ class TryLoggingInMocks(DynamicMagicMock):
     password: MagicMock
     password_digest: MagicMock
     user_id: MagicMock
-    session_token: MagicMock
     user_info: MagicMock
-    make_response: MagicMock
-    create_session_token: MagicMock
     check_password_hash: MagicMock
+    unauthorized_response: MagicMock
+    login_response: MagicMock
 
 
 def setup_try_logging_in_mocks(check_password_hash_return_value):
     # Create Mock values
     mock = TryLoggingInMocks(
         patch_root="middleware.login_queries",
-        mocks_to_patch=["make_response", "create_session_token", "check_password_hash"],
+        mocks_to_patch=["login_response", "check_password_hash", "unauthorized_response"],
     )
     mock.user_info = DatabaseClient.UserInfo(
         password_digest=mock.password_digest,
@@ -53,7 +52,6 @@ def setup_try_logging_in_mocks(check_password_hash_return_value):
         email=mock.email,
     )
     mock.db_client.get_user_info = MagicMock(return_value=mock.user_info)
-    mock.create_session_token.return_value = mock.session_token
     mock.check_password_hash.return_value = check_password_hash_return_value
 
     return mock
@@ -67,12 +65,10 @@ def test_try_logging_in_successful():
 
     # Assert
     mock.db_client.get_user_info.assert_called_with(mock.email)
-    mock.create_session_token.assert_called_with(
-        mock.db_client, mock.user_id, mock.email
-    )
-    mock.make_response.assert_called_with(
-        {"message": "Successfully logged in", "data": mock.session_token}, HTTPStatus.OK
-    )
+    mock.check_password_hash.assert_called_with(mock.password_digest, mock.password)
+    mock.unauthorized_response.assert_not_called()
+    mock.login_response.assert_called_with(mock.db_client, mock.user_info)
+
 
 
 def test_try_logging_in_unsuccessful():
@@ -83,10 +79,10 @@ def test_try_logging_in_unsuccessful():
 
     # Assert
     mock.db_client.get_user_info.assert_called_with(mock.email)
-    mock.create_session_token.assert_not_called()
-    mock.make_response.assert_called_with(
-        {"message": "Invalid email or password"}, HTTPStatus.UNAUTHORIZED
-    )
+    mock.check_password_hash.assert_called_with(mock.password_digest, mock.password)
+    mock.unauthorized_response.assert_called_once()
+    mock.login_response.assert_not_called()
+
 
 
 @pytest.fixture

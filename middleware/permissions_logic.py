@@ -18,14 +18,14 @@ class PermissionsManager:
 
     def __init__(self, db_client: DatabaseClient, user_email: str):
         try:
-            db_client.get_user_info(user_email)
+            user_info = db_client.get_user_info(user_email)
         except UserNotFoundError:
             abort(HTTPStatus.NOT_FOUND, "User not found")
             return
         self.db_client = db_client
         self.user_email = user_email
 
-        self.permissions = self.db_client.get_user_permissions(user_email)
+        self.permissions = self.db_client.get_user_permissions(user_info.id)
 
     def get_user_permissions(self) -> Response:
         permissions_list = [permission.value for permission in self.permissions]

@@ -40,6 +40,7 @@ class RefreshSession(PsycopgResource):
     @namespace_refresh_session.doc(
         description="Allows a user to refresh their session token."
     )
+    @namespace_refresh_session.deprecated
     def post(self) -> Response:
         """
         Processes the session token refresh request. If the provided session token is valid,

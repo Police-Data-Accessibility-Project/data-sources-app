@@ -18,8 +18,8 @@ from middleware.enums import PermissionsEnum
 from tests.fixtures import (
     live_database_client,
     dev_db_connection,
-    xylonslyvania_test_data,
-    db_cursor,
+    bypass_api_token_required,
+    db_cursor
 )
 from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources_if_not_exist,
@@ -380,74 +380,23 @@ def test_get_role_by_email(live_database_client):
     assert role_info.role == "test_role"
 
 
-def test_get_role_by_api_key(live_database_client):
+def test_get_user_by_api_key(live_database_client):
     # Add a new user to the database
-    live_database_client.add_new_user(
+    user_id =live_database_client.add_new_user(
         email="test_user",
         password_digest="test_password",
     )
 
     # Add a role and api_key to the user
     live_database_client.cursor.execute(
-        "update users set role = 'test_role', api_key = 'test_api_key' where email = 'test_user'",
+        "update users set api_key = 'test_api_key' where email = 'test_user'",
     )
 
     # Fetch the user's role using its api key with the DatabaseClient method
-    role_info = live_database_client.get_role_by_api_key(api_key="test_api_key")
+    api_key_user_id = live_database_client.get_user_by_api_key(api_key="test_api_key")
 
-    # Confirm the role is retrieved successfully
-    assert role_info.role == "test_role"
-
-
-def test_add_new_session_token(live_database_client):
-    # Add a new user to the database
-    email = uuid.uuid4().hex
-    live_database_client.add_new_user(
-        email=email,
-        password_digest="test_password",
-    )
-
-    # Create a new session token locally
-    session_token = uuid.uuid4().hex
-
-    # Call the DatabaseClient method add the session token to the database
-    live_database_client.add_new_session_token(
-        session_token=session_token,
-        email=email,
-        expiration=datetime.now(tz=timezone.utc),
-    )
-
-    # Fetch the new session token from the database to confirm it was added successfully
-    result = live_database_client.get_session_token_info(api_key=session_token)
-
-    assert result.email == email
-
-
-def test_delete_session_token(live_database_client):
-    # Create new user
-    email = uuid.uuid4().hex
-    live_database_client.add_new_user(
-        email=email,
-        password_digest="test_password",
-    )
-
-    # Add a session token to the database associated with the user
-    session_token = uuid.uuid4().hex
-    live_database_client.add_new_session_token(
-        session_token=session_token,
-        email=email,
-        expiration=datetime.now(tz=timezone.utc),
-    )
-
-    # Confirm session token exists beforehand:
-    result = live_database_client.get_session_token_info(api_key=session_token)
-    assert result.email == email
-
-    # Delete the session token with the DatabaseClient method
-    live_database_client.delete_session_token(old_token=session_token)
-
-    # Confirm the session token was deleted by attempting to fetch it
-    assert live_database_client.get_session_token_info(session_token) is None
+    # Confirm the user_id is retrieved successfully
+    assert api_key_user_id == user_id
 
 
 def test_get_access_token(live_database_client):
@@ -606,7 +555,7 @@ def test_search_with_location_and_record_types_real_data_multiple_records(
 
 def test_get_user_permissions_default(live_database_client):
     test_user = create_test_user_db_client(live_database_client)
-    test_user_permissions = live_database_client.get_user_permissions(test_user.email)
+    test_user_permissions = live_database_client.get_user_permissions(test_user.user_id)
     assert len(test_user_permissions) == 0
 
 
@@ -617,7 +566,7 @@ def test_add_user_permission(live_database_client):
 
     # Add permission
     live_database_client.add_user_permission(test_user.email, PermissionsEnum.DB_WRITE)
-    test_user_permissions = live_database_client.get_user_permissions(test_user.email)
+    test_user_permissions = live_database_client.get_user_permissions(test_user.user_id)
     assert len(test_user_permissions) == 1
 
 
@@ -626,12 +575,12 @@ def test_remove_user_permission(live_database_client):
 
     # Add permission
     live_database_client.add_user_permission(test_user.email, PermissionsEnum.READ_ALL_USER_INFO)
-    test_user_permissions = live_database_client.get_user_permissions(test_user.email)
+    test_user_permissions = live_database_client.get_user_permissions(test_user.user_id)
     assert len(test_user_permissions) == 1
 
     # Remove permission
     live_database_client.remove_user_permission(test_user.email, PermissionsEnum.READ_ALL_USER_INFO)
-    test_user_permissions = live_database_client.get_user_permissions(test_user.email)
+    test_user_permissions = live_database_client.get_user_permissions(test_user.user_id)
     assert len(test_user_permissions) == 0
 
 

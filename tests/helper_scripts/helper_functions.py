@@ -2,6 +2,7 @@
 
 import uuid
 from collections import namedtuple
+from dataclasses import dataclass
 from typing import Optional
 from http import HTTPStatus
 from unittest.mock import MagicMock
@@ -211,7 +212,11 @@ def get_boolean_dictionary(keys: tuple) -> dict:
     return d
 
 
-UserInfo = namedtuple("UserInfo", ["email", "password"])
+@dataclass
+class UserInfo:
+    email: str
+    password: str
+    user_id: Optional[str] = None
 
 
 def create_test_user_api(client: FlaskClient) -> UserInfo:
@@ -230,7 +235,7 @@ def create_test_user_api(client: FlaskClient) -> UserInfo:
     return UserInfo(email=email, password=password)
 
 
-def login_and_return_session_token(
+def login_and_return_api_key(
     client_with_db: FlaskClient, user_info: UserInfo
 ) -> str:
     """
@@ -245,8 +250,8 @@ def login_and_return_session_token(
         json={"email": user_info.email, "password": user_info.password},
     )
     assert response.status_code == HTTPStatus.OK.value, "User login unsuccessful"
-    session_token = response.json.get("data")
-    return session_token
+    api_key = response.json.get("data")
+    return api_key
 
 
 def get_user_password_digest(cursor: psycopg2.extensions.cursor, user_info):
@@ -443,22 +448,9 @@ def assert_expected_pre_callback_response(response):
     assert_is_oauth_redirect_link(response_text)
 
 
-def assert_session_token_exists_for_email(
-    cursor: psycopg2.extensions.cursor, session_token: str, email: str
-):
-    cursor.execute(
-        """
-    SELECT email
-    FROM session_tokens
-    WHERE token = %s
-    """,
-        (session_token,),
-    )
-    rows = cursor.fetchall()
-    assert len(rows) == 1, "Session token should only exist once in database"
-
-    row = rows[0]
-    assert row[0] == email, "Email in session_tokens table does not match user email"
+def assert_api_key_exists_for_email(db_client: DatabaseClient, email: str, api_key):
+    user_info = db_client.get_user_info(email)
+    assert user_info.api_key == api_key
 
 TestUserSetup = namedtuple(
     "TestUserSetup", ["user_info", "api_key", "authorization_header"])
@@ -474,5 +466,5 @@ def create_test_user_setup(client: FlaskClient) -> TestUserSetup:
 def create_test_user_db_client(db_client: DatabaseClient) -> UserInfo:
     email = uuid.uuid4().hex
     password_digest = uuid.uuid4().hex
-    db_client.add_new_user(email, password_digest)
-    return UserInfo(email, password_digest)
+    user_id = db_client.add_new_user(email, password_digest)
+    return UserInfo(email, password_digest, user_id)

@@ -56,7 +56,7 @@ class Search(PsycopgResource):
     based on user-provided search terms and location.
     """
 
-    @api_key_required
+    @api_key_required()
     @namespace_search.expect(request_parser)
     @namespace_search.response(200, "Success", search_model)
     @namespace_search.response(500, "Internal server error")

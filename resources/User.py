@@ -52,7 +52,7 @@ class User(PsycopgResource):
 
     # Endpoint for updating a user's password
     @handle_exceptions
-    @api_key_required
+    @api_key_required()
     @namespace_user.expect(authorization_parser, user_model)
     @namespace_user.response(201, "Success: User password successfully updated")
     @namespace_user.response(500, "Error: Internal server error")

@@ -94,7 +94,7 @@ class Agencies(PsycopgResource):
     """Represents a resource for fetching approved agency data from the database."""
 
     @handle_exceptions
-    @api_key_required
+    @api_key_required()
     @namespace_agencies.response(
         200,
         "Success. Returns a paginated list of approved agencies.",

@@ -7,7 +7,6 @@ from flask import Response
 from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
 from middleware.login_queries import (
-    is_admin,
     generate_api_key,
     get_api_key_for_user,
     refresh_session,
@@ -15,39 +14,6 @@ from middleware.login_queries import (
 )
 from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
 
-
-def test_is_admin_happy_path() -> None:
-    """
-    Creates and inserts two users, one an admin and the other not
-    And then checks to see if the `is_admin` properly
-    identifies both
-    :param db_cursor:
-    """
-    mock_db_client = MagicMock()
-    mock_get_role_by_email_result = MagicMock()
-    mock_get_role_by_email_result.role = "admin"
-    mock_db_client.get_role_by_email.return_value = mock_get_role_by_email_result
-
-    result = is_admin(mock_db_client, "test_email")
-    assert result is True
-    mock_db_client.get_role_by_email.assert_called_once_with("test_email")
-
-
-def test_is_admin_not_admin() -> None:
-    """
-    Creates and inserts two users, one an admin and the other not
-    And then checks to see if the `is_admin` properly
-    identifies both
-    :param db_cursor:
-    """
-    mock_db_client = MagicMock()
-    mock_get_role_by_email_result = MagicMock()
-    mock_get_role_by_email_result.role = "user"
-    mock_db_client.get_role_by_email.return_value = mock_get_role_by_email_result
-
-    result = is_admin(mock_db_client, "test_email")
-    assert result is False
-    mock_db_client.get_role_by_email.assert_called_once_with("test_email")
 
 
 def test_generate_api_key():
@@ -148,32 +114,6 @@ def setup_refresh_session_mocks(monkeypatch):
     mock.session_token_info.email = mock.mock_email
 
     return mock
-
-
-def test_refresh_session_happy_path(setup_refresh_session_mocks):
-    mock = setup_refresh_session_mocks
-    refresh_session(mock.db_client, mock.old_token)
-    mock.db_client.get_session_token_info.assert_called_with(mock.old_token)
-    mock.db_client.delete_session_token.assert_called_with(mock.old_token)
-    mock.create_session_token.assert_called_with(
-        mock.db_client, mock.session_token_info.id, mock.session_token_info.email
-    )
-    mock.make_response.assert_called_with(
-        {"message": "Successfully refreshed session token", "data": mock.new_token},
-        HTTPStatus.OK,
-    )
-
-
-def test_refresh_session_token_not_found_error(setup_refresh_session_mocks):
-    mock = setup_refresh_session_mocks
-    mock.db_client.get_session_token_info.return_value = None
-    refresh_session(mock.db_client, mock.old_token)
-    mock.db_client.get_session_token_info.assert_called_with(mock.old_token)
-    mock.delete_session_token.assert_not_called()
-    mock.create_session_token.assert_not_called()
-    mock.make_response.assert_called_with(
-        {"message": "Invalid session token"}, HTTPStatus.FORBIDDEN
-    )
 
 
 class TryLoggingInWithGithubIdMocks(DynamicMagicMock):
