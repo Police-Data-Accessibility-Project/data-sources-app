@@ -19,6 +19,7 @@ class SQLAlchemySession():
 
     def commit_and_close(self):
         self.session.commit()
+        self.transaction.commit()
         self.close()
     
     def close(self):
