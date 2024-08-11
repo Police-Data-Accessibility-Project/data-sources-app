@@ -82,7 +82,7 @@ class ReverseProxied(object):
 def get_flask_app_secret_key() -> str:
     return os.getenv("FLASK_APP_SECRET_KEY")
 
-def create_app() -> Flask:
+def create_app(testing=False) -> Flask:
     psycopg2_connection = initialize_psycopg2_connection()
     config.connection = psycopg2_connection
     api = Api()
@@ -96,6 +96,9 @@ def create_app() -> Flask:
     app.config["SQLALCHEMY_DATABASE_URI"] = get_env_variable(
         "DEV_DB_CONN_STRING"
     )
+    if testing is True:
+        app.config["TESTING"] = True
+        app.config["SQLALCHEMY_ECHO"] = True
     api.init_app(app)
     oauth.init_app(app)
     db.init_app(app)

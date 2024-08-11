@@ -11,9 +11,7 @@ from app import create_app
 
 @pytest.fixture(scope="module")
 def test_client():
-    app = create_app()
-    app.config["TESTING"] = True
-    app.config["SQLALCHEMY_ECHO"] = True
+    app = create_app(testing=True)
 
     with app.test_client() as testing_client:
         with app.app_context():
