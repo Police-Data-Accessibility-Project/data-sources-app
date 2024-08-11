@@ -16,7 +16,7 @@ from middleware.dataclasses import (
     OAuthCallbackInfo,
     FlaskSessionCallbackInfo,
 )
-from middleware.enums import CallbackFunctionsEnum
+from middleware.enums import CallbackFunctionsEnum, PermissionsEnum
 from tests.helper_scripts.common_test_data import TEST_RESPONSE
 
 TestTokenInsert = namedtuple("TestTokenInsert", ["id", "email", "token"])
@@ -235,9 +235,7 @@ def create_test_user_api(client: FlaskClient) -> UserInfo:
     return UserInfo(email=email, password=password)
 
 
-def login_and_return_api_key(
-    client_with_db: FlaskClient, user_info: UserInfo
-) -> str:
+def login_and_return_api_key(client_with_db: FlaskClient, user_info: UserInfo) -> str:
     """
     Login as a given user and return the associated session token,
     using the /login endpoint of the Flask API
@@ -452,16 +450,35 @@ def assert_api_key_exists_for_email(db_client: DatabaseClient, email: str, api_k
     user_info = db_client.get_user_info(email)
     assert user_info.api_key == api_key
 
+
 TestUserSetup = namedtuple(
-    "TestUserSetup", ["user_info", "api_key", "authorization_header"])
+    "TestUserSetup", ["user_info", "api_key", "authorization_header"]
+)
+
 
 def create_test_user_setup(client: FlaskClient) -> TestUserSetup:
     user_info = create_test_user_api(client)
     api_key = create_api_key(client, user_info)
-    authorization_header = {
-        "Authorization": f"Basic {api_key}"
-    }
+    authorization_header = {"Authorization": f"Basic {api_key}"}
     return TestUserSetup(user_info, api_key, authorization_header)
+
+
+def create_test_user_setup_db_client(
+    db_client: DatabaseClient, permission: Optional[PermissionsEnum] = None
+) -> TestUserSetup:
+    email = uuid.uuid4().hex
+    password_digest = uuid.uuid4().hex
+    user_id = db_client.add_new_user(email, password_digest)
+    api_key = db_client.get_user_info(email).api_key
+    if permission is not None:
+        db_client.add_user_permission(email, permission)
+    db_client.cursor.connection.commit()
+    return TestUserSetup(
+        UserInfo(email, password_digest, user_id),
+        api_key,
+        {"Authorization": f"Basic {api_key}"},
+    )
+
 
 def create_test_user_db_client(db_client: DatabaseClient) -> UserInfo:
     email = uuid.uuid4().hex

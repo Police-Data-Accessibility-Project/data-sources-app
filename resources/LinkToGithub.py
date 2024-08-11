@@ -29,7 +29,6 @@ link_to_github_parser.add_argument(
 @namespace_link_to_github.route("/link-to-github")
 class LinkToGithub(PsycopgResource):
 
-    @api_key_required()
     @namespace_link_to_github.expect(link_to_github_parser)
     @namespace_link_to_github.doc(
         description="""

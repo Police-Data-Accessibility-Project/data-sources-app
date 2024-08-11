@@ -65,6 +65,10 @@ def db_cursor(
     cur.execute("ROLLBACK TO SAVEPOINT test_savepoint")
     cur.close()
 
+@pytest.fixture
+def dev_db_client(dev_db_connection: psycopg2.extensions.connection) -> DatabaseClient:
+    db_client = DatabaseClient(dev_db_connection.cursor())
+    yield db_client
 
 @pytest.fixture
 def connection_with_test_data(
@@ -83,6 +87,13 @@ def connection_with_test_data(
     except psycopg2.errors.UniqueViolation:
         dev_db_connection.rollback()
     return dev_db_connection
+
+@pytest.fixture
+def db_client_with_test_data(
+    connection_with_test_data: psycopg2.extensions.connection,
+) -> DatabaseClient:
+    db_client = DatabaseClient(connection_with_test_data.cursor(cursor_factory=DictCursor))
+    yield db_client
 
 
 ClientWithMockDB = namedtuple("ClientWithMockDB", ["client", "mock_db"])
@@ -103,7 +114,7 @@ def client_with_mock_db(mocker, monkeypatch) -> ClientWithMockDB:
 
 
 @pytest.fixture
-def client_with_db(dev_db_connection: psycopg2.extensions.connection, monkeypatch):
+def flask_client_with_db(dev_db_connection: psycopg2.extensions.connection, monkeypatch):
     """
     Creates a client with database connection
     :param dev_db_connection:

@@ -19,7 +19,7 @@ from tests.fixtures import (
     live_database_client,
     dev_db_connection,
     bypass_api_token_required,
-    db_cursor
+    db_cursor,
 )
 from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources_if_not_exist,
@@ -382,7 +382,7 @@ def test_get_role_by_email(live_database_client):
 
 def test_get_user_by_api_key(live_database_client):
     # Add a new user to the database
-    user_id =live_database_client.add_new_user(
+    user_id = live_database_client.add_new_user(
         email="test_user",
         password_digest="test_password",
     )
@@ -553,6 +553,7 @@ def test_search_with_location_and_record_types_real_data_multiple_records(
     )
     assert len(results) == last_count
 
+
 def test_get_user_permissions_default(live_database_client):
     test_user = create_test_user_db_client(live_database_client)
     test_user_permissions = live_database_client.get_user_permissions(test_user.user_id)
@@ -574,16 +575,18 @@ def test_remove_user_permission(live_database_client):
     test_user = create_test_user_db_client(live_database_client)
 
     # Add permission
-    live_database_client.add_user_permission(test_user.email, PermissionsEnum.READ_ALL_USER_INFO)
+    live_database_client.add_user_permission(
+        test_user.email, PermissionsEnum.READ_ALL_USER_INFO
+    )
     test_user_permissions = live_database_client.get_user_permissions(test_user.user_id)
     assert len(test_user_permissions) == 1
 
     # Remove permission
-    live_database_client.remove_user_permission(test_user.email, PermissionsEnum.READ_ALL_USER_INFO)
+    live_database_client.remove_user_permission(
+        test_user.email, PermissionsEnum.READ_ALL_USER_INFO
+    )
     test_user_permissions = live_database_client.get_user_permissions(test_user.user_id)
     assert len(test_user_permissions) == 0
-
-
 
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts

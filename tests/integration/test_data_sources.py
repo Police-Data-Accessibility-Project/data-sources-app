@@ -4,10 +4,14 @@ from http import HTTPStatus
 import uuid
 
 import psycopg2
+
+from database_client.database_client import DatabaseClient
+from middleware.enums import PermissionsEnum
 from tests.fixtures import (
     connection_with_test_data,
     dev_db_connection,
-    client_with_db,
+    flask_client_with_db,
+    db_client_with_test_data,
 )
 from tests.helper_scripts.helper_functions import (
     get_boolean_dictionary,
@@ -16,11 +20,12 @@ from tests.helper_scripts.helper_functions import (
     give_user_admin_role,
     check_response_status,
     create_test_user_setup,
+    create_test_user_setup_db_client,
 )
 
 
 def test_data_sources_get(
-    client_with_db, connection_with_test_data: psycopg2.extensions.connection
+        flask_client_with_db, connection_with_test_data: psycopg2.extensions.connection
 ):
     """
     Test that GET call to /data-sources endpoint retrieves data sources and correctly identifies specific sources by name
@@ -28,8 +33,8 @@ def test_data_sources_get(
     inserted_data_sources_found = get_boolean_dictionary(
         ("Source 1", "Source 2", "Source 3")
     )
-    tus = create_test_user_setup(client_with_db)
-    response = client_with_db.get(
+    tus = create_test_user_setup(flask_client_with_db)
+    response = flask_client_with_db.get(
         "/api/data-sources",
         headers=tus.authorization_header,
     )
@@ -44,24 +49,24 @@ def test_data_sources_get(
     assert not inserted_data_sources_found["Source 3"]
 
 
-def test_data_sources_post(
-    client_with_db, dev_db_connection: psycopg2.extensions.connection
-):
+def test_data_sources_post(flask_client_with_db, db_client_with_test_data: DatabaseClient):
     """
     Test that POST call to /data-sources endpoint successfully creates a new data source with a unique name and verifies its existence in the database
     """
 
-    tus = create_test_user_setup(client_with_db)
-    give_user_admin_role(dev_db_connection, tus.user_info)
+    tus = create_test_user_setup_db_client(
+        db_client_with_test_data,
+        permission=PermissionsEnum.DB_WRITE,
+    )
 
     name = str(uuid.uuid4())
-    response = client_with_db.post(
+    response = flask_client_with_db.post(
         "/data-sources",
         json={"name": name},
         headers=tus.authorization_header,
     )
     check_response_status(response, HTTPStatus.OK.value)
-    cursor = dev_db_connection.cursor()
+    cursor = db_client_with_test_data.cursor
     cursor.execute(
         """
     SELECT * from data_sources WHERE name=%s

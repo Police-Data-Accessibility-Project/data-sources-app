@@ -3,6 +3,7 @@ from flask_restx import fields
 
 from middleware.agencies import get_agencies
 from middleware.decorators import api_key_required
+from middleware.enums import PermissionsEnum
 from resources.resource_helpers import add_api_key_header_arg
 from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
@@ -94,7 +95,7 @@ class Agencies(PsycopgResource):
     """Represents a resource for fetching approved agency data from the database."""
 
     @handle_exceptions
-    @api_key_required()
+    @api_key_required(PermissionsEnum.DB_WRITE)
     @namespace_agencies.response(
         200,
         "Success. Returns a paginated list of approved agencies.",

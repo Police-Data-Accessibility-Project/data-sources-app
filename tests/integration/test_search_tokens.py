@@ -2,7 +2,7 @@
 
 import psycopg2
 from http import HTTPStatus
-from tests.fixtures import connection_with_test_data, client_with_db, dev_db_connection
+from tests.fixtures import connection_with_test_data, flask_client_with_db, dev_db_connection
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     create_api_key,
@@ -12,13 +12,13 @@ from tests.helper_scripts.helper_functions import (
 
 
 def test_search_tokens_get(
-    client_with_db, connection_with_test_data: psycopg2.extensions.connection
+        flask_client_with_db, connection_with_test_data: psycopg2.extensions.connection
 ):
     """
     Test that GET call to /search-tokens endpoint with specified query parameters successfully retrieves search tokens and verifies the correct entry with agency name and airtable UID
     """
-    tus = create_test_user_setup(client_with_db)
-    response = client_with_db.get(
+    tus = create_test_user_setup(flask_client_with_db)
+    response = flask_client_with_db.get(
         "/api/search-tokens",
         headers=tus.authorization_header,
         query_string={"endpoint": "quick-search", "arg1": "Source 1", "arg2": "City A"},

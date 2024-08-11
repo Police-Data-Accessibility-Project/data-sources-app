@@ -3,6 +3,7 @@ from http import HTTPStatus
 from flask import Response, request
 from flask_restx import fields
 
+from middleware.decorators import api_key_required
 from middleware.enums import PermissionsEnum, PermissionsActionEnum
 from middleware.permissions_logic import (
     manage_user_permissions,
@@ -58,6 +59,7 @@ class Permissions(PsycopgResource):
     @namespace_permissions.doc(
         description="Retrieves a user's permissions.",
     )
+    @api_key_required(PermissionsEnum.READ_ALL_USER_INFO)
     def get(self) -> Response:
         """
         Retrieves a user's permissions.
@@ -87,6 +89,7 @@ class Permissions(PsycopgResource):
     @namespace_permissions.doc(
         description="Adds or removes a permission for a user.",
     )
+    @api_key_required(PermissionsEnum.DB_WRITE)
     def put(self) -> Response:
         """
         Adds or removes a permission for a user.

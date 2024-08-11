@@ -10,6 +10,7 @@ from flask_restful import request
 import json
 from typing import Dict, Any
 
+from middleware.enums import PermissionsEnum
 from resources.resource_helpers import add_api_key_header_arg
 from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
@@ -71,7 +72,7 @@ class Archives(PsycopgResource):
         return archives_combined_results_clean
 
     @handle_exceptions
-    @api_key_required()
+    @api_key_required(PermissionsEnum.DB_WRITE)
     @namespace_archives.doc(
         description="Updates the archive data based on the provided JSON payload.",
         responses={

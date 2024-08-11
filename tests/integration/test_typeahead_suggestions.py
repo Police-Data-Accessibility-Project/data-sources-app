@@ -4,16 +4,16 @@ from tests.helper_scripts.helper_functions import (
     check_response_status,
     setup_get_typeahead_suggestion_test_data,
 )
-from tests.fixtures import client_with_db, dev_db_connection
+from tests.fixtures import flask_client_with_db, dev_db_connection
 
 
-def test_typeahead_suggestions(client_with_db, dev_db_connection):
+def test_typeahead_suggestions(flask_client_with_db, dev_db_connection):
     """
     Test that GET call to /typeahead-suggestions endpoint successfully retrieves data
     """
     setup_get_typeahead_suggestion_test_data(dev_db_connection.cursor())
     dev_db_connection.commit()
-    response = client_with_db.get("/search/typeahead-suggestions?query=xyl")
+    response = flask_client_with_db.get("/search/typeahead-suggestions?query=xyl")
     check_response_status(response, HTTPStatus.OK.value)
     results = response.json["suggestions"]
     assert results[0]["display_name"] == "Xylodammerung"

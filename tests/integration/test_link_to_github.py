@@ -3,7 +3,7 @@ from http import HTTPStatus
 import psycopg2
 
 from middleware.enums import CallbackFunctionsEnum
-from tests.fixtures import dev_db_connection, client_with_db
+from tests.fixtures import dev_db_connection, flask_client_with_db
 from tests.helper_scripts.helper_functions import (
     check_response_status,
     create_test_user_api,
@@ -17,9 +17,9 @@ from tests.helper_scripts.helper_functions import (
 
 
 def test_link_to_github(
-    client_with_db, dev_db_connection: psycopg2.extensions.connection, monkeypatch
+        flask_client_with_db, dev_db_connection: psycopg2.extensions.connection, monkeypatch
 ):
-    tus = create_test_user_setup(client_with_db)
+    tus = create_test_user_setup(flask_client_with_db)
     mock_setup_callback_session = patch_setup_callback_session(
         monkeypatch, "LinkToGithub"
     )
@@ -27,7 +27,7 @@ def test_link_to_github(
         "redirect_to": "test_page",
         "user_email": tus.user_info.email,
     }
-    response = client_with_db.post(
+    response = flask_client_with_db.post(
         "auth/link-to-github",
         headers=tus.authorization_header,
         json=mock_params,
@@ -47,7 +47,7 @@ def test_link_to_github(
         callback_functions_enum=CallbackFunctionsEnum.LINK_TO_GITHUB,
         callback_params=mock_params,
     )
-    response = client_with_db.get("auth/callback")
+    response = flask_client_with_db.get("auth/callback")
     check_response_status(response, HTTPStatus.OK)
     cursor = dev_db_connection.cursor()
     cursor.execute(

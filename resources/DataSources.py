@@ -10,6 +10,7 @@ from middleware.data_source_queries import (
     update_data_source_wrapper,
     needs_identification_data_sources_wrapper,
 )
+from middleware.enums import PermissionsEnum
 from resources.resource_helpers import add_api_key_header_arg, create_outer_model
 from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
@@ -78,7 +79,7 @@ class DataSourceById(PsycopgResource):
             return data_source_by_id_wrapper(data_source_id, db_client)
 
     @handle_exceptions
-    @api_key_required()
+    @api_key_required(PermissionsEnum.DB_WRITE)
     @namespace_data_source.expect(authorization_parser, data_sources_inner_model)
     @namespace_data_source.doc(
         description="Update details of a specific data source by its ID.",
@@ -131,7 +132,7 @@ class DataSources(PsycopgResource):
             return get_approved_data_sources_wrapper(db_client)
 
     @handle_exceptions
-    @api_key_required()
+    @api_key_required(PermissionsEnum.DB_WRITE)
     @namespace_data_source.expect(authorization_parser, data_sources_inner_model)
     @namespace_data_source.response(200, "Successful operation")
     @namespace_data_source.response(500, "Internal server error")

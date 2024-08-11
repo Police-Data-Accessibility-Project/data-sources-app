@@ -3,7 +3,7 @@
 from http import HTTPStatus
 import psycopg2.extensions
 
-from tests.fixtures import dev_db_connection, client_with_db
+from tests.fixtures import dev_db_connection, flask_client_with_db
 from tests.helper_scripts.helper_functions import create_test_user_api, login_and_return_api_key
 
 # NOTE: Deprecated: rebuild later when setting up JWT tokens

@@ -2,24 +2,27 @@
 
 from http import HTTPStatus
 import psycopg2
-from tests.fixtures import dev_db_connection, client_with_db
+
+from database_client.database_client import DatabaseClient
+from middleware.enums import PermissionsEnum
+from tests.fixtures import dev_db_connection, flask_client_with_db, dev_db_client
 from tests.helper_scripts.helper_functions import (
-    create_test_user_api,
-    create_api_key,
     check_response_status,
-    create_test_user_setup,
+    create_test_user_setup_db_client,
 )
 
 
 def test_agencies_get(
-    client_with_db, dev_db_connection: psycopg2.extensions.connection
+        flask_client_with_db, dev_db_client: DatabaseClient
 ):
     """
     Test that GET call to /agencies endpoint properly retrieves a nonzero amount of data
     """
+    tus = create_test_user_setup_db_client(
+        dev_db_client, permission=PermissionsEnum.DB_WRITE
+    )
 
-    tus = create_test_user_setup(client_with_db)
-    response = client_with_db.get(
+    response = flask_client_with_db.get(
         "/api/agencies/2",
         headers=tus.authorization_header,
     )

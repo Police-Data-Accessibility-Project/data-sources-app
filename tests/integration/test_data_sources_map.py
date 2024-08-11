@@ -2,7 +2,7 @@
 
 from http import HTTPStatus
 import psycopg2
-from tests.fixtures import connection_with_test_data, client_with_db, dev_db_connection
+from tests.fixtures import connection_with_test_data, flask_client_with_db, dev_db_connection
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     create_api_key,
@@ -12,13 +12,13 @@ from tests.helper_scripts.helper_functions import (
 
 
 def test_data_sources_map_get(
-    client_with_db, connection_with_test_data: psycopg2.extensions.connection
+        flask_client_with_db, connection_with_test_data: psycopg2.extensions.connection
 ):
     """
     Test that GET call to /data-sources-map endpoint retrieves data sources and verifies the location (latitude and longitude) of a specific source by name
     """
-    tus = create_test_user_setup(client_with_db)
-    response = client_with_db.get(
+    tus = create_test_user_setup(flask_client_with_db)
+    response = flask_client_with_db.get(
         "/api/data-sources-map",
         headers=tus.authorization_header,
     )
