@@ -141,20 +141,6 @@ def create_test_user(
     """
     if email == "":
         email = uuid.uuid4().hex + "@test.com"
-    '''cursor.execute(
-        """
-        INSERT INTO users (email, password_digest, api_key, role)
-        VALUES
-        (%s, %s, %s, %s)
-        RETURNING id;
-        """,
-        (email, password_hash, api_key, role),
-    )
-    return TestUser(
-        id=cursor.fetchone()[0],
-        email=email,
-        password_hash=password_hash,
-    )'''
     user = User(email=email, password_digest=password_hash, api_key=api_key, role=role)
     session.add(user)
     session.commit()
@@ -311,7 +297,6 @@ def create_api_key(client_with_db, user_info) -> str:
 
 def create_api_key_db(session, user_id: str):
     api_key = uuid.uuid4().hex
-    #cursor.execute("UPDATE users SET api_key = %s WHERE id = %s", (api_key, user_id))
     session.execute(update(User).where(User.id == user_id).values(api_key=api_key))
     return api_key
 
@@ -353,16 +338,6 @@ def give_user_admin_role(
     :param user_info:
     :return:
     """
-    '''cursor = connection.cursor()
-
-    cursor.execute(
-        """
-    UPDATE users
-    SET role = 'admin'
-    WHERE email = %s
-    """,
-        (user_info.email,),
-    )'''
     session.execute(
         update(User).where(User.email == user_info.email).values(role="admin")
     )

@@ -35,20 +35,16 @@ dotenv.load_dotenv()
 
 
 def test_api_key_exists_in_users_table_with_admin_role(test_client, session):
-    #cursor = dev_db_connection.cursor()
     test_user = create_test_user(session)
     give_user_admin_role(session, UserInfo(test_user.email, ""))
     api_key = create_api_key_db(session, test_user.id)
-    #dev_db_connection.commit()
     result = validate_api_key(api_key, "", "", session)
     assert result is None
 
 
 def test_api_key_exists_in_users_table_with_non_admin_role(test_client, session):
-    #cursor = dev_db_connection.cursor()
     test_user = create_test_user(session)
     api_key = create_api_key_db(session, test_user.id)
-    #dev_db_connection.commit()
     result = validate_api_key(api_key, "", "", session)
     assert result is None
 
@@ -107,21 +103,17 @@ def test_api_key_not_exist_in_any_table(dev_db_connection, test_client, session)
 
 
 def test_admin_only_action_with_non_admin_role(test_client, session):
-    #cursor = dev_db_connection.cursor()
     test_user = create_test_user(session)
     api_key = create_api_key_db(session, test_user.id)
-    #dev_db_connection.commit()
     with pytest.raises(InvalidRoleError) as e:
         result = validate_api_key(api_key, "datasources", "PUT", session)
     assert "You do not have permission to access this endpoint" in str(e.value)
 
 
 def test_admin_only_action_with_admin_role(test_client, session):
-    #cursor = dev_db_connection.cursor()
     test_user = create_test_user(session)
     give_user_admin_role(session, UserInfo(test_user.email, ""))
     api_key = create_api_key_db(session, test_user.id)
-    #dev_db_connection.commit()
     result = validate_api_key(api_key, "datasources", "PUT", session)
     assert result is None
 
