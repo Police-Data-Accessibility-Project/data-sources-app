@@ -96,6 +96,7 @@ class PsycopgResource(Resource):
                 conn.rollback()
                 sqlalchemy.rollback_and_close()
                 raise e
+            else:
+                sqlalchemy.commit_and_close()
             finally:
                 conn.commit()
-                sqlalchemy.commit_and_close()
