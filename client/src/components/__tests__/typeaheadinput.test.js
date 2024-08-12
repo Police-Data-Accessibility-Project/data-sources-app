@@ -190,14 +190,6 @@ describe('TypeaheadInput', () => {
 		expect(vm.formatText(stateItem)).toBe('California');
 	});
 
-	it('formats not found text correctly', () => {
-		const { vm } = mountComponent();
-
-		expect(vm.formatNotFoundText('test')).toBe(
-			'No results found. Search places for "test"',
-		);
-	});
-
 	it('bolds matched text correctly', () => {
 		const { vm } = mountComponent();
 		vm.input = 'test';

@@ -51,14 +51,11 @@
 			class="pdap-typeahead-list"
 			data-test="typeahead-list-not-found"
 		>
-			<li
-				role="button"
-				tabindex="0"
-				@click="selectItem(input)"
-				@keydown.enter.prevent="selectItem(input)"
-			>
-				<!-- eslint-disable-next-line vue/no-v-html This data is coming from our API, so we can trust it-->
-				<span v-html="boldMatchText(formatNotFoundText(input))" />
+			<li class="max-w-[unset]">
+				<span>
+					<strong>No results found.</strong> Please check your spelling and
+					search for a place in the United States.
+				</span>
 			</li>
 		</ul>
 	</div>
@@ -169,10 +166,6 @@ function formatText(item) {
 			return item.display_name;
 	}
 }
-function formatNotFoundText(string) {
-	return `No results found. Search places for "${string}"`;
-}
-
 function escapeRegExp(string) {
 	return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
