@@ -155,7 +155,7 @@ function onSelectRecord(item) {
 const fetchTypeaheadResults = _debounce(
 	async (e) => {
 		try {
-			if (e.target.value.length) {
+			if (e.target.value.length > 1) {
 				const {
 					data: { suggestions },
 				} = await axios.get(

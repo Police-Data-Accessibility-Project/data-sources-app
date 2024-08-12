@@ -1,6 +1,7 @@
 <template>
 	<div
 		:id="wrapperId"
+		data-test="typeahead-wrapper"
 		class="pdap-typeahead"
 		:class="{ 'pdap-typeahead-expanded': isListOpen }"
 	>
@@ -21,6 +22,7 @@
 		/>
 		<ul
 			v-if="itemsToDisplay?.length && inputRef?.value"
+			data-test="typeahead-list"
 			class="pdap-typeahead-list"
 		>
 			<li
@@ -30,7 +32,6 @@
 				data-test="typeahead-list-item"
 				role="button"
 				tabindex="0"
-				@mousedown.prevent
 				@click="selectItem(item)"
 				@keydown.enter.prevent="selectItem(item)"
 				@keydown.down.prevent="onArrowDown"
@@ -48,6 +49,7 @@
 		<ul
 			v-else-if="typeof itemsToDisplay === 'undefined' && input.length > 1"
 			class="pdap-typeahead-list"
+			data-test="typeahead-list-not-found"
 		>
 			<li
 				role="button"
@@ -77,10 +79,6 @@ const props = defineProps({
 	},
 	items: {
 		type: Array,
-	},
-	selectOnTab: {
-		type: Boolean,
-		default: true,
 	},
 });
 const emit = defineEmits(['onInput', 'onFocus', 'onBlur', 'selectItem']);
@@ -168,7 +166,7 @@ function formatText(item) {
 			return `${item.display_name} ${statesToAbbreviations.get(item.state)}`;
 		case 'State':
 		default:
-			return typeof item === 'string' ? item : item.display_name;
+			return item.display_name;
 	}
 }
 function formatNotFoundText(string) {
