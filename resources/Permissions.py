@@ -60,7 +60,6 @@ class Permissions(PsycopgResource):
     @namespace_permissions.doc(
         description="Retrieves a user's permissions.",
     )
-    @jwt_required()
     @permissions_required(PermissionsEnum.READ_ALL_USER_INFO)
     def get(self) -> Response:
         """
@@ -91,13 +90,12 @@ class Permissions(PsycopgResource):
     @namespace_permissions.doc(
         description="Adds or removes a permission for a user.",
     )
-    @jwt_required()
+    @permissions_required(PermissionsEnum.DB_WRITE)
     def put(self) -> Response:
         """
         Adds or removes a permission for a user.
         :return:
         """
-        check_permissions(PermissionsEnum.DB_WRITE)
         data = request.args
         json_data = request.get_json()
         with self.setup_database_client() as db_client:

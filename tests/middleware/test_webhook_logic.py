@@ -17,6 +17,12 @@ def mock_requests_post():
         yield mock_post
 
 
+def assert_mock_env_calls(mock_env_variable, secondary_call: str):
+    assert mock_env_variable.call_count == 2
+    mock_env_variable.assert_any_call("VITE_VUE_APP_BASE_URL")
+    mock_env_variable.assert_any_call(secondary_call)
+
+
 def test_post_to_webhook(mock_env_variable, mock_requests_post):
     mock_env_variable.side_effect = [
         "https://base_app.com",
@@ -25,9 +31,7 @@ def test_post_to_webhook(mock_env_variable, mock_requests_post):
     data = '{"key": "value"}'
     post_to_webhook(data)
 
-    assert mock_env_variable.call_count == 2
-    mock_env_variable.assert_any_call("VITE_VUE_APP_BASE_URL")
-    mock_env_variable.assert_any_call("WEBHOOK_URL")
+    assert_mock_env_calls(mock_env_variable, "WEBHOOK_URL")
     mock_requests_post.assert_called_once_with(
         url="https://example.com/webhook",
         data="(https://base_app.com) " + data,
@@ -41,7 +45,5 @@ def test_send_password_reset_link(mock_env_variable, mock_requests_post):
     token = "test_token"
     send_password_reset_link(email, token)
 
-    assert mock_env_variable.call_count == 2
-    mock_env_variable.assert_any_call("MAILGUN_KEY")
-    mock_env_variable.assert_any_call("VITE_VUE_APP_BASE_URL")
+    assert_mock_env_calls(mock_env_variable, "MAILGUN_KEY")
     mock_requests_post.assert_called_once()

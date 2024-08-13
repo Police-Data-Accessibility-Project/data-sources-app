@@ -6,10 +6,8 @@ from datetime import datetime
 import psycopg2
 import pytest
 
-from database_client.database_client import DatabaseClient
 from middleware.quick_search_query import (
     quick_search_query,
-    QUICK_SEARCH_COLUMNS,
     quick_search_query_wrapper,
     process_data_source_matches,
     SearchParameters,
@@ -17,10 +15,7 @@ from middleware.quick_search_query import (
     DataSourceMatches,
 )
 from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
-from tests.helper_scripts.helper_functions import (
-    has_expected_keys,
-    get_most_recent_quick_search_query_log,
-)
+
 from tests.fixtures import connection_with_test_data, dev_db_connection
 
 
@@ -72,6 +67,7 @@ def test_quick_search_query_logging(
         mock.process_search_parameters.return_value,
     )
 
+
 class QuickSearchQueryWrapperMocks(DynamicMagicMock):
     db_client: MagicMock
     quick_search_query: MagicMock
@@ -88,27 +84,32 @@ def mock_quick_search_query_wrapper(monkeypatch):
     return mock
 
 
-def test_quick_search_query_wrapper_happy_path(mock_quick_search_query_wrapper):
-    mock = mock_quick_search_query_wrapper
-    mock.quick_search_query.return_value = [{"record_type": "Type A"}]
-    quick_search_query_wrapper(arg1="Source 1", arg2="City A", db_client=mock.db_client)
-    mock.quick_search_query.assert_called_with(
-        SearchParameters(search="Source 1", location="City A"), db_client=mock.db_client
-    )
-    mock.make_response.assert_called_with(
-        [{"record_type": "Type A"}], HTTPStatus.OK.value
-    )
-
-
-def test_quick_search_query_wrapper_exception(mock_quick_search_query_wrapper):
-    mock = mock_quick_search_query_wrapper
-    mock.quick_search_query.side_effect = Exception("Test Exception")
+def call_and_validate_quick_search_query_wrapper(mock: QuickSearchQueryWrapperMocks):
     arg1 = "Source 1"
     arg2 = "City A"
     quick_search_query_wrapper(arg1=arg1, arg2=arg2, db_client=mock.db_client)
     mock.quick_search_query.assert_called_with(
         SearchParameters(search=arg1, location=arg2), db_client=mock.db_client
     )
+
+
+def test_quick_search_query_wrapper_happy_path(mock_quick_search_query_wrapper):
+    mock = mock_quick_search_query_wrapper
+    mock.quick_search_query.return_value = [{"record_type": "Type A"}]
+
+    call_and_validate_quick_search_query_wrapper(mock)
+
+    mock.make_response.assert_called_with(
+        [{"record_type": "Type A"}], HTTPStatus.OK
+    )
+
+
+def test_quick_search_query_wrapper_exception(mock_quick_search_query_wrapper):
+    mock = mock_quick_search_query_wrapper
+    mock.quick_search_query.side_effect = Exception("Test Exception")
+
+    call_and_validate_quick_search_query_wrapper(mock)
+
     user_message = "There was an error during the search operation"
     mock.post_to_webhook.assert_called_with(
         json.dumps(
@@ -118,7 +119,7 @@ def test_quick_search_query_wrapper_exception(mock_quick_search_query_wrapper):
         )
     )
     mock.make_response.assert_called_with(
-        {"count": 0, "message": user_message}, HTTPStatus.INTERNAL_SERVER_ERROR.value
+        {"count": 0, "message": user_message}, HTTPStatus.INTERNAL_SERVER_ERROR
     )
 
 

@@ -1,6 +1,6 @@
 from http import HTTPStatus
 from flask import request
-from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from flask_restx import abort
 
 from database_client.database_client import DatabaseClient
@@ -73,6 +73,7 @@ def check_permissions(
     :param permission: Permission to check.
     :return: True if the user has the permission, False otherwise.
     """
+    verify_jwt_in_request()
     user_email = get_jwt_identity()
     db_client = get_db_client()
     pm = PermissionsManager(db_client=db_client, user_email=user_email)

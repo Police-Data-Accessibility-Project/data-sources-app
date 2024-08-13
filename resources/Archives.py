@@ -84,7 +84,6 @@ class Archives(PsycopgResource):
         return archives_combined_results_clean
 
     @handle_exceptions
-    @jwt_required()
     @permissions_required(PermissionsEnum.DB_WRITE)
     @namespace_archives.doc(
         description="Updates the archive data based on the provided JSON payload.",

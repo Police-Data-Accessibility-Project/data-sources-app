@@ -58,16 +58,23 @@ def test_get_user_permissions(mock):
 
 def test_add_user_permission_success(mock):
     pm = PermissionsManager(mock.db_client, mock.user_email)
+
     pm.add_user_permission(PermissionsEnum.DB_WRITE)
+
     mock.db_client.add_user_permission.assert_called_with(
         mock.user_email, PermissionsEnum.DB_WRITE
     )
-    mock.make_response.assert_called_with("Permission added", HTTPStatus.OK)
+    mock.make_response.assert_called_with(
+        "Permission added",
+        HTTPStatus.OK
+    )
 
 
 def test_add_user_permission_conflict(mock):
     pm = PermissionsManager(mock.db_client, mock.user_email)
+
     pm.add_user_permission(PermissionsEnum.READ_ALL_USER_INFO)
+
     mock.make_response.assert_called_with(
         f"Permission {PermissionsEnum.READ_ALL_USER_INFO.value} already exists for user",
         HTTPStatus.CONFLICT,
@@ -76,7 +83,9 @@ def test_add_user_permission_conflict(mock):
 
 def test_remove_user_permission_success(mock):
     pm = PermissionsManager(mock.db_client, mock.user_email)
+
     pm.remove_user_permission(PermissionsEnum.READ_ALL_USER_INFO)
+
     mock.db_client.remove_user_permission.assert_called_with(
         mock.user_email, PermissionsEnum.READ_ALL_USER_INFO
     )
@@ -85,7 +94,9 @@ def test_remove_user_permission_success(mock):
 
 def test_remove_user_permission_not_found(mock):
     pm = PermissionsManager(mock.db_client, mock.user_email)
+
     pm.remove_user_permission(PermissionsEnum.DB_WRITE)
+
     mock.make_response.assert_called_with(
         f"Permission {PermissionsEnum.DB_WRITE.value} does not exist for user. Cannot remove.",
         HTTPStatus.CONFLICT,
@@ -169,7 +180,7 @@ def test_update_permissions_wrapper():
         mock.action_enum,
         mock.permission_enum
     ]
-    response = update_permissions_wrapper(
+    update_permissions_wrapper(
         mock.db_client, mock.user_email, mock.permission_str, mock.action_str
     )
     mock.get_valid_enum_value.assert_has_calls(

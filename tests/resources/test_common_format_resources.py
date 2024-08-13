@@ -7,12 +7,20 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from tests.fixtures import client_with_mock_db, bypass_api_key_required, bypass_permissions_required, bypass_jwt_required
+from tests.fixtures import (
+    client_with_mock_db,
+    bypass_api_key_required,
+    bypass_permissions_required,
+    bypass_jwt_required
+)
 from http import HTTPStatus
 
 from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_test_data import TEST_RESPONSE
-from tests.helper_scripts.helper_functions import check_is_test_response
+from tests.helper_scripts.helper_functions import (
+    check_is_test_response,
+    run_and_validate_request,
+)
 
 
 class DataSourcesMocks(DynamicMagicMock):
@@ -118,7 +126,7 @@ def test_common_format_resources(
     json_data,
     client_with_mock_db,
     monkeypatch,
-        bypass_api_key_required,
+    bypass_api_key_required,
     bypass_permissions_required,
     bypass_jwt_required
 ):
@@ -127,8 +135,11 @@ def test_common_format_resources(
         f"resources.{route_to_patch}", MagicMock(return_value=TEST_RESPONSE)
     )
 
-    response = client_with_mock_db.client.open(
-        endpoint, method=http_method, json=json_data
+    run_and_validate_request(
+        flask_client=client_with_mock_db.client,
+        http_method=http_method,
+        endpoint=endpoint,
+        json=json_data,
+        expected_json_content=TEST_RESPONSE.response,
+        expected_response_status=TEST_RESPONSE.status_code,
     )
-
-    check_is_test_response(response)

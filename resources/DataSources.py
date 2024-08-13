@@ -87,7 +87,6 @@ class DataSourceById(PsycopgResource):
             return data_source_by_id_wrapper(data_source_id, db_client)
 
     @handle_exceptions
-    @jwt_required()
     @permissions_required(PermissionsEnum.DB_WRITE)
     @namespace_data_source.expect(authorization_jwt_parser, data_sources_inner_model)
     @namespace_data_source.doc(
@@ -141,7 +140,6 @@ class DataSources(PsycopgResource):
             return get_approved_data_sources_wrapper(db_client)
 
     @handle_exceptions
-    @jwt_required()
     @permissions_required(PermissionsEnum.DB_WRITE)
     @namespace_data_source.expect(authorization_jwt_parser, data_sources_inner_model)
     @namespace_data_source.response(200, "Successful operation")

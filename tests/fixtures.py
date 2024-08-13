@@ -139,7 +139,7 @@ def flask_client_with_db(
     with app.test_client() as client:
         yield client
 
-
+#region Bypass Decorators
 @pytest.fixture
 def bypass_api_key_required(monkeypatch):
     """
@@ -172,6 +172,7 @@ def bypass_jwt_required(monkeypatch):
         lambda a, b, c, d, e, f: None,
     )
 
+#endregion
 
 @pytest.fixture
 def live_database_client(db_cursor) -> DatabaseClient:

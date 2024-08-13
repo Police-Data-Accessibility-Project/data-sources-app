@@ -15,44 +15,10 @@ from middleware.login_queries import (
 from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
 
 
-
 def test_generate_api_key():
     api_key = generate_api_key()
     assert len(api_key) == 32
     assert all(c in "0123456789abcdef" for c in api_key)
-
-
-def test_get_api_key_for_user_success(monkeypatch):
-    mock = setup_get_api_for_user_mocks()
-    mock.check_password_hash.return_value = True
-    mock.generate_api_key.return_value = mock.api_key
-
-    # Call function
-    get_api_key_for_user(mock.db_client, mock.email, mock.password)
-
-    mock.db_client.get_user_info.assert_called_with(mock.email)
-    mock.check_password_hash.assert_called_with(mock.password_digest, mock.password)
-    mock.generate_api_key.assert_called()
-    mock.db_client.update_user_api_key.assert_called_with(
-        user_id=mock.user_id, api_key=mock.api_key
-    )
-    mock.make_response.assert_called_with({"api_key": mock.api_key}, HTTPStatus.OK)
-
-
-def test_get_api_key_for_user_failure(monkeypatch):
-    mock = setup_get_api_for_user_mocks()
-
-    mock.check_password_hash.return_value = False
-
-    get_api_key_for_user(mock.db_client, mock.email, mock.password)
-
-    mock.db_client.get_user_info.assert_called_with(mock.email)
-    mock.check_password_hash.assert_called_with(mock.password_digest, mock.password)
-    mock.generate_api_key.assert_not_called()
-    mock.db_client.update_user_api_key.assert_not_called()
-    mock.make_response.assert_called_with(
-        {"message": "Invalid email or password"}, HTTPStatus.UNAUTHORIZED
-    )
 
 
 class GetAPIKeyForUserMocks(DynamicMagicMock):
@@ -67,6 +33,44 @@ class GetAPIKeyForUserMocks(DynamicMagicMock):
     update_api_key: MagicMock
     make_response: MagicMock
     api_key = MagicMock()
+
+
+def test_get_api_key_for_user_success(monkeypatch):
+    mock = setup_get_api_for_user_mocks()
+    mock.check_password_hash.return_value = True
+    mock.generate_api_key.return_value = mock.api_key
+
+    # Call function
+    get_api_key_for_user(mock.db_client, mock.email, mock.password)
+
+    assert_get_api_key_for_user_precondition_calls(mock)
+
+    mock.generate_api_key.assert_called()
+    mock.db_client.update_user_api_key.assert_called_with(
+        user_id=mock.user_id, api_key=mock.api_key
+    )
+    mock.make_response.assert_called_with({"api_key": mock.api_key}, HTTPStatus.OK)
+
+
+def test_get_api_key_for_user_failure():
+    mock = setup_get_api_for_user_mocks()
+
+    mock.check_password_hash.return_value = False
+
+    get_api_key_for_user(mock.db_client, mock.email, mock.password)
+
+    assert_get_api_key_for_user_precondition_calls(mock)
+
+    mock.generate_api_key.assert_not_called()
+    mock.db_client.update_user_api_key.assert_not_called()
+    mock.make_response.assert_called_with(
+        {"message": "Invalid email or password"}, HTTPStatus.UNAUTHORIZED
+    )
+
+
+def assert_get_api_key_for_user_precondition_calls(mock: GetAPIKeyForUserMocks):
+    mock.db_client.get_user_info.assert_called_with(mock.email)
+    mock.check_password_hash.assert_called_with(mock.password_digest, mock.password)
 
 
 def setup_get_api_for_user_mocks():
@@ -103,7 +107,7 @@ class RefreshSessionMocks(DynamicMagicMock):
 
 
 @pytest.fixture
-def setup_refresh_session_mocks(monkeypatch):
+def setup_refresh_session_mocks():
     mock = RefreshSessionMocks(
         patch_root="middleware.login_queries",
         mocks_to_patch=["make_response", "create_session_token"],
@@ -125,26 +129,17 @@ class TryLoggingInWithGithubIdMocks(DynamicMagicMock):
     user_info: MagicMock
 
 
-def test_try_logging_in_with_github_id_happy_path():
-    mock = TryLoggingInWithGithubIdMocks(
-        patch_root="middleware.login_queries",
-        mocks_to_patch=["unauthorized_response", "login_response"],
-    )
-    mock.github_user_info.user_id = mock.github_user_id
-    mock.db_client.get_user_info_by_external_account_id.return_value = mock.user_info
-
-    result = try_logging_in_with_github_id(mock.db_client, mock.github_user_info)
-
-    assert result == mock.login_response.return_value
-
+def assert_try_logging_in_with_github_id_precondition_calls(
+    mock: TryLoggingInWithGithubIdMocks,
+):
     mock.db_client.get_user_info_by_external_account_id.assert_called_with(
         external_account_id=mock.github_user_id,
         external_account_type=ExternalAccountTypeEnum.GITHUB,
     )
-    mock.login_response.assert_called_once_with(mock.user_info)
 
 
-def test_try_logging_in_with_github_id_unauthorized():
+@pytest.fixture
+def setup_try_logging_in_with_github_id_mocks():
     mock = TryLoggingInWithGithubIdMocks(
         patch_root="middleware.login_queries",
         mocks_to_patch=["unauthorized_response", "login_response"],
@@ -153,18 +148,35 @@ def test_try_logging_in_with_github_id_unauthorized():
             "login_response": MagicMock(spec=Response),
         },
     )
+
     mock.github_user_info.user_id = mock.github_user_id
+    return mock
+
+def test_try_logging_in_with_github_id_happy_path(setup_try_logging_in_with_github_id_mocks):
+    mock = setup_try_logging_in_with_github_id_mocks
+
+    mock.db_client.get_user_info_by_external_account_id.return_value = mock.user_info
+
+    result = try_logging_in_with_github_id(mock.db_client, mock.github_user_info)
+
+    assert_try_logging_in_with_github_id_precondition_calls(mock)
+
+    assert result == mock.login_response.return_value
+    mock.login_response.assert_called_once_with(mock.user_info)
+
+
+def test_try_logging_in_with_github_id_unauthorized(setup_try_logging_in_with_github_id_mocks):
+    mock = setup_try_logging_in_with_github_id_mocks
+
     mock.db_client.get_user_info_by_external_account_id.return_value = None
 
     result = try_logging_in_with_github_id(mock.db_client, mock.github_user_info)
 
-    assert result == mock.unauthorized_response.return_value
+    assert_try_logging_in_with_github_id_precondition_calls(mock)
 
-    mock.db_client.get_user_info_by_external_account_id.assert_called_with(
-        external_account_id=mock.github_user_id,
-        external_account_type=ExternalAccountTypeEnum.GITHUB,
-    )
+    assert result == mock.unauthorized_response.return_value
     mock.unauthorized_response.assert_called_once()
+
 
 class RefreshSessionMocks(DynamicMagicMock):
     identity: MagicMock
@@ -172,6 +184,7 @@ class RefreshSessionMocks(DynamicMagicMock):
     create_access_token: MagicMock
     make_response: MagicMock
     access_token: MagicMock
+
 
 def test_refresh_session():
     mock = RefreshSessionMocks(
@@ -187,6 +200,5 @@ def test_refresh_session():
     mock.create_access_token.assert_called_once_with(identity=mock.identity)
     mock.make_response.assert_called_once_with(
         {"message": "Successfully refreshed session token", "data": mock.access_token},
-        HTTPStatus.OK
+        HTTPStatus.OK,
     )
-
