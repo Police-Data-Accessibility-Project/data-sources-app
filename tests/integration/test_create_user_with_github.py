@@ -14,7 +14,7 @@ from tests.helper_scripts.helper_functions import (
     create_fake_github_user_info,
     assert_expected_pre_callback_response,
 )
-
+from conftest import test_client, monkeymodule, session
 
 def test_create_user_with_github_post(client_with_db, dev_db_connection, monkeypatch, test_client, session):
 

@@ -17,6 +17,7 @@ from middleware.custom_exceptions import (
     UserNotFoundError,
 )
 from middleware.models import User, ExternalAccount
+from conftest import test_client, monkeymodule, session
 from tests.fixtures import (
     live_database_client,
     dev_db_connection,

@@ -7,7 +7,7 @@ import psycopg2
 import sqlalchemy
 from sqlalchemy import select
 
-from conftest import test_client, session
+from conftest import test_client, monkeymodule, session
 from middleware.models import User
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,

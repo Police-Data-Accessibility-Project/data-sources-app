@@ -3,7 +3,7 @@
 from http import HTTPStatus
 import uuid
 
-from conftest import test_client, session
+from conftest import test_client, monkeymodule, session
 import psycopg2
 from tests.fixtures import (
     connection_with_test_data,

@@ -8,7 +8,7 @@ from conftest import test_client, session
 from database_client.database_client import DatabaseClient
 from tests.fixtures import dev_db_connection, client_with_db
 from tests.helper_scripts.helper_functions import create_test_user_api, check_response_status
-
+from conftest import test_client, monkeymodule, session
 
 def test_api_key_get(client_with_db, dev_db_connection: psycopg2.extensions.connection, test_client, session):
     """

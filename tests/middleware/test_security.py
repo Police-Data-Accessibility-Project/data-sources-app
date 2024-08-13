@@ -10,7 +10,7 @@ from unittest.mock import MagicMock
 
 from flask import Flask
 
-from conftest import test_client, session
+from conftest import test_client, monkeymodule, session
 from database_client.database_client import DatabaseClient
 from middleware import security
 from middleware.models import db

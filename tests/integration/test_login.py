@@ -5,7 +5,7 @@ import psycopg2.extensions
 from tests.fixtures import dev_db_connection, client_with_db
 from tests.helper_scripts.helper_functions import create_test_user_api, login_and_return_session_token, \
     assert_session_token_exists_for_email
-
+from conftest import test_client, monkeymodule, session
 
 def test_login_post(client_with_db, dev_db_connection: psycopg2.extensions.connection):
     """

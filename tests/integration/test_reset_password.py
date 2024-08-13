@@ -6,7 +6,7 @@ import uuid
 import psycopg2
 import sqlalchemy
 
-from conftest import test_client, session
+from conftest import test_client, monkeymodule, session
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     get_user_password_digest,
