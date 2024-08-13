@@ -14,6 +14,7 @@ from tests.helper_scripts.helper_functions import (
     check_response_status,
     create_test_user_setup,
     run_and_validate_request,
+    search_with_boolean_dictionary,
 )
 
 
@@ -34,10 +35,12 @@ def test_data_sources_needs_identification(
         headers=tus.api_authorization_header,
     )
 
-    for result in response_json["data"]:
-        name = result["name"]
-        if name in inserted_data_sources_found:
-            inserted_data_sources_found[name] = True
+    data = response_json["data"]
+    search_with_boolean_dictionary(
+        data=data,
+        boolean_dictionary=inserted_data_sources_found,
+        key_to_search_on="name",
+    )
 
     assert not inserted_data_sources_found["Source 1"]
     assert inserted_data_sources_found["Source 2"]

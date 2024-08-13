@@ -52,7 +52,6 @@ def test_quick_search_get(flask_client_with_db, connection_with_test_data):
 
     # Test that query inserted into log
     result = get_most_recent_quick_search_query_log(cursor, "Source 1", "City A")
-    assert result.result_count == 1
-    assert len(result.results) == 1
+    assert result.result_count == len(result.results) == 1
     assert result.results[0] == "SOURCE_UID_1"
     assert result.updated_at >= test_datetime

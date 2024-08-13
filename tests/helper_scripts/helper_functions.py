@@ -202,7 +202,7 @@ def has_expected_keys(result_keys: list, expected_keys: list) -> bool:
     return not set(expected_keys).difference(result_keys)
 
 
-def get_boolean_dictionary(keys: tuple) -> dict:
+def get_boolean_dictionary(keys: tuple) -> dict[str, bool]:
     """
     Creates dictionary of booleans, all set to false.
 
@@ -213,6 +213,24 @@ def get_boolean_dictionary(keys: tuple) -> dict:
     for key in keys:
         d[key] = False
     return d
+
+def search_with_boolean_dictionary(
+    data: list[dict],
+    boolean_dictionary: dict[str, bool],
+    key_to_search_on: str,
+):
+    """
+    Search data with boolean dictionary.
+    Updates boolean dictionary with found data.
+
+    :param data:
+    :param boolean_dictionary:
+    :param key_to_search_on:
+    """
+    for result in data:
+        name = result[key_to_search_on]
+        if name in boolean_dictionary:
+            boolean_dictionary[name] = True
 
 
 @dataclass

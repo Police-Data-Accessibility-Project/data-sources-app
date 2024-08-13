@@ -58,7 +58,5 @@ def test_data_sources_by_id_put(
         json={"description": desc},
     )
 
-    cursor = db_client_with_test_data.cursor
-    db_client = DatabaseClient(cursor)
-    result = db_client.get_data_source_by_id("SOURCE_UID_1")
+    result = db_client_with_test_data.get_data_source_by_id("SOURCE_UID_1")
     assert result["description"] == desc

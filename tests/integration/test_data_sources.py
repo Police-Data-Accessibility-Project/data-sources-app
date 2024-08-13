@@ -23,9 +23,11 @@ from tests.helper_scripts.helper_functions import (
     create_test_user_setup,
     create_test_user_setup_db_client,
     run_and_validate_request,
+    search_with_boolean_dictionary,
 )
 
 ENDPOINT = "/api/data-sources"
+
 
 def test_data_sources_get(
     flask_client_with_db, connection_with_test_data: psycopg2.extensions.connection
@@ -44,10 +46,11 @@ def test_data_sources_get(
         headers=tus.api_authorization_header,
     )
     data = response_json["data"]
-    for result in data:
-        name = result["name"]
-        if name in inserted_data_sources_found:
-            inserted_data_sources_found[name] = True
+    search_with_boolean_dictionary(
+        data=data,
+        boolean_dictionary=inserted_data_sources_found,
+        key_to_search_on="name",
+    )
     assert inserted_data_sources_found["Source 1"]
     assert not inserted_data_sources_found["Source 2"]
     assert not inserted_data_sources_found["Source 3"]

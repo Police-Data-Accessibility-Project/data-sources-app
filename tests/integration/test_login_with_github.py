@@ -5,7 +5,7 @@ from psycopg2.extras import DictCursor
 from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
 from middleware.enums import CallbackFunctionsEnum
-from tests.fixtures import dev_db_connection, flask_client_with_db
+from tests.fixtures import dev_db_connection, flask_client_with_db, dev_db_client
 from tests.helper_scripts.helper_functions import (
     check_response_status,
     create_test_user_api,
@@ -19,12 +19,11 @@ from tests.helper_scripts.helper_functions import (
 )
 
 
-def test_login_with_github_post(flask_client_with_db, dev_db_connection, monkeypatch):
+def test_login_with_github_post(flask_client_with_db, dev_db_client, monkeypatch):
     test_user_info = create_test_user_api(flask_client_with_db)
     github_user_info = create_fake_github_user_info(test_user_info.email)
-    db_client = DatabaseClient(dev_db_connection.cursor(cursor_factory=DictCursor))
-    user_info = db_client.get_user_info(test_user_info.email)
-    db_client.link_external_account(
+    user_info = dev_db_client.get_user_info(test_user_info.email)
+    dev_db_client.link_external_account(
         user_id=user_info.id,
         external_account_type=ExternalAccountTypeEnum.GITHUB,
         external_account_id=github_user_info.user_id,

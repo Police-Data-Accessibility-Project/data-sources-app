@@ -60,5 +60,4 @@ def test_link_to_github(
         (tus.user_info.email,),
     )
     result = cursor.fetchone()
-    assert result[0] == "github"
-    assert result[1] == github_user_info.user_id
+    assert result == ("github", github_user_info.user_id)
