@@ -3,6 +3,7 @@
 from http import HTTPStatus
 import uuid
 
+from conftest import test_client, session
 import psycopg2
 from tests.fixtures import (
     connection_with_test_data,
@@ -46,14 +47,14 @@ def test_data_sources_get(
 
 
 def test_data_sources_post(
-    client_with_db, dev_db_connection: psycopg2.extensions.connection
+    client_with_db, dev_db_connection: psycopg2.extensions.connection, test_client, session
 ):
     """
     Test that POST call to /data-sources endpoint successfully creates a new data source with a unique name and verifies its existence in the database
     """
 
     tus = create_test_user_setup(client_with_db)
-    give_user_admin_role(dev_db_connection, tus.user_info)
+    give_user_admin_role(session, tus.user_info)
 
     name = str(uuid.uuid4())
     response = client_with_db.post(
