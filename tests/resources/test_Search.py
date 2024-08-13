@@ -14,26 +14,40 @@ from utilities.enums import RecordCategories
 def mock_search_wrapper_all_parameters(
     db_client: DatabaseClient,
     state: str,
-    record_category: Optional[RecordCategories] = None,
+    record_categories: Optional[list[RecordCategories]] = None,
     county: Optional[str] = None,
     locality: Optional[str] = None,
 ):
     assert state == "Pennsylvania"
-    assert record_category == RecordCategories.POLICE
+    assert record_categories == [RecordCategories.POLICE]
     assert county == "Allegheny"
     assert locality == "Pittsburgh"
+
+    return TEST_RESPONSE
+
+def mock_search_wrapper_multiple_parameters(
+    db_client: DatabaseClient,
+    state: str,
+    record_categories: Optional[list[RecordCategories]] = None,
+    county: Optional[str] = None,
+    locality: Optional[str] = None,
+):
+    assert state == "Pennsylvania"
+    assert record_categories == [RecordCategories.POLICE, RecordCategories.RESOURCE]
+    assert county is None
+    assert locality is None
 
     return TEST_RESPONSE
 
 def mock_search_wrapper_minimal_parameters(
     db_client: DatabaseClient,
     state: str,
-    record_category: Optional[RecordCategories] = None,
+    record_categories: Optional[list[RecordCategories]] = None,
     county: Optional[str] = None,
     locality: Optional[str] = None,
 ):
     assert state == "Pennsylvania"
-    assert record_category is None
+    assert record_categories is None
     assert county is None
     assert locality is None
 
@@ -51,6 +65,10 @@ def mock_search_wrapper_minimal_parameters(
             "/search/search-location-and-record-type?state=Pennsylvania",
             mock_search_wrapper_minimal_parameters
         ),
+        (
+            "/search/search-location-and-record-type?state=Pennsylvania&record_category=Police+%26+Public+interactions%2CAgency-published+resources",
+            mock_search_wrapper_multiple_parameters
+        )
     )
 )
 def test_search_get_parameters(

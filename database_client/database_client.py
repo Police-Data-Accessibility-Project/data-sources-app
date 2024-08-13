@@ -688,7 +688,7 @@ class DatabaseClient:
     def search_with_location_and_record_type(
         self,
         state: str,
-        record_type: Optional[RecordCategories] = None,
+        record_categories: Optional[list[RecordCategories]] = None,
         county: Optional[str] = None,
         locality: Optional[str] = None,
     ) -> List[QuickSearchResult]:
@@ -696,13 +696,13 @@ class DatabaseClient:
         Searches for data sources in the database.
 
         :param state: The state to search for data sources in.
-        :param record_type: The type of data sources to search for. If None, all data sources will be searched for.
+        :param record_categories: The types of data sources to search for. If None, all data sources will be searched for.
         :param county: The county to search for data sources in. If None, all data sources will be searched for.
         :param locality: The locality to search for data sources in. If None, all data sources will be searched for.
         :return: A list of QuickSearchResult objects.
         """
         query = DynamicQueryConstructor.create_search_query(
-            state=state, record_type=record_type, county=county, locality=locality
+            state=state, record_categories=record_categories, county=county, locality=locality
         )
         self.cursor.execute(query)
         results = self.cursor.fetchall()

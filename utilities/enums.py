@@ -9,3 +9,4 @@ class RecordCategories(Enum):
     AGENCIES = "Info about Agencies"
     RESOURCE = "Agency-published Resources"
     JAIL = "Jails & Courts"
+    OTHER = "Other"

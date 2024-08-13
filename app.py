@@ -14,7 +14,7 @@ from resources.TypeaheadSuggestions import (
 )
 from flask_restx import Api
 
-from config import config, oauth
+from config import config, oauth, limiter
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 from middleware.models import db
 from middleware.util import get_env_variable
@@ -49,7 +49,7 @@ NAMESPACES = [
     namespace_auth,
     namespace_link_to_github,
     namespace_login_with_github,
-    namespace_create_user_with_github
+    namespace_create_user_with_github,
 ]
 
 MY_PREFIX = "/api"
@@ -79,6 +79,7 @@ class ReverseProxied(object):
             environ["wsgi.url_scheme"] = scheme
         return self.app(environ, start_response)
 
+
 def get_flask_app_secret_key() -> str:
     return os.getenv("FLASK_APP_SECRET_KEY")
 
@@ -102,6 +103,7 @@ def create_app(testing=False) -> Flask:
     api.init_app(app)
     oauth.init_app(app)
     db.init_app(app)
+    limiter.init_app(app)
 
     return app
 

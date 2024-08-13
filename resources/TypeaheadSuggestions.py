@@ -1,6 +1,7 @@
 from flask import Response, request
 from flask_restx import fields, reqparse
 
+from config import limiter
 from middleware.typeahead_suggestion_logic import get_typeahead_suggestions_wrapper
 from resources.PsycopgResource import handle_exceptions, PsycopgResource
 from resources.resource_helpers import create_outer_model
@@ -19,6 +20,8 @@ request_parser.add_argument(
     required=True,
     help="The typeahead query to get suggestions for, such as `Pitts`",
 )
+
+
 
 typeahead_suggestions_inner_model = namespace_typeahead_suggestions.model(
     "TypeaheadSuggestionsInner",
@@ -64,6 +67,7 @@ class TypeaheadSuggestions(PsycopgResource):
     @namespace_typeahead_suggestions.expect(request_parser)
     @namespace_typeahead_suggestions.response(200, "OK", typeahead_suggestions_outer_model)
     @namespace_typeahead_suggestions.response(500, "Internal server error")
+    @limiter.limit("10/second")
     def get(self) -> Response:
         """
         Get suggestions for a typeahead query

@@ -1,3 +1,4 @@
+from config import limiter
 from middleware.callback_flask_sessions_logic import setup_callback_session
 from middleware.callback_oauth_logic import redirect_to_github_authorization
 from middleware.enums import CallbackFunctionsEnum
@@ -20,6 +21,7 @@ class CreateUserWithGithub(PsycopgResource):
             500: "Internal Server Error",
         },
     )
+    @limiter.limit("5 per minute")
     def post(self):
         """
         Creates a new user with Github account

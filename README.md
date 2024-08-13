@@ -6,7 +6,8 @@ Development of the next big iteration of the data sources app according to https
 
 An API and UI for searching, using, and maintaining Data Sources. 
 
-#### [Live app](https://data-sources.pdap.io/)
+#### [Live app](https://data-sources-v2.pdap.io/) deployed from `main`
+#### [Dev app](https://data-sources-v2.pdap.dev/) deployed from `dev`
 #### [API docs](https://docs.pdap.io/api/introduction)
 
 ## Installation
@@ -66,8 +67,8 @@ The environment variables are as follows:
 * VITE_VUE_API_BASE_URL: The base URL for the API
 * VITE_VUE_APP_BASE_URL: The base URL for the UI
 * SECRET_KEY: Used to sign cookies
-* GITHUB_CLIENT_ID: Used to authenticate with GitHub via OAuth
-* GITHUB_CLIENT_SECRET: Used to authenticate with GitHub via OAuth
+* GH_CLIENT_ID: Used to authenticate with GitHub via OAuth
+* GH_CLIENT_SECRET: Used to authenticate with GitHub via OAuth
 
 #### .env Example
 ```
@@ -78,8 +79,8 @@ DEV_DB_CONN_STRING="postgresql://data_sources_app_v2:<password>@pdap-db-dev-do-u
 VITE_VUE_API_BASE_URL="http://localhost:5000"
 VITE_VUE_APP_BASE_URL="http://localhost:8888"
 SECRET_KEY="mySecretKey"
-GITHUB_CLIENT_ID="myGithubClientId"
-GITHUB_CLIENT_SECRET="myGithubClientSecret"
+GH_CLIENT_ID="myGithubClientId"
+GH_CLIENT_SECRET="myGithubClientSecret"
 ```
 
 #### Shell Example
@@ -121,91 +122,5 @@ npm run dev
 
 ```
 
-## Testing
-
-### Location
-All unit and integration tests for the API live in the `tests` folder
-
-It is best practice to add tests for any new feature to ensure it is working as expected and that any future code changes do not affect its functionality. All tests will be automatically run when a PR into dev is opened in order to ensure any changes do not break current app functionality. If a test fails, it is a sign that the new code should be checked or possibly that the test needs to be updated. 
-
-
-### How to run tests
-Some tests involve interfacing with the development database, which copies the production database's data and schema daily.
-
-To ensure such tests properly connect to the database, create or amend an `.env` file in the root direct of the project with the environment variable `DEV_DB_CONN_STRING`. Provide as a value a connection string giving you access to the `data_sources_app` user. If you do not have this connection string, DM a database administrator.
-
-Tests are currently run with pytest and can be run locally with the `pytest` command.
-
-Remaining API code is stored in functions suffixed with "_query" tested against static query results stored in app_test_data.py.
-
-```
-pip install pytest
-pytest
-
-```
-## Linting
-Linting is enforced with black on PR creation. You can use black to automatically reformat your files before commiting them, this will allow your PR to pass this check. Any files that require reformatting will be listed on any failed checks on the PR.
-```
-black app_test.py
-```
-
-## Docstring and Type Checking
-
-Docstrings and Type Checking are checked using the [pydocstyle](https://www.pydocstyle.org/en/stable/) and [mypy](https://mypy-lang.org/)
-modules, respectively. When making a pull request, a Github Action (`python_checks.yml`) will run and, 
-if it detects any missing docstrings or type hints in files that you have modified, post them in the Pull Request.
-
-These will *not* block any Pull request, but exist primarily as advisory comments to encourage good coding standards.
-
-Note that `python_checks.yml` will only function on pull requests made from within the repo, not from a forked repo.
-
-## Client App
-
-A few things to know:
-
-- We use Vue3. This allows for using either the options or composition APIs. Feel free to use whichever you are most fluent in.
-- We use `pinia` for state management. This works much better with the composition API than with options, so it is recommended to use the composition API if you need data from one of the `pinia` stores.
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Serves production build locally
-```
-npm run preview
-```
-
-### Lints files
-```
-npm run lint
-```
-
-### Lints and fixes any fixable errors
-```
-npm run lint:fix
-```
-
-### Runs tests with debug output
-```
-npm run test
-```
-
-### Runs tests quietly for CI
-```
-npm run test:ci
-```
-
-### Runs tests only on changed files
-```
-npm run test:changed
-```
-
-### Runs tests and outputs coverage reports
-```
-npm run coverage
-```
-
-### Customize configuration
-
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## Contributing
+If you're here to submit a Pull Request, please review the important information available in CONTRIBUTING.md.

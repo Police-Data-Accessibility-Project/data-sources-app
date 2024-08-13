@@ -541,15 +541,15 @@ def test_search_with_location_and_record_types_real_data(live_database_client):
     :param live_database_client:
     :return:
     """
-    state_parameter = "Pennsylvania"
+    state_parameter = "PeNnSylvaNia"  # Additionally testing for case-insensitivity
     record_type_parameter = RecordCategories.AGENCIES
-    county_parameter = "Allegheny"
-    locality_parameter = "Pittsburgh"
+    county_parameter = "ALLEGHENY"
+    locality_parameter = "pittsburgh"
 
     SRLC = len(
         live_database_client.search_with_location_and_record_type(
             state=state_parameter,
-            record_type=record_type_parameter,
+            record_categories=[record_type_parameter],
             county=county_parameter,
             locality=locality_parameter,
         )
@@ -559,13 +559,13 @@ def test_search_with_location_and_record_types_real_data(live_database_client):
     )
     SR = len(
         live_database_client.search_with_location_and_record_type(
-            state=state_parameter, record_type=record_type_parameter
+            state=state_parameter, record_categories=[record_type_parameter]
         )
     )
     SRC = len(
         live_database_client.search_with_location_and_record_type(
             state=state_parameter,
-            record_type=record_type_parameter,
+            record_categories=[record_type_parameter],
             county=county_parameter,
         )
     )
@@ -585,6 +585,27 @@ def test_search_with_location_and_record_types_real_data(live_database_client):
     assert SRLC < SCL
     assert S > SR > SRC
     assert S > SC > SCL
+
+def test_search_with_location_and_record_types_real_data_multiple_records(live_database_client):
+    state_parameter = "Pennsylvania"
+    record_types = []
+    last_count = 0
+
+    # Check that when more record types are added, the number of results increases
+    for record_type in [e for e in RecordCategories]:
+        record_types.append(record_type)
+        results = live_database_client.search_with_location_and_record_type(
+            state=state_parameter, record_categories=record_types
+        )
+        assert len(results) > last_count
+        last_count = len(results)
+
+    # Finally, check that all record_types is equivalent to no record types in terms of number of results
+    results = live_database_client.search_with_location_and_record_type(
+        state=state_parameter
+    )
+    assert len(results) == last_count
+
 
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts

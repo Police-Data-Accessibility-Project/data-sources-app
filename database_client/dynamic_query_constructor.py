@@ -276,7 +276,7 @@ class DynamicQueryConstructor:
             locality
         FROM combined
         ORDER BY sort_order, display_name
-        LIMIT 4;
+        LIMIT 10;
         """
         ).format(
             search_term_prefix=sql.Literal(f"{search_term}%"),
@@ -287,7 +287,7 @@ class DynamicQueryConstructor:
     @staticmethod
     def create_search_query(
         state: str,
-        record_type: Optional[RecordCategories] = None,
+        record_categories: Optional[list[RecordCategories]] = None,
         county: Optional[str] = None,
         locality: Optional[str] = None
     ) ->sql.Composed:
@@ -320,12 +320,12 @@ class DynamicQueryConstructor:
 
         join_conditions = []
         where_conditions = [
-            sql.SQL("state_names.state_name = {state_name}").format(state_name=sql.Literal(state)),
+            sql.SQL("LOWER(state_names.state_name) = LOWER({state_name})").format(state_name=sql.Literal(state)),
             sql.SQL("data_sources.approval_status = 'approved'"),
             sql.SQL("data_sources.url_status NOT IN ('broken', 'none found')")
         ]
 
-        if record_type is not None:
+        if record_categories is not None:
             join_conditions.append(sql.SQL("""
                 INNER JOIN
                     record_types ON data_sources.record_type_id = record_types.id
@@ -333,18 +333,19 @@ class DynamicQueryConstructor:
                     record_categories ON record_types.category_id = record_categories.id
             """))
 
+            record_type_str_tup = tuple([record_type.value for record_type in record_categories])
             where_conditions.append(sql.SQL(
-                "record_categories.name = {record_type}"
-            ).format(record_type=sql.Literal(record_type.value)))
+                "record_categories.name in {record_types}"
+            ).format(record_types=sql.Literal(record_type_str_tup)))
 
         if county is not None:
             where_conditions.append(sql.SQL(
-                "counties.name = {county_name}"
+                "LOWER(counties.name) = LOWER({county_name})"
             ).format(county_name=sql.Literal(county)))
 
         if locality is not None:
             where_conditions.append(sql.SQL(
-                "agencies.municipality = {locality}"
+                "LOWER(agencies.municipality) = LOWER({locality})"
             ).format(locality=sql.Literal(locality)))
 
         query = sql.Composed([
