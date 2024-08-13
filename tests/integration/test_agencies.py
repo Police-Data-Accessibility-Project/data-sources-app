@@ -9,25 +9,24 @@ from tests.fixtures import dev_db_connection, flask_client_with_db, dev_db_clien
 from tests.helper_scripts.helper_functions import (
     check_response_status,
     create_test_user_setup_db_client,
+    run_and_validate_request,
 )
 
 
-def test_agencies_get(
-        flask_client_with_db, dev_db_client: DatabaseClient
-):
+def test_agencies_get(flask_client_with_db, dev_db_client: DatabaseClient):
     """
     Test that GET call to /agencies endpoint properly retrieves a nonzero amount of data
     """
-    tus = create_test_user_setup_db_client(
-        dev_db_client
-    )
+    tus = create_test_user_setup_db_client(dev_db_client)
 
-    response = flask_client_with_db.get(
-        "/api/agencies/2",
+    response_json = run_and_validate_request(
+        flask_client=flask_client_with_db,
+        http_method="get",
+        endpoint="/api/agencies/2",
         headers=tus.api_authorization_header,
     )
-    check_response_status(response, HTTPStatus.OK.value)
-    data = response.json["data"]
+
+    data = response_json["data"]
     assert len(data) > 0
     assert isinstance(data[0], dict)
     assert data[0]["airtable_uid"] is not None

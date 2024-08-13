@@ -22,11 +22,13 @@ from tests.helper_scripts.helper_functions import (
     check_response_status,
     create_test_user_setup,
     create_test_user_setup_db_client,
+    run_and_validate_request,
 )
 
+ENDPOINT = "/api/data-sources"
 
 def test_data_sources_get(
-        flask_client_with_db, connection_with_test_data: psycopg2.extensions.connection
+    flask_client_with_db, connection_with_test_data: psycopg2.extensions.connection
 ):
     """
     Test that GET call to /data-sources endpoint retrieves data sources and correctly identifies specific sources by name
@@ -35,12 +37,13 @@ def test_data_sources_get(
         ("Source 1", "Source 2", "Source 3")
     )
     tus = create_test_user_setup(flask_client_with_db)
-    response = flask_client_with_db.get(
-        "/api/data-sources",
+    response_json = run_and_validate_request(
+        flask_client=flask_client_with_db,
+        http_method="get",
+        endpoint=ENDPOINT,
         headers=tus.api_authorization_header,
     )
-    check_response_status(response, HTTPStatus.OK.value)
-    data = response.get_json()["data"]
+    data = response_json["data"]
     for result in data:
         name = result["name"]
         if name in inserted_data_sources_found:
@@ -60,12 +63,13 @@ def test_data_sources_post(
     """
 
     name = str(uuid.uuid4())
-    response = flask_client_with_db.post(
-        "/data-sources",
-        json={"name": name},
+    run_and_validate_request(
+        flask_client=flask_client_with_db,
+        http_method="post",
+        endpoint=ENDPOINT,
         headers=test_user_admin.jwt_authorization_header,
+        json={"name": name},
     )
-    check_response_status(response, HTTPStatus.OK.value)
     cursor = db_client_with_test_data.cursor
     cursor.execute(
         """

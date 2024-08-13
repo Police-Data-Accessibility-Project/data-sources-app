@@ -8,7 +8,13 @@ import psycopg2
 
 from database_client.database_client import DatabaseClient
 from middleware.enums import PermissionsEnum
-from tests.fixtures import dev_db_connection, flask_client_with_db, db_cursor, dev_db_client, test_user_admin
+from tests.fixtures import (
+    dev_db_connection,
+    flask_client_with_db,
+    db_cursor,
+    dev_db_client,
+    test_user_admin,
+)
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     create_api_key,
@@ -16,24 +22,27 @@ from tests.helper_scripts.helper_functions import (
     create_test_user_setup,
     create_test_user_setup_db_client,
     check_response_status,
+    run_and_validate_request,
 )
 
+ENDPOINT = "/api/archives"
 
-def test_archives_get(flask_client_with_db, dev_db_client: DatabaseClient, test_user_admin):
+def test_archives_get(flask_client_with_db, dev_db_client: DatabaseClient):
     """
     Test that GET call to /archives endpoint successfully retrieves a non-zero amount of data
     """
     tus = create_test_user_setup_db_client(
         dev_db_client,
     )
-    response = flask_client_with_db.get(
-        "/api/archives",
+    response_json = run_and_validate_request(
+        flask_client=flask_client_with_db,
+        http_method="get",
+        endpoint=ENDPOINT,
         headers=tus.api_authorization_header,
     )
-    check_response_status(response, HTTPStatus.OK)
 
-    assert len(response.json) > 0, "Endpoint should return more than 0 results"
-    assert response.json[0]["id"] is not None
+    assert len(response_json) > 0, "Endpoint should return more than 0 results"
+    assert response_json[0]["id"] is not None
 
 
 def test_archives_put(
@@ -46,18 +55,17 @@ def test_archives_put(
     last_cached = datetime.datetime(year=2020, month=3, day=4)
     broken_as_of = datetime.date(year=1993, month=11, day=13)
     test_user_admin.jwt_authorization_header["Content-Type"] = "application/json"
-    response = flask_client_with_db.put(
-        "/archives",
+    run_and_validate_request(
+        flask_client=flask_client_with_db,
+        http_method="put",
+        endpoint=ENDPOINT,
         headers=test_user_admin.jwt_authorization_header,
-        json=json.dumps(
-            {
-                "id": data_source_id,
-                "last_cached": str(last_cached),
-                "broken_source_url_as_of": str(broken_as_of),
-            }
-        ),
+        json=json.dumps({
+            "id": data_source_id,
+            "last_cached": str(last_cached),
+            "broken_source_url_as_of": str(broken_as_of),
+        }),
     )
-    assert response.status_code == HTTPStatus.OK.value, "Endpoint returned non-200"
 
     cursor = dev_db_client.cursor
     cursor.execute(

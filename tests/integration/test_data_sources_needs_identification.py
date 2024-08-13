@@ -2,18 +2,23 @@
 
 from http import HTTPStatus
 import psycopg2
-from tests.fixtures import connection_with_test_data, flask_client_with_db, dev_db_connection
+from tests.fixtures import (
+    connection_with_test_data,
+    flask_client_with_db,
+    dev_db_connection,
+)
 from tests.helper_scripts.helper_functions import (
     get_boolean_dictionary,
     create_test_user_api,
     create_api_key,
     check_response_status,
     create_test_user_setup,
+    run_and_validate_request,
 )
 
 
 def test_data_sources_needs_identification(
-        flask_client_with_db, connection_with_test_data: psycopg2.extensions.connection
+    flask_client_with_db, connection_with_test_data: psycopg2.extensions.connection
 ):
     """
     Test that GET call to /data-sources-needs-identification endpoint retrieves data sources that need identification and correctly identifies specific sources by name
@@ -22,13 +27,14 @@ def test_data_sources_needs_identification(
         ("Source 1", "Source 2", "Source 3")
     )
     tus = create_test_user_setup(flask_client_with_db)
-    response = flask_client_with_db.get(
-        "/api/data-sources-needs-identification",
+    response_json = run_and_validate_request(
+        flask_client=flask_client_with_db,
+        http_method="get",
+        endpoint="/api/data-sources-needs-identification",
         headers=tus.api_authorization_header,
     )
-    check_response_status(response, HTTPStatus.OK.value)
 
-    for result in response.json["data"]:
+    for result in response_json["data"]:
         name = result["name"]
         if name in inserted_data_sources_found:
             inserted_data_sources_found[name] = True

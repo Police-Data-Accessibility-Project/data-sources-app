@@ -13,11 +13,12 @@ from tests.helper_scripts.helper_functions import (
     create_fake_github_user_info,
     assert_expected_pre_callback_response,
     create_test_user_setup,
+    run_and_validate_request,
 )
 
 
 def test_link_to_github(
-        flask_client_with_db, dev_db_connection: psycopg2.extensions.connection, monkeypatch
+    flask_client_with_db, dev_db_connection: psycopg2.extensions.connection, monkeypatch
 ):
     tus = create_test_user_setup(flask_client_with_db)
     mock_setup_callback_session = patch_setup_callback_session(
@@ -47,8 +48,12 @@ def test_link_to_github(
         callback_functions_enum=CallbackFunctionsEnum.LINK_TO_GITHUB,
         callback_params=mock_params,
     )
-    response = flask_client_with_db.get("auth/callback")
-    check_response_status(response, HTTPStatus.OK)
+    run_and_validate_request(
+        flask_client=flask_client_with_db,
+        http_method="get",
+        endpoint="auth/callback",
+    )
+
     cursor = dev_db_connection.cursor()
     cursor.execute(
         "SELECT account_type, account_identifier FROM user_external_accounts WHERE email = %s",

@@ -3,6 +3,7 @@ from http import HTTPStatus
 from tests.helper_scripts.helper_functions import (
     check_response_status,
     setup_get_typeahead_suggestion_test_data,
+    run_and_validate_request,
 )
 from tests.fixtures import flask_client_with_db, dev_db_connection
 
@@ -13,23 +14,31 @@ def test_typeahead_suggestions(flask_client_with_db, dev_db_connection):
     """
     setup_get_typeahead_suggestion_test_data(dev_db_connection.cursor())
     dev_db_connection.commit()
-    response = flask_client_with_db.get("/search/typeahead-suggestions?query=xyl")
-    check_response_status(response, HTTPStatus.OK.value)
-    results = response.json["suggestions"]
-    assert results[0]["display_name"] == "Xylodammerung"
-    assert results[0]["locality"] == "Xylodammerung"
-    assert results[0]["county"] == "Arxylodon"
-    assert results[0]["state"] == "Xylonsylvania"
-    assert results[0]["type"] == "Locality"
-
-    assert results[1]["display_name"] == "Xylonsylvania"
-    assert results[1]["locality"] is None
-    assert results[1]["county"] is None
-    assert results[1]["state"] == "Xylonsylvania"
-    assert results[1]["type"] == "State"
-
-    assert results[2]["display_name"] == "Arxylodon"
-    assert results[2]["locality"] is None
-    assert results[2]["county"] == "Arxylodon"
-    assert results[2]["state"] == "Xylonsylvania"
-    assert results[2]["type"] == "County"
+    run_and_validate_request(
+        flask_client=flask_client_with_db,
+        http_method="get",
+        endpoint="/search/typeahead-suggestions?query=xyl",
+        expected_json_content={"suggestions": [
+            {
+                "display_name": "Xylodammerung",
+                "locality": "Xylodammerung",
+                "county": "Arxylodon",
+                "state": "Xylonsylvania",
+                "type": "Locality"
+            },
+            {
+                "display_name": "Xylonsylvania",
+                "locality": None,
+                "county": None,
+                "state": "Xylonsylvania",
+                "type": "State"
+            },
+            {
+                "display_name": "Arxylodon",
+                "locality": None,
+                "county": "Arxylodon",
+                "state": "Xylonsylvania",
+                "type": "County"
+            },
+        ]},
+    )

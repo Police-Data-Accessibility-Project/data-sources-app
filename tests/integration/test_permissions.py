@@ -1,3 +1,5 @@
+from typing import Union, Dict, List, Optional
+
 from psycopg2.extras import DictCursor
 
 from database_client.database_client import DatabaseClient
@@ -5,8 +7,14 @@ from middleware.enums import PermissionsEnum
 from tests.helper_scripts.helper_functions import (
     check_response_status,
     create_test_user_setup,
+    run_and_validate_request,
 )
-from tests.fixtures import flask_client_with_db, bypass_api_key_required, dev_db_connection, test_user_admin
+from tests.fixtures import (
+    flask_client_with_db,
+    bypass_api_key_required,
+    dev_db_connection,
+    test_user_admin,
+)
 
 
 def test_permissions(flask_client_with_db, bypass_api_key_required, test_user_admin):
@@ -21,37 +29,41 @@ def test_permissions(flask_client_with_db, bypass_api_key_required, test_user_ad
 
     endpoint = f"/auth/permissions?user_email={tus.user_info.email}"
 
-    response = flask_client_with_db.get(
-        endpoint,
-        headers=test_user_admin.jwt_authorization_header,
-    )
-    check_response_status(response, 200)
-    assert response.json == []
+    def run_and_validate_endpoint(
+        http_method: str,
+        expected_json_content: Optional[Union[Dict, List]] = None,
+        **additional_kwargs,
+    ):
+        run_and_validate_request(
+            flask_client=flask_client_with_db,
+            http_method=http_method,
+            endpoint=endpoint,
+            expected_json_content=expected_json_content,
+            headers=test_user_admin.jwt_authorization_header,
+            **additional_kwargs,
+        )
 
-    response = flask_client_with_db.put(
-        endpoint,
+    run_and_validate_endpoint(
+        http_method="get",
+        expected_json_content=[],
+    )
+
+    run_and_validate_endpoint(
+        http_method="put",
         json={"action": "add", "permission": "db_write"},
-        headers=test_user_admin.jwt_authorization_header,
     )
-    check_response_status(response, 200)
 
-    response = flask_client_with_db.get(
-        endpoint,
-        headers=test_user_admin.jwt_authorization_header,
+    run_and_validate_endpoint(
+        http_method="get",
+        expected_json_content=["db_write"],
     )
-    check_response_status(response, 200)
-    assert response.json == ["db_write"]
 
-    response = flask_client_with_db.put(
-        endpoint,
+    run_and_validate_endpoint(
+        http_method="put",
         json={"action": "remove", "permission": "db_write"},
-        headers=test_user_admin.jwt_authorization_header,
     )
-    check_response_status(response, 200)
 
-    response = flask_client_with_db.get(
-        endpoint,
-        headers=test_user_admin.jwt_authorization_header,
+    run_and_validate_endpoint(
+        http_method="get",
+        expected_json_content=[],
     )
-    check_response_status(response, 200)
-    assert response.json == []

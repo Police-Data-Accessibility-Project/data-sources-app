@@ -11,11 +11,12 @@ from tests.helper_scripts.helper_functions import (
     get_user_password_digest,
     request_reset_password_api,
     check_response_status,
+    run_and_validate_request,
 )
 
 
 def test_reset_password_post(
-        flask_client_with_db, dev_db_connection: psycopg2.extensions.connection, mocker
+    flask_client_with_db, dev_db_connection: psycopg2.extensions.connection, mocker
 ):
     """
     Test that POST call to /reset-password endpoint successfully resets the user's password, and verifies the new password digest is distinct from the old one in the database
@@ -27,11 +28,12 @@ def test_reset_password_post(
 
     token = request_reset_password_api(flask_client_with_db, mocker, user_info)
     new_password = str(uuid.uuid4())
-    response = flask_client_with_db.post(
-        "/api/reset-password",
+    run_and_validate_request(
+        flask_client=flask_client_with_db,
+        http_method="post",
+        endpoint="/api/reset-password",
         json={"email": user_info.email, "token": token, "password": new_password},
     )
-    check_response_status(response, HTTPStatus.OK.value)
     new_password_digest = get_user_password_digest(cursor, user_info)
     assert (
         new_password_digest != old_password_digest

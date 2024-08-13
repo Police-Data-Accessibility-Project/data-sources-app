@@ -514,3 +514,22 @@ def create_test_user_db_client(db_client: DatabaseClient) -> UserInfo:
     password_digest = uuid.uuid4().hex
     user_id = db_client.add_new_user(email, password_digest)
     return UserInfo(email, password_digest, user_id)
+
+def run_and_validate_request(
+        flask_client: FlaskClient,
+        http_method: str,
+        endpoint: str,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_json_content: Optional[dict] = None,
+        **request_kwargs
+):
+    response = flask_client.open(
+        endpoint,
+        method=http_method,
+        **request_kwargs
+    )
+    check_response_status(response, expected_response_status.value)
+    if expected_json_content is not None:
+        assert response.json == expected_json_content
+
+    return response.json
