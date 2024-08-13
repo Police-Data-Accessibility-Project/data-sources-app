@@ -8,7 +8,7 @@ import psycopg2
 
 from database_client.database_client import DatabaseClient
 from middleware.enums import PermissionsEnum
-from tests.fixtures import dev_db_connection, flask_client_with_db, db_cursor, dev_db_client
+from tests.fixtures import dev_db_connection, flask_client_with_db, db_cursor, dev_db_client, test_user_admin
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     create_api_key,
@@ -19,7 +19,7 @@ from tests.helper_scripts.helper_functions import (
 )
 
 
-def test_archives_get(flask_client_with_db, dev_db_client: DatabaseClient):
+def test_archives_get(flask_client_with_db, dev_db_client: DatabaseClient, test_user_admin):
     """
     Test that GET call to /archives endpoint successfully retrieves a non-zero amount of data
     """
@@ -28,7 +28,7 @@ def test_archives_get(flask_client_with_db, dev_db_client: DatabaseClient):
     )
     response = flask_client_with_db.get(
         "/api/archives",
-        headers=tus.authorization_header,
+        headers=tus.api_authorization_header,
     )
     check_response_status(response, HTTPStatus.OK)
 
@@ -37,22 +37,18 @@ def test_archives_get(flask_client_with_db, dev_db_client: DatabaseClient):
 
 
 def test_archives_put(
-        flask_client_with_db, dev_db_client: DatabaseClient
+    flask_client_with_db, dev_db_client: DatabaseClient, test_user_admin
 ):
     """
     Test that PUT call to /archives endpoint successfully updates the data source with last_cached and broken_source_url_as_of fields
     """
-    tus = create_test_user_setup_db_client(
-        dev_db_client,
-        permission=PermissionsEnum.DB_WRITE,
-    )
     data_source_id = insert_test_data_source(dev_db_client.cursor)
     last_cached = datetime.datetime(year=2020, month=3, day=4)
     broken_as_of = datetime.date(year=1993, month=11, day=13)
-    tus.authorization_header["Content-Type"] = "application/json"
+    test_user_admin.jwt_authorization_header["Content-Type"] = "application/json"
     response = flask_client_with_db.put(
         "/archives",
-        headers=tus.authorization_header,
+        headers=test_user_admin.jwt_authorization_header,
         json=json.dumps(
             {
                 "id": data_source_id,

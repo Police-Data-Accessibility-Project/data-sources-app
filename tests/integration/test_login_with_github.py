@@ -14,6 +14,7 @@ from tests.helper_scripts.helper_functions import (
     create_fake_github_user_info,
     assert_expected_pre_callback_response,
     assert_api_key_exists_for_email,
+    assert_jwt_token_matches_user_email,
 )
 
 
@@ -47,8 +48,9 @@ def test_login_with_github_post(flask_client_with_db, dev_db_connection, monkeyp
     response = flask_client_with_db.get("auth/callback")
     check_response_status(response, HTTPStatus.OK)
 
-    api_key = response.json["data"]
+    access_token = response.json["access_token"]
 
-    assert_api_key_exists_for_email(
-        db_client=db_client, api_key=api_key, email=user_info.email
+    assert_jwt_token_matches_user_email(
+        email=user_info.email,
+        jwt_token=access_token,
     )

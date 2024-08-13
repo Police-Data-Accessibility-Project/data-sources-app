@@ -1,7 +1,8 @@
 from flask import request, Response
+from flask_jwt_extended import jwt_required
 from flask_restx import fields
 
-from middleware.decorators import api_key_required
+from middleware.decorators import api_key_required, permissions_required
 from middleware.data_source_queries import (
     get_approved_data_sources_wrapper,
     data_source_by_id_wrapper,
@@ -11,7 +12,11 @@ from middleware.data_source_queries import (
     needs_identification_data_sources_wrapper,
 )
 from middleware.enums import PermissionsEnum
-from resources.resource_helpers import add_api_key_header_arg, create_outer_model
+from resources.resource_helpers import (
+    add_api_key_header_arg,
+    create_outer_model,
+    add_jwt_header_arg,
+)
 from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
@@ -38,8 +43,11 @@ data_sources_outer_model = create_outer_model(
 )
 
 
-authorization_parser = namespace_data_source.parser()
-add_api_key_header_arg(authorization_parser)
+authorization_api_parser = namespace_data_source.parser()
+add_api_key_header_arg(authorization_api_parser)
+
+authorization_jwt_parser = namespace_data_source.parser()
+add_jwt_header_arg(authorization_jwt_parser)
 
 
 @namespace_data_source.route("/data-sources-by-id/<data_source_id>")
@@ -55,7 +63,7 @@ class DataSourceById(PsycopgResource):
     """
 
     @handle_exceptions
-    @api_key_required()
+    @api_key_required
     @namespace_data_source.response(200, "Success", data_sources_outer_model)
     @namespace_data_source.response(400, "Missing or bad API key")
     @namespace_data_source.response(403, "Forbidden Invalid API key")
@@ -64,7 +72,7 @@ class DataSourceById(PsycopgResource):
     @namespace_data_source.doc(
         description="Get details of a specific data source by its ID.",
     )
-    @namespace_data_source.expect(authorization_parser)
+    @namespace_data_source.expect(authorization_api_parser)
     def get(self, data_source_id: str) -> Response:
         """
         Retrieves details of a specific data source by its ID.
@@ -79,8 +87,9 @@ class DataSourceById(PsycopgResource):
             return data_source_by_id_wrapper(data_source_id, db_client)
 
     @handle_exceptions
-    @api_key_required(PermissionsEnum.DB_WRITE)
-    @namespace_data_source.expect(authorization_parser, data_sources_inner_model)
+    @jwt_required()
+    @permissions_required(PermissionsEnum.DB_WRITE)
+    @namespace_data_source.expect(authorization_jwt_parser, data_sources_inner_model)
     @namespace_data_source.doc(
         description="Update details of a specific data source by its ID.",
     )
@@ -111,7 +120,7 @@ class DataSources(PsycopgResource):
     """
 
     @handle_exceptions
-    @api_key_required()
+    @api_key_required
     @namespace_data_source.response(200, "Success", data_sources_outer_model)
     @namespace_data_source.response(500, "Internal server error")
     @namespace_data_source.response(400, "Bad request; missing or bad API key")
@@ -119,7 +128,7 @@ class DataSources(PsycopgResource):
     @namespace_data_source.doc(
         description="Retrieves all data sources.",
     )
-    @namespace_data_source.expect(authorization_parser)
+    @namespace_data_source.expect(authorization_api_parser)
     def get(self) -> Response:
         """
         Retrieves all data sources. The data sources endpoint returns all approved rows in the corresponding Data
@@ -132,8 +141,9 @@ class DataSources(PsycopgResource):
             return get_approved_data_sources_wrapper(db_client)
 
     @handle_exceptions
-    @api_key_required(PermissionsEnum.DB_WRITE)
-    @namespace_data_source.expect(authorization_parser, data_sources_inner_model)
+    @jwt_required()
+    @permissions_required(PermissionsEnum.DB_WRITE)
+    @namespace_data_source.expect(authorization_jwt_parser, data_sources_inner_model)
     @namespace_data_source.response(200, "Successful operation")
     @namespace_data_source.response(500, "Internal server error")
     @namespace_data_source.response(400, "Bad request; missing or bad API key")
@@ -164,8 +174,8 @@ class DataSourcesNeedsIdentification(PsycopgResource):
         description="Retrieves all data sources needing identification.",
     )
     @handle_exceptions
-    @api_key_required()
-    @namespace_data_source.expect(authorization_parser)
+    @api_key_required
+    @namespace_data_source.expect(authorization_api_parser)
     def get(self):
         with self.setup_database_client() as db_client:
             return needs_identification_data_sources_wrapper(db_client)
@@ -179,7 +189,7 @@ class DataSourcesMap(PsycopgResource):
     """
 
     @handle_exceptions
-    @api_key_required()
+    @api_key_required
     @namespace_data_source.response(200, "Success", data_sources_outer_model)
     @namespace_data_source.response(500, "Internal server error")
     @namespace_data_source.response(400, "Bad request; missing or bad API key")
@@ -187,7 +197,7 @@ class DataSourcesMap(PsycopgResource):
     @namespace_data_source.doc(
         description="Retrieves location-relevant columns for data sources.",
     )
-    @namespace_data_source.expect(authorization_parser)
+    @namespace_data_source.expect(authorization_api_parser)
     def get(self) -> Response:
         """
         Retrieves location relevant columns for data sources.

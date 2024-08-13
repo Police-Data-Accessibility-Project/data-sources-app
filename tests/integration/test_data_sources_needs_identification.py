@@ -24,7 +24,7 @@ def test_data_sources_needs_identification(
     tus = create_test_user_setup(flask_client_with_db)
     response = flask_client_with_db.get(
         "/api/data-sources-needs-identification",
-        headers=tus.authorization_header,
+        headers=tus.api_authorization_header,
     )
     check_response_status(response, HTTPStatus.OK.value)
 

@@ -18,7 +18,7 @@ from middleware.enums import PermissionsEnum
 from tests.fixtures import (
     live_database_client,
     dev_db_connection,
-    bypass_api_token_required,
+    bypass_api_key_required,
     db_cursor,
 )
 from tests.helper_scripts.helper_functions import (

@@ -8,7 +8,10 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import psycopg2.extensions
+import pytest
 from flask.testing import FlaskClient
+from flask_jwt_extended import decode_token
+from psycopg2.extras import DictCursor
 
 from database_client.database_client import DatabaseClient
 from middleware.dataclasses import (
@@ -235,7 +238,12 @@ def create_test_user_api(client: FlaskClient) -> UserInfo:
     return UserInfo(email=email, password=password)
 
 
-def login_and_return_api_key(client_with_db: FlaskClient, user_info: UserInfo) -> str:
+JWTTokens = namedtuple("JWTTokens", ["access_token", "refresh_token"])
+
+
+def login_and_return_jwt_tokens(
+    client_with_db: FlaskClient, user_info: UserInfo
+) -> JWTTokens:
     """
     Login as a given user and return the associated session token,
     using the /login endpoint of the Flask API
@@ -248,8 +256,10 @@ def login_and_return_api_key(client_with_db: FlaskClient, user_info: UserInfo) -
         json={"email": user_info.email, "password": user_info.password},
     )
     assert response.status_code == HTTPStatus.OK.value, "User login unsuccessful"
-    api_key = response.json.get("data")
-    return api_key
+    return JWTTokens(
+        access_token=response.json.get("access_token"),
+        refresh_token=response.json.get("refresh_token"),
+    )
 
 
 def get_user_password_digest(cursor: psycopg2.extensions.cursor, user_info):
@@ -451,26 +461,43 @@ def assert_api_key_exists_for_email(db_client: DatabaseClient, email: str, api_k
     assert user_info.api_key == api_key
 
 
-TestUserSetup = namedtuple(
-    "TestUserSetup", ["user_info", "api_key", "authorization_header"]
-)
+def assert_jwt_token_matches_user_email(email: str, jwt_token: str):
+    decoded_token = decode_token(jwt_token)
+    assert email == decoded_token["sub"]
+
+
+@dataclass
+class TestUserSetup:
+    user_info: UserInfo
+    api_key: str
+    api_authorization_header: dict
+    jwt_authorization_header: Optional[dict] = None
 
 
 def create_test_user_setup(client: FlaskClient) -> TestUserSetup:
     user_info = create_test_user_api(client)
     api_key = create_api_key(client, user_info)
-    authorization_header = {"Authorization": f"Basic {api_key}"}
-    return TestUserSetup(user_info, api_key, authorization_header)
+    jwt_tokens = login_and_return_jwt_tokens(client, user_info)
+    return TestUserSetup(
+        user_info,
+        api_key,
+        api_authorization_header={"Authorization": f"Basic {api_key}"},
+        jwt_authorization_header={"Authorization": f"Bearer {jwt_tokens.access_token}"},
+    )
 
 
 def create_test_user_setup_db_client(
-    db_client: DatabaseClient, permission: Optional[PermissionsEnum] = None
+    db_client: DatabaseClient, permissions: Optional[list[PermissionsEnum]] = None
 ) -> TestUserSetup:
+    if permissions is None:
+        permissions = []
+    elif not isinstance(permissions, list):
+        permissions = [permissions]
     email = uuid.uuid4().hex
     password_digest = uuid.uuid4().hex
     user_id = db_client.add_new_user(email, password_digest)
     api_key = db_client.get_user_info(email).api_key
-    if permission is not None:
+    for permission in permissions:
         db_client.add_user_permission(email, permission)
     db_client.cursor.connection.commit()
     return TestUserSetup(
@@ -478,6 +505,8 @@ def create_test_user_setup_db_client(
         api_key,
         {"Authorization": f"Basic {api_key}"},
     )
+
+
 
 
 def create_test_user_db_client(db_client: DatabaseClient) -> UserInfo:

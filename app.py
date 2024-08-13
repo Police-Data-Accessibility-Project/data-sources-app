@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 from flask import Flask
 from flask_cors import CORS
@@ -14,7 +15,7 @@ from resources.TypeaheadSuggestions import (
 )
 from flask_restx import Api
 
-from config import config, oauth, limiter
+from config import config, oauth, limiter, jwt
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 from resources.Agencies import namespace_agencies
 from resources.ApiKey import namespace_api_key
@@ -88,12 +89,20 @@ def create_app() -> Flask:
     for namespace in NAMESPACES:
         api.add_namespace(namespace)
     app = Flask(__name__)
+
+    # JWT settings
+    app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=15)
+    app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
+
     app.secret_key = get_flask_app_secret_key()
     app.wsgi_app = ReverseProxied(app.wsgi_app)
     CORS(app)
+
     api.init_app(app)
     oauth.init_app(app)
     limiter.init_app(app)
+    jwt.init_app(app)
 
     return app
 

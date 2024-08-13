@@ -26,7 +26,7 @@ class QuickSearch(PsycopgResource):
 
     # api_required decorator requires the request"s header to include an "Authorization" key with the value formatted as "Bearer [api_key]"
     # A user can get an API key by signing up and logging in (see User.py)
-    @api_key_required()
+    @api_key_required
     @namespace_quick_search.response(200, "Success", search_result_outer_model)
     @namespace_data_source.response(500, "Internal server error")
     @namespace_data_source.response(400, "Bad request; missing or bad API key")

@@ -9,7 +9,7 @@ from middleware.enums import CallbackFunctionsEnum
 from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_test_data import TEST_RESPONSE
 from tests.helper_scripts.helper_functions import check_response_status
-from tests.fixtures import client_with_mock_db, bypass_api_token_required
+from tests.fixtures import client_with_mock_db, bypass_api_key_required
 
 class TestPreCallbackResources(DynamicMagicMock):
     setup_callback_session: MagicMock
@@ -55,7 +55,7 @@ def test_pre_callback_resources(
         json_data,
         setup_callback_session_expected_args,
         client_with_mock_db,
-        bypass_api_token_required
+        bypass_api_key_required
 ):
     mock = TestPreCallbackResources(
         patch_root=f"resources.{resource_module_name}",

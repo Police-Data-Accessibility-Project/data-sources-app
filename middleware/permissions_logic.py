@@ -3,13 +3,13 @@ from http import HTTPStatus
 from typing import Type
 
 from flask import Response, make_response
+from flask_jwt_extended import get_jwt_identity
 from flask_restx import abort
 
 from database_client.database_client import DatabaseClient
 from middleware.custom_exceptions import UserNotFoundError
 from middleware.enums import PermissionsEnum, PermissionsActionEnum
 from utilities.common import get_valid_enum_value
-
 
 class PermissionsManager:
     """
@@ -26,6 +26,9 @@ class PermissionsManager:
         self.user_email = user_email
 
         self.permissions = self.db_client.get_user_permissions(user_info.id)
+
+    def has_permission(self, permission: PermissionsEnum) -> bool:
+        return permission in self.permissions
 
     def get_user_permissions(self) -> Response:
         permissions_list = [permission.value for permission in self.permissions]

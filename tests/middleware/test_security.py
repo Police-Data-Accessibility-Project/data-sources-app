@@ -16,9 +16,9 @@ from middleware.security import (
     extract_api_key_from_header,
     check_for_properly_formatted_authorization_header,
     check_for_header_with_authorization_key,
-    check_user_permission,
-    get_user_id_from_database,
+    check_api_key_associated_with_user,
     check_api_key,
+    check_permissions,
 )
 from middleware.decorators import api_key_required
 from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
@@ -194,37 +194,73 @@ def test_check_for_header_with_authorization_key_failure_no_authorization_header
     )
 
 
+class CheckPermissionsMocks(DynamicMagicMock):
+    user_email: MagicMock
+    db_client: MagicMock
+    get_jwt_identity: MagicMock
+    get_db_client: MagicMock
+    PermissionsManager: MagicMock
+    permissions_manager_instance: MagicMock
+    permission: MagicMock
+    abort: MagicMock
+
+
+@pytest.fixture
+def check_permissions_mocks():
+    mock = CheckPermissionsMocks(
+        patch_root=PATCH_ROOT,
+        mocks_to_patch=[
+            "get_jwt_identity",
+            "get_db_client",
+            "PermissionsManager",
+            "abort",
+        ],
+    )
+    mock.get_jwt_identity.return_value = mock.user_email
+    mock.get_db_client.return_value = mock.db_client
+    mock.PermissionsManager.return_value = mock.permissions_manager_instance
+    return mock
+
+
+def test_check_permissions_happy_path(check_permissions_mocks):
+    mock = check_permissions_mocks
+    mock.permissions_manager_instance.has_permission.return_value = True
+    check_permissions(mock.permission)
+    mock.get_jwt_identity.assert_called_once()
+    mock.get_db_client.assert_called_once()
+    mock.PermissionsManager.assert_called_once_with(
+        db_client=mock.db_client,
+        user_email=mock.user_email
+    )
+    mock.permissions_manager_instance.has_permission.assert_called_once_with(
+        mock.permission
+    )
+    mock.abort.assert_not_called()
+
+def test_check_permissions_user_does_not_have_permission(check_permissions_mocks):
+    mock = check_permissions_mocks
+    mock.permissions_manager_instance.has_permission.return_value = False
+    check_permissions(mock.permission)
+    mock.get_jwt_identity.assert_called_once()
+    mock.get_db_client.assert_called_once()
+    mock.PermissionsManager.assert_called_once_with(
+        db_client=mock.db_client,
+        user_email=mock.user_email
+    )
+    mock.permissions_manager_instance.has_permission.assert_called_once_with(
+        mock.permission
+    )
+    mock.abort.assert_called_once_with(
+        code=HTTPStatus.FORBIDDEN,
+        message="You do not have permission to access this endpoint"
+    )
+
+
 class CheckUserPermissionMocks(DynamicMagicMock):
     db_client: MagicMock
     user_id: MagicMock
     permission: MagicMock
     abort: MagicMock
-
-
-def test_check_user_permission_permission_is_none(mock_abort):
-    mock = CheckUserPermissionMocks()
-    check_user_permission(mock.db_client, mock.user_id, None)
-    mock.db_client.get_user_permissions.assert_not_called()
-    mock_abort.assert_not_called()
-
-
-def test_check_user_permission_permission_in_user_permissions(mock_abort):
-    mock = CheckUserPermissionMocks()
-    mock.db_client.get_user_permissions.return_value = [mock.permission]
-    check_user_permission(mock.db_client, mock.user_id, mock.permission)
-    mock.db_client.get_user_permissions.assert_called_once_with(mock.user_id)
-    mock_abort.assert_not_called()
-
-
-def test_check_user_permission_permission_not_in_user_permissions(mock_abort):
-    mock = CheckUserPermissionMocks()
-    mock.db_client.get_user_permissions.return_value = []
-    check_user_permission(mock.db_client, mock.user_id, mock.permission)
-    mock.db_client.get_user_permissions.assert_called_once_with(mock.user_id)
-    mock_abort.assert_called_once_with(
-        HTTPStatus.FORBIDDEN, "You do not have permission to access this endpoint"
-    )
-
 
 class GetUserIdFromDatabaseMocks(DynamicMagicMock):
     db_client: MagicMock
@@ -232,22 +268,20 @@ class GetUserIdFromDatabaseMocks(DynamicMagicMock):
     api_key: MagicMock
 
 
-def test_get_user_id_from_database_happy_path(mock_abort):
+def test_check_api_key_associated_with_user_happy_path(mock_abort):
     mock = GetUserIdFromDatabaseMocks()
     mock.db_client.get_user_by_api_key.return_value = mock.user_id
-    user_id = get_user_id_from_database(mock.db_client, mock.api_key)
+    check_api_key_associated_with_user(mock.db_client, mock.api_key)
     mock.db_client.get_user_by_api_key.assert_called_once_with(mock.api_key)
     mock_abort.assert_not_called()
-    assert user_id == mock.user_id
 
 
-def test_get_user_id_from_database_invalid_api_key(mock_abort):
+def test_check_api_key_associated_with_user_invalid_api_key(mock_abort):
     mock = GetUserIdFromDatabaseMocks()
     mock.db_client.get_user_by_api_key.return_value = None
-    user_id = get_user_id_from_database(mock.db_client, mock.api_key)
+    check_api_key_associated_with_user(mock.db_client, mock.api_key)
     mock.db_client.get_user_by_api_key.assert_called_once_with(mock.api_key)
     mock_abort.assert_called_once_with(HTTPStatus.UNAUTHORIZED, "Invalid API Key")
-    assert user_id is None
 
 
 class CheckApiKeyMocks(DynamicMagicMock):
@@ -255,9 +289,7 @@ class CheckApiKeyMocks(DynamicMagicMock):
     db_client: MagicMock
     get_db_client: MagicMock
     get_api_key_from_header: MagicMock
-    get_user_id_from_database: MagicMock
-    check_user_permission: MagicMock
-    user_id: MagicMock
+    check_api_key_associated_with_user: MagicMock
     api_key: MagicMock
 
 
@@ -265,20 +297,18 @@ def test_check_api_key():
     mock = CheckApiKeyMocks(
         patch_root=PATCH_ROOT,
         mocks_to_patch=[
-            "get_user_id_from_database",
-            "check_user_permission",
+            "check_api_key_associated_with_user",
             "get_db_client",
             "get_api_key_from_header",
         ],
     )
     mock.get_api_key_from_header.return_value = mock.api_key
-    mock.get_user_id_from_database.return_value = mock.user_id
     mock.get_db_client.return_value = mock.db_client
 
-    check_api_key(mock.permission)
+    check_api_key()
 
     mock.get_api_key_from_header.assert_called_once()
     mock.get_db_client.assert_called_once()
-    mock.get_user_id_from_database.assert_called_once_with(mock.db_client, mock.api_key)
-    mock.check_user_permission.assert_called_once_with(mock.db_client, mock.user_id, mock.permission)
-
+    mock.check_api_key_associated_with_user.assert_called_once_with(
+        mock.db_client, mock.api_key
+    )

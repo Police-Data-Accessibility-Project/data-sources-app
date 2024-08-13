@@ -34,7 +34,7 @@ def test_quick_search_get(flask_client_with_db, connection_with_test_data):
 
     response = flask_client_with_db.get(
         f"/api/quick-search/{encoded_search_term}/{encoded_location}",
-        headers=tus.authorization_header,
+        headers=tus.api_authorization_header,
     )
     check_response_status(response, HTTPStatus.OK.value)
     data = response.json.get("data")

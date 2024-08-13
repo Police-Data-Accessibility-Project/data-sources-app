@@ -50,7 +50,7 @@ def test_user_put(flask_client_with_db, dev_db_connection: psycopg2.extensions.c
 
     response = flask_client_with_db.put(
         "/api/user",
-        headers=tus.authorization_header,
+        headers=tus.api_authorization_header,
         json={"email": tus.user_info.email, "password": new_password},
     )
     assert (

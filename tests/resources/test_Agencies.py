@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from tests.fixtures import client_with_mock_db, bypass_api_token_required
+from tests.fixtures import client_with_mock_db, bypass_api_key_required
 
 
 def mock_get_agencies(cursor, page: int):
@@ -10,7 +10,7 @@ def mock_get_agencies(cursor, page: int):
     return ({'count': page, 'data': None}, HTTPStatus.IM_A_TEAPOT)
 
 
-def test_get_agencies(client_with_mock_db, monkeypatch, bypass_api_token_required):
+def test_get_agencies(client_with_mock_db, monkeypatch, bypass_api_key_required):
     monkeypatch.setattr("resources.Agencies.get_agencies", mock_get_agencies)
 
     response = client_with_mock_db.client.get(

@@ -67,7 +67,7 @@ def test_try_logging_in_successful():
     mock.db_client.get_user_info.assert_called_with(mock.email)
     mock.check_password_hash.assert_called_with(mock.password_digest, mock.password)
     mock.unauthorized_response.assert_not_called()
-    mock.login_response.assert_called_with(mock.db_client, mock.user_info)
+    mock.login_response.assert_called_with(mock.user_info)
 
 
 

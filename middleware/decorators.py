@@ -5,7 +5,7 @@ from typing import Callable, Optional
 from flask import redirect, url_for, session
 
 from middleware.enums import PermissionsEnum
-from middleware.security import check_api_key
+from middleware.security import check_api_key, check_permissions
 
 
 def login_required(f):
@@ -19,7 +19,7 @@ def login_required(f):
 
 
 
-def api_key_required(permissions: Optional[PermissionsEnum] = None):
+def api_key_required(func):
     """
     The api_key_required decorator can be added to protect a route so that only authenticated users can access the information.
     To protect a route with this decorator, add @api_key_required on the line above a given route.
@@ -27,11 +27,18 @@ def api_key_required(permissions: Optional[PermissionsEnum] = None):
     A user can get an API key by signing up and logging in.
     """
 
-    def decorator(func: Callable):
+    @wraps(func)
+    def decorator(*args, **kwargs):
+        check_api_key()
+        return func(*args, **kwargs)
 
+    return decorator
+
+def permissions_required(permissions: PermissionsEnum):
+    def decorator(func: Callable):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            check_api_key(permissions)
+            check_permissions(permissions)
             return func(*args, **kwargs)
 
         return wrapper

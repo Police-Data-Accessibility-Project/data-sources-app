@@ -29,7 +29,7 @@ def test_link_to_github(
     }
     response = flask_client_with_db.post(
         "auth/link-to-github",
-        headers=tus.authorization_header,
+        headers=tus.api_authorization_header,
         json=mock_params,
     )
     assert_expected_pre_callback_response(response)

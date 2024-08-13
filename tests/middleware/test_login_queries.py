@@ -141,7 +141,7 @@ def test_try_logging_in_with_github_id_happy_path():
         external_account_id=mock.github_user_id,
         external_account_type=ExternalAccountTypeEnum.GITHUB,
     )
-    mock.login_response.assert_called_once_with(mock.db_client, mock.user_info)
+    mock.login_response.assert_called_once_with(mock.user_info)
 
 
 def test_try_logging_in_with_github_id_unauthorized():
@@ -165,3 +165,28 @@ def test_try_logging_in_with_github_id_unauthorized():
         external_account_type=ExternalAccountTypeEnum.GITHUB,
     )
     mock.unauthorized_response.assert_called_once()
+
+class RefreshSessionMocks(DynamicMagicMock):
+    identity: MagicMock
+    get_jwt_identity: MagicMock
+    create_access_token: MagicMock
+    make_response: MagicMock
+    access_token: MagicMock
+
+def test_refresh_session():
+    mock = RefreshSessionMocks(
+        patch_root="middleware.login_queries",
+        mocks_to_patch=["get_jwt_identity", "make_response", "create_access_token"],
+    )
+    mock.get_jwt_identity.return_value = mock.identity
+    mock.create_access_token.return_value = mock.access_token
+
+    refresh_session()
+
+    mock.get_jwt_identity.assert_called_once()
+    mock.create_access_token.assert_called_once_with(identity=mock.identity)
+    mock.make_response.assert_called_once_with(
+        {"message": "Successfully refreshed session token", "data": mock.access_token},
+        HTTPStatus.OK
+    )
+

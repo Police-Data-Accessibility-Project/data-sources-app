@@ -19,12 +19,12 @@ def test_agencies_get(
     Test that GET call to /agencies endpoint properly retrieves a nonzero amount of data
     """
     tus = create_test_user_setup_db_client(
-        dev_db_client, permission=PermissionsEnum.DB_WRITE
+        dev_db_client
     )
 
     response = flask_client_with_db.get(
         "/api/agencies/2",
-        headers=tus.authorization_header,
+        headers=tus.api_authorization_header,
     )
     check_response_status(response, HTTPStatus.OK.value)
     data = response.json["data"]
