@@ -18,7 +18,7 @@ def monkeymodule():
 
 @pytest.fixture(scope="module")
 def test_client(monkeymodule):
-    mock_get_flask_app_secret_key = MagicMock(return_value='test')
+    mock_get_flask_app_secret_key = MagicMock(return_value="test")
     monkeymodule.setattr("app.get_flask_app_secret_key", mock_get_flask_app_secret_key)
 
     app = create_app(testing=True)

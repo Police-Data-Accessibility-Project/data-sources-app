@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from psycopg2.extras import DictCursor
 
+from conftest import test_client, session
 from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
 from middleware.enums import CallbackFunctionsEnum
@@ -15,7 +16,7 @@ from tests.helper_scripts.helper_functions import (
 )
 
 
-def test_create_user_with_github_post(client_with_db, dev_db_connection, monkeypatch):
+def test_create_user_with_github_post(client_with_db, dev_db_connection, monkeypatch, test_client, session):
 
     github_user_info = create_fake_github_user_info()
     mock_setup_callback_session = patch_setup_callback_session(
@@ -37,7 +38,7 @@ def test_create_user_with_github_post(client_with_db, dev_db_connection, monkeyp
     response = client_with_db.get("auth/callback")
     check_response_status(response, HTTPStatus.OK)
 
-    db_client = DatabaseClient(dev_db_connection.cursor(cursor_factory=DictCursor))
+    db_client = DatabaseClient(dev_db_connection.cursor(cursor_factory=DictCursor), session)
     user_info = db_client.get_user_info_by_external_account_id(
         github_user_info.user_id, ExternalAccountTypeEnum.GITHUB
     )
