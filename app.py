@@ -95,7 +95,7 @@ def create_app(testing=False) -> Flask:
     CORS(app)
     dotenv.load_dotenv()
     app.config["SQLALCHEMY_DATABASE_URI"] = get_env_variable(
-        "DEV_DB_CONN_STRING"
+        "DO_DATABASE_URL"
     )
     if testing is True:
         app.config["TESTING"] = True
