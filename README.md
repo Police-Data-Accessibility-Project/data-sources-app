@@ -6,7 +6,8 @@ Development of the next big iteration of the data sources app according to https
 
 An API and UI for searching, using, and maintaining Data Sources. 
 
-#### [Live app](https://data-sources.pdap.io/)
+#### [Live app](https://data-sources-v2.pdap.io/) deployed from `main`
+#### [Dev app](https://data-sources-v2.pdap.dev/) deployed from `dev`
 #### [API docs](https://docs.pdap.io/api/introduction)
 
 ## Installation
