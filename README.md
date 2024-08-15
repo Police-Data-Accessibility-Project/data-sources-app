@@ -67,6 +67,7 @@ The environment variables are as follows:
 * VITE_VUE_API_BASE_URL: The base URL for the API
 * VITE_VUE_APP_BASE_URL: The base URL for the UI
 * JWT_SECRET_KEY: Used to sign and verify JWT tokens
+* FLASK_APP_SECRET_KEY: Used to create signed cookies to prevent CSRF attacks
 * GH_CLIENT_ID: Used to authenticate with GitHub via OAuth
 * GH_CLIENT_SECRET: Used to authenticate with GitHub via OAuth
 
@@ -78,7 +79,8 @@ DO_DATABASE_URL="postgres://data_sources_app:<password>@db-postgresql-nyc3-38355
 DEV_DB_CONN_STRING="postgresql://data_sources_app_v2:<password>@pdap-db-dev-do-user-8463429-0.c.db.ondigitalocean.com:25060/pdap_dev_db?sslmode=require"
 VITE_VUE_API_BASE_URL="http://localhost:5000"
 VITE_VUE_APP_BASE_URL="http://localhost:8888"
-SECRET_KEY="mySecretKey"
+FLASK_APP_SECRET_KEY="myFlaskAppSecretKey"
+JWT_SECRET_KEY="myJwtSecretKey"
 GH_CLIENT_ID="myGithubClientId"
 GH_CLIENT_SECRET="myGithubClientSecret"
 ```
