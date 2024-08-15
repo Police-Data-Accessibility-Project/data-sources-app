@@ -18,8 +18,8 @@ config = Config()
 oauth = OAuth()
 oauth.register(
     name="github",
-    client_id=get_env_variable("GITHUB_CLIENT_ID"),
-    client_secret=get_env_variable("GITHUB_CLIENT_SECRET"),
+    client_id=get_env_variable("GH_CLIENT_ID"),
+    client_secret=get_env_variable("GH_CLIENT_SECRET"),
     access_token_url="https://github.com/login/oauth/access_token",
     access_token_params=None,
     authorize_url="https://github.com/login/oauth/authorize",

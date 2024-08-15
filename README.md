@@ -66,8 +66,8 @@ The environment variables are as follows:
 * VITE_VUE_API_BASE_URL: The base URL for the API
 * VITE_VUE_APP_BASE_URL: The base URL for the UI
 * JWT_SECRET_KEY: Used to sign and verify JWT tokens
-* GITHUB_CLIENT_ID: Used to authenticate with GitHub via OAuth
-* GITHUB_CLIENT_SECRET: Used to authenticate with GitHub via OAuth
+* GH_CLIENT_ID: Used to authenticate with GitHub via OAuth
+* GH_CLIENT_SECRET: Used to authenticate with GitHub via OAuth
 
 #### .env Example
 ```
@@ -78,8 +78,8 @@ DEV_DB_CONN_STRING="postgresql://data_sources_app_v2:<password>@pdap-db-dev-do-u
 VITE_VUE_API_BASE_URL="http://localhost:5000"
 VITE_VUE_APP_BASE_URL="http://localhost:8888"
 SECRET_KEY="mySecretKey"
-GITHUB_CLIENT_ID="myGithubClientId"
-GITHUB_CLIENT_SECRET="myGithubClientSecret"
+GH_CLIENT_ID="myGithubClientId"
+GH_CLIENT_SECRET="myGithubClientSecret"
 ```
 
 #### Shell Example

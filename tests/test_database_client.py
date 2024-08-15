@@ -343,18 +343,23 @@ def test_get_user_info(live_database_client):
 
 def test_get_user_by_api_key(live_database_client):
     # Add a new user to the database
+    test_email = uuid.uuid4().hex
+    test_api_key = uuid.uuid4().hex
+
     user_id = live_database_client.add_new_user(
-        email="test_user",
+        email=test_email,
         password_digest="test_password",
     )
 
+
+
     # Add a role and api_key to the user
     live_database_client.cursor.execute(
-        "update users set api_key = 'test_api_key' where email = 'test_user'",
+        f"update users set api_key = '{test_api_key}' where email = '{test_email}'",
     )
 
     # Fetch the user's role using its api key with the DatabaseClient method
-    api_key_user_id = live_database_client.get_user_by_api_key(api_key="test_api_key")
+    api_key_user_id = live_database_client.get_user_by_api_key(api_key=test_api_key)
 
     # Confirm the user_id is retrieved successfully
     assert api_key_user_id == user_id
