@@ -15,7 +15,7 @@
 <script>
 import { Footer, Header } from 'pdap-design-system';
 import AuthWrapper from './components/AuthWrapper.vue';
-import ErrorBoundary from './components/ErrorBoundary.vue';
+import { ErrorBoundary } from 'pdap-design-system';
 import acronym from 'pdap-design-system/images/acronym.svg';
 import lockup from 'pdap-design-system/images/lockup.svg';
 
