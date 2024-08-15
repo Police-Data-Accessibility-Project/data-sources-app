@@ -134,7 +134,7 @@ def flask_client_with_db(
     """
     mock_get_flask_app_secret_key = MagicMock(return_value="test")
     monkeypatch.setattr("app.initialize_psycopg2_connection", lambda: dev_db_connection)
-    monkeypatch.setattr("app.get_flask_app_secret_key", mock_get_flask_app_secret_key)
+    monkeypatch.setattr("app.get_flask_app_cookie_encryption_key", mock_get_flask_app_secret_key)
     app = create_app()
     with app.test_client() as client:
         yield client
