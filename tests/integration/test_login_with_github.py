@@ -5,7 +5,7 @@ from psycopg2.extras import DictCursor
 from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
 from middleware.enums import CallbackFunctionsEnum
-from tests.fixtures import dev_db_connection, client_with_db
+from tests.fixtures import dev_db_connection, flask_client_with_db, dev_db_client
 from tests.helper_scripts.helper_functions import (
     check_response_status,
     create_test_user_api,
@@ -13,15 +13,17 @@ from tests.helper_scripts.helper_functions import (
     patch_setup_callback_session,
     create_fake_github_user_info,
     assert_expected_pre_callback_response,
-    assert_session_token_exists_for_email,
+    assert_api_key_exists_for_email,
+    assert_jwt_token_matches_user_email,
+    run_and_validate_request,
 )
 
-def test_login_with_github_post(client_with_db, dev_db_connection, monkeypatch):
-    test_user_info = create_test_user_api(client_with_db)
+
+def test_login_with_github_post(flask_client_with_db, dev_db_client, monkeypatch):
+    test_user_info = create_test_user_api(flask_client_with_db)
     github_user_info = create_fake_github_user_info(test_user_info.email)
-    db_client = DatabaseClient(dev_db_connection.cursor(cursor_factory=DictCursor))
-    user_info = db_client.get_user_info(test_user_info.email)
-    db_client.link_external_account(
+    user_info = dev_db_client.get_user_info(test_user_info.email)
+    dev_db_client.link_external_account(
         user_id=user_info.id,
         external_account_type=ExternalAccountTypeEnum.GITHUB,
         external_account_id=github_user_info.user_id,
@@ -30,7 +32,7 @@ def test_login_with_github_post(client_with_db, dev_db_connection, monkeypatch):
     mock_setup_callback_session = patch_setup_callback_session(
         monkeypatch, "LoginWithGithub"
     )
-    response = client_with_db.post("auth/login-with-github")
+    response = flask_client_with_db.post("auth/login-with-github")
     assert_expected_pre_callback_response(response)
     mock_setup_callback_session.assert_called_once_with(
         callback_functions_enum=CallbackFunctionsEnum.LOGIN_WITH_GITHUB
@@ -43,12 +45,15 @@ def test_login_with_github_post(client_with_db, dev_db_connection, monkeypatch):
         callback_params={},
     )
 
-    response = client_with_db.get("auth/callback")
-    check_response_status(response, HTTPStatus.OK)
-
-    api_key = response.json["data"]
-
-    assert_session_token_exists_for_email(
-        cursor=db_client.cursor, session_token=api_key, email=user_info.email
+    response_json = run_and_validate_request(
+        flask_client=flask_client_with_db,
+        http_method="get",
+        endpoint="auth/callback",
     )
 
+    access_token = response_json["access_token"]
+
+    assert_jwt_token_matches_user_email(
+        email=user_info.email,
+        jwt_token=access_token,
+    )

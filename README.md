@@ -62,13 +62,16 @@ In both the local root directory and the `/client` directory, either:
 Reach out to contact@pdap.io or make noise in Discord if you'd like access to these keys.
 
 The environment variables are as follows:
-* DO_DATABASE_URL: Used to connect to the database
-* DEV_DB_CONN_STRING: Used to connect to the dev database
+* DO_DATABASE_URL: Used to connect to the database.
+* DEV_DB_CONN_STRING: Used to connect to the dev database.
 * VITE_VUE_API_BASE_URL: The base URL for the API
 * VITE_VUE_APP_BASE_URL: The base URL for the UI
-* SECRET_KEY: Used to sign cookies
-* GH_CLIENT_ID: Used to authenticate with GitHub via OAuth
-* GH_CLIENT_SECRET: Used to authenticate with GitHub via OAuth
+* GH_CLIENT_ID: Used to authenticate with GitHub via OAuth. Must correspond to the `client_id` provided by GitHub.
+* GH_CLIENT_SECRET: Used to authenticate with GitHub via OAuth. Must correspond to the `client_secret` provided by GitHub.
+* JWT_SECRET_KEY: Used to sign and verify JWT tokens. Used to identify that any JWT tokens produced are recognizable by this version of the app and no other. Can be customized for local development.
+* FLASK_APP_COOKIE_ENCRYPTION_KEY: Used to create signed cookies to prevent CSRF attacks. Used to identify that any cookies produced are recognizable by this version of the app and no other. Can be customized for local development.
+* DEVELOPMENT_PASSWORD: Used to create a test user with elevated permissions for the purposes of testing. Developers must provide this password when using the `/dev/create-test-user-with-elevated-permissions` endpoint. Can be customized for local development.
+
 
 #### .env Example
 ```
@@ -78,9 +81,11 @@ DO_DATABASE_URL="postgres://data_sources_app:<password>@db-postgresql-nyc3-38355
 DEV_DB_CONN_STRING="postgresql://data_sources_app_v2:<password>@pdap-db-dev-do-user-8463429-0.c.db.ondigitalocean.com:25060/pdap_dev_db?sslmode=require"
 VITE_VUE_API_BASE_URL="http://localhost:5000"
 VITE_VUE_APP_BASE_URL="http://localhost:8888"
-SECRET_KEY="mySecretKey"
-GH_CLIENT_ID="myGithubClientId"
-GH_CLIENT_SECRET="myGithubClientSecret"
+GH_CLIENT_ID="GithubProvidedClientId"
+GH_CLIENT_SECRET="GithubProvidedClientSecret"
+FLASK_APP_COOKIE_ENCRYPTION_KEY="myCustomFlaskAppSecretKey"
+JWT_SECRET_KEY="myCustomJwtSecretKey"
+DEVELOPMENT_PASSWORD="myCustomDevelopmentPassword"
 ```
 
 #### Shell Example
@@ -91,6 +96,7 @@ export DO_DATABASE_URL=postgres://data_sources_app:<password>@db-postgresql-nyc3
 # etc.
 ```
 Additionally, if you are testing the email functionality, you will need to also provide the `MAILGUN_KEY` environment variable as well (also obtainable from the sources mentioned above).
+
 
 ### 6. Allow your IP address
 

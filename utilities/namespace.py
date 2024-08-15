@@ -9,6 +9,7 @@ class AppNamespaces(Enum):
     DEFAULT = NamespaceAttributes(path="/", description="Default Namespace")
     SEARCH = NamespaceAttributes(path="search", description="Search Namespace")
     AUTH = NamespaceAttributes(path="auth", description="Authentication Namespace")
+    DEV = NamespaceAttributes(path="dev", description="Developer Namespace")
 
 
 def create_namespace(namespace_attributes: AppNamespaces = AppNamespaces.DEFAULT) -> Namespace:

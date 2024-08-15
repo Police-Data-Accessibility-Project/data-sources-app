@@ -1,8 +1,14 @@
 from enum import Enum
+from http import HTTPStatus
+from unittest.mock import MagicMock
 
 import pytest
 from datetime import date
-from utilities.common import convert_dates_to_strings, get_enums_from_string
+from utilities.common import (
+    convert_dates_to_strings,
+    get_enums_from_string,
+    get_valid_enum_value,
+)
 
 
 def test_empty_dict():
@@ -79,10 +85,29 @@ def test_get_enums_from_string_all_valid_enum_members():
 def test_get_enums_from_string_all_valid_case_insensitive():
     input_string = "ALPHA, beta, gAmMa"
     expected_output = [TestEnum.ALPHA, TestEnum.BETA, TestEnum.GAMMA]
-    assert get_enums_from_string(TestEnum, input_string, case_insensitive=True) == expected_output
+    assert (
+        get_enums_from_string(TestEnum, input_string, case_insensitive=True)
+        == expected_output
+    )
+
 
 def test_get_enums_from_string_invalid_input_case_insensitive():
     input_string = "DELTA, oMeGa"
     with pytest.raises(ValueError) as excinfo:
         get_enums_from_string(TestEnum, input_string, case_insensitive=True)
     assert "Invalid enum names: delta, omega" in str(excinfo.value)
+
+
+def test_valid_enum_value_success():
+    assert get_valid_enum_value(TestEnum, "alpha") == TestEnum.ALPHA
+
+def test_valid_enum_value_failure(monkeypatch):
+    mock_abort = MagicMock()
+    monkeypatch.setattr(
+        "utilities.common.abort",
+        mock_abort
+    )
+    get_valid_enum_value(TestEnum, "delta")
+    mock_abort.assert_called_with(
+        code=HTTPStatus.BAD_REQUEST,
+        message="Invalid TestEnum 'delta'. Must be one of the following: ['alpha', 'beta', 'gamma']")

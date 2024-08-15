@@ -1,7 +1,7 @@
 from flask import Response, request
 
 from middleware.search_logic import search_wrapper
-from middleware.security import api_required
+from middleware.decorators import api_key_required
 from resources.PsycopgResource import PsycopgResource
 from resources.resource_helpers import add_api_key_header_arg, create_search_model
 from utilities.common import get_enums_from_string
@@ -17,7 +17,7 @@ request_parser.add_argument(
     type=str,
     location="args",
     required=True,
-    help="The state of the search. Must be an exact match.",
+    help="The state of the search.",
 )
 
 request_parser.add_argument(
@@ -25,8 +25,7 @@ request_parser.add_argument(
     type=str,
     location="args",
     required=False,
-    help="The county of the search. If empty, all counties for the given state will be searched. Must be an exact "
-         "match.",
+    help="The county of the search. If empty, all counties for the given state will be searched.",
 )
 
 request_parser.add_argument(
@@ -34,8 +33,7 @@ request_parser.add_argument(
     type=str,
     location="args",
     required=False,
-    help="The locality of the search. If empty, all localities for the given county will be searched. Must be an "
-         "exact match.",
+    help="The locality of the search. If empty, all localities for the given county will be searched.",
 )
 
 request_parser.add_argument(
@@ -43,8 +41,8 @@ request_parser.add_argument(
     type=str,
     location="args",
     required=False,
-    help="The record categories of the search. If empty, all categories will be searched. Must be an exact match."
-         "Allowable record categories include: " + ", ".join([e.value for e in RecordCategories]),
+    help="The record categories of the search. If empty, all categories will be searched.\n"
+         "Allowable record categories include: \n  * " + "\n  * ".join([e.value for e in RecordCategories]),
 )
 # TODO: Check that this description looks as expected.
 
@@ -58,7 +56,7 @@ class Search(PsycopgResource):
     based on user-provided search terms and location.
     """
 
-    @api_required
+    @api_key_required
     @namespace_search.expect(request_parser)
     @namespace_search.response(200, "Success", search_model)
     @namespace_search.response(500, "Internal server error")

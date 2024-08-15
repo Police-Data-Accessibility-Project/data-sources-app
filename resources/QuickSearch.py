@@ -1,7 +1,7 @@
 from flask import Response
 from flask_restx import fields
 
-from middleware.security import api_required
+from middleware.decorators import api_key_required
 from middleware.quick_search_query import quick_search_query_wrapper
 from resources.DataSources import namespace_data_source
 from resources.resource_helpers import add_api_key_header_arg, create_search_model
@@ -26,7 +26,7 @@ class QuickSearch(PsycopgResource):
 
     # api_required decorator requires the request"s header to include an "Authorization" key with the value formatted as "Bearer [api_key]"
     # A user can get an API key by signing up and logging in (see User.py)
-    @api_required
+    @api_key_required
     @namespace_quick_search.response(200, "Success", search_result_outer_model)
     @namespace_data_source.response(500, "Internal server error")
     @namespace_data_source.response(400, "Bad request; missing or bad API key")

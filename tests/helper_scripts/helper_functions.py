@@ -2,19 +2,24 @@
 
 import uuid
 from collections import namedtuple
+from dataclasses import dataclass
 from typing import Optional
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import psycopg2.extensions
+import pytest
 from flask.testing import FlaskClient
+from flask_jwt_extended import decode_token
+from psycopg2.extras import DictCursor
 
+from database_client.database_client import DatabaseClient
 from middleware.dataclasses import (
     GithubUserInfo,
     OAuthCallbackInfo,
     FlaskSessionCallbackInfo,
 )
-from middleware.enums import CallbackFunctionsEnum
+from middleware.enums import CallbackFunctionsEnum, PermissionsEnum
 from tests.helper_scripts.common_test_data import TEST_RESPONSE
 
 TestTokenInsert = namedtuple("TestTokenInsert", ["id", "email", "token"])
@@ -197,7 +202,7 @@ def has_expected_keys(result_keys: list, expected_keys: list) -> bool:
     return not set(expected_keys).difference(result_keys)
 
 
-def get_boolean_dictionary(keys: tuple) -> dict:
+def get_boolean_dictionary(keys: tuple) -> dict[str, bool]:
     """
     Creates dictionary of booleans, all set to false.
 
@@ -209,8 +214,30 @@ def get_boolean_dictionary(keys: tuple) -> dict:
         d[key] = False
     return d
 
+def search_with_boolean_dictionary(
+    data: list[dict],
+    boolean_dictionary: dict[str, bool],
+    key_to_search_on: str,
+):
+    """
+    Search data with boolean dictionary.
+    Updates boolean dictionary with found data.
 
-UserInfo = namedtuple("UserInfo", ["email", "password"])
+    :param data:
+    :param boolean_dictionary:
+    :param key_to_search_on:
+    """
+    for result in data:
+        name = result[key_to_search_on]
+        if name in boolean_dictionary:
+            boolean_dictionary[name] = True
+
+
+@dataclass
+class UserInfo:
+    email: str
+    password: str
+    user_id: Optional[str] = None
 
 
 def create_test_user_api(client: FlaskClient) -> UserInfo:
@@ -229,9 +256,12 @@ def create_test_user_api(client: FlaskClient) -> UserInfo:
     return UserInfo(email=email, password=password)
 
 
-def login_and_return_session_token(
+JWTTokens = namedtuple("JWTTokens", ["access_token", "refresh_token"])
+
+
+def login_and_return_jwt_tokens(
     client_with_db: FlaskClient, user_info: UserInfo
-) -> str:
+) -> JWTTokens:
     """
     Login as a given user and return the associated session token,
     using the /login endpoint of the Flask API
@@ -244,8 +274,10 @@ def login_and_return_session_token(
         json={"email": user_info.email, "password": user_info.password},
     )
     assert response.status_code == HTTPStatus.OK.value, "User login unsuccessful"
-    session_token = response.json.get("data")
-    return session_token
+    return JWTTokens(
+        access_token=response.json.get("access_token"),
+        refresh_token=response.json.get("refresh_token"),
+    )
 
 
 def get_user_password_digest(cursor: psycopg2.extensions.cursor, user_info):
@@ -442,30 +474,80 @@ def assert_expected_pre_callback_response(response):
     assert_is_oauth_redirect_link(response_text)
 
 
-def assert_session_token_exists_for_email(
-    cursor: psycopg2.extensions.cursor, session_token: str, email: str
-):
-    cursor.execute(
-        """
-    SELECT email
-    FROM session_tokens
-    WHERE token = %s
-    """,
-        (session_token,),
-    )
-    rows = cursor.fetchall()
-    assert len(rows) == 1, "Session token should only exist once in database"
+def assert_api_key_exists_for_email(db_client: DatabaseClient, email: str, api_key):
+    user_info = db_client.get_user_info(email)
+    assert user_info.api_key == api_key
 
-    row = rows[0]
-    assert row[0] == email, "Email in session_tokens table does not match user email"
 
-TestUserSetup = namedtuple(
-    "TestUserSetup", ["user_info", "api_key", "authorization_header"])
+def assert_jwt_token_matches_user_email(email: str, jwt_token: str):
+    decoded_token = decode_token(jwt_token)
+    assert email == decoded_token["sub"]
+
+
+@dataclass
+class TestUserSetup:
+    user_info: UserInfo
+    api_key: str
+    api_authorization_header: dict
+    jwt_authorization_header: Optional[dict] = None
+
 
 def create_test_user_setup(client: FlaskClient) -> TestUserSetup:
     user_info = create_test_user_api(client)
     api_key = create_api_key(client, user_info)
-    authorization_header = {
-        "Authorization": f"Bearer {api_key}"
-    }
-    return TestUserSetup(user_info, api_key, authorization_header)
+    jwt_tokens = login_and_return_jwt_tokens(client, user_info)
+    return TestUserSetup(
+        user_info,
+        api_key,
+        api_authorization_header={"Authorization": f"Basic {api_key}"},
+        jwt_authorization_header={"Authorization": f"Bearer {jwt_tokens.access_token}"},
+    )
+
+
+def create_test_user_setup_db_client(
+    db_client: DatabaseClient, permissions: Optional[list[PermissionsEnum]] = None
+) -> TestUserSetup:
+    if permissions is None:
+        permissions = []
+    elif not isinstance(permissions, list):
+        permissions = [permissions]
+    email = uuid.uuid4().hex
+    password_digest = uuid.uuid4().hex
+    user_id = db_client.add_new_user(email, password_digest)
+    api_key = db_client.get_user_info(email).api_key
+    for permission in permissions:
+        db_client.add_user_permission(email, permission)
+    db_client.cursor.connection.commit()
+    return TestUserSetup(
+        UserInfo(email, password_digest, user_id),
+        api_key,
+        {"Authorization": f"Basic {api_key}"},
+    )
+
+
+
+
+def create_test_user_db_client(db_client: DatabaseClient) -> UserInfo:
+    email = uuid.uuid4().hex
+    password_digest = uuid.uuid4().hex
+    user_id = db_client.add_new_user(email, password_digest)
+    return UserInfo(email, password_digest, user_id)
+
+def run_and_validate_request(
+        flask_client: FlaskClient,
+        http_method: str,
+        endpoint: str,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_json_content: Optional[dict] = None,
+        **request_kwargs
+):
+    response = flask_client.open(
+        endpoint,
+        method=http_method,
+        **request_kwargs
+    )
+    check_response_status(response, expected_response_status.value)
+    if expected_json_content is not None:
+        assert response.json == expected_json_content
+
+    return response.json

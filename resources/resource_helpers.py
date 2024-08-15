@@ -13,9 +13,18 @@ def add_api_key_header_arg(parser: RequestParser):
         required=True,
         location="headers",
         help="API key required to access this endpoint",
-        default="Bearer YOUR_API_KEY",
+        default="Basic YOUR_API_KEY",
     )
 
+def add_jwt_header_arg(parser: RequestParser):
+    parser.add_argument(
+        "Authorization",
+        type=str,
+        required=True,
+        location="headers",
+        help="Access token required to access this endpoint",
+        default="Bearer YOUR_ACCESS_TOKEN",
+    )
 
 def create_user_model(namespace: Namespace) -> Model:
     return namespace.model(
@@ -24,6 +33,19 @@ def create_user_model(namespace: Namespace) -> Model:
             "email": fields.String(required=True, description="The email of the user"),
             "password": fields.String(
                 required=True, description="The password of the user"
+            ),
+        },
+    )
+
+def create_jwt_tokens_model(namespace: Namespace) -> Model:
+    return namespace.model(
+        "JWTTokens",
+        {
+            "access_token": fields.String(
+                required=True, description="The access token of the user"
+            ),
+            "refresh_token": fields.String(
+                required=True, description="The refresh token of the user"
             ),
         },
     )

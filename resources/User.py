@@ -5,7 +5,7 @@ from flask_restx import fields
 
 from middleware.reset_token_queries import set_user_password
 from middleware.user_queries import user_post_results
-from middleware.security import api_required
+from middleware.decorators import api_key_required
 from typing import Dict, Any
 
 from resources.resource_helpers import add_api_key_header_arg, create_user_model
@@ -52,7 +52,6 @@ class User(PsycopgResource):
 
     # Endpoint for updating a user's password
     @handle_exceptions
-    @api_required
     @namespace_user.expect(authorization_parser, user_model)
     @namespace_user.response(201, "Success: User password successfully updated")
     @namespace_user.response(500, "Error: Internal server error")

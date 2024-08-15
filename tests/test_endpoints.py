@@ -26,13 +26,13 @@ from resources.DataSources import (
 from resources.LinkToGithub import LinkToGithub
 from resources.Login import Login
 from resources.LoginWithGithub import LoginWithGithub
+from resources.Permissions import Permissions
 from resources.QuickSearch import QuickSearch
 from resources.RefreshSession import RefreshSession
 from resources.RequestResetPassword import RequestResetPassword
 from resources.ResetPassword import ResetPassword
 from resources.ResetTokenValidation import ResetTokenValidation
 from resources.Search import Search
-from resources.SearchTokens import SearchTokens
 from resources.TypeaheadSuggestions import TypeaheadSuggestions
 from resources.User import User
 from tests.fixtures import client_with_mock_db, ClientWithMockDB
@@ -83,13 +83,13 @@ test_parameters = [
     ),
     TestParameters(DataSourceById, "/data-sources-by-id/<data_source_id>", [GET, PUT]),
     TestParameters(Agencies, "/agencies/<page>", [GET]),
-    TestParameters(SearchTokens, "/search-tokens", [GET]),
     TestParameters(Search, "/search/search-location-and-record-type", [GET]),
     TestParameters(TypeaheadSuggestions, "/search/typeahead-suggestions", [GET]),
     TestParameters(Callback, "auth/callback", [GET]),
     TestParameters(LinkToGithub, "auth/link-to-github", [POST]),
     TestParameters(LoginWithGithub, "auth/login-with-github", [POST]),
     TestParameters(CreateUserWithGithub, "auth/create-user-with-github", [POST]),
+    TestParameters(Permissions, "auth/permissions", [GET, PUT]),
 ]
 
 

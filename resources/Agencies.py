@@ -2,7 +2,8 @@ from flask import Response
 from flask_restx import fields
 
 from middleware.agencies import get_agencies
-from middleware.security import api_required
+from middleware.decorators import api_key_required, permissions_required
+from middleware.enums import PermissionsEnum
 from resources.resource_helpers import add_api_key_header_arg
 from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
@@ -63,8 +64,8 @@ inner_model = namespace_agencies.model(
 output_model = namespace_agencies.model(
     "Agencies Result",
     {
-        'count': fields.Integer(description='Total count of agencies'),
-        "data": fields.List(fields.Nested(inner_model), description='List of agencies'),
+        "count": fields.Integer(description="Total count of agencies"),
+        "data": fields.List(fields.Nested(inner_model), description="List of agencies"),
     },
 )
 
@@ -78,6 +79,7 @@ parser.add_argument(
     default=1,
 )
 add_api_key_header_arg(parser)
+
 
 @namespace_agencies.route("/agencies/<page>")
 @namespace_agencies.expect(parser)
@@ -94,7 +96,7 @@ class Agencies(PsycopgResource):
     """Represents a resource for fetching approved agency data from the database."""
 
     @handle_exceptions
-    @api_required
+    @api_key_required
     @namespace_agencies.response(
         200,
         "Success. Returns a paginated list of approved agencies.",

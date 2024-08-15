@@ -4,7 +4,7 @@ from config import limiter
 from middleware.callback_flask_sessions_logic import setup_callback_session
 from middleware.enums import CallbackFunctionsEnum
 from middleware.callback_oauth_logic import redirect_to_github_authorization
-from middleware.security import api_required
+from middleware.decorators import api_key_required
 from resources.PsycopgResource import PsycopgResource
 from utilities.namespace import create_namespace, AppNamespaces
 
@@ -29,7 +29,6 @@ link_to_github_parser.add_argument(
 @namespace_link_to_github.route("/link-to-github")
 class LinkToGithub(PsycopgResource):
 
-    @api_required
     @namespace_link_to_github.expect(link_to_github_parser)
     @namespace_link_to_github.doc(
         description="""

@@ -2,7 +2,10 @@ import datetime
 import re
 import json
 from enum import Enum
+from http import HTTPStatus
 from typing import Type, Union
+
+from flask_restx import abort
 
 
 def convert_dates_to_strings(data_dict: dict) -> dict:
@@ -64,3 +67,20 @@ def match_string_to_enum(value: str, enum_class: Type[Enum]) -> Enum:
     raise ValueError(
         f"'{value}' does not match any enum value in {enum_class.__name__}"
     )
+
+
+def get_valid_enum_value(enum_type: Type[Enum], value: str) -> Enum:
+    """
+    Returns the appropriate enum value if it is valid, otherwise aborts the request.
+    Must be within a Flask context
+    :param enum_type:
+    :param value:
+    :return:
+    """
+    try:
+        return match_string_to_enum(value, enum_type)
+    except ValueError:
+        abort(
+            code=HTTPStatus.BAD_REQUEST,
+            message=f"Invalid {enum_type.__name__} '{value}'. Must be one of the following: {[item.value for item in enum_type]}",
+        )

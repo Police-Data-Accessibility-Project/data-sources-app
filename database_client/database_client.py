@@ -15,7 +15,7 @@ from middleware.custom_exceptions import (
     TokenNotFoundError,
     AccessTokenNotFoundError,
 )
-from middleware.permissions_logic import UserPermissions
+from middleware.enums import PermissionsEnum
 from utilities.enums import RecordCategories
 
 DATA_SOURCES_MAP_COLUMN = [
@@ -70,7 +70,7 @@ class DatabaseClient:
     def __init__(self, cursor: psycopg2.extensions.cursor):
         self.cursor = cursor
 
-    def add_new_user(self, email: str, password_digest: str):
+    def add_new_user(self, email: str, password_digest: str) -> Optional[int]:
         """
         Adds a new user to the database.
         :param email:
@@ -78,12 +78,15 @@ class DatabaseClient:
         :return:
         """
         query = sql.SQL(
-            "insert into users (email, password_digest) values ({}, {})"
+            "insert into users (email, password_digest) values ({}, {}) returning id"
         ).format(
             sql.Literal(email),
             sql.Literal(password_digest),
         )
         self.cursor.execute(query)
+        if self.cursor.rowcount == 0:
+            return None
+        return self.cursor.fetchone()[0]
 
     def get_user_id(self, email: str) -> Optional[int]:
         """
@@ -156,59 +159,21 @@ class DatabaseClient:
         ).format(sql.Literal(email), sql.Literal(token))
         self.cursor.execute(query)
 
-    SessionTokenInfo = namedtuple(
-        "SessionTokenInfo", ["id", "email", "expiration_date"]
-    )
 
-    def get_session_token_info(self, api_key: str) -> Optional[SessionTokenInfo]:
+    def get_user_by_api_key(self, api_key: str) -> Optional[str]:
         """
-        Checks if a session token exists in the database and retrieves the associated user data.
-
-        :param api_key: The session token to check.
-        :return: SessionTokenInfo if the token exists; otherwise, None.
-        """
-        query = sql.SQL(
-            "select id, email, expiration_date from session_tokens where token = {}"
-        ).format(sql.Literal(api_key))
-        self.cursor.execute(query)
-        row = self.cursor.fetchone()
-        if row is None:
-            return None
-        return self.SessionTokenInfo(id=row[0], email=row[1], expiration_date=row[2])
-
-    RoleInfo = namedtuple("RoleInfo", ["id", "role"])
-
-    def get_role_by_api_key(self, api_key: str) -> Optional[RoleInfo]:
-        """
-        Get role and user id for a given api key
+        Get user id for a given api key
         :param api_key: The api key to check.
         :return: RoleInfo if the token exists; otherwise, None.
         """
-        query = sql.SQL("select id, role from users where api_key = {}").format(
+        query = sql.SQL("select id from users where api_key = {}").format(
             sql.Literal(api_key)
         )
         self.cursor.execute(query)
         row = self.cursor.fetchone()
         if row is None:
             return None
-        return self.RoleInfo(id=row[0], role=row[1])
-
-    def get_role_by_email(self, email: str) -> RoleInfo:
-        """
-        Retrieves a user's role from the database using a given email.
-
-        :param email: User's email.
-        :raises UserNotFoundError: If no user is found.
-        :return: RoleInfo namedtuple containing the user's role.
-        """
-        query = sql.SQL("select role from users where email = {}")
-        query = query.format(sql.Literal(email))
-        self.cursor.execute(query)
-        results = self.cursor.fetchone()
-        if len(results) == 0:
-            raise UserNotFoundError(email)
-
-        return self.RoleInfo(id=None, role=results[0])
+        return row[0]
 
     def update_user_api_key(self, api_key: str, user_id: int):
         """
@@ -553,16 +518,6 @@ class DatabaseClient:
             ),
         )
 
-    def add_new_access_token(self, token: str, expiration: datetime) -> None:
-        """Inserts a new access token into the database."""
-        query = sql.SQL(
-            "insert into access_tokens (token, expiration_date) values ({token}, {expiration})"
-        ).format(
-            token=sql.Literal(token),
-            expiration=sql.Literal(expiration),
-        )
-        self.cursor.execute(query)
-
     UserInfo = namedtuple("UserInfo", ["id", "password_digest", "api_key", "email"])
 
     def get_user_info(self, email: str) -> UserInfo:
@@ -622,59 +577,6 @@ class DatabaseClient:
             api_key=results["api_key"],
             email=results["email"],
         )
-
-    def add_new_session_token(self, session_token, email: str, expiration) -> None:
-        """
-        Inserts a session token into the database.
-
-        :param session_token: The session token.
-        :param email: User's email.
-        :param expiration: The session token's expiration.
-        """
-        query = sql.SQL(
-            "insert into session_tokens (token, email, expiration_date) values ({token}, {email}, {expiration})"
-        ).format(
-            token=sql.Literal(session_token),
-            email=sql.Literal(email),
-            expiration=sql.Literal(expiration),
-        )
-        self.cursor.execute(query)
-
-    SessionTokenUserData = namedtuple("SessionTokenUserData", ["id", "email"])
-
-    def delete_session_token(self, old_token: str) -> None:
-        """
-        Deletes a session token from the database.
-
-        :param old_token: The session token.
-        """
-        query = sql.SQL("delete from session_tokens where token = {token}").format(
-            token=sql.Literal(old_token)
-        )
-        self.cursor.execute(query)
-
-    AccessToken = namedtuple("AccessToken", ["id", "token"])
-
-    def get_access_token(self, api_key: str) -> AccessToken:
-        """
-        Retrieves an access token from the database.
-
-        :param api_key: The access token.
-        :raise AccessTokenNotFoundError: If the access token is not found.
-        :returns: AccessToken namedtuple with the ID and the access token.
-        """
-        query = sql.SQL(
-            "select id, token from access_tokens where token = {token}"
-        ).format(token=sql.Literal(api_key))
-        self.cursor.execute(query)
-        results = self.cursor.fetchone()
-        if not results:
-            raise AccessTokenNotFoundError("Access token not found")
-        return self.AccessToken(id=results[0], token=results[1])
-
-    def delete_expired_access_tokens(self) -> None:
-        """Deletes all expired access tokens from the database."""
-        self.cursor.execute("delete from access_tokens where expiration_date < NOW()")
 
     TypeaheadSuggestions = namedtuple(
         "TypeaheadSuggestions", ["display_name", "type", "state", "county", "locality"]
@@ -755,11 +657,40 @@ class DatabaseClient:
         )
         self.cursor.execute(query)
 
+    def add_user_permission(self, user_email: str, permission: PermissionsEnum):
+        query = sql.SQL("""
+            INSERT INTO user_permissions (user_id, permission_id) 
+            VALUES (
+                (SELECT id FROM users WHERE email = {email}), 
+                (SELECT permission_id FROM permissions WHERE permission_name = {permission})
+            );
+        """).format(
+            email=sql.Literal(user_email),
+            permission=sql.Literal(permission.value),
+        )
+        self.cursor.execute(query)
 
-    def get_user_permissions(self, user_id: str) -> UserPermissions:
-        """
+    def remove_user_permission(self, user_email: str, permission: PermissionsEnum):
+        query = sql.SQL("""
+            DELETE FROM user_permissions
+            WHERE user_id = (SELECT id FROM users WHERE email = {email})
+            AND permission_id = (SELECT permission_id FROM permissions WHERE permission_name = {permission});
+        """).format(
+            email=sql.Literal(user_email),
+            permission=sql.Literal(permission.value),
+        )
+        self.cursor.execute(query)
 
-        :param user_id:
-        :return: A UserPermissions object.
-        """
-        pass
+    def get_user_permissions(self, user_id: str) -> List[PermissionsEnum]:
+        query = sql.SQL("""
+            SELECT p.permission_name
+            FROM 
+            user_permissions up
+            INNER JOIN permissions p on up.permission_id = p.permission_id
+            where up.user_id = {user_id}
+        """).format(
+            user_id=sql.Literal(user_id),
+        )
+        self.cursor.execute(query)
+        results = self.cursor.fetchall()
+        return [PermissionsEnum(row[0]) for row in results]

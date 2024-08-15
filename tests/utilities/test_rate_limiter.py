@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
-from tests.fixtures import client_with_mock_db
+from tests.fixtures import client_with_mock_db, bypass_jwt_required
 from tests.helper_scripts.common_test_data import TEST_RESPONSE
 from tests.helper_scripts.helper_functions import check_response_status
 
@@ -44,7 +44,7 @@ def test_rate_limiter_explicit_limit(client_with_mock_db, monkeypatch):
     response = post_login_request(client_with_mock_db, ip_address="237.84.2.178")
     check_response_status(response, TEST_RESPONSE.status_code)
 
-def test_rate_limiter_default_limit(client_with_mock_db, monkeypatch):
+def test_rate_limiter_default_limit(client_with_mock_db, monkeypatch, bypass_jwt_required):
     """
     Test the rate limiter's default limit decorator using the refresh-session endpoint
     which is not explicitly rate-limited and thus should default to

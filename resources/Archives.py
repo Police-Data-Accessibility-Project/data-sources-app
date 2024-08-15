@@ -1,6 +1,7 @@
+from flask_jwt_extended import jwt_required
 from flask_restx import fields
 
-from middleware.security import api_required
+from middleware.decorators import api_key_required, permissions_required
 from middleware.archives_queries import (
     archives_get_query,
     update_archives_data,
@@ -10,7 +11,8 @@ from flask_restful import request
 import json
 from typing import Dict, Any
 
-from resources.resource_helpers import add_api_key_header_arg
+from middleware.enums import PermissionsEnum
+from resources.resource_helpers import add_api_key_header_arg, add_jwt_header_arg
 from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
@@ -22,7 +24,9 @@ archives_get_model = namespace_archives.model(
         "id": fields.String(description="The ID of the data source"),
         "last_cached": fields.DateTime(description="The last date the data was cached"),
         "source_url": fields.String(description="The URL of the data source"),
-        "update_frequency": fields.String(description="The archive update frequency of the data source"),
+        "update_frequency": fields.String(
+            description="The archive update frequency of the data source"
+        ),
     },
 )
 
@@ -31,12 +35,17 @@ archives_post_model = namespace_archives.model(
     {
         "id": fields.String(description="The ID of the data source", required=True),
         "last_cached": fields.DateTime(description="The last date the data was cached"),
-        "broken_source_url_as_of": fields.Date(description="The date the source was marked as broken"),
+        "broken_source_url_as_of": fields.Date(
+            description="The date the source was marked as broken"
+        ),
     },
 )
 
-archives_header_parser = namespace_archives.parser()
-add_api_key_header_arg(archives_header_parser)
+archives_header_get_parser = namespace_archives.parser()
+add_api_key_header_arg(archives_header_get_parser)
+
+archives_header_post_parser = namespace_archives.parser()
+add_jwt_header_arg(archives_header_post_parser)
 
 
 @namespace_archives.route("/archives")
@@ -46,14 +55,18 @@ class Archives(PsycopgResource):
     """
 
     @handle_exceptions
-    @api_required
-    @namespace_archives.response(200, "Success: Returns a list of archived data sources", archives_get_model)
+    @api_key_required
+    @namespace_archives.response(
+        200, "Success: Returns a list of archived data sources", archives_get_model
+    )
     @namespace_archives.response(400, "Error: Bad request missing or bad API key")
-    @namespace_archives.response(403, "Error: Unauthorized. Forbidden or an invalid API key")
+    @namespace_archives.response(
+        403, "Error: Unauthorized. Forbidden or an invalid API key"
+    )
     @namespace_archives.doc(
         description="Retrieves archived data sources from the database.",
     )
-    @namespace_archives.expect(archives_header_parser)
+    @namespace_archives.expect(archives_header_get_parser)
     def get(self) -> Any:
         """
         Retrieves archived data sources from the database.
@@ -71,7 +84,7 @@ class Archives(PsycopgResource):
         return archives_combined_results_clean
 
     @handle_exceptions
-    @api_required
+    @permissions_required(PermissionsEnum.DB_WRITE)
     @namespace_archives.doc(
         description="Updates the archive data based on the provided JSON payload.",
         responses={
@@ -79,9 +92,9 @@ class Archives(PsycopgResource):
             400: "Error: Bad request missing or bad API key",
             403: "Error: Unauthorized. Forbidden or an invalid API key",
             500: "Error: Internal server error",
-        }
+        },
     )
-    @namespace_archives.expect(archives_header_parser, archives_post_model)
+    @namespace_archives.expect(archives_header_post_parser, archives_post_model)
     def put(self) -> Dict[str, str]:
         """
         Updates the archive data based on the provided JSON payload.

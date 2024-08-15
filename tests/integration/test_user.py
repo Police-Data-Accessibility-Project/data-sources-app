@@ -5,21 +5,22 @@ import uuid
 
 import psycopg2
 
-from tests.fixtures import dev_db_connection, client_with_db
+from tests.fixtures import dev_db_connection, flask_client_with_db, dev_db_client
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     get_user_password_digest,
     create_api_key,
     create_test_user_setup,
+
 )
 
 
-def test_user_post(client_with_db, dev_db_connection: psycopg2.extensions.connection):
+def test_user_post(flask_client_with_db, dev_db_connection: psycopg2.extensions.connection):
     """
     Test that POST call to /user endpoint successfully creates a new user and verifies the user's email and password digest in the database
     """
 
-    user_info = create_test_user_api(client_with_db)
+    user_info = create_test_user_api(flask_client_with_db)
     cursor = dev_db_connection.cursor()
     cursor.execute(
         f"SELECT email, password_digest FROM users WHERE email = %s", (user_info.email,)
@@ -35,21 +36,21 @@ def test_user_post(client_with_db, dev_db_connection: psycopg2.extensions.connec
     ), "DB user password digest should not match password"
 
 
-def test_user_put(client_with_db, dev_db_connection: psycopg2.extensions.connection):
+def test_user_put(flask_client_with_db, dev_db_connection: psycopg2.extensions.connection):
     """
     Test that PUT call to /user endpoint successfully updates the user's password and verifies the new password hash is distinct from both the plain new password and the old password hash in the database
     """
 
-    tus = create_test_user_setup(client_with_db)
+    tus = create_test_user_setup(flask_client_with_db)
     cursor = dev_db_connection.cursor()
 
     old_password_hash = get_user_password_digest(cursor, tus.user_info)
 
     new_password = str(uuid.uuid4())
 
-    response = client_with_db.put(
+    response = flask_client_with_db.put(
         "/api/user",
-        headers=tus.authorization_header,
+        headers=tus.api_authorization_header,
         json={"email": tus.user_info.email, "password": new_password},
     )
     assert (
