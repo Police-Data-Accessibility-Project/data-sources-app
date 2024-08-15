@@ -2,21 +2,6 @@
 
 This guide contains information which will help you submit code to the Data Sources App.
 
-## Calling the Local API
-
-Most API endpoints are restricted by one of two forms of authentication:
-* `Basic Auth`, which requires an API key to be passed in the `Authorization` header with the value `Basic <key>`
-* `Bearer Auth`, which requires a JWT to be passed in the `Authorization` header with the value `Bearer <key>`
-
-`Basic` endpoints are endpoints which any registered user can utilize and which do not require elevated permissions.
-
-`Bearer` endpoints are endpoints which require elevated permissions.
-
-To create a user with elevated permissions, use the `/dev/create-test-user-with-elevated-permissions` endpoint, and follow instructions provided. 
-That endpoint will provide you with a randomly generated email, password, and api key to use to test endpoints. The permissions are such that all endpoints should be available to you for use.
-To obtain a short-lived JWT for use in the `Bearer` endpoints, use the `/login` endpoint with the provided email and password to receive the requisite JWT.
-
-
 ## Installation
 Follow instructions in README.md.
 
@@ -128,4 +113,19 @@ npm run coverage
 ### Customize configuration
 
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+## Calling the Local API
+
+Most API endpoints are restricted by one of two forms of authentication:
+* `Basic Auth`, which requires an API key to be passed in the `Authorization` header with the value `Basic <key>`
+* `Bearer Auth`, which requires a JWT to be passed in the `Authorization` header with the value `Bearer <key>`
+
+`Basic` endpoints are endpoints which any registered user can utilize and which do not require elevated permissions.
+
+`Bearer` endpoints are endpoints which require elevated permissions.
+
+To create a user with elevated permissions, use the `/dev/create-test-user-with-elevated-permissions` endpoint, and follow instructions provided. 
+That endpoint will provide you with a randomly generated email, password, and api key to use to test endpoints. The permissions are such that all endpoints should be available to you for use.
+To obtain a short-live d JWT for use in the `Bearer` endpoints, use the `/login` endpoint with the provided email and password to receive the requisite JWT.
+
 
