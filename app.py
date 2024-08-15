@@ -28,6 +28,7 @@ from resources.RequestResetPassword import namespace_request_reset_password
 from resources.ResetPassword import namespace_reset_password
 from resources.ResetTokenValidation import namespace_reset_token_validation
 from resources.User import namespace_user
+from resources.Yolo import namespace_yolo
 
 NAMESPACES = [
     namespace_api_key,
@@ -48,6 +49,7 @@ NAMESPACES = [
     namespace_login_with_github,
     namespace_create_user_with_github,
     namespace_permissions,
+    namespace_yolo
 ]
 
 MY_PREFIX = "/api"
