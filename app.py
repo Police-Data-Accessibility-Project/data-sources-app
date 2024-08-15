@@ -28,7 +28,7 @@ from resources.RequestResetPassword import namespace_request_reset_password
 from resources.ResetPassword import namespace_reset_password
 from resources.ResetTokenValidation import namespace_reset_token_validation
 from resources.User import namespace_user
-from resources.Yolo import namespace_yolo
+from resources.CreateTestUserWithElevatedPermissions import namespace_create_test_user
 
 NAMESPACES = [
     namespace_api_key,
@@ -49,7 +49,7 @@ NAMESPACES = [
     namespace_login_with_github,
     namespace_create_user_with_github,
     namespace_permissions,
-    namespace_yolo
+    namespace_create_test_user
 ]
 
 MY_PREFIX = "/api"
@@ -80,8 +80,8 @@ class ReverseProxied(object):
         return self.app(environ, start_response)
 
 
-def get_flask_app_secret_key() -> str:
-    return os.getenv("FLASK_APP_SECRET_KEY")
+def get_flask_app_cookie_encryption_key() -> str:
+    return os.getenv("FLASK_APP_COOKIE_ENCRYPTION_KEY")
 
 
 def create_app() -> Flask:
@@ -97,7 +97,7 @@ def create_app() -> Flask:
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=15)
     app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 
-    app.secret_key = get_flask_app_secret_key()
+    app.secret_key = get_flask_app_cookie_encryption_key()
     app.wsgi_app = ReverseProxied(app.wsgi_app)
     CORS(app)
 

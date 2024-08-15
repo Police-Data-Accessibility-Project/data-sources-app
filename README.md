@@ -66,10 +66,11 @@ The environment variables are as follows:
 * DEV_DB_CONN_STRING: Used to connect to the dev database
 * VITE_VUE_API_BASE_URL: The base URL for the API
 * VITE_VUE_APP_BASE_URL: The base URL for the UI
-* JWT_SECRET_KEY: Used to sign and verify JWT tokens
-* FLASK_APP_SECRET_KEY: Used to create signed cookies to prevent CSRF attacks
 * GH_CLIENT_ID: Used to authenticate with GitHub via OAuth
 * GH_CLIENT_SECRET: Used to authenticate with GitHub via OAuth
+* JWT_SECRET_KEY: Used to sign and verify JWT tokens
+* FLASK_APP_COOKIE_ENCRYPTION_KEY: Used to create signed cookies to prevent CSRF attacks
+* DEVELOPMENT_PASSWORD: Used to create a test user with elevated permissions for the purposes of testing.
 
 #### .env Example
 ```
@@ -79,10 +80,11 @@ DO_DATABASE_URL="postgres://data_sources_app:<password>@db-postgresql-nyc3-38355
 DEV_DB_CONN_STRING="postgresql://data_sources_app_v2:<password>@pdap-db-dev-do-user-8463429-0.c.db.ondigitalocean.com:25060/pdap_dev_db?sslmode=require"
 VITE_VUE_API_BASE_URL="http://localhost:5000"
 VITE_VUE_APP_BASE_URL="http://localhost:8888"
-FLASK_APP_SECRET_KEY="myFlaskAppSecretKey"
-JWT_SECRET_KEY="myJwtSecretKey"
 GH_CLIENT_ID="myGithubClientId"
 GH_CLIENT_SECRET="myGithubClientSecret"
+FLASK_APP_COOKIE_ENCRYPTION_KEY="myFlaskAppSecretKey"
+JWT_SECRET_KEY="myJwtSecretKey"
+DEVELOPMENT_PASSWORD="myDevelopmentPassword"
 ```
 
 #### Shell Example
