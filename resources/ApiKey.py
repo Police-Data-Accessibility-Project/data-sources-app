@@ -3,11 +3,13 @@ from flask_restx import fields
 
 from middleware.login_queries import get_api_key_for_user
 from resources.resource_helpers import create_user_model
-from utilities.namespace import create_namespace
+from utilities.namespace import create_namespace, AppNamespaces
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
-namespace_api_key = create_namespace()
+namespace_api_key = create_namespace(
+    namespace_attributes=AppNamespaces.AUTH
+)
 
 api_key_model = namespace_api_key.model(
     "ApiKey",
