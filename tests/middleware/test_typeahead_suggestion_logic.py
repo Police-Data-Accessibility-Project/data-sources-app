@@ -8,7 +8,7 @@ from middleware.typeahead_suggestion_logic import (
     get_typeahead_dict_results,
     get_typeahead_suggestions_wrapper,
 )
-from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
 def test_get_typeahead_dict_results():

@@ -11,7 +11,7 @@ from middleware.data_source_queries import (
     DataSourceNotFoundError,
 )
 from middleware.login_queries import try_logging_in
-from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.helper_functions import (
     get_boolean_dictionary,
 )

@@ -10,7 +10,7 @@ from middleware.permissions_logic import (
     manage_user_permissions,
     update_permissions_wrapper,
 )
-from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
 class PermissionsManagerMocks(DynamicMagicMock):

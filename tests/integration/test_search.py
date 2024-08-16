@@ -16,7 +16,7 @@ def test_search_get(flask_client_with_db, bypass_api_key_required):
     data = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
-        endpoint="/search/search-location-and-record-type?state=Pennsylvania&county=Allegheny&locality=Pittsburgh&record_category=Police%20%26%20Public%20Interactions",
+        endpoint="/search/search-location-and-record-type?state=Pennsylvania&county=Allegheny&locality=Pittsburgh&record_categories=Police%20%26%20Public%20Interactions",
         headers=tus.api_authorization_header,
     )
 

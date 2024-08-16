@@ -4,7 +4,7 @@ import pytest
 
 from middleware.custom_exceptions import UserNotFoundError
 from middleware.user_queries import user_post_results, user_check_email
-from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
 def test_user_post_query(monkeypatch):

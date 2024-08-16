@@ -13,7 +13,7 @@ from middleware.reset_token_queries import (
     validate_token,
     InvalidTokenError,
 )
-from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
 class RequestResetPasswordMocks(DynamicMagicMock):

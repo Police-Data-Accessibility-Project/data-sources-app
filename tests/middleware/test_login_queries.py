@@ -12,7 +12,7 @@ from middleware.login_queries import (
     refresh_session,
     try_logging_in_with_github_id,
 )
-from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
 def test_generate_api_key():
