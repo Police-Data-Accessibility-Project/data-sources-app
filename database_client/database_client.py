@@ -2,11 +2,13 @@ import json
 from collections import namedtuple
 from contextlib import contextmanager
 from datetime import datetime
+from functools import wraps
 from typing import Optional, Any, List
 import uuid
 
 import psycopg2
 from psycopg2 import sql
+from psycopg2.extras import DictCursor, DictRow
 
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import ExternalAccountTypeEnum
@@ -16,6 +18,7 @@ from middleware.custom_exceptions import (
     AccessTokenNotFoundError,
 )
 from middleware.enums import PermissionsEnum
+from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 from utilities.enums import RecordCategories
 
 DATA_SOURCES_MAP_COLUMN = [
@@ -67,9 +70,53 @@ QUICK_SEARCH_SQL = """
 
 class DatabaseClient:
 
-    def __init__(self, cursor: psycopg2.extensions.cursor):
-        self.cursor = cursor
+    def __init__(self):
+        self.connection = initialize_psycopg2_connection()
+        self.cursor = None
 
+    def cursor_manager(method):
+        @wraps(method)
+        def wrapper(self, *args, **kwargs):
+            # Open a new cursor
+            self.cursor = self.connection.cursor(cursor_factory=DictCursor)
+            try:
+                # Execute the method
+                result = method(self, *args, **kwargs)
+                # Commit the transaction if no exception occurs
+                self.connection.commit()
+                return result
+            except Exception as e:
+                # Rollback in case of an error
+                self.connection.rollback()
+                raise e
+            finally:
+                # Close the cursor
+                self.cursor.close()
+                self.cursor = None
+        return wrapper
+
+    def close(self):
+        self.connection.close()
+    
+    @cursor_manager
+    def execute_raw_sql(self, query: str, vars: Optional[tuple] = None) -> Optional[list[DictRow] | DictRow]:
+        """Executes an SQL query passed to the function.
+
+        :param query: The SQL query to execute.
+        :param vars: A tuple of variables to replace placeholders in the SQL query, defaults to None
+        :return: A list of DictRow objects when there are multiple results, a single DictRow object if there is one result, or None if there are no results.
+        """          
+        self.cursor.execute(query, vars)
+        results = self.cursor.fetchall()
+
+        if len(results) == 0:
+            return None
+        elif len(results) == 1:
+            return results[0]
+        else:
+            return results
+
+    @cursor_manager
     def add_new_user(self, email: str, password_digest: str) -> Optional[int]:
         """
         Adds a new user to the database.
