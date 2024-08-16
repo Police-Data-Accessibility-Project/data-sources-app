@@ -181,7 +181,7 @@ def live_database_client(db_cursor) -> DatabaseClient:
     :param db_cursor:
     :return:
     """
-    return DatabaseClient(db_cursor)
+    yield DatabaseClient()
 
 
 @pytest.fixture
