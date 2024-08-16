@@ -320,7 +320,7 @@ def create_api_key(client_with_db, user_info) -> str:
     :param user_info:
     :return: api_key
     """
-    response = client_with_db.get(
+    response = client_with_db.post(
         "/api/api_key", json={"email": user_info.email, "password": user_info.password}
     )
     assert (
