@@ -6,7 +6,7 @@ import pytest
 from middleware.archives_queries import (
     update_archives_data,
 )
-from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
 class UpdateArchivesDataMocks(DynamicMagicMock):

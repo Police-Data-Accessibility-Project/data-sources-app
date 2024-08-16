@@ -14,7 +14,7 @@ from middleware.quick_search_query import (
     depluralize,
     DataSourceMatches,
 )
-from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 from tests.fixtures import connection_with_test_data, dev_db_connection
 

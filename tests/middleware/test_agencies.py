@@ -7,7 +7,7 @@ from middleware.agencies import (
     get_agencies_matches,
     get_agencies,
 )
-from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
 class AgenciesMocks(DynamicMagicMock):

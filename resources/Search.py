@@ -1,6 +1,6 @@
 from flask import Response, request
 
-from middleware.search_logic import search_wrapper
+from middleware.search_logic import search_wrapper, SearchRequests
 from middleware.decorators import api_key_required
 from resources.PsycopgResource import PsycopgResource
 from resources.resource_helpers import add_api_key_header_arg, create_search_model
@@ -81,25 +81,22 @@ class Search(PsycopgResource):
         Returns:
         - A dictionary containing a message about the search results and the data found, if any.
         """
-        state = request.args.get("state")
-        county = request.args.get("county")
-        locality = request.args.get("locality")
-        record_category_raw = request.args.get("record_category")
-        if record_category_raw is not None:
-            record_categories = get_enums_from_string(
-                RecordCategories,
-                record_category_raw,
-                case_insensitive=True
-            )
-        else:
-            record_categories = None
+        # state = request.args.get("state")
+        # county = request.args.get("county")
+        # locality = request.args.get("locality")
+        # record_category_raw = request.args.get("record_categories")
+        # if record_category_raw is not None:
+        #     record_categories = get_enums_from_string(
+        #         RecordCategories,
+        #         record_category_raw,
+        #         case_insensitive=True
+        #     )
+        # else:
+        #     record_categories = None
 
         with self.setup_database_client() as db_client:
             response = search_wrapper(
                 db_client=db_client,
-                record_categories=record_categories,
-                state=state,
-                county=county,
-                locality=locality,
+                dto=SearchRequests()
             )
         return response
