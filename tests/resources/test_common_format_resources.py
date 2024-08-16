@@ -69,7 +69,7 @@ MOCK_EMAIL_PASSWORD = {
             ),
         ),
         ("/archives", "GET", "Archives.archives_get_query", {}),
-        ("/api/api_key", "GET", "ApiKey.get_api_key_for_user", MOCK_EMAIL_PASSWORD),
+        ("/api/api_key", "POST", "ApiKey.get_api_key_for_user", MOCK_EMAIL_PASSWORD),
         ("auth/callback", "GET", "Callback.callback_outer_wrapper", {}),
         ("/login", "POST", "Login.try_logging_in", MOCK_EMAIL_PASSWORD),
         ("/refresh-session", "POST", "RefreshSession.refresh_session", {}),
