@@ -82,19 +82,6 @@ class Search(PsycopgResource):
         Returns:
         - A dictionary containing a message about the search results and the data found, if any.
         """
-        # state = request.args.get("state")
-        # county = request.args.get("county")
-        # locality = request.args.get("locality")
-        # record_category_raw = request.args.get("record_categories")
-        # if record_category_raw is not None:
-        #     record_categories = get_enums_from_string(
-        #         RecordCategories,
-        #         record_category_raw,
-        #         case_insensitive=True
-        #     )
-        # else:
-        #     record_categories = None
-
         with self.setup_database_client() as db_client:
             response = search_wrapper(
                 db_client=db_client,
