@@ -80,6 +80,8 @@ def insert_test_agencies_and_sources_if_not_exist(cursor: psycopg2.extensions.cu
         insert_test_agencies_and_sources(cursor)
     except psycopg2.errors.UniqueViolation:  # Data already inserted
         cursor.execute("ROLLBACK TO SAVEPOINT my_savepoint")
+    finally:
+        cursor.close()
 
 
 def get_reset_tokens_for_email(
