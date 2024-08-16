@@ -22,7 +22,9 @@ api_key_model = namespace_api_key.model(
 
 user = create_user_model(namespace_api_key)
 
-@namespace_api_key.route("/api_key")
+API_KEY_ROUTE = "/api-key"
+
+@namespace_api_key.route(API_KEY_ROUTE)
 @namespace_api_key.expect(user)
 @namespace_api_key.doc(
     description="Generates an API key for authenticated users.",

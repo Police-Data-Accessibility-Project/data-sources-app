@@ -5,6 +5,7 @@ from http import HTTPStatus
 import psycopg2.extensions
 
 from database_client.database_client import DatabaseClient
+from resources.ApiKey import API_KEY_ROUTE
 from tests.fixtures import dev_db_connection, flask_client_with_db, dev_db_client
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
@@ -25,7 +26,7 @@ def test_api_key_post(
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="post",
-        endpoint="/api/api_key",
+        endpoint=f"/api{API_KEY_ROUTE}",
         json={"email": user_info.email, "password": user_info.password},
     )
 

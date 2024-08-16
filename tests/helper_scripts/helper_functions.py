@@ -20,6 +20,7 @@ from middleware.dataclasses import (
     FlaskSessionCallbackInfo,
 )
 from middleware.enums import CallbackFunctionsEnum, PermissionsEnum
+from resources.ApiKey import API_KEY_ROUTE
 from tests.helper_scripts.common_test_data import TEST_RESPONSE
 
 TestTokenInsert = namedtuple("TestTokenInsert", ["id", "email", "token"])
@@ -321,7 +322,7 @@ def create_api_key(client_with_db, user_info) -> str:
     :return: api_key
     """
     response = client_with_db.post(
-        "/api/api_key", json={"email": user_info.email, "password": user_info.password}
+        f"/api{API_KEY_ROUTE}", json={"email": user_info.email, "password": user_info.password}
     )
     assert (
         response.status_code == HTTPStatus.OK.value
