@@ -42,6 +42,7 @@ request_parser.add_argument(
     location="args",
     required=False,
     help="The record categories of the search. If empty, all categories will be searched.\n"
+         "Multiple record categories can be provided as a comma-separated list, eg. 'Police & Public Interactions,Agency-published Resources'.\n"
          "Allowable record categories include: \n  * " + "\n  * ".join([e.value for e in RecordCategories]),
 )
 # TODO: Check that this description looks as expected.
