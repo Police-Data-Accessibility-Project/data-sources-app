@@ -37,7 +37,7 @@ class ApiKey(PsycopgResource):
 
     @handle_exceptions
     @namespace_api_key.response(200, "Success", model=api_key_model)
-    def get(self) -> Response:
+    def post(self) -> Response:
         """
         Authenticates a user based on provided credentials and generates an API key.
 

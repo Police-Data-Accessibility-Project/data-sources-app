@@ -1,0 +1,5 @@
+COLUMN,STANDARD,ADMIN
+standard_view_admin_view,VIEW,VIEW
+standard_view_admin_edit,VIEW,EDIT
+standard_none_admin_view,,VIEW
+standard_none_admin_edit,,EDIT

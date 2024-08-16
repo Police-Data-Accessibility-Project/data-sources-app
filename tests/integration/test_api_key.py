@@ -13,7 +13,7 @@ from tests.helper_scripts.helper_functions import (
 )
 
 
-def test_api_key_get(
+def test_api_key_post(
     flask_client_with_db, dev_db_client
 ):
     """
@@ -24,7 +24,7 @@ def test_api_key_get(
 
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
-        http_method="get",
+        http_method="post",
         endpoint="/api/api_key",
         json={"email": user_info.email, "password": user_info.password},
     )
