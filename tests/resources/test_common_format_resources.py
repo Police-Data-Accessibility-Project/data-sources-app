@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from resources.ApiKey import API_KEY_ROUTE
 from tests.fixtures import (
     client_with_mock_db,
     bypass_api_key_required,
@@ -69,7 +70,7 @@ MOCK_EMAIL_PASSWORD = {
             ),
         ),
         ("/archives", "GET", "Archives.archives_get_query", {}),
-        ("/api/api_key", "POST", "ApiKey.get_api_key_for_user", MOCK_EMAIL_PASSWORD),
+        (f"/api{API_KEY_ROUTE}", "POST", "ApiKey.get_api_key_for_user", MOCK_EMAIL_PASSWORD),
         ("auth/callback", "GET", "Callback.callback_outer_wrapper", {}),
         ("/login", "POST", "Login.try_logging_in", MOCK_EMAIL_PASSWORD),
         ("/refresh-session", "POST", "RefreshSession.refresh_session", {}),
