@@ -26,7 +26,7 @@ def test_api_key_post(
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="post",
-        endpoint=f"/api{API_KEY_ROUTE}",
+        endpoint=f"/auth{API_KEY_ROUTE}",
         json={"email": user_info.email, "password": user_info.password},
     )
 
