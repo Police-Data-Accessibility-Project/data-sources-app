@@ -50,18 +50,20 @@ def check_for_header_with_authorization_key():
 
 
 def get_db_client() -> DatabaseClient:
-    psycopg2_connection = initialize_psycopg2_connection()
-    return DatabaseClient(psycopg2_connection.cursor())
+    return DatabaseClient()
+
 
 def check_api_key_associated_with_user(db_client: DatabaseClient, api_key: str) -> None:
     user_id = db_client.get_user_by_api_key(api_key)
     if user_id is None:
+        db_client.close()
         abort(HTTPStatus.UNAUTHORIZED, "Invalid API Key")
 
 def check_api_key() -> None:
     api_key = get_api_key_from_header()
     db_client = get_db_client()
     check_api_key_associated_with_user(db_client, api_key)
+    db_client.close()
 
 def check_permissions(
     permission: PermissionsEnum
@@ -78,7 +80,9 @@ def check_permissions(
     db_client = get_db_client()
     pm = PermissionsManager(db_client=db_client, user_email=user_email)
     if not pm.has_permission(permission):
+        db_client.close()
         abort(
             code=HTTPStatus.FORBIDDEN,
             message="You do not have permission to access this endpoint"
         )
+    db_client.close()
