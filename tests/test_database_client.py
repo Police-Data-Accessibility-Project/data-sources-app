@@ -299,12 +299,12 @@ def test_get_quick_search_results(live_database_client):
 
 def test_add_quick_search_log(live_database_client):
     # Add a quick search log to the database using the DatabaseClient method
-    search = "Source QSL"
+    search = f"{uuid.uuid4().hex} QSL"
     location = "City QSL"
     live_database_client.add_quick_search_log(
         data_sources_count=1,
         processed_data_source_matches=live_database_client.DataSourceMatches(
-            converted=["Source QSL"],
+            converted=[search],
             ids=["SOURCE_UID_QSL"],
         ),
         processed_search_parameters=live_database_client.SearchParameters(
