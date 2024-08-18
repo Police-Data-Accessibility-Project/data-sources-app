@@ -4,6 +4,7 @@ from http import HTTPStatus
 import uuid
 
 import psycopg2
+from psycopg2.extras import DictRow
 
 from database_client.database_client import DatabaseClient
 from middleware.enums import PermissionsEnum
@@ -73,12 +74,10 @@ def test_data_sources_post(
         headers=test_user_admin.jwt_authorization_header,
         json={"name": name},
     )
-    cursor = db_client_with_test_data.cursor
-    cursor.execute(
-        """
-    SELECT * from data_sources WHERE name=%s
-    """,
-        (name,),
+    rows = db_client_with_test_data.execute_raw_sql(
+        query="""
+        SELECT * from data_sources WHERE name=%s
+        """,
+        vars=(name,),
     )
-    rows = cursor.fetchall()
-    assert (len(rows)) == 1
+    assert type(rows) == DictRow # rows is type DictRow when there is one result
