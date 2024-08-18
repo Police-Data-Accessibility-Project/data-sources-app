@@ -22,17 +22,10 @@ def test_generate_api_key():
 
 
 class GetAPIKeyForUserMocks(DynamicMagicMock):
-    db_client: MagicMock
-    email: MagicMock
-    password: MagicMock
-    password_digest: MagicMock
-    user_id: MagicMock
-    user_data: MagicMock
     check_password_hash: MagicMock
     generate_api_key: MagicMock
     update_api_key: MagicMock
     make_response: MagicMock
-    api_key = MagicMock()
 
 
 def test_get_api_key_for_user_success(monkeypatch):
@@ -41,7 +34,7 @@ def test_get_api_key_for_user_success(monkeypatch):
     mock.generate_api_key.return_value = mock.api_key
 
     # Call function
-    get_api_key_for_user(mock.db_client, mock.email, mock.password)
+    get_api_key_for_user(mock.db_client, mock.dto)
 
     assert_get_api_key_for_user_precondition_calls(mock)
 
@@ -57,7 +50,7 @@ def test_get_api_key_for_user_failure():
 
     mock.check_password_hash.return_value = False
 
-    get_api_key_for_user(mock.db_client, mock.email, mock.password)
+    get_api_key_for_user(mock.db_client, mock.dto)
 
     assert_get_api_key_for_user_precondition_calls(mock)
 
@@ -69,8 +62,8 @@ def test_get_api_key_for_user_failure():
 
 
 def assert_get_api_key_for_user_precondition_calls(mock: GetAPIKeyForUserMocks):
-    mock.db_client.get_user_info.assert_called_with(mock.email)
-    mock.check_password_hash.assert_called_with(mock.password_digest, mock.password)
+    mock.db_client.get_user_info.assert_called_with(mock.dto.email)
+    mock.check_password_hash.assert_called_with(mock.password_digest, mock.dto.password)
 
 
 def setup_get_api_for_user_mocks():

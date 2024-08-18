@@ -9,26 +9,18 @@ from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 def test_user_post_query(monkeypatch):
 
-    mock_db_client = MagicMock()
-    mock_generate_password_hash = MagicMock()
-    mock_generate_password_hash.return_value = "password_digest"
+    mock = MagicMock()
+    mock.generate_password_hash = MagicMock()
+    mock.generate_password_hash.return_value = mock.password_digest
 
     monkeypatch.setattr(
-        "middleware.user_queries.generate_password_hash", mock_generate_password_hash
+        "middleware.user_queries.generate_password_hash", mock.generate_password_hash
     )
 
-    user_post_results(mock_db_client, "test_email", "test_password")
+    user_post_results(mock.db_client, mock.dto)
 
-    mock_generate_password_hash.assert_called_once_with("test_password")
-    mock_db_client.add_new_user.assert_called_once_with("test_email", "password_digest")
-
-
-class TestUserMagicMock(DynamicMagicMock):
-    db_client: MagicMock
-    user_id: MagicMock
-    email: MagicMock
-
-
+    mock.generate_password_hash.assert_called_once_with(mock.dto.password)
+    mock.db_client.add_new_user.assert_called_once_with(mock.dto.email, mock.password_digest)
 
 @pytest.mark.parametrize(
     "user_id, expected_exception",
@@ -38,7 +30,7 @@ class TestUserMagicMock(DynamicMagicMock):
     ]
 )
 def test_user_check_email(user_id, expected_exception) -> None:
-    mock = TestUserMagicMock()
+    mock = MagicMock()
     mock.db_client.get_user_id.return_value = user_id
 
     if expected_exception:

@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from http import HTTPStatus
 from typing import List, Dict, Any, Optional, Tuple
 
@@ -15,6 +16,12 @@ ARCHIVES_GET_COLUMNS = [
     "update_frequency",
     "last_cached",
 ]
+
+@dataclass
+class ArchivesQueryData:
+    id: Optional[str] = None
+    broken_source_url_as_of: Optional[str] = None
+    last_cached: Optional[str] = None
 
 
 def archives_get_query(

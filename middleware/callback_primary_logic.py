@@ -1,4 +1,5 @@
 import uuid
+from dataclasses import dataclass
 from http import HTTPStatus
 
 from flask import Response, make_response
@@ -10,8 +11,13 @@ from middleware.dataclasses import GithubUserInfo, FlaskSessionCallbackInfo, OAu
 from middleware.enums import CallbackFunctionsEnum
 from middleware.login_queries import try_logging_in_with_github_id
 from middleware.callback_oauth_logic import get_github_user_id, get_github_user_email, get_github_oauth_access_token
-from middleware.user_queries import user_post_results
+from middleware.user_queries import user_post_results, UserRequest
 
+
+@dataclass
+class LinkToGithubRequest:
+    redirect_to: str
+    user_email: str
 
 def get_flask_session_callback_info() -> FlaskSessionCallbackInfo:
     """
@@ -64,9 +70,11 @@ def create_user_with_github(
 
     user_post_results(
         db_client=db_client,
-        email=github_user_info.user_email,
-        # Create a random password. Will need to be reset if not logging in via Github
-        password=create_random_password(),
+        dto=UserRequest(
+            email=github_user_info.user_email,
+            # Create a random password. Will need to be reset if not logging in via Github
+            password=create_random_password(),
+        )
     )
     link_github_account(
         db_client=db_client,

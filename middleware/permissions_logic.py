@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from enum import Enum
 from http import HTTPStatus
 from typing import Type
@@ -10,6 +11,12 @@ from database_client.database_client import DatabaseClient
 from middleware.custom_exceptions import UserNotFoundError
 from middleware.enums import PermissionsEnum, PermissionsActionEnum
 from utilities.common import get_valid_enum_value
+
+@dataclass
+class PermissionsRequest:
+    user_email: str
+    permission: str
+    action: str
 
 class PermissionsManager:
     """
@@ -81,15 +88,13 @@ def manage_user_permissions(
 
 def update_permissions_wrapper(
     db_client: DatabaseClient,
-    user_email: str,
-    permission: str,
-    action: str
+    dto: PermissionsRequest,
 ) -> Response:
-    action = get_valid_enum_value(PermissionsActionEnum, action)
-    permission = get_valid_enum_value(PermissionsEnum, permission)
+    action = get_valid_enum_value(PermissionsActionEnum, dto.action)
+    permission = get_valid_enum_value(PermissionsEnum, dto.permission)
     return manage_user_permissions(
         db_client=db_client,
-        user_email=user_email,
+        user_email=dto.user_email,
         method=f"{action.value}_user_permission",
         permission=permission
     )

@@ -1,29 +1,30 @@
+from dataclasses import dataclass
 from http import HTTPStatus
 from typing import Optional
 
 from flask import Response, make_response
 
 from database_client.database_client import DatabaseClient
-from database_client.result_formatter import ResultFormatter, dictify_namedtuple
-from utilities.DynamicRequestDTO import DynamicRequestDTO
+from database_client.result_formatter import dictify_namedtuple
 from utilities.common import get_enums_from_string
 from utilities.enums import RecordCategories
 from middleware.util import format_list_response
 
-class SearchRequests(DynamicRequestDTO):
+def transform_record_categories(value: str) -> Optional[list[RecordCategories]]:
+    if value is not None:
+        return get_enums_from_string(
+            RecordCategories,
+            value,
+            case_insensitive=True
+        )
+    return None
+
+@dataclass
+class SearchRequests:
     state: str
     record_categories: Optional[list[RecordCategories]] = None
     county: Optional[str] = None
     locality: Optional[str] = None
-
-    def _transform_record_categories(self, value: str) -> Optional[list[RecordCategories]]:
-        if value is not None:
-            return get_enums_from_string(
-                RecordCategories,
-                value,
-                case_insensitive=True
-            )
-        return None
 
 def search_wrapper(
     db_client: DatabaseClient,
