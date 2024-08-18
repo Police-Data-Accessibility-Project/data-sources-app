@@ -1,9 +1,17 @@
 from flask import Response, request
 
-from middleware.search_logic import search_wrapper, SearchRequests
+from middleware.search_logic import (
+    search_wrapper,
+    SearchRequests,
+    transform_record_categories,
+)
 from middleware.decorators import api_key_required
 from resources.PsycopgResource import PsycopgResource
 from resources.resource_helpers import add_api_key_header_arg, create_search_model
+from utilities.populate_dto_with_request_content import (
+    populate_dto_with_request_content,
+    SourceMappingEnum,
+)
 from utilities.common import get_enums_from_string
 from utilities.enums import RecordCategories
 from utilities.namespace import create_namespace, AppNamespaces
@@ -42,8 +50,9 @@ request_parser.add_argument(
     location="args",
     required=False,
     help="The record categories of the search. If empty, all categories will be searched.\n"
-         "Multiple record categories can be provided as a comma-separated list, eg. 'Police & Public Interactions,Agency-published Resources'.\n"
-         "Allowable record categories include: \n  * " + "\n  * ".join([e.value for e in RecordCategories]),
+    "Multiple record categories can be provided as a comma-separated list, eg. 'Police & Public Interactions,Agency-published Resources'.\n"
+    "Allowable record categories include: \n  * "
+    + "\n  * ".join([e.value for e in RecordCategories]),
 )
 # TODO: Check that this description looks as expected.
 
@@ -82,9 +91,11 @@ class Search(PsycopgResource):
         Returns:
         - A dictionary containing a message about the search results and the data found, if any.
         """
+        dto = populate_dto_with_request_content(
+            object_class=SearchRequests,
+            transformation_functions={"record_categories": transform_record_categories},
+            source=SourceMappingEnum.ARGS,
+        )
         with self.setup_database_client() as db_client:
-            response = search_wrapper(
-                db_client=db_client,
-                dto=SearchRequests()
-            )
+            response = search_wrapper(db_client=db_client, dto=dto)
         return response

@@ -9,11 +9,16 @@ from middleware.enums import PermissionsEnum, PermissionsActionEnum
 from middleware.permissions_logic import (
     manage_user_permissions,
     update_permissions_wrapper,
+    PermissionsRequest,
 )
 from middleware.security import check_permissions
 from resources.PsycopgResource import handle_exceptions, PsycopgResource
 from resources.resource_helpers import add_api_key_header_arg, add_jwt_header_arg
 from utilities.namespace import AppNamespaces, create_namespace
+from utilities.populate_dto_with_request_content import (
+    populate_dto_with_request_content,
+    SourceMappingEnum,
+)
 
 namespace_permissions = create_namespace(namespace_attributes=AppNamespaces.AUTH)
 
@@ -96,12 +101,16 @@ class Permissions(PsycopgResource):
         Adds or removes a permission for a user.
         :return:
         """
-        data = request.args
-        json_data = request.get_json()
+        dto = populate_dto_with_request_content(
+            object_class=PermissionsRequest,
+            attribute_source_mapping= {
+                "user_email": SourceMappingEnum.ARGS,
+                "permission": SourceMappingEnum.JSON,
+                "action": SourceMappingEnum.JSON,
+            }
+        )
         with self.setup_database_client() as db_client:
             return update_permissions_wrapper(
                 db_client=db_client,
-                user_email=data.get("user_email"),
-                action=json_data.get("action"),
-                permission=json_data.get("permission"),
+                dto=dto,
             )

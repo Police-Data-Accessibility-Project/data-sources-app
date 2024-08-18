@@ -12,10 +12,11 @@ from werkzeug.security import check_password_hash
 from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
 from middleware.dataclasses import GithubUserInfo
+from middleware.user_queries import UserRequest
 from middleware.util import get_env_variable
 
 
-def try_logging_in(db_client: DatabaseClient, email: str, password: str) -> Response:
+def try_logging_in(db_client: DatabaseClient, dto: UserRequest) -> Response:
     """
     Tries to log in a user.
 
@@ -24,8 +25,8 @@ def try_logging_in(db_client: DatabaseClient, email: str, password: str) -> Resp
     :param password: User's password.
     :return: A response object with a message and status code.
     """
-    user_info = db_client.get_user_info(email)
-    if not check_password_hash(user_info.password_digest, password):
+    user_info = db_client.get_user_info(dto.email)
+    if not check_password_hash(user_info.password_digest, dto.password):
         return unauthorized_response("Invalid email or password")
     return login_response(user_info)
 
@@ -80,7 +81,7 @@ def generate_api_key() -> str:
 
 
 def get_api_key_for_user(
-    db_client: DatabaseClient, email: str, password: str
+    db_client: DatabaseClient, dto: UserRequest
 ) -> Response:
     """
     Tries to log in a user. If successful, generates API key
@@ -90,9 +91,9 @@ def get_api_key_for_user(
     :param password: User's password.
     :return: A response object with a message and status code.
     """
-    user_data = db_client.get_user_info(email)
+    user_data = db_client.get_user_info(dto.email)
 
-    if check_password_hash(user_data.password_digest, password):
+    if check_password_hash(user_data.password_digest, dto.password):
         api_key = generate_api_key()
         db_client.update_user_api_key(user_id=user_data.id, api_key=api_key)
         payload = {"api_key": api_key}
