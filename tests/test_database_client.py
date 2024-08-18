@@ -321,7 +321,6 @@ def test_add_quick_search_log(live_database_client):
         """,
         vars=(search, location),
     )
-    print(row)
 
     assert type(row) == DictRow # row is type DictRow when there is one result
     assert row["search"] == search
