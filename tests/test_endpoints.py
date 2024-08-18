@@ -13,7 +13,7 @@ from flask.testing import FlaskClient
 from flask_restful import Resource
 
 from resources.Agencies import Agencies
-from resources.ApiKey import ApiKey
+from resources.ApiKey import ApiKey, API_KEY_ROUTE
 from resources.Archives import Archives
 from resources.Callback import Callback
 from resources.CreateUserWithGithub import CreateUserWithGithub
@@ -70,7 +70,7 @@ test_parameters = [
     TestParameters(User, "/user", [POST, PUT]),
     TestParameters(Login, "/login", [POST]),
     TestParameters(RefreshSession, "/refresh-session", [POST]),
-    TestParameters(ApiKey, "/api/api_key", [GET]),
+    TestParameters(ApiKey, f"/auth{API_KEY_ROUTE}", [POST]),
     TestParameters(RequestResetPassword, "/request-reset-password", [POST]),
     TestParameters(ResetPassword, "/reset-password", [POST]),
     TestParameters(ResetTokenValidation, "/reset-token-validation", [POST]),

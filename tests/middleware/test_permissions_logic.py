@@ -10,7 +10,7 @@ from middleware.permissions_logic import (
     manage_user_permissions,
     update_permissions_wrapper,
 )
-from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
 class PermissionsManagerMocks(DynamicMagicMock):
@@ -163,12 +163,6 @@ def test_manage_user_permissions_invalid_method(db_client_mock, user_email):
 class UpdatePermissionsWrapperMock(DynamicMagicMock):
     get_valid_enum_value: MagicMock
     manage_user_permissions: MagicMock
-    db_client: MagicMock
-    user_email: MagicMock
-    permission_str: MagicMock
-    action_str: MagicMock
-    permission_enum: MagicMock
-    action_enum: MagicMock
 
 
 def test_update_permissions_wrapper():
@@ -181,17 +175,17 @@ def test_update_permissions_wrapper():
         mock.permission_enum
     ]
     update_permissions_wrapper(
-        mock.db_client, mock.user_email, mock.permission_str, mock.action_str
+        mock.db_client, mock.dto
     )
     mock.get_valid_enum_value.assert_has_calls(
         [
-            call(PermissionsActionEnum, mock.action_str),
-            call(PermissionsEnum, mock.permission_str)
+            call(PermissionsActionEnum, mock.dto.action),
+            call(PermissionsEnum, mock.dto.permission)
         ]
     )
     mock.manage_user_permissions.assert_called_once_with(
         db_client=mock.db_client,
-        user_email=mock.user_email,
+        user_email=mock.dto.user_email,
         method=f"{mock.action_enum.value}_user_permission",
         permission=mock.permission_enum
     )

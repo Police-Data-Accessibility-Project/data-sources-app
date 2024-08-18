@@ -13,15 +13,12 @@ from middleware.reset_token_queries import (
     validate_token,
     InvalidTokenError,
 )
-from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
 class RequestResetPasswordMocks(DynamicMagicMock):
-    db_client: MagicMock
-    email: MagicMock
     user_check_email: MagicMock
     generate_api_key: MagicMock
-    token: MagicMock
     send_password_reset_link: MagicMock
     make_response: MagicMock
 
@@ -53,9 +50,6 @@ def test_request_reset_password(monkeypatch):
 
 
 class ResetPasswordMocks(DynamicMagicMock):
-    db_client: MagicMock
-    email: MagicMock
-    token: MagicMock
     make_response: MagicMock
     set_user_password: MagicMock
     invalid_token_response: MagicMock
@@ -82,14 +76,14 @@ def setup_reset_password_mocks():
 def test_reset_password_happy_path(setup_reset_password_mocks):
     mock = setup_reset_password_mocks
 
-    reset_password(mock.db_client, mock.token, mock.password)
+    reset_password(mock.db_client, mock.dto)
 
     mock.invalid_token_response.assert_not_called()
     mock.make_response.assert_called_once_with(
         {"message": "Successfully updated password"}, HTTPStatus.OK
     )
     mock.set_user_password.assert_called_once_with(
-        mock.db_client, mock.email, mock.password
+        mock.db_client, mock.email, mock.dto.token
     )
 
 
@@ -98,7 +92,7 @@ def test_reset_password_invalid_token(setup_reset_password_mocks):
 
     mock.validate_token.side_effect = InvalidTokenError
 
-    mock_response = reset_password(mock.cursor, mock.token, mock.password)
+    mock_response = reset_password(mock.cursor, mock.dto)
 
     assert mock_response == mock.invalid_token_response.return_value
     mock.invalid_token_response.assert_called_once()
@@ -107,10 +101,6 @@ def test_reset_password_invalid_token(setup_reset_password_mocks):
 
 
 class ValidateTokenMocks(DynamicMagicMock):
-    db_client: MagicMock
-    email: MagicMock
-    token: MagicMock
-    token_data: MagicMock
     token_is_expired: MagicMock
 
 
@@ -211,8 +201,6 @@ def test_token_is_expired(token_age_seconds, expected_result):
 
 
 class ResetTokenValidationMocks(DynamicMagicMock):
-    cursor: MagicMock
-    token: MagicMock
     validate_token: MagicMock
     make_response: MagicMock
     invalid_token_response: MagicMock

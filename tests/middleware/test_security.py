@@ -21,7 +21,7 @@ from middleware.security import (
     check_permissions,
 )
 from middleware.decorators import api_key_required
-from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 PATCH_ROOT = "middleware.security"
 

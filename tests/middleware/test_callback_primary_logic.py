@@ -22,7 +22,8 @@ from middleware.dataclasses import (
     GithubUserInfo,
 )
 from middleware.enums import CallbackFunctionsEnum
-from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
+from middleware.user_queries import UserRequest
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 PATCH_PREFIX = "middleware.callback_primary_logic"
 
@@ -121,8 +122,6 @@ def test_callback_outer_wrapper():
 
 
 class CreateUserWithGithubMocks(DynamicMagicMock):
-    db_client: MagicMock
-    github_user_info: MagicMock
     user_post_results: MagicMock
     create_random_password: MagicMock
     link_github_account: MagicMock
@@ -152,8 +151,11 @@ def test_create_user_with_github():
 
     mock.user_post_results.assert_called_once_with(
         db_client=mock.db_client,
-        email=mock.github_user_info.user_email,
-        password=mock.create_random_password.return_value,
+        dto=UserRequest(
+            email=mock.github_user_info.user_email,
+            # Create a random password. Will need to be reset if not logging in via Github
+            password=mock.create_random_password.return_value,
+        )
     )
 
     mock.link_github_account.assert_called_once_with(

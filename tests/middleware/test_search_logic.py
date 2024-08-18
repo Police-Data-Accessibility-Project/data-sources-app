@@ -2,15 +2,12 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 from middleware.search_logic import search_wrapper
-from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
 class SearchWrapperMocks(DynamicMagicMock):
     db_client: MagicMock
-    state: MagicMock
-    record_categories: MagicMock
-    county: MagicMock
-    locality: MagicMock
+    dto: MagicMock
     make_response: MagicMock
     search_results: MagicMock
     dictify_namedtuple: MagicMock
@@ -24,9 +21,9 @@ def test_search_wrapper(monkeypatch):
 
     mock.dictify_namedtuple.return_value = [MagicMock()]
 
-    search_wrapper(mock.db_client, mock.state, mock.record_categories, mock.county, mock.locality)
+    search_wrapper(mock.db_client, mock.dto)
     mock.db_client.search_with_location_and_record_type.assert_called_with(
-        state=mock.state, record_categories=mock.record_categories, county=mock.county, locality=mock.locality
+        state=mock.dto.state, record_categories=mock.dto.record_categories, county=mock.dto.county, locality=mock.dto.locality
     )
     mock.dictify_namedtuple.assert_called_with(mock.search_results)
     mock.make_response.assert_called_with(

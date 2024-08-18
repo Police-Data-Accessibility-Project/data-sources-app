@@ -11,7 +11,7 @@ from middleware.data_source_queries import (
     DataSourceNotFoundError,
 )
 from middleware.login_queries import try_logging_in
-from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.helper_functions import (
     get_boolean_dictionary,
 )
@@ -29,11 +29,6 @@ def inserted_data_sources_found():
 
 class TryLoggingInMocks(DynamicMagicMock):
     db_client: MagicMock
-    email: MagicMock
-    password: MagicMock
-    password_digest: MagicMock
-    user_id: MagicMock
-    user_info: MagicMock
     check_password_hash: MagicMock
     unauthorized_response: MagicMock
     login_response: MagicMock
@@ -62,15 +57,15 @@ def setup_try_logging_in_mocks(check_password_hash_return_value):
 
 
 def assert_try_logging_in_preconditions(mock):
-    mock.db_client.get_user_info.assert_called_with(mock.email)
-    mock.check_password_hash.assert_called_with(mock.password_digest, mock.password)
+    mock.db_client.get_user_info.assert_called_with(mock.dto.email)
+    mock.check_password_hash.assert_called_with(mock.password_digest, mock.dto.password)
 
 
 def test_try_logging_in_successful():
     mock = setup_try_logging_in_mocks(check_password_hash_return_value=True)
 
     # Call function
-    try_logging_in(mock.db_client, mock.email, mock.password)
+    try_logging_in(mock.db_client, mock.dto)
 
     # Assert
     assert_try_logging_in_preconditions(mock)
@@ -82,7 +77,7 @@ def test_try_logging_in_unsuccessful():
     mock = setup_try_logging_in_mocks(check_password_hash_return_value=False)
 
     # Call function
-    try_logging_in(mock.db_client, mock.email, mock.password)
+    try_logging_in(mock.db_client, mock.dto)
 
     # Assert
     assert_try_logging_in_preconditions(mock)

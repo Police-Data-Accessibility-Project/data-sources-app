@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from resources.ApiKey import API_KEY_ROUTE
 from tests.fixtures import (
     client_with_mock_db,
     bypass_api_key_required,
@@ -15,7 +16,7 @@ from tests.fixtures import (
 )
 from http import HTTPStatus
 
-from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_test_data import TEST_RESPONSE
 from tests.helper_scripts.helper_functions import (
     check_is_test_response,
@@ -69,7 +70,7 @@ MOCK_EMAIL_PASSWORD = {
             ),
         ),
         ("/archives", "GET", "Archives.archives_get_query", {}),
-        ("/api/api_key", "GET", "ApiKey.get_api_key_for_user", MOCK_EMAIL_PASSWORD),
+        (f"auth{API_KEY_ROUTE}", "POST", "ApiKey.get_api_key_for_user", MOCK_EMAIL_PASSWORD),
         ("auth/callback", "GET", "Callback.callback_outer_wrapper", {}),
         ("/login", "POST", "Login.try_logging_in", MOCK_EMAIL_PASSWORD),
         ("/refresh-session", "POST", "RefreshSession.refresh_session", {}),

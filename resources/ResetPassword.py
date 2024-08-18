@@ -3,11 +3,16 @@ from flask_restx import fields
 
 from middleware.reset_token_queries import (
     reset_password,
+    RequestResetPasswordRequest,
 )
 from resources.resource_helpers import create_user_model
 from utilities.namespace import create_namespace
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
+from utilities.populate_dto_with_request_content import (
+    populate_dto_with_request_content,
+    SourceMappingEnum,
+)
 
 namespace_reset_password = create_namespace()
 
@@ -17,15 +22,14 @@ reset_password_model = namespace_reset_password.model(
         "token": fields.String(
             required=True,
             description="The Reset password token to validate",
-            example="2bd77a1d7ef24a1dad3365b8a5c6994e"
+            example="2bd77a1d7ef24a1dad3365b8a5c6994e",
         ),
         "password": fields.String(
-            required=True,
-            description="The new password to set",
-            example="newpassword"
+            required=True, description="The new password to set", example="newpassword"
         ),
     },
 )
+
 
 @namespace_reset_password.route("/reset-password")
 class ResetPassword(PsycopgResource):
@@ -49,10 +53,13 @@ class ResetPassword(PsycopgResource):
         Returns:
         - A dictionary containing a message indicating whether the password was successfully updated or an error occurred.
         """
-        data = request.get_json()
+        dto = populate_dto_with_request_content(
+            object_class=RequestResetPasswordRequest,
+            source=SourceMappingEnum.JSON,
+        )
         with self.setup_database_client() as db_client:
             response = reset_password(
-                db_client, token=data.get("token"), password=data.get("password")
+                db_client, dto=dto
             )
 
         return response
