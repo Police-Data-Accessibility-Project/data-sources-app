@@ -75,6 +75,13 @@ class DatabaseClient:
         self.cursor = None
 
     def cursor_manager(method):
+        """Decorator method for managing a cursor object. 
+        The cursor is closed after the method concludes its execution.
+
+        :param method: The method being called upon.
+        :raises e: If an error occurs, rollback the current transaction.
+        :return: result of the method.
+        """        
         @wraps(method)
         def wrapper(self, *args, **kwargs):
             # Open a new cursor
