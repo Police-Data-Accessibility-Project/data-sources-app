@@ -51,7 +51,7 @@ def test_archives_put(
     """
     Test that PUT call to /archives endpoint successfully updates the data source with last_cached and broken_source_url_as_of fields
     """
-    data_source_id = insert_test_data_source(dev_db_client.cursor)
+    data_source_id = insert_test_data_source(dev_db_client)
     last_cached = datetime.datetime(year=2020, month=3, day=4)
     broken_as_of = datetime.date(year=1993, month=11, day=13)
     test_user_admin.jwt_authorization_header["Content-Type"] = "application/json"
@@ -67,16 +67,14 @@ def test_archives_put(
         }),
     )
 
-    cursor = dev_db_client.cursor
-    cursor.execute(
-        """
-    SELECT last_cached, broken_source_url_as_of 
-    FROM data_sources 
-    INNER JOIN data_sources_archive_info ON data_sources.airtable_uid = data_sources_archive_info.airtable_uid 
-    WHERE data_sources.airtable_uid = %s
-    """,
-        (data_source_id,),
+    row = dev_db_client.execute_raw_sql(
+        query="""
+        SELECT last_cached, broken_source_url_as_of 
+        FROM data_sources 
+        INNER JOIN data_sources_archive_info ON data_sources.airtable_uid = data_sources_archive_info.airtable_uid 
+        WHERE data_sources.airtable_uid = %s
+        """,
+        vars=(data_source_id,),
     )
-    row = cursor.fetchone()
-    assert row[0] == last_cached
-    assert row[1] == broken_as_of
+    assert row["last_cached"] == last_cached
+    assert row["broken_source_url_as_of"] == broken_as_of
