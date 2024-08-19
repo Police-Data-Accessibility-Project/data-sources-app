@@ -75,7 +75,6 @@ def db_cursor(
 def dev_db_client(dev_db_connection: psycopg2.extensions.connection) -> DatabaseClient:
     db_client = DatabaseClient()
     yield db_client
-    db_client.close()
 
 
 @pytest.fixture
@@ -103,7 +102,6 @@ def db_client_with_test_data(
 ) -> DatabaseClient:
     db_client = DatabaseClient()
     yield db_client
-    db_client.close()
 
 
 ClientWithMockDB = namedtuple("ClientWithMockDB", ["client", "mock_db"])
@@ -183,7 +181,6 @@ def live_database_client(db_cursor) -> DatabaseClient:
     """
     db_client = DatabaseClient()
     yield db_client
-    db_client.close()
 
 
 @pytest.fixture
@@ -214,5 +211,4 @@ def test_user_admin(flask_client_with_db, dev_db_connection) -> TestUserSetup:
         tus_admin.user_info.email, PermissionsEnum.READ_ALL_USER_INFO
     )
     db_client.add_user_permission(tus_admin.user_info.email, PermissionsEnum.DB_WRITE)
-    db_client.close()
     return tus_admin

@@ -47,7 +47,6 @@ def test_create_user_with_github_post(
     user_info = db_client.get_user_info_by_external_account_id(
         github_user_info.user_id, ExternalAccountTypeEnum.GITHUB
     )
-    db_client.close()
 
     assert user_info is not None
     assert user_info.email == github_user_info.user_email

@@ -91,5 +91,3 @@ class PsycopgResource(Resource):
             yield db_client
         except Exception as e:
             raise e
-        finally:
-            db_client.close()
