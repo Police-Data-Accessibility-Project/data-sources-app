@@ -34,7 +34,8 @@ def insert_test_agencies_and_sources(cursor: psycopg2.extensions.cursor) -> None
     :param cursor:
     :return:
     """
-    cursor.execute(
+
+    DatabaseClient().execute_raw_sql(
         """
         INSERT INTO
         PUBLIC.DATA_SOURCES (
@@ -77,12 +78,10 @@ def insert_test_agencies_and_sources(cursor: psycopg2.extensions.cursor) -> None
 
 def insert_test_agencies_and_sources_if_not_exist(cursor: psycopg2.extensions.cursor):
     try:
-        cursor.execute("SAVEPOINT my_savepoint")
         insert_test_agencies_and_sources(cursor)
     except psycopg2.errors.UniqueViolation:  # Data already inserted
-        cursor.execute("ROLLBACK TO SAVEPOINT my_savepoint")
-    finally:
-        cursor.close()
+        pass
+
 
 
 def get_reset_tokens_for_email(
