@@ -5,11 +5,16 @@ Module for testing database client functionality against a live database
 import uuid
 from datetime import datetime, timezone, timedelta
 
+import psycopg2.errors
 from psycopg2.extras import DictRow
 import pytest
 
 from database_client.database_client import DatabaseClient
-from database_client.enums import ExternalAccountTypeEnum
+from database_client.enums import (
+    ExternalAccountTypeEnum,
+    RelationRoleEnum,
+    ColumnPermissionEnum,
+)
 from database_client.result_formatter import ResultFormatter
 from middleware.custom_exceptions import (
     AccessTokenNotFoundError,
@@ -72,12 +77,12 @@ def test_link_external_account(live_database_client):
         external_account_id=fake_external_account_id,
         external_account_type=ExternalAccountTypeEnum.GITHUB,
     )
-    '''cursor = live_database_client.cursor
+    """cursor = live_database_client.cursor
     cursor.execute(
         f"SELECT user_id, account_type FROM external_accounts WHERE account_identifier = %s",
         (fake_external_account_id,),
     )
-    row = cursor.fetchone()'''
+    row = cursor.fetchone()"""
     row = live_database_client.execute_raw_sql(
         query=f"SELECT user_id, account_type FROM external_accounts WHERE account_identifier = %s",
         vars=(fake_external_account_id,),
@@ -153,7 +158,9 @@ def test_update_user_api_key(live_database_client):
 
 def test_get_data_source_by_id(live_database_client):
     # Add a new data source and agency to the database
-    insert_test_agencies_and_sources_if_not_exist(live_database_client.connection.cursor())
+    insert_test_agencies_and_sources_if_not_exist(
+        live_database_client.connection.cursor()
+    )
     # Fetch the data source using its id with the DatabaseClient method
     result = live_database_client.get_data_source_by_id("SOURCE_UID_1")
 
@@ -208,7 +215,9 @@ def test_add_new_data_source(live_database_client):
     )
 
     # Fetch the data source from the database to confirm that it was added successfully
-    results = live_database_client.execute_raw_sql(query="SELECT * FROM data_sources WHERE name = %s", vars=(name,))
+    results = live_database_client.execute_raw_sql(
+        query="SELECT * FROM data_sources WHERE name = %s", vars=(name,)
+    )
 
     assert len(results) == 1
 
@@ -286,7 +295,9 @@ def test_get_quick_search_results(live_database_client):
     # Add new data sources to the database, some that satisfy the search criteria and some that don't
     test_datetime = live_database_client.execute_raw_sql(query="SELECT NOW()")[0]
 
-    insert_test_agencies_and_sources_if_not_exist(live_database_client.connection.cursor())
+    insert_test_agencies_and_sources_if_not_exist(
+        live_database_client.connection.cursor()
+    )
 
     # Fetch the search results using the DatabaseClient method
     result = live_database_client.get_quick_search_results(
@@ -375,6 +386,7 @@ def test_get_user_by_api_key(live_database_client):
 
     # Confirm the user_id is retrieved successfully
     assert api_key_user_id == user_id
+
 
 def test_get_typeahead_suggestion(live_database_client):
     # Insert test data into the database
@@ -521,6 +533,68 @@ def test_remove_user_permission(live_database_client):
     )
     test_user_permissions = live_database_client.get_user_permissions(test_user.user_id)
     assert len(test_user_permissions) == 0
+
+
+def test_get_permitted_columns(live_database_client):
+
+    try:
+        live_database_client.execute_raw_sql(
+            """
+        DO $$
+        DECLARE
+            column_a_id INT;
+            column_b_id INT;
+            column_c_id INT;
+        BEGIN
+            INSERT INTO relation_column (relation, associated_column) VALUES ('test_relation', 'column_a') RETURNING id INTO column_a_id;
+            INSERT INTO relation_column (relation, associated_column) VALUES ('test_relation', 'column_b') RETURNING id INTO column_b_id;
+            INSERT INTO relation_column (relation, associated_column) VALUES ('test_relation', 'column_c') RETURNING id INTO column_c_id;
+            
+            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_a_id, 'STANDARD', 'READ');
+            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_b_id, 'STANDARD', 'READ');
+            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_c_id, 'STANDARD', 'NONE');
+            
+            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_a_id, 'OWNER', 'READ');
+            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_b_id, 'OWNER', 'WRITE');
+            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_c_id, 'OWNER', 'NONE');
+            
+            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_a_id, 'ADMIN', 'WRITE');
+            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_b_id, 'ADMIN', 'WRITE');
+            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_c_id, 'ADMIN', 'READ');
+    
+        END $$;
+        """
+        )
+    except psycopg2.errors.UniqueViolation:
+        pass  # Already added
+
+    results = live_database_client.get_permitted_columns(
+        relation="test_relation",
+        role=RelationRoleEnum.STANDARD,
+        column_permission=ColumnPermissionEnum.READ,
+    )
+    assert len(results) == 2
+    assert "column_a" in results
+    assert "column_b" in results
+
+    results = live_database_client.get_permitted_columns(
+        relation="test_relation",
+        role=RelationRoleEnum.OWNER,
+        column_permission=ColumnPermissionEnum.READ,
+    )
+    assert len(results) == 2
+    assert "column_a" in results
+    assert "column_b" in results
+
+    results = live_database_client.get_permitted_columns(
+        relation="test_relation",
+        role=RelationRoleEnum.ADMIN,
+        column_permission=ColumnPermissionEnum.WRITE,
+    )
+    assert len(results) == 2
+    assert "column_a" in results
+    assert "column_b" in results
+
 
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts

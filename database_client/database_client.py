@@ -11,7 +11,11 @@ from psycopg2 import sql
 from psycopg2.extras import DictCursor, DictRow
 
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
-from database_client.enums import ExternalAccountTypeEnum
+from database_client.enums import (
+    ExternalAccountTypeEnum,
+    RelationRoleEnum,
+    ColumnPermissionEnum,
+)
 from middleware.custom_exceptions import (
     UserNotFoundError,
     TokenNotFoundError,
@@ -75,13 +79,14 @@ class DatabaseClient:
         self.cursor = None
 
     def cursor_manager(method):
-        """Decorator method for managing a cursor object. 
+        """Decorator method for managing a cursor object.
         The cursor is closed after the method concludes its execution.
 
         :param method: The method being called upon.
         :raises e: If an error occurs, rollback the current transaction.
         :return: result of the method.
-        """        
+        """
+
         @wraps(method)
         def wrapper(self, *args, **kwargs):
             # Open a new cursor
@@ -100,11 +105,12 @@ class DatabaseClient:
                 # Close the cursor
                 self.cursor.close()
                 self.cursor = None
+
         return wrapper
 
     def close(self):
         self.connection.close()
-    
+
     @cursor_manager
     def execute_raw_sql(
         self, query: str, vars: Optional[tuple] = None
@@ -114,7 +120,7 @@ class DatabaseClient:
         :param query: The SQL query to execute.
         :param vars: A tuple of variables to replace placeholders in the SQL query, defaults to None
         :return: A list of DictRow objects when there are multiple results, a single DictRow object if there is one result, or None if there are no results.
-        """          
+        """
         self.cursor.execute(query, vars)
         try:
             results = self.cursor.fetchall()
@@ -263,7 +269,7 @@ class DatabaseClient:
         result = self.cursor.fetchone()
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return result
-    
+
     @cursor_manager
     def get_approved_data_sources(self) -> list[tuple[Any, ...]]:
         """
@@ -619,11 +625,10 @@ class DatabaseClient:
 
     @cursor_manager
     def get_user_info_by_external_account_id(
-            self,
-            external_account_id: str,
-            external_account_type: ExternalAccountTypeEnum
+        self, external_account_id: str, external_account_type: ExternalAccountTypeEnum
     ) -> UserInfo:
-        query = sql.SQL("""
+        query = sql.SQL(
+            """
             SELECT 
                 u.id,
                 u.email,
@@ -636,9 +641,10 @@ class DatabaseClient:
             WHERE 
                 ea.account_identifier = {external_account_identifier}
                 and ea.account_type = {external_account_type}
-        """).format(
+        """
+        ).format(
             external_account_identifier=sql.Literal(external_account_id),
-            external_account_type=sql.Literal(external_account_type.value)
+            external_account_type=sql.Literal(external_account_type.value),
         )
         self.cursor.execute(query)
 
@@ -665,7 +671,9 @@ class DatabaseClient:
         :param search_term: The search query.
         :return: List of data sources that match the search query.
         """
-        query = DynamicQueryConstructor.generate_new_typeahead_suggestion_query(search_term)
+        query = DynamicQueryConstructor.generate_new_typeahead_suggestion_query(
+            search_term
+        )
         self.cursor.execute(query)
         results = self.cursor.fetchall()
 
@@ -698,7 +706,10 @@ class DatabaseClient:
         :return: A list of QuickSearchResult objects.
         """
         query = DynamicQueryConstructor.create_search_query(
-            state=state, record_categories=record_categories, county=county, locality=locality
+            state=state,
+            record_categories=record_categories,
+            county=county,
+            locality=locality,
         )
         self.cursor.execute(query)
         results = self.cursor.fetchall()
@@ -722,14 +733,17 @@ class DatabaseClient:
 
     @cursor_manager
     def link_external_account(
-            self,
-            user_id: str,
-            external_account_id: str,
-            external_account_type: ExternalAccountTypeEnum):
-        query = sql.SQL("""
+        self,
+        user_id: str,
+        external_account_id: str,
+        external_account_type: ExternalAccountTypeEnum,
+    ):
+        query = sql.SQL(
+            """
             INSERT INTO external_accounts (user_id, account_type, account_identifier) 
             VALUES ({user_id}, {account_type}, {account_identifier});
-        """).format(
+        """
+        ).format(
             user_id=sql.Literal(user_id),
             account_type=sql.Literal(external_account_type.value),
             account_identifier=sql.Literal(external_account_id),
@@ -738,13 +752,15 @@ class DatabaseClient:
 
     @cursor_manager
     def add_user_permission(self, user_email: str, permission: PermissionsEnum):
-        query = sql.SQL("""
+        query = sql.SQL(
+            """
             INSERT INTO user_permissions (user_id, permission_id) 
             VALUES (
                 (SELECT id FROM users WHERE email = {email}), 
                 (SELECT permission_id FROM permissions WHERE permission_name = {permission})
             );
-        """).format(
+        """
+        ).format(
             email=sql.Literal(user_email),
             permission=sql.Literal(permission.value),
         )
@@ -752,11 +768,13 @@ class DatabaseClient:
 
     @cursor_manager
     def remove_user_permission(self, user_email: str, permission: PermissionsEnum):
-        query = sql.SQL("""
+        query = sql.SQL(
+            """
             DELETE FROM user_permissions
             WHERE user_id = (SELECT id FROM users WHERE email = {email})
             AND permission_id = (SELECT permission_id FROM permissions WHERE permission_name = {permission});
-        """).format(
+        """
+        ).format(
             email=sql.Literal(user_email),
             permission=sql.Literal(permission.value),
         )
@@ -764,15 +782,54 @@ class DatabaseClient:
 
     @cursor_manager
     def get_user_permissions(self, user_id: str) -> List[PermissionsEnum]:
-        query = sql.SQL("""
+        query = sql.SQL(
+            """
             SELECT p.permission_name
             FROM 
             user_permissions up
             INNER JOIN permissions p on up.permission_id = p.permission_id
             where up.user_id = {user_id}
-        """).format(
+        """
+        ).format(
             user_id=sql.Literal(user_id),
         )
         self.cursor.execute(query)
         results = self.cursor.fetchall()
         return [PermissionsEnum(row[0]) for row in results]
+
+    @cursor_manager
+    def get_permitted_columns(
+        self,
+        relation: str,
+        role: RelationRoleEnum,
+        column_permission: ColumnPermissionEnum,
+    ) -> list[str]:
+        """
+        Gets permitted columns for a given relation, role, and permission type
+        :param relation:
+        :param role:
+        :param column_permission:
+        :return:
+        """
+        # If the column permission is READ, return also WRITE values, which are assumed to include READ
+        if column_permission == ColumnPermissionEnum.READ:
+            column_permissions = (ColumnPermissionEnum.READ.value, ColumnPermissionEnum.WRITE.value)
+        else:
+            column_permissions = (column_permission.value, )
+
+        query = sql.SQL(
+            """
+         SELECT rc.associated_column
+            FROM column_permission cp
+            INNER JOIN relation_column rc on rc.id = cp.rc_id
+            WHERE rc.relation = {relation}
+            and cp.relation_role = {relation_role}
+            and cp.access_permission in {column_permissions}
+        """
+        ).format(
+            relation=sql.Literal(relation),
+            relation_role=sql.Literal(role.value),
+            column_permissions=sql.Literal(column_permissions))
+        self.cursor.execute(query)
+        results = self.cursor.fetchall()
+        return [row[0] for row in results]
