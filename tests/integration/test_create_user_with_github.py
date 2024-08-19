@@ -43,7 +43,7 @@ def test_create_user_with_github_post(
         endpoint="auth/callback",
     )
 
-    db_client = DatabaseClient(dev_db_connection.cursor(cursor_factory=DictCursor))
+    db_client = DatabaseClient()
     user_info = db_client.get_user_info_by_external_account_id(
         github_user_info.user_id, ExternalAccountTypeEnum.GITHUB
     )

@@ -5,6 +5,7 @@ Module for testing database client functionality against a live database
 import uuid
 from datetime import datetime, timezone, timedelta
 
+from psycopg2.extras import DictRow
 import pytest
 
 from database_client.database_client import DatabaseClient
@@ -32,13 +33,13 @@ from utilities.enums import RecordCategories
 def test_add_new_user(live_database_client):
     fake_email = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
-    cursor = live_database_client.cursor
-    cursor.execute(
-        f"SELECT password_digest, api_key FROM users WHERE email = %s", (fake_email,)
-    )
-    result = cursor.fetchone()
-    password_digest = result[0]
-    api_key = result[1]
+    result = live_database_client.execute_raw_sql(
+        query=f"SELECT password_digest, api_key FROM users WHERE email = %s",
+        vars=(fake_email,),
+    )[0]
+
+    password_digest = result["password_digest"]
+    api_key = result["api_key"]
 
     assert api_key is not None
     assert password_digest == "test_password"
@@ -50,9 +51,9 @@ def test_get_user_id(live_database_client):
     live_database_client.add_new_user(fake_email, "test_password")
 
     # Directly fetch the user ID from the database for comparison
-    cursor = live_database_client.cursor
-    cursor.execute(f"SELECT id FROM users WHERE email = %s", (fake_email,))
-    direct_user_id = cursor.fetchone()[0]
+    direct_user_id = live_database_client.execute_raw_sql(
+        query=f"SELECT id FROM users WHERE email = %s", vars=(fake_email,)
+    )[0]["id"]
 
     # Get the user ID from the live database
     result_user_id = live_database_client.get_user_id(fake_email)
@@ -71,15 +72,19 @@ def test_link_external_account(live_database_client):
         external_account_id=fake_external_account_id,
         external_account_type=ExternalAccountTypeEnum.GITHUB,
     )
-    cursor = live_database_client.cursor
+    '''cursor = live_database_client.cursor
     cursor.execute(
         f"SELECT user_id, account_type FROM external_accounts WHERE account_identifier = %s",
         (fake_external_account_id,),
     )
-    row = cursor.fetchone()
+    row = cursor.fetchone()'''
+    row = live_database_client.execute_raw_sql(
+        query=f"SELECT user_id, account_type FROM external_accounts WHERE account_identifier = %s",
+        vars=(fake_external_account_id,),
+    )[0]
 
-    assert row[0] == user_id
-    assert row[1] == ExternalAccountTypeEnum.GITHUB.value
+    assert row["user_id"] == user_id
+    assert row["account_type"] == ExternalAccountTypeEnum.GITHUB.value
 
 
 def test_get_user_info_by_external_account_id(live_database_client):
@@ -102,9 +107,9 @@ def test_set_user_password_digest(live_database_client):
     fake_email = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
     live_database_client.set_user_password_digest(fake_email, "test_password")
-    cursor = live_database_client.cursor
-    cursor.execute(f"SELECT password_digest FROM users WHERE email = %s", (fake_email,))
-    password_digest = cursor.fetchone()[0]
+    password_digest = live_database_client.execute_raw_sql(
+        query=f"SELECT password_digest FROM users WHERE email = %s", vars=(fake_email,)
+    )[0]["password_digest"]
 
     assert password_digest == "test_password"
 
@@ -148,7 +153,7 @@ def test_update_user_api_key(live_database_client):
 
 def test_get_data_source_by_id(live_database_client):
     # Add a new data source and agency to the database
-    insert_test_agencies_and_sources_if_not_exist(live_database_client.cursor)
+    insert_test_agencies_and_sources_if_not_exist(live_database_client.connection.cursor())
     # Fetch the data source using its id with the DatabaseClient method
     result = live_database_client.get_data_source_by_id("SOURCE_UID_1")
 
@@ -156,12 +161,14 @@ def test_get_data_source_by_id(live_database_client):
     NUMBER_OF_RESULT_COLUMNS = 67
     assert result is not None
     assert len(result) == NUMBER_OF_RESULT_COLUMNS
-    assert result[0] == "Source 1"
+    assert result["name"] == "Source 1"
 
 
 def test_get_approved_data_sources(live_database_client):
     # Add new data sources and agencies to the database, at least two approved and one unapproved
-    insert_test_agencies_and_sources_if_not_exist(live_database_client.cursor)
+    insert_test_agencies_and_sources_if_not_exist(
+        live_database_client.connection.cursor()
+    )
 
     # Fetch the data sources with the DatabaseClient method
     data_sources = live_database_client.get_approved_data_sources()
@@ -174,14 +181,16 @@ def test_get_approved_data_sources(live_database_client):
 
 def test_get_needs_identification_data_sources(live_database_client):
     # Add new data sources to the database, at least two labeled 'needs identification' and one not
-    insert_test_agencies_and_sources_if_not_exist(live_database_client.cursor)
+    insert_test_agencies_and_sources_if_not_exist(
+        live_database_client.connection.cursor()
+    )
     # Fetch the data sources with the DatabaseClient method
     results = live_database_client.get_needs_identification_data_sources()
 
     found = False
     for result in results:
         # Confirm "Source 2" (which was inserted as "needs identification" is retrieved).
-        if result[0] != "Source 2":
+        if result["name"] != "Source 2":
             continue
         found = True
     assert found
@@ -199,18 +208,16 @@ def test_add_new_data_source(live_database_client):
     )
 
     # Fetch the data source from the database to confirm that it was added successfully
-    live_database_client.cursor.execute(
-        "SELECT * FROM data_sources WHERE name = %s", (name,)
-    )
-
-    results = live_database_client.cursor.fetchall()
+    results = live_database_client.execute_raw_sql(query="SELECT * FROM data_sources WHERE name = %s", vars=(name,))
 
     assert len(results) == 1
 
 
 def test_update_data_source(live_database_client):
     # Add a new data source to the database
-    insert_test_agencies_and_sources_if_not_exist(live_database_client.cursor)
+    insert_test_agencies_and_sources_if_not_exist(
+        live_database_client.connection.cursor()
+    )
 
     # Update the data source with the DatabaseClient method
     new_description = uuid.uuid4().hex
@@ -221,12 +228,14 @@ def test_update_data_source(live_database_client):
     # Fetch the data source from the database to confirm the change
     result = live_database_client.get_data_source_by_id("SOURCE_UID_1")
 
-    assert result[2] == new_description
+    assert result["description"] == new_description
 
 
 def test_get_data_sources_for_map(live_database_client):
     # Add at least two new data sources to the database
-    insert_test_agencies_and_sources_if_not_exist(live_database_client.cursor)
+    insert_test_agencies_and_sources_if_not_exist(
+        live_database_client.connection.cursor()
+    )
     # Fetch the data source with the DatabaseClient method
     results = live_database_client.get_data_sources_for_map()
     # Confirm both data sources are retrieved and only the proper columns are returned
@@ -259,7 +268,9 @@ def test_get_data_sources_to_archive(live_database_client):
 
 def test_update_last_cached(live_database_client):
     # Add a new data source to the database
-    insert_test_agencies_and_sources_if_not_exist(live_database_client.cursor)
+    insert_test_agencies_and_sources_if_not_exist(
+        live_database_client.connection.cursor()
+    )
     # Update the data source's last_cached value with the DatabaseClient method
     new_last_cached = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     live_database_client.update_last_cached("SOURCE_UID_1", new_last_cached)
@@ -273,12 +284,9 @@ def test_update_last_cached(live_database_client):
 
 def test_get_quick_search_results(live_database_client):
     # Add new data sources to the database, some that satisfy the search criteria and some that don't
-    cursor = live_database_client.cursor
-    cursor.execute("SELECT NOW()")
-    result = cursor.fetchone()
-    test_datetime = result[0]
+    test_datetime = live_database_client.execute_raw_sql(query="SELECT NOW()")[0]
 
-    insert_test_agencies_and_sources_if_not_exist(cursor)
+    insert_test_agencies_and_sources_if_not_exist(live_database_client.connection.cursor())
 
     # Fetch the search results using the DatabaseClient method
     result = live_database_client.get_quick_search_results(
@@ -291,12 +299,12 @@ def test_get_quick_search_results(live_database_client):
 
 def test_add_quick_search_log(live_database_client):
     # Add a quick search log to the database using the DatabaseClient method
-    search = "Source QSL"
+    search = f"{uuid.uuid4().hex} QSL"
     location = "City QSL"
     live_database_client.add_quick_search_log(
         data_sources_count=1,
         processed_data_source_matches=live_database_client.DataSourceMatches(
-            converted=["Source QSL"],
+            converted=[search],
             ids=["SOURCE_UID_QSL"],
         ),
         processed_search_parameters=live_database_client.SearchParameters(
@@ -305,20 +313,22 @@ def test_add_quick_search_log(live_database_client):
     )
 
     # Fetch the quick search logs to confirm it was added successfully
-    live_database_client.cursor.execute(
-        """
+    rows = live_database_client.execute_raw_sql(
+        query="""
         select search, location, results, result_count
         from quick_search_query_logs
         where search = %s and location = %s
         """,
-        (search, location),
+        vars=(search, location),
     )
-    rows = live_database_client.cursor.fetchall()
+
     assert len(rows) == 1
-    assert rows[0][0] == search
-    assert rows[0][1] == location
-    assert rows[0][2][0] == "SOURCE_UID_QSL"
-    assert rows[0][3] == 1
+    row = rows[0]
+    assert type(row) == DictRow
+    assert row["search"] == search
+    assert row["location"] == location
+    assert row["results"][0] == "SOURCE_UID_QSL"
+    assert row["result_count"] == 1
 
 
 def test_get_user_info(live_database_client):
@@ -351,11 +361,13 @@ def test_get_user_by_api_key(live_database_client):
         password_digest="test_password",
     )
 
-
-
     # Add a role and api_key to the user
-    live_database_client.cursor.execute(
-        f"update users set api_key = '{test_api_key}' where email = '{test_email}'",
+    live_database_client.execute_raw_sql(
+        query=f"update users set api_key = %s where email = %s",
+        vars=(
+            test_api_key,
+            test_email,
+        ),
     )
 
     # Fetch the user's role using its api key with the DatabaseClient method
@@ -366,7 +378,7 @@ def test_get_user_by_api_key(live_database_client):
 
 def test_get_typeahead_suggestion(live_database_client):
     # Insert test data into the database
-    cursor = live_database_client.cursor
+    cursor = live_database_client.connection.cursor()
     setup_get_typeahead_suggestion_test_data(cursor)
 
     # Call the get_typeahead_suggestion function

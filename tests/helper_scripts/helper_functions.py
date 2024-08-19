@@ -34,7 +34,8 @@ def insert_test_agencies_and_sources(cursor: psycopg2.extensions.cursor) -> None
     :param cursor:
     :return:
     """
-    cursor.execute(
+
+    DatabaseClient().execute_raw_sql(
         """
         INSERT INTO
         PUBLIC.DATA_SOURCES (
@@ -77,10 +78,10 @@ def insert_test_agencies_and_sources(cursor: psycopg2.extensions.cursor) -> None
 
 def insert_test_agencies_and_sources_if_not_exist(cursor: psycopg2.extensions.cursor):
     try:
-        cursor.execute("SAVEPOINT my_savepoint")
         insert_test_agencies_and_sources(cursor)
     except psycopg2.errors.UniqueViolation:  # Data already inserted
-        cursor.execute("ROLLBACK TO SAVEPOINT my_savepoint")
+        pass
+
 
 
 def get_reset_tokens_for_email(
@@ -337,15 +338,15 @@ def create_api_key_db(cursor, user_id: str):
     return api_key
 
 
-def insert_test_data_source(cursor: psycopg2.extensions.cursor) -> str:
+def insert_test_data_source(db_client: DatabaseClient) -> str:
     """
     Insert test data source and return id
     :param cursor:
     :return: randomly generated uuid
     """
     test_uid = str(uuid.uuid4())
-    cursor.execute(
-        """
+    db_client.execute_raw_sql(
+        query="""
         INSERT INTO
         PUBLIC.DATA_SOURCES (
             airtable_uid,
@@ -360,7 +361,7 @@ def insert_test_data_source(cursor: psycopg2.extensions.cursor) -> str:
         (%s,'Example Data Source', 'Example Description',
             'Type A','http://src1.com','approved','available')
         """,
-        (test_uid,),
+        vars=(test_uid,),
     )
     return test_uid
 
@@ -518,7 +519,6 @@ def create_test_user_setup_db_client(
     api_key = db_client.get_user_info(email).api_key
     for permission in permissions:
         db_client.add_user_permission(email, permission)
-    db_client.cursor.connection.commit()
     return TestUserSetup(
         UserInfo(email, password_digest, user_id),
         api_key,

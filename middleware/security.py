@@ -50,8 +50,8 @@ def check_for_header_with_authorization_key():
 
 
 def get_db_client() -> DatabaseClient:
-    psycopg2_connection = initialize_psycopg2_connection()
-    return DatabaseClient(psycopg2_connection.cursor())
+    return DatabaseClient()
+
 
 def check_api_key_associated_with_user(db_client: DatabaseClient, api_key: str) -> None:
     user_id = db_client.get_user_by_api_key(api_key)
