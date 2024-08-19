@@ -76,5 +76,5 @@ def test_archives_put(
         """,
         vars=(data_source_id,),
     )
-    assert row["last_cached"] == last_cached
-    assert row["broken_source_url_as_of"] == broken_as_of
+    assert row[0]["last_cached"] == last_cached
+    assert row[0]["broken_source_url_as_of"] == broken_as_of

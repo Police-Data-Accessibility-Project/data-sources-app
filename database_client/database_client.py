@@ -108,7 +108,7 @@ class DatabaseClient:
     @cursor_manager
     def execute_raw_sql(
         self, query: str, vars: Optional[tuple] = None
-    ) -> Optional[list[DictRow] | DictRow]:
+    ) -> Optional[list[DictRow]]:
         """Executes an SQL query passed to the function.
 
         :param query: The SQL query to execute.
@@ -123,10 +123,7 @@ class DatabaseClient:
 
         if len(results) == 0:
             return None
-        elif len(results) == 1:
-            return results[0]
-        else:
-            return results
+        return results
 
     @cursor_manager
     def add_new_user(self, email: str, password_digest: str) -> Optional[int]:

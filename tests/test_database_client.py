@@ -36,7 +36,7 @@ def test_add_new_user(live_database_client):
     result = live_database_client.execute_raw_sql(
         query=f"SELECT password_digest, api_key FROM users WHERE email = %s",
         vars=(fake_email,),
-    )
+    )[0]
 
     password_digest = result["password_digest"]
     api_key = result["api_key"]
@@ -53,7 +53,7 @@ def test_get_user_id(live_database_client):
     # Directly fetch the user ID from the database for comparison
     direct_user_id = live_database_client.execute_raw_sql(
         query=f"SELECT id FROM users WHERE email = %s", vars=(fake_email,)
-    )["id"]
+    )[0]["id"]
 
     # Get the user ID from the live database
     result_user_id = live_database_client.get_user_id(fake_email)
@@ -81,7 +81,7 @@ def test_link_external_account(live_database_client):
     row = live_database_client.execute_raw_sql(
         query=f"SELECT user_id, account_type FROM external_accounts WHERE account_identifier = %s",
         vars=(fake_external_account_id,),
-    )
+    )[0]
 
     assert row["user_id"] == user_id
     assert row["account_type"] == ExternalAccountTypeEnum.GITHUB.value
@@ -109,7 +109,7 @@ def test_set_user_password_digest(live_database_client):
     live_database_client.set_user_password_digest(fake_email, "test_password")
     password_digest = live_database_client.execute_raw_sql(
         query=f"SELECT password_digest FROM users WHERE email = %s", vars=(fake_email,)
-    )["password_digest"]
+    )[0]["password_digest"]
 
     assert password_digest == "test_password"
 
@@ -210,7 +210,7 @@ def test_add_new_data_source(live_database_client):
     # Fetch the data source from the database to confirm that it was added successfully
     results = live_database_client.execute_raw_sql(query="SELECT * FROM data_sources WHERE name = %s", vars=(name,))
 
-    assert type(results) == DictRow # results is type DictRow when there is one result
+    assert len(results) == 1
 
 
 def test_update_data_source(live_database_client):
@@ -313,7 +313,7 @@ def test_add_quick_search_log(live_database_client):
     )
 
     # Fetch the quick search logs to confirm it was added successfully
-    row = live_database_client.execute_raw_sql(
+    rows = live_database_client.execute_raw_sql(
         query="""
         select search, location, results, result_count
         from quick_search_query_logs
@@ -322,7 +322,9 @@ def test_add_quick_search_log(live_database_client):
         vars=(search, location),
     )
 
-    assert type(row) == DictRow # row is type DictRow when there is one result
+    assert len(rows) == 1
+    row = rows[0]
+    assert type(row) == DictRow
     assert row["search"] == search
     assert row["location"] == location
     assert row["results"][0] == "SOURCE_UID_QSL"

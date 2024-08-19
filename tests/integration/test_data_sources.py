@@ -80,4 +80,4 @@ def test_data_sources_post(
         """,
         vars=(name,),
     )
-    assert type(rows) == DictRow # rows is type DictRow when there is one result
+    len(rows) == 1
