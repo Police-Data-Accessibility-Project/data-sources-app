@@ -103,7 +103,8 @@ class DatabaseClient:
         return wrapper
 
     def close(self):
-        self.connection.close()
+        pass
+        # self.connection.close()
     
     @cursor_manager
     def execute_raw_sql(
