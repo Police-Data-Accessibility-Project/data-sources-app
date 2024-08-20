@@ -5,8 +5,10 @@
 
 		<Form
 			id="pdap-data-sources-search"
-			class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-auto max-w-full"
+			ref="formRef"
+			class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-auto max-w-full gap-4"
 			:schema="SCHEMA"
+			@change="onChange"
 			@submit="submit"
 		>
 			<div
@@ -14,11 +16,31 @@
 			>
 				<!-- This label is hardcoded to support the PDAP /search functionality. We'll need to pass a prop if we need to use the typeahead element elsewhere -->
 				<label class="col-span-2 mt-6 mb-4" :for="TYPEAHEAD_ID">
-					<!-- TODO: add paths to these links after search results page built -->
 					From where? Example,
-					<router-link to="">Pittsburgh, Allegheny, PA</router-link>
-					or <router-link to="">Pennsylvania</router-link></label
-				>
+					<router-link
+						:to="{
+							path: '/search',
+							query: {
+								state: 'Pennsylvania',
+								county: 'Allegheny',
+								locality: 'Pittsburgh',
+							},
+						}"
+					>
+						Pittsburgh, Allegheny, PA
+					</router-link>
+					or
+					<router-link
+						:to="{
+							path: '/search',
+							query: {
+								state: 'Pennsylvania',
+							},
+						}"
+					>
+						Pennsylvania
+					</router-link>
+				</label>
 
 				<TypeaheadInput
 					:id="TYPEAHEAD_ID"
@@ -31,6 +53,7 @@
 
 				<Button
 					class="col-start-3 col-span-1 max-h-[calc(var(--typeahead-input-height)+2px)]"
+					:disabled="!selectedRecord"
 					intent="primary"
 					type="submit"
 				>
@@ -47,13 +70,16 @@ import TypeaheadInput from '@/components/TypeaheadInput.vue';
 import axios from 'axios';
 import { ref } from 'vue';
 import { debounce as _debounce } from 'lodash';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 /* constants */
 const TYPEAHEAD_ID = 'pdap-search-typeahead';
 const SCHEMA = [
 	{
 		id: 'all-data-types',
-		defaultChecked: false,
+		defaultChecked: true,
 		name: 'all-data-types',
 		label: 'All data types',
 		type: 'checkbox',
@@ -103,14 +129,10 @@ const SCHEMA = [
 
 const items = ref([]);
 const selectedRecord = ref();
+const formRef = ref();
 
 function submit(values) {
-	const params = new URLSearchParams(buildParams(values));
-
-	const path = `/search?${params.toString()}`;
-
-	// Logging for now, will router.push(path) once the search results page is built
-	console.log('Path from search:\n', path);
+	router.push({ path: '/search', query: buildParams(values) });
 }
 
 function buildParams(values) {
@@ -145,6 +167,24 @@ function buildParams(values) {
 		.filter(Boolean);
 
 	return obj;
+}
+
+function onChange(values, event) {
+	if (event.target.name === 'all-data-types') {
+		if (event.target.checked) {
+			const update = {};
+			Object.entries(values).forEach(([key, val]) => {
+				if (key !== 'all-data-types' && val === 'true') {
+					update[key] = 'false';
+				}
+			});
+			formRef.value.setValues({ ...values, ...update });
+		}
+	} else {
+		if (values['all-data-types'] === 'true' && event.target.checked) {
+			formRef.value.setValues({ ...values, ['all-data-types']: 'false' });
+		}
+	}
 }
 
 function onSelectRecord(item) {

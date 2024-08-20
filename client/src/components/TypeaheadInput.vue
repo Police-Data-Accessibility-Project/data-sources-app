@@ -111,6 +111,7 @@ function onInput(e) {
 function onFocus(e) {
 	if (Array.isArray(itemsToDisplay.value) && !itemsToDisplay.value.length) {
 		clearInput();
+		emit('selectItem', undefined);
 	}
 
 	emit('onFocus', e);
