@@ -8,6 +8,7 @@ from flask_jwt_extended import get_jwt_identity
 from flask_restx import abort
 
 from database_client.database_client import DatabaseClient
+from database_client.helper_functions import get_db_client
 from middleware.custom_exceptions import UserNotFoundError
 from middleware.enums import PermissionsEnum, PermissionsActionEnum
 from utilities.common import get_valid_enum_value
@@ -17,6 +18,7 @@ class PermissionsRequest:
     user_email: str
     permission: str
     action: str
+
 
 class PermissionsManager:
     """
@@ -99,3 +101,8 @@ def update_permissions_wrapper(
         permission=permission
     )
 
+
+def get_user_permissions(user_email: str) -> list[PermissionsEnum]:
+    db_client = get_db_client()
+    pm = PermissionsManager(db_client, user_email)
+    return pm.permissions

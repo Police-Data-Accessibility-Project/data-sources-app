@@ -31,25 +31,29 @@ def api_key_or_jwt_required(f):
 
     return decorator
 
-def check_decorator_factory(check_func: Callable[[Any], None], *args, **kwargs):
+
+def api_key_required(func):
     """
-    Factory function to create decorators that perform a check before executing the decorated function.
-    check_func: The function that performs the check.
-    *args, **kwargs: Additional arguments to be passed to the check_func.
+    The api_key_required decorator can be added to protect a route so that only authenticated users can access the information.
+    To protect a route with this decorator, add @api_key_required on the line above a given route.
+    The request header for a protected route must include an "Authorization" key with the value formatted as "Basic [api_key]".
+    A user can get an API key by signing up and logging in.
     """
 
+    @wraps(func)
+    def decorator(*args, **kwargs):
+        check_api_key()
+        return func(*args, **kwargs)
+
+    return decorator
+
+def permissions_required(permissions: PermissionsEnum):
     def decorator(func: Callable):
         @wraps(func)
-        def wrapper(*func_args, **func_kwargs):
-            # Perform the check
-            check_func(*args, **kwargs)
-            # Call the decorated function
-            return func(*func_args, **func_kwargs)
+        def wrapper(*args, **kwargs):
+            check_permissions(permissions)
+            return func(*args, **kwargs)
 
         return wrapper
 
     return decorator
-
-# Example usage
-api_key_required = check_decorator_factory(check_api_key)
-permissions_required = lambda permissions: check_decorator_factory(check_permissions, permissions)

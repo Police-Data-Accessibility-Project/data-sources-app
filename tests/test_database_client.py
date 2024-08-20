@@ -382,10 +382,10 @@ def test_get_user_by_api_key(live_database_client):
     )
 
     # Fetch the user's role using its api key with the DatabaseClient method
-    api_key_user_id = live_database_client.get_user_by_api_key(api_key=test_api_key)
+    user_identifiers = live_database_client.get_user_by_api_key(api_key=test_api_key)
 
     # Confirm the user_id is retrieved successfully
-    assert api_key_user_id == user_id
+    assert user_identifiers.id == user_id
 
 
 def test_get_typeahead_suggestion(live_database_client):
