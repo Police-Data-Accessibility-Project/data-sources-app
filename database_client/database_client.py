@@ -165,7 +165,6 @@ class DatabaseClient:
             return None
         return self.cursor.fetchone()[0]
 
-    @cursor_manager
     def set_user_password_digest(self, email: str, password_digest: str):
         """
         Updates the password digest for a user in the database.
@@ -173,13 +172,12 @@ class DatabaseClient:
         :param password_digest:
         :return:
         """
-        query = sql.SQL(
-            "update users set password_digest = {} where email = {}"
-        ).format(
-            sql.Literal(password_digest),
-            sql.Literal(email),
+        self._update_entry_in_table(
+            table_name="users",
+            entry_id=email,
+            column_edit_mappings={"password_digest": password_digest},
+            id_column_name="email"
         )
-        self.cursor.execute(query)
 
     ResetTokenInfo = namedtuple("ResetTokenInfo", ["id", "email", "create_date"])
 
@@ -242,17 +240,17 @@ class DatabaseClient:
             return None
         return row[0]
 
-    @cursor_manager
     def update_user_api_key(self, api_key: str, user_id: int):
         """
         Update the api key for a user
         :param api_key: The api key to check.
         :param user_id: The user id to update.
         """
-        query = sql.SQL("update users set api_key = {} where id = {}")
-        query = query.format(sql.Literal(api_key), sql.Literal(user_id))
-
-        self.cursor.execute(query)
+        self._update_entry_in_table(
+            table_name="users",
+            entry_id=user_id,
+            column_edit_mappings={"api_key": api_key},
+        )
 
     @cursor_manager
     def get_data_source_by_id(self, data_source_id: str) -> Optional[tuple[Any, ...]]:
@@ -310,7 +308,6 @@ class DatabaseClient:
         sql_query = DynamicQueryConstructor.create_new_data_source_query(data)
         self.cursor.execute(sql_query)
 
-    @cursor_manager
     def update_data_source(self, data: dict, data_source_id: str) -> None:
         """
         Processes a request to update a data source.
@@ -318,10 +315,13 @@ class DatabaseClient:
         :param data_source_id: The data source's ID.
         :param data: A dictionary containing the data source details.
         """
-        sql_query = DynamicQueryConstructor.create_data_source_update_query(
-            data, data_source_id
+        self._update_entry_in_table(
+            table_name="data_sources",
+            entry_id=data_source_id,
+            column_edit_mappings=data,
+            id_column_name="airtable_uid"
         )
-        self.cursor.execute(sql_query)
+
 
     MapInfo = namedtuple(
         "MapInfo",
@@ -482,14 +482,13 @@ class DatabaseClient:
         return results
 
     def update_url_status_to_broken(
-        self, id: str, broken_as_of: str, last_cached: str
+        self, id: str, broken_as_of: str
     ) -> None:
         """
         Updates the data_sources table setting the url_status to 'broken' for a given id.
 
         :param id: The airtable_uid of the data source.
         :param broken_as_of: The date when the source was identified as broken.
-        :param last_cached: The last cached date of the data source.
         """
         self.update_data_source(
             data_source_id=id,
@@ -499,7 +498,6 @@ class DatabaseClient:
             },
         )
 
-    @cursor_manager
     def update_last_cached(self, id: str, last_cached: str) -> None:
         """
         Updates the last_cached field in the data_sources_archive_info table for a given id.
@@ -507,8 +505,12 @@ class DatabaseClient:
         :param id: The airtable_uid of the data source.
         :param last_cached: The last cached date to be updated.
         """
-        sql_query = "UPDATE data_sources_archive_info SET last_cached = %s WHERE airtable_uid = %s"
-        self.cursor.execute(sql_query, (last_cached, id))
+        self._update_entry_in_table(
+            table_name="data_sources_archive_info",
+            entry_id=id,
+            column_edit_mappings={"last_cached": last_cached},
+            id_column_name="airtable_uid"
+        )
 
     QuickSearchResult = namedtuple(
         "QuickSearchResults",
@@ -813,9 +815,12 @@ class DatabaseClient:
         """
         # If the column permission is READ, return also WRITE values, which are assumed to include READ
         if column_permission == ColumnPermissionEnum.READ:
-            column_permissions = (ColumnPermissionEnum.READ.value, ColumnPermissionEnum.WRITE.value)
+            column_permissions = (
+                ColumnPermissionEnum.READ.value,
+                ColumnPermissionEnum.WRITE.value,
+            )
         else:
-            column_permissions = (column_permission.value, )
+            column_permissions = (column_permission.value,)
 
         query = sql.SQL(
             """
@@ -829,7 +834,28 @@ class DatabaseClient:
         ).format(
             relation=sql.Literal(relation),
             relation_role=sql.Literal(role.value),
-            column_permissions=sql.Literal(column_permissions))
+            column_permissions=sql.Literal(column_permissions),
+        )
         self.cursor.execute(query)
         results = self.cursor.fetchall()
         return [row[0] for row in results]
+
+    @cursor_manager
+    def _update_entry_in_table(
+        self,
+        table_name: str,
+        entry_id: Any,
+        column_edit_mappings: dict[str, str],
+        id_column_name: str = "id",
+    ):
+        """
+        Updates a specific entry in a table in the database.
+
+        :param table_name: The name of the table to update.
+        :param entry_id: The ID of the entry to update.
+        :param column_edit_mappings: A dictionary mapping column names to their new values.
+        """
+        query = DynamicQueryConstructor.create_update_query(
+            table_name, entry_id, column_edit_mappings, id_column_name
+        )
+        self.cursor.execute(query)
