@@ -23,6 +23,7 @@
 			@change="onChange"
 			@submit="onSubmit"
 		>
+			<!-- TODO: encapsulate this into a separate component, as it's repeated across this, /reset-password, and /change-password -->
 			<ul class="text-med mb-8">
 				Passwords must be at least 8 characters and include:
 				<li

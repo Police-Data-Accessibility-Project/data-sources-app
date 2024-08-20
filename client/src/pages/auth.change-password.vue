@@ -15,6 +15,38 @@
 			@change="onChange"
 			@submit="onSubmit"
 		>
+			<ul class="text-med mb-8">
+				Passwords must be at least 8 characters and include:
+				<li
+					:class="{
+						valid: validation.uppercase,
+					}"
+				>
+					1 uppercase letter
+				</li>
+				<li
+					:class="{
+						valid: validation.lowercase,
+					}"
+				>
+					1 lowercase letter
+				</li>
+				<li
+					:class="{
+						valid: validation.number,
+					}"
+				>
+					1 number
+				</li>
+				<li
+					:class="{
+						valid: validation.specialCharacter,
+					}"
+				>
+					1 special character
+				</li>
+			</ul>
+
 			<Button class="max-w-full" type="submit">
 				{{ loading ? 'Loading...' : 'Change password' }}
 			</Button>
@@ -158,3 +190,9 @@ async function onSubmit(formValues) {
 	}
 }
 </script>
+
+<style scoped>
+.valid {
+	@apply text-green-700 dark:text-green-300;
+}
+</style>

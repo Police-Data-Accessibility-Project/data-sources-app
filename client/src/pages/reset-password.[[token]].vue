@@ -45,15 +45,39 @@
 			name="reset-password"
 			:error="error"
 			:schema="FORM_SCHEMA_CHANGE_PASSWORD"
-			@change="handleChangeOnError"
+			@change="onChange"
 			@submit="onSubmitChangePassword"
 		>
 			<ul class="text-med mb-8">
 				Passwords must be at least 8 characters and include:
-				<li>1 uppercase letter</li>
-				<li>1 lowercase letter</li>
-				<li>1 number</li>
-				<li>1 special character</li>
+				<li
+					:class="{
+						valid: validation.uppercase,
+					}"
+				>
+					1 uppercase letter
+				</li>
+				<li
+					:class="{
+						valid: validation.lowercase,
+					}"
+				>
+					1 lowercase letter
+				</li>
+				<li
+					:class="{
+						valid: validation.number,
+					}"
+				>
+					1 number
+				</li>
+				<li
+					:class="{
+						valid: validation.specialCharacter,
+					}"
+				>
+					1 special character
+				</li>
 			</ul>
 
 			<Button class="max-w-full" type="submit">
@@ -83,7 +107,7 @@
 <script setup>
 import { Button, Form } from 'pdap-design-system';
 import { useUserStore } from '@/stores/user';
-import { onMounted, ref, watchEffect } from 'vue';
+import { onMounted, reactive, ref, watchEffect } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 
 // Constants
@@ -155,6 +179,13 @@ const hasValidatedToken = ref(false);
 const loading = ref(false);
 const success = ref(false);
 
+const validation = reactive({
+	uppercase: false,
+	lowercase: false,
+	number: false,
+	specialCharacter: false,
+});
+
 // Effects
 // Clear error on success
 watchEffect(() => {
@@ -181,20 +212,19 @@ async function validateToken() {
 		hasValidatedToken.value = true;
 	}
 }
+// Handlers
 /**
  * Handles clearing pw-match form errors on change if they exist
  */
-function handleChangeOnError(formValues) {
-	if (error.value && formValues.password !== formValues.confirmPassword) {
-		handlePasswordValidation(formValues);
+function onChange(formValues) {
+	updatePasswordValidation(formValues);
+
+	if (error.value) {
+		handleValidatePasswordMatch(formValues);
 	}
 }
 
-/**
- * Validates that passwords match
- * @returns {boolean} `false` if passwords do not match, `true` if they do
- */
-function handlePasswordValidation(formValues) {
+function handleValidatePasswordMatch(formValues) {
 	if (formValues.password !== formValues.confirmPassword) {
 		if (!error.value) {
 			error.value = 'Passwords do not match, please try again.';
@@ -206,11 +236,61 @@ function handlePasswordValidation(formValues) {
 	}
 }
 
-/**
- * Updates user's password
- */
+function isPasswordValid() {
+	if (!Object.values(validation).every(Boolean)) {
+		error.value = 'Password is not valid';
+		return false;
+	} else {
+		if (error.value) error.value = undefined;
+		return true;
+	}
+}
+
+function updatePasswordValidation({ password }) {
+	// Test uppercase
+	if (/[A-Z]/gm.test(password)) {
+		validation.uppercase = true;
+	} else {
+		validation.uppercase = false;
+	}
+
+	// Test lowercase
+	if (/[a-z]/gm.test(password)) {
+		validation.lowercase = true;
+	} else {
+		validation.lowercase = false;
+	}
+
+	// Test number
+	if (/[0-9]/gm.test(password)) {
+		validation.number = true;
+	} else {
+		validation.number = false;
+	}
+
+	// Test special char
+	if (/[#?!@$%^&*-]/gm.test(password)) {
+		validation.specialCharacter = true;
+	} else {
+		validation.specialCharacter = false;
+	}
+}
+
+async function onSubmitRequestReset(formValues) {
+	try {
+		loading.value = true;
+		const { email } = formValues;
+		await user.requestPasswordReset(email);
+		success.value = true;
+	} catch (err) {
+		error.value = err.message;
+	} finally {
+		loading.value = false;
+	}
+}
+
 async function onSubmitChangePassword(formValues) {
-	if (!handlePasswordValidation(formValues)) return;
+	if (!handleValidatePasswordMatch(formValues) || !isPasswordValid()) return;
 
 	try {
 		loading.value = true;
@@ -227,20 +307,10 @@ async function onSubmitChangePassword(formValues) {
 		loading.value = false;
 	}
 }
-
-/**
- * Updates user's password
- */
-async function onSubmitRequestReset(formValues) {
-	try {
-		loading.value = true;
-		const { email } = formValues;
-		await user.requestPasswordReset(email);
-		success.value = true;
-	} catch (err) {
-		error.value = err.message;
-	} finally {
-		loading.value = false;
-	}
-}
 </script>
+
+<style scoped>
+.valid {
+	@apply text-green-700 dark:text-green-300;
+}
+</style>
