@@ -224,21 +224,23 @@ class DatabaseClient:
         ).format(sql.Literal(email), sql.Literal(token))
         self.cursor.execute(query)
 
+    UserIdentifiers = namedtuple("UserIdentifiers", ["id", "email"])
+
     @cursor_manager
-    def get_user_by_api_key(self, api_key: str) -> Optional[str]:
+    def get_user_by_api_key(self, api_key: str) -> Optional[UserIdentifiers]:
         """
         Get user id for a given api key
         :param api_key: The api key to check.
         :return: RoleInfo if the token exists; otherwise, None.
         """
-        query = sql.SQL("select id from users where api_key = {}").format(
+        query = sql.SQL("select id, email from users where api_key = {}").format(
             sql.Literal(api_key)
         )
         self.cursor.execute(query)
         row = self.cursor.fetchone()
         if row is None:
             return None
-        return row[0]
+        return self.UserIdentifiers(id=row[0], email=row[1])
 
     def update_user_api_key(self, api_key: str, user_id: int):
         """
