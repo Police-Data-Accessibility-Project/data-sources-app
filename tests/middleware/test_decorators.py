@@ -2,41 +2,75 @@ from unittest.mock import MagicMock
 
 import pytest
 from flask_restx._http import HTTPStatus
+from pytest_mock import mocker
 
-from middleware.decorators import api_key_required, permissions_required
+from middleware.decorators import (
+    api_key_required,
+    permissions_required,
+    check_decorator_factory,
+)
 from middleware.enums import PermissionsEnum
 
 
-@pytest.fixture
-def dummy_api_key_required_route():
-    @api_key_required
-    def _dummy_route():
-        return "This is a protected route", HTTPStatus.OK.value
+def test_decorator_factory():
+    # Create a mock check function
+    mock_check_func = MagicMock()
 
-    return _dummy_route
+    sample_decorator = check_decorator_factory(mock_check_func)
 
+    # Create a simple function to decorate
+    # @check_decorator_factory(mock_check_func, "arg1", key="value")
+    @sample_decorator
+    def sample_function():
+        return "Function Executed"
 
-def test_api_key_required(dummy_api_key_required_route, monkeypatch):
-    mock_check_api_key = MagicMock()
-    monkeypatch.setattr("middleware.decorators.check_api_key", mock_check_api_key)
+    # Call the decorated function
+    result = sample_function()
 
-    dummy_api_key_required_route()
-    mock_check_api_key.assert_called_once()
+    # Assert that the check function was called with the correct arguments
+    # mock_check_func.assert_called_once_with("arg1", key="value")
+    mock_check_func.assert_called_once()
 
+    # Assert that the decorated function returns the correct value
+    assert result == "Function Executed"
 
-@pytest.fixture
-def dummy_permissions_required_route():
-    @permissions_required(PermissionsEnum.READ_ALL_USER_INFO)
-    def _dummy_route():
-        return "This is a protected route", HTTPStatus.OK.value
+def test_decorator_factory_with_args_in_check_function():
+    # Create a mock check function
+    mock_check_func = MagicMock()
 
-    return _dummy_route
+    sample_decorator = check_decorator_factory(mock_check_func, "arg1", key="value")
 
-def test_permissions_required(dummy_permissions_required_route, monkeypatch):
-    mock_check_permissions = MagicMock()
-    monkeypatch.setattr("middleware.decorators.check_permissions", mock_check_permissions)
+    # Create a simple function to decorate
+    @sample_decorator
+    def sample_function():
+        return "Function Executed"
 
-    dummy_permissions_required_route()
-    mock_check_permissions.assert_called_once_with(
-        PermissionsEnum.READ_ALL_USER_INFO
-    )
+    # Call the decorated function
+    result = sample_function()
+
+    # Assert that the check function was called with the correct arguments
+    mock_check_func.assert_called_once_with("arg1", key="value")
+
+    # Assert that the decorated function returns the correct value
+    assert result == "Function Executed"
+
+def test_decorator_factory_with_args_in_decorator():
+    # Create a mock check function
+    mock_check_func = MagicMock()
+    mock_decorator_parameter = MagicMock()
+
+    sample_decorator = lambda dp: check_decorator_factory(mock_check_func, dp)
+
+    # Create a simple function to decorate
+    @sample_decorator(mock_decorator_parameter)
+    def sample_function():
+        return "Function Executed"
+
+    # Call the decorated function
+    result = sample_function()
+
+    # Assert that the check function was called with the correct arguments
+    mock_check_func.assert_called_once_with(mock_decorator_parameter)
+
+    # Assert that the decorated function returns the correct value
+    assert result == "Function Executed"
