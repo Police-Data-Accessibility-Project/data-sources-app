@@ -8,8 +8,7 @@ import uuid
 
 import psycopg
 from psycopg import sql
-from psycopg.extras import DictCursor
-from psycopg.rows import DictRow
+from psycopg.rows import DictRow, dict_row
 
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
@@ -91,7 +90,7 @@ class DatabaseClient:
         @wraps(method)
         def wrapper(self, *args, **kwargs):
             # Open a new cursor
-            self.cursor = self.connection.cursor(cursor_factory=DictCursor)
+            self.cursor = self.connection.cursor(row_factory=dict_row)
             try:
                 # Execute the method
                 result = method(self, *args, **kwargs)
@@ -115,7 +114,7 @@ class DatabaseClient:
     @cursor_manager
     def execute_raw_sql(
         self, query: str, vars: Optional[tuple] = None
-    ) -> Optional[list[DictRow]]:
+    ) -> Optional[list[dict]]:
         """Executes an SQL query passed to the function.
 
         :param query: The SQL query to execute.
