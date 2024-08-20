@@ -1,34 +1,115 @@
 <template>
-	<main v-if="success" class="pdap-flex-container">
-		<h1>Success</h1>
-		<p>Your password has been successfully updated</p>
+	<!-- User is already logged in -->
+	<main v-if="auth.userId" class="pdap-flex-container">
+		<h1>Your account is now active</h1>
+		<p data-test="success-subheading">Enjoy the data sources app.</p>
+
+		<RouterLink class="pdap-button-secondary mt-6" to="/">
+			Search data sources
+		</RouterLink>
 	</main>
+
+	<!-- Otherwise, the form (form handles error UI on its own) -->
 	<main v-else class="pdap-flex-container mx-auto max-w-2xl">
-		<h1>Change your password</h1>
+		<h1>Sign Up</h1>
 		<Form
-			id="change-password"
+			id="login"
 			class="flex flex-col"
-			data-test="change-password-form"
-			name="change-password"
+			data-test="login-form"
+			name="login"
 			:error="error"
+			:reset-on="success"
 			:schema="FORM_SCHEMA"
 			@change="onChange"
 			@submit="onSubmit"
 		>
-			<Button class="max-w-full" type="submit">
-				{{ loading ? 'Loading...' : 'Change password' }}
+			<ul class="text-med mb-8">
+				Passwords must be at least 8 characters and include:
+				<li
+					:class="{
+						valid: validation.uppercase,
+					}"
+				>
+					1 uppercase letter
+				</li>
+				<li
+					:class="{
+						valid: validation.lowercase,
+					}"
+				>
+					1 lowercase letter
+				</li>
+				<li
+					:class="{
+						valid: validation.number,
+					}"
+				>
+					1 number
+				</li>
+				<li
+					:class="{
+						valid: validation.specialCharacter,
+					}"
+				>
+					1 special character
+				</li>
+			</ul>
+
+			<Button class="max-w-full" type="submit" data-test="submit-button">
+				Create account
 			</Button>
 		</Form>
+		<div
+			class="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4 sm:flex-wrap w-full"
+		>
+			<p class="w-full max-w-[unset]">Already have an account?</p>
+
+			<RouterLink
+				class="pdap-button-secondary flex-1 max-w-full"
+				data-test="toggle-button"
+				to="/sign-in"
+			>
+				Log in
+			</RouterLink>
+			<RouterLink
+				class="pdap-button-secondary flex-1 max-w-full"
+				data-test="reset-link"
+				to="/reset-password"
+			>
+				Reset Password
+			</RouterLink>
+		</div>
 	</main>
 </template>
 
 <script setup>
+// Imports
 import { Button, Form } from 'pdap-design-system';
+import { ref, onMounted, reactive } from 'vue';
+import { useAuthStore } from '@/stores/auth';
 import { useUserStore } from '@/stores/user';
-import { reactive, ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 // Constants
 const FORM_SCHEMA = [
+	{
+		autofill: 'email',
+		'data-test': 'email',
+		id: 'email',
+		name: 'email',
+		label: 'Email',
+		type: 'text',
+		placeholder: 'Your email address',
+		value: '',
+		validators: {
+			email: {
+				message: 'Please provide your email address',
+				value: true,
+			},
+		},
+	},
 	{
 		autofill: 'new-password',
 		'data-test': 'password',
@@ -36,7 +117,7 @@ const FORM_SCHEMA = [
 		name: 'password',
 		label: 'Password',
 		type: 'password',
-		placeholder: 'Your updated password',
+		placeholder: 'Your password',
 		value: '',
 		validators: {
 			password: {
@@ -52,7 +133,7 @@ const FORM_SCHEMA = [
 		name: 'confirmPassword',
 		label: 'Confirm Password',
 		type: 'password',
-		placeholder: 'Confirm your updated password',
+		placeholder: 'Confirm your password',
 		value: '',
 		validators: {
 			password: {
@@ -63,14 +144,14 @@ const FORM_SCHEMA = [
 	},
 ];
 
-// Stores
+// Store
+const auth = useAuthStore();
 const user = useUserStore();
 
 // Reactive vars
 const error = ref(undefined);
 const loading = ref(false);
 const success = ref(false);
-
 const validation = reactive({
 	uppercase: false,
 	lowercase: false,
@@ -78,10 +159,15 @@ const validation = reactive({
 	specialCharacter: false,
 });
 
+onMounted(async () => {
+	// User signed up and logged in
+	if (auth.userId) await router.push({ path: '/' });
+});
+
 // Functions
 // Handlers
 /**
- * Handles clearing pw-match form errors on change if they exist
+ * When signing up: handles clearing pw-match form errors on change if they exist
  */
 function onChange(formValues) {
 	updatePasswordValidation(formValues);
@@ -142,19 +228,26 @@ function updatePasswordValidation({ password }) {
 		validation.specialCharacter = false;
 	}
 }
+
 async function onSubmit(formValues) {
 	if (!handleValidatePasswordMatch(formValues) || !isPasswordValid()) return;
 
 	try {
 		loading.value = true;
-		const { password } = formValues;
-		await user.changePassword(user.email, password);
+		const { email, password } = formValues;
 
+		await user.signup(email, password);
 		success.value = true;
 	} catch (err) {
-		error.value = err.message;
+		error.value = 'Something went wrong, please try again.';
 	} finally {
 		loading.value = false;
 	}
 }
 </script>
+
+<style scoped>
+.valid {
+	@apply text-green-700 dark:text-green-300;
+}
+</style>

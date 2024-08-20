@@ -89,6 +89,7 @@ import { RouterLink, useRoute } from 'vue-router';
 // Constants
 const FORM_SCHEMA_CHANGE_PASSWORD = [
 	{
+		autofill: 'password',
 		'data-test': 'password',
 		id: 'password',
 		name: 'password',
@@ -104,6 +105,7 @@ const FORM_SCHEMA_CHANGE_PASSWORD = [
 		},
 	},
 	{
+		autofill: 'password',
 		'data-test': 'confirm-password',
 		id: 'confirmPassword',
 		name: 'confirmPassword',
@@ -122,6 +124,7 @@ const FORM_SCHEMA_CHANGE_PASSWORD = [
 
 const FORM_SCHEMA_REQUEST_PASSWORD = [
 	{
+		autofill: 'email',
 		'data-test': 'email',
 		id: 'email',
 		name: 'email',

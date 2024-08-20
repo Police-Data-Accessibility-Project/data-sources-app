@@ -3,9 +3,10 @@ import { defineStore } from 'pinia';
 import parseJwt from '../util/parseJwt';
 import router from '../router';
 import { useUserStore } from './user';
+import { useRoute } from 'vue-router';
 
 const HEADERS = {
-	headers: { 'Content-Type': 'application/json' },
+	'Content-Type': 'application/json',
 };
 const LOGIN_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/login`;
 const REFRESH_SESSION_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/refresh-session`;
@@ -13,11 +14,17 @@ const REFRESH_SESSION_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/refresh-se
 export const useAuthStore = defineStore('auth', {
 	state: () => ({
 		userId: null,
-		accessToken: {
-			value: null,
-			expires: Date.now(),
+		tokens: {
+			accessToken: {
+				value: null,
+				expires: Date.now(),
+			},
+			refreshToken: {
+				value: null,
+				expires: Date.now(),
+			},
 		},
-		returnUrl: null,
+		redirectTo: null,
 	}),
 	persist: true,
 	actions: {
@@ -27,29 +34,36 @@ export const useAuthStore = defineStore('auth', {
 			const response = await axios.post(
 				LOGIN_URL,
 				{ email, password },
-				HEADERS,
+				{
+					headers: {
+						...HEADERS,
+						// TODO: API should require auth
+						// authorization: `Basic ${import.meta.env.VITE_ADMIN_API_KEY}`,
+					},
+				},
 			);
 
 			// Update user store with email
 			user.$patch({ email });
 
 			this.parseTokenAndSetData(response);
-			if (this.returnUrl) router.push(this.returnUrl);
 		},
 
-		logout(isAuthRoute) {
+		async logout() {
 			const user = useUserStore();
+			const route = useRoute();
 
 			this.$patch({
 				userId: null,
 				accessToken: { value: null, expires: Date.now() },
-				returnUrl: null,
+				redirectTo: null,
 			});
 
 			user.$patch({
 				email: '',
 			});
-			if (isAuthRoute) router.push('/login');
+
+			if (route.redirectedFrom?.meta.auth) router.push({ path: '/sign-in' });
 		},
 
 		async refreshAccessToken() {
@@ -58,7 +72,12 @@ export const useAuthStore = defineStore('auth', {
 				const response = await axios.post(
 					REFRESH_SESSION_URL,
 					{ session_token: this.$state.accessToken.value },
-					HEADERS,
+					{
+						headers: {
+							...HEADERS,
+							authorization: `Basic ${this.refreshToken.value}`,
+						},
+					},
 				);
 				return this.parseTokenAndSetData(response);
 			} catch (error) {
@@ -67,14 +86,22 @@ export const useAuthStore = defineStore('auth', {
 		},
 
 		parseTokenAndSetData(response) {
-			const token = response.data.data;
-			const tokenParsed = parseJwt(token);
+			const accessToken = response.data.access_token;
+			const refreshToken = response.data.refresh_token;
+			const accessTokenParsed = parseJwt(accessToken);
+			const refreshTokenParsed = parseJwt(refreshToken);
 
 			this.$patch({
-				userId: tokenParsed.sub,
-				accessToken: {
-					value: token,
-					expires: new Date(tokenParsed.exp * 1000).getTime(),
+				userId: accessTokenParsed.sub,
+				tokens: {
+					accessToken: {
+						value: accessToken,
+						expires: new Date(accessTokenParsed.exp * 1000).getTime(),
+					},
+					refreshToken: {
+						value: refreshToken,
+						expires: new Date(refreshTokenParsed.exp * 1000).getTime(),
+					},
 				},
 			});
 		},
