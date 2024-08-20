@@ -27,7 +27,6 @@ from middleware.custom_exceptions import (
 )
 
 from middleware.models import User, ExternalAccount
-from middleware.permissions_logic import UserPermissions
 from middleware.enums import PermissionsEnum
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 from utilities.enums import RecordCategories
@@ -232,22 +231,6 @@ class DatabaseClient:
         if row is None:
             return None
         return self.RoleInfo(id=row.id, role=row.role)
-
-    def get_role_by_email(self, email: str) -> RoleInfo:
-        """
-        Retrieves a user's role from the database using a given email.
-
-        :param email: User's email.
-        :raises UserNotFoundError: If no user is found.
-        :return: RoleInfo namedtuple containing the user's role.
-        """
-        query = select(User.role).where(User.email == email)
-        try:
-            role = self.session.scalars(query).one()
-        except NoResultFound:
-            raise UserNotFoundError(email)
-
-        return self.RoleInfo(id=None, role=role)
 
     @cursor_manager
     def update_user_api_key(self, api_key: str, user_id: int):
@@ -740,18 +723,22 @@ class DatabaseClient:
         )
         self.session.add(external_account)
 
-    def get_user_permissions(self, user_id: str) -> UserPermissions:
+    @cursor_manager
+    def get_user_permissions(self, user_id: str) -> List[PermissionsEnum]:
         query = sql.SQL(
             """
-            INSERT INTO external_accounts (user_id, account_type, account_identifier) 
-            VALUES ({user_id}, {account_type}, {account_identifier});
+            SELECT p.permission_name
+            FROM 
+            user_permissions up
+            INNER JOIN permissions p on up.permission_id = p.permission_id
+            where up.user_id = {user_id}
         """
         ).format(
             user_id=sql.Literal(user_id),
-            account_type=sql.Literal(external_account_type.value),
-            account_identifier=sql.Literal(external_account_id),
         )
         self.cursor.execute(query)
+        results = self.cursor.fetchall()
+        return [PermissionsEnum(row[0]) for row in results]
 
     @cursor_manager
     def add_user_permission(self, user_email: str, permission: PermissionsEnum):
