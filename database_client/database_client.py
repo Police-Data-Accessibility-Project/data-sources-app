@@ -8,7 +8,7 @@ import uuid
 
 import psycopg
 from psycopg import sql
-from psycopg.rows import dict_row
+from psycopg.rows import namedtuple_row
 
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
@@ -90,7 +90,7 @@ class DatabaseClient:
         @wraps(method)
         def wrapper(self, *args, **kwargs):
             # Open a new cursor
-            self.cursor = self.connection.cursor(row_factory=dict_row)
+            self.cursor = self.connection.cursor(row_factory=namedtuple_row)
             try:
                 # Execute the method
                 result = method(self, *args, **kwargs)

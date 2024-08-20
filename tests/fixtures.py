@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 import psycopg
 import pytest
 from dotenv import load_dotenv
-from psycopg.rows import dict_row
+from psycopg.rows import namedtuple_row
 
 from app import create_app
 from database_client.database_client import DatabaseClient
@@ -59,7 +59,7 @@ def db_cursor(
     Create a cursor to execute database operations, with savepoint management.
     This is to ensure that changes made during the test can be rolled back.
     """
-    cur = dev_db_connection.cursor(row_factory=dict_row)
+    cur = dev_db_connection.cursor(row_factory=namedtuple_row)
 
     # Start a savepoint
     cur.execute("SAVEPOINT test_savepoint")
