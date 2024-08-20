@@ -2,7 +2,7 @@
 
 from http import HTTPStatus
 
-import psycopg2.extensions
+import psycopg.extensions
 
 from database_client.database_client import DatabaseClient
 from resources.ApiKey import API_KEY_ROUTE

@@ -3,7 +3,7 @@ import json
 from unittest.mock import MagicMock
 from datetime import datetime
 
-import psycopg2
+import psycopg
 import pytest
 
 from middleware.quick_search_query import (
@@ -28,7 +28,7 @@ class QuickSearchQueryMocks(DynamicMagicMock):
 
 
 def test_quick_search_query_logging(
-    connection_with_test_data: psycopg2.extensions.connection,
+    connection_with_test_data: psycopg.extensions.connection,
 ) -> None:
 
     mock = QuickSearchQueryMocks(

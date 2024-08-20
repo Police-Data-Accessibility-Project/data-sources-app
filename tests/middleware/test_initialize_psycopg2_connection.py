@@ -1,24 +1,24 @@
 import pytest
 from unittest.mock import patch, MagicMock
-import psycopg2
-from psycopg2.extensions import connection as PgConnection
-from middleware.initialize_psycopg2_connection import (
-    initialize_psycopg2_connection,
+import psycopg
+from psycopg.extensions import connection as PgConnection
+from middleware.initialize_psycopg_connection import (
+    initialize_psycopg_connection,
     DatabaseInitializationError,
 )
 
-PATCH_ROOT = "middleware.initialize_psycopg2_connection"
+PATCH_ROOT = "middleware.initialize_psycopg_connection"
 GET_ENV_PATCH_ROUTE = PATCH_ROOT + ".get_env_variable"
-CONNECT_PATCH_ROUTE = PATCH_ROOT + ".psycopg2.connect"
+CONNECT_PATCH_ROUTE = PATCH_ROOT + ".psycopg.connect"
 
 
 def test_initialize_psycopg2_connection():
     """
-    Test that initialize_psycopg2_connection returns a psycopg2 connection object.
+    Test that initialize_psycopg_connection returns a psycopg connection object.
     And that, if the connection is closed, it is reopened.
     :return:
     """
-    conn = initialize_psycopg2_connection()
+    conn = initialize_psycopg_connection()
 
     assert isinstance(conn, PgConnection)
     assert conn.closed == 0
@@ -27,7 +27,7 @@ def test_initialize_psycopg2_connection():
 
     assert conn.closed == 1
 
-    conn = initialize_psycopg2_connection()
+    conn = initialize_psycopg_connection()
 
     assert isinstance(conn, PgConnection)
     assert conn.closed == 0

@@ -6,9 +6,10 @@ from functools import wraps
 from typing import Optional, Any, List
 import uuid
 
-import psycopg2
-from psycopg2 import sql
-from psycopg2.extras import DictCursor, DictRow
+import psycopg
+from psycopg import sql
+from psycopg.extras import DictCursor
+from psycopg.rows import DictRow
 
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
@@ -22,7 +23,7 @@ from middleware.custom_exceptions import (
     AccessTokenNotFoundError,
 )
 from middleware.enums import PermissionsEnum
-from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
+from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from utilities.enums import RecordCategories
 
 DATA_SOURCES_MAP_COLUMN = [
@@ -75,7 +76,7 @@ QUICK_SEARCH_SQL = """
 class DatabaseClient:
 
     def __init__(self):
-        self.connection = initialize_psycopg2_connection()
+        self.connection = initialize_psycopg_connection()
         self.cursor = None
 
     def cursor_manager(method):
@@ -124,7 +125,7 @@ class DatabaseClient:
         self.cursor.execute(query, vars)
         try:
             results = self.cursor.fetchall()
-        except psycopg2.ProgrammingError:
+        except psycopg.ProgrammingError:
             return None
 
         if len(results) == 0:

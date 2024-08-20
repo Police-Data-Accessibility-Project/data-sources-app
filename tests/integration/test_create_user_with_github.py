@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from psycopg2.extras import DictCursor
+from psycopg.extras import DictCursor
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum

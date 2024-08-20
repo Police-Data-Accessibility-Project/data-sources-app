@@ -3,7 +3,7 @@ from collections import namedtuple
 from datetime import datetime
 from typing import Optional
 
-from psycopg2 import sql
+from psycopg import sql
 
 from database_client.constants import (
     AGENCY_APPROVED_COLUMNS,

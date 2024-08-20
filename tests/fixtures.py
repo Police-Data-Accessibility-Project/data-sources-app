@@ -3,10 +3,10 @@
 from collections import namedtuple
 from unittest.mock import MagicMock
 
-import psycopg2
+import psycopg
 import pytest
 from dotenv import load_dotenv
-from psycopg2.extras import DictCursor
+from psycopg.extras import DictCursor
 
 from app import create_app
 from database_client.database_client import DatabaseClient
@@ -21,7 +21,7 @@ from tests.helper_scripts.test_data_generator import TestDataGenerator
 
 
 @pytest.fixture
-def dev_db_connection() -> psycopg2.extensions.connection:
+def dev_db_connection() -> psycopg.extensions.connection:
     """
     Create reversible connection to dev database.
 
@@ -32,7 +32,7 @@ def dev_db_connection() -> psycopg2.extensions.connection:
     """
     load_dotenv()
     dev_db_connection_string = get_env_variable("DEV_DB_CONN_STRING")
-    connection = psycopg2.connect(
+    connection = psycopg.connect(
         dev_db_connection_string,
         keepalives=1,
         keepalives_idle=30,
@@ -51,8 +51,8 @@ def dev_db_connection() -> psycopg2.extensions.connection:
 
 @pytest.fixture
 def db_cursor(
-    dev_db_connection: psycopg2.extensions.connection,
-) -> psycopg2.extensions.cursor:
+    dev_db_connection: psycopg.extensions.connection,
+) -> psycopg.extensions.cursor:
     """
     Create cursor for reversible database operations.
 
@@ -72,15 +72,15 @@ def db_cursor(
 
 
 @pytest.fixture
-def dev_db_client(dev_db_connection: psycopg2.extensions.connection) -> DatabaseClient:
+def dev_db_client(dev_db_connection: psycopg.extensions.connection) -> DatabaseClient:
     db_client = DatabaseClient()
     yield db_client
 
 
 @pytest.fixture
 def connection_with_test_data(
-    dev_db_connection: psycopg2.extensions.connection,
-) -> psycopg2.extensions.connection:
+    dev_db_connection: psycopg.extensions.connection,
+) -> psycopg.extensions.connection:
     """
     Insert test agencies and sources into test data.
 
@@ -91,14 +91,14 @@ def connection_with_test_data(
     """
     try:
         insert_test_agencies_and_sources(dev_db_connection.cursor())
-    except psycopg2.errors.UniqueViolation:
+    except psycopg.errors.UniqueViolation:
         dev_db_connection.rollback()
     return dev_db_connection
 
 
 @pytest.fixture
 def db_client_with_test_data(
-    connection_with_test_data: psycopg2.extensions.connection,
+    connection_with_test_data: psycopg.extensions.connection,
 ) -> DatabaseClient:
     db_client = DatabaseClient()
     yield db_client
@@ -115,7 +115,7 @@ def client_with_mock_db(mocker, monkeypatch) -> ClientWithMockDB:
     :return:
     """
     mock_db = mocker.MagicMock()
-    monkeypatch.setattr("app.initialize_psycopg2_connection", lambda: mock_db)
+    monkeypatch.setattr("app.initialize_psycopg_connection", lambda: mock_db)
     app = create_app()
     with app.test_client() as client:
         yield ClientWithMockDB(client, mock_db)
@@ -123,7 +123,7 @@ def client_with_mock_db(mocker, monkeypatch) -> ClientWithMockDB:
 
 @pytest.fixture
 def flask_client_with_db(
-    dev_db_connection: psycopg2.extensions.connection, monkeypatch
+    dev_db_connection: psycopg.extensions.connection, monkeypatch
 ):
     """
     Creates a client with database connection
@@ -131,7 +131,7 @@ def flask_client_with_db(
     :return:
     """
     mock_get_flask_app_secret_key = MagicMock(return_value="test")
-    monkeypatch.setattr("app.initialize_psycopg2_connection", lambda: dev_db_connection)
+    monkeypatch.setattr("app.initialize_psycopg_connection", lambda: dev_db_connection)
     monkeypatch.setattr("app.get_flask_app_cookie_encryption_key", mock_get_flask_app_secret_key)
     app = create_app()
     with app.test_client() as client:

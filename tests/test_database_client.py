@@ -5,8 +5,8 @@ Module for testing database client functionality against a live database
 import uuid
 from datetime import datetime, timezone, timedelta
 
-import psycopg2.errors
-from psycopg2.extras import DictRow
+import psycopg.errors
+from psycopg.extras import DictRow
 import pytest
 
 from database_client.database_client import DatabaseClient
@@ -565,7 +565,7 @@ def test_get_permitted_columns(live_database_client):
         END $$;
         """
         )
-    except psycopg2.errors.UniqueViolation:
+    except psycopg.errors.UniqueViolation:
         pass  # Already added
 
     results = live_database_client.get_permitted_columns(

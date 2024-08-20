@@ -2,8 +2,8 @@
 
 from http import HTTPStatus
 import uuid
-import psycopg2
-from psycopg2.extras import DictCursor
+import psycopg
+from psycopg.extras import DictCursor
 
 from database_client.database_client import DatabaseClient
 from tests.fixtures import (
@@ -25,7 +25,7 @@ from tests.helper_scripts.helper_functions import (
 
 
 def test_data_sources_by_id_get(
-    flask_client_with_db, connection_with_test_data: psycopg2.extensions.connection
+    flask_client_with_db, connection_with_test_data: psycopg.extensions.connection
 ):
     """
     Test that GET call to /data-sources-by-id/<data_source_id> endpoint retrieves the data source with the correct homepage URL

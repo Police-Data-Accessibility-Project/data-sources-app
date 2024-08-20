@@ -1,7 +1,7 @@
 """Integration tests for /data-sources-map endpoint"""
 
 from http import HTTPStatus
-import psycopg2
+import psycopg
 from tests.fixtures import (
     connection_with_test_data,
     flask_client_with_db,
@@ -17,7 +17,7 @@ from tests.helper_scripts.helper_functions import (
 
 
 def test_data_sources_map_get(
-    flask_client_with_db, connection_with_test_data: psycopg2.extensions.connection
+    flask_client_with_db, connection_with_test_data: psycopg.extensions.connection
 ):
     """
     Test that GET call to /data-sources-map endpoint retrieves data sources and verifies the location (latitude and longitude) of a specific source by name

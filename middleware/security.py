@@ -5,7 +5,7 @@ from flask_restx import abort
 
 from database_client.database_client import DatabaseClient
 from middleware.enums import PermissionsEnum
-from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
+from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from typing import Optional
 
 from middleware.permissions_logic import PermissionsManager
