@@ -11,10 +11,10 @@ from flask import Flask
 
 from middleware import security
 from middleware.security import (
-    get_api_key_from_header,
+    get_api_key_from_request_header,
     get_authorization_header,
     extract_api_key_from_header,
-    check_for_properly_formatted_authorization_header,
+    check_for_properly_formatted_basic_header,
     check_for_header_with_authorization_key,
     check_api_key_associated_with_user,
     check_api_key,
@@ -78,7 +78,7 @@ def test_validate_header():
         ],
     )
     mock.extract_api_key_from_header.return_value = mock.api_key
-    api_key = get_api_key_from_header()
+    api_key = get_api_key_from_request_header()
     mock.check_for_header_with_authorization_key.assert_called_once()
     mock.extract_api_key_from_header.assert_called_once()
     assert api_key == mock.api_key
@@ -103,7 +103,7 @@ def test_get_authorization_header():
 
 class ExtractApiKeyFromHeaderMocks(DynamicMagicMock):
     get_authorization_header: MagicMock
-    check_for_properly_formatted_authorization_header: MagicMock
+    check_for_properly_formatted_basic_header: MagicMock
 
 
 def test_extract_api_key_from_header():
@@ -111,7 +111,7 @@ def test_extract_api_key_from_header():
         patch_root=PATCH_ROOT,
         mocks_to_patch=[
             "get_authorization_header",
-            "check_for_properly_formatted_authorization_header",
+            "check_for_properly_formatted_basic_header",
         ],
         return_values={
             "get_authorization_header": ["Basic", "QWxhZGRpbjpvcGVuIHNlc2FtZQ=="],
@@ -120,7 +120,7 @@ def test_extract_api_key_from_header():
 
     api_key = extract_api_key_from_header()
     mock.get_authorization_header.assert_called_once()
-    mock.check_for_properly_formatted_authorization_header.assert_called_once()
+    mock.check_for_properly_formatted_basic_header.assert_called_once()
     assert api_key == "QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
 
 
@@ -133,7 +133,7 @@ def mock_abort(monkeypatch):
 
 def test_check_for_properly_formatted_authorization_header_success(mock_abort):
     authorization_header = ["Basic", "QWxhZGRpbjpvcGVuIHNlc2FtZQ=="]
-    check_for_properly_formatted_authorization_header(authorization_header)
+    check_for_properly_formatted_basic_header(authorization_header)
     mock_abort.assert_not_called()
 
 
@@ -141,7 +141,7 @@ def test_check_for_properly_formatted_authorization_header_failure_not_basic(
     mock_abort,
 ):
     authorization_header = ["Bearer", "QWxhZGRpbjpvcGVuIHNlc2FtZQ=="]
-    check_for_properly_formatted_authorization_header(authorization_header)
+    check_for_properly_formatted_basic_header(authorization_header)
     mock_abort.assert_called_once_with(
         code=HTTPStatus.BAD_REQUEST,
         message="Please provide a properly formatted Basic token and API key",
@@ -152,7 +152,7 @@ def test_check_for_properly_formatted_authorization_header_failure_not_properly_
     mock_abort,
 ):
     authorization_header = ["Basic"]
-    check_for_properly_formatted_authorization_header(authorization_header)
+    check_for_properly_formatted_basic_header(authorization_header)
     mock_abort.assert_called_once_with(
         code=HTTPStatus.BAD_REQUEST,
         message="Please provide a properly formatted Basic token and API key",
