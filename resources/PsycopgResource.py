@@ -5,7 +5,6 @@ from typing import Callable, Any, Union, Tuple, Dict
 
 import psycopg
 from flask_restx import abort, Resource
-from psycopg.extras import DictCursor
 
 from config import config
 from database_client.database_client import DatabaseClient
@@ -55,7 +54,7 @@ class PsycopgResource(Resource):
     def __init__(self, *args, **kwargs):
         """
         Initializes the resource with a database connection.
-        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
+        - kwargs (dict): Keyword arguments containing 'psycopg_connection' for database connection.
         """
         super().__init__(*args, **kwargs)
 

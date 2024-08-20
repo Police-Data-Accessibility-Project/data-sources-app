@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 import psycopg
 import pytest
 from dotenv import load_dotenv
-from psycopg.rows import dict_rpw
+from psycopg.rows import dict_row
 
 from app import create_app
 from database_client.database_client import DatabaseClient
@@ -21,7 +21,7 @@ from tests.helper_scripts.test_data_generator import TestDataGenerator
 
 
 @pytest.fixture
-def dev_db_connection() -> psycopg.extensions.connection:
+def dev_db_connection() -> psycopg.connection:
     """
     Create reversible connection to dev database.
 
@@ -51,8 +51,8 @@ def dev_db_connection() -> psycopg.extensions.connection:
 
 @pytest.fixture
 def db_cursor(
-    dev_db_connection: psycopg.extensions.connection,
-) -> psycopg.extensions.cursor:
+    dev_db_connection: psycopg.connection,
+) -> psycopg.cursor:
     """
     Create cursor for reversible database operations.
 
@@ -72,15 +72,15 @@ def db_cursor(
 
 
 @pytest.fixture
-def dev_db_client(dev_db_connection: psycopg.extensions.connection) -> DatabaseClient:
+def dev_db_client(dev_db_connection: psycopg.connection) -> DatabaseClient:
     db_client = DatabaseClient()
     yield db_client
 
 
 @pytest.fixture
 def connection_with_test_data(
-    dev_db_connection: psycopg.extensions.connection,
-) -> psycopg.extensions.connection:
+    dev_db_connection: psycopg.connection,
+) -> psycopg.connection:
     """
     Insert test agencies and sources into test data.
 
@@ -98,7 +98,7 @@ def connection_with_test_data(
 
 @pytest.fixture
 def db_client_with_test_data(
-    connection_with_test_data: psycopg.extensions.connection,
+    connection_with_test_data: psycopg.connection,
 ) -> DatabaseClient:
     db_client = DatabaseClient()
     yield db_client
@@ -123,7 +123,7 @@ def client_with_mock_db(mocker, monkeypatch) -> ClientWithMockDB:
 
 @pytest.fixture
 def flask_client_with_db(
-    dev_db_connection: psycopg.extensions.connection, monkeypatch
+    dev_db_connection: psycopg.connection, monkeypatch
 ):
     """
     Creates a client with database connection

@@ -7,7 +7,7 @@ from flask import make_response
 
 from database_client.database_client import DatabaseClient
 from utilities.common import convert_dates_to_strings
-from psycopg.extensions import connection as PgConnection
+from psycopg import connection as PgConnection
 
 
 ARCHIVES_GET_COLUMNS = [

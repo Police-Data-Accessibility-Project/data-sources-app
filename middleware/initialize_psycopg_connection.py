@@ -1,7 +1,7 @@
 from asyncio import Lock
 
 import psycopg
-from psycopg.extensions import connection as PgConnection
+from psycopg import connection as PgConnection
 from middleware.util import get_env_variable
 
 

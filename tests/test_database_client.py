@@ -6,7 +6,6 @@ import uuid
 from datetime import datetime, timezone, timedelta
 
 import psycopg.errors
-from psycopg.extras import DictRow
 import pytest
 
 from database_client.database_client import DatabaseClient
@@ -335,7 +334,7 @@ def test_add_quick_search_log(live_database_client):
 
     assert len(rows) == 1
     row = rows[0]
-    assert type(row) == DictRow
+    assert type(row) == dict
     assert row["search"] == search
     assert row["location"] == location
     assert row["results"][0] == "SOURCE_UID_QSL"

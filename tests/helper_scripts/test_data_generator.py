@@ -7,7 +7,7 @@ class TestDataGenerator:
     A class for generating test data.
     """
 
-    def __init__(self, cursor: psycopg.extensions.cursor):
+    def __init__(self, cursor: psycopg.cursor):
         self.cursor = cursor
         self.savepoint = None
 

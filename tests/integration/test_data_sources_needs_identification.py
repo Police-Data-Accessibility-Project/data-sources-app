@@ -19,7 +19,7 @@ from tests.helper_scripts.helper_functions import (
 
 
 def test_data_sources_needs_identification(
-    flask_client_with_db, connection_with_test_data: psycopg.extensions.connection
+    flask_client_with_db, connection_with_test_data: psycopg.connection
 ):
     """
     Test that GET call to /data-sources-needs-identification endpoint retrieves data sources that need identification and correctly identifies specific sources by name

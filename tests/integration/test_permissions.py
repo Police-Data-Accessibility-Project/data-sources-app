@@ -1,7 +1,5 @@
 from typing import Union, Dict, List, Optional
 
-from psycopg.extras import DictCursor
-
 from database_client.database_client import DatabaseClient
 from middleware.enums import PermissionsEnum
 from tests.helper_scripts.helper_functions import (

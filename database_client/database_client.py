@@ -8,7 +8,7 @@ import uuid
 
 import psycopg
 from psycopg import sql
-from psycopg.rows import DictRow, dict_row
+from psycopg.rows import dict_row
 
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
@@ -119,7 +119,7 @@ class DatabaseClient:
 
         :param query: The SQL query to execute.
         :param vars: A tuple of variables to replace placeholders in the SQL query, defaults to None
-        :return: A list of DictRow objects when there are multiple results, a single DictRow object if there is one result, or None if there are no results.
+        :return: A list of dicts, or None if there are no results.
         """
         self.cursor.execute(query, vars)
         try:

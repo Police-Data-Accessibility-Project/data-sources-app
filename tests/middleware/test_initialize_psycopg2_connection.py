@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 import psycopg
-from psycopg.extensions import connection as PgConnection
+from psycopg import connection as PgConnection
 from middleware.initialize_psycopg_connection import (
     initialize_psycopg_connection,
     DatabaseInitializationError,
