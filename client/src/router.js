@@ -22,12 +22,17 @@ router.beforeEach(async (to, _, next) => {
 
 	// redirect to login page if not logged in and trying to access a restricted page
 	const auth = useAuthStore();
-	if (to.meta.auth && !auth.userId) {
-		auth.returnUrl = to.path;
-		router.push('/login');
-	}
 
-	next();
+	if (to.meta.auth && !auth.userId) {
+		auth.redirectTo = to.path;
+		next({ path: '/sign-in', replace: true });
+	} else {
+		next();
+	}
+});
+
+router.afterEach((to, from, failure) => {
+	if (failure) console.error('router failure', { failure, to, from });
 });
 
 export default router;

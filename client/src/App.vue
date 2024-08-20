@@ -3,9 +3,11 @@
 		<Header :logo-image-src="lockup" />
 		<ErrorBoundary component="main">
 			<router-view v-slot="{ Component }">
-				<transition name="route-fade" mode="out-in">
-					<component :is="Component" />
-				</transition>
+				<!-- TODO: Fix route transition. It works everywhere except navigating ANYWHERE from /sign-up, where it breaks the app 🤯 
+				---- I suspect this may be a bug in unplugin-vue-router. Opening an issue in their repo if I can create a small reproducible example. -->
+				<!-- <transition name="route-fade" mode="out-in"> -->
+				<component :is="Component" />
+				<!-- </transition> -->
 			</router-view>
 		</ErrorBoundary>
 		<Footer :logo-image-src="acronym" />
@@ -13,9 +15,8 @@
 </template>
 
 <script>
-import { Footer, Header } from 'pdap-design-system';
+import { ErrorBoundary, Footer, Header } from 'pdap-design-system';
 import AuthWrapper from './components/AuthWrapper.vue';
-import { ErrorBoundary } from 'pdap-design-system';
 import acronym from 'pdap-design-system/images/acronym.svg';
 import lockup from 'pdap-design-system/images/lockup.svg';
 
@@ -48,7 +49,7 @@ export default {
 }
 
 main {
-	min-height: calc(100vh - 80px - 500px);
+	min-height: calc(100vh - 80px - 400px);
 }
 
 .route-fade-enter-active,
