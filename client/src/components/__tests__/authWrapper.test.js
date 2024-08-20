@@ -48,8 +48,10 @@ describe('AuthWrapper', () => {
 		const auth = useAuthStore();
 		auth.$patch({
 			userId: 42,
-			accessToken: {
-				expires: NOW_PLUS_THIRTY,
+			tokens: {
+				accessToken: {
+					expires: NOW_PLUS_THIRTY,
+				},
 			},
 		});
 
@@ -62,8 +64,10 @@ describe('AuthWrapper', () => {
 		const auth = useAuthStore();
 		auth.$patch({
 			userId: 42,
-			accessToken: {
-				expires: NOW_MINUS_THIRTY,
+			tokens: {
+				accessToken: {
+					expires: NOW_MINUS_THIRTY,
+				},
 			},
 		});
 
