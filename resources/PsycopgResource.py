@@ -87,16 +87,8 @@ class PsycopgResource(Resource):
         Yields:
         - The database client.
         """
-        conn = self.get_connection()
-        sqlalchemy = SQLAlchemySession()
-        with conn.cursor(cursor_factory=DictCursor) as cursor:
-            try:
-                yield DatabaseClient(cursor, sqlalchemy.session)
-            except Exception as e:
-                conn.rollback()
-                sqlalchemy.rollback_and_close()
-                raise e
-            else:
-                sqlalchemy.commit_and_close()
-            finally:
-                conn.commit()
+        db_client = DatabaseClient()
+        try:
+            yield db_client
+        except Exception as e:
+            raise e

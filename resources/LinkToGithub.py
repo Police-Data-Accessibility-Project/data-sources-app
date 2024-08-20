@@ -2,11 +2,16 @@ from flask_restx import reqparse
 
 from config import limiter
 from middleware.callback_flask_sessions_logic import setup_callback_session
+from middleware.callback_primary_logic import LinkToGithubRequest
 from middleware.enums import CallbackFunctionsEnum
 from middleware.callback_oauth_logic import redirect_to_github_authorization
-from middleware.security import api_required
+from middleware.decorators import api_key_required
 from resources.PsycopgResource import PsycopgResource
 from utilities.namespace import create_namespace, AppNamespaces
+from utilities.populate_dto_with_request_content import (
+    SourceMappingEnum,
+    populate_dto_with_request_content,
+)
 
 namespace_link_to_github = create_namespace(AppNamespaces.AUTH)
 
@@ -29,7 +34,6 @@ link_to_github_parser.add_argument(
 @namespace_link_to_github.route("/link-to-github")
 class LinkToGithub(PsycopgResource):
 
-    @api_required
     @namespace_link_to_github.expect(link_to_github_parser)
     @namespace_link_to_github.doc(
         description="""
@@ -50,10 +54,13 @@ class LinkToGithub(PsycopgResource):
         Link the user to their Github account
         :return:
         """
-        args = link_to_github_parser.parse_args()
+        dto = populate_dto_with_request_content(
+            object_class=LinkToGithubRequest,
+            source=SourceMappingEnum.JSON,
+        )
         setup_callback_session(
             callback_functions_enum=CallbackFunctionsEnum.LINK_TO_GITHUB,
-            redirect_to=args["redirect_to"],
-            user_email=args["user_email"],
+            redirect_to=dto.redirect_to,
+            user_email=dto.user_email,
         )
         return redirect_to_github_authorization()

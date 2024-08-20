@@ -4,13 +4,17 @@ from flask import request
 from flask_restx import fields
 
 from middleware.reset_token_queries import set_user_password
-from middleware.user_queries import user_post_results
-from middleware.security import api_required
+from middleware.user_queries import user_post_results, UserRequest
+from middleware.decorators import api_key_required
 from typing import Dict, Any
 
 from resources.resource_helpers import add_api_key_header_arg, create_user_model
 from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
+from utilities.populate_dto_with_request_content import (
+    populate_dto_with_request_content,
+    SourceMappingEnum,
+)
 
 namespace_user = create_namespace()
 
@@ -42,17 +46,17 @@ class User(PsycopgResource):
         Returns:
         - A dictionary containing a success message or an error message if the operation fails.
         """
-        data = request.get_json()
-        email = data.get("email")
-        password = data.get("password")
+        dto = populate_dto_with_request_content(
+            object_class=UserRequest,
+            source=SourceMappingEnum.JSON,
+        )
         with self.setup_database_client() as db_client:
-            user_post_results(db_client, email, password)
+            user_post_results(db_client, dto)
 
         return {"message": "Successfully added user"}
 
     # Endpoint for updating a user's password
     @handle_exceptions
-    @api_required
     @namespace_user.expect(authorization_parser, user_model)
     @namespace_user.response(201, "Success: User password successfully updated")
     @namespace_user.response(500, "Error: Internal server error")

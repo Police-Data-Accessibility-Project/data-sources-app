@@ -4,6 +4,7 @@ import os
 from authlib.integrations.flask_client import OAuth
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_jwt_extended import JWTManager
 
 from middleware.util import get_env_variable
 
@@ -32,3 +33,5 @@ limiter = Limiter(
     default_limits=["100 per hour"],
     storage_uri="memory://",
 )
+
+jwt = JWTManager()

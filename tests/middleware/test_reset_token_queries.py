@@ -13,22 +13,25 @@ from middleware.reset_token_queries import (
     validate_token,
     InvalidTokenError,
 )
-from tests.helper_scripts.DymamicMagicMock import DynamicMagicMock
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
 class RequestResetPasswordMocks(DynamicMagicMock):
-    db_client: MagicMock
-    email: MagicMock
     user_check_email: MagicMock
     generate_api_key: MagicMock
-    token: MagicMock
     send_password_reset_link: MagicMock
     make_response: MagicMock
+
 
 def test_request_reset_password(monkeypatch):
     mock = RequestResetPasswordMocks(
         patch_root="middleware.reset_token_queries",
-        mocks_to_patch=["user_check_email", "generate_api_key", "send_password_reset_link", "make_response"],
+        mocks_to_patch=[
+            "user_check_email",
+            "generate_api_key",
+            "send_password_reset_link",
+            "make_response",
+        ],
     )
     mock.generate_api_key.return_value = mock.token
     request_reset_password(mock.db_client, mock.email)
@@ -47,41 +50,14 @@ def test_request_reset_password(monkeypatch):
 
 
 class ResetPasswordMocks(DynamicMagicMock):
-    db_client: MagicMock
-    email: MagicMock
-    token: MagicMock
     make_response: MagicMock
     set_user_password: MagicMock
     invalid_token_response: MagicMock
     validate_token: MagicMock
 
 
-def test_reset_password_happy_path(monkeypatch):
-    mock = ResetPasswordMocks(
-        patch_root="middleware.reset_token_queries",
-        mocks_to_patch=[
-            "validate_token",
-            "make_response",
-            "set_user_password",
-            "delete_reset_token",
-            "invalid_token_response",
-        ],
-    )
-    mock.validate_token.return_value = mock.email
-
-    reset_password(mock.db_client, mock.token, mock.password)
-
-    mock.invalid_token_response.assert_not_called()
-    mock.make_response.assert_called_once_with(
-        {"message": "Successfully updated password"}, HTTPStatus.OK
-    )
-    mock.delete_reset_token.assert_not_called()
-    mock.set_user_password.assert_called_once_with(
-        mock.db_client, mock.email, mock.password
-    )
-
-
-def test_reset_password_invalid_token(monkeypatch):
+@pytest.fixture
+def setup_reset_password_mocks():
     mock = ResetPasswordMocks(
         patch_root="middleware.reset_token_queries",
         mocks_to_patch=[
@@ -93,23 +69,38 @@ def test_reset_password_invalid_token(monkeypatch):
         ],
         return_values={"invalid_token_response": MagicMock()},
     )
-    # set_reset_password_monkeypatches(monkeypatch, mock)
+    mock.validate_token.return_value = mock.email
+    yield mock
+
+
+def test_reset_password_happy_path(setup_reset_password_mocks):
+    mock = setup_reset_password_mocks
+
+    reset_password(mock.db_client, mock.dto)
+
+    mock.invalid_token_response.assert_not_called()
+    mock.make_response.assert_called_once_with(
+        {"message": "Successfully updated password"}, HTTPStatus.OK
+    )
+    mock.set_user_password.assert_called_once_with(
+        mock.db_client, mock.email, mock.dto.token
+    )
+
+
+def test_reset_password_invalid_token(setup_reset_password_mocks):
+    mock = setup_reset_password_mocks
+
     mock.validate_token.side_effect = InvalidTokenError
 
-    mock_response = reset_password(mock.cursor, mock.token, mock.password)
+    mock_response = reset_password(mock.cursor, mock.dto)
 
     assert mock_response == mock.invalid_token_response.return_value
-
     mock.invalid_token_response.assert_called_once()
     mock.make_response.assert_not_called()
     mock.set_user_password.assert_not_called()
 
 
 class ValidateTokenMocks(DynamicMagicMock):
-    db_client: MagicMock
-    email: MagicMock
-    token: MagicMock
-    token_data: MagicMock
     token_is_expired: MagicMock
 
 
@@ -119,12 +110,17 @@ def setup_validate_token_mocks(monkeypatch) -> ValidateTokenMocks:
         patch_root="middleware.reset_token_queries",
         mocks_to_patch=["token_is_expired"],
     )
+    mock.token_data.email = mock.email
     return mock
+
+
+def assert_validate_token_precondition_calls(mock: ValidateTokenMocks):
+    mock.db_client.get_reset_token_info.assert_called_once_with(mock.token)
 
 
 def test_validate_token_happy_path(monkeypatch, setup_validate_token_mocks):
     mock = setup_validate_token_mocks
-    mock.token_data.email = mock.email
+
     mock.db_client.get_reset_token_info.return_value = mock.token_data
     mock.token_is_expired.return_value = False
 
@@ -132,7 +128,8 @@ def test_validate_token_happy_path(monkeypatch, setup_validate_token_mocks):
 
     assert email == mock.email
 
-    mock.db_client.get_reset_token_info.assert_called_once_with(mock.token)
+    assert_validate_token_precondition_calls(mock)
+
     mock.token_is_expired.assert_called_once_with(
         token_create_date=mock.token_data.create_date
     )
@@ -141,26 +138,29 @@ def test_validate_token_happy_path(monkeypatch, setup_validate_token_mocks):
 
 def test_validate_token_token_not_found(monkeypatch, setup_validate_token_mocks):
     mock = setup_validate_token_mocks
+
     mock.db_client.get_reset_token_info.return_value = None
 
     with pytest.raises(InvalidTokenError):
         email = validate_token(mock.db_client, mock.token)
 
-    mock.db_client.get_reset_token_info.assert_called_once_with(mock.token)
+    assert_validate_token_precondition_calls(mock)
+
     mock.token_is_expired.assert_not_called()
     mock.db_client.delete_reset_token.assert_not_called()
 
 
 def test_validate_token_token_is_expired(monkeypatch, setup_validate_token_mocks):
     mock = setup_validate_token_mocks
-    mock.token_data.email = mock.email
+
     mock.db_client.get_reset_token_info.return_value = mock.token_data
     mock.token_is_expired.return_value = True
 
     with pytest.raises(InvalidTokenError):
         email = validate_token(mock.db_client, mock.token)
 
-    mock.db_client.get_reset_token_info.assert_called_once_with(mock.token)
+    assert_validate_token_precondition_calls(mock)
+
     mock.token_is_expired.assert_called_once_with(
         token_create_date=mock.token_data.create_date
     )
@@ -187,47 +187,59 @@ def test_set_new_user_password_happy_path(monkeypatch):
     )
 
 
-def test_token_is_expired_true():
-    token_create_date = datetime.utcnow() - timedelta(seconds=1000)
+@pytest.mark.parametrize(
+    "token_age_seconds, expected_result",
+    [
+        (1000, True),  # Token is expired
+        (800, False),  # Token is not expired
+    ]
+)
+def test_token_is_expired(token_age_seconds, expected_result):
+    token_create_date = datetime.utcnow() - timedelta(seconds=token_age_seconds)
     expired = token_is_expired(token_create_date)
-    assert expired
-
-
-def test_token_is_expired_false():
-    token_create_date = datetime.utcnow() - timedelta(seconds=800)
-    expired = token_is_expired(token_create_date)
-    assert not expired
+    assert expired == expected_result
 
 
 class ResetTokenValidationMocks(DynamicMagicMock):
-    cursor: MagicMock
-    token: MagicMock
     validate_token: MagicMock
     make_response: MagicMock
     invalid_token_response: MagicMock
 
 
-def test_reset_token_validation_happy_path(monkeypatch):
-    mocks = ResetTokenValidationMocks(
+@pytest.fixture
+def setup_reset_token_validation_mocks():
+    mock = ResetTokenValidationMocks(
         patch_root="middleware.reset_token_queries",
         mocks_to_patch=["validate_token", "make_response", "invalid_token_response"],
     )
-    mocks.validate_token.return_value = mocks.email
+    mock.validate_token.return_value = mock.email
+    return mock
+
+
+def assert_reset_token_validation_precondition_calls(mock: ResetTokenValidationMocks):
+    mock.validate_token.assert_called_once_with(mock.cursor, mock.token)
+
+
+def test_reset_token_validation_happy_path(setup_reset_token_validation_mocks):
+    mocks = setup_reset_token_validation_mocks
+
     reset_token_validation(mocks.cursor, mocks.token)
 
-    mocks.validate_token.assert_called_once_with(mocks.cursor, mocks.token)
+    assert_reset_token_validation_precondition_calls(mocks)
+
     mocks.make_response.assert_called_once_with(
         {"message": "Token is valid"}, HTTPStatus.OK
     )
 
 
-def test_reset_token_validation_invalid_token(monkeypatch):
-    mocks = ResetTokenValidationMocks(
-        patch_root="middleware.reset_token_queries",
-        mocks_to_patch=["validate_token", "make_response", "invalid_token_response"],
-    )
+def test_reset_token_validation_invalid_token(setup_reset_token_validation_mocks):
+    mocks = setup_reset_token_validation_mocks
+
     mocks.validate_token.side_effect = InvalidTokenError
+
     reset_token_validation(mocks.cursor, mocks.token)
-    mocks.validate_token.assert_called_once_with(mocks.cursor, mocks.token)
+
+    assert_reset_token_validation_precondition_calls(mocks)
+
     mocks.make_response.assert_not_called()
     mocks.invalid_token_response.assert_called_once()

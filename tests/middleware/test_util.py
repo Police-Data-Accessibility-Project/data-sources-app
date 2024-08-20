@@ -1,35 +1,46 @@
 import os
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from middleware.util import get_env_variable
-
-GET_ENV_PATH = "middleware.util.get_env_variable"
-DOTENV_PATH = "middleware.util.dotenv_values"
-
-@patch(GET_ENV_PATH)
-@patch(DOTENV_PATH)
-def test_get_env_variable_valid(mock_dotenv_values, mock_os_getenv):
-    mock_dotenv_values.return_value = {"test_var": "test_value"}
-    mock_os_getenv.return_value = "test_value"
-
-    assert get_env_variable("test_var") == "test_value"
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
-@patch(GET_ENV_PATH)
-@patch(DOTENV_PATH)
-def test_get_env_variable_not_set(mock_dotenv_values, mock_os_getenv):
-    mock_dotenv_values.return_value = {}
-    mock_os_getenv.return_value = None
+class GetEnvVariableMocks(DynamicMagicMock):
+    dotenv_values: MagicMock
+    get_env_variable: MagicMock
 
-    with pytest.raises(ValueError):
-        get_env_variable("not_set_var")
+@pytest.mark.parametrize(
+    "dotenv_values, os_getenv, variable_name, expected_result, expected_exception",
+    [
+        (
+            {"test_var": "test_value"},
+            "test_value",
+            "test_var",
+            "test_value",
+            None,
+        ),  # Valid case
+        ({}, None, "not_set_var", None, ValueError),  # Variable not set
+        ({"empty_var": ""}, "", "empty_var", None, ValueError),  # Variable set to empty
+    ],
+)
+def test_get_env_variable(
+    dotenv_values,
+    os_getenv,
+    variable_name,
+    expected_result,
+    expected_exception,
+):
+    mock = GetEnvVariableMocks(
+        patch_root="middleware.util",
+        mocks_to_patch=["dotenv_values", "get_env_variable"],
+        return_values={
+            "get_env_variable": os_getenv,
+            "dotenv_values": dotenv_values,
+        },
+    )
 
-
-@patch(GET_ENV_PATH)
-@patch(DOTENV_PATH)
-def test_get_env_variable_empty(mock_dotenv_values, mock_os_getenv):
-    mock_dotenv_values.return_value = {"empty_var": ""}
-    mock_os_getenv.return_value = ""
-
-    with pytest.raises(ValueError):
-        get_env_variable("empty_var")
+    if expected_exception:
+        with pytest.raises(expected_exception):
+            get_env_variable(variable_name)
+    else:
+        assert get_env_variable(variable_name) == expected_result

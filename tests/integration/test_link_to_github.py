@@ -3,7 +3,7 @@ from http import HTTPStatus
 import psycopg2
 
 from middleware.enums import CallbackFunctionsEnum
-from tests.fixtures import dev_db_connection, client_with_db
+from tests.fixtures import dev_db_connection, flask_client_with_db
 from tests.helper_scripts.helper_functions import (
     check_response_status,
     create_test_user_api,
@@ -13,13 +13,14 @@ from tests.helper_scripts.helper_functions import (
     create_fake_github_user_info,
     assert_expected_pre_callback_response,
     create_test_user_setup,
+    run_and_validate_request,
 )
 
 
 def test_link_to_github(
-    client_with_db, dev_db_connection: psycopg2.extensions.connection, monkeypatch
+    flask_client_with_db, dev_db_connection: psycopg2.extensions.connection, monkeypatch
 ):
-    tus = create_test_user_setup(client_with_db)
+    tus = create_test_user_setup(flask_client_with_db)
     mock_setup_callback_session = patch_setup_callback_session(
         monkeypatch, "LinkToGithub"
     )
@@ -27,9 +28,9 @@ def test_link_to_github(
         "redirect_to": "test_page",
         "user_email": tus.user_info.email,
     }
-    response = client_with_db.post(
+    response = flask_client_with_db.post(
         "auth/link-to-github",
-        headers=tus.authorization_header,
+        headers=tus.api_authorization_header,
         json=mock_params,
     )
     assert_expected_pre_callback_response(response)
@@ -47,13 +48,16 @@ def test_link_to_github(
         callback_functions_enum=CallbackFunctionsEnum.LINK_TO_GITHUB,
         callback_params=mock_params,
     )
-    response = client_with_db.get("auth/callback")
-    check_response_status(response, HTTPStatus.OK)
+    run_and_validate_request(
+        flask_client=flask_client_with_db,
+        http_method="get",
+        endpoint="auth/callback",
+    )
+
     cursor = dev_db_connection.cursor()
     cursor.execute(
         "SELECT account_type, account_identifier FROM user_external_accounts WHERE email = %s",
         (tus.user_info.email,),
     )
     result = cursor.fetchone()
-    assert result[0] == "github"
-    assert result[1] == github_user_info.user_id
+    assert result == ("github", github_user_info.user_id)

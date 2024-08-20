@@ -1,9 +1,11 @@
+import functools
 from functools import wraps
+from typing import Callable, Optional
 
-from flask import redirect, url_for, make_response, session
+from flask import redirect, url_for, session
 
-from database_client.database_client import DatabaseClient
-from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
+from middleware.enums import PermissionsEnum
+from middleware.security import check_api_key, check_permissions
 
 
 def login_required(f):
@@ -16,27 +18,29 @@ def login_required(f):
     return decorated_function
 
 
-def permission_required(permission):
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            if "user_id" not in session:
-                return redirect(url_for("authorize"))
 
-            psycopg2_connection = initialize_psycopg2_connection()
-            db_client = DatabaseClient(psycopg2_connection.cursor())
-            user_id = session["user_id"]
-            user_permissions = db_client.get_user_permissions(user_id)
-            if user_permissions is None:
-                return (
-                    make_response(
-                        {"error": "You do not have permission to access this resource."}
-                    ),
-                    403,
-                )
-            if user_permissions.get(permission):
-                return f(*args, **kwargs)
+def api_key_required(func):
+    """
+    The api_key_required decorator can be added to protect a route so that only authenticated users can access the information.
+    To protect a route with this decorator, add @api_key_required on the line above a given route.
+    The request header for a protected route must include an "Authorization" key with the value formatted as "Basic [api_key]".
+    A user can get an API key by signing up and logging in.
+    """
 
-        return decorated_function
+    @wraps(func)
+    def decorator(*args, **kwargs):
+        check_api_key()
+        return func(*args, **kwargs)
+
+    return decorator
+
+def permissions_required(permissions: PermissionsEnum):
+    def decorator(func: Callable):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            check_permissions(permissions)
+            return func(*args, **kwargs)
+
+        return wrapper
 
     return decorator

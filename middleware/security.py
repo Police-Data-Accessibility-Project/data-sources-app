@@ -1,180 +1,84 @@
-import functools
-from flask import request, jsonify
-from flask_restx import abort
-import sqlalchemy
-
-from collections import namedtuple
-
 from http import HTTPStatus
 from flask import request
+from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask_restx import abort
 
 from database_client.database_client import DatabaseClient
-from middleware.custom_exceptions import AccessTokenNotFoundError
+from middleware.enums import PermissionsEnum
 from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
-from middleware.initialize_sqlalchemy_session import SQLAlchemySession
-from datetime import datetime as dt
-from middleware.login_queries import is_admin
-from typing import Tuple, Optional
+from typing import Optional
 
-APIKeyStatus = namedtuple("APIKeyStatus", ["is_valid", "is_expired"])
+from middleware.permissions_logic import PermissionsManager
 
 
-class NoAPIKeyError(Exception):
-    pass
-
-
-class ExpiredAPIKeyError(Exception):
-    pass
-
-
-class InvalidAPIKeyError(Exception):
-    pass
-
-
-class InvalidRoleError(Exception):
-    pass
-
-
-def validate_api_key(api_key: str, endpoint: str, method: str, session: sqlalchemy.orm.scoping.scoped_session):
-    """
-    Validates the API key and checks if the user has the required role to access a specific endpoint.
-
-    :param api_key: The API key provided by the user.
-    :param endpoint: The endpoint the user is trying to access.
-    :param method: The HTTP method of the request.
-    :param session: SQLAlchemy scoped session.
-    :return: A tuple (isValid, isExpired) indicating whether the API key is valid and not expired.
-    """
-
-    psycopg2_connection = initialize_psycopg2_connection()
-    db_client = DatabaseClient(psycopg2_connection.cursor(), session)
-    role = get_role(api_key, db_client)
-    if role:
-        validate_role(role, endpoint, method)
-        return
-
-    try:
-        session_token_results = get_session_token(api_key, db_client)
-
-        if session_token_results.expiration_date < dt.utcnow():
-            raise ExpiredAPIKeyError("Session token expired")
-
-        if is_admin(db_client, session_token_results.email):
-            validate_role(role="admin", endpoint=endpoint, method=method)
-            return
-
-    except SessionTokenNotFoundError:
-        db_client.delete_expired_access_tokens()
-        try:
-            db_client.get_access_token(api_key)
-            role = "user"
-        except AccessTokenNotFoundError:
-            raise InvalidAPIKeyError("API Key not found")
-
-    validate_role(role, endpoint, method)
-
-
-def validate_role(role: str, endpoint: str, method: str):
-    # Compare the API key in the user table to the API in the request header and proceed
-    # through the protected route if it's valid. Otherwise, compare_digest will return False
-    # and api_required will send an error message to provide a valid API key
-    if is_admin_only_action(endpoint, method) and role != "admin":
-        raise InvalidRoleError("You do not have permission to access this endpoint")
-
-
-def get_role(api_key, db_client: DatabaseClient) -> Optional[str]:
-    role = db_client.get_role_by_api_key(api_key)
-    if role is None:
-        return None
-    if role.role is None:
-        return "user"
-    return role.role
-
-
-SessionTokenResults = namedtuple("SessionTokenResults", ["email", "expiration_date"])
-
-
-class SessionTokenNotFoundError(Exception):
-    pass
-
-
-def get_session_token(api_key, db_client: DatabaseClient) -> SessionTokenResults:
-    session_token_results = db_client.get_session_token_info(api_key)
-    if not session_token_results:
-        raise SessionTokenNotFoundError("Session token not found")
-    return session_token_results
-
-
-def is_admin_only_action(endpoint, method):
-    return endpoint in ("datasources", "datasourcebyid") and method in ("PUT", "POST")
-
-
-class InvalidHeader(Exception):
-
-    def __init__(self, message: str):
-        super().__init__(message)
-
-
-def validate_header() -> str:
+def get_api_key_from_header() -> str:
     """
     Validates the API key and checks if the user has the required role to access a specific endpoint.
     :return:
     """
-    if not request.headers or "Authorization" not in request.headers:
-        raise InvalidHeader(
-            "Please provide an 'Authorization' key in the request header"
-        )
-
-    authorization_header = request.headers["Authorization"].split(" ")
-    if len(authorization_header) < 2 or authorization_header[0] != "Bearer":
-        raise InvalidHeader(
-            "Please provide a properly formatted bearer token and API key"
-        )
-
-    api_key = authorization_header[1]
-    if api_key == "undefined":
-        raise InvalidHeader("Please provide an API key")
+    check_for_header_with_authorization_key()
+    api_key = extract_api_key_from_header()
     return api_key
 
 
-def validate_token() -> Optional[Tuple[dict, int]]:
+def extract_api_key_from_header():
+    authorization_header = get_authorization_header()
+    check_for_properly_formatted_authorization_header(authorization_header)
+    api_key = authorization_header[1]
+    return api_key
+
+
+def get_authorization_header() -> list[str]:
+    authorization_header = request.headers["Authorization"].split(" ")
+    return authorization_header
+
+
+def check_for_properly_formatted_authorization_header(authorization_header):
+    if len(authorization_header) != 2 or authorization_header[0] != "Basic":
+        abort(
+            code=HTTPStatus.BAD_REQUEST,
+            message="Please provide a properly formatted Basic token and API key"
+        )
+
+
+def check_for_header_with_authorization_key():
+    if not request.headers or "Authorization" not in request.headers:
+        abort(
+            code=HTTPStatus.BAD_REQUEST,
+            message="Please provide an 'Authorization' key in the request header",
+        )
+
+
+def get_db_client() -> DatabaseClient:
+    return DatabaseClient()
+
+
+def check_api_key_associated_with_user(db_client: DatabaseClient, api_key: str) -> None:
+    user_id = db_client.get_user_by_api_key(api_key)
+    if user_id is None:
+        abort(HTTPStatus.UNAUTHORIZED, "Invalid API Key")
+
+def check_api_key() -> None:
+    api_key = get_api_key_from_header()
+    db_client = get_db_client()
+    check_api_key_associated_with_user(db_client, api_key)
+
+def check_permissions(
+    permission: PermissionsEnum
+) -> None:
     """
-    Validates the API key and checks if the user has the required role to access a specific endpoint.
-    :return:
+    Checks if a user has a permission.
+    Must be within flask context.
+
+    :param permission: Permission to check.
+    :return: True if the user has the permission, False otherwise.
     """
-    try:
-        api_key = validate_header()
-    except InvalidHeader as e:
-        return {"message": str(e)}, HTTPStatus.BAD_REQUEST.value
-
-    sqlalchemy = SQLAlchemySession()
-    # Check if API key is correct and valid
-    try:
-        validate_api_key(api_key, request.endpoint, request.method, sqlalchemy.session)
-    except ExpiredAPIKeyError as e:
-        sqlalchemy.close()
-        return {"message": str(e)}, HTTPStatus.UNAUTHORIZED.value
-    except InvalidRoleError as e:
-        sqlalchemy.close()
-        return {"message": str(e)}, HTTPStatus.FORBIDDEN.value
-
-    sqlalchemy.close()
-    return None
-
-
-def api_required(func):
-    """
-    The api_required decorator can be added to protect a route so that only authenticated users can access the information
-    To protect a route with this decorator, add @api_required on the line above a given route
-    The request header for a protected route must include an "Authorization" key with the value formatted as "Bearer [api_key]"
-    A user can get an API key by signing up and logging in (see User.py)
-    """
-
-    @functools.wraps(func)
-    def decorator(*args, **kwargs):
-        validation_error = validate_token()
-        if validation_error:
-            return validation_error
-        return func(*args, **kwargs)
-
-    return decorator
+    verify_jwt_in_request()
+    user_email = get_jwt_identity()
+    db_client = get_db_client()
+    pm = PermissionsManager(db_client=db_client, user_email=user_email)
+    if not pm.has_permission(permission):
+        abort(
+            code=HTTPStatus.FORBIDDEN,
+            message="You do not have permission to access this endpoint"
+        )
