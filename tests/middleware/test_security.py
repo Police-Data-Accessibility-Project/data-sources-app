@@ -26,32 +26,6 @@ from tests.helper_scripts.common_mocks_and_patches import patch_abort
 
 PATCH_ROOT = "middleware.security"
 
-
-@pytest.fixture
-def app() -> Flask:
-    app = Flask(__name__)
-    return app
-
-
-@pytest.fixture
-def client(app: Flask):
-    return app.test_client()
-
-
-@pytest.fixture
-def mock_request_headers(monkeypatch):
-    mock = MagicMock()
-    monkeypatch.setattr(flask, "request", mock)
-    return mock
-
-
-@pytest.fixture
-def mock_validate_api_key(monkeypatch):
-    mock = MagicMock()
-    monkeypatch.setattr(security, "validate_api_key", mock)
-    return mock
-
-
 @pytest.fixture
 def dummy_route():
     @api_key_required
@@ -70,14 +44,10 @@ def mock_abort(monkeypatch) -> MagicMock:
 
 
 class CheckPermissionsMocks(DynamicMagicMock):
-    user_email: MagicMock
-    db_client: MagicMock
     get_jwt_identity: MagicMock
     verify_jwt_in_request: MagicMock
     get_db_client: MagicMock
     PermissionsManager: MagicMock
-    permissions_manager_instance: MagicMock
-    permission: MagicMock
     abort: MagicMock
 
 
@@ -85,13 +55,6 @@ class CheckPermissionsMocks(DynamicMagicMock):
 def check_permissions_mocks():
     mock = CheckPermissionsMocks(
         patch_root=PATCH_ROOT,
-        mocks_to_patch=[
-            "get_jwt_identity",
-            "get_db_client",
-            "PermissionsManager",
-            "abort",
-            "verify_jwt_in_request",
-        ],
     )
     mock.get_jwt_identity.return_value = mock.user_email
     mock.get_db_client.return_value = mock.db_client
@@ -133,21 +96,8 @@ def test_check_permissions_user_does_not_have_permission(check_permissions_mocks
     )
 
 
-class CheckUserPermissionMocks(DynamicMagicMock):
-    db_client: MagicMock
-    user_id: MagicMock
-    permission: MagicMock
-    abort: MagicMock
-
-
-class GetUserIdFromDatabaseMocks(DynamicMagicMock):
-    db_client: MagicMock
-    user_id: MagicMock
-    api_key: MagicMock
-
-
 def test_check_api_key_associated_with_user_happy_path(mock_abort):
-    mock = GetUserIdFromDatabaseMocks()
+    mock = MagicMock()
     mock.db_client.get_user_by_api_key.return_value = mock.user_id
     check_api_key_associated_with_user(mock.db_client, mock.api_key)
     mock.db_client.get_user_by_api_key.assert_called_once_with(mock.api_key)
@@ -155,7 +105,7 @@ def test_check_api_key_associated_with_user_happy_path(mock_abort):
 
 
 def test_check_api_key_associated_with_user_invalid_api_key(mock_abort):
-    mock = GetUserIdFromDatabaseMocks()
+    mock = MagicMock()
     mock.db_client.get_user_by_api_key.return_value = None
     check_api_key_associated_with_user(mock.db_client, mock.api_key)
     mock.db_client.get_user_by_api_key.assert_called_once_with(mock.api_key)
@@ -171,11 +121,6 @@ class CheckApiKeyMocks(DynamicMagicMock):
 def test_check_api_key_happy_path():
     mock = CheckApiKeyMocks(
         patch_root=PATCH_ROOT,
-        mocks_to_patch=[
-            "check_api_key_associated_with_user",
-            "get_db_client",
-            "get_api_key_from_request_header",
-        ],
     )
     mock.get_api_key_from_request_header.return_value = mock.api_key
     mock.get_db_client.return_value = mock.db_client
@@ -199,11 +144,6 @@ def test_check_api_key_happy_path():
 def test_check_api_key_invalid_api_key(exception, mock_abort):
     mock = CheckApiKeyMocks(
         patch_root=PATCH_ROOT,
-        mocks_to_patch=[
-            "check_api_key_associated_with_user",
-            "get_db_client",
-            "get_api_key_from_request_header",
-        ],
     )
     mock.get_api_key_from_request_header.side_effect = exception
 

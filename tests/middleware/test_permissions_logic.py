@@ -14,17 +14,14 @@ from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
 class PermissionsManagerMocks(DynamicMagicMock):
-    db_client: MagicMock
     make_response: MagicMock
     abort: MagicMock
-    user_email: MagicMock
 
 
 @pytest.fixture
 def mock():
     mock = PermissionsManagerMocks(
         patch_root="middleware.permissions_logic",
-        mocks_to_patch=["make_response", "abort"],
     )
     mock.db_client.get_user_permissions.return_value = [
         PermissionsEnum.READ_ALL_USER_INFO
@@ -168,7 +165,6 @@ class UpdatePermissionsWrapperMock(DynamicMagicMock):
 def test_update_permissions_wrapper():
     mock = UpdatePermissionsWrapperMock(
         patch_root="middleware.permissions_logic",
-        mocks_to_patch=["get_valid_enum_value", "manage_user_permissions"],
     )
     mock.get_valid_enum_value.side_effect = [
         mock.action_enum,

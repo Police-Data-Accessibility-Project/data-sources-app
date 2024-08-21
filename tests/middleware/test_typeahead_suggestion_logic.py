@@ -63,17 +63,12 @@ def test_get_typeahead_dict_results():
     assert get_typeahead_dict_results(mock_suggestions) == expected_results
 
 class GetTypeaheadSuggestionsMocks(DynamicMagicMock):
-    db_client: MagicMock
-    query: MagicMock
     get_typeahead_dict_results: MagicMock
     make_response: MagicMock
-    dict_results: MagicMock
 
 def test_get_typeahead_suggestions_wrapper(monkeypatch):
     mock = GetTypeaheadSuggestionsMocks(
         patch_root="middleware.typeahead_suggestion_logic",
-        mocks_to_patch=[
-            "get_typeahead_dict_results", "make_response"],
     )
 
     get_typeahead_suggestions_wrapper(mock.db_client, mock.query)

@@ -6,16 +6,12 @@ from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
 class SearchWrapperMocks(DynamicMagicMock):
-    db_client: MagicMock
-    dto: MagicMock
     make_response: MagicMock
-    search_results: MagicMock
     dictify_namedtuple: MagicMock
 
 def test_search_wrapper(monkeypatch):
     mock = SearchWrapperMocks(
         patch_root="middleware.search_logic",
-        mocks_to_patch=["make_response", "dictify_namedtuple"],
     )
     mock.db_client.search_with_location_and_record_type.return_value = mock.search_results
 

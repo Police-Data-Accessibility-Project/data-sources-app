@@ -59,7 +59,6 @@ def test_pre_callback_resources(
 ):
     mock = TestPreCallbackResources(
         patch_root=f"resources.{resource_module_name}",
-        mocks_to_patch=["setup_callback_session", "redirect_to_github_authorization"],
         return_values={"redirect_to_github_authorization": TEST_RESPONSE},
     )
 

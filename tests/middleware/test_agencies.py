@@ -11,9 +11,6 @@ from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
 class AgenciesMocks(DynamicMagicMock):
-    db_client: MagicMock
-    page: MagicMock
-    results: MagicMock
     process_results: MagicMock
     get_agencies_matches: MagicMock
     make_response: MagicMock
@@ -22,7 +19,6 @@ class AgenciesMocks(DynamicMagicMock):
 def agencies_mocks():
     return AgenciesMocks(
         patch_root="middleware.agencies",
-        mocks_to_patch=["get_agencies_matches", "make_response", "process_results"],
     )
 
 

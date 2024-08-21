@@ -26,12 +26,6 @@ class RequestResetPasswordMocks(DynamicMagicMock):
 def test_request_reset_password(monkeypatch):
     mock = RequestResetPasswordMocks(
         patch_root="middleware.reset_token_queries",
-        mocks_to_patch=[
-            "user_check_email",
-            "generate_api_key",
-            "send_password_reset_link",
-            "make_response",
-        ],
     )
     mock.generate_api_key.return_value = mock.token
     request_reset_password(mock.db_client, mock.email)
@@ -60,13 +54,6 @@ class ResetPasswordMocks(DynamicMagicMock):
 def setup_reset_password_mocks():
     mock = ResetPasswordMocks(
         patch_root="middleware.reset_token_queries",
-        mocks_to_patch=[
-            "validate_token",
-            "make_response",
-            "set_user_password",
-            "delete_reset_token",
-            "invalid_token_response",
-        ],
         return_values={"invalid_token_response": MagicMock()},
     )
     mock.validate_token.return_value = mock.email
@@ -108,7 +95,6 @@ class ValidateTokenMocks(DynamicMagicMock):
 def setup_validate_token_mocks(monkeypatch) -> ValidateTokenMocks:
     mock = ValidateTokenMocks(
         patch_root="middleware.reset_token_queries",
-        mocks_to_patch=["token_is_expired"],
     )
     mock.token_data.email = mock.email
     return mock
@@ -210,7 +196,6 @@ class ResetTokenValidationMocks(DynamicMagicMock):
 def setup_reset_token_validation_mocks():
     mock = ResetTokenValidationMocks(
         patch_root="middleware.reset_token_queries",
-        mocks_to_patch=["validate_token", "make_response", "invalid_token_response"],
     )
     mock.validate_token.return_value = mock.email
     return mock

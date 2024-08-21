@@ -74,10 +74,6 @@ class GetAPIKeyFromRequestHeaderMock(DynamicMagicMock):
 def test_get_api_key_from_request_header():
     mock = GetAPIKeyFromRequestHeaderMock(
         patch_root="middleware.access_logic",
-        mocks_to_patch=[
-            "get_authorization_header_from_request",
-            "get_api_key_from_authorization_header",
-        ],
     )
 
     result = get_api_key_from_request_header()
@@ -101,13 +97,6 @@ class GetAccessInfoFromJWTOrAPIKeyMocks(DynamicMagicMock):
 def get_access_info_mocks():
     return GetAccessInfoFromJWTOrAPIKeyMocks(
         patch_root="middleware.access_logic",
-        mocks_to_patch=[
-            "get_user_email_from_api_key",
-            "get_jwt_identity",
-            "AccessInfo",
-            "get_user_permissions",
-            "abort",
-        ],
     )
 
 
