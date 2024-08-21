@@ -78,6 +78,7 @@ def test_try_logging_in_unsuccessful():
     mock.unauthorized_response.assert_called_once()
     mock.login_response.assert_not_called()
 
+
 def test_convert_data_source_matches():
     """
     Convert_data_source_matches should output a list of
@@ -105,10 +106,10 @@ def test_convert_data_source_matches():
         )
 
 
-
 class DataSourceByIDWrapperMocks(DynamicMagicMock):
     data_source_by_id_query: MagicMock
     make_response: MagicMock
+
 
 @pytest.fixture
 def data_source_by_id_wrapper_mocks(monkeypatch):
@@ -141,4 +142,3 @@ def test_data_source_by_id_wrapper_data_not_found(data_source_by_id_wrapper_mock
     assert_data_source_by_id_wrapper_calls(
         mock, expected_json={"message": "Data source not found."}
     )
-

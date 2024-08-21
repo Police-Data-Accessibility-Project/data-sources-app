@@ -80,6 +80,7 @@ def test_check_api_key_valid_authorization_header(
         code=HTTPStatus.UNAUTHORIZED, message=INVALID_API_KEY_MESSAGE
     )
 
+
 def test_check_api_key_api_key_not_associated_with_user(monkeypatch, mock_abort):
 
     patch_request_headers(

@@ -140,11 +140,8 @@ class DatabaseClient:
         """
         return self._create_entry_in_table(
             table_name="users",
-            column_value_mappings={
-                "email": email,
-                "password_digest": password_digest
-            },
-            column_to_return="id"
+            column_value_mappings={"email": email, "password_digest": password_digest},
+            column_to_return="id",
         )
 
     def get_user_id(self, email: str) -> Optional[int]:
@@ -154,9 +151,7 @@ class DatabaseClient:
         :return:
         """
         results = self._select_from_single_relation(
-            relation_name="users",
-            columns=["id"],
-            where_mappings={"email": email}
+            relation_name="users", columns=["id"], where_mappings={"email": email}
         )
         if len(results) == 0:
             return None
@@ -173,7 +168,7 @@ class DatabaseClient:
             table_name="users",
             entry_id=email,
             column_edit_mappings={"password_digest": password_digest},
-            id_column_name="email"
+            id_column_name="email",
         )
 
     ResetTokenInfo = namedtuple("ResetTokenInfo", ["id", "email", "create_date"])
@@ -188,7 +183,7 @@ class DatabaseClient:
         results = self._select_from_single_relation(
             relation_name="reset_tokens",
             columns=["id", "email", "create_date"],
-            where_mappings={"token": token}
+            where_mappings={"token": token},
         )
         if len(results) == 0:
             return None
@@ -204,7 +199,7 @@ class DatabaseClient:
         """
         self._create_entry_in_table(
             table_name="reset_tokens",
-            column_value_mappings={"email": email, "token": token}
+            column_value_mappings={"email": email, "token": token},
         )
 
     @cursor_manager
@@ -316,9 +311,8 @@ class DatabaseClient:
             table_name="data_sources",
             entry_id=data_source_id,
             column_edit_mappings=data,
-            id_column_name="airtable_uid"
+            id_column_name="airtable_uid",
         )
-
 
     MapInfo = namedtuple(
         "MapInfo",
@@ -402,7 +396,7 @@ class DatabaseClient:
             "agency_created",
             "county_airtable_uid",
             "defunct_year",
-            "airtable_uid"
+            "airtable_uid",
         ]
         results = self._select_from_single_relation(
             relation_name="agencies",
@@ -478,9 +472,7 @@ class DatabaseClient:
 
         return results
 
-    def update_url_status_to_broken(
-        self, id: str, broken_as_of: str
-    ) -> None:
+    def update_url_status_to_broken(self, id: str, broken_as_of: str) -> None:
         """
         Updates the data_sources table setting the url_status to 'broken' for a given id.
 
@@ -506,7 +498,7 @@ class DatabaseClient:
             table_name="data_sources_archive_info",
             entry_id=id,
             column_edit_mappings={"last_cached": last_cached},
-            id_column_name="airtable_uid"
+            id_column_name="airtable_uid",
         )
 
     QuickSearchResult = namedtuple(
@@ -744,7 +736,7 @@ class DatabaseClient:
                 "user_id": user_id,
                 "account_type": external_account_type.value,
                 "account_identifier": external_account_id,
-            }
+            },
         )
 
     @cursor_manager
@@ -866,7 +858,7 @@ class DatabaseClient:
         self,
         table_name: str,
         column_value_mappings: dict[str, str],
-        column_to_return: Optional[str] = None
+        column_to_return: Optional[str] = None,
     ):
         """
         Creates a new entry in a table in the database, using the provided column value mappings
@@ -904,27 +896,24 @@ class DatabaseClient:
         return self._create_entry_in_table(
             table_name="data_requests",
             column_value_mappings=data_request_info,
-            column_to_return="id"
+            column_to_return="id",
         )
 
-    def get_data_requests_for_creator(self, creator_user_id: str, columns: List[str]) -> List[str]:
+    def get_data_requests_for_creator(
+        self, creator_user_id: str, columns: List[str]
+    ) -> List[str]:
         return self._select_from_single_relation(
             relation_name="data_requests",
             columns=columns,
-            where_mappings={"creator_user_id": creator_user_id}
+            where_mappings={"creator_user_id": creator_user_id},
         )
 
     def user_is_creator_of_data_request(
-            self,
-            user_id: int,
-            data_request_id: int
+        self, user_id: int, data_request_id: int
     ) -> bool:
         results = self._select_from_single_relation(
             relation_name="data_requests",
             columns=["id"],
-            where_mappings={
-                "creator_user_id": user_id,
-                "id": data_request_id
-            }
+            where_mappings={"creator_user_id": user_id, "id": data_request_id},
         )
         return len(results) == 1

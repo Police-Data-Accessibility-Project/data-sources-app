@@ -25,7 +25,7 @@ def dummy_api_key_required_route():
 def test_api_key_required(dummy_api_key_required_route, monkeypatch):
     # Mock the check_api_key function
     mock_check_api_key = MagicMock()
-    monkeypatch.setattr('middleware.decorators.check_api_key', mock_check_api_key)
+    monkeypatch.setattr("middleware.decorators.check_api_key", mock_check_api_key)
 
     # Create a simple function to decorate
     @api_key_required
@@ -40,6 +40,7 @@ def test_api_key_required(dummy_api_key_required_route, monkeypatch):
 
     # Assert that the decorated function returns the correct value
     assert result == "Protected Resource"
+
 
 @pytest.fixture
 def dummy_permissions_required_route():
@@ -60,16 +61,17 @@ def test_permissions_required(dummy_permissions_required_route, monkeypatch):
     mock_check_permissions.assert_called_once_with(PermissionsEnum.READ_ALL_USER_INFO)
 
 
-
 def test_api_key_or_jwt_required(monkeypatch):
     mock_get_access_info = MagicMock()
-    monkeypatch.setattr("middleware.decorators.get_access_info_from_jwt_or_api_key", mock_get_access_info)
+    monkeypatch.setattr(
+        "middleware.decorators.get_access_info_from_jwt_or_api_key",
+        mock_get_access_info,
+    )
     mock_get_access_info.return_value = AccessInfo(
         user_email="test_user",
         access_type=AccessTypeEnum.JWT,
         permissions=[PermissionsEnum.READ_ALL_USER_INFO, PermissionsEnum.DB_WRITE],
     )
-
 
     # Create a simple function to decorate
     @api_key_or_jwt_required

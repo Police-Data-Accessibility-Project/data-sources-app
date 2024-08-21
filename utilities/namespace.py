@@ -12,7 +12,9 @@ class AppNamespaces(Enum):
     DEV = NamespaceAttributes(path="dev", description="Developer Namespace")
 
 
-def create_namespace(namespace_attributes: AppNamespaces = AppNamespaces.DEFAULT) -> Namespace:
+def create_namespace(
+    namespace_attributes: AppNamespaces = AppNamespaces.DEFAULT,
+) -> Namespace:
     """
     Create a namespace to be used with Flask_restx resources.
     Each namespace can contain the route definitions and other documentation about the resource

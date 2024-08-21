@@ -37,9 +37,7 @@ def populate_dto_with_request_content(
     """
     # Instantiate object
     if source is not None and attribute_source_mapping is not None:
-        raise MutuallyExclusiveArgumentError(
-            "source", "attribute_source_mapping"
-        )
+        raise MutuallyExclusiveArgumentError("source", "attribute_source_mapping")
     if source is not None:
         values = _get_class_attribute_values_from_request(object_class, source)
     elif attribute_source_mapping is not None:
@@ -47,9 +45,7 @@ def populate_dto_with_request_content(
             object_class, attribute_source_mapping
         )
     else:
-        raise MissingRequiredArgumentError(
-            "source", "attribute_source_mapping"
-        )
+        raise MissingRequiredArgumentError("source", "attribute_source_mapping")
 
     instantiated_object = object_class(**values)
     _apply_transformation_functions(instantiated_object, transformation_functions)
@@ -59,24 +55,25 @@ def populate_dto_with_request_content(
 
 class AttributeNotInClassError(Exception):
 
-    def __init__(
-            self,
-            attribute: str,
-            class_name: str
-    ):
+    def __init__(self, attribute: str, class_name: str):
         super().__init__(
             f"The attribute '{attribute}' is not part of the class '{class_name}'"
         )
 
+
 class MutuallyExclusiveArgumentError(ValueError):
     """Raised when mutually exclusive arguments are passed to a function."""
+
     def __init__(self, arg1, arg2):
         super().__init__(f"Arguments '{arg1}' and '{arg2}' cannot be used together.")
 
+
 class MissingRequiredArgumentError(ValueError):
     """Raised when neither of the required mutually exclusive arguments are passed to a function."""
+
     def __init__(self, arg1, arg2):
         super().__init__(f"One of '{arg1}' or '{arg2}' must be provided.")
+
 
 def _apply_transformation_functions(
     instantiated_object: T,
@@ -95,7 +92,9 @@ def _apply_transformation_functions(
         try:
             value = getattr(instantiated_object, attribute)
         except AttributeError:
-            raise AttributeNotInClassError(attribute, instantiated_object.__class__.__name__)
+            raise AttributeNotInClassError(
+                attribute, instantiated_object.__class__.__name__
+            )
         if value is not None and callable(transform):
             value = transform(value)
         setattr(instantiated_object, attribute, value)

@@ -7,10 +7,12 @@ from typing import Dict
 from database_client.database_client import DatabaseClient
 from middleware.custom_exceptions import UserNotFoundError
 
+
 @dataclass
 class UserRequest:
     email: str
     password: str
+
 
 def user_check_email(db_client: DatabaseClient, email: str) -> None:
     """

@@ -12,7 +12,7 @@ from tests.fixtures import (
     client_with_mock_db,
     bypass_api_key_required,
     bypass_permissions_required,
-    bypass_jwt_required
+    bypass_jwt_required,
 )
 from http import HTTPStatus
 
@@ -70,7 +70,12 @@ MOCK_EMAIL_PASSWORD = {
             ),
         ),
         ("/archives", "GET", "Archives.archives_get_query", {}),
-        (f"auth{API_KEY_ROUTE}", "POST", "ApiKey.get_api_key_for_user", MOCK_EMAIL_PASSWORD),
+        (
+            f"auth{API_KEY_ROUTE}",
+            "POST",
+            "ApiKey.get_api_key_for_user",
+            MOCK_EMAIL_PASSWORD,
+        ),
         ("auth/callback", "GET", "Callback.callback_outer_wrapper", {}),
         ("/login", "POST", "Login.try_logging_in", MOCK_EMAIL_PASSWORD),
         ("/refresh-session", "POST", "RefreshSession.refresh_session", {}),
@@ -129,7 +134,7 @@ def test_common_format_resources(
     monkeypatch,
     bypass_api_key_required,
     bypass_permissions_required,
-    bypass_jwt_required
+    bypass_jwt_required,
 ):
 
     monkeypatch.setattr(

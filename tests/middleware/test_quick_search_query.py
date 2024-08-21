@@ -90,9 +90,7 @@ def test_quick_search_query_wrapper_happy_path(mock_quick_search_query_wrapper):
 
     call_and_validate_quick_search_query_wrapper(mock)
 
-    mock.make_response.assert_called_with(
-        [{"record_type": "Type A"}], HTTPStatus.OK
-    )
+    mock.make_response.assert_called_with([{"record_type": "Type A"}], HTTPStatus.OK)
 
 
 def test_quick_search_query_wrapper_exception(mock_quick_search_query_wrapper):

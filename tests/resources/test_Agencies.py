@@ -22,4 +22,3 @@ def test_get_agencies(client_with_mock_db, monkeypatch, bypass_api_key_required)
         expected_json_content={"count": 3, "data": None},
         expected_response_status=HTTPStatus.IM_A_TEAPOT,
     )
-

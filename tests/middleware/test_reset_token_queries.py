@@ -178,7 +178,7 @@ def test_set_new_user_password_happy_path(monkeypatch):
     [
         (1000, True),  # Token is expired
         (800, False),  # Token is not expired
-    ]
+    ],
 )
 def test_token_is_expired(token_age_seconds, expected_result):
     token_create_date = datetime.utcnow() - timedelta(seconds=token_age_seconds)

@@ -18,6 +18,7 @@ def login_required(f):
 
     return decorated_function
 
+
 def api_key_or_jwt_required(f):
     def decorator(*args, **kwargs):
 
@@ -46,6 +47,7 @@ def api_key_required(func):
         return func(*args, **kwargs)
 
     return decorator
+
 
 def permissions_required(permissions: PermissionsEnum):
     def decorator(func: Callable):

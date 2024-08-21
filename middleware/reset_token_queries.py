@@ -17,6 +17,7 @@ from middleware.webhook_logic import send_password_reset_link
 class InvalidTokenError(Exception):
     pass
 
+
 @dataclass
 class RequestResetPasswordRequest:
     email: str
@@ -43,7 +44,9 @@ def request_reset_password(db_client: DatabaseClient, email) -> Response:
     )
 
 
-def reset_password(db_client: DatabaseClient, dto: RequestResetPasswordRequest) -> Response:
+def reset_password(
+    db_client: DatabaseClient, dto: RequestResetPasswordRequest
+) -> Response:
     """
     Resets a user's password if the provided token is valid and not expired.
     :param db_client:

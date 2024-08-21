@@ -9,6 +9,7 @@ class GetEnvVariableMocks(DynamicMagicMock):
     dotenv_values: MagicMock
     get_env_variable: MagicMock
 
+
 @pytest.mark.parametrize(
     "dotenv_values, os_getenv, variable_name, expected_result, expected_exception",
     [

@@ -61,10 +61,7 @@ def test_add_user_permission_success(mock):
     mock.db_client.add_user_permission.assert_called_with(
         mock.user_email, PermissionsEnum.DB_WRITE
     )
-    mock.make_response.assert_called_with(
-        "Permission added",
-        HTTPStatus.OK
-    )
+    mock.make_response.assert_called_with("Permission added", HTTPStatus.OK)
 
 
 def test_add_user_permission_conflict(mock):
@@ -166,22 +163,17 @@ def test_update_permissions_wrapper():
     mock = UpdatePermissionsWrapperMock(
         patch_root="middleware.permissions_logic",
     )
-    mock.get_valid_enum_value.side_effect = [
-        mock.action_enum,
-        mock.permission_enum
-    ]
-    update_permissions_wrapper(
-        mock.db_client, mock.dto
-    )
+    mock.get_valid_enum_value.side_effect = [mock.action_enum, mock.permission_enum]
+    update_permissions_wrapper(mock.db_client, mock.dto)
     mock.get_valid_enum_value.assert_has_calls(
         [
             call(PermissionsActionEnum, mock.dto.action),
-            call(PermissionsEnum, mock.dto.permission)
+            call(PermissionsEnum, mock.dto.permission),
         ]
     )
     mock.manage_user_permissions.assert_called_once_with(
         db_client=mock.db_client,
         user_email=mock.dto.user_email,
         method=f"{mock.action_enum.value}_user_permission",
-        permission=mock.permission_enum
+        permission=mock.permission_enum,
     )

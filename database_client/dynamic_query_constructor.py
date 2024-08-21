@@ -200,7 +200,8 @@ class DynamicQueryConstructor:
         )
 
         return DynamicQueryConstructor.create_insert_query(
-            table_name="data_sources", column_value_mappings=data)
+            table_name="data_sources", column_value_mappings=data
+        )
 
     @staticmethod
     def generate_new_typeahead_suggestion_query(search_term: str):
@@ -341,7 +342,7 @@ class DynamicQueryConstructor:
         table_name: str,
         id_value: int,
         column_edit_mappings: dict[str, str],
-        id_column_name: str
+        id_column_name: str,
     ) -> sql.Composed:
         """
         Dynamically constructs an update query based on the provided mappings
@@ -359,8 +360,7 @@ class DynamicQueryConstructor:
         # Generate the column assignments
         assignments = [
             sql.SQL("{column} = {value}").format(
-                column=sql.Identifier(column_name),
-                value=sql.Literal(column_value)
+                column=sql.Identifier(column_name), value=sql.Literal(column_value)
             )
             for column_name, column_value in column_edit_mappings.items()
         ]
@@ -370,8 +370,7 @@ class DynamicQueryConstructor:
 
         # Add the WHERE clause to specify the entry to update
         query += sql.SQL(" WHERE {id_column} = {id_value}").format(
-            id_column=sql.Identifier(id_column_name),
-            id_value=sql.Literal(id_value)
+            id_column=sql.Identifier(id_column_name), id_value=sql.Literal(id_value)
         )
 
         return query
@@ -396,12 +395,18 @@ class DynamicQueryConstructor:
 
         # Generate the column assignments
         columns = sql.SQL(", ").join(
-            [sql.Identifier(column_name) for column_name in column_value_mappings.keys()]
+            [
+                sql.Identifier(column_name)
+                for column_name in column_value_mappings.keys()
+            ]
         )
 
         # Generate the value assignments
         values = sql.SQL(", ").join(
-            [sql.Literal(column_value) for column_value in column_value_mappings.values()]
+            [
+                sql.Literal(column_value)
+                for column_value in column_value_mappings.values()
+            ]
         )
 
         # Combine the base query with the assignments
@@ -422,10 +427,8 @@ class DynamicQueryConstructor:
         columns: list[str],
         where_mappings: Optional[dict] = None,
         limit: Optional[int] = None,
-        offset: Optional[int] = None
+        offset: Optional[int] = None,
     ):
-
-
         """
         Creates a SELECT query for a single relation (table or view)
         that selects the given columns with the given where mappings
@@ -434,20 +437,20 @@ class DynamicQueryConstructor:
         :param where_mappings: And-joined simple where conditionals (of column = value)
         :return:
         """
-        base_query = sql.SQL(
-            "SELECT {columns} FROM {relation}"
-        ).format(
+        base_query = sql.SQL("SELECT {columns} FROM {relation}").format(
             columns=sql.SQL(", ").join([sql.Identifier(column) for column in columns]),
             relation=sql.Identifier(relation),
         )
         if where_mappings is not None:
             where_clause = sql.SQL("WHERE {where_clause}").format(
                 where_clause=sql.SQL(" AND ").join(
-                        [sql.SQL(" {column} = {value} ").format(
-                            column=sql.Identifier(column),
-                            value=sql.Literal(value)
-                        ) for column, value in where_mappings.items()]
-                    )
+                    [
+                        sql.SQL(" {column} = {value} ").format(
+                            column=sql.Identifier(column), value=sql.Literal(value)
+                        )
+                        for column, value in where_mappings.items()
+                    ]
+                )
             )
             base_query += where_clause
         if limit is not None:

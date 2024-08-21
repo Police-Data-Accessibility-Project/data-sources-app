@@ -141,7 +141,7 @@ def test_create_user_with_github():
             email=mock.github_user_info.user_email,
             # Create a random password. Will need to be reset if not logging in via Github
             password=mock.create_random_password.return_value,
-        )
+        ),
     )
 
     mock.link_github_account.assert_called_once_with(
@@ -188,10 +188,11 @@ def setup_callback_inner_wrapper_mocks():
     )
     return mock
 
+
 def run_and_validate_callback_inner_wrapper_with_mocks(
     mock: CallbackInnerWrapperMocks,
     callback_function_enum: CallbackFunctionsEnum,
-    check_is_response: bool = True
+    check_is_response: bool = True,
 ):
     result = callback_inner_wrapper(
         db_client=mock.db_client,
@@ -218,6 +219,7 @@ def test_callback_inner_wrapper_login_with_github(setup_callback_inner_wrapper_m
         db_client=mock.db_client,
         github_user_info=mock.github_user_info,
     )
+
 
 def test_callback_inner_wrapper_create_user_with_github(
     setup_callback_inner_wrapper_mocks,
@@ -263,9 +265,7 @@ def test_callback_inner_wrapper_invalid_callback_function_enum(
 
     with pytest.raises(ValueError):
         run_and_validate_callback_inner_wrapper_with_mocks(
-            mock=mock,
-            callback_function_enum=MagicMock(),
-            check_is_response=False
+            mock=mock, callback_function_enum=MagicMock(), check_is_response=False
         )
 
     assert_callback_inner_wrapper_function_calls(mock=mock, called_function=None)
@@ -274,7 +274,6 @@ def test_callback_inner_wrapper_invalid_callback_function_enum(
 class LinkGithubAccountRequestMocks(DynamicMagicMock):
     link_github_account: MagicMock
     make_response: MagicMock
-
 
 
 def test_link_github_account_request():
@@ -305,9 +304,7 @@ class LinkGithubAccountMocks(DynamicMagicMock):
 
 def test_link_github_account():
 
-    mock = LinkGithubAccountMocks(
-        patch_root=PATCH_PREFIX
-    )
+    mock = LinkGithubAccountMocks(patch_root=PATCH_PREFIX)
     mock.github_user_info.user_email = mock.pdap_account_email
     mock.db_client.get_user_info.return_value = mock.db_client_user_info
     mock.db_client_user_info.id = MagicMock()

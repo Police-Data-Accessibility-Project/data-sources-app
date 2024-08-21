@@ -26,6 +26,7 @@ class GetAPIKeyForUserMocks(DynamicMagicMock):
     generate_api_key: MagicMock
     make_response: MagicMock
 
+
 def setup_get_api_for_user_mocks():
     mock = GetAPIKeyForUserMocks(
         patch_root="middleware.login_queries",
@@ -39,6 +40,7 @@ def setup_get_api_for_user_mocks():
     )
     mock.generate_api_key.return_value = mock.api_key
     return mock
+
 
 def test_get_api_key_for_user_success(monkeypatch):
     mock = setup_get_api_for_user_mocks()
@@ -76,9 +78,6 @@ def test_get_api_key_for_user_failure():
 def assert_get_api_key_for_user_precondition_calls(mock: GetAPIKeyForUserMocks):
     mock.db_client.get_user_info.assert_called_with(mock.dto.email)
     mock.check_password_hash.assert_called_with(mock.password_digest, mock.dto.password)
-
-
-
 
 
 class RefreshSessionMocks(DynamicMagicMock):
@@ -126,7 +125,10 @@ def setup_try_logging_in_with_github_id_mocks():
     mock.github_user_info.user_id = mock.github_user_id
     return mock
 
-def test_try_logging_in_with_github_id_happy_path(setup_try_logging_in_with_github_id_mocks):
+
+def test_try_logging_in_with_github_id_happy_path(
+    setup_try_logging_in_with_github_id_mocks,
+):
     mock = setup_try_logging_in_with_github_id_mocks
 
     mock.db_client.get_user_info_by_external_account_id.return_value = mock.user_info
@@ -139,7 +141,9 @@ def test_try_logging_in_with_github_id_happy_path(setup_try_logging_in_with_gith
     mock.login_response.assert_called_once_with(mock.user_info)
 
 
-def test_try_logging_in_with_github_id_unauthorized(setup_try_logging_in_with_github_id_mocks):
+def test_try_logging_in_with_github_id_unauthorized(
+    setup_try_logging_in_with_github_id_mocks,
+):
     mock = setup_try_logging_in_with_github_id_mocks
 
     mock.db_client.get_user_info_by_external_account_id.return_value = None

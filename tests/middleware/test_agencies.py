@@ -15,12 +15,12 @@ class AgenciesMocks(DynamicMagicMock):
     get_agencies_matches: MagicMock
     make_response: MagicMock
 
+
 @pytest.fixture
 def agencies_mocks():
     return AgenciesMocks(
         patch_root="middleware.agencies",
     )
-
 
 
 def test_get_agencies_matches(monkeypatch, agencies_mocks):

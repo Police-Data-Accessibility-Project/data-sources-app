@@ -6,7 +6,11 @@ import jwt
 import datetime
 
 from flask import Response, make_response, jsonify
-from flask_jwt_extended import create_access_token, get_jwt_identity, create_refresh_token
+from flask_jwt_extended import (
+    create_access_token,
+    get_jwt_identity,
+    create_refresh_token,
+)
 from werkzeug.security import check_password_hash
 
 from database_client.database_client import DatabaseClient
@@ -32,8 +36,7 @@ def try_logging_in(db_client: DatabaseClient, dto: UserRequest) -> Response:
 
 
 def try_logging_in_with_github_id(
-        db_client: DatabaseClient,
-        github_user_info: GithubUserInfo
+    db_client: DatabaseClient, github_user_info: GithubUserInfo
 ) -> Response:
     """
     Tries to log in a user.
@@ -44,11 +47,12 @@ def try_logging_in_with_github_id(
     """
     user_info = db_client.get_user_info_by_external_account_id(
         external_account_id=github_user_info.user_id,
-        external_account_type=ExternalAccountTypeEnum.GITHUB
+        external_account_type=ExternalAccountTypeEnum.GITHUB,
     )
     if not user_info:
         return unauthorized_response("Github user not found")
     return login_response(user_info)
+
 
 def unauthorized_response(msg: str = "Unauthorized") -> Response:
     """
@@ -58,8 +62,8 @@ def unauthorized_response(msg: str = "Unauthorized") -> Response:
     """
     return make_response({"message": msg}, HTTPStatus.UNAUTHORIZED)
 
-def login_response(
-        user_info: DatabaseClient.UserInfo) -> Response:
+
+def login_response(user_info: DatabaseClient.UserInfo) -> Response:
     """
     Creates a response object for a successful login.
 
@@ -72,17 +76,17 @@ def login_response(
         jsonify(
             message="Successfully logged in",
             access_token=access_token,
-            refresh_token=refresh_token
-        ), HTTPStatus.OK
+            refresh_token=refresh_token,
+        ),
+        HTTPStatus.OK,
     )
+
 
 def generate_api_key() -> str:
     return uuid.uuid4().hex
 
 
-def get_api_key_for_user(
-    db_client: DatabaseClient, dto: UserRequest
-) -> Response:
+def get_api_key_for_user(db_client: DatabaseClient, dto: UserRequest) -> Response:
     """
     Tries to log in a user. If successful, generates API key
 

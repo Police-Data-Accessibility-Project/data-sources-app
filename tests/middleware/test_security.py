@@ -26,6 +26,7 @@ from tests.helper_scripts.common_mocks_and_patches import patch_abort
 
 PATCH_ROOT = "middleware.security"
 
+
 @pytest.fixture
 def dummy_route():
     @api_key_required
@@ -153,6 +154,5 @@ def test_check_api_key_invalid_api_key(exception, mock_abort):
     mock.get_db_client.assert_not_called()
     mock.check_api_key_associated_with_user.assert_not_called()
     mock_abort.assert_called_once_with(
-        code=HTTPStatus.UNAUTHORIZED,
-        message=INVALID_API_KEY_MESSAGE
+        code=HTTPStatus.UNAUTHORIZED, message=INVALID_API_KEY_MESSAGE
     )

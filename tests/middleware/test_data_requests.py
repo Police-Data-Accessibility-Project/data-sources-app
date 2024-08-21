@@ -28,15 +28,14 @@ def test_get_data_requests_relation_role(
     is_owner: bool,
     permissions: list[PermissionsEnum],
     expected_relation_role: RelationRoleEnum,
-
 ):
     mock = MagicMock()
     mock.db_client.user_is_creator_of_data_request.return_value = is_owner
     relation_role = get_data_requests_relation_role(
-            db_client=mock.db_client,
-            data_request_id=mock.data_request_id,
-            access_info=AccessInfo(
-                user_email="test_user", access_type=access_type, permissions=permissions
-            ),
-        )
+        db_client=mock.db_client,
+        data_request_id=mock.data_request_id,
+        access_info=AccessInfo(
+            user_email="test_user", access_type=access_type, permissions=permissions
+        ),
+    )
     assert relation_role == expected_relation_role

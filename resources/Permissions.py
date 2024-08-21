@@ -103,11 +103,11 @@ class Permissions(PsycopgResource):
         """
         dto = populate_dto_with_request_content(
             object_class=PermissionsRequest,
-            attribute_source_mapping= {
+            attribute_source_mapping={
                 "user_email": SourceMappingEnum.ARGS,
                 "permission": SourceMappingEnum.JSON,
                 "action": SourceMappingEnum.JSON,
-            }
+            },
         )
         with self.setup_database_client() as db_client:
             return update_permissions_wrapper(

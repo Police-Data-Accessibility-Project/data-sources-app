@@ -11,11 +11,12 @@ from tests.helper_scripts.helper_functions import (
     get_user_password_digest,
     create_api_key,
     create_test_user_setup,
-
 )
 
 
-def test_user_post(flask_client_with_db, dev_db_connection: psycopg2.extensions.connection):
+def test_user_post(
+    flask_client_with_db, dev_db_connection: psycopg2.extensions.connection
+):
     """
     Test that POST call to /user endpoint successfully creates a new user and verifies the user's email and password digest in the database
     """
@@ -36,7 +37,9 @@ def test_user_post(flask_client_with_db, dev_db_connection: psycopg2.extensions.
     ), "DB user password digest should not match password"
 
 
-def test_user_put(flask_client_with_db, dev_db_connection: psycopg2.extensions.connection):
+def test_user_put(
+    flask_client_with_db, dev_db_connection: psycopg2.extensions.connection
+):
     """
     Test that PUT call to /user endpoint successfully updates the user's password and verifies the new password hash is distinct from both the plain new password and the old password hash in the database
     """

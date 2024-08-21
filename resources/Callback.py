@@ -25,4 +25,3 @@ class Callback(PsycopgResource):
         """
         with self.setup_database_client() as db_client:
             return callback_outer_wrapper(db_client)
-

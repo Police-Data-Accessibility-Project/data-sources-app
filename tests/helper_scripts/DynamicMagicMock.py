@@ -42,7 +42,7 @@ class DynamicMagicMock:
         self._patch_root = patch_root
         self.__post_init__(return_values)
 
-    def __post_init__(self,return_values=None) -> None:
+    def __post_init__(self, return_values=None) -> None:
         self._patchers = {}
         if return_values is None:
             return_values = {}
@@ -66,7 +66,9 @@ class DynamicMagicMock:
         mock = patcher.start()
         return mock
 
-    def mock_return_value_if_specified(self, attribute: str, mock: MagicMock, return_values: dict):
+    def mock_return_value_if_specified(
+        self, attribute: str, mock: MagicMock, return_values: dict
+    ):
         if attribute in return_values:
             mock.return_value = return_values[attribute]
 

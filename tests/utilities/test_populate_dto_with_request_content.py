@@ -53,7 +53,6 @@ def test_populate_dto_with_request_content_happy_path(
     source_mapping_enum, patched_request_args_get
 ):
 
-
     dto = populate_dto_with_request_content(
         SimpleDTO,
         transformation_functions={"transformed_array": transform_array},

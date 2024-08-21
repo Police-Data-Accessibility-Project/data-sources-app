@@ -9,7 +9,8 @@ from flask import session
 
 from middleware.enums import CallbackFunctionsEnum
 
-#region Pre-Callback
+
+# region Pre-Callback
 def setup_callback_session(callback_functions_enum: CallbackFunctionsEnum, **kwargs):
     """
     Sets up the flask session that will be used for the callback function
@@ -21,9 +22,10 @@ def setup_callback_session(callback_functions_enum: CallbackFunctionsEnum, **kwa
     session["callback_params"] = kwargs
 
 
-#endregion Pre-Callback
+# endregion Pre-Callback
 
-#region Post-Callback
+
+# region Post-Callback
 def get_callback_params() -> dict:
     """
     Returns the key-value parameters set prior to the callback function
@@ -38,4 +40,6 @@ def get_callback_function() -> CallbackFunctionsEnum:
     """
     callback_function = CallbackFunctionsEnum(session.pop("callback_function"))
     return callback_function
-#endregion Post-Callback
+
+
+# endregion Post-Callback

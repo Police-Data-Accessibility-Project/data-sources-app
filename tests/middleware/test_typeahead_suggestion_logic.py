@@ -62,9 +62,11 @@ def test_get_typeahead_dict_results():
 
     assert get_typeahead_dict_results(mock_suggestions) == expected_results
 
+
 class GetTypeaheadSuggestionsMocks(DynamicMagicMock):
     get_typeahead_dict_results: MagicMock
     make_response: MagicMock
+
 
 def test_get_typeahead_suggestions_wrapper(monkeypatch):
     mock = GetTypeaheadSuggestionsMocks(
@@ -78,6 +80,5 @@ def test_get_typeahead_suggestions_wrapper(monkeypatch):
         mock.db_client.get_typeahead_suggestions.return_value
     )
     mock.make_response.assert_called_with(
-        {
-            "suggestions": mock.get_typeahead_dict_results.return_value
-        }, HTTPStatus.OK)
+        {"suggestions": mock.get_typeahead_dict_results.return_value}, HTTPStatus.OK
+    )

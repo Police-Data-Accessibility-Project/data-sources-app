@@ -9,7 +9,6 @@ from middleware.archives_queries import (
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
-
 @pytest.fixture
 def make_response_mock(monkeypatch):
     mock = MagicMock()
