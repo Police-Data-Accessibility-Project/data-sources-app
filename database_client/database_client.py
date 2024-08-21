@@ -131,7 +131,6 @@ class DatabaseClient:
             return None
         return results
 
-    @cursor_manager
     def add_new_user(self, email: str, password_digest: str) -> Optional[int]:
         """
         Adds a new user to the database.
@@ -139,16 +138,14 @@ class DatabaseClient:
         :param password_digest:
         :return:
         """
-        query = sql.SQL(
-            "insert into users (email, password_digest) values ({}, {}) returning id"
-        ).format(
-            sql.Literal(email),
-            sql.Literal(password_digest),
+        return self._create_entry_in_table(
+            table_name="users",
+            column_value_mappings={
+                "email": email,
+                "password_digest": password_digest
+            },
+            column_to_return="id"
         )
-        self.cursor.execute(query)
-        if self.cursor.rowcount == 0:
-            return None
-        return self.cursor.fetchone()[0]
 
     @cursor_manager
     def get_user_id(self, email: str) -> Optional[int]:
@@ -198,7 +195,6 @@ class DatabaseClient:
             return None
         return self.ResetTokenInfo(id=row[0], email=row[1], create_date=row[2])
 
-    @cursor_manager
     def add_reset_token(self, email: str, token: str):
         """
         Inserts a new reset token into the database for a specified email.
@@ -206,10 +202,10 @@ class DatabaseClient:
         :param email: The email to associate with the reset token.
         :param token: The reset token to add.
         """
-        query = sql.SQL(
-            "insert into reset_tokens (email, token) values ({}, {})"
-        ).format(sql.Literal(email), sql.Literal(token))
-        self.cursor.execute(query)
+        self._create_entry_in_table(
+            table_name="reset_tokens",
+            column_value_mappings={"email": email, "token": token}
+        )
 
     @cursor_manager
     def delete_reset_token(self, email: str, token: str):
@@ -572,7 +568,6 @@ class DatabaseClient:
     DataSourceMatches = namedtuple("DataSourceMatches", ["converted", "ids"])
     SearchParameters = namedtuple("SearchParameters", ["search", "location"])
 
-    @cursor_manager
     def add_quick_search_log(
         self,
         data_sources_count: int,
@@ -587,18 +582,14 @@ class DatabaseClient:
         :param processed_search_parameters: SearchParameters namedtuple with the search and location parameters
         """
         query_results = json.dumps(processed_data_source_matches.ids).replace("'", "")
-        sql_query = """
-            INSERT INTO quick_search_query_logs (search, location, results, result_count) 
-            VALUES (%s, %s, %s, %s)
-        """
-        self.cursor.execute(
-            sql_query,
-            (
-                processed_search_parameters.search,
-                processed_search_parameters.location,
-                query_results,
-                data_sources_count,
-            ),
+        self._create_entry_in_table(
+            table_name="quick_search_query_logs",
+            column_value_mappings={
+                "search": processed_search_parameters.search,
+                "location": processed_search_parameters.location,
+                "results": query_results,
+                "result_count": data_sources_count,
+            },
         )
 
     UserInfo = namedtuple("UserInfo", ["id", "password_digest", "api_key", "email"])
@@ -735,27 +726,36 @@ class DatabaseClient:
             for row in results
         ]
 
-    @cursor_manager
     def link_external_account(
         self,
         user_id: str,
         external_account_id: str,
         external_account_type: ExternalAccountTypeEnum,
     ):
-        query = sql.SQL(
-            """
-            INSERT INTO external_accounts (user_id, account_type, account_identifier) 
-            VALUES ({user_id}, {account_type}, {account_identifier});
         """
-        ).format(
-            user_id=sql.Literal(user_id),
-            account_type=sql.Literal(external_account_type.value),
-            account_identifier=sql.Literal(external_account_id),
+        Links an external account to a user.
+
+        :param user_id: The ID of the user.
+        :param external_account_id: The ID of the external account.
+        :param external_account_type: The type of the external account.
+        """
+        self._create_entry_in_table(
+            table_name="external_accounts",
+            column_value_mappings={
+                "user_id": user_id,
+                "account_type": external_account_type.value,
+                "account_identifier": external_account_id,
+            }
         )
-        self.cursor.execute(query)
 
     @cursor_manager
     def add_user_permission(self, user_email: str, permission: PermissionsEnum):
+        """
+        Adds a permission to a user.
+
+        :param user_email: The email of the user.
+        :param permission: The permission to add.
+        """
         query = sql.SQL(
             """
             INSERT INTO user_permissions (user_id, permission_id) 
@@ -861,3 +861,23 @@ class DatabaseClient:
             table_name, entry_id, column_edit_mappings, id_column_name
         )
         self.cursor.execute(query)
+
+    @cursor_manager
+    def _create_entry_in_table(
+        self,
+        table_name: str,
+        column_value_mappings: dict[str, str],
+        column_to_return: Optional[str] = None
+    ):
+        """
+        Creates a new entry in a table in the database, using the provided column value mappings
+
+        :param table_name: The name of the table to create an entry in.
+        :param column_value_mappings: A dictionary mapping column names to their new values.
+        """
+        query = DynamicQueryConstructor.create_insert_query(
+            table_name, column_value_mappings, column_to_return
+        )
+        self.cursor.execute(query)
+        if column_to_return is not None:
+            return self.cursor.fetchone()[0]
