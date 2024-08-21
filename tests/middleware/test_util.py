@@ -32,7 +32,6 @@ def test_get_env_variable(
 ):
     mock = GetEnvVariableMocks(
         patch_root="middleware.util",
-        mocks_to_patch=["dotenv_values", "get_env_variable"],
         return_values={
             "get_env_variable": os_getenv,
             "dotenv_values": dotenv_values,

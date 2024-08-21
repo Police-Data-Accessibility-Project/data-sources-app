@@ -8,9 +8,7 @@ from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
 def test_user_post_query(monkeypatch):
-
     mock = MagicMock()
-    mock.generate_password_hash = MagicMock()
     mock.generate_password_hash.return_value = mock.password_digest
 
     monkeypatch.setattr(
