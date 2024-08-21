@@ -1,26 +1,24 @@
-# Pull request template
-
-#### Fixes
+### Fixes
 
 * Issues being closed by this PR
 
-#### Description
+### Description
 
 * A brief description of what this does. Include screenshots, if anything should change visually.
 
-#### Testing
+### Testing
 
 * Steps to test this PR, if there are any required.
 * For cut-and-dry changes (API updates or interface tweaks), include a screenshot or updated API response to show what correct behavior looks like
 
-#### Performance
+### Performance
 
 * If you're adding or heavily modifying a script, estimate how long it should take to run.
 
-#### Docs
+### Docs
 
 * Accompanying docs PRs, if applicable
 
-#### Breaking Changes
+### Breaking Changes
 
 * What functionality, if any, might be broken by this change, which could impact other developers. For example, an environmental variable changing.
