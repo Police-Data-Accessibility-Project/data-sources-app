@@ -4,14 +4,13 @@ import pytest
 from flask_restx._http import HTTPStatus
 from pytest_mock import mocker
 
-from middleware.access_logic import AccessInfo, AccessTypeEnum
+from middleware.access_logic import AccessInfo
 from middleware.decorators import (
     api_key_required,
     permissions_required,
     api_key_or_jwt_required,
 )
-from middleware.enums import PermissionsEnum
-
+from middleware.enums import PermissionsEnum, AccessTypeEnum
 
 
 @pytest.fixture

@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from enum import Enum, auto
 from http import HTTPStatus
 from typing import Optional
 
@@ -7,7 +6,7 @@ from flask import request
 from flask_jwt_extended import get_jwt_identity
 from flask_restx import abort
 
-from middleware.enums import PermissionsEnum
+from middleware.enums import PermissionsEnum, AccessTypeEnum
 from database_client.helper_functions import get_db_client
 from middleware.permissions_logic import get_user_permissions
 
@@ -20,10 +19,6 @@ class InvalidAuthorizationHeaderException(Exception):
     pass
 
 JWT_OR_API_KEY_NEEDED_ERROR_MESSAGE = "Please provide an API key with the format 'Basic <api_key>' OR an access token with the format 'Bearer <access_token>' in the request header in the 'Authorization' key "
-
-class AccessTypeEnum(Enum):
-    JWT = auto()
-    API_KEY = auto()
 
 @dataclass
 class AccessInfo:
