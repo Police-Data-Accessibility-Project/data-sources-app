@@ -415,3 +415,43 @@ class DynamicQueryConstructor:
             )
 
         return query
+
+    @staticmethod
+    def create_single_relation_selection_query(
+        relation: str,
+        columns: list[str],
+        where_mappings: Optional[dict] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None
+    ):
+
+
+        """
+        Creates a SELECT query for a single relation (table or view)
+        that selects the given columns with the given where mappings
+        :param relation:
+        :param columns:
+        :param where_mappings: And-joined simple where conditionals (of column = value)
+        :return:
+        """
+        base_query = sql.SQL(
+            "SELECT {columns} FROM {relation}"
+        ).format(
+            columns=sql.SQL(", ").join([sql.Identifier(column) for column in columns]),
+            relation=sql.Identifier(relation),
+        )
+        if where_mappings is not None:
+            where_clause = sql.SQL("WHERE {where_clause}").format(
+                where_clause=sql.SQL(" AND ").join(
+                        [sql.SQL(" {column} = {value} ").format(
+                            column=sql.Identifier(column),
+                            value=sql.Literal(value)
+                        ) for column, value in where_mappings.items()]
+                    )
+            )
+            base_query += where_clause
+        if limit is not None:
+            base_query += sql.SQL(" LIMIT {limit}").format(limit=sql.Literal(limit))
+        if offset is not None:
+            base_query += sql.SQL(" OFFSET {offset}").format(offset=sql.Literal(offset))
+        return base_query

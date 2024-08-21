@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, auto
 
 
 class CallbackFunctionsEnum(Enum):
@@ -28,3 +28,8 @@ class PermissionsActionEnum(Enum):
     @classmethod
     def values(cls):
         return [member.value for member in cls]
+
+
+class AccessTypeEnum(Enum):
+    JWT = auto()
+    API_KEY = auto()

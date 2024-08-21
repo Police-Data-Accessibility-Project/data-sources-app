@@ -11,10 +11,9 @@ from middleware.access_logic import (
     InvalidAPIKeyException,
     get_api_key_from_request_header,
     get_access_info_from_jwt_or_api_key,
-    AccessTypeEnum,
     JWT_OR_API_KEY_NEEDED_ERROR_MESSAGE,
 )
-from middleware.enums import PermissionsEnum
+from middleware.enums import PermissionsEnum, AccessTypeEnum
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_mocks_and_patches import patch_request_headers
 
