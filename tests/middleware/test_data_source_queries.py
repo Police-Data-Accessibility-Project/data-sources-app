@@ -2,7 +2,6 @@ from datetime import datetime
 from http import HTTPStatus
 from unittest.mock import MagicMock, patch
 
-import psycopg2
 import pytest
 
 from database_client.database_client import DatabaseClient
@@ -12,10 +11,10 @@ from middleware.data_source_queries import (
     DataSourceNotFoundError,
 )
 from middleware.login_queries import try_logging_in
-from tests.helper_functions import (
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
+from tests.helper_scripts.helper_functions import (
     get_boolean_dictionary,
 )
-from tests.fixtures import connection_with_test_data, dev_db_connection
 
 
 @pytest.fixture
@@ -28,111 +27,56 @@ def inserted_data_sources_found():
     return get_boolean_dictionary(("Source 1", "Source 2", "Source 3"))
 
 
-def setup_try_logging_in_mocks(monkeypatch, check_password_hash_return_value):
+class TryLoggingInMocks(DynamicMagicMock):
+    check_password_hash: MagicMock
+    unauthorized_response: MagicMock
+    login_response: MagicMock
+
+
+def setup_try_logging_in_mocks(check_password_hash_return_value):
     # Create Mock values
-    mock_db_client = MagicMock()
-    mock_email = MagicMock()
-    mock_password = MagicMock()
-    mock_password_digest = MagicMock()
-    mock_user_id = MagicMock()
-    mock_session_token = MagicMock()
-    mock_user_info = DatabaseClient.UserInfo(
-        password_digest=mock_password_digest,
-        id=mock_user_id,
-        api_key=None
+    mock = TryLoggingInMocks(
+        patch_root="middleware.login_queries",
     )
-    mock_db_client.get_user_info = MagicMock(return_value=mock_user_info)
-    mock_make_response = MagicMock()
-    mock_create_session_token = MagicMock(return_value=mock_session_token)
-    mock_check_password_hash = MagicMock(return_value=check_password_hash_return_value)
+    mock.user_info = DatabaseClient.UserInfo(
+        password_digest=mock.password_digest,
+        id=mock.user_id,
+        api_key=None,
+        email=mock.email,
+    )
+    mock.db_client.get_user_info = MagicMock(return_value=mock.user_info)
+    mock.check_password_hash.return_value = check_password_hash_return_value
 
-    # Use monkeypatch to set mock values
-    monkeypatch.setattr(
-        "middleware.login_queries.create_session_token",
-        mock_create_session_token,
-    )
-    monkeypatch.setattr("middleware.login_queries.make_response", mock_make_response)
-    monkeypatch.setattr(
-        "middleware.login_queries.check_password_hash", mock_check_password_hash
-    )
-
-    return (
-        mock_db_client,
-        mock_email,
-        mock_password,
-        mock_user_id,
-        mock_session_token,
-        None,
-        mock_make_response,
-        mock_create_session_token,
-    )
+    return mock
 
 
-def test_try_logging_in_successful(monkeypatch):
-    (
-        mock_db_client,
-        mock_email,
-        mock_password,
-        mock_user_id,
-        mock_session_token,
-        mock_get_user_info,
-        mock_make_response,
-        mock_create_session_token,
-    ) = setup_try_logging_in_mocks(monkeypatch, check_password_hash_return_value=True)
+def assert_try_logging_in_preconditions(mock):
+    mock.db_client.get_user_info.assert_called_with(mock.dto.email)
+    mock.check_password_hash.assert_called_with(mock.password_digest, mock.dto.password)
+
+
+def test_try_logging_in_successful():
+    mock = setup_try_logging_in_mocks(check_password_hash_return_value=True)
 
     # Call function
-    try_logging_in(mock_db_client, mock_email, mock_password)
+    try_logging_in(mock.db_client, mock.dto)
 
     # Assert
-    mock_db_client.get_user_info.assert_called_with(mock_email)
-    mock_create_session_token.assert_called_with(mock_db_client, mock_user_id, mock_email)
-    mock_make_response.assert_called_with(
-        {"message": "Successfully logged in", "data": mock_session_token}, HTTPStatus.OK
-    )
+    assert_try_logging_in_preconditions(mock)
+    mock.unauthorized_response.assert_not_called()
+    mock.login_response.assert_called_with(mock.user_info)
 
 
-def test_try_logging_in_unsuccessful(monkeypatch):
-    (
-        mock_db_client,
-        mock_email,
-        mock_password,
-        mock_user_id,
-        mock_session_token,
-        mock_get_user_info,
-        mock_make_response,
-        mock_create_session_token,
-    ) = setup_try_logging_in_mocks(monkeypatch, check_password_hash_return_value=False)
+def test_try_logging_in_unsuccessful():
+    mock = setup_try_logging_in_mocks(check_password_hash_return_value=False)
 
     # Call function
-    try_logging_in(mock_db_client, mock_email, mock_password)
+    try_logging_in(mock.db_client, mock.dto)
 
     # Assert
-    mock_db_client.get_user_info.assert_called_with(mock_email)
-    mock_create_session_token.assert_not_called()
-    mock_make_response.assert_called_with(
-        {"message": "Invalid email or password"}, HTTPStatus.UNAUTHORIZED
-    )
-
-
-@pytest.fixture
-def mock_get_restricted_columns():
-    with patch("middleware.data_source_queries.get_restricted_columns") as mock:
-        mock.return_value = ["restricted_column1", "restricted_column2"]
-        yield mock
-
-
-@pytest.fixture
-def mock_uuid():
-    with patch("middleware.data_source_queries.uuid") as mock:
-        mock.uuid4.return_value = "123e4567-e89b-12d3-a456-426655440000"
-        yield mock
-
-
-@pytest.fixture
-def mock_datetime():
-    with patch("middleware.data_source_queries.datetime") as mock:
-        mock.now.return_value = datetime(2022, 1, 1)
-        yield mock
+    assert_try_logging_in_preconditions(mock)
+    mock.unauthorized_response.assert_called_once()
+    mock.login_response.assert_not_called()
 
 
 def test_convert_data_source_matches():
@@ -162,43 +106,39 @@ def test_convert_data_source_matches():
         )
 
 
-@pytest.fixture
-def mock_make_response(monkeypatch):
-    mock = MagicMock()
-    monkeypatch.setattr("middleware.data_source_queries.make_response", mock)
-    return mock
+class DataSourceByIDWrapperMocks(DynamicMagicMock):
+    data_source_by_id_query: MagicMock
+    make_response: MagicMock
 
 
 @pytest.fixture
-def mock_data_source_by_id_query(monkeypatch):
-    mock = MagicMock()
-    monkeypatch.setattr("middleware.data_source_queries.data_source_by_id_query", mock)
+def data_source_by_id_wrapper_mocks(monkeypatch):
+    mock = DataSourceByIDWrapperMocks(
+        patch_root="middleware.data_source_queries",
+    )
     return mock
 
 
-def test_data_source_by_id_wrapper_data_found(
-    mock_data_source_by_id_query, mock_make_response
-):
-    mock_data_source_by_id_query.return_value = {"agency_name": "Agency A"}
-    mock_db_client = MagicMock()
-    data_source_by_id_wrapper(arg="SOURCE_UID_1", db_client=mock_db_client)
-    mock_data_source_by_id_query.assert_called_with(
-        data_source_id="SOURCE_UID_1", db_client=mock_db_client
+def assert_data_source_by_id_wrapper_calls(mock, expected_json: dict):
+    mock.data_source_by_id_query.assert_called_with(
+        data_source_id="SOURCE_UID_1", db_client=mock.db_client
     )
-    mock_make_response.assert_called_with(
-        {"agency_name": "Agency A"}, HTTPStatus.OK.value
+    mock.make_response.assert_called_with(expected_json, HTTPStatus.OK.value)
+
+
+def test_data_source_by_id_wrapper_data_found(data_source_by_id_wrapper_mocks):
+    mock = data_source_by_id_wrapper_mocks
+    mock.data_source_by_id_query.return_value = {"agency_name": "Agency A"}
+    data_source_by_id_wrapper(arg="SOURCE_UID_1", db_client=mock.db_client)
+    assert_data_source_by_id_wrapper_calls(
+        mock, expected_json={"agency_name": "Agency A"}
     )
 
 
-def test_data_source_by_id_wrapper_data_not_found(
-    mock_data_source_by_id_query, mock_make_response
-):
-    mock_data_source_by_id_query.side_effect = DataSourceNotFoundError
-    mock_db_client = MagicMock()
-    data_source_by_id_wrapper(arg="SOURCE_UID_1", db_client=mock_db_client)
-    mock_data_source_by_id_query.assert_called_with(
-        data_source_id="SOURCE_UID_1", db_client=mock_db_client
-    )
-    mock_make_response.assert_called_with(
-        {"message": "Data source not found."}, HTTPStatus.OK.value
+def test_data_source_by_id_wrapper_data_not_found(data_source_by_id_wrapper_mocks):
+    mock = data_source_by_id_wrapper_mocks
+    mock.data_source_by_id_query.side_effect = DataSourceNotFoundError
+    data_source_by_id_wrapper(arg="SOURCE_UID_1", db_client=mock.db_client)
+    assert_data_source_by_id_wrapper_calls(
+        mock, expected_json={"message": "Data source not found."}
     )

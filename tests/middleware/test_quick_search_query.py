@@ -2,154 +2,113 @@ from http import HTTPStatus
 import json
 from unittest.mock import MagicMock
 from datetime import datetime
-from unittest.mock import patch
 
 import psycopg2
 import pytest
 
-from database_client.database_client import DatabaseClient
 from middleware.quick_search_query import (
     quick_search_query,
-    QUICK_SEARCH_COLUMNS,
     quick_search_query_wrapper,
     process_data_source_matches,
     SearchParameters,
     depluralize,
+    DataSourceMatches,
 )
-from tests.helper_functions import (
-    has_expected_keys,
-    get_most_recent_quick_search_query_log,
-)
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
+
 from tests.fixtures import connection_with_test_data, dev_db_connection
 
+
+class QuickSearchQueryMocks(DynamicMagicMock):
+    process_search_parameters: MagicMock
+    get_data_source_matches: MagicMock
+    process_data_source_matches: MagicMock
 
 
 def test_quick_search_query_logging(
     connection_with_test_data: psycopg2.extensions.connection,
 ) -> None:
-    """
-    Tests that quick_search_query properly creates a log of the query
 
-    :param connection_with_test_data: psycopg2.extensions.connection object representing the connection to the test database.
-    :return: None
-    """
-    # Get datetime of test
-    with connection_with_test_data.cursor() as cursor:
-        cursor.execute("SELECT NOW()")
-        result = cursor.fetchone()
-        test_datetime = result[0]
-
-        quick_search_query(
-            SearchParameters(search="Source 1", location="City A"), db_client=DatabaseClient(cursor)
-        )
-        # Test that query inserted into log
-        result = get_most_recent_quick_search_query_log(cursor, "Source 1", "City A")
-    assert result.result_count == 1
-    assert len(result.results) == 1
-    assert result.results[0] == "SOURCE_UID_1"
-    assert result.updated_at >= test_datetime
-
-
-def test_quick_search_query_results(
-    connection_with_test_data: psycopg2.extensions.connection,
-) -> None:
-    """
-    Test the `quick_search_query` method returns expected test data
-
-    :param connection_with_test_data: The connection to the test data database.
-    :return: None
-    """
-    db_client = DatabaseClient(connection_with_test_data.cursor())
-    results = quick_search_query(
-        SearchParameters(search="Source 1", location="City A"), db_client=db_client
+    mock = QuickSearchQueryMocks(
+        patch_root="middleware.quick_search_query",
+        return_values={
+            "process_data_source_matches": DataSourceMatches(
+                converted=[MagicMock(), MagicMock()], ids=[1, 2]
+            ),
+        },
     )
-    # Test that results include expected keys
-    assert has_expected_keys(results["data"][0].keys(), QUICK_SEARCH_COLUMNS)
-    assert len(results["data"]) == 1
-    assert results["data"][0]["record_type"] == "Type A"
-    # "Source 3" was listed as pending and shouldn't show up
-    results = quick_search_query(
-        SearchParameters(search="Source 3", location="City C"), db_client=db_client
+
+    data_sources = quick_search_query(
+        search_parameters=mock.search_parameters,
+        db_client=mock.db_client,
     )
-    assert len(results["data"]) == 0
-
-
-def test_quick_search_query_no_results(
-    connection_with_test_data: psycopg2.extensions.connection,
-) -> None:
-    """
-    Test the `quick_search_query` method returns no results when there are no matches
-
-    :param connection_with_test_data: The connection to the test data database.
-    :return: None
-    """
-    db_client = DatabaseClient(connection_with_test_data.cursor())
-    results = quick_search_query(
-        SearchParameters(
-            search="Nonexistent Source",
-            location="Nonexistent Location",
-        ),
-        db_client=db_client,
+    assert data_sources["count"] == 2
+    assert (
+        data_sources["data"] == mock.process_data_source_matches.return_value.converted
     )
-    assert len(results["data"]) == 0
+
+    mock.process_search_parameters.assert_called_once_with(mock.search_parameters)
+    mock.get_data_source_matches.assert_called_once_with(
+        mock.db_client, mock.process_search_parameters.return_value
+    )
+    mock.process_data_source_matches.assert_called_once_with(
+        mock.get_data_source_matches.return_value
+    )
+    mock.db_client.add_quick_search_log.assert_called_once_with(
+        data_sources["count"],
+        mock.process_data_source_matches.return_value,
+        mock.process_search_parameters.return_value,
+    )
+
+
+class QuickSearchQueryWrapperMocks(DynamicMagicMock):
+    quick_search_query: MagicMock
+    make_response: MagicMock
+    post_to_webhook: MagicMock
 
 
 @pytest.fixture
-def mock_quick_search_query(monkeypatch):
-    mock = MagicMock()
-    monkeypatch.setattr("middleware.quick_search_query.quick_search_query", mock)
-    return mock
-
-
-@pytest.fixture
-def mock_make_response(monkeypatch):
-    mock = MagicMock()
-    monkeypatch.setattr("middleware.quick_search_query.make_response", mock)
-    return mock
-
-
-@pytest.fixture
-def mock_post_to_webhook(monkeypatch):
-    mock = MagicMock()
-    monkeypatch.setattr("middleware.quick_search_query.post_to_webhook", mock)
-    return mock
-
-
-def test_quick_search_query_wrapper_happy_path(
-    mock_quick_search_query, mock_make_response
-):
-    mock_quick_search_query.return_value = [{"record_type": "Type A"}]
-    mock_db_client = MagicMock()
-    quick_search_query_wrapper(arg1="Source 1", arg2="City A", db_client=mock_db_client)
-    mock_quick_search_query.assert_called_with(
-        SearchParameters(search="Source 1", location="City A"), db_client=mock_db_client
+def mock_quick_search_query_wrapper(monkeypatch):
+    mock = QuickSearchQueryWrapperMocks(
+        patch_root="middleware.quick_search_query",
     )
-    mock_make_response.assert_called_with(
-        [{"record_type": "Type A"}], HTTPStatus.OK.value
-    )
+    return mock
 
 
-def test_quick_search_query_wrapper_exception(
-    mock_quick_search_query, mock_make_response, mock_post_to_webhook
-):
-    mock_quick_search_query.side_effect = Exception("Test Exception")
+def call_and_validate_quick_search_query_wrapper(mock: QuickSearchQueryWrapperMocks):
     arg1 = "Source 1"
     arg2 = "City A"
-    mock_db_client = MagicMock()
-    quick_search_query_wrapper(arg1=arg1, arg2=arg2, db_client=mock_db_client)
-    mock_quick_search_query.assert_called_with(
-        SearchParameters(search=arg1, location=arg2), db_client=mock_db_client
+    quick_search_query_wrapper(arg1=arg1, arg2=arg2, db_client=mock.db_client)
+    mock.quick_search_query.assert_called_with(
+        SearchParameters(search=arg1, location=arg2), db_client=mock.db_client
     )
+
+
+def test_quick_search_query_wrapper_happy_path(mock_quick_search_query_wrapper):
+    mock = mock_quick_search_query_wrapper
+    mock.quick_search_query.return_value = [{"record_type": "Type A"}]
+
+    call_and_validate_quick_search_query_wrapper(mock)
+
+    mock.make_response.assert_called_with([{"record_type": "Type A"}], HTTPStatus.OK)
+
+
+def test_quick_search_query_wrapper_exception(mock_quick_search_query_wrapper):
+    mock = mock_quick_search_query_wrapper
+    mock.quick_search_query.side_effect = Exception("Test Exception")
+
+    call_and_validate_quick_search_query_wrapper(mock)
+
     user_message = "There was an error during the search operation"
-    mock_post_to_webhook.assert_called_with(
+    mock.post_to_webhook.assert_called_with(
         json.dumps(
             {
                 "content": "There was an error during the search operation: Test Exception\nSearch term: Source 1\nLocation: City A"
             }
         )
     )
-    mock_make_response.assert_called_with(
-        {"count": 0, "message": user_message}, HTTPStatus.INTERNAL_SERVER_ERROR.value
+    mock.make_response.assert_called_with(
+        {"count": 0, "message": user_message}, HTTPStatus.INTERNAL_SERVER_ERROR
     )
 
 
@@ -195,25 +154,14 @@ def test_process_data_source_matches(sample_data_source_matches):
     assert result.ids == expected_ids
 
 
-def test_depluralize_with_plural_words():
-    term = "apples oranges boxes"
-    expected = "apple orange box"
-    assert depluralize(term) == expected
-
-
-def test_depluralize_with_singular_words():
-    term = "apple orange box"
-    expected = "apple orange box"
-    assert depluralize(term) == expected
-
-
-def test_depluralize_with_mixed_words():
-    term = "apples orange box"
-    expected = "apple orange box"
-    assert depluralize(term) == expected
-
-
-def test_depluralize_with_empty_string():
-    term = ""
-    expected = ""
+@pytest.mark.parametrize(
+    "term, expected",
+    [
+        ("apples oranges boxes", "apple orange box"),
+        ("apple orange boxes", "apple orange box"),
+        ("apples orange box", "apple orange box"),
+        ("", ""),
+    ],
+)
+def test_depluralize(term, expected):
     assert depluralize(term) == expected

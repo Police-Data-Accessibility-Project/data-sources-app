@@ -44,7 +44,6 @@ DATA_SOURCES_APPROVED_COLUMNS = [
     "access_type",
     "data_portal_type",
     "record_format",
-    "update_frequency",
     "update_method",
     "tags",
     "readme_url",
@@ -64,9 +63,14 @@ DATA_SOURCES_APPROVED_COLUMNS = [
     "url_button",
     "tags_other",
     "access_notes",
+]
+ARCHIVE_INFO_APPROVED_COLUMNS = [
+    "update_frequency",
     "last_cached",
 ]
-DATA_SOURCES_OUTPUT_COLUMNS = DATA_SOURCES_APPROVED_COLUMNS + ["agency_name"]
+DATA_SOURCES_OUTPUT_COLUMNS = (
+    DATA_SOURCES_APPROVED_COLUMNS + ARCHIVE_INFO_APPROVED_COLUMNS + ["agency_name"]
+)
 RESTRICTED_DATA_SOURCE_COLUMNS = [
     "rejection_note",
     "data_source_request",
@@ -85,4 +89,11 @@ DATA_SOURCES_MAP_COLUMN = [
     "record_type",
     "lat",
     "lng",
+]
+RESTRICTED_COLUMNS = [
+    "rejection_note",
+    "data_source_request",
+    "approval_status",
+    "airtable_uid",
+    "airtable_source_last_modified",
 ]

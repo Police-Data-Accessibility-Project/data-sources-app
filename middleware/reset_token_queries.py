@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime
 from http import HTTPStatus
 
@@ -15,6 +16,12 @@ from middleware.webhook_logic import send_password_reset_link
 
 class InvalidTokenError(Exception):
     pass
+
+
+@dataclass
+class RequestResetPasswordRequest:
+    email: str
+    token: str
 
 
 def request_reset_password(db_client: DatabaseClient, email) -> Response:
@@ -37,7 +44,9 @@ def request_reset_password(db_client: DatabaseClient, email) -> Response:
     )
 
 
-def reset_password(db_client: DatabaseClient, token, password) -> Response:
+def reset_password(
+    db_client: DatabaseClient, dto: RequestResetPasswordRequest
+) -> Response:
     """
     Resets a user's password if the provided token is valid and not expired.
     :param db_client:
@@ -46,10 +55,10 @@ def reset_password(db_client: DatabaseClient, token, password) -> Response:
     :return:
     """
     try:
-        email = validate_token(db_client, token)
+        email = validate_token(db_client, dto.token)
     except InvalidTokenError:
         return invalid_token_response()
-    set_user_password(db_client, email, password)
+    set_user_password(db_client, email, dto.token)
     return make_response({"message": "Successfully updated password"}, HTTPStatus.OK)
 
 

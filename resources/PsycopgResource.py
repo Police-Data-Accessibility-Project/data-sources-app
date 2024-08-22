@@ -7,7 +7,9 @@ import psycopg2
 from flask_restx import abort, Resource
 from psycopg2.extras import DictCursor
 
+from config import config
 from database_client.database_client import DatabaseClient
+from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
 
 
 def handle_exceptions(
@@ -40,7 +42,7 @@ def handle_exceptions(
         try:
             return func(self, *args, **kwargs)
         except Exception as e:
-            self.psycopg2_connection.rollback()
+            self.get_connection().rollback()
             print(str(e))
             abort(
                 http_status_code=HTTPStatus.INTERNAL_SERVER_ERROR.value, message=str(e)
@@ -56,7 +58,25 @@ class PsycopgResource(Resource):
         - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
         """
         super().__init__(*args, **kwargs)
-        self.psycopg2_connection = kwargs["psycopg2_connection"]
+
+    def connection_is_closed(self) -> bool:
+        """
+        Per https://www.psycopg.org/docs/connection.html#connection.closed
+        a connection is open is the integer attribute is 0,
+        closed or broken of the integer attribute is nonzero
+
+        A connection is only determined to be closed after
+        an operation has been tried and failed.
+        Thus, in the case of a closed connection, the operation will fail
+        on the first run, then succeed on the second run.
+        :return:
+        """
+        return config.connection.closed != 0
+
+    def get_connection(self):
+        if self.connection_is_closed():
+            config.connection = initialize_psycopg2_connection()
+        return config.connection
 
     @contextmanager
     def setup_database_client(self) -> DatabaseClient:
@@ -66,11 +86,8 @@ class PsycopgResource(Resource):
         Yields:
         - The database client.
         """
-        with self.psycopg2_connection.cursor(cursor_factory=DictCursor) as cursor:
-            try:
-                yield DatabaseClient(cursor)
-            except Exception as e:
-                self.psycopg2_connection.rollback()
-                raise e
-            finally:
-                self.psycopg2_connection.commit()
+        db_client = DatabaseClient()
+        try:
+            yield db_client
+        except Exception as e:
+            raise e

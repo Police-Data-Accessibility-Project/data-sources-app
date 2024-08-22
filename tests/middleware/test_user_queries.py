@@ -1,56 +1,43 @@
 from unittest.mock import MagicMock
 
-import psycopg2
 import pytest
 
 from middleware.custom_exceptions import UserNotFoundError
 from middleware.user_queries import user_post_results, user_check_email
-from tests.helper_functions import create_test_user, DynamicMagicMock
-from tests.fixtures import db_cursor, dev_db_connection
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
 def test_user_post_query(monkeypatch):
-
-    mock_db_client = MagicMock()
-    mock_generate_password_hash = MagicMock()
-    mock_generate_password_hash.return_value = "password_digest"
+    mock = MagicMock()
+    mock.generate_password_hash.return_value = mock.password_digest
 
     monkeypatch.setattr(
-        "middleware.user_queries.generate_password_hash", mock_generate_password_hash
+        "middleware.user_queries.generate_password_hash", mock.generate_password_hash
     )
 
-    user_post_results(mock_db_client, "test_email", "test_password")
+    user_post_results(mock.db_client, mock.dto)
 
-    mock_generate_password_hash.assert_called_once_with("test_password")
-    mock_db_client.add_new_user.assert_called_once_with("test_email", "password_digest")
-
-
-class TestUserMagicMock(DynamicMagicMock):
-    db_client: MagicMock
-    user_id: MagicMock
-    email: MagicMock
-
-def test_user_check_email(monkeypatch) -> None:
-    """
-    Verify the functionality of the `user_check_email` method.
-
-    :param db_cursor: A `psycopg2.extensions.cursor` object representing the database cursor.
-    :return: None
-
-    """
-    mock = TestUserMagicMock()
-    mock.db_client.get_user_id.return_value = mock.user_id
-
-    user_check_email(mock.db_client, mock.email)
-    mock.db_client.get_user_id.assert_called_once_with(mock.email)
+    mock.generate_password_hash.assert_called_once_with(mock.dto.password)
+    mock.db_client.add_new_user.assert_called_once_with(
+        mock.dto.email, mock.password_digest
+    )
 
 
-def test_user_check_email_raises_user_not_found_error(
-    monkeypatch
-) -> None:
-    mock = TestUserMagicMock()
-    mock.db_client.get_user_id.return_value = None
+@pytest.mark.parametrize(
+    "user_id, expected_exception",
+    [
+        ("some_user_id", None),  # No exception expected, valid user_id
+        (None, UserNotFoundError),  # Exception expected, user_id is None
+    ],
+)
+def test_user_check_email(user_id, expected_exception) -> None:
+    mock = MagicMock()
+    mock.db_client.get_user_id.return_value = user_id
 
-    with pytest.raises(UserNotFoundError):
+    if expected_exception:
+        with pytest.raises(expected_exception):
+            user_check_email(mock.db_client, mock.email)
+    else:
         user_check_email(mock.db_client, mock.email)
+
     mock.db_client.get_user_id.assert_called_once_with(mock.email)

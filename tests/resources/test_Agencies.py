@@ -1,23 +1,24 @@
 from http import HTTPStatus
-from unittest.mock import MagicMock
-
-import pytest
-
-from tests.fixtures import client_with_mock_db
+from tests.fixtures import client_with_mock_db, bypass_api_key_required
+from tests.helper_scripts.helper_functions import run_and_validate_request
 
 
 def mock_get_agencies(cursor, page: int):
-    return ({"message": f"Test Response for page {page}"}, HTTPStatus.IM_A_TEAPOT)
+    # This mock function is a bit of a hack:
+    # In reality, count would not be equivalent to the page
+    # But it's intended to show that the get method
+    # properly reads the page parameter.
+    return ({"count": page, "data": None}, HTTPStatus.IM_A_TEAPOT)
 
 
-def test_get_agencies(client_with_mock_db, monkeypatch):
-
-    monkeypatch.setattr("middleware.security.validate_token", lambda: None)
+def test_get_agencies(client_with_mock_db, monkeypatch, bypass_api_key_required):
     monkeypatch.setattr("resources.Agencies.get_agencies", mock_get_agencies)
 
-    response = client_with_mock_db.client.get(
-        "/agencies/3",
+    run_and_validate_request(
+        flask_client=client_with_mock_db.client,
+        http_method="get",
+        endpoint="/agencies/3",
         headers={"Authorization": "Bearer test_token"},
+        expected_json_content={"count": 3, "data": None},
+        expected_response_status=HTTPStatus.IM_A_TEAPOT,
     )
-    assert response.status_code == HTTPStatus.IM_A_TEAPOT
-    assert response.json == {"message": "Test Response for page 3"}

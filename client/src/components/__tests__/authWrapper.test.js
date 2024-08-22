@@ -5,6 +5,23 @@ import { createTestingPinia } from '@pinia/testing';
 import { useAuthStore } from '../../stores/auth';
 import { nextTick } from 'vue';
 
+vi.mock('vue-router/auto-routes');
+vi.mock('vue-router', async () => {
+	const actual = await vi.importActual('vue-router');
+	return {
+		...actual,
+		useRoute: vi.fn(() => {
+			return routeMock;
+		}),
+	};
+});
+
+const routeMock = {
+	meta: {
+		auth: true,
+	},
+};
+
 let wrapper;
 
 const NOW = Date.now();
@@ -31,8 +48,10 @@ describe('AuthWrapper', () => {
 		const auth = useAuthStore();
 		auth.$patch({
 			userId: 42,
-			accessToken: {
-				expires: NOW_PLUS_THIRTY,
+			tokens: {
+				accessToken: {
+					expires: NOW_PLUS_THIRTY,
+				},
 			},
 		});
 
@@ -45,8 +64,10 @@ describe('AuthWrapper', () => {
 		const auth = useAuthStore();
 		auth.$patch({
 			userId: 42,
-			accessToken: {
-				expires: NOW_MINUS_THIRTY,
+			tokens: {
+				accessToken: {
+					expires: NOW_MINUS_THIRTY,
+				},
 			},
 		});
 

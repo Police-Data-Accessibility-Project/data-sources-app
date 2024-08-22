@@ -1,22 +1,30 @@
 """This module contains pytest fixtures employed by middleware tests."""
 
-import os
 from collections import namedtuple
+from importlib import reload
+from types import ModuleType
+from unittest import mock
+from unittest.mock import MagicMock
 
 import psycopg2
 import pytest
 from dotenv import load_dotenv
-from flask.testing import FlaskClient
 from psycopg2.extras import DictCursor
 
 from app import create_app
 from database_client.database_client import DatabaseClient
+from middleware.enums import PermissionsEnum
 from middleware.util import get_env_variable
-from tests.helper_functions import insert_test_agencies_and_sources
+from tests.helper_scripts.helper_functions import (
+    insert_test_agencies_and_sources,
+    create_test_user_setup,
+    TestUserSetup,
+)
+from tests.helper_scripts.test_data_generator import TestDataGenerator
 
 
 @pytest.fixture
-def dev_db_connection() -> psycopg2.extensions.cursor:
+def dev_db_connection() -> psycopg2.extensions.connection:
     """
     Create reversible connection to dev database.
 
@@ -67,6 +75,12 @@ def db_cursor(
 
 
 @pytest.fixture
+def dev_db_client(dev_db_connection: psycopg2.extensions.connection) -> DatabaseClient:
+    db_client = DatabaseClient()
+    yield db_client
+
+
+@pytest.fixture
 def connection_with_test_data(
     dev_db_connection: psycopg2.extensions.connection,
 ) -> psycopg2.extensions.connection:
@@ -83,6 +97,14 @@ def connection_with_test_data(
     except psycopg2.errors.UniqueViolation:
         dev_db_connection.rollback()
     return dev_db_connection
+
+
+@pytest.fixture
+def db_client_with_test_data(
+    connection_with_test_data: psycopg2.extensions.connection,
+) -> DatabaseClient:
+    db_client = DatabaseClient()
+    yield db_client
 
 
 ClientWithMockDB = namedtuple("ClientWithMockDB", ["client", "mock_db"])
@@ -103,21 +125,76 @@ def client_with_mock_db(mocker, monkeypatch) -> ClientWithMockDB:
 
 
 @pytest.fixture
-def client_with_db(dev_db_connection: psycopg2.extensions.connection, monkeypatch):
+def flask_client_with_db(
+    dev_db_connection: psycopg2.extensions.connection, monkeypatch
+):
     """
     Creates a client with database connection
     :param dev_db_connection:
     :return:
     """
+    mock_get_flask_app_secret_key = MagicMock(return_value="test")
     monkeypatch.setattr("app.initialize_psycopg2_connection", lambda: dev_db_connection)
+    monkeypatch.setattr(
+        "app.get_flask_app_cookie_encryption_key", mock_get_flask_app_secret_key
+    )
     app = create_app()
     with app.test_client() as client:
         yield client
 
 
+# region Bypass Decorators
+
+
+def patch_decorator(monkeypatch, module: ModuleType):
+    # Patch the decorator where it is being imported from
+    monkeypatch.setattr("app.decorators.func_decor", lambda x: x)
+
+    # Reload the uut module to apply the patched decorator
+    reload(module)
+
+    # Add a finalizer to stop all patches and reload the original module
+    yield  # This yield statement allows the test to run
+
+    mock.patch.stopall()
+    reload(module)  # Reload to restore the original decorator
+
+
 @pytest.fixture
-def bypass_api_required(monkeypatch):
-    monkeypatch.setattr("middleware.security.validate_token", lambda: None)
+def bypass_api_key_required(monkeypatch):
+    """
+    A fixture to bypass the api_key required decorator for testing
+    :param monkeypatch:
+    :return:
+    """
+    monkeypatch.setattr("middleware.decorators.check_api_key", lambda: None)
+
+
+@pytest.fixture
+def bypass_permissions_required(monkeypatch):
+    """
+    A fixture to bypass the permissions required decorator for testing
+    :param monkeypatch:
+    :return:
+    """
+    monkeypatch.setattr("middleware.decorators.check_permissions", lambda x: None)
+
+
+@pytest.fixture
+def bypass_jwt_required(monkeypatch):
+    """
+    A fixture to bypass the jwt required decorator for testing
+    :param monkeypatch:
+    :return:
+    """
+    monkeypatch.setattr(
+        "flask_jwt_extended.view_decorators.verify_jwt_in_request",
+        lambda a, b, c, d, e, f: None,
+    )
+
+
+# endregion
+
 
 @pytest.fixture
 def live_database_client(db_cursor) -> DatabaseClient:
@@ -126,4 +203,36 @@ def live_database_client(db_cursor) -> DatabaseClient:
     :param db_cursor:
     :return:
     """
-    return DatabaseClient(db_cursor)
+    db_client = DatabaseClient()
+    yield db_client
+
+
+@pytest.fixture
+def xylonslyvania_test_data(db_cursor):
+    """
+    Adds XylonsLyvania data to the database, then rolls back the transaction.
+    """
+    tcg = TestDataGenerator(db_cursor)
+    tcg.build_savepoint("xylonslyvania_test_data")
+    tcg.build_xylonslvania()
+    yield
+    tcg.rollback_savepoint()
+
+
+@pytest.fixture
+def test_user_admin(flask_client_with_db, dev_db_connection) -> TestUserSetup:
+    """
+    Creates a test user with admin permissions
+    :param flask_client_with_db:
+    :param dev_db_connection:
+    :return:
+    """
+
+    db_client = DatabaseClient()
+
+    tus_admin = create_test_user_setup(flask_client_with_db)
+    db_client.add_user_permission(
+        tus_admin.user_info.email, PermissionsEnum.READ_ALL_USER_INFO
+    )
+    db_client.add_user_permission(tus_admin.user_info.email, PermissionsEnum.DB_WRITE)
+    return tus_admin

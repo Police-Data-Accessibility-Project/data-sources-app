@@ -1,17 +1,39 @@
-from flask_restx import abort
-from werkzeug.security import check_password_hash
 from flask import request, Response
+from flask_restx import fields
+
+from config import limiter
 from middleware.login_queries import try_logging_in
+from middleware.user_queries import UserRequest
+from resources.resource_helpers import create_user_model, create_jwt_tokens_model
+from utilities.namespace import create_namespace
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
+from utilities.populate_dto_with_request_content import (
+    populate_dto_with_request_content,
+    SourceMappingEnum,
+)
+
+namespace_login = create_namespace()
+user_model = create_user_model(namespace_login)
+jwt_tokens_model = create_jwt_tokens_model(namespace_login)
 
 
+@namespace_login.route("/login")
 class Login(PsycopgResource):
     """
     A resource for authenticating users. Allows users to log in using their email and password.
     """
 
     @handle_exceptions
+    @namespace_login.expect(user_model)
+    @namespace_login.response(200, "Success: User logged in", jwt_tokens_model)
+    @namespace_login.response(500, "Error: Internal server error")
+    @namespace_login.response(400, "Error: Bad Request Missing or bad API key")
+    @namespace_login.response(403, "Error: Forbidden")
+    @namespace_login.doc(
+        description="Allows a user to log in. If successful, returns a session token.",
+    )
+    @limiter.limit("5 per minute")
     def post(self) -> Response:
         """
         Processes the login request. Validates user credentials against the stored hashed password and,
@@ -20,10 +42,10 @@ class Login(PsycopgResource):
         Returns:
         - A dictionary containing a message of success or failure, and the session token if successful.
         """
-        data = request.get_json()
-        email = data.get("email")
-        password = data.get("password")
+        dto = populate_dto_with_request_content(
+            object_class=UserRequest,
+            source=SourceMappingEnum.JSON,
+        )
         with self.setup_database_client() as db_client:
-            response = try_logging_in(db_client, email, password)
-            self.psycopg2_connection.commit()
+            response = try_logging_in(db_client, dto)
         return response

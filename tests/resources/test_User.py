@@ -1,11 +1,11 @@
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
-from tests.fixtures import client_with_mock_db, bypass_api_required
-from tests.helper_functions import check_response_status
+from tests.fixtures import client_with_mock_db, bypass_api_key_required
+from tests.helper_scripts.helper_functions import check_response_status
 
 
-def test_put_user(client_with_mock_db, monkeypatch, bypass_api_required):
+def test_put_user(client_with_mock_db, monkeypatch, bypass_api_key_required):
     mock_data = {
         "email": "test_email",
         "password": "test_password",

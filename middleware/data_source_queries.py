@@ -7,21 +7,21 @@ from flask import make_response, Response
 from database_client.database_client import DatabaseClient
 from database_client.result_formatter import ResultFormatter
 from utilities.common import convert_dates_to_strings, format_arrays
+from middleware.util import format_list_response
 
 
 class DataSourceNotFoundError(Exception):
     pass
 
+
 def get_approved_data_sources_wrapper(db_client: DatabaseClient) -> Response:
     raw_results = db_client.get_approved_data_sources()
     zipped_results = ResultFormatter.zip_get_approved_data_sources_results(raw_results)
     return make_response(
-        {
-            "count": len(zipped_results),
-            "data": zipped_results,
-        },
+        format_list_response(zipped_results),
         HTTPStatus.OK.value,
     )
+
 
 def data_source_by_id_wrapper(arg, db_client: DatabaseClient) -> Response:
     try:
@@ -37,10 +37,7 @@ def get_data_sources_for_map_wrapper(db_client: DatabaseClient) -> Response:
     raw_results = db_client.get_data_sources_for_map()
     zipped_results = ResultFormatter.zip_get_datas_sources_for_map_results(raw_results)
     return make_response(
-        {
-            "count": len(zipped_results),
-            "data": zipped_results,
-        },
+        format_list_response(zipped_results),
         HTTPStatus.OK.value,
     )
 
@@ -73,6 +70,7 @@ def get_restricted_columns():
     ]
     return restricted_columns
 
+
 def update_data_source_wrapper(
     db_client: DatabaseClient, data: dict, data_source_id: str
 ) -> Response:
@@ -93,10 +91,7 @@ def needs_identification_data_sources_wrapper(db_client: DatabaseClient) -> Resp
         raw_results
     )
     return make_response(
-        {
-            "count": len(zipped_results),
-            "data": zipped_results,
-        },
+        format_list_response(zipped_results),
         HTTPStatus.OK.value,
     )
 

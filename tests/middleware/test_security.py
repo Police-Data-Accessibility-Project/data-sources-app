@@ -5,249 +5,154 @@ from typing import Callable
 
 import flask
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-import requests
 from flask import Flask
 
-from database_client.database_client import DatabaseClient
 from middleware import security
-from middleware.custom_exceptions import UserNotFoundError
-from middleware.login_queries import create_session_token
+from middleware.access_logic import (
+    InvalidAuthorizationHeaderException,
+    InvalidAPIKeyException,
+)
 from middleware.security import (
-    validate_api_key,
-    APIKeyStatus,
-    api_required,
-    NoAPIKeyError,
-    ExpiredAPIKeyError,
-    InvalidAPIKeyError,
-    InvalidRoleError,
+    check_api_key_associated_with_user,
+    check_api_key,
+    check_permissions,
+    INVALID_API_KEY_MESSAGE,
 )
-from tests.helper_functions import (
-    create_test_user,
-    UserInfo,
-    give_user_admin_role,
-    create_api_key_db,
-)
-from tests.fixtures import dev_db_connection
+from middleware.decorators import api_key_required
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
+from tests.helper_scripts.common_mocks_and_patches import patch_abort
 
-
-def test_api_key_exists_in_users_table_with_admin_role(dev_db_connection):
-    cursor = dev_db_connection.cursor()
-    test_user = create_test_user(cursor)
-    give_user_admin_role(dev_db_connection, UserInfo(test_user.email, ""))
-    api_key = create_api_key_db(cursor, test_user.id)
-    dev_db_connection.commit()
-    result = validate_api_key(api_key, "", "")
-    assert result is None
-
-
-def test_api_key_exists_in_users_table_with_non_admin_role(dev_db_connection):
-    cursor = dev_db_connection.cursor()
-    test_user = create_test_user(cursor)
-    api_key = create_api_key_db(cursor, test_user.id)
-    dev_db_connection.commit()
-    result = validate_api_key(api_key, "", "")
-    assert result is None
-
-
-def test_api_key_not_in_users_table_but_in_session_tokens_table(dev_db_connection):
-    # TODO: REWORK
-    cursor = dev_db_connection.cursor()
-    test_user = create_test_user(cursor)
-    token = create_session_token(DatabaseClient(cursor), test_user.id, test_user.email)
-    dev_db_connection.commit()
-    result = validate_api_key(token, "", "")
-    assert result is None
-
-
-def test_expired_session_token(dev_db_connection):
-    cursor = dev_db_connection.cursor()
-    test_user = create_test_user(cursor)
-    token = create_session_token(DatabaseClient(cursor), test_user.id, test_user.email)
-    cursor.execute(
-        f"UPDATE session_tokens SET expiration_date = '{datetime.date(year=2020, month=3, day=4)}' WHERE token = '{token}'"
-    )
-    dev_db_connection.commit()
-    with pytest.raises(ExpiredAPIKeyError):
-        result = validate_api_key(token, "", "")
-
-
-def test_session_token_with_admin_role(dev_db_connection):
-    # TODO: REWORK
-    cursor = dev_db_connection.cursor()
-    test_user = create_test_user(cursor)
-    give_user_admin_role(dev_db_connection, UserInfo(test_user.email, ""))
-    token = create_session_token(DatabaseClient(cursor), test_user.id, test_user.email)
-    dev_db_connection.commit()
-    result = validate_api_key(token, "", "")
-    assert result is None
-
-
-def test_api_key_exists_in_access_tokens_table(dev_db_connection):
-    cursor = dev_db_connection.cursor()
-    token = uuid.uuid4().hex
-    expiration = datetime.datetime(year=2030, month=1, day=1)
-    cursor.execute(
-        f"insert into access_tokens (token, expiration_date) values (%s, %s)",
-        (token, expiration),
-    )
-    dev_db_connection.commit()
-    result = validate_api_key(token, "", "")
-    assert result is None
-
-
-def test_api_key_not_exist_in_any_table(dev_db_connection):
-    token = uuid.uuid4().hex
-    with pytest.raises(InvalidAPIKeyError) as e:
-        result = validate_api_key(token, "", "")
-    assert "API Key not found" in str(e.value)
-
-
-def test_admin_only_action_with_non_admin_role(dev_db_connection):
-    cursor = dev_db_connection.cursor()
-    test_user = create_test_user(cursor)
-    api_key = create_api_key_db(cursor, test_user.id)
-    dev_db_connection.commit()
-    with pytest.raises(InvalidRoleError) as e:
-        result = validate_api_key(api_key, "datasources", "PUT")
-    assert "You do not have permission to access this endpoint" in str(e.value)
-
-
-def test_admin_only_action_with_admin_role(dev_db_connection):
-    cursor = dev_db_connection.cursor()
-    test_user = create_test_user(cursor)
-    give_user_admin_role(dev_db_connection, UserInfo(test_user.email, ""))
-    api_key = create_api_key_db(cursor, test_user.id)
-    dev_db_connection.commit()
-    result = validate_api_key(api_key, "datasources", "PUT")
-    assert result is None
-
-
-@pytest.fixture
-def app() -> Flask:
-    app = Flask(__name__)
-    return app
-
-
-@pytest.fixture
-def client(app: Flask):
-    return app.test_client()
-
-
-@pytest.fixture
-def mock_request_headers(monkeypatch):
-    mock = MagicMock()
-    monkeypatch.setattr(flask, "request", mock)
-    return mock
-
-
-@pytest.fixture
-def mock_validate_api_key(monkeypatch):
-    mock = MagicMock()
-    monkeypatch.setattr(security, "validate_api_key", mock)
-    return mock
+PATCH_ROOT = "middleware.security"
 
 
 @pytest.fixture
 def dummy_route():
-    @api_required
+    @api_key_required
     def _dummy_route():
         return "This is a protected route", HTTPStatus.OK.value
 
     return _dummy_route
 
 
-def test_api_required_happy_path(
-    app, client, mock_request_headers, mock_validate_api_key, dummy_route: Callable
-):
-    mock_validate_api_key.return_value = None
-    with app.test_request_context(headers={"Authorization": "Bearer valid_api_key"}):
-        response = dummy_route()
-        assert response == ("This is a protected route", HTTPStatus.OK.value)
+DUMMY_AUTHORIZATION = {"Authorization": "Basic valid_api_key"}
 
 
-def test_api_required_api_key_expired(
-    app, client, mock_request_headers, mock_validate_api_key, dummy_route: Callable
-):
-    mock_validate_api_key.side_effect = ExpiredAPIKeyError(
-        "The provided API key has expired"
+@pytest.fixture
+def mock_abort(monkeypatch) -> MagicMock:
+    return patch_abort(monkeypatch, path=PATCH_ROOT)
+
+
+class CheckPermissionsMocks(DynamicMagicMock):
+    get_jwt_identity: MagicMock
+    verify_jwt_in_request: MagicMock
+    get_db_client: MagicMock
+    PermissionsManager: MagicMock
+    abort: MagicMock
+
+
+@pytest.fixture
+def check_permissions_mocks():
+    mock = CheckPermissionsMocks(
+        patch_root=PATCH_ROOT,
     )
-    with app.test_request_context(headers={"Authorization": "Bearer valid_api_key"}):
-        response = dummy_route()
-        assert response == (
-            {"message": "The provided API key has expired"},
-            HTTPStatus.UNAUTHORIZED.value,
-        )
+    mock.get_jwt_identity.return_value = mock.user_email
+    mock.get_db_client.return_value = mock.db_client
+    mock.PermissionsManager.return_value = mock.permissions_manager_instance
+    return mock
 
 
-def test_api_required_expired_api_key(
-    app, client, mock_request_headers, mock_validate_api_key, dummy_route: Callable
-):
-    mock_validate_api_key.side_effect = ExpiredAPIKeyError(
-        "The provided API key has expired"
+def assert_pre_conditional_check_permission_mocks(mock: CheckPermissionsMocks):
+    mock.verify_jwt_in_request.assert_called_once()
+    mock.get_jwt_identity.assert_called_once()
+    mock.get_db_client.assert_called_once()
+    mock.PermissionsManager.assert_called_once_with(
+        db_client=mock.db_client, user_email=mock.user_email
     )
-    with app.test_request_context(headers={"Authorization": "Bearer expired_api_key"}):
-        response = dummy_route()
-        assert response == (
-            {"message": "The provided API key has expired"},
-            HTTPStatus.UNAUTHORIZED.value,
-        )
-
-
-def test_api_required_no_api_key_in_request_header(
-    app, client, mock_request_headers, mock_validate_api_key, dummy_route: Callable
-):
-    with app.test_request_context(headers={"Authorization": "Bearer"}):
-        response = dummy_route()
-        assert response == (
-            {"message": "Please provide a properly formatted bearer token and API key"},
-            HTTPStatus.BAD_REQUEST.value,
-        )
-
-
-def test_api_required_invalid_role(
-    app, client, mock_request_headers, mock_validate_api_key, dummy_route: Callable
-):
-    mock_validate_api_key.side_effect = InvalidRoleError(
-        "You do not have permission to access this endpoint"
+    mock.permissions_manager_instance.has_permission.assert_called_once_with(
+        mock.permission
     )
-    with app.test_request_context(headers={"Authorization": "Bearer valid_api_key"}):
-        response = dummy_route()
-        assert response == (
-            {"message": "You do not have permission to access this endpoint"},
-            HTTPStatus.FORBIDDEN.value,
-        )
 
 
-def test_api_required_not_authorization_key_in_request_header(
-    app, client, mock_request_headers, mock_validate_api_key, dummy_route: Callable
-):
-    with app.test_request_context(headers={}):
-        response = dummy_route()
-        assert response == (
-            {"message": "Please provide an 'Authorization' key in the request header"},
-            HTTPStatus.BAD_REQUEST.value,
-        )
+def test_check_permissions_happy_path(check_permissions_mocks):
+    mock = check_permissions_mocks
+    mock.permissions_manager_instance.has_permission.return_value = True
+
+    check_permissions(mock.permission)
+
+    assert_pre_conditional_check_permission_mocks(mock)
+    mock.abort.assert_not_called()
 
 
-def test_api_required_improperly_formatted_authorization_key(
-    app, client, mock_request_headers, mock_validate_api_key, dummy_route: Callable
-):
-    with app.test_request_context(headers={"Authorization": "Bearer"}):
-        response = dummy_route()
-        assert response == (
-            {"message": "Please provide a properly formatted bearer token and API key"},
-            HTTPStatus.BAD_REQUEST.value,
-        )
+def test_check_permissions_user_does_not_have_permission(check_permissions_mocks):
+    mock = check_permissions_mocks
+    mock.permissions_manager_instance.has_permission.return_value = False
+    check_permissions(mock.permission)
+
+    assert_pre_conditional_check_permission_mocks(mock)
+    mock.abort.assert_called_once_with(
+        code=HTTPStatus.FORBIDDEN,
+        message="You do not have permission to access this endpoint",
+    )
 
 
-def test_api_required_undefined_api_key(
-    app, client, mock_request_headers, mock_validate_api_key, dummy_route: Callable
-):
-    with app.test_request_context(headers={"Authorization": "Bearer undefined"}):
-        response = dummy_route()
-        assert response == (
-            {"message": "Please provide an API key"},
-            HTTPStatus.BAD_REQUEST.value,
-        )
+def test_check_api_key_associated_with_user_happy_path(mock_abort):
+    mock = MagicMock()
+    mock.db_client.get_user_by_api_key.return_value = mock.user_id
+    check_api_key_associated_with_user(mock.db_client, mock.api_key)
+    mock.db_client.get_user_by_api_key.assert_called_once_with(mock.api_key)
+    mock_abort.assert_not_called()
+
+
+def test_check_api_key_associated_with_user_invalid_api_key(mock_abort):
+    mock = MagicMock()
+    mock.db_client.get_user_by_api_key.return_value = None
+    check_api_key_associated_with_user(mock.db_client, mock.api_key)
+    mock.db_client.get_user_by_api_key.assert_called_once_with(mock.api_key)
+    mock_abort.assert_called_once_with(HTTPStatus.UNAUTHORIZED, "Invalid API Key")
+
+
+class CheckApiKeyMocks(DynamicMagicMock):
+    get_db_client: MagicMock
+    get_api_key_from_request_header: MagicMock
+    check_api_key_associated_with_user: MagicMock
+
+
+def test_check_api_key_happy_path():
+    mock = CheckApiKeyMocks(
+        patch_root=PATCH_ROOT,
+    )
+    mock.get_api_key_from_request_header.return_value = mock.api_key
+    mock.get_db_client.return_value = mock.db_client
+
+    check_api_key()
+
+    mock.get_api_key_from_request_header.assert_called_once()
+    mock.get_db_client.assert_called_once()
+    mock.check_api_key_associated_with_user.assert_called_once_with(
+        mock.db_client, mock.api_key
+    )
+
+
+@pytest.mark.parametrize(
+    "exception",
+    [
+        InvalidAuthorizationHeaderException,
+        InvalidAPIKeyException,
+    ],
+)
+def test_check_api_key_invalid_api_key(exception, mock_abort):
+    mock = CheckApiKeyMocks(
+        patch_root=PATCH_ROOT,
+    )
+    mock.get_api_key_from_request_header.side_effect = exception
+
+    check_api_key()
+
+    mock.get_api_key_from_request_header.assert_called_once()
+    mock.get_db_client.assert_not_called()
+    mock.check_api_key_associated_with_user.assert_not_called()
+    mock_abort.assert_called_once_with(
+        code=HTTPStatus.UNAUTHORIZED, message=INVALID_API_KEY_MESSAGE
+    )
