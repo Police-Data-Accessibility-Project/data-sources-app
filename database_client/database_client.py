@@ -131,7 +131,6 @@ class DatabaseClient:
             return None
         return results
 
-    @cursor_manager
     def add_new_user(self, email: str, password_digest: str) -> Optional[int]:
         """
         Adds a new user to the database.
@@ -139,31 +138,24 @@ class DatabaseClient:
         :param password_digest:
         :return:
         """
-        query = sql.SQL(
-            "insert into users (email, password_digest) values ({}, {}) returning id"
-        ).format(
-            sql.Literal(email),
-            sql.Literal(password_digest),
+        return self._create_entry_in_table(
+            table_name="users",
+            column_value_mappings={"email": email, "password_digest": password_digest},
+            column_to_return="id",
         )
-        self.cursor.execute(query)
-        if self.cursor.rowcount == 0:
-            return None
-        return self.cursor.fetchone()[0]
 
-    @cursor_manager
     def get_user_id(self, email: str) -> Optional[int]:
         """
         Gets the ID of a user in the database based on their email.
         :param email:
         :return:
         """
-        query = sql.SQL("select id from users where email = {}").format(
-            sql.Literal(email)
+        results = self._select_from_single_relation(
+            relation_name="users", columns=["id"], where_mappings={"email": email}
         )
-        self.cursor.execute(query)
-        if self.cursor.rowcount == 0:
+        if len(results) == 0:
             return None
-        return self.cursor.fetchone()[0]
+        return results[0][0]
 
     def set_user_password_digest(self, email: str, password_digest: str):
         """
@@ -176,12 +168,11 @@ class DatabaseClient:
             table_name="users",
             entry_id=email,
             column_edit_mappings={"password_digest": password_digest},
-            id_column_name="email"
+            id_column_name="email",
         )
 
     ResetTokenInfo = namedtuple("ResetTokenInfo", ["id", "email", "create_date"])
 
-    @cursor_manager
     def get_reset_token_info(self, token: str) -> Optional[ResetTokenInfo]:
         """
         Checks if a reset token exists in the database and retrieves the associated user data.
@@ -189,16 +180,16 @@ class DatabaseClient:
         :param token: The reset token to check.
         :return: ResetTokenInfo if the token exists; otherwise, None.
         """
-        query = sql.SQL(
-            "select id, email, create_date from reset_tokens where token = {}"
-        ).format(sql.Literal(token))
-        self.cursor.execute(query)
-        row = self.cursor.fetchone()
-        if row is None:
+        results = self._select_from_single_relation(
+            relation_name="reset_tokens",
+            columns=["id", "email", "create_date"],
+            where_mappings={"token": token},
+        )
+        if len(results) == 0:
             return None
+        row = results[0]
         return self.ResetTokenInfo(id=row[0], email=row[1], create_date=row[2])
 
-    @cursor_manager
     def add_reset_token(self, email: str, token: str):
         """
         Inserts a new reset token into the database for a specified email.
@@ -206,10 +197,10 @@ class DatabaseClient:
         :param email: The email to associate with the reset token.
         :param token: The reset token to add.
         """
-        query = sql.SQL(
-            "insert into reset_tokens (email, token) values ({}, {})"
-        ).format(sql.Literal(email), sql.Literal(token))
-        self.cursor.execute(query)
+        self._create_entry_in_table(
+            table_name="reset_tokens",
+            column_value_mappings={"email": email, "token": token},
+        )
 
     @cursor_manager
     def delete_reset_token(self, email: str, token: str):
@@ -224,21 +215,22 @@ class DatabaseClient:
         ).format(sql.Literal(email), sql.Literal(token))
         self.cursor.execute(query)
 
-    @cursor_manager
-    def get_user_by_api_key(self, api_key: str) -> Optional[str]:
+    UserIdentifiers = namedtuple("UserIdentifiers", ["id", "email"])
+
+    def get_user_by_api_key(self, api_key: str) -> Optional[UserIdentifiers]:
         """
         Get user id for a given api key
         :param api_key: The api key to check.
         :return: RoleInfo if the token exists; otherwise, None.
         """
-        query = sql.SQL("select id from users where api_key = {}").format(
-            sql.Literal(api_key)
+        results = self._select_from_single_relation(
+            relation_name="users",
+            columns=["id", "email"],
+            where_mappings={"api_key": api_key},
         )
-        self.cursor.execute(query)
-        row = self.cursor.fetchone()
-        if row is None:
+        if len(results) == 0:
             return None
-        return row[0]
+        return self.UserIdentifiers(id=results[0][0], email=results[0][1])
 
     def update_user_api_key(self, api_key: str, user_id: int):
         """
@@ -319,9 +311,8 @@ class DatabaseClient:
             table_name="data_sources",
             entry_id=data_source_id,
             column_edit_mappings=data,
-            id_column_name="airtable_uid"
+            id_column_name="airtable_uid",
         )
-
 
     MapInfo = namedtuple(
         "MapInfo",
@@ -372,7 +363,6 @@ class DatabaseClient:
 
         return [self.MapInfo(*result) for result in results]
 
-    @cursor_manager
     def get_agencies_from_page(self, page: int) -> list[tuple[Any, ...]]:
         """
         Returns a list of up to 1000 agencies from the database from a given page.
@@ -381,40 +371,41 @@ class DatabaseClient:
         :return: A list of agency tuples.
         """
         offset = self.get_offset(page)
-        sql_query = """
-            SELECT 
-                name,
-                homepage_url,
-                count_data_sources,
-                agency_type,
-                multi_agency,
-                submitted_name,
-                jurisdiction_type,
-                state_iso,
-                municipality,
-                zip_code,
-                county_fips,
-                county_name,
-                lat,
-                lng,
-                data_sources,
-                no_web_presence,
-                airtable_agency_last_modified,
-                data_sources_last_updated,
-                approved,
-                rejection_reason,
-                last_approval_editor,
-                agency_created,
-                county_airtable_uid,
-                defunct_year,
-                airtable_uid
-            FROM agencies where approved = 'TRUE' limit 1000 offset %s
-        """
-        self.cursor.execute(
-            sql_query,
-            (offset,),
+        columns = [
+            "name",
+            "homepage_url",
+            "count_data_sources",
+            "agency_type",
+            "multi_agency",
+            "submitted_name",
+            "jurisdiction_type",
+            "state_iso",
+            "municipality",
+            "zip_code",
+            "county_fips",
+            "county_name",
+            "lat",
+            "lng",
+            "data_sources",
+            "no_web_presence",
+            "airtable_agency_last_modified",
+            "data_sources_last_updated",
+            "approved",
+            "rejection_reason",
+            "last_approval_editor",
+            "agency_created",
+            "county_airtable_uid",
+            "defunct_year",
+            "airtable_uid",
+        ]
+        results = self._select_from_single_relation(
+            relation_name="agencies",
+            columns=columns,
+            where_mappings={"approved": "TRUE"},
+            limit=1000,
+            offset=offset,
         )
-        results = self.cursor.fetchall()
+
         return results
 
     @staticmethod
@@ -481,9 +472,7 @@ class DatabaseClient:
 
         return results
 
-    def update_url_status_to_broken(
-        self, id: str, broken_as_of: str
-    ) -> None:
+    def update_url_status_to_broken(self, id: str, broken_as_of: str) -> None:
         """
         Updates the data_sources table setting the url_status to 'broken' for a given id.
 
@@ -509,7 +498,7 @@ class DatabaseClient:
             table_name="data_sources_archive_info",
             entry_id=id,
             column_edit_mappings={"last_cached": last_cached},
-            id_column_name="airtable_uid"
+            id_column_name="airtable_uid",
         )
 
     QuickSearchResult = namedtuple(
@@ -570,7 +559,6 @@ class DatabaseClient:
     DataSourceMatches = namedtuple("DataSourceMatches", ["converted", "ids"])
     SearchParameters = namedtuple("SearchParameters", ["search", "location"])
 
-    @cursor_manager
     def add_quick_search_log(
         self,
         data_sources_count: int,
@@ -585,23 +573,18 @@ class DatabaseClient:
         :param processed_search_parameters: SearchParameters namedtuple with the search and location parameters
         """
         query_results = json.dumps(processed_data_source_matches.ids).replace("'", "")
-        sql_query = """
-            INSERT INTO quick_search_query_logs (search, location, results, result_count) 
-            VALUES (%s, %s, %s, %s)
-        """
-        self.cursor.execute(
-            sql_query,
-            (
-                processed_search_parameters.search,
-                processed_search_parameters.location,
-                query_results,
-                data_sources_count,
-            ),
+        self._create_entry_in_table(
+            table_name="quick_search_query_logs",
+            column_value_mappings={
+                "search": processed_search_parameters.search,
+                "location": processed_search_parameters.location,
+                "results": query_results,
+                "result_count": data_sources_count,
+            },
         )
 
     UserInfo = namedtuple("UserInfo", ["id", "password_digest", "api_key", "email"])
 
-    @cursor_manager
     def get_user_info(self, email: str) -> UserInfo:
         """
         Retrieves user data by email.
@@ -610,19 +593,20 @@ class DatabaseClient:
         :raise UserNotFoundError: If no user is found.
         :return: UserInfo namedtuple containing the user's information.
         """
-        query = sql.SQL(
-            "select id, password_digest, api_key, email from users where email = {email}"
-        ).format(email=sql.Literal(email))
-        self.cursor.execute(query)
-        results = self.cursor.fetchone()
-        if results is None:
+        results = self._select_from_single_relation(
+            relation_name="users",
+            columns=["id", "password_digest", "api_key", "email"],
+            where_mappings={"email": email},
+        )
+        if len(results) == 0:
             raise UserNotFoundError(email)
+        result = results[0]
 
         return self.UserInfo(
-            id=results[0],
-            password_digest=results[1],
-            api_key=results[2],
-            email=results[3],
+            id=result[0],
+            password_digest=result[1],
+            api_key=result[2],
+            email=result[3],
         )
 
     @cursor_manager
@@ -733,27 +717,36 @@ class DatabaseClient:
             for row in results
         ]
 
-    @cursor_manager
     def link_external_account(
         self,
         user_id: str,
         external_account_id: str,
         external_account_type: ExternalAccountTypeEnum,
     ):
-        query = sql.SQL(
-            """
-            INSERT INTO external_accounts (user_id, account_type, account_identifier) 
-            VALUES ({user_id}, {account_type}, {account_identifier});
         """
-        ).format(
-            user_id=sql.Literal(user_id),
-            account_type=sql.Literal(external_account_type.value),
-            account_identifier=sql.Literal(external_account_id),
+        Links an external account to a user.
+
+        :param user_id: The ID of the user.
+        :param external_account_id: The ID of the external account.
+        :param external_account_type: The type of the external account.
+        """
+        self._create_entry_in_table(
+            table_name="external_accounts",
+            column_value_mappings={
+                "user_id": user_id,
+                "account_type": external_account_type.value,
+                "account_identifier": external_account_id,
+            },
         )
-        self.cursor.execute(query)
 
     @cursor_manager
     def add_user_permission(self, user_email: str, permission: PermissionsEnum):
+        """
+        Adds a permission to a user.
+
+        :param user_email: The email of the user.
+        :param permission: The permission to add.
+        """
         query = sql.SQL(
             """
             INSERT INTO user_permissions (user_id, permission_id) 
@@ -859,3 +852,68 @@ class DatabaseClient:
             table_name, entry_id, column_edit_mappings, id_column_name
         )
         self.cursor.execute(query)
+
+    @cursor_manager
+    def _create_entry_in_table(
+        self,
+        table_name: str,
+        column_value_mappings: dict[str, str],
+        column_to_return: Optional[str] = None,
+    ):
+        """
+        Creates a new entry in a table in the database, using the provided column value mappings
+
+        :param table_name: The name of the table to create an entry in.
+        :param column_value_mappings: A dictionary mapping column names to their new values.
+        """
+        query = DynamicQueryConstructor.create_insert_query(
+            table_name, column_value_mappings, column_to_return
+        )
+        self.cursor.execute(query)
+        if column_to_return is not None:
+            return self.cursor.fetchone()[0]
+
+    @cursor_manager
+    def _select_from_single_relation(
+        self,
+        relation_name: str,
+        columns: List[str],
+        where_mappings: Optional[dict] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ):
+        """
+        Selects a single relation from the database
+        """
+        query = DynamicQueryConstructor.create_single_relation_selection_query(
+            relation_name, columns, where_mappings, limit, offset
+        )
+        self.cursor.execute(query)
+        results = self.cursor.fetchall()
+        return results
+
+    def create_data_request(self, data_request_info: dict) -> str:
+        return self._create_entry_in_table(
+            table_name="data_requests",
+            column_value_mappings=data_request_info,
+            column_to_return="id",
+        )
+
+    def get_data_requests_for_creator(
+        self, creator_user_id: str, columns: List[str]
+    ) -> List[str]:
+        return self._select_from_single_relation(
+            relation_name="data_requests",
+            columns=columns,
+            where_mappings={"creator_user_id": creator_user_id},
+        )
+
+    def user_is_creator_of_data_request(
+        self, user_id: int, data_request_id: int
+    ) -> bool:
+        results = self._select_from_single_relation(
+            relation_name="data_requests",
+            columns=["id"],
+            where_mappings={"creator_user_id": user_id, "id": data_request_id},
+        )
+        return len(results) == 1

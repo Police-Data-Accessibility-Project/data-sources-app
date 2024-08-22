@@ -15,22 +15,25 @@ reset_token_model = namespace_reset_token_validation.model(
         "token": fields.String(
             required=True,
             description="The Reset password token to validate",
-            example="2bd77a1d7ef24a1dad3365b8a5c6994e"
+            example="2bd77a1d7ef24a1dad3365b8a5c6994e",
         ),
     },
 )
+
 
 @namespace_reset_token_validation.route("/reset-token-validation")
 class ResetTokenValidation(PsycopgResource):
 
     @handle_exceptions
     @namespace_reset_token_validation.expect(reset_token_model)
-    @namespace_reset_token_validation.response(200, "OK; Reset password token validated")
-    @namespace_reset_token_validation.response(500, "Internal server error")
-    @namespace_reset_token_validation.response(400, "Bad request; Request token is invalid")
-    @namespace_reset_token_validation.doc(
-        description="Validates a reset token."
+    @namespace_reset_token_validation.response(
+        200, "OK; Reset password token validated"
     )
+    @namespace_reset_token_validation.response(500, "Internal server error")
+    @namespace_reset_token_validation.response(
+        400, "Bad request; Request token is invalid"
+    )
+    @namespace_reset_token_validation.doc(description="Validates a reset token.")
     def post(self) -> Response:
         """
         If the token matches a row in the database, 'Token is valid' is returned.
@@ -38,7 +41,6 @@ class ResetTokenValidation(PsycopgResource):
         """
         with self.setup_database_client() as db_client:
             response = reset_token_validation(
-                db_client,
-                token=request.json.get("token")
+                db_client, token=request.json.get("token")
             )
         return response

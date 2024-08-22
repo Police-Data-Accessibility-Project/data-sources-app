@@ -23,11 +23,13 @@ def test_get_permitted_columns():
         relation=mock.relation, role=mock.role, column_permission=mock.column_permission
     )
 
+
 @pytest.fixture
 def mock_abort(monkeypatch):
     mock = MagicMock()
     monkeypatch.setattr("middleware.column_permission_logic.abort", mock)
     return mock
+
 
 def test_check_has_permission_to_edit_columns_success(mock_abort):
     mock = MagicMock()
@@ -43,8 +45,11 @@ def test_check_has_permission_to_edit_columns_success(mock_abort):
     mock_abort.assert_not_called()
 
     mock.db_client.get_permitted_columns.assert_called_once_with(
-        relation=mock.relation, role=mock.role, column_permission=ColumnPermissionEnum.WRITE
+        relation=mock.relation,
+        role=mock.role,
+        column_permission=ColumnPermissionEnum.WRITE,
     )
+
 
 def test_check_has_permission_to_edit_columns_fail(mock_abort):
     mock = MagicMock()
@@ -58,7 +63,9 @@ def test_check_has_permission_to_edit_columns_fail(mock_abort):
     )
 
     mock.db_client.get_permitted_columns.assert_called_once_with(
-        relation=mock.relation, role=mock.role, column_permission=ColumnPermissionEnum.WRITE
+        relation=mock.relation,
+        role=mock.role,
+        column_permission=ColumnPermissionEnum.WRITE,
     )
 
     mock_abort.assert_called_once()

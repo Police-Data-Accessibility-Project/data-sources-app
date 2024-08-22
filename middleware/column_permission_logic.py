@@ -11,19 +11,15 @@ def get_permitted_columns(
     db_client: DatabaseClient,
     relation: str,
     role: RelationRoleEnum,
-    column_permission: ColumnPermissionEnum
+    column_permission: ColumnPermissionEnum,
 ) -> list[str]:
     return db_client.get_permitted_columns(
-        relation=relation,
-        role=role,
-        column_permission=column_permission
+        relation=relation, role=role, column_permission=column_permission
     )
 
+
 def check_has_permission_to_edit_columns(
-    db_client: DatabaseClient,
-    relation: str,
-    role: RelationRoleEnum,
-    columns: list[str]
+    db_client: DatabaseClient, relation: str, role: RelationRoleEnum, columns: list[str]
 ):
     """
     Checks if the user has permission to edit the given columns
@@ -37,7 +33,7 @@ def check_has_permission_to_edit_columns(
         db_client=db_client,
         relation=relation,
         role=role,
-        column_permission=ColumnPermissionEnum.WRITE
+        column_permission=ColumnPermissionEnum.WRITE,
     )
     invalid_columns = []
     for column in columns:

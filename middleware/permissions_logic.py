@@ -8,15 +8,18 @@ from flask_jwt_extended import get_jwt_identity
 from flask_restx import abort
 
 from database_client.database_client import DatabaseClient
+from database_client.helper_functions import get_db_client
 from middleware.custom_exceptions import UserNotFoundError
 from middleware.enums import PermissionsEnum, PermissionsActionEnum
 from utilities.common import get_valid_enum_value
+
 
 @dataclass
 class PermissionsRequest:
     user_email: str
     permission: str
     action: str
+
 
 class PermissionsManager:
     """
@@ -39,42 +42,30 @@ class PermissionsManager:
 
     def get_user_permissions(self) -> Response:
         permissions_list = [permission.value for permission in self.permissions]
-        return make_response(
-            permissions_list,
-            HTTPStatus.OK
-        )
+        return make_response(permissions_list, HTTPStatus.OK)
 
     def add_user_permission(self, permission: PermissionsEnum) -> Response:
         if permission in self.permissions:
             return make_response(
                 f"Permission {permission.value} already exists for user",
-                HTTPStatus.CONFLICT
+                HTTPStatus.CONFLICT,
             )
 
         self.db_client.add_user_permission(self.user_email, permission)
-        return make_response(
-            "Permission added",
-            HTTPStatus.OK
-        )
+        return make_response("Permission added", HTTPStatus.OK)
 
     def remove_user_permission(self, permission: PermissionsEnum) -> Response:
         if permission not in self.permissions:
             return make_response(
                 f"Permission {permission.value} does not exist for user. Cannot remove.",
-                HTTPStatus.CONFLICT
+                HTTPStatus.CONFLICT,
             )
         self.db_client.remove_user_permission(self.user_email, permission)
-        return make_response(
-            "Permission removed",
-            HTTPStatus.OK
-        )
+        return make_response("Permission removed", HTTPStatus.OK)
+
 
 def manage_user_permissions(
-        db_client: DatabaseClient,
-        user_email: str,
-        method: str,
-        *args,
-        **kwargs
+    db_client: DatabaseClient, user_email: str, method: str, *args, **kwargs
 ) -> Response:
     # Create an instance of PermissionsManager
     permissions_manager = PermissionsManager(db_client, user_email)
@@ -86,6 +77,7 @@ def manage_user_permissions(
     else:
         raise AttributeError(f"Method {method} does not exist in PermissionsManager")
 
+
 def update_permissions_wrapper(
     db_client: DatabaseClient,
     dto: PermissionsRequest,
@@ -96,6 +88,11 @@ def update_permissions_wrapper(
         db_client=db_client,
         user_email=dto.user_email,
         method=f"{action.value}_user_permission",
-        permission=permission
+        permission=permission,
     )
 
+
+def get_user_permissions(user_email: str) -> list[PermissionsEnum]:
+    db_client = get_db_client()
+    pm = PermissionsManager(db_client, user_email)
+    return pm.permissions

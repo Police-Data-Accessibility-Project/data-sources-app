@@ -16,6 +16,7 @@ def add_api_key_header_arg(parser: RequestParser):
         default="Basic YOUR_API_KEY",
     )
 
+
 def add_jwt_header_arg(parser: RequestParser):
     parser.add_argument(
         "Authorization",
@@ -25,6 +26,7 @@ def add_jwt_header_arg(parser: RequestParser):
         help="Access token required to access this endpoint",
         default="Bearer YOUR_ACCESS_TOKEN",
     )
+
 
 def create_user_model(namespace: Namespace) -> Model:
     return namespace.model(
@@ -36,6 +38,7 @@ def create_user_model(namespace: Namespace) -> Model:
             ),
         },
     )
+
 
 def create_jwt_tokens_model(namespace: Namespace) -> Model:
     return namespace.model(
@@ -86,7 +89,9 @@ def create_outer_model(namespace: Namespace, inner_model: Model, name: str) -> M
         name,
         {
             "count": fields.Integer(
-                required=True, description=f"Count of {inner_model.name} items", attribute="count"
+                required=True,
+                description=f"Count of {inner_model.name} items",
+                attribute="count",
             ),
             "data": fields.List(
                 fields.Nested(

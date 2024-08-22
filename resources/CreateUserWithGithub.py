@@ -8,6 +8,7 @@ from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_create_user_with_github = create_namespace(AppNamespaces.AUTH)
 
+
 @namespace_create_user_with_github.route("/create-user-with-github")
 class CreateUserWithGithub(PsycopgResource):
 

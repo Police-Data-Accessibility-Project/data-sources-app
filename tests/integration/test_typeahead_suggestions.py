@@ -18,27 +18,29 @@ def test_typeahead_suggestions(flask_client_with_db, dev_db_connection):
         flask_client=flask_client_with_db,
         http_method="get",
         endpoint="/search/typeahead-suggestions?query=xyl",
-        expected_json_content={"suggestions": [
-            {
-                "display_name": "Xylodammerung",
-                "locality": "Xylodammerung",
-                "county": "Arxylodon",
-                "state": "Xylonsylvania",
-                "type": "Locality"
-            },
-            {
-                "display_name": "Xylonsylvania",
-                "locality": None,
-                "county": None,
-                "state": "Xylonsylvania",
-                "type": "State"
-            },
-            {
-                "display_name": "Arxylodon",
-                "locality": None,
-                "county": "Arxylodon",
-                "state": "Xylonsylvania",
-                "type": "County"
-            },
-        ]},
+        expected_json_content={
+            "suggestions": [
+                {
+                    "display_name": "Xylodammerung",
+                    "locality": "Xylodammerung",
+                    "county": "Arxylodon",
+                    "state": "Xylonsylvania",
+                    "type": "Locality",
+                },
+                {
+                    "display_name": "Xylonsylvania",
+                    "locality": None,
+                    "county": None,
+                    "state": "Xylonsylvania",
+                    "type": "State",
+                },
+                {
+                    "display_name": "Arxylodon",
+                    "locality": None,
+                    "county": "Arxylodon",
+                    "state": "Xylonsylvania",
+                    "type": "County",
+                },
+            ]
+        },
     )

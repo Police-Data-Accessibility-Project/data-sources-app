@@ -16,9 +16,7 @@ def get_agencies(db_client: DatabaseClient, page: int) -> Response:
     :return: A response object with the relevant agency information and status code.
     """
     agencies_matches = get_agencies_matches(db_client, page)
-    return make_response(
-        format_list_response(agencies_matches),
-        HTTPStatus.OK)
+    return make_response(format_list_response(agencies_matches), HTTPStatus.OK)
 
 
 def get_agencies_matches(db_client: DatabaseClient, page: int):

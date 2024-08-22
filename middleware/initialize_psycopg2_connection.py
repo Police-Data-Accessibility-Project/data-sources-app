@@ -53,6 +53,7 @@ class DatabaseConnectionSingleton:
         except psycopg2.OperationalError as e:
             raise DatabaseInitializationError(e) from e
 
+
 def initialize_psycopg2_connection() -> PgConnection:
     """
     Initializes a connection to a PostgreSQL database using psycopg2 with connection parameters

@@ -184,38 +184,24 @@ class DynamicQueryConstructor:
 
         :param data: A dictionary containing the data source details.
         """
-        columns = []
-        values = []
-        for key, value in data.items():
-            if key not in RESTRICTED_COLUMNS:
-                columns.append(sql.Identifier(key))
-                values.append(sql.Literal(value))
+        # Remove restricted keys
+        for key in data.keys():
+            if key in RESTRICTED_COLUMNS:
+                data.pop(key)
 
-        now = datetime.now().strftime("%Y-%m-%d")
-        airtable_uid = str(uuid.uuid4())
-
-        columns.extend(
-            [
-                sql.Identifier("approval_status"),
-                sql.Identifier("url_status"),
-                sql.Identifier("data_source_created"),
-                sql.Identifier("airtable_uid"),
-            ]
-        )
-        values.extend(
-            [
-                sql.Literal(False),
-                sql.Literal(["ok"]),
-                sql.Literal(now),
-                sql.Literal(airtable_uid),
-            ]
+        # Add default values
+        data.update(
+            {
+                "approval_status": False,
+                "url_status": ["ok"],
+                "data_source_created": datetime.now().strftime("%Y-%m-%d"),
+                "airtable_uid": str(uuid.uuid4()),
+            }
         )
 
-        query = sql.SQL("INSERT INTO data_sources ({}) VALUES ({}) RETURNING *").format(
-            sql.SQL(", ").join(columns), sql.SQL(", ").join(values)
+        return DynamicQueryConstructor.create_insert_query(
+            table_name="data_sources", column_value_mappings=data
         )
-
-        return query
 
     @staticmethod
     def generate_new_typeahead_suggestion_query(search_term: str):
@@ -356,7 +342,7 @@ class DynamicQueryConstructor:
         table_name: str,
         id_value: int,
         column_edit_mappings: dict[str, str],
-        id_column_name: str
+        id_column_name: str,
     ) -> sql.Composed:
         """
         Dynamically constructs an update query based on the provided mappings
@@ -374,8 +360,7 @@ class DynamicQueryConstructor:
         # Generate the column assignments
         assignments = [
             sql.SQL("{column} = {value}").format(
-                column=sql.Identifier(column_name),
-                value=sql.Literal(column_value)
+                column=sql.Identifier(column_name), value=sql.Literal(column_value)
             )
             for column_name, column_value in column_edit_mappings.items()
         ]
@@ -385,8 +370,91 @@ class DynamicQueryConstructor:
 
         # Add the WHERE clause to specify the entry to update
         query += sql.SQL(" WHERE {id_column} = {id_value}").format(
-            id_column=sql.Identifier(id_column_name),
-            id_value=sql.Literal(id_value)
+            id_column=sql.Identifier(id_column_name), id_value=sql.Literal(id_value)
         )
 
         return query
+
+    @staticmethod
+    def create_insert_query(
+        table_name: str,
+        column_value_mappings: dict[str, str],
+        column_to_return: Optional[str] = None,
+    ) -> sql.Composed:
+        """
+        Dynamically constructs an insert query based on the provided mappings
+        :param table_name: Name of the table to insert into
+        :param column_value_mappings: A dictionary mapping column names to their values
+        :return: A composed SQL query ready for execution
+        """
+
+        # Start with the base insert query
+        base_query = sql.SQL("INSERT INTO {table} ").format(
+            table=sql.Identifier(table_name)
+        )
+
+        # Generate the column assignments
+        columns = sql.SQL(", ").join(
+            [
+                sql.Identifier(column_name)
+                for column_name in column_value_mappings.keys()
+            ]
+        )
+
+        # Generate the value assignments
+        values = sql.SQL(", ").join(
+            [
+                sql.Literal(column_value)
+                for column_value in column_value_mappings.values()
+            ]
+        )
+
+        # Combine the base query with the assignments
+        query = base_query + sql.SQL("({columns}) VALUES ({values})").format(
+            columns=columns, values=values
+        )
+
+        if column_to_return is not None:
+            query += sql.SQL(" RETURNING {column_to_return}").format(
+                column_to_return=sql.Identifier(column_to_return)
+            )
+
+        return query
+
+    @staticmethod
+    def create_single_relation_selection_query(
+        relation: str,
+        columns: list[str],
+        where_mappings: Optional[dict] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ):
+        """
+        Creates a SELECT query for a single relation (table or view)
+        that selects the given columns with the given where mappings
+        :param relation:
+        :param columns:
+        :param where_mappings: And-joined simple where conditionals (of column = value)
+        :return:
+        """
+        base_query = sql.SQL("SELECT {columns} FROM {relation}").format(
+            columns=sql.SQL(", ").join([sql.Identifier(column) for column in columns]),
+            relation=sql.Identifier(relation),
+        )
+        if where_mappings is not None:
+            where_clause = sql.SQL("WHERE {where_clause}").format(
+                where_clause=sql.SQL(" AND ").join(
+                    [
+                        sql.SQL(" {column} = {value} ").format(
+                            column=sql.Identifier(column), value=sql.Literal(value)
+                        )
+                        for column, value in where_mappings.items()
+                    ]
+                )
+            )
+            base_query += where_clause
+        if limit is not None:
+            base_query += sql.SQL(" LIMIT {limit}").format(limit=sql.Literal(limit))
+        if offset is not None:
+            base_query += sql.SQL(" OFFSET {offset}").format(offset=sql.Literal(offset))
+        return base_query
