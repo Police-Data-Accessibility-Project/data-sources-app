@@ -27,10 +27,10 @@ class DatabaseConnectionSingleton:
 
     def get_connection(self) -> PgConnection:
         if self._connection is None or self._connection.closed != 0:
-            self._connection = self._initialize_psycopg2_connection()
+            self._connection = self._initialize_psycopg_connection()
         return self._connection
 
-    def _initialize_psycopg2_connection(self) -> PgConnection:
+    def _initialize_psycopg_connection(self) -> PgConnection:
         """
         Initializes a connection to a PostgreSQL database using psycopg with connection parameters
         obtained from an environment variable. If the connection fails, it raises a DatabaseInitializationError.
@@ -54,7 +54,7 @@ class DatabaseConnectionSingleton:
             raise DatabaseInitializationError(e) from e
 
 
-def initialize_psycopg2_connection() -> PgConnection:
+def initialize_psycopg_connection() -> PgConnection:
     """
     Initializes a connection to a PostgreSQL database using psycopg with connection parameters
     obtained from an environment variable. If the connection fails, it returns a default dictionary

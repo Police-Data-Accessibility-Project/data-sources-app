@@ -607,7 +607,7 @@ def test_create_data_request(live_database_client):
     )
 
     assert len(results) == 1
-    assert results[0][0] == submission_notes
+    assert results[0]["submission_notes"] == submission_notes
 
 
 def test_get_data_requests_for_creator(live_database_client):
@@ -627,7 +627,7 @@ def test_get_data_requests_for_creator(live_database_client):
     )
     assert len(results) == 3
     for result in results:
-        assert result[0] in submission_notes_list
+        assert result["submission_notes"] in submission_notes_list
 
 
 def test_user_is_creator_of_data_request(live_database_client):

@@ -12,7 +12,7 @@ GET_ENV_PATCH_ROUTE = PATCH_ROOT + ".get_env_variable"
 CONNECT_PATCH_ROUTE = PATCH_ROOT + ".psycopg.connect"
 
 
-def test_initialize_psycopg2_connection():
+def test_initialize_psycopg_connection():
     """
     Test that initialize_psycopg_connection returns a psycopg connection object.
     And that, if the connection is closed, it is reopened.
