@@ -154,7 +154,7 @@ class DatabaseClient:
         )
         if len(results) == 0:
             return None
-        return results[0][0]
+        return results[0]["id"]
 
     def set_user_password_digest(self, email: str, password_digest: str):
         """
@@ -187,7 +187,7 @@ class DatabaseClient:
         if len(results) == 0:
             return None
         row = results[0]
-        return self.ResetTokenInfo(id=row[0], email=row[1], create_date=row[2])
+        return self.ResetTokenInfo(id=row["id"], email=row["email"], create_date=row["create_date"])
 
     def add_reset_token(self, email: str, token: str):
         """
@@ -229,7 +229,7 @@ class DatabaseClient:
         )
         if len(results) == 0:
             return None
-        return self.UserIdentifiers(id=results[0][0], email=results[0][1])
+        return self.UserIdentifiers(id=results[0]["id"], email=results[0]["email"])
 
     def update_user_api_key(self, api_key: str, user_id: int):
         """
@@ -602,10 +602,10 @@ class DatabaseClient:
         result = results[0]
 
         return self.UserInfo(
-            id=results["id"],
-            password_digest=results["password_digest"],
-            api_key=results["api_key"],
-            email=results["email"],
+            id=result["id"],
+            password_digest=result["password_digest"],
+            api_key=result["api_key"],
+            email=result["email"],
         )
 
     @cursor_manager()
@@ -852,7 +852,7 @@ class DatabaseClient:
         )
         self.cursor.execute(query)
 
-    @cursor_manager
+    @cursor_manager()
     def _create_entry_in_table(
         self,
         table_name: str,
@@ -870,9 +870,9 @@ class DatabaseClient:
         )
         self.cursor.execute(query)
         if column_to_return is not None:
-            return self.cursor.fetchone()[0]
+            return self.cursor.fetchone()[column_to_return]
 
-    @cursor_manager
+    @cursor_manager()
     def _select_from_single_relation(
         self,
         relation_name: str,
