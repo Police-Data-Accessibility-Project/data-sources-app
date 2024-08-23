@@ -8,7 +8,7 @@ import uuid
 
 import psycopg
 from psycopg import sql
-from psycopg.rows import namedtuple_row
+from psycopg.rows import dict_row, tuple_row
 
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
@@ -78,40 +78,39 @@ class DatabaseClient:
         self.connection = initialize_psycopg_connection()
         self.cursor = None
 
-    def cursor_manager(method):
+    def cursor_manager(row_factory=dict_row):
         """Decorator method for managing a cursor object.
         The cursor is closed after the method concludes its execution.
 
-        :param method: The method being called upon.
-        :raises e: If an error occurs, rollback the current transaction.
-        :return: result of the method.
+        :param row_factory: Row factory for the cursor, defaults to dict_row
         """
+        def decorator(method):
+            @wraps(method)
+            def wrapper(self, *args, **kwargs):
+                # Open a new cursor
+                self.cursor = self.connection.cursor(row_factory=row_factory)
+                try:
+                    # Execute the method
+                    result = method(self, *args, **kwargs)
+                    # Commit the transaction if no exception occurs
+                    self.connection.commit()
+                    return result
+                except Exception as e:
+                    # Rollback in case of an error
+                    self.connection.rollback()
+                    raise e
+                finally:
+                    # Close the cursor
+                    self.cursor.close()
+                    self.cursor = None
 
-        @wraps(method)
-        def wrapper(self, *args, **kwargs):
-            # Open a new cursor
-            self.cursor = self.connection.cursor(row_factory=namedtuple_row)
-            try:
-                # Execute the method
-                result = method(self, *args, **kwargs)
-                # Commit the transaction if no exception occurs
-                self.connection.commit()
-                return result
-            except Exception as e:
-                # Rollback in case of an error
-                self.connection.rollback()
-                raise e
-            finally:
-                # Close the cursor
-                self.cursor.close()
-                self.cursor = None
-
-        return wrapper
+            return wrapper
+        return decorator
 
     def close(self):
         self.connection.close()
 
-    @cursor_manager
+    @cursor_manager()
     def execute_raw_sql(
         self, query: str, vars: Optional[tuple] = None
     ) -> Optional[list[dict]]:
@@ -131,7 +130,7 @@ class DatabaseClient:
             return None
         return results
 
-    @cursor_manager
+    @cursor_manager()
     def add_new_user(self, email: str, password_digest: str) -> Optional[int]:
         """
         Adds a new user to the database.
@@ -148,9 +147,9 @@ class DatabaseClient:
         self.cursor.execute(query)
         if self.cursor.rowcount == 0:
             return None
-        return self.cursor.fetchone()[0]
+        return self.cursor.fetchone()["id"]
 
-    @cursor_manager
+    @cursor_manager()
     def get_user_id(self, email: str) -> Optional[int]:
         """
         Gets the ID of a user in the database based on their email.
@@ -163,7 +162,7 @@ class DatabaseClient:
         self.cursor.execute(query)
         if self.cursor.rowcount == 0:
             return None
-        return self.cursor.fetchone()[0]
+        return self.cursor.fetchone()["id"]
 
     def set_user_password_digest(self, email: str, password_digest: str):
         """
@@ -181,7 +180,7 @@ class DatabaseClient:
 
     ResetTokenInfo = namedtuple("ResetTokenInfo", ["id", "email", "create_date"])
 
-    @cursor_manager
+    @cursor_manager()
     def get_reset_token_info(self, token: str) -> Optional[ResetTokenInfo]:
         """
         Checks if a reset token exists in the database and retrieves the associated user data.
@@ -196,9 +195,9 @@ class DatabaseClient:
         row = self.cursor.fetchone()
         if row is None:
             return None
-        return self.ResetTokenInfo(id=row[0], email=row[1], create_date=row[2])
+        return self.ResetTokenInfo(id=row["id"], email=row["email"], create_date=row["create_date"])
 
-    @cursor_manager
+    @cursor_manager()
     def add_reset_token(self, email: str, token: str):
         """
         Inserts a new reset token into the database for a specified email.
@@ -211,7 +210,7 @@ class DatabaseClient:
         ).format(sql.Literal(email), sql.Literal(token))
         self.cursor.execute(query)
 
-    @cursor_manager
+    @cursor_manager()
     def delete_reset_token(self, email: str, token: str):
         """
         Deletes a reset token from the database for a specified email.
@@ -224,7 +223,7 @@ class DatabaseClient:
         ).format(sql.Literal(email), sql.Literal(token))
         self.cursor.execute(query)
 
-    @cursor_manager
+    @cursor_manager()
     def get_user_by_api_key(self, api_key: str) -> Optional[str]:
         """
         Get user id for a given api key
@@ -238,7 +237,7 @@ class DatabaseClient:
         row = self.cursor.fetchone()
         if row is None:
             return None
-        return row[0]
+        return row["id"]
 
     def update_user_api_key(self, api_key: str, user_id: int):
         """
@@ -252,7 +251,7 @@ class DatabaseClient:
             column_edit_mappings={"api_key": api_key},
         )
 
-    @cursor_manager
+    @cursor_manager(row_factory=tuple_row)
     def get_data_source_by_id(self, data_source_id: str) -> Optional[tuple[Any, ...]]:
         """
         Get a data source by its ID, including related agency information from the database.
@@ -268,7 +267,7 @@ class DatabaseClient:
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return result
 
-    @cursor_manager
+    @cursor_manager()
     def get_approved_data_sources(self) -> list[tuple[Any, ...]]:
         """
         Fetches all approved data sources and their related agency information from the database.
@@ -284,7 +283,7 @@ class DatabaseClient:
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return results
 
-    @cursor_manager
+    @cursor_manager()
     def get_needs_identification_data_sources(self) -> list[tuple[Any, ...]]:
         """
         Returns a list of data sources that need identification from the database.
@@ -298,7 +297,7 @@ class DatabaseClient:
         self.cursor.execute(sql_query)
         return self.cursor.fetchall()
 
-    @cursor_manager
+    @cursor_manager()
     def add_new_data_source(self, data: dict) -> None:
         """
         Processes a request to add a new data source.
@@ -339,7 +338,7 @@ class DatabaseClient:
         ],
     )
 
-    @cursor_manager
+    @cursor_manager(row_factory=tuple_row)
     def get_data_sources_for_map(self) -> list[MapInfo]:
         """
         Returns a list of data sources with relevant info for the map from the database.
@@ -372,7 +371,7 @@ class DatabaseClient:
 
         return [self.MapInfo(*result) for result in results]
 
-    @cursor_manager
+    @cursor_manager()
     def get_agencies_from_page(self, page: int) -> list[tuple[Any, ...]]:
         """
         Returns a list of up to 1000 agencies from the database from a given page.
@@ -436,7 +435,7 @@ class DatabaseClient:
         ["id", "url", "update_frequency", "last_cached", "broken_url_as_of"],
     )
 
-    @cursor_manager
+    @cursor_manager()
     def get_data_sources_to_archive(self) -> list[ArchiveInfo]:
         """
         Pulls data sources to be archived by the automatic archives script.
@@ -470,11 +469,11 @@ class DatabaseClient:
 
         results = [
             self.ArchiveInfo(
-                id=row[0],
-                url=row[1],
-                update_frequency=row[2],
-                last_cached=row[3],
-                broken_url_as_of=row[4],
+                id=row["airtable_uid"],
+                url=row["source_url"],
+                update_frequency=row["update_frequency"],
+                last_cached=row["last_cached"],
+                broken_url_as_of=row["broken_source_url_as_of"],
             )
             for row in data_sources
         ]
@@ -530,7 +529,7 @@ class DatabaseClient:
         ],
     )
 
-    @cursor_manager
+    @cursor_manager()
     def get_quick_search_results(
         self, search: str, location: str
     ) -> Optional[list[QuickSearchResult]]:
@@ -549,18 +548,18 @@ class DatabaseClient:
 
         results = [
             self.QuickSearchResult(
-                id=row[0],
-                data_source_name=row[1],
-                description=row[2],
-                record_type=row[3],
-                url=row[4],
-                format=row[5],
-                coverage_start=row[6],
-                coverage_end=row[7],
-                agency_supplied=row[8],
-                agency_name=row[9],
-                municipality=row[10],
-                state=row[11],
+                id=row["airtable_uid"],
+                data_source_name=row["data_source_name"],
+                description=row["description"],
+                record_type=row["record_type"],
+                url=row["source_url"],
+                format=row["record_format"],
+                coverage_start=row["coverage_start"],
+                coverage_end=row["coverage_end"],
+                agency_supplied=row["agency_supplied"],
+                agency_name=row["agency_name"],
+                municipality=row["municipality"],
+                state=row["state_iso"],
             )
             for row in data_sources
         ]
@@ -570,7 +569,7 @@ class DatabaseClient:
     DataSourceMatches = namedtuple("DataSourceMatches", ["converted", "ids"])
     SearchParameters = namedtuple("SearchParameters", ["search", "location"])
 
-    @cursor_manager
+    @cursor_manager()
     def add_quick_search_log(
         self,
         data_sources_count: int,
@@ -601,7 +600,7 @@ class DatabaseClient:
 
     UserInfo = namedtuple("UserInfo", ["id", "password_digest", "api_key", "email"])
 
-    @cursor_manager
+    @cursor_manager()
     def get_user_info(self, email: str) -> UserInfo:
         """
         Retrieves user data by email.
@@ -619,13 +618,13 @@ class DatabaseClient:
             raise UserNotFoundError(email)
 
         return self.UserInfo(
-            id=results[0],
-            password_digest=results[1],
-            api_key=results[2],
-            email=results[3],
+            id=results["id"],
+            password_digest=results["password_digest"],
+            api_key=results["api_key"],
+            email=results["email"],
         )
 
-    @cursor_manager
+    @cursor_manager()
     def get_user_info_by_external_account_id(
         self, external_account_id: str, external_account_type: ExternalAccountTypeEnum
     ) -> UserInfo:
@@ -665,7 +664,7 @@ class DatabaseClient:
         "TypeaheadSuggestions", ["display_name", "type", "state", "county", "locality"]
     )
 
-    @cursor_manager
+    @cursor_manager()
     def get_typeahead_suggestions(self, search_term: str) -> List[TypeaheadSuggestions]:
         """
         Returns a list of data sources that match the search query.
@@ -681,16 +680,16 @@ class DatabaseClient:
 
         return [
             self.TypeaheadSuggestions(
-                display_name=row[1],
-                type=row[2],
-                state=row[3],
-                county=row[4],
-                locality=row[5],
+                display_name=row["display_name"],
+                type=row["type"],
+                state=row["state"],
+                county=row["county"],
+                locality=row["locality"],
             )
             for row in results
         ]
 
-    @cursor_manager
+    @cursor_manager()
     def search_with_location_and_record_type(
         self,
         state: str,
@@ -717,23 +716,23 @@ class DatabaseClient:
         results = self.cursor.fetchall()
         return [
             self.QuickSearchResult(
-                id=row[0],
-                data_source_name=row[1],
-                description=row[2],
-                record_type=row[3],
-                url=row[4],
-                format=row[5],
-                coverage_start=row[6],
-                coverage_end=row[7],
-                agency_supplied=row[8],
-                agency_name=row[9],
-                municipality=row[10],
-                state=row[11],
+                id=row["id"],
+                data_source_name=row["data_source_name"],
+                description=row["description"],
+                record_type=row["record_type"],
+                url=row["source_url"],
+                format=row["record_format"],
+                coverage_start=row["coverage_start"],
+                coverage_end=row["coverage_end"],
+                agency_supplied=row["agency_supplied"],
+                agency_name=row["agency_name"],
+                municipality=row["municipality"],
+                state=row["state"],
             )
             for row in results
         ]
 
-    @cursor_manager
+    @cursor_manager()
     def link_external_account(
         self,
         user_id: str,
@@ -752,7 +751,7 @@ class DatabaseClient:
         )
         self.cursor.execute(query)
 
-    @cursor_manager
+    @cursor_manager()
     def add_user_permission(self, user_email: str, permission: PermissionsEnum):
         query = sql.SQL(
             """
@@ -768,7 +767,7 @@ class DatabaseClient:
         )
         self.cursor.execute(query)
 
-    @cursor_manager
+    @cursor_manager()
     def remove_user_permission(self, user_email: str, permission: PermissionsEnum):
         query = sql.SQL(
             """
@@ -782,7 +781,7 @@ class DatabaseClient:
         )
         self.cursor.execute(query)
 
-    @cursor_manager
+    @cursor_manager()
     def get_user_permissions(self, user_id: str) -> List[PermissionsEnum]:
         query = sql.SQL(
             """
@@ -797,9 +796,9 @@ class DatabaseClient:
         )
         self.cursor.execute(query)
         results = self.cursor.fetchall()
-        return [PermissionsEnum(row[0]) for row in results]
+        return [PermissionsEnum(row["permission_name"]) for row in results]
 
-    @cursor_manager
+    @cursor_manager()
     def get_permitted_columns(
         self,
         relation: str,
@@ -838,9 +837,9 @@ class DatabaseClient:
         )
         self.cursor.execute(query)
         results = self.cursor.fetchall()
-        return [row[0] for row in results]
+        return [row["associated_column"] for row in results]
 
-    @cursor_manager
+    @cursor_manager()
     def _update_entry_in_table(
         self,
         table_name: str,
