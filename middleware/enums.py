@@ -37,3 +37,9 @@ class PermissionsActionEnum(Enum):
 class AccessTypeEnum(Enum):
     JWT = auto()
     API_KEY = auto()
+
+class Relations(Enum):
+    """
+    A list of valid relations for the database
+    """
+    DATA_REQUESTS = "data_requests"
