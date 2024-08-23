@@ -23,7 +23,7 @@ def get_approved_data_sources_wrapper(db_client: DatabaseClient) -> Response:
     )
 
 
-def data_source_by_id_wrapper(arg, db_client: DatabaseClient) -> Response:
+def data_source_by_id_wrapper(db_client: DatabaseClient, arg: str) -> Response:
     try:
         data_source_details = data_source_by_id_query(
             data_source_id=arg, db_client=db_client

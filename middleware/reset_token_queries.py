@@ -8,7 +8,7 @@ from typing import Dict, Union
 from werkzeug.security import generate_password_hash
 
 from database_client.database_client import DatabaseClient
-from middleware.custom_exceptions import TokenNotFoundError
+from middleware.exceptions import TokenNotFoundError
 from middleware.login_queries import generate_api_key
 from middleware.user_queries import user_check_email
 from middleware.webhook_logic import send_password_reset_link

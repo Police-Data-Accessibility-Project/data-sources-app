@@ -4,7 +4,7 @@ with retrieving requests and populating Data Transfer Objects (DTO)s
 By dynamically populating an DTO with data from the request,
     based on the attributes defined in the DTO
 """
-
+from dataclasses import dataclass
 from typing import Any, Callable, Optional, TypeVar, Type
 
 from flask import request
@@ -18,9 +18,16 @@ class SourceMappingEnum(Enum):
     FORM = "form"
     JSON = "json"
 
+@dataclass
+class DTOPopulateParameters:
+    dto_class: Type[T]
+    source: Optional[SourceMappingEnum] = None
+    transformation_functions: Optional[dict[str, Callable]] = None
+    attribute_source_mapping: Optional[dict[str, SourceMappingEnum]] = None
+
 
 def populate_dto_with_request_content(
-    object_class: Type[T],
+    dto_class: Type[T],
     transformation_functions: Optional[dict[str, Callable]] = None,
     source: SourceMappingEnum = None,
     attribute_source_mapping: Optional[dict[str, SourceMappingEnum]] = None,
@@ -39,15 +46,15 @@ def populate_dto_with_request_content(
     if source is not None and attribute_source_mapping is not None:
         raise MutuallyExclusiveArgumentError("source", "attribute_source_mapping")
     if source is not None:
-        values = _get_class_attribute_values_from_request(object_class, source)
+        values = _get_class_attribute_values_from_request(dto_class, source)
     elif attribute_source_mapping is not None:
         values = _get_class_attribute_values_from_request_source_mapping(
-            object_class, attribute_source_mapping
+            dto_class, attribute_source_mapping
         )
     else:
         raise MissingRequiredArgumentError("source", "attribute_source_mapping")
 
-    instantiated_object = object_class(**values)
+    instantiated_object = dto_class(**values)
     _apply_transformation_functions(instantiated_object, transformation_functions)
 
     return instantiated_object

@@ -1,28 +1,20 @@
 """Integration tests for /data-sources endpoint"""
 
-from http import HTTPStatus
 import uuid
 
 import psycopg2
-from psycopg2.extras import DictRow
 
 from database_client.database_client import DatabaseClient
-from middleware.enums import PermissionsEnum
 from tests.fixtures import (
     connection_with_test_data,
-    dev_db_connection,
     flask_client_with_db,
     db_client_with_test_data,
     test_user_admin,
+    dev_db_connection
 )
 from tests.helper_scripts.helper_functions import (
     get_boolean_dictionary,
-    create_test_user_api,
-    create_api_key,
-    give_user_admin_role,
-    check_response_status,
     create_test_user_setup,
-    create_test_user_setup_db_client,
     run_and_validate_request,
     search_with_boolean_dictionary,
 )

@@ -426,6 +426,7 @@ class DynamicQueryConstructor:
         relation: str,
         columns: list[str],
         where_mappings: Optional[dict] = None,
+        not_where_mappings: Optional[dict] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
     ):
@@ -441,18 +442,27 @@ class DynamicQueryConstructor:
             columns=sql.SQL(", ").join([sql.Identifier(column) for column in columns]),
             relation=sql.Identifier(relation),
         )
-        if where_mappings is not None:
-            where_clause = sql.SQL("WHERE {where_clause}").format(
-                where_clause=sql.SQL(" AND ").join(
-                    [
-                        sql.SQL(" {column} = {value} ").format(
-                            column=sql.Identifier(column), value=sql.Literal(value)
-                        )
-                        for column, value in where_mappings.items()
-                    ]
-                )
-            )
-            base_query += where_clause
+        if where_mappings is not None or not_where_mappings is not None:
+            base_query += sql.SQL(" WHERE ")
+            where_clauses = []
+            if where_mappings is not None:
+                # Create list of where clauses
+                where_clauses.extend([
+                    sql.SQL(" {column} = {value} ").format(
+                        column=sql.Identifier(column), value=sql.Literal(value)
+                    )
+                    for column, value in where_mappings.items()
+                ])
+            if not_where_mappings is not None:
+                # Create list of not where clauses
+                where_clauses.extend([
+                    sql.SQL(" {column} != {value} ").format(
+                        column=sql.Identifier(column), value=sql.Literal(value)
+                    )
+                    for column, value in not_where_mappings.items()
+                ])
+            full_where_clause = sql.SQL(" AND ").join(where_clauses)
+            base_query += full_where_clause
         if limit is not None:
             base_query += sql.SQL(" LIMIT {limit}").format(limit=sql.Literal(limit))
         if offset is not None:

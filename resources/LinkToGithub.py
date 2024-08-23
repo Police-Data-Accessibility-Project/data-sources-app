@@ -55,7 +55,7 @@ class LinkToGithub(PsycopgResource):
         :return:
         """
         dto = populate_dto_with_request_content(
-            object_class=LinkToGithubRequest,
+            dto_class=LinkToGithubRequest,
             source=SourceMappingEnum.JSON,
         )
         setup_callback_session(

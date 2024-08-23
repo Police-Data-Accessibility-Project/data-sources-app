@@ -16,7 +16,7 @@ from database_client.enums import (
     RelationRoleEnum,
     ColumnPermissionEnum,
 )
-from middleware.custom_exceptions import (
+from middleware.exceptions import (
     UserNotFoundError,
     TokenNotFoundError,
     AccessTokenNotFoundError,
@@ -879,6 +879,7 @@ class DatabaseClient:
         relation_name: str,
         columns: List[str],
         where_mappings: Optional[dict] = None,
+        not_where_mappings: Optional[dict] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
     ):
@@ -886,7 +887,7 @@ class DatabaseClient:
         Selects a single relation from the database
         """
         query = DynamicQueryConstructor.create_single_relation_selection_query(
-            relation_name, columns, where_mappings, limit, offset
+            relation_name, columns, where_mappings, not_where_mappings, limit, offset
         )
         self.cursor.execute(query)
         results = self.cursor.fetchall()
@@ -897,6 +898,19 @@ class DatabaseClient:
             table_name="data_requests",
             column_value_mappings=data_request_info,
             column_to_return="id",
+        )
+
+    def get_data_requests(
+            self,
+            columns: List[str],
+            where_mappings: Optional[dict] = None,
+            not_where_mappings: Optional[dict] = None
+    ) -> List[tuple]:
+        return self._select_from_single_relation(
+            relation_name="data_requests",
+            columns=columns,
+            where_mappings=where_mappings,
+            not_where_mappings=not_where_mappings
         )
 
     def get_data_requests_for_creator(
@@ -917,3 +931,36 @@ class DatabaseClient:
             where_mappings={"creator_user_id": user_id, "id": data_request_id},
         )
         return len(results) == 1
+
+    def delete_data_request(self, data_request_id: str):
+        self._delete_from_table(table_name="data_requests", id_column_value=data_request_id)
+
+    def update_data_request(self, column_edit_mappings: dict, data_request_id: str):
+        self._update_entry_in_table(
+            table_name="data_requests",
+            entry_id=data_request_id,
+            column_edit_mappings=column_edit_mappings,
+        )
+
+    @cursor_manager
+    def _delete_from_table(
+        self,
+        table_name: str,
+        id_column_value: str,
+        id_column_name: str = "id",
+    ):
+        """
+        Deletes an entry from a table in the database
+        """
+        query = sql.SQL(
+            """
+            DELETE FROM {table_name}
+            WHERE {id_column_name} = {id_column_value}
+            """
+        ).format(
+            table_name=sql.Identifier(table_name),
+            id_column_name=sql.Identifier(id_column_name),
+            id_column_value=sql.Literal(id_column_value),
+        )
+        self.cursor.execute(query)
+

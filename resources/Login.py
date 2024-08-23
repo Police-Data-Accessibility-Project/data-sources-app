@@ -11,6 +11,7 @@ from resources.PsycopgResource import PsycopgResource, handle_exceptions
 from utilities.populate_dto_with_request_content import (
     populate_dto_with_request_content,
     SourceMappingEnum,
+    DTOPopulateParameters,
 )
 
 namespace_login = create_namespace()
@@ -42,10 +43,10 @@ class Login(PsycopgResource):
         Returns:
         - A dictionary containing a message of success or failure, and the session token if successful.
         """
-        dto = populate_dto_with_request_content(
-            object_class=UserRequest,
-            source=SourceMappingEnum.JSON,
+        return self.run_endpoint(
+            wrapper_function=try_logging_in,
+            dto_populate_parameters=DTOPopulateParameters(
+                dto_class=UserRequest,
+                source=SourceMappingEnum.JSON,
+            ),
         )
-        with self.setup_database_client() as db_client:
-            response = try_logging_in(db_client, dto)
-        return response

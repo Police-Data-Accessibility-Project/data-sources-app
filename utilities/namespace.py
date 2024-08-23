@@ -10,6 +10,9 @@ class AppNamespaces(Enum):
     SEARCH = NamespaceAttributes(path="search", description="Search Namespace")
     AUTH = NamespaceAttributes(path="auth", description="Authentication Namespace")
     DEV = NamespaceAttributes(path="dev", description="Developer Namespace")
+    DATA_REQUESTS = NamespaceAttributes(
+        path="data-requests", description="Data Requests Namespace"
+    )
 
 
 def create_namespace(

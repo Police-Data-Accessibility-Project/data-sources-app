@@ -9,7 +9,7 @@ from flask_restx import abort
 
 from database_client.database_client import DatabaseClient
 from database_client.helper_functions import get_db_client
-from middleware.custom_exceptions import UserNotFoundError
+from middleware.exceptions import UserNotFoundError
 from middleware.enums import PermissionsEnum, PermissionsActionEnum
 from utilities.common import get_valid_enum_value
 

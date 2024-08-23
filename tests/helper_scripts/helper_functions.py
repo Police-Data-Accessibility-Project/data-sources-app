@@ -254,8 +254,9 @@ def create_test_user_api(client: FlaskClient) -> UserInfo:
         "user",
         json={"email": email, "password": password},
     )
+    user_id = DatabaseClient().get_user_id(email)
     check_response_status(response, HTTPStatus.OK.value)
-    return UserInfo(email=email, password=password)
+    return UserInfo(email=email, password=password, user_id=user_id)
 
 
 JWTTokens = namedtuple("JWTTokens", ["access_token", "refresh_token"])
@@ -495,8 +496,18 @@ class TestUserSetup:
     jwt_authorization_header: Optional[dict] = None
 
 
-def create_test_user_setup(client: FlaskClient) -> TestUserSetup:
+def create_test_user_setup(client: FlaskClient, permissions: Optional[list[PermissionsEnum]] = None) -> TestUserSetup:
     user_info = create_test_user_api(client)
+    db_client = DatabaseClient()
+    if permissions is None:
+        permissions = []
+    elif not isinstance(permissions, list):
+        permissions = [permissions]
+    for permission in permissions:
+        db_client.add_user_permission(
+            user_email=user_info.email,
+            permission=permission
+        )
     api_key = create_api_key(client, user_info)
     jwt_tokens = login_and_return_jwt_tokens(client, user_info)
     return TestUserSetup(

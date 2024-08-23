@@ -6,13 +6,12 @@ import pytest
 
 from middleware.access_logic import (
     get_authorization_header_from_request,
-    InvalidAuthorizationHeaderException,
     get_api_key_from_authorization_header,
-    InvalidAPIKeyException,
     get_api_key_from_request_header,
     get_access_info_from_jwt_or_api_key,
     JWT_OR_API_KEY_NEEDED_ERROR_MESSAGE,
 )
+from middleware.exceptions import InvalidAPIKeyException, InvalidAuthorizationHeaderException
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_mocks_and_patches import patch_request_headers

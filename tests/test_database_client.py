@@ -16,7 +16,7 @@ from database_client.enums import (
     ColumnPermissionEnum,
 )
 from database_client.result_formatter import ResultFormatter
-from middleware.custom_exceptions import (
+from middleware.exceptions import (
     AccessTokenNotFoundError,
     UserNotFoundError,
 )
@@ -661,6 +661,63 @@ def test_user_is_creator_of_data_request(live_database_client):
     )
     assert results is False
 
+def test_get_data_requests(live_database_client):
+    submitter_email = uuid.uuid4().hex
+    submission_notes_1 = uuid.uuid4().hex
+    submission_notes_2 = uuid.uuid4().hex
+
+    data_request_id_1 = live_database_client.create_data_request(
+        data_request_info={
+            "submission_notes": submission_notes_1,
+            "submitter_email": submitter_email
+        }
+    )
+    data_request_id_2 = live_database_client.create_data_request(
+        data_request_info={
+            "submission_notes": submission_notes_2,
+            "submitter_email": submitter_email
+        }
+    )
+
+    result_1 = live_database_client.get_data_requests(columns=["submission_notes"], where_mappings={"submitter_email": submitter_email})
+    assert len(result_1) == 2
+    assert result_1[0][0] == submission_notes_1
+
+    result_2 = live_database_client.get_data_requests(
+        columns=["submission_notes"],
+        where_mappings={"submitter_email": submitter_email},
+        not_where_mappings={"id": data_request_id_1}
+    )
+    assert len(result_2) == 1
+    assert result_2[0][0] == submission_notes_2
+
+def test_delete_data_request(live_database_client):
+    submission_notes = uuid.uuid4().hex
+    data_request_id = live_database_client.create_data_request(
+        data_request_info={"submission_notes": submission_notes}
+    )
+
+    results = live_database_client.get_data_requests(columns=["submission_notes"], where_mappings={"id": data_request_id})
+    assert len(results) == 1
+    live_database_client.delete_data_request(data_request_id)
+    results = live_database_client.get_data_requests(columns=["submission_notes"], where_mappings={"id": data_request_id})
+    assert len(results) == 0
+
+def test_update_data_request(live_database_client):
+    submission_notes = uuid.uuid4().hex
+
+    data_request_id = live_database_client.create_data_request(
+        data_request_info={"submission_notes": submission_notes}
+    )
+
+    results = live_database_client.get_data_requests(columns=["submission_notes"], where_mappings={"id": data_request_id})
+    assert len(results) == 1
+    assert results[0][0] == submission_notes
+    new_submission_notes = uuid.uuid4().hex
+    live_database_client.update_data_request(column_edit_mappings={"submission_notes": new_submission_notes}, data_request_id=data_request_id)
+    results = live_database_client.get_data_requests(columns=["submission_notes"], where_mappings={"id": data_request_id})
+    assert len(results) == 1
+    assert results[0][0] == new_submission_notes
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts
 # def test_search_with_location_and_record_types_test_data(live_database_client, xylonslyvania_test_data):
