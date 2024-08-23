@@ -4,7 +4,7 @@ from typing import Callable, Optional, Any
 
 from flask import redirect, url_for, session
 
-from middleware.access_logic import get_access_info_from_jwt_or_api_key, get_authentication
+from middleware.access_logic import get_authentication
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from middleware.security import check_api_key, check_permissions
 
@@ -61,7 +61,6 @@ def authentication_required(
     :param restrict_to_permissions: Automatically abort if the user does not have the requisite permissions
     :return:
     """
-    # TODO: Test
     def decorator(func: Callable):
         @wraps(func)
         def wrapper(*args, **kwargs):

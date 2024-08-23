@@ -7,8 +7,7 @@ from pytest_mock import mocker
 from middleware.access_logic import AccessInfo
 from middleware.decorators import (
     api_key_required,
-    permissions_required,
-    api_key_or_jwt_required,
+    permissions_required, authentication_required,
 )
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 
@@ -51,6 +50,18 @@ def dummy_permissions_required_route():
     return _dummy_route
 
 
+@pytest.fixture
+def dummy_authentication_required_route():
+    @authentication_required(
+        allowed_access_methods=[AccessTypeEnum.API_KEY],
+        restrict_to_permissions=[PermissionsEnum.READ_ALL_USER_INFO],
+    )
+    def _dummy_route(access_info: AccessInfo):
+        return "This is a protected route", HTTPStatus.OK.value
+
+    return _dummy_route
+
+
 def test_permissions_required(dummy_permissions_required_route, monkeypatch):
     mock_check_permissions = MagicMock()
     monkeypatch.setattr(
@@ -60,23 +71,13 @@ def test_permissions_required(dummy_permissions_required_route, monkeypatch):
     dummy_permissions_required_route()
     mock_check_permissions.assert_called_once_with(PermissionsEnum.READ_ALL_USER_INFO)
 
-
-def test_api_key_or_jwt_required(monkeypatch):
-    mock_get_access_info = MagicMock()
+def test_authentication_required(dummy_authentication_required_route, monkeypatch):
+    mock_get_authentication = MagicMock()
     monkeypatch.setattr(
-        "middleware.decorators.get_access_info_from_jwt_or_api_key",
-        mock_get_access_info,
-    )
-    mock_get_access_info.return_value = AccessInfo(
-        user_email="test_user",
-        access_type=AccessTypeEnum.JWT,
-        permissions=[PermissionsEnum.READ_ALL_USER_INFO, PermissionsEnum.DB_WRITE],
+        "middleware.decorators.get_authentication", mock_get_authentication
     )
 
-    # Create a simple function to decorate
-    @api_key_or_jwt_required
-    def sample_function(access_info: AccessInfo):
-        return access_info
-
-    # Call the decorated function
-    assert sample_function() == mock_get_access_info.return_value
+    dummy_authentication_required_route()
+    mock_get_authentication.assert_called_once_with(
+        [AccessTypeEnum.API_KEY], [PermissionsEnum.READ_ALL_USER_INFO]
+    )

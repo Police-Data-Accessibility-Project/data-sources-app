@@ -6,8 +6,8 @@ from middleware.access_logic import AccessInfo
 from middleware.data_requests import (
     create_data_request_wrapper,
     get_data_requests_wrapper,
-    delete_data_requests_wrapper,
-    update_data_requests_wrapper,
+    delete_data_request_wrapper,
+    update_data_request_wrapper,
     get_data_request_by_id_wrapper,
 )
 from middleware.dataclasses import EntryDataRequest
@@ -72,7 +72,7 @@ class DataRequestsById(PsycopgResource):
         :return:
         """
         return self.run_endpoint(
-            update_data_requests_wrapper,
+            update_data_request_wrapper,
             dto_populate_parameters=DTOPopulateParameters(
                 dto_class=EntryDataRequest,
                 source=SourceMappingEnum.JSON,
@@ -97,7 +97,7 @@ class DataRequestsById(PsycopgResource):
         :return:
         """
         return self.run_endpoint(
-            delete_data_requests_wrapper,
+            delete_data_request_wrapper,
             data_request_id=data_request_id,
             access_info=access_info
         )
