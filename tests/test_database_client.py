@@ -167,7 +167,7 @@ def test_get_data_source_by_id(live_database_client):
     NUMBER_OF_RESULT_COLUMNS = 67
     assert result is not None
     assert len(result) == NUMBER_OF_RESULT_COLUMNS
-    assert result["name"] == "Source 1"
+    assert result[0] == "Source 1"
 
 
 def test_get_approved_data_sources(live_database_client):
@@ -236,14 +236,12 @@ def test_update_data_source(live_database_client):
     # Fetch the data source from the database to confirm the change
     result = live_database_client.get_data_source_by_id("SOURCE_UID_1")
 
-    assert result["description"] == new_description
+    assert result[2] == new_description
 
 
 def test_get_data_sources_for_map(live_database_client):
     # Add at least two new data sources to the database
-    insert_test_agencies_and_sources_if_not_exist(
-        live_database_client.connection.cursor()
-    )
+    insert_test_agencies_and_sources_if_not_exist(live_database_client.connection.cursor())
     # Fetch the data source with the DatabaseClient method
     results = live_database_client.get_data_sources_for_map()
     # Confirm both data sources are retrieved and only the proper columns are returned
