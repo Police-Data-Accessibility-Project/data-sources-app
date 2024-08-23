@@ -379,10 +379,10 @@ def test_get_user_by_api_key(live_database_client):
     )
 
     # Fetch the user's role using its api key with the DatabaseClient method
-    api_key_user_id = live_database_client.get_user_by_api_key(api_key=test_api_key)
+    user_identifiers = live_database_client.get_user_by_api_key(api_key=test_api_key)
 
     # Confirm the user_id is retrieved successfully
-    assert api_key_user_id == user_id
+    assert user_identifiers.id == user_id
 
 
 def test_get_typeahead_suggestion(live_database_client):
@@ -592,6 +592,71 @@ def test_get_permitted_columns(live_database_client):
     assert "column_a" in results
     assert "column_b" in results
 
+
+def test_create_data_request(live_database_client):
+    submission_notes = uuid.uuid4().hex
+
+    data_request_id = live_database_client.create_data_request(
+        data_request_info={"submission_notes": submission_notes}
+    )
+
+    results = live_database_client._select_from_single_relation(
+        "data_requests",
+        columns=["submission_notes"],
+        where_mappings={"id": data_request_id},
+    )
+
+    assert len(results) == 1
+    assert results[0][0] == submission_notes
+
+
+def test_get_data_requests_for_creator(live_database_client):
+    test_user = create_test_user_db_client(live_database_client)
+    submission_notes_list = [uuid.uuid4().hex, uuid.uuid4().hex, uuid.uuid4().hex]
+
+    for submission_notes in submission_notes_list:
+        live_database_client.create_data_request(
+            data_request_info={
+                "submission_notes": submission_notes,
+                "creator_user_id": test_user.user_id,
+            }
+        )
+
+    results = live_database_client.get_data_requests_for_creator(
+        test_user.user_id, columns=["submission_notes"]
+    )
+    assert len(results) == 3
+    for result in results:
+        assert result[0] in submission_notes_list
+
+
+def test_user_is_creator_of_data_request(live_database_client):
+
+    test_user = create_test_user_db_client(live_database_client)
+    submission_notes = uuid.uuid4().hex
+
+    # Test with entry where user is listed as creator
+    data_request_id = live_database_client.create_data_request(
+        data_request_info={
+            "submission_notes": submission_notes,
+            "creator_user_id": test_user.user_id,
+        }
+    )
+
+    results = live_database_client.user_is_creator_of_data_request(
+        user_id=test_user.user_id, data_request_id=data_request_id
+    )
+    assert results is True
+
+    # Test with entry where user is not listed as creator
+    data_request_id = live_database_client.create_data_request(
+        data_request_info={"submission_notes": submission_notes}
+    )
+
+    results = live_database_client.user_is_creator_of_data_request(
+        user_id=test_user.user_id, data_request_id=data_request_id
+    )
+    assert results is False
 
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts

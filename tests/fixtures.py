@@ -1,6 +1,9 @@
 """This module contains pytest fixtures employed by middleware tests."""
 
 from collections import namedtuple
+from importlib import reload
+from types import ModuleType
+from unittest import mock
 from unittest.mock import MagicMock
 
 import psycopg
@@ -131,13 +134,32 @@ def flask_client_with_db(
     :return:
     """
     mock_get_flask_app_secret_key = MagicMock(return_value="test")
-    monkeypatch.setattr("app.initialize_psycopg_connection", lambda: dev_db_connection)
-    monkeypatch.setattr("app.get_flask_app_cookie_encryption_key", mock_get_flask_app_secret_key)
+    monkeypatch.setattr("app.initialize_psycopg2_connection", lambda: dev_db_connection)
+    monkeypatch.setattr(
+        "app.get_flask_app_cookie_encryption_key", mock_get_flask_app_secret_key
+    )
     app = create_app()
     with app.test_client() as client:
         yield client
 
-#region Bypass Decorators
+
+# region Bypass Decorators
+
+
+def patch_decorator(monkeypatch, module: ModuleType):
+    # Patch the decorator where it is being imported from
+    monkeypatch.setattr("app.decorators.func_decor", lambda x: x)
+
+    # Reload the uut module to apply the patched decorator
+    reload(module)
+
+    # Add a finalizer to stop all patches and reload the original module
+    yield  # This yield statement allows the test to run
+
+    mock.patch.stopall()
+    reload(module)  # Reload to restore the original decorator
+
+
 @pytest.fixture
 def bypass_api_key_required(monkeypatch):
     """
@@ -170,7 +192,9 @@ def bypass_jwt_required(monkeypatch):
         lambda a, b, c, d, e, f: None,
     )
 
-#endregion
+
+# endregion
+
 
 @pytest.fixture
 def live_database_client(db_cursor) -> DatabaseClient:

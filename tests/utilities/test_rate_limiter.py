@@ -13,12 +13,14 @@ def post_login_request(client_with_mock_db, ip_address="127.0.0.1"):
         json={"email": "test_email", "password": "test_password"},
     )
 
+
 def post_refresh_session_request(client_with_mock_db, ip_address="127.0.0.1"):
     return client_with_mock_db.client.post(
         "/refresh-session",
         environ_base={"REMOTE_ADDR": ip_address},
         json={"refresh_token": "test_refresh_token"},
     )
+
 
 def test_rate_limiter_explicit_limit(client_with_mock_db, monkeypatch):
     """
@@ -44,7 +46,10 @@ def test_rate_limiter_explicit_limit(client_with_mock_db, monkeypatch):
     response = post_login_request(client_with_mock_db, ip_address="237.84.2.178")
     check_response_status(response, TEST_RESPONSE.status_code)
 
-def test_rate_limiter_default_limit(client_with_mock_db, monkeypatch, bypass_jwt_required):
+
+def test_rate_limiter_default_limit(
+    client_with_mock_db, monkeypatch, bypass_jwt_required
+):
     """
     Test the rate limiter's default limit decorator using the refresh-session endpoint
     which is not explicitly rate-limited and thus should default to
@@ -55,7 +60,8 @@ def test_rate_limiter_default_limit(client_with_mock_db, monkeypatch, bypass_jwt
     """
 
     monkeypatch.setattr(
-        f"resources.RefreshSession.refresh_session", MagicMock(return_value=TEST_RESPONSE)
+        f"resources.RefreshSession.refresh_session",
+        MagicMock(return_value=TEST_RESPONSE),
     )
 
     for i in range(100):
@@ -67,5 +73,7 @@ def test_rate_limiter_default_limit(client_with_mock_db, monkeypatch, bypass_jwt
     assert response.json["message"] == "100 per 1 hour"
 
     # Test that a different IP address still works
-    response = post_refresh_session_request(client_with_mock_db, ip_address="237.84.2.178")
+    response = post_refresh_session_request(
+        client_with_mock_db, ip_address="237.84.2.178"
+    )
     check_response_status(response, TEST_RESPONSE.status_code)

@@ -7,14 +7,17 @@ class GithubUserInfo:
     """
     Information about a Github user
     """
+
     user_id: str
     user_email: str
+
 
 @dataclass
 class FlaskSessionCallbackInfo:
     """
     Contains information contained in the Flask session in the callback logic
     """
+
     callback_functions_enum: CallbackFunctionsEnum
     callback_params: dict
 
@@ -24,5 +27,5 @@ class OAuthCallbackInfo:
     """
     Contains information returned by OAuth in the callback logic
     """
-    github_user_info: GithubUserInfo
 
+    github_user_info: GithubUserInfo

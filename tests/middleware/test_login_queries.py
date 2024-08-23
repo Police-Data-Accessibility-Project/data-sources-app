@@ -24,8 +24,22 @@ def test_generate_api_key():
 class GetAPIKeyForUserMocks(DynamicMagicMock):
     check_password_hash: MagicMock
     generate_api_key: MagicMock
-    update_api_key: MagicMock
     make_response: MagicMock
+
+
+def setup_get_api_for_user_mocks():
+    mock = GetAPIKeyForUserMocks(
+        patch_root="middleware.login_queries",
+    )
+
+    mock.db_client.get_user_info.return_value = DatabaseClient.UserInfo(
+        id=mock.user_id,
+        password_digest=mock.password_digest,
+        api_key=None,
+        email=mock.email,
+    )
+    mock.generate_api_key.return_value = mock.api_key
+    return mock
 
 
 def test_get_api_key_for_user_success(monkeypatch):
@@ -66,44 +80,15 @@ def assert_get_api_key_for_user_precondition_calls(mock: GetAPIKeyForUserMocks):
     mock.check_password_hash.assert_called_with(mock.password_digest, mock.dto.password)
 
 
-def setup_get_api_for_user_mocks():
-    mock = GetAPIKeyForUserMocks(
-        patch_root="middleware.login_queries",
-        mocks_to_patch=[
-            "check_password_hash",
-            "generate_api_key",
-            "make_response",
-        ],
-    )
-
-    mock.db_client.get_user_info.return_value = DatabaseClient.UserInfo(
-        id=mock.user_id,
-        password_digest=mock.password_digest,
-        api_key=None,
-        email=mock.email,
-    )
-    mock.generate_api_key.return_value = mock.api_key
-    return mock
-
-
 class RefreshSessionMocks(DynamicMagicMock):
-    db_client: MagicMock
-    old_token: MagicMock
-    new_token: MagicMock
-    get_session_token_user_data: MagicMock
-    session_token_info: MagicMock
-    delete_session_token: MagicMock
     make_response: MagicMock
     create_session_token: MagicMock
-    mock_user_id: MagicMock
-    mock_email: MagicMock
 
 
 @pytest.fixture
 def setup_refresh_session_mocks():
     mock = RefreshSessionMocks(
         patch_root="middleware.login_queries",
-        mocks_to_patch=["make_response", "create_session_token"],
     )
     mock.db_client.get_session_token_info.return_value = mock.session_token_info
     mock.create_session_token.return_value = mock.new_token
@@ -114,12 +99,8 @@ def setup_refresh_session_mocks():
 
 
 class TryLoggingInWithGithubIdMocks(DynamicMagicMock):
-    db_client: MagicMock
-    github_user_info: MagicMock
-    github_user_id: MagicMock
     unauthorized_response: MagicMock
     login_response: MagicMock
-    user_info: MagicMock
 
 
 def assert_try_logging_in_with_github_id_precondition_calls(
@@ -135,7 +116,6 @@ def assert_try_logging_in_with_github_id_precondition_calls(
 def setup_try_logging_in_with_github_id_mocks():
     mock = TryLoggingInWithGithubIdMocks(
         patch_root="middleware.login_queries",
-        mocks_to_patch=["unauthorized_response", "login_response"],
         return_values={
             "unauthorized_response": MagicMock(spec=Response),
             "login_response": MagicMock(spec=Response),
@@ -145,7 +125,10 @@ def setup_try_logging_in_with_github_id_mocks():
     mock.github_user_info.user_id = mock.github_user_id
     return mock
 
-def test_try_logging_in_with_github_id_happy_path(setup_try_logging_in_with_github_id_mocks):
+
+def test_try_logging_in_with_github_id_happy_path(
+    setup_try_logging_in_with_github_id_mocks,
+):
     mock = setup_try_logging_in_with_github_id_mocks
 
     mock.db_client.get_user_info_by_external_account_id.return_value = mock.user_info
@@ -158,7 +141,9 @@ def test_try_logging_in_with_github_id_happy_path(setup_try_logging_in_with_gith
     mock.login_response.assert_called_once_with(mock.user_info)
 
 
-def test_try_logging_in_with_github_id_unauthorized(setup_try_logging_in_with_github_id_mocks):
+def test_try_logging_in_with_github_id_unauthorized(
+    setup_try_logging_in_with_github_id_mocks,
+):
     mock = setup_try_logging_in_with_github_id_mocks
 
     mock.db_client.get_user_info_by_external_account_id.return_value = None
@@ -172,17 +157,14 @@ def test_try_logging_in_with_github_id_unauthorized(setup_try_logging_in_with_gi
 
 
 class RefreshSessionMocks(DynamicMagicMock):
-    identity: MagicMock
     get_jwt_identity: MagicMock
     create_access_token: MagicMock
     make_response: MagicMock
-    access_token: MagicMock
 
 
 def test_refresh_session():
     mock = RefreshSessionMocks(
         patch_root="middleware.login_queries",
-        mocks_to_patch=["get_jwt_identity", "make_response", "create_access_token"],
     )
     mock.get_jwt_identity.return_value = mock.identity
     mock.create_access_token.return_value = mock.access_token

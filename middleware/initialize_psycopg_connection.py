@@ -53,7 +53,8 @@ class DatabaseConnectionSingleton:
         except psycopg.OperationalError as e:
             raise DatabaseInitializationError(e) from e
 
-def initialize_psycopg_connection() -> PgConnection:
+
+def initialize_psycopg2_connection() -> PgConnection:
     """
     Initializes a connection to a PostgreSQL database using psycopg with connection parameters
     obtained from an environment variable. If the connection fails, it returns a default dictionary

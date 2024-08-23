@@ -1,6 +1,7 @@
 """
 Tests resources which result in a redirection to the `/callback` endpoint
 """
+
 from unittest.mock import MagicMock
 
 import pytest
@@ -11,55 +12,49 @@ from tests.helper_scripts.common_test_data import TEST_RESPONSE
 from tests.helper_scripts.helper_functions import check_response_status
 from tests.fixtures import client_with_mock_db, bypass_api_key_required
 
+
 class TestPreCallbackResources(DynamicMagicMock):
     setup_callback_session: MagicMock
     redirect_to_github_authorization: MagicMock
+
 
 @pytest.mark.parametrize(
     "resource_module_name, endpoint, json_data, setup_callback_session_expected_args",
     (
         (
-                "LoginWithGithub",
-                "auth/login-with-github",
-                {},
-                {
-                    "callback_functions_enum": CallbackFunctionsEnum.LOGIN_WITH_GITHUB
-                }
+            "LoginWithGithub",
+            "auth/login-with-github",
+            {},
+            {"callback_functions_enum": CallbackFunctionsEnum.LOGIN_WITH_GITHUB},
         ),
         (
-                "CreateUserWithGithub",
-                "auth/create-user-with-github",
-                {},
-                {
-                    "callback_functions_enum": CallbackFunctionsEnum.CREATE_USER_WITH_GITHUB
-                }
+            "CreateUserWithGithub",
+            "auth/create-user-with-github",
+            {},
+            {"callback_functions_enum": CallbackFunctionsEnum.CREATE_USER_WITH_GITHUB},
         ),
         (
-                "LinkToGithub",
-                "auth/link-to-github",
-                {
-                    "redirect_to": "test_redirect_to",
-                    "user_email": "test_user_email"
-                },
-                {
-                    "callback_functions_enum": CallbackFunctionsEnum.LINK_TO_GITHUB,
-                    "redirect_to": "test_redirect_to",
-                    "user_email": "test_user_email"
-                }
+            "LinkToGithub",
+            "auth/link-to-github",
+            {"redirect_to": "test_redirect_to", "user_email": "test_user_email"},
+            {
+                "callback_functions_enum": CallbackFunctionsEnum.LINK_TO_GITHUB,
+                "redirect_to": "test_redirect_to",
+                "user_email": "test_user_email",
+            },
         ),
-    )
+    ),
 )
 def test_pre_callback_resources(
-        resource_module_name,
-        endpoint,
-        json_data,
-        setup_callback_session_expected_args,
-        client_with_mock_db,
-        bypass_api_key_required
+    resource_module_name,
+    endpoint,
+    json_data,
+    setup_callback_session_expected_args,
+    client_with_mock_db,
+    bypass_api_key_required,
 ):
     mock = TestPreCallbackResources(
         patch_root=f"resources.{resource_module_name}",
-        mocks_to_patch=["setup_callback_session", "redirect_to_github_authorization"],
         return_values={"redirect_to_github_authorization": TEST_RESPONSE},
     )
 

@@ -26,9 +26,7 @@ def format_arrays(data_dict):
 
 
 def get_enums_from_string(
-        enum_class: Type[Enum],
-        comma_delimited_string: str,
-        case_insensitive: bool = False
+    enum_class: Type[Enum], comma_delimited_string: str, case_insensitive: bool = False
 ) -> Union[list[Enum], None]:
     # Split the input string into a list of names
     if len(comma_delimited_string) == 0:
@@ -54,6 +52,7 @@ def get_enums_from_string(
     result = [match_string_to_enum(name, enum_class) for name in names]
 
     return result
+
 
 def match_string_to_enum(value: str, enum_class: Type[Enum]) -> Enum:
     # Convert input string to lowercase

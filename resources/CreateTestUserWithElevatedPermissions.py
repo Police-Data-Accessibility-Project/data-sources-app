@@ -53,7 +53,10 @@ def check_dev_password(dev_password: str) -> bool:
         if dev_password != expected_dev_password:
             abort(HTTPStatus.UNAUTHORIZED, message="Incorrect development password.")
     except ValueError:
-        abort(HTTPStatus.INTERNAL_SERVER_ERROR, message="Server DEVELOPMENT_PASSWORD not set. Please set the DEVELOPMENT_PASSWORD as an environment variable.")
+        abort(
+            HTTPStatus.INTERNAL_SERVER_ERROR,
+            message="Server DEVELOPMENT_PASSWORD not set. Please set the DEVELOPMENT_PASSWORD as an environment variable.",
+        )
 
 
 @namespace_create_test_user.route("/create-test-user-with-elevated-permissions")
@@ -64,7 +67,9 @@ class CreateTestUserWithElevatedPermissions(PsycopgResource):
         HTTPStatus.INTERNAL_SERVER_ERROR,
         "Internal server error OR Server DEVELOPMENT_PASSWORD not set.",
     )
-    @namespace_create_test_user.response(HTTPStatus.UNAUTHORIZED, "Incorrect development password")
+    @namespace_create_test_user.response(
+        HTTPStatus.UNAUTHORIZED, "Incorrect development password"
+    )
     @namespace_create_test_user.doc(
         description="Creates a test user with elevated permissions. Requires a development which matches the DEVELOPMENT_PASSWORD environment variable."
     )

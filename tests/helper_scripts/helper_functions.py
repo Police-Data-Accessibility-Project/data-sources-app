@@ -82,7 +82,6 @@ def insert_test_agencies_and_sources_if_not_exist(cursor: psycopg.cursor):
         pass
 
 
-
 def get_reset_tokens_for_email(
     db_cursor: psycopg.cursor, reset_token_insert: TestTokenInsert
 ) -> tuple:
@@ -215,6 +214,7 @@ def get_boolean_dictionary(keys: tuple) -> dict[str, bool]:
         d[key] = False
     return d
 
+
 def search_with_boolean_dictionary(
     data: list[dict],
     boolean_dictionary: dict[str, bool],
@@ -322,7 +322,8 @@ def create_api_key(client_with_db, user_info) -> str:
     :return: api_key
     """
     response = client_with_db.post(
-        f"/auth{API_KEY_ROUTE}", json={"email": user_info.email, "password": user_info.password}
+        f"/auth{API_KEY_ROUTE}",
+        json={"email": user_info.email, "password": user_info.password},
     )
     assert (
         response.status_code == HTTPStatus.OK.value
@@ -525,27 +526,22 @@ def create_test_user_setup_db_client(
     )
 
 
-
-
 def create_test_user_db_client(db_client: DatabaseClient) -> UserInfo:
     email = uuid.uuid4().hex
     password_digest = uuid.uuid4().hex
     user_id = db_client.add_new_user(email, password_digest)
     return UserInfo(email, password_digest, user_id)
 
+
 def run_and_validate_request(
-        flask_client: FlaskClient,
-        http_method: str,
-        endpoint: str,
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: Optional[dict] = None,
-        **request_kwargs
+    flask_client: FlaskClient,
+    http_method: str,
+    endpoint: str,
+    expected_response_status: HTTPStatus = HTTPStatus.OK,
+    expected_json_content: Optional[dict] = None,
+    **request_kwargs,
 ):
-    response = flask_client.open(
-        endpoint,
-        method=http_method,
-        **request_kwargs
-    )
+    response = flask_client.open(endpoint, method=http_method, **request_kwargs)
     check_response_status(response, expected_response_status.value)
     if expected_json_content is not None:
         assert response.json == expected_json_content

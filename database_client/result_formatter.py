@@ -61,7 +61,9 @@ class ResultFormatter:
     @staticmethod
     def zip_get_data_source_by_id_results(results: tuple[Any, ...]) -> dict[str, Any]:
         data_source_and_agency_columns = (
-            DATA_SOURCES_APPROVED_COLUMNS + AGENCY_APPROVED_COLUMNS + ARCHIVE_INFO_APPROVED_COLUMNS
+            DATA_SOURCES_APPROVED_COLUMNS
+            + AGENCY_APPROVED_COLUMNS
+            + ARCHIVE_INFO_APPROVED_COLUMNS
         )
         data_source_and_agency_columns.extend(
             ["data_source_id", "agency_id", "agency_name"]
@@ -70,6 +72,7 @@ class ResultFormatter:
         return ResultFormatter.convert_data_source_matches(
             data_source_and_agency_columns, [results]
         )[0]
+
 
 def dictify_namedtuple(result: list[namedtuple]) -> list[dict[str, Any]]:
     return [result._asdict() for result in result]

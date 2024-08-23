@@ -58,8 +58,6 @@ class ResetPassword(PsycopgResource):
             source=SourceMappingEnum.JSON,
         )
         with self.setup_database_client() as db_client:
-            response = reset_password(
-                db_client, dto=dto
-            )
+            response = reset_password(db_client, dto=dto)
 
         return response

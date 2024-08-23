@@ -27,6 +27,7 @@ from tests.helper_scripts.helper_functions import (
 
 ENDPOINT = "/api/archives"
 
+
 def test_archives_get(flask_client_with_db, dev_db_client: DatabaseClient):
     """
     Test that GET call to /archives endpoint successfully retrieves a non-zero amount of data
@@ -60,11 +61,13 @@ def test_archives_put(
         http_method="put",
         endpoint=ENDPOINT,
         headers=test_user_admin.jwt_authorization_header,
-        json=json.dumps({
-            "id": data_source_id,
-            "last_cached": str(last_cached),
-            "broken_source_url_as_of": str(broken_as_of),
-        }),
+        json=json.dumps(
+            {
+                "id": data_source_id,
+                "last_cached": str(last_cached),
+                "broken_source_url_as_of": str(broken_as_of),
+            }
+        ),
     )
 
     row = dev_db_client.execute_raw_sql(

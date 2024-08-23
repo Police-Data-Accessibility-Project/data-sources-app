@@ -7,6 +7,7 @@ from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_login_with_github = create_namespace(AppNamespaces.AUTH)
 
+
 @namespace_login_with_github.route("/login-with-github")
 class LoginWithGithub(PsycopgResource):
 
