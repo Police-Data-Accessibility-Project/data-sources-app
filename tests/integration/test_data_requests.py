@@ -45,6 +45,7 @@ def ts(flask_client_with_db, dev_db_client):
 
 def test_data_requests_get(ts: TestSetup):
 
+    data_request_id_not_creator = create_data_request(ts.db_client, ts.submission_notes)
     data_request_id_creator = create_data_request(ts.db_client, ts.submission_notes, ts.tus.user_info.user_id)
 
     json_data = run_and_validate_request(

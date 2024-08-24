@@ -662,6 +662,8 @@ def test_user_is_creator_of_data_request(live_database_client):
     assert results is False
 
 def test_get_data_requests(live_database_client):
+
+
     submitter_email = uuid.uuid4().hex
     submission_notes_1 = uuid.uuid4().hex
     submission_notes_2 = uuid.uuid4().hex
@@ -690,6 +692,11 @@ def test_get_data_requests(live_database_client):
     )
     assert len(result_2) == 1
     assert result_2[0][0] == submission_notes_2
+
+    user_id = live_database_client.add_new_user(
+        email=submitter_email,
+        password_digest=uuid.uuid4().hex
+    )
 
 def test_delete_data_request(live_database_client):
     submission_notes = uuid.uuid4().hex

@@ -12,6 +12,7 @@ from database_client.constants import (
     RESTRICTED_DATA_SOURCE_COLUMNS,
     RESTRICTED_COLUMNS,
 )
+from database_client.dataclasses import DataRequestCreatorInfo
 from utilities.enums import RecordCategories
 
 TableColumn = namedtuple("TableColumn", ["table", "column"])
@@ -422,6 +423,11 @@ class DynamicQueryConstructor:
         return query
 
     @staticmethod
+    def build_full_where_clause(where_subclauses: list[sql.Composed]) -> sql.Composed:
+        return sql.SQL(" WHERE ") + sql.SQL(" AND ").join(where_subclauses)
+
+
+    @staticmethod
     def create_single_relation_selection_query(
         relation: str,
         columns: list[str],
@@ -438,33 +444,66 @@ class DynamicQueryConstructor:
         :param where_mappings: And-joined simple where conditionals (of column = value)
         :return:
         """
+        base_query = DynamicQueryConstructor.get_select_clause(columns, relation)
+        if where_mappings is not None or not_where_mappings is not None:
+            where_clauses = DynamicQueryConstructor.build_where_subclauses_from_mappings(
+                not_where_mappings,
+                where_mappings
+            )
+            base_query += DynamicQueryConstructor.build_full_where_clause(where_clauses)
+        if limit is not None:
+            base_query += DynamicQueryConstructor.get_limit_clause(limit)
+        if offset is not None:
+            base_query += DynamicQueryConstructor.get_offset_clause(offset)
+        return base_query
+
+    @staticmethod
+    def build_where_subclauses_from_mappings(not_where_mappings, where_mappings):
+        where_clauses = []
+        if where_mappings is not None:
+            # Create list of where clauses
+            where_clauses.extend(
+                DynamicQueryConstructor.get_where_eq_clauses(where_mappings)
+            )
+        if not_where_mappings is not None:
+            # Create list of not where clauses
+            where_clauses.extend(
+                DynamicQueryConstructor.get_where_neq_clauses(not_where_mappings)
+            )
+        return where_clauses
+
+    @staticmethod
+    def get_offset_clause(offset):
+        return sql.SQL(" OFFSET {offset}").format(offset=sql.Literal(offset))
+
+    @staticmethod
+    def get_limit_clause(limit):
+        return sql.SQL(" LIMIT {limit}").format(limit=sql.Literal(limit))
+
+    @staticmethod
+    def get_where_neq_clauses(not_where_mappings):
+        where_neq_clauses = [
+            sql.SQL(" ({column} != {value} or {column} is null) ").format(
+                column=sql.Identifier(column), value=sql.Literal(value)
+            )
+            for column, value in not_where_mappings.items()
+        ]
+        return where_neq_clauses
+
+    @staticmethod
+    def get_where_eq_clauses(where_mappings):
+        where_eq_clauses = [
+            sql.SQL(" {column} = {value} ").format(
+                column=sql.Identifier(column), value=sql.Literal(value)
+            )
+            for column, value in where_mappings.items()
+        ]
+        return where_eq_clauses
+
+    @staticmethod
+    def get_select_clause(columns, relation):
         base_query = sql.SQL("SELECT {columns} FROM {relation}").format(
             columns=sql.SQL(", ").join([sql.Identifier(column) for column in columns]),
             relation=sql.Identifier(relation),
         )
-        if where_mappings is not None or not_where_mappings is not None:
-            base_query += sql.SQL(" WHERE ")
-            where_clauses = []
-            if where_mappings is not None:
-                # Create list of where clauses
-                where_clauses.extend([
-                    sql.SQL(" {column} = {value} ").format(
-                        column=sql.Identifier(column), value=sql.Literal(value)
-                    )
-                    for column, value in where_mappings.items()
-                ])
-            if not_where_mappings is not None:
-                # Create list of not where clauses
-                where_clauses.extend([
-                    sql.SQL(" {column} != {value} ").format(
-                        column=sql.Identifier(column), value=sql.Literal(value)
-                    )
-                    for column, value in not_where_mappings.items()
-                ])
-            full_where_clause = sql.SQL(" AND ").join(where_clauses)
-            base_query += full_where_clause
-        if limit is not None:
-            base_query += sql.SQL(" LIMIT {limit}").format(limit=sql.Literal(limit))
-        if offset is not None:
-            base_query += sql.SQL(" OFFSET {offset}").format(offset=sql.Literal(offset))
         return base_query

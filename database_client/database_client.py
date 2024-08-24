@@ -904,7 +904,7 @@ class DatabaseClient:
             self,
             columns: List[str],
             where_mappings: Optional[dict] = None,
-            not_where_mappings: Optional[dict] = None
+            not_where_mappings: Optional[dict] = None,
     ) -> List[tuple]:
         return self._select_from_single_relation(
             relation_name="data_requests",
