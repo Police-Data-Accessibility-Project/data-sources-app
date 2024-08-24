@@ -3,6 +3,7 @@ from typing import Optional
 
 from flask import make_response, Response
 from flask_jwt_extended import get_jwt_identity
+from flask_restx import abort
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import ColumnPermissionEnum, RelationRoleEnum
@@ -42,7 +43,6 @@ def get_data_requests_relation_role(
     return RelationRoleEnum.STANDARD
 
 
-
 def create_data_request_wrapper(
         db_client: DatabaseClient,
         dto: EntryDataRequest,
@@ -55,14 +55,17 @@ def create_data_request_wrapper(
     :param data_request_data:
     :return:
     """
-    # TODO: Test
     check_has_permission_to_edit_columns(
         db_client=db_client,
         relation=RELATION,
         role=RelationRoleEnum.OWNER,
         columns=list(dto.entry_data.keys())
     )
-    data_request_id = get_data_requestor_with_creator_user_id(access_info.user_email, db_client, dto)
+    data_request_id = get_data_requestor_with_creator_user_id(
+        user_email=access_info.user_email,
+        db_client=db_client,
+        dto=dto
+    )
     return make_response(
         {
             "message": "Data request created",
@@ -72,7 +75,7 @@ def create_data_request_wrapper(
     )
 
 
-def get_data_requestor_with_creator_user_id(user_email, db_client, dto):
+def get_data_requestor_with_creator_user_id(user_email, db_client, dto: EntryDataRequest):
     user_id = db_client.get_user_id(user_email)
     dto.entry_data.update({"creator_user_id": user_id})
     data_request_id = db_client.create_data_request(dto.entry_data)
@@ -89,7 +92,7 @@ def get_data_requests_wrapper(
     :param access_info:
     :return:
     """
-    # TODO: Test
+
     relation_role = get_data_requests_relation_role(
         db_client,
         data_request_id=None,
@@ -106,8 +109,7 @@ def get_data_requests_wrapper(
     )
 
 
-def get_formatted_data_requests(access_info, db_client, relation_role):
-    # TODO: Test
+def get_formatted_data_requests(access_info, db_client, relation_role) -> list[dict]:
 
     if relation_role == RelationRoleEnum.ADMIN:
         return get_zipped_data_requests(
@@ -123,7 +125,6 @@ def get_formatted_data_requests(access_info, db_client, relation_role):
 
 
 def get_standard_and_owner_zipped_data_requests(user_email, db_client):
-    # TODO: Test
     user_id = db_client.get_user_id(user_email)
     # Create two requests -- one where the user is the creator and one where the user is not
     mapping = {"creator_user_id": user_id}
@@ -148,6 +149,7 @@ def get_zipped_data_requests(
         where_mappings: Optional[dict] = None,
         not_where_mappings: Optional[dict] = None
 ) -> list[dict]:
+
     columns = get_permitted_columns(
         db_client=db_client,
         relation=RELATION,
@@ -177,23 +179,30 @@ def delete_data_request_wrapper(
     :param access_info:
     :return:
     """
-    # TODO: Test
-    if not allowed_to_delete_request(access_info, data_request_id, db_client):
-        return message_response(
-            "You do not have permission to delete this data request",
-            HTTPStatus.FORBIDDEN,
-        )
+    check_if_allowed_to_delete_data_request(access_info, data_request_id, db_client)
+    return delete_data_request(data_request_id, db_client)
 
+
+def delete_data_request(data_request_id, db_client):
     db_client.delete_data_request(data_request_id)
     return message_response(
-            "Data request deleted",
-            HTTPStatus.OK,
+        "Data request deleted",
+        HTTPStatus.OK,
     )
 
 
+def check_if_allowed_to_delete_data_request(access_info, data_request_id, db_client):
+    if not allowed_to_delete_request(access_info, data_request_id, db_client):
+        abort(
+            code=HTTPStatus.FORBIDDEN,
+            message="You do not have permission to delete this data request",
+        )
+
+
 def allowed_to_delete_request(access_info, data_request_id, db_client):
+    user_id = db_client.get_user_id(access_info.user_email)
     return db_client.user_is_creator_of_data_request(
-        user_id=db_client.get_user_id(access_info.user_email),
+        user_id=user_id,
         data_request_id=data_request_id
     ) or PermissionsEnum.DB_WRITE in access_info.permissions
 
@@ -210,7 +219,6 @@ def update_data_request_wrapper(
     :param access_info:
     :return:
     """
-    # TODO: Test
     relation_role = get_data_requests_relation_role(db_client, data_request_id, access_info)
     check_has_permission_to_edit_columns(
         db_client=db_client,
@@ -248,11 +256,7 @@ def get_data_request_by_id_wrapper(
         relation_role=relation_role,
         where_mappings={"id": data_request_id}
     )
-    if len(zipped_results) == 0:
-        return message_response(
-            "Data request not found",
-            HTTPStatus.OK
-        )
+    abort_if_no_results(zipped_results)
     return make_response(
         {
             "message": "Data request retrieved",
@@ -260,3 +264,11 @@ def get_data_request_by_id_wrapper(
         },
         HTTPStatus.OK,
 )
+
+
+def abort_if_no_results(zipped_results):
+    if len(zipped_results) == 0:
+        abort(
+            code=HTTPStatus.OK,
+            message="Data request not found",
+        )

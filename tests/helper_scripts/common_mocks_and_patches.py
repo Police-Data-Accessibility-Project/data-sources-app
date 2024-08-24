@@ -1,6 +1,7 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from tests.helper_scripts.common_test_data import TEST_RESPONSE
+
 
 
 def patch_test_response_to_resource(monkeypatch, path) -> MagicMock:
@@ -34,4 +35,15 @@ def patch_request_headers(monkeypatch, path: str, request_headers: dict) -> Magi
 def patch_abort(monkeypatch, path: str) -> MagicMock:
     mock = MagicMock()
     monkeypatch.setattr(f"{path}.abort", mock)
+    return mock
+
+
+def patch_and_return_mock(path: str, monkeypatch) -> MagicMock:
+    mock = MagicMock()
+    monkeypatch.setattr(path, mock)
+    return mock
+
+def patch_make_response(path: str, monkeypatch) -> MagicMock:
+    mock = MagicMock()
+    monkeypatch.setattr(f"{path}.make_response", mock)
     return mock
