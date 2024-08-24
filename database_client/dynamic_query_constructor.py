@@ -12,7 +12,6 @@ from database_client.constants import (
     RESTRICTED_DATA_SOURCE_COLUMNS,
     RESTRICTED_COLUMNS,
 )
-from database_client.dataclasses import DataRequestCreatorInfo
 from utilities.enums import RecordCategories
 
 TableColumn = namedtuple("TableColumn", ["table", "column"])
