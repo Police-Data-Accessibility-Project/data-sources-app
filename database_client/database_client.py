@@ -700,7 +700,7 @@ class DatabaseClient:
         results = self.cursor.fetchall()
         return [
             self.QuickSearchResult(
-                id=row["id"],
+                id=row["airtable_uid"],
                 data_source_name=row["data_source_name"],
                 description=row["description"],
                 record_type=row["record_type"],
@@ -711,7 +711,7 @@ class DatabaseClient:
                 agency_supplied=row["agency_supplied"],
                 agency_name=row["agency_name"],
                 municipality=row["municipality"],
-                state=row["state"],
+                state=row["state_iso"],
             )
             for row in results
         ]
@@ -807,12 +807,12 @@ class DatabaseClient:
         """
         # If the column permission is READ, return also WRITE values, which are assumed to include READ
         if column_permission == ColumnPermissionEnum.READ:
-            column_permissions = (
+            column_permissions = [
                 ColumnPermissionEnum.READ.value,
                 ColumnPermissionEnum.WRITE.value,
-            )
+            ]
         else:
-            column_permissions = (column_permission.value,)
+            column_permissions = [column_permission.value,]
 
         query = sql.SQL(
             """
@@ -821,7 +821,7 @@ class DatabaseClient:
             INNER JOIN relation_column rc on rc.id = cp.rc_id
             WHERE rc.relation = {relation}
             and cp.relation_role = {relation_role}
-            and cp.access_permission in {column_permissions}
+            and cp.access_permission = ANY({column_permissions})
         """
         ).format(
             relation=sql.Literal(relation),

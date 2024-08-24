@@ -303,12 +303,12 @@ class DynamicQueryConstructor:
                 )
             )
 
-            record_type_str_tup = tuple(
+            record_type_str_list = [
                 [record_type.value for record_type in record_categories]
-            )
+            ]
             where_conditions.append(
-                sql.SQL("record_categories.name in {record_types}").format(
-                    record_types=sql.Literal(record_type_str_tup)
+                sql.SQL("record_categories.name = ANY({record_types})").format(
+                    record_types=sql.Literal(record_type_str_list)
                 )
             )
 
