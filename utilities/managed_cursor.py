@@ -6,8 +6,8 @@ import psycopg
 
 @contextmanager
 def managed_cursor(
-    connection: psycopg.connection,
-) -> Iterator[psycopg.cursor]:
+    connection: psycopg.Connection,
+) -> Iterator[psycopg.Cursor]:
     """
     Manage a cursor for a given database connection.
 

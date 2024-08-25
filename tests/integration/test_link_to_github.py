@@ -18,7 +18,7 @@ from tests.helper_scripts.helper_functions import (
 
 
 def test_link_to_github(
-    flask_client_with_db, dev_db_connection: psycopg.connection, monkeypatch
+    flask_client_with_db, dev_db_connection: psycopg.Connection, monkeypatch
 ):
     tus = create_test_user_setup(flask_client_with_db)
     mock_setup_callback_session = patch_setup_callback_session(

@@ -14,7 +14,7 @@ from tests.helper_scripts.helper_functions import (
 
 
 def test_login_post(
-    flask_client_with_db, dev_db_connection: psycopg.connection
+    flask_client_with_db, dev_db_connection: psycopg.Connection
 ):
     """
     Test that POST call to /login endpoint successfully logs in a user, creates a session token, and verifies the session token exists only once in the database with the correct email

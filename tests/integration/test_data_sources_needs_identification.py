@@ -19,7 +19,7 @@ from tests.helper_scripts.helper_functions import (
 
 
 def test_data_sources_needs_identification(
-    flask_client_with_db, connection_with_test_data: psycopg.connection
+    flask_client_with_db, connection_with_test_data: psycopg.Connection
 ):
     """
     Test that GET call to /data-sources-needs-identification endpoint retrieves data sources that need identification and correctly identifies specific sources by name
@@ -36,6 +36,7 @@ def test_data_sources_needs_identification(
     )
 
     data = response_json["data"]
+    print(data)
     search_with_boolean_dictionary(
         data=data,
         boolean_dictionary=inserted_data_sources_found,

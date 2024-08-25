@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 import psycopg
-from psycopg import connection as PgConnection
+from psycopg import Connection as PgConnection
 from middleware.initialize_psycopg_connection import (
     initialize_psycopg_connection,
     DatabaseInitializationError,
@@ -19,7 +19,7 @@ def test_initialize_psycopg_connection():
     :return:
     """
     conn = initialize_psycopg_connection()
-
+    print(type(conn))
     assert isinstance(conn, PgConnection)
     assert conn.closed == 0
 

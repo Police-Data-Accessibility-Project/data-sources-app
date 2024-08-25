@@ -26,7 +26,7 @@ class QuickSearchQueryMocks(DynamicMagicMock):
 
 
 def test_quick_search_query_logging(
-    connection_with_test_data: psycopg.connection,
+    connection_with_test_data: psycopg.Connection,
 ) -> None:
 
     mock = QuickSearchQueryMocks(
