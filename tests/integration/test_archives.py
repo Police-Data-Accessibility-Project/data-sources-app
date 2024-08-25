@@ -4,7 +4,7 @@ import datetime
 from http import HTTPStatus
 import json
 
-import psycopg2
+import psycopg
 
 from database_client.database_client import DatabaseClient
 from middleware.enums import PermissionsEnum

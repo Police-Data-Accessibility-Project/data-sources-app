@@ -3,7 +3,7 @@ from collections import namedtuple
 from datetime import datetime
 from typing import Optional
 
-from psycopg2 import sql
+from psycopg import sql
 
 from database_client.constants import (
     AGENCY_APPROVED_COLUMNS,
@@ -303,12 +303,12 @@ class DynamicQueryConstructor:
                 )
             )
 
-            record_type_str_tup = tuple(
+            record_type_str_list = [
                 [record_type.value for record_type in record_categories]
-            )
+            ]
             where_conditions.append(
-                sql.SQL("record_categories.name in {record_types}").format(
-                    record_types=sql.Literal(record_type_str_tup)
+                sql.SQL("record_categories.name = ANY({record_types})").format(
+                    record_types=sql.Literal(record_type_str_list)
                 )
             )
 

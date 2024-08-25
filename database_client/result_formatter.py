@@ -40,14 +40,6 @@ class ResultFormatter:
         return data_source_matches_converted
 
     @staticmethod
-    def zip_needs_identification_data_source_results(
-        results: list[tuple],
-    ) -> list[dict]:
-        return ResultFormatter.convert_data_source_matches(
-            DATA_SOURCES_APPROVED_COLUMNS + ARCHIVE_INFO_APPROVED_COLUMNS, results
-        )
-
-    @staticmethod
     def zip_get_datas_sources_for_map_results(results: list[tuple]) -> list[dict]:
         return ResultFormatter.convert_data_source_matches(
             DATA_SOURCES_MAP_COLUMN, results

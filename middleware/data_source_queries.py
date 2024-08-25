@@ -86,12 +86,9 @@ def add_new_data_source_wrapper(db_client: DatabaseClient, data: dict) -> Respon
 
 
 def needs_identification_data_sources_wrapper(db_client: DatabaseClient) -> Response:
-    raw_results = db_client.get_needs_identification_data_sources()
-    zipped_results = ResultFormatter.zip_needs_identification_data_source_results(
-        raw_results
-    )
+    results = db_client.get_needs_identification_data_sources()
     return make_response(
-        format_list_response(zipped_results),
+        format_list_response(results),
         HTTPStatus.OK.value,
     )
 

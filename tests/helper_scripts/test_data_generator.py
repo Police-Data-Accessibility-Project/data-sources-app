@@ -1,5 +1,5 @@
-import psycopg2
-from psycopg2 import sql
+import psycopg
+from psycopg import sql
 
 
 class TestDataGenerator:
@@ -7,7 +7,7 @@ class TestDataGenerator:
     A class for generating test data.
     """
 
-    def __init__(self, cursor: psycopg2.extensions.cursor):
+    def __init__(self, cursor: psycopg.Cursor):
         self.cursor = cursor
         self.savepoint = None
 
