@@ -2,8 +2,6 @@
 
 from http import HTTPStatus
 
-import psycopg2.extensions
-
 from database_client.database_client import DatabaseClient
 from resources.ApiKey import API_KEY_ROUTE
 from tests.fixtures import dev_db_connection, flask_client_with_db, dev_db_client

@@ -16,7 +16,7 @@ from resources.TypeaheadSuggestions import (
 from flask_restx import Api
 
 from config import config, oauth, limiter, jwt
-from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
+from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from resources.Agencies import namespace_agencies
 from resources.ApiKey import namespace_api_key
 from resources.Archives import namespace_archives
@@ -85,7 +85,7 @@ def get_flask_app_cookie_encryption_key() -> str:
 
 
 def create_app() -> Flask:
-    psycopg2_connection = initialize_psycopg2_connection()
+    psycopg2_connection = initialize_psycopg_connection()
     config.connection = psycopg2_connection
     api = Api()
     for namespace in NAMESPACES:

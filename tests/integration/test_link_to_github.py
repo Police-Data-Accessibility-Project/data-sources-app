@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-import psycopg2
+import psycopg
 
 from middleware.enums import CallbackFunctionsEnum
 from tests.fixtures import dev_db_connection, flask_client_with_db
@@ -18,7 +18,7 @@ from tests.helper_scripts.helper_functions import (
 
 
 def test_link_to_github(
-    flask_client_with_db, dev_db_connection: psycopg2.extensions.connection, monkeypatch
+    flask_client_with_db, dev_db_connection: psycopg.Connection, monkeypatch
 ):
     tus = create_test_user_setup(flask_client_with_db)
     mock_setup_callback_session = patch_setup_callback_session(

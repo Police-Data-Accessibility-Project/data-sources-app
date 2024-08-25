@@ -1,7 +1,7 @@
 """Integration tests for /request-reset-password endpoint."""
 
 from http import HTTPStatus
-import psycopg2
+import psycopg
 
 from tests.fixtures import dev_db_connection, flask_client_with_db
 from tests.helper_scripts.helper_functions import (
@@ -12,7 +12,7 @@ from tests.helper_scripts.helper_functions import (
 
 
 def test_request_reset_password_post(
-    flask_client_with_db, dev_db_connection: psycopg2.extensions.connection, mocker
+    flask_client_with_db, dev_db_connection: psycopg.Connection, mocker
 ):
     """
     Test that POST call to /request-reset-password endpoint successfully initiates a password reset request, sends a single email via Mailgun, and verifies the reset token is correctly associated with the user's email in the database

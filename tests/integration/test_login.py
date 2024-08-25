@@ -1,6 +1,6 @@
 """Integration tests for /login endpoint"""
 
-import psycopg2.extensions
+import psycopg
 from flask_jwt_extended import get_jwt_identity, decode_token
 
 from database_client.database_client import DatabaseClient
@@ -14,7 +14,7 @@ from tests.helper_scripts.helper_functions import (
 
 
 def test_login_post(
-    flask_client_with_db, dev_db_connection: psycopg2.extensions.connection
+    flask_client_with_db, dev_db_connection: psycopg.Connection
 ):
     """
     Test that POST call to /login endpoint successfully logs in a user, creates a session token, and verifies the session token exists only once in the database with the correct email
