@@ -275,7 +275,7 @@ class DatabaseClient:
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return results
 
-    @cursor_manager(row_factory=tuple_row)
+    @cursor_manager()
     def get_needs_identification_data_sources(self) -> list[tuple[Any, ...]]:
         """
         Returns a list of data sources that need identification from the database.
