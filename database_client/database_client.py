@@ -113,7 +113,7 @@ class DatabaseClient:
     @cursor_manager()
     def execute_raw_sql(
         self, query: str, vars: Optional[tuple] = None
-    ) -> Optional[list[dict]]:
+    ) -> Optional[list[dict[Any, ...]]]:
         """Executes an SQL query passed to the function.
 
         :param query: The SQL query to execute.
@@ -275,7 +275,7 @@ class DatabaseClient:
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return results
 
-    @cursor_manager()
+    @cursor_manager(row_factory=tuple_row)
     def get_needs_identification_data_sources(self) -> list[tuple[Any, ...]]:
         """
         Returns a list of data sources that need identification from the database.
@@ -362,7 +362,7 @@ class DatabaseClient:
 
         return [self.MapInfo(*result) for result in results]
 
-    def get_agencies_from_page(self, page: int) -> list[tuple[Any, ...]]:
+    def get_agencies_from_page(self, page: int) -> list[dict[Any, ...]]:
         """
         Returns a list of up to 1000 agencies from the database from a given page.
 
