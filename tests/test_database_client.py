@@ -680,7 +680,7 @@ def test_get_data_requests(live_database_client):
 
     result_1 = live_database_client.get_data_requests(columns=["submission_notes"], where_mappings={"submitter_email": submitter_email})
     assert len(result_1) == 2
-    assert result_1[0][0] == submission_notes_1
+    assert result_1[0]["submission_notes"] == submission_notes_1
 
     result_2 = live_database_client.get_data_requests(
         columns=["submission_notes"],
@@ -688,7 +688,7 @@ def test_get_data_requests(live_database_client):
         not_where_mappings={"id": data_request_id_1}
     )
     assert len(result_2) == 1
-    assert result_2[0][0] == submission_notes_2
+    assert result_2[0]["submission_notes"] == submission_notes_2
 
     user_id = live_database_client.add_new_user(
         email=submitter_email,
@@ -716,12 +716,12 @@ def test_update_data_request(live_database_client):
 
     results = live_database_client.get_data_requests(columns=["submission_notes"], where_mappings={"id": data_request_id})
     assert len(results) == 1
-    assert results[0][0] == submission_notes
+    assert results[0]["submission_notes"] == submission_notes
     new_submission_notes = uuid.uuid4().hex
     live_database_client.update_data_request(column_edit_mappings={"submission_notes": new_submission_notes}, data_request_id=data_request_id)
     results = live_database_client.get_data_requests(columns=["submission_notes"], where_mappings={"id": data_request_id})
     assert len(results) == 1
-    assert results[0][0] == new_submission_notes
+    assert results[0]["submission_notes"] == new_submission_notes
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts
 # def test_search_with_location_and_record_types_test_data(live_database_client, xylonslyvania_test_data):

@@ -24,7 +24,7 @@ from middleware.data_requests import (
     abort_if_no_results,
     get_data_requestor_with_creator_user_id,
     get_data_requests_wrapper,
-    get_zipped_data_requests,
+    get_data_requests_with_permitted_columns,
 )
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_mocks_and_patches import (
@@ -96,8 +96,8 @@ def mock_message_response(monkeypatch):
 
 
 @pytest.fixture
-def mock_get_zipped_data_requests(monkeypatch):
-    return patch_and_return_mock(f"{PATCH_ROOT}.get_zipped_data_requests", monkeypatch)
+def mock_get_data_requests_with_permitted_columns(monkeypatch):
+    return patch_and_return_mock(f"{PATCH_ROOT}.get_data_requests_with_permitted_columns", monkeypatch)
 
 
 def test_get_data_requestor_with_creator_user_id():
@@ -177,7 +177,7 @@ def test_create_data_request_wrapper(
 
 class GetFormattedDataRequestsMocks(DynamicMagicMock):
     get_standard_and_owner_zipped_data_requests: MagicMock
-    get_zipped_data_requests: MagicMock
+    get_data_requests_with_permitted_columns: MagicMock
 
 
 @pytest.fixture
@@ -187,28 +187,21 @@ def get_formatted_data_requests_mocks():
     )
 
 
-@patch.object(ResultFormatter, "convert_data_source_matches")
 @patch(PATCH_ROOT + ".get_permitted_columns")
-def test_get_zipped_data_requests(
+def test_get_data_requests_with_permitted_columns(
     mock_get_permitted_columns: MagicMock,
-    mock_convert_data_source_matches: MagicMock,
 ):
     mock = MagicMock()
-    mock_convert_data_source_matches.return_value = [mock.zipped_data_request]
 
-    results = get_zipped_data_requests(
+    results = get_data_requests_with_permitted_columns(
         db_client=mock.db_client,
         relation_role=mock.relation_role,
         where_mappings=mock.where_mappings,
         not_where_mappings=mock.not_where_mappings,
     )
 
-    mock_convert_data_source_matches.assert_called_once_with(
-        data_source_output_columns=mock_get_permitted_columns.return_value,
-        results=mock.db_client.get_data_requests.return_value,
-    )
 
-    assert results == [mock.zipped_data_request]
+    assert results == mock.db_client.get_data_requests.return_value
 
 
     # assert results == mock.zipped_data_requests
@@ -235,7 +228,7 @@ def test_get_formatted_data_requests_admin(get_formatted_data_requests_mocks):
         access_info=mock.access_info,
         relation_role=RelationRoleEnum.ADMIN,
     )
-    mock.get_zipped_data_requests.assert_called_once_with(
+    mock.get_data_requests_with_permitted_columns.assert_called_once_with(
         mock.db_client, RelationRoleEnum.ADMIN
     )
     mock.get_standard_and_owner_zipped_data_requests.assert_not_called()
@@ -249,7 +242,7 @@ def test_get_formatted_data_requests_standard(get_formatted_data_requests_mocks)
         access_info=mock.access_info,
         relation_role=RelationRoleEnum.STANDARD,
     )
-    mock.get_zipped_data_requests.assert_not_called()
+    mock.get_data_requests_with_permitted_columns.assert_not_called()
     mock.get_standard_and_owner_zipped_data_requests.assert_called_once_with(
         mock.access_info.user_email, mock.db_client
     )
@@ -264,15 +257,15 @@ def test_get_formatted_data_requests_owner(get_formatted_data_requests_mocks):
             access_info=mock.access_info,
             relation_role=RelationRoleEnum.OWNER,
         )
-    mock.get_zipped_data_requests.assert_not_called()
+    mock.get_data_requests_with_permitted_columns.assert_not_called()
     mock.get_standard_and_owner_zipped_data_requests.assert_not_called()
 
 
 def test_get_standard_and_owner_zipped_data_requests(
-    mock_get_zipped_data_requests: MagicMock,
+        mock_get_data_requests_with_permitted_columns: MagicMock,
 ):
     mock = MagicMock()
-    mock_get_zipped_data_requests.side_effect = [
+    mock_get_data_requests_with_permitted_columns.side_effect = [
         [mock.data_request_standard],
         [mock.data_request_owner],
     ]
@@ -282,7 +275,7 @@ def test_get_standard_and_owner_zipped_data_requests(
     )
     assert zipped_data_requests == [mock.data_request_owner, mock.data_request_standard]
     expected_mapping = {"creator_user_id": mock.user_id}
-    mock_get_zipped_data_requests.assert_has_calls(
+    mock_get_data_requests_with_permitted_columns.assert_has_calls(
         [
             call(
                 db_client=mock.db_client,
@@ -447,7 +440,7 @@ def test_update_data_request_wrapper(
 
 
 def test_get_data_request_by_id_wrapper(
-    mock_get_zipped_data_requests,
+        mock_get_data_requests_with_permitted_columns,
     mock_get_data_requests_relation_role,
     mock_make_response,
     monkeypatch,
@@ -468,18 +461,18 @@ def test_get_data_request_by_id_wrapper(
         data_request_id=mock.data_request_id,
         access_info=mock.access_info,
     )
-    mock_get_zipped_data_requests.assert_called_once_with(
+    mock_get_data_requests_with_permitted_columns.assert_called_once_with(
         db_client=mock.db_client,
         relation_role=mock_get_data_requests_relation_role.return_value,
         where_mappings={"id": mock.data_request_id},
     )
     mock.abort_if_no_results.assert_called_once_with(
-        mock_get_zipped_data_requests.return_value
+        mock_get_data_requests_with_permitted_columns.return_value
     )
     mock_make_response.assert_called_once_with(
         {
             "message": "Data request retrieved",
-            "data_request": mock_get_zipped_data_requests.return_value[0],
+            "data_request": mock_get_data_requests_with_permitted_columns.return_value[0],
         },
         HTTPStatus.OK,
     )

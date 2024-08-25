@@ -108,8 +108,8 @@ def test_data_requests_post(ts: TestSetup):
     )
 
     assert len(results) == 1
-    assert results[0][1] == ts.submission_notes
-    assert results[0][2] == user_id
+    assert results[0]["submission_notes"] == ts.submission_notes
+    assert results[0]["creator_user_id"] == user_id
 
     # Check that response is forbidden for standard user
     run_and_validate_request(
@@ -173,7 +173,7 @@ def test_data_requests_by_id_put(ts: TestSetup):
         where_mappings={"id": data_request_id},
     )
 
-    assert result[0][0] == ts.submission_notes
+    assert result[0]["submission_notes"] == ts.submission_notes
 
     new_submission_notes = str(uuid.uuid4())
 
@@ -190,7 +190,7 @@ def test_data_requests_by_id_put(ts: TestSetup):
         where_mappings={"id": data_request_id},
     )
 
-    assert result[0][0] == new_submission_notes
+    assert result[0]["submission_notes"] == new_submission_notes
 
     # Check that request is denied on admin-only column
     run_and_validate_request(

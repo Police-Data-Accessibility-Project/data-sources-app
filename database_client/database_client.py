@@ -941,7 +941,7 @@ class DatabaseClient:
             column_edit_mappings=column_edit_mappings,
         )
 
-    @cursor_manager
+    @cursor_manager()
     def _delete_from_table(
         self,
         table_name: str,

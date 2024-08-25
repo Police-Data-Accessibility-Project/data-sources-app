@@ -112,7 +112,7 @@ def get_data_requests_wrapper(
 def get_formatted_data_requests(access_info, db_client, relation_role) -> list[dict]:
 
     if relation_role == RelationRoleEnum.ADMIN:
-        return get_zipped_data_requests(
+        return get_data_requests_with_permitted_columns(
             db_client,
             relation_role
         )
@@ -128,12 +128,12 @@ def get_standard_and_owner_zipped_data_requests(user_email, db_client):
     user_id = db_client.get_user_id(user_email)
     # Create two requests -- one where the user is the creator and one where the user is not
     mapping = {"creator_user_id": user_id}
-    zipped_standard_requests = get_zipped_data_requests(
+    zipped_standard_requests = get_data_requests_with_permitted_columns(
         db_client=db_client,
         relation_role=RelationRoleEnum.STANDARD,
         not_where_mappings=mapping
     )
-    zipped_owner_requests = get_zipped_data_requests(
+    zipped_owner_requests = get_data_requests_with_permitted_columns(
         db_client=db_client,
         relation_role=RelationRoleEnum.OWNER,
         where_mappings=mapping
@@ -143,7 +143,7 @@ def get_standard_and_owner_zipped_data_requests(user_email, db_client):
     return zipped_data_requests
 
 
-def get_zipped_data_requests(
+def get_data_requests_with_permitted_columns(
         db_client,
         relation_role,
         where_mappings: Optional[dict] = None,
@@ -161,11 +161,7 @@ def get_zipped_data_requests(
         where_mappings=where_mappings,
         not_where_mappings=not_where_mappings
     )
-    zipped_data_requests = ResultFormatter.convert_data_source_matches(
-        data_source_output_columns=columns,
-        results=data_requests,
-    )
-    return zipped_data_requests
+    return data_requests
 
 
 def delete_data_request_wrapper(
@@ -251,7 +247,7 @@ def get_data_request_by_id_wrapper(
         data_request_id=data_request_id,
         access_info=access_info
     )
-    zipped_results = get_zipped_data_requests(
+    zipped_results = get_data_requests_with_permitted_columns(
         db_client=db_client,
         relation_role=relation_role,
         where_mappings={"id": data_request_id}
