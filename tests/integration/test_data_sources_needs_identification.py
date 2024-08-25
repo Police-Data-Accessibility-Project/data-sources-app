@@ -36,7 +36,6 @@ def test_data_sources_needs_identification(
     )
 
     data = response_json["data"]
-    print(data)
     search_with_boolean_dictionary(
         data=data,
         boolean_dictionary=inserted_data_sources_found,

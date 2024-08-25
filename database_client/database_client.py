@@ -259,7 +259,7 @@ class DatabaseClient:
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return result
 
-    @cursor_manager()
+    @cursor_manager(row_factory=tuple_row)
     def get_approved_data_sources(self) -> list[tuple[Any, ...]]:
         """
         Fetches all approved data sources and their related agency information from the database.
