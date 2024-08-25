@@ -16,9 +16,7 @@ from tests.helper_scripts.helper_functions import (
 )
 
 
-def test_reset_password_post(
-    flask_client_with_db, dev_db_client, mocker
-):
+def test_reset_password_post(flask_client_with_db, dev_db_client, mocker):
     """
     Test that POST call to /reset-password endpoint successfully resets the user's password, and verifies the new password digest is distinct from the old one in the database
     """

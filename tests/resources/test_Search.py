@@ -23,6 +23,7 @@ def mock_search_wrapper_all_parameters(
 
     return TEST_RESPONSE
 
+
 def mock_search_wrapper_multiple_parameters(
     db_client: DatabaseClient,
     dto: SearchRequests,
@@ -33,6 +34,7 @@ def mock_search_wrapper_multiple_parameters(
     assert dto.locality is None
 
     return TEST_RESPONSE
+
 
 def mock_search_wrapper_minimal_parameters(
     db_client: DatabaseClient,
@@ -46,35 +48,32 @@ def mock_search_wrapper_minimal_parameters(
     return TEST_RESPONSE
 
 
-
 @pytest.mark.parametrize(
     "url, mock_search_wrapper_function",
     (
         (
             "/search/search-location-and-record-type?state=Pennsylvania&county=Allegheny&locality=Pittsburgh&record_categories=Police%20%26%20Public%20Interactions",
-            mock_search_wrapper_all_parameters
+            mock_search_wrapper_all_parameters,
         ),
         (
             "/search/search-location-and-record-type?state=Pennsylvania",
-            mock_search_wrapper_minimal_parameters
+            mock_search_wrapper_minimal_parameters,
         ),
         (
             "/search/search-location-and-record-type?state=Pennsylvania&record_categories=Police+%26+Public+interactions%2CAgency-published+resources",
-            mock_search_wrapper_multiple_parameters
+            mock_search_wrapper_multiple_parameters,
         ),
-    )
+    ),
 )
 def test_search_get_parameters(
-        url,
-        mock_search_wrapper_function,
-        client_with_mock_db,
-        monkeypatch,
-        bypass_api_key_required,
+    url,
+    mock_search_wrapper_function,
+    client_with_mock_db,
+    monkeypatch,
+    bypass_api_key_required,
 ):
 
-    monkeypatch.setattr(
-        "resources.Search.search_wrapper", mock_search_wrapper_function
-    )
+    monkeypatch.setattr("resources.Search.search_wrapper", mock_search_wrapper_function)
 
     response = client_with_mock_db.client.get(url)
     check_is_test_response(response)

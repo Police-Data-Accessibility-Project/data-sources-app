@@ -22,14 +22,14 @@ request_parser.add_argument(
 )
 
 
-
 typeahead_suggestions_inner_model = namespace_typeahead_suggestions.model(
     "TypeaheadSuggestionsInner",
     {
         "display_name": fields.String(
             required=True,
             description="The display name of the suggestion",
-            example="Pittsburgh",),
+            example="Pittsburgh",
+        ),
         "type": fields.String(
             required=True,
             description="The type of suggestion. Either `State`, `County` or `Locality`",
@@ -65,7 +65,9 @@ class TypeaheadSuggestions(PsycopgResource):
 
     @handle_exceptions
     @namespace_typeahead_suggestions.expect(request_parser)
-    @namespace_typeahead_suggestions.response(200, "OK", typeahead_suggestions_outer_model)
+    @namespace_typeahead_suggestions.response(
+        200, "OK", typeahead_suggestions_outer_model
+    )
     @namespace_typeahead_suggestions.response(500, "Internal server error")
     @limiter.limit("10/second")
     def get(self) -> Response:

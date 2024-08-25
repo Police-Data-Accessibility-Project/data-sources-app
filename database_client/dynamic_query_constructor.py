@@ -115,7 +115,9 @@ class DynamicQueryConstructor:
             ),
         ]
         fields = DynamicQueryConstructor.build_fields(
-            columns_only=data_sources_columns + agencies_approved_columns + archive_info_columns,
+            columns_only=data_sources_columns
+            + agencies_approved_columns
+            + archive_info_columns,
             columns_and_alias=alias_columns,
         )
         sql_query = sql.SQL(
@@ -165,40 +167,15 @@ class DynamicQueryConstructor:
     def zip_needs_identification_data_source_results(
         results: list[tuple],
     ) -> list[dict]:
-        return [dict(zip(DATA_SOURCES_APPROVED_COLUMNS + ARCHIVE_INFO_APPROVED_COLUMNS, result)) for result in results]
-
-    @staticmethod
-    def create_data_source_update_query(
-        data: dict, data_source_id: str
-    ) -> sql.Composed:
-        """
-        Creates a query to update a data source in the database.
-
-        :param data: A dictionary containing the updated data source details.
-        :param data_source_id: The ID of the data source to be updated.
-        """
-        data_to_update = []
-        for key, value in data.items():
-            if key in RESTRICTED_DATA_SOURCE_COLUMNS:
-                continue
-            data_to_update.append(
-                sql.SQL("{} = {}").format(sql.Identifier(key), sql.Literal(value))
+        return [
+            dict(
+                zip(
+                    DATA_SOURCES_APPROVED_COLUMNS + ARCHIVE_INFO_APPROVED_COLUMNS,
+                    result,
+                )
             )
-
-        data_to_update_sql = sql.SQL(", ").join(data_to_update)
-
-        query = sql.SQL(
-            """
-            UPDATE data_sources 
-            SET {data_to_update}
-            WHERE airtable_uid = {data_source_id}
-        """
-        ).format(
-            data_to_update=data_to_update_sql,
-            data_source_id=sql.Literal(data_source_id),
-        )
-
-        return query
+            for result in results
+        ]
 
     @staticmethod
     def create_new_data_source_query(data: dict) -> sql.Composed:
@@ -207,39 +184,24 @@ class DynamicQueryConstructor:
 
         :param data: A dictionary containing the data source details.
         """
-        columns = []
-        values = []
-        for key, value in data.items():
-            if key not in RESTRICTED_COLUMNS:
-                columns.append(sql.Identifier(key))
-                values.append(sql.Literal(value))
+        # Remove restricted keys
+        for key in data.keys():
+            if key in RESTRICTED_COLUMNS:
+                data.pop(key)
 
-        now = datetime.now().strftime("%Y-%m-%d")
-        airtable_uid = str(uuid.uuid4())
-
-        columns.extend(
-            [
-                sql.Identifier("approval_status"),
-                sql.Identifier("url_status"),
-                sql.Identifier("data_source_created"),
-                sql.Identifier("airtable_uid"),
-            ]
-        )
-        values.extend(
-            [
-                sql.Literal(False),
-                sql.Literal(["ok"]),
-                sql.Literal(now),
-                sql.Literal(airtable_uid),
-            ]
+        # Add default values
+        data.update(
+            {
+                "approval_status": False,
+                "url_status": ["ok"],
+                "data_source_created": datetime.now().strftime("%Y-%m-%d"),
+                "airtable_uid": str(uuid.uuid4()),
+            }
         )
 
-        query = sql.SQL("INSERT INTO data_sources ({}) VALUES ({}) RETURNING *").format(
-            sql.SQL(", ").join(columns), sql.SQL(", ").join(values)
+        return DynamicQueryConstructor.create_insert_query(
+            table_name="data_sources", column_value_mappings=data
         )
-
-        return query
-
 
     @staticmethod
     def generate_new_typeahead_suggestion_query(search_term: str):
@@ -289,10 +251,11 @@ class DynamicQueryConstructor:
         state: str,
         record_categories: Optional[list[RecordCategories]] = None,
         county: Optional[str] = None,
-        locality: Optional[str] = None
-    ) ->sql.Composed:
+        locality: Optional[str] = None,
+    ) -> sql.Composed:
 
-        base_query = sql.SQL("""
+        base_query = sql.SQL(
+            """
             SELECT
                 data_sources.airtable_uid,
                 data_sources.name AS data_source_name,
@@ -316,44 +279,182 @@ class DynamicQueryConstructor:
                 state_names ON agencies.state_iso = state_names.state_iso
             INNER JOIN
                 counties ON agencies.county_fips = counties.fips
-        """)
+        """
+        )
 
         join_conditions = []
         where_conditions = [
-            sql.SQL("LOWER(state_names.state_name) = LOWER({state_name})").format(state_name=sql.Literal(state)),
+            sql.SQL("LOWER(state_names.state_name) = LOWER({state_name})").format(
+                state_name=sql.Literal(state)
+            ),
             sql.SQL("data_sources.approval_status = 'approved'"),
-            sql.SQL("data_sources.url_status NOT IN ('broken', 'none found')")
+            sql.SQL("data_sources.url_status NOT IN ('broken', 'none found')"),
         ]
 
         if record_categories is not None:
-            join_conditions.append(sql.SQL("""
+            join_conditions.append(
+                sql.SQL(
+                    """
                 INNER JOIN
                     record_types ON data_sources.record_type_id = record_types.id
                 INNER JOIN
                     record_categories ON record_types.category_id = record_categories.id
-            """))
+            """
+                )
+            )
 
-            record_type_str_tup = tuple([record_type.value for record_type in record_categories])
-            where_conditions.append(sql.SQL(
-                "record_categories.name in {record_types}"
-            ).format(record_types=sql.Literal(record_type_str_tup)))
+            record_type_str_tup = tuple(
+                [record_type.value for record_type in record_categories]
+            )
+            where_conditions.append(
+                sql.SQL("record_categories.name in {record_types}").format(
+                    record_types=sql.Literal(record_type_str_tup)
+                )
+            )
 
         if county is not None:
-            where_conditions.append(sql.SQL(
-                "LOWER(counties.name) = LOWER({county_name})"
-            ).format(county_name=sql.Literal(county)))
+            where_conditions.append(
+                sql.SQL("LOWER(counties.name) = LOWER({county_name})").format(
+                    county_name=sql.Literal(county)
+                )
+            )
 
         if locality is not None:
-            where_conditions.append(sql.SQL(
-                "LOWER(agencies.municipality) = LOWER({locality})"
-            ).format(locality=sql.Literal(locality)))
+            where_conditions.append(
+                sql.SQL("LOWER(agencies.municipality) = LOWER({locality})").format(
+                    locality=sql.Literal(locality)
+                )
+            )
 
-        query = sql.Composed([
-            base_query,
-            sql.SQL(' ').join(join_conditions),
-            sql.SQL(" WHERE "),
-            sql.SQL(' AND ').join(where_conditions)
-        ])
+        query = sql.Composed(
+            [
+                base_query,
+                sql.SQL(" ").join(join_conditions),
+                sql.SQL(" WHERE "),
+                sql.SQL(" AND ").join(where_conditions),
+            ]
+        )
 
         return query
 
+    @staticmethod
+    def create_update_query(
+        table_name: str,
+        id_value: int,
+        column_edit_mappings: dict[str, str],
+        id_column_name: str,
+    ) -> sql.Composed:
+        """
+        Dynamically constructs an update query based on the provided mappings
+        :param table_name: Name of the table to update
+        :param id_value: The ID of the entry to update
+        :param column_edit_mappings: A dictionary mapping column names to their new values
+        :return: A composed SQL query ready for execution
+        """
+
+        # Start with the base update query
+        base_query = sql.SQL("UPDATE {table} SET ").format(
+            table=sql.Identifier(table_name)
+        )
+
+        # Generate the column assignments
+        assignments = [
+            sql.SQL("{column} = {value}").format(
+                column=sql.Identifier(column_name), value=sql.Literal(column_value)
+            )
+            for column_name, column_value in column_edit_mappings.items()
+        ]
+
+        # Combine the base query with the assignments
+        query = base_query + sql.SQL(", ").join(assignments)
+
+        # Add the WHERE clause to specify the entry to update
+        query += sql.SQL(" WHERE {id_column} = {id_value}").format(
+            id_column=sql.Identifier(id_column_name), id_value=sql.Literal(id_value)
+        )
+
+        return query
+
+    @staticmethod
+    def create_insert_query(
+        table_name: str,
+        column_value_mappings: dict[str, str],
+        column_to_return: Optional[str] = None,
+    ) -> sql.Composed:
+        """
+        Dynamically constructs an insert query based on the provided mappings
+        :param table_name: Name of the table to insert into
+        :param column_value_mappings: A dictionary mapping column names to their values
+        :return: A composed SQL query ready for execution
+        """
+
+        # Start with the base insert query
+        base_query = sql.SQL("INSERT INTO {table} ").format(
+            table=sql.Identifier(table_name)
+        )
+
+        # Generate the column assignments
+        columns = sql.SQL(", ").join(
+            [
+                sql.Identifier(column_name)
+                for column_name in column_value_mappings.keys()
+            ]
+        )
+
+        # Generate the value assignments
+        values = sql.SQL(", ").join(
+            [
+                sql.Literal(column_value)
+                for column_value in column_value_mappings.values()
+            ]
+        )
+
+        # Combine the base query with the assignments
+        query = base_query + sql.SQL("({columns}) VALUES ({values})").format(
+            columns=columns, values=values
+        )
+
+        if column_to_return is not None:
+            query += sql.SQL(" RETURNING {column_to_return}").format(
+                column_to_return=sql.Identifier(column_to_return)
+            )
+
+        return query
+
+    @staticmethod
+    def create_single_relation_selection_query(
+        relation: str,
+        columns: list[str],
+        where_mappings: Optional[dict] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ):
+        """
+        Creates a SELECT query for a single relation (table or view)
+        that selects the given columns with the given where mappings
+        :param relation:
+        :param columns:
+        :param where_mappings: And-joined simple where conditionals (of column = value)
+        :return:
+        """
+        base_query = sql.SQL("SELECT {columns} FROM {relation}").format(
+            columns=sql.SQL(", ").join([sql.Identifier(column) for column in columns]),
+            relation=sql.Identifier(relation),
+        )
+        if where_mappings is not None:
+            where_clause = sql.SQL("WHERE {where_clause}").format(
+                where_clause=sql.SQL(" AND ").join(
+                    [
+                        sql.SQL(" {column} = {value} ").format(
+                            column=sql.Identifier(column), value=sql.Literal(value)
+                        )
+                        for column, value in where_mappings.items()
+                    ]
+                )
+            )
+            base_query += where_clause
+        if limit is not None:
+            base_query += sql.SQL(" LIMIT {limit}").format(limit=sql.Literal(limit))
+        if offset is not None:
+            base_query += sql.SQL(" OFFSET {offset}").format(offset=sql.Literal(offset))
+        return base_query

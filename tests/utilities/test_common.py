@@ -101,13 +101,12 @@ def test_get_enums_from_string_invalid_input_case_insensitive():
 def test_valid_enum_value_success():
     assert get_valid_enum_value(TestEnum, "alpha") == TestEnum.ALPHA
 
+
 def test_valid_enum_value_failure(monkeypatch):
     mock_abort = MagicMock()
-    monkeypatch.setattr(
-        "utilities.common.abort",
-        mock_abort
-    )
+    monkeypatch.setattr("utilities.common.abort", mock_abort)
     get_valid_enum_value(TestEnum, "delta")
     mock_abort.assert_called_with(
         code=HTTPStatus.BAD_REQUEST,
-        message="Invalid TestEnum 'delta'. Must be one of the following: ['alpha', 'beta', 'gamma']")
+        message="Invalid TestEnum 'delta'. Must be one of the following: ['alpha', 'beta', 'gamma']",
+    )

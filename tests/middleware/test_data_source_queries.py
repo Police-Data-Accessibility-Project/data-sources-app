@@ -28,7 +28,6 @@ def inserted_data_sources_found():
 
 
 class TryLoggingInMocks(DynamicMagicMock):
-    db_client: MagicMock
     check_password_hash: MagicMock
     unauthorized_response: MagicMock
     login_response: MagicMock
@@ -38,11 +37,6 @@ def setup_try_logging_in_mocks(check_password_hash_return_value):
     # Create Mock values
     mock = TryLoggingInMocks(
         patch_root="middleware.login_queries",
-        mocks_to_patch=[
-            "login_response",
-            "check_password_hash",
-            "unauthorized_response",
-        ],
     )
     mock.user_info = DatabaseClient.UserInfo(
         password_digest=mock.password_digest,
@@ -84,6 +78,7 @@ def test_try_logging_in_unsuccessful():
     mock.unauthorized_response.assert_called_once()
     mock.login_response.assert_not_called()
 
+
 def test_convert_data_source_matches():
     """
     Convert_data_source_matches should output a list of
@@ -111,17 +106,15 @@ def test_convert_data_source_matches():
         )
 
 
-
 class DataSourceByIDWrapperMocks(DynamicMagicMock):
-    db_client: MagicMock
     data_source_by_id_query: MagicMock
     make_response: MagicMock
+
 
 @pytest.fixture
 def data_source_by_id_wrapper_mocks(monkeypatch):
     mock = DataSourceByIDWrapperMocks(
         patch_root="middleware.data_source_queries",
-        mocks_to_patch=["data_source_by_id_query", "make_response"],
     )
     return mock
 
@@ -149,4 +142,3 @@ def test_data_source_by_id_wrapper_data_not_found(data_source_by_id_wrapper_mock
     assert_data_source_by_id_wrapper_calls(
         mock, expected_json={"message": "Data source not found."}
     )
-

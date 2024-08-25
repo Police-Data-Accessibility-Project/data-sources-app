@@ -20,11 +20,9 @@ from tests.fixtures import connection_with_test_data, dev_db_connection
 
 
 class QuickSearchQueryMocks(DynamicMagicMock):
-    db_client: MagicMock
     process_search_parameters: MagicMock
     get_data_source_matches: MagicMock
     process_data_source_matches: MagicMock
-    search_parameters: SearchParameters
 
 
 def test_quick_search_query_logging(
@@ -33,11 +31,6 @@ def test_quick_search_query_logging(
 
     mock = QuickSearchQueryMocks(
         patch_root="middleware.quick_search_query",
-        mocks_to_patch=[
-            "process_search_parameters",
-            "get_data_source_matches",
-            "process_data_source_matches",
-        ],
         return_values={
             "process_data_source_matches": DataSourceMatches(
                 converted=[MagicMock(), MagicMock()], ids=[1, 2]
@@ -69,7 +62,6 @@ def test_quick_search_query_logging(
 
 
 class QuickSearchQueryWrapperMocks(DynamicMagicMock):
-    db_client: MagicMock
     quick_search_query: MagicMock
     make_response: MagicMock
     post_to_webhook: MagicMock
@@ -79,7 +71,6 @@ class QuickSearchQueryWrapperMocks(DynamicMagicMock):
 def mock_quick_search_query_wrapper(monkeypatch):
     mock = QuickSearchQueryWrapperMocks(
         patch_root="middleware.quick_search_query",
-        mocks_to_patch=["quick_search_query", "make_response", "post_to_webhook"],
     )
     return mock
 
@@ -99,9 +90,7 @@ def test_quick_search_query_wrapper_happy_path(mock_quick_search_query_wrapper):
 
     call_and_validate_quick_search_query_wrapper(mock)
 
-    mock.make_response.assert_called_with(
-        [{"record_type": "Type A"}], HTTPStatus.OK
-    )
+    mock.make_response.assert_called_with([{"record_type": "Type A"}], HTTPStatus.OK)
 
 
 def test_quick_search_query_wrapper_exception(mock_quick_search_query_wrapper):

@@ -52,7 +52,7 @@ NAMESPACES = [
     namespace_login_with_github,
     namespace_create_user_with_github,
     namespace_permissions,
-    namespace_create_test_user
+    namespace_create_test_user,
 ]
 
 MY_PREFIX = "/api"

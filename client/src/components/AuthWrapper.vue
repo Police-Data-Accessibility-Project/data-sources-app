@@ -30,15 +30,7 @@ const handlers = {
 
 function handleAuthRefresh() {
 	const now = Date.now();
-	const difference = auth.accessToken.expires - now;
-
-	/* c8 ignore next 6 */
-	if (difference > 0) {
-		console.debug({
-			secondsUntilRefreshOnUserActivity: (difference - 60000) / 1000,
-			secondsUntilInactivityLogout: difference / 1000,
-		});
-	}
+	const difference = auth.tokens.accessToken.expires - now;
 
 	// User's token is about to expire, update it.
 	if (difference <= 60 * 1000 && difference > 0) {
