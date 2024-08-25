@@ -3,13 +3,12 @@ from http import HTTPStatus
 import functools
 from typing import Callable, Any, Union, Tuple, Dict
 
-import psycopg2
+import psycopg
 from flask_restx import abort, Resource
-from psycopg2.extras import DictCursor
 
 from config import config
 from database_client.database_client import DatabaseClient
-from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
+from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from middleware.initialize_sqlalchemy_session import SQLAlchemySession
 
 def handle_exceptions(
@@ -23,7 +22,7 @@ def handle_exceptions(
 
     The decorated function handles any exceptions raised
     by the original function. If an exception occurs, the
-    decorator performs a rollback on the psycopg2 connection,
+    decorator performs a rollback on the psycopg connection,
     prints the error message, and returns a dictionary with
     the error message and an HTTP status code of 500.
 
@@ -55,7 +54,7 @@ class PsycopgResource(Resource):
     def __init__(self, *args, **kwargs):
         """
         Initializes the resource with a database connection.
-        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
+        - kwargs (dict): Keyword arguments containing 'psycopg_connection' for database connection.
         """
         super().__init__(*args, **kwargs)
 
@@ -75,7 +74,7 @@ class PsycopgResource(Resource):
 
     def get_connection(self):
         if self.connection_is_closed():
-            config.connection = initialize_psycopg2_connection()
+            config.connection = initialize_psycopg_connection()
         return config.connection
 
 

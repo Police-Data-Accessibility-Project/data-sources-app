@@ -2,8 +2,7 @@
 
 from http import HTTPStatus
 import uuid
-import psycopg2
-from psycopg2.extras import DictCursor
+import psycopg
 
 from conftest import test_client, session
 from database_client.database_client import DatabaseClient
@@ -26,7 +25,7 @@ from tests.helper_scripts.helper_functions import (
 from conftest import test_client, monkeymodule, session
 
 def test_data_sources_by_id_get(
-    flask_client_with_db, connection_with_test_data: psycopg2.extensions.connection
+    flask_client_with_db, connection_with_test_data: psycopg.Connection
 ):
     """
     Test that GET call to /data-sources-by-id/<data_source_id> endpoint retrieves the data source with the correct homepage URL
@@ -59,4 +58,4 @@ def test_data_sources_by_id_put(
     )
 
     result = db_client_with_test_data.get_data_source_by_id("SOURCE_UID_1")
-    assert result["description"] == desc
+    assert result[2] == desc

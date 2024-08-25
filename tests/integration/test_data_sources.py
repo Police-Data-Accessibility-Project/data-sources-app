@@ -3,9 +3,7 @@
 from http import HTTPStatus
 import uuid
 
-from conftest import test_client, monkeymodule, session
-import psycopg2
-from psycopg2.extras import DictRow
+import psycopg
 
 from database_client.database_client import DatabaseClient
 from middleware.enums import PermissionsEnum
@@ -32,7 +30,7 @@ ENDPOINT = "/api/data-sources"
 
 
 def test_data_sources_get(
-    flask_client_with_db, connection_with_test_data: psycopg2.extensions.connection
+    flask_client_with_db, connection_with_test_data: psycopg.Connection
 ):
     """
     Test that GET call to /data-sources endpoint retrieves data sources and correctly identifies specific sources by name

@@ -5,10 +5,7 @@ Module for testing database client functionality against a live database
 import uuid
 from datetime import datetime, timezone, timedelta
 
-from sqlalchemy import select, update
-import psycopg2
-import psycopg2.errors
-from psycopg2.extras import DictRow
+import psycopg.errors
 import pytest
 
 from database_client.database_client import DatabaseClient
@@ -174,7 +171,7 @@ def test_get_data_source_by_id(live_database_client):
     NUMBER_OF_RESULT_COLUMNS = 67
     assert result is not None
     assert len(result) == NUMBER_OF_RESULT_COLUMNS
-    assert result["name"] == "Source 1"
+    assert result[0] == "Source 1"
 
 
 def test_get_approved_data_sources(live_database_client):
@@ -243,14 +240,12 @@ def test_update_data_source(live_database_client):
     # Fetch the data source from the database to confirm the change
     result = live_database_client.get_data_source_by_id("SOURCE_UID_1")
 
-    assert result["description"] == new_description
+    assert result[2] == new_description
 
 
 def test_get_data_sources_for_map(live_database_client):
     # Add at least two new data sources to the database
-    insert_test_agencies_and_sources_if_not_exist(
-        live_database_client.connection.cursor()
-    )
+    insert_test_agencies_and_sources_if_not_exist(live_database_client.connection.cursor())
     # Fetch the data source with the DatabaseClient method
     results = live_database_client.get_data_sources_for_map()
     # Confirm both data sources are retrieved and only the proper columns are returned
@@ -341,7 +336,7 @@ def test_add_quick_search_log(live_database_client):
 
     assert len(rows) == 1
     row = rows[0]
-    assert type(row) == DictRow
+    assert type(row) == dict
     assert row["search"] == search
     assert row["location"] == location
     assert row["results"][0] == "SOURCE_UID_QSL"
@@ -583,7 +578,7 @@ def test_get_permitted_columns(live_database_client):
         END $$;
         """
         )
-    except psycopg2.errors.UniqueViolation:
+    except psycopg.errors.UniqueViolation:
         pass  # Already added
 
     results = live_database_client.get_permitted_columns(
@@ -628,7 +623,7 @@ def test_create_data_request(live_database_client):
     )
 
     assert len(results) == 1
-    assert results[0][0] == submission_notes
+    assert results[0]["submission_notes"] == submission_notes
 
 
 def test_get_data_requests_for_creator(live_database_client):
@@ -648,7 +643,7 @@ def test_get_data_requests_for_creator(live_database_client):
     )
     assert len(results) == 3
     for result in results:
-        assert result[0] in submission_notes_list
+        assert result["submission_notes"] in submission_notes_list
 
 
 def test_user_is_creator_of_data_request(live_database_client):

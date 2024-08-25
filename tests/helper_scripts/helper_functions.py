@@ -7,13 +7,12 @@ from typing import Optional
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
-import psycopg2.extensions
+import psycopg
 import pytest
 from flask.testing import FlaskClient
 import sqlalchemy
 from sqlalchemy import update, select
 from flask_jwt_extended import decode_token
-from psycopg2.extras import DictCursor
 
 from database_client.database_client import DatabaseClient
 from middleware.dataclasses import (
@@ -31,7 +30,7 @@ TestTokenInsert = namedtuple("TestTokenInsert", ["id", "email", "token"])
 TestUser = namedtuple("TestUser", ["id", "email", "password_hash"])
 
 
-def insert_test_agencies_and_sources(cursor: psycopg2.extensions.cursor) -> None:
+def insert_test_agencies_and_sources(cursor: psycopg.Cursor) -> None:
     """
     Insert test agencies and sources into database.
 
@@ -80,15 +79,15 @@ def insert_test_agencies_and_sources(cursor: psycopg2.extensions.cursor) -> None
     )
 
 
-def insert_test_agencies_and_sources_if_not_exist(cursor: psycopg2.extensions.cursor):
+def insert_test_agencies_and_sources_if_not_exist(cursor: psycopg.Cursor):
     try:
         insert_test_agencies_and_sources(cursor)
-    except psycopg2.errors.UniqueViolation:  # Data already inserted
+    except psycopg.errors.UniqueViolation:  # Data already inserted
         pass
 
 
 def get_reset_tokens_for_email(
-    db_cursor: psycopg2.extensions.cursor, reset_token_insert: TestTokenInsert
+    db_cursor: psycopg.Cursor, reset_token_insert: TestTokenInsert
 ) -> tuple:
     """
     Get all reset tokens associated with an email.
@@ -107,7 +106,7 @@ def get_reset_tokens_for_email(
     return results
 
 
-def create_reset_token(cursor: psycopg2.extensions.cursor) -> TestTokenInsert:
+def create_reset_token(cursor: psycopg.Cursor) -> TestTokenInsert:
     """
     Create a test user and associated reset token.
 
@@ -164,7 +163,7 @@ QuickSearchQueryLogResult = namedtuple(
 
 
 def get_most_recent_quick_search_query_log(
-    cursor: psycopg2.extensions.cursor, search: str, location: str
+    cursor: psycopg.Cursor, search: str, location: str
 ) -> Optional[QuickSearchQueryLogResult]:
     """
     Retrieve most recent quick search query log for a search and location.
@@ -280,7 +279,7 @@ def login_and_return_jwt_tokens(
     )
 
 
-def get_user_password_digest(session: sqlalchemy.orm.scoping.scoped_session, user_info):
+def get_user_password_digest(cursor: psycopg.Cursor, user_info):
     """
     Get the associated password digest of a user (given their email) from the database
     :param session:
@@ -363,7 +362,7 @@ def insert_test_data_source(db_client: DatabaseClient) -> str:
 
 
 def give_user_admin_role(
-    session: sqlalchemy.orm.scoping.scoped_session, user_info: UserInfo
+    connection: psycopg.Connection, user_info: UserInfo
 ):
     """
     Give the given user an admin role.
@@ -382,7 +381,7 @@ def check_response_status(response, status_code):
     ), f"Expected status code {status_code}, got {response.status_code}: {response.text}"
 
 
-def setup_get_typeahead_suggestion_test_data(cursor: psycopg2.extensions.cursor):
+def setup_get_typeahead_suggestion_test_data(cursor: psycopg.Cursor):
     try:
         cursor.execute("SAVEPOINT typeahead_suggestion_test_savepoint")
 
@@ -405,7 +404,7 @@ def setup_get_typeahead_suggestion_test_data(cursor: psycopg2.extensions.cursor)
 
         # Refresh materialized view
         cursor.execute("CALL refresh_typeahead_suggestions();")
-    except psycopg2.errors.UniqueViolation:
+    except psycopg.errors.UniqueViolation:
         cursor.execute("ROLLBACK TO SAVEPOINT typeahead_suggestion_test_savepoint")
 
 

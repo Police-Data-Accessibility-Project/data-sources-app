@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from werkzeug.security import generate_password_hash
-from psycopg2.extensions import cursor as PgCursor
 from typing import Dict
 
 from database_client.database_client import DatabaseClient

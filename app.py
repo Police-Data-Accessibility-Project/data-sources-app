@@ -17,9 +17,7 @@ from resources.TypeaheadSuggestions import (
 from flask_restx import Api
 
 from config import config, oauth, limiter, jwt
-from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
-#from middleware.models import db
-#from middleware.util import get_env_variable
+from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from resources.Agencies import namespace_agencies
 from resources.ApiKey import namespace_api_key
 from resources.Archives import namespace_archives
@@ -86,8 +84,9 @@ class ReverseProxied(object):
 def get_flask_app_cookie_encryption_key() -> str:
     return os.getenv("FLASK_APP_COOKIE_ENCRYPTION_KEY")
 
-def create_app(testing=False) -> Flask:
-    psycopg2_connection = initialize_psycopg2_connection()
+
+def create_app() -> Flask:
+    psycopg2_connection = initialize_psycopg_connection()
     config.connection = psycopg2_connection
     api = Api()
     for namespace in NAMESPACES:
