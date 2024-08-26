@@ -29,3 +29,11 @@ class OAuthCallbackInfo:
     """
 
     github_user_info: GithubUserInfo
+
+
+@dataclass
+class EntryDataRequest:
+    """
+    Contains data for creating or updating an entry
+    """
+    entry_data: dict

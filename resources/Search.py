@@ -11,6 +11,7 @@ from resources.resource_helpers import add_api_key_header_arg, create_search_mod
 from utilities.populate_dto_with_request_content import (
     populate_dto_with_request_content,
     SourceMappingEnum,
+    DTOPopulateParameters,
 )
 from utilities.common import get_enums_from_string
 from utilities.enums import RecordCategories
@@ -91,11 +92,13 @@ class Search(PsycopgResource):
         Returns:
         - A dictionary containing a message about the search results and the data found, if any.
         """
-        dto = populate_dto_with_request_content(
-            object_class=SearchRequests,
-            transformation_functions={"record_categories": transform_record_categories},
-            source=SourceMappingEnum.ARGS,
+        return self.run_endpoint(
+            wrapper_function=search_wrapper,
+            dto_populate_parameters=DTOPopulateParameters(
+                dto_class=SearchRequests,
+                transformation_functions={
+                    "record_categories": transform_record_categories
+                },
+                source=SourceMappingEnum.ARGS,
+            ),
         )
-        with self.setup_database_client() as db_client:
-            response = search_wrapper(db_client=db_client, dto=dto)
-        return response

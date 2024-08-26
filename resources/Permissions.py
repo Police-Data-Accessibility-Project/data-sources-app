@@ -18,6 +18,7 @@ from utilities.namespace import AppNamespaces, create_namespace
 from utilities.populate_dto_with_request_content import (
     populate_dto_with_request_content,
     SourceMappingEnum,
+    DTOPopulateParameters,
 )
 
 namespace_permissions = create_namespace(namespace_attributes=AppNamespaces.AUTH)
@@ -71,13 +72,11 @@ class Permissions(PsycopgResource):
         Retrieves a user's permissions.
         :return:
         """
-        user_email = request.args.get("user_email")
-        with self.setup_database_client() as db_client:
-            return manage_user_permissions(
-                db_client=db_client,
-                user_email=user_email,
-                method="get_user_permissions",
-            )
+        return self.run_endpoint(
+            manage_user_permissions,
+            user_email=request.args.get("user_email"),
+            method="get_user_permissions",
+        )
 
     @handle_exceptions
     @namespace_permissions.expect(all_routes_parser, permission_model)
@@ -101,16 +100,14 @@ class Permissions(PsycopgResource):
         Adds or removes a permission for a user.
         :return:
         """
-        dto = populate_dto_with_request_content(
-            object_class=PermissionsRequest,
-            attribute_source_mapping={
-                "user_email": SourceMappingEnum.ARGS,
-                "permission": SourceMappingEnum.JSON,
-                "action": SourceMappingEnum.JSON,
-            },
+        return self.run_endpoint(
+            wrapper_function=update_permissions_wrapper,
+            dto_populate_parameters=DTOPopulateParameters(
+                dto_class=PermissionsRequest,
+                attribute_source_mapping={
+                    "user_email": SourceMappingEnum.ARGS,
+                    "permission": SourceMappingEnum.JSON,
+                    "action": SourceMappingEnum.JSON,
+                },
+            ),
         )
-        with self.setup_database_client() as db_client:
-            return update_permissions_wrapper(
-                db_client=db_client,
-                dto=dto,
-            )

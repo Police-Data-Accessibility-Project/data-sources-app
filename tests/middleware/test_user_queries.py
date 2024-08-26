@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from middleware.custom_exceptions import UserNotFoundError
+from middleware.exceptions import UserNotFoundError
 from middleware.user_queries import user_post_results, user_check_email
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 

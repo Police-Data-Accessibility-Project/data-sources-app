@@ -192,6 +192,17 @@ def bypass_jwt_required(monkeypatch):
         lambda a, b, c, d, e, f: None,
     )
 
+@pytest.fixture
+def bypass_authentication_required(monkeypatch):
+    """
+    A fixture to bypass the authentication required decorator for testing
+    :param monkeypatch:
+    :return:
+    """
+    monkeypatch.setattr(
+        "middleware.decorators.get_authentication",
+        lambda a, b: None,
+    )
 
 # endregion
 

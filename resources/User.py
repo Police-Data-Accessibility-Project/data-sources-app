@@ -47,7 +47,7 @@ class User(PsycopgResource):
         - A dictionary containing a success message or an error message if the operation fails.
         """
         dto = populate_dto_with_request_content(
-            object_class=UserRequest,
+            dto_class=UserRequest,
             source=SourceMappingEnum.JSON,
         )
         with self.setup_database_client() as db_client:

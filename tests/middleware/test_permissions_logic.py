@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch, call
 from http import HTTPStatus
 from flask import Response, make_response
 
-from middleware.custom_exceptions import UserNotFoundError
+from middleware.exceptions import UserNotFoundError
 from middleware.enums import PermissionsEnum, PermissionsActionEnum
 from middleware.permissions_logic import (
     PermissionsManager,

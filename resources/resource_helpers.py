@@ -27,6 +27,16 @@ def add_jwt_header_arg(parser: RequestParser):
         default="Bearer YOUR_ACCESS_TOKEN",
     )
 
+def add_jwt_or_api_key_header_arg(parser: RequestParser):
+    parser.add_argument(
+        "Authorization",
+        type=str,
+        required=True,
+        location="headers",
+        help="API key or access token required to access this endpoint",
+        default="Basic YOUR_API_KEY OR Bearer YOUR_ACCESS_TOKEN",
+    )
+
 
 def create_user_model(namespace: Namespace) -> Model:
     return namespace.model(
@@ -39,6 +49,27 @@ def create_user_model(namespace: Namespace) -> Model:
         },
     )
 
+def create_variable_columns_model(namespace: Namespace, name_snake_case: str) -> Model:
+    """
+    Creates a generic model for an entry with variable columns
+    :param namespace:
+    :param name:
+    :return:
+    """
+    name_split = name_snake_case.split("_")
+    name_camelcase = "".join([split[0].upper() + split[1:] for split in name_split])
+
+    return namespace.model(
+        name_camelcase,
+        {
+            "column_1": fields.String("Value for first column"),
+            "column_2": fields.String("Value for second column"),
+            "column_etc": fields.String("And so on..."),
+        }
+    )
+
+def create_entry_data_model(namespace: Namespace) -> Model:
+    return create_variable_columns_model(namespace, "entry_data")
 
 def create_jwt_tokens_model(namespace: Namespace) -> Model:
     return namespace.model(

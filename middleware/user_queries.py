@@ -4,7 +4,7 @@ from werkzeug.security import generate_password_hash
 from typing import Dict
 
 from database_client.database_client import DatabaseClient
-from middleware.custom_exceptions import UserNotFoundError
+from middleware.exceptions import UserNotFoundError
 
 
 @dataclass

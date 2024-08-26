@@ -9,7 +9,7 @@ from utilities.namespace import create_namespace, AppNamespaces
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 from utilities.populate_dto_with_request_content import (
     populate_dto_with_request_content,
-    SourceMappingEnum,
+    SourceMappingEnum, DTOPopulateParameters,
 )
 
 namespace_api_key = create_namespace(namespace_attributes=AppNamespaces.AUTH)
@@ -57,10 +57,11 @@ class ApiKey(PsycopgResource):
         Returns:
         - dict: A dictionary containing the generated API key, or None if an error occurs.
         """
-        dto = populate_dto_with_request_content(
-            object_class=UserRequest,
-            source=SourceMappingEnum.JSON,
+        return self.run_endpoint(
+            wrapper_function=get_api_key_for_user,
+            dto_populate_parameters=DTOPopulateParameters(
+                source=SourceMappingEnum.JSON,
+                dto_class=UserRequest,
+            )
         )
-        with self.setup_database_client() as db_client:
-            response = get_api_key_for_user(db_client, dto)
-        return response
+

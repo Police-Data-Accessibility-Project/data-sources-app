@@ -17,3 +17,11 @@ class TokenNotFoundError(Exception):
 
 class AccessTokenNotFoundError(Exception):
     pass
+
+
+class InvalidAPIKeyException(Exception):
+    pass
+
+
+class InvalidAuthorizationHeaderException(Exception):
+    pass

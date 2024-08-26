@@ -4,8 +4,8 @@ from typing import Callable, Optional, Any
 
 from flask import redirect, url_for, session
 
-from middleware.access_logic import get_access_info_from_jwt_or_api_key
-from middleware.enums import PermissionsEnum
+from middleware.access_logic import get_authentication
+from middleware.enums import PermissionsEnum, AccessTypeEnum
 from middleware.security import check_api_key, check_permissions
 
 
@@ -18,19 +18,6 @@ def login_required(f):
 
     return decorated_function
 
-
-def api_key_or_jwt_required(f):
-    def decorator(*args, **kwargs):
-
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            kwargs["access_info"] = get_access_info_from_jwt_or_api_key()
-
-            return f(*args, **kwargs)
-
-        return wrapper(*args, **kwargs)
-
-    return decorator
 
 
 def api_key_required(func):
@@ -54,6 +41,31 @@ def permissions_required(permissions: PermissionsEnum):
         @wraps(func)
         def wrapper(*args, **kwargs):
             check_permissions(permissions)
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+def authentication_required(
+    allowed_access_methods: list[AccessTypeEnum],
+    restrict_to_permissions: Optional[list[PermissionsEnum]] = None,
+):
+    """
+    Checks if the user has access to the resource,
+     and provides access info to the inner function
+
+    Resource methods using this must include `access_info` in their kwargs.
+
+    :param allowed_access_methods:
+    :param restrict_to_permissions: Automatically abort if the user does not have the requisite permissions
+    :return:
+    """
+    def decorator(func: Callable):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            kwargs["access_info"] = get_authentication(allowed_access_methods, restrict_to_permissions)
+
             return func(*args, **kwargs)
 
         return wrapper

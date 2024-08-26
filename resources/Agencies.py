@@ -110,5 +110,4 @@ class Agencies(PsycopgResource):
         Returns:
         - dict: A dictionary containing the count of returned agencies and their data.
         """
-        with self.setup_database_client() as db_client:
-            return get_agencies(db_client, int(page))
+        return self.run_endpoint(get_agencies, page=int(page))
