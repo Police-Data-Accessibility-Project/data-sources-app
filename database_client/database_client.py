@@ -963,3 +963,24 @@ class DatabaseClient:
         )
         self.cursor.execute(query)
 
+    @cursor_manager()
+    def execute_composed_sql(self, query: sql.Composed, return_results: bool = False):
+        self.cursor.execute(query)
+        if return_results:
+            return self.cursor.fetchall()
+
+    def get_column_permissions_as_permission_table(self, relation: str) -> list[dict]:
+        result = self.execute_raw_sql("""
+            SELECT DISTINCT cp.relation_role 
+            FROM public.column_permission cp 
+            INNER JOIN relation_column rc on rc.id = cp.rc_id
+            WHERE rc.relation = %s
+            """, (relation, )
+        )
+        relation_roles = [row["relation_role"] for row in result]
+        query = DynamicQueryConstructor.get_column_permissions_as_permission_table_query(
+            relation, relation_roles
+        )
+        return self.execute_composed_sql(query, return_results=True)
+
+

@@ -506,3 +506,39 @@ class DynamicQueryConstructor:
             relation=sql.Identifier(relation),
         )
         return base_query
+
+    @staticmethod
+    def get_column_permissions_as_permission_table_query(
+        relation: str,
+        relation_roles: list[str]
+    ) -> sql.Composed:
+
+        max_case_queries = []
+        for role in relation_roles:
+            max_case_query = sql.SQL(
+                " MAX(CASE WHEN CP.relation_role = {role} THEN CP.ACCESS_PERMISSION ELSE NULL END) AS {role_alias} "
+            ).format(
+                role=sql.Literal(role),
+                role_alias=sql.Identifier(role)
+            )
+            max_case_queries.append(max_case_query)
+
+        query = sql.SQL("""
+        SELECT
+            RC.ASSOCIATED_COLUMN,
+            {max_case_queries}
+        FROM
+            PUBLIC.COLUMN_PERMISSION CP
+        INNER JOIN PUBLIC.relation_column RC ON CP.rc_id = RC.id
+        WHERE
+            RC.relation = {relation}
+        GROUP BY
+            RC.ASSOCIATED_COLUMN, rc.id
+        ORDER BY
+            RC.id;
+        
+        """).format(
+            max_case_queries=sql.SQL(", ").join(max_case_queries),
+            relation=sql.Literal(relation)
+        )
+        return query

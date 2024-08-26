@@ -2,17 +2,14 @@ from http import HTTPStatus
 from typing import Optional
 
 from flask import make_response, Response
-from flask_jwt_extended import get_jwt_identity
 from flask_restx import abort
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import ColumnPermissionEnum, RelationRoleEnum
-from database_client.result_formatter import ResultFormatter
 from middleware.access_logic import AccessInfo, get_access_info_from_jwt
 from middleware.column_permission_logic import get_permitted_columns, check_has_permission_to_edit_columns
 from middleware.dataclasses import EntryDataRequest
 from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
-from middleware.permissions_logic import get_user_permissions
 from middleware.util import message_response
 
 RELATION = Relations.DATA_REQUESTS.value
@@ -102,7 +99,7 @@ def get_data_requests_wrapper(
 
     return make_response(
         {
-            "message": "Data requests retrieved",
+            "count": len(formatted_data_requests),
             "data_requests": formatted_data_requests,
         },
         HTTPStatus.OK,
@@ -252,7 +249,13 @@ def get_data_request_by_id_wrapper(
         relation_role=relation_role,
         where_mappings={"id": data_request_id}
     )
-    abort_if_no_results(zipped_results)
+    if len(zipped_results) == 0:
+        return make_response(
+            {
+                "message": "Data request not found",
+            },
+            HTTPStatus.OK,
+        )
     return make_response(
         {
             "message": "Data request retrieved",
@@ -260,11 +263,3 @@ def get_data_request_by_id_wrapper(
         },
         HTTPStatus.OK,
 )
-
-
-def abort_if_no_results(zipped_results):
-    if len(zipped_results) == 0:
-        abort(
-            code=HTTPStatus.OK,
-            message="Data request not found",
-        )

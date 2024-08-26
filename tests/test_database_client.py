@@ -26,6 +26,7 @@ from tests.fixtures import (
     bypass_api_key_required,
     db_cursor,
 )
+from tests.helper_scripts.common_test_data import insert_test_column_permission_data
 from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources_if_not_exist,
     setup_get_typeahead_suggestion_test_data,
@@ -534,36 +535,7 @@ def test_remove_user_permission(live_database_client):
 
 def test_get_permitted_columns(live_database_client):
 
-    try:
-        live_database_client.execute_raw_sql(
-            """
-        DO $$
-        DECLARE
-            column_a_id INT;
-            column_b_id INT;
-            column_c_id INT;
-        BEGIN
-            INSERT INTO relation_column (relation, associated_column) VALUES ('test_relation', 'column_a') RETURNING id INTO column_a_id;
-            INSERT INTO relation_column (relation, associated_column) VALUES ('test_relation', 'column_b') RETURNING id INTO column_b_id;
-            INSERT INTO relation_column (relation, associated_column) VALUES ('test_relation', 'column_c') RETURNING id INTO column_c_id;
-            
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_a_id, 'STANDARD', 'READ');
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_b_id, 'STANDARD', 'READ');
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_c_id, 'STANDARD', 'NONE');
-            
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_a_id, 'OWNER', 'READ');
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_b_id, 'OWNER', 'WRITE');
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_c_id, 'OWNER', 'NONE');
-            
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_a_id, 'ADMIN', 'WRITE');
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_b_id, 'ADMIN', 'WRITE');
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_c_id, 'ADMIN', 'READ');
-    
-        END $$;
-        """
-        )
-    except psycopg.errors.UniqueViolation:
-        pass  # Already added
+    insert_test_column_permission_data(live_database_client)
 
     results = live_database_client.get_permitted_columns(
         relation="test_relation",
@@ -722,6 +694,33 @@ def test_update_data_request(live_database_client):
     results = live_database_client.get_data_requests(columns=["submission_notes"], where_mappings={"id": data_request_id})
     assert len(results) == 1
     assert results[0]["submission_notes"] == new_submission_notes
+
+def test_get_column_permissions_as_permission_table(live_database_client):
+    insert_test_column_permission_data(live_database_client)
+
+    results = live_database_client.get_column_permissions_as_permission_table(
+        relation="test_relation"
+    )
+    assert results == [
+        {
+            'associated_column': 'column_a',
+            'STANDARD': 'READ',
+            'OWNER': 'READ',
+            'ADMIN': 'WRITE'
+        },
+        {
+            'associated_column': 'column_b',
+            'STANDARD': 'READ',
+            'OWNER': 'WRITE',
+            'ADMIN': 'WRITE'
+        },
+        {
+            'associated_column': 'column_c',
+            'STANDARD': 'NONE',
+            'OWNER': 'NONE',
+            'ADMIN': 'READ'
+        }
+    ]
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts
 # def test_search_with_location_and_record_types_test_data(live_database_client, xylonslyvania_test_data):

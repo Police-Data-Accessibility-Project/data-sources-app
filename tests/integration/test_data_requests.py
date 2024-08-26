@@ -91,7 +91,6 @@ def create_data_request(dev_db_client, submission_notes, user_id = None):
 
 def test_data_requests_post(ts: TestSetup):
 
-
     json_data = run_and_validate_request(
         flask_client=ts.flask_client,
         http_method="post",
