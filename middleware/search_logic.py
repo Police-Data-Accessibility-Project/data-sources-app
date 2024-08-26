@@ -6,6 +6,7 @@ from flask import Response, make_response
 
 from database_client.database_client import DatabaseClient
 from database_client.result_formatter import dictify_namedtuple
+from middleware.enums import Jurisdiction
 from utilities.common import get_enums_from_string
 from utilities.enums import RecordCategories
 from middleware.util import format_list_response
@@ -24,6 +25,63 @@ class SearchRequests:
     county: Optional[str] = None
     locality: Optional[str] = None
 
+def get_jursidiction_type_enum(jurisdiction_type_str: str) -> Optional[Jurisdiction]:
+    if jurisdiction_type_str in ["local", "school", "military", "tribal", "transit", "port"]:
+        return Jurisdiction.LOCALITY
+    return Jurisdiction(jurisdiction_type_str)
+
+def format_search_results(search_results: list[dict]) -> dict:
+    """
+    Convert results to the following format:
+
+    {
+      "count": <number>,
+      "data": {
+          "federal": {
+            "count": <number>,
+            "results": [<data-source-record>]
+          }
+          "state": {
+            "count": <number>,
+            "results": [<data-source-record>]
+          },
+          county: {
+            "count": <number>,
+            "results": [<data-source-record>]
+          },
+          locality: {
+            "count": <number>,
+            "results": [<data-source-record>]
+          },
+        }
+    }
+
+    :param search_results:
+    :return:
+    """
+
+    response = {
+        "count": 0,
+        "data": {}
+    }
+
+    # Create sub-dictionary for each jurisdiction
+    for jurisdiction in [j.value for j in Jurisdiction]:
+        response["data"][jurisdiction] = {
+            "count": 0,
+            "results": []
+        }
+
+    for result in search_results:
+        jurisdiction_str = result.get("jurisdiction_type")
+        jurisdiction = get_jursidiction_type_enum(jurisdiction_str)
+        response["data"][jurisdiction.value]["count"] += 1
+        response["data"][jurisdiction.value]["results"].append(result)
+        response["count"] += 1
+
+    return response
+
+
 
 def search_wrapper(
     db_client: DatabaseClient,
@@ -35,6 +93,5 @@ def search_wrapper(
         county=dto.county,
         locality=dto.locality,
     )
-
-    dict_results = dictify_namedtuple(search_results)
-    return make_response(format_list_response(dict_results), HTTPStatus.OK)
+    formatted_search_results = format_search_results(search_results)
+    return make_response(formatted_search_results, HTTPStatus.OK)

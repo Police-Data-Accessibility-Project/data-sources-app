@@ -680,7 +680,7 @@ class DatabaseClient:
         record_categories: Optional[list[RecordCategories]] = None,
         county: Optional[str] = None,
         locality: Optional[str] = None,
-    ) -> List[QuickSearchResult]:
+    ) -> List[dict]:
         """
         Searches for data sources in the database.
 
@@ -697,24 +697,7 @@ class DatabaseClient:
             locality=locality,
         )
         self.cursor.execute(query)
-        results = self.cursor.fetchall()
-        return [
-            self.QuickSearchResult(
-                id=row["airtable_uid"],
-                data_source_name=row["data_source_name"],
-                description=row["description"],
-                record_type=row["record_type"],
-                url=row["source_url"],
-                format=row["record_format"],
-                coverage_start=row["coverage_start"],
-                coverage_end=row["coverage_end"],
-                agency_supplied=row["agency_supplied"],
-                agency_name=row["agency_name"],
-                municipality=row["municipality"],
-                state=row["state_iso"],
-            )
-            for row in results
-        ]
+        return self.cursor.fetchall()
 
     def link_external_account(
         self,

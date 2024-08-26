@@ -20,18 +20,34 @@ def test_search_get(flask_client_with_db, bypass_api_key_required):
         headers=tus.api_authorization_header,
     )
 
+    jurisdictions = ["federal", "state", "county", "locality"]
+
+    assert list(data.keys()) == ["count", "data"]
+    assert list(data["data"].keys()).sort() == jurisdictions.sort()
     assert data["count"] > 0
-    assert list(data["data"][0].keys()) == [
-        "agency_name",
-        "agency_supplied",
-        "coverage_end",
-        "coverage_start",
-        "data_source_name",
-        "description",
-        "format",
-        "id",
-        "municipality",
-        "record_type",
-        "state",
-        "url",
-    ]
+
+    jurisdiction_count = 0
+    for jurisdiction in jurisdictions:
+        assert list(data["data"][jurisdiction].keys()) == ["count", "results"]
+        jurisdiction_count += data["data"][jurisdiction]["count"]
+        if data["data"][jurisdiction]["count"] > 0:
+            assert (
+                list(data["data"][jurisdiction]["results"][0].keys()).sort()
+                == [
+                    "agency_name",
+                    "agency_supplied",
+                    "coverage_end",
+                    "coverage_start",
+                    "data_source_name",
+                    "description",
+                    "jurisdiction_type",
+                    "record_format",
+                    "id",
+                    "municipality",
+                    "record_type",
+                    "state",
+                    "url",
+                ].sort()
+            )
+
+    assert jurisdiction_count == data["count"]
