@@ -21,7 +21,6 @@ from middleware.data_requests import (
     allowed_to_delete_request,
     update_data_request_wrapper,
     get_data_request_by_id_wrapper,
-    abort_if_no_results,
     get_data_requestor_with_creator_user_id,
     get_data_requests_wrapper,
     get_data_requests_with_permitted_columns,
@@ -138,7 +137,7 @@ def test_get_data_requests_wrapper(
     )
     mock_make_response.assert_called_once_with(
         {
-            "message": "Data requests retrieved",
+            "count": 0,
             "data_requests": mock_get_formatted_data_requests.return_value,
         },
         HTTPStatus.OK,
@@ -439,17 +438,15 @@ def test_update_data_request_wrapper(
     assert result == mock_message_response.return_value
 
 
-def test_get_data_request_by_id_wrapper(
+def test_get_data_request_by_id_wrapper_results(
         mock_get_data_requests_with_permitted_columns,
     mock_get_data_requests_relation_role,
     mock_make_response,
     monkeypatch,
 ):
     mock = MagicMock()
-    monkeypatch.setattr(
-        f"{PATCH_ROOT}.abort_if_no_results",
-        mock.abort_if_no_results,
-    )
+
+    mock_get_data_requests_with_permitted_columns.return_value = [mock.data_request]
 
     result = get_data_request_by_id_wrapper(
         db_client=mock.db_client,
@@ -466,9 +463,6 @@ def test_get_data_request_by_id_wrapper(
         relation_role=mock_get_data_requests_relation_role.return_value,
         where_mappings={"id": mock.data_request_id},
     )
-    mock.abort_if_no_results.assert_called_once_with(
-        mock_get_data_requests_with_permitted_columns.return_value
-    )
     mock_make_response.assert_called_once_with(
         {
             "message": "Data request retrieved",
@@ -478,15 +472,36 @@ def test_get_data_request_by_id_wrapper(
     )
     assert result == mock_make_response.return_value
 
+def test_get_data_request_by_id_wrapper_no_results(
+        mock_get_data_requests_with_permitted_columns,
+    mock_get_data_requests_relation_role,
+    mock_make_response,
+    monkeypatch,
+):
+    mock = MagicMock()
 
-def test_if_no_results_happy_path(mock_abort):
-    abort_if_no_results([1, 2, 3])
-    mock_abort.assert_not_called()
+    mock_get_data_requests_with_permitted_columns.return_value = []
 
-
-def test_if_no_results_abort_called(mock_abort):
-    abort_if_no_results([])
-    mock_abort.assert_called_once_with(
-        code=HTTPStatus.OK,
-        message="Data request not found",
+    result = get_data_request_by_id_wrapper(
+        db_client=mock.db_client,
+        access_info=mock.access_info,
+        data_request_id=mock.data_request_id,
     )
+    mock_get_data_requests_relation_role.assert_called_once_with(
+        mock.db_client,
+        data_request_id=mock.data_request_id,
+        access_info=mock.access_info,
+    )
+    mock_get_data_requests_with_permitted_columns.assert_called_once_with(
+        db_client=mock.db_client,
+        relation_role=mock_get_data_requests_relation_role.return_value,
+        where_mappings={"id": mock.data_request_id},
+    )
+    mock_make_response.assert_called_once_with(
+        {
+            "message": "Data request not found",
+        },
+        HTTPStatus.OK,
+    )
+    assert result == mock_make_response.return_value
+
