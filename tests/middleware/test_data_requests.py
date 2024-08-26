@@ -464,10 +464,7 @@ def test_get_data_request_by_id_wrapper_results(
         where_mappings={"id": mock.data_request_id},
     )
     mock_make_response.assert_called_once_with(
-        {
-            "message": "Data request retrieved",
-            "data_request": mock_get_data_requests_with_permitted_columns.return_value[0],
-        },
+        mock_get_data_requests_with_permitted_columns.return_value[0],
         HTTPStatus.OK,
     )
     assert result == mock_make_response.return_value

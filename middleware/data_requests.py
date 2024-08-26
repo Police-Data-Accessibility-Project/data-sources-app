@@ -257,9 +257,6 @@ def get_data_request_by_id_wrapper(
             HTTPStatus.OK,
         )
     return make_response(
-        {
-            "message": "Data request retrieved",
-            "data_request": zipped_results[0],
-        },
+        zipped_results[0],
         HTTPStatus.OK,
 )

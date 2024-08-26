@@ -62,17 +62,10 @@ def create_variable_columns_model(namespace: Namespace, name_snake_case: str) ->
     return namespace.model(
         name_camelcase,
         {
-            name_snake_case: fields.Nested(
-                namespace.model(
-                    f"{name_camelcase}Inner",
-                    {
-                        "column_1": fields.String("Value for first column"),
-                        "column_2": fields.String("Value for second column"),
-                        "column_etc": fields.String("And so on..."),
-                    }
-                )
-            ),
-        },
+            "column_1": fields.String("Value for first column"),
+            "column_2": fields.String("Value for second column"),
+            "column_etc": fields.String("And so on..."),
+        }
     )
 
 def create_entry_data_model(namespace: Namespace) -> Model:

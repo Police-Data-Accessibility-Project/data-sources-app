@@ -37,7 +37,7 @@ namespace_data_requests = create_namespace(AppNamespaces.DATA_REQUESTS)
 entry_data_model = create_entry_data_model(namespace_data_requests)
 
 data_requests_inner_model = create_variable_columns_model(
-    namespace_data_requests, "data_requests"
+    namespace_data_requests, "data_request"
 )
 
 data_requests_outer_model = create_outer_model(
@@ -201,7 +201,9 @@ class DataRequests(PsycopgResource):
     )
     @namespace_data_requests.expect(authorization_parser, entry_data_model)
     @namespace_data_requests.response(
-        HTTPStatus.OK, "Success; Data request created", model=create_data_request_result
+        code=HTTPStatus.OK,
+        description="Success; Data request created",
+        model=create_data_request_result
     )
     @namespace_data_requests.response(
         HTTPStatus.INTERNAL_SERVER_ERROR, "Internal server error"

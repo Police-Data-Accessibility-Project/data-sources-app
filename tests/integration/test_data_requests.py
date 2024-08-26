@@ -146,7 +146,7 @@ def test_data_requests_by_id_get(ts: TestSetup):
         headers=ts.tus.api_authorization_header,
     )
 
-    assert api_json_data["data_request"]["submission_notes"] == ts.submission_notes
+    assert api_json_data["submission_notes"] == ts.submission_notes
 
     jwt_json_data = run_and_validate_request(
         flask_client=ts.flask_client,
@@ -155,11 +155,11 @@ def test_data_requests_by_id_get(ts: TestSetup):
         headers=ts.tus.jwt_authorization_header,
     )
 
-    assert jwt_json_data["data_request"]["submission_notes"] == ts.submission_notes
+    assert jwt_json_data["submission_notes"] == ts.submission_notes
 
     #  Confirm elevated user has more columns than standard user
-    assert len(jwt_json_data["data_request"].keys()) > len(
-        api_json_data["data_request"].keys()
+    assert len(jwt_json_data.keys()) > len(
+        api_json_data.keys()
     )
 
 
