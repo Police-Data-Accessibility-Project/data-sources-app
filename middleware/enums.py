@@ -43,3 +43,12 @@ class Relations(Enum):
     A list of valid relations for the database
     """
     DATA_REQUESTS = "data_requests"
+
+class Jurisdiction(Enum):
+    """
+    A list of valid agency jurisdictions for the database
+    """
+    FEDERAL = "federal"
+    STATE = "state"
+    COUNTY = "county"
+    LOCALITY = "locality"

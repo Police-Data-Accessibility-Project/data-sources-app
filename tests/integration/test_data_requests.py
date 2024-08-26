@@ -4,6 +4,7 @@ from http import HTTPStatus
 
 import pytest
 
+from middleware.constants import data_key
 from middleware.enums import PermissionsEnum
 from tests.fixtures import (
     connection_with_test_data,
@@ -54,15 +55,15 @@ def test_data_requests_get(ts: TestSetup):
         endpoint=GENERAL_ENDPOINT,
         headers=ts.tus.jwt_authorization_header,
     )
-    assert len(json_data["data_requests"]) > 0
-    assert isinstance(json_data["data_requests"], list)
-    assert isinstance(json_data["data_requests"][0], dict)
+    assert len(json_data[data_key]) > 0
+    assert isinstance(json_data[data_key], list)
+    assert isinstance(json_data[data_key][0], dict)
 
     # Check that first result is user's data request
-    assert json_data["data_requests"][0]["id"] == data_request_id_creator
+    assert json_data[data_key][0]["id"] == data_request_id_creator
 
     # Check that last result is not user's data request
-    assert json_data["data_requests"][-1]["id"] != data_request_id_creator
+    assert json_data[data_key][-1]["id"] != data_request_id_creator
 
     # Give user admin permission
     ts.db_client.add_user_permission(
@@ -78,7 +79,7 @@ def test_data_requests_get(ts: TestSetup):
     )
 
     # Assert admin columns are greater than user columns
-    assert len(admin_json_data["data_requests"][0]) > len(json_data["data_requests"][0])
+    assert len(admin_json_data[data_key][0]) > len(json_data[data_key][0])
 
 
 def create_data_request(dev_db_client, submission_notes, user_id = None):

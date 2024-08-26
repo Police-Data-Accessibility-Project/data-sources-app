@@ -117,9 +117,11 @@ def test_get_data_requestor_with_creator_user_id():
     result = mock.db_client.create_data_request.return_value
 
 
+@patch(PATCH_ROOT + ".format_list_response")
 @patch(PATCH_ROOT + ".get_formatted_data_requests")
 def test_get_data_requests_wrapper(
     mock_get_formatted_data_requests: MagicMock,
+    mock_format_list_response: MagicMock,
     mock_get_data_requests_relation_role,
     mock_make_response,
     monkeypatch,
@@ -135,11 +137,13 @@ def test_get_data_requests_wrapper(
         mock.db_client,
         mock_get_data_requests_relation_role.return_value,
     )
+
+    mock_format_list_response.assert_called_once_with(
+        mock_get_formatted_data_requests.return_value
+    )
+
     mock_make_response.assert_called_once_with(
-        {
-            "count": 0,
-            "data_requests": mock_get_formatted_data_requests.return_value,
-        },
+        mock_format_list_response.return_value,
         HTTPStatus.OK,
     )
 

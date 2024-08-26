@@ -27,6 +27,7 @@ def add_jwt_header_arg(parser: RequestParser):
         default="Bearer YOUR_ACCESS_TOKEN",
     )
 
+
 def add_jwt_or_api_key_header_arg(parser: RequestParser):
     parser.add_argument(
         "Authorization",
@@ -49,6 +50,7 @@ def create_user_model(namespace: Namespace) -> Model:
         },
     )
 
+
 def create_variable_columns_model(namespace: Namespace, name_snake_case: str) -> Model:
     """
     Creates a generic model for an entry with variable columns
@@ -65,11 +67,13 @@ def create_variable_columns_model(namespace: Namespace, name_snake_case: str) ->
             "column_1": fields.String("Value for first column"),
             "column_2": fields.String("Value for second column"),
             "column_etc": fields.String("And so on..."),
-        }
+        },
     )
+
 
 def create_entry_data_model(namespace: Namespace) -> Model:
     return create_variable_columns_model(namespace, "entry_data")
+
 
 def create_jwt_tokens_model(namespace: Namespace) -> Model:
     return namespace.model(
@@ -86,6 +90,7 @@ def create_jwt_tokens_model(namespace: Namespace) -> Model:
 
 
 def create_search_model(namespace: Namespace) -> Model:
+
     search_result_inner_model = namespace.model(
         "SearchResultInner",
         {
@@ -105,11 +110,64 @@ def create_search_model(namespace: Namespace) -> Model:
             "agency_supplied": fields.String(
                 description="If the record is supplied by the agency"
             ),
+            "jurisdiction_type": fields.String(
+                description="Type of jursidiction for agency"
+            ),
         },
     )
 
-    search_result_outer_model = create_outer_model(
-        namespace, search_result_inner_model, "SearchResultOuter"
+    search_result_inner_wrapper_model = namespace.model(
+        "SearchResultInnerWrapper",
+        {
+            "count": fields.Integer(
+                required=True,
+                description="Count of SearchResultInnerWrapper items",
+                attribute="count",
+            ),
+            "results": fields.List(
+                fields.Nested(
+                    search_result_inner_model,
+                    description="List of results for the given jurisdiction",
+                )
+            ),
+        },
+    )
+
+    search_result_jurisdictions_wrapper_model = namespace.model(
+        name="SearchResultJurisdictionsWrapper",
+        model={
+            "federal": fields.Nested(
+                search_result_inner_wrapper_model,
+                description="Results for the federal jurisdiction",
+            ),
+            "state": fields.Nested(
+                search_result_inner_wrapper_model,
+                description="Results for the state jurisdiction",
+            ),
+            "county": fields.Nested(
+                search_result_inner_wrapper_model,
+                description="Results for the county jurisdiction"
+            ),
+            "locality": fields.Nested(
+                search_result_inner_wrapper_model,
+                description="Results for the locality jurisdiction"
+            ),
+        }
+    )
+
+    search_result_outer_model = namespace.model(
+        "SearchResultOuter",
+        {
+            "count": fields.Integer(
+                required=True,
+                description="Count of SearchResultInner items",
+                attribute="count",
+            ),
+            "data": fields.Nested(
+                attribute="data",
+                model=search_result_jurisdictions_wrapper_model,
+            ),
+        },
     )
 
     return search_result_outer_model

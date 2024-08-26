@@ -268,7 +268,8 @@ class DynamicQueryConstructor:
                 data_sources.agency_supplied,
                 agencies.name AS agency_name,
                 agencies.municipality,
-                agencies.state_iso
+                agencies.state_iso,
+                agencies.jurisdiction_type
             FROM
                 agency_source_link
             INNER JOIN
@@ -283,7 +284,7 @@ class DynamicQueryConstructor:
         )
 
         join_conditions = []
-        where_conditions = [
+        where_subclauses = [
             sql.SQL("LOWER(state_names.state_name) = LOWER({state_name})").format(
                 state_name=sql.Literal(state)
             ),
@@ -306,21 +307,21 @@ class DynamicQueryConstructor:
             record_type_str_list = [
                 [record_type.value for record_type in record_categories]
             ]
-            where_conditions.append(
+            where_subclauses.append(
                 sql.SQL("record_categories.name = ANY({record_types})").format(
                     record_types=sql.Literal(record_type_str_list)
                 )
             )
 
         if county is not None:
-            where_conditions.append(
+            where_subclauses.append(
                 sql.SQL("LOWER(counties.name) = LOWER({county_name})").format(
                     county_name=sql.Literal(county)
                 )
             )
 
         if locality is not None:
-            where_conditions.append(
+            where_subclauses.append(
                 sql.SQL("LOWER(agencies.municipality) = LOWER({locality})").format(
                     locality=sql.Literal(locality)
                 )
@@ -330,8 +331,7 @@ class DynamicQueryConstructor:
             [
                 base_query,
                 sql.SQL(" ").join(join_conditions),
-                sql.SQL(" WHERE "),
-                sql.SQL(" AND ").join(where_conditions),
+                DynamicQueryConstructor.build_full_where_clause(where_subclauses),
             ]
         )
 

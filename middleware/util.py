@@ -4,6 +4,8 @@ from http import HTTPStatus
 from dotenv import dotenv_values, find_dotenv
 from flask import Response, make_response
 
+from middleware.constants import data_key
+
 
 def get_env_variable(name: str) -> str:
     """
@@ -30,7 +32,7 @@ def format_list_response(data: list) -> dict:
     Returns:
         dict: A dictionary with the count and data keys.
     """
-    return {"count": len(data), "data": data}
+    return {"count": len(data), data_key: data}
 
 def message_response(message: str, status_code: HTTPStatus) -> Response:
     return make_response(

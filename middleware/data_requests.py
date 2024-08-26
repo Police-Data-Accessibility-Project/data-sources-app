@@ -10,7 +10,7 @@ from middleware.access_logic import AccessInfo, get_access_info_from_jwt
 from middleware.column_permission_logic import get_permitted_columns, check_has_permission_to_edit_columns
 from middleware.dataclasses import EntryDataRequest
 from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
-from middleware.util import message_response
+from middleware.util import message_response, format_list_response
 
 RELATION = Relations.DATA_REQUESTS.value
 
@@ -96,12 +96,10 @@ def get_data_requests_wrapper(
         access_info=access_info
     )
     formatted_data_requests = get_formatted_data_requests(access_info, db_client, relation_role)
+    formatted_list_response = format_list_response(formatted_data_requests)
 
     return make_response(
-        {
-            "count": len(formatted_data_requests),
-            "data_requests": formatted_data_requests,
-        },
+        formatted_list_response,
         HTTPStatus.OK,
     )
 
