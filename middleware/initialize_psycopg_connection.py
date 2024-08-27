@@ -2,6 +2,9 @@ from asyncio import Lock
 
 import psycopg
 from psycopg import connection as PgConnection
+from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine as SQLAlchemyEngine
+
 from middleware.util import get_env_variable
 
 
@@ -65,3 +68,10 @@ def initialize_psycopg_connection() -> PgConnection:
     :return: A psycopg connection object if successful, or a dictionary with a count of 0 and an empty data list upon failure.
     """
     return DatabaseConnectionSingleton().get_connection()
+
+def get_engine() -> SQLAlchemyEngine:
+    do_database_url = get_env_variable("DO_DATABASE_URL")
+    do_database_url = "postgresql+psycopg" + do_database_url[10:]
+
+    engine = create_engine(do_database_url)
+    return engine
