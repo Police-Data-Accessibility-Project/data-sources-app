@@ -9,6 +9,8 @@ import uuid
 import psycopg
 from psycopg import sql
 from psycopg.rows import dict_row, tuple_row
+from sqlalchemy.orm import sessionmaker, aliased
+from sqlalchemy.sql.expression import select
 
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
@@ -24,7 +26,7 @@ from middleware.custom_exceptions import (
 
 from middleware.models import User, ExternalAccount
 from middleware.enums import PermissionsEnum
-from middleware.initialize_psycopg_connection import initialize_psycopg_connection
+from middleware.initialize_psycopg_connection import initialize_psycopg_connection, get_engine
 from utilities.enums import RecordCategories
 
 DATA_SOURCES_MAP_COLUMN = [
@@ -78,7 +80,10 @@ class DatabaseClient:
 
     def __init__(self):
         self.connection = initialize_psycopg_connection()
+        self.engine = get_engine()
+        self.Session = sessionmaker(bind=self.engine)
         self.cursor = None
+        self.session = None
 
     def cursor_manager(row_factory=dict_row):
         """Decorator method for managing a cursor object.
@@ -109,8 +114,24 @@ class DatabaseClient:
             return wrapper
         return decorator
 
-    def close(self):
-        self.connection.close()
+    def session_manager(method):
+        @wraps(method)
+        def wrapper(self, *args, **kwargs):
+            self.session = self.Session()
+            try:
+                result = method(self, *args, **kwargs)
+                self.session.commit()
+                return result
+            except Exception as e:
+                self.session.rollback()
+                raise e
+            finally:
+                self.session.close()
+                self.session = None
+
+        return wrapper
+        
+
 
     @cursor_manager()
     def execute_raw_sql(
@@ -610,7 +631,7 @@ class DatabaseClient:
             email=result["email"],
         )
 
-    @cursor_manager()
+    @session_manager
     def get_user_info_by_external_account_id(
         self, external_account_id: str, external_account_type: ExternalAccountTypeEnum
     ) -> UserInfo:
