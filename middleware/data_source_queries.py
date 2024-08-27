@@ -23,7 +23,7 @@ def get_approved_data_sources_wrapper(db_client: DatabaseClient) -> Response:
     )
 
 
-def data_source_by_id_wrapper(arg, db_client: DatabaseClient) -> Response:
+def data_source_by_id_wrapper(db_client: DatabaseClient, arg: str) -> Response:
     try:
         data_source_details = data_source_by_id_query(
             data_source_id=arg, db_client=db_client
@@ -86,12 +86,9 @@ def add_new_data_source_wrapper(db_client: DatabaseClient, data: dict) -> Respon
 
 
 def needs_identification_data_sources_wrapper(db_client: DatabaseClient) -> Response:
-    raw_results = db_client.get_needs_identification_data_sources()
-    zipped_results = ResultFormatter.zip_needs_identification_data_source_results(
-        raw_results
-    )
+    results = db_client.get_needs_identification_data_sources()
     return make_response(
-        format_list_response(zipped_results),
+        format_list_response(results),
         HTTPStatus.OK.value,
     )
 

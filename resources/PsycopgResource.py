@@ -1,15 +1,19 @@
 from contextlib import contextmanager
 from http import HTTPStatus
 import functools
-from typing import Callable, Any, Union, Tuple, Dict
+from typing import Callable, Any, Union, Tuple, Dict, Optional
 
-import psycopg2
+import psycopg
+from flask import Response, Request
 from flask_restx import abort, Resource
-from psycopg2.extras import DictCursor
 
 from config import config
 from database_client.database_client import DatabaseClient
-from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
+from middleware.initialize_psycopg_connection import initialize_psycopg_connection
+from utilities.populate_dto_with_request_content import (
+    populate_dto_with_request_content,
+    DTOPopulateParameters,
+)
 
 
 def handle_exceptions(
@@ -23,7 +27,7 @@ def handle_exceptions(
 
     The decorated function handles any exceptions raised
     by the original function. If an exception occurs, the
-    decorator performs a rollback on the psycopg2 connection,
+    decorator performs a rollback on the psycopg connection,
     prints the error message, and returns a dictionary with
     the error message and an HTTP status code of 500.
 
@@ -43,10 +47,22 @@ def handle_exceptions(
             return func(self, *args, **kwargs)
         except Exception as e:
             self.get_connection().rollback()
-            print(str(e))
-            abort(
-                http_status_code=HTTPStatus.INTERNAL_SERVER_ERROR.value, message=str(e)
-            )
+
+            if hasattr(e, 'data') and 'message' in e.data:
+                message = e.data['message']
+            else:
+                message = str(e)
+            print(message)
+
+            if hasattr(e, 'code'):
+                abort(
+                    code=e.code, message=message
+                )
+            else:
+                abort(
+                    code=HTTPStatus.INTERNAL_SERVER_ERROR.value,
+                    message=message,
+                )
 
     return wrapper
 
@@ -55,7 +71,7 @@ class PsycopgResource(Resource):
     def __init__(self, *args, **kwargs):
         """
         Initializes the resource with a database connection.
-        - kwargs (dict): Keyword arguments containing 'psycopg2_connection' for database connection.
+        - kwargs (dict): Keyword arguments containing 'psycopg_connection' for database connection.
         """
         super().__init__(*args, **kwargs)
 
@@ -75,7 +91,7 @@ class PsycopgResource(Resource):
 
     def get_connection(self):
         if self.connection_is_closed():
-            config.connection = initialize_psycopg2_connection()
+            config.connection = initialize_psycopg_connection()
         return config.connection
 
     @contextmanager
@@ -91,3 +107,24 @@ class PsycopgResource(Resource):
             yield db_client
         except Exception as e:
             raise e
+
+    def run_endpoint(
+        self,
+        wrapper_function: Callable[..., Any],
+        dto_populate_parameters: Optional[DTOPopulateParameters] = None,
+        **wrapper_kwargs: Any,
+    ) -> Response:
+        if dto_populate_parameters is None:
+            with self.setup_database_client() as db_client:
+                response = wrapper_function(db_client, **wrapper_kwargs)
+        else:
+            dto = populate_dto_with_request_content(
+                dto_class=dto_populate_parameters.dto_class,
+                source=dto_populate_parameters.source,
+                attribute_source_mapping=dto_populate_parameters.attribute_source_mapping,
+                transformation_functions=dto_populate_parameters.transformation_functions,
+            )
+            with self.setup_database_client() as db_client:
+                response = wrapper_function(db_client, dto, **wrapper_kwargs)
+
+        return response

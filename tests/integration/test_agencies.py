@@ -1,7 +1,7 @@
 """Integration tests for /agencies endpoint"""
 
 from http import HTTPStatus
-import psycopg2
+import psycopg
 
 from database_client.database_client import DatabaseClient
 from middleware.enums import PermissionsEnum

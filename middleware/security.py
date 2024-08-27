@@ -5,10 +5,9 @@ from flask_restx import abort
 from database_client.database_client import DatabaseClient
 from database_client.helper_functions import get_db_client
 from middleware.access_logic import (
-    InvalidAPIKeyException,
-    InvalidAuthorizationHeaderException,
     get_api_key_from_request_header,
 )
+from middleware.exceptions import InvalidAPIKeyException, InvalidAuthorizationHeaderException
 from middleware.enums import PermissionsEnum
 from middleware.permissions_logic import PermissionsManager
 
@@ -47,3 +46,4 @@ def check_permissions(permission: PermissionsEnum) -> None:
             code=HTTPStatus.FORBIDDEN,
             message="You do not have permission to access this endpoint",
         )
+

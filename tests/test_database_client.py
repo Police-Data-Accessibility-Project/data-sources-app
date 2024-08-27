@@ -5,8 +5,7 @@ Module for testing database client functionality against a live database
 import uuid
 from datetime import datetime, timezone, timedelta
 
-import psycopg2.errors
-from psycopg2.extras import DictRow
+import psycopg.errors
 import pytest
 
 from database_client.database_client import DatabaseClient
@@ -16,7 +15,7 @@ from database_client.enums import (
     ColumnPermissionEnum,
 )
 from database_client.result_formatter import ResultFormatter
-from middleware.custom_exceptions import (
+from middleware.exceptions import (
     AccessTokenNotFoundError,
     UserNotFoundError,
 )
@@ -27,6 +26,7 @@ from tests.fixtures import (
     bypass_api_key_required,
     db_cursor,
 )
+from tests.helper_scripts.common_test_data import insert_test_column_permission_data
 from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources_if_not_exist,
     setup_get_typeahead_suggestion_test_data,
@@ -168,7 +168,7 @@ def test_get_data_source_by_id(live_database_client):
     NUMBER_OF_RESULT_COLUMNS = 67
     assert result is not None
     assert len(result) == NUMBER_OF_RESULT_COLUMNS
-    assert result["name"] == "Source 1"
+    assert result[0] == "Source 1"
 
 
 def test_get_approved_data_sources(live_database_client):
@@ -237,14 +237,12 @@ def test_update_data_source(live_database_client):
     # Fetch the data source from the database to confirm the change
     result = live_database_client.get_data_source_by_id("SOURCE_UID_1")
 
-    assert result["description"] == new_description
+    assert result[2] == new_description
 
 
 def test_get_data_sources_for_map(live_database_client):
     # Add at least two new data sources to the database
-    insert_test_agencies_and_sources_if_not_exist(
-        live_database_client.connection.cursor()
-    )
+    insert_test_agencies_and_sources_if_not_exist(live_database_client.connection.cursor())
     # Fetch the data source with the DatabaseClient method
     results = live_database_client.get_data_sources_for_map()
     # Confirm both data sources are retrieved and only the proper columns are returned
@@ -335,7 +333,7 @@ def test_add_quick_search_log(live_database_client):
 
     assert len(rows) == 1
     row = rows[0]
-    assert type(row) == DictRow
+    assert type(row) == dict
     assert row["search"] == search
     assert row["location"] == location
     assert row["results"][0] == "SOURCE_UID_QSL"
@@ -537,36 +535,7 @@ def test_remove_user_permission(live_database_client):
 
 def test_get_permitted_columns(live_database_client):
 
-    try:
-        live_database_client.execute_raw_sql(
-            """
-        DO $$
-        DECLARE
-            column_a_id INT;
-            column_b_id INT;
-            column_c_id INT;
-        BEGIN
-            INSERT INTO relation_column (relation, associated_column) VALUES ('test_relation', 'column_a') RETURNING id INTO column_a_id;
-            INSERT INTO relation_column (relation, associated_column) VALUES ('test_relation', 'column_b') RETURNING id INTO column_b_id;
-            INSERT INTO relation_column (relation, associated_column) VALUES ('test_relation', 'column_c') RETURNING id INTO column_c_id;
-            
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_a_id, 'STANDARD', 'READ');
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_b_id, 'STANDARD', 'READ');
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_c_id, 'STANDARD', 'NONE');
-            
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_a_id, 'OWNER', 'READ');
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_b_id, 'OWNER', 'WRITE');
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_c_id, 'OWNER', 'NONE');
-            
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_a_id, 'ADMIN', 'WRITE');
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_b_id, 'ADMIN', 'WRITE');
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_c_id, 'ADMIN', 'READ');
-    
-        END $$;
-        """
-        )
-    except psycopg2.errors.UniqueViolation:
-        pass  # Already added
+    insert_test_column_permission_data(live_database_client)
 
     results = live_database_client.get_permitted_columns(
         relation="test_relation",
@@ -610,7 +579,7 @@ def test_create_data_request(live_database_client):
     )
 
     assert len(results) == 1
-    assert results[0][0] == submission_notes
+    assert results[0]["submission_notes"] == submission_notes
 
 
 def test_get_data_requests_for_creator(live_database_client):
@@ -630,7 +599,7 @@ def test_get_data_requests_for_creator(live_database_client):
     )
     assert len(results) == 3
     for result in results:
-        assert result[0] in submission_notes_list
+        assert result["submission_notes"] in submission_notes_list
 
 
 def test_user_is_creator_of_data_request(live_database_client):
@@ -661,6 +630,97 @@ def test_user_is_creator_of_data_request(live_database_client):
     )
     assert results is False
 
+def test_get_data_requests(live_database_client):
+
+
+    submitter_email = uuid.uuid4().hex
+    submission_notes_1 = uuid.uuid4().hex
+    submission_notes_2 = uuid.uuid4().hex
+
+    data_request_id_1 = live_database_client.create_data_request(
+        data_request_info={
+            "submission_notes": submission_notes_1,
+            "submitter_email": submitter_email
+        }
+    )
+    data_request_id_2 = live_database_client.create_data_request(
+        data_request_info={
+            "submission_notes": submission_notes_2,
+            "submitter_email": submitter_email
+        }
+    )
+
+    result_1 = live_database_client.get_data_requests(columns=["submission_notes"], where_mappings={"submitter_email": submitter_email})
+    assert len(result_1) == 2
+    assert result_1[0]["submission_notes"] == submission_notes_1
+
+    result_2 = live_database_client.get_data_requests(
+        columns=["submission_notes"],
+        where_mappings={"submitter_email": submitter_email},
+        not_where_mappings={"id": data_request_id_1}
+    )
+    assert len(result_2) == 1
+    assert result_2[0]["submission_notes"] == submission_notes_2
+
+    user_id = live_database_client.add_new_user(
+        email=submitter_email,
+        password_digest=uuid.uuid4().hex
+    )
+
+def test_delete_data_request(live_database_client):
+    submission_notes = uuid.uuid4().hex
+    data_request_id = live_database_client.create_data_request(
+        data_request_info={"submission_notes": submission_notes}
+    )
+
+    results = live_database_client.get_data_requests(columns=["submission_notes"], where_mappings={"id": data_request_id})
+    assert len(results) == 1
+    live_database_client.delete_data_request(data_request_id)
+    results = live_database_client.get_data_requests(columns=["submission_notes"], where_mappings={"id": data_request_id})
+    assert len(results) == 0
+
+def test_update_data_request(live_database_client):
+    submission_notes = uuid.uuid4().hex
+
+    data_request_id = live_database_client.create_data_request(
+        data_request_info={"submission_notes": submission_notes}
+    )
+
+    results = live_database_client.get_data_requests(columns=["submission_notes"], where_mappings={"id": data_request_id})
+    assert len(results) == 1
+    assert results[0]["submission_notes"] == submission_notes
+    new_submission_notes = uuid.uuid4().hex
+    live_database_client.update_data_request(column_edit_mappings={"submission_notes": new_submission_notes}, data_request_id=data_request_id)
+    results = live_database_client.get_data_requests(columns=["submission_notes"], where_mappings={"id": data_request_id})
+    assert len(results) == 1
+    assert results[0]["submission_notes"] == new_submission_notes
+
+def test_get_column_permissions_as_permission_table(live_database_client):
+    insert_test_column_permission_data(live_database_client)
+
+    results = live_database_client.get_column_permissions_as_permission_table(
+        relation="test_relation"
+    )
+    assert results == [
+        {
+            'associated_column': 'column_a',
+            'STANDARD': 'READ',
+            'OWNER': 'READ',
+            'ADMIN': 'WRITE'
+        },
+        {
+            'associated_column': 'column_b',
+            'STANDARD': 'READ',
+            'OWNER': 'WRITE',
+            'ADMIN': 'WRITE'
+        },
+        {
+            'associated_column': 'column_c',
+            'STANDARD': 'NONE',
+            'OWNER': 'NONE',
+            'ADMIN': 'READ'
+        }
+    ]
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts
 # def test_search_with_location_and_record_types_test_data(live_database_client, xylonslyvania_test_data):

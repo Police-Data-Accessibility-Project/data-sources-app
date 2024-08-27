@@ -12,6 +12,7 @@ from resources.PsycopgResource import PsycopgResource, handle_exceptions
 from utilities.populate_dto_with_request_content import (
     populate_dto_with_request_content,
     SourceMappingEnum,
+    DTOPopulateParameters,
 )
 
 namespace_reset_password = create_namespace()
@@ -53,11 +54,10 @@ class ResetPassword(PsycopgResource):
         Returns:
         - A dictionary containing a message indicating whether the password was successfully updated or an error occurred.
         """
-        dto = populate_dto_with_request_content(
-            object_class=RequestResetPasswordRequest,
-            source=SourceMappingEnum.JSON,
+        return self.run_endpoint(
+            wrapper_function=reset_password,
+            dto_populate_parameters=DTOPopulateParameters(
+                dto_class=RequestResetPasswordRequest,
+                source=SourceMappingEnum.JSON,
+            ),
         )
-        with self.setup_database_client() as db_client:
-            response = reset_password(db_client, dto=dto)
-
-        return response

@@ -10,10 +10,7 @@ from unittest.mock import MagicMock, patch
 from flask import Flask
 
 from middleware import security
-from middleware.access_logic import (
-    InvalidAuthorizationHeaderException,
-    InvalidAPIKeyException,
-)
+from middleware.exceptions import InvalidAPIKeyException, InvalidAuthorizationHeaderException
 from middleware.security import (
     check_api_key_associated_with_user,
     check_api_key,

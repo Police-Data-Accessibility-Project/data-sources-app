@@ -10,10 +10,11 @@ from flask_restx import abort
 
 def convert_dates_to_strings(data_dict: dict) -> dict:
     for key, value in data_dict.items():
-        if key == "last_cached" and value is not None:
-            data_dict[key] = value.strftime("%Y-%m-%d %H:%M:%S")
-        elif isinstance(value, datetime.date):
-            data_dict[key] = value.strftime("%Y-%m-%d")
+        if isinstance(value, datetime.date):
+            if key == "last_cached":
+                data_dict[key] = value.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                data_dict[key] = value.strftime("%Y-%m-%d")
     return data_dict
 
 

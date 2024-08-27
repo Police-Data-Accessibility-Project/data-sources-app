@@ -6,6 +6,7 @@ from flask_cors import CORS
 
 from resources.Callback import namespace_auth
 from resources.CreateUserWithGithub import namespace_create_user_with_github
+from resources.DataRequests import namespace_data_requests
 from resources.LinkToGithub import namespace_link_to_github
 from resources.LoginWithGithub import namespace_login_with_github
 from resources.Permissions import namespace_permissions
@@ -16,7 +17,7 @@ from resources.TypeaheadSuggestions import (
 from flask_restx import Api
 
 from config import config, oauth, limiter, jwt
-from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
+from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from resources.Agencies import namespace_agencies
 from resources.ApiKey import namespace_api_key
 from resources.Archives import namespace_archives
@@ -50,6 +51,7 @@ NAMESPACES = [
     namespace_create_user_with_github,
     namespace_permissions,
     namespace_create_test_user,
+    namespace_data_requests
 ]
 
 MY_PREFIX = "/api"
@@ -85,7 +87,7 @@ def get_flask_app_cookie_encryption_key() -> str:
 
 
 def create_app() -> Flask:
-    psycopg2_connection = initialize_psycopg2_connection()
+    psycopg2_connection = initialize_psycopg_connection()
     config.connection = psycopg2_connection
     api = Api()
     for namespace in NAMESPACES:

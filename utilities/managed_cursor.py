@@ -1,17 +1,17 @@
 from contextlib import contextmanager
 from typing import Iterator
 
-import psycopg2
+import psycopg
 
 
 @contextmanager
 def managed_cursor(
-    connection: psycopg2.extensions.connection,
-) -> Iterator[psycopg2.extensions.cursor]:
+    connection: psycopg.Connection,
+) -> Iterator[psycopg.Cursor]:
     """
     Manage a cursor for a given database connection.
 
-    :param connection: The psycopg2 database connection.
+    :param connection: The psycopg database connection.
     :return: Iterator that yields the cursor
         and automatically commits changes on successful completion,
         or rolls back changes and closes the cursor on failure.

@@ -117,7 +117,7 @@ def get_data_source_matches(
     return data_source_matches
 
 
-def quick_search_query_wrapper(arg1, arg2, db_client: DatabaseClient) -> Response:
+def quick_search_query_wrapper(db_client: DatabaseClient, arg1, arg2) -> Response:
     try:
         data_sources = quick_search_query(
             SearchParameters(search=arg1, location=arg2), db_client=db_client
