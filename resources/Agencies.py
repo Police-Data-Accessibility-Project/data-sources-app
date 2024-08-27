@@ -1,14 +1,31 @@
+from http import HTTPStatus
+
 from flask import Response
 from flask_restx import fields
 
+from middleware.access_logic import AccessInfo
 from middleware.agencies import get_agencies
-from middleware.decorators import api_key_required, permissions_required
-from middleware.enums import PermissionsEnum
-from resources.resource_helpers import add_api_key_header_arg
-from utilities.namespace import create_namespace
+from middleware.decorators import (
+    api_key_required,
+    permissions_required,
+    authentication_required,
+)
+from middleware.enums import PermissionsEnum, AccessTypeEnum
+from resources.resource_helpers import (
+    add_api_key_header_arg,
+    create_variable_columns_model,
+    create_entry_data_model,
+    add_jwt_or_api_key_header_arg,
+    add_jwt_header_arg,
+    create_response_dictionary,
+    create_id_and_message_model,
+)
+from utilities.namespace import create_namespace, AppNamespaces
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
-namespace_agencies = create_namespace()
+namespace_agencies = create_namespace(
+    AppNamespaces.AGENCIES,
+)
 
 inner_model = namespace_agencies.model(
     "Agency Item",
@@ -69,41 +86,68 @@ output_model = namespace_agencies.model(
     },
 )
 
-parser = namespace_agencies.parser()
-parser.add_argument(
+agencies_entry_model = create_entry_data_model(namespace_agencies)
+
+page_parser = namespace_agencies.parser()
+page_parser.add_argument(
     "page",
     type=int,
     required=True,
-    location="args",
+    location="path",
     help="The page number of results to return.",
     default=1,
 )
-add_api_key_header_arg(parser)
+add_jwt_or_api_key_header_arg(page_parser)
+
+post_parser = namespace_agencies.parser()
+add_jwt_header_arg(post_parser)
+
+id_parser_get = namespace_agencies.parser()
+add_jwt_or_api_key_header_arg(id_parser_get)
+
+id_parser_admin = namespace_agencies.parser()
+add_jwt_header_arg(id_parser_admin)
+
+id_and_message_model = create_id_and_message_model(namespace_agencies)
 
 
-@namespace_agencies.route("/agencies/<page>")
-@namespace_agencies.expect(parser)
-@namespace_agencies.doc(
-    description="Get a paginated list of approved agencies from the database.",
-    responses={
-        200: "Success. Returns a paginated list of approved agencies.",
-        500: "Internal server error.",
-        403: "Unauthorized. Forbidden or an invalid API key.",
-        400: "Bad request. Missing or bad API key",
-    },
-)
-class Agencies(PsycopgResource):
+@namespace_agencies.route("/")
+class AgenciesPost(PsycopgResource):
+
+    @handle_exceptions
+    @namespace_agencies.doc(
+        description="Adds a new agency.",
+        # TODO: Add column permissions
+        responses=create_response_dictionary(
+            success_message="Returns the id of the newly created agency.",
+            success_model=id_and_message_model,
+        ),
+    )
+    @namespace_agencies.expect(agencies_entry_model, post_parser)
+    @authentication_required(
+        allowed_access_methods=[AccessTypeEnum.JWT],
+    )
+    def post(self, access_info: AccessInfo):
+        pass
+
+
+@namespace_agencies.route("/page/<page>")
+@namespace_agencies.expect(page_parser)
+class AgenciesByPage(PsycopgResource):
     """Represents a resource for fetching approved agency data from the database."""
 
     @handle_exceptions
-    @api_key_required
-    @namespace_agencies.response(
-        200,
-        "Success. Returns a paginated list of approved agencies.",
-        model=output_model,
+    @authentication_required(
+        allowed_access_methods=[AccessTypeEnum.JWT, AccessTypeEnum.API_KEY],
     )
-    # @namespace_agencies.marshal_with(output_model)
-    def get(self, page: int) -> Response:
+    @namespace_agencies.doc(
+        description="Get a paginated list of approved agencies from the database.",
+        responses=create_response_dictionary(
+            success_message="Returns a paginated list of approved agencies.",
+            success_model=output_model
+        ),
+    )
+    def get(self, page: int, access_info: AccessInfo) -> Response:
         """
         Retrieves a paginated list of approved agencies from the database.
 
@@ -111,3 +155,40 @@ class Agencies(PsycopgResource):
         - dict: A dictionary containing the count of returned agencies and their data.
         """
         return self.run_endpoint(get_agencies, page=int(page))
+
+
+@namespace_agencies.route("/id/<agency_id>")
+class AgenciesById(PsycopgResource):
+
+    @authentication_required(
+        allowed_access_methods=[AccessTypeEnum.JWT, AccessTypeEnum.API_KEY],
+    )
+    @namespace_agencies.expect(id_parser_get)
+    @namespace_agencies.doc(
+        description="Get data request by id",
+        responses=create_response_dictionary("Returns data request.", inner_model),
+    )
+    def get(self, data_request_id: str, access_info: AccessInfo) -> Response:
+        pass
+
+    @authentication_required(
+        allowed_access_methods=[AccessTypeEnum.JWT],
+    )
+    @namespace_agencies.expect(id_parser_admin, agencies_entry_model)
+    @namespace_agencies.doc(
+        description="Updates data request",
+        responses=create_response_dictionary("Data request successfully updated."),
+    )
+    def put(self, data_request_id: str, access_info: AccessInfo) -> Response:
+        pass
+
+    @authentication_required(
+        allowed_access_methods=[AccessTypeEnum.JWT],
+    )
+    @namespace_agencies.expect(id_parser_admin)
+    @namespace_agencies.doc(
+        description="Deletes data request",
+        responses=create_response_dictionary("Data request successfully deleted."),
+    )
+    def delete(self, data_request_id: str, access_info: AccessInfo) -> Response:
+        pass

@@ -12,7 +12,7 @@ from unittest.mock import patch
 from flask.testing import FlaskClient
 from flask_restful import Resource
 
-from resources.Agencies import Agencies
+from resources.Agencies import AgenciesByPage, AgenciesPost, AgenciesById
 from resources.ApiKey import ApiKey, API_KEY_ROUTE
 from resources.Archives import Archives
 from resources.Callback import Callback
@@ -83,7 +83,9 @@ test_parameters = [
         DataSourcesNeedsIdentification, "/data-sources-needs-identification", [GET]
     ),
     TestParameters(DataSourceById, "/data-sources-by-id/<data_source_id>", [GET, PUT]),
-    TestParameters(Agencies, "/agencies/<page>", [GET]),
+    TestParameters(AgenciesPost, "/agencies/", [POST]),
+    TestParameters(AgenciesByPage, "/agencies/page/<page>", [GET]),
+    TestParameters(AgenciesById, "/agencies/id/<agency_id>", [GET, PUT, DELETE]),
     TestParameters(Search, "/search/search-location-and-record-type", [GET]),
     TestParameters(TypeaheadSuggestions, "/search/typeahead-suggestions", [GET]),
     TestParameters(Callback, "auth/callback", [GET]),

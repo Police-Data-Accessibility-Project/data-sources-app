@@ -22,7 +22,7 @@ def test_agencies_get(flask_client_with_db, dev_db_client: DatabaseClient):
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
-        endpoint="/api/agencies/2",
+        endpoint="/api/agencies/page/2",
         headers=tus.api_authorization_header,
     )
 

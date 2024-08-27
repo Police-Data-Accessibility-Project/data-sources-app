@@ -1,6 +1,7 @@
 """
 Helper scripts for the Resource classes
 """
+from http import HTTPStatus
 
 from flask_restx import Namespace, Model, fields
 from flask_restx.reqparse import RequestParser
@@ -50,6 +51,17 @@ def create_user_model(namespace: Namespace) -> Model:
         },
     )
 
+def create_id_and_message_model(namespace: Namespace) -> Model:
+    return namespace.model(
+        "IdAndMessage",
+        {
+            "id": fields.Integer(description="The id of the created entry"),
+            "message": fields.String(
+                description="The success message",
+                example="Success. Entry created",
+            ),
+        },
+    )
 
 def create_variable_columns_model(namespace: Namespace, name_snake_case: str) -> Model:
     """
@@ -72,8 +84,29 @@ def create_variable_columns_model(namespace: Namespace, name_snake_case: str) ->
 
 
 def create_entry_data_model(namespace: Namespace) -> Model:
-    return create_variable_columns_model(namespace, "entry_data")
+    inner_model = create_variable_columns_model(namespace, "entry_data_inner")
+    outer_model = namespace.model(
+        name="EntryDataOuter",
+        model={
+            "entry_data": fields.Nested(inner_model),
+        }
+    )
+    return outer_model
 
+def create_response_dictionary(success_message: str, success_model: Model = None) -> dict:
+    success_msg = "Success. " + success_message
+
+    if success_model is not None:
+        success_val = success_msg, success_model
+    else:
+        success_val = success_msg
+
+    return {
+        HTTPStatus.OK: success_val,
+        HTTPStatus.INTERNAL_SERVER_ERROR: "Internal server error.",
+        HTTPStatus.BAD_REQUEST: "Bad request. Missing or bad authentication or parameters",
+        HTTPStatus.FORBIDDEN: "Unauthorized. Forbidden or invalid authentication.",
+    }
 
 def create_jwt_tokens_model(namespace: Namespace) -> Model:
     return namespace.model(

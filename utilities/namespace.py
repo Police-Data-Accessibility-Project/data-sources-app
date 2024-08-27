@@ -13,6 +13,7 @@ class AppNamespaces(Enum):
     DATA_REQUESTS = NamespaceAttributes(
         path="data-requests", description="Data Requests Namespace"
     )
+    AGENCIES = NamespaceAttributes(path="agencies", description="Agencies Namespace")
 
 
 def create_namespace(
