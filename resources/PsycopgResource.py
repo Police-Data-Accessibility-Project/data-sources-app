@@ -1,15 +1,20 @@
 from contextlib import contextmanager
 from http import HTTPStatus
 import functools
-from typing import Callable, Any, Union, Tuple, Dict
+from typing import Callable, Any, Union, Tuple, Dict, Optional
 
 import psycopg
+from flask import Response, Request
 from flask_restx import abort, Resource
 
 from config import config
 from database_client.database_client import DatabaseClient
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from middleware.initialize_sqlalchemy_session import SQLAlchemySession
+from utilities.populate_dto_with_request_content import (
+    populate_dto_with_request_content,
+    DTOPopulateParameters,
+)
 
 def handle_exceptions(
     func: Callable[..., Any]
@@ -42,10 +47,22 @@ def handle_exceptions(
             return func(self, *args, **kwargs)
         except Exception as e:
             self.get_connection().rollback()
-            print(str(e))
-            abort(
-                http_status_code=HTTPStatus.INTERNAL_SERVER_ERROR.value, message=str(e)
-            )
+
+            if hasattr(e, 'data') and 'message' in e.data:
+                message = e.data['message']
+            else:
+                message = str(e)
+            print(message)
+
+            if hasattr(e, 'code'):
+                abort(
+                    code=e.code, message=message
+                )
+            else:
+                abort(
+                    code=HTTPStatus.INTERNAL_SERVER_ERROR.value,
+                    message=message,
+                )
 
     return wrapper
 
@@ -91,3 +108,24 @@ class PsycopgResource(Resource):
             yield db_client
         except Exception as e:
             raise e
+
+    def run_endpoint(
+        self,
+        wrapper_function: Callable[..., Any],
+        dto_populate_parameters: Optional[DTOPopulateParameters] = None,
+        **wrapper_kwargs: Any,
+    ) -> Response:
+        if dto_populate_parameters is None:
+            with self.setup_database_client() as db_client:
+                response = wrapper_function(db_client, **wrapper_kwargs)
+        else:
+            dto = populate_dto_with_request_content(
+                dto_class=dto_populate_parameters.dto_class,
+                source=dto_populate_parameters.source,
+                attribute_source_mapping=dto_populate_parameters.attribute_source_mapping,
+                transformation_functions=dto_populate_parameters.transformation_functions,
+            )
+            with self.setup_database_client() as db_client:
+                response = wrapper_function(db_client, dto, **wrapper_kwargs)
+
+        return response

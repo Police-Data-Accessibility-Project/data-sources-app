@@ -83,8 +83,7 @@ class DataSourceById(PsycopgResource):
         Returns:
         - Tuple containing the response message with data source details if found, and the HTTP status code.
         """
-        with self.setup_database_client() as db_client:
-            return data_source_by_id_wrapper(data_source_id, db_client)
+        return self.run_endpoint(data_source_by_id_wrapper, arg=data_source_id)
 
     @handle_exceptions
     @permissions_required(PermissionsEnum.DB_WRITE)
@@ -107,8 +106,8 @@ class DataSourceById(PsycopgResource):
         - A dictionary containing a message about the update operation.
         """
         data = request.get_json()
-        with self.setup_database_client() as db_client:
-            return update_data_source_wrapper(db_client, data, data_source_id)
+        return self.run_endpoint(update_data_source_wrapper, data=data, data_source_id=data_source_id)
+
 
 
 @namespace_data_source.route("/data-sources")
@@ -136,8 +135,7 @@ class DataSources(PsycopgResource):
         Returns:
         - A dictionary containing the count of data sources and their details.
         """
-        with self.setup_database_client() as db_client:
-            return get_approved_data_sources_wrapper(db_client)
+        return self.run_endpoint(get_approved_data_sources_wrapper)
 
     @handle_exceptions
     @permissions_required(PermissionsEnum.DB_WRITE)
@@ -157,8 +155,7 @@ class DataSources(PsycopgResource):
         - A dictionary containing a message about the addition operation.
         """
         data = request.get_json()
-        with self.setup_database_client() as db_client:
-            return add_new_data_source_wrapper(db_client, data)
+        return self.run_endpoint(add_new_data_source_wrapper, data=data)
 
 
 @namespace_data_source.route("/data-sources-needs-identification")
@@ -175,8 +172,7 @@ class DataSourcesNeedsIdentification(PsycopgResource):
     @api_key_required
     @namespace_data_source.expect(authorization_api_parser)
     def get(self):
-        with self.setup_database_client() as db_client:
-            return needs_identification_data_sources_wrapper(db_client)
+        return self.run_endpoint(needs_identification_data_sources_wrapper)
 
 
 @namespace_data_source.route("/data-sources-map")
@@ -203,5 +199,4 @@ class DataSourcesMap(PsycopgResource):
         Returns:
         - A dictionary containing the count of data sources and their details.
         """
-        with self.setup_database_client() as db_client:
-            return get_data_sources_for_map_wrapper(db_client)
+        return self.run_endpoint(get_data_sources_for_map_wrapper)

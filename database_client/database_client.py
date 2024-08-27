@@ -18,7 +18,7 @@ from database_client.enums import (
     RelationRoleEnum,
     ColumnPermissionEnum,
 )
-from middleware.custom_exceptions import (
+from middleware.exceptions import (
     UserNotFoundError,
     TokenNotFoundError,
     AccessTokenNotFoundError,
@@ -694,7 +694,7 @@ class DatabaseClient:
         record_categories: Optional[list[RecordCategories]] = None,
         county: Optional[str] = None,
         locality: Optional[str] = None,
-    ) -> List[QuickSearchResult]:
+    ) -> List[dict]:
         """
         Searches for data sources in the database.
 
@@ -711,24 +711,7 @@ class DatabaseClient:
             locality=locality,
         )
         self.cursor.execute(query)
-        results = self.cursor.fetchall()
-        return [
-            self.QuickSearchResult(
-                id=row["airtable_uid"],
-                data_source_name=row["data_source_name"],
-                description=row["description"],
-                record_type=row["record_type"],
-                url=row["source_url"],
-                format=row["record_format"],
-                coverage_start=row["coverage_start"],
-                coverage_end=row["coverage_end"],
-                agency_supplied=row["agency_supplied"],
-                agency_name=row["agency_name"],
-                municipality=row["municipality"],
-                state=row["state_iso"],
-            )
-            for row in results
-        ]
+        return self.cursor.fetchall()
 
     def link_external_account(
         self,
@@ -892,6 +875,7 @@ class DatabaseClient:
         relation_name: str,
         columns: List[str],
         where_mappings: Optional[dict] = None,
+        not_where_mappings: Optional[dict] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
     ):
@@ -899,7 +883,7 @@ class DatabaseClient:
         Selects a single relation from the database
         """
         query = DynamicQueryConstructor.create_single_relation_selection_query(
-            relation_name, columns, where_mappings, limit, offset
+            relation_name, columns, where_mappings, not_where_mappings, limit, offset
         )
         self.cursor.execute(query)
         results = self.cursor.fetchall()
@@ -910,6 +894,19 @@ class DatabaseClient:
             table_name="data_requests",
             column_value_mappings=data_request_info,
             column_to_return="id",
+        )
+
+    def get_data_requests(
+            self,
+            columns: List[str],
+            where_mappings: Optional[dict] = None,
+            not_where_mappings: Optional[dict] = None,
+    ) -> List[tuple]:
+        return self._select_from_single_relation(
+            relation_name="data_requests",
+            columns=columns,
+            where_mappings=where_mappings,
+            not_where_mappings=not_where_mappings
         )
 
     def get_data_requests_for_creator(
@@ -930,3 +927,57 @@ class DatabaseClient:
             where_mappings={"creator_user_id": user_id, "id": data_request_id},
         )
         return len(results) == 1
+
+    def delete_data_request(self, data_request_id: str):
+        self._delete_from_table(table_name="data_requests", id_column_value=data_request_id)
+
+    def update_data_request(self, column_edit_mappings: dict, data_request_id: str):
+        self._update_entry_in_table(
+            table_name="data_requests",
+            entry_id=data_request_id,
+            column_edit_mappings=column_edit_mappings,
+        )
+
+    @cursor_manager()
+    def _delete_from_table(
+        self,
+        table_name: str,
+        id_column_value: str,
+        id_column_name: str = "id",
+    ):
+        """
+        Deletes an entry from a table in the database
+        """
+        query = sql.SQL(
+            """
+            DELETE FROM {table_name}
+            WHERE {id_column_name} = {id_column_value}
+            """
+        ).format(
+            table_name=sql.Identifier(table_name),
+            id_column_name=sql.Identifier(id_column_name),
+            id_column_value=sql.Literal(id_column_value),
+        )
+        self.cursor.execute(query)
+
+    @cursor_manager()
+    def execute_composed_sql(self, query: sql.Composed, return_results: bool = False):
+        self.cursor.execute(query)
+        if return_results:
+            return self.cursor.fetchall()
+
+    def get_column_permissions_as_permission_table(self, relation: str) -> list[dict]:
+        result = self.execute_raw_sql("""
+            SELECT DISTINCT cp.relation_role 
+            FROM public.column_permission cp 
+            INNER JOIN relation_column rc on rc.id = cp.rc_id
+            WHERE rc.relation = %s
+            """, (relation, )
+        )
+        relation_roles = [row["relation_role"] for row in result]
+        query = DynamicQueryConstructor.get_column_permissions_as_permission_table_query(
+            relation, relation_roles
+        )
+        return self.execute_composed_sql(query, return_results=True)
+
+

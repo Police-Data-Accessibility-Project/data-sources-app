@@ -19,7 +19,7 @@ from flask_restx import fields, abort
 
 from middleware.enums import PermissionsEnum
 from middleware.login_queries import get_api_key_for_user
-from middleware.user_queries import user_post_results
+from middleware.user_queries import user_post_results, UserRequest
 from middleware.util import get_env_variable
 from resources.PsycopgResource import PsycopgResource
 from utilities.namespace import AppNamespaces, create_namespace
@@ -84,12 +84,12 @@ class CreateTestUserWithElevatedPermissions(PsycopgResource):
         check_dev_password(dev_password=dev_password)
         auto_user_email = uuid.uuid4().hex
         auto_user_password = uuid.uuid4().hex
+        dto = UserRequest(
+            email=auto_user_email,
+            password=auto_user_password,
+        )
         with self.setup_database_client() as db_client:
-            user_post_results(
-                db_client=db_client,
-                email=auto_user_email,
-                password=auto_user_password,
-            )
+            user_post_results(db_client=db_client, dto=dto)
             for permission in [
                 PermissionsEnum.READ_ALL_USER_INFO,
                 PermissionsEnum.DB_WRITE,
@@ -98,11 +98,7 @@ class CreateTestUserWithElevatedPermissions(PsycopgResource):
                     user_email=auto_user_email,
                     permission=permission,
                 )
-            api_key = get_api_key_for_user(
-                db_client=db_client,
-                email=auto_user_email,
-                password=auto_user_password,
-            ).json["api_key"]
+            api_key = get_api_key_for_user(db_client=db_client, dto=dto).json["api_key"]
         return {
             "email": auto_user_email,
             "password": auto_user_password,

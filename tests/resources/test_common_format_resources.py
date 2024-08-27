@@ -13,6 +13,7 @@ from tests.fixtures import (
     bypass_api_key_required,
     bypass_permissions_required,
     bypass_jwt_required,
+    bypass_authentication_required
 )
 from http import HTTPStatus
 
@@ -123,6 +124,44 @@ MOCK_EMAIL_PASSWORD = {
                 "permission": "test-permission",
             },
         ),
+        (
+            "/data-requests/",
+            "POST",
+            "DataRequests.create_data_request_wrapper",
+            {
+                "entry_data": {
+                    "sample_column": "sample_value"
+                }
+            },
+        ),
+        (
+            "/data-requests/",
+            "GET",
+            "DataRequests.get_data_requests_wrapper",
+            {},
+        ),
+        (
+            "/data-requests/by-id/test_id",
+            "GET",
+            "DataRequests.get_data_request_by_id_wrapper",
+            {},
+        ),
+        (
+            "/data-requests/by-id/test_id",
+            "PUT",
+            "DataRequests.update_data_request_wrapper",
+            {
+                "entry_data": {
+                    "sample_column": "sample_value"
+                }
+            },
+        ),
+        (
+            "/data-requests/by-id/test_id",
+            "DELETE",
+            "DataRequests.delete_data_request_wrapper",
+            {}
+        )
     ),
 )
 def test_common_format_resources(
@@ -135,6 +174,7 @@ def test_common_format_resources(
     bypass_api_key_required,
     bypass_permissions_required,
     bypass_jwt_required,
+    bypass_authentication_required
 ):
 
     monkeypatch.setattr(

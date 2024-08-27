@@ -268,7 +268,8 @@ class DynamicQueryConstructor:
                 data_sources.agency_supplied,
                 agencies.name AS agency_name,
                 agencies.municipality,
-                agencies.state_iso
+                agencies.state_iso,
+                agencies.jurisdiction_type
             FROM
                 agency_source_link
             INNER JOIN
@@ -283,7 +284,7 @@ class DynamicQueryConstructor:
         )
 
         join_conditions = []
-        where_conditions = [
+        where_subclauses = [
             sql.SQL("LOWER(state_names.state_name) = LOWER({state_name})").format(
                 state_name=sql.Literal(state)
             ),
@@ -306,21 +307,21 @@ class DynamicQueryConstructor:
             record_type_str_list = [
                 [record_type.value for record_type in record_categories]
             ]
-            where_conditions.append(
+            where_subclauses.append(
                 sql.SQL("record_categories.name = ANY({record_types})").format(
                     record_types=sql.Literal(record_type_str_list)
                 )
             )
 
         if county is not None:
-            where_conditions.append(
+            where_subclauses.append(
                 sql.SQL("LOWER(counties.name) = LOWER({county_name})").format(
                     county_name=sql.Literal(county)
                 )
             )
 
         if locality is not None:
-            where_conditions.append(
+            where_subclauses.append(
                 sql.SQL("LOWER(agencies.municipality) = LOWER({locality})").format(
                     locality=sql.Literal(locality)
                 )
@@ -330,8 +331,7 @@ class DynamicQueryConstructor:
             [
                 base_query,
                 sql.SQL(" ").join(join_conditions),
-                sql.SQL(" WHERE "),
-                sql.SQL(" AND ").join(where_conditions),
+                DynamicQueryConstructor.build_full_where_clause(where_subclauses),
             ]
         )
 
@@ -422,10 +422,16 @@ class DynamicQueryConstructor:
         return query
 
     @staticmethod
+    def build_full_where_clause(where_subclauses: list[sql.Composed]) -> sql.Composed:
+        return sql.SQL(" WHERE ") + sql.SQL(" AND ").join(where_subclauses)
+
+
+    @staticmethod
     def create_single_relation_selection_query(
         relation: str,
         columns: list[str],
         where_mappings: Optional[dict] = None,
+        not_where_mappings: Optional[dict] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
     ):
@@ -437,24 +443,102 @@ class DynamicQueryConstructor:
         :param where_mappings: And-joined simple where conditionals (of column = value)
         :return:
         """
+        base_query = DynamicQueryConstructor.get_select_clause(columns, relation)
+        if where_mappings is not None or not_where_mappings is not None:
+            where_clauses = DynamicQueryConstructor.build_where_subclauses_from_mappings(
+                not_where_mappings,
+                where_mappings
+            )
+            base_query += DynamicQueryConstructor.build_full_where_clause(where_clauses)
+        if limit is not None:
+            base_query += DynamicQueryConstructor.get_limit_clause(limit)
+        if offset is not None:
+            base_query += DynamicQueryConstructor.get_offset_clause(offset)
+        return base_query
+
+    @staticmethod
+    def build_where_subclauses_from_mappings(not_where_mappings, where_mappings):
+        where_clauses = []
+        if where_mappings is not None:
+            # Create list of where clauses
+            where_clauses.extend(
+                DynamicQueryConstructor.get_where_eq_clauses(where_mappings)
+            )
+        if not_where_mappings is not None:
+            # Create list of not where clauses
+            where_clauses.extend(
+                DynamicQueryConstructor.get_where_neq_clauses(not_where_mappings)
+            )
+        return where_clauses
+
+    @staticmethod
+    def get_offset_clause(offset):
+        return sql.SQL(" OFFSET {offset}").format(offset=sql.Literal(offset))
+
+    @staticmethod
+    def get_limit_clause(limit):
+        return sql.SQL(" LIMIT {limit}").format(limit=sql.Literal(limit))
+
+    @staticmethod
+    def get_where_neq_clauses(not_where_mappings):
+        where_neq_clauses = [
+            sql.SQL(" ({column} != {value} or {column} is null) ").format(
+                column=sql.Identifier(column), value=sql.Literal(value)
+            )
+            for column, value in not_where_mappings.items()
+        ]
+        return where_neq_clauses
+
+    @staticmethod
+    def get_where_eq_clauses(where_mappings):
+        where_eq_clauses = [
+            sql.SQL(" {column} = {value} ").format(
+                column=sql.Identifier(column), value=sql.Literal(value)
+            )
+            for column, value in where_mappings.items()
+        ]
+        return where_eq_clauses
+
+    @staticmethod
+    def get_select_clause(columns, relation):
         base_query = sql.SQL("SELECT {columns} FROM {relation}").format(
             columns=sql.SQL(", ").join([sql.Identifier(column) for column in columns]),
             relation=sql.Identifier(relation),
         )
-        if where_mappings is not None:
-            where_clause = sql.SQL("WHERE {where_clause}").format(
-                where_clause=sql.SQL(" AND ").join(
-                    [
-                        sql.SQL(" {column} = {value} ").format(
-                            column=sql.Identifier(column), value=sql.Literal(value)
-                        )
-                        for column, value in where_mappings.items()
-                    ]
-                )
-            )
-            base_query += where_clause
-        if limit is not None:
-            base_query += sql.SQL(" LIMIT {limit}").format(limit=sql.Literal(limit))
-        if offset is not None:
-            base_query += sql.SQL(" OFFSET {offset}").format(offset=sql.Literal(offset))
         return base_query
+
+    @staticmethod
+    def get_column_permissions_as_permission_table_query(
+        relation: str,
+        relation_roles: list[str]
+    ) -> sql.Composed:
+
+        max_case_queries = []
+        for role in relation_roles:
+            max_case_query = sql.SQL(
+                " MAX(CASE WHEN CP.relation_role = {role} THEN CP.ACCESS_PERMISSION ELSE NULL END) AS {role_alias} "
+            ).format(
+                role=sql.Literal(role),
+                role_alias=sql.Identifier(role)
+            )
+            max_case_queries.append(max_case_query)
+
+        query = sql.SQL("""
+        SELECT
+            RC.ASSOCIATED_COLUMN,
+            {max_case_queries}
+        FROM
+            PUBLIC.COLUMN_PERMISSION CP
+        INNER JOIN PUBLIC.relation_column RC ON CP.rc_id = RC.id
+        WHERE
+            RC.relation = {relation}
+        GROUP BY
+            RC.ASSOCIATED_COLUMN, rc.id
+        ORDER BY
+            RC.id;
+        
+        """).format(
+            max_case_queries=sql.SQL(", ").join(max_case_queries),
+            relation=sql.Literal(relation)
+        )
+        return query

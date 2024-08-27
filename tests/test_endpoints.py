@@ -17,6 +17,7 @@ from resources.ApiKey import ApiKey, API_KEY_ROUTE
 from resources.Archives import Archives
 from resources.Callback import Callback
 from resources.CreateUserWithGithub import CreateUserWithGithub
+from resources.DataRequests import DataRequests, DataRequestsById
 from resources.DataSources import (
     DataSources,
     DataSourcesMap,
@@ -90,6 +91,10 @@ test_parameters = [
     TestParameters(LoginWithGithub, "auth/login-with-github", [POST]),
     TestParameters(CreateUserWithGithub, "auth/create-user-with-github", [POST]),
     TestParameters(Permissions, "auth/permissions", [GET, PUT]),
+    TestParameters(DataRequests, "/data-requests/", [GET, POST]),
+    TestParameters(
+        DataRequestsById, "/data-requests/by-id/<data_request_id>", [GET, PUT, DELETE]
+    ),
 ]
 
 

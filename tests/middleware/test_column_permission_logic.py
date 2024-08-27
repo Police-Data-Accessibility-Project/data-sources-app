@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -6,6 +6,7 @@ from database_client.enums import ColumnPermissionEnum
 from middleware.column_permission_logic import (
     get_permitted_columns,
     check_has_permission_to_edit_columns,
+    create_column_permissions_string_table,
 )
 
 
@@ -69,3 +70,46 @@ def test_check_has_permission_to_edit_columns_fail(mock_abort):
     )
 
     mock_abort.assert_called_once()
+
+
+@patch("middleware.column_permission_logic.DatabaseClient")
+def test_create_column_permissions_string_table(mock_DatabaseClient: MagicMock):
+    mock_db_client = MagicMock()
+    mock_DatabaseClient.return_value = mock_db_client
+    mock_db_client.get_column_permissions_as_permission_table.return_value = [
+        {
+            "associated_column": "column_a",
+            "STANDARD": "READ",
+            "OWNER": "READ",
+            "ADMIN": "WRITE",
+        },
+        {
+            "associated_column": "column_b",
+            "STANDARD": "READ",
+            "OWNER": "WRITE",
+            "ADMIN": "WRITE",
+        },
+        {
+            "associated_column": "column_c",
+            "STANDARD": "NONE",
+            "OWNER": "NONE",
+            "ADMIN": "READ",
+        },
+    ]
+
+    result = create_column_permissions_string_table(relation="test_relation")
+
+    mock_db_client.get_column_permissions_as_permission_table.assert_called_once_with(
+        relation="test_relation",
+    )
+
+    assert (
+        result.replace(" ", "").replace("-", "").replace("\n", "")
+        == """
+    | associated_column | STANDARD | OWNER | ADMIN |
+    |-------------------|----------|-------|-------|
+    | column_a          | READ     | READ  | WRITE |
+    | column_b          | READ     | WRITE | WRITE |
+    | column_c          | NONE     | NONE  | READ  |
+    """.replace(" ", "").replace("-", "").replace("\n", "")
+    )

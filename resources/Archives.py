@@ -1,3 +1,4 @@
+from flask import Response
 from flask_jwt_extended import jwt_required
 from flask_restx import fields
 
@@ -95,7 +96,7 @@ class Archives(PsycopgResource):
         },
     )
     @namespace_archives.expect(archives_header_post_parser, archives_post_model)
-    def put(self) -> Dict[str, str]:
+    def put(self) -> Response:
         """
         Updates the archive data based on the provided JSON payload.
 
@@ -115,8 +116,4 @@ class Archives(PsycopgResource):
             if "broken_source_url_as_of" in data
             else None
         )
-
-        with self.setup_database_client() as db_client:
-            response = update_archives_data(db_client, id, last_cached, broken_as_of)
-
-        return response
+        return self.run_endpoint(update_archives_data, data_id=id, last_cached=last_cached, broken_as_of=broken_as_of)
