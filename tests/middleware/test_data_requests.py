@@ -110,7 +110,7 @@ def test_get_data_requestor_with_creator_user_id():
 
     mock.db_client.get_user_id.assert_called_once_with(mock.user_email)
     mock.db_client.create_data_request.assert_called_once_with(
-        {
+        column_value_mappings={
             "creator_user_id": mock.db_client.get_user_id.return_value,
         }
     )
@@ -322,7 +322,8 @@ def test_delete_data_request(
 ):
     mock = MagicMock()
     result = delete_data_request(mock.data_request_id, mock.db_client)
-    mock.db_client.delete_data_request.assert_called_once_with(mock.data_request_id)
+    mock.db_client.delete_data_request.assert_called_once_with(
+        id_column_value=mock.data_request_id)
     mock_message_response.assert_called_once_with("Data request deleted", HTTPStatus.OK)
     assert result == mock_message_response.return_value
 

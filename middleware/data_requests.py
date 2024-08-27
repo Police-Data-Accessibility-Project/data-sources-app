@@ -75,7 +75,8 @@ def create_data_request_wrapper(
 def get_data_requestor_with_creator_user_id(user_email, db_client, dto: EntryDataRequest):
     user_id = db_client.get_user_id(user_email)
     dto.entry_data.update({"creator_user_id": user_id})
-    data_request_id = db_client.create_data_request(dto.entry_data)
+    data_request_id = db_client.create_data_request(
+        column_value_mappings=dto.entry_data)
     return data_request_id
 
 
@@ -175,7 +176,8 @@ def delete_data_request_wrapper(
 
 
 def delete_data_request(data_request_id, db_client):
-    db_client.delete_data_request(data_request_id)
+    db_client.delete_data_request(
+        id_column_value=data_request_id)
     return message_response(
         "Data request deleted",
         HTTPStatus.OK,
@@ -219,7 +221,7 @@ def update_data_request_wrapper(
     )
     db_client.update_data_request(
         column_edit_mappings=dto.entry_data,
-        data_request_id=data_request_id
+        entry_id=data_request_id
     )
     return message_response(
         "Data request updated",

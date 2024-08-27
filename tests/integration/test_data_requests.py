@@ -24,13 +24,9 @@ GENERAL_ENDPOINT = "/api/data-requests/"
 BY_ID_ENDPOINT = GENERAL_ENDPOINT + "by-id/"
 
 TestSetup = namedtuple(
-    "TestSetup",
-    [
-        "flask_client",
-        "db_client",
-        "submission_notes",
-        "tus"
-    ])
+    "TestSetup", ["flask_client", "db_client", "submission_notes", "tus"]
+)
+
 
 @pytest.fixture
 def ts(flask_client_with_db, dev_db_client):
@@ -38,16 +34,16 @@ def ts(flask_client_with_db, dev_db_client):
         flask_client=flask_client_with_db,
         db_client=dev_db_client,
         submission_notes=str(uuid.uuid4().hex),
-        tus = create_test_user_setup(flask_client_with_db)
+        tus=create_test_user_setup(flask_client_with_db),
     )
-
-
 
 
 def test_data_requests_get(ts: TestSetup):
 
     data_request_id_not_creator = create_data_request(ts.db_client, ts.submission_notes)
-    data_request_id_creator = create_data_request(ts.db_client, ts.submission_notes, ts.tus.user_info.user_id)
+    data_request_id_creator = create_data_request(
+        ts.db_client, ts.submission_notes, ts.tus.user_info.user_id
+    )
 
     json_data = run_and_validate_request(
         flask_client=ts.flask_client,
@@ -67,8 +63,7 @@ def test_data_requests_get(ts: TestSetup):
 
     # Give user admin permission
     ts.db_client.add_user_permission(
-        user_email=ts.tus.user_info.email,
-        permission=PermissionsEnum.DB_WRITE
+        user_email=ts.tus.user_info.email, permission=PermissionsEnum.DB_WRITE
     )
 
     admin_json_data = run_and_validate_request(
@@ -82,11 +77,13 @@ def test_data_requests_get(ts: TestSetup):
     assert len(admin_json_data[data_key][0]) > len(json_data[data_key][0])
 
 
-def create_data_request(dev_db_client, submission_notes, user_id = None):
-    data_request_id_creator = dev_db_client.create_data_request({
-        "submission_notes": submission_notes,
-        "creator_user_id": user_id
-    })
+def create_data_request(dev_db_client, submission_notes, user_id=None):
+    data_request_id_creator = dev_db_client.create_data_request(
+        column_value_mappings={
+            "submission_notes": submission_notes,
+            "creator_user_id": user_id,
+        }
+    )
     return data_request_id_creator
 
 
@@ -133,10 +130,7 @@ def test_data_requests_post(ts: TestSetup):
 
 
 def test_data_requests_by_id_get(ts: TestSetup):
-    ts.db_client.add_user_permission(
-        ts.tus.user_info.email,
-        PermissionsEnum.DB_WRITE
-    )
+    ts.db_client.add_user_permission(ts.tus.user_info.email, PermissionsEnum.DB_WRITE)
 
     data_request_id = create_data_request(ts.db_client, ts.submission_notes)
 
@@ -159,14 +153,14 @@ def test_data_requests_by_id_get(ts: TestSetup):
     assert jwt_json_data["submission_notes"] == ts.submission_notes
 
     #  Confirm elevated user has more columns than standard user
-    assert len(jwt_json_data.keys()) > len(
-        api_json_data.keys()
-    )
+    assert len(jwt_json_data.keys()) > len(api_json_data.keys())
 
 
 def test_data_requests_by_id_put(ts: TestSetup):
 
-    data_request_id = create_data_request(ts.db_client, ts.submission_notes, ts.tus.user_info.user_id)
+    data_request_id = create_data_request(
+        ts.db_client, ts.submission_notes, ts.tus.user_info.user_id
+    )
 
     result = ts.db_client.get_data_requests(
         columns=["submission_notes"],
@@ -203,14 +197,12 @@ def test_data_requests_by_id_put(ts: TestSetup):
     )
 
 
-
 def test_data_requests_by_id_delete(ts: TestSetup):
-    ts.db_client.add_user_permission(
-        ts.tus.user_info.email,
-        PermissionsEnum.DB_WRITE
-    )
+    ts.db_client.add_user_permission(ts.tus.user_info.email, PermissionsEnum.DB_WRITE)
 
-    data_request_id = create_data_request(ts.db_client, ts.submission_notes, ts.tus.user_info.user_id)
+    data_request_id = create_data_request(
+        ts.db_client, ts.submission_notes, ts.tus.user_info.user_id
+    )
 
     json_data = run_and_validate_request(
         flask_client=ts.flask_client,
@@ -238,7 +230,9 @@ def test_data_requests_by_id_delete(ts: TestSetup):
     )
 
     # But if user is owner, allow
-    new_data_request_id = create_data_request(ts.db_client, ts.submission_notes, tus_2.user_info.user_id)
+    new_data_request_id = create_data_request(
+        ts.db_client, ts.submission_notes, tus_2.user_info.user_id
+    )
 
     run_and_validate_request(
         flask_client=ts.flask_client,
@@ -246,4 +240,3 @@ def test_data_requests_by_id_delete(ts: TestSetup):
         endpoint=BY_ID_ENDPOINT + str(new_data_request_id),
         headers=tus_2.jwt_authorization_header,
     )
-

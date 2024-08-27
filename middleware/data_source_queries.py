@@ -74,7 +74,7 @@ def get_restricted_columns():
 def update_data_source_wrapper(
     db_client: DatabaseClient, data: dict, data_source_id: str
 ) -> Response:
-    db_client.update_data_source(data, data_source_id)
+    db_client.update_data_source(column_edit_mappings=data, entry_id=data_source_id)
     return make_response(
         {"message": "Data source updated successfully."}, HTTPStatus.OK
     )
