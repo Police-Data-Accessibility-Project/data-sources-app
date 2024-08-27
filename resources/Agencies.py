@@ -165,10 +165,10 @@ class AgenciesById(PsycopgResource):
     )
     @namespace_agencies.expect(id_parser_get)
     @namespace_agencies.doc(
-        description="Get data request by id",
-        responses=create_response_dictionary("Returns data request.", inner_model),
+        description="Get Agency by id",
+        responses=create_response_dictionary("Returns agency.", inner_model),
     )
-    def get(self, data_request_id: str, access_info: AccessInfo) -> Response:
+    def get(self, agency_id: str, access_info: AccessInfo) -> Response:
         pass
 
     @authentication_required(
@@ -176,10 +176,10 @@ class AgenciesById(PsycopgResource):
     )
     @namespace_agencies.expect(id_parser_admin, agencies_entry_model)
     @namespace_agencies.doc(
-        description="Updates data request",
-        responses=create_response_dictionary("Data request successfully updated."),
+        description="Updates Agency",
+        responses=create_response_dictionary("Agency successfully updated."),
     )
-    def put(self, data_request_id: str, access_info: AccessInfo) -> Response:
+    def put(self, agency_id: str, access_info: AccessInfo) -> Response:
         pass
 
     @authentication_required(
@@ -187,8 +187,8 @@ class AgenciesById(PsycopgResource):
     )
     @namespace_agencies.expect(id_parser_admin)
     @namespace_agencies.doc(
-        description="Deletes data request",
-        responses=create_response_dictionary("Data request successfully deleted."),
+        description="Deletes Agency",
+        responses=create_response_dictionary("Agency successfully deleted."),
     )
-    def delete(self, data_request_id: str, access_info: AccessInfo) -> Response:
+    def delete(self, agency_id: str, access_info: AccessInfo) -> Response:
         pass
