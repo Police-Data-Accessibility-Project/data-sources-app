@@ -11,11 +11,11 @@ from tests.helper_scripts.helper_functions import (
     get_boolean_dictionary,
     create_test_user_api,
     create_api_key,
-    check_response_status,
     create_test_user_setup,
     run_and_validate_request,
     search_with_boolean_dictionary,
 )
+from tests.helper_scripts.common_test_functions import check_response_status
 
 
 def test_data_sources_needs_identification(

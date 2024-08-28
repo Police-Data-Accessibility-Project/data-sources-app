@@ -7,9 +7,11 @@ from flask_restx import abort
 from database_client.database_client import DatabaseClient
 from database_client.enums import ColumnPermissionEnum, RelationRoleEnum
 from middleware.access_logic import AccessInfo, get_access_info_from_jwt
-from middleware.column_permission_logic import get_permitted_columns, check_has_permission_to_edit_columns
-from middleware.dataclasses import EntryDataRequest
+from middleware.column_permission_logic import get_permitted_columns, check_has_permission_to_edit_columns, \
+    RelationRoleParameters
+from middleware.dataclasses import EntryDataRequest, MiddlewareParameters, PostParameters, DeferredFunction
 from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
+from middleware.get_by_id_logic import get_by_id, post_entry
 from middleware.util import message_response, format_list_response
 
 RELATION = Relations.DATA_REQUESTS.value
@@ -39,6 +41,9 @@ def get_data_requests_relation_role(
         return RelationRoleEnum.OWNER
     return RelationRoleEnum.STANDARD
 
+def add_creator_user_id(db_client: DatabaseClient, user_email: str, dto: EntryDataRequest):
+    user_id = db_client.get_user_id(user_email)
+    dto.entry_data.update({"creator_user_id": user_id})
 
 def create_data_request_wrapper(
         db_client: DatabaseClient,
@@ -52,33 +57,25 @@ def create_data_request_wrapper(
     :param data_request_data:
     :return:
     """
-    check_has_permission_to_edit_columns(
-        db_client=db_client,
-        relation=RELATION,
-        role=RelationRoleEnum.OWNER,
-        columns=list(dto.entry_data.keys())
+    return post_entry(
+        middleware_parameters=MiddlewareParameters(
+            db_client=db_client,
+            access_info=access_info,
+            entry_name="Data request",
+            relation=RELATION,
+            db_client_method=DatabaseClient.create_data_request,
+        ),
+        entry=dto.entry_data,
+        pre_insertion_function_with_parameters=DeferredFunction(
+            function=add_creator_user_id,
+            db_client=db_client,
+            user_email=access_info.user_email,
+            dto=dto,
+        ),
+        relation_role_parameters=RelationRoleParameters(
+            relation_role_override=RelationRoleEnum.OWNER
+        )
     )
-    data_request_id = get_data_requestor_with_creator_user_id(
-        user_email=access_info.user_email,
-        db_client=db_client,
-        dto=dto
-    )
-    return make_response(
-        {
-            "message": "Data request created",
-            "data_request_id": data_request_id,
-        },
-        HTTPStatus.OK,
-    )
-
-
-def get_data_requestor_with_creator_user_id(user_email, db_client, dto: EntryDataRequest):
-    user_id = db_client.get_user_id(user_email)
-    dto.entry_data.update({"creator_user_id": user_id})
-    data_request_id = db_client.create_data_request(
-        column_value_mappings=dto.entry_data)
-    return data_request_id
-
 
 def get_data_requests_wrapper(
     db_client: DatabaseClient,
@@ -239,24 +236,20 @@ def get_data_request_by_id_wrapper(
     :param access_info:
     :return:
     """
-    relation_role = get_data_requests_relation_role(
-        db_client,
-        data_request_id=data_request_id,
-        access_info=access_info
+    return get_by_id(
+        middleware_parameters=MiddlewareParameters(
+            db_client=db_client,
+            relation=RELATION,
+            access_info=access_info,
+            db_client_method=DatabaseClient.get_data_requests,
+            entry_name="Data request"
+        ),
+        relation_role_parameters=RelationRoleParameters(
+            relation_role_function_with_params=DeferredFunction(
+                function=get_data_requests_relation_role,
+                data_request_id=data_request_id,
+                db_client=db_client
+            )
+        ),
+        id=data_request_id,
     )
-    zipped_results = get_data_requests_with_permitted_columns(
-        db_client=db_client,
-        relation_role=relation_role,
-        where_mappings={"id": data_request_id}
-    )
-    if len(zipped_results) == 0:
-        return make_response(
-            {
-                "message": "Data request not found",
-            },
-            HTTPStatus.OK,
-        )
-    return make_response(
-        zipped_results[0],
-        HTTPStatus.OK,
-)

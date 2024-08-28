@@ -6,9 +6,9 @@ import psycopg
 from tests.fixtures import dev_db_connection, flask_client_with_db
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
-    check_response_status,
     run_and_validate_request,
 )
+from tests.helper_scripts.common_test_functions import check_response_status
 
 
 def test_request_reset_password_post(

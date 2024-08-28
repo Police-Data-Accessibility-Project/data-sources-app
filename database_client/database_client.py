@@ -10,6 +10,7 @@ import psycopg
 from psycopg import sql
 from psycopg.rows import dict_row, tuple_row
 
+from database_client.constants import PAGE_SIZE
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
     ExternalAccountTypeEnum,
@@ -21,7 +22,7 @@ from middleware.exceptions import (
     TokenNotFoundError,
     AccessTokenNotFoundError,
 )
-from middleware.enums import PermissionsEnum
+from middleware.enums import PermissionsEnum, Relations
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from utilities.enums import RecordCategories
 
@@ -398,7 +399,7 @@ class DatabaseClient:
         return results
 
     @staticmethod
-    def get_offset(page: int) -> int:
+    def get_offset(page: int) -> Optional[int]:
         """
         Calculates the offset value for pagination based on the given page number.
         Args:
@@ -409,7 +410,9 @@ class DatabaseClient:
             >>> get_offset(3)
             2000
         """
-        return (page - 1) * 1000
+        if page is None:
+            return None
+        return (page - 1) * PAGE_SIZE
 
     ArchiveInfo = namedtuple(
         "ArchiveInfo",
@@ -828,9 +831,7 @@ class DatabaseClient:
         self.cursor.execute(query)
 
     update_data_source = partialmethod(
-        _update_entry_in_table,
-        table_name="data_sources",
-        id_column_name="airtable_uid"
+        _update_entry_in_table, table_name="data_sources", id_column_name="airtable_uid"
     )
 
     update_data_request = partialmethod(
@@ -858,7 +859,13 @@ class DatabaseClient:
         if column_to_return is not None:
             return self.cursor.fetchone()[column_to_return]
 
-    create_data_request = partialmethod(_create_entry_in_table, table_name="data_requests", column_to_return="id")
+    create_data_request = partialmethod(
+        _create_entry_in_table, table_name="data_requests", column_to_return="id"
+    )
+
+    create_agency = partialmethod(
+        _create_entry_in_table, table_name="agencies", column_to_return="airtable_uid"
+    )
 
     @cursor_manager()
     def _select_from_single_relation(
@@ -867,12 +874,13 @@ class DatabaseClient:
         columns: List[str],
         where_mappings: Optional[dict] = None,
         not_where_mappings: Optional[dict] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        limit: Optional[int] = PAGE_SIZE,
+        page: Optional[int] = None,
     ):
         """
         Selects a single relation from the database
         """
+        offset = self.get_offset(page)
         query = DynamicQueryConstructor.create_single_relation_selection_query(
             relation_name, columns, where_mappings, not_where_mappings, limit, offset
         )
@@ -880,10 +888,11 @@ class DatabaseClient:
         results = self.cursor.fetchall()
         return results
 
-
     get_data_requests = partialmethod(
-        _select_from_single_relation, relation_name="data_requests"
+        _select_from_single_relation, relation_name=Relations.DATA_REQUESTS.value
     )
+
+    get_agencies = partialmethod(_select_from_single_relation, relation_name=Relations.AGENCIES.value)
 
     def get_data_requests_for_creator(
         self, creator_user_id: str, columns: List[str]
@@ -903,10 +912,6 @@ class DatabaseClient:
             where_mappings={"creator_user_id": user_id, "id": data_request_id},
         )
         return len(results) == 1
-
-
-
-
 
     @cursor_manager()
     def _delete_from_table(

@@ -97,3 +97,5 @@ RESTRICTED_COLUMNS = [
     "airtable_uid",
     "airtable_source_last_modified",
 ]
+
+PAGE_SIZE = 100

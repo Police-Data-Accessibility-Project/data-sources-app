@@ -1,19 +1,14 @@
-from http import HTTPStatus
-
 from flask import Response
 from flask_restx import fields
 
 from middleware.access_logic import AccessInfo
-from middleware.agencies import get_agencies
+from middleware.agencies import get_agencies, get_agency_by_id, create_agency
+from middleware.dataclasses import EntryDataRequest
 from middleware.decorators import (
-    api_key_required,
-    permissions_required,
     authentication_required,
 )
-from middleware.enums import PermissionsEnum, AccessTypeEnum
+from middleware.enums import AccessTypeEnum
 from resources.resource_helpers import (
-    add_api_key_header_arg,
-    create_variable_columns_model,
     create_entry_data_model,
     add_jwt_or_api_key_header_arg,
     add_jwt_header_arg,
@@ -22,6 +17,10 @@ from resources.resource_helpers import (
 )
 from utilities.namespace import create_namespace, AppNamespaces
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
+from utilities.populate_dto_with_request_content import (
+    DTOPopulateParameters,
+    SourceMappingEnum,
+)
 
 namespace_agencies = create_namespace(
     AppNamespaces.AGENCIES,
@@ -128,6 +127,13 @@ class AgenciesPost(PsycopgResource):
         allowed_access_methods=[AccessTypeEnum.JWT],
     )
     def post(self, access_info: AccessInfo):
+        return self.run_endpoint(
+            wrapper_function=create_agency,
+            dto_populate_parameters=DTOPopulateParameters(
+                dto_class=EntryDataRequest, source=SourceMappingEnum.JSON
+            ),
+            access_info=access_info,
+        )
         pass
 
 
@@ -144,7 +150,7 @@ class AgenciesByPage(PsycopgResource):
         description="Get a paginated list of approved agencies from the database.",
         responses=create_response_dictionary(
             success_message="Returns a paginated list of approved agencies.",
-            success_model=output_model
+            success_model=output_model,
         ),
     )
     def get(self, page: int, access_info: AccessInfo) -> Response:
@@ -154,7 +160,7 @@ class AgenciesByPage(PsycopgResource):
         Returns:
         - dict: A dictionary containing the count of returned agencies and their data.
         """
-        return self.run_endpoint(get_agencies, page=int(page))
+        return self.run_endpoint(get_agencies, access_info=access_info, page=int(page))
 
 
 @namespace_agencies.route("/id/<agency_id>")
@@ -169,7 +175,10 @@ class AgenciesById(PsycopgResource):
         responses=create_response_dictionary("Returns agency.", inner_model),
     )
     def get(self, agency_id: str, access_info: AccessInfo) -> Response:
-        pass
+        # TODO: Test
+        return self.run_endpoint(
+            get_agency_by_id, access_info=access_info, agency_id=agency_id
+        )
 
     @authentication_required(
         allowed_access_methods=[AccessTypeEnum.JWT],

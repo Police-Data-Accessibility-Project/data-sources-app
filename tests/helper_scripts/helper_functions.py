@@ -8,9 +8,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import psycopg
-import pytest
 from flask.testing import FlaskClient
-from flask_jwt_extended import decode_token
 
 from database_client.database_client import DatabaseClient
 from middleware.dataclasses import (
@@ -21,6 +19,7 @@ from middleware.dataclasses import (
 from middleware.enums import CallbackFunctionsEnum, PermissionsEnum
 from resources.ApiKey import API_KEY_ROUTE
 from tests.helper_scripts.common_test_data import TEST_RESPONSE
+from tests.helper_scripts.common_test_functions import check_response_status
 
 TestTokenInsert = namedtuple("TestTokenInsert", ["id", "email", "token"])
 TestUser = namedtuple("TestUser", ["id", "email", "password_hash"])
@@ -189,17 +188,6 @@ def get_most_recent_quick_search_query_log(
     return QuickSearchQueryLogResult(
         result_count=result[0], updated_at=result[1], results=result[2]
     )
-
-
-def has_expected_keys(result_keys: list, expected_keys: list) -> bool:
-    """
-    Check that given result includes expected keys.
-
-    :param result:
-    :param expected_keys:
-    :return: True if has expected keys, false otherwise
-    """
-    return not set(expected_keys).difference(result_keys)
 
 
 def get_boolean_dictionary(keys: tuple) -> dict[str, bool]:
@@ -388,12 +376,6 @@ def give_user_admin_role(
     )
 
 
-def check_response_status(response, status_code):
-    assert (
-        response.status_code == status_code
-    ), f"Expected status code {status_code}, got {response.status_code}: {response.text}"
-
-
 def setup_get_typeahead_suggestion_test_data(cursor: psycopg.Cursor):
     try:
         cursor.execute("SAVEPOINT typeahead_suggestion_test_savepoint")
@@ -419,12 +401,6 @@ def setup_get_typeahead_suggestion_test_data(cursor: psycopg.Cursor):
         cursor.execute("CALL refresh_typeahead_suggestions();")
     except psycopg.errors.UniqueViolation:
         cursor.execute("ROLLBACK TO SAVEPOINT typeahead_suggestion_test_savepoint")
-
-
-def assert_is_oauth_redirect_link(text: str):
-    assert "https://github.com/login/oauth/authorize?response_type=code" in text, (
-        "Expected OAuth authorize link, got: " + text
-    )
 
 
 def patch_post_callback_functions(
@@ -469,22 +445,6 @@ def create_fake_github_user_info(email: Optional[str] = None) -> GithubUserInfo:
         user_id=uuid.uuid4().hex,
         user_email=uuid.uuid4().hex if email is None else email,
     )
-
-
-def assert_expected_pre_callback_response(response):
-    check_response_status(response, HTTPStatus.FOUND)
-    response_text = response.text
-    assert_is_oauth_redirect_link(response_text)
-
-
-def assert_api_key_exists_for_email(db_client: DatabaseClient, email: str, api_key):
-    user_info = db_client.get_user_info(email)
-    assert user_info.api_key == api_key
-
-
-def assert_jwt_token_matches_user_email(email: str, jwt_token: str):
-    decoded_token = decode_token(jwt_token)
-    assert email == decoded_token["sub"]
 
 
 @dataclass
