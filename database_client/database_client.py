@@ -2,7 +2,7 @@ import json
 from collections import namedtuple
 from contextlib import contextmanager
 from datetime import datetime
-from functools import wraps
+from functools import wraps, partialmethod
 from typing import Optional, Any, List
 import uuid
 
@@ -84,6 +84,7 @@ class DatabaseClient:
 
         :param row_factory: Row factory for the cursor, defaults to dict_row
         """
+
         def decorator(method):
             @wraps(method)
             def wrapper(self, *args, **kwargs):
@@ -105,6 +106,7 @@ class DatabaseClient:
                     self.cursor = None
 
             return wrapper
+
         return decorator
 
     def close(self):
@@ -187,7 +189,9 @@ class DatabaseClient:
         if len(results) == 0:
             return None
         row = results[0]
-        return self.ResetTokenInfo(id=row["id"], email=row["email"], create_date=row["create_date"])
+        return self.ResetTokenInfo(
+            id=row["id"], email=row["email"], create_date=row["create_date"]
+        )
 
     def add_reset_token(self, email: str, token: str):
         """
@@ -795,7 +799,9 @@ class DatabaseClient:
                 ColumnPermissionEnum.WRITE.value,
             ]
         else:
-            column_permissions = [column_permission.value,]
+            column_permissions = [
+                column_permission.value,
+            ]
 
         query = sql.SQL(
             """
@@ -855,6 +861,8 @@ class DatabaseClient:
         if column_to_return is not None:
             return self.cursor.fetchone()[column_to_return]
 
+    create_search_cache_entry = partialmethod(_create_entry_in_table, table_name="agency_url_search_cache")
+
     @cursor_manager()
     def _select_from_single_relation(
         self,
@@ -883,16 +891,16 @@ class DatabaseClient:
         )
 
     def get_data_requests(
-            self,
-            columns: List[str],
-            where_mappings: Optional[dict] = None,
-            not_where_mappings: Optional[dict] = None,
+        self,
+        columns: List[str],
+        where_mappings: Optional[dict] = None,
+        not_where_mappings: Optional[dict] = None,
     ) -> List[tuple]:
         return self._select_from_single_relation(
             relation_name="data_requests",
             columns=columns,
             where_mappings=where_mappings,
-            not_where_mappings=not_where_mappings
+            not_where_mappings=not_where_mappings,
         )
 
     def get_data_requests_for_creator(
@@ -915,7 +923,9 @@ class DatabaseClient:
         return len(results) == 1
 
     def delete_data_request(self, data_request_id: str):
-        self._delete_from_table(table_name="data_requests", id_column_value=data_request_id)
+        self._delete_from_table(
+            table_name="data_requests", id_column_value=data_request_id
+        )
 
     def update_data_request(self, column_edit_mappings: dict, data_request_id: str):
         self._update_entry_in_table(
@@ -953,17 +963,44 @@ class DatabaseClient:
             return self.cursor.fetchall()
 
     def get_column_permissions_as_permission_table(self, relation: str) -> list[dict]:
-        result = self.execute_raw_sql("""
+        result = self.execute_raw_sql(
+            """
             SELECT DISTINCT cp.relation_role 
             FROM public.column_permission cp 
             INNER JOIN relation_column rc on rc.id = cp.rc_id
             WHERE rc.relation = %s
-            """, (relation, )
+            """,
+            (relation,),
         )
         relation_roles = [row["relation_role"] for row in result]
-        query = DynamicQueryConstructor.get_column_permissions_as_permission_table_query(
-            relation, relation_roles
+        query = (
+            DynamicQueryConstructor.get_column_permissions_as_permission_table_query(
+                relation, relation_roles
+            )
         )
         return self.execute_composed_sql(query, return_results=True)
 
-
+    def get_agencies_without_homepage_urls(self) -> list[dict]:
+        return self.execute_raw_sql("""
+            SELECT
+                SUBMITTED_NAME,
+                JURISDICTION_TYPE,
+                STATE_ISO,
+                MUNICIPALITY,
+                COUNTY_NAME,
+                AIRTABLE_UID,
+                COUNT_DATA_SOURCES,
+                ZIP_CODE,
+                NO_WEB_PRESENCE -- Relevant
+            FROM
+                PUBLIC.AGENCIES
+            WHERE 
+                approved = true
+                AND homepage_url is null
+                AND NOT EXISTS (
+                    SELECT 1 FROM PUBLIC.AGENCY_URL_SEARCH_CACHE
+                    WHERE PUBLIC.AGENCIES.AIRTABLE_UID = PUBLIC.AGENCY_URL_SEARCH_CACHE.agency_airtable_uid
+                )
+            ORDER BY COUNT_DATA_SOURCES DESC
+            LIMIT 100 -- Limiting to 100 in acknowledgment of the search engine quota
+        """)

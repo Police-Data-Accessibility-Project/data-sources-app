@@ -1,10 +1,8 @@
 """Integration tests for /agencies endpoint"""
 
-from http import HTTPStatus
-import psycopg
 
 from database_client.database_client import DatabaseClient
-from middleware.enums import PermissionsEnum
+
 from tests.fixtures import dev_db_connection, flask_client_with_db, dev_db_client
 from tests.helper_scripts.helper_functions import (
     check_response_status,

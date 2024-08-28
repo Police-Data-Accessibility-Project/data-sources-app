@@ -12,7 +12,7 @@ from middleware.data_requests import (
     update_data_request_wrapper,
     get_data_request_by_id_wrapper,
 )
-from middleware.dataclasses import EntryDataRequest
+from middleware.custom_dataclasses import EntryDataRequest
 from middleware.decorators import (
     authentication_required,
 )

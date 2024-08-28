@@ -1,3 +1,4 @@
+import uuid
 from http import HTTPStatus
 from collections import namedtuple
 
@@ -43,3 +44,24 @@ def insert_test_column_permission_data(db_client: DatabaseClient):
         )
     except psycopg.errors.UniqueViolation:
         pass  # Already added
+
+
+def create_agency_entry_for_search_cache(db_client: DatabaseClient) -> str:
+    """
+    Create an entry in `Agencies` guaranteed to appear in the search cache functionality
+    :param db_client:
+    :return:
+    """
+    submitted_name = "TEST SEARCH CACHE NAME"
+    db_client._create_entry_in_table(
+        table_name="agencies",
+        column_value_mappings={
+            "submitted_name": submitted_name,
+            "name": submitted_name,
+            "airtable_uid": uuid.uuid4().hex[:15],
+            "count_data_sources": 2000,  # AKA, an absurdly high number to guarantee it's the first result
+            "approved": True,
+            "homepage_url": None,
+        },
+    )
+    return submitted_name
