@@ -15,7 +15,7 @@ from werkzeug.security import check_password_hash
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
-from middleware.dataclasses import GithubUserInfo
+from middleware.custom_dataclasses import GithubUserInfo
 from middleware.user_queries import UserRequest
 from middleware.util import get_env_variable
 

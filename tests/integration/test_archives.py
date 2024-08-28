@@ -11,7 +11,6 @@ from middleware.enums import PermissionsEnum
 from tests.fixtures import (
     dev_db_connection,
     flask_client_with_db,
-    db_cursor,
     dev_db_client,
     test_user_admin,
 )
