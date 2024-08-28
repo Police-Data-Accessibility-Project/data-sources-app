@@ -11,7 +11,7 @@ import psycopg
 from flask.testing import FlaskClient
 
 from database_client.database_client import DatabaseClient
-from middleware.dataclasses import (
+from middleware.custom_dataclasses import (
     GithubUserInfo,
     OAuthCallbackInfo,
     FlaskSessionCallbackInfo,

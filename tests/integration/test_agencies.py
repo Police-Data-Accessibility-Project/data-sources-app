@@ -8,7 +8,7 @@ import pytest
 
 from database_client.constants import PAGE_SIZE
 from database_client.database_client import DatabaseClient
-from middleware.enums import PermissionsEnum
+
 from tests.fixtures import dev_db_connection, flask_client_with_db, dev_db_client
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup_db_client,

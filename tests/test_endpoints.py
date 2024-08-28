@@ -24,6 +24,7 @@ from resources.DataSources import (
     DataSourcesNeedsIdentification,
     DataSourceById,
 )
+from resources.HomepageSearchCache import HomepageSearchCache
 from resources.LinkToGithub import LinkToGithub
 from resources.Login import Login
 from resources.LoginWithGithub import LoginWithGithub
@@ -97,6 +98,9 @@ test_parameters = [
     TestParameters(
         DataRequestsById, "/data-requests/by-id/<data_request_id>", [GET, PUT, DELETE]
     ),
+    TestParameters(
+        HomepageSearchCache, "/homepage-search-cache", [GET, POST]
+    )
 ]
 
 

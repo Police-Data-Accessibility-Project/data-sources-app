@@ -10,7 +10,7 @@ from middleware.callback_flask_sessions_logic import (
     get_callback_params,
     get_callback_function,
 )
-from middleware.dataclasses import (
+from middleware.custom_dataclasses import (
     GithubUserInfo,
     FlaskSessionCallbackInfo,
     OAuthCallbackInfo,

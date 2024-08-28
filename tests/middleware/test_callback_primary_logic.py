@@ -16,7 +16,7 @@ from middleware.callback_primary_logic import (
     link_github_account,
     get_github_user_info,
 )
-from middleware.dataclasses import (
+from middleware.custom_dataclasses import (
     FlaskSessionCallbackInfo,
     OAuthCallbackInfo,
     GithubUserInfo,

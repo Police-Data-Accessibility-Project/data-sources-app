@@ -9,7 +9,7 @@ from database_client.enums import ColumnPermissionEnum, RelationRoleEnum
 from middleware.access_logic import AccessInfo, get_access_info_from_jwt
 from middleware.column_permission_logic import get_permitted_columns, check_has_permission_to_edit_columns, \
     RelationRoleParameters
-from middleware.dataclasses import EntryDataRequest, MiddlewareParameters, PostParameters, DeferredFunction
+from middleware.custom_dataclasses import EntryDataRequest, MiddlewareParameters, PostParameters, DeferredFunction
 from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
 from middleware.get_by_id_logic import get_by_id, post_entry
 from middleware.util import message_response, format_list_response

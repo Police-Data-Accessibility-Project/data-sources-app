@@ -859,6 +859,8 @@ class DatabaseClient:
         if column_to_return is not None:
             return self.cursor.fetchone()[column_to_return]
 
+    create_search_cache_entry = partialmethod(_create_entry_in_table, table_name="agency_url_search_cache")
+
     create_data_request = partialmethod(
         _create_entry_in_table, table_name="data_requests", column_to_return="id"
     )
@@ -960,3 +962,28 @@ class DatabaseClient:
             )
         )
         return self.execute_composed_sql(query, return_results=True)
+
+    def get_agencies_without_homepage_urls(self) -> list[dict]:
+        return self.execute_raw_sql("""
+            SELECT
+                SUBMITTED_NAME,
+                JURISDICTION_TYPE,
+                STATE_ISO,
+                MUNICIPALITY,
+                COUNTY_NAME,
+                AIRTABLE_UID,
+                COUNT_DATA_SOURCES,
+                ZIP_CODE,
+                NO_WEB_PRESENCE -- Relevant
+            FROM
+                PUBLIC.AGENCIES
+            WHERE 
+                approved = true
+                AND homepage_url is null
+                AND NOT EXISTS (
+                    SELECT 1 FROM PUBLIC.AGENCY_URL_SEARCH_CACHE
+                    WHERE PUBLIC.AGENCIES.AIRTABLE_UID = PUBLIC.AGENCY_URL_SEARCH_CACHE.agency_airtable_uid
+                )
+            ORDER BY COUNT_DATA_SOURCES DESC
+            LIMIT 100 -- Limiting to 100 in acknowledgment of the search engine quota
+        """)
