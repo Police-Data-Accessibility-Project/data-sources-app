@@ -4,7 +4,7 @@ from flask import Response, make_response
 
 from database_client.database_client import DatabaseClient
 from middleware.access_logic import AccessInfo
-from middleware.dataclasses import MiddlewareParameters, EntryDataRequest
+from middleware.custom_dataclasses import MiddlewareParameters, EntryDataRequest
 from middleware.enums import Relations
 from middleware.get_by_id_logic import get_many, get_by_id, post_entry
 from utilities.common import convert_dates_to_strings

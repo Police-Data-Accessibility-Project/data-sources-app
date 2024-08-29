@@ -3,7 +3,7 @@ from flask_restx import fields
 
 from middleware.access_logic import AccessInfo
 from middleware.agencies import get_agencies, get_agency_by_id, create_agency
-from middleware.dataclasses import EntryDataRequest
+from middleware.custom_dataclasses import EntryDataRequest
 from middleware.decorators import (
     authentication_required,
 )

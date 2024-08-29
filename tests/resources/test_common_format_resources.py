@@ -176,6 +176,12 @@ MOCK_EMAIL_PASSWORD = {
             "GET",
             "HomepageSearchCache.get_agencies_without_homepage_urls",
             {}
+        ),
+        (
+            "/agencies/page/1",
+            "GET",
+            "Agencies.get_agencies",
+            {},
         )
     ),
 )

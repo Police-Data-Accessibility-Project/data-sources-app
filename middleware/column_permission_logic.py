@@ -8,7 +8,7 @@ from flask_restx import abort
 from database_client.database_client import DatabaseClient
 from database_client.enums import RelationRoleEnum, ColumnPermissionEnum
 from middleware.access_logic import AccessInfo
-from middleware.dataclasses import DeferredFunction
+from middleware.custom_dataclasses import DeferredFunction
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 
 

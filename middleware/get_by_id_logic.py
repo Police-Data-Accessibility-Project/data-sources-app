@@ -3,7 +3,7 @@ from flask import Response
 from database_client.enums import ColumnPermissionEnum
 from middleware.column_permission_logic import get_permitted_columns, RelationRoleParameters, \
     check_has_permission_to_edit_columns
-from middleware.dataclasses import MiddlewareParameters, PostParameters, DeferredFunction
+from middleware.custom_dataclasses import MiddlewareParameters, PostParameters, DeferredFunction
 from middleware.util import message_response, format_list_response, multiple_results_response, created_id_response
 
 

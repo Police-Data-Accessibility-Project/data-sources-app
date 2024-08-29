@@ -4,7 +4,6 @@ from unittest.mock import MagicMock
 import pytest
 
 from middleware.agencies import (
-    get_agencies_matches,
     get_agencies,
 )
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock

@@ -263,7 +263,7 @@ def test_get_agencies_from_page(live_database_client):
 def test_get_offset():
     # Send a page number to the DatabaseClient method
     # Confirm that the correct offset is returned
-    assert DatabaseClient.get_offset(3) == 2000
+    assert DatabaseClient.get_offset(page=3) == 200
 
 
 def test_get_data_sources_to_archive(live_database_client):

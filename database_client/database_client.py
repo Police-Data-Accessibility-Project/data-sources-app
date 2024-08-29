@@ -360,7 +360,6 @@ class DatabaseClient:
         :param page: The page number to pull the agencies from.
         :return: A list of agency tuples.
         """
-        offset = self.get_offset(page)
         columns = [
             "name",
             "homepage_url",
@@ -393,7 +392,7 @@ class DatabaseClient:
             columns=columns,
             where_mappings={"approved": "TRUE"},
             limit=1000,
-            offset=offset,
+            page=page,
         )
 
         return results

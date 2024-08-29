@@ -5,7 +5,6 @@ from unittest.mock import MagicMock, patch, call
 import pytest
 
 from database_client.enums import RelationRoleEnum, ColumnPermissionEnum
-from database_client.result_formatter import ResultFormatter
 from middleware.access_logic import AccessInfo
 from middleware.custom_dataclasses import EntryDataRequest
 from middleware.enums import AccessTypeEnum, PermissionsEnum
@@ -21,7 +20,6 @@ from middleware.data_requests import (
     allowed_to_delete_request,
     update_data_request_wrapper,
     get_data_request_by_id_wrapper,
-    get_data_requestor_with_creator_user_id,
     get_data_requests_wrapper,
     get_data_requests_with_permitted_columns,
 )
