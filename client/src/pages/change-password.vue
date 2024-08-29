@@ -196,3 +196,11 @@ async function onSubmit(formValues) {
 	@apply text-green-700 dark:text-green-300;
 }
 </style>
+
+<route>
+	{
+		meta: {
+			auth: true
+		}
+	}
+</route>

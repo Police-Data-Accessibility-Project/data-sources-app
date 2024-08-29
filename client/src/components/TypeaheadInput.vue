@@ -5,6 +5,7 @@
 		class="pdap-typeahead"
 		:class="{ 'pdap-typeahead-expanded': isListOpen }"
 	>
+		<slot name="label" />
 		<input
 			:id="id"
 			ref="inputRef"
@@ -111,6 +112,7 @@ function onInput(e) {
 function onFocus(e) {
 	if (Array.isArray(itemsToDisplay.value) && !itemsToDisplay.value.length) {
 		clearInput();
+		emit('selectItem', undefined);
 	}
 
 	emit('onFocus', e);
@@ -191,7 +193,7 @@ function clearInput() {
 
 <style>
 .pdap-typeahead {
-	@apply relative gap-4 leading-normal mb-3 w-full flex flex-col;
+	@apply relative gap-4 leading-normal w-full flex flex-col;
 }
 
 .pdap-typeahead-expanded {
