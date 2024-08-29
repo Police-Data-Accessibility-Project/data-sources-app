@@ -2,6 +2,7 @@
 
 import uuid
 from collections import namedtuple
+from dataclasses import dataclass
 from http import HTTPStatus
 import psycopg
 import pytest
@@ -10,33 +11,36 @@ from database_client.constants import PAGE_SIZE
 from database_client.database_client import DatabaseClient
 from middleware.enums import PermissionsEnum
 
-from tests.fixtures import dev_db_connection, flask_client_with_db, dev_db_client
+from tests.fixtures import (
+    dev_db_connection,
+    flask_client_with_db,
+    dev_db_client,
+    integration_test_admin_setup,
+)
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup_db_client,
-    run_and_validate_request,
     create_test_user_setup,
 )
 from tests.helper_scripts.common_test_functions import (
     check_response_status,
     assert_expected_get_many_result,
+    call_and_validate_get_by_id_endpoint, run_and_validate_request,
 )
+from tests.helper_scripts.test_dataclasses import IntegrationTestSetup
 
 
-AgenciesTestSetup = namedtuple(
-    "TestSetup", ["flask_client", "db_client", "submitted_name", "tus"]
-)
+@dataclass
+class AgenciesTestSetup(IntegrationTestSetup):
+    submitted_name: str = str(uuid.uuid4())
 
 
 @pytest.fixture
-def ts(flask_client_with_db, dev_db_client):
+def ts(integration_test_admin_setup: IntegrationTestSetup):
+    tas = integration_test_admin_setup
     return AgenciesTestSetup(
-        flask_client=flask_client_with_db,
-        db_client=dev_db_client,
-        submitted_name=str(uuid.uuid4()),
-        tus=create_test_user_setup(
-            flask_client_with_db,
-            permissions=[PermissionsEnum.DB_WRITE],
-        ),
+        flask_client=tas.flask_client,
+        db_client=tas.db_client,
+        tus=tas.tus,
     )
 
 
@@ -59,6 +63,23 @@ def test_agencies_get(flask_client_with_db, dev_db_client: DatabaseClient):
     )
 
 
+def test_agencies_get_by_id(ts: AgenciesTestSetup):
+    # Add data via db client
+    airtable_uid = uuid.uuid4().hex
+    ts.db_client._create_entry_in_table(
+        table_name="agencies",
+        column_value_mappings={"submitted_name": ts.submitted_name, "airtable_uid": airtable_uid},
+    )
+
+    call_and_validate_get_by_id_endpoint(
+        its=ts,
+        id_name=airtable_uid,
+        base_endpoint="/api/agencies/id",
+        expected_value_key="submitted_name",
+        expected_value=ts.submitted_name,
+    )
+
+
 def test_agencies_post(ts: AgenciesTestSetup):
 
     json_data = run_and_validate_request(
@@ -66,5 +87,91 @@ def test_agencies_post(ts: AgenciesTestSetup):
         http_method="post",
         endpoint="/api/agencies/",
         headers=ts.tus.jwt_authorization_header,
-        json={"entry_data": {"submitted_name": ts.submitted_name}},
+        json={
+            "entry_data": {
+                "submitted_name": ts.submitted_name,
+                "airtable_uid": uuid.uuid4().hex,
+            }
+        },
     )
+
+    results = ts.db_client._select_from_single_relation(
+        relation_name="agencies",
+        columns=["submitted_name"],
+        where_mappings={"airtable_uid": json_data["id"]},
+    )
+
+    assert len(results) == 1
+
+    assert results[0]["submitted_name"] == ts.submitted_name
+
+
+def test_agencies_put(ts: AgenciesTestSetup):
+
+    json_data = run_and_validate_request(
+        flask_client=ts.flask_client,
+        http_method="post",
+        endpoint="/api/agencies/",
+        headers=ts.tus.jwt_authorization_header,
+        json={
+            "entry_data": {
+                "submitted_name": ts.submitted_name,
+                "airtable_uid": uuid.uuid4().hex,
+            }
+        },
+    )
+
+    agency_id = json_data["id"]
+
+    new_submitted_name = str(uuid.uuid4())
+
+    json_data = run_and_validate_request(
+        flask_client=ts.flask_client,
+        http_method="put",
+        endpoint="/api/agencies/id/" + agency_id,
+        headers=ts.tus.jwt_authorization_header,
+        json={"entry_data": {"submitted_name": new_submitted_name}},
+    )
+
+    results = ts.db_client._select_from_single_relation(
+        relation_name="agencies",
+        columns=["submitted_name"],
+        where_mappings={"airtable_uid": agency_id},
+    )
+
+    assert len(results) == 1
+
+    assert results[0]["submitted_name"] == new_submitted_name
+
+
+def test_agencies_delete(ts: AgenciesTestSetup):
+
+    json_data = run_and_validate_request(
+        flask_client=ts.flask_client,
+        http_method="post",
+        endpoint="/api/agencies/",
+        headers=ts.tus.jwt_authorization_header,
+        json={
+            "entry_data": {
+                "submitted_name": ts.submitted_name,
+                "airtable_uid": uuid.uuid4().hex,
+            }
+        },
+    )
+
+    agency_id = json_data["id"]
+
+    run_and_validate_request(
+        flask_client=ts.flask_client,
+        http_method="delete",
+        endpoint="/api/agencies/id/" + agency_id,
+        headers=ts.tus.jwt_authorization_header,
+    )
+
+    results = ts.db_client._select_from_single_relation(
+        relation_name="agencies",
+        columns=["submitted_name"],
+        where_mappings={"airtable_uid": agency_id},
+    )
+
+    assert len(results) == 0

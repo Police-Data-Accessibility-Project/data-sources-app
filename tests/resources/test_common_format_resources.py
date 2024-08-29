@@ -21,8 +21,8 @@ from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_test_data import TEST_RESPONSE
 from tests.helper_scripts.helper_functions import (
     check_is_test_response,
-    run_and_validate_request,
 )
+from tests.helper_scripts.common_test_functions import run_and_validate_request
 
 
 class DataSourcesMocks(DynamicMagicMock):
@@ -182,7 +182,44 @@ MOCK_EMAIL_PASSWORD = {
             "GET",
             "Agencies.get_agencies",
             {},
-        )
+        ),
+        (
+            "/agencies/",
+            "POST",
+            "Agencies.create_agency",
+            {
+                "entry_data":
+                    {
+                        "submitted_name": "test_agency_name",
+                        "airtable_uid": "test_airtable_uid"
+                    }
+            },
+        ),
+        (
+            "/agencies/id/test_id",
+            "GET",
+            "Agencies.get_agency_by_id",
+            {},
+        ),
+        (
+            "/agencies/id/test_id",
+            "PUT",
+            "Agencies.update_agency",
+            {
+                "entry_data":
+                    {
+                        "submitted_name": "test_agency_name",
+                        "airtable_uid": "test_airtable_uid"
+                    }
+            },
+        ),
+        (
+            "/agencies/id/test_id",
+            "DELETE",
+            "Agencies.delete_agency",
+            {}
+        ),
+
     ),
 )
 def test_common_format_resources(

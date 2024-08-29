@@ -10,8 +10,8 @@ from tests.fixtures import (
 from tests.helper_scripts.common_test_data import create_agency_entry_for_search_cache
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup,
-    run_and_validate_request,
 )
+from tests.helper_scripts.common_test_functions import run_and_validate_request
 
 
 def test_homepage_search_cache(flask_client_with_db, dev_db_client):

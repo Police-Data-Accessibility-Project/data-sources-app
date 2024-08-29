@@ -2,12 +2,19 @@ from flask import Response
 from flask_restx import fields
 
 from middleware.access_logic import AccessInfo
-from middleware.agencies import get_agencies, get_agency_by_id, create_agency
+from middleware.agencies import (
+    get_agencies,
+    get_agency_by_id,
+    create_agency,
+    update_agency,
+    delete_agency,
+)
+from middleware.column_permission_logic import create_column_permissions_string_table
 from middleware.custom_dataclasses import EntryDataRequest
 from middleware.decorators import (
     authentication_required,
 )
-from middleware.enums import AccessTypeEnum
+from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
 from resources.resource_helpers import (
     create_entry_data_model,
     add_jwt_or_api_key_header_arg,
@@ -109,14 +116,25 @@ add_jwt_header_arg(id_parser_admin)
 
 id_and_message_model = create_id_and_message_model(namespace_agencies)
 
+agencies_column_permissions = create_column_permissions_string_table(
+    relation=Relations.AGENCIES.value
+)
+
 
 @namespace_agencies.route("/")
 class AgenciesPost(PsycopgResource):
 
     @handle_exceptions
     @namespace_agencies.doc(
-        description="Adds a new agency.",
-        # TODO: Add column permissions
+        description=f"""
+        Adds a new agency.
+        
+Columns permitted to be included by the user is determined by their level of access
+
+## COLUMN PERMISSIONS
+
+{agencies_column_permissions}
+        """,
         responses=create_response_dictionary(
             success_message="Returns the id of the newly created agency.",
             success_model=id_and_message_model,
@@ -125,6 +143,7 @@ class AgenciesPost(PsycopgResource):
     @namespace_agencies.expect(agencies_entry_model, post_parser)
     @authentication_required(
         allowed_access_methods=[AccessTypeEnum.JWT],
+        restrict_to_permissions=[PermissionsEnum.DB_WRITE],
     )
     def post(self, access_info: AccessInfo):
         return self.run_endpoint(
@@ -147,7 +166,15 @@ class AgenciesByPage(PsycopgResource):
         allowed_access_methods=[AccessTypeEnum.JWT, AccessTypeEnum.API_KEY],
     )
     @namespace_agencies.doc(
-        description="Get a paginated list of approved agencies from the database.",
+        description=f"""
+Get a paginated list of approved agencies from the database.
+
+Columns returned are determined by the user's access level.
+
+## COLUMN PERMISSIONS
+
+{agencies_column_permissions}
+""",
         responses=create_response_dictionary(
             success_message="Returns a paginated list of approved agencies.",
             success_model=output_model,
@@ -166,33 +193,61 @@ class AgenciesByPage(PsycopgResource):
 @namespace_agencies.route("/id/<agency_id>")
 class AgenciesById(PsycopgResource):
 
+    @handle_exceptions
     @authentication_required(
         allowed_access_methods=[AccessTypeEnum.JWT, AccessTypeEnum.API_KEY],
     )
     @namespace_agencies.expect(id_parser_get)
     @namespace_agencies.doc(
-        description="Get Agency by id",
+        description=f"""
+        Get Agency by id
+
+Columns returned are determined by the user's access level.
+
+## COLUMN PERMISSIONS
+
+{agencies_column_permissions}
+        """,
         responses=create_response_dictionary("Returns agency.", inner_model),
     )
     def get(self, agency_id: str, access_info: AccessInfo) -> Response:
-        # TODO: Test
         return self.run_endpoint(
             get_agency_by_id, access_info=access_info, agency_id=agency_id
         )
 
+    @handle_exceptions
     @authentication_required(
         allowed_access_methods=[AccessTypeEnum.JWT],
+        restrict_to_permissions=[PermissionsEnum.DB_WRITE],
     )
     @namespace_agencies.expect(id_parser_admin, agencies_entry_model)
     @namespace_agencies.doc(
-        description="Updates Agency",
+        description=f"""
+        Updates Agency
+        
+Columns allowed to be updated by the user is determined by their level of access
+
+## COLUMN PERMISSIONS
+
+{agencies_column_permissions}
+
+""",
         responses=create_response_dictionary("Agency successfully updated."),
     )
     def put(self, agency_id: str, access_info: AccessInfo) -> Response:
-        pass
+        return self.run_endpoint(
+            update_agency,
+            dto_populate_parameters=DTOPopulateParameters(
+                dto_class=EntryDataRequest, source=SourceMappingEnum.JSON
+            ),
+            access_info=access_info,
+            agency_id=agency_id,
+        )
 
+    @handle_exceptions
     @authentication_required(
         allowed_access_methods=[AccessTypeEnum.JWT],
+        restrict_to_permissions=[PermissionsEnum.DB_WRITE],
     )
     @namespace_agencies.expect(id_parser_admin)
     @namespace_agencies.doc(
@@ -200,4 +255,6 @@ class AgenciesById(PsycopgResource):
         responses=create_response_dictionary("Agency successfully deleted."),
     )
     def delete(self, agency_id: str, access_info: AccessInfo) -> Response:
-        pass
+        return self.run_endpoint(
+            delete_agency, agency_id=agency_id, access_info=access_info
+        )

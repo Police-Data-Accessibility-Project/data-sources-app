@@ -7,14 +7,21 @@ from flask_restx import abort
 from database_client.database_client import DatabaseClient
 from database_client.enums import ColumnPermissionEnum, RelationRoleEnum
 from middleware.access_logic import AccessInfo, get_access_info_from_jwt
-from middleware.column_permission_logic import get_permitted_columns, check_has_permission_to_edit_columns, \
-    RelationRoleParameters
-from middleware.custom_dataclasses import EntryDataRequest, MiddlewareParameters, PostParameters, DeferredFunction
+from middleware.column_permission_logic import (
+    get_permitted_columns,
+    check_has_permission_to_edit_columns,
+    RelationRoleParameters,
+)
+from middleware.custom_dataclasses import (
+    EntryDataRequest,
+    DeferredFunction,
+)
 from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
-from middleware.get_by_id_logic import get_by_id, post_entry
+from middleware.dynamic_request_logic import get_by_id, post_entry, put_entry, delete_entry, MiddlewareParameters
 from middleware.util import message_response, format_list_response
 
 RELATION = Relations.DATA_REQUESTS.value
+
 
 def get_data_requests_relation_role(
     db_client: DatabaseClient, data_request_id: Optional[str], access_info: AccessInfo
@@ -41,14 +48,16 @@ def get_data_requests_relation_role(
         return RelationRoleEnum.OWNER
     return RelationRoleEnum.STANDARD
 
-def add_creator_user_id(db_client: DatabaseClient, user_email: str, dto: EntryDataRequest):
+
+def add_creator_user_id(
+    db_client: DatabaseClient, user_email: str, dto: EntryDataRequest
+):
     user_id = db_client.get_user_id(user_email)
     dto.entry_data.update({"creator_user_id": user_id})
 
+
 def create_data_request_wrapper(
-        db_client: DatabaseClient,
-        dto: EntryDataRequest,
-        access_info: AccessInfo
+    db_client: DatabaseClient, dto: EntryDataRequest, access_info: AccessInfo
 ) -> Response:
     """
     Create a data request
@@ -74,12 +83,12 @@ def create_data_request_wrapper(
         ),
         relation_role_parameters=RelationRoleParameters(
             relation_role_override=RelationRoleEnum.OWNER
-        )
+        ),
     )
 
+
 def get_data_requests_wrapper(
-    db_client: DatabaseClient,
-    access_info: AccessInfo
+    db_client: DatabaseClient, access_info: AccessInfo
 ) -> Response:
     """
     Get data requests
@@ -89,11 +98,11 @@ def get_data_requests_wrapper(
     """
 
     relation_role = get_data_requests_relation_role(
-        db_client,
-        data_request_id=None,
-        access_info=access_info
+        db_client, data_request_id=None, access_info=access_info
     )
-    formatted_data_requests = get_formatted_data_requests(access_info, db_client, relation_role)
+    formatted_data_requests = get_formatted_data_requests(
+        access_info, db_client, relation_role
+    )
     formatted_list_response = format_list_response(formatted_data_requests)
 
     return make_response(
@@ -105,14 +114,10 @@ def get_data_requests_wrapper(
 def get_formatted_data_requests(access_info, db_client, relation_role) -> list[dict]:
 
     if relation_role == RelationRoleEnum.ADMIN:
-        return get_data_requests_with_permitted_columns(
-            db_client,
-            relation_role
-        )
+        return get_data_requests_with_permitted_columns(db_client, relation_role)
     elif relation_role == RelationRoleEnum.STANDARD:
         return get_standard_and_owner_zipped_data_requests(
-            access_info.user_email,
-            db_client
+            access_info.user_email, db_client
         )
     raise ValueError(f"Invalid relation role: {relation_role}")
 
@@ -124,12 +129,12 @@ def get_standard_and_owner_zipped_data_requests(user_email, db_client):
     zipped_standard_requests = get_data_requests_with_permitted_columns(
         db_client=db_client,
         relation_role=RelationRoleEnum.STANDARD,
-        not_where_mappings=mapping
+        not_where_mappings=mapping,
     )
     zipped_owner_requests = get_data_requests_with_permitted_columns(
         db_client=db_client,
         relation_role=RelationRoleEnum.OWNER,
-        where_mappings=mapping
+        where_mappings=mapping,
     )
     # Combine these so that the owner requests are listed first
     zipped_data_requests = zipped_owner_requests + zipped_standard_requests
@@ -137,10 +142,10 @@ def get_standard_and_owner_zipped_data_requests(user_email, db_client):
 
 
 def get_data_requests_with_permitted_columns(
-        db_client,
-        relation_role,
-        where_mappings: Optional[dict] = None,
-        not_where_mappings: Optional[dict] = None
+    db_client,
+    relation_role,
+    where_mappings: Optional[dict] = None,
+    not_where_mappings: Optional[dict] = None,
 ) -> list[dict]:
 
     columns = get_permitted_columns(
@@ -152,15 +157,23 @@ def get_data_requests_with_permitted_columns(
     data_requests = db_client.get_data_requests(
         columns=columns,
         where_mappings=where_mappings,
-        not_where_mappings=not_where_mappings
+        not_where_mappings=not_where_mappings,
     )
     return data_requests
 
+def allowed_to_delete_request(access_info, data_request_id, db_client):
+    user_id = db_client.get_user_id(access_info.user_email)
+    return (
+        db_client.user_is_creator_of_data_request(
+            user_id=user_id, data_request_id=data_request_id
+        )
+        or PermissionsEnum.DB_WRITE in access_info.permissions
+    )
+
+
 
 def delete_data_request_wrapper(
-    db_client: DatabaseClient,
-    data_request_id: int,
-    access_info: AccessInfo
+    db_client: DatabaseClient, data_request_id: str, access_info: AccessInfo
 ) -> Response:
     """
     Delete data requests
@@ -168,40 +181,31 @@ def delete_data_request_wrapper(
     :param access_info:
     :return:
     """
-    check_if_allowed_to_delete_data_request(access_info, data_request_id, db_client)
-    return delete_data_request(data_request_id, db_client)
-
-
-def delete_data_request(data_request_id, db_client):
-    db_client.delete_data_request(
-        id_column_value=data_request_id)
-    return message_response(
-        "Data request deleted",
-        HTTPStatus.OK,
+    return delete_entry(
+        middleware_parameters=MiddlewareParameters(
+            db_client=db_client,
+            access_info=access_info,
+            entry_name="Data request",
+            relation=RELATION,
+            db_client_method=DatabaseClient.delete_data_request
+        ),
+        entry_id=data_request_id,
+        permission_checking_function=DeferredFunction(
+            allowed_to_delete_request,
+            access_info=access_info,
+            data_request_id=data_request_id,
+            db_client=db_client
+        )
     )
 
 
-def check_if_allowed_to_delete_data_request(access_info, data_request_id, db_client):
-    if not allowed_to_delete_request(access_info, data_request_id, db_client):
-        abort(
-            code=HTTPStatus.FORBIDDEN,
-            message="You do not have permission to delete this data request",
-        )
-
-
-def allowed_to_delete_request(access_info, data_request_id, db_client):
-    user_id = db_client.get_user_id(access_info.user_email)
-    return db_client.user_is_creator_of_data_request(
-        user_id=user_id,
-        data_request_id=data_request_id
-    ) or PermissionsEnum.DB_WRITE in access_info.permissions
 
 
 def update_data_request_wrapper(
     db_client: DatabaseClient,
     dto: EntryDataRequest,
     data_request_id: str,
-    access_info: AccessInfo
+    access_info: AccessInfo,
 ):
     """
     Update data requests
@@ -209,26 +213,28 @@ def update_data_request_wrapper(
     :param access_info:
     :return:
     """
-    relation_role = get_data_requests_relation_role(db_client, data_request_id, access_info)
-    check_has_permission_to_edit_columns(
-        db_client=db_client,
-        relation=RELATION,
-        role=relation_role,
-        columns=list(dto.entry_data.keys())
-    )
-    db_client.update_data_request(
-        column_edit_mappings=dto.entry_data,
-        entry_id=data_request_id
-    )
-    return message_response(
-        "Data request updated",
-        HTTPStatus.OK,
+    return put_entry(
+        middleware_parameters=MiddlewareParameters(
+            db_client=db_client,
+            access_info=access_info,
+            entry_name="Data request",
+            relation=RELATION,
+            db_client_method=DatabaseClient.update_data_request,
+        ),
+        entry=dto.entry_data,
+        entry_id=data_request_id,
+        relation_role_parameters=RelationRoleParameters(
+            relation_role_function_with_params=DeferredFunction(
+                function=get_data_requests_relation_role,
+                data_request_id=data_request_id,
+                db_client=db_client,
+            )
+        ),
     )
 
+
 def get_data_request_by_id_wrapper(
-    db_client: DatabaseClient,
-    access_info: AccessInfo,
-    data_request_id: str
+    db_client: DatabaseClient, access_info: AccessInfo, data_request_id: str
 ) -> Response:
     """
     Get data requests
@@ -242,13 +248,13 @@ def get_data_request_by_id_wrapper(
             relation=RELATION,
             access_info=access_info,
             db_client_method=DatabaseClient.get_data_requests,
-            entry_name="Data request"
+            entry_name="Data request",
         ),
         relation_role_parameters=RelationRoleParameters(
             relation_role_function_with_params=DeferredFunction(
                 function=get_data_requests_relation_role,
                 data_request_id=data_request_id,
-                db_client=db_client
+                db_client=db_client,
             )
         ),
         id=data_request_id,

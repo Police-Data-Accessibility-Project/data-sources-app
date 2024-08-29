@@ -10,9 +10,8 @@ from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     get_user_password_digest,
     request_reset_password_api,
-    run_and_validate_request,
 )
-from tests.helper_scripts.common_test_functions import check_response_status
+from tests.helper_scripts.common_test_functions import check_response_status, run_and_validate_request
 
 
 def test_reset_password_post(flask_client_with_db, dev_db_client, mocker):

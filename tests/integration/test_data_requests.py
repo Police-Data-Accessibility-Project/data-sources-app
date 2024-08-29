@@ -1,5 +1,6 @@
 import uuid
 from collections import namedtuple
+from dataclasses import dataclass
 from http import HTTPStatus
 
 import pytest
@@ -16,29 +17,29 @@ from tests.fixtures import (
 )
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup,
-    run_and_validate_request,
 )
-
+from tests.helper_scripts.common_test_functions import run_and_validate_request
+from tests.helper_scripts.test_dataclasses import IntegrationTestSetup
 
 GENERAL_ENDPOINT = "/api/data-requests/"
 BY_ID_ENDPOINT = GENERAL_ENDPOINT + "by-id/"
 
-TestSetup = namedtuple(
-    "TestSetup", ["flask_client", "db_client", "submission_notes", "tus"]
-)
+
+@dataclass
+class AgencyTestSetup(IntegrationTestSetup):
+    submission_notes: str = str(uuid.uuid4())
 
 
 @pytest.fixture
 def ts(flask_client_with_db, dev_db_client):
-    return TestSetup(
+    return AgencyTestSetup(
         flask_client=flask_client_with_db,
         db_client=dev_db_client,
-        submission_notes=str(uuid.uuid4().hex),
         tus=create_test_user_setup(flask_client_with_db),
     )
 
 
-def test_data_requests_get(ts: TestSetup):
+def test_data_requests_get(ts: AgencyTestSetup):
 
     data_request_id_not_creator = create_data_request(ts.db_client, ts.submission_notes)
     data_request_id_creator = create_data_request(
@@ -87,7 +88,7 @@ def create_data_request(dev_db_client, submission_notes, user_id=None):
     return data_request_id_creator
 
 
-def test_data_requests_post(ts: TestSetup):
+def test_data_requests_post(ts: AgencyTestSetup):
 
     json_data = run_and_validate_request(
         flask_client=ts.flask_client,
@@ -129,7 +130,7 @@ def test_data_requests_post(ts: TestSetup):
     )
 
 
-def test_data_requests_by_id_get(ts: TestSetup):
+def test_data_requests_by_id_get(ts: AgencyTestSetup):
     ts.db_client.add_user_permission(ts.tus.user_info.email, PermissionsEnum.DB_WRITE)
 
     data_request_id = create_data_request(ts.db_client, ts.submission_notes)
@@ -156,7 +157,7 @@ def test_data_requests_by_id_get(ts: TestSetup):
     assert len(jwt_json_data[DATA_KEY].keys()) > len(api_json_data[DATA_KEY].keys())
 
 
-def test_data_requests_by_id_put(ts: TestSetup):
+def test_data_requests_by_id_put(ts: AgencyTestSetup):
 
     data_request_id = create_data_request(
         ts.db_client, ts.submission_notes, ts.tus.user_info.user_id
@@ -197,7 +198,7 @@ def test_data_requests_by_id_put(ts: TestSetup):
     )
 
 
-def test_data_requests_by_id_delete(ts: TestSetup):
+def test_data_requests_by_id_delete(ts: AgencyTestSetup):
     ts.db_client.add_user_permission(ts.tus.user_info.email, PermissionsEnum.DB_WRITE)
 
     data_request_id = create_data_request(

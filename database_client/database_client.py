@@ -838,6 +838,12 @@ class DatabaseClient:
         table_name="data_requests",
     )
 
+    update_agency = partialmethod(
+        _update_entry_in_table,
+        table_name="agencies",
+        id_column_name="airtable_uid",
+    )
+
     @cursor_manager()
     def _create_entry_in_table(
         self,
@@ -937,6 +943,8 @@ class DatabaseClient:
         self.cursor.execute(query)
 
     delete_data_request = partialmethod(_delete_from_table, table_name="data_requests")
+
+    delete_agency = partialmethod(_delete_from_table, table_name="agencies")
 
     @cursor_manager()
     def execute_composed_sql(self, query: sql.Composed, return_results: bool = False):

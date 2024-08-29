@@ -9,10 +9,9 @@ from tests.helper_scripts.helper_functions import (
     patch_post_callback_functions,
     patch_setup_callback_session,
     create_fake_github_user_info,
-    run_and_validate_request,
 )
 from tests.helper_scripts.common_test_functions import check_response_status, assert_expected_pre_callback_response, \
-    assert_api_key_exists_for_email, assert_jwt_token_matches_user_email
+    assert_api_key_exists_for_email, assert_jwt_token_matches_user_email, run_and_validate_request
 
 
 def test_login_with_github_post(flask_client_with_db, dev_db_client, monkeypatch):

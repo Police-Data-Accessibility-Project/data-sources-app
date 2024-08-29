@@ -73,3 +73,5 @@ def message_response(message: str, status_code: HTTPStatus = HTTPStatus.OK, **kw
         dict_response,
         status_code
     )
+
+

@@ -2,7 +2,6 @@
 
 import uuid
 from collections import namedtuple
-from dataclasses import dataclass
 from typing import Optional
 from http import HTTPStatus
 from unittest.mock import MagicMock
@@ -20,6 +19,7 @@ from middleware.enums import CallbackFunctionsEnum, PermissionsEnum
 from resources.ApiKey import API_KEY_ROUTE
 from tests.helper_scripts.common_test_data import TEST_RESPONSE
 from tests.helper_scripts.common_test_functions import check_response_status
+from tests.helper_scripts.test_dataclasses import UserInfo, TestUserSetup
 
 TestTokenInsert = namedtuple("TestTokenInsert", ["id", "email", "token"])
 TestUser = namedtuple("TestUser", ["id", "email", "password_hash"])
@@ -220,13 +220,6 @@ def search_with_boolean_dictionary(
         name = result[key_to_search_on]
         if name in boolean_dictionary:
             boolean_dictionary[name] = True
-
-
-@dataclass
-class UserInfo:
-    email: str
-    password: str
-    user_id: Optional[str] = None
 
 
 def create_test_user_api(client: FlaskClient) -> UserInfo:
@@ -447,14 +440,6 @@ def create_fake_github_user_info(email: Optional[str] = None) -> GithubUserInfo:
     )
 
 
-@dataclass
-class TestUserSetup:
-    user_info: UserInfo
-    api_key: str
-    api_authorization_header: dict
-    jwt_authorization_header: Optional[dict] = None
-
-
 def create_test_user_setup(client: FlaskClient, permissions: Optional[list[PermissionsEnum]] = None) -> TestUserSetup:
     user_info = create_test_user_api(client)
     db_client = DatabaseClient()
@@ -504,17 +489,3 @@ def create_test_user_db_client(db_client: DatabaseClient) -> UserInfo:
     return UserInfo(email, password_digest, user_id)
 
 
-def run_and_validate_request(
-    flask_client: FlaskClient,
-    http_method: str,
-    endpoint: str,
-    expected_response_status: HTTPStatus = HTTPStatus.OK,
-    expected_json_content: Optional[dict] = None,
-    **request_kwargs,
-):
-    response = flask_client.open(endpoint, method=http_method, **request_kwargs)
-    check_response_status(response, expected_response_status.value)
-    if expected_json_content is not None:
-        assert response.json == expected_json_content
-
-    return response.json

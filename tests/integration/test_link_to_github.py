@@ -11,9 +11,9 @@ from tests.helper_scripts.helper_functions import (
     patch_setup_callback_session,
     create_fake_github_user_info,
     create_test_user_setup,
-    run_and_validate_request,
 )
-from tests.helper_scripts.common_test_functions import check_response_status, assert_expected_pre_callback_response
+from tests.helper_scripts.common_test_functions import check_response_status, assert_expected_pre_callback_response, \
+    run_and_validate_request
 
 
 def test_link_to_github(

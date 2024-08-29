@@ -12,10 +12,9 @@ from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     create_api_key,
     create_test_user_setup,
-    run_and_validate_request,
     search_with_boolean_dictionary,
 )
-from tests.helper_scripts.common_test_functions import check_response_status
+from tests.helper_scripts.common_test_functions import check_response_status, run_and_validate_request
 
 
 def test_data_sources_needs_identification(
