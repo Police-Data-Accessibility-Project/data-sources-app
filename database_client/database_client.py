@@ -2,7 +2,7 @@ import json
 from collections import namedtuple
 from contextlib import contextmanager
 from datetime import datetime
-from functools import wraps, partialmethod
+from functools import wraps, partial, partialmethod
 from typing import Optional, Any, List
 import uuid
 
@@ -10,6 +10,7 @@ import psycopg
 from psycopg import sql
 from psycopg.rows import dict_row, tuple_row
 
+from database_client.constants import PAGE_SIZE
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
     ExternalAccountTypeEnum,
@@ -21,7 +22,7 @@ from middleware.exceptions import (
     TokenNotFoundError,
     AccessTokenNotFoundError,
 )
-from middleware.enums import PermissionsEnum
+from middleware.enums import PermissionsEnum, Relations
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from utilities.enums import RecordCategories
 
@@ -303,20 +304,6 @@ class DatabaseClient:
         sql_query = DynamicQueryConstructor.create_new_data_source_query(data)
         self.cursor.execute(sql_query)
 
-    def update_data_source(self, data: dict, data_source_id: str) -> None:
-        """
-        Processes a request to update a data source.
-
-        :param data_source_id: The data source's ID.
-        :param data: A dictionary containing the data source details.
-        """
-        self._update_entry_in_table(
-            table_name="data_sources",
-            entry_id=data_source_id,
-            column_edit_mappings=data,
-            id_column_name="airtable_uid",
-        )
-
     MapInfo = namedtuple(
         "MapInfo",
         [
@@ -373,7 +360,6 @@ class DatabaseClient:
         :param page: The page number to pull the agencies from.
         :return: A list of agency tuples.
         """
-        offset = self.get_offset(page)
         columns = [
             "name",
             "homepage_url",
@@ -406,13 +392,13 @@ class DatabaseClient:
             columns=columns,
             where_mappings={"approved": "TRUE"},
             limit=1000,
-            offset=offset,
+            page=page,
         )
 
         return results
 
     @staticmethod
-    def get_offset(page: int) -> int:
+    def get_offset(page: int) -> Optional[int]:
         """
         Calculates the offset value for pagination based on the given page number.
         Args:
@@ -423,7 +409,9 @@ class DatabaseClient:
             >>> get_offset(3)
             2000
         """
-        return (page - 1) * 1000
+        if page is None:
+            return None
+        return (page - 1) * PAGE_SIZE
 
     ArchiveInfo = namedtuple(
         "ArchiveInfo",
@@ -483,8 +471,8 @@ class DatabaseClient:
         :param broken_as_of: The date when the source was identified as broken.
         """
         self.update_data_source(
-            data_source_id=id,
-            data={
+            entry_id=id,
+            column_edit_mappings={
                 "url_status": "broken",
                 "broken_source_url_as_of": broken_as_of,
             },
@@ -841,6 +829,21 @@ class DatabaseClient:
         )
         self.cursor.execute(query)
 
+    update_data_source = partialmethod(
+        _update_entry_in_table, table_name="data_sources", id_column_name="airtable_uid"
+    )
+
+    update_data_request = partialmethod(
+        _update_entry_in_table,
+        table_name="data_requests",
+    )
+
+    update_agency = partialmethod(
+        _update_entry_in_table,
+        table_name="agencies",
+        id_column_name="airtable_uid",
+    )
+
     @cursor_manager()
     def _create_entry_in_table(
         self,
@@ -863,6 +866,14 @@ class DatabaseClient:
 
     create_search_cache_entry = partialmethod(_create_entry_in_table, table_name="agency_url_search_cache")
 
+    create_data_request = partialmethod(
+        _create_entry_in_table, table_name="data_requests", column_to_return="id"
+    )
+
+    create_agency = partialmethod(
+        _create_entry_in_table, table_name="agencies", column_to_return="airtable_uid"
+    )
+
     @cursor_manager()
     def _select_from_single_relation(
         self,
@@ -870,12 +881,13 @@ class DatabaseClient:
         columns: List[str],
         where_mappings: Optional[dict] = None,
         not_where_mappings: Optional[dict] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        limit: Optional[int] = PAGE_SIZE,
+        page: Optional[int] = None,
     ):
         """
         Selects a single relation from the database
         """
+        offset = self.get_offset(page)
         query = DynamicQueryConstructor.create_single_relation_selection_query(
             relation_name, columns, where_mappings, not_where_mappings, limit, offset
         )
@@ -883,25 +895,11 @@ class DatabaseClient:
         results = self.cursor.fetchall()
         return results
 
-    def create_data_request(self, data_request_info: dict) -> str:
-        return self._create_entry_in_table(
-            table_name="data_requests",
-            column_value_mappings=data_request_info,
-            column_to_return="id",
-        )
+    get_data_requests = partialmethod(
+        _select_from_single_relation, relation_name=Relations.DATA_REQUESTS.value
+    )
 
-    def get_data_requests(
-        self,
-        columns: List[str],
-        where_mappings: Optional[dict] = None,
-        not_where_mappings: Optional[dict] = None,
-    ) -> List[tuple]:
-        return self._select_from_single_relation(
-            relation_name="data_requests",
-            columns=columns,
-            where_mappings=where_mappings,
-            not_where_mappings=not_where_mappings,
-        )
+    get_agencies = partialmethod(_select_from_single_relation, relation_name=Relations.AGENCIES.value)
 
     def get_data_requests_for_creator(
         self, creator_user_id: str, columns: List[str]
@@ -921,18 +919,6 @@ class DatabaseClient:
             where_mappings={"creator_user_id": user_id, "id": data_request_id},
         )
         return len(results) == 1
-
-    def delete_data_request(self, data_request_id: str):
-        self._delete_from_table(
-            table_name="data_requests", id_column_value=data_request_id
-        )
-
-    def update_data_request(self, column_edit_mappings: dict, data_request_id: str):
-        self._update_entry_in_table(
-            table_name="data_requests",
-            entry_id=data_request_id,
-            column_edit_mappings=column_edit_mappings,
-        )
 
     @cursor_manager()
     def _delete_from_table(
@@ -955,6 +941,10 @@ class DatabaseClient:
             id_column_value=sql.Literal(id_column_value),
         )
         self.cursor.execute(query)
+
+    delete_data_request = partialmethod(_delete_from_table, table_name="data_requests")
+
+    delete_agency = partialmethod(_delete_from_table, table_name="agencies")
 
     @cursor_manager()
     def execute_composed_sql(self, query: sql.Composed, return_results: bool = False):

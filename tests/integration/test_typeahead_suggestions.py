@@ -1,10 +1,9 @@
 from http import HTTPStatus
 
 from tests.helper_scripts.helper_functions import (
-    check_response_status,
     setup_get_typeahead_suggestion_test_data,
-    run_and_validate_request,
 )
+from tests.helper_scripts.common_test_functions import check_response_status, run_and_validate_request
 from tests.fixtures import flask_client_with_db, dev_db_connection
 
 

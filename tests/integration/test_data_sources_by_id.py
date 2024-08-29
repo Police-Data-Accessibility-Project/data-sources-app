@@ -16,11 +16,10 @@ from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     create_api_key,
     give_user_admin_role,
-    check_response_status,
     create_test_user_setup,
     create_test_user_setup_db_client,
-    run_and_validate_request,
 )
+from tests.helper_scripts.common_test_functions import check_response_status, run_and_validate_request
 
 
 def test_data_sources_by_id_get(

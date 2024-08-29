@@ -23,6 +23,7 @@ from resources.resource_helpers import (
     create_variable_columns_model,
     create_outer_model,
     add_jwt_or_api_key_header_arg,
+    create_id_and_message_model,
 )
 from utilities.namespace import create_namespace, AppNamespaces
 from utilities.populate_dto_with_request_content import (
@@ -57,6 +58,8 @@ create_data_request_result = namespace_data_requests.model(
         ),
     },
 )
+
+id_and_message_model = create_id_and_message_model(namespace_data_requests)
 
 authorization_parser = namespace_data_requests.parser()
 add_jwt_or_api_key_header_arg(authorization_parser)
@@ -109,7 +112,7 @@ Columns returned are determinant upon the user's access level and/or relation to
         allowed_access_methods=[AccessTypeEnum.JWT],
     )
     @namespace_data_requests.expect(authorization_parser, entry_data_model)
-    @namespace_data_requests.response(HTTPStatus.OK, "Success; Data request updated")
+    @namespace_data_requests.response(HTTPStatus.OK, "Success; Data request updated", id_and_message_model)
     @namespace_data_requests.response(
         HTTPStatus.INTERNAL_SERVER_ERROR, "Internal server error"
     )
@@ -203,7 +206,7 @@ class DataRequests(PsycopgResource):
     @namespace_data_requests.response(
         code=HTTPStatus.OK,
         description="Success; Data request created",
-        model=create_data_request_result
+        model=create_data_request_result,
     )
     @namespace_data_requests.response(
         HTTPStatus.INTERNAL_SERVER_ERROR, "Internal server error"

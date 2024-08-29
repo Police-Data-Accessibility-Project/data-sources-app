@@ -227,7 +227,7 @@ def test_update_data_source(live_database_client):
     # Update the data source with the DatabaseClient method
     new_description = uuid.uuid4().hex
     live_database_client.update_data_source(
-        {"description": new_description}, "SOURCE_UID_1"
+        column_edit_mappings={"description": new_description}, entry_id="SOURCE_UID_1"
     )
 
     # Fetch the data source from the database to confirm the change
@@ -263,7 +263,7 @@ def test_get_agencies_from_page(live_database_client):
 def test_get_offset():
     # Send a page number to the DatabaseClient method
     # Confirm that the correct offset is returned
-    assert DatabaseClient.get_offset(3) == 2000
+    assert DatabaseClient.get_offset(page=3) == 200
 
 
 def test_get_data_sources_to_archive(live_database_client):
@@ -567,7 +567,7 @@ def test_create_data_request(live_database_client):
     submission_notes = uuid.uuid4().hex
 
     data_request_id = live_database_client.create_data_request(
-        data_request_info={"submission_notes": submission_notes}
+        column_value_mappings={"submission_notes": submission_notes}
     )
 
     results = live_database_client._select_from_single_relation(
@@ -586,7 +586,7 @@ def test_get_data_requests_for_creator(live_database_client):
 
     for submission_notes in submission_notes_list:
         live_database_client.create_data_request(
-            data_request_info={
+            column_value_mappings={
                 "submission_notes": submission_notes,
                 "creator_user_id": test_user.user_id,
             }
@@ -607,7 +607,7 @@ def test_user_is_creator_of_data_request(live_database_client):
 
     # Test with entry where user is listed as creator
     data_request_id = live_database_client.create_data_request(
-        data_request_info={
+        column_value_mappings={
             "submission_notes": submission_notes,
             "creator_user_id": test_user.user_id,
         }
@@ -620,7 +620,7 @@ def test_user_is_creator_of_data_request(live_database_client):
 
     # Test with entry where user is not listed as creator
     data_request_id = live_database_client.create_data_request(
-        data_request_info={"submission_notes": submission_notes}
+        column_value_mappings={"submission_notes": submission_notes}
     )
 
     results = live_database_client.user_is_creator_of_data_request(
@@ -636,13 +636,13 @@ def test_get_data_requests(live_database_client):
     submission_notes_2 = uuid.uuid4().hex
 
     data_request_id_1 = live_database_client.create_data_request(
-        data_request_info={
+        column_value_mappings={
             "submission_notes": submission_notes_1,
             "submitter_email": submitter_email,
         }
     )
     data_request_id_2 = live_database_client.create_data_request(
-        data_request_info={
+        column_value_mappings={
             "submission_notes": submission_notes_2,
             "submitter_email": submitter_email,
         }
@@ -671,14 +671,15 @@ def test_get_data_requests(live_database_client):
 def test_delete_data_request(live_database_client):
     submission_notes = uuid.uuid4().hex
     data_request_id = live_database_client.create_data_request(
-        data_request_info={"submission_notes": submission_notes}
+        column_value_mappings={"submission_notes": submission_notes}
     )
 
     results = live_database_client.get_data_requests(
         columns=["submission_notes"], where_mappings={"id": data_request_id}
     )
     assert len(results) == 1
-    live_database_client.delete_data_request(data_request_id)
+    live_database_client.delete_data_request(
+        id_column_value=data_request_id)
     results = live_database_client.get_data_requests(
         columns=["submission_notes"], where_mappings={"id": data_request_id}
     )
@@ -689,7 +690,7 @@ def test_update_data_request(live_database_client):
     submission_notes = uuid.uuid4().hex
 
     data_request_id = live_database_client.create_data_request(
-        data_request_info={"submission_notes": submission_notes}
+        column_value_mappings={"submission_notes": submission_notes}
     )
 
     results = live_database_client.get_data_requests(
@@ -700,11 +701,9 @@ def test_update_data_request(live_database_client):
     new_submission_notes = uuid.uuid4().hex
     live_database_client.update_data_request(
         column_edit_mappings={"submission_notes": new_submission_notes},
-        data_request_id=data_request_id,
+        entry_id=data_request_id
     )
-    results = live_database_client.get_data_requests(
-        columns=["submission_notes"], where_mappings={"id": data_request_id}
-    )
+    results = live_database_client.get_data_requests(columns=["submission_notes"], where_mappings={"id": data_request_id})
     assert len(results) == 1
     assert results[0]["submission_notes"] == new_submission_notes
 

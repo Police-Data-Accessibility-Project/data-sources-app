@@ -43,6 +43,7 @@ class Relations(Enum):
     A list of valid relations for the database
     """
     DATA_REQUESTS = "data_requests"
+    AGENCIES = "agencies"
 
 class Jurisdiction(Enum):
     """
