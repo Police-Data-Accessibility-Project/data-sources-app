@@ -73,5 +73,5 @@ def get_engine() -> SQLAlchemyEngine:
     do_database_url = get_env_variable("DO_DATABASE_URL")
     do_database_url = "postgresql+psycopg" + do_database_url[10:]
 
-    engine = create_engine(do_database_url)
+    engine = create_engine(do_database_url, echo=True)
     return engine

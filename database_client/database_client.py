@@ -26,7 +26,8 @@ from middleware.exceptions import (
 
 from middleware.models import User, ExternalAccount
 from middleware.enums import PermissionsEnum
-from middleware.initialize_psycopg_connection import initialize_psycopg_connection, get_engine
+from middleware.initialize_psycopg_connection import initialize_psycopg_connection
+from middleware.initialize_sqlalchemy_session import initialize_sqlalchemy_session
 from utilities.enums import RecordCategories
 
 DATA_SOURCES_MAP_COLUMN = [
@@ -80,10 +81,8 @@ class DatabaseClient:
 
     def __init__(self):
         self.connection = initialize_psycopg_connection()
-        self.engine = get_engine()
-        self.Session = sessionmaker(bind=self.engine)
+        self.session = initialize_sqlalchemy_session()
         self.cursor = None
-        self.session = None
 
     def cursor_manager(row_factory=dict_row):
         """Decorator method for managing a cursor object.
@@ -117,7 +116,7 @@ class DatabaseClient:
     def session_manager(method):
         @wraps(method)
         def wrapper(self, *args, **kwargs):
-            self.session = self.Session()
+            #self.session = self.Session()
             try:
                 result = method(self, *args, **kwargs)
                 self.session.commit()
@@ -125,13 +124,12 @@ class DatabaseClient:
             except Exception as e:
                 self.session.rollback()
                 raise e
-            finally:
+            '''finally:
                 self.session.close()
-                self.session = None
+                self.session = None'''
 
         return wrapper
         
-
 
     @cursor_manager()
     def execute_raw_sql(
@@ -152,7 +150,14 @@ class DatabaseClient:
         if len(results) == 0:
             return None
         return results
+    
+    @session_manager
+    def execute_sqlalchemy(self, query):
+        results = self.session.execute(query())
+        print(results)
+        return results
 
+    @session_manager
     def add_new_user(self, email: str, password_digest: str) -> Optional[int]:
         """
         Adds a new user to the database.
@@ -160,11 +165,13 @@ class DatabaseClient:
         :param password_digest:
         :return:
         """
-        return self._create_entry_in_table(
+        '''return self._create_entry_in_table(
             table_name="users",
             column_value_mappings={"email": email, "password_digest": password_digest},
             column_to_return="id",
-        )
+        )'''
+        user = User(email=email, password_digest=password_digest)
+        self.session.add(user)
 
     def get_user_id(self, email: str) -> Optional[int]:
         """

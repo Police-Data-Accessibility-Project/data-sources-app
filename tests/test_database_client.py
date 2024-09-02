@@ -7,6 +7,7 @@ from datetime import datetime, timezone, timedelta
 
 import psycopg.errors
 import pytest
+from sqlalchemy import update, select
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import (
@@ -364,21 +365,29 @@ def test_get_user_info(live_database_client):
         live_database_client.get_user_info(email="invalid_email")
 
 
-def test_get_user_by_api_key(live_database_client):
+def test_get_user_by_api_key(live_database_client: DatabaseClient):
     # Add a new user to the database
     test_email = uuid.uuid4().hex
     test_api_key = uuid.uuid4().hex
 
+    user_id = live_database_client.add_new_user(
+        email=test_email,
+        password_digest="test_password",
+    )
     # Add a role to the user
-    live_database_client.session.execute(
+    '''live_database_client.session.execute(
         update(User).where(User.email == "test_user").values(role="test_role")
+    )'''
+    live_database_client.execute_sqlalchemy(lambda: update(User).where(User.email == "test_user").values(api_key=test_api_key)
     )
 
-    # Fetch the user using its email with the DatabaseClient method
-    role_info = live_database_client.get_role_by_email(email="test_user")
+    # Fetch the user's info using its api key with the DatabaseClient method
+    #user_identifiers = live_database_client.get_user_by_api_key(api_key=test_api_key)
+    results = live_database_client.execute_sqlalchemy(lambda: select(User.id).where(User.api_key == test_api_key)).one_or_none()
+    print(results)
 
-    # Confirm the role is retrieved successfully
-    assert role_info.role == "test_role"
+    # Confirm the user_id is retrieved successfully
+    assert results == user_id
 
 
 def test_get_role_by_api_key(live_database_client):
