@@ -1,37 +1,19 @@
-"""
-This module aims to reduce the amount of boilerplate code
-with retrieving requests and populating Data Transfer Objects (DTO)s
-By dynamically populating an DTO with data from the request,
-    based on the attributes defined in the DTO
-"""
-from dataclasses import dataclass
-from typing import Any, Callable, Optional, TypeVar, Type
+from typing import Type, Optional, Callable, Any
 
-from flask import request
-from enum import Enum
-
-T = TypeVar("T")
-
-
-class SourceMappingEnum(Enum):
-    ARGS = "args"
-    FORM = "form"
-    JSON = "json"
-
-@dataclass
-class DTOPopulateParameters:
-    dto_class: Type[T]
-    source: Optional[SourceMappingEnum] = None
-    transformation_functions: Optional[dict[str, Callable]] = None
-    attribute_source_mapping: Optional[dict[str, SourceMappingEnum]] = None
+from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments, check_for_either_or_argument
+from middleware.schema_and_dto_logic.custom_exceptions import AttributeNotInClassError
+from middleware.schema_and_dto_logic.custom_types import DTOTypes, ValidationSchema
+from middleware.schema_and_dto_logic.util import _get_source_getting_function
+from utilities.enums import SourceMappingEnum
 
 
 def populate_dto_with_request_content(
-    dto_class: Type[T],
+    dto_class: Type[DTOTypes],
     transformation_functions: Optional[dict[str, Callable]] = None,
     source: SourceMappingEnum = None,
     attribute_source_mapping: Optional[dict[str, SourceMappingEnum]] = None,
-) -> T:
+    validation_schema: Optional[ValidationSchema] = None,
+) -> DTOTypes:
     """
     Populate dto with data from the request
     Will call `request.args.get` for each attribute
@@ -40,19 +22,15 @@ def populate_dto_with_request_content(
     :source: Mutually exclusive with source_attribute_mapping; used to designate the getter for all request attributes
     :source_attribute_mapping: Mutually exclusive with source; used to map specific attributes to different request getters
     :transformation_functions: A dictionary whose key-value pairs are the attributes to apply a transformation function to, and the transformation function
+    :validation_schema: A schema used to validate the input is in the expected form.
     :return: The instantiated object populated with data from the request
     """
     # Instantiate object
-    if source is not None and attribute_source_mapping is not None:
-        raise MutuallyExclusiveArgumentError("source", "attribute_source_mapping")
-    if source is not None:
-        values = _get_class_attribute_values_from_request(dto_class, source)
-    elif attribute_source_mapping is not None:
-        values = _get_class_attribute_values_from_request_source_mapping(
-            dto_class, attribute_source_mapping
-        )
-    else:
-        raise MissingRequiredArgumentError("source", "attribute_source_mapping")
+    check_for_mutually_exclusive_arguments(source, attribute_source_mapping)
+    check_for_either_or_argument(source, attribute_source_mapping)
+
+    values = _get_values(attribute_source_mapping, dto_class, source)
+    _optionally_check_against_schema(validation_schema, values)
 
     instantiated_object = dto_class(**values)
     _apply_transformation_functions(instantiated_object, transformation_functions)
@@ -60,30 +38,23 @@ def populate_dto_with_request_content(
     return instantiated_object
 
 
-class AttributeNotInClassError(Exception):
+def _optionally_check_against_schema(validation_schema, values):
+    if validation_schema is not None:
+        validation_schema().load(values)
 
-    def __init__(self, attribute: str, class_name: str):
-        super().__init__(
-            f"The attribute '{attribute}' is not part of the class '{class_name}'"
+
+def _get_values(attribute_source_mapping, dto_class, source):
+    if source is not None:
+        values = _get_class_attribute_values_from_request(dto_class, source)
+    elif attribute_source_mapping is not None:
+        values = _get_class_attribute_values_from_request_source_mapping(
+            dto_class, attribute_source_mapping
         )
-
-
-class MutuallyExclusiveArgumentError(ValueError):
-    """Raised when mutually exclusive arguments are passed to a function."""
-
-    def __init__(self, arg1, arg2):
-        super().__init__(f"Arguments '{arg1}' and '{arg2}' cannot be used together.")
-
-
-class MissingRequiredArgumentError(ValueError):
-    """Raised when neither of the required mutually exclusive arguments are passed to a function."""
-
-    def __init__(self, arg1, arg2):
-        super().__init__(f"One of '{arg1}' or '{arg2}' must be provided.")
+    return values
 
 
 def _apply_transformation_functions(
-    instantiated_object: T,
+    instantiated_object: DTOTypes,
     transformation_functions: Optional[dict[str, Callable]] = None,
 ) -> None:
     """
@@ -107,19 +78,8 @@ def _apply_transformation_functions(
         setattr(instantiated_object, attribute, value)
 
 
-def _get_source_getting_function(source: SourceMappingEnum) -> Callable:
-    source_mapping: dict[SourceMappingEnum, Callable] = {
-        SourceMappingEnum.ARGS: request.args.get,
-        SourceMappingEnum.FORM: request.form.get,
-        SourceMappingEnum.JSON: lambda key: (
-            request.json.get(key) if request.json else None
-        ),
-    }
-    return source_mapping[source]
-
-
 def _get_class_attribute_values_from_request(
-    object_class: Type[T], source: SourceMappingEnum = SourceMappingEnum.ARGS
+    object_class: Type[DTOTypes], source: SourceMappingEnum = SourceMappingEnum.QUERY_ARGS
 ) -> dict[str, Any]:
     """
     Apply getter on all defined class attributes, returning a list of values
@@ -135,7 +95,7 @@ def _get_class_attribute_values_from_request(
 
 
 def _get_class_attribute_values_from_request_source_mapping(
-    object_class: Type[T], source_mapping: dict[str, SourceMappingEnum]
+    object_class: Type[DTOTypes], source_mapping: dict[str, SourceMappingEnum]
 ) -> dict[str, Any]:
     """
     Apply multiple getters on all defined class attributes,

@@ -1,16 +1,23 @@
 from dataclasses import dataclass
 
+from marshmallow import Schema, fields
 from werkzeug.security import generate_password_hash
 from typing import Dict
 
 from database_client.database_client import DatabaseClient
 from middleware.exceptions import UserNotFoundError
+from utilities.enums import SourceMappingEnum
 
+
+class UserRequestSchema(Schema):
+    email = fields.Str(required=True, description="The email of the user", source=SourceMappingEnum.JSON)
+    password = fields.Str(required=True, description="The password of the user", source=SourceMappingEnum.JSON)
 
 @dataclass
 class UserRequest:
     email: str
     password: str
+
 
 
 def user_check_email(db_client: DatabaseClient, email: str) -> None:

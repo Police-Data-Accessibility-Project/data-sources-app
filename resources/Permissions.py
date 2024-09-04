@@ -1,55 +1,34 @@
 from http import HTTPStatus
 
 from flask import Response, request
-from flask_jwt_extended import jwt_required
-from flask_restx import fields
 
-from middleware.decorators import api_key_required, permissions_required
-from middleware.enums import PermissionsEnum, PermissionsActionEnum
-from middleware.permissions_logic import (
+from middleware.decorators import permissions_required
+from middleware.enums import PermissionsEnum
+from middleware.primary_resource_logic.permissions_logic import (
     manage_user_permissions,
     update_permissions_wrapper,
     PermissionsRequest,
+    PermissionsRequestSchema,
 )
-from middleware.security import check_permissions
 from resources.PsycopgResource import handle_exceptions, PsycopgResource
-from resources.resource_helpers import add_api_key_header_arg, add_jwt_header_arg
+from resources.resource_helpers import add_jwt_header_arg
 from utilities.namespace import AppNamespaces, create_namespace
-from utilities.populate_dto_with_request_content import (
-    populate_dto_with_request_content,
-    SourceMappingEnum,
-    DTOPopulateParameters,
-)
+from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
+
+    get_restx_param_documentation, )
+from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 
 namespace_permissions = create_namespace(namespace_attributes=AppNamespaces.AUTH)
 
-allowable_permissions_str = "Allowable permissions include: \n  * " + "\n  * ".join(
-    PermissionsEnum.values()
-)
-allowable_actions_str = "Allowable actions include: \n  * " + "\n  * ".join(
-    PermissionsActionEnum.values()
-)
-permission_model = namespace_permissions.model(
-    "Permission",
-    {
-        "permission": fields.String(
-            description=f"The permission to add or remove.\n {allowable_permissions_str}"
-        ),
-        "action": fields.String(
-            description=f"The action to perform.\n {allowable_actions_str} ",
-        ),
-    },
+doc_info = get_restx_param_documentation(
+    namespace=namespace_permissions,
+    schema_class=PermissionsRequestSchema,
+    model_name="PermissionRequest",
 )
 
-all_routes_parser = namespace_permissions.parser()
+permission_model = doc_info.model
+all_routes_parser = doc_info.parser
 add_jwt_header_arg(all_routes_parser)
-all_routes_parser.add_argument(
-    "user_email",
-    type=str,
-    location="query",
-    required=True,
-    help="The user for which to retrieve permissions.",
-)
 
 
 @namespace_permissions.route("/permissions")
@@ -102,12 +81,8 @@ class Permissions(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=update_permissions_wrapper,
-            dto_populate_parameters=DTOPopulateParameters(
+            schema_populate_parameters=SchemaPopulateParameters(
+                schema_class=PermissionsRequestSchema,
                 dto_class=PermissionsRequest,
-                attribute_source_mapping={
-                    "user_email": SourceMappingEnum.ARGS,
-                    "permission": SourceMappingEnum.JSON,
-                    "action": SourceMappingEnum.JSON,
-                },
-            ),
+            )
         )

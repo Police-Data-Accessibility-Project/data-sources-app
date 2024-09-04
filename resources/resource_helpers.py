@@ -40,17 +40,6 @@ def add_jwt_or_api_key_header_arg(parser: RequestParser):
     )
 
 
-def create_user_model(namespace: Namespace) -> Model:
-    return namespace.model(
-        "User",
-        {
-            "email": fields.String(required=True, description="The email of the user"),
-            "password": fields.String(
-                required=True, description="The password of the user"
-            ),
-        },
-    )
-
 def create_id_and_message_model(namespace: Namespace) -> Model:
     return namespace.model(
         "IdAndMessage",
@@ -81,17 +70,6 @@ def create_variable_columns_model(namespace: Namespace, name_snake_case: str) ->
             "column_etc": fields.String("And so on..."),
         },
     )
-
-
-def create_entry_data_model(namespace: Namespace) -> Model:
-    inner_model = create_variable_columns_model(namespace, "entry_data_inner")
-    outer_model = namespace.model(
-        name="EntryDataOuter",
-        model={
-            "entry_data": fields.Nested(inner_model),
-        }
-    )
-    return outer_model
 
 def create_response_dictionary(success_message: str, success_model: Model = None) -> dict:
     success_msg = "Success. " + success_message

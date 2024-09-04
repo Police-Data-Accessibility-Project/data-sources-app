@@ -40,20 +40,27 @@ MOCK_EMAIL_PASSWORD = {
     "endpoint, http_method, route_to_patch, json_data",
     (
         (
-            "/data-sources-by-id/test_id",
+            "/data-sources/id/test_id",
             "GET",
             "DataSources.data_source_by_id_wrapper",
             {},
         ),
         (
-            "/data-sources-by-id/test_id",
+            "/data-sources/id/test_id",
             "PUT",
             "DataSources.update_data_source_wrapper",
+            {"entry_data": {}},
+        ),
+        (
+            "/data-sources/id/test_id",
+            "DELETE",
+            "DataSources.delete_data_source_wrapper",
             {},
         ),
-        ("/data-sources", "POST", "DataSources.add_new_data_source_wrapper", {}),
+        ("/data-sources/", "POST", "DataSources.add_new_data_source_wrapper", {"entry_data": {}}),
+        ("/data-sources/page/1", "GET", "DataSources.get_data_sources_wrapper", {}),
         (
-            "/data-sources-map",
+            "/data-sources/data-sources-map",
             "GET",
             "DataSources.get_data_sources_for_map_wrapper",
             {},
@@ -91,6 +98,7 @@ MOCK_EMAIL_PASSWORD = {
             "POST",
             "ResetPassword.reset_password",
             {
+                "email": "test_email",
                 "token": "test_token",
                 "password": "test_password",
             },

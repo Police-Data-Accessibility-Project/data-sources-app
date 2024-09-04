@@ -11,6 +11,7 @@ from psycopg import sql
 from psycopg.rows import dict_row, tuple_row
 
 from database_client.constants import PAGE_SIZE
+from database_client.db_client_dataclasses import OrderByParameters
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
     ExternalAccountTypeEnum,
@@ -248,21 +249,7 @@ class DatabaseClient:
             column_edit_mappings={"api_key": api_key},
         )
 
-    @cursor_manager(row_factory=tuple_row)
-    def get_data_source_by_id(self, data_source_id: str) -> Optional[tuple[Any, ...]]:
-        """
-        Get a data source by its ID, including related agency information from the database.
-        :param data_source_id: The unique identifier for the data source.
-        :return: A dictionary containing the data source and its related agency details. None if not found.
-        """
-        sql_query = DynamicQueryConstructor.build_data_source_by_id_results_query()
-        self.cursor.execute(
-            sql_query,
-            (data_source_id,),
-        )
-        result = self.cursor.fetchone()
-        # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
-        return result
+
 
     @cursor_manager(row_factory=tuple_row)
     def get_approved_data_sources(self) -> list[tuple[Any, ...]]:
@@ -280,29 +267,7 @@ class DatabaseClient:
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return results
 
-    @cursor_manager()
-    def get_needs_identification_data_sources(self) -> list[tuple[Any, ...]]:
-        """
-        Returns a list of data sources that need identification from the database.
 
-        :param columns: List of column names to use in the SELECT statement.
-        :return: A list of tuples, each containing details of a data source.
-        """
-        sql_query = (
-            DynamicQueryConstructor.build_needs_identification_data_source_query()
-        )
-        self.cursor.execute(sql_query)
-        return self.cursor.fetchall()
-
-    @cursor_manager()
-    def add_new_data_source(self, data: dict) -> None:
-        """
-        Processes a request to add a new data source.
-
-        :param data: A dictionary containing the updated data source details.
-        """
-        sql_query = DynamicQueryConstructor.create_new_data_source_query(data)
-        self.cursor.execute(sql_query)
 
     MapInfo = namedtuple(
         "MapInfo",
@@ -402,7 +367,7 @@ class DatabaseClient:
         """
         Calculates the offset value for pagination based on the given page number.
         Args:
-            page (int): The page number for which the offset is to be calculated.
+            page (int): The page number for which the offset is to be calculated. Starts at 0.
         Returns:
             int: The calculated offset value.
         Example:
@@ -850,7 +815,7 @@ class DatabaseClient:
         table_name: str,
         column_value_mappings: dict[str, str],
         column_to_return: Optional[str] = None,
-    ):
+    ) -> Optional[Any]:
         """
         Creates a new entry in a table in the database, using the provided column value mappings
 
@@ -863,6 +828,7 @@ class DatabaseClient:
         self.cursor.execute(query)
         if column_to_return is not None:
             return self.cursor.fetchone()[column_to_return]
+        return None
 
     create_search_cache_entry = partialmethod(_create_entry_in_table, table_name="agency_url_search_cache")
 
@@ -874,6 +840,9 @@ class DatabaseClient:
         _create_entry_in_table, table_name="agencies", column_to_return="airtable_uid"
     )
 
+    add_new_data_source = partialmethod(_create_entry_in_table, table_name="data_sources", column_to_return="airtable_uid")
+
+
     @cursor_manager()
     def _select_from_single_relation(
         self,
@@ -883,13 +852,14 @@ class DatabaseClient:
         not_where_mappings: Optional[dict] = None,
         limit: Optional[int] = PAGE_SIZE,
         page: Optional[int] = None,
+        order_by: Optional[OrderByParameters] = None,
     ):
         """
         Selects a single relation from the database
         """
         offset = self.get_offset(page)
         query = DynamicQueryConstructor.create_single_relation_selection_query(
-            relation_name, columns, where_mappings, not_where_mappings, limit, offset
+            relation_name, columns, where_mappings, not_where_mappings, limit, offset, order_by
         )
         self.cursor.execute(query)
         results = self.cursor.fetchall()
@@ -900,6 +870,8 @@ class DatabaseClient:
     )
 
     get_agencies = partialmethod(_select_from_single_relation, relation_name=Relations.AGENCIES.value)
+
+    get_data_sources = partialmethod(_select_from_single_relation, relation_name=Relations.DATA_SOURCES.value)
 
     def get_data_requests_for_creator(
         self, creator_user_id: str, columns: List[str]
@@ -945,6 +917,8 @@ class DatabaseClient:
     delete_data_request = partialmethod(_delete_from_table, table_name="data_requests")
 
     delete_agency = partialmethod(_delete_from_table, table_name="agencies")
+
+    delete_data_source = partialmethod(_delete_from_table, table_name="data_sources")
 
     @cursor_manager()
     def execute_composed_sql(self, query: sql.Composed, return_results: bool = False):

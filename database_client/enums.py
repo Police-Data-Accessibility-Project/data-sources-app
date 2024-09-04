@@ -23,3 +23,19 @@ class ColumnPermissionEnum(Enum):
 
 class ExternalAccountTypeEnum(Enum):
     GITHUB = "github"
+
+class SortOrder(Enum):
+    """
+    Designates the order in which sorted results should be returned
+    """
+    ASCENDING = "ASC"
+    DESCENDING = "DESC"
+
+class ApprovalStatus(Enum):
+    """
+    Correlates to approval status in the `data_sources` column in the database
+    """
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    PENDING = "pending"
+    NEEDS_IDENTIFICATION = "needs identification"

@@ -1,8 +1,8 @@
-from flask import request, Response
+from flask import Response
 from flask_jwt_extended import jwt_required
 from flask_restx import fields
 
-from middleware.login_queries import (
+from middleware.primary_resource_logic.login_queries import (
     refresh_session,
 )
 from resources.resource_helpers import add_jwt_header_arg

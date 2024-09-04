@@ -1,12 +1,12 @@
 from http import HTTPStatus
 from unittest.mock import MagicMock, patch, call
 
-from middleware.homepage_search_cache import (
+from middleware.primary_resource_logic.homepage_search_cache import (
     get_agencies_without_homepage_urls,
     update_search_cache,
 )
 
-PATCH_ROOT = "middleware.homepage_search_cache"
+PATCH_ROOT = "middleware.primary_resource_logic.homepage_search_cache"
 
 
 @patch(f"{PATCH_ROOT}.format_list_response")

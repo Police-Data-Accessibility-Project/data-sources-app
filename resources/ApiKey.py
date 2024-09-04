@@ -1,16 +1,14 @@
-from flask import request, Response
+from flask import Response
 from flask_restx import fields
 
-from middleware.login_queries import get_api_key_for_user
-from middleware.user_queries import UserRequest
-from resources.resource_helpers import create_user_model
+from middleware.primary_resource_logic.login_queries import get_api_key_for_user
+from middleware.primary_resource_logic.user_queries import UserRequest
+from middleware.schema_and_dto_logic.model_helpers_with_schemas import create_user_model
 from utilities.namespace import create_namespace, AppNamespaces
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
-from utilities.populate_dto_with_request_content import (
-    populate_dto_with_request_content,
-    SourceMappingEnum, DTOPopulateParameters,
-)
+from utilities.enums import SourceMappingEnum
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import DTOPopulateParameters
 
 namespace_api_key = create_namespace(namespace_attributes=AppNamespaces.AUTH)
 

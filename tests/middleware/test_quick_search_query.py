@@ -6,7 +6,7 @@ from datetime import datetime
 import psycopg
 import pytest
 
-from middleware.quick_search_query import (
+from middleware.primary_resource_logic.quick_search_query import (
     quick_search_query,
     quick_search_query_wrapper,
     process_data_source_matches,
@@ -18,6 +18,7 @@ from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 from tests.fixtures import connection_with_test_data, dev_db_connection
 
+PATCH_ROOT = "middleware.primary_resource_logic.quick_search_query"
 
 class QuickSearchQueryMocks(DynamicMagicMock):
     process_search_parameters: MagicMock
@@ -30,7 +31,7 @@ def test_quick_search_query_logging(
 ) -> None:
 
     mock = QuickSearchQueryMocks(
-        patch_root="middleware.quick_search_query",
+        patch_root=PATCH_ROOT,
         return_values={
             "process_data_source_matches": DataSourceMatches(
                 converted=[MagicMock(), MagicMock()], ids=[1, 2]
@@ -70,7 +71,7 @@ class QuickSearchQueryWrapperMocks(DynamicMagicMock):
 @pytest.fixture
 def mock_quick_search_query_wrapper(monkeypatch):
     mock = QuickSearchQueryWrapperMocks(
-        patch_root="middleware.quick_search_query",
+        patch_root=PATCH_ROOT,
     )
     return mock
 

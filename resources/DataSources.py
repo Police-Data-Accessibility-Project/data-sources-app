@@ -1,47 +1,49 @@
-from flask import request, Response
-from flask_jwt_extended import jwt_required
-from flask_restx import fields
+from flask import Response
 
-from middleware.decorators import api_key_required, permissions_required
-from middleware.data_source_queries import (
-    get_approved_data_sources_wrapper,
+from middleware.access_logic import AccessInfo
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+    EntryDataRequestDTO,
+    EntryDataRequestSchema,
+)
+from middleware.decorators import (
+    api_key_required,
+    authentication_required,
+)
+from middleware.primary_resource_logic.data_source_queries import (
+    get_data_sources_wrapper,
     data_source_by_id_wrapper,
     get_data_sources_for_map_wrapper,
     add_new_data_source_wrapper,
     update_data_source_wrapper,
-    needs_identification_data_sources_wrapper,
+    DataSourcesGetRequestSchema,
+    DataSourcesGetRequestDTOMany,
+    delete_data_source_wrapper,
 )
-from middleware.enums import PermissionsEnum
+from middleware.enums import PermissionsEnum, AccessTypeEnum
+from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
+    CRUDModels,
+)
 from resources.resource_helpers import (
     add_api_key_header_arg,
-    create_outer_model,
     add_jwt_header_arg,
+    create_response_dictionary,
 )
-from utilities.namespace import create_namespace
+from utilities.namespace import create_namespace, AppNamespaces
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
-
-namespace_data_source = create_namespace()
-
-data_sources_inner_model = namespace_data_source.model(
-    "DataSourcesInner",
-    {
-        "attribute_1": fields.String(
-            description="An attribute of the data source",
-        ),
-        "attribute_2": fields.String(
-            description="Another attribute of the data source",
-        ),
-        "attribute_3": fields.String(
-            description="Continue for as many attributes as you intend to modify",
-        ),
-    },
+from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
+    get_restx_param_documentation,
 )
+from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 
+namespace_data_source = create_namespace(AppNamespaces.DATA_SOURCES)
 
-data_sources_outer_model = create_outer_model(
-    namespace_data_source, data_sources_inner_model, "DataSourcesOuter"
-)
+models = CRUDModels(namespace_data_source)
 
+data_sources_get_request_parser = get_restx_param_documentation(
+    namespace=namespace_data_source,
+    schema_class=DataSourcesGetRequestSchema,
+    model_name="DataSourcesGetRequest",
+).parser
 
 authorization_api_parser = namespace_data_source.parser()
 add_api_key_header_arg(authorization_api_parser)
@@ -50,7 +52,7 @@ authorization_jwt_parser = namespace_data_source.parser()
 add_jwt_header_arg(authorization_jwt_parser)
 
 
-@namespace_data_source.route("/data-sources-by-id/<data_source_id>")
+@namespace_data_source.route("/id/<data_source_id>")
 @namespace_data_source.param(
     name="data_source_id",
     description="The unique identifier of the data source.",
@@ -63,17 +65,16 @@ class DataSourceById(PsycopgResource):
     """
 
     @handle_exceptions
-    @api_key_required
-    @namespace_data_source.response(200, "Success", data_sources_outer_model)
-    @namespace_data_source.response(400, "Missing or bad API key")
-    @namespace_data_source.response(403, "Forbidden Invalid API key")
-    @namespace_data_source.response(404, "Data source not found")
-    @namespace_data_source.response(500, "Internal server error")
+    @authentication_required([AccessTypeEnum.API_KEY, AccessTypeEnum.JWT])
     @namespace_data_source.doc(
         description="Get details of a specific data source by its ID.",
+        responses=create_response_dictionary(
+            success_message="Returns information on the specific data source.",
+            success_model=models.entry_data_response_model,
+        ),
     )
     @namespace_data_source.expect(authorization_api_parser)
-    def get(self, data_source_id: str) -> Response:
+    def get(self, access_info: AccessInfo, data_source_id: str) -> Response:
         """
         Retrieves details of a specific data source by its ID.
 
@@ -83,19 +84,26 @@ class DataSourceById(PsycopgResource):
         Returns:
         - Tuple containing the response message with data source details if found, and the HTTP status code.
         """
-        return self.run_endpoint(data_source_by_id_wrapper, arg=data_source_id)
+        return self.run_endpoint(
+            data_source_by_id_wrapper,
+            access_info=access_info,
+            data_source_id=data_source_id,
+        )
 
     @handle_exceptions
-    @permissions_required(PermissionsEnum.DB_WRITE)
-    @namespace_data_source.expect(authorization_jwt_parser, data_sources_inner_model)
+    @authentication_required(
+        [AccessTypeEnum.JWT], restrict_to_permissions=[PermissionsEnum.DB_WRITE]
+    )
+    @namespace_data_source.expect(
+        authorization_jwt_parser, models.entry_data_request_model
+    )
     @namespace_data_source.doc(
         description="Update details of a specific data source by its ID.",
+        responses=create_response_dictionary(
+            success_message="Data source successfully updated.",
+        ),
     )
-    @namespace_data_source.response(200, "Successful operation")
-    @namespace_data_source.response(400, "Missing or bad API key")
-    @namespace_data_source.response(403, "Forbidden Invalid API key")
-    @namespace_data_source.response(500, "Internal server error")
-    def put(self, data_source_id: str) -> Response:
+    def put(self, access_info: AccessInfo, data_source_id: str) -> Response:
         """
         Updates a data source by its ID based on the provided JSON payload.
 
@@ -105,12 +113,45 @@ class DataSourceById(PsycopgResource):
         Returns:
         - A dictionary containing a message about the update operation.
         """
-        data = request.get_json()
-        return self.run_endpoint(update_data_source_wrapper, data=data, data_source_id=data_source_id)
+        return self.run_endpoint(
+            wrapper_function=update_data_source_wrapper,
+            schema_populate_parameters=SchemaPopulateParameters(
+                dto_class=EntryDataRequestDTO,
+                schema_class=EntryDataRequestSchema,
+            ),
+            data_source_id=data_source_id,
+            access_info=access_info,
+        )
+
+    @handle_exceptions
+    @authentication_required(
+        [AccessTypeEnum.JWT], restrict_to_permissions=[PermissionsEnum.DB_WRITE]
+    )
+    @namespace_data_source.doc(
+        description="Delete a data source by its ID.",
+        responses=create_response_dictionary(
+            success_message="Data source successfully deleted."
+        ),
+    )
+    @namespace_data_source.expect(authorization_jwt_parser)
+    def delete(self, access_info: AccessInfo, data_source_id: str) -> Response:
+        """
+        Deletes a data source by its ID.
+
+        Parameters:
+        - data_source_id (str): The unique identifier of the data source to delete.
+
+        Returns:
+        - A dictionary containing a message about the deletion operation.
+        """
+        return self.run_endpoint(
+            wrapper_function=delete_data_source_wrapper,
+            data_source_id=data_source_id,
+            access_info=access_info,
+        )
 
 
-
-@namespace_data_source.route("/data-sources")
+@namespace_data_source.route("/page/<page>")
 class DataSources(PsycopgResource):
     """
     A resource for managing collections of data sources.
@@ -118,16 +159,20 @@ class DataSources(PsycopgResource):
     """
 
     @handle_exceptions
-    @api_key_required
-    @namespace_data_source.response(200, "Success", data_sources_outer_model)
-    @namespace_data_source.response(500, "Internal server error")
-    @namespace_data_source.response(400, "Bad request; missing or bad API key")
-    @namespace_data_source.response(403, "Forbidden; invalid API key")
+    @authentication_required(
+        allowed_access_methods=[AccessTypeEnum.API_KEY, AccessTypeEnum.JWT],
+    )
     @namespace_data_source.doc(
         description="Retrieves all data sources.",
+        responses=create_response_dictionary(
+            success_message="Returns all requested data sources.",
+            success_model=models.get_many_response_model,
+        ),
     )
-    @namespace_data_source.expect(authorization_api_parser)
-    def get(self) -> Response:
+    @namespace_data_source.expect(
+        data_sources_get_request_parser, authorization_api_parser
+    )
+    def get(self, page: int, access_info: AccessInfo) -> Response:
         """
         Retrieves all data sources. The data sources endpoint returns all approved rows in the corresponding Data
         Sources database table.
@@ -135,44 +180,46 @@ class DataSources(PsycopgResource):
         Returns:
         - A dictionary containing the count of data sources and their details.
         """
-        return self.run_endpoint(get_approved_data_sources_wrapper)
+        return self.run_endpoint(
+            wrapper_function=get_data_sources_wrapper,
+            schema_populate_parameters=SchemaPopulateParameters(
+                schema_class=DataSourcesGetRequestSchema,
+                dto_class=DataSourcesGetRequestDTOMany,
+            ),
+            access_info=access_info,
+        )
+
+
+@namespace_data_source.route("/")
+class DataSourcesPost(PsycopgResource):
 
     @handle_exceptions
-    @permissions_required(PermissionsEnum.DB_WRITE)
-    @namespace_data_source.expect(authorization_jwt_parser, data_sources_inner_model)
-    @namespace_data_source.response(200, "Successful operation")
-    @namespace_data_source.response(500, "Internal server error")
-    @namespace_data_source.response(400, "Bad request; missing or bad API key")
-    @namespace_data_source.response(403, "Forbidden; invalid API key")
+    @authentication_required(
+        allowed_access_methods=[AccessTypeEnum.JWT],
+        restrict_to_permissions=[PermissionsEnum.DB_WRITE],
+    )
+    @namespace_data_source.expect(
+        authorization_jwt_parser, models.entry_data_request_model
+    )
     @namespace_data_source.doc(
         description="Adds a new data source.",
+        responses=create_response_dictionary(
+            success_message="Data source successfully added.",
+            success_model=models.id_and_message_model,
+        ),
     )
-    def post(self) -> Response:
+    def post(self, access_info: AccessInfo) -> Response:
         """
         Adds a new data source based on the provided JSON payload.
 
         Returns:
         - A dictionary containing a message about the addition operation.
         """
-        data = request.get_json()
-        return self.run_endpoint(add_new_data_source_wrapper, data=data)
-
-
-@namespace_data_source.route("/data-sources-needs-identification")
-class DataSourcesNeedsIdentification(PsycopgResource):
-
-    @namespace_data_source.response(200, "Success", data_sources_outer_model)
-    @namespace_data_source.response(500, "Internal server error")
-    @namespace_data_source.response(400, "Bad request; missing or bad API key")
-    @namespace_data_source.response(403, "Forbidden; invalid API key")
-    @namespace_data_source.doc(
-        description="Retrieves all data sources needing identification.",
-    )
-    @handle_exceptions
-    @api_key_required
-    @namespace_data_source.expect(authorization_api_parser)
-    def get(self):
-        return self.run_endpoint(needs_identification_data_sources_wrapper)
+        return self.run_endpoint(
+            wrapper_function=add_new_data_source_wrapper,
+            dto_populate_parameters=EntryDataRequestDTO.get_dto_populate_parameters(),
+            access_info=access_info,
+        )
 
 
 @namespace_data_source.route("/data-sources-map")
@@ -184,7 +231,7 @@ class DataSourcesMap(PsycopgResource):
 
     @handle_exceptions
     @api_key_required
-    @namespace_data_source.response(200, "Success", data_sources_outer_model)
+    @namespace_data_source.response(200, "Success", models.get_many_response_model)
     @namespace_data_source.response(500, "Internal server error")
     @namespace_data_source.response(400, "Bad request; missing or bad API key")
     @namespace_data_source.response(403, "Forbidden; invalid API key")

@@ -128,6 +128,11 @@ def run_and_validate_request(
 ):
     response = flask_client.open(endpoint, method=http_method, **request_kwargs)
     check_response_status(response, expected_response_status.value)
+
+    # All of our requests should return some json message providing information.
+    assert response.json is not None
+
+    # But we can also test to see if the json content is what we expect
     if expected_json_content is not None:
         assert response.json == expected_json_content
 

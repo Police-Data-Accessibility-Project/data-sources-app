@@ -6,20 +6,47 @@ from typing import Type
 from flask import Response, make_response
 from flask_jwt_extended import get_jwt_identity
 from flask_restx import abort
+from marshmallow import Schema, fields
 
 from database_client.database_client import DatabaseClient
 from database_client.helper_functions import get_db_client
 from middleware.exceptions import UserNotFoundError
 from middleware.enums import PermissionsEnum, PermissionsActionEnum
+from middleware.common_response_formatting import message_response
 from utilities.common import get_valid_enum_value
+from utilities.enums import SourceMappingEnum, ParserLocation
 
+allowable_permissions_str = "Allowable permissions include: \n  * " + "\n  * ".join(
+    PermissionsEnum.values()
+)
+allowable_actions_str = "Allowable actions include: \n  * " + "\n  * ".join(
+    PermissionsActionEnum.values()
+)
+
+
+class PermissionsRequestSchema(Schema):
+    user_email = fields.Str(
+        required=True,
+        description="The email of the user for which to retrieve permissions.",
+        location=ParserLocation.QUERY.value,
+        source=SourceMappingEnum.QUERY_ARGS,
+    )
+    permission = fields.Str(
+        required=True,
+        description=f"The permission to add or remove. \n {allowable_permissions_str}",
+        source=SourceMappingEnum.JSON,
+    )
+    action = fields.Str(
+        required=True,
+        description=f"The action to perform. \n {allowable_actions_str}",
+        source=SourceMappingEnum.JSON,
+    )
 
 @dataclass
 class PermissionsRequest:
     user_email: str
     permission: str
     action: str
-
 
 class PermissionsManager:
     """
@@ -46,22 +73,22 @@ class PermissionsManager:
 
     def add_user_permission(self, permission: PermissionsEnum) -> Response:
         if permission in self.permissions:
-            return make_response(
+            return message_response(
                 f"Permission {permission.value} already exists for user",
                 HTTPStatus.CONFLICT,
             )
 
         self.db_client.add_user_permission(self.user_email, permission)
-        return make_response("Permission added", HTTPStatus.OK)
+        return message_response("Permission added")
 
     def remove_user_permission(self, permission: PermissionsEnum) -> Response:
         if permission not in self.permissions:
-            return make_response(
+            return message_response(
                 f"Permission {permission.value} does not exist for user. Cannot remove.",
                 HTTPStatus.CONFLICT,
             )
         self.db_client.remove_user_permission(self.user_email, permission)
-        return make_response("Permission removed", HTTPStatus.OK)
+        return message_response("Permission removed")
 
 
 def manage_user_permissions(

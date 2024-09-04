@@ -9,7 +9,7 @@ from flask_restx import abort
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from database_client.helper_functions import get_db_client
 from middleware.exceptions import InvalidAPIKeyException, InvalidAuthorizationHeaderException
-from middleware.permissions_logic import get_user_permissions
+from middleware.primary_resource_logic.permissions_logic import get_user_permissions
 
 JWT_OR_API_KEY_NEEDED_ERROR_MESSAGE = "Please provide an API key with the format 'Basic <api_key>' OR an access token with the format 'Bearer <access_token>' in the request header in the 'Authorization' key "
 

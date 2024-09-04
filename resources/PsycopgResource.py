@@ -3,17 +3,17 @@ from http import HTTPStatus
 import functools
 from typing import Callable, Any, Union, Tuple, Dict, Optional
 
-import psycopg
-from flask import Response, Request
+from flask import Response
 from flask_restx import abort, Resource
 
 from config import config
 from database_client.database_client import DatabaseClient
+from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
-from utilities.populate_dto_with_request_content import (
-    populate_dto_with_request_content,
-    DTOPopulateParameters,
-)
+from middleware.schema_and_dto_logic.dynamic_schema_request_content_population import populate_schema_with_request_content
+from middleware.schema_and_dto_logic.dynamic_dto_request_content_population import populate_dto_with_request_content
+from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import DTOPopulateParameters
 
 
 def handle_exceptions(
@@ -48,16 +48,14 @@ def handle_exceptions(
         except Exception as e:
             self.get_connection().rollback()
 
-            if hasattr(e, 'data') and 'message' in e.data:
-                message = e.data['message']
+            if hasattr(e, "data") and "message" in e.data:
+                message = e.data["message"]
             else:
                 message = str(e)
             print(message)
 
-            if hasattr(e, 'code'):
-                abort(
-                    code=e.code, message=message
-                )
+            if hasattr(e, "code"):
+                abort(code=e.code, message=message)
             else:
                 abort(
                     code=HTTPStatus.INTERNAL_SERVER_ERROR.value,
@@ -112,19 +110,30 @@ class PsycopgResource(Resource):
         self,
         wrapper_function: Callable[..., Any],
         dto_populate_parameters: Optional[DTOPopulateParameters] = None,
+        schema_populate_parameters: Optional[SchemaPopulateParameters] = None,
         **wrapper_kwargs: Any,
     ) -> Response:
-        if dto_populate_parameters is None:
+
+        check_for_mutually_exclusive_arguments(schema_populate_parameters, dto_populate_parameters)
+
+        if dto_populate_parameters is None and schema_populate_parameters is None:
             with self.setup_database_client() as db_client:
-                response = wrapper_function(db_client, **wrapper_kwargs)
-        else:
+                return wrapper_function(db_client, **wrapper_kwargs)
+
+        if dto_populate_parameters is not None:
             dto = populate_dto_with_request_content(
                 dto_class=dto_populate_parameters.dto_class,
                 source=dto_populate_parameters.source,
                 attribute_source_mapping=dto_populate_parameters.attribute_source_mapping,
                 transformation_functions=dto_populate_parameters.transformation_functions,
+                validation_schema=dto_populate_parameters.validation_schema
             )
-            with self.setup_database_client() as db_client:
-                response = wrapper_function(db_client, dto, **wrapper_kwargs)
+        elif schema_populate_parameters is not None:
+            dto = populate_schema_with_request_content(
+                schema_class=schema_populate_parameters.schema_class,
+                dto_class=schema_populate_parameters.dto_class,
+            )
+        with self.setup_database_client() as db_client:
+            response = wrapper_function(db_client, dto=dto, **wrapper_kwargs)
 
         return response

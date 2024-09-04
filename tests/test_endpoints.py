@@ -21,8 +21,8 @@ from resources.DataRequests import DataRequests, DataRequestsById
 from resources.DataSources import (
     DataSources,
     DataSourcesMap,
-    DataSourcesNeedsIdentification,
     DataSourceById,
+    DataSourcesPost,
 )
 from resources.HomepageSearchCache import HomepageSearchCache
 from resources.LinkToGithub import LinkToGithub
@@ -78,12 +78,10 @@ test_parameters = [
     TestParameters(ResetTokenValidation, "/reset-token-validation", [POST]),
     TestParameters(QuickSearch, "/quick-search/<search>/<location>", [GET]),
     TestParameters(Archives, "/archives", [GET, PUT]),
-    TestParameters(DataSources, "/data-sources", [GET, POST]),
-    TestParameters(DataSourcesMap, "/data-sources-map", [GET]),
-    TestParameters(
-        DataSourcesNeedsIdentification, "/data-sources-needs-identification", [GET]
-    ),
-    TestParameters(DataSourceById, "/data-sources-by-id/<data_source_id>", [GET, PUT]),
+    TestParameters(DataSources, "/data-sources/page/<page>", [GET]),
+    TestParameters(DataSourcesPost, "/data-sources/", [POST]),
+    TestParameters(DataSourcesMap, "/data-sources/data-sources-map", [GET]),
+    TestParameters(DataSourceById, "/data-sources/id/<data_source_id>", [GET, PUT, DELETE]),
     TestParameters(AgenciesPost, "/agencies/", [POST]),
     TestParameters(AgenciesByPage, "/agencies/page/<page>", [GET]),
     TestParameters(AgenciesById, "/agencies/id/<agency_id>", [GET, PUT, DELETE]),
@@ -98,9 +96,7 @@ test_parameters = [
     TestParameters(
         DataRequestsById, "/data-requests/by-id/<data_request_id>", [GET, PUT, DELETE]
     ),
-    TestParameters(
-        HomepageSearchCache, "/homepage-search-cache", [GET, POST]
-    )
+    TestParameters(HomepageSearchCache, "/homepage-search-cache", [GET, POST]),
 ]
 
 

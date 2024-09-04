@@ -1,7 +1,7 @@
 from flask import request, Response
 from flask_restx import fields
 
-from middleware.reset_token_queries import (
+from middleware.primary_resource_logic.reset_token_queries import (
     reset_token_validation,
 )
 

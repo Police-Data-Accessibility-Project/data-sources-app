@@ -4,7 +4,7 @@ from http import HTTPStatus
 from flask import Response, make_response
 
 from database_client.database_client import DatabaseClient
-from middleware.util import message_response, format_list_response
+from middleware.common_response_formatting import format_list_response, message_response
 
 
 def get_agencies_without_homepage_urls(database_client: DatabaseClient) -> Response:

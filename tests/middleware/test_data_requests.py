@@ -7,7 +7,7 @@ import pytest
 from database_client.enums import RelationRoleEnum, ColumnPermissionEnum
 from middleware.access_logic import AccessInfo
 from middleware.enums import AccessTypeEnum, PermissionsEnum
-from middleware.data_requests import (
+from middleware.primary_resource_logic.data_requests import (
     get_data_requests_relation_role,
     RELATION,
     get_formatted_data_requests,
@@ -21,7 +21,7 @@ from tests.helper_scripts.common_mocks_and_patches import (
     patch_and_return_mock,
 )
 
-PATCH_ROOT = "middleware.data_requests"
+PATCH_ROOT = "middleware.primary_resource_logic.data_requests"
 
 
 @pytest.mark.parametrize(

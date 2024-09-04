@@ -1,20 +1,14 @@
 from http import HTTPStatus
 
-from flask import request
-from flask_restx import fields
-
-from middleware.reset_token_queries import set_user_password
-from middleware.user_queries import user_post_results, UserRequest
-from middleware.decorators import api_key_required
+from middleware.primary_resource_logic.reset_token_queries import set_user_password
+from middleware.primary_resource_logic.user_queries import user_post_results, UserRequest, UserRequestSchema
 from typing import Dict, Any
 
-from resources.resource_helpers import add_api_key_header_arg, create_user_model
+from resources.resource_helpers import add_api_key_header_arg
+from middleware.schema_and_dto_logic.model_helpers_with_schemas import create_user_model
 from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
-from utilities.populate_dto_with_request_content import (
-    populate_dto_with_request_content,
-    SourceMappingEnum,
-)
+from middleware.schema_and_dto_logic.dynamic_schema_request_content_population import populate_schema_with_request_content
 
 namespace_user = create_namespace()
 
@@ -46,9 +40,9 @@ class User(PsycopgResource):
         Returns:
         - A dictionary containing a success message or an error message if the operation fails.
         """
-        dto = populate_dto_with_request_content(
+        dto = populate_schema_with_request_content(
+            schema_class=UserRequestSchema,
             dto_class=UserRequest,
-            source=SourceMappingEnum.JSON,
         )
         with self.setup_database_client() as db_client:
             user_post_results(db_client, dto)
@@ -73,9 +67,10 @@ class User(PsycopgResource):
         Returns:
         - A dictionary containing a success message or an error message if the operation fails.
         """
-        data = request.get_json()
-        email = data.get("email")
-        password = data.get("password")
+        dto = populate_schema_with_request_content(
+            schema_class=UserRequestSchema,
+            dto_class=UserRequest,
+        )
         with self.setup_database_client() as db_client:
-            set_user_password(db_client, email, password)
+            set_user_password(db_client, dto.email, dto.password)
         return {"message": "Successfully updated password"}, HTTPStatus.OK

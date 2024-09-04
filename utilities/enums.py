@@ -12,3 +12,21 @@ class RecordCategories(Enum):
     RESOURCE = "Agency-published Resources"
     JAIL = "Jails & Courts"
     OTHER = "Other"
+
+
+class SourceMappingEnum(Enum):
+    """
+    Used to denote which sources should be derived from the request
+    """
+    QUERY_ARGS = "args"
+    FORM = "form"
+    JSON = "json"
+    PATH = "path"
+
+
+class ParserLocation(Enum):
+    """
+    Used to denote the location a parameter is in the parser query
+    """
+    PATH = "path"
+    QUERY = "query"

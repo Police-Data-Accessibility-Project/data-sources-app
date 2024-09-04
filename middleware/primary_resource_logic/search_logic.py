@@ -3,19 +3,51 @@ from http import HTTPStatus
 from typing import Optional
 
 from flask import Response, make_response
+from marshmallow import fields, Schema
 
 from database_client.database_client import DatabaseClient
 from database_client.result_formatter import dictify_namedtuple
 from middleware.enums import Jurisdiction
 from utilities.common import get_enums_from_string
-from utilities.enums import RecordCategories
-from middleware.util import format_list_response
+from utilities.enums import RecordCategories, SourceMappingEnum, ParserLocation
+from middleware.common_response_formatting import format_list_response
 
 
 def transform_record_categories(value: str) -> Optional[list[RecordCategories]]:
     if value is not None:
         return get_enums_from_string(RecordCategories, value, case_insensitive=True)
     return None
+
+
+class SearchRequestSchema(Schema):
+    state = fields.Str(
+        required=True,
+        description="The state of the search.",
+        location=ParserLocation.QUERY.value,
+        source=SourceMappingEnum.QUERY_ARGS,
+    )
+    record_categories = fields.Str(
+        required=False,
+        description="The record categories of the search. If empty, all categories will be searched."
+        "Multiple record categories can be provided as a comma-separated list, eg. 'Police & Public Interactions,Agency-published Resources'."
+        "Allowable record categories include: \n  * "
+        + "\n  * ".join([e.value for e in RecordCategories]),
+        location=ParserLocation.QUERY.value,
+        source=SourceMappingEnum.QUERY_ARGS,
+        transformation_function=transform_record_categories,
+    )
+    county = fields.Str(
+        required=False,
+        description="The county of the search. If empty, all counties for the given state will be searched.",
+        location=ParserLocation.QUERY.value,
+        source=SourceMappingEnum.QUERY_ARGS,
+    )
+    locality = fields.Str(
+        required=False,
+        description="The locality of the search. If empty, all localities for the given county will be searched.",
+        location=ParserLocation.QUERY.value,
+        source=SourceMappingEnum.QUERY_ARGS,
+    )
 
 
 @dataclass
@@ -25,10 +57,19 @@ class SearchRequests:
     county: Optional[str] = None
     locality: Optional[str] = None
 
+
 def get_jursidiction_type_enum(jurisdiction_type_str: str) -> Optional[Jurisdiction]:
-    if jurisdiction_type_str in ["local", "school", "military", "tribal", "transit", "port"]:
+    if jurisdiction_type_str in [
+        "local",
+        "school",
+        "military",
+        "tribal",
+        "transit",
+        "port",
+    ]:
         return Jurisdiction.LOCALITY
     return Jurisdiction(jurisdiction_type_str)
+
 
 def format_search_results(search_results: list[dict]) -> dict:
     """
@@ -60,17 +101,11 @@ def format_search_results(search_results: list[dict]) -> dict:
     :return:
     """
 
-    response = {
-        "count": 0,
-        "data": {}
-    }
+    response = {"count": 0, "data": {}}
 
     # Create sub-dictionary for each jurisdiction
     for jurisdiction in [j.value for j in Jurisdiction]:
-        response["data"][jurisdiction] = {
-            "count": 0,
-            "results": []
-        }
+        response["data"][jurisdiction] = {"count": 0, "results": []}
 
     for result in search_results:
         jurisdiction_str = result.get("jurisdiction_type")
@@ -80,7 +115,6 @@ def format_search_results(search_results: list[dict]) -> dict:
         response["count"] += 1
 
     return response
-
 
 
 def search_wrapper(
