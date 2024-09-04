@@ -25,7 +25,7 @@ def test_data_sources_map_get(
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
-        endpoint="/api/data-sources-map",
+        endpoint="/api/data-sources/data-sources-map",
         headers=tus.api_authorization_header,
     )
     data = response_json["data"]

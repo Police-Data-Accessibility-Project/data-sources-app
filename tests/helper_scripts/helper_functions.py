@@ -288,7 +288,7 @@ def request_reset_password_api(client_with_db, mocker, user_info):
     :param user_info:
     :return:
     """
-    mocker.patch("middleware.reset_token_queries.send_password_reset_link")
+    mocker.patch("middleware.primary_resource_logic.reset_token_queries.send_password_reset_link")
     response = client_with_db.post(
         "/api/request-reset-password", json={"email": user_info.email}
     )

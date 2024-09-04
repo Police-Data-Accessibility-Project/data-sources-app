@@ -3,7 +3,7 @@ from flask_restx import fields
 from middleware.access_logic import AccessInfo
 from middleware.decorators import authentication_required
 from middleware.enums import AccessTypeEnum, PermissionsEnum
-from middleware.homepage_search_cache import (
+from middleware.primary_resource_logic.homepage_search_cache import (
     get_agencies_without_homepage_urls,
     update_search_cache,
     SearchCacheEntry,
@@ -11,10 +11,8 @@ from middleware.homepage_search_cache import (
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 from resources.resource_helpers import add_jwt_header_arg
 from utilities.namespace import create_namespace
-from utilities.populate_dto_with_request_content import (
-    DTOPopulateParameters,
-    SourceMappingEnum,
-)
+from utilities.enums import SourceMappingEnum
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import DTOPopulateParameters
 
 namespace_homepage_search_cache = create_namespace()
 

@@ -10,7 +10,7 @@ from database_client.database_client import DatabaseClient
 from middleware.webhook_logic import post_to_webhook
 from utilities.common import convert_dates_to_strings, format_arrays
 from typing import List, Dict, Any
-from middleware.util import format_list_response
+from middleware.common_response_formatting import format_list_response
 
 QUICK_SEARCH_COLUMNS = [
     "airtable_uid",

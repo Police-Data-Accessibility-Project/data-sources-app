@@ -2,23 +2,21 @@ from http import HTTPStatus
 from typing import Optional
 
 from flask import make_response, Response
-from flask_restx import abort
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import ColumnPermissionEnum, RelationRoleEnum
-from middleware.access_logic import AccessInfo, get_access_info_from_jwt
+from middleware.access_logic import AccessInfo
 from middleware.column_permission_logic import (
     get_permitted_columns,
-    check_has_permission_to_edit_columns,
     RelationRoleParameters,
 )
 from middleware.custom_dataclasses import (
-    EntryDataRequest,
     DeferredFunction,
 )
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import EntryDataRequestDTO
 from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
 from middleware.dynamic_request_logic import get_by_id, post_entry, put_entry, delete_entry, MiddlewareParameters
-from middleware.util import message_response, format_list_response
+from middleware.common_response_formatting import format_list_response
 
 RELATION = Relations.DATA_REQUESTS.value
 
@@ -50,14 +48,14 @@ def get_data_requests_relation_role(
 
 
 def add_creator_user_id(
-    db_client: DatabaseClient, user_email: str, dto: EntryDataRequest
+    db_client: DatabaseClient, user_email: str, dto: EntryDataRequestDTO
 ):
     user_id = db_client.get_user_id(user_email)
     dto.entry_data.update({"creator_user_id": user_id})
 
 
 def create_data_request_wrapper(
-    db_client: DatabaseClient, dto: EntryDataRequest, access_info: AccessInfo
+    db_client: DatabaseClient, dto: EntryDataRequestDTO, access_info: AccessInfo
 ) -> Response:
     """
     Create a data request
@@ -203,7 +201,7 @@ def delete_data_request_wrapper(
 
 def update_data_request_wrapper(
     db_client: DatabaseClient,
-    dto: EntryDataRequest,
+    dto: EntryDataRequestDTO,
     data_request_id: str,
     access_info: AccessInfo,
 ):

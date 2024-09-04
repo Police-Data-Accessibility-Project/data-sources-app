@@ -5,61 +5,44 @@ from flask_restx import fields
 
 from middleware.access_logic import AccessInfo
 from middleware.column_permission_logic import create_column_permissions_string_table
-from middleware.data_requests import (
+from middleware.primary_resource_logic.data_requests import (
     create_data_request_wrapper,
     get_data_requests_wrapper,
     delete_data_request_wrapper,
     update_data_request_wrapper,
     get_data_request_by_id_wrapper,
 )
-from middleware.custom_dataclasses import EntryDataRequest
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+    EntryDataRequestDTO,
+)
 from middleware.decorators import (
     authentication_required,
 )
-from middleware.enums import PermissionsEnum, AccessTypeEnum, Relations
+from middleware.enums import AccessTypeEnum, Relations
+from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
+    create_entry_data_request_model,
+    create_id_and_message_model,
+    create_get_many_response_model,
+    create_entry_data_response_model,
+)
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 from resources.resource_helpers import (
-    create_entry_data_model,
-    create_variable_columns_model,
-    create_outer_model,
     add_jwt_or_api_key_header_arg,
-    create_id_and_message_model,
 )
 from utilities.namespace import create_namespace, AppNamespaces
-from utilities.populate_dto_with_request_content import (
-    SourceMappingEnum,
-    DTOPopulateParameters,
-)
 
 namespace_data_requests = create_namespace(AppNamespaces.DATA_REQUESTS)
 
 # TODO: Create models for data requests to expect and return, and add to documentation
 
-entry_data_model = create_entry_data_model(namespace_data_requests)
-
-data_requests_inner_model = create_variable_columns_model(
-    namespace_data_requests, "data_request"
-)
-
-data_requests_outer_model = create_outer_model(
-    namespace_data_requests, data_requests_inner_model, "data_requests"
-)
+entry_data_requests_model = create_entry_data_request_model(namespace_data_requests)
+entry_data_response_model = create_entry_data_response_model(namespace_data_requests)
+data_requests_outer_model = create_get_many_response_model(namespace_data_requests)
+id_and_message_model = create_id_and_message_model(namespace_data_requests)
 
 data_requests_column_permissions = create_column_permissions_string_table(
     relation=Relations.DATA_REQUESTS.value
 )
-
-create_data_request_result = namespace_data_requests.model(
-    "Create Data Request Result",
-    {
-        "message": fields.String(description="The success message"),
-        "data_request_id": fields.Integer(
-            description="The id of the data request created"
-        ),
-    },
-)
-
-id_and_message_model = create_id_and_message_model(namespace_data_requests)
 
 authorization_parser = namespace_data_requests.parser()
 add_jwt_or_api_key_header_arg(authorization_parser)
@@ -78,7 +61,7 @@ class DataRequestsById(PsycopgResource):
     @namespace_data_requests.response(
         HTTPStatus.OK,
         "Success; Data request retrieved",
-        model=data_requests_inner_model,
+        model=entry_data_response_model,
     )
     @namespace_data_requests.response(
         HTTPStatus.INTERNAL_SERVER_ERROR, "Internal server error"
@@ -111,8 +94,8 @@ Columns returned are determinant upon the user's access level and/or relation to
     @authentication_required(
         allowed_access_methods=[AccessTypeEnum.JWT],
     )
-    @namespace_data_requests.expect(authorization_parser, entry_data_model)
-    @namespace_data_requests.response(HTTPStatus.OK, "Success; Data request updated", id_and_message_model)
+    @namespace_data_requests.expect(authorization_parser, entry_data_requests_model)
+    @namespace_data_requests.response(HTTPStatus.OK, "Success; Data request updated")
     @namespace_data_requests.response(
         HTTPStatus.INTERNAL_SERVER_ERROR, "Internal server error"
     )
@@ -137,10 +120,7 @@ Columns allowed to be updated by the user is determinant upon the user's access 
         """
         return self.run_endpoint(
             update_data_request_wrapper,
-            dto_populate_parameters=DTOPopulateParameters(
-                dto_class=EntryDataRequest,
-                source=SourceMappingEnum.JSON,
-            ),
+            dto_populate_parameters=EntryDataRequestDTO.get_dto_populate_parameters(),
             data_request_id=data_request_id,
             access_info=access_info,
         )
@@ -202,11 +182,11 @@ class DataRequests(PsycopgResource):
     @authentication_required(
         allowed_access_methods=[AccessTypeEnum.JWT],
     )
-    @namespace_data_requests.expect(authorization_parser, entry_data_model)
+    @namespace_data_requests.expect(authorization_parser, entry_data_requests_model)
     @namespace_data_requests.response(
         code=HTTPStatus.OK,
         description="Success; Data request created",
-        model=create_data_request_result,
+        model=id_and_message_model,
     )
     @namespace_data_requests.response(
         HTTPStatus.INTERNAL_SERVER_ERROR, "Internal server error"
@@ -232,9 +212,6 @@ Columns permitted to be included by the user is determined by their level of acc
         """
         return self.run_endpoint(
             wrapper_function=create_data_request_wrapper,
-            dto_populate_parameters=DTOPopulateParameters(
-                dto_class=EntryDataRequest,
-                source=SourceMappingEnum.JSON,
-            ),
+            dto_populate_parameters=EntryDataRequestDTO.get_dto_populate_parameters(),
             access_info=access_info,
         )

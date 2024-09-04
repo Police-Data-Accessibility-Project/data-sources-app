@@ -3,16 +3,15 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from middleware.archives_queries import (
+from middleware.primary_resource_logic.archives_queries import (
     update_archives_data,
 )
-from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
 @pytest.fixture
 def make_response_mock(monkeypatch):
     mock = MagicMock()
-    monkeypatch.setattr("middleware.archives_queries.make_response", mock)
+    monkeypatch.setattr("middleware.primary_resource_logic.archives_queries.make_response", mock)
     return mock
 
 

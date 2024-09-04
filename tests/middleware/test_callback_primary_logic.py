@@ -22,7 +22,7 @@ from middleware.custom_dataclasses import (
     GithubUserInfo,
 )
 from middleware.enums import CallbackFunctionsEnum
-from middleware.user_queries import UserRequest
+from middleware.primary_resource_logic.user_queries import UserRequest
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 PATCH_PREFIX = "middleware.callback_primary_logic"

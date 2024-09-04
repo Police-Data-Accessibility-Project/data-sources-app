@@ -1,36 +1,26 @@
-from flask import request, Response
-from flask_restx import fields
+from flask import Response
 
-from middleware.reset_token_queries import (
+from middleware.primary_resource_logic.reset_token_queries import (
     reset_password,
     RequestResetPasswordRequest,
+    RequestResetPasswordRequestSchema,
 )
-from resources.resource_helpers import create_user_model
 from utilities.namespace import create_namespace
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
-from utilities.populate_dto_with_request_content import (
-    populate_dto_with_request_content,
-    SourceMappingEnum,
-    DTOPopulateParameters,
-)
+from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
+    get_restx_param_documentation, )
+from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 
 namespace_reset_password = create_namespace()
 
-reset_password_model = namespace_reset_password.model(
-    "ResetPassword",
-    {
-        "token": fields.String(
-            required=True,
-            description="The Reset password token to validate",
-            example="2bd77a1d7ef24a1dad3365b8a5c6994e",
-        ),
-        "password": fields.String(
-            required=True, description="The new password to set", example="newpassword"
-        ),
-    },
+doc_info = get_restx_param_documentation(
+    namespace=namespace_reset_password,
+    schema_class=RequestResetPasswordRequestSchema,
+    model_name="ResetPassword",
 )
 
+reset_password_model = doc_info.model
 
 @namespace_reset_password.route("/reset-password")
 class ResetPassword(PsycopgResource):
@@ -56,8 +46,8 @@ class ResetPassword(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=reset_password,
-            dto_populate_parameters=DTOPopulateParameters(
+            schema_populate_parameters=SchemaPopulateParameters(
+                schema_class=RequestResetPasswordRequestSchema,
                 dto_class=RequestResetPasswordRequest,
-                source=SourceMappingEnum.JSON,
-            ),
+            )
         )

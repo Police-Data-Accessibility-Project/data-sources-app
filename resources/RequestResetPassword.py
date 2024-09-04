@@ -1,7 +1,7 @@
 from flask import request, Response
 from flask_restx import fields
 
-from middleware.reset_token_queries import request_reset_password
+from middleware.primary_resource_logic.reset_token_queries import request_reset_password
 from utilities.namespace import create_namespace
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions

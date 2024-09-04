@@ -3,15 +3,15 @@ from datetime import datetime
 from http import HTTPStatus
 
 from flask import Response, make_response
-from typing import Dict, Union
 
+from marshmallow import Schema, fields
 from werkzeug.security import generate_password_hash
 
 from database_client.database_client import DatabaseClient
-from middleware.exceptions import TokenNotFoundError
-from middleware.login_queries import generate_api_key
-from middleware.user_queries import user_check_email
+from middleware.primary_resource_logic.login_queries import generate_api_key
+from middleware.primary_resource_logic.user_queries import user_check_email
 from middleware.webhook_logic import send_password_reset_link
+from utilities.enums import SourceMappingEnum
 
 
 class InvalidTokenError(Exception):
@@ -22,6 +22,19 @@ class InvalidTokenError(Exception):
 class RequestResetPasswordRequest:
     email: str
     token: str
+
+
+class RequestResetPasswordRequestSchema(Schema):
+    email = fields.Str(
+        required=True,
+        description="The email of the user",
+        source=SourceMappingEnum.JSON,
+    )
+    token = fields.Str(
+        required=True,
+        description="The token of the user",
+        source=SourceMappingEnum.JSON,
+    )
 
 
 def request_reset_password(db_client: DatabaseClient, email) -> Response:

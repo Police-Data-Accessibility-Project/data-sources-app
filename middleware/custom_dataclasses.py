@@ -32,14 +32,6 @@ class OAuthCallbackInfo:
     github_user_info: GithubUserInfo
 
 
-@dataclass
-class EntryDataRequest:
-    """
-    Contains data for creating or updating an entry
-    """
-    entry_data: dict
-
-
 class DeferredFunction:
     """
     Encapsulates a function and its parameters for deferred execution.
@@ -51,3 +43,5 @@ class DeferredFunction:
 
     def execute(self, **additional_parameters):
         return self.function(**self.base_parameters, **additional_parameters)
+
+

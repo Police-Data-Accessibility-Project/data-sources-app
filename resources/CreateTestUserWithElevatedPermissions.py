@@ -18,8 +18,8 @@ from flask import request
 from flask_restx import fields, abort
 
 from middleware.enums import PermissionsEnum
-from middleware.login_queries import get_api_key_for_user
-from middleware.user_queries import user_post_results, UserRequest
+from middleware.primary_resource_logic.login_queries import get_api_key_for_user
+from middleware.primary_resource_logic.user_queries import user_post_results, UserRequest
 from middleware.util import get_env_variable
 from resources.PsycopgResource import PsycopgResource
 from utilities.namespace import AppNamespaces, create_namespace

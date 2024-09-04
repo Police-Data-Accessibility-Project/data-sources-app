@@ -1,10 +1,8 @@
-from http import HTTPStatus
-
-from flask import Response, make_response
+from flask import Response
 
 from database_client.database_client import DatabaseClient
 from middleware.access_logic import AccessInfo
-from middleware.custom_dataclasses import EntryDataRequest
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import EntryDataRequestDTO
 from middleware.enums import Relations
 from middleware.dynamic_request_logic import (
     get_many,
@@ -13,8 +11,6 @@ from middleware.dynamic_request_logic import (
     put_entry,
     delete_entry, MiddlewareParameters,
 )
-from utilities.common import convert_dates_to_strings
-from middleware.util import format_list_response
 
 
 def get_agencies(
@@ -56,7 +52,7 @@ def get_agency_by_id(
 
 
 def create_agency(
-    db_client: DatabaseClient, dto: EntryDataRequest, access_info: AccessInfo
+    db_client: DatabaseClient, dto: EntryDataRequestDTO, access_info: AccessInfo
 ) -> Response:
     return post_entry(
         middleware_parameters=MiddlewareParameters(
@@ -72,7 +68,7 @@ def create_agency(
 
 def update_agency(
     db_client: DatabaseClient,
-    dto: EntryDataRequest,
+    dto: EntryDataRequestDTO,
     access_info: AccessInfo,
     agency_id: str,
 ) -> Response:

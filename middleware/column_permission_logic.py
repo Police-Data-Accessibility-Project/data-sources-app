@@ -10,6 +10,7 @@ from database_client.enums import RelationRoleEnum, ColumnPermissionEnum
 from middleware.access_logic import AccessInfo
 from middleware.custom_dataclasses import DeferredFunction
 from middleware.enums import PermissionsEnum, AccessTypeEnum
+from middleware.flask_response_manager import FlaskResponseManager
 
 
 def get_permitted_columns(
@@ -21,6 +22,22 @@ def get_permitted_columns(
     return db_client.get_permitted_columns(
         relation=relation, role=role, column_permission=column_permission
     )
+
+def get_invalid_columns(
+    requested_columns: list[str],
+    permitted_columns: list[str],
+) -> list[str]:
+    """
+    Returns a list of columns that are not permitted
+    :param requested_columns: The columns that were requested
+    :param permitted_columns: List of columns that are permitted
+    :return:
+    """
+    invalid_columns = []
+    for column in requested_columns:
+        if column not in permitted_columns:
+            invalid_columns.append(column)
+    return invalid_columns
 
 
 def check_has_permission_to_edit_columns(
@@ -40,15 +57,14 @@ def check_has_permission_to_edit_columns(
         role=role,
         column_permission=ColumnPermissionEnum.WRITE,
     )
-    invalid_columns = []
-    for column in columns:
-        if column not in writeable_columns:
-            invalid_columns.append(column)
-
+    invalid_columns = get_invalid_columns(
+        requested_columns=columns,
+        permitted_columns=writeable_columns
+    )
     if len(invalid_columns) == 0:
         return
 
-    abort(
+    FlaskResponseManager.abort(
         code=HTTPStatus.FORBIDDEN,
         message=f"""
         You do not have permission to edit the following columns: 

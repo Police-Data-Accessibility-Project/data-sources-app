@@ -260,3 +260,37 @@ def integration_test_admin_setup(flask_client_with_db) -> IntegrationTestSetup:
     return IntegrationTestSetup(
         flask_client=flask_client_with_db, db_client=db_client, tus=tus_admin
     )
+
+
+@pytest.fixture
+def test_table_data(live_database_client: DatabaseClient):
+    """
+    Removes existing test table data and generates test data for the test table
+    Generates test data for the test table
+    :param dev_db_client:
+    :return:
+    """
+
+    live_database_client.execute_raw_sql("""
+    DELETE FROM test_table;
+    """)
+
+    live_database_client.execute_raw_sql("""
+    INSERT INTO test_table (pet_name, species) VALUES 
+    ('Arthur', 'Aardvark'),
+    ('Jimbo', 'Cat'),
+    ('Simon', 'Bear');
+    """)
+
+
+@pytest.fixture
+def mock_flask_response_manager(monkeypatch):
+    """
+    Mock the flask-native functions embedded within the FlaskResponseManager
+    :param monkeypatch:
+    :return:
+    """
+    mock = MagicMock()
+    monkeypatch.setattr("middleware.flask_response_manager.make_response", mock.make_response)
+    monkeypatch.setattr("middleware.flask_response_manager.abort", mock.abort)
+    return mock
