@@ -7,9 +7,8 @@ from resources.ApiKey import API_KEY_ROUTE
 from tests.fixtures import dev_db_connection, flask_client_with_db, dev_db_client
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
-    check_response_status,
-    run_and_validate_request,
 )
+from tests.helper_scripts.common_test_functions import check_response_status, run_and_validate_request
 
 
 def test_api_key_post(flask_client_with_db, dev_db_client):

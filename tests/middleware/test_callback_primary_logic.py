@@ -16,13 +16,13 @@ from middleware.callback_primary_logic import (
     link_github_account,
     get_github_user_info,
 )
-from middleware.dataclasses import (
+from middleware.custom_dataclasses import (
     FlaskSessionCallbackInfo,
     OAuthCallbackInfo,
     GithubUserInfo,
 )
 from middleware.enums import CallbackFunctionsEnum
-from middleware.user_queries import UserRequest
+from middleware.primary_resource_logic.user_queries import UserRequest
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 PATCH_PREFIX = "middleware.callback_primary_logic"

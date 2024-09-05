@@ -2,13 +2,22 @@ from dataclasses import dataclass
 from typing import Optional
 from unittest.mock import MagicMock
 
+import flask_restx
 import pytest
+from flask_restx import Namespace, Model
+from flask_restx.reqparse import RequestParser
+from marshmallow import Schema, fields, validate, ValidationError
 
 from tests.helper_scripts.common_mocks_and_patches import patch_request_args_get
-from utilities.populate_dto_with_request_content import (
-    populate_dto_with_request_content,
-    SourceMappingEnum,
-    AttributeNotInClassError,
+from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
+    get_restx_param_documentation,
+)
+from middleware.schema_and_dto_logic.dynamic_schema_request_content_population import populate_schema_with_request_content
+from middleware.schema_and_dto_logic.dynamic_dto_request_content_population import populate_dto_with_request_content, \
+    _optionally_check_against_schema
+from middleware.schema_and_dto_logic.custom_exceptions import AttributeNotInClassError
+from utilities.enums import SourceMappingEnum
+from utilities.argument_checking_logic import (
     MutuallyExclusiveArgumentError,
     MissingRequiredArgumentError,
 )
@@ -33,7 +42,7 @@ SAMPLE_REQUEST_ARGS = {
     "transformed_array": "hello,world",
 }
 
-ROUTE_TO_PATCH = "utilities.populate_dto_with_request_content"
+ROUTE_TO_PATCH = "middleware.schema_and_dto_logic.util"
 
 
 @pytest.fixture
@@ -44,7 +53,7 @@ def patched_request_args_get(monkeypatch):
 @pytest.mark.parametrize(
     "source_mapping_enum",
     (
-        SourceMappingEnum.ARGS,
+        SourceMappingEnum.QUERY_ARGS,
         SourceMappingEnum.FORM,
         SourceMappingEnum.JSON,
     ),
@@ -74,7 +83,7 @@ def test_populate_dto_with_request_transformation_function_not_in_attributes(
         dto = populate_dto_with_request_content(
             SimpleDTO,
             transformation_functions={"non_existent_attribute": lambda value: value},
-            source=SourceMappingEnum.ARGS,
+            source=SourceMappingEnum.QUERY_ARGS,
         )
 
 
@@ -83,7 +92,7 @@ def test_populate_dto_with_request_no_transformation_functions(
 ):
     dto = populate_dto_with_request_content(
         SimpleDTO,
-        source=SourceMappingEnum.ARGS,
+        source=SourceMappingEnum.QUERY_ARGS,
     )
     assert dto.simple_string == "spam"
     assert dto.optional_int is None
@@ -96,7 +105,7 @@ def test_populate_dto_with_request_source_mapping_and_source_arguments(
     with pytest.raises(MutuallyExclusiveArgumentError):
         dto = populate_dto_with_request_content(
             SimpleDTO,
-            source=SourceMappingEnum.ARGS,
+            source=SourceMappingEnum.QUERY_ARGS,
             attribute_source_mapping={"simple_string": SourceMappingEnum.FORM},
         )
 
@@ -118,7 +127,7 @@ def test_populate_dto_with_request_source_mapping_happy_path(
     dto = populate_dto_with_request_content(
         SimpleDTO,
         attribute_source_mapping={
-            "simple_string": SourceMappingEnum.ARGS,
+            "simple_string": SourceMappingEnum.QUERY_ARGS,
             "optional_int": SourceMappingEnum.FORM,
             "transformed_array": SourceMappingEnum.JSON,
         },
@@ -130,3 +139,121 @@ def test_populate_dto_with_request_source_mapping_happy_path(
     assert dto.simple_string == 1
     assert dto.optional_int == 2
     assert dto.transformed_array == 3
+
+
+class ExampleSchema(Schema):
+    example_string = fields.String(
+        required=True,
+        source=SourceMappingEnum.JSON,
+        description="An example string",
+    )
+    example_query_string = fields.String(
+        required=True,
+        source=SourceMappingEnum.QUERY_ARGS,
+        description="An example query string",
+    )
+    example_form = fields.String(
+        required=True,
+        source=SourceMappingEnum.FORM,
+        description="An example form string",
+    )
+
+
+class ExampleSchemaWithoutForm(Schema):
+    example_string = fields.String(
+        required=True,
+        source=SourceMappingEnum.JSON,
+        description="An example string",
+    )
+    example_query_string = fields.String(
+        required=True,
+        source=SourceMappingEnum.QUERY_ARGS,
+        description="An example query string",
+    )
+
+
+@dataclass
+class ExampleDTO:
+    example_string: str
+    example_query_string: str
+    example_form: str
+
+
+def test_optionally_check_against_schema_none():
+    example_values = {"hello": "world"}
+    _optionally_check_against_schema(None, example_values)
+
+
+def test_optionally_check_against_schema_valid_schema():
+    example_values = {
+        "example_string": "hello world",
+        "example_query_string": "world hello",
+    }
+    _optionally_check_against_schema(ExampleSchemaWithoutForm, example_values)
+
+
+def test_optionally_check_against_schema_invalid_schema():
+    with pytest.raises(ValidationError):
+        _optionally_check_against_schema(ExampleSchema, {"invalid_arg": 1})
+
+
+class ExampleSchemaWithEnum(Schema):
+    example_enum = fields.String(
+        required=True,
+        source=SourceMappingEnum.QUERY_ARGS,
+        description="An example query string.",
+        validate=validate.OneOf(["a", "b"]),
+    )
+
+
+def test_populate_schema_with_request_content(
+    patched_request_args_get,
+):
+    mock_request = patched_request_args_get
+    mock_request.json.get = MagicMock(return_value="json value")
+    mock_request.args.get = MagicMock(return_value="arg value")
+    mock_request.form.get = MagicMock(return_value="form value")
+
+    obj = populate_schema_with_request_content(
+        schema_class=ExampleSchema, dto_class=ExampleDTO
+    )
+
+    assert isinstance(obj, ExampleDTO)
+    assert obj.example_string == "json value"
+    assert obj.example_query_string == "arg value"
+    assert obj.example_form == "form value"
+
+
+def test_get_restx_param_documentation():
+
+    result = get_restx_param_documentation(
+        namespace=Namespace(name="test", path="/test", description="test"),
+        schema_class=ExampleSchemaWithoutForm,
+        model_name="ExampleDTOWithoutForm",
+    )
+
+    assert isinstance(result.model, Model)
+    assert result.model.name == "ExampleDTOWithoutForm"
+    assert result.model["example_string"].description == "An example string"
+    assert isinstance(result.model["example_string"], flask_restx.fields.String)
+    assert isinstance(result.parser, RequestParser)
+    assert result.parser.args[0].help == "An example query string"
+    assert isinstance(result.parser.args[0], flask_restx.reqparse.Argument)
+    assert result.parser.args[0].required is True
+
+
+def test_get_restx_param_documentation_with_enum():
+    """
+    Test that description properly appended to description of enum field (i.e. a field with limited values)
+    """
+
+    result = get_restx_param_documentation(
+        namespace=Namespace(name="test", path="/test", description="test"),
+        schema_class=ExampleSchemaWithEnum,
+        model_name="ExampleDTOWithEnum",
+    )
+
+    assert (
+        result.parser.args[0].help
+        == "An example query string. Must be one of: ['a', 'b']."
+    )

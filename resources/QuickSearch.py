@@ -1,8 +1,7 @@
 from flask import Response
-from flask_restx import fields
 
 from middleware.decorators import api_key_required
-from middleware.quick_search_query import quick_search_query_wrapper
+from middleware.primary_resource_logic.quick_search_query import quick_search_query_wrapper
 from resources.DataSources import namespace_data_source
 from resources.resource_helpers import add_api_key_header_arg, create_search_model
 

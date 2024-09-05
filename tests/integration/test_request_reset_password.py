@@ -6,9 +6,8 @@ import psycopg
 from tests.fixtures import dev_db_connection, flask_client_with_db
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
-    check_response_status,
-    run_and_validate_request,
 )
+from tests.helper_scripts.common_test_functions import check_response_status, run_and_validate_request
 
 
 def test_request_reset_password_post(
@@ -21,7 +20,7 @@ def test_request_reset_password_post(
     user_info = create_test_user_api(flask_client_with_db)
 
     mock_send_password_reset_link = mocker.patch(
-        "middleware.reset_token_queries.send_password_reset_link"
+        "middleware.primary_resource_logic.reset_token_queries.send_password_reset_link"
     )
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,

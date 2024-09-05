@@ -1,9 +1,5 @@
 import uuid
-from collections import namedtuple
 from http import HTTPStatus
-
-import jwt
-import datetime
 
 from flask import Response, make_response, jsonify
 from flask_jwt_extended import (
@@ -15,9 +11,8 @@ from werkzeug.security import check_password_hash
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
-from middleware.dataclasses import GithubUserInfo
-from middleware.user_queries import UserRequest
-from middleware.util import get_env_variable
+from middleware.custom_dataclasses import GithubUserInfo
+from middleware.primary_resource_logic.user_queries import UserRequest
 
 
 def try_logging_in(db_client: DatabaseClient, dto: UserRequest) -> Response:

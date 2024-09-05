@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
-from middleware.search_logic import search_wrapper, format_search_results
+from middleware.primary_resource_logic.search_logic import search_wrapper, format_search_results
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
@@ -12,7 +12,7 @@ class SearchWrapperMocks(DynamicMagicMock):
 
 def test_search_wrapper(monkeypatch):
     mock = SearchWrapperMocks(
-        patch_root="middleware.search_logic",
+        patch_root="middleware.primary_resource_logic.search_logic",
     )
     mock.db_client.search_with_location_and_record_type.return_value = (
         mock.search_results

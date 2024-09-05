@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from middleware.reset_token_queries import (
+from middleware.primary_resource_logic.reset_token_queries import (
     request_reset_password,
     reset_password,
     set_user_password,
@@ -14,7 +14,7 @@ from middleware.reset_token_queries import (
     InvalidTokenError,
 )
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
-
+from tests.fixtures import mock_flask_response_manager
 
 class RequestResetPasswordMocks(DynamicMagicMock):
     user_check_email: MagicMock
@@ -25,7 +25,7 @@ class RequestResetPasswordMocks(DynamicMagicMock):
 
 def test_request_reset_password(monkeypatch):
     mock = RequestResetPasswordMocks(
-        patch_root="middleware.reset_token_queries",
+        patch_root="middleware.primary_resource_logic.reset_token_queries",
     )
     mock.generate_api_key.return_value = mock.token
     request_reset_password(mock.db_client, mock.email)
@@ -53,24 +53,26 @@ class ResetPasswordMocks(DynamicMagicMock):
 @pytest.fixture
 def setup_reset_password_mocks():
     mock = ResetPasswordMocks(
-        patch_root="middleware.reset_token_queries",
+        patch_root="middleware.primary_resource_logic.reset_token_queries",
         return_values={"invalid_token_response": MagicMock()},
     )
     mock.validate_token.return_value = mock.email
     yield mock
 
 
-def test_reset_password_happy_path(setup_reset_password_mocks):
+def test_reset_password_happy_path(setup_reset_password_mocks, mock_flask_response_manager):
     mock = setup_reset_password_mocks
 
     reset_password(mock.db_client, mock.dto)
 
     mock.invalid_token_response.assert_not_called()
-    mock.make_response.assert_called_once_with(
+    mock_flask_response_manager.make_response.assert_called_once_with(
         {"message": "Successfully updated password"}, HTTPStatus.OK
     )
     mock.set_user_password.assert_called_once_with(
-        mock.db_client, mock.email, mock.dto.token
+        db_client=mock.db_client,
+        email=mock.email,
+        password=mock.dto.password
     )
 
 
@@ -94,7 +96,7 @@ class ValidateTokenMocks(DynamicMagicMock):
 @pytest.fixture
 def setup_validate_token_mocks(monkeypatch) -> ValidateTokenMocks:
     mock = ValidateTokenMocks(
-        patch_root="middleware.reset_token_queries",
+        patch_root="middleware.primary_resource_logic.reset_token_queries",
     )
     mock.token_data.email = mock.email
     return mock
@@ -161,7 +163,7 @@ def test_set_new_user_password_happy_path(monkeypatch):
     mock_generate_password_hash = MagicMock(return_value=mock_password_digest)
 
     monkeypatch.setattr(
-        "middleware.reset_token_queries.generate_password_hash",
+        "middleware.primary_resource_logic.reset_token_queries.generate_password_hash",
         mock_generate_password_hash,
     )
 
@@ -195,7 +197,7 @@ class ResetTokenValidationMocks(DynamicMagicMock):
 @pytest.fixture
 def setup_reset_token_validation_mocks():
     mock = ResetTokenValidationMocks(
-        patch_root="middleware.reset_token_queries",
+        patch_root="middleware.primary_resource_logic.reset_token_queries",
     )
     mock.validate_token.return_value = mock.email
     return mock

@@ -9,7 +9,7 @@ from middleware.access_logic import (
 )
 from middleware.exceptions import InvalidAPIKeyException, InvalidAuthorizationHeaderException
 from middleware.enums import PermissionsEnum
-from middleware.permissions_logic import PermissionsManager
+from middleware.primary_resource_logic.permissions_logic import PermissionsManager
 
 INVALID_API_KEY_MESSAGE = "Please provide an API key in the request header in the 'Authorization' key with the format 'Basic <api_key>'"
 

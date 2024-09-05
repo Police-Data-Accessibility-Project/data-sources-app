@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 from middleware.enums import CallbackFunctionsEnum
 
 
@@ -31,9 +32,16 @@ class OAuthCallbackInfo:
     github_user_info: GithubUserInfo
 
 
-@dataclass
-class EntryDataRequest:
+class DeferredFunction:
     """
-    Contains data for creating or updating an entry
+    Encapsulates a function and its parameters for deferred execution.
     """
-    entry_data: dict
+
+    def __init__(self, function: callable, **base_parameters):
+        self.function = function
+        self.base_parameters = base_parameters
+
+    def execute(self, **additional_parameters):
+        return self.function(**self.base_parameters, **additional_parameters)
+
+

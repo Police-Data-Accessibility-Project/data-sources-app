@@ -12,7 +12,7 @@ from unittest.mock import patch
 from flask.testing import FlaskClient
 from flask_restful import Resource
 
-from resources.Agencies import Agencies
+from resources.Agencies import AgenciesByPage, AgenciesPost, AgenciesById
 from resources.ApiKey import ApiKey, API_KEY_ROUTE
 from resources.Archives import Archives
 from resources.Callback import Callback
@@ -21,9 +21,10 @@ from resources.DataRequests import DataRequests, DataRequestsById
 from resources.DataSources import (
     DataSources,
     DataSourcesMap,
-    DataSourcesNeedsIdentification,
     DataSourceById,
+    DataSourcesPost,
 )
+from resources.HomepageSearchCache import HomepageSearchCache
 from resources.LinkToGithub import LinkToGithub
 from resources.Login import Login
 from resources.LoginWithGithub import LoginWithGithub
@@ -77,13 +78,13 @@ test_parameters = [
     TestParameters(ResetTokenValidation, "/reset-token-validation", [POST]),
     TestParameters(QuickSearch, "/quick-search/<search>/<location>", [GET]),
     TestParameters(Archives, "/archives", [GET, PUT]),
-    TestParameters(DataSources, "/data-sources", [GET, POST]),
-    TestParameters(DataSourcesMap, "/data-sources-map", [GET]),
-    TestParameters(
-        DataSourcesNeedsIdentification, "/data-sources-needs-identification", [GET]
-    ),
-    TestParameters(DataSourceById, "/data-sources-by-id/<data_source_id>", [GET, PUT]),
-    TestParameters(Agencies, "/agencies/<page>", [GET]),
+    TestParameters(DataSources, "/data-sources/page/<page>", [GET]),
+    TestParameters(DataSourcesPost, "/data-sources/", [POST]),
+    TestParameters(DataSourcesMap, "/data-sources/data-sources-map", [GET]),
+    TestParameters(DataSourceById, "/data-sources/id/<data_source_id>", [GET, PUT, DELETE]),
+    TestParameters(AgenciesPost, "/agencies/", [POST]),
+    TestParameters(AgenciesByPage, "/agencies/page/<page>", [GET]),
+    TestParameters(AgenciesById, "/agencies/id/<agency_id>", [GET, PUT, DELETE]),
     TestParameters(Search, "/search/search-location-and-record-type", [GET]),
     TestParameters(TypeaheadSuggestions, "/search/typeahead-suggestions", [GET]),
     TestParameters(Callback, "auth/callback", [GET]),
@@ -95,6 +96,7 @@ test_parameters = [
     TestParameters(
         DataRequestsById, "/data-requests/by-id/<data_request_id>", [GET, PUT, DELETE]
     ),
+    TestParameters(HomepageSearchCache, "/homepage-search-cache", [GET, POST]),
 ]
 
 

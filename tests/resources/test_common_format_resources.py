@@ -21,8 +21,8 @@ from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_test_data import TEST_RESPONSE
 from tests.helper_scripts.helper_functions import (
     check_is_test_response,
-    run_and_validate_request,
 )
+from tests.helper_scripts.common_test_functions import run_and_validate_request
 
 
 class DataSourcesMocks(DynamicMagicMock):
@@ -40,20 +40,27 @@ MOCK_EMAIL_PASSWORD = {
     "endpoint, http_method, route_to_patch, json_data",
     (
         (
-            "/data-sources-by-id/test_id",
+            "/data-sources/id/test_id",
             "GET",
             "DataSources.data_source_by_id_wrapper",
             {},
         ),
         (
-            "/data-sources-by-id/test_id",
+            "/data-sources/id/test_id",
             "PUT",
             "DataSources.update_data_source_wrapper",
+            {"entry_data": {}},
+        ),
+        (
+            "/data-sources/id/test_id",
+            "DELETE",
+            "DataSources.delete_data_source_wrapper",
             {},
         ),
-        ("/data-sources", "POST", "DataSources.add_new_data_source_wrapper", {}),
+        ("/data-sources/", "POST", "DataSources.add_new_data_source_wrapper", {"entry_data": {}}),
+        ("/data-sources/page/1", "GET", "DataSources.get_data_sources_wrapper", {}),
         (
-            "/data-sources-map",
+            "/data-sources/data-sources-map",
             "GET",
             "DataSources.get_data_sources_for_map_wrapper",
             {},
@@ -91,6 +98,7 @@ MOCK_EMAIL_PASSWORD = {
             "POST",
             "ResetPassword.reset_password",
             {
+                "email": "test_email",
                 "token": "test_token",
                 "password": "test_password",
             },
@@ -161,7 +169,65 @@ MOCK_EMAIL_PASSWORD = {
             "DELETE",
             "DataRequests.delete_data_request_wrapper",
             {}
-        )
+        ),
+        (
+            "/homepage-search-cache",
+            "POST",
+            "HomepageSearchCache.update_search_cache",
+            {
+                "search_results": ["test_result_1", "test_result_2"],
+                "agency_airtable_uid": "test_airtable_uid"
+            },
+        ),
+        (
+            "/homepage-search-cache",
+            "GET",
+            "HomepageSearchCache.get_agencies_without_homepage_urls",
+            {}
+        ),
+        (
+            "/agencies/page/1",
+            "GET",
+            "Agencies.get_agencies",
+            {},
+        ),
+        (
+            "/agencies/",
+            "POST",
+            "Agencies.create_agency",
+            {
+                "entry_data":
+                    {
+                        "submitted_name": "test_agency_name",
+                        "airtable_uid": "test_airtable_uid"
+                    }
+            },
+        ),
+        (
+            "/agencies/id/test_id",
+            "GET",
+            "Agencies.get_agency_by_id",
+            {},
+        ),
+        (
+            "/agencies/id/test_id",
+            "PUT",
+            "Agencies.update_agency",
+            {
+                "entry_data":
+                    {
+                        "submitted_name": "test_agency_name",
+                        "airtable_uid": "test_airtable_uid"
+                    }
+            },
+        ),
+        (
+            "/agencies/id/test_id",
+            "DELETE",
+            "Agencies.delete_agency",
+            {}
+        ),
+
     ),
 )
 def test_common_format_resources(

@@ -1,10 +1,8 @@
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
-import pytest
-
 from database_client.database_client import DatabaseClient
-from middleware.typeahead_suggestion_logic import (
+from middleware.primary_resource_logic.typeahead_suggestion_logic import (
     get_typeahead_dict_results,
     get_typeahead_suggestions_wrapper,
 )
@@ -70,7 +68,7 @@ class GetTypeaheadSuggestionsMocks(DynamicMagicMock):
 
 def test_get_typeahead_suggestions_wrapper(monkeypatch):
     mock = GetTypeaheadSuggestionsMocks(
-        patch_root="middleware.typeahead_suggestion_logic",
+        patch_root="middleware.primary_resource_logic.typeahead_suggestion_logic",
     )
 
     get_typeahead_suggestions_wrapper(mock.db_client, mock.query)

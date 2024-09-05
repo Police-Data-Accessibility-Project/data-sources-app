@@ -9,12 +9,6 @@ export default defineConfig({
 		VueRouter({
 			routesFolder: 'src/pages',
 			extendRoute(route) {
-				// Remove auth prefix for protected routes, update meta with auth
-				if (route.path.includes('auth')) {
-					route.path = route.path.replace('auth/', '');
-					route.meta = { ...route.meta, auth: true };
-				}
-
 				// Add meta from meta map (see below)
 				if (ROUTES_TO_META.has(route.name)) {
 					route.meta = { ...route.meta, ...ROUTES_TO_META.get(route.name) };

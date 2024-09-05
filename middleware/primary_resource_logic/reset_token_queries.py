@@ -3,15 +3,16 @@ from datetime import datetime
 from http import HTTPStatus
 
 from flask import Response, make_response
-from typing import Dict, Union
 
+from marshmallow import Schema, fields
 from werkzeug.security import generate_password_hash
 
 from database_client.database_client import DatabaseClient
-from middleware.exceptions import TokenNotFoundError
-from middleware.login_queries import generate_api_key
-from middleware.user_queries import user_check_email
+from middleware.flask_response_manager import FlaskResponseManager
+from middleware.primary_resource_logic.login_queries import generate_api_key
+from middleware.primary_resource_logic.user_queries import user_check_email
 from middleware.webhook_logic import send_password_reset_link
+from utilities.enums import SourceMappingEnum
 
 
 class InvalidTokenError(Exception):
@@ -21,6 +22,42 @@ class InvalidTokenError(Exception):
 @dataclass
 class RequestResetPasswordRequest:
     email: str
+    token: str
+
+
+class RequestResetPasswordRequestSchema(Schema):
+    email = fields.Str(
+        required=True,
+        description="The email of the user",
+        source=SourceMappingEnum.JSON,
+    )
+    token = fields.Str(
+        required=True,
+        description="The token of the user",
+        source=SourceMappingEnum.JSON,
+    )
+
+class ResetPasswordSchema(Schema):
+    email = fields.Str(
+        required=True,
+        description="The email of the user",
+        source=SourceMappingEnum.JSON,
+    )
+    password = fields.Str(
+        required=True,
+        description="The new password of the user",
+        source=SourceMappingEnum.JSON,
+    )
+    token = fields.Str(
+        required=True,
+        description="The user's reset password token",
+        source=SourceMappingEnum.JSON,
+    )
+
+@dataclass
+class ResetPasswordDTO:
+    email: str
+    password: str
     token: str
 
 
@@ -45,7 +82,7 @@ def request_reset_password(db_client: DatabaseClient, email) -> Response:
 
 
 def reset_password(
-    db_client: DatabaseClient, dto: RequestResetPasswordRequest
+    db_client: DatabaseClient, dto: ResetPasswordDTO
 ) -> Response:
     """
     Resets a user's password if the provided token is valid and not expired.
@@ -55,11 +92,25 @@ def reset_password(
     :return:
     """
     try:
-        email = validate_token(db_client, dto.token)
+        token_email = validate_token(db_client, dto.token)
     except InvalidTokenError:
         return invalid_token_response()
-    set_user_password(db_client, email, dto.token)
-    return make_response({"message": "Successfully updated password"}, HTTPStatus.OK)
+    validate_emails_match(dto.email, token_email)
+
+    set_user_password(
+        db_client=db_client,
+        email=token_email,
+        password=dto.password
+    )
+    return FlaskResponseManager.make_response({"message": "Successfully updated password"}, HTTPStatus.OK)
+
+
+def validate_emails_match(request_email: str, token_email: str):
+    if token_email != request_email:
+        FlaskResponseManager.abort(
+            code=HTTPStatus.BAD_REQUEST,
+            message="Invalid token."
+        )
 
 
 def set_user_password(db_client: DatabaseClient, email, password):

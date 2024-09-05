@@ -18,8 +18,8 @@ from middleware.util import get_env_variable
 from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources,
     create_test_user_setup,
-    TestUserSetup,
 )
+from tests.helper_scripts.test_dataclasses import TestUserSetup, IntegrationTestSetup
 from tests.helper_scripts.test_data_generator import TestDataGenerator
 
 
@@ -125,9 +125,7 @@ def client_with_mock_db(mocker, monkeypatch) -> ClientWithMockDB:
 
 
 @pytest.fixture
-def flask_client_with_db(
-    dev_db_connection: psycopg.Connection, monkeypatch
-):
+def flask_client_with_db(dev_db_connection: psycopg.Connection, monkeypatch):
     """
     Creates a client with database connection
     :param dev_db_connection:
@@ -192,6 +190,7 @@ def bypass_jwt_required(monkeypatch):
         lambda a, b, c, d, e, f: None,
     )
 
+
 @pytest.fixture
 def bypass_authentication_required(monkeypatch):
     """
@@ -204,11 +203,12 @@ def bypass_authentication_required(monkeypatch):
         lambda a, b: None,
     )
 
+
 # endregion
 
 
 @pytest.fixture
-def live_database_client(db_cursor) -> DatabaseClient:
+def live_database_client() -> DatabaseClient:
     """
     Returns a database client with a live connection to the database
     :param db_cursor:
@@ -249,3 +249,50 @@ def test_user_admin(flask_client_with_db, dev_db_connection) -> TestUserSetup:
     )
     db_client.add_user_permission(tus_admin.user_info.email, PermissionsEnum.DB_WRITE)
     return tus_admin
+
+
+@pytest.fixture
+def integration_test_admin_setup(flask_client_with_db) -> IntegrationTestSetup:
+    db_client = DatabaseClient()
+    tus_admin = create_test_user_setup(flask_client_with_db)
+    db_client.add_user_permission(
+        tus_admin.user_info.email, PermissionsEnum.READ_ALL_USER_INFO
+    )
+    db_client.add_user_permission(tus_admin.user_info.email, PermissionsEnum.DB_WRITE)
+    return IntegrationTestSetup(
+        flask_client=flask_client_with_db, db_client=db_client, tus=tus_admin
+    )
+
+
+@pytest.fixture
+def test_table_data(live_database_client: DatabaseClient):
+    """
+    Removes existing test table data and generates test data for the test table
+    Generates test data for the test table
+    :param dev_db_client:
+    :return:
+    """
+
+    live_database_client.execute_raw_sql("""
+    DELETE FROM test_table;
+    """)
+
+    live_database_client.execute_raw_sql("""
+    INSERT INTO test_table (pet_name, species) VALUES 
+    ('Arthur', 'Aardvark'),
+    ('Jimbo', 'Cat'),
+    ('Simon', 'Bear');
+    """)
+
+
+@pytest.fixture
+def mock_flask_response_manager(monkeypatch):
+    """
+    Mock the flask-native functions embedded within the FlaskResponseManager
+    :param monkeypatch:
+    :return:
+    """
+    mock = MagicMock()
+    monkeypatch.setattr("middleware.flask_response_manager.make_response", mock.make_response)
+    monkeypatch.setattr("middleware.flask_response_manager.abort", mock.abort)
+    return mock

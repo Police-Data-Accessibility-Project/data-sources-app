@@ -1,2 +1,2 @@
 
-data_key = "data"
+DATA_KEY = "data"

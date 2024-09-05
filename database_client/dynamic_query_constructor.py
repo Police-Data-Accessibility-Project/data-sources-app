@@ -12,6 +12,7 @@ from database_client.constants import (
     RESTRICTED_DATA_SOURCE_COLUMNS,
     RESTRICTED_COLUMNS,
 )
+from database_client.db_client_dataclasses import OrderByParameters
 from utilities.enums import RecordCategories
 
 TableColumn = namedtuple("TableColumn", ["table", "column"])
@@ -95,50 +96,6 @@ class DynamicQueryConstructor:
         return sql_query
 
     @staticmethod
-    def build_data_source_by_id_results_query() -> sql.Composed:
-        data_sources_columns = DynamicQueryConstructor.create_table_columns(
-            table="data_sources", columns=DATA_SOURCES_APPROVED_COLUMNS
-        )
-        agencies_approved_columns = DynamicQueryConstructor.create_table_columns(
-            table="agencies", columns=AGENCY_APPROVED_COLUMNS
-        )
-        archive_info_columns = DynamicQueryConstructor.create_table_columns(
-            table="data_sources_archive_info", columns=ARCHIVE_INFO_APPROVED_COLUMNS
-        )
-        alias_columns = [
-            TableColumnAlias(table="agencies", column="name", alias="agency_name"),
-            TableColumnAlias(
-                table="agencies", column="airtable_uid", alias="agency_id"
-            ),
-            TableColumnAlias(
-                table="data_sources", column="airtable_uid", alias="data_source_id"
-            ),
-        ]
-        fields = DynamicQueryConstructor.build_fields(
-            columns_only=data_sources_columns
-            + agencies_approved_columns
-            + archive_info_columns,
-            columns_and_alias=alias_columns,
-        )
-        sql_query = sql.SQL(
-            """
-            SELECT
-                {fields}
-            FROM
-                agency_source_link
-            INNER JOIN
-                data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
-            INNER JOIN
-                agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
-            INNER JOIN
-                data_sources_archive_info ON data_sources.airtable_uid = data_sources_archive_info.airtable_uid
-            WHERE
-                data_sources.approval_status = 'approved' AND data_sources.airtable_uid = %s
-        """
-        ).format(fields=fields)
-        return sql_query
-
-    @staticmethod
     def build_needs_identification_data_source_query():
         data_sources_columns = DynamicQueryConstructor.create_table_columns(
             table="data_sources", columns=DATA_SOURCES_APPROVED_COLUMNS
@@ -176,32 +133,6 @@ class DynamicQueryConstructor:
             )
             for result in results
         ]
-
-    @staticmethod
-    def create_new_data_source_query(data: dict) -> sql.Composed:
-        """
-        Creates a query to add a new data source to the database.
-
-        :param data: A dictionary containing the data source details.
-        """
-        # Remove restricted keys
-        for key in data.keys():
-            if key in RESTRICTED_COLUMNS:
-                data.pop(key)
-
-        # Add default values
-        data.update(
-            {
-                "approval_status": False,
-                "url_status": ["ok"],
-                "data_source_created": datetime.now().strftime("%Y-%m-%d"),
-                "airtable_uid": str(uuid.uuid4()),
-            }
-        )
-
-        return DynamicQueryConstructor.create_insert_query(
-            table_name="data_sources", column_value_mappings=data
-        )
 
     @staticmethod
     def generate_new_typeahead_suggestion_query(search_term: str):
@@ -425,7 +356,6 @@ class DynamicQueryConstructor:
     def build_full_where_clause(where_subclauses: list[sql.Composed]) -> sql.Composed:
         return sql.SQL(" WHERE ") + sql.SQL(" AND ").join(where_subclauses)
 
-
     @staticmethod
     def create_single_relation_selection_query(
         relation: str,
@@ -434,6 +364,7 @@ class DynamicQueryConstructor:
         not_where_mappings: Optional[dict] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
+        order_by: Optional[OrderByParameters] = None,
     ):
         """
         Creates a SELECT query for a single relation (table or view)
@@ -445,11 +376,14 @@ class DynamicQueryConstructor:
         """
         base_query = DynamicQueryConstructor.get_select_clause(columns, relation)
         if where_mappings is not None or not_where_mappings is not None:
-            where_clauses = DynamicQueryConstructor.build_where_subclauses_from_mappings(
-                not_where_mappings,
-                where_mappings
+            where_clauses = (
+                DynamicQueryConstructor.build_where_subclauses_from_mappings(
+                    not_where_mappings, where_mappings
+                )
             )
             base_query += DynamicQueryConstructor.build_full_where_clause(where_clauses)
+        if order_by is not None:
+            base_query += DynamicQueryConstructor.get_order_by_clause(order_by)
         if limit is not None:
             base_query += DynamicQueryConstructor.get_limit_clause(limit)
         if offset is not None:
@@ -509,21 +443,18 @@ class DynamicQueryConstructor:
 
     @staticmethod
     def get_column_permissions_as_permission_table_query(
-        relation: str,
-        relation_roles: list[str]
+        relation: str, relation_roles: list[str]
     ) -> sql.Composed:
 
         max_case_queries = []
         for role in relation_roles:
             max_case_query = sql.SQL(
                 " MAX(CASE WHEN CP.relation_role = {role} THEN CP.ACCESS_PERMISSION ELSE NULL END) AS {role_alias} "
-            ).format(
-                role=sql.Literal(role),
-                role_alias=sql.Identifier(role)
-            )
+            ).format(role=sql.Literal(role), role_alias=sql.Identifier(role))
             max_case_queries.append(max_case_query)
 
-        query = sql.SQL("""
+        query = sql.SQL(
+            """
         SELECT
             RC.ASSOCIATED_COLUMN,
             {max_case_queries}
@@ -537,8 +468,20 @@ class DynamicQueryConstructor:
         ORDER BY
             RC.id;
         
-        """).format(
+        """
+        ).format(
             max_case_queries=sql.SQL(", ").join(max_case_queries),
-            relation=sql.Literal(relation)
+            relation=sql.Literal(relation),
         )
         return query
+
+    @staticmethod
+    def get_order_by_clause(order_by: OrderByParameters):
+        return sql.SQL(
+            """
+            ORDER BY {column} {order}
+            """
+        ).format(
+            column=sql.Identifier(order_by.sort_by),
+            order=sql.SQL(order_by.sort_order.value),
+        )

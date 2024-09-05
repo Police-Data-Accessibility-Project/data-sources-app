@@ -3,21 +3,22 @@ Module for testing database client functionality against a live database
 """
 
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
+from unittest.mock import MagicMock
 
-import psycopg.errors
 import pytest
 from sqlalchemy import update, select
 
 from database_client.database_client import DatabaseClient
+from database_client.db_client_dataclasses import OrderByParameters
 from database_client.enums import (
     ExternalAccountTypeEnum,
     RelationRoleEnum,
     ColumnPermissionEnum,
+    SortOrder,
 )
 from database_client.result_formatter import ResultFormatter
 from middleware.exceptions import (
-    AccessTokenNotFoundError,
     UserNotFoundError,
 )
 from middleware.models import User, ExternalAccount
@@ -25,11 +26,12 @@ from conftest import test_client, monkeymodule, session
 from middleware.enums import PermissionsEnum
 from tests.fixtures import (
     live_database_client,
-    dev_db_connection,
-    bypass_api_key_required,
-    db_cursor,
+    test_table_data,
 )
-from tests.helper_scripts.common_test_data import insert_test_column_permission_data
+from tests.helper_scripts.common_test_data import (
+    insert_test_column_permission_data,
+    create_agency_entry_for_search_cache,
+)
 from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources_if_not_exist,
     setup_get_typeahead_suggestion_test_data,
@@ -161,19 +163,160 @@ def test_update_user_api_key(live_database_client):
     assert user_info.api_key == "test_api_key"
 
 
-def test_get_data_source_by_id(live_database_client):
-    # Add a new data source and agency to the database
-    insert_test_agencies_and_sources_if_not_exist(
-        live_database_client.connection.cursor()
+def test_select_from_single_relation_columns_only(
+    test_table_data, live_database_client
+):
+    results = live_database_client._select_from_single_relation(
+        relation_name="test_table",
+        columns=["pet_name"],
     )
-    # Fetch the data source using its id with the DatabaseClient method
-    result = live_database_client.get_data_source_by_id("SOURCE_UID_1")
 
-    # Confirm the data source and agency are retrieved successfully
-    NUMBER_OF_RESULT_COLUMNS = 67
-    assert result is not None
-    assert len(result) == NUMBER_OF_RESULT_COLUMNS
-    assert result[0] == "Source 1"
+    assert results == [
+        {"pet_name": "Arthur"},
+        {"pet_name": "Jimbo"},
+        {"pet_name": "Simon"},
+    ]
+
+
+def test_select_from_single_relation_where_mapping(live_database_client):
+    results = live_database_client._select_from_single_relation(
+        relation_name="test_table",
+        columns=["pet_name"],
+        where_mappings={"species": "Aardvark"},
+    )
+
+    assert results == [
+        {"pet_name": "Arthur"},
+    ]
+
+
+def test_select_from_single_relation_not_where_mapping(live_database_client):
+    results = live_database_client._select_from_single_relation(
+        relation_name="test_table",
+        columns=["pet_name"],
+        not_where_mappings={"species": "Aardvark"},
+    )
+
+    assert results == [
+        {"pet_name": "Jimbo"},
+        {"pet_name": "Simon"},
+    ]
+
+
+def test_select_from_single_relation_limit_and_offset(live_database_client):
+    results = live_database_client._select_from_single_relation(
+        relation_name="test_table",
+        columns=["pet_name"],
+        limit=1,
+    )
+
+    assert results == [
+        {"pet_name": "Arthur"},
+    ]
+
+
+def test_select_from_single_relation_offset(live_database_client, monkeypatch):
+    # Used alongside limit; we mock PAGE_SIZE to be one
+    monkeypatch.setattr("database_client.database_client.PAGE_SIZE", 1)
+
+    live_database_client.get_offset = MagicMock(return_value=1)
+
+    results = live_database_client._select_from_single_relation(
+        relation_name="test_table",
+        columns=["pet_name"],
+        limit=1,
+        page=1,  # 1 is the second page; 0-indexed
+    )
+
+    assert results == [
+        {"pet_name": "Jimbo"},
+    ]
+
+
+def test_select_from_single_relation_order_by(live_database_client):
+    results = live_database_client._select_from_single_relation(
+        relation_name="test_table",
+        columns=["pet_name"],
+        order_by=OrderByParameters(
+            sort_by="species", sort_order=SortOrder.ASCENDING
+        ),
+    )
+
+    assert results == [
+        {"pet_name": "Arthur"},
+        {"pet_name": "Simon"},
+        {"pet_name": "Jimbo"},
+    ]
+
+
+def test_select_from_single_relation_all_parameters(live_database_client, monkeypatch):
+    # Used alongside limit; we mock PAGE_SIZE to be one
+    monkeypatch.setattr("database_client.database_client.PAGE_SIZE", 1)
+
+    # Add additional row to the table to test the offset and limit
+    live_database_client.execute_raw_sql(
+        query="INSERT INTO test_table (pet_name, species) VALUES ('Ezekiel', 'Cat')"
+    )
+
+    results = live_database_client._select_from_single_relation(
+        relation_name="test_table",
+        columns=["pet_name"],
+        where_mappings={"species": "Aardvark"},
+        not_where_mappings={"species": "Bear"},
+        limit=1,
+        page=1,  # 1 is the second page; 0-indexed
+        order_by=OrderByParameters(
+            sort_by="pet_name",
+            sort_order=SortOrder.DESCENDING,
+        ),
+    )
+
+    assert results == [
+        {"pet_name": "Arthur"},
+    ]
+
+
+def test_create_entry_in_table_return_columns(live_database_client, test_table_data):
+    id = live_database_client._create_entry_in_table(
+        table_name="test_table",
+        column_value_mappings={
+            "pet_name": "George",
+            "species": "Monkey",
+        },
+        column_to_return="id",
+    )
+
+    results = live_database_client._select_from_single_relation(
+        relation_name="test_table",
+        columns=["pet_name", "species"],
+        where_mappings={"id": id},
+    )
+
+    assert results == [
+        {"pet_name": "George", "species": "Monkey"},
+    ]
+
+
+def test_create_entry_in_table_no_return_columns(live_database_client, test_table_data):
+    id = live_database_client._create_entry_in_table(
+        table_name="test_table",
+        column_value_mappings={
+            "pet_name": "George",
+            "species": "Monkey",
+        },
+    )
+
+    assert id is None
+
+    results = live_database_client._select_from_single_relation(
+        relation_name="test_table",
+        columns=["pet_name"],
+        where_mappings={"species": "Monkey"},
+    )
+
+    assert results == [
+        {"pet_name": "George"},
+    ]
 
 
 def test_get_approved_data_sources(live_database_client):
@@ -190,64 +333,77 @@ def test_get_approved_data_sources(live_database_client):
     assert len(data_sources) > 0
     assert len(data_sources[0]) == NUMBER_OF_DATA_SOURCE_COLUMNS
 
-
-def test_get_needs_identification_data_sources(live_database_client):
-    # Add new data sources to the database, at least two labeled 'needs identification' and one not
-    insert_test_agencies_and_sources_if_not_exist(
-        live_database_client.connection.cursor()
-    )
-    # Fetch the data sources with the DatabaseClient method
-    results = live_database_client.get_needs_identification_data_sources()
-
-    found = False
-    for result in results:
-        # Confirm "Source 2" (which was inserted as "needs identification" is retrieved).
-        if result["name"] != "Source 2":
-            continue
-        found = True
-    assert found
-    # Confirm only all data sources labeled 'needs identification' are retrieved
-
-
-def test_add_new_data_source(live_database_client):
-    # Add a new data source to the database with the DatabaseClient method
-    name = uuid.uuid4().hex
-    live_database_client.add_new_data_source(
-        {
-            "name": name,
-            "source_url": "https://example.com",
-        }
+def test_delete_from_table(live_database_client, test_table_data):
+    initial_results = live_database_client._select_from_single_relation(
+        relation_name="test_table",
+        columns=["pet_name"],
     )
 
-    # Fetch the data source from the database to confirm that it was added successfully
-    results = live_database_client.execute_raw_sql(
-        query="SELECT * FROM data_sources WHERE name = %s", vars=(name,)
+    assert initial_results == [
+        {"pet_name": "Arthur"},
+        {"pet_name": "Jimbo"},
+        {"pet_name": "Simon"},
+    ]
+
+
+    live_database_client._delete_from_table(
+        table_name="test_table",
+        id_column_name="species",
+        id_column_value="Cat",
     )
 
-    assert len(results) == 1
-
-
-def test_update_data_source(live_database_client):
-    # Add a new data source to the database
-    insert_test_agencies_and_sources_if_not_exist(
-        live_database_client.connection.cursor()
+    results = live_database_client._select_from_single_relation(
+        relation_name="test_table",
+        columns=["pet_name"],
     )
 
-    # Update the data source with the DatabaseClient method
-    new_description = uuid.uuid4().hex
-    live_database_client.update_data_source(
-        {"description": new_description}, "SOURCE_UID_1"
+    assert results == [
+        {"pet_name": "Arthur"},
+        {"pet_name": "Simon"},
+    ]
+
+def test_update_entry_in_table(live_database_client, test_table_data):
+    results = live_database_client._select_from_single_relation(
+        relation_name="test_table",
+        columns=["pet_name"],
+        where_mappings={"species": "Cat"},
     )
 
-    # Fetch the data source from the database to confirm the change
-    result = live_database_client.get_data_source_by_id("SOURCE_UID_1")
+    assert results == [
+        {"pet_name": "Jimbo"},
+    ]
 
-    assert result[2] == new_description
+    live_database_client._update_entry_in_table(
+        table_name="test_table",
+        entry_id="Jimbo",
+        column_edit_mappings={"species": "Lion"},
+        id_column_name="pet_name",
+    )
 
+
+    results = live_database_client._select_from_single_relation(
+        relation_name="test_table",
+        columns=["pet_name"],
+        where_mappings={"species": "Cat"},
+    )
+
+    assert results == []
+
+    results = live_database_client._select_from_single_relation(
+        relation_name="test_table",
+        columns=["pet_name"],
+        where_mappings={"species": "Lion"},
+    )
+
+    assert results == [
+        {"pet_name": "Jimbo"},
+    ]
 
 def test_get_data_sources_for_map(live_database_client):
     # Add at least two new data sources to the database
-    insert_test_agencies_and_sources_if_not_exist(live_database_client.connection.cursor())
+    insert_test_agencies_and_sources_if_not_exist(
+        live_database_client.connection.cursor()
+    )
     # Fetch the data source with the DatabaseClient method
     results = live_database_client.get_data_sources_for_map()
     # Confirm both data sources are retrieved and only the proper columns are returned
@@ -270,7 +426,7 @@ def test_get_agencies_from_page(live_database_client):
 def test_get_offset():
     # Send a page number to the DatabaseClient method
     # Confirm that the correct offset is returned
-    assert DatabaseClient.get_offset(3) == 2000
+    assert DatabaseClient.get_offset(page=3) == 200
 
 
 def test_get_data_sources_to_archive(live_database_client):
@@ -288,10 +444,13 @@ def test_update_last_cached(live_database_client):
     live_database_client.update_last_cached("SOURCE_UID_1", new_last_cached)
 
     # Fetch the data source from the database to confirm the change
-    result = live_database_client.get_data_source_by_id("SOURCE_UID_1")
-    zipped_results = ResultFormatter.zip_get_data_source_by_id_results(result)
+    result = live_database_client._select_from_single_relation(
+        relation_name="data_sources_archive_info",
+        columns=["last_cached"],
+        where_mappings={"airtable_uid": "SOURCE_UID_1"},
+    )[0]
 
-    assert zipped_results["last_cached"] == new_last_cached
+    assert result["last_cached"].strftime("%Y-%m-%d %H:%M:%S") == new_last_cached
 
 
 def test_get_quick_search_results(live_database_client):
@@ -588,30 +747,13 @@ def test_get_permitted_columns(live_database_client):
     assert "column_b" in results
 
 
-def test_create_data_request(live_database_client):
-    submission_notes = uuid.uuid4().hex
-
-    data_request_id = live_database_client.create_data_request(
-        data_request_info={"submission_notes": submission_notes}
-    )
-
-    results = live_database_client._select_from_single_relation(
-        "data_requests",
-        columns=["submission_notes"],
-        where_mappings={"id": data_request_id},
-    )
-
-    assert len(results) == 1
-    assert results[0]["submission_notes"] == submission_notes
-
-
 def test_get_data_requests_for_creator(live_database_client):
     test_user = create_test_user_db_client(live_database_client)
     submission_notes_list = [uuid.uuid4().hex, uuid.uuid4().hex, uuid.uuid4().hex]
 
     for submission_notes in submission_notes_list:
         live_database_client.create_data_request(
-            data_request_info={
+            column_value_mappings={
                 "submission_notes": submission_notes,
                 "creator_user_id": test_user.user_id,
             }
@@ -632,7 +774,7 @@ def test_user_is_creator_of_data_request(live_database_client):
 
     # Test with entry where user is listed as creator
     data_request_id = live_database_client.create_data_request(
-        data_request_info={
+        column_value_mappings={
             "submission_notes": submission_notes,
             "creator_user_id": test_user.user_id,
         }
@@ -645,7 +787,7 @@ def test_user_is_creator_of_data_request(live_database_client):
 
     # Test with entry where user is not listed as creator
     data_request_id = live_database_client.create_data_request(
-        data_request_info={"submission_notes": submission_notes}
+        column_value_mappings={"submission_notes": submission_notes}
     )
 
     results = live_database_client.user_is_creator_of_data_request(
@@ -653,70 +795,6 @@ def test_user_is_creator_of_data_request(live_database_client):
     )
     assert results is False
 
-def test_get_data_requests(live_database_client):
-
-
-    submitter_email = uuid.uuid4().hex
-    submission_notes_1 = uuid.uuid4().hex
-    submission_notes_2 = uuid.uuid4().hex
-
-    data_request_id_1 = live_database_client.create_data_request(
-        data_request_info={
-            "submission_notes": submission_notes_1,
-            "submitter_email": submitter_email
-        }
-    )
-    data_request_id_2 = live_database_client.create_data_request(
-        data_request_info={
-            "submission_notes": submission_notes_2,
-            "submitter_email": submitter_email
-        }
-    )
-
-    result_1 = live_database_client.get_data_requests(columns=["submission_notes"], where_mappings={"submitter_email": submitter_email})
-    assert len(result_1) == 2
-    assert result_1[0]["submission_notes"] == submission_notes_1
-
-    result_2 = live_database_client.get_data_requests(
-        columns=["submission_notes"],
-        where_mappings={"submitter_email": submitter_email},
-        not_where_mappings={"id": data_request_id_1}
-    )
-    assert len(result_2) == 1
-    assert result_2[0]["submission_notes"] == submission_notes_2
-
-    user_id = live_database_client.add_new_user(
-        email=submitter_email,
-        password_digest=uuid.uuid4().hex
-    )
-
-def test_delete_data_request(live_database_client):
-    submission_notes = uuid.uuid4().hex
-    data_request_id = live_database_client.create_data_request(
-        data_request_info={"submission_notes": submission_notes}
-    )
-
-    results = live_database_client.get_data_requests(columns=["submission_notes"], where_mappings={"id": data_request_id})
-    assert len(results) == 1
-    live_database_client.delete_data_request(data_request_id)
-    results = live_database_client.get_data_requests(columns=["submission_notes"], where_mappings={"id": data_request_id})
-    assert len(results) == 0
-
-def test_update_data_request(live_database_client):
-    submission_notes = uuid.uuid4().hex
-
-    data_request_id = live_database_client.create_data_request(
-        data_request_info={"submission_notes": submission_notes}
-    )
-
-    results = live_database_client.get_data_requests(columns=["submission_notes"], where_mappings={"id": data_request_id})
-    assert len(results) == 1
-    assert results[0]["submission_notes"] == submission_notes
-    new_submission_notes = uuid.uuid4().hex
-    live_database_client.update_data_request(column_edit_mappings={"submission_notes": new_submission_notes}, data_request_id=data_request_id)
-    results = live_database_client.get_data_requests(columns=["submission_notes"], where_mappings={"id": data_request_id})
-    assert len(results) == 1
-    assert results[0]["submission_notes"] == new_submission_notes
 
 def test_get_column_permissions_as_permission_table(live_database_client):
     insert_test_column_permission_data(live_database_client)
@@ -726,24 +804,68 @@ def test_get_column_permissions_as_permission_table(live_database_client):
     )
     assert results == [
         {
-            'associated_column': 'column_a',
-            'STANDARD': 'READ',
-            'OWNER': 'READ',
-            'ADMIN': 'WRITE'
+            "associated_column": "column_a",
+            "STANDARD": "READ",
+            "OWNER": "READ",
+            "ADMIN": "WRITE",
         },
         {
-            'associated_column': 'column_b',
-            'STANDARD': 'READ',
-            'OWNER': 'WRITE',
-            'ADMIN': 'WRITE'
+            "associated_column": "column_b",
+            "STANDARD": "READ",
+            "OWNER": "WRITE",
+            "ADMIN": "WRITE",
         },
         {
-            'associated_column': 'column_c',
-            'STANDARD': 'NONE',
-            'OWNER': 'NONE',
-            'ADMIN': 'READ'
-        }
+            "associated_column": "column_c",
+            "STANDARD": "NONE",
+            "OWNER": "NONE",
+            "ADMIN": "READ",
+        },
     ]
+
+
+def test_get_agencies_without_homepage_urls(live_database_client):
+    submitted_name = create_agency_entry_for_search_cache(
+        db_client=live_database_client
+    )
+
+    results = live_database_client.get_agencies_without_homepage_urls()
+    assert len(results) > 1
+    assert results[0]["submitted_name"] == submitted_name
+    assert list(results[0].keys()) == [
+        "submitted_name",
+        "jurisdiction_type",
+        "state_iso",
+        "municipality",
+        "county_name",
+        "airtable_uid",
+        "count_data_sources",
+        "zip_code",
+        "no_web_presence",
+    ]
+
+
+def test_create_search_cache_entry(live_database_client):
+    submitted_name = create_agency_entry_for_search_cache(
+        db_client=live_database_client
+    )
+
+    result_to_update = live_database_client.get_agencies_without_homepage_urls()[0]
+
+    airtable_uid = result_to_update["airtable_uid"]
+
+    fake_search_result = "found_results"
+    live_database_client.create_search_cache_entry(
+        column_value_mappings={
+            "agency_airtable_uid": airtable_uid,
+            "search_result": fake_search_result,
+        }
+    )
+
+    # Check the first result is now different
+    new_result = live_database_client.get_agencies_without_homepage_urls()[0]
+    assert new_result["airtable_uid"] != airtable_uid
+
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts
 # def test_search_with_location_and_record_types_test_data(live_database_client, xylonslyvania_test_data):

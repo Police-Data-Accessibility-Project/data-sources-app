@@ -2,7 +2,7 @@ from flask import Response, request
 from flask_restx import fields, reqparse
 
 from config import limiter
-from middleware.typeahead_suggestion_logic import get_typeahead_suggestions_wrapper
+from middleware.primary_resource_logic.typeahead_suggestion_logic import get_typeahead_suggestions_wrapper
 from resources.PsycopgResource import handle_exceptions, PsycopgResource
 from resources.resource_helpers import create_outer_model
 

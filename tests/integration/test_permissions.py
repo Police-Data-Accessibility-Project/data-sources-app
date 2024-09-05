@@ -3,10 +3,9 @@ from typing import Union, Dict, List, Optional
 from database_client.database_client import DatabaseClient
 from middleware.enums import PermissionsEnum
 from tests.helper_scripts.helper_functions import (
-    check_response_status,
     create_test_user_setup,
-    run_and_validate_request,
 )
+from tests.helper_scripts.common_test_functions import check_response_status, run_and_validate_request
 from tests.fixtures import (
     flask_client_with_db,
     bypass_api_key_required,
