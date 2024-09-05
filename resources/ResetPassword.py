@@ -4,12 +4,15 @@ from middleware.primary_resource_logic.reset_token_queries import (
     reset_password,
     RequestResetPasswordRequest,
     RequestResetPasswordRequestSchema,
+    ResetPasswordSchema,
+    ResetPasswordDTO,
 )
 from utilities.namespace import create_namespace
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
-    get_restx_param_documentation, )
+    get_restx_param_documentation,
+)
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 
 namespace_reset_password = create_namespace()
@@ -21,6 +24,7 @@ doc_info = get_restx_param_documentation(
 )
 
 reset_password_model = doc_info.model
+
 
 @namespace_reset_password.route("/reset-password")
 class ResetPassword(PsycopgResource):
@@ -47,7 +51,7 @@ class ResetPassword(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=reset_password,
             schema_populate_parameters=SchemaPopulateParameters(
-                schema_class=RequestResetPasswordRequestSchema,
-                dto_class=RequestResetPasswordRequest,
-            )
+                schema_class=ResetPasswordSchema,
+                dto_class=ResetPasswordDTO,
+            ),
         )
