@@ -28,12 +28,11 @@ from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 from resources.resource_helpers import (
     add_jwt_or_api_key_header_arg,
+    create_response_dictionary,
 )
 from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_data_requests = create_namespace(AppNamespaces.DATA_REQUESTS)
-
-# TODO: Create models for data requests to expect and return, and add to documentation
 
 entry_data_requests_model = create_entry_data_request_model(namespace_data_requests)
 entry_data_response_model = create_entry_data_response_model(namespace_data_requests)
@@ -58,15 +57,6 @@ class DataRequestsById(PsycopgResource):
     @authentication_required(
         allowed_access_methods=[AccessTypeEnum.API_KEY, AccessTypeEnum.JWT],
     )
-    @namespace_data_requests.response(
-        HTTPStatus.OK,
-        "Success; Data request retrieved",
-        model=entry_data_response_model,
-    )
-    @namespace_data_requests.response(
-        HTTPStatus.INTERNAL_SERVER_ERROR, "Internal server error"
-    )
-    @namespace_data_requests.response(HTTPStatus.BAD_REQUEST, "Invalid API Key or JWT")
     @namespace_data_requests.doc(
         description=f"""
         Get data request by id
@@ -76,7 +66,11 @@ Columns returned are determinant upon the user's access level and/or relation to
 ## COLUMN PERMISSIONS
         
 {data_requests_column_permissions}
-        """
+        """,
+        responses=create_response_dictionary(
+            success_message="Returns information on the specific data request.",
+            success_model=entry_data_response_model
+        )
     )
     @namespace_data_requests.expect(authorization_parser, validate=True)
     def get(self, access_info: AccessInfo, data_request_id: str) -> Response:
@@ -95,12 +89,6 @@ Columns returned are determinant upon the user's access level and/or relation to
         allowed_access_methods=[AccessTypeEnum.JWT],
     )
     @namespace_data_requests.expect(authorization_parser, entry_data_requests_model)
-    @namespace_data_requests.response(HTTPStatus.OK, "Success; Data request updated")
-    @namespace_data_requests.response(
-        HTTPStatus.INTERNAL_SERVER_ERROR, "Internal server error"
-    )
-    @namespace_data_requests.response(HTTPStatus.FORBIDDEN, "Invalid permissions")
-    @namespace_data_requests.response(HTTPStatus.BAD_REQUEST, "Invalid API Key or JWT")
     @namespace_data_requests.doc(
         description=f"""
         Updates data request
@@ -112,6 +100,9 @@ Columns allowed to be updated by the user is determinant upon the user's access 
 {data_requests_column_permissions}
         
         """,
+        responses=create_response_dictionary(
+            success_message="Data request successfully updated.",
+        )
     )
     def put(self, data_request_id: str, access_info: AccessInfo) -> Response:
         """
@@ -129,12 +120,12 @@ Columns allowed to be updated by the user is determinant upon the user's access 
     @authentication_required(
         allowed_access_methods=[AccessTypeEnum.JWT],
     )
-    @namespace_data_requests.response(HTTPStatus.OK, "Success; Data request deleted")
-    @namespace_data_requests.response(
-        HTTPStatus.INTERNAL_SERVER_ERROR, "Internal server error"
+    @namespace_data_requests.doc(
+        description="Delete a data request by its ID",
+        responses=create_response_dictionary(
+            success_message="Data request successfully deleted."
+        ),
     )
-    @namespace_data_requests.response(HTTPStatus.FORBIDDEN, "Invalid permissions")
-    @namespace_data_requests.response(HTTPStatus.BAD_REQUEST, "Invalid API Key or JWT")
     @namespace_data_requests.expect(authorization_parser, validate=True)
     def delete(self, data_request_id: str, access_info: AccessInfo) -> Response:
         """
@@ -154,15 +145,6 @@ class DataRequests(PsycopgResource):
     @authentication_required(
         allowed_access_methods=[AccessTypeEnum.API_KEY, AccessTypeEnum.JWT],
     )
-    @namespace_data_requests.response(
-        HTTPStatus.OK,
-        "Success",
-        model=data_requests_outer_model,
-    )
-    @namespace_data_requests.response(
-        HTTPStatus.INTERNAL_SERVER_ERROR, "Internal server error"
-    )
-    @namespace_data_requests.response(HTTPStatus.BAD_REQUEST, "Invalid API Key or JWT")
     @namespace_data_requests.doc(
         description=f"""
         Gets data requests with optional filters
@@ -173,6 +155,10 @@ class DataRequests(PsycopgResource):
         
 {data_requests_column_permissions}
         """,
+        responses=create_response_dictionary(
+            success_message="Returns a paginated list of data requests.",
+            success_model=data_requests_outer_model
+        )
     )
     @namespace_data_requests.expect(authorization_parser, validate=True)
     def get(self, access_info: AccessInfo) -> Response:
@@ -183,16 +169,6 @@ class DataRequests(PsycopgResource):
         allowed_access_methods=[AccessTypeEnum.JWT],
     )
     @namespace_data_requests.expect(authorization_parser, entry_data_requests_model)
-    @namespace_data_requests.response(
-        code=HTTPStatus.OK,
-        description="Success; Data request created",
-        model=id_and_message_model,
-    )
-    @namespace_data_requests.response(
-        HTTPStatus.INTERNAL_SERVER_ERROR, "Internal server error"
-    )
-    @namespace_data_requests.response(HTTPStatus.FORBIDDEN, "Invalid permissions")
-    @namespace_data_requests.response(HTTPStatus.BAD_REQUEST, "Invalid API Key or JWT")
     @namespace_data_requests.doc(
         description=f"""
         Creates a new data request
@@ -204,6 +180,10 @@ Columns permitted to be included by the user is determined by their level of acc
 {data_requests_column_permissions}
         
         """,
+        responses=create_response_dictionary(
+            success_message="Data request successfully created.",
+            success_model=id_and_message_model
+        )
     )
     def post(self, access_info: AccessInfo) -> Response:
         """
