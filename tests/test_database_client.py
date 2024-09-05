@@ -22,7 +22,6 @@ from middleware.exceptions import (
     UserNotFoundError,
 )
 from middleware.models import User, ExternalAccount
-from conftest import test_client, monkeymodule, session
 from middleware.enums import PermissionsEnum
 from tests.fixtures import (
     live_database_client,
@@ -40,31 +39,35 @@ from tests.helper_scripts.helper_functions import (
 from utilities.enums import RecordCategories
 
 
-def test_add_new_user(live_database_client):
+def test_add_new_user(live_database_client: DatabaseClient):
     fake_email = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
-    session = live_database_client.session
-    password_digest = session.scalars(
-        select(User.password_digest).where(User.email == fake_email)
-    ).one_or_none()
+    result = (
+        live_database_client.execute_sqlalchemy(
+            lambda: select(User.password_digest, User.api_key).where(
+                User.email == fake_email
+            )
+        )
+        .mappings()
+        .one_or_none()
+    )
 
-    password_digest = result["password_digest"]
-    api_key = result["api_key"]
+    password_digest = result.password_digest
+    api_key = result.api_key
 
     assert api_key is not None
     assert password_digest == "test_password"
 
 
-def test_get_user_id(live_database_client):
+def test_get_user_id(live_database_client: DatabaseClient):
     # Add a new user to the database
     fake_email = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
 
     # Directly fetch the user ID from the database for comparison
-    session = live_database_client.session
-    direct_user_id = session.scalars(
-        select(User.id).where(User.email == fake_email)
-    ).one_or_none()
+    direct_user_id = live_database_client.execute_sqlalchemy(
+        lambda: select(User.id).where(User.email == fake_email)
+    ).one_or_none()[0]
 
     # Get the user ID from the live database
     result_user_id = live_database_client.get_user_id(fake_email)
@@ -73,7 +76,7 @@ def test_get_user_id(live_database_client):
     assert result_user_id == direct_user_id
 
 
-def test_link_external_account(live_database_client):
+def test_link_external_account(live_database_client: DatabaseClient):
     fake_email = uuid.uuid4().hex
     fake_external_account_id = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
@@ -83,10 +86,9 @@ def test_link_external_account(live_database_client):
         external_account_id=fake_external_account_id,
         external_account_type=ExternalAccountTypeEnum.GITHUB,
     )
-    session = live_database_client.session
     row = (
-        session.execute(
-            select(ExternalAccount.user_id, ExternalAccount.account_type).where(
+        live_database_client.execute_sqlalchemy(
+            lambda: select(ExternalAccount.user_id, ExternalAccount.account_type).where(
                 ExternalAccount.account_identifier == fake_external_account_id
             )
         )
@@ -114,14 +116,13 @@ def test_get_user_info_by_external_account_id(live_database_client):
     assert user_info.email == fake_email
 
 
-def test_set_user_password_digest(live_database_client):
+def test_set_user_password_digest(live_database_client: DatabaseClient):
     fake_email = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
     live_database_client.set_user_password_digest(fake_email, "test_password")
-    session = live_database_client.session
-    password_digest = session.scalars(
-        select(User.password_digest).where(User.email == fake_email)
-    ).one_or_none()
+    password_digest = live_database_client.execute_sqlalchemy(
+        lambda: select(User.password_digest).where(User.email == fake_email)
+    ).one_or_none()[0]
 
     assert password_digest == "test_password"
 
@@ -533,32 +534,12 @@ def test_get_user_by_api_key(live_database_client: DatabaseClient):
         email=test_email,
         password_digest="test_password",
     )
-    # Add a role to the user
+
+    # Add a role and api_key to the user
     live_database_client.execute_sqlalchemy(
         lambda: update(User)
         .where(User.email == test_email)
-        .values(api_key=test_api_key)
-    )
-
-    # Fetch the user's info using its api key with the DatabaseClient method
-    user_identifiers = live_database_client.get_user_by_api_key(api_key=test_api_key)
-
-    # Confirm the user_id is retrieved successfully
-    assert user_identifiers.id == user_id
-
-
-def test_get_role_by_api_key(live_database_client):
-    # Add a new user to the database
-    live_database_client.add_new_user(
-        email="test_user",
-        password_digest="test_password",
-    )
-
-    # Add a role and api_key to the user
-    live_database_client.session.execute(
-        update(User)
-        .where(User.email == "test_user")
-        .values(role="test_role", api_key="test_api_key")
+        .values(role="test_role", api_key=test_api_key)
     )
 
     # Fetch the user's role using its api key with the DatabaseClient method

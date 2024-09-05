@@ -15,6 +15,7 @@ from middleware.schema_and_dto_logic.dynamic_dto_request_content_population impo
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import DTOPopulateParameters
 
+
 def handle_exceptions(
     func: Callable[..., Any]
 ) -> Callable[..., Union[Any, Tuple[Dict[str, str], int]]]:
@@ -90,7 +91,6 @@ class PsycopgResource(Resource):
         if self.connection_is_closed():
             config.connection = initialize_psycopg_connection()
         return config.connection
-
 
     @contextmanager
     def setup_database_client(self) -> DatabaseClient:

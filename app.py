@@ -1,7 +1,6 @@
 import os
 from datetime import timedelta
 
-#import dotenv
 from flask import Flask
 from flask_cors import CORS
 
@@ -105,16 +104,8 @@ def create_app() -> Flask:
     app.secret_key = get_flask_app_cookie_encryption_key()
     app.wsgi_app = ReverseProxied(app.wsgi_app)
     CORS(app)
-    '''dotenv.load_dotenv()
-    app.config["SQLALCHEMY_DATABASE_URI"] = get_env_variable(
-        "DO_DATABASE_URL"
-    )
-    if testing is True:
-        app.config["TESTING"] = True
-        app.config["SQLALCHEMY_ECHO"] = True'''
     api.init_app(app)
     oauth.init_app(app)
-    #db.init_app(app)
     limiter.init_app(app)
     jwt.init_app(app)
 

@@ -160,7 +160,6 @@ class DatabaseClient:
         results = self.session.execute(query())
         return results
 
-    @session_manager
     def add_new_user(self, email: str, password_digest: str) -> Optional[int]:
         """
         Adds a new user to the database.

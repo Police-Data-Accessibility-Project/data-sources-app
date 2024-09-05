@@ -17,7 +17,6 @@ from middleware.custom_dataclasses import (
     OAuthCallbackInfo,
     FlaskSessionCallbackInfo,
 )
-from middleware.enums import CallbackFunctionsEnum
 from middleware.models import User
 from middleware.enums import CallbackFunctionsEnum, PermissionsEnum
 from resources.ApiKey import API_KEY_ROUTE
@@ -132,7 +131,7 @@ def check_is_test_response(response):
 
 
 def create_test_user(
-    session,
+    cursor,
     email="",
     password_hash="hashed_password_here",
     api_key="api_key_here",
@@ -141,16 +140,23 @@ def create_test_user(
     """
     Create test user and return the id of the test user.
 
-    :param session:
+    :param cursor:
     :return: user id
     """
     if email == "":
         email = uuid.uuid4().hex + "@test.com"
-    user = User(email=email, password_digest=password_hash, api_key=api_key, role=role)
-    session.add(user)
-    session.commit()
+    cursor.execute(
+
+        """
+        INSERT INTO users (email, password_digest, api_key, role)
+        VALUES
+        (%s, %s, %s, %s)
+        RETURNING id;
+        """,
+        (email, password_digest, api_key, role)
+    )
     return TestUser(
-        id=user.id,
+        id=cursor.fetchone()[0],
         email=email,
         password_hash=password_hash,
     )
@@ -264,14 +270,17 @@ def login_and_return_jwt_tokens(
 def get_user_password_digest(cursor: psycopg.Cursor, user_info):
     """
     Get the associated password digest of a user (given their email) from the database
-    :param session:
+    :param cursor:
     :param user_info:
     :return:
     """
-    password_digest = session.scalars(
-        select(User.password_digest).where(User.email == user_info.email)
-    ).one_or_none()
-    return password_digest
+    cursor.execute(
+        """
+        SELECT password_digest from users where email = %s
+    """,
+        (user_info.email,),
+    )
+    return cursor.fetchone()[0]
 
 
 def request_reset_password_api(client_with_db, mocker, user_info):
@@ -309,9 +318,9 @@ def create_api_key(client_with_db, user_info) -> str:
     return api_key
 
 
-def create_api_key_db(session, user_id: str):
+def create_api_key_db(cursor, user_id: str):
     api_key = uuid.uuid4().hex
-    session.execute(update(User).where(User.id == user_id).values(api_key=api_key))
+    cursor.execute("UPDATE users SET api_key = %s WHERE id = %s", (api_key, user_id))
     return api_key
 
 
@@ -348,7 +357,7 @@ def give_user_admin_role(
 ):
     """
     Give the given user an admin role.
-    :param session:
+    :param connection:
     :param user_info:
     :return:
     """

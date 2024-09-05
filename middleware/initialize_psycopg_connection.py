@@ -2,9 +2,6 @@ from asyncio import Lock
 
 import psycopg
 from psycopg import connection as PgConnection
-from sqlalchemy import create_engine
-from sqlalchemy.engine import Engine as SQLAlchemyEngine
-
 from middleware.util import get_env_variable
 
 

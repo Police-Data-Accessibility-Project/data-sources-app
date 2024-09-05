@@ -5,7 +5,7 @@ import uuid
 
 import psycopg
 
-from tests.fixtures import dev_db_connection, flask_client_with_db
+from tests.fixtures import dev_db_connection, flask_client_with_db, dev_db_client
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     get_user_password_digest,
@@ -33,7 +33,7 @@ def test_user_post(
     password_digest = rows[0][1]
     assert user_info.email == email, "DB user email and original email do not match"
     assert (
-        user_info.password != row.password_digest
+        user_info.password != password_digest
     ), "DB user password digest should not match password"
 
 
@@ -43,6 +43,7 @@ def test_user_put(
     """
     Test that PUT call to /user endpoint successfully updates the user's password and verifies the new password hash is distinct from both the plain new password and the old password hash in the database
     """
+
     tus = create_test_user_setup(flask_client_with_db)
     cursor = dev_db_connection.cursor()
 
@@ -59,7 +60,7 @@ def test_user_put(
         response.status_code == HTTPStatus.OK.value
     ), "User password update not successful"
 
-    new_password_hash = get_user_password_digest(session, tus.user_info)
+    new_password_hash = get_user_password_digest(cursor, tus.user_info)
 
     assert (
         new_password != new_password_hash

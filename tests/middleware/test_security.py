@@ -3,7 +3,6 @@ import uuid
 from http import HTTPStatus
 from typing import Callable
 
-import dotenv
 import flask
 import pytest
 from unittest.mock import MagicMock, patch
