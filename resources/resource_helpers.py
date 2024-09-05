@@ -2,6 +2,7 @@
 Helper scripts for the Resource classes
 """
 from http import HTTPStatus
+from typing import Optional
 
 from flask_restx import Namespace, Model, fields
 from flask_restx.reqparse import RequestParser
@@ -203,3 +204,4 @@ def create_outer_model(namespace: Namespace, inner_model: Model, name: str) -> M
             ),
         },
     )
+

@@ -1,7 +1,5 @@
-from http import HTTPStatus
 
 from flask import Response
-from flask_restx import fields
 
 from middleware.access_logic import AccessInfo
 from middleware.column_permission_logic import create_column_permissions_string_table
@@ -69,10 +67,10 @@ Columns returned are determinant upon the user's access level and/or relation to
         """,
         responses=create_response_dictionary(
             success_message="Returns information on the specific data request.",
-            success_model=entry_data_response_model
-        )
+            success_model=entry_data_response_model,
+        ),
+        expect=[authorization_parser],
     )
-    @namespace_data_requests.expect(authorization_parser, validate=True)
     def get(self, access_info: AccessInfo, data_request_id: str) -> Response:
         """
         Get data request by id
@@ -88,7 +86,6 @@ Columns returned are determinant upon the user's access level and/or relation to
     @authentication_required(
         allowed_access_methods=[AccessTypeEnum.JWT],
     )
-    @namespace_data_requests.expect(authorization_parser, entry_data_requests_model)
     @namespace_data_requests.doc(
         description=f"""
         Updates data request
@@ -102,7 +99,8 @@ Columns allowed to be updated by the user is determinant upon the user's access 
         """,
         responses=create_response_dictionary(
             success_message="Data request successfully updated.",
-        )
+        ),
+        expect=[authorization_parser, entry_data_requests_model]
     )
     def put(self, data_request_id: str, access_info: AccessInfo) -> Response:
         """
@@ -125,8 +123,8 @@ Columns allowed to be updated by the user is determinant upon the user's access 
         responses=create_response_dictionary(
             success_message="Data request successfully deleted."
         ),
+        expect=[authorization_parser],
     )
-    @namespace_data_requests.expect(authorization_parser, validate=True)
     def delete(self, data_request_id: str, access_info: AccessInfo) -> Response:
         """
         Delete data request
@@ -157,10 +155,10 @@ class DataRequests(PsycopgResource):
         """,
         responses=create_response_dictionary(
             success_message="Returns a paginated list of data requests.",
-            success_model=data_requests_outer_model
-        )
+            success_model=data_requests_outer_model,
+        ),
+        expect=[authorization_parser],
     )
-    @namespace_data_requests.expect(authorization_parser, validate=True)
     def get(self, access_info: AccessInfo) -> Response:
         return self.run_endpoint(get_data_requests_wrapper, access_info=access_info)
 
@@ -168,7 +166,6 @@ class DataRequests(PsycopgResource):
     @authentication_required(
         allowed_access_methods=[AccessTypeEnum.JWT],
     )
-    @namespace_data_requests.expect(authorization_parser, entry_data_requests_model)
     @namespace_data_requests.doc(
         description=f"""
         Creates a new data request
@@ -182,8 +179,9 @@ Columns permitted to be included by the user is determined by their level of acc
         """,
         responses=create_response_dictionary(
             success_message="Data request successfully created.",
-            success_model=id_and_message_model
-        )
+            success_model=id_and_message_model,
+        ),
+        expect=[entry_data_requests_model,authorization_parser],
     )
     def post(self, access_info: AccessInfo) -> Response:
         """
