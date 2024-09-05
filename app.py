@@ -104,6 +104,7 @@ def create_app() -> Flask:
     app.secret_key = get_flask_app_cookie_encryption_key()
     app.wsgi_app = ReverseProxied(app.wsgi_app)
     CORS(app)
+
     api.init_app(app)
     oauth.init_app(app)
     limiter.init_app(app)

@@ -8,8 +8,6 @@ from unittest.mock import MagicMock
 
 import psycopg
 from flask.testing import FlaskClient
-import sqlalchemy
-from sqlalchemy import update, select
 
 from database_client.database_client import DatabaseClient
 from middleware.custom_dataclasses import (
@@ -17,7 +15,6 @@ from middleware.custom_dataclasses import (
     OAuthCallbackInfo,
     FlaskSessionCallbackInfo,
 )
-from middleware.models import User
 from middleware.enums import CallbackFunctionsEnum, PermissionsEnum
 from resources.ApiKey import API_KEY_ROUTE
 from tests.helper_scripts.common_test_data import TEST_RESPONSE
@@ -146,14 +143,13 @@ def create_test_user(
     if email == "":
         email = uuid.uuid4().hex + "@test.com"
     cursor.execute(
-
         """
         INSERT INTO users (email, password_digest, api_key, role)
         VALUES
         (%s, %s, %s, %s)
         RETURNING id;
         """,
-        (email, password_digest, api_key, role)
+        (email, password_hash, api_key, role),
     )
     return TestUser(
         id=cursor.fetchone()[0],
