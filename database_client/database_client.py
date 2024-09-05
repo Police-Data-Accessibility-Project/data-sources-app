@@ -3,14 +3,14 @@ from collections import namedtuple
 from contextlib import contextmanager
 from datetime import datetime
 from functools import wraps
-from typing import Optional, Any, List
+from typing import Optional, Any, List, Callable
 import uuid
 
 import psycopg
 from psycopg import sql
 from psycopg.rows import dict_row, tuple_row
 from sqlalchemy.orm import sessionmaker, aliased
-from sqlalchemy.sql.expression import select
+from sqlalchemy import select
 
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
@@ -81,7 +81,7 @@ class DatabaseClient:
 
     def __init__(self):
         self.connection = initialize_psycopg_connection()
-        self.session = initialize_sqlalchemy_session()
+        self.Session = initialize_sqlalchemy_session()
         self.cursor = None
 
     def cursor_manager(row_factory=dict_row):
@@ -116,7 +116,7 @@ class DatabaseClient:
     def session_manager(method):
         @wraps(method)
         def wrapper(self, *args, **kwargs):
-            #self.session = self.Session()
+            self.session = self.Session()
             try:
                 result = method(self, *args, **kwargs)
                 self.session.commit()
@@ -124,9 +124,9 @@ class DatabaseClient:
             except Exception as e:
                 self.session.rollback()
                 raise e
-            '''finally:
+            finally:
                 self.session.close()
-                self.session = None'''
+                self.session = None
 
         return wrapper
         
@@ -152,9 +152,8 @@ class DatabaseClient:
         return results
     
     @session_manager
-    def execute_sqlalchemy(self, query):
+    def execute_sqlalchemy(self, query: Callable):
         results = self.session.execute(query())
-        print(results)
         return results
 
     @session_manager
@@ -165,13 +164,11 @@ class DatabaseClient:
         :param password_digest:
         :return:
         """
-        '''return self._create_entry_in_table(
+        return self._create_entry_in_table(
             table_name="users",
             column_value_mappings={"email": email, "password_digest": password_digest},
             column_to_return="id",
-        )'''
-        user = User(email=email, password_digest=password_digest)
-        self.session.add(user)
+        )
 
     def get_user_id(self, email: str) -> Optional[int]:
         """

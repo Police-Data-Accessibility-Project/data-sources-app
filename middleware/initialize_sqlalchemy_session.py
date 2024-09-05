@@ -8,10 +8,10 @@ from middleware.util import get_env_variable
 
 class DatabaseInitializationError(Exception):
     """
-    Custom Exception to be raised when psycopg connection initialization fails.
+    Custom Exception to be raised when SQLAlchemy connection initialization fails.
     """
 
-    def __init__(self, message="Failed to initialize sqlalchemy session."):
+    def __init__(self, message="Failed to initialize SQLAlchemy session."):
         self.message = message
         super().__init__(self.message)
 
@@ -27,18 +27,16 @@ class DatabaseSessionSingleton:
         return cls._instance
 
     def get_session(self) -> SQLAlchemySession:
-        if self._session is None:# or self._session.closed != 0:
+        if self._session is None:
             self._session = self._initialize_sqlalchemy_session()
         return self._session
 
     def _initialize_sqlalchemy_session(self) -> SQLAlchemySession:
         """
-        Initializes a connection to a PostgreSQL database using psycopg with connection parameters
-        obtained from an environment variable. If the connection fails, it raises a DatabaseInitializationError.
+        Initializes a connection to a PostgreSQL database using SQLAlchemy obtained from an environment variable. 
+        If the connection fails, it raises a DatabaseInitializationError.
 
-        The function sets keepalive parameters to maintain the connection active during periods of inactivity.
-
-        :return: A psycopg connection object if successful.
+        :return: A SQLAlchemy session object if successful.
         """
         try: 
             do_database_url = get_env_variable("DO_DATABASE_URL")
@@ -46,15 +44,7 @@ class DatabaseSessionSingleton:
 
             engine = create_engine(do_database_url, echo=True)
             Session = sessionmaker(bind=engine)
-            return Session()
-            
-            '''return psycopg.connect(
-                DO_DATABASE_URL,
-                keepalives=1,
-                keepalives_idle=30,
-                keepalives_interval=10,
-                keepalives_count=5,
-            )'''
+            return Session
 
         except sqlalchemy.exc.SQLAlchemyError as e:
             raise DatabaseInitializationError(e) from e
@@ -62,13 +52,10 @@ class DatabaseSessionSingleton:
 
 def initialize_sqlalchemy_session() -> SQLAlchemySession:
     """
-    Initializes a connection to a PostgreSQL database using psycopg with connection parameters
-    obtained from an environment variable. If the connection fails, it returns a default dictionary
-    indicating no data sources are available.
+    Initializes a connection to a PostgreSQL database using SQLAlchemy obtained from an environment variable. 
+    If the connection fails, it returns a default dictionary indicating no data sources are available.
 
-    The function sets keepalive parameters to maintain the connection active during periods of inactivity.
-
-    :return: A psycopg connection object if successful, or a dictionary with a count of 0 and an empty data list upon failure.
+    :return: A SQLAlchemy session object if successful, or a dictionary with a count of 0 and an empty data list upon failure.
     """
     return DatabaseSessionSingleton().get_session()
 

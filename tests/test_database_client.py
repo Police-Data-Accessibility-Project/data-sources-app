@@ -375,19 +375,17 @@ def test_get_user_by_api_key(live_database_client: DatabaseClient):
         password_digest="test_password",
     )
     # Add a role to the user
-    '''live_database_client.session.execute(
-        update(User).where(User.email == "test_user").values(role="test_role")
-    )'''
-    live_database_client.execute_sqlalchemy(lambda: update(User).where(User.email == "test_user").values(api_key=test_api_key)
+    live_database_client.execute_sqlalchemy(
+        lambda: update(User)
+        .where(User.email == test_email)
+        .values(api_key=test_api_key)
     )
 
     # Fetch the user's info using its api key with the DatabaseClient method
-    #user_identifiers = live_database_client.get_user_by_api_key(api_key=test_api_key)
-    results = live_database_client.execute_sqlalchemy(lambda: select(User.id).where(User.api_key == test_api_key)).one_or_none()
-    print(results)
+    user_identifiers = live_database_client.get_user_by_api_key(api_key=test_api_key)
 
     # Confirm the user_id is retrieved successfully
-    assert results == user_id
+    assert user_identifiers.id == user_id
 
 
 def test_get_role_by_api_key(live_database_client):

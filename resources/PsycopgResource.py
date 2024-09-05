@@ -10,7 +10,6 @@ from flask_restx import abort, Resource
 from config import config
 from database_client.database_client import DatabaseClient
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
-from middleware.initialize_sqlalchemy_session import SQLAlchemySession
 from utilities.populate_dto_with_request_content import (
     populate_dto_with_request_content,
     DTOPopulateParameters,
