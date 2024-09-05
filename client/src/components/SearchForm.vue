@@ -224,7 +224,6 @@ const fetchTypeaheadResults = _debounce(
 				items.value = [];
 			}
 		} catch (err) {
-			// TODO: handle error UI
 			console.error(err);
 		}
 	},

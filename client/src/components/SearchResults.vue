@@ -5,7 +5,6 @@
 			:key="location"
 			:open="location === mostSpecificLocationSearched"
 		>
-			<!-- TODO: Hide native summary marker, use font awesome icon instead -->
 			<summary>
 				{{ getSummaryText(location) }}
 				{{

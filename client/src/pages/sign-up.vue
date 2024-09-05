@@ -23,38 +23,7 @@
 			@change="onChange"
 			@submit="onSubmit"
 		>
-			<!-- TODO: encapsulate this into a separate component, as it's repeated across this, /reset-password, and /change-password -->
-			<ul class="text-med mb-8">
-				Passwords must be at least 8 characters and include:
-				<li
-					:class="{
-						valid: validation.uppercase,
-					}"
-				>
-					1 uppercase letter
-				</li>
-				<li
-					:class="{
-						valid: validation.lowercase,
-					}"
-				>
-					1 lowercase letter
-				</li>
-				<li
-					:class="{
-						valid: validation.number,
-					}"
-				>
-					1 number
-				</li>
-				<li
-					:class="{
-						valid: validation.specialCharacter,
-					}"
-				>
-					1 special character
-				</li>
-			</ul>
+			<PasswordValidationChecker ref="passwordRef" />
 
 			<Button class="max-w-full" type="submit" data-test="submit-button">
 				Create account
@@ -86,7 +55,8 @@
 <script setup>
 // Imports
 import { Button, Form } from 'pdap-design-system';
-import { ref, onMounted, reactive } from 'vue';
+import PasswordValidationChecker from '@/components/PasswordValidationChecker.vue';
+import { ref, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useUserStore } from '@/stores/user';
 import { useRouter } from 'vue-router';
@@ -150,15 +120,10 @@ const auth = useAuthStore();
 const user = useUserStore();
 
 // Reactive vars
+const passwordRef = ref();
 const error = ref(undefined);
 const loading = ref(false);
 const success = ref(false);
-const validation = reactive({
-	uppercase: false,
-	lowercase: false,
-	number: false,
-	specialCharacter: false,
-});
 
 onMounted(async () => {
 	// User signed up and logged in
@@ -171,7 +136,7 @@ onMounted(async () => {
  * When signing up: handles clearing pw-match form errors on change if they exist
  */
 function onChange(formValues) {
-	updatePasswordValidation(formValues);
+	passwordRef.value.updatePasswordValidation(formValues.password);
 
 	if (error.value) {
 		handleValidatePasswordMatch(formValues);
@@ -190,48 +155,16 @@ function handleValidatePasswordMatch(formValues) {
 	}
 }
 
-function isPasswordValid() {
-	if (!Object.values(validation).every(Boolean)) {
+async function onSubmit(formValues) {
+	const isPasswordValid = passwordRef.value.isPasswordValid();
+
+	if (!isPasswordValid) {
 		error.value = 'Password is not valid';
-		return false;
 	} else {
 		if (error.value) error.value = undefined;
-		return true;
-	}
-}
-
-function updatePasswordValidation({ password }) {
-	// Test uppercase
-	if (/[A-Z]/gm.test(password)) {
-		validation.uppercase = true;
-	} else {
-		validation.uppercase = false;
 	}
 
-	// Test lowercase
-	if (/[a-z]/gm.test(password)) {
-		validation.lowercase = true;
-	} else {
-		validation.lowercase = false;
-	}
-
-	// Test number
-	if (/[0-9]/gm.test(password)) {
-		validation.number = true;
-	} else {
-		validation.number = false;
-	}
-
-	// Test special char
-	if (/[#?!@$%^&*-]/gm.test(password)) {
-		validation.specialCharacter = true;
-	} else {
-		validation.specialCharacter = false;
-	}
-}
-
-async function onSubmit(formValues) {
-	if (!handleValidatePasswordMatch(formValues) || !isPasswordValid()) return;
+	if (!handleValidatePasswordMatch(formValues) || !isPasswordValid) return;
 
 	try {
 		loading.value = true;
@@ -246,9 +179,3 @@ async function onSubmit(formValues) {
 	}
 }
 </script>
-
-<style scoped>
-.valid {
-	@apply text-green-700 dark:text-green-300;
-}
-</style>

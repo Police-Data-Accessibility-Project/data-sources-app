@@ -98,8 +98,6 @@ import SearchForm from '@/components/SearchForm.vue';
 
 const { data: searchData, isLoading, error } = useSearchData();
 
-console.debug({ searchData });
-
 function getFollowText({ searched, params }) {
 	switch (searched) {
 		case 'locality':
