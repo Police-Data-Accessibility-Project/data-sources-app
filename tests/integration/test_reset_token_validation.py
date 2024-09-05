@@ -6,7 +6,8 @@ from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     request_reset_password_api,
 )
-from tests.helper_scripts.common_test_functions import check_response_status, run_and_validate_request
+from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helper_scripts.simple_result_validators import check_response_status
 from tests.fixtures import dev_db_connection, flask_client_with_db
 
 

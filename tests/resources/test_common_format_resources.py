@@ -22,7 +22,7 @@ from tests.helper_scripts.common_test_data import TEST_RESPONSE
 from tests.helper_scripts.helper_functions import (
     check_is_test_response,
 )
-from tests.helper_scripts.common_test_functions import run_and_validate_request
+from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
 
 class DataSourcesMocks(DynamicMagicMock):

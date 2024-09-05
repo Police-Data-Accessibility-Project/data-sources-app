@@ -22,11 +22,11 @@ from tests.helper_scripts.helper_functions import (
     create_test_user_setup,
 )
 from tests.helper_scripts.common_test_functions import (
-    check_response_status,
     assert_expected_get_many_result,
-    call_and_validate_get_by_id_endpoint, run_and_validate_request,
-)
-from tests.helper_scripts.test_dataclasses import IntegrationTestSetup
+    call_and_validate_get_by_id_endpoint, )
+from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helper_scripts.simple_result_validators import check_response_status
+from tests.helper_scripts.helper_classes.IntegrationTestSetup import IntegrationTestSetup
 
 
 @dataclass

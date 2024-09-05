@@ -14,7 +14,8 @@ from tests.helper_scripts.helper_functions import (
     create_test_user_setup,
     get_most_recent_quick_search_query_log,
 )
-from tests.helper_scripts.common_test_functions import check_response_status, run_and_validate_request
+from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helper_scripts.simple_result_validators import check_response_status
 
 
 def test_quick_search_get(flask_client_with_db, connection_with_test_data):

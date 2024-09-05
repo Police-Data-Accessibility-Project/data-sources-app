@@ -3,38 +3,15 @@ Functions commonly used in testing and asserting results
 """
 
 from http import HTTPStatus
-from typing import Optional
 
 import pytest
-from flask.testing import FlaskClient
 from flask_jwt_extended import decode_token
 
 from database_client.constants import PAGE_SIZE
 from database_client.database_client import DatabaseClient
-from tests.helper_scripts.test_dataclasses import IntegrationTestSetup
-
-
-def has_expected_keys(result_keys: list, expected_keys: list) -> bool:
-    """
-    Check that given result includes expected keys.
-
-    :param result:
-    :param expected_keys:
-    :return: True if has expected keys, false otherwise
-    """
-    return not set(expected_keys).difference(result_keys)
-
-
-def check_response_status(response, status_code):
-    assert (
-        response.status_code == status_code
-    ), f"Expected status code {status_code}, got {response.status_code}: {response.text}"
-
-
-def assert_is_oauth_redirect_link(text: str):
-    assert "https://github.com/login/oauth/authorize?response_type=code" in text, (
-        "Expected OAuth authorize link, got: " + text
-    )
+from tests.helper_scripts.helper_classes.IntegrationTestSetup import IntegrationTestSetup
+from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helper_scripts.simple_result_validators import check_response_status, assert_is_oauth_redirect_link
 
 
 def assert_expected_pre_callback_response(response):
@@ -118,22 +95,3 @@ def call_and_validate_get_by_id_endpoint(
     return json_data
 
 
-def run_and_validate_request(
-    flask_client: FlaskClient,
-    http_method: str,
-    endpoint: str,
-    expected_response_status: HTTPStatus = HTTPStatus.OK,
-    expected_json_content: Optional[dict] = None,
-    **request_kwargs,
-):
-    response = flask_client.open(endpoint, method=http_method, **request_kwargs)
-    check_response_status(response, expected_response_status.value)
-
-    # All of our requests should return some json message providing information.
-    assert response.json is not None
-
-    # But we can also test to see if the json content is what we expect
-    if expected_json_content is not None:
-        assert response.json == expected_json_content
-
-    return response.json

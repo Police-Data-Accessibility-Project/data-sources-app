@@ -1,4 +1,5 @@
 """Integration tests for /data-sources endpoint"""
+
 import urllib.parse
 import uuid
 
@@ -10,16 +11,15 @@ from tests.fixtures import (
     flask_client_with_db,
     db_client_with_test_data,
     test_user_admin,
-    dev_db_connection
 )
+from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
 from tests.helper_scripts.helper_functions import (
     get_boolean_dictionary,
     create_test_user_setup,
     search_with_boolean_dictionary,
 )
-from tests.helper_scripts.common_test_functions import run_and_validate_request
-
-ENDPOINT = "/api/data-sources/"
+from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helper_scripts.constants import DATA_SOURCES_BASE_ENDPOINT
 
 
 def test_data_sources_get(
@@ -35,7 +35,7 @@ def test_data_sources_get(
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
-        endpoint=f"{ENDPOINT}page/1",  # ENDPOINT,
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}page/1",  # ENDPOINT,
         headers=tus.api_authorization_header,
     )
     data = response_json["data"]
@@ -53,7 +53,7 @@ def test_data_sources_get(
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
-        endpoint=f"{ENDPOINT}page/1?sort_by=name&sort_order=ASC",
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}page/1?sort_by=name&sort_order=ASC",
         headers=tus.api_authorization_header,
     )
     data_asc = response_json["data"]
@@ -61,12 +61,13 @@ def test_data_sources_get(
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
-        endpoint=f"{ENDPOINT}page/1?sort_by=name&sort_order=DESC",
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}page/1?sort_by=name&sort_order=DESC",
         headers=tus.api_authorization_header,
     )
     data_desc = response_json["data"]
 
     assert data_asc[0]["name"] < data_desc[0]["name"]
+
 
 def test_data_sources_get_many_limit_columns(
     flask_client_with_db, connection_with_test_data: psycopg.Connection
@@ -82,7 +83,7 @@ def test_data_sources_get_many_limit_columns(
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
-        endpoint=f"{ENDPOINT}page/1?requested_columns={url_encoded_column_string}",
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}page/1?requested_columns={url_encoded_column_string}",
         headers=tus.api_authorization_header,
     )
     data = response_json["data"]
@@ -90,7 +91,6 @@ def test_data_sources_get_many_limit_columns(
     entry = data[0]
     for column in allowed_columns:
         assert column in entry
-
 
 
 def test_data_sources_post(
@@ -101,30 +101,18 @@ def test_data_sources_post(
     """
     Test that POST call to /data-sources endpoint successfully creates a new data source with a unique name and verifies its existence in the database
     """
-
-    name = str(uuid.uuid4())
-    airtable_uid = str(uuid.uuid4())
-    json = run_and_validate_request(
+    cds = create_data_source_with_endpoint(
         flask_client=flask_client_with_db,
-        http_method="post",
-        endpoint=ENDPOINT,
-        headers=test_user_admin.jwt_authorization_header,
-        json={
-            "entry_data": {
-                "name": name,
-                "airtable_uid": airtable_uid,
-            }
-        },
+        jwt_authorization_header=test_user_admin.jwt_authorization_header,
     )
-    assert json is not None
+
     rows = db_client_with_test_data.execute_raw_sql(
         query="""
         SELECT * from data_sources WHERE name=%s
         """,
-        vars=(name,),
+        vars=(cds.name,),
     )
     len(rows) == 1
-
 
 
 def test_data_sources_by_id_get(
@@ -138,7 +126,7 @@ def test_data_sources_by_id_get(
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
-        endpoint=f"{ENDPOINT}id/SOURCE_UID_1",
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}id/SOURCE_UID_1",
         headers=tus.api_authorization_header,
     )
 
@@ -164,12 +152,10 @@ def test_data_sources_by_id_put(
     )
 
     result = db_client_with_test_data.get_data_sources(
-        columns=["description"],
-        where_mappings={
-            "airtable_uid": "SOURCE_UID_1"
-        }
+        columns=["description"], where_mappings={"airtable_uid": "SOURCE_UID_1"}
     )
     assert result[0]["description"] == desc
+
 
 def test_data_sources_by_id_delete(
     flask_client_with_db, db_client_with_test_data: DatabaseClient, test_user_admin
@@ -193,27 +179,20 @@ def test_data_sources_by_id_delete(
         column_to_return="airtable_uid",
     )
 
-
     result = db_client_with_test_data.get_data_sources(
-        columns=["description"],
-        where_mappings={
-            "airtable_uid": airtable_uid
-        }
+        columns=["description"], where_mappings={"airtable_uid": airtable_uid}
     )
     assert len(result) == 1
 
     run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="delete",
-        endpoint=f"{ENDPOINT}id/{airtable_uid}",
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}id/{airtable_uid}",
         headers=test_user_admin.jwt_authorization_header,
     )
 
     result = db_client_with_test_data.get_data_sources(
-        columns=["description"],
-        where_mappings={
-            "airtable_uid": airtable_uid
-        }
+        columns=["description"], where_mappings={"airtable_uid": airtable_uid}
     )
 
     assert len(result) == 0
