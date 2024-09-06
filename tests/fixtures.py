@@ -76,7 +76,7 @@ def db_cursor(
 
 
 @pytest.fixture
-def dev_db_client(dev_db_connection: psycopg.Connection) -> DatabaseClient:
+def dev_db_client() -> DatabaseClient:
     db_client = DatabaseClient()
     yield db_client
 

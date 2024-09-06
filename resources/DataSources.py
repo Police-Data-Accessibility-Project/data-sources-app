@@ -15,7 +15,7 @@ from middleware.primary_resource_logic.data_source_queries import (
     get_data_sources_for_map_wrapper,
     add_new_data_source_wrapper,
     update_data_source_wrapper,
-    DataSourcesGetRequestSchema,
+    DataSourcesGetRequestSchemaMany,
     DataSourcesGetRequestDTOMany,
     delete_data_source_wrapper,
 )
@@ -41,7 +41,7 @@ models = CRUDModels(namespace_data_source)
 
 data_sources_get_request_parser = get_restx_param_documentation(
     namespace=namespace_data_source,
-    schema_class=DataSourcesGetRequestSchema,
+    schema_class=DataSourcesGetRequestSchemaMany,
     model_name="DataSourcesGetRequest",
 ).parser
 
@@ -52,7 +52,7 @@ authorization_jwt_parser = namespace_data_source.parser()
 add_jwt_header_arg(authorization_jwt_parser)
 
 
-@namespace_data_source.route("/id/<data_source_id>")
+@namespace_data_source.route("/<data_source_id>")
 @namespace_data_source.param(
     name="data_source_id",
     description="The unique identifier of the data source.",
@@ -151,7 +151,7 @@ class DataSourceById(PsycopgResource):
         )
 
 
-@namespace_data_source.route("/page/<page>")
+@namespace_data_source.route("")
 class DataSources(PsycopgResource):
     """
     A resource for managing collections of data sources.
@@ -172,7 +172,7 @@ class DataSources(PsycopgResource):
     @namespace_data_source.expect(
         data_sources_get_request_parser, authorization_api_parser
     )
-    def get(self, page: int, access_info: AccessInfo) -> Response:
+    def get(self, access_info: AccessInfo) -> Response:
         """
         Retrieves all data sources. The data sources endpoint returns all approved rows in the corresponding Data
         Sources database table.
@@ -183,14 +183,14 @@ class DataSources(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=get_data_sources_wrapper,
             schema_populate_parameters=SchemaPopulateParameters(
-                schema_class=DataSourcesGetRequestSchema,
+                schema_class=DataSourcesGetRequestSchemaMany,
                 dto_class=DataSourcesGetRequestDTOMany,
             ),
             access_info=access_info,
         )
 
 
-@namespace_data_source.route("/")
+@namespace_data_source.route("")
 class DataSourcesPost(PsycopgResource):
 
     @handle_exceptions

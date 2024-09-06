@@ -16,11 +16,11 @@ from utilities.common import get_valid_enum_value
 from utilities.enums import SourceMappingEnum
 
 
-class GetBaseSchema(Schema):
+class GetManyBaseSchema(Schema):
     page = fields.Integer(
         required=True,
         description="The page number of the results to retrieve. Begins at 1.",
-        source=SourceMappingEnum.PATH,
+        source=SourceMappingEnum.QUERY_ARGS,
         validate=validate.Range(min=1),
         default=1,
     )

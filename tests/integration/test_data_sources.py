@@ -35,7 +35,7 @@ def test_data_sources_get(
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
-        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}page/1",  # ENDPOINT,
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1",  # ENDPOINT,
         headers=tus.api_authorization_header,
     )
     data = response_json["data"]
@@ -53,7 +53,7 @@ def test_data_sources_get(
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
-        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}page/1?sort_by=name&sort_order=ASC",
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&sort_by=name&sort_order=ASC",
         headers=tus.api_authorization_header,
     )
     data_asc = response_json["data"]
@@ -61,7 +61,7 @@ def test_data_sources_get(
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
-        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}page/1?sort_by=name&sort_order=DESC",
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&sort_by=name&sort_order=DESC",
         headers=tus.api_authorization_header,
     )
     data_desc = response_json["data"]
@@ -83,7 +83,7 @@ def test_data_sources_get_many_limit_columns(
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
-        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}page/1?requested_columns={url_encoded_column_string}",
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&requested_columns={url_encoded_column_string}",
         headers=tus.api_authorization_header,
     )
     data = response_json["data"]
@@ -126,7 +126,7 @@ def test_data_sources_by_id_get(
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
-        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}id/SOURCE_UID_1",
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}/SOURCE_UID_1",
         headers=tus.api_authorization_header,
     )
 
@@ -144,7 +144,7 @@ def test_data_sources_by_id_put(
     run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="put",
-        endpoint=f"/api/data-sources/id/SOURCE_UID_1",
+        endpoint=f"/api/data-sources/SOURCE_UID_1",
         headers=test_user_admin.jwt_authorization_header,
         json={
             "entry_data": {"description": desc},
@@ -187,7 +187,7 @@ def test_data_sources_by_id_delete(
     run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="delete",
-        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}id/{airtable_uid}",
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}/{airtable_uid}",
         headers=test_user_admin.jwt_authorization_header,
     )
 

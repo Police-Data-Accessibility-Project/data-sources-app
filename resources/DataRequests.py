@@ -45,7 +45,7 @@ authorization_parser = namespace_data_requests.parser()
 add_jwt_or_api_key_header_arg(authorization_parser)
 
 
-@namespace_data_requests.route("/by-id/<data_request_id>")
+@namespace_data_requests.route("/<data_request_id>")
 @namespace_data_requests.param(
     name="data_request_id", description="The data request id", _in="path"
 )
@@ -136,7 +136,7 @@ Columns allowed to be updated by the user is determinant upon the user's access 
         )
 
 
-@namespace_data_requests.route("/")
+@namespace_data_requests.route("")
 class DataRequests(PsycopgResource):
 
     @handle_exceptions

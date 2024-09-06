@@ -17,6 +17,7 @@ from tests.fixtures import (
     dev_db_client,
     integration_test_admin_setup,
 )
+from tests.helper_scripts.constants import AGENCIES_BASE_ENDPOINT
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup_db_client,
     create_test_user_setup,
@@ -53,7 +54,7 @@ def test_agencies_get(flask_client_with_db, dev_db_client: DatabaseClient):
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
-        endpoint="/api/agencies/page/2",
+        endpoint=AGENCIES_BASE_ENDPOINT + "?page=2",
         headers=tus.api_authorization_header,
     )
 
@@ -74,7 +75,7 @@ def test_agencies_get_by_id(ts: AgenciesTestSetup):
     call_and_validate_get_by_id_endpoint(
         its=ts,
         id_name=airtable_uid,
-        base_endpoint="/api/agencies/id",
+        base_endpoint=AGENCIES_BASE_ENDPOINT,
         expected_value_key="submitted_name",
         expected_value=ts.submitted_name,
     )
@@ -85,7 +86,7 @@ def test_agencies_post(ts: AgenciesTestSetup):
     json_data = run_and_validate_request(
         flask_client=ts.flask_client,
         http_method="post",
-        endpoint="/api/agencies/",
+        endpoint=AGENCIES_BASE_ENDPOINT,
         headers=ts.tus.jwt_authorization_header,
         json={
             "entry_data": {
@@ -111,7 +112,7 @@ def test_agencies_put(ts: AgenciesTestSetup):
     json_data = run_and_validate_request(
         flask_client=ts.flask_client,
         http_method="post",
-        endpoint="/api/agencies/",
+        endpoint=AGENCIES_BASE_ENDPOINT,
         headers=ts.tus.jwt_authorization_header,
         json={
             "entry_data": {
@@ -128,7 +129,7 @@ def test_agencies_put(ts: AgenciesTestSetup):
     json_data = run_and_validate_request(
         flask_client=ts.flask_client,
         http_method="put",
-        endpoint="/api/agencies/id/" + agency_id,
+        endpoint=f"{AGENCIES_BASE_ENDPOINT}/{agency_id}",
         headers=ts.tus.jwt_authorization_header,
         json={"entry_data": {"submitted_name": new_submitted_name}},
     )
@@ -149,7 +150,7 @@ def test_agencies_delete(ts: AgenciesTestSetup):
     json_data = run_and_validate_request(
         flask_client=ts.flask_client,
         http_method="post",
-        endpoint="/api/agencies/",
+        endpoint=AGENCIES_BASE_ENDPOINT,
         headers=ts.tus.jwt_authorization_header,
         json={
             "entry_data": {
@@ -164,7 +165,7 @@ def test_agencies_delete(ts: AgenciesTestSetup):
     run_and_validate_request(
         flask_client=ts.flask_client,
         http_method="delete",
-        endpoint="/api/agencies/id/" + agency_id,
+        endpoint=f"{AGENCIES_BASE_ENDPOINT}/{agency_id}",
         headers=ts.tus.jwt_authorization_header,
     )
 

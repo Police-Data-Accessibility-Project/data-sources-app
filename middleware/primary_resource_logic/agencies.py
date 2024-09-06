@@ -2,19 +2,23 @@ from flask import Response
 
 from database_client.database_client import DatabaseClient
 from middleware.access_logic import AccessInfo
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import EntryDataRequestDTO
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+    EntryDataRequestDTO,
+    GetManyBaseDTO,
+)
 from middleware.enums import Relations
 from middleware.dynamic_request_logic import (
     get_many,
     get_by_id,
     post_entry,
     put_entry,
-    delete_entry, MiddlewareParameters,
+    delete_entry,
+    MiddlewareParameters,
 )
 
 
 def get_agencies(
-    db_client: DatabaseClient, access_info: AccessInfo, page: int
+    db_client: DatabaseClient, access_info: AccessInfo, dto: GetManyBaseDTO
 ) -> Response:
     """
     Retrieves a paginated list of approved agencies from the database.
@@ -31,7 +35,7 @@ def get_agencies(
             relation=Relations.AGENCIES.value,
             db_client_method=DatabaseClient.get_agencies,
         ),
-        page=page,
+        page=dto.page,
     )
 
 

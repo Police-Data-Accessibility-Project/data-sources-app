@@ -18,7 +18,7 @@ from middleware.dynamic_request_logic import (
     delete_entry,
 )
 from middleware.enums import Relations
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetBaseSchema, GetManyBaseDTO, EntryDataRequestDTO
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyBaseSchema, GetManyBaseDTO, EntryDataRequestDTO
 from middleware.common_response_formatting import format_list_response
 from utilities.enums import SourceMappingEnum
 
@@ -29,7 +29,7 @@ class DataSourceNotFoundError(Exception):
     pass
 
 
-class DataSourcesGetRequestSchema(GetBaseSchema):
+class DataSourcesGetRequestSchemaMany(GetManyBaseSchema):
     approval_status = fields.Str(
         required=False,
         description="Approval status of returned data sources.",
@@ -39,9 +39,11 @@ class DataSourcesGetRequestSchema(GetBaseSchema):
     )
 
 
+
 @dataclass
 class DataSourcesGetRequestDTOMany(GetManyBaseDTO):
     approval_status: ApprovalStatus = ApprovalStatus.APPROVED
+    page_number: int = 1
 
 
 def get_data_sources_wrapper(
