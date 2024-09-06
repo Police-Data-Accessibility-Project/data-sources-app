@@ -58,6 +58,23 @@ class Agency(Base):
     county_airtable_uid: Mapped[Optional[str]]
 
 
+class County(Base):
+    __tablename__ = "counties"
+    __table_args__ = {"schema": "public"}
+
+    fips: Mapped[str] = mapped_column(primary_key=True)
+    name: Mapped[Optional[Text]] = mapped_column(Text)
+    name_ascii: Mapped[Optional[Text]] = mapped_column(Text)
+    state_iso: Mapped[Optional[Text]] = mapped_column(Text)
+    lat: Mapped[Optional[float]]
+    lng: Mapped[Optional[float]]
+    population: Mapped[Optional[int]]
+    agencies: Mapped[Optional[Text]] = mapped_column(Text)
+    airtable_uid: Mapped[Optional[Text]] = mapped_column(Text)
+    airtable_county_last_modified: Mapped[Optional[Text]] = mapped_column(Text)
+    airtable_county_created: Mapped[Optional[Text]] = mapped_column(Text)
+
+
 class DataSource(Base):
     __tablename__ = "data_sources"
     __table_args__ = {"schema": "public"}
