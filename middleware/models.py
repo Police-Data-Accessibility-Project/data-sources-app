@@ -150,6 +150,16 @@ class ExternalAccount(Base):
     )
 
 
+class RecordType(Base):
+    __tablename__ = "record_types"
+    __table_args__ = {"schema": "public"}
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(255))
+    category_id: Mapped[int] = mapped_column(ForeignKey("public.record_categories.id"))
+    description: Mapped[Optional[Text]] = mapped_column(Text)
+
+
 class TestTable(Base):
     __tablename__ = "test_table"
     __table_args__ = {"schema": "public"}
