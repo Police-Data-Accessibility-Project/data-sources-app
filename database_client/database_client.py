@@ -9,8 +9,9 @@ import uuid
 import psycopg
 from psycopg import sql
 from psycopg.rows import dict_row, tuple_row
-from sqlalchemy.orm import sessionmaker, aliased
 from sqlalchemy import select
+from sqlalchemy.orm import aliased
+from sqlalchemy.schema import Column
 
 from database_client.constants import PAGE_SIZE
 from database_client.db_client_dataclasses import OrderByParameters
@@ -25,7 +26,6 @@ from middleware.exceptions import (
     TokenNotFoundError,
     AccessTokenNotFoundError,
 )
-
 from middleware.models import User, ExternalAccount
 from middleware.enums import PermissionsEnum, Relations
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
@@ -860,13 +860,11 @@ class DatabaseClient:
     add_new_data_source = partialmethod(_create_entry_in_table, table_name="data_sources", column_to_return="airtable_uid")
 
 
-    @cursor_manager()
+    @session_manager
     def _select_from_single_relation(
         self,
-        relation_name: str,
-        columns: List[str],
-        where_mappings: Optional[dict] = None,
-        not_where_mappings: Optional[dict] = None,
+        columns: list[Column],
+        where_mappings: Optional[list[bool]] = [True],
         limit: Optional[int] = PAGE_SIZE,
         page: Optional[int] = None,
         order_by: Optional[OrderByParameters] = None,
@@ -876,10 +874,9 @@ class DatabaseClient:
         """
         offset = self.get_offset(page)
         query = DynamicQueryConstructor.create_single_relation_selection_query(
-            relation_name, columns, where_mappings, not_where_mappings, limit, offset, order_by
+            columns, where_mappings, limit, offset, order_by
         )
-        self.cursor.execute(query)
-        results = self.cursor.fetchall()
+        results = self.session.execute(query()).mappings().all()
         return results
 
     get_data_requests = partialmethod(
