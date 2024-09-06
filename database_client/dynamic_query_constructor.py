@@ -4,6 +4,8 @@ from datetime import datetime
 from typing import Optional
 
 from psycopg import sql
+from sqlalchemy import select
+from sqlalchemy.schema import Column
 
 from database_client.constants import (
     AGENCY_APPROVED_COLUMNS,
@@ -358,10 +360,8 @@ class DynamicQueryConstructor:
 
     @staticmethod
     def create_single_relation_selection_query(
-        relation: str,
-        columns: list[str],
-        where_mappings: Optional[dict] = None,
-        not_where_mappings: Optional[dict] = None,
+        columns: list[Column],
+        where_mappings: Optional[list[bool]] = [True],
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         order_by: Optional[OrderByParameters] = None,
@@ -374,20 +374,13 @@ class DynamicQueryConstructor:
         :param where_mappings: And-joined simple where conditionals (of column = value)
         :return:
         """
-        base_query = DynamicQueryConstructor.get_select_clause(columns, relation)
-        if where_mappings is not None or not_where_mappings is not None:
-            where_clauses = (
-                DynamicQueryConstructor.build_where_subclauses_from_mappings(
-                    not_where_mappings, where_mappings
-                )
-            )
-            base_query += DynamicQueryConstructor.build_full_where_clause(where_clauses)
-        if order_by is not None:
-            base_query += DynamicQueryConstructor.get_order_by_clause(order_by)
-        if limit is not None:
-            base_query += DynamicQueryConstructor.get_limit_clause(limit)
-        if offset is not None:
-            base_query += DynamicQueryConstructor.get_offset_clause(offset)
+        base_query = (
+            lambda: select(*columns)
+            .where(*where_mappings)
+            .order_by(order_by)
+            .limit(limit)
+            .offset(offset)
+        )
         return base_query
 
     @staticmethod
