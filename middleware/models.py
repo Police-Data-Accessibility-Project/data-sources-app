@@ -58,6 +58,66 @@ class Agency(Base):
     county_airtable_uid: Mapped[Optional[str]]
 
 
+class DataSource(Base):
+    __tablename__ = "data_sources"
+    __table_args__ = {"schema": "public"}
+
+    airtable_uid: Mapped[str] = mapped_column(primary_key=True)
+    name: Mapped[str]
+    submitted_name: Mapped[Optional[str]]
+    description: Mapped[Optional[str]]
+    record_type: Mapped[Optional[str]]
+    source_url: Mapped[Optional[str]]
+    agency_supplied: Mapped[Optional[bool]]
+    supplying_entity: Mapped[Optional[str]]
+    agency_originated: Mapped[Optional[bool]]
+    agency_aggregation: Mapped[Optional[str]]
+    coverage_start: Mapped[Optional[DATE]] = mapped_column(DATE)
+    coverage_end: Mapped[Optional[DATE]] = mapped_column(DATE)
+    source_last_updated: Mapped[Optional[DATE]] = mapped_column(DATE)
+    detail_level: Mapped[Optional[str]]
+    number_of_records_available: Mapped[Optional[int]]
+    size: Mapped[Optional[str]]
+    access_type: Mapped[Optional[str]]
+    record_download_option_provided: Mapped[Optional[bool]]
+    data_portal_type: Mapped[Optional[str]]
+    record_format: Mapped[Optional[str]]
+    update_method: Mapped[Optional[str]]
+    tags: Mapped[Optional[str]]
+    readme_url: Mapped[Optional[str]]
+    originating_entity: Mapped[Optional[str]]
+    retention_schedule: Mapped[Optional[str]]
+    scraper_url: Mapped[Optional[str]]
+    data_source_created: Mapped[Optional[TIMESTAMP]] = mapped_column(
+        TIMESTAMP(timezone=True)
+    )
+    airtable_source_last_modified: Mapped[Optional[TIMESTAMP]] = mapped_column(
+        TIMESTAMP(timezone=True)
+    )
+    url_broken: Mapped[Optional[bool]]
+    submission_notes: Mapped[Optional[str]]
+    rejection_notes: Mapped[Optional[str]]
+    last_approval_editor: Mapped[Optional[str]]
+    submitter_contact_info: Mapped[Optional[str]]
+    agency_described_submitted: Mapped[Optional[str]]
+    agency_described_not_in_database: Mapped[Optional[str]]
+    approval: Mapped[Optional[bool]]
+    record_type_other: Mapped[Optional[str]]
+    data_portal_type_other: Mapped[Optional[str]]
+    private_access_instructions: Mapped[Optional[str]]
+    records_not_online: Mapped[Optional[bool]]
+    data_source_request: Mapped[Optional[str]]
+    url_button: Mapped[Optional[str]]
+    tags_other: Mapped[Optional[str]]
+    broken_source_url_as_of: Mapped[Optional[DATE]] = mapped_column(DATE)
+    access_notes: Mapped[Optional[Text]] = mapped_column(Text)
+    url_status: Mapped[Optional[Text]] = mapped_column(Text)
+    approval_status: Mapped[Optional[Text]] = mapped_column(Text)
+    record_type_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("public.record_types.id")
+    )
+
+
 class ExternalAccount(Base):
     __tablename__ = "external_accounts"
     __table_args__ = {"schema": "public"}
