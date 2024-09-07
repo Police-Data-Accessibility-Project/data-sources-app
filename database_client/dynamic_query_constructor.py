@@ -1,11 +1,12 @@
 import uuid
 from collections import namedtuple
 from datetime import datetime
-from typing import Optional
+from typing import Callable, Optional
 
 from psycopg import sql
 from sqlalchemy import select
 from sqlalchemy.schema import Column
+from sqlalchemy.sql.expression import UnaryExpression
 
 from database_client.constants import (
     AGENCY_APPROVED_COLUMNS,
@@ -364,14 +365,16 @@ class DynamicQueryConstructor:
         where_mappings: Optional[list[bool]] = [True],
         limit: Optional[int] = None,
         offset: Optional[int] = None,
-        order_by: Optional[OrderByParameters] = None,
-    ):
+        order_by: Optional[UnaryExpression] = None,
+    ) -> Callable:
         """
         Creates a SELECT query for a single relation (table or view)
         that selects the given columns with the given where mappings
-        :param relation:
-        :param columns:
-        :param where_mappings: And-joined simple where conditionals (of column = value)
+        :param columns: List of database column references. Example: [User.name, User.email]
+        :param where_mappings: List of booleans for conditional selection.
+        :param limit:
+        :param offset:
+        :param order_by: Database column reference with SQLAlchemy UnaryExpression determining order. Example: Agency.name.desc()
         :return:
         """
         base_query = (

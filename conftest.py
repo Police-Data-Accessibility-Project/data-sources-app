@@ -5,7 +5,7 @@ import pytest
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker, scoped_session
 
-from middleware.models import db
+#from middleware.models import db
 
 from app import create_app
 
