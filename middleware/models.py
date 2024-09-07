@@ -213,6 +213,18 @@ class DataSource(Base):
     )
 
 
+class DataSourceArchiveInfo(Bass):
+    __tablename__ = "data_sources_archive_info"
+    __table_args__ = {"schema": "public"}
+
+    airtable_uid: Mapped[str] = mapped_column(
+        ForeignKey("public.data_sources.airtable_uid"), primary_key=True
+    )
+    update_frequency: Mapped[Optional[str]]
+    last_cached: Mapped[Optional[TIMESTAMP]] = mapped_column(TIMESTAMP)
+    next_cached: Mapped[Optional[TIMESTAMP]] = mapped_column(TIMESTAMP)
+
+
 class ExternalAccount(Base):
     __tablename__ = "external_accounts"
     __table_args__ = {"schema": "public"}
