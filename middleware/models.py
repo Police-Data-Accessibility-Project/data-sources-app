@@ -11,6 +11,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ARRAY, DATE, DATERANGE, TIMESTAMP
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.sql.expression import false, func
 
 
 ExternalAccountType = Literal["github"]
@@ -150,7 +151,7 @@ class DataRequest(Base):
     pdap_response: Mapped[Optional[Text]] = mapped_column(Text)
     coverage_range: Mapped[Optional[DATERANGE]] = mapped_column(DATERANGE)
     date_requirements: Mapped[Optional[Text]] = mapped_column(Text)
-    withdrawn: Mapped[Optional[bool]] = mapped_column(server_default="fasle")
+    withdrawn: Mapped[Optional[bool]] = mapped_column(server_default=false())
 
 
 class DataSource(Base):
@@ -213,7 +214,7 @@ class DataSource(Base):
     )
 
 
-class DataSourceArchiveInfo(Bass):
+class DataSourceArchiveInfo(Base):
     __tablename__ = "data_sources_archive_info"
     __table_args__ = {"schema": "public"}
 
@@ -257,6 +258,16 @@ class RecordType(Base):
     name: Mapped[str] = mapped_column(String(255))
     category_id: Mapped[int] = mapped_column(ForeignKey("public.record_categories.id"))
     description: Mapped[Optional[Text]] = mapped_column(Text)
+
+
+class ResetToken(Base):
+    __tablename__ = "reset_tokens"
+    __table_args__ = {"schema": "public"}
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    email: Mapped[Optional[Text]] = mapped_column(Text)
+    token: Mapped[Optional[Text]] = mapped_column(Text)
+    create_date: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, server_default=func.current_timestamp())
 
 
 class TestTable(Base):
