@@ -9,11 +9,59 @@ from sqlalchemy import (
     ForeignKey,
     Enum,
 )
-from sqlalchemy.dialects.postgresql import DATE, TIMESTAMP
+from sqlalchemy.dialects.postgresql import ARRAY, DATE, DATERANGE, TIMESTAMP
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 ExternalAccountType = Literal["github"]
+RecordType = Literal[
+    "Dispatch Recordings",
+    "Arrest Records",
+    "Citations",
+    "Incarceration Records",
+    "Booking Reports",
+    "Budgets & Finances",
+    "Misc Police Activity",
+    "Geographic",
+    "Crime Maps & Reports",
+    "Other",
+    "Annual & Monthly Reports",
+    "Resources",
+    "Dispatch Logs",
+    "Sex Offender Registry",
+    "Officer Involved Shootings",
+    "Daily Activity Logs",
+    "Crime Statistics",
+    "Records Request Info",
+    "Policies & Contracts",
+    "Stops",
+    "Media Bulletins",
+    "Training & Hiring Info",
+    "Personnel Records",
+    "Contact Info & Agency Meta",
+    "Incident Reports",
+    "Calls for Service",
+    "Accident Reports",
+    "Use of Force Reports",
+    "Complaints & Misconduct",
+    "Vehicle Pursuits",
+    "Court Cases",
+    "Surveys",
+    "Field Contacts",
+    "Wanted Persons",
+    "List of Data Sources",
+]
+RequestStatus = Literal[
+    "Intake",
+    "Active",
+    "Complete",
+    "Request withdrawn",
+    "Waiting for scraper",
+    "Archived",
+    "Ready to Start",
+    "Waiting for FOIA",
+    "Waiting for requestor",
+]
 
 
 class Base(DeclarativeBase):
@@ -73,6 +121,36 @@ class County(Base):
     airtable_uid: Mapped[Optional[Text]] = mapped_column(Text)
     airtable_county_last_modified: Mapped[Optional[Text]] = mapped_column(Text)
     airtable_county_created: Mapped[Optional[Text]] = mapped_column(Text)
+
+
+class DataRequest(Base):
+    __tablename__ = "data_requests"
+    __table_args__ = {"schema": "public"}
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    submission_notes: Mapped[Optional[Text]] = mapped_column(Text)
+    request_status: Mapped[RequestStatus] = mapped_column(
+        Enum(*get_args(RequestStatus)), name="request_status", server_defualt="Intake"
+    )
+    submitter_email: Mapped[Optional[Text]] = mapped_column(Text)
+    location_described_submitted: Mapped[Optional[Text]] = mapped_column(Text)
+    archive_reason: Mapped[Optional[Text]] = mapped_column(Text)
+    date_created: Mapped[TIMESTAMP] = mapped_column(
+        TIMESTAMP(timezone=True), server_default=text("now()")
+    )
+    date_status_last_changed: Mapped[Optional[TIMESTAMP]] = mapped_column(
+        TIMESTAMP(timezone=True), server_default=text("now()")
+    )
+    creator_user_id: Mapped[Optional[int]]
+    github_issue_url: Mapped[Optional[Text]] = mapped_column(Text)
+    internal_notes: Mapped[Optional[Text]] = mapped_column(Text)
+    record_types_required: Mapped[Optional[ARRAY[RecordType]]] = mapped_column(
+        ARRAY(Enum(*get_args(RecordType), name="record_type"))
+    )
+    pdap_response: Mapped[Optional[Text]] = mapped_column(Text)
+    coverage_range: Mapped[Optional[DATERANGE]] = mapped_column(DATERANGE)
+    date_requirements: Mapped[Optional[Text]] = mapped_column(Text)
+    withdrawn: Mapped[Optional[bool]] = mapped_column(server_default="fasle")
 
 
 class DataSource(Base):
