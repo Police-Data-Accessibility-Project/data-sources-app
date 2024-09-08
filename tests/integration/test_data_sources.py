@@ -5,6 +5,7 @@ import uuid
 import psycopg
 
 from database_client.database_client import DatabaseClient
+from middleware.models import DataSource
 from tests.fixtures import (
     connection_with_test_data,
     flask_client_with_db,
@@ -141,7 +142,6 @@ def test_data_sources_by_id_get(
         endpoint=f"{ENDPOINT}id/SOURCE_UID_1",
         headers=tus.api_authorization_header,
     )
-
     assert response_json["data"]["source_url"] == "http://src1.com"
 
 
@@ -164,10 +164,10 @@ def test_data_sources_by_id_put(
     )
 
     result = db_client_with_test_data.get_data_sources(
-        columns=["description"],
-        where_mappings={
-            "airtable_uid": "SOURCE_UID_1"
-        }
+        columns=[DataSource.description],
+        where_mappings=[
+            DataSource.airtable_uid == "SOURCE_UID_1"
+        ]
     )
     assert result[0]["description"] == desc
 
@@ -195,10 +195,10 @@ def test_data_sources_by_id_delete(
 
 
     result = db_client_with_test_data.get_data_sources(
-        columns=["description"],
-        where_mappings={
-            "airtable_uid": airtable_uid
-        }
+        columns=[DataSource.description],
+        where_mappings=[
+            DataSource.airtable_uid == airtable_uid
+        ]
     )
     assert len(result) == 1
 
@@ -210,10 +210,10 @@ def test_data_sources_by_id_delete(
     )
 
     result = db_client_with_test_data.get_data_sources(
-        columns=["description"],
-        where_mappings={
-            "airtable_uid": airtable_uid
-        }
+        columns=[DataSource.description],
+        where_mappings=[
+            DataSource.airtable_uid == airtable_uid
+        ]
     )
 
     assert len(result) == 0

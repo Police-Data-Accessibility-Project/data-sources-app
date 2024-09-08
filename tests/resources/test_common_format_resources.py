@@ -34,25 +34,25 @@ MOCK_EMAIL_PASSWORD = {
     "email": "test_email",
     "password": "test_password",
 }
-
+TEST_ID = -1
 
 @pytest.mark.parametrize(
     "endpoint, http_method, route_to_patch, json_data",
     (
         (
-            "/data-sources/id/test_id",
+            f"/data-sources/id/{TEST_ID}",
             "GET",
             "DataSources.data_source_by_id_wrapper",
             {},
         ),
         (
-            "/data-sources/id/test_id",
+            f"/data-sources/id/{TEST_ID}",
             "PUT",
             "DataSources.update_data_source_wrapper",
             {"entry_data": {}},
         ),
         (
-            "/data-sources/id/test_id",
+            f"/data-sources/id/{TEST_ID}",
             "DELETE",
             "DataSources.delete_data_source_wrapper",
             {},
@@ -71,7 +71,7 @@ MOCK_EMAIL_PASSWORD = {
             "Archives.update_archives_data",
             json.dumps(
                 {
-                    "id": "test_id",
+                    "id": TEST_ID,
                     "last_cached": "2019-01-01",
                     "broken_source_url_as_of": "2019-02-02",
                 }
@@ -149,13 +149,13 @@ MOCK_EMAIL_PASSWORD = {
             {},
         ),
         (
-            "/data-requests/by-id/test_id",
+            f"/data-requests/by-id/{TEST_ID}",
             "GET",
             "DataRequests.get_data_request_by_id_wrapper",
             {},
         ),
         (
-            "/data-requests/by-id/test_id",
+            f"/data-requests/by-id/{TEST_ID}",
             "PUT",
             "DataRequests.update_data_request_wrapper",
             {
@@ -165,7 +165,7 @@ MOCK_EMAIL_PASSWORD = {
             },
         ),
         (
-            "/data-requests/by-id/test_id",
+            f"/data-requests/by-id/{TEST_ID}",
             "DELETE",
             "DataRequests.delete_data_request_wrapper",
             {}
@@ -204,13 +204,13 @@ MOCK_EMAIL_PASSWORD = {
             },
         ),
         (
-            "/agencies/id/test_id",
+            f"/agencies/id/{TEST_ID}",
             "GET",
             "Agencies.get_agency_by_id",
             {},
         ),
         (
-            "/agencies/id/test_id",
+            f"/agencies/id/{TEST_ID}",
             "PUT",
             "Agencies.update_agency",
             {
@@ -222,7 +222,7 @@ MOCK_EMAIL_PASSWORD = {
             },
         ),
         (
-            "/agencies/id/test_id",
+            f"/agencies/id/{TEST_ID}",
             "DELETE",
             "Agencies.delete_agency",
             {}

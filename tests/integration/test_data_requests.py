@@ -7,6 +7,7 @@ import pytest
 
 from middleware.constants import DATA_KEY
 from middleware.enums import PermissionsEnum
+from middleware.models import DataRequest
 from tests.fixtures import (
     connection_with_test_data,
     flask_client_with_db,
@@ -101,8 +102,12 @@ def test_data_requests_post(ts: AgencyTestSetup):
     data_request_id = json_data["id"]
     user_id = ts.db_client.get_user_id(ts.tus.user_info.email)
     results = ts.db_client.get_data_requests(
-        columns=["id", "submission_notes", "creator_user_id"],
-        where_mappings={"id": data_request_id},
+        columns=[
+            DataRequest.id,
+            DataRequest.submission_notes,
+            DataRequest.creator_user_id,
+        ],
+        where_mappings=[DataRequest.id == int(data_request_id)],
     )
 
     assert len(results) == 1
@@ -164,8 +169,8 @@ def test_data_requests_by_id_put(ts: AgencyTestSetup):
     )
 
     result = ts.db_client.get_data_requests(
-        columns=["submission_notes"],
-        where_mappings={"id": data_request_id},
+        columns=[DataRequest.submission_notes],
+        where_mappings=[DataRequest.id == data_request_id],
     )
 
     assert result[0]["submission_notes"] == ts.submission_notes
@@ -181,8 +186,8 @@ def test_data_requests_by_id_put(ts: AgencyTestSetup):
     )
 
     result = ts.db_client.get_data_requests(
-        columns=["submission_notes"],
-        where_mappings={"id": data_request_id},
+        columns=[DataRequest.submission_notes],
+        where_mappings=[DataRequest.id == data_request_id],
     )
 
     assert result[0]["submission_notes"] == new_submission_notes
@@ -213,8 +218,8 @@ def test_data_requests_by_id_delete(ts: AgencyTestSetup):
     )
 
     result = ts.db_client.get_data_requests(
-        columns=["submission_notes"],
-        where_mappings={"id": data_request_id},
+        columns=[DataRequest.submission_notes],
+        where_mappings=[DataRequest.id == data_request_id],
     )
 
     assert result == []

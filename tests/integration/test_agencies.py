@@ -10,6 +10,7 @@ import pytest
 from database_client.constants import PAGE_SIZE
 from database_client.database_client import DatabaseClient
 from middleware.enums import PermissionsEnum
+from middleware.models import Agency
 
 from tests.fixtures import (
     dev_db_connection,
@@ -96,9 +97,8 @@ def test_agencies_post(ts: AgenciesTestSetup):
     )
 
     results = ts.db_client._select_from_single_relation(
-        relation_name="agencies",
-        columns=["submitted_name"],
-        where_mappings={"airtable_uid": json_data["id"]},
+        columns=[Agency.submitted_name],
+        where_mappings=[Agency.airtable_uid == json_data["id"]],
     )
 
     assert len(results) == 1
@@ -134,9 +134,8 @@ def test_agencies_put(ts: AgenciesTestSetup):
     )
 
     results = ts.db_client._select_from_single_relation(
-        relation_name="agencies",
-        columns=["submitted_name"],
-        where_mappings={"airtable_uid": agency_id},
+        columns=[Agency.submitted_name],
+        where_mappings=[Agency.airtable_uid == agency_id],
     )
 
     assert len(results) == 1
@@ -169,9 +168,8 @@ def test_agencies_delete(ts: AgenciesTestSetup):
     )
 
     results = ts.db_client._select_from_single_relation(
-        relation_name="agencies",
-        columns=["submitted_name"],
-        where_mappings={"airtable_uid": agency_id},
+        columns=[Agency.submitted_name],
+        where_mappings=[Agency.airtable_uid == agency_id],
     )
 
     assert len(results) == 0
