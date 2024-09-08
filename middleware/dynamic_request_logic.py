@@ -10,6 +10,7 @@ from http import HTTPStatus
 from typing import Optional
 
 from flask import Response
+from sqlalchemy.schema import Table
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import ColumnPermissionEnum
@@ -27,8 +28,15 @@ from middleware.common_response_formatting import (
     message_response,
 )
 from middleware.flask_response_manager import FlaskResponseManager
+from middleware.models import Agency, DataRequest, DataSource
 from middleware.schema_and_dto_logic.response_schemas import EntryDataResponseSchema
 from middleware.util_dynamic import call_if_not_none, execute_if_not_none
+
+TABLE_CONVERSION = {
+    "agencies": Agency,
+    "data_requests": DataRequest,
+    "data_sources": DataSource,
+}
 
 
 @dataclass
@@ -73,11 +81,12 @@ def get_by_id(
         role=relation_role,
         column_permission=ColumnPermissionEnum.READ,
     )
+    #TODO: Evaluate if logic can be moved to seperate method
+    relation_reference = TABLE_CONVERSION[mp.relation]
     results = mp.db_client_method(
         mp.db_client,
-        relation_name=mp.relation,
-        columns=columns,
-        where_mappings={id_column_name: id},
+        columns=[getattr(relation_reference, column) for column in columns],
+        where_mappings=[getattr(relation_reference, id_column_name) == id],
     )
     return results_dependent_response(mp.entry_name, results)
 
@@ -95,7 +104,7 @@ def results_dependent_response(entry_name: str, results):
         )
     return message_response(
         message=f"{entry_name} found",
-        data=results[0],
+        data=dict(results[0]),
         validation_schema=EntryDataResponseSchema,
     )
 
@@ -222,7 +231,7 @@ def check_for_delete_permissions(check_function: DeferredFunction, entry_name: s
 
 def delete_entry(
     middleware_parameters: MiddlewareParameters,
-    entry_id: str,
+    entry_id: int,
     id_column_name: str = "id",
     permission_checking_function: Optional[DeferredFunction] = None,
 ):
