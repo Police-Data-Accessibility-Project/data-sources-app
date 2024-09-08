@@ -87,7 +87,7 @@ Columns returned are determinant upon the user's access level and/or relation to
         return self.run_endpoint(
             get_data_request_by_id_wrapper,
             access_info=access_info,
-            data_request_id=data_request_id,
+            data_request_id=int(data_request_id),
         )
 
     @handle_exceptions
@@ -121,7 +121,7 @@ Columns allowed to be updated by the user is determinant upon the user's access 
         return self.run_endpoint(
             update_data_request_wrapper,
             dto_populate_parameters=EntryDataRequestDTO.get_dto_populate_parameters(),
-            data_request_id=data_request_id,
+            data_request_id=int(data_request_id),
             access_info=access_info,
         )
 
@@ -142,7 +142,7 @@ Columns allowed to be updated by the user is determinant upon the user's access 
         """
         return self.run_endpoint(
             delete_data_request_wrapper,
-            data_request_id=data_request_id,
+            data_request_id=int(data_request_id),
             access_info=access_info,
         )
 

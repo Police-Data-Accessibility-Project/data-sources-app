@@ -69,7 +69,7 @@ def get_data_sources_wrapper(
 
 
 def data_source_by_id_wrapper(
-    db_client: DatabaseClient, access_info: AccessInfo, data_source_id: str
+    db_client: DatabaseClient, access_info: AccessInfo, data_source_id: int
 ) -> Response:
     return get_by_id(
         middleware_parameters=MiddlewareParameters(

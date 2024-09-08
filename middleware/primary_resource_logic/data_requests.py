@@ -22,7 +22,7 @@ RELATION = Relations.DATA_REQUESTS.value
 
 
 def get_data_requests_relation_role(
-    db_client: DatabaseClient, data_request_id: Optional[str], access_info: AccessInfo
+    db_client: DatabaseClient, data_request_id: Optional[int], access_info: AccessInfo
 ) -> RelationRoleEnum:
     """
     Determine the relation role for information on a data request
@@ -171,7 +171,7 @@ def allowed_to_delete_request(access_info, data_request_id, db_client):
 
 
 def delete_data_request_wrapper(
-    db_client: DatabaseClient, data_request_id: str, access_info: AccessInfo
+    db_client: DatabaseClient, data_request_id: int, access_info: AccessInfo
 ) -> Response:
     """
     Delete data requests
@@ -202,7 +202,7 @@ def delete_data_request_wrapper(
 def update_data_request_wrapper(
     db_client: DatabaseClient,
     dto: EntryDataRequestDTO,
-    data_request_id: str,
+    data_request_id: int,
     access_info: AccessInfo,
 ):
     """
@@ -232,7 +232,7 @@ def update_data_request_wrapper(
 
 
 def get_data_request_by_id_wrapper(
-    db_client: DatabaseClient, access_info: AccessInfo, data_request_id: str
+    db_client: DatabaseClient, access_info: AccessInfo, data_request_id: int
 ) -> Response:
     """
     Get data requests
