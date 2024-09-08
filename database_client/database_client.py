@@ -10,6 +10,7 @@ import psycopg
 from psycopg import sql
 from psycopg.rows import dict_row, tuple_row
 from sqlalchemy import select
+from sqlalchemy.engine.row import RowMapping
 from sqlalchemy.orm import aliased
 from sqlalchemy.schema import Column
 from sqlalchemy.sql.expression import UnaryExpression
@@ -91,7 +92,7 @@ class DatabaseClient:
 
     def __init__(self):
         self.connection = initialize_psycopg_connection()
-        self.Session = initialize_sqlalchemy_session()
+        self.session_maker = initialize_sqlalchemy_session()
         self.cursor = None
 
     def cursor_manager(row_factory=dict_row):
@@ -128,7 +129,7 @@ class DatabaseClient:
     def session_manager(method):
         @wraps(method)
         def wrapper(self, *args, **kwargs):
-            self.session = self.Session()
+            self.session = self.session_maker()
             try:
                 result = method(self, *args, **kwargs)
                 self.session.commit()
@@ -872,7 +873,7 @@ class DatabaseClient:
         limit: Optional[int] = PAGE_SIZE,
         page: Optional[int] = None,
         order_by: Optional[UnaryExpression] = None,
-    ):
+    ) -> list[RowMapping]:
         """
         Selects a single relation from the database
         """
