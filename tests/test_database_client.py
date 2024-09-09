@@ -230,7 +230,9 @@ def test_select_from_single_relation_limit_and_offset(live_database_client: Data
 def test_select_from_single_relation_order_by(live_database_client):
     results = live_database_client._select_from_single_relation(
         columns=[TestTable.pet_name],
-        order_by=TestTable.species.asc(),
+        order_by=OrderByParameters(
+            sort_by="species", sort_order=SortOrder.ASCENDING, relation="test_table"
+        ),
     )
 
     assert results == [
@@ -254,7 +256,11 @@ def test_select_from_single_relation_all_parameters(live_database_client: Databa
         where_mappings=[TestTable.species == "Aardvark", TestTable.species != "Bear"],
         limit=1,
         page=1,  # 1 is the second page; 0-indexed
-        order_by=TestTable.pet_name.desc()
+        order_by=OrderByParameters(
+            sort_by="pet_name",
+            sort_order=SortOrder.DESCENDING,
+            relation="test_table"
+        ),
     )
 
     assert results == [
