@@ -3,6 +3,7 @@ from typing import Optional
 
 from flask import make_response, Response
 
+from database_client.constants import TABLE_REFERENCE
 from database_client.database_client import DatabaseClient
 from database_client.enums import ColumnPermissionEnum, RelationRoleEnum
 from middleware.access_logic import AccessInfo
@@ -17,6 +18,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import EntryDataReq
 from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
 from middleware.dynamic_request_logic import get_by_id, post_entry, put_entry, delete_entry, MiddlewareParameters
 from middleware.common_response_formatting import format_list_response
+from middleware.models import DataRequest
 
 RELATION = Relations.DATA_REQUESTS.value
 
@@ -102,6 +104,7 @@ def get_data_requests_wrapper(
         access_info, db_client, relation_role
     )
     formatted_list_response = format_list_response(formatted_data_requests)
+    formatted_list_response["data"] = [dict(row) for row in formatted_list_response["data"]]
 
     return make_response(
         formatted_list_response,
@@ -123,12 +126,13 @@ def get_formatted_data_requests(access_info, db_client, relation_role) -> list[d
 def get_standard_and_owner_zipped_data_requests(user_email, db_client):
     user_id = db_client.get_user_id(user_email)
     # Create two requests -- one where the user is the creator and one where the user is not
-    mapping = {"creator_user_id": user_id}
+    mapping = [DataRequest.creator_user_id != user_id]
     zipped_standard_requests = get_data_requests_with_permitted_columns(
         db_client=db_client,
         relation_role=RelationRoleEnum.STANDARD,
-        not_where_mappings=mapping,
+        where_mappings=mapping,
     )
+    mapping = [DataRequest.creator_user_id == user_id]
     zipped_owner_requests = get_data_requests_with_permitted_columns(
         db_client=db_client,
         relation_role=RelationRoleEnum.OWNER,
@@ -142,8 +146,7 @@ def get_standard_and_owner_zipped_data_requests(user_email, db_client):
 def get_data_requests_with_permitted_columns(
     db_client,
     relation_role,
-    where_mappings: Optional[dict] = None,
-    not_where_mappings: Optional[dict] = None,
+    where_mappings: Optional[list[bool]] = [True],
 ) -> list[dict]:
 
     columns = get_permitted_columns(
@@ -152,10 +155,10 @@ def get_data_requests_with_permitted_columns(
         role=relation_role,
         column_permission=ColumnPermissionEnum.READ,
     )
+    column_references = DatabaseClient.convert_to_column_reference(columns=columns, relation=RELATION)
     data_requests = db_client.get_data_requests(
-        columns=columns,
+        columns=column_references,
         where_mappings=where_mappings,
-        not_where_mappings=not_where_mappings,
     )
     return data_requests
 
