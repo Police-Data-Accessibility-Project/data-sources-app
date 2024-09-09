@@ -365,7 +365,7 @@ class DynamicQueryConstructor:
         where_mappings: Optional[list[bool]] = [True],
         limit: Optional[int] = None,
         offset: Optional[int] = None,
-        order_by: Optional[UnaryExpression] = None,
+        order_by: Optional[OrderByParameters] = None,
     ) -> Callable:
         """
         Creates a SELECT query for a single relation (table or view)
@@ -374,9 +374,12 @@ class DynamicQueryConstructor:
         :param where_mappings: List of booleans for conditional selection.
         :param limit:
         :param offset:
-        :param order_by: Database column reference with SQLAlchemy UnaryExpression determining order. Example: Agency.name.desc()
+        :param order_by:
         :return:
         """
+        if order_by is not None:
+            order_by = order_by.build_order_by_clause()
+
         base_query = (
             lambda: select(*columns)
             .where(*where_mappings)
