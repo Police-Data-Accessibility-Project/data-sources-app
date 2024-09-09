@@ -601,12 +601,8 @@ class DatabaseClient:
             email=results["email"],
         )
 
-    TypeaheadSuggestions = namedtuple(
-        "TypeaheadSuggestions", ["display_name", "type", "state", "county", "locality"]
-    )
-
     @cursor_manager()
-    def get_typeahead_suggestions(self, search_term: str) -> List[TypeaheadSuggestions]:
+    def get_typeahead_locations(self, search_term: str) -> dict:
         """
         Returns a list of data sources that match the search query.
 
@@ -617,18 +613,22 @@ class DatabaseClient:
             search_term
         )
         self.cursor.execute(query)
-        results = self.cursor.fetchall()
+        return self.cursor.fetchall()
 
-        return [
-            self.TypeaheadSuggestions(
-                display_name=row["display_name"],
-                type=row["type"],
-                state=row["state"],
-                county=row["county"],
-                locality=row["locality"],
-            )
-            for row in results
-        ]
+    @cursor_manager()
+    def get_typeahead_agencies(self, search_term: str) -> dict:
+        """
+        Returns a list of data sources that match the search query.
+
+        :param search_term: The search query.
+        :return: List of data sources that match the search query.
+        """
+        # TODO: Change create new logic for this
+        query = DynamicQueryConstructor.generate_new_typeahead_suggestion_query(
+            search_term
+        )
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
 
     @cursor_manager()
     def search_with_location_and_record_type(

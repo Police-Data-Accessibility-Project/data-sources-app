@@ -160,16 +160,19 @@ class DynamicQueryConstructor:
             WHERE display_name ILIKE {search_term_anywhere}
             AND display_name NOT ILIKE {search_term_prefix}
         )
-        SELECT DISTINCT 
-            sort_order,
-            display_name,
-            type,
-            state,
-            county,
-            locality
-        FROM combined
-        ORDER BY sort_order, display_name
-        LIMIT 10;
+        SELECT display_name, type, state, county, locality
+        FROM (
+            SELECT DISTINCT 
+                sort_order,
+                display_name,
+                type,
+                state,
+                county,
+                locality
+            FROM combined
+            ORDER BY sort_order, display_name
+            LIMIT 10
+        ) as results;
         """
         ).format(
             search_term_prefix=sql.Literal(f"{search_term}%"),

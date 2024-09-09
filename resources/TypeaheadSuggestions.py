@@ -1,8 +1,18 @@
+from typing import Callable
+
 from flask import Response, request
 from flask_restx import fields, reqparse
 
 from config import limiter
-from middleware.primary_resource_logic.typeahead_suggestion_logic import get_typeahead_suggestions_wrapper
+from database_client.database_client import DatabaseClient
+from middleware.primary_resource_logic.typeahead_suggestion_logic import (
+    get_typeahead_results,
+)
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+    TypeaheadSchema,
+    TypeaheadDTO,
+)
+from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 from resources.PsycopgResource import handle_exceptions, PsycopgResource
 from resources.resource_helpers import create_outer_model
 
@@ -60,8 +70,19 @@ typeahead_suggestions_outer_model = create_outer_model(
 )
 
 
+def get_typeahead_kwargs(db_client_method: Callable) -> dict:
+    return {
+        "wrapper_function": get_typeahead_results,
+        "schema_populate_parameters": SchemaPopulateParameters(
+            schema_class=TypeaheadSchema,
+            dto_class=TypeaheadDTO,
+        ),
+        "db_client_method": db_client_method,
+    }
+
+
 @namespace_typeahead_suggestions.route("/locations")
-class TypeaheadSuggestions(PsycopgResource):
+class TypeaheadLocations(PsycopgResource):
 
     @handle_exceptions
     @namespace_typeahead_suggestions.expect(request_parser)
@@ -78,7 +99,17 @@ class TypeaheadSuggestions(PsycopgResource):
         **Returns**
             - a list of location suggestions
         """
-        query = request.args.get("query")
-        with self.setup_database_client() as db_client:
-            response = get_typeahead_suggestions_wrapper(db_client, query)
-        return response
+        return self.run_endpoint(
+            **get_typeahead_kwargs(DatabaseClient.get_typeahead_locations)
+        )
+
+
+@namespace_typeahead_suggestions.route("/agencies")
+class TypeaheadAgencies(PsycopgResource):
+
+    @handle_exceptions
+    @limiter.limit("10/second")
+    def get(self):
+        return self.run_endpoint(
+            **get_typeahead_kwargs(DatabaseClient.get_typeahead_agencies)
+        )

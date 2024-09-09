@@ -1,19 +1,13 @@
-from http import HTTPStatus
-
-from flask import Response, make_response
-
+from typing import Callable
 from database_client.database_client import DatabaseClient
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import TypeaheadDTO, TypeaheadSchema
 
+def get_typeahead_results(
+    db_client: DatabaseClient,
+    dto: TypeaheadDTO,
+    db_client_method: Callable
+):
+    return {
+        "suggestions": db_client_method(db_client, dto.query)
+    }
 
-def get_typeahead_dict_results(
-    suggestions: list[DatabaseClient.TypeaheadSuggestions],
-) -> list[dict]:
-    return [suggestion._asdict() for suggestion in suggestions]
-
-
-def get_typeahead_suggestions_wrapper(
-    db_client: DatabaseClient, query: str
-) -> Response:
-    suggestions = db_client.get_typeahead_suggestions(query)
-    dict_results = get_typeahead_dict_results(suggestions)
-    return make_response({"suggestions": dict_results}, HTTPStatus.OK)

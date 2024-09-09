@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 from database_client.database_client import DatabaseClient
 from middleware.primary_resource_logic.typeahead_suggestion_logic import (
     get_typeahead_dict_results,
-    get_typeahead_suggestions_wrapper,
+    get_typeahead_locations_wrapper,
 )
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
@@ -71,11 +71,11 @@ def test_get_typeahead_suggestions_wrapper(monkeypatch):
         patch_root="middleware.primary_resource_logic.typeahead_suggestion_logic",
     )
 
-    get_typeahead_suggestions_wrapper(mock.db_client, mock.query)
+    get_typeahead_locations_wrapper(mock.db_client, mock.query)
 
-    mock.db_client.get_typeahead_suggestions.assert_called_with(mock.query)
+    mock.db_client.get_typeahead_locations.assert_called_with(mock.query)
     mock.get_typeahead_dict_results.assert_called_with(
-        mock.db_client.get_typeahead_suggestions.return_value
+        mock.db_client.get_typeahead_locations.return_value
     )
     mock.make_response.assert_called_with(
         {"suggestions": mock.get_typeahead_dict_results.return_value}, HTTPStatus.OK
