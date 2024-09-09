@@ -1,3 +1,5 @@
+from middleware.models import Agency, DataRequest, DataSource, TestTable
+
 AGENCY_APPROVED_COLUMNS = [
     "homepage_url",
     "count_data_sources",
@@ -99,3 +101,10 @@ RESTRICTED_COLUMNS = [
 ]
 
 PAGE_SIZE = 100
+
+TABLE_REFERENCE = {
+    "agencies": Agency,
+    "data_requests": DataRequest,
+    "data_sources": DataSource,
+    "test_table": TestTable,
+}
