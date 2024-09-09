@@ -4,9 +4,11 @@ from unittest.mock import MagicMock, patch, call
 
 import pytest
 
+from database_client.database_client import DatabaseClient
 from database_client.enums import RelationRoleEnum, ColumnPermissionEnum
 from middleware.access_logic import AccessInfo
 from middleware.enums import AccessTypeEnum, PermissionsEnum
+from middleware.models import DataRequest
 from middleware.primary_resource_logic.data_requests import (
     get_data_requests_relation_role,
     RELATION,
@@ -141,7 +143,6 @@ def test_get_data_requests_with_permitted_columns(
         db_client=mock.db_client,
         relation_role=mock.relation_role,
         where_mappings=mock.where_mappings,
-        not_where_mappings=mock.not_where_mappings,
     )
 
 
@@ -156,10 +157,12 @@ def test_get_data_requests_with_permitted_columns(
         role=mock.relation_role,
         column_permission=ColumnPermissionEnum.READ,
     )
+    column_references = DatabaseClient.convert_to_column_reference(
+        columns=mock_get_permitted_columns.return_value, relation="data_requests"
+    )
     mock.db_client.get_data_requests.assert_called_once_with(
-        columns=mock_get_permitted_columns.return_value,
+        columns=column_references,
         where_mappings=mock.where_mappings,
-        not_where_mappings=mock.not_where_mappings,
     )
 
 
@@ -218,18 +221,19 @@ def test_get_standard_and_owner_zipped_data_requests(
         user_email=mock.user_email, db_client=mock.db_client
     )
     assert zipped_data_requests == [mock.data_request_owner, mock.data_request_standard]
-    expected_mapping = {"creator_user_id": mock.user_id}
+    neq_expected_mapping = [DataRequest.creator_user_id != mock.user_id]
+    eq_expected_mapping = [DataRequest.creator_user_id == mock.user_id]
     mock_get_data_requests_with_permitted_columns.assert_has_calls(
         [
             call(
                 db_client=mock.db_client,
                 relation_role=RelationRoleEnum.STANDARD,
-                not_where_mappings=expected_mapping,
+                where_mappings=neq_expected_mapping,
             ),
             call(
                 db_client=mock.db_client,
                 relation_role=RelationRoleEnum.OWNER,
-                where_mappings=expected_mapping,
+                where_mappings=eq_expected_mapping,
             ),
         ],
         any_order=True,

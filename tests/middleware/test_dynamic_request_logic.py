@@ -3,6 +3,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from database_client.constants import TABLE_REFERENCE
+from database_client.database_client import DatabaseClient
 from database_client.enums import ColumnPermissionEnum
 from middleware.dynamic_request_logic import (
     results_dependent_response,
@@ -51,11 +53,11 @@ def test_results_dependent_response_with_results(mock_message_response):
 
     results_dependent_response(
         entry_name="test entry",
-        results=[1],
+        results=[{"test": 1}],
     )
 
     mock_message_response.assert_called_once_with(
-        message="test entry found", data=1, validation_schema=EntryDataResponseSchema
+        message="test entry found", data={"test": 1}, validation_schema=EntryDataResponseSchema
     )
 
 
@@ -94,11 +96,17 @@ def test_get_by_id(monkeypatch, mock_get_permitted_columns):
         column_permission=ColumnPermissionEnum.READ,
     )
 
+    column_references = DatabaseClient.convert_to_column_reference(
+        columns=mock_get_permitted_columns.return_value, relation=mock.mp.relation
+    )
+
     mock.mp.db_client_method.assert_called_once_with(
         mock.mp.db_client,
         relation_name=mock.mp.relation,
-        columns=mock_get_permitted_columns.return_value,
-        where_mappings={mock.id_column_name: mock.id},
+        columns=column_references,
+        where_mappings=[
+            getattr(TABLE_REFERENCE[mock.mp.relation], mock.id_column_name) == mock.id
+        ],
     )
 
     mock.results_dependent_response.assert_called_once_with(
@@ -141,7 +149,6 @@ def test_get_many(monkeypatch, mock_get_permitted_columns):
 
     mock.mp.db_client_method.assert_called_once_with(
         mock.mp.db_client,
-        relation_name=mock.mp.relation,
         columns=mock.optionally_limit_to_requested_columns.return_value,
         page=mock.page,
     )

@@ -42,7 +42,7 @@ class DatabaseSessionSingleton:
             do_database_url = get_env_variable("DO_DATABASE_URL")
             do_database_url = "postgresql+psycopg" + do_database_url[10:]
 
-            engine = create_engine(do_database_url, echo=True)
+            engine = create_engine(do_database_url)
             Session = sessionmaker(bind=engine)
             return Session
 
