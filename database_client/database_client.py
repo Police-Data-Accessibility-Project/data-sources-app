@@ -15,7 +15,7 @@ from sqlalchemy.orm import aliased
 from sqlalchemy.schema import Column
 from sqlalchemy.sql.expression import UnaryExpression
 
-from database_client.constants import PAGE_SIZE
+from database_client.constants import PAGE_SIZE, TABLE_REFERENCE
 from database_client.db_client_dataclasses import OrderByParameters
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
@@ -359,34 +359,35 @@ class DatabaseClient:
         :return: A list of agency tuples.
         """
         columns = [
-            Agency.name,
-            Agency.homepage_url,
-            Agency.count_data_sources,
-            Agency.agency_type,
-            Agency.multi_agency,
-            Agency.submitted_name,
-            Agency.jurisdiction_type,
-            Agency.state_iso,
-            Agency.municipality,
-            Agency.zip_code,
-            Agency.county_fips,
-            Agency.county_name,
-            Agency.lat,
-            Agency.lng,
-            Agency.data_sources,
-            Agency.no_web_presence,
-            Agency.airtable_agency_last_modified,
-            Agency.data_sources_last_updated,
-            Agency.approved,
-            Agency.rejection_reason,
-            Agency.last_approval_editor,
-            Agency.agency_created,
-            Agency.county_airtable_uid,
-            Agency.defunct_year,
-            Agency.airtable_uid,
+            "name",
+            "homepage_url",
+            "count_data_sources",
+            "agency_type",
+            "multi_agency",
+            "submitted_name",
+            "jurisdiction_type",
+            "state_iso",
+            "municipality",
+            "zip_code",
+            "county_fips",
+            "county_name",
+            "lat",
+            "lng",
+            "data_sources",
+            "no_web_presence",
+            "airtable_agency_last_modified",
+            "data_sources_last_updated",
+            "approved",
+            "rejection_reason",
+            "last_approval_editor",
+            "agency_created",
+            "county_airtable_uid",
+            "defunct_year",
+            "airtable_uid",
         ]
+        column_references = self.convert_to_column_reference(columns=columns, relation="agencies")
         results = self._select_from_single_relation(
-            columns=columns,
+            columns=column_references,
             where_mappings=[Agency.approved == True],
             limit=1000,
             page=page,
@@ -796,6 +797,17 @@ class DatabaseClient:
         results = self.cursor.fetchall()
         return [row["associated_column"] for row in results]
 
+    @staticmethod
+    def convert_to_column_reference(columns: list[str], relation: str) -> list[Column]:
+        """Converts a list of column strings to SQLAlchemy column references.
+
+        :param columns: List of column strings.
+        :param relation: Relation string.
+        :return:
+        """        
+        relation_reference = TABLE_REFERENCE[relation]
+        return [getattr(relation_reference, column) for column in columns]
+
     @cursor_manager()
     def _update_entry_in_table(
         self,
@@ -872,7 +884,7 @@ class DatabaseClient:
         where_mappings: Optional[list[bool]] = [True],
         limit: Optional[int] = PAGE_SIZE,
         page: Optional[int] = None,
-        order_by: Optional[UnaryExpression] = None,
+        order_by: Optional[OrderByParameters] = None,
     ) -> list[RowMapping]:
         """
         Selects a single relation from the database
