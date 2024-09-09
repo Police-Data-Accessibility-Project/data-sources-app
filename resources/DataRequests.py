@@ -23,7 +23,9 @@ from middleware.decorators import (
     authentication_required,
 )
 from middleware.enums import AccessTypeEnum, Relations
-from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import get_restx_param_documentation
+from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
+    get_restx_param_documentation,
+)
 from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
     create_entry_data_request_model,
     create_id_and_message_model,
@@ -35,6 +37,8 @@ from resources.PsycopgResource import PsycopgResource, handle_exceptions
 from resources.resource_helpers import (
     add_jwt_or_api_key_header_arg,
     create_response_dictionary,
+    add_api_key_header_arg,
+    add_jwt_header_arg,
 )
 from utilities.namespace import create_namespace, AppNamespaces
 
@@ -57,6 +61,12 @@ data_requests_column_permissions = create_column_permissions_string_table(
 
 authorization_parser = namespace_data_requests.parser()
 add_jwt_or_api_key_header_arg(authorization_parser)
+
+api_key_parser = namespace_data_requests.parser()
+add_api_key_header_arg(api_key_parser)
+
+jwt_parser = namespace_data_requests.parser()
+add_jwt_header_arg(jwt_parser)
 
 
 @namespace_data_requests.route("/<resource_id>")
@@ -221,7 +231,7 @@ class DataRequestsRelatedSources(PsycopgResource):
             success_message="Related sources successfully retrieved.",
             success_model=data_requests_outer_model,
         ),
-        expect=[authorization_parser],
+        expect=[api_key_parser],
     )
     def get(self, resource_id: str, access_info: AccessInfo) -> Response:
         return self.run_endpoint(
@@ -243,8 +253,11 @@ class DataRequestsRelatedSourcesById(PsycopgResource):
         responses=create_response_dictionary(
             success_message="Data source successfully associated with data request.",
         ),
+        expect=[jwt_parser],
     )
-    def post(self, resource_id: str, data_source_id: str, access_info: AccessInfo) -> Response:
+    def post(
+        self, resource_id: str, data_source_id: str, access_info: AccessInfo
+    ) -> Response:
         return self.run_endpoint(
             wrapper_function=create_data_request_related_source,
             access_info=access_info,
@@ -263,6 +276,7 @@ class DataRequestsRelatedSourcesById(PsycopgResource):
         responses=create_response_dictionary(
             success_message="Successfully removed data source association from data request.",
         ),
+        expect=[jwt_parser],
     )
     def delete(
         self, resource_id: str, data_source_id: str, access_info: AccessInfo
