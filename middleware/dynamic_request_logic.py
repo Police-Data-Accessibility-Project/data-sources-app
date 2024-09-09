@@ -12,6 +12,7 @@ from typing import Optional
 from flask import Response
 from sqlalchemy.schema import Table
 
+from database_client.constants import TABLE_REFERENCE
 from database_client.database_client import DatabaseClient
 from database_client.enums import ColumnPermissionEnum
 from middleware.access_logic import AccessInfo
@@ -28,15 +29,8 @@ from middleware.common_response_formatting import (
     message_response,
 )
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.models import Agency, DataRequest, DataSource
 from middleware.schema_and_dto_logic.response_schemas import EntryDataResponseSchema
 from middleware.util_dynamic import call_if_not_none, execute_if_not_none
-
-TABLE_CONVERSION = {
-    "agencies": Agency,
-    "data_requests": DataRequest,
-    "data_sources": DataSource,
-}
 
 
 @dataclass
@@ -81,12 +75,13 @@ def get_by_id(
         role=relation_role,
         column_permission=ColumnPermissionEnum.READ,
     )
-    #TODO: Evaluate if logic can be moved to seperate method
-    relation_reference = TABLE_CONVERSION[mp.relation]
+    column_references = DatabaseClient.convert_to_column_reference(
+        columns=columns, relation=mp.relation
+    )
     results = mp.db_client_method(
         mp.db_client,
-        columns=[getattr(relation_reference, column) for column in columns],
-        where_mappings=[getattr(relation_reference, id_column_name) == id],
+        columns=column_references,
+        where_mappings=[getattr(TABLE_REFERENCE[mp.relation], id_column_name) == id],
     )
     return results_dependent_response(mp.entry_name, results)
 
@@ -154,14 +149,17 @@ def get_many(
         permitted_columns,
         requested_columns
     )
+    column_references = DatabaseClient.convert_to_column_reference(
+        columns=permitted_columns, relation=mp.relation
+    )
 
     results = mp.db_client_method(
         mp.db_client,
-        relation_name=mp.relation,
-        columns=permitted_columns,
+        columns=column_references,
         page=page,
         **mp.db_client_additional_args,
     )
+    results = [dict(row) for row in results]
     return multiple_results_response(message=f"{mp.entry_name} found", data=results)
 
 
