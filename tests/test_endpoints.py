@@ -109,7 +109,7 @@ test_parameters = [
     TestParameters(AgenciesByPage, "/agencies", [POST, GET]),
     TestParameters(AgenciesById, "/agencies/<agency_id>", [GET, PUT, DELETE]),
     TestParameters(Search, "/search/search-location-and-record-type", [GET]),
-    TestParameters(TypeaheadSuggestions, "/search/typeahead-suggestions", [GET]),
+    TestParameters(TypeaheadSuggestions, "/typeahead/locations", [GET]),
     TestParameters(Callback, "auth/callback", [GET]),
     TestParameters(LinkToGithub, "auth/link-to-github", [POST]),
     TestParameters(LoginWithGithub, "auth/login-with-github", [POST]),

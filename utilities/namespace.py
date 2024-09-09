@@ -17,6 +17,7 @@ class AppNamespaces(Enum):
     DATA_SOURCES = NamespaceAttributes(
         path="data-sources", description="Data Sources Namespace"
     )
+    TYPEAHEAD = NamespaceAttributes(path="typeahead", description="Typeahead Namespace")
 
 
 def create_namespace(

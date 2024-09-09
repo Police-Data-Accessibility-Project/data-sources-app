@@ -17,7 +17,7 @@ def test_typeahead_suggestions(flask_client_with_db, dev_db_connection):
     run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
-        endpoint="/search/typeahead-suggestions?query=xyl",
+        endpoint="/typeahead/locations?query=xyl",
         expected_json_content={
             "suggestions": [
                 {

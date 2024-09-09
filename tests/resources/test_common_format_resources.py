@@ -121,7 +121,7 @@ MOCK_EMAIL_PASSWORD = {
             },
         ),
         (
-            "/search/typeahead-suggestions?query=test_query",
+            "/typeahead/locations?query=test_query",
             "GET",
             "TypeaheadSuggestions.get_typeahead_suggestions_wrapper",
             {},

@@ -9,7 +9,7 @@ from resources.resource_helpers import create_outer_model
 from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_typeahead_suggestions = create_namespace(
-    namespace_attributes=AppNamespaces.SEARCH
+    namespace_attributes=AppNamespaces.TYPEAHEAD
 )
 
 request_parser = reqparse.RequestParser()
@@ -60,7 +60,7 @@ typeahead_suggestions_outer_model = create_outer_model(
 )
 
 
-@namespace_typeahead_suggestions.route("/typeahead-suggestions")
+@namespace_typeahead_suggestions.route("/locations")
 class TypeaheadSuggestions(PsycopgResource):
 
     @handle_exceptions
