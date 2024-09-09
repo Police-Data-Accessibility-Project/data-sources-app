@@ -103,3 +103,14 @@ class EntryDataRequestDTO:
             source=SourceMappingEnum.JSON,
             validation_schema=EntryDataRequestSchema,
         )
+
+class TypeaheadSchema(Schema):
+    query = fields.Str(
+        required=True,
+        description="The search query.",
+        metadata={"source": SourceMappingEnum.QUERY_ARGS},
+    )
+
+@dataclass
+class TypeaheadDTO:
+    query: str
