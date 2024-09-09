@@ -281,6 +281,8 @@ def test_table_data(live_database_client: DatabaseClient):
     ('Simon', 'Bear');
     """)
 
+class FakeAbort(Exception):
+    pass
 
 @pytest.fixture
 def mock_flask_response_manager(monkeypatch):
@@ -292,4 +294,6 @@ def mock_flask_response_manager(monkeypatch):
     mock = MagicMock()
     monkeypatch.setattr("middleware.flask_response_manager.make_response", mock.make_response)
     monkeypatch.setattr("middleware.flask_response_manager.abort", mock.abort)
+    # Create a fake abort exception to use in tests
+    mock.abort.side_effect = FakeAbort
     return mock

@@ -6,7 +6,8 @@ import pytest
 
 from database_client.enums import RelationRoleEnum, ColumnPermissionEnum
 from middleware.access_logic import AccessInfo
-from middleware.enums import AccessTypeEnum, PermissionsEnum
+from middleware.dynamic_request_logic.supporting_classes import IDInfo
+from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
 from middleware.primary_resource_logic.data_requests import (
     get_data_requests_relation_role,
     RELATION,
@@ -15,11 +16,17 @@ from middleware.primary_resource_logic.data_requests import (
     allowed_to_delete_request,
     get_data_requests_wrapper,
     get_data_requests_with_permitted_columns,
+    RelatedSourceByIDDTO,
+    delete_data_request_related_source,
+    get_data_request_related_sources,
+    RELATED_SOURCES_RELATION,
 )
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_mocks_and_patches import (
     patch_and_return_mock,
+    multi_monkeypatch,
 )
+from tests.fixtures import mock_flask_response_manager, FakeAbort
 
 PATCH_ROOT = "middleware.primary_resource_logic.data_requests"
 
@@ -86,7 +93,10 @@ def mock_message_response(monkeypatch):
 
 @pytest.fixture
 def mock_get_data_requests_with_permitted_columns(monkeypatch):
-    return patch_and_return_mock(f"{PATCH_ROOT}.get_data_requests_with_permitted_columns", monkeypatch)
+    return patch_and_return_mock(
+        f"{PATCH_ROOT}.get_data_requests_with_permitted_columns", monkeypatch
+    )
+
 
 @patch(PATCH_ROOT + ".format_list_response")
 @patch(PATCH_ROOT + ".get_formatted_data_requests")
@@ -144,9 +154,7 @@ def test_get_data_requests_with_permitted_columns(
         not_where_mappings=mock.not_where_mappings,
     )
 
-
     assert results == mock.db_client.get_data_requests.return_value
-
 
     # assert results == mock.zipped_data_requests
 
@@ -161,7 +169,6 @@ def test_get_data_requests_with_permitted_columns(
         where_mappings=mock.where_mappings,
         not_where_mappings=mock.not_where_mappings,
     )
-
 
 
 def test_get_formatted_data_requests_admin(get_formatted_data_requests_mocks):
@@ -206,7 +213,7 @@ def test_get_formatted_data_requests_owner(get_formatted_data_requests_mocks):
 
 
 def test_get_standard_and_owner_zipped_data_requests(
-        mock_get_data_requests_with_permitted_columns: MagicMock,
+    mock_get_data_requests_with_permitted_columns: MagicMock,
 ):
     mock = MagicMock()
     mock_get_data_requests_with_permitted_columns.side_effect = [
@@ -245,12 +252,16 @@ def mock_abort(monkeypatch):
 def mock_make_response(monkeypatch):
     return patch_and_return_mock(f"{PATCH_ROOT}.make_response", monkeypatch)
 
+
 def check_allowed_to_delete_request_mock_calls(mock: MagicMock):
-    mock.db_client.get_user_id.assert_called_once_with(mock.access_info.user_email)
+    mock.db_client.get_user_id.assert_called_once_with(
+        email=mock.access_info.user_email
+    )
     mock.db_client.user_is_creator_of_data_request.assert_called_once_with(
         user_id=mock.db_client.get_user_id.return_value,
         data_request_id=mock.data_request_id,
     )
+
 
 def test_allowed_to_delete_request_user_is_creator():
     mock = MagicMock()
@@ -290,3 +301,127 @@ def test_allowed_to_delete_request_user_not_creator_and_without_permissions():
         is False
     )
     check_allowed_to_delete_request_mock_calls(mock)
+
+
+@pytest.fixture
+def data_request_delete_related_source_mocks(
+    mock_flask_response_manager: MagicMock, monkeypatch
+):
+    mock = MagicMock()
+    mock.flask_response_manager = mock_flask_response_manager
+    monkeypatch.setattr(mock, f"{PATCH_ROOT}.DatabaseClient", mock.DatabaseClient)
+    mock.db_client = MagicMock()
+    mock.dto = RelatedSourceByIDDTO(
+        resource_id=mock.resource_id,
+        data_source_id=mock.data_source_id,
+    )
+    mock.access_info = MagicMock()
+    return mock
+
+
+def _check_delete_request_source_relation_called(
+    mock_DatabaseClient: MagicMock, mock: MagicMock, id_column_value: str
+):
+    mock_DatabaseClient.delete_request_source_relation.assert_called_once_with(
+        mock.db_client, id_column_name="id", id_column_value=id_column_value
+    )
+
+
+def _check_get_user_id_called(mock: MagicMock):
+    mock.db_client.get_user_id.assert_called_once_with(
+        email=mock.access_info.user_email
+    )
+
+
+def _check_user_is_creator_of_data_request_called(mock: MagicMock):
+    mock.db_client.user_is_creator_of_data_request.assert_called_once_with(
+        user_id=mock.user_id, data_request_id=mock.resource_id
+    )
+
+
+def _check_select_from_single_relation_called(mock: MagicMock):
+    mock.db_client._select_from_single_relation.assert_called_once_with(
+        relation_name=Relations.RELATED_SOURCES.value,
+        where_mappings={
+            "request_id": mock.resource_id,
+            "source_id": mock.data_source_id,
+        },
+        columns=["id"],
+    )
+
+
+@patch(f"{PATCH_ROOT}.DatabaseClient")
+def test_delete_data_request_related_source_happy_path(
+    mock_DatabaseClient,
+    data_request_delete_related_source_mocks,
+):
+    mock = data_request_delete_related_source_mocks
+    mock.db_client._select_from_single_relation.return_value = [{"id": mock.link_id}]
+    mock.db_client.get_user_id.return_value = mock.user_id
+    mock.db_client.user_is_creator_of_data_request.return_value = True
+
+    delete_data_request_related_source(
+        db_client=mock.db_client,
+        access_info=mock.access_info,
+        dto=mock.dto,
+    )
+    _check_select_from_single_relation_called(mock)
+    _check_get_user_id_called(mock)
+    _check_user_is_creator_of_data_request_called(mock)
+    _check_delete_request_source_relation_called(
+        mock_DatabaseClient, mock, id_column_value=mock.link_id
+    )
+    mock.flask_response_manager.make_response.assert_called_once_with(
+        {"message": "Request-Source association deleted."},
+        HTTPStatus.OK,
+    )
+
+
+def test_delete_data_request_related_source_user_not_creator(
+    data_request_delete_related_source_mocks,
+):
+    mock = data_request_delete_related_source_mocks
+    mock.db_client._select_from_single_relation.return_value = [{"id": mock.link_id}]
+    mock.db_client.get_user_id.return_value = mock.user_id
+    mock.db_client.user_is_creator_of_data_request.return_value = False
+    with pytest.raises(FakeAbort):
+        delete_data_request_related_source(
+            db_client=mock.db_client,
+            access_info=mock.access_info,
+            dto=mock.dto,
+        )
+    _check_select_from_single_relation_called(mock)
+    _check_get_user_id_called(mock)
+    _check_user_is_creator_of_data_request_called(mock)
+    mock.delete_request_source_relation.assert_not_called()
+    mock.flask_response_manager.abort.assert_called_once_with(
+        message="You do not have permission to delete this Request-Source association.",
+        code=HTTPStatus.FORBIDDEN,
+    )
+
+
+@patch(f"{PATCH_ROOT}.DatabaseClient")
+def test_delete_data_request_related_source_user_is_admin(
+    mock_DatabaseClient,
+    data_request_delete_related_source_mocks,
+):
+    mock = data_request_delete_related_source_mocks
+    mock.db_client._select_from_single_relation.return_value = [{"id": mock.link_id}]
+    mock.db_client.get_user_id.return_value = mock.user_id
+    mock.db_client.user_is_creator_of_data_request.return_value = False
+    mock.access_info.permissions = [PermissionsEnum.DB_WRITE]
+    delete_data_request_related_source(
+        db_client=mock.db_client,
+        access_info=mock.access_info,
+        dto=mock.dto,
+    )
+    _check_select_from_single_relation_called(mock)
+    _check_get_user_id_called(mock)
+    _check_user_is_creator_of_data_request_called(mock)
+    _check_delete_request_source_relation_called(
+        mock_DatabaseClient, mock, id_column_value=mock.link_id
+    )
+    mock.flask_response_manager.make_response.assert_called_once_with(
+        {"message": "Request-Source association deleted."},
+        HTTPStatus.OK,
+    )

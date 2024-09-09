@@ -4,6 +4,8 @@ from middleware.access_logic import AccessInfo
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     EntryDataRequestDTO,
     EntryDataRequestSchema,
+    GetByIDBaseSchema,
+    GetByIDBaseDTO,
 )
 from middleware.decorators import (
     api_key_required,
@@ -52,12 +54,7 @@ authorization_jwt_parser = namespace_data_source.parser()
 add_jwt_header_arg(authorization_jwt_parser)
 
 
-@namespace_data_source.route("/<data_source_id>")
-@namespace_data_source.param(
-    name="data_source_id",
-    description="The unique identifier of the data source.",
-    _in="path",
-)
+@namespace_data_source.route("/<resource_id>")
 class DataSourceById(PsycopgResource):
     """
     A resource for managing data source entities by their unique identifier.
@@ -74,7 +71,7 @@ class DataSourceById(PsycopgResource):
         ),
     )
     @namespace_data_source.expect(authorization_api_parser)
-    def get(self, access_info: AccessInfo, data_source_id: str) -> Response:
+    def get(self, access_info: AccessInfo, resource_id: str) -> Response:
         """
         Retrieves details of a specific data source by its ID.
 
@@ -87,7 +84,9 @@ class DataSourceById(PsycopgResource):
         return self.run_endpoint(
             data_source_by_id_wrapper,
             access_info=access_info,
-            data_source_id=data_source_id,
+            schema_populate_parameters=SchemaPopulateParameters(
+                schema_class=GetByIDBaseSchema, dto_class=GetByIDBaseDTO
+            ),
         )
 
     @handle_exceptions
@@ -103,7 +102,7 @@ class DataSourceById(PsycopgResource):
             success_message="Data source successfully updated.",
         ),
     )
-    def put(self, access_info: AccessInfo, data_source_id: str) -> Response:
+    def put(self, access_info: AccessInfo, resource_id: str) -> Response:
         """
         Updates a data source by its ID based on the provided JSON payload.
 
@@ -119,7 +118,7 @@ class DataSourceById(PsycopgResource):
                 dto_class=EntryDataRequestDTO,
                 schema_class=EntryDataRequestSchema,
             ),
-            data_source_id=data_source_id,
+            data_source_id=resource_id,
             access_info=access_info,
         )
 
@@ -134,7 +133,7 @@ class DataSourceById(PsycopgResource):
         ),
     )
     @namespace_data_source.expect(authorization_jwt_parser)
-    def delete(self, access_info: AccessInfo, data_source_id: str) -> Response:
+    def delete(self, access_info: AccessInfo, resource_id: str) -> Response:
         """
         Deletes a data source by its ID.
 
@@ -146,7 +145,7 @@ class DataSourceById(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=delete_data_source_wrapper,
-            data_source_id=data_source_id,
+            data_source_id=resource_id,
             access_info=access_info,
         )
 
@@ -189,10 +188,6 @@ class DataSources(PsycopgResource):
             access_info=access_info,
         )
 
-
-@namespace_data_source.route("")
-class DataSourcesPost(PsycopgResource):
-
     @handle_exceptions
     @authentication_required(
         allowed_access_methods=[AccessTypeEnum.JWT],
@@ -221,29 +216,33 @@ class DataSourcesPost(PsycopgResource):
             access_info=access_info,
         )
 
-
-@namespace_data_source.route("/data-sources-map")
-class DataSourcesMap(PsycopgResource):
-    """
-    A resource for managing collections of data sources for mapping.
-    Provides a method for retrieving all data sources.
-    """
-
-    @handle_exceptions
-    @api_key_required
-    @namespace_data_source.response(200, "Success", models.get_many_response_model)
-    @namespace_data_source.response(500, "Internal server error")
-    @namespace_data_source.response(400, "Bad request; missing or bad API key")
-    @namespace_data_source.response(403, "Forbidden; invalid API key")
-    @namespace_data_source.doc(
-        description="Retrieves location-relevant columns for data sources.",
-    )
-    @namespace_data_source.expect(authorization_api_parser)
-    def get(self) -> Response:
-        """
-        Retrieves location relevant columns for data sources.
-
-        Returns:
-        - A dictionary containing the count of data sources and their details.
-        """
-        return self.run_endpoint(get_data_sources_for_map_wrapper)
+    # This endpoint no longer works because of the other data source endpoint
+    # It is interpreted as another data source id
+    # But we have not yet decided whether to modify or remove it entirely
+# @namespace_data_source.route("/data-sources-map")
+# class DataSourcesMap(PsycopgResource):
+#     """
+#     A resource for managing collections of data sources for mapping.
+#     Provides a method for retrieving all data sources.
+#     """
+#
+#     @handle_exceptions
+#     @authentication_required(
+#         allowed_access_methods=[AccessTypeEnum.API_KEY],
+#     )
+#     @namespace_data_source.response(200, "Success", models.get_many_response_model)
+#     @namespace_data_source.response(500, "Internal server error")
+#     @namespace_data_source.response(400, "Bad request; missing or bad API key")
+#     @namespace_data_source.response(403, "Forbidden; invalid API key")
+#     @namespace_data_source.doc(
+#         description="Retrieves location-relevant columns for data sources.",
+#     )
+#     @namespace_data_source.expect(authorization_api_parser)
+#     def get(self) -> Response:
+#         """
+#         Retrieves location relevant columns for data sources.
+#
+#         Returns:
+#         - A dictionary containing the count of data sources and their details.
+#         """
+#         return self.run_endpoint(get_data_sources_for_map_wrapper)

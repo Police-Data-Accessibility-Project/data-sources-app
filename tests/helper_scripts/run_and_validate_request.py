@@ -22,6 +22,6 @@ def run_and_validate_request(
 
     # But we can also test to see if the json content is what we expect
     if expected_json_content is not None:
-        assert response.json == expected_json_content
+        assert response.json == expected_json_content, f"Expected {expected_json_content} but got {response.json}"
 
     return response.json

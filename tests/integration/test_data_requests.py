@@ -7,6 +7,7 @@ from typing import Dict, Optional
 import pytest
 from flask.testing import FlaskClient
 
+from database_client.database_client import DatabaseClient
 from middleware.constants import DATA_KEY
 from middleware.enums import PermissionsEnum
 from tests.fixtures import (
@@ -233,47 +234,63 @@ def test_data_requests_by_id_put(ts: DataRequestsTestSetup):
 
 
 def test_data_requests_by_id_delete(ts: DataRequestsTestSetup):
+
     ts.db_client.add_user_permission(ts.tus.user_info.email, PermissionsEnum.DB_WRITE)
 
+    tus_admin = ts.tus
+    tus_owner = create_test_user_setup(ts.flask_client)
+    tus_non_owner = create_test_user_setup(ts.flask_client)
+
     data_request_id = create_data_request(
-        ts.db_client, ts.submission_notes, ts.tus.user_info.user_id
+        ts.db_client, ts.submission_notes, tus_owner.user_info.user_id
     )
 
+    # Owner should be able to delete their own request
     json_data = run_and_validate_request(
         flask_client=ts.flask_client,
         http_method="delete",
         endpoint=DATA_REQUESTS_BY_ID_ENDPOINT + str(data_request_id),
-        headers=ts.tus.jwt_authorization_header,
+        headers=tus_owner.jwt_authorization_header,
     )
 
-    result = ts.db_client.get_data_requests(
-        columns=["submission_notes"],
-        where_mappings={"id": data_request_id},
+    assert (
+        ts.db_client.get_data_requests(
+            columns=["submission_notes"],
+            where_mappings={"id": data_request_id},
+        )
+        == []
     )
 
-    assert result == []
+    # Check that request is denied if user is not owner and does not have DB_WRITE permission
+    new_data_request_id = create_data_request(
+        ts.db_client, ts.submission_notes, tus_owner.user_info.user_id
+    )
 
-    # Check that request is denied if user does not have DB_WRITE permission
-    tus_2 = create_test_user_setup(ts.flask_client)
+    NEW_ENDPOINT = DATA_REQUESTS_BY_ID_ENDPOINT + str(new_data_request_id)
 
     run_and_validate_request(
         flask_client=ts.flask_client,
         http_method="delete",
-        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT + str(data_request_id),
-        headers=tus_2.jwt_authorization_header,
+        endpoint=NEW_ENDPOINT,
+        headers=tus_non_owner.jwt_authorization_header,
         expected_response_status=HTTPStatus.FORBIDDEN,
     )
 
-    # But if user is owner, allow
-    new_data_request_id = create_data_request(
-        ts.db_client, ts.submission_notes, tus_2.user_info.user_id
-    )
-
+    # But if user is an admin, allow
     run_and_validate_request(
         flask_client=ts.flask_client,
         http_method="delete",
-        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT + str(new_data_request_id),
-        headers=tus_2.jwt_authorization_header,
+        endpoint=NEW_ENDPOINT,
+        headers=tus_admin.jwt_authorization_header,
+    )
+
+    # If data request id doesn't exist (or is already deleted), return 404
+    run_and_validate_request(
+        flask_client=ts.flask_client,
+        http_method="delete",
+        endpoint=NEW_ENDPOINT,
+        headers=tus_admin.jwt_authorization_header,
+        expected_response_status=HTTPStatus.NOT_FOUND,
     )
 
 
@@ -294,7 +311,65 @@ def get_data_request_related_sources_with_endpoint(
     )
 
 
-def test_data_request_by_id_related_agencies(
+class DataRequestByRelatedSourcesTestSetup(IntegrationTestSetup):
+
+    def __init__(
+        self,
+        flask_client: FlaskClient,
+        db_client: DatabaseClient,
+    ):
+        self.flask_client = flask_client
+        self.db_client = db_client
+        """
+        Create three users:
+        - USER_ADMIN: a user with DB_WRITE permissions
+        - USER_OWNER: a user who owns/creates a data request
+        - USER_NON_OWNER: a user who does not own/create a data request
+        """
+        # Represents an admin
+        self.tus_admin = create_test_user_setup(
+            self.flask_client, permissions=[PermissionsEnum.DB_WRITE]
+        )
+        # Represents a user who owns/create a data request
+        self.tus_owner = create_test_user_setup(self.flask_client)
+        # Represents a user who does not own/create a data request
+        self.tus_non_owner = create_test_user_setup(self.flask_client)
+
+        # USER_ADMIN creates a data source
+        self.created_data_source = create_data_source_with_endpoint(
+            flask_client=self.flask_client,
+            jwt_authorization_header=self.tus_admin.jwt_authorization_header,
+        )
+
+        # USER_OWNER creates a data request
+        self.created_data_request = create_data_request_with_endpoint(
+            flask_client=self.flask_client,
+            jwt_authorization_header=self.tus_owner.jwt_authorization_header,
+        )
+
+    def get_data_request_related_sources_with_given_data_request_id(
+        self,
+        api_authorization_header: dict,
+        expected_json_content: Optional[dict] = None
+    ):
+        get_data_request_related_sources_with_endpoint(
+            flask_client=self.flask_client,
+            api_authorization_header=api_authorization_header,
+            data_request_id=self.created_data_request.id,
+            expected_json_content=expected_json_content,
+        )
+
+
+
+
+@pytest.fixture
+def related_agencies_test_setup(integration_test_setup: IntegrationTestSetup):
+    return DataRequestByRelatedSourcesTestSetup(
+        flask_client=integration_test_setup.flask_client,
+        db_client=integration_test_setup.db_client,
+    )
+
+def test_data_request_by_id_related_sources(
     integration_test_setup: IntegrationTestSetup,
 ):
     """
@@ -304,12 +379,6 @@ def test_data_request_by_id_related_agencies(
     """
     ts = integration_test_setup
 
-    """
-    Create three users:
-    - USER_ADMIN: a user with DB_WRITE permissions
-    - USER_OWNER: a user who owns/creates a data request
-    - USER_NON_OWNER: a user who does not own/create a data request
-    """
     tus_admin = create_test_user_setup(
         ts.flask_client, permissions=[PermissionsEnum.DB_WRITE]
     )
@@ -329,35 +398,33 @@ def test_data_request_by_id_related_agencies(
     )
 
     def get_data_request_related_sources_with_given_data_request_id(
-        api_authorization_header: dict,
-        expected_json_content: Optional[dict] = None
+        api_authorization_header: dict, expected_json_content: Optional[dict] = None
     ):
         get_data_request_related_sources_with_endpoint(
             flask_client=ts.flask_client,
             api_authorization_header=api_authorization_header,
             data_request_id=cdr.id,
-            expected_json_content=expected_json_content
+            expected_json_content=expected_json_content,
         )
 
     # USER_OWNER and USER_NON_OWNER gets related sources of data request, and should see none
-    NO_RESULTS_RESPONSE = {"count": 0, "data": []}
-
+    NO_RESULTS_RESPONSE = {"count": 0, "data": [], "message": "Related sources found."}
 
     get_data_request_related_sources_with_given_data_request_id(
         api_authorization_header=tus_owner.api_authorization_header,
-        expected_json_content=NO_RESULTS_RESPONSE
+        expected_json_content=NO_RESULTS_RESPONSE,
     )
 
     get_data_request_related_sources_with_given_data_request_id(
         api_authorization_header=tus_non_owner.api_authorization_header,
-        expected_json_content=NO_RESULTS_RESPONSE
+        expected_json_content=NO_RESULTS_RESPONSE,
     )
 
     FORMATTED_DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT = (
         DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT.format(
-        data_request_id=cdr.id,
-        source_id=cds.id
-    ))
+            data_request_id=cdr.id, source_id=cds.id
+        )
+    )
 
     def add_related_source(
         jwt_authorization_header: dict,
@@ -385,14 +452,15 @@ def test_data_request_by_id_related_agencies(
         jwt_authorization_header=tus_owner.jwt_authorization_header,
         expected_json_content={
             "message": "Data source successfully associated with request."
-        }
+        },
     )
     # USER_ADMIN tries to add the same related source to the data request, and should be denied
     add_related_source(
         jwt_authorization_header=tus_admin.jwt_authorization_header,
         expected_json_content={
-            "message": "Data source already associated with request."
-        }
+            "message": "Request-Source association already exists."
+        },
+        expected_response_status=HTTPStatus.CONFLICT
     )
 
     # USER_OWNER and USER_NON_OWNER gets related sources of data request, and should see the one added
@@ -400,20 +468,21 @@ def test_data_request_by_id_related_agencies(
         "count": 1,
         "data": [
             {
-                "id": cds.id,
+                "airtable_uid": cds.id,
                 "name": cds.name
             }
-        ]
+        ],
+        "message": "Related sources found."
     }
 
     get_data_request_related_sources_with_given_data_request_id(
         api_authorization_header=tus_owner.api_authorization_header,
-        expected_json_content=RESULTS_RESPONSE
+        expected_json_content=RESULTS_RESPONSE,
     )
 
     get_data_request_related_sources_with_given_data_request_id(
         api_authorization_header=tus_non_owner.api_authorization_header,
-        expected_json_content=RESULTS_RESPONSE
+        expected_json_content=RESULTS_RESPONSE,
     )
 
     def delete_related_source(
@@ -426,30 +495,27 @@ def test_data_request_by_id_related_agencies(
             endpoint=FORMATTED_DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT,
             headers=tus_owner.jwt_authorization_header,
             expected_json_content=expected_json_response,
-            expected_response_status=expected_response_status
+            expected_response_status=expected_response_status,
         )
 
     # USER_OWNER deletes the related source of the data request, and succeeds
     delete_related_source(
         expected_json_response={
-            "message": "Data source successfully removed from request."
+            "message": "Request-Source association deleted."
         },
-        expected_response_status=HTTPStatus.OK
+        expected_response_status=HTTPStatus.OK,
     )
 
     # USER_OWNER tries to delete the same related source of the data request, and should be denied
-    delete_related_source(
-        expected_response_status=HTTPStatus.NOT_FOUND
-    )
+    delete_related_source(expected_response_status=HTTPStatus.NOT_FOUND)
 
     # USER_OWNER and USER_NON_OWNER gets related sources of data request, and should see none
     get_data_request_related_sources_with_given_data_request_id(
         api_authorization_header=tus_owner.api_authorization_header,
-        expected_json_content=NO_RESULTS_RESPONSE
+        expected_json_content=NO_RESULTS_RESPONSE,
     )
 
     get_data_request_related_sources_with_given_data_request_id(
         api_authorization_header=tus_non_owner.api_authorization_header,
-        expected_json_content=NO_RESULTS_RESPONSE
+        expected_json_content=NO_RESULTS_RESPONSE,
     )
-

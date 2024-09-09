@@ -14,6 +14,8 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     EntryDataRequestDTO,
     GetManyBaseSchema,
     GetManyBaseDTO,
+    GetByIDBaseSchema,
+    GetByIDBaseDTO,
 )
 from middleware.decorators import (
     authentication_required,
@@ -137,7 +139,7 @@ Columns permitted to be included by the user is determined by their level of acc
         pass
 
 
-@namespace_agencies.route("/<agency_id>")
+@namespace_agencies.route("/<resource_id>")
 class AgenciesById(PsycopgResource):
 
     @handle_exceptions
@@ -159,9 +161,14 @@ Columns returned are determined by the user's access level.
             "Returns agency.", models.entry_data_response_model
         ),
     )
-    def get(self, agency_id: str, access_info: AccessInfo) -> Response:
+    def get(self, resource_id: str, access_info: AccessInfo) -> Response:
         return self.run_endpoint(
-            get_agency_by_id, access_info=access_info, agency_id=agency_id
+            wrapper_function=get_agency_by_id,
+            schema_populate_parameters=SchemaPopulateParameters(
+                schema_class=GetByIDBaseSchema,
+                dto_class=GetByIDBaseDTO,
+            ),
+            access_info=access_info,
         )
 
     @handle_exceptions
@@ -183,12 +190,12 @@ Columns allowed to be updated by the user is determined by their level of access
 """,
         responses=create_response_dictionary("Agency successfully updated."),
     )
-    def put(self, agency_id: str, access_info: AccessInfo) -> Response:
+    def put(self, resource_id: str, access_info: AccessInfo) -> Response:
         return self.run_endpoint(
             update_agency,
             dto_populate_parameters=EntryDataRequestDTO.get_dto_populate_parameters(),
             access_info=access_info,
-            agency_id=agency_id,
+            agency_id=resource_id,
         )
 
     @handle_exceptions
@@ -201,7 +208,7 @@ Columns allowed to be updated by the user is determined by their level of access
         description="Deletes Agency",
         responses=create_response_dictionary("Agency successfully deleted."),
     )
-    def delete(self, agency_id: str, access_info: AccessInfo) -> Response:
+    def delete(self, resource_id: str, access_info: AccessInfo) -> Response:
         return self.run_endpoint(
-            delete_agency, agency_id=agency_id, access_info=access_info
+            delete_agency, agency_id=resource_id, access_info=access_info
         )

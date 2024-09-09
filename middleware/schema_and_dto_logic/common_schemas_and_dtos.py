@@ -55,6 +55,16 @@ class GetManyBaseDTO:
     sort_order: Optional[SortOrder] = None
     requested_columns: Optional[list[str]] = None
 
+class GetByIDBaseSchema(Schema):
+    resource_id = fields.Str(
+        required=True,
+        description="The ID of the object to retrieve.",
+        source=SourceMappingEnum.PATH,
+    )
+
+@dataclass
+class GetByIDBaseDTO:
+    resource_id: str
 
 class EntryDataRequestSchema(Schema):
     entry_data = DataField(
