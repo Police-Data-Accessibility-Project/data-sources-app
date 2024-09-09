@@ -307,7 +307,6 @@ def test_link_github_account():
     mock = LinkGithubAccountMocks(patch_root=PATCH_PREFIX)
     mock.github_user_info.user_email = mock.pdap_account_email
     mock.db_client.get_user_info.return_value = mock.db_client_user_info
-    mock.db_client_user_info.id = MagicMock()
 
     link_github_account(
         db_client=mock.db_client,

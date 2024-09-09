@@ -19,7 +19,7 @@ namespace_reset_password = create_namespace()
 
 doc_info = get_restx_param_documentation(
     namespace=namespace_reset_password,
-    schema_class=RequestResetPasswordRequestSchema,
+    schema_class=ResetPasswordSchema,
     model_name="ResetPassword",
 )
 

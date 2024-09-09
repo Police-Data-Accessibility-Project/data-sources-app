@@ -13,7 +13,7 @@ from tests.fixtures import (
     bypass_api_key_required,
     bypass_permissions_required,
     bypass_jwt_required,
-    bypass_authentication_required
+    bypass_authentication_required,
 )
 from http import HTTPStatus
 
@@ -22,7 +22,7 @@ from tests.helper_scripts.common_test_data import TEST_RESPONSE
 from tests.helper_scripts.helper_functions import (
     check_is_test_response,
 )
-from tests.helper_scripts.common_test_functions import run_and_validate_request
+from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
 
 class DataSourcesMocks(DynamicMagicMock):
@@ -40,31 +40,40 @@ MOCK_EMAIL_PASSWORD = {
     "endpoint, http_method, route_to_patch, json_data",
     (
         (
-            "/data-sources/id/test_id",
+            "/data-sources/test_id",
             "GET",
             "DataSources.data_source_by_id_wrapper",
             {},
         ),
         (
-            "/data-sources/id/test_id",
+            "/data-sources/test_id",
             "PUT",
             "DataSources.update_data_source_wrapper",
             {"entry_data": {}},
         ),
         (
-            "/data-sources/id/test_id",
+            "/data-sources/test_id",
             "DELETE",
             "DataSources.delete_data_source_wrapper",
             {},
         ),
-        ("/data-sources/", "POST", "DataSources.add_new_data_source_wrapper", {"entry_data": {}}),
-        ("/data-sources/page/1", "GET", "DataSources.get_data_sources_wrapper", {}),
         (
-            "/data-sources/data-sources-map",
-            "GET",
-            "DataSources.get_data_sources_for_map_wrapper",
-            {},
+            "/data-sources",
+            "POST",
+            "DataSources.add_new_data_source_wrapper",
+            {"entry_data": {}},
         ),
+        ("/data-sources?page=1", "GET", "DataSources.get_data_sources_wrapper", {}),
+        ("/data-requests/test_id/related-sources", "GET", "DataRequests.get_data_request_related_sources", {}),
+        # This endpoint no longer works because of the other data source endpoint
+        # It is interpreted as another data source id
+        # But we have not yet decided whether to modify or remove it entirely
+        # (
+        #     "/data-sources/data-sources-map",
+        #     "GET",
+        #     "DataSources.get_data_sources_for_map_wrapper",
+        #     {},
+        # ),
         (
             "/archives",
             "PUT",
@@ -133,42 +142,34 @@ MOCK_EMAIL_PASSWORD = {
             },
         ),
         (
-            "/data-requests/",
+            "/data-requests",
             "POST",
             "DataRequests.create_data_request_wrapper",
-            {
-                "entry_data": {
-                    "sample_column": "sample_value"
-                }
-            },
+            {"entry_data": {"sample_column": "sample_value"}},
         ),
         (
-            "/data-requests/",
+            "/data-requests",
             "GET",
             "DataRequests.get_data_requests_wrapper",
             {},
         ),
         (
-            "/data-requests/by-id/test_id",
+            "/data-requests/test_id",
             "GET",
             "DataRequests.get_data_request_by_id_wrapper",
             {},
         ),
         (
-            "/data-requests/by-id/test_id",
+            "/data-requests/test_id",
             "PUT",
             "DataRequests.update_data_request_wrapper",
-            {
-                "entry_data": {
-                    "sample_column": "sample_value"
-                }
-            },
+            {"entry_data": {"sample_column": "sample_value"}},
         ),
         (
-            "/data-requests/by-id/test_id",
+            "/data-requests/test_id",
             "DELETE",
             "DataRequests.delete_data_request_wrapper",
-            {}
+            {},
         ),
         (
             "/homepage-search-cache",
@@ -176,58 +177,50 @@ MOCK_EMAIL_PASSWORD = {
             "HomepageSearchCache.update_search_cache",
             {
                 "search_results": ["test_result_1", "test_result_2"],
-                "agency_airtable_uid": "test_airtable_uid"
+                "agency_airtable_uid": "test_airtable_uid",
             },
         ),
         (
             "/homepage-search-cache",
             "GET",
             "HomepageSearchCache.get_agencies_without_homepage_urls",
-            {}
+            {},
         ),
         (
-            "/agencies/page/1",
+            "/agencies?page=1",
             "GET",
             "Agencies.get_agencies",
             {},
         ),
         (
-            "/agencies/",
+            "/agencies",
             "POST",
             "Agencies.create_agency",
             {
-                "entry_data":
-                    {
-                        "submitted_name": "test_agency_name",
-                        "airtable_uid": "test_airtable_uid"
-                    }
+                "entry_data": {
+                    "submitted_name": "test_agency_name",
+                    "airtable_uid": "test_airtable_uid",
+                }
             },
         ),
         (
-            "/agencies/id/test_id",
+            "/agencies/test_id",
             "GET",
             "Agencies.get_agency_by_id",
             {},
         ),
         (
-            "/agencies/id/test_id",
+            "/agencies/test_id",
             "PUT",
             "Agencies.update_agency",
             {
-                "entry_data":
-                    {
-                        "submitted_name": "test_agency_name",
-                        "airtable_uid": "test_airtable_uid"
-                    }
+                "entry_data": {
+                    "submitted_name": "test_agency_name",
+                    "airtable_uid": "test_airtable_uid",
+                }
             },
         ),
-        (
-            "/agencies/id/test_id",
-            "DELETE",
-            "Agencies.delete_agency",
-            {}
-        ),
-
+        ("/agencies/test_id", "DELETE", "Agencies.delete_agency", {}),
     ),
 )
 def test_common_format_resources(
@@ -240,7 +233,7 @@ def test_common_format_resources(
     bypass_api_key_required,
     bypass_permissions_required,
     bypass_jwt_required,
-    bypass_authentication_required
+    bypass_authentication_required,
 ):
 
     monkeypatch.setattr(

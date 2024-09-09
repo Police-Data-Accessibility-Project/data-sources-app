@@ -1,7 +1,9 @@
+from dataclasses import dataclass
 from http import HTTPStatus
 from typing import Optional
 
 from flask import make_response, Response
+from marshmallow import fields
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import ColumnPermissionEnum, RelationRoleEnum
@@ -13,12 +15,49 @@ from middleware.column_permission_logic import (
 from middleware.custom_dataclasses import (
     DeferredFunction,
 )
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import EntryDataRequestDTO
+from middleware.dynamic_request_logic.common_functions import check_for_id
+from middleware.dynamic_request_logic.delete_logic import delete_entry
+from middleware.dynamic_request_logic.get_by_id_logic import get_by_id
+from middleware.dynamic_request_logic.post_logic import post_entry, PostLogic
+from middleware.dynamic_request_logic.put_logic import put_entry
+from middleware.dynamic_request_logic.supporting_classes import (
+    MiddlewareParameters,
+    IDInfo,
+)
+from middleware.flask_response_manager import FlaskResponseManager
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+    EntryDataRequestDTO,
+    GetByIDBaseDTO,
+    GetByIDBaseSchema,
+)
 from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
-from middleware.dynamic_request_logic import get_by_id, post_entry, put_entry, delete_entry, MiddlewareParameters
-from middleware.common_response_formatting import format_list_response
+
+from middleware.common_response_formatting import (
+    format_list_response,
+    multiple_results_response,
+    created_id_response,
+    message_response,
+)
+from utilities.enums import SourceMappingEnum
 
 RELATION = Relations.DATA_REQUESTS.value
+RELATED_SOURCES_RELATION = Relations.RELATED_SOURCES.value
+
+
+class RelatedSourceByIDSchema(GetByIDBaseSchema):
+    data_source_id = fields.Str(
+        required=True,
+        description="The ID of the data source",
+        source=SourceMappingEnum.PATH,
+    )
+
+
+@dataclass
+class RelatedSourceByIDDTO(GetByIDBaseDTO):
+    data_source_id: int
+
+    def get_where_mapping(self):
+        return {"source_id": self.data_source_id, "request_id": self.resource_id}
 
 
 def get_data_requests_relation_role(
@@ -159,15 +198,15 @@ def get_data_requests_with_permitted_columns(
     )
     return data_requests
 
+
 def allowed_to_delete_request(access_info, data_request_id, db_client):
-    user_id = db_client.get_user_id(access_info.user_email)
+    user_id = db_client.get_user_id(email=access_info.user_email)
     return (
         db_client.user_is_creator_of_data_request(
             user_id=user_id, data_request_id=data_request_id
         )
         or PermissionsEnum.DB_WRITE in access_info.permissions
     )
-
 
 
 def delete_data_request_wrapper(
@@ -185,18 +224,16 @@ def delete_data_request_wrapper(
             access_info=access_info,
             entry_name="Data request",
             relation=RELATION,
-            db_client_method=DatabaseClient.delete_data_request
+            db_client_method=DatabaseClient.delete_data_request,
         ),
-        entry_id=data_request_id,
+        id_info=IDInfo(id_column_value=data_request_id),
         permission_checking_function=DeferredFunction(
             allowed_to_delete_request,
             access_info=access_info,
             data_request_id=data_request_id,
-            db_client=db_client
-        )
+            db_client=db_client,
+        ),
     )
-
-
 
 
 def update_data_request_wrapper(
@@ -232,10 +269,11 @@ def update_data_request_wrapper(
 
 
 def get_data_request_by_id_wrapper(
-    db_client: DatabaseClient, access_info: AccessInfo, data_request_id: str
+    db_client: DatabaseClient, access_info: AccessInfo, dto: GetByIDBaseDTO
 ) -> Response:
     """
     Get data requests
+    :param dto:
     :param db_client:
     :param access_info:
     :return:
@@ -251,9 +289,82 @@ def get_data_request_by_id_wrapper(
         relation_role_parameters=RelationRoleParameters(
             relation_role_function_with_params=DeferredFunction(
                 function=get_data_requests_relation_role,
-                data_request_id=data_request_id,
+                data_request_id=dto.resource_id,
                 db_client=db_client,
             )
         ),
-        id=data_request_id,
+        id=dto.resource_id,
+    )
+
+
+def get_data_request_related_sources(db_client: DatabaseClient, dto: GetByIDBaseDTO):
+    check_for_id(
+        db_client=db_client,
+        table_name=RELATION,
+        id_info=IDInfo(id_column_value=int(dto.resource_id)),
+    )
+    results = db_client.get_related_data_sources(data_request_id=int(dto.resource_id))
+    return multiple_results_response(message=f"Related sources found.", data=results)
+
+
+def check_can_create_data_request_related_source(relation_role: RelationRoleEnum):
+    if relation_role not in [RelationRoleEnum.OWNER, RelationRoleEnum.ADMIN]:
+        FlaskResponseManager.abort(
+            code=HTTPStatus.FORBIDDEN,
+            message="User does not have permission to perform this action.",
+        )
+
+
+class CreateDataRequestRelatedSourceLogic(PostLogic):
+
+    def check_for_permission(self, relation_role: RelationRoleEnum):
+        check_can_create_data_request_related_source(relation_role)
+
+    def make_response(self) -> Response:
+        return message_response("Data source successfully associated with request.")
+
+
+def create_data_request_related_source(
+    db_client: DatabaseClient, access_info: AccessInfo, dto: RelatedSourceByIDDTO
+):
+    post_logic = CreateDataRequestRelatedSourceLogic(
+        middleware_parameters=MiddlewareParameters(
+            db_client=db_client,
+            access_info=access_info,
+            entry_name="Request-Source association",
+            relation=RELATED_SOURCES_RELATION,
+            db_client_method=DatabaseClient.create_request_source_relation,
+        ),
+        entry=dto.get_where_mapping(),
+        relation_role_parameters=RelationRoleParameters(
+            relation_role_function_with_params=DeferredFunction(
+                function=get_data_requests_relation_role,
+                data_request_id=dto.resource_id,
+                db_client=db_client,
+            )
+        ),
+    )
+    return post_logic.execute()
+
+
+def delete_data_request_related_source(
+    db_client: DatabaseClient, access_info: AccessInfo, dto: RelatedSourceByIDDTO
+):
+    return delete_entry(
+        middleware_parameters=MiddlewareParameters(
+            db_client=db_client,
+            access_info=access_info,
+            entry_name="Request-Source association",
+            relation=RELATED_SOURCES_RELATION,
+            db_client_method=DatabaseClient.delete_request_source_relation,
+        ),
+        id_info=IDInfo(
+            additional_where_mappings=dto.get_where_mapping(),
+        ),
+        permission_checking_function=DeferredFunction(
+            allowed_to_delete_request,
+            access_info=access_info,
+            data_request_id=dto.resource_id,
+            db_client=db_client,
+        ),
     )

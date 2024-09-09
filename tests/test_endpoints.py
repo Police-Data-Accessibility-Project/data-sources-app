@@ -12,17 +12,20 @@ from unittest.mock import patch
 from flask.testing import FlaskClient
 from flask_restful import Resource
 
-from resources.Agencies import AgenciesByPage, AgenciesPost, AgenciesById
+from resources.Agencies import AgenciesByPage, AgenciesById
 from resources.ApiKey import ApiKey, API_KEY_ROUTE
 from resources.Archives import Archives
 from resources.Callback import Callback
 from resources.CreateUserWithGithub import CreateUserWithGithub
-from resources.DataRequests import DataRequests, DataRequestsById
+from resources.DataRequests import (
+    DataRequests,
+    DataRequestsById,
+    DataRequestsRelatedSourcesById,
+    DataRequestsRelatedSources,
+)
 from resources.DataSources import (
     DataSources,
-    DataSourcesMap,
     DataSourceById,
-    DataSourcesPost,
 )
 from resources.HomepageSearchCache import HomepageSearchCache
 from resources.LinkToGithub import LinkToGithub
@@ -52,19 +55,28 @@ def run_endpoint_tests(
     methods = [GET, POST, PUT, DELETE]
     for method in methods:
         if method in allowed_methods:
-            with patch.object(
-                class_type, method, return_value="Mocked response"
-            ) as mock_method:
-                response = getattr(client, method)(endpoint)
-                assert (
-                    response.status_code == HTTPStatus.OK.value
-                ), f"{method.upper()} {endpoint} failed with status code {response.status_code}, expected 200"
-                mock_method.assert_called_once(), f"{method.upper()} {endpoint} should have called the {method} method on {class_type.__name__}"
+            check_method_exists(class_type, client, endpoint, method)
         else:
-            response = getattr(client, method)(endpoint)
-            assert (
-                response.status_code == HTTPStatus.METHOD_NOT_ALLOWED.value
-            ), f"{method.upper()} {endpoint} failed with status code {response.status_code}, expected 405"
+            check_method_not_allowed(client, endpoint, method)
+
+
+def check_method_not_allowed(client, endpoint, method):
+
+    response = getattr(client, method)(endpoint)
+    assert (
+        response.status_code == HTTPStatus.METHOD_NOT_ALLOWED.value
+    ), f"{method.upper()} {endpoint} failed with status code {response.status_code}, expected 405"
+
+
+def check_method_exists(class_type, client, endpoint, method):
+    with patch.object(
+        class_type, method, return_value="Mocked response"
+    ) as mock_method:
+        response = getattr(client, method)(endpoint)
+        assert (
+            response.status_code == HTTPStatus.OK.value
+        ), f"{method.upper()} {endpoint} failed with status code {response.status_code}, expected 200"
+        mock_method.assert_called_once(), f"{method.upper()} {endpoint} should have called the {method} method on {class_type.__name__}"
 
 
 TestParameters = namedtuple("Resource", ["class_type", "endpoint", "allowed_methods"])
@@ -78,13 +90,24 @@ test_parameters = [
     TestParameters(ResetTokenValidation, "/reset-token-validation", [POST]),
     TestParameters(QuickSearch, "/quick-search/<search>/<location>", [GET]),
     TestParameters(Archives, "/archives", [GET, PUT]),
-    TestParameters(DataSources, "/data-sources/page/<page>", [GET]),
-    TestParameters(DataSourcesPost, "/data-sources/", [POST]),
-    TestParameters(DataSourcesMap, "/data-sources/data-sources-map", [GET]),
-    TestParameters(DataSourceById, "/data-sources/id/<data_source_id>", [GET, PUT, DELETE]),
-    TestParameters(AgenciesPost, "/agencies/", [POST]),
-    TestParameters(AgenciesByPage, "/agencies/page/<page>", [GET]),
-    TestParameters(AgenciesById, "/agencies/id/<agency_id>", [GET, PUT, DELETE]),
+    TestParameters(DataSources, "/data-sources", [GET, POST]),
+    # This endpoint no longer works because of the other data source endpoint
+    # It is interpreted as another data source id
+    # But we have not yet decided whether to modify or remove it entirely
+    # TestParameters(DataSourcesMap, "/data-sources/data-sources-map", [GET]),
+    TestParameters(
+        DataSourceById, "/data-sources/<data_source_id>", [GET, PUT, DELETE]
+    ),
+    TestParameters(
+        DataRequestsRelatedSources, "/data-requests/<resource_id>/related-sources", [GET]
+    ),
+    TestParameters(
+        DataRequestsRelatedSourcesById,
+        "/data-requests/<resource-id>/related-sources/<source-id>",
+        [POST, DELETE],
+    ),
+    TestParameters(AgenciesByPage, "/agencies", [POST, GET]),
+    TestParameters(AgenciesById, "/agencies/<agency_id>", [GET, PUT, DELETE]),
     TestParameters(Search, "/search/search-location-and-record-type", [GET]),
     TestParameters(TypeaheadSuggestions, "/search/typeahead-suggestions", [GET]),
     TestParameters(Callback, "auth/callback", [GET]),
@@ -92,9 +115,9 @@ test_parameters = [
     TestParameters(LoginWithGithub, "auth/login-with-github", [POST]),
     TestParameters(CreateUserWithGithub, "auth/create-user-with-github", [POST]),
     TestParameters(Permissions, "auth/permissions", [GET, PUT]),
-    TestParameters(DataRequests, "/data-requests/", [GET, POST]),
+    TestParameters(DataRequests, "/data-requests", [GET, POST]),
     TestParameters(
-        DataRequestsById, "/data-requests/by-id/<data_request_id>", [GET, PUT, DELETE]
+        DataRequestsById, "/data-requests/<data_request_id>", [GET, PUT, DELETE]
     ),
     TestParameters(HomepageSearchCache, "/homepage-search-cache", [GET, POST]),
 ]

@@ -18,8 +18,9 @@ from middleware.custom_dataclasses import (
 from middleware.enums import CallbackFunctionsEnum, PermissionsEnum
 from resources.ApiKey import API_KEY_ROUTE
 from tests.helper_scripts.common_test_data import TEST_RESPONSE
-from tests.helper_scripts.common_test_functions import check_response_status
-from tests.helper_scripts.test_dataclasses import UserInfo, TestUserSetup
+from tests.helper_scripts.simple_result_validators import check_response_status
+from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
+from tests.helper_scripts.helper_classes.UserInfo import UserInfo
 
 TestTokenInsert = namedtuple("TestTokenInsert", ["id", "email", "token"])
 TestUser = namedtuple("TestUser", ["id", "email", "password_hash"])

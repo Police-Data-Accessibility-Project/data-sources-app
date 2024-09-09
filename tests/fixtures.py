@@ -19,7 +19,8 @@ from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources,
     create_test_user_setup,
 )
-from tests.helper_scripts.test_dataclasses import TestUserSetup, IntegrationTestSetup
+from tests.helper_scripts.helper_classes.IntegrationTestSetup import IntegrationTestSetup
+from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.test_data_generator import TestDataGenerator
 
 
@@ -75,14 +76,13 @@ def db_cursor(
 
 
 @pytest.fixture
-def dev_db_client(dev_db_connection: psycopg.Connection) -> DatabaseClient:
+def dev_db_client() -> DatabaseClient:
     db_client = DatabaseClient()
     yield db_client
 
 
 @pytest.fixture
 def connection_with_test_data(
-    dev_db_connection: psycopg.Connection,
 ) -> psycopg.Connection:
     """
     Insert test agencies and sources into test data.
@@ -92,11 +92,12 @@ def connection_with_test_data(
     :param dev_db_connection:
     :return:
     """
+    db_client = DatabaseClient()
     try:
-        insert_test_agencies_and_sources(dev_db_connection.cursor())
+        insert_test_agencies_and_sources(db_client.connection.cursor())
     except psycopg.errors.UniqueViolation:
-        dev_db_connection.rollback()
-    return dev_db_connection
+        db_client.connection.rollback()
+    return db_client.connection
 
 
 @pytest.fixture
@@ -125,14 +126,13 @@ def client_with_mock_db(mocker, monkeypatch) -> ClientWithMockDB:
 
 
 @pytest.fixture
-def flask_client_with_db(dev_db_connection: psycopg.Connection, monkeypatch):
+def flask_client_with_db(monkeypatch):
     """
     Creates a client with database connection
     :param dev_db_connection:
     :return:
     """
     mock_get_flask_app_secret_key = MagicMock(return_value="test")
-    monkeypatch.setattr("app.initialize_psycopg_connection", lambda: dev_db_connection)
     monkeypatch.setattr(
         "app.get_flask_app_cookie_encryption_key", mock_get_flask_app_secret_key
     )
@@ -231,11 +231,10 @@ def xylonslyvania_test_data(db_cursor):
 
 
 @pytest.fixture
-def test_user_admin(flask_client_with_db, dev_db_connection) -> TestUserSetup:
+def test_user_admin(flask_client_with_db) -> TestUserSetup:
     """
     Creates a test user with admin permissions
     :param flask_client_with_db:
-    :param dev_db_connection:
     :return:
     """
 
@@ -282,6 +281,8 @@ def test_table_data(live_database_client: DatabaseClient):
     ('Simon', 'Bear');
     """)
 
+class FakeAbort(Exception):
+    pass
 
 @pytest.fixture
 def mock_flask_response_manager(monkeypatch):
@@ -293,4 +294,6 @@ def mock_flask_response_manager(monkeypatch):
     mock = MagicMock()
     monkeypatch.setattr("middleware.flask_response_manager.make_response", mock.make_response)
     monkeypatch.setattr("middleware.flask_response_manager.abort", mock.abort)
+    # Create a fake abort exception to use in tests
+    mock.abort.side_effect = FakeAbort
     return mock

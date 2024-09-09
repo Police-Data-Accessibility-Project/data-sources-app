@@ -6,6 +6,7 @@ import uuid
 from datetime import datetime
 from unittest.mock import MagicMock
 
+import psycopg.errors
 import pytest
 
 from database_client.database_client import DatabaseClient
@@ -232,9 +233,7 @@ def test_select_from_single_relation_order_by(live_database_client):
     results = live_database_client._select_from_single_relation(
         relation_name="test_table",
         columns=["pet_name"],
-        order_by=OrderByParameters(
-            sort_by="species", sort_order=SortOrder.ASCENDING
-        ),
+        order_by=OrderByParameters(sort_by="species", sort_order=SortOrder.ASCENDING),
     )
 
     assert results == [
@@ -328,6 +327,7 @@ def test_get_approved_data_sources(live_database_client):
     assert len(data_sources) > 0
     assert len(data_sources[0]) == NUMBER_OF_DATA_SOURCE_COLUMNS
 
+
 def test_delete_from_table(live_database_client, test_table_data):
     initial_results = live_database_client._select_from_single_relation(
         relation_name="test_table",
@@ -339,7 +339,6 @@ def test_delete_from_table(live_database_client, test_table_data):
         {"pet_name": "Jimbo"},
         {"pet_name": "Simon"},
     ]
-
 
     live_database_client._delete_from_table(
         table_name="test_table",
@@ -356,6 +355,7 @@ def test_delete_from_table(live_database_client, test_table_data):
         {"pet_name": "Arthur"},
         {"pet_name": "Simon"},
     ]
+
 
 def test_update_entry_in_table(live_database_client, test_table_data):
     results = live_database_client._select_from_single_relation(
@@ -375,7 +375,6 @@ def test_update_entry_in_table(live_database_client, test_table_data):
         id_column_name="pet_name",
     )
 
-
     results = live_database_client._select_from_single_relation(
         relation_name="test_table",
         columns=["pet_name"],
@@ -393,6 +392,7 @@ def test_update_entry_in_table(live_database_client, test_table_data):
     assert results == [
         {"pet_name": "Jimbo"},
     ]
+
 
 def test_get_data_sources_for_map(live_database_client):
     # Add at least two new data sources to the database
@@ -842,6 +842,68 @@ def test_create_search_cache_entry(live_database_client):
     # Check the first result is now different
     new_result = live_database_client.get_agencies_without_homepage_urls()[0]
     assert new_result["airtable_uid"] != airtable_uid
+
+
+def test_get_related_data_sources(live_database_client):
+
+    # Create two data sources
+    source_column_value_mappings = []
+    source_ids = []
+    for i in range(2):
+        source_column_value_mapping = {
+            "airtable_uid": uuid.uuid4().hex,
+            "name": uuid.uuid4().hex,
+        }
+        source_id = live_database_client.add_new_data_source(
+            column_value_mappings=source_column_value_mapping
+        )
+        source_column_value_mappings.append(source_column_value_mapping)
+        source_ids.append(source_id)
+
+    # Create a request
+    submission_notes = uuid.uuid4().hex
+    request_id = live_database_client.create_data_request(
+        column_value_mappings={"submission_notes": submission_notes}
+    )
+
+    # Associate them in the link table
+    for source_id in source_ids:
+        live_database_client.create_request_source_relation(
+            column_value_mappings={"request_id": request_id, "source_id": source_id}
+        )
+
+    results = live_database_client.get_related_data_sources(data_request_id=request_id)
+
+    assert len(results) == 2
+
+    for result in results:
+        assert result["name"] in [
+            source["name"] for source in source_column_value_mappings
+        ]
+
+def test_create_request_source_relation(live_database_client):
+    # Create data source and request
+
+    source_id = live_database_client.add_new_data_source(
+        column_value_mappings={
+            "airtable_uid": uuid.uuid4().hex,
+            "name": uuid.uuid4().hex,
+        }
+    )
+
+    # Create a request
+    request_id = live_database_client.create_data_request(
+        column_value_mappings={"submission_notes": uuid.uuid4().hex}
+    )
+
+    # Try to add twice and get a unique violation
+    live_database_client.create_request_source_relation(
+        column_value_mappings={"request_id": request_id, "source_id": source_id}
+    )
+    with pytest.raises(psycopg.errors.UniqueViolation):
+        live_database_client.create_request_source_relation(
+            column_value_mappings={"request_id": request_id, "source_id": source_id}
+        )
 
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts

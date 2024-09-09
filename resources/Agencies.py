@@ -10,7 +10,13 @@ from middleware.primary_resource_logic.agencies import (
     delete_agency,
 )
 from middleware.column_permission_logic import create_column_permissions_string_table
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import EntryDataRequestDTO
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+    EntryDataRequestDTO,
+    GetManyBaseSchema,
+    GetManyBaseDTO,
+    GetByIDBaseSchema,
+    GetByIDBaseDTO,
+)
 from middleware.decorators import (
     authentication_required,
 )
@@ -22,6 +28,7 @@ from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
     create_entry_data_response_model,
     CRUDModels,
 )
+from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 from resources.resource_helpers import (
     add_jwt_or_api_key_header_arg,
     add_jwt_header_arg,
@@ -62,14 +69,51 @@ agencies_column_permissions = create_column_permissions_string_table(
 )
 
 
-@namespace_agencies.route("/")
-class AgenciesPost(PsycopgResource):
+@namespace_agencies.route("")
+@namespace_agencies.expect(page_parser)
+class AgenciesByPage(PsycopgResource):
+    """Represents a resource for fetching approved agency data from the database."""
+
+    @handle_exceptions
+    @authentication_required(
+        allowed_access_methods=[AccessTypeEnum.JWT, AccessTypeEnum.API_KEY],
+    )
+    @namespace_agencies.doc(
+        description=f"""
+Get a paginated list of approved agencies from the database.
+
+Columns returned are determined by the user's access level.
+
+## COLUMN PERMISSIONS
+
+{agencies_column_permissions}
+""",
+        responses=create_response_dictionary(
+            success_message="Returns a paginated list of approved agencies.",
+            success_model=models.get_many_response_model,
+        ),
+    )
+    def get(self, access_info: AccessInfo) -> Response:
+        """
+        Retrieves a paginated list of approved agencies from the database.
+
+        Returns:
+        - dict: A dictionary containing the count of returned agencies and their data.
+        """
+        return self.run_endpoint(
+            wrapper_function=get_agencies,
+            schema_populate_parameters=SchemaPopulateParameters(
+                schema_class=GetManyBaseSchema,
+                dto_class=GetManyBaseDTO,
+            ),
+            access_info=access_info,
+        )
 
     @handle_exceptions
     @namespace_agencies.doc(
         description=f"""
         Adds a new agency.
-        
+
 Columns permitted to be included by the user is determined by their level of access
 
 ## COLUMN PERMISSIONS
@@ -95,41 +139,7 @@ Columns permitted to be included by the user is determined by their level of acc
         pass
 
 
-@namespace_agencies.route("/page/<page>")
-@namespace_agencies.expect(page_parser)
-class AgenciesByPage(PsycopgResource):
-    """Represents a resource for fetching approved agency data from the database."""
-
-    @handle_exceptions
-    @authentication_required(
-        allowed_access_methods=[AccessTypeEnum.JWT, AccessTypeEnum.API_KEY],
-    )
-    @namespace_agencies.doc(
-        description=f"""
-Get a paginated list of approved agencies from the database.
-
-Columns returned are determined by the user's access level.
-
-## COLUMN PERMISSIONS
-
-{agencies_column_permissions}
-""",
-        responses=create_response_dictionary(
-            success_message="Returns a paginated list of approved agencies.",
-            success_model=models.get_many_response_model,
-        ),
-    )
-    def get(self, page: int, access_info: AccessInfo) -> Response:
-        """
-        Retrieves a paginated list of approved agencies from the database.
-
-        Returns:
-        - dict: A dictionary containing the count of returned agencies and their data.
-        """
-        return self.run_endpoint(get_agencies, access_info=access_info, page=int(page))
-
-
-@namespace_agencies.route("/id/<agency_id>")
+@namespace_agencies.route("/<resource_id>")
 class AgenciesById(PsycopgResource):
 
     @handle_exceptions
@@ -151,9 +161,14 @@ Columns returned are determined by the user's access level.
             "Returns agency.", models.entry_data_response_model
         ),
     )
-    def get(self, agency_id: str, access_info: AccessInfo) -> Response:
+    def get(self, resource_id: str, access_info: AccessInfo) -> Response:
         return self.run_endpoint(
-            get_agency_by_id, access_info=access_info, agency_id=agency_id
+            wrapper_function=get_agency_by_id,
+            schema_populate_parameters=SchemaPopulateParameters(
+                schema_class=GetByIDBaseSchema,
+                dto_class=GetByIDBaseDTO,
+            ),
+            access_info=access_info,
         )
 
     @handle_exceptions
@@ -175,12 +190,12 @@ Columns allowed to be updated by the user is determined by their level of access
 """,
         responses=create_response_dictionary("Agency successfully updated."),
     )
-    def put(self, agency_id: str, access_info: AccessInfo) -> Response:
+    def put(self, resource_id: str, access_info: AccessInfo) -> Response:
         return self.run_endpoint(
             update_agency,
             dto_populate_parameters=EntryDataRequestDTO.get_dto_populate_parameters(),
             access_info=access_info,
-            agency_id=agency_id,
+            agency_id=resource_id,
         )
 
     @handle_exceptions
@@ -193,7 +208,7 @@ Columns allowed to be updated by the user is determined by their level of access
         description="Deletes Agency",
         responses=create_response_dictionary("Agency successfully deleted."),
     )
-    def delete(self, agency_id: str, access_info: AccessInfo) -> Response:
+    def delete(self, resource_id: str, access_info: AccessInfo) -> Response:
         return self.run_endpoint(
-            delete_agency, agency_id=agency_id, access_info=access_info
+            delete_agency, agency_id=resource_id, access_info=access_info
         )

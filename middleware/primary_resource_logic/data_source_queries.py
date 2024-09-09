@@ -9,16 +9,23 @@ from database_client.db_client_dataclasses import OrderByParameters
 from database_client.enums import ApprovalStatus
 from database_client.result_formatter import ResultFormatter
 from middleware.access_logic import AccessInfo
-from middleware.dynamic_request_logic import (
-    post_entry,
+from middleware.dynamic_request_logic.delete_logic import delete_entry
+from middleware.dynamic_request_logic.get_by_id_logic import get_by_id
+from middleware.dynamic_request_logic.get_many_logic import get_many
+from middleware.dynamic_request_logic.post_logic import post_entry
+from middleware.dynamic_request_logic.put_logic import put_entry
+from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
-    get_by_id,
-    put_entry,
-    get_many,
-    delete_entry,
+    IDInfo,
 )
+
 from middleware.enums import Relations
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetBaseSchema, GetManyBaseDTO, EntryDataRequestDTO
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+    GetManyBaseSchema,
+    GetManyBaseDTO,
+    EntryDataRequestDTO,
+    GetByIDBaseDTO,
+)
 from middleware.common_response_formatting import format_list_response
 from utilities.enums import SourceMappingEnum
 
@@ -29,7 +36,7 @@ class DataSourceNotFoundError(Exception):
     pass
 
 
-class DataSourcesGetRequestSchema(GetBaseSchema):
+class DataSourcesGetRequestSchemaMany(GetManyBaseSchema):
     approval_status = fields.Str(
         required=False,
         description="Approval status of returned data sources.",
@@ -42,6 +49,7 @@ class DataSourcesGetRequestSchema(GetBaseSchema):
 @dataclass
 class DataSourcesGetRequestDTOMany(GetManyBaseDTO):
     approval_status: ApprovalStatus = ApprovalStatus.APPROVED
+    page_number: int = 1
 
 
 def get_data_sources_wrapper(
@@ -69,7 +77,7 @@ def get_data_sources_wrapper(
 
 
 def data_source_by_id_wrapper(
-    db_client: DatabaseClient, access_info: AccessInfo, data_source_id: str
+    db_client: DatabaseClient, access_info: AccessInfo, dto: GetByIDBaseDTO
 ) -> Response:
     return get_by_id(
         middleware_parameters=MiddlewareParameters(
@@ -79,7 +87,7 @@ def data_source_by_id_wrapper(
             db_client=db_client,
             entry_name="data source",
         ),
-        id=data_source_id,
+        id=dto.resource_id,
         id_column_name="airtable_uid",
     )
 
@@ -106,8 +114,10 @@ def delete_data_source_wrapper(
             db_client=db_client,
             entry_name="data source",
         ),
-        entry_id=data_source_id,
-        id_column_name="airtable_uid",
+        id_info=IDInfo(
+            id_column_name="airtable_uid",
+            id_column_value=data_source_id,
+        ),
     )
 
 

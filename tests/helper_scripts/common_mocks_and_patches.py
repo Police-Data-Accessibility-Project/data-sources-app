@@ -1,8 +1,29 @@
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 from tests.helper_scripts.common_test_data import TEST_RESPONSE
 
 
+
+def multi_monkeypatch(
+        monkeypatch: patch,
+        patch_root: str,
+        mock: MagicMock,
+        functions_to_patch: list[str]) -> None:
+    """
+    Patches the given mock with all functions in the given list
+    Each function will be accessible from the mock via an attribute with the same name as the funciton.
+    :param monkeypatch:
+    :param patch_root: The root of the patch, denoting the module where all functions are patched
+    :param mock: The mock object which will be patched
+    :param functions_to_patch: The functions to patch the mock object with
+    :return:
+    """
+    for function_name in functions_to_patch:
+        monkeypatch.setattr(
+            target=f"{patch_root}.{function_name}",
+            name=mock.__getattr__(function_name)
+        )
 
 def patch_test_response_to_resource(monkeypatch, path) -> MagicMock:
     """

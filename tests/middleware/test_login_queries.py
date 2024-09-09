@@ -94,7 +94,7 @@ def setup_refresh_session_mocks():
     )
     mock.db_client.get_session_token_info.return_value = mock.session_token_info
     mock.create_session_token.return_value = mock.new_token
-    mock.session_token_info.id = mock.mock_user_id
+    mock.session_token_info.resource_id = mock.mock_user_id
     mock.session_token_info.email = mock.mock_email
 
     return mock
