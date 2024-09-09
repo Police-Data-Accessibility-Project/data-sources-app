@@ -123,7 +123,13 @@ MOCK_EMAIL_PASSWORD = {
         (
             "/typeahead/locations?query=test_query",
             "GET",
-            "TypeaheadSuggestions.get_typeahead_suggestions_wrapper",
+            "TypeaheadSuggestions.get_typeahead_results",
+            {},
+        ),
+        (
+            "typeahead/locations?query=test_query",
+            "GET",
+            "TypeaheadSuggestions.get_typeahead_results",
             {},
         ),
         (
