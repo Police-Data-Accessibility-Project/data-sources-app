@@ -1,15 +1,10 @@
-export const STATIC_VIEW_UI_SHAPE = [
+export const DATA_SOURCE_UI_SHAPE = [
 	{
 		header: 'Data Type',
 		records: [
 			{
 				title: 'Record type',
 				key: 'record_type',
-				classNames:
-					'mt-1 py-[.125rem] px-3 rounded-full bg-brand-wine/10 dark:bg-brand-wine dark:text-white w-fit small font-normal text-lg',
-				component: 'Button',
-				attributes: { intent: 'tertiary' },
-				['data-test']: 'record-type-button',
 			},
 			{ title: 'Description', key: 'description' },
 			{ title: 'Tags', key: 'tags' },
@@ -25,16 +20,16 @@ export const STATIC_VIEW_UI_SHAPE = [
 				attributes: { target: '_blank', rel: 'noreferrer' },
 				classNames: 'w-full inline-block truncate-text',
 			},
-			{
-				key: 'source_url_cache',
-				attributes: { intent: 'secondary' },
-				component: 'PButton',
-				classNames: 'flex gap-4 items-center',
-				['data-test']: 'view-archives-button',
-				text: 'View Archives',
-				renderIf: 'last_cached',
-				icon: 'fa-external-link',
-			},
+			// {
+			// 	key: 'source_url_cache',
+			// 	attributes: { intent: 'secondary' },
+			// 	component: 'PButton',
+			// 	classNames: 'flex gap-4 items-center',
+			// 	['data-test']: 'view-archives-button',
+			// 	text: 'View Archives',
+			// 	renderIf: 'last_cached',
+			// 	icon: 'fa-external-link',
+			// },
 			{
 				title: 'Last Archived',
 				key: 'last_cached',
@@ -51,6 +46,7 @@ export const STATIC_VIEW_UI_SHAPE = [
 			{
 				title: 'Record Formats',
 				key: 'record_format',
+				component: 'span',
 				classNames:
 					'mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit small',
 			},
@@ -67,11 +63,11 @@ export const STATIC_VIEW_UI_SHAPE = [
 			{
 				title: 'Name',
 				key: 'agency_name',
-				component: 'Button',
-				classNames:
-					'decoration-solid decoration-[6%] text-brand-gold  underline-offset-[5%] hover:brightness-85 small p-0 font-normal text-lg',
-				attributes: { intent: 'tertiary' },
-				['data-test']: 'agency-name-button',
+				// component: 'Button',
+				// classNames:
+				// 	'decoration-solid decoration-[6%] text-brand-gold  underline-offset-[5%] hover:brightness-85 small p-0 font-normal text-lg',
+				// attributes: { intent: 'tertiary' },
+				// ['data-test']: 'agency-name-button',
 			},
 			{ title: 'State', key: 'state_iso' },
 			{ title: 'County', key: 'county_name' },
@@ -120,74 +116,5 @@ export const STATIC_VIEW_UI_SHAPE = [
 			{ title: 'Agency ID', key: 'agency_id' },
 			{ title: 'Data Source ID', key: 'data_source_id' },
 		],
-	},
-];
-
-export const SEARCH_RESULTS_UI_SHAPE = [
-	{
-		header: 'Police & public interactions',
-		records: [
-			{ type: 'Accident Reports' },
-			{ type: 'Arrest Records' },
-			{ type: 'Calls for Service' },
-			{ type: 'Car GPS' },
-			{ type: 'Citations' },
-			{ type: 'Dispatch Logs' },
-			{ type: 'Dispatch Recordings' },
-			{ type: 'Field Contacts' },
-			{ type: 'Incident Reports' },
-			{ type: 'Misc Police Activity' },
-			{ type: 'Officer Involved Shootings' },
-			{ type: 'Stops' },
-			{ type: 'Surveys' },
-			{ type: 'Use of Force Reports' },
-			{ type: 'Vehicle Pursuits' },
-		],
-	},
-	{
-		header: 'Info about officers',
-		records: [
-			{ type: 'Complaints & Misconduct' },
-			{ type: 'Daily Activity Logs' },
-			{ type: 'Training & Hiring Info' },
-			{ type: 'Personnel Records' },
-		],
-	},
-	{
-		header: 'Info about agencies',
-		records: [
-			{ type: 'Annual & Monthly Reports' },
-			{ type: 'Budgets & Finances' },
-			{ type: 'Contact Info & Agency Meta' },
-			{ type: 'Geographic' },
-			{ type: 'List of Data Sources' },
-			{ type: 'Policies & Contracts' },
-		],
-	},
-	{
-		header: 'Agency-published resources',
-		records: [
-			{ type: 'Crime Maps & Reports' },
-			{ type: 'Crime Statistics' },
-			{ type: 'Media Bulletins'},
-			{ type: 'Records Request Info' },
-			{ type: 'Resources' },
-			{ type: 'Sex Offender Registry' },
-			{ type: 'Wanted Persons' },
-		],
-	},
-	{
-		header: 'Jails & Courts specific',
-		records: [
-			{ type: 'Booking Reports' },
-			{ type: 'Court Cases' },
-			{ type: 'Incarceration Records' },
-		],
-	},
-	{
-		header: 'Other',
-		records: [
-			{ type: 'Other' },
-		]
 	},
 ];

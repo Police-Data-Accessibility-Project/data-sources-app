@@ -7,6 +7,7 @@ const HEADERS_BASIC = {
 	'Content-Type': 'application/json',
 };
 const SEARCH_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/search/search-location-and-record-type`;
+const DATA_SOURCE_BY_ID_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/data-sources/id`;
 
 export const useSearchStore = defineStore('search', {
 	state: () => ({
@@ -15,7 +16,6 @@ export const useSearchStore = defineStore('search', {
 	}),
 	actions: {
 		async search(params) {
-			console.debug('search', { params });
 			const response = await axios.get(SEARCH_URL, {
 				params,
 				headers: HEADERS_BASIC,
@@ -26,6 +26,11 @@ export const useSearchStore = defineStore('search', {
 			});
 
 			return response.data;
+		},
+		async getDataSource(id) {
+			return await axios.get(`${DATA_SOURCE_BY_ID_URL}/${id}`, {
+				headers: HEADERS_BASIC,
+			});
 		},
 	},
 });

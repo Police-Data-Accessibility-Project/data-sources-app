@@ -1,3 +1,4 @@
+// TODO: update this util to use `date-fns`
 /**
  * Date formatter for PDAP search results
  * @param {string | Date} date Date to be formatted

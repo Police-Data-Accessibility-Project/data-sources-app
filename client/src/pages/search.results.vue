@@ -1,12 +1,12 @@
 <template>
-	<main v-if="isLoading" class="loading">
+	<main :class="{ content: !isLoading && !error, loading: isLoading }">
 		<Spinner :show="isLoading" :size="64" text="Fetching search results..." />
-	</main>
-	<main v-else-if="!isLoading && error">
-		<h1>Error loading search results</h1>
-		<p>Please refresh the page to try again.</p>
-	</main>
-	<main v-else class="content">
+
+		<div v-if="!isLoading && error">
+			<h1>Error loading search results</h1>
+			<p>Please refresh the page to try again.</p>
+		</div>
+
 		<!-- Search results -->
 		<section class="results">
 			<div class="flex flex-col sm:flex-row sm:justify-between mb-4">
