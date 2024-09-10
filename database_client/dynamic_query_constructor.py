@@ -135,7 +135,7 @@ class DynamicQueryConstructor:
         ]
 
     @staticmethod
-    def generate_new_typeahead_suggestion_query(search_term: str):
+    def generate_new_typeahead_locations_query(search_term: str):
         query = sql.SQL(
             """
         WITH combined AS (
@@ -146,7 +146,7 @@ class DynamicQueryConstructor:
                 state,
                 county,
                 locality
-            FROM typeahead_suggestions
+            FROM typeahead_locations
             WHERE display_name ILIKE {search_term_prefix}
             UNION ALL
             SELECT
@@ -156,7 +156,7 @@ class DynamicQueryConstructor:
                 state,
                 county,
                 locality
-            FROM typeahead_suggestions
+            FROM typeahead_locations
             WHERE display_name ILIKE {search_term_anywhere}
             AND display_name NOT ILIKE {search_term_prefix}
         )

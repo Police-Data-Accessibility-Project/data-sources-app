@@ -609,7 +609,7 @@ class DatabaseClient:
         :param search_term: The search query.
         :return: List of data sources that match the search query.
         """
-        query = DynamicQueryConstructor.generate_new_typeahead_suggestion_query(
+        query = DynamicQueryConstructor.generate_new_typeahead_locations_query(
             search_term
         )
         self.cursor.execute(query)
@@ -624,7 +624,7 @@ class DatabaseClient:
         :return: List of data sources that match the search query.
         """
         # TODO: Change create new logic for this
-        query = DynamicQueryConstructor.generate_new_typeahead_suggestion_query(
+        query = DynamicQueryConstructor.generate_new_typeahead_locations_query(
             search_term
         )
         self.cursor.execute(query)
