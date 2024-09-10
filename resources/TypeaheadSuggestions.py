@@ -25,15 +25,6 @@ namespace_typeahead_suggestions = create_namespace(
     namespace_attributes=AppNamespaces.TYPEAHEAD
 )
 
-# request_parser = reqparse.RequestParser()
-# request_parser.add_argument(
-#     "query",
-#     type=str,
-#     location="args",
-#     required=True,
-#     help="The typeahead query to get suggestions for, such as `Pitts`",
-# )
-
 query_doc_info = get_restx_param_documentation(
     namespace=namespace_typeahead_suggestions,
     schema_class=TypeaheadSchema,
@@ -48,46 +39,6 @@ agencies_doc_info = get_restx_param_documentation(
     namespace=namespace_typeahead_suggestions,
     schema_class=TypeaheadAgenciesOuterResponseSchema,
 )
-
-#
-# # TODO: update doc
-# typeahead_suggestions_inner_model = namespace_typeahead_suggestions.model(
-#     "TypeaheadSuggestionsInner",
-#     {
-#         "display_name": fields.String(
-#             required=True,
-#             description="The display name of the suggestion",
-#             example="Pittsburgh",
-#         ),
-#         "type": fields.String(
-#             required=True,
-#             description="The type of suggestion. Either `State`, `County` or `Locality`",
-#             example="Locality",
-#         ),
-#         "state": fields.String(
-#             required=True,
-#             description="The state of the suggestion",
-#             example="Pennsylvania",
-#         ),
-#         "county": fields.String(
-#             required=True,
-#             description="The county of the suggestion",
-#             example="Allegheny",
-#         ),
-#         "locality": fields.String(
-#             required=True,
-#             description="The locality of the suggestion",
-#             example="Pittsburgh",
-#         ),
-#     },
-# )
-#
-# typeahead_locations_outer_model = create_outer_model(
-#     namespace_typeahead_suggestions,
-#     typeahead_suggestions_inner_model,
-#     "TypeaheadSuggestionsOuter",
-# )
-
 
 def get_typeahead_kwargs(db_client_method: Callable) -> dict:
     return {
