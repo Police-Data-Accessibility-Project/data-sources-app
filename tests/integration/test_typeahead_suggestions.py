@@ -8,9 +8,9 @@ from tests.helper_scripts.simple_result_validators import check_response_status
 from tests.fixtures import flask_client_with_db, dev_db_connection
 
 
-def test_typeahead_suggestions(flask_client_with_db, dev_db_connection):
+def test_typeahead_locations(flask_client_with_db, dev_db_connection):
     """
-    Test that GET call to /typeahead-suggestions endpoint successfully retrieves data
+    Test that GET call to /typeahead/locations endpoint successfully retrieves data
     """
     setup_get_typeahead_suggestion_test_data(dev_db_connection.cursor())
     dev_db_connection.commit()
@@ -41,6 +41,29 @@ def test_typeahead_suggestions(flask_client_with_db, dev_db_connection):
                     "state": "Xylonsylvania",
                     "type": "County",
                 },
+            ]
+        },
+    )
+
+def test_typeahead_agencies(flask_client_with_db, dev_db_connection):
+    """
+    Test that GET call to /typeahead/agencies endpoint successfully retrieves data
+    """
+    setup_get_typeahead_suggestion_test_data(dev_db_connection.cursor())
+    dev_db_connection.commit()
+    run_and_validate_request(
+        flask_client=flask_client_with_db,
+        http_method="get",
+        endpoint="/typeahead/agencies?query=xyl",
+        expected_json_content={
+            "suggestions": [
+                {
+                    "name": "Xylodammerung Police Agency",
+                    "municipality": "Xylodammerung",
+                    "county_name": "Arxylodon",
+                    "state_iso": "XY",
+                    "jurisdiction_type": "state",
+                }
             ]
         },
     )

@@ -621,10 +621,9 @@ class DatabaseClient:
         Returns a list of data sources that match the search query.
 
         :param search_term: The search query.
-        :return: List of data sources that match the search query.
+        :return: List of agencies that match the search query.
         """
-        # TODO: Change create new logic for this
-        query = DynamicQueryConstructor.generate_new_typeahead_locations_query(
+        query = DynamicQueryConstructor.generate_new_typeahead_agencies_query(
             search_term
         )
         self.cursor.execute(query)

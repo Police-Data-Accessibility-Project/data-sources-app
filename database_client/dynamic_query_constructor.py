@@ -181,6 +181,55 @@ class DynamicQueryConstructor:
         return query
 
     @staticmethod
+    def generate_new_typeahead_agencies_query(search_term: str):
+        query = sql.SQL("""
+        WITH combined AS (
+            SELECT
+                1 AS sort_order,
+                name,
+                jurisdiction_type,
+                state_iso,
+                municipality,
+                county_name
+            FROM typeahead_agencies
+            WHERE name ILIKE {search_term}
+            UNION ALL
+            SELECT
+                2 AS sort_order,
+                name,
+                jurisdiction_type,
+                state_iso,
+                municipality,
+                county_name
+            FROM typeahead_agencies
+            WHERE name ILIKE {search_term_anywhere}
+            AND name NOT ILIKE {search_term}
+        )
+        SELECT
+            name,
+            jurisdiction_type,
+            state_iso,
+            municipality,
+            county_name
+        FROM (
+            SELECT DISTINCT
+                sort_order,
+                name,
+                jurisdiction_type,
+                state_iso,
+                municipality,
+                county_name
+            FROM combined
+            ORDER BY sort_order, name
+            LIMIT 10
+        ) as results
+        """).format(
+            search_term=sql.Literal(f"{search_term}%"),
+            search_term_anywhere=sql.Literal(f"%{search_term}%"),
+        )
+        return query
+
+    @staticmethod
     def create_search_query(
         state: str,
         record_categories: Optional[list[RecordCategories]] = None,

@@ -545,7 +545,7 @@ def test_get_user_by_api_key(live_database_client):
     assert user_identifiers.id == user_id
 
 
-def test_get_typeahead_suggestion(live_database_client):
+def test_get_typeahead_locations(live_database_client):
     # Insert test data into the database
     cursor = live_database_client.connection.cursor()
     setup_get_typeahead_suggestion_test_data(cursor)
@@ -574,6 +574,18 @@ def test_get_typeahead_suggestion(live_database_client):
     assert results[2]["county"] == "Arxylodon"
     assert results[2]["locality"] is None
 
+def test_get_typeahead_agencies(live_database_client):
+    # Insert test data into the database
+    cursor = live_database_client.connection.cursor()
+    setup_get_typeahead_suggestion_test_data(cursor)
+
+    results = live_database_client.get_typeahead_agencies(search_term="xyl")
+    assert len(results) == 1
+    assert results[0]["name"] == 'Xylodammerung Police Agency'
+    assert results[0]["jurisdiction_type"] == "state"
+    assert results[0]["state_iso"] == "XY"
+    assert results[0]["county_name"] == "Arxylodon"
+    assert results[0]["municipality"] == "Xylodammerung"
 
 def test_search_with_location_and_record_types_real_data(live_database_client):
     """
