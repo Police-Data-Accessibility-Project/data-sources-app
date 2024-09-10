@@ -17,7 +17,7 @@ class FlaskResponseManager:
     def make_response(
         cls,
         data: dict,
-        status_code: int,
+        status_code: HTTPStatus = HTTPStatus.OK,
         validation_schema: Optional[Type[Schema]] = None,
     ) -> Response:
         if validation_schema is not None:

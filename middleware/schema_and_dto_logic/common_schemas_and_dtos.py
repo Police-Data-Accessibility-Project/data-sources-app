@@ -107,7 +107,7 @@ class EntryDataRequestDTO:
 class TypeaheadSchema(Schema):
     query = fields.Str(
         required=True,
-        description="The search query.",
+        description="The search query to get suggestions for.",
         metadata={"source": SourceMappingEnum.QUERY_ARGS},
     )
 
