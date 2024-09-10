@@ -210,7 +210,7 @@ class DynamicQueryConstructor:
             jurisdiction_type,
             state_iso,
             municipality,
-            county_name
+            county_name as county
         FROM (
             SELECT DISTINCT
                 sort_order,

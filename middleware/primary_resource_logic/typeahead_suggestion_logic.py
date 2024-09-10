@@ -84,11 +84,15 @@ class TypeaheadAgenciesResponseSchema(TypeaheadBaseResponseSchema):
 # TODO: Use these in the integration tests
 class TypeaheadAgenciesOuterResponseSchema(Schema):
     # pass
-    suggestions = fields.Nested(
-        TypeaheadAgenciesResponseSchema,
-        required=True,
-        description="The suggestions for the given query",
+    suggestions = fields.List(
+        cls_or_instance=fields.Nested(
+            nested=TypeaheadAgenciesResponseSchema,
+            required=True,
+            description="The suggestions for the given query",
+            metadata=RESPONSE_METADATA,
+        ),
         metadata=RESPONSE_METADATA,
+        description="The suggestions for the given query",
     )
 
 

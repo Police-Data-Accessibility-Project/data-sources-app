@@ -584,7 +584,7 @@ def test_get_typeahead_agencies(live_database_client):
     assert results[0]["name"] == 'Xylodammerung Police Agency'
     assert results[0]["jurisdiction_type"] == "state"
     assert results[0]["state_iso"] == "XY"
-    assert results[0]["county_name"] == "Arxylodon"
+    assert results[0]["county"] == "Arxylodon"
     assert results[0]["municipality"] == "Xylodammerung"
 
 def test_search_with_location_and_record_types_real_data(live_database_client):

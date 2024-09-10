@@ -1,5 +1,6 @@
 from http import HTTPStatus
 
+from middleware.primary_resource_logic.typeahead_suggestion_logic import TypeaheadLocationsOuterResponseSchema
 from tests.helper_scripts.helper_functions import (
     setup_get_typeahead_suggestion_test_data,
 )
@@ -51,7 +52,7 @@ def test_typeahead_agencies(flask_client_with_db, dev_db_connection):
     """
     setup_get_typeahead_suggestion_test_data(dev_db_connection.cursor())
     dev_db_connection.commit()
-    run_and_validate_request(
+    json_content = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
         endpoint="/typeahead/agencies?query=xyl",
@@ -60,10 +61,11 @@ def test_typeahead_agencies(flask_client_with_db, dev_db_connection):
                 {
                     "name": "Xylodammerung Police Agency",
                     "municipality": "Xylodammerung",
-                    "county_name": "Arxylodon",
+                    "county": "Arxylodon",
                     "state_iso": "XY",
                     "jurisdiction_type": "state",
                 }
             ]
         },
     )
+    TypeaheadLocationsOuterResponseSchema().load(json_content)

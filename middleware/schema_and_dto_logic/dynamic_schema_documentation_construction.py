@@ -166,14 +166,30 @@ class RestxModelBuilder(RestxBuilder):
     def add_field(self, field_info: FieldInfo):
         fi = field_info
         if fi.restx_field_type in [e for e in RestxModelPlaceholder]:
-            self.build_restx_submodel(fi.restx_field_type, fi)
+            field = self.build_restx_submodel(fi.restx_field_type, fi)
         elif fi.restx_field_type == restx_fields.Nested:
-            self._build_nested_field_as_model(fi)
+            field = self._build_nested_field_as_model(fi)
+        elif fi.restx_field_type == restx_fields.List:
+            field = self.add_list_field(fi)
 
         else:
-            self.model_dict[fi.field_name] = fi.restx_field_type(
+            field = fi.restx_field_type(
                 required=fi.required, description=fi.description
             )
+
+        self.model_dict[fi.field_name] = field
+
+    def _get_restx_field(self, fi: FieldInfo) -> Type[RestxFields]:
+
+    # TODO: create "get_field" method, or "FieldGetter" class, which is
+    #  then inserted into self.model_dict
+
+    def add_list_field(self, fi: FieldInfo):
+        # Get interior field of Marshmallow List
+
+        # Create list with same interior field for Restx
+
+        #
 
     def build_restx_submodel(self, placeholder: RestxModelPlaceholder, fi: FieldInfo):
         """
@@ -184,13 +200,13 @@ class RestxModelBuilder(RestxBuilder):
         """
 
         if placeholder == RestxModelPlaceholder.VARIABLE_COLUMNS:
-            self.model_dict[fi.field_name] = restx_fields.Nested(
+            return restx_fields.Nested(
                 create_variable_columns_model(
                     namespace=self.namespace, name_snake_case=fi.field_name
                 )
             )
         elif placeholder == RestxModelPlaceholder.LIST_VARIABLE_COLUMNS:
-            self.model_dict[fi.field_name] = restx_fields.List(
+            return restx_fields.List(
                 restx_fields.Nested(
                     create_variable_columns_model(
                         namespace=self.namespace, name_snake_case="result"
@@ -213,7 +229,7 @@ class RestxModelBuilder(RestxBuilder):
         submodel_builder.add_fields(fields)
         submodel = submodel_builder.build_model()
 
-        self.model_dict[fi.field_name] = restx_fields.Nested(
+        return restx_fields.Nested(
             submodel, required=fi.required, description=fi.description
         )
 
