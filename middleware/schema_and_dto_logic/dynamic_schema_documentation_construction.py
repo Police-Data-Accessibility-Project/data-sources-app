@@ -79,18 +79,19 @@ class FieldInfo:
         self,
         field_name: str,
         field_value: marshmallow_fields.Field,
-        schema_class: Type[SchemaTypes],
     ):
         self.field_name = field_name
-        self.field_value = field_value
-        self.schema_class = schema_class
+        self.marshmallow_field_value = field_value
+        self.marshmallow_field_type = type(field_value)
+        self.parent_schema_instance = field_value.parent
+        self.parent_schema_class = type(field_value.parent)
         self.metadata = field_value.metadata
         self.description = self._get_description(
-            self.metadata, self.schema_class, self.field_value
+            self.metadata, self.parent_schema_class, self.marshmallow_field_value
         )
         self.required = field_value.required
-        self.restx_field_type = self._map_field_type(type(field_value))
-        self.source = _get_required_argument("source", self.metadata, self.schema_class)
+        self.restx_field_type = self._map_field_type(self.marshmallow_field_type)
+        self.source = _get_required_argument("source", self.metadata, self.parent_schema_class)
 
     def _get_description(
         self,
@@ -163,33 +164,34 @@ class RestxModelBuilder(RestxBuilder):
         self.model_name = model_name
         self.model_dict = {}
 
-    def add_field(self, field_info: FieldInfo):
-        fi = field_info
-        if fi.restx_field_type in [e for e in RestxModelPlaceholder]:
-            field = self.build_restx_submodel(fi.restx_field_type, fi)
-        elif fi.restx_field_type == restx_fields.Nested:
-            field = self._build_nested_field_as_model(fi)
-        elif fi.restx_field_type == restx_fields.List:
-            field = self.add_list_field(fi)
-
-        else:
-            field = fi.restx_field_type(
-                required=fi.required, description=fi.description
-            )
-
+    def add_field(self, fi: FieldInfo):
+        field = self._get_restx_field(fi)
         self.model_dict[fi.field_name] = field
 
-    def _get_restx_field(self, fi: FieldInfo) -> Type[RestxFields]:
+    def _get_restx_field(self, fi: FieldInfo) -> RestxFields:
+        if fi.restx_field_type in [e for e in RestxModelPlaceholder]:
+            return self.build_restx_submodel(fi.restx_field_type, fi)
+        if fi.restx_field_type == restx_fields.Nested:
+            return self._build_nested_field_as_model(fi)
+        if fi.restx_field_type == restx_fields.List:
+            return self._build_list_field(fi)
+        return fi.restx_field_type(
+            required=fi.required, description=fi.description
+        )
 
-    # TODO: create "get_field" method, or "FieldGetter" class, which is
-    #  then inserted into self.model_dict
-
-    def add_list_field(self, fi: FieldInfo):
+    def _build_list_field(self, fi: FieldInfo):
         # Get interior field of Marshmallow List
+        inner_field = fi.marshmallow_field_value.inner
 
-        # Create list with same interior field for Restx
+        inner_field_info = FieldInfo(
+            field_name=inner_field.name,
+            field_value=inner_field,
+        )
+        inner_restx_field = self._get_restx_field(inner_field_info)
 
-        #
+        return restx_fields.List(inner_restx_field, attribute=fi.field_name)
+
+
 
     def build_restx_submodel(self, placeholder: RestxModelPlaceholder, fi: FieldInfo):
         """
@@ -219,7 +221,7 @@ class RestxModelBuilder(RestxBuilder):
         return self.namespace.model(self.model_name, self.model_dict)
 
     def _build_nested_field_as_model(self, fi: FieldInfo):
-        sub_schema = fi.schema_class().fields[fi.field_name].schema
+        sub_schema = fi.marshmallow_field_value.schema
         sub_schema_class = type(sub_schema)
         fields = MarshmallowFieldSorter(sub_schema_class).model_fields
         submodel_builder = RestxModelBuilder(
@@ -253,7 +255,6 @@ class MarshmallowFieldSorter:
             fi = FieldInfo(
                 field_name=field_name,
                 field_value=field_value,
-                schema_class=schema_class,
             )
             self._sort_field(fi)
 

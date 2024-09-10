@@ -97,11 +97,16 @@ class TypeaheadAgenciesOuterResponseSchema(Schema):
 
 
 class TypeaheadLocationsOuterResponseSchema(Schema):
-    suggestions = fields.Nested(
-        TypeaheadLocationsResponseSchema,
-        required=True,
-        description="The suggestions for the given query",
+
+    suggestions = fields.List(
+        cls_or_instance=fields.Nested(
+            nested=TypeaheadLocationsResponseSchema,
+            required=True,
+            description="The suggestions for the given query",
+            metadata=RESPONSE_METADATA,
+        ),
         metadata=RESPONSE_METADATA,
+        description="The suggestions for the given query",
     )
 
 
