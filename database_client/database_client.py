@@ -10,7 +10,6 @@ import psycopg
 from psycopg import sql
 from psycopg.rows import dict_row, tuple_row
 from sqlalchemy import select
-from sqlalchemy.engine.row import RowMapping
 from sqlalchemy.orm import aliased
 from sqlalchemy.schema import Column
 from sqlalchemy.sql.expression import UnaryExpression
@@ -142,7 +141,6 @@ class DatabaseClient:
                 self.session = None
 
         return wrapper
-        
 
     @cursor_manager()
     def execute_raw_sql(
@@ -163,7 +161,7 @@ class DatabaseClient:
         if len(results) == 0:
             return None
         return results
-    
+
     @session_manager
     def execute_sqlalchemy(self, query: Callable):
         results = self.session.execute(query())
@@ -189,7 +187,7 @@ class DatabaseClient:
         :return:
         """
         results = self._select_from_single_relation(
-            columns=[User.id], where_mappings=[User.email == email]
+            relation="users", columns=["id"], where_mappings=[User.email == email]
         )
         if len(results) == 0:
             return None
@@ -219,7 +217,8 @@ class DatabaseClient:
         :return: ResetTokenInfo if the token exists; otherwise, None.
         """
         results = self._select_from_single_relation(
-            columns=[ResetToken.id, ResetToken.email, ResetToken.create_date],
+            relation="reset_tokens",
+            columns=["id", "email", "create_date"],
             where_mappings=[ResetToken.token == token],
         )
         if len(results) == 0:
@@ -263,7 +262,8 @@ class DatabaseClient:
         :return: RoleInfo if the token exists; otherwise, None.
         """
         results = self._select_from_single_relation(
-            columns=[User.id, User.email],
+            relation="users",
+            columns=["id", "email"],
             where_mappings=[User.api_key == api_key],
         )
         if len(results) == 0:
@@ -282,8 +282,6 @@ class DatabaseClient:
             column_edit_mappings={"api_key": api_key},
         )
 
-
-
     @cursor_manager(row_factory=tuple_row)
     def get_approved_data_sources(self) -> list[tuple[Any, ...]]:
         """
@@ -299,8 +297,6 @@ class DatabaseClient:
         results = self.cursor.fetchall()
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return results
-
-
 
     MapInfo = namedtuple(
         "MapInfo",
@@ -385,9 +381,9 @@ class DatabaseClient:
             "defunct_year",
             "airtable_uid",
         ]
-        column_references = self.convert_to_column_reference(columns=columns, relation="agencies")
         results = self._select_from_single_relation(
-            columns=column_references,
+            relation="agencies",
+            columns=columns,
             where_mappings=[Agency.approved == True],
             limit=1000,
             page=page,
@@ -583,7 +579,8 @@ class DatabaseClient:
         :return: UserInfo namedtuple containing the user's information.
         """
         results = self._select_from_single_relation(
-            columns=[User.id, User.password_digest, User.api_key, User.email],
+            relation="users",
+            columns=["id", "password_digest", "api_key", "email"],
             where_mappings=[User.email == email],
         )
         if len(results) == 0:
@@ -804,7 +801,7 @@ class DatabaseClient:
         :param columns: List of column strings.
         :param relation: Relation string.
         :return:
-        """        
+        """
         relation_reference = TABLE_REFERENCE[relation]
         return [getattr(relation_reference, column) for column in columns]
 
@@ -864,7 +861,9 @@ class DatabaseClient:
             return self.cursor.fetchone()[column_to_return]
         return None
 
-    create_search_cache_entry = partialmethod(_create_entry_in_table, table_name="agency_url_search_cache")
+    create_search_cache_entry = partialmethod(
+        _create_entry_in_table, table_name="agency_url_search_cache"
+    )
 
     create_data_request = partialmethod(
         _create_entry_in_table, table_name="data_requests", column_to_return="id"
@@ -874,40 +873,51 @@ class DatabaseClient:
         _create_entry_in_table, table_name="agencies", column_to_return="airtable_uid"
     )
 
-    add_new_data_source = partialmethod(_create_entry_in_table, table_name="data_sources", column_to_return="airtable_uid")
-
+    add_new_data_source = partialmethod(
+        _create_entry_in_table,
+        table_name="data_sources",
+        column_to_return="airtable_uid",
+    )
 
     @session_manager
     def _select_from_single_relation(
         self,
-        columns: list[Column],
+        relation: str,
+        columns: list[str],
         where_mappings: Optional[list[bool]] = [True],
         limit: Optional[int] = PAGE_SIZE,
         page: Optional[int] = None,
         order_by: Optional[OrderByParameters] = None,
-    ) -> list[RowMapping]:
+    ) -> list[dict]:
         """
         Selects a single relation from the database
         """
         offset = self.get_offset(page)
+        column_references = self.convert_to_column_reference(
+            columns=columns, relation=relation
+        )
         query = DynamicQueryConstructor.create_single_relation_selection_query(
-            columns, where_mappings, limit, offset, order_by
+            column_references, where_mappings, limit, offset, order_by
         )
         results = self.session.execute(query()).mappings().all()
+        results = [dict(result) for result in results]
         return results
 
     get_data_requests = partialmethod(
-        _select_from_single_relation, columns=[DataRequest]
+        _select_from_single_relation, relation="data_requests"
     )
 
-    get_agencies = partialmethod(_select_from_single_relation, columns=[Agency])
+    get_agencies = partialmethod(_select_from_single_relation, relation="agencies")
 
-    get_data_sources = partialmethod(_select_from_single_relation, columns=[DataSource])
+    get_data_sources = partialmethod(
+        _select_from_single_relation, relation="data_sources"
+    )
 
     def get_data_requests_for_creator(
-        self, creator_user_id: str, columns: List[Column]
+        self, creator_user_id: str, columns: List[str]
     ) -> List[str]:
         return self._select_from_single_relation(
+            relation="data_requests",
             columns=columns,
             where_mappings=[DataRequest.creator_user_id == creator_user_id],
         )
@@ -916,8 +926,12 @@ class DatabaseClient:
         self, user_id: int, data_request_id: int
     ) -> bool:
         results = self._select_from_single_relation(
-            columns=[DataRequest.id],
-            where_mappings=[DataRequest.creator_user_id == user_id, DataRequest.id == data_request_id],
+            relation="data_requests",
+            columns=["id"],
+            where_mappings=[
+                DataRequest.creator_user_id == user_id,
+                DataRequest.id == data_request_id,
+            ],
         )
         return len(results) == 1
 
@@ -974,7 +988,8 @@ class DatabaseClient:
         return self.execute_composed_sql(query, return_results=True)
 
     def get_agencies_without_homepage_urls(self) -> list[dict]:
-        return self.execute_raw_sql("""
+        return self.execute_raw_sql(
+            """
             SELECT
                 SUBMITTED_NAME,
                 JURISDICTION_TYPE,
@@ -996,4 +1011,5 @@ class DatabaseClient:
                 )
             ORDER BY COUNT_DATA_SOURCES DESC
             LIMIT 100 -- Limiting to 100 in acknowledgment of the search engine quota
-        """)
+        """
+        )

@@ -164,7 +164,7 @@ def test_data_sources_by_id_put(
     )
 
     result = db_client_with_test_data.get_data_sources(
-        columns=[DataSource.description],
+        columns=["description"],
         where_mappings=[
             DataSource.airtable_uid == "SOURCE_UID_1"
         ]
@@ -195,7 +195,7 @@ def test_data_sources_by_id_delete(
 
 
     result = db_client_with_test_data.get_data_sources(
-        columns=[DataSource.description],
+        columns=["description"],
         where_mappings=[
             DataSource.airtable_uid == airtable_uid
         ]
@@ -210,7 +210,7 @@ def test_data_sources_by_id_delete(
     )
 
     result = db_client_with_test_data.get_data_sources(
-        columns=[DataSource.description],
+        columns=["description"],
         where_mappings=[
             DataSource.airtable_uid == airtable_uid
         ]

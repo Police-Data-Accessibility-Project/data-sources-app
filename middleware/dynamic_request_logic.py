@@ -75,12 +75,11 @@ def get_by_id(
         role=relation_role,
         column_permission=ColumnPermissionEnum.READ,
     )
-    column_references = DatabaseClient.convert_to_column_reference(
-        columns=columns, relation=mp.relation
-    )
+
     results = mp.db_client_method(
         mp.db_client,
-        columns=column_references,
+        relation=mp.relation,
+        columns=columns,
         where_mappings=[getattr(TABLE_REFERENCE[mp.relation], id_column_name) == id],
     )
     return results_dependent_response(mp.entry_name, results)
@@ -99,7 +98,7 @@ def results_dependent_response(entry_name: str, results):
         )
     return message_response(
         message=f"{entry_name} found",
-        data=dict(results[0]),
+        data=results[0],
         validation_schema=EntryDataResponseSchema,
     )
 
@@ -149,13 +148,11 @@ def get_many(
         permitted_columns,
         requested_columns
     )
-    column_references = DatabaseClient.convert_to_column_reference(
-        columns=permitted_columns, relation=mp.relation
-    )
 
     results = mp.db_client_method(
         mp.db_client,
-        columns=column_references,
+        relation=mp.relation,
+        columns=permitted_columns,
         page=page,
         **mp.db_client_additional_args,
     )

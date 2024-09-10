@@ -96,14 +96,10 @@ def test_get_by_id(monkeypatch, mock_get_permitted_columns):
         column_permission=ColumnPermissionEnum.READ,
     )
 
-    column_references = DatabaseClient.convert_to_column_reference(
-        columns=mock_get_permitted_columns.return_value, relation=mock.mp.relation
-    )
-
     mock.mp.db_client_method.assert_called_once_with(
         mock.mp.db_client,
         relation_name=mock.mp.relation,
-        columns=column_references,
+        columns=mock_get_permitted_columns.return_value,
         where_mappings=[
             getattr(TABLE_REFERENCE[mock.mp.relation], mock.id_column_name) == mock.id
         ],
@@ -149,6 +145,7 @@ def test_get_many(monkeypatch, mock_get_permitted_columns):
 
     mock.mp.db_client_method.assert_called_once_with(
         mock.mp.db_client,
+        relation=mock.mp.relation,
         columns=mock.optionally_limit_to_requested_columns.return_value,
         page=mock.page,
     )

@@ -97,7 +97,8 @@ def test_agencies_post(ts: AgenciesTestSetup):
     )
 
     results = ts.db_client._select_from_single_relation(
-        columns=[Agency.submitted_name],
+        relation="agencies",
+        columns=["submitted_name"],
         where_mappings=[Agency.airtable_uid == json_data["id"]],
     )
 
@@ -134,7 +135,8 @@ def test_agencies_put(ts: AgenciesTestSetup):
     )
 
     results = ts.db_client._select_from_single_relation(
-        columns=[Agency.submitted_name],
+        relation="agencies",
+        columns=["submitted_name"],
         where_mappings=[Agency.airtable_uid == agency_id],
     )
 
@@ -168,7 +170,8 @@ def test_agencies_delete(ts: AgenciesTestSetup):
     )
 
     results = ts.db_client._select_from_single_relation(
-        columns=[Agency.submitted_name],
+        relation="agencies",
+        columns=["submitted_name"],
         where_mappings=[Agency.airtable_uid == agency_id],
     )
 

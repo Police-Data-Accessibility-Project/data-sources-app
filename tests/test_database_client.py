@@ -100,7 +100,7 @@ def test_link_external_account(live_database_client: DatabaseClient):
     assert row.account_type == ExternalAccountTypeEnum.GITHUB.value
 
 
-def test_get_user_info_by_external_account_id(live_database_client):
+def test_get_user_info_by_external_account_id(live_database_client: DatabaseClient):
     fake_email = uuid.uuid4().hex
     fake_external_account_id = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
@@ -127,7 +127,7 @@ def test_set_user_password_digest(live_database_client: DatabaseClient):
     assert password_digest == "test_password"
 
 
-def test_reset_token_logic(live_database_client):
+def test_reset_token_logic(live_database_client: DatabaseClient):
     fake_email = uuid.uuid4().hex
     fake_token = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
@@ -141,7 +141,7 @@ def test_reset_token_logic(live_database_client):
     assert reset_token_info is None, "Token not deleted"
 
 
-def test_update_user_api_key(live_database_client):
+def test_update_user_api_key(live_database_client: DatabaseClient):
     # Add a new user to the database
     email = uuid.uuid4().hex
     password_digest = uuid.uuid4().hex
@@ -168,7 +168,8 @@ def test_select_from_single_relation_columns_only(
     test_table_data, live_database_client: DatabaseClient
 ):
     results = live_database_client._select_from_single_relation(
-        columns=[TestTable.pet_name],
+        relation="test_table",
+        columns=["pet_name"],
     )
 
     assert results == [
@@ -178,9 +179,10 @@ def test_select_from_single_relation_columns_only(
     ]
 
 
-def test_select_from_single_relation_where_mapping(live_database_client):
+def test_select_from_single_relation_where_mapping(live_database_client: DatabaseClient):
     results = live_database_client._select_from_single_relation(
-        columns=[TestTable.pet_name],
+        relation="test_table",
+        columns=["pet_name"],
         where_mappings=[TestTable.species == "Aardvark"],
     )
 
@@ -189,7 +191,8 @@ def test_select_from_single_relation_where_mapping(live_database_client):
     ]
 
     results = live_database_client._select_from_single_relation(
-        columns=[TestTable.pet_name],
+        relation="test_table",
+        columns=["pet_name"],
         where_mappings=[TestTable.species != "Aardvark"],
     )
 
@@ -199,9 +202,10 @@ def test_select_from_single_relation_where_mapping(live_database_client):
     ]
 
 
-def test_select_from_single_relation_limit(live_database_client):
+def test_select_from_single_relation_limit(live_database_client: DatabaseClient):
     results = live_database_client._select_from_single_relation(
-        columns=[TestTable.pet_name],
+        relation="test_table",
+        columns=["pet_name"],
         limit=1,
     )
 
@@ -217,7 +221,8 @@ def test_select_from_single_relation_limit_and_offset(live_database_client: Data
     live_database_client.get_offset = MagicMock(return_value=1)
 
     results = live_database_client._select_from_single_relation(
-        columns=[TestTable.pet_name],
+        relation="test_table",
+        columns=["pet_name"],
         limit=1,
         page=1,  # 1 is the second page; 0-indexed
     )
@@ -227,9 +232,10 @@ def test_select_from_single_relation_limit_and_offset(live_database_client: Data
     ]
 
 
-def test_select_from_single_relation_order_by(live_database_client):
+def test_select_from_single_relation_order_by(live_database_client: DatabaseClient):
     results = live_database_client._select_from_single_relation(
-        columns=[TestTable.pet_name],
+        relation="test_table",
+        columns=["pet_name"],
         order_by=OrderByParameters(
             sort_by="species", sort_order=SortOrder.ASCENDING, relation="test_table"
         ),
@@ -252,7 +258,8 @@ def test_select_from_single_relation_all_parameters(live_database_client: Databa
     )
 
     results = live_database_client._select_from_single_relation(
-        columns=[TestTable.pet_name],
+        relation="test_table",
+        columns=["pet_name"],
         where_mappings=[TestTable.species == "Aardvark", TestTable.species != "Bear"],
         limit=1,
         page=1,  # 1 is the second page; 0-indexed
@@ -279,7 +286,8 @@ def test_create_entry_in_table_return_columns(live_database_client, test_table_d
     )
 
     results = live_database_client._select_from_single_relation(
-        columns=[TestTable.pet_name, TestTable.species],
+        relation="test_table",
+        columns=["pet_name", "species"],
         where_mappings=[TestTable.id == id],
     )
 
@@ -300,7 +308,8 @@ def test_create_entry_in_table_no_return_columns(live_database_client, test_tabl
     assert id is None
 
     results = live_database_client._select_from_single_relation(
-        columns=[TestTable.pet_name],
+        relation="test_table",
+        columns=["pet_name"],
         where_mappings=[TestTable.species == "Monkey"],
     )
 
@@ -325,7 +334,8 @@ def test_get_approved_data_sources(live_database_client: DatabaseClient):
 
 def test_delete_from_table(live_database_client, test_table_data):
     initial_results = live_database_client._select_from_single_relation(
-        columns=[TestTable.pet_name],
+        relation="test_table",
+        columns=["pet_name"],
     )
 
     assert initial_results == [
@@ -342,7 +352,8 @@ def test_delete_from_table(live_database_client, test_table_data):
     )
 
     results = live_database_client._select_from_single_relation(
-        columns=[TestTable.pet_name],
+        relation="test_table",
+        columns=["pet_name"],
     )
 
     assert results == [
@@ -350,9 +361,10 @@ def test_delete_from_table(live_database_client, test_table_data):
         {"pet_name": "Simon"},
     ]
 
-def test_update_entry_in_table(live_database_client, test_table_data):
+def test_update_entry_in_table(live_database_client: DatabaseClient, test_table_data):
     results = live_database_client._select_from_single_relation(
-        columns=[TestTable.pet_name],
+        relation="test_table",
+        columns=["pet_name"],
         where_mappings=[TestTable.species == "Cat"],
     )
 
@@ -369,14 +381,16 @@ def test_update_entry_in_table(live_database_client, test_table_data):
 
 
     results = live_database_client._select_from_single_relation(
-        columns=[TestTable.pet_name],
+        relation="test_table",
+        columns=["pet_name"],
         where_mappings=[TestTable.species == "Cat"],
     )
 
     assert results == []
 
     results = live_database_client._select_from_single_relation(
-        columns=[TestTable.pet_name],
+        relation="test_table",
+        columns=["pet_name"],
         where_mappings=[TestTable.species == "Lion"],
     )
 
@@ -402,7 +416,7 @@ def test_get_data_sources_for_map(live_database_client):
     assert found_source
 
 
-def test_get_agencies_from_page(live_database_client):
+def test_get_agencies_from_page(live_database_client: DatabaseClient):
     results = live_database_client.get_agencies_from_page(2)
 
     assert len(results) > 0
@@ -414,12 +428,12 @@ def test_get_offset():
     assert DatabaseClient.get_offset(page=3) == 200
 
 
-def test_get_data_sources_to_archive(live_database_client):
+def test_get_data_sources_to_archive(live_database_client: DatabaseClient):
     results = live_database_client.get_data_sources_to_archive()
     assert len(results) > 0
 
 
-def test_update_last_cached(live_database_client):
+def test_update_last_cached(live_database_client: DatabaseClient):
     # Add a new data source to the database
     insert_test_agencies_and_sources_if_not_exist(
         live_database_client.connection.cursor()
@@ -430,14 +444,15 @@ def test_update_last_cached(live_database_client):
 
     # Fetch the data source from the database to confirm the change
     result = live_database_client._select_from_single_relation(
-        columns=[DataSourceArchiveInfo.last_cached],
+        relation="data_sources_archive_info",
+        columns=["last_cached"],
         where_mappings=[DataSourceArchiveInfo.airtable_uid == "SOURCE_UID_1"],
     )[0]
 
     assert result["last_cached"].strftime("%Y-%m-%d %H:%M:%S") == new_last_cached
 
 
-def test_get_quick_search_results(live_database_client):
+def test_get_quick_search_results(live_database_client: DatabaseClient):
     # Add new data sources to the database, some that satisfy the search criteria and some that don't
     test_datetime = live_database_client.execute_raw_sql(query="SELECT NOW()")[0]
 
@@ -454,7 +469,7 @@ def test_get_quick_search_results(live_database_client):
     assert result[0].id == "SOURCE_UID_1"
 
 
-def test_add_quick_search_log(live_database_client):
+def test_add_quick_search_log(live_database_client: DatabaseClient):
     # Add a quick search log to the database using the DatabaseClient method
     search = f"{uuid.uuid4().hex} QSL"
     location = "City QSL"
@@ -724,7 +739,7 @@ def test_get_data_requests_for_creator(live_database_client: DatabaseClient):
         )
 
     results = live_database_client.get_data_requests_for_creator(
-        test_user.user_id, columns=[DataRequest.submission_notes]
+        test_user.user_id, columns=["submission_notes"]
     )
     assert len(results) == 3
     for result in results:

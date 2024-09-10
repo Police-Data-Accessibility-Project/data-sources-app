@@ -104,7 +104,6 @@ def get_data_requests_wrapper(
         access_info, db_client, relation_role
     )
     formatted_list_response = format_list_response(formatted_data_requests)
-    formatted_list_response["data"] = [dict(row) for row in formatted_list_response["data"]]
 
     return make_response(
         formatted_list_response,
@@ -155,9 +154,8 @@ def get_data_requests_with_permitted_columns(
         role=relation_role,
         column_permission=ColumnPermissionEnum.READ,
     )
-    column_references = DatabaseClient.convert_to_column_reference(columns=columns, relation=RELATION)
     data_requests = db_client.get_data_requests(
-        columns=column_references,
+        columns=columns,
         where_mappings=where_mappings,
     )
     return data_requests

@@ -103,9 +103,9 @@ def test_data_requests_post(ts: AgencyTestSetup):
     user_id = ts.db_client.get_user_id(ts.tus.user_info.email)
     results = ts.db_client.get_data_requests(
         columns=[
-            DataRequest.id,
-            DataRequest.submission_notes,
-            DataRequest.creator_user_id,
+            "id",
+            "submission_notes",
+            "creator_user_id",
         ],
         where_mappings=[DataRequest.id == int(data_request_id)],
     )
@@ -169,7 +169,7 @@ def test_data_requests_by_id_put(ts: AgencyTestSetup):
     )
 
     result = ts.db_client.get_data_requests(
-        columns=[DataRequest.submission_notes],
+        columns=["submission_notes"],
         where_mappings=[DataRequest.id == data_request_id],
     )
 
@@ -186,7 +186,7 @@ def test_data_requests_by_id_put(ts: AgencyTestSetup):
     )
 
     result = ts.db_client.get_data_requests(
-        columns=[DataRequest.submission_notes],
+        columns=["submission_notes"],
         where_mappings=[DataRequest.id == data_request_id],
     )
 
@@ -218,7 +218,7 @@ def test_data_requests_by_id_delete(ts: AgencyTestSetup):
     )
 
     result = ts.db_client.get_data_requests(
-        columns=[DataRequest.submission_notes],
+        columns=["submission_notes"],
         where_mappings=[DataRequest.id == data_request_id],
     )
 

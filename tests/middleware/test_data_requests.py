@@ -157,11 +157,8 @@ def test_get_data_requests_with_permitted_columns(
         role=mock.relation_role,
         column_permission=ColumnPermissionEnum.READ,
     )
-    column_references = DatabaseClient.convert_to_column_reference(
-        columns=mock_get_permitted_columns.return_value, relation="data_requests"
-    )
     mock.db_client.get_data_requests.assert_called_once_with(
-        columns=column_references,
+        columns=mock_get_permitted_columns.return_value,
         where_mappings=mock.where_mappings,
     )
 

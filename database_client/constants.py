@@ -1,4 +1,12 @@
-from middleware.models import Agency, DataRequest, DataSource, TestTable
+from middleware.models import (
+    Agency,
+    DataRequest,
+    DataSource,
+    DataSourceArchiveInfo,
+    ResetToken,
+    TestTable,
+    User,
+)
 
 AGENCY_APPROVED_COLUMNS = [
     "homepage_url",
@@ -106,5 +114,8 @@ TABLE_REFERENCE = {
     "agencies": Agency,
     "data_requests": DataRequest,
     "data_sources": DataSource,
+    "data_sources_archive_info": DataSourceArchiveInfo,
+    "reset_tokens": ResetToken,
     "test_table": TestTable,
+    "users": User,
 }
