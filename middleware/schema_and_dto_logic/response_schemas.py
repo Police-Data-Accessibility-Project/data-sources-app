@@ -11,32 +11,42 @@ from utilities.enums import SourceMappingEnum
 
 class IDAndMessageSchema(Schema):
     id = fields.String(
-        description="The id of the created entry",
         required=True,
-        source=SourceMappingEnum.JSON,
+        metadata={
+            "description": "The id of the created entry",
+            "source": SourceMappingEnum.JSON,
+        }
     )
     message = fields.String(
-        description="The success message",
         example="Success. Entry created",
         required=True,
-        source=SourceMappingEnum.JSON,
+        metadata={
+            "description": "The success message",
+            "source": SourceMappingEnum.JSON,
+        }
     )
 
 
 class GetManyResponseSchema(Schema):
     message = fields.String(
-        description="The success message",
-        source=SourceMappingEnum.JSON,
+        metadata={
+            "description": "The success message",
+            "source": SourceMappingEnum.JSON,
+        }
     )
     count = fields.Integer(
-        description="The total number of results",
-        source=SourceMappingEnum.JSON,
+        metadata={
+            "description": "The total number of results",
+            "source": SourceMappingEnum.JSON,
+        }
     )
     data = EntryDataListField(
         fields.Dict,
-        description="The list of results",
         required=True,
-        source=SourceMappingEnum.JSON,
+        metadata={
+            "description": "The list of results",
+            "source": SourceMappingEnum.JSON,
+        }
     )
 
 
@@ -49,13 +59,17 @@ class EntryDataResponseSchema(Schema):
     rather than provided
     """
     message = fields.String(
-        description="The success message",
         example="Success. Entry created",
         required=True,
-        source=SourceMappingEnum.JSON,
+        metadata={
+            "description": "The success message",
+            "source": SourceMappingEnum.JSON,
+        }
     )
     data = DataField(
         required=True,
-        description="The data for the given entry",
-        source=SourceMappingEnum.JSON,
+        metadata={
+            "description": "The data for the given entry",
+            "source": SourceMappingEnum.JSON,
+        }
     )

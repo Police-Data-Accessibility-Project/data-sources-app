@@ -10,8 +10,20 @@ from utilities.enums import SourceMappingEnum
 
 
 class UserRequestSchema(Schema):
-    email = fields.Str(required=True, description="The email of the user", source=SourceMappingEnum.JSON)
-    password = fields.Str(required=True, description="The password of the user", source=SourceMappingEnum.JSON)
+    email = fields.Str(
+        required=True,
+        metadata={
+            "description": "The email of the user",
+            "source": SourceMappingEnum.JSON
+        }
+    )
+    password = fields.Str(
+        required=True,
+        metadata={
+            "description": "The password of the user",
+            "source": SourceMappingEnum.JSON
+        }
+    )
 
 @dataclass
 class UserRequest:
