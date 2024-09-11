@@ -14,6 +14,7 @@ MARSHMALLOW_TO_RESTX_FIELD_MAPPING = {
     marshmallow_fields.Email: restx_fields.String,  # Email can map to a String field in flask_restx
     marshmallow_fields.List: restx_fields.List,
     marshmallow_fields.Nested: restx_fields.Nested,
+    marshmallow_fields.URL: restx_fields.Url,
     DataField: RestxModelPlaceholder.VARIABLE_COLUMNS,
     EntryDataListField: RestxModelPlaceholder.LIST_VARIABLE_COLUMNS,
     # Add more mappings as needed
@@ -24,4 +25,5 @@ RESTX_FIELD_TO_NATIVE_TYPE_MAPPING = {
     restx_fields.Boolean: bool,
     restx_fields.List: list,
     restx_fields.Nested: dict,
+    restx_fields.Url: str,
 }

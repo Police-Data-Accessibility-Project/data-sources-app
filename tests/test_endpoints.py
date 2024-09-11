@@ -39,6 +39,7 @@ from resources.ResetPassword import ResetPassword
 from resources.ResetTokenValidation import ResetTokenValidation
 from resources.Search import Search
 from resources.TypeaheadSuggestions import TypeaheadLocations, TypeaheadAgencies
+from resources.UniqueURLChecker import UniqueURLChecker
 from resources.User import User
 from tests.fixtures import client_with_mock_db, ClientWithMockDB
 
@@ -123,6 +124,7 @@ test_parameters = [
     ),
     TestParameters(HomepageSearchCache, "/homepage-search-cache", [GET, POST]),
     TestParameters(TypeaheadAgencies, "/typeahead/agencies", [GET]),
+    TestParameters(UniqueURLChecker, "/check/unique-url", [GET]),
 ]
 
 

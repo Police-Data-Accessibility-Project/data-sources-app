@@ -18,6 +18,7 @@ class AppNamespaces(Enum):
         path="data-sources", description="Data Sources Namespace"
     )
     TYPEAHEAD = NamespaceAttributes(path="typeahead", description="Typeahead Namespace")
+    CHECK = NamespaceAttributes(path="check", description="Check Namespace")
 
 
 def create_namespace(

@@ -227,6 +227,7 @@ MOCK_EMAIL_PASSWORD = {
             },
         ),
         ("/agencies/test_id", "DELETE", "Agencies.delete_agency", {}),
+        ("/check/unique-url?url=test_url", "GET", "UniqueURLChecker.check_unique_url", {}),
     ),
 )
 def test_common_format_resources(
