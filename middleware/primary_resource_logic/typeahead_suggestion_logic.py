@@ -31,22 +31,28 @@ RESPONSE_METADATA = {
 class TypeaheadBaseResponseSchema(Schema):
     state = fields.String(
         required=True,
-        description="The state of the suggestion",
         example="Pennsylvania",
-        metadata=RESPONSE_METADATA,
+        metadata={
+            "source": SourceMappingEnum.JSON,
+            "description": "The state of the suggestion",
+        },
     )
     county = fields.String(
         required=True,
-        description="The county of the suggestion",
         example="Allegheny",
-        metadata=RESPONSE_METADATA,
+        metadata={
+            "source": SourceMappingEnum.JSON,
+            "description": "The county of the suggestion",
+        },
         allow_none=True
     )
     locality = fields.String(
         required=True,
-        description="The locality of the suggestion",
         example="Pittsburgh",
-        metadata=RESPONSE_METADATA,
+        metadata={
+            "source": SourceMappingEnum.JSON,
+            "description": "The locality of the suggestion",
+        },
         allow_none=True
     )
 
@@ -55,32 +61,41 @@ class TypeaheadBaseResponseSchema(Schema):
 class TypeaheadLocationsResponseSchema(TypeaheadBaseResponseSchema):
     display_name = fields.String(
         required=True,
-        description="The display name of the suggestion",
         example="Pittsburgh",
-        metadata=RESPONSE_METADATA,
+        metadata={
+            "source": SourceMappingEnum.JSON,
+            "description": "The display name of the suggestion",
+        },
     )
     type = fields.String(
         required=True,
-        description="The type of suggestion.",
         example="Locality",
         validate=validate.OneOf(["State", "County", "Locality"]),
-        metadata=RESPONSE_METADATA,
+        metadata={
+            "source": SourceMappingEnum.JSON,
+            "description": "The type of suggestion.",
+        },
     )
 
 
 class TypeaheadAgenciesResponseSchema(TypeaheadBaseResponseSchema):
     display_name = fields.String(
         required=True,
-        description="The display name of the suggestion",
         example="Springfield Police Agency",
-        metadata=RESPONSE_METADATA,
+        metadata={
+            "source": SourceMappingEnum.JSON,
+            "description": "The display name of the suggestion",
+        },
     )
     jurisdiction_type = fields.String(
         required=True,
         description=f"The jurisdiction type.",
         validate=validate.OneOf(JURISDICTION_TYPES),
         example="school",
-        metadata=RESPONSE_METADATA,
+        metadata={
+            "source": SourceMappingEnum.JSON,
+            "description": "The type of suggestion.",
+        },
     )
 
 # TODO: Use these in the integration tests
@@ -90,11 +105,15 @@ class TypeaheadAgenciesOuterResponseSchema(Schema):
         cls_or_instance=fields.Nested(
             nested=TypeaheadAgenciesResponseSchema,
             required=True,
-            description="The suggestions for the given query",
-            metadata=RESPONSE_METADATA,
+            metadata={
+                "source": SourceMappingEnum.JSON,
+                "description": "The suggestions for the given query",
+            },
         ),
-        metadata=RESPONSE_METADATA,
-        description="The suggestions for the given query",
+        metadata={
+            "source": SourceMappingEnum.JSON,
+            "description": "The suggestions for the given query",
+        },
     )
 
 
@@ -104,11 +123,15 @@ class TypeaheadLocationsOuterResponseSchema(Schema):
         cls_or_instance=fields.Nested(
             nested=TypeaheadLocationsResponseSchema,
             required=True,
-            description="The suggestions for the given query",
-            metadata=RESPONSE_METADATA,
+            metadata={
+                "source": SourceMappingEnum.JSON,
+                "description": "The suggestions for the given query",
+            },
         ),
-        metadata=RESPONSE_METADATA,
-        description="The suggestions for the given query",
+        metadata={
+            "source": SourceMappingEnum.JSON,
+            "description": "The suggestions for the given query",
+        },
     )
 
 

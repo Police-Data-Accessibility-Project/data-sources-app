@@ -22,9 +22,11 @@ def transform_record_categories(value: str) -> Optional[list[RecordCategories]]:
 class SearchRequestSchema(Schema):
     state = fields.Str(
         required=True,
-        description="The state of the search.",
-        location=ParserLocation.QUERY.value,
-        source=SourceMappingEnum.QUERY_ARGS,
+        metadata={
+            "description": "The state of the search.",
+            "source": SourceMappingEnum.QUERY_ARGS,
+            "location": ParserLocation.QUERY.value
+        }
     )
     record_categories = fields.Str(
         required=False,
@@ -34,19 +36,32 @@ class SearchRequestSchema(Schema):
         + "\n  * ".join([e.value for e in RecordCategories]),
         location=ParserLocation.QUERY.value,
         source=SourceMappingEnum.QUERY_ARGS,
-        transformation_function=transform_record_categories,
+        metadata={
+            "transformation_function": transform_record_categories,
+            "description": "The record categories of the search. If empty, all categories will be searched."
+                "Multiple record categories can be provided as a comma-separated list, eg. 'Police & Public "
+                           "Interactions,Agency-published Resources'."
+                "Allowable record categories include: \n  * "
+                + "\n  * ".join([e.value for e in RecordCategories]),
+            "source": SourceMappingEnum.QUERY_ARGS,
+            "location": ParserLocation.QUERY.value
+        }
     )
     county = fields.Str(
         required=False,
-        description="The county of the search. If empty, all counties for the given state will be searched.",
-        location=ParserLocation.QUERY.value,
-        source=SourceMappingEnum.QUERY_ARGS,
+        metadata={
+            "description": "The county of the search. If empty, all counties for the given state will be searched.",
+            "source": SourceMappingEnum.QUERY_ARGS,
+            "location": ParserLocation.QUERY.value
+        }
     )
     locality = fields.Str(
         required=False,
-        description="The locality of the search. If empty, all localities for the given county will be searched.",
-        location=ParserLocation.QUERY.value,
-        source=SourceMappingEnum.QUERY_ARGS,
+        metadata={
+            "description": "The locality of the search. If empty, all localities for the given county will be searched.",
+            "source": SourceMappingEnum.QUERY_ARGS,
+            "location": ParserLocation.QUERY.value
+        }
     )
 
 

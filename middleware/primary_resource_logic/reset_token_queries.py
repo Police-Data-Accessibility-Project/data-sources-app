@@ -28,30 +28,40 @@ class RequestResetPasswordRequest:
 class RequestResetPasswordRequestSchema(Schema):
     email = fields.Str(
         required=True,
-        description="The email of the user",
-        source=SourceMappingEnum.JSON,
+        metadata={
+            "description": "The email of the user",
+            "source": SourceMappingEnum.JSON,
+        }
     )
     token = fields.Str(
         required=True,
-        description="The token of the user",
-        source=SourceMappingEnum.JSON,
+        metadata={
+            "description": "The token of the user",
+            "source": SourceMappingEnum.JSON,
+        }
     )
 
 class ResetPasswordSchema(Schema):
     email = fields.Str(
         required=True,
-        description="The email of the user",
-        source=SourceMappingEnum.JSON,
+        metadata={
+            "description": "The email of the user",
+            "source": SourceMappingEnum.JSON,
+        }
     )
     password = fields.Str(
         required=True,
-        description="The new password of the user",
-        source=SourceMappingEnum.JSON,
+        metadata={
+            "description": "The new password of the user",
+            "source": SourceMappingEnum.JSON,
+        }
     )
     token = fields.Str(
         required=True,
-        description="The user's reset password token",
-        source=SourceMappingEnum.JSON,
+        metadata={
+            "description": "The token of the user",
+            "source": SourceMappingEnum.JSON,
+        }
     )
 
 @dataclass

@@ -19,36 +19,35 @@ from utilities.enums import SourceMappingEnum
 class GetManyBaseSchema(Schema):
     page = fields.Integer(
         required=True,
-        description="The page number of the results to retrieve. Begins at 1.",
         validate=validate.Range(min=1),
-        default=1,
+        dump_default=1,
         metadata={
+            "description": "The page number of the results to retrieve. Begins at 1.",
             "source": SourceMappingEnum.QUERY_ARGS
         }
     )
     sort_by = fields.Str(
         required=False,
-        description="The field to sort the results by.",
         metadata={
+            "description": "The field to sort the results by.",
             "source": SourceMappingEnum.QUERY_ARGS
         }
     )
     sort_order = fields.Str(
         required=False,
-        description="The order to sort the results by.",
         validate=validate.OneOf([e.value for e in SortOrder]),
         metadata={
             "transformation_function": lambda value: get_valid_enum_value(SortOrder, value),
-            "source": SourceMappingEnum.QUERY_ARGS
-
+            "source": SourceMappingEnum.QUERY_ARGS,
+            "description": "The order to sort the results by.",
         }
     )
     requested_columns = fields.Str(
         required=False,
-        description="A comma-delimited list of the columns to return in the results. Defaults to all permitted if not provided.",
         metadata={
             "source": SourceMappingEnum.QUERY_ARGS,
-            "transformation_function": lambda value: value.split(",")
+            "transformation_function": lambda value: value.split(","),
+            "description": "A comma-delimited list of the columns to return in the results. Defaults to all permitted if not provided.",
         }
 
     )
@@ -68,9 +67,9 @@ class GetManyBaseDTO:
 class GetByIDBaseSchema(Schema):
     resource_id = fields.Str(
         required=True,
-        description="The ID of the object to retrieve.",
         metadata={
-            "source": SourceMappingEnum.PATH
+            "source": SourceMappingEnum.PATH,
+            "description": "The ID of the object to retrieve.",
         }
     )
 
@@ -81,8 +80,10 @@ class GetByIDBaseDTO:
 class EntryDataRequestSchema(Schema):
     entry_data = DataField(
         required=True,
-        description="The entry data field for adding and updating entries",
-        metadata={"source": SourceMappingEnum.JSON},
+        metadata={
+            "source": SourceMappingEnum.JSON,
+            "description": "The entry data field for adding and updating entries",
+        },
     )
 
 
@@ -119,8 +120,10 @@ class EntryDataRequestDTO:
 class TypeaheadSchema(Schema):
     query = fields.Str(
         required=True,
-        description="The search query to get suggestions for.",
-        metadata={"source": SourceMappingEnum.QUERY_ARGS},
+        metadata={
+            "source": SourceMappingEnum.QUERY_ARGS,
+            "description": "The search query to get suggestions for.",
+        },
     )
 
 @dataclass
