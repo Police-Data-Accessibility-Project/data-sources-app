@@ -20,27 +20,37 @@ class GetManyBaseSchema(Schema):
     page = fields.Integer(
         required=True,
         description="The page number of the results to retrieve. Begins at 1.",
-        source=SourceMappingEnum.QUERY_ARGS,
         validate=validate.Range(min=1),
         default=1,
+        metadata={
+            "source": SourceMappingEnum.QUERY_ARGS
+        }
     )
     sort_by = fields.Str(
         required=False,
         description="The field to sort the results by.",
-        source=SourceMappingEnum.QUERY_ARGS,
+        metadata={
+            "source": SourceMappingEnum.QUERY_ARGS
+        }
     )
     sort_order = fields.Str(
         required=False,
         description="The order to sort the results by.",
-        source=SourceMappingEnum.QUERY_ARGS,
         validate=validate.OneOf([e.value for e in SortOrder]),
-        transformation_function=lambda value: get_valid_enum_value(SortOrder, value),
+        metadata={
+            "transformation_function": lambda value: get_valid_enum_value(SortOrder, value),
+            "source": SourceMappingEnum.QUERY_ARGS
+
+        }
     )
     requested_columns = fields.Str(
         required=False,
         description="A comma-delimited list of the columns to return in the results. Defaults to all permitted if not provided.",
-        source=SourceMappingEnum.QUERY_ARGS,
-        transformation_function=lambda value: value.split(","),
+        metadata={
+            "source": SourceMappingEnum.QUERY_ARGS,
+            "transformation_function": lambda value: value.split(",")
+        }
+
     )
 
 
@@ -59,7 +69,9 @@ class GetByIDBaseSchema(Schema):
     resource_id = fields.Str(
         required=True,
         description="The ID of the object to retrieve.",
-        source=SourceMappingEnum.PATH,
+        metadata={
+            "source": SourceMappingEnum.PATH
+        }
     )
 
 @dataclass
@@ -70,7 +82,7 @@ class EntryDataRequestSchema(Schema):
     entry_data = DataField(
         required=True,
         description="The entry data field for adding and updating entries",
-        source=SourceMappingEnum.JSON,
+        metadata={"source": SourceMappingEnum.JSON},
     )
 
 
