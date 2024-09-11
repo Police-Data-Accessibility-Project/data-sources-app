@@ -386,13 +386,14 @@ def setup_get_typeahead_suggestion_test_data(cursor: psycopg.Cursor):
         # Locality (via agencies table)
         cursor.execute(
             """insert into agencies 
-            (name, airtable_uid, municipality, state_iso, county_fips, county_name) 
+            (name, airtable_uid, municipality, state_iso, county_fips, county_name, jurisdiction_type) 
             values 
-            ('Xylodammerung Police Agency', 'XY_SOURCE_UID', 'Xylodammerung', 'XY', '12345', 'Arxylodon')"""
+            ('Xylodammerung Police Agency', 'XY_SOURCE_UID', 'Xylodammerung', 'XY', '12345', 'Arxylodon', 'state')"""
         )
 
         # Refresh materialized view
-        cursor.execute("CALL refresh_typeahead_suggestions();")
+        cursor.execute("CALL refresh_typeahead_agencies();")
+        cursor.execute("CALL refresh_typeahead_locations();")
     except psycopg.errors.UniqueViolation:
         cursor.execute("ROLLBACK TO SAVEPOINT typeahead_suggestion_test_savepoint")
 

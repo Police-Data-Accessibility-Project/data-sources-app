@@ -27,19 +27,25 @@ allowable_actions_str = "Allowable actions include: \n  * " + "\n  * ".join(
 class PermissionsRequestSchema(Schema):
     user_email = fields.Str(
         required=True,
-        description="The email of the user for which to retrieve permissions.",
-        location=ParserLocation.QUERY.value,
-        source=SourceMappingEnum.QUERY_ARGS,
+        metadata={
+            "description": "The email of the user for which to retrieve permissions.",
+            "source": SourceMappingEnum.QUERY_ARGS,
+            "location": ParserLocation.QUERY.value
+        }
     )
     permission = fields.Str(
         required=True,
-        description=f"The permission to add or remove. \n {allowable_permissions_str}",
-        source=SourceMappingEnum.JSON,
+        metadata={
+            "description": "The permission to add or remove. \n {allowable_permissions_str}",
+            "source": SourceMappingEnum.JSON
+        }
     )
     action = fields.Str(
         required=True,
-        description=f"The action to perform. \n {allowable_actions_str}",
-        source=SourceMappingEnum.JSON,
+        metadata={
+            "source": SourceMappingEnum.JSON,
+            "description": "The action to perform. \n {allowable_actions_str}",
+        }
     )
 
 @dataclass
