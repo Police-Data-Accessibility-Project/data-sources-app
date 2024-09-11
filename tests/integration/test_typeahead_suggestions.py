@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
-from middleware.primary_resource_logic.typeahead_suggestion_logic import TypeaheadLocationsOuterResponseSchema
+from middleware.primary_resource_logic.typeahead_suggestion_logic import TypeaheadLocationsOuterResponseSchema, \
+    TypeaheadAgenciesOuterResponseSchema
 from tests.helper_scripts.helper_functions import (
     setup_get_typeahead_suggestion_test_data,
 )
@@ -44,6 +45,7 @@ def test_typeahead_locations(flask_client_with_db, dev_db_connection):
                 },
             ]
         },
+        expected_schema=TypeaheadLocationsOuterResponseSchema,
     )
 
 def test_typeahead_agencies(flask_client_with_db, dev_db_connection):
@@ -59,13 +61,13 @@ def test_typeahead_agencies(flask_client_with_db, dev_db_connection):
         expected_json_content={
             "suggestions": [
                 {
-                    "name": "Xylodammerung Police Agency",
-                    "municipality": "Xylodammerung",
+                    "display_name": "Xylodammerung Police Agency",
+                    "locality": "Xylodammerung",
                     "county": "Arxylodon",
-                    "state_iso": "XY",
+                    "state": "XY",
                     "jurisdiction_type": "state",
                 }
             ]
         },
+        expected_schema=TypeaheadAgenciesOuterResponseSchema,
     )
-    TypeaheadLocationsOuterResponseSchema().load(json_content)

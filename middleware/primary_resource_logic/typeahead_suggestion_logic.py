@@ -40,12 +40,14 @@ class TypeaheadBaseResponseSchema(Schema):
         description="The county of the suggestion",
         example="Allegheny",
         metadata=RESPONSE_METADATA,
+        allow_none=True
     )
     locality = fields.String(
         required=True,
         description="The locality of the suggestion",
         example="Pittsburgh",
         metadata=RESPONSE_METADATA,
+        allow_none=True
     )
 
 

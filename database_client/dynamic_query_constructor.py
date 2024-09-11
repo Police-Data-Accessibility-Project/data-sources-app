@@ -206,10 +206,10 @@ class DynamicQueryConstructor:
             AND name NOT ILIKE {search_term}
         )
         SELECT
-            name,
+            name as display_name,
             jurisdiction_type,
-            state_iso,
-            municipality,
+            state_iso as state,
+            municipality as locality,
             county_name as county
         FROM (
             SELECT DISTINCT

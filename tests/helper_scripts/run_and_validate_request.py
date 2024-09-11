@@ -1,7 +1,8 @@
 from http import HTTPStatus
-from typing import Optional
+from typing import Optional, Type
 
 from flask.testing import FlaskClient
+from marshmallow import Schema
 
 from tests.helper_scripts.simple_result_validators import check_response_status
 
@@ -12,6 +13,7 @@ def run_and_validate_request(
     endpoint: str,
     expected_response_status: HTTPStatus = HTTPStatus.OK,
     expected_json_content: Optional[dict] = None,
+    expected_schema: Optional[Type[Schema]] = None,
     **request_kwargs,
 ):
     response = flask_client.open(endpoint, method=http_method, **request_kwargs)
@@ -22,6 +24,11 @@ def run_and_validate_request(
 
     # But we can also test to see if the json content is what we expect
     if expected_json_content is not None:
-        assert response.json == expected_json_content, f"Expected {expected_json_content} but got {response.json}"
+        assert (
+            response.json == expected_json_content
+        ), f"Expected {expected_json_content} but got {response.json}"
+
+    if expected_schema is not None:
+        expected_schema().load(response.json)
 
     return response.json
