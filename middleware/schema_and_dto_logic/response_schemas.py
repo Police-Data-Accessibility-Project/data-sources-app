@@ -18,11 +18,11 @@ class IDAndMessageSchema(Schema):
         }
     )
     message = fields.String(
-        example="Success. Entry created",
         required=True,
         metadata={
             "description": "The success message",
             "source": SourceMappingEnum.JSON,
+            "example": "Success. Entry created",
         }
     )
 
@@ -59,11 +59,11 @@ class EntryDataResponseSchema(Schema):
     rather than provided
     """
     message = fields.String(
-        example="Success. Entry created",
         required=True,
         metadata={
             "description": "The success message",
             "source": SourceMappingEnum.JSON,
+            "example": "Success. Entry created",
         }
     )
     data = DataField(
