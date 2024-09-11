@@ -30,12 +30,6 @@ class SearchRequestSchema(Schema):
     )
     record_categories = fields.Str(
         required=False,
-        description="The record categories of the search. If empty, all categories will be searched."
-        "Multiple record categories can be provided as a comma-separated list, eg. 'Police & Public Interactions,Agency-published Resources'."
-        "Allowable record categories include: \n  * "
-        + "\n  * ".join([e.value for e in RecordCategories]),
-        location=ParserLocation.QUERY.value,
-        source=SourceMappingEnum.QUERY_ARGS,
         metadata={
             "transformation_function": transform_record_categories,
             "description": "The record categories of the search. If empty, all categories will be searched."

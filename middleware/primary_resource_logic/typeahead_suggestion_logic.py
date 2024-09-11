@@ -31,27 +31,27 @@ RESPONSE_METADATA = {
 class TypeaheadBaseResponseSchema(Schema):
     state = fields.String(
         required=True,
-        example="Pennsylvania",
         metadata={
             "source": SourceMappingEnum.JSON,
             "description": "The state of the suggestion",
+            "example": "Pennsylvania",
         },
     )
     county = fields.String(
         required=True,
-        example="Allegheny",
         metadata={
             "source": SourceMappingEnum.JSON,
             "description": "The county of the suggestion",
+            "example": "Allegheny",
         },
         allow_none=True
     )
     locality = fields.String(
         required=True,
-        example="Pittsburgh",
         metadata={
             "source": SourceMappingEnum.JSON,
             "description": "The locality of the suggestion",
+            "example": "Pittsburgh",
         },
         allow_none=True
     )
@@ -61,19 +61,19 @@ class TypeaheadBaseResponseSchema(Schema):
 class TypeaheadLocationsResponseSchema(TypeaheadBaseResponseSchema):
     display_name = fields.String(
         required=True,
-        example="Pittsburgh",
         metadata={
             "source": SourceMappingEnum.JSON,
             "description": "The display name of the suggestion",
+            "example": "Pittsburgh",
         },
     )
     type = fields.String(
         required=True,
-        example="Locality",
         validate=validate.OneOf(["State", "County", "Locality"]),
         metadata={
             "source": SourceMappingEnum.JSON,
             "description": "The type of suggestion.",
+            "example": "Locality",
         },
     )
 
@@ -81,20 +81,19 @@ class TypeaheadLocationsResponseSchema(TypeaheadBaseResponseSchema):
 class TypeaheadAgenciesResponseSchema(TypeaheadBaseResponseSchema):
     display_name = fields.String(
         required=True,
-        example="Springfield Police Agency",
         metadata={
             "source": SourceMappingEnum.JSON,
             "description": "The display name of the suggestion",
+            "example": "Springfield County Sheriff's Office",
         },
     )
     jurisdiction_type = fields.String(
         required=True,
-        description=f"The jurisdiction type.",
         validate=validate.OneOf(JURISDICTION_TYPES),
-        example="school",
         metadata={
             "source": SourceMappingEnum.JSON,
-            "description": "The type of suggestion.",
+            "description": "The jurisdiction type.",
+            "example": "school",
         },
     )
 
