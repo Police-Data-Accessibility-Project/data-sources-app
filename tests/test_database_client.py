@@ -10,7 +10,7 @@ import pytest
 from sqlalchemy import insert, select, update
 
 from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import OrderByParameters
+from database_client.db_client_dataclasses import OrderByParameters, WhereMapping
 from database_client.enums import (
     ExternalAccountTypeEnum,
     RelationRoleEnum,
@@ -21,7 +21,7 @@ from database_client.result_formatter import ResultFormatter
 from middleware.exceptions import (
     UserNotFoundError,
 )
-from middleware.models import DataRequest, DataSourceArchiveInfo, ExternalAccount, TestTable, User
+from middleware.models import ExternalAccount, TestTable, User
 from middleware.enums import PermissionsEnum
 from tests.fixtures import (
     live_database_client,
@@ -183,7 +183,7 @@ def test_select_from_single_relation_where_mapping(live_database_client: Databas
     results = live_database_client._select_from_single_relation(
         relation="test_table",
         columns=["pet_name"],
-        where_mappings=[TestTable.species == "Aardvark"],
+        where_mappings=[WhereMapping(column="species", value="Aardvark")],
     )
 
     assert results == [
@@ -193,7 +193,7 @@ def test_select_from_single_relation_where_mapping(live_database_client: Databas
     results = live_database_client._select_from_single_relation(
         relation="test_table",
         columns=["pet_name"],
-        where_mappings=[TestTable.species != "Aardvark"],
+        where_mappings=[WhereMapping(column="species", eq=False, value="Aardvark")],
     )
 
     assert results == [
@@ -237,7 +237,7 @@ def test_select_from_single_relation_order_by(live_database_client: DatabaseClie
         relation="test_table",
         columns=["pet_name"],
         order_by=OrderByParameters(
-            sort_by="species", sort_order=SortOrder.ASCENDING, relation="test_table"
+            sort_by="species", sort_order=SortOrder.ASCENDING
         ),
     )
 
@@ -260,13 +260,15 @@ def test_select_from_single_relation_all_parameters(live_database_client: Databa
     results = live_database_client._select_from_single_relation(
         relation="test_table",
         columns=["pet_name"],
-        where_mappings=[TestTable.species == "Aardvark", TestTable.species != "Bear"],
+        where_mappings=[
+            WhereMapping(column="species", value="Aardvark"),
+            WhereMapping(column="species", eq=False, value="Bear"),
+        ],
         limit=1,
         page=1,  # 1 is the second page; 0-indexed
         order_by=OrderByParameters(
             sort_by="pet_name",
             sort_order=SortOrder.DESCENDING,
-            relation="test_table"
         ),
     )
 
@@ -288,7 +290,7 @@ def test_create_entry_in_table_return_columns(live_database_client, test_table_d
     results = live_database_client._select_from_single_relation(
         relation="test_table",
         columns=["pet_name", "species"],
-        where_mappings=[TestTable.id == id],
+        where_mappings=[WhereMapping(column="id", value=id)],
     )
 
     assert results == [
@@ -310,7 +312,7 @@ def test_create_entry_in_table_no_return_columns(live_database_client, test_tabl
     results = live_database_client._select_from_single_relation(
         relation="test_table",
         columns=["pet_name"],
-        where_mappings=[TestTable.species == "Monkey"],
+        where_mappings=[WhereMapping(column="species", value="Monkey")],
     )
 
     assert results == [
@@ -365,7 +367,7 @@ def test_update_entry_in_table(live_database_client: DatabaseClient, test_table_
     results = live_database_client._select_from_single_relation(
         relation="test_table",
         columns=["pet_name"],
-        where_mappings=[TestTable.species == "Cat"],
+        where_mappings=[WhereMapping(column="species", value="Cat")],
     )
 
     assert results == [
@@ -383,7 +385,7 @@ def test_update_entry_in_table(live_database_client: DatabaseClient, test_table_
     results = live_database_client._select_from_single_relation(
         relation="test_table",
         columns=["pet_name"],
-        where_mappings=[TestTable.species == "Cat"],
+        where_mappings=[WhereMapping(column="species", value="Cat")],
     )
 
     assert results == []
@@ -391,7 +393,7 @@ def test_update_entry_in_table(live_database_client: DatabaseClient, test_table_
     results = live_database_client._select_from_single_relation(
         relation="test_table",
         columns=["pet_name"],
-        where_mappings=[TestTable.species == "Lion"],
+        where_mappings=[WhereMapping(column="species", value="Lion")],
     )
 
     assert results == [
@@ -446,7 +448,7 @@ def test_update_last_cached(live_database_client: DatabaseClient):
     result = live_database_client._select_from_single_relation(
         relation="data_sources_archive_info",
         columns=["last_cached"],
-        where_mappings=[DataSourceArchiveInfo.airtable_uid == "SOURCE_UID_1"],
+        where_mappings=[WhereMapping(column="airtable_uid", value="SOURCE_UID_1")],
     )[0]
 
     assert result["last_cached"].strftime("%Y-%m-%d %H:%M:%S") == new_last_cached

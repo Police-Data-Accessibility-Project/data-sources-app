@@ -3,8 +3,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from database_client.constants import TABLE_REFERENCE
 from database_client.database_client import DatabaseClient
+from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import ColumnPermissionEnum
 from middleware.dynamic_request_logic import (
     results_dependent_response,
@@ -98,10 +98,10 @@ def test_get_by_id(monkeypatch, mock_get_permitted_columns):
 
     mock.mp.db_client_method.assert_called_once_with(
         mock.mp.db_client,
-        relation_name=mock.mp.relation,
+        relation=mock.mp.relation,
         columns=mock_get_permitted_columns.return_value,
         where_mappings=[
-            getattr(TABLE_REFERENCE[mock.mp.relation], mock.id_column_name) == mock.id
+            WhereMapping(column=mock.id_column_name, value=mock.id)
         ],
     )
 

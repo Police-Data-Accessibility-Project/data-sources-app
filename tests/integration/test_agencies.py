@@ -9,8 +9,8 @@ import pytest
 
 from database_client.constants import PAGE_SIZE
 from database_client.database_client import DatabaseClient
+from database_client.db_client_dataclasses import WhereMapping
 from middleware.enums import PermissionsEnum
-from middleware.models import Agency
 
 from tests.fixtures import (
     dev_db_connection,
@@ -99,7 +99,7 @@ def test_agencies_post(ts: AgenciesTestSetup):
     results = ts.db_client._select_from_single_relation(
         relation="agencies",
         columns=["submitted_name"],
-        where_mappings=[Agency.airtable_uid == json_data["id"]],
+        where_mappings=[WhereMapping(column="airtable_uid", value=json_data["id"])],
     )
 
     assert len(results) == 1
@@ -137,7 +137,7 @@ def test_agencies_put(ts: AgenciesTestSetup):
     results = ts.db_client._select_from_single_relation(
         relation="agencies",
         columns=["submitted_name"],
-        where_mappings=[Agency.airtable_uid == agency_id],
+        where_mappings=[WhereMapping(column="airtable_uid", value=agency_id)],
     )
 
     assert len(results) == 1
@@ -172,7 +172,7 @@ def test_agencies_delete(ts: AgenciesTestSetup):
     results = ts.db_client._select_from_single_relation(
         relation="agencies",
         columns=["submitted_name"],
-        where_mappings=[Agency.airtable_uid == agency_id],
+        where_mappings=[WhereMapping(column="airtable_uid", value=agency_id)],
     )
 
     assert len(results) == 0

@@ -15,7 +15,7 @@ from sqlalchemy.schema import Column
 from sqlalchemy.sql.expression import UnaryExpression
 
 from database_client.constants import PAGE_SIZE, TABLE_REFERENCE
-from database_client.db_client_dataclasses import OrderByParameters
+from database_client.db_client_dataclasses import OrderByParameters, WhereMapping
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
     ExternalAccountTypeEnum,
@@ -28,11 +28,7 @@ from middleware.exceptions import (
     AccessTokenNotFoundError,
 )
 from middleware.models import (
-    Agency,
-    DataRequest,
-    DataSource,
     ExternalAccount,
-    ResetToken,
     User,
 )
 from middleware.enums import PermissionsEnum, Relations
@@ -187,7 +183,7 @@ class DatabaseClient:
         :return:
         """
         results = self._select_from_single_relation(
-            relation="users", columns=["id"], where_mappings=[User.email == email]
+            relation="users", columns=["id"], where_mappings=[WhereMapping(column="email", value=email)]
         )
         if len(results) == 0:
             return None
@@ -219,7 +215,7 @@ class DatabaseClient:
         results = self._select_from_single_relation(
             relation="reset_tokens",
             columns=["id", "email", "create_date"],
-            where_mappings=[ResetToken.token == token],
+            where_mappings=[WhereMapping(column="token", value=token)],
         )
         if len(results) == 0:
             return None
@@ -264,7 +260,7 @@ class DatabaseClient:
         results = self._select_from_single_relation(
             relation="users",
             columns=["id", "email"],
-            where_mappings=[User.api_key == api_key],
+            where_mappings=[WhereMapping(column="api_key", value=api_key)],
         )
         if len(results) == 0:
             return None
@@ -384,7 +380,7 @@ class DatabaseClient:
         results = self._select_from_single_relation(
             relation="agencies",
             columns=columns,
-            where_mappings=[Agency.approved == True],
+            where_mappings=[WhereMapping(column="approved", value=True)],
             limit=1000,
             page=page,
         )
@@ -581,7 +577,7 @@ class DatabaseClient:
         results = self._select_from_single_relation(
             relation="users",
             columns=["id", "password_digest", "api_key", "email"],
-            where_mappings=[User.email == email],
+            where_mappings=[WhereMapping(column="email", value=email)],
         )
         if len(results) == 0:
             raise UserNotFoundError(email)
@@ -884,7 +880,7 @@ class DatabaseClient:
         self,
         relation: str,
         columns: list[str],
-        where_mappings: Optional[list[bool]] = [True],
+        where_mappings: Optional[list[WhereMapping]] = [True],
         limit: Optional[int] = PAGE_SIZE,
         page: Optional[int] = None,
         order_by: Optional[OrderByParameters] = None,
@@ -897,7 +893,7 @@ class DatabaseClient:
             columns=columns, relation=relation
         )
         query = DynamicQueryConstructor.create_single_relation_selection_query(
-            column_references, where_mappings, limit, offset, order_by
+            relation, column_references, where_mappings, limit, offset, order_by
         )
         results = self.session.execute(query()).mappings().all()
         results = [dict(result) for result in results]
@@ -919,7 +915,7 @@ class DatabaseClient:
         return self._select_from_single_relation(
             relation="data_requests",
             columns=columns,
-            where_mappings=[DataRequest.creator_user_id == creator_user_id],
+            where_mappings=[WhereMapping(column="creator_user_id", value=creator_user_id)],
         )
 
     def user_is_creator_of_data_request(
@@ -929,8 +925,8 @@ class DatabaseClient:
             relation="data_requests",
             columns=["id"],
             where_mappings=[
-                DataRequest.creator_user_id == user_id,
-                DataRequest.id == data_request_id,
+                WhereMapping(column="creator_user_id", value=user_id),
+                WhereMapping(column="id", value=data_request_id)
             ],
         )
         return len(results) == 1

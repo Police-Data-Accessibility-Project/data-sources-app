@@ -5,7 +5,7 @@ from flask import make_response, Response
 from marshmallow import fields, validate
 
 from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import OrderByParameters
+from database_client.db_client_dataclasses import OrderByParameters, WhereMapping
 from database_client.enums import ApprovalStatus
 from database_client.result_formatter import ResultFormatter
 from middleware.access_logic import AccessInfo
@@ -18,7 +18,6 @@ from middleware.dynamic_request_logic import (
     delete_entry,
 )
 from middleware.enums import Relations
-from middleware.models import DataSource
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetBaseSchema, GetManyBaseDTO, EntryDataRequestDTO
 from middleware.common_response_formatting import format_list_response
 from utilities.enums import SourceMappingEnum
@@ -60,10 +59,9 @@ def get_data_sources_wrapper(
                 "order_by": OrderByParameters.construct_from_args(
                     sort_by=dto.sort_by,
                     sort_order=dto.sort_order,
-                    relation=RELATION,
                 ),
                 "where_mappings": [
-                    DataSource.approval_status == dto.approval_status.value
+                    WhereMapping(column="approval_status", value=dto.approval_status.value)
                 ],
             },
             entry_name="data source",

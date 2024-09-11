@@ -5,10 +5,10 @@ from unittest.mock import MagicMock, patch, call
 import pytest
 
 from database_client.database_client import DatabaseClient
+from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import RelationRoleEnum, ColumnPermissionEnum
 from middleware.access_logic import AccessInfo
 from middleware.enums import AccessTypeEnum, PermissionsEnum
-from middleware.models import DataRequest
 from middleware.primary_resource_logic.data_requests import (
     get_data_requests_relation_role,
     RELATION,
@@ -218,8 +218,8 @@ def test_get_standard_and_owner_zipped_data_requests(
         user_email=mock.user_email, db_client=mock.db_client
     )
     assert zipped_data_requests == [mock.data_request_owner, mock.data_request_standard]
-    neq_expected_mapping = [DataRequest.creator_user_id != mock.user_id]
-    eq_expected_mapping = [DataRequest.creator_user_id == mock.user_id]
+    neq_expected_mapping = [WhereMapping(column="creator_user_id", eq=False, value=mock.user_id)]
+    eq_expected_mapping = [WhereMapping(column="creator_user_id", value=mock.user_id)]
     mock_get_data_requests_with_permitted_columns.assert_has_calls(
         [
             call(

@@ -15,7 +15,7 @@ from database_client.constants import (
     RESTRICTED_DATA_SOURCE_COLUMNS,
     RESTRICTED_COLUMNS,
 )
-from database_client.db_client_dataclasses import OrderByParameters
+from database_client.db_client_dataclasses import OrderByParameters, WhereMapping
 from utilities.enums import RecordCategories
 
 TableColumn = namedtuple("TableColumn", ["table", "column"])
@@ -361,8 +361,9 @@ class DynamicQueryConstructor:
 
     @staticmethod
     def create_single_relation_selection_query(
+        relation: str,
         columns: list[Column],
-        where_mappings: Optional[list[bool]] = [True],
+        where_mappings: Optional[list[WhereMapping]] = [True],
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         order_by: Optional[OrderByParameters] = None,
@@ -377,8 +378,10 @@ class DynamicQueryConstructor:
         :param order_by:
         :return:
         """
+        if where_mappings != [True]:
+            where_mappings = [mapping.build_where_clause(relation) for mapping in where_mappings]
         if order_by is not None:
-            order_by = order_by.build_order_by_clause()
+            order_by = order_by.build_order_by_clause(relation)
 
         base_query = (
             lambda: select(*columns)

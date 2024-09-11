@@ -12,8 +12,8 @@ from typing import Optional
 from flask import Response
 from sqlalchemy.schema import Table
 
-from database_client.constants import TABLE_REFERENCE
 from database_client.database_client import DatabaseClient
+from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import ColumnPermissionEnum
 from middleware.access_logic import AccessInfo
 from middleware.column_permission_logic import (
@@ -80,7 +80,7 @@ def get_by_id(
         mp.db_client,
         relation=mp.relation,
         columns=columns,
-        where_mappings=[getattr(TABLE_REFERENCE[mp.relation], id_column_name) == id],
+        where_mappings=[WhereMapping(column=id_column_name, value=id)],
     )
     return results_dependent_response(mp.entry_name, results)
 
@@ -156,7 +156,6 @@ def get_many(
         page=page,
         **mp.db_client_additional_args,
     )
-    results = [dict(row) for row in results]
     return multiple_results_response(message=f"{mp.entry_name} found", data=results)
 
 

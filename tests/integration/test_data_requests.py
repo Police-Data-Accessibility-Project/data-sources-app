@@ -5,9 +5,9 @@ from http import HTTPStatus
 
 import pytest
 
+from database_client.db_client_dataclasses import WhereMapping
 from middleware.constants import DATA_KEY
 from middleware.enums import PermissionsEnum
-from middleware.models import DataRequest
 from tests.fixtures import (
     connection_with_test_data,
     flask_client_with_db,
@@ -107,7 +107,7 @@ def test_data_requests_post(ts: AgencyTestSetup):
             "submission_notes",
             "creator_user_id",
         ],
-        where_mappings=[DataRequest.id == int(data_request_id)],
+        where_mappings=[WhereMapping(column="id", value=int(data_request_id))],
     )
 
     assert len(results) == 1
@@ -170,7 +170,7 @@ def test_data_requests_by_id_put(ts: AgencyTestSetup):
 
     result = ts.db_client.get_data_requests(
         columns=["submission_notes"],
-        where_mappings=[DataRequest.id == data_request_id],
+        where_mappings=[WhereMapping(column="id", value=data_request_id)],
     )
 
     assert result[0]["submission_notes"] == ts.submission_notes
@@ -187,7 +187,7 @@ def test_data_requests_by_id_put(ts: AgencyTestSetup):
 
     result = ts.db_client.get_data_requests(
         columns=["submission_notes"],
-        where_mappings=[DataRequest.id == data_request_id],
+        where_mappings=[WhereMapping(column="id", value=data_request_id)],
     )
 
     assert result[0]["submission_notes"] == new_submission_notes
@@ -219,7 +219,7 @@ def test_data_requests_by_id_delete(ts: AgencyTestSetup):
 
     result = ts.db_client.get_data_requests(
         columns=["submission_notes"],
-        where_mappings=[DataRequest.id == data_request_id],
+        where_mappings=[WhereMapping(column="id", value=data_request_id)],
     )
 
     assert result == []
