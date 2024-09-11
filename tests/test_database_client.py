@@ -581,11 +581,11 @@ def test_get_typeahead_agencies(live_database_client):
 
     results = live_database_client.get_typeahead_agencies(search_term="xyl")
     assert len(results) == 1
-    assert results[0]["name"] == 'Xylodammerung Police Agency'
+    assert results[0]["display_name"] == 'Xylodammerung Police Agency'
     assert results[0]["jurisdiction_type"] == "state"
-    assert results[0]["state_iso"] == "XY"
+    assert results[0]["state"] == "XY"
     assert results[0]["county"] == "Arxylodon"
-    assert results[0]["municipality"] == "Xylodammerung"
+    assert results[0]["locality"] == "Xylodammerung"
 
 def test_search_with_location_and_record_types_real_data(live_database_client):
     """
