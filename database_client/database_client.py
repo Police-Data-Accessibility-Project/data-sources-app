@@ -869,6 +869,10 @@ class DatabaseClient:
         _create_entry_in_table, table_name="agencies", column_to_return="airtable_uid"
     )
 
+    create_request_source_relation = partialmethod(
+        _create_entry_in_table, table_name="link_data_sources_data_requests", column_to_return="id"
+    )
+
     add_new_data_source = partialmethod(
         _create_entry_in_table,
         table_name="data_sources",
@@ -908,6 +912,23 @@ class DatabaseClient:
     get_data_sources = partialmethod(
         _select_from_single_relation, relation="data_sources"
     )
+
+    get_request_source_relations = partialmethod(_select_from_single_relation, relation_name=Relations.RELATED_SOURCES.value)
+
+    def get_related_data_sources(self, data_request_id: int) -> List[dict]:
+        """
+        Get data sources related to the request id
+        :param data_request_id:
+        :return:
+        """
+        query = sql.SQL("""
+            SELECT ds.airtable_uid, ds.name
+            FROM link_data_sources_data_requests link
+            INNER JOIN data_sources ds on link.source_id = ds.airtable_uid
+            WHERE link.request_id = {request_id}
+        """).format(request_id=sql.Literal(data_request_id))
+        return self.execute_composed_sql(query, return_results=True)
+
 
     def get_data_requests_for_creator(
         self, creator_user_id: str, columns: List[str]
@@ -958,6 +979,8 @@ class DatabaseClient:
     delete_agency = partialmethod(_delete_from_table, table_name="agencies")
 
     delete_data_source = partialmethod(_delete_from_table, table_name="data_sources")
+
+    delete_request_source_relation = partialmethod(_delete_from_table, table_name=Relations.RELATED_SOURCES.value)
 
     @cursor_manager()
     def execute_composed_sql(self, query: sql.Composed, return_results: bool = False):

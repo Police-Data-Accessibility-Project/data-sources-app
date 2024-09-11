@@ -11,7 +11,7 @@ from tests.helper_scripts.common_test_data import create_agency_entry_for_search
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup,
 )
-from tests.helper_scripts.common_test_functions import run_and_validate_request
+from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
 
 def test_homepage_search_cache(flask_client_with_db, dev_db_client):

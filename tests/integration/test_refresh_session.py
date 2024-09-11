@@ -14,7 +14,7 @@ from tests.helper_scripts.helper_functions import (
     login_and_return_jwt_tokens,
     create_test_user_setup_db_client,
 )
-from tests.helper_scripts.common_test_functions import run_and_validate_request
+from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
 
 def test_refresh_session_post(test_user_admin, flask_client_with_db):

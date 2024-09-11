@@ -6,21 +6,32 @@ import pytest
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import ColumnPermissionEnum
-from middleware.dynamic_request_logic import (
-    results_dependent_response,
-    get_by_id,
-    get_many,
-    post_entry,
-    put_entry,
+from middleware.dynamic_request_logic.common_functions import check_for_id
+from middleware.dynamic_request_logic.delete_logic import (
     check_for_delete_permissions,
     delete_entry,
-    check_requested_columns,
-    optionally_limit_to_requested_columns,
 )
+from middleware.dynamic_request_logic.get_by_id_logic import (
+    results_dependent_response,
+    get_by_id,
+)
+from middleware.dynamic_request_logic.get_many_logic import (
+    get_many,
+    optionally_limit_to_requested_columns,
+    check_requested_columns,
+)
+from middleware.dynamic_request_logic.post_logic import post_entry
+from middleware.dynamic_request_logic.put_logic import put_entry
+from middleware.dynamic_request_logic.supporting_classes import IDInfo
+from middleware.primary_resource_logic.data_requests import RelatedSourceByIDDTO
+
 from middleware.schema_and_dto_logic.response_schemas import EntryDataResponseSchema
 from middleware.util_dynamic import call_if_not_none, execute_if_not_none
-from tests.fixtures import mock_flask_response_manager
-from tests.helper_scripts.common_mocks_and_patches import patch_and_return_mock
+from tests.fixtures import mock_flask_response_manager, FakeAbort
+from tests.helper_scripts.common_mocks_and_patches import (
+    patch_and_return_mock,
+    multi_monkeypatch,
+)
 
 PATCH_ROOT = "middleware.dynamic_request_logic"
 
@@ -36,20 +47,16 @@ def mock_get_permitted_columns(monkeypatch):
 
 
 @pytest.fixture
-def mock_check_has_permission_to_edit_columns(monkeypatch):
-    return patch_and_return_mock(
-        f"{PATCH_ROOT}.check_has_permission_to_edit_columns", monkeypatch
-    )
-
-
-@pytest.fixture
 def mock_abort(monkeypatch):
     return patch_and_return_mock(
         f"middleware.flask_response_manager.abort", monkeypatch
     )
 
 
-def test_results_dependent_response_with_results(mock_message_response):
+def test_results_dependent_response_with_results(monkeypatch):
+    mock_message_response = patch_and_return_mock(
+        f"{PATCH_ROOT}.get_by_id_logic.message_response", monkeypatch
+    )
 
     results_dependent_response(
         entry_name="test entry",
@@ -61,7 +68,10 @@ def test_results_dependent_response_with_results(mock_message_response):
     )
 
 
-def test_results_dependent_response_with_no_results(mock_message_response):
+def test_results_dependent_response_with_no_results(monkeypatch):
+    mock_message_response = patch_and_return_mock(
+        f"{PATCH_ROOT}.get_by_id_logic.message_response", monkeypatch
+    )
 
     results_dependent_response(
         entry_name="test entry",
@@ -73,10 +83,20 @@ def test_results_dependent_response_with_no_results(mock_message_response):
     )
 
 
-def test_get_by_id(monkeypatch, mock_get_permitted_columns):
+def test_get_by_id(monkeypatch):
     mock = MagicMock()
     monkeypatch.setattr(
-        f"{PATCH_ROOT}.results_dependent_response", mock.results_dependent_response
+        f"{PATCH_ROOT}.get_by_id_logic.results_dependent_response",
+        mock.results_dependent_response,
+    )
+    monkeypatch.setattr(
+        f"{PATCH_ROOT}.get_by_id_logic.get_permitted_columns",
+        mock.get_permitted_columns,
+    )
+    monkeypatch.setattr(f"{PATCH_ROOT}.get_by_id_logic.check_for_id", mock.check_for_id)
+    id_info = IDInfo(id_column_value=mock.id, id_column_name=mock.id_column_name)
+    monkeypatch.setattr(
+        f"{PATCH_ROOT}.get_by_id_logic.IDInfo", MagicMock(return_value=id_info)
     )
     result = get_by_id(
         middleware_parameters=mock.mp,
@@ -85,11 +105,15 @@ def test_get_by_id(monkeypatch, mock_get_permitted_columns):
         relation_role_parameters=mock.relation_role_parameters,
     )
 
+    mock.check_for_id.assert_called_once_with(
+        db_client=mock.mp.db_client, table_name=mock.mp.relation, id_info=id_info
+    )
+
     mock.relation_role_parameters.get_relation_role_from_parameters.assert_called_once_with(
         access_info=mock.mp.access_info
     )
 
-    mock_get_permitted_columns.assert_called_once_with(
+    mock.get_permitted_columns.assert_called_once_with(
         db_client=mock.mp.db_client,
         relation=mock.mp.relation,
         role=mock.relation_role_parameters.get_relation_role_from_parameters.return_value,
@@ -99,7 +123,7 @@ def test_get_by_id(monkeypatch, mock_get_permitted_columns):
     mock.mp.db_client_method.assert_called_once_with(
         mock.mp.db_client,
         relation=mock.mp.relation,
-        columns=mock_get_permitted_columns.return_value,
+        columns=mock.get_permitted_columns.return_value,
         where_mappings=[
             WhereMapping(column=mock.id_column_name, value=mock.id)
         ],
@@ -112,14 +136,17 @@ def test_get_by_id(monkeypatch, mock_get_permitted_columns):
     assert result == mock.results_dependent_response.return_value
 
 
-def test_get_many(monkeypatch, mock_get_permitted_columns):
+def test_get_many(monkeypatch):
     mock = MagicMock()
-    monkeypatch.setattr(
-        f"{PATCH_ROOT}.multiple_results_response", mock.multiple_results_response
-    )
-    monkeypatch.setattr(
-        f"{PATCH_ROOT}.optionally_limit_to_requested_columns",
-        mock.optionally_limit_to_requested_columns,
+    multi_monkeypatch(
+        monkeypatch,
+        patch_root=f"{PATCH_ROOT}.get_many_logic",
+        mock=mock,
+        functions_to_patch=[
+            "get_permitted_columns",
+            "optionally_limit_to_requested_columns",
+            "multiple_results_response",
+        ],
     )
     result = get_many(
         middleware_parameters=mock.mp,
@@ -132,7 +159,7 @@ def test_get_many(monkeypatch, mock_get_permitted_columns):
         access_info=mock.mp.access_info
     )
 
-    mock_get_permitted_columns.assert_called_once_with(
+    mock.get_permitted_columns.assert_called_once_with(
         db_client=mock.mp.db_client,
         relation=mock.mp.relation,
         role=mock.relation_role_parameters.get_relation_role_from_parameters.return_value,
@@ -140,7 +167,7 @@ def test_get_many(monkeypatch, mock_get_permitted_columns):
     )
 
     mock.optionally_limit_to_requested_columns.assert_called_once_with(
-        mock_get_permitted_columns.return_value, mock.requested_columns
+        mock.get_permitted_columns.return_value, mock.requested_columns
     )
 
     mock.mp.db_client_method.assert_called_once_with(
@@ -161,7 +188,7 @@ def test_get_many(monkeypatch, mock_get_permitted_columns):
 @pytest.fixture
 def mock_check_requested_columns(monkeypatch) -> MagicMock:
     mock = MagicMock()
-    monkeypatch.setattr(f"{PATCH_ROOT}.check_requested_columns", mock)
+    monkeypatch.setattr(f"{PATCH_ROOT}.get_many_logic.check_requested_columns", mock)
     return mock
 
 
@@ -174,6 +201,7 @@ def test_optionally_limit_to_requested_columns_with_no_requested_columns(
         requested_columns=None,
     )
     mock_check_requested_columns.assert_not_called()
+
 
 def test_optionally_limit_to_requested_columns_with_requested_columns(
     mock_check_requested_columns,
@@ -200,11 +228,21 @@ def test_execute_if_none_is_not_none():
     mock.execute.assert_called_once()
 
 
-def test_post_entry(monkeypatch, mock_check_has_permission_to_edit_columns):
+def test_post_entry(monkeypatch):
     mock = MagicMock()
-    monkeypatch.setattr(f"{PATCH_ROOT}.execute_if_not_none", mock.execute_if_not_none)
-    monkeypatch.setattr(f"{PATCH_ROOT}.created_id_response", mock.created_id_response)
-
+    multi_monkeypatch(
+        monkeypatch,
+        patch_root=f"{PATCH_ROOT}.post_logic",
+        mock=mock,
+        functions_to_patch=[
+            "execute_if_not_none",
+            "created_id_response",
+        ],
+    )
+    monkeypatch.setattr(
+        f"{PATCH_ROOT}.supporting_classes.check_has_permission_to_edit_columns",
+        mock.check_has_permission_to_edit_columns,
+    )
     result = post_entry(
         middleware_parameters=mock.mp,
         entry=mock.entry,
@@ -216,7 +254,7 @@ def test_post_entry(monkeypatch, mock_check_has_permission_to_edit_columns):
         access_info=mock.mp.access_info
     )
 
-    mock_check_has_permission_to_edit_columns.assert_called_once_with(
+    mock.check_has_permission_to_edit_columns.assert_called_once_with(
         db_client=mock.mp.db_client,
         relation=mock.mp.relation,
         role=mock.relation_role_parameters.get_relation_role_from_parameters.return_value,
@@ -239,10 +277,16 @@ def test_post_entry(monkeypatch, mock_check_has_permission_to_edit_columns):
     assert result == mock.created_id_response.return_value
 
 
-def test_put_entry(
-    monkeypatch, mock_check_has_permission_to_edit_columns, mock_message_response
-):
+def test_put_entry(monkeypatch):
     mock = MagicMock()
+    monkeypatch.setattr(
+        f"{PATCH_ROOT}.put_logic.message_response",
+        mock.message_response,
+    )
+    monkeypatch.setattr(
+        f"{PATCH_ROOT}.supporting_classes.check_has_permission_to_edit_columns",
+        mock.check_has_permission_to_edit_columns,
+    )
 
     result = put_entry(
         middleware_parameters=mock.mp,
@@ -255,7 +299,7 @@ def test_put_entry(
         access_info=mock.mp.access_info
     )
 
-    mock_check_has_permission_to_edit_columns.assert_called_once_with(
+    mock.check_has_permission_to_edit_columns.assert_called_once_with(
         db_client=mock.mp.db_client,
         relation=mock.mp.relation,
         role=mock.relation_role_parameters.get_relation_role_from_parameters.return_value,
@@ -266,11 +310,11 @@ def test_put_entry(
         mock.mp.db_client, column_edit_mappings=mock.entry, entry_id=mock.entry_id
     )
 
-    mock_message_response.assert_called_once_with(
+    mock.message_response.assert_called_once_with(
         message=f"{mock.mp.entry_name} updated."
     )
 
-    assert result == mock_message_response.return_value
+    assert result == mock.message_response.return_value
 
 
 def test_check_for_delete_permission_check_function_returns_true(mock_abort):
@@ -308,16 +352,29 @@ def test_call_if_not_none_is_not_none():
     mock_func.assert_called_once_with(a=1)
 
 
-def test_delete_entry(monkeypatch, mock_message_response):
+def test_delete_entry(monkeypatch):
     mock = MagicMock()
-
-    monkeypatch.setattr(f"{PATCH_ROOT}.call_if_not_none", mock.call_if_not_none)
+    multi_monkeypatch(
+        monkeypatch,
+        patch_root=f"{PATCH_ROOT}.delete_logic",
+        mock=mock,
+        functions_to_patch=[
+            "check_for_id",
+            "call_if_not_none",
+            "message_response",
+        ],
+    )
 
     result = delete_entry(
         middleware_parameters=mock.mp,
-        entry_id=mock.entry_id,
-        id_column_name=mock.id_column_name,
+        id_info=mock.id_info,
         permission_checking_function=mock.permission_checking_function,
+    )
+
+    mock.check_for_id.assert_called_once_with(
+        table_name=mock.mp.relation,
+        id_info=mock.id_info,
+        db_client=mock.mp.db_client,
     )
 
     mock.call_if_not_none.assert_called_once_with(
@@ -329,19 +386,50 @@ def test_delete_entry(monkeypatch, mock_message_response):
 
     mock.mp.db_client_method.assert_called_once_with(
         mock.mp.db_client,
-        id_column_name=mock.id_column_name,
-        id_column_value=mock.entry_id,
+        id_column_name=mock.id_info.id_column_name,
+        id_column_value=mock.check_for_id.return_value,
     )
 
-    mock_message_response.assert_called_once_with(f"{mock.mp.entry_name} deleted.")
+    mock.message_response.assert_called_once_with(f"{mock.mp.entry_name} deleted.")
 
-    assert result == mock_message_response.return_value
+    assert result == mock.message_response.return_value
+
+
+def test_delete_id_not_found(monkeypatch, mock_flask_response_manager):
+    mock = MagicMock()
+    mock.flask_response_manager = mock_flask_response_manager
+    monkeypatch.setattr(mock, f"{PATCH_ROOT}.DatabaseClient", mock.DatabaseClient)
+    mock.dto = RelatedSourceByIDDTO(
+        resource_id=mock.resource_id,
+        data_source_id=mock.data_source_id,
+    )
+    mock.access_info = MagicMock()
+    mock.db_client._select_from_single_relation.return_value = []
+    with pytest.raises(FakeAbort):
+        delete_entry(
+            middleware_parameters=mock.mp,
+            id_info=mock.id_info,
+            permission_checking_function=mock.permission_checking_function,
+        )
+    mock.mp.db_client._select_from_single_relation.assert_called_once_with(
+        relation_name=mock.mp.relation,
+        where_mappings=mock.id_info.where_mappings,
+        columns=[mock.id_info.id_column_name],
+    )
+    mock.db_client.get_user_id.assert_not_called()
+    mock.user_is_creator_of_data_request.assert_not_called()
+    mock.flask_response_manager.abort.assert_called_once_with(
+        message=f"Entry for {mock.id_info.where_mappings} not found.",
+        code=HTTPStatus.NOT_FOUND,
+    )
 
 
 def test_check_requested_columns_happy_path(mock_flask_response_manager, monkeypatch):
     mock = MagicMock()
     mock.get_invalid_columns.return_value = []
-    monkeypatch.setattr(f"{PATCH_ROOT}.get_invalid_columns", mock.get_invalid_columns)
+    monkeypatch.setattr(
+        f"{PATCH_ROOT}.get_many_logic.get_invalid_columns", mock.get_invalid_columns
+    )
     check_requested_columns(
         requested_columns=mock.requested_columns,
         permitted_columns=mock.permitted_columns,
@@ -358,11 +446,14 @@ def test_check_requested_columns_invalid_columns(
 ):
     mock = MagicMock()
     mock.get_invalid_columns.return_value = ["invalid_column"]
-    monkeypatch.setattr(f"{PATCH_ROOT}.get_invalid_columns", mock.get_invalid_columns)
-    check_requested_columns(
-        requested_columns=mock.requested_columns,
-        permitted_columns=mock.permitted_columns,
+    monkeypatch.setattr(
+        f"{PATCH_ROOT}.get_many_logic.get_invalid_columns", mock.get_invalid_columns
     )
+    with pytest.raises(FakeAbort):
+        check_requested_columns(
+            requested_columns=mock.requested_columns,
+            permitted_columns=mock.permitted_columns,
+        )
 
     mock.get_invalid_columns.assert_called_once_with(
         mock.requested_columns, mock.permitted_columns
@@ -370,4 +461,44 @@ def test_check_requested_columns_invalid_columns(
     mock_flask_response_manager.abort.assert_called_once_with(
         code=HTTPStatus.FORBIDDEN,
         message=f"The following columns are either invalid or not permitted for your access permissions: {mock.get_invalid_columns.return_value}",
+    )
+
+
+def test_check_for_id_happy_path(mock_flask_response_manager):
+    mock = MagicMock()
+    mock.db_client._select_from_single_relation.return_value = [{"id": 1}]
+    mock.id_info.id_column_name = "id"
+
+    result = check_for_id(
+        table_name=mock.table_name, id_info=mock.id_info, db_client=mock.db_client
+    )
+
+    assert result == 1
+
+    mock.db_client._select_from_single_relation.assert_called_once_with(
+        relation_name=mock.table_name,
+        where_mappings=mock.id_info.where_mappings,
+        columns=[mock.id_info.id_column_name],
+    )
+    mock_flask_response_manager.abort.assert_not_called()
+
+
+def test_check_for_id_no_id(mock_flask_response_manager):
+    mock = MagicMock()
+    mock.db_client._select_from_single_relation.return_value = []
+    mock.id_info.id_column_name = "id"
+
+    with pytest.raises(FakeAbort) as e:
+        check_for_id(
+            table_name=mock.table_name, id_info=mock.id_info, db_client=mock.db_client
+        )
+
+    mock.db_client._select_from_single_relation.assert_called_once_with(
+        relation_name=mock.table_name,
+        where_mappings=mock.id_info.where_mappings,
+        columns=[mock.id_info.id_column_name],
+    )
+    mock_flask_response_manager.abort.assert_called_once_with(
+        code=HTTPStatus.NOT_FOUND,
+        message=f"Entry for {mock.id_info.where_mappings} not found.",
     )

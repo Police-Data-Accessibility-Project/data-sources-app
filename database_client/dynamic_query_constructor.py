@@ -393,7 +393,10 @@ class DynamicQueryConstructor:
         return base_query
 
     @staticmethod
-    def build_where_subclauses_from_mappings(not_where_mappings, where_mappings):
+    def build_where_subclauses_from_mappings(
+            not_where_mappings: Optional[dict] = None,
+            where_mappings: Optional[dict] = None
+    ):
         where_clauses = []
         if where_mappings is not None:
             # Create list of where clauses

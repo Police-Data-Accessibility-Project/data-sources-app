@@ -16,6 +16,7 @@ from middleware.primary_resource_logic.reset_token_queries import (
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.fixtures import mock_flask_response_manager
 
+
 class RequestResetPasswordMocks(DynamicMagicMock):
     user_check_email: MagicMock
     generate_api_key: MagicMock
@@ -48,6 +49,7 @@ class ResetPasswordMocks(DynamicMagicMock):
     set_user_password: MagicMock
     invalid_token_response: MagicMock
     validate_token: MagicMock
+    validate_emails_match: MagicMock
 
 
 @pytest.fixture
@@ -60,19 +62,23 @@ def setup_reset_password_mocks():
     yield mock
 
 
-def test_reset_password_happy_path(setup_reset_password_mocks, mock_flask_response_manager):
+def test_reset_password_happy_path(
+    setup_reset_password_mocks, mock_flask_response_manager
+):
     mock = setup_reset_password_mocks
 
-    reset_password(mock.db_client, mock.dto)
+    response = reset_password(mock.db_client, mock.dto)
+
+    assert response == mock_flask_response_manager.make_response.return_value
+
+    mock.validate_emails_match.assert_called_once_with(mock.dto.email, mock.email)
 
     mock.invalid_token_response.assert_not_called()
     mock_flask_response_manager.make_response.assert_called_once_with(
         {"message": "Successfully updated password"}, HTTPStatus.OK
     )
     mock.set_user_password.assert_called_once_with(
-        db_client=mock.db_client,
-        email=mock.email,
-        password=mock.dto.password
+        db_client=mock.db_client, email=mock.email, password=mock.dto.password
     )
 
 
@@ -85,6 +91,7 @@ def test_reset_password_invalid_token(setup_reset_password_mocks):
 
     assert mock_response == mock.invalid_token_response.return_value
     mock.invalid_token_response.assert_called_once()
+    mock.validate_emails_match.assert_not_called()
     mock.make_response.assert_not_called()
     mock.set_user_password.assert_not_called()
 
