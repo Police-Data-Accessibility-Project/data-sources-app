@@ -1042,5 +1042,10 @@ class DatabaseClient:
                 )
             ORDER BY COUNT_DATA_SOURCES DESC
             LIMIT 100 -- Limiting to 100 in acknowledgment of the search engine quota
-        """
-        )
+        """)
+
+    @cursor_manager()
+    def check_for_url_duplicates(self, url: str) -> list[dict]:
+        query = DynamicQueryConstructor.get_distinct_source_urls_query(url)
+        self.cursor.execute(query)
+        return self.cursor.fetchall()

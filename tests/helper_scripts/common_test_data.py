@@ -89,3 +89,6 @@ def create_data_source_entry_for_url_duplicate_checking(db_client: DatabaseClien
         """)
     except psycopg.errors.UniqueViolation:
         pass  # Already added
+    except Exception as e:
+        # Rollback
+        db_client.connection.rollback()

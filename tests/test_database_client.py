@@ -930,10 +930,28 @@ def test_check_for_url_duplicates(live_database_client):
     create_data_source_entry_for_url_duplicate_checking(live_database_client)
 
     # Happy path
-    url = "https://duplicate-checker.com/"
-    results = live_database_client.check_for_url_duplicates(url)
+    non_duplicate_url = "not-a-duplicate.com"
+    results = live_database_client.check_for_url_duplicates(non_duplicate_url)
+    assert len(results) == 0
 
-    # Add tests for multiple variants
+    duplicate_base_url = "duplicate-checker.com"
+    results = live_database_client.check_for_url_duplicates(duplicate_base_url)
+    assert len(results) == 1
+    #
+    #
+    # # Add tests for multiple variants
+    # # TODO: Add multiple variants test to a unit test for the url transformation function,
+    # #    OR for the integration test
+    # same_urls = [
+    #     "http://duplicate-checker.com/",
+    #     "https://www.duplicate-checker.com",
+    #     "http://www.duplicate-checker.com/",
+    # ]
+    #
+    # for url in same_urls:
+    #     results = live_database_client.check_for_url_duplicates(url)
+    #     assert len(results) == 1
+
 
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts
