@@ -13,7 +13,6 @@ from sqlalchemy.dialects.postgresql import ARRAY, DATE, DATERANGE, TIMESTAMP
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.sql.expression import false, func
 
-
 ExternalAccountType = Literal["github"]
 RecordType = Literal[
     "Dispatch Recordings",
@@ -131,7 +130,7 @@ class DataRequest(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     submission_notes: Mapped[Optional[Text]] = mapped_column(Text)
     request_status: Mapped[RequestStatus] = mapped_column(
-        Enum(*get_args(RequestStatus)), name="request_status", server_defualt="Intake"
+        Enum(*get_args(RequestStatus)), name="request_status", server_default="Intake"
     )
     submitter_email: Mapped[Optional[Text]] = mapped_column(Text)
     location_described_submitted: Mapped[Optional[Text]] = mapped_column(Text)

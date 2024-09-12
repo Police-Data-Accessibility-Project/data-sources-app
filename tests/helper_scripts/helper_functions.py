@@ -5,6 +5,7 @@ from collections import namedtuple
 from typing import Optional
 from http import HTTPStatus
 from unittest.mock import MagicMock
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 import psycopg
 from flask.testing import FlaskClient
@@ -289,7 +290,9 @@ def request_reset_password_api(client_with_db, mocker, user_info):
     :param user_info:
     :return:
     """
-    mocker.patch("middleware.primary_resource_logic.reset_token_queries.send_password_reset_link")
+    mocker.patch(
+        "middleware.primary_resource_logic.reset_token_queries.send_password_reset_link"
+    )
     response = client_with_db.post(
         "/api/request-reset-password", json={"email": user_info.email}
     )
@@ -349,9 +352,7 @@ def insert_test_data_source(db_client: DatabaseClient) -> str:
     return test_uid
 
 
-def give_user_admin_role(
-    connection: psycopg.Connection, user_info: UserInfo
-):
+def give_user_admin_role(connection: psycopg.Connection, user_info: UserInfo):
     """
     Give the given user an admin role.
     :param connection:
@@ -442,7 +443,9 @@ def create_fake_github_user_info(email: Optional[str] = None) -> GithubUserInfo:
     )
 
 
-def create_test_user_setup(client: FlaskClient, permissions: Optional[list[PermissionsEnum]] = None) -> TestUserSetup:
+def create_test_user_setup(
+    client: FlaskClient, permissions: Optional[list[PermissionsEnum]] = None
+) -> TestUserSetup:
     user_info = create_test_user_api(client)
     db_client = DatabaseClient()
     if permissions is None:
@@ -450,10 +453,7 @@ def create_test_user_setup(client: FlaskClient, permissions: Optional[list[Permi
     elif not isinstance(permissions, list):
         permissions = [permissions]
     for permission in permissions:
-        db_client.add_user_permission(
-            user_email=user_info.email,
-            permission=permission
-        )
+        db_client.add_user_permission(user_email=user_info.email, permission=permission)
     api_key = create_api_key(client, user_info)
     jwt_tokens = login_and_return_jwt_tokens(client, user_info)
     return TestUserSetup(
@@ -491,3 +491,23 @@ def create_test_user_db_client(db_client: DatabaseClient) -> UserInfo:
     return UserInfo(email, password_digest, user_id)
 
 
+def add_query_params(url, params: dict):
+    """
+    Add query parameters to a URL.
+    :param url:
+    :param params:
+    :return:
+    """
+
+    # Parse the original URL into components
+    url_parts = list(urlparse(url))
+
+    # Extract existing query parameters (if any) and update with the new ones
+    query = dict(parse_qs(url_parts[4]))
+    query.update(params)
+
+    # Encode the updated query parameters
+    url_parts[4] = urlencode(query, doseq=True)
+
+    # Rebuild the URL with the updated query parameters
+    return urlunparse(url_parts)

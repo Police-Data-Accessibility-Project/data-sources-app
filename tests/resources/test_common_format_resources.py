@@ -21,6 +21,7 @@ from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_test_data import TEST_RESPONSE
 from tests.helper_scripts.helper_functions import (
     check_is_test_response,
+    add_query_params,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
@@ -35,6 +36,7 @@ MOCK_EMAIL_PASSWORD = {
     "password": "test_password",
 }
 TEST_ID = -1
+
 
 @pytest.mark.parametrize(
     "endpoint, http_method, route_to_patch, json_data",
@@ -64,7 +66,12 @@ TEST_ID = -1
             {"entry_data": {}},
         ),
         ("/data-sources?page=1", "GET", "DataSources.get_data_sources_wrapper", {}),
-        ("/data-requests/test_id/related-sources", "GET", "DataRequests.get_data_request_related_sources", {}),
+        (
+            "/data-requests/test_id/related-sources",
+            "GET",
+            "DataRequests.get_data_request_related_sources",
+            {},
+        ),
         # This endpoint no longer works because of the other data source endpoint
         # It is interpreted as another data source id
         # But we have not yet decided whether to modify or remove it entirely
@@ -227,6 +234,15 @@ TEST_ID = -1
             },
         ),
         (f"/agencies/{TEST_ID}", "DELETE", "Agencies.delete_agency", {}),
+        (
+            add_query_params(
+                url="/check/unique-url",
+                params={"url": "https://www.test-url.com"}
+            ),
+            "GET",
+            "UniqueURLChecker.unique_url_checker_wrapper",
+            {},
+        ),
     ),
 )
 def test_common_format_resources(

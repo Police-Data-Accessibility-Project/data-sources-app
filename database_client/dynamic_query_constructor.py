@@ -99,31 +99,6 @@ class DynamicQueryConstructor:
         return sql_query
 
     @staticmethod
-    def build_needs_identification_data_source_query():
-        data_sources_columns = DynamicQueryConstructor.create_table_columns(
-            table="data_sources", columns=DATA_SOURCES_APPROVED_COLUMNS
-        )
-        archive_info_columns = DynamicQueryConstructor.create_table_columns(
-            table="data_sources_archive_info", columns=ARCHIVE_INFO_APPROVED_COLUMNS
-        )
-        fields = DynamicQueryConstructor.build_fields(
-            columns_only=data_sources_columns,
-        )
-        sql_query = sql.SQL(
-            """
-            SELECT
-                {fields}
-            FROM
-                data_sources
-            INNER JOIN
-                data_sources_archive_info ON data_sources.airtable_uid = data_sources_archive_info.airtable_uid
-            WHERE
-                approval_status = 'needs identification'
-        """
-        ).format(fields=fields)
-        return sql_query
-
-    @staticmethod
     def zip_needs_identification_data_source_results(
         results: list[tuple],
     ) -> list[dict]:
@@ -544,3 +519,17 @@ class DynamicQueryConstructor:
             column=sql.Identifier(order_by.sort_by),
             order=sql.SQL(order_by.sort_order.value),
         )
+
+    @staticmethod
+    def get_distinct_source_urls_query(url: str) -> sql.Composed:
+        query = sql.SQL(
+            """
+            SELECT 
+                original_url,
+                rejection_note,
+                approval_status
+            FROM distinct_source_urls
+            WHERE base_url = {url}
+            """
+        ).format(url=sql.Literal(url))
+        return query

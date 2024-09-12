@@ -29,6 +29,7 @@ from resources.RefreshSession import namespace_refresh_session
 from resources.RequestResetPassword import namespace_request_reset_password
 from resources.ResetPassword import namespace_reset_password
 from resources.ResetTokenValidation import namespace_reset_token_validation
+from resources.UniqueURLChecker import namespace_url_checker
 from resources.User import namespace_user
 from resources.CreateTestUserWithElevatedPermissions import namespace_create_test_user
 
@@ -53,7 +54,8 @@ NAMESPACES = [
     namespace_permissions,
     namespace_create_test_user,
     namespace_data_requests,
-    namespace_homepage_search_cache
+    namespace_homepage_search_cache,
+    namespace_url_checker
 ]
 
 MY_PREFIX = "/api"

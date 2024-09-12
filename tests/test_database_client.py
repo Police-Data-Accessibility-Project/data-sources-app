@@ -18,11 +18,10 @@ from database_client.enums import (
     ColumnPermissionEnum,
     SortOrder,
 )
-from database_client.result_formatter import ResultFormatter
 from middleware.exceptions import (
     UserNotFoundError,
 )
-from middleware.models import ExternalAccount, TestTable, User
+from database_client.models import ExternalAccount, TestTable, User
 from middleware.enums import PermissionsEnum
 from tests.fixtures import (
     live_database_client,
@@ -31,6 +30,7 @@ from tests.fixtures import (
 from tests.helper_scripts.common_test_data import (
     insert_test_column_permission_data,
     create_agency_entry_for_search_cache,
+    create_data_source_entry_for_url_duplicate_checking,
 )
 from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources_if_not_exist,
@@ -577,6 +577,7 @@ def test_get_typeahead_locations(live_database_client: DatabaseClient):
     assert results[2]["county"] == "Arxylodon"
     assert results[2]["locality"] is None
 
+
 def test_get_typeahead_agencies(live_database_client):
     # Insert test data into the database
     cursor = live_database_client.connection.cursor()
@@ -584,11 +585,12 @@ def test_get_typeahead_agencies(live_database_client):
 
     results = live_database_client.get_typeahead_agencies(search_term="xyl")
     assert len(results) == 1
-    assert results[0]["display_name"] == 'Xylodammerung Police Agency'
+    assert results[0]["display_name"] == "Xylodammerung Police Agency"
     assert results[0]["jurisdiction_type"] == "state"
     assert results[0]["state"] == "XY"
     assert results[0]["county"] == "Arxylodon"
     assert results[0]["locality"] == "Xylodammerung"
+
 
 def test_search_with_location_and_record_types_real_data(live_database_client):
     """
@@ -896,6 +898,7 @@ def test_get_related_data_sources(live_database_client):
             source["name"] for source in source_column_value_mappings
         ]
 
+
 def test_create_request_source_relation(live_database_client):
     # Create data source and request
 
@@ -919,6 +922,35 @@ def test_create_request_source_relation(live_database_client):
         live_database_client.create_request_source_relation(
             column_value_mappings={"request_id": request_id, "source_id": source_id}
         )
+
+
+def test_check_for_url_duplicates(live_database_client):
+
+    create_data_source_entry_for_url_duplicate_checking(live_database_client)
+
+    # Happy path
+    non_duplicate_url = "not-a-duplicate.com"
+    results = live_database_client.check_for_url_duplicates(non_duplicate_url)
+    assert len(results) == 0
+
+    duplicate_base_url = "duplicate-checker.com"
+    results = live_database_client.check_for_url_duplicates(duplicate_base_url)
+    assert len(results) == 1
+    #
+    #
+    # # Add tests for multiple variants
+    # # TODO: Add multiple variants test to a unit test for the url transformation function,
+    # #    OR for the integration test
+    # same_urls = [
+    #     "http://duplicate-checker.com/",
+    #     "https://www.duplicate-checker.com",
+    #     "http://www.duplicate-checker.com/",
+    # ]
+    #
+    # for url in same_urls:
+    #     results = live_database_client.check_for_url_duplicates(url)
+    #     assert len(results) == 1
+
 
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts
