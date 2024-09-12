@@ -1,27 +1,27 @@
-from unittest.mock import MagicMock
+import os
 
 import dotenv
 import pytest
-import sqlalchemy
 from sqlalchemy.orm import sessionmaker, scoped_session
 
 #from middleware.models import db
 
 from app import create_app
+from middleware.util import get_env_variable
+
+# Load environment variables
+dotenv.load_dotenv()
 
 
 @pytest.fixture(scope="module")
-def monkeymodule():
-    with pytest.MonkeyPatch.context() as mp:
-        yield mp
+def test_client():
+    app = create_app()
+    app.config["SQLALCHEMY_DATABASE_URI"] = get_env_variable(
+        "DEV_DB_CONN_STRING"
+    )  # Connect to pre-existing test database
+    app.config["TESTING"] = True
 
-
-@pytest.fixture(scope="module")
-def test_client(monkeymodule):
-    mock_get_flask_app_secret_key = MagicMock(return_value="test")
-    monkeymodule.setattr("app.get_flask_app_secret_key", mock_get_flask_app_secret_key)
-
-    app = create_app(testing=True)
+    db.init_app(app)
 
     with app.test_client() as testing_client:
         with app.app_context():
@@ -29,7 +29,7 @@ def test_client(monkeymodule):
 
 
 @pytest.fixture
-def session() -> sqlalchemy.orm.scoping.scoped_session:
+def session():
     connection = db.engine.connect()
     transaction = connection.begin()
     session = scoped_session(sessionmaker(bind=connection))

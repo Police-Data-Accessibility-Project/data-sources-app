@@ -130,6 +130,7 @@ def test_data_sources_by_id_get(
         endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}/SOURCE_UID_1",
         headers=tus.api_authorization_header,
     )
+
     assert response_json["data"]["source_url"] == "http://src1.com"
 
 

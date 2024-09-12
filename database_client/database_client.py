@@ -183,7 +183,9 @@ class DatabaseClient:
         :return:
         """
         results = self._select_from_single_relation(
-            relation_name="users", columns=["id"], where_mappings=[WhereMapping(column="email", value=email)]
+            relation_name="users",
+            columns=["id"],
+            where_mappings=[WhereMapping(column="email", value=email)],
         )
         if len(results) == 0:
             return None
@@ -869,7 +871,9 @@ class DatabaseClient:
     )
 
     create_request_source_relation = partialmethod(
-        _create_entry_in_table, table_name="link_data_sources_data_requests", column_to_return="id"
+        _create_entry_in_table,
+        table_name="link_data_sources_data_requests",
+        column_to_return="id",
     )
 
     add_new_data_source = partialmethod(
@@ -903,16 +907,20 @@ class DatabaseClient:
         return results
 
     get_data_requests = partialmethod(
-        _select_from_single_relation, relation_name="data_requests"
+        _select_from_single_relation, relation_name=Relations.DATA_REQUESTS.value
     )
 
-    get_agencies = partialmethod(_select_from_single_relation, relation_name="agencies")
+    get_agencies = partialmethod(
+        _select_from_single_relation, relation_name=Relations.AGENCIES.value
+    )
 
     get_data_sources = partialmethod(
-        _select_from_single_relation, relation_name="data_sources"
+        _select_from_single_relation, relation_name=Relations.DATA_SOURCES.value
     )
 
-    get_request_source_relations = partialmethod(_select_from_single_relation, relation_name=Relations.RELATED_SOURCES.value)
+    get_request_source_relations = partialmethod(
+        _select_from_single_relation, relation_name=Relations.RELATED_SOURCES.value
+    )
 
     def get_related_data_sources(self, data_request_id: int) -> List[dict]:
         """
@@ -920,14 +928,15 @@ class DatabaseClient:
         :param data_request_id:
         :return:
         """
-        query = sql.SQL("""
+        query = sql.SQL(
+            """
             SELECT ds.airtable_uid, ds.name
             FROM link_data_sources_data_requests link
             INNER JOIN data_sources ds on link.source_id = ds.airtable_uid
             WHERE link.request_id = {request_id}
-        """).format(request_id=sql.Literal(data_request_id))
+        """
+        ).format(request_id=sql.Literal(data_request_id))
         return self.execute_composed_sql(query, return_results=True)
-
 
     def get_data_requests_for_creator(
         self, creator_user_id: str, columns: List[str]
@@ -935,7 +944,9 @@ class DatabaseClient:
         return self._select_from_single_relation(
             relation_name="data_requests",
             columns=columns,
-            where_mappings=[WhereMapping(column="creator_user_id", value=creator_user_id)],
+            where_mappings=[
+                WhereMapping(column="creator_user_id", value=creator_user_id)
+            ],
         )
 
     def user_is_creator_of_data_request(
@@ -946,7 +957,7 @@ class DatabaseClient:
             columns=["id"],
             where_mappings=[
                 WhereMapping(column="creator_user_id", value=int(user_id)),
-                WhereMapping(column="id", value=int(data_request_id))
+                WhereMapping(column="id", value=int(data_request_id)),
             ],
         )
         return len(results) == 1
@@ -979,7 +990,9 @@ class DatabaseClient:
 
     delete_data_source = partialmethod(_delete_from_table, table_name="data_sources")
 
-    delete_request_source_relation = partialmethod(_delete_from_table, table_name=Relations.RELATED_SOURCES.value)
+    delete_request_source_relation = partialmethod(
+        _delete_from_table, table_name=Relations.RELATED_SOURCES.value
+    )
 
     @cursor_manager()
     def execute_composed_sql(self, query: sql.Composed, return_results: bool = False):

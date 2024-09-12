@@ -5,7 +5,6 @@ from typing import Optional, Union
 from flask import Response
 
 from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import RelationRoleEnum
 from middleware.access_logic import AccessInfo
 from middleware.column_permission_logic import (

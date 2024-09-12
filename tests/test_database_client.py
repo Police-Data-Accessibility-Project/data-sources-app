@@ -548,7 +548,7 @@ def test_get_user_by_api_key(live_database_client: DatabaseClient):
     assert user_identifiers.id == user_id
 
 
-def test_get_typeahead_suggestion(live_database_client: DatabaseClient):
+def test_get_typeahead_locations(live_database_client: DatabaseClient):
     # Insert test data into the database
     cursor = live_database_client.connection.cursor()
     setup_get_typeahead_suggestion_test_data(cursor)
