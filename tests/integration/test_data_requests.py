@@ -50,10 +50,16 @@ def ts(flask_client_with_db, dev_db_client):
 
 def test_data_requests_get(ts: DataRequestsTestSetup):
 
-    data_request_id_not_creator = create_data_request(ts.db_client, ts.submission_notes)
-    data_request_id_creator = create_data_request(
-        ts.db_client, ts.submission_notes, ts.tus.user_info.user_id
+    tus_not_creator = create_test_user_setup(ts.flask_client)
+    create_data_request_with_endpoint(
+        flask_client=ts.flask_client,
+        jwt_authorization_header=tus_not_creator.jwt_authorization_header,
     )
+    cdr = create_data_request_with_endpoint(
+        flask_client=ts.flask_client,
+        jwt_authorization_header=ts.tus.jwt_authorization_header,
+    )
+    data_request_id_creator = int(cdr.id)
 
     json_data = run_and_validate_request(
         flask_client=ts.flask_client,
