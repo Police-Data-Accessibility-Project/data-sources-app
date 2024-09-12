@@ -22,15 +22,13 @@ def normalize_url(source_url: str) -> str:
 
 
 class UniqueURLCheckerRequestSchema(Schema):
-    url = fields.URL(
+    url = fields.Str(
         required=True,
         metadata={
             "description": "The URL to check.",
             "source": SourceMappingEnum.QUERY_ARGS,
             "transformation_function": normalize_url,
-        },
-        require_tld=False,
-        relative=True
+        }
     )
 
 
