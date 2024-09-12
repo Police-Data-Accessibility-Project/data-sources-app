@@ -169,7 +169,7 @@ def test_select_from_single_relation_columns_only(
     test_table_data, live_database_client: DatabaseClient
 ):
     results = live_database_client._select_from_single_relation(
-        relation="test_table",
+        relation_name="test_table",
         columns=["pet_name"],
     )
 
@@ -182,7 +182,7 @@ def test_select_from_single_relation_columns_only(
 
 def test_select_from_single_relation_where_mapping(live_database_client: DatabaseClient):
     results = live_database_client._select_from_single_relation(
-        relation="test_table",
+        relation_name="test_table",
         columns=["pet_name"],
         where_mappings=[WhereMapping(column="species", value="Aardvark")],
     )
@@ -192,7 +192,7 @@ def test_select_from_single_relation_where_mapping(live_database_client: Databas
     ]
 
     results = live_database_client._select_from_single_relation(
-        relation="test_table",
+        relation_name="test_table",
         columns=["pet_name"],
         where_mappings=[WhereMapping(column="species", eq=False, value="Aardvark")],
     )
@@ -205,7 +205,7 @@ def test_select_from_single_relation_where_mapping(live_database_client: Databas
 
 def test_select_from_single_relation_limit(live_database_client: DatabaseClient):
     results = live_database_client._select_from_single_relation(
-        relation="test_table",
+        relation_name="test_table",
         columns=["pet_name"],
         limit=1,
     )
@@ -222,7 +222,7 @@ def test_select_from_single_relation_limit_and_offset(live_database_client: Data
     live_database_client.get_offset = MagicMock(return_value=1)
 
     results = live_database_client._select_from_single_relation(
-        relation="test_table",
+        relation_name="test_table",
         columns=["pet_name"],
         limit=1,
         page=1,  # 1 is the second page; 0-indexed
@@ -235,7 +235,7 @@ def test_select_from_single_relation_limit_and_offset(live_database_client: Data
 
 def test_select_from_single_relation_order_by(live_database_client: DatabaseClient):
     results = live_database_client._select_from_single_relation(
-        relation="test_table",
+        relation_name="test_table",
         columns=["pet_name"],
         order_by=OrderByParameters(sort_by="species", sort_order=SortOrder.ASCENDING),
     )
@@ -257,7 +257,7 @@ def test_select_from_single_relation_all_parameters(live_database_client: Databa
     )
 
     results = live_database_client._select_from_single_relation(
-        relation="test_table",
+        relation_name="test_table",
         columns=["pet_name"],
         where_mappings=[
             WhereMapping(column="species", value="Aardvark"),
@@ -287,7 +287,7 @@ def test_create_entry_in_table_return_columns(live_database_client, test_table_d
     )
 
     results = live_database_client._select_from_single_relation(
-        relation="test_table",
+        relation_name="test_table",
         columns=["pet_name", "species"],
         where_mappings=[WhereMapping(column="id", value=id)],
     )
@@ -309,7 +309,7 @@ def test_create_entry_in_table_no_return_columns(live_database_client, test_tabl
     assert id is None
 
     results = live_database_client._select_from_single_relation(
-        relation="test_table",
+        relation_name="test_table",
         columns=["pet_name"],
         where_mappings=[WhereMapping(column="species", value="Monkey")],
     )
@@ -336,7 +336,7 @@ def test_get_approved_data_sources(live_database_client: DatabaseClient):
 
 def test_delete_from_table(live_database_client, test_table_data):
     initial_results = live_database_client._select_from_single_relation(
-        relation="test_table",
+        relation_name="test_table",
         columns=["pet_name"],
     )
 
@@ -353,7 +353,7 @@ def test_delete_from_table(live_database_client, test_table_data):
     )
 
     results = live_database_client._select_from_single_relation(
-        relation="test_table",
+        relation_name="test_table",
         columns=["pet_name"],
     )
 
@@ -364,7 +364,7 @@ def test_delete_from_table(live_database_client, test_table_data):
 
 def test_update_entry_in_table(live_database_client: DatabaseClient, test_table_data):
     results = live_database_client._select_from_single_relation(
-        relation="test_table",
+        relation_name="test_table",
         columns=["pet_name"],
         where_mappings=[WhereMapping(column="species", value="Cat")],
     )
@@ -381,7 +381,7 @@ def test_update_entry_in_table(live_database_client: DatabaseClient, test_table_
     )
 
     results = live_database_client._select_from_single_relation(
-        relation="test_table",
+        relation_name="test_table",
         columns=["pet_name"],
         where_mappings=[WhereMapping(column="species", value="Cat")],
     )
@@ -389,7 +389,7 @@ def test_update_entry_in_table(live_database_client: DatabaseClient, test_table_
     assert results == []
 
     results = live_database_client._select_from_single_relation(
-        relation="test_table",
+        relation_name="test_table",
         columns=["pet_name"],
         where_mappings=[WhereMapping(column="species", value="Lion")],
     )
@@ -445,7 +445,7 @@ def test_update_last_cached(live_database_client: DatabaseClient):
 
     # Fetch the data source from the database to confirm the change
     result = live_database_client._select_from_single_relation(
-        relation="data_sources_archive_info",
+        relation_name="data_sources_archive_info",
         columns=["last_cached"],
         where_mappings=[WhereMapping(column="airtable_uid", value="SOURCE_UID_1")],
     )[0]
@@ -548,7 +548,7 @@ def test_get_user_by_api_key(live_database_client: DatabaseClient):
     assert user_identifiers.id == user_id
 
 
-def test_get_typeahead_suggestion(live_database_client):
+def test_get_typeahead_suggestion(live_database_client: DatabaseClient):
     # Insert test data into the database
     cursor = live_database_client.connection.cursor()
     setup_get_typeahead_suggestion_test_data(cursor)
@@ -695,7 +695,7 @@ def test_remove_user_permission(live_database_client):
     assert len(test_user_permissions) == 0
 
 
-def test_get_permitted_columns(live_database_client):
+def test_get_permitted_columns(live_database_client: DatabaseClient):
 
     insert_test_column_permission_data(live_database_client)
 
@@ -776,7 +776,7 @@ def test_user_is_creator_of_data_request(live_database_client):
     assert results is False
 
 
-def test_get_column_permissions_as_permission_table(live_database_client):
+def test_get_column_permissions_as_permission_table(live_database_client: DatabaseClient):
     insert_test_column_permission_data(live_database_client)
 
     results = live_database_client.get_column_permissions_as_permission_table(

@@ -122,10 +122,10 @@ def test_get_by_id(monkeypatch):
 
     mock.mp.db_client_method.assert_called_once_with(
         mock.mp.db_client,
-        relation=mock.mp.relation,
+        relation_name=mock.mp.relation,
         columns=mock.get_permitted_columns.return_value,
         where_mappings=[
-            WhereMapping(column=mock.id_column_name, value=mock.id)
+            WhereMapping(column=mock.id_column_name, value=int(mock.id))
         ],
     )
 
@@ -172,7 +172,7 @@ def test_get_many(monkeypatch):
 
     mock.mp.db_client_method.assert_called_once_with(
         mock.mp.db_client,
-        relation=mock.mp.relation,
+        relation_name=mock.mp.relation,
         columns=mock.optionally_limit_to_requested_columns.return_value,
         page=mock.page,
     )

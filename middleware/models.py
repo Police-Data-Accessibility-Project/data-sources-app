@@ -241,6 +241,15 @@ class ExternalAccount(Base):
     )
 
 
+class LinkDataSourceDataRequest(Base):
+    __tablename__ = "link_data_sources_data_requests"
+    __table_args__ = {"schema": "public"}
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    source_id: Mapped[Text] = mapped_column(Text, ForeignKey("public.data_sources.airtable_uid"))
+    request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
+
+
 class RecordCategory(Base):
     __tablename__ = "record_categories"
     __table_args__ = {"schema": "public"}

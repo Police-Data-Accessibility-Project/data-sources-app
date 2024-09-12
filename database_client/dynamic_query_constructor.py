@@ -363,7 +363,7 @@ class DynamicQueryConstructor:
     def create_single_relation_selection_query(
         relation: str,
         columns: list[Column],
-        where_mappings: Optional[list[WhereMapping]] = [True],
+        where_mappings: Optional[list[WhereMapping | dict]] = [True],
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         order_by: Optional[OrderByParameters] = None,
@@ -372,12 +372,14 @@ class DynamicQueryConstructor:
         Creates a SELECT query for a single relation (table or view)
         that selects the given columns with the given where mappings
         :param columns: List of database column references. Example: [User.name, User.email]
-        :param where_mappings: List of booleans for conditional selection.
+        :param where_mappings: List of WhereMapping objects for conditional selection.
         :param limit:
         :param offset:
         :param order_by:
         :return:
         """
+        if type(where_mappings) == dict:
+            where_mappings = [WhereMapping(column=list(where_mappings.keys())[0], value=list(where_mappings.values())[0])]
         if where_mappings != [True]:
             where_mappings = [mapping.build_where_clause(relation) for mapping in where_mappings]
         if order_by is not None:

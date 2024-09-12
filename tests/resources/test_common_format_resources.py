@@ -160,7 +160,7 @@ TEST_ID = -1
             {},
         ),
         (
-            f"/data-requests/by-id/{TEST_ID}",
+            f"/data-requests/{TEST_ID}",
             "PUT",
             "DataRequests.update_data_request_wrapper",
             {"entry_data": {"sample_column": "sample_value"}},

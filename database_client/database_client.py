@@ -183,7 +183,7 @@ class DatabaseClient:
         :return:
         """
         results = self._select_from_single_relation(
-            relation="users", columns=["id"], where_mappings=[WhereMapping(column="email", value=email)]
+            relation_name="users", columns=["id"], where_mappings=[WhereMapping(column="email", value=email)]
         )
         if len(results) == 0:
             return None
@@ -213,7 +213,7 @@ class DatabaseClient:
         :return: ResetTokenInfo if the token exists; otherwise, None.
         """
         results = self._select_from_single_relation(
-            relation="reset_tokens",
+            relation_name="reset_tokens",
             columns=["id", "email", "create_date"],
             where_mappings=[WhereMapping(column="token", value=token)],
         )
@@ -258,7 +258,7 @@ class DatabaseClient:
         :return: RoleInfo if the token exists; otherwise, None.
         """
         results = self._select_from_single_relation(
-            relation="users",
+            relation_name="users",
             columns=["id", "email"],
             where_mappings=[WhereMapping(column="api_key", value=api_key)],
         )
@@ -378,7 +378,7 @@ class DatabaseClient:
             "airtable_uid",
         ]
         results = self._select_from_single_relation(
-            relation="agencies",
+            relation_name="agencies",
             columns=columns,
             where_mappings=[WhereMapping(column="approved", value=True)],
             limit=1000,
@@ -575,7 +575,7 @@ class DatabaseClient:
         :return: UserInfo namedtuple containing the user's information.
         """
         results = self._select_from_single_relation(
-            relation="users",
+            relation_name="users",
             columns=["id", "password_digest", "api_key", "email"],
             where_mappings=[WhereMapping(column="email", value=email)],
         )
@@ -882,7 +882,7 @@ class DatabaseClient:
     @session_manager
     def _select_from_single_relation(
         self,
-        relation: str,
+        relation_name: str,
         columns: list[str],
         where_mappings: Optional[list[WhereMapping]] = [True],
         limit: Optional[int] = PAGE_SIZE,
@@ -894,23 +894,23 @@ class DatabaseClient:
         """
         offset = self.get_offset(page)
         column_references = self.convert_to_column_reference(
-            columns=columns, relation=relation
+            columns=columns, relation=relation_name
         )
         query = DynamicQueryConstructor.create_single_relation_selection_query(
-            relation, column_references, where_mappings, limit, offset, order_by
+            relation_name, column_references, where_mappings, limit, offset, order_by
         )
         results = self.session.execute(query()).mappings().all()
         results = [dict(result) for result in results]
         return results
 
     get_data_requests = partialmethod(
-        _select_from_single_relation, relation="data_requests"
+        _select_from_single_relation, relation_name="data_requests"
     )
 
-    get_agencies = partialmethod(_select_from_single_relation, relation="agencies")
+    get_agencies = partialmethod(_select_from_single_relation, relation_name="agencies")
 
     get_data_sources = partialmethod(
-        _select_from_single_relation, relation="data_sources"
+        _select_from_single_relation, relation_name="data_sources"
     )
 
     get_request_source_relations = partialmethod(_select_from_single_relation, relation_name=Relations.RELATED_SOURCES.value)
@@ -934,7 +934,7 @@ class DatabaseClient:
         self, creator_user_id: str, columns: List[str]
     ) -> List[str]:
         return self._select_from_single_relation(
-            relation="data_requests",
+            relation_name="data_requests",
             columns=columns,
             where_mappings=[WhereMapping(column="creator_user_id", value=creator_user_id)],
         )
@@ -943,11 +943,11 @@ class DatabaseClient:
         self, user_id: int, data_request_id: int
     ) -> bool:
         results = self._select_from_single_relation(
-            relation="data_requests",
+            relation_name="data_requests",
             columns=["id"],
             where_mappings=[
-                WhereMapping(column="creator_user_id", value=user_id),
-                WhereMapping(column="id", value=data_request_id)
+                WhereMapping(column="creator_user_id", value=int(user_id)),
+                WhereMapping(column="id", value=int(data_request_id))
             ],
         )
         return len(results) == 1
