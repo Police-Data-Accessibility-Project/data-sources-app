@@ -59,7 +59,7 @@ RequestStatus = Literal[
     "Request withdrawn",
     "Waiting for scraper",
     "Archived",
-    "Ready to Start",
+    "Ready to start",
     "Waiting for FOIA",
     "Waiting for requestor",
 ]
