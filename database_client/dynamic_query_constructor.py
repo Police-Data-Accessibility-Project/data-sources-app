@@ -1,9 +1,12 @@
 import uuid
 from collections import namedtuple
 from datetime import datetime
-from typing import Optional
+from typing import Callable, Optional
 
 from psycopg import sql
+from sqlalchemy import select
+from sqlalchemy.schema import Column
+from sqlalchemy.sql.expression import UnaryExpression
 
 from database_client.constants import (
     AGENCY_APPROVED_COLUMNS,
@@ -12,7 +15,7 @@ from database_client.constants import (
     RESTRICTED_DATA_SOURCE_COLUMNS,
     RESTRICTED_COLUMNS,
 )
-from database_client.db_client_dataclasses import OrderByParameters
+from database_client.db_client_dataclasses import OrderByParameters, WhereMapping
 from utilities.enums import RecordCategories
 
 TableColumn = namedtuple("TableColumn", ["table", "column"])
@@ -411,35 +414,36 @@ class DynamicQueryConstructor:
     @staticmethod
     def create_single_relation_selection_query(
         relation: str,
-        columns: list[str],
-        where_mappings: Optional[dict] = None,
-        not_where_mappings: Optional[dict] = None,
+        columns: list[Column],
+        where_mappings: Optional[list[WhereMapping | dict]] = [True],
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         order_by: Optional[OrderByParameters] = None,
-    ):
+    ) -> Callable:
         """
         Creates a SELECT query for a single relation (table or view)
         that selects the given columns with the given where mappings
-        :param relation:
-        :param columns:
-        :param where_mappings: And-joined simple where conditionals (of column = value)
+        :param columns: List of database column references. Example: [User.name, User.email]
+        :param where_mappings: List of WhereMapping objects for conditional selection.
+        :param limit:
+        :param offset:
+        :param order_by:
         :return:
         """
-        base_query = DynamicQueryConstructor.get_select_clause(columns, relation)
-        if where_mappings is not None or not_where_mappings is not None:
-            where_clauses = (
-                DynamicQueryConstructor.build_where_subclauses_from_mappings(
-                    not_where_mappings, where_mappings
-                )
-            )
-            base_query += DynamicQueryConstructor.build_full_where_clause(where_clauses)
+        if type(where_mappings) == dict:
+            where_mappings = [WhereMapping(column=list(where_mappings.keys())[0], value=list(where_mappings.values())[0])]
+        if where_mappings != [True]:
+            where_mappings = [mapping.build_where_clause(relation) for mapping in where_mappings]
         if order_by is not None:
-            base_query += DynamicQueryConstructor.get_order_by_clause(order_by)
-        if limit is not None:
-            base_query += DynamicQueryConstructor.get_limit_clause(limit)
-        if offset is not None:
-            base_query += DynamicQueryConstructor.get_offset_clause(offset)
+            order_by = order_by.build_order_by_clause(relation)
+
+        base_query = (
+            lambda: select(*columns)
+            .where(*where_mappings)
+            .order_by(order_by)
+            .limit(limit)
+            .offset(offset)
+        )
         return base_query
 
     @staticmethod

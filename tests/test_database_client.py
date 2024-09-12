@@ -8,9 +8,10 @@ from unittest.mock import MagicMock
 
 import psycopg.errors
 import pytest
+from sqlalchemy import insert, select, update
 
 from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import OrderByParameters
+from database_client.db_client_dataclasses import OrderByParameters, WhereMapping
 from database_client.enums import (
     ExternalAccountTypeEnum,
     RelationRoleEnum,
@@ -21,6 +22,7 @@ from database_client.result_formatter import ResultFormatter
 from middleware.exceptions import (
     UserNotFoundError,
 )
+from middleware.models import ExternalAccount, TestTable, User
 from middleware.enums import PermissionsEnum
 from tests.fixtures import (
     live_database_client,
@@ -38,30 +40,35 @@ from tests.helper_scripts.helper_functions import (
 from utilities.enums import RecordCategories
 
 
-def test_add_new_user(live_database_client):
+def test_add_new_user(live_database_client: DatabaseClient):
     fake_email = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
-    result = live_database_client.execute_raw_sql(
-        query=f"SELECT password_digest, api_key FROM users WHERE email = %s",
-        vars=(fake_email,),
-    )[0]
+    result = (
+        live_database_client.execute_sqlalchemy(
+            lambda: select(User.password_digest, User.api_key).where(
+                User.email == fake_email
+            )
+        )
+        .mappings()
+        .one_or_none()
+    )
 
-    password_digest = result["password_digest"]
-    api_key = result["api_key"]
+    password_digest = result.password_digest
+    api_key = result.api_key
 
     assert api_key is not None
     assert password_digest == "test_password"
 
 
-def test_get_user_id(live_database_client):
+def test_get_user_id(live_database_client: DatabaseClient):
     # Add a new user to the database
     fake_email = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
 
     # Directly fetch the user ID from the database for comparison
-    direct_user_id = live_database_client.execute_raw_sql(
-        query=f"SELECT id FROM users WHERE email = %s", vars=(fake_email,)
-    )[0]["id"]
+    direct_user_id = live_database_client.execute_sqlalchemy(
+        lambda: select(User.id).where(User.email == fake_email)
+    ).one_or_none()[0]
 
     # Get the user ID from the live database
     result_user_id = live_database_client.get_user_id(fake_email)
@@ -70,7 +77,7 @@ def test_get_user_id(live_database_client):
     assert result_user_id == direct_user_id
 
 
-def test_link_external_account(live_database_client):
+def test_link_external_account(live_database_client: DatabaseClient):
     fake_email = uuid.uuid4().hex
     fake_external_account_id = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
@@ -80,22 +87,21 @@ def test_link_external_account(live_database_client):
         external_account_id=fake_external_account_id,
         external_account_type=ExternalAccountTypeEnum.GITHUB,
     )
-    """cursor = live_database_client.cursor
-    cursor.execute(
-        f"SELECT user_id, account_type FROM external_accounts WHERE account_identifier = %s",
-        (fake_external_account_id,),
+    row = (
+        live_database_client.execute_sqlalchemy(
+            lambda: select(ExternalAccount.user_id, ExternalAccount.account_type).where(
+                ExternalAccount.account_identifier == fake_external_account_id
+            )
+        )
+        .mappings()
+        .one_or_none()
     )
-    row = cursor.fetchone()"""
-    row = live_database_client.execute_raw_sql(
-        query=f"SELECT user_id, account_type FROM external_accounts WHERE account_identifier = %s",
-        vars=(fake_external_account_id,),
-    )[0]
 
-    assert row["user_id"] == user_id
-    assert row["account_type"] == ExternalAccountTypeEnum.GITHUB.value
+    assert row.user_id == user_id
+    assert row.account_type == ExternalAccountTypeEnum.GITHUB.value
 
 
-def test_get_user_info_by_external_account_id(live_database_client):
+def test_get_user_info_by_external_account_id(live_database_client: DatabaseClient):
     fake_email = uuid.uuid4().hex
     fake_external_account_id = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
@@ -111,18 +117,18 @@ def test_get_user_info_by_external_account_id(live_database_client):
     assert user_info.email == fake_email
 
 
-def test_set_user_password_digest(live_database_client):
+def test_set_user_password_digest(live_database_client: DatabaseClient):
     fake_email = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
     live_database_client.set_user_password_digest(fake_email, "test_password")
-    password_digest = live_database_client.execute_raw_sql(
-        query=f"SELECT password_digest FROM users WHERE email = %s", vars=(fake_email,)
-    )[0]["password_digest"]
+    password_digest = live_database_client.execute_sqlalchemy(
+        lambda: select(User.password_digest).where(User.email == fake_email)
+    ).one_or_none()[0]
 
     assert password_digest == "test_password"
 
 
-def test_reset_token_logic(live_database_client):
+def test_reset_token_logic(live_database_client: DatabaseClient):
     fake_email = uuid.uuid4().hex
     fake_token = uuid.uuid4().hex
     live_database_client.add_new_user(fake_email, "test_password")
@@ -136,7 +142,7 @@ def test_reset_token_logic(live_database_client):
     assert reset_token_info is None, "Token not deleted"
 
 
-def test_update_user_api_key(live_database_client):
+def test_update_user_api_key(live_database_client: DatabaseClient):
     # Add a new user to the database
     email = uuid.uuid4().hex
     password_digest = uuid.uuid4().hex
@@ -160,7 +166,7 @@ def test_update_user_api_key(live_database_client):
 
 
 def test_select_from_single_relation_columns_only(
-    test_table_data, live_database_client
+    test_table_data, live_database_client: DatabaseClient
 ):
     results = live_database_client._select_from_single_relation(
         relation_name="test_table",
@@ -174,23 +180,21 @@ def test_select_from_single_relation_columns_only(
     ]
 
 
-def test_select_from_single_relation_where_mapping(live_database_client):
+def test_select_from_single_relation_where_mapping(live_database_client: DatabaseClient):
     results = live_database_client._select_from_single_relation(
         relation_name="test_table",
         columns=["pet_name"],
-        where_mappings={"species": "Aardvark"},
+        where_mappings=[WhereMapping(column="species", value="Aardvark")],
     )
 
     assert results == [
         {"pet_name": "Arthur"},
     ]
 
-
-def test_select_from_single_relation_not_where_mapping(live_database_client):
     results = live_database_client._select_from_single_relation(
         relation_name="test_table",
         columns=["pet_name"],
-        not_where_mappings={"species": "Aardvark"},
+        where_mappings=[WhereMapping(column="species", eq=False, value="Aardvark")],
     )
 
     assert results == [
@@ -199,7 +203,7 @@ def test_select_from_single_relation_not_where_mapping(live_database_client):
     ]
 
 
-def test_select_from_single_relation_limit_and_offset(live_database_client):
+def test_select_from_single_relation_limit(live_database_client: DatabaseClient):
     results = live_database_client._select_from_single_relation(
         relation_name="test_table",
         columns=["pet_name"],
@@ -211,7 +215,7 @@ def test_select_from_single_relation_limit_and_offset(live_database_client):
     ]
 
 
-def test_select_from_single_relation_offset(live_database_client, monkeypatch):
+def test_select_from_single_relation_limit_and_offset(live_database_client: DatabaseClient, monkeypatch):
     # Used alongside limit; we mock PAGE_SIZE to be one
     monkeypatch.setattr("database_client.database_client.PAGE_SIZE", 1)
 
@@ -229,7 +233,7 @@ def test_select_from_single_relation_offset(live_database_client, monkeypatch):
     ]
 
 
-def test_select_from_single_relation_order_by(live_database_client):
+def test_select_from_single_relation_order_by(live_database_client: DatabaseClient):
     results = live_database_client._select_from_single_relation(
         relation_name="test_table",
         columns=["pet_name"],
@@ -243,20 +247,22 @@ def test_select_from_single_relation_order_by(live_database_client):
     ]
 
 
-def test_select_from_single_relation_all_parameters(live_database_client, monkeypatch):
+def test_select_from_single_relation_all_parameters(live_database_client: DatabaseClient, monkeypatch):
     # Used alongside limit; we mock PAGE_SIZE to be one
     monkeypatch.setattr("database_client.database_client.PAGE_SIZE", 1)
 
     # Add additional row to the table to test the offset and limit
-    live_database_client.execute_raw_sql(
-        query="INSERT INTO test_table (pet_name, species) VALUES ('Ezekiel', 'Cat')"
+    live_database_client.execute_sqlalchemy(
+        lambda: insert(TestTable).values(pet_name="Ezekiel", species="Cat")
     )
 
     results = live_database_client._select_from_single_relation(
         relation_name="test_table",
         columns=["pet_name"],
-        where_mappings={"species": "Aardvark"},
-        not_where_mappings={"species": "Bear"},
+        where_mappings=[
+            WhereMapping(column="species", value="Aardvark"),
+            WhereMapping(column="species", eq=False, value="Bear"),
+        ],
         limit=1,
         page=1,  # 1 is the second page; 0-indexed
         order_by=OrderByParameters(
@@ -283,7 +289,7 @@ def test_create_entry_in_table_return_columns(live_database_client, test_table_d
     results = live_database_client._select_from_single_relation(
         relation_name="test_table",
         columns=["pet_name", "species"],
-        where_mappings={"id": id},
+        where_mappings=[WhereMapping(column="id", value=id)],
     )
 
     assert results == [
@@ -305,7 +311,7 @@ def test_create_entry_in_table_no_return_columns(live_database_client, test_tabl
     results = live_database_client._select_from_single_relation(
         relation_name="test_table",
         columns=["pet_name"],
-        where_mappings={"species": "Monkey"},
+        where_mappings=[WhereMapping(column="species", value="Monkey")],
     )
 
     assert results == [
@@ -313,7 +319,7 @@ def test_create_entry_in_table_no_return_columns(live_database_client, test_tabl
     ]
 
 
-def test_get_approved_data_sources(live_database_client):
+def test_get_approved_data_sources(live_database_client: DatabaseClient):
     # Add new data sources and agencies to the database, at least two approved and one unapproved
     insert_test_agencies_and_sources_if_not_exist(
         live_database_client.connection.cursor()
@@ -356,12 +362,11 @@ def test_delete_from_table(live_database_client, test_table_data):
         {"pet_name": "Simon"},
     ]
 
-
-def test_update_entry_in_table(live_database_client, test_table_data):
+def test_update_entry_in_table(live_database_client: DatabaseClient, test_table_data):
     results = live_database_client._select_from_single_relation(
         relation_name="test_table",
         columns=["pet_name"],
-        where_mappings={"species": "Cat"},
+        where_mappings=[WhereMapping(column="species", value="Cat")],
     )
 
     assert results == [
@@ -378,7 +383,7 @@ def test_update_entry_in_table(live_database_client, test_table_data):
     results = live_database_client._select_from_single_relation(
         relation_name="test_table",
         columns=["pet_name"],
-        where_mappings={"species": "Cat"},
+        where_mappings=[WhereMapping(column="species", value="Cat")],
     )
 
     assert results == []
@@ -386,7 +391,7 @@ def test_update_entry_in_table(live_database_client, test_table_data):
     results = live_database_client._select_from_single_relation(
         relation_name="test_table",
         columns=["pet_name"],
-        where_mappings={"species": "Lion"},
+        where_mappings=[WhereMapping(column="species", value="Lion")],
     )
 
     assert results == [
@@ -412,7 +417,7 @@ def test_get_data_sources_for_map(live_database_client):
     assert found_source
 
 
-def test_get_agencies_from_page(live_database_client):
+def test_get_agencies_from_page(live_database_client: DatabaseClient):
     results = live_database_client.get_agencies_from_page(2)
 
     assert len(results) > 0
@@ -424,12 +429,12 @@ def test_get_offset():
     assert DatabaseClient.get_offset(page=3) == 200
 
 
-def test_get_data_sources_to_archive(live_database_client):
+def test_get_data_sources_to_archive(live_database_client: DatabaseClient):
     results = live_database_client.get_data_sources_to_archive()
     assert len(results) > 0
 
 
-def test_update_last_cached(live_database_client):
+def test_update_last_cached(live_database_client: DatabaseClient):
     # Add a new data source to the database
     insert_test_agencies_and_sources_if_not_exist(
         live_database_client.connection.cursor()
@@ -442,13 +447,13 @@ def test_update_last_cached(live_database_client):
     result = live_database_client._select_from_single_relation(
         relation_name="data_sources_archive_info",
         columns=["last_cached"],
-        where_mappings={"airtable_uid": "SOURCE_UID_1"},
+        where_mappings=[WhereMapping(column="airtable_uid", value="SOURCE_UID_1")],
     )[0]
 
     assert result["last_cached"].strftime("%Y-%m-%d %H:%M:%S") == new_last_cached
 
 
-def test_get_quick_search_results(live_database_client):
+def test_get_quick_search_results(live_database_client: DatabaseClient):
     # Add new data sources to the database, some that satisfy the search criteria and some that don't
     test_datetime = live_database_client.execute_raw_sql(query="SELECT NOW()")[0]
 
@@ -465,7 +470,7 @@ def test_get_quick_search_results(live_database_client):
     assert result[0].id == "SOURCE_UID_1"
 
 
-def test_add_quick_search_log(live_database_client):
+def test_add_quick_search_log(live_database_client: DatabaseClient):
     # Add a quick search log to the database using the DatabaseClient method
     search = f"{uuid.uuid4().hex} QSL"
     location = "City QSL"
@@ -519,7 +524,7 @@ def test_get_user_info(live_database_client):
         live_database_client.get_user_info(email="invalid_email")
 
 
-def test_get_user_by_api_key(live_database_client):
+def test_get_user_by_api_key(live_database_client: DatabaseClient):
     # Add a new user to the database
     test_email = uuid.uuid4().hex
     test_api_key = uuid.uuid4().hex
@@ -530,12 +535,10 @@ def test_get_user_by_api_key(live_database_client):
     )
 
     # Add a role and api_key to the user
-    live_database_client.execute_raw_sql(
-        query=f"update users set api_key = %s where email = %s",
-        vars=(
-            test_api_key,
-            test_email,
-        ),
+    live_database_client.execute_sqlalchemy(
+        lambda: update(User)
+        .where(User.email == test_email)
+        .values(role="test_role", api_key=test_api_key)
     )
 
     # Fetch the user's role using its api key with the DatabaseClient method
@@ -545,7 +548,7 @@ def test_get_user_by_api_key(live_database_client):
     assert user_identifiers.id == user_id
 
 
-def test_get_typeahead_locations(live_database_client):
+def test_get_typeahead_locations(live_database_client: DatabaseClient):
     # Insert test data into the database
     cursor = live_database_client.connection.cursor()
     setup_get_typeahead_suggestion_test_data(cursor)
@@ -704,7 +707,7 @@ def test_remove_user_permission(live_database_client):
     assert len(test_user_permissions) == 0
 
 
-def test_get_permitted_columns(live_database_client):
+def test_get_permitted_columns(live_database_client: DatabaseClient):
 
     insert_test_column_permission_data(live_database_client)
 
@@ -736,7 +739,7 @@ def test_get_permitted_columns(live_database_client):
     assert "column_b" in results
 
 
-def test_get_data_requests_for_creator(live_database_client):
+def test_get_data_requests_for_creator(live_database_client: DatabaseClient):
     test_user = create_test_user_db_client(live_database_client)
     submission_notes_list = [uuid.uuid4().hex, uuid.uuid4().hex, uuid.uuid4().hex]
 
@@ -785,7 +788,7 @@ def test_user_is_creator_of_data_request(live_database_client):
     assert results is False
 
 
-def test_get_column_permissions_as_permission_table(live_database_client):
+def test_get_column_permissions_as_permission_table(live_database_client: DatabaseClient):
     insert_test_column_permission_data(live_database_client)
 
     results = live_database_client.get_column_permissions_as_permission_table(

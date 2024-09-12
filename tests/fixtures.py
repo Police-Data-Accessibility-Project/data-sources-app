@@ -211,7 +211,6 @@ def bypass_authentication_required(monkeypatch):
 def live_database_client() -> DatabaseClient:
     """
     Returns a database client with a live connection to the database
-    :param db_cursor:
     :return:
     """
     db_client = DatabaseClient()

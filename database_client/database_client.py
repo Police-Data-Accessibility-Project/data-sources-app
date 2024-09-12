@@ -3,15 +3,19 @@ from collections import namedtuple
 from contextlib import contextmanager
 from datetime import datetime
 from functools import wraps, partial, partialmethod
-from typing import Optional, Any, List
+from typing import Optional, Any, List, Callable
 import uuid
 
 import psycopg
 from psycopg import sql
 from psycopg.rows import dict_row, tuple_row
+from sqlalchemy import select
+from sqlalchemy.orm import aliased
+from sqlalchemy.schema import Column
+from sqlalchemy.sql.expression import UnaryExpression
 
-from database_client.constants import PAGE_SIZE
-from database_client.db_client_dataclasses import OrderByParameters
+from database_client.constants import PAGE_SIZE, TABLE_REFERENCE
+from database_client.db_client_dataclasses import OrderByParameters, WhereMapping
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
     ExternalAccountTypeEnum,
@@ -23,8 +27,13 @@ from middleware.exceptions import (
     TokenNotFoundError,
     AccessTokenNotFoundError,
 )
+from middleware.models import (
+    ExternalAccount,
+    User,
+)
 from middleware.enums import PermissionsEnum, Relations
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
+from middleware.initialize_sqlalchemy_session import initialize_sqlalchemy_session
 from utilities.enums import RecordCategories
 
 DATA_SOURCES_MAP_COLUMN = [
@@ -78,6 +87,7 @@ class DatabaseClient:
 
     def __init__(self):
         self.connection = initialize_psycopg_connection()
+        self.session_maker = initialize_sqlalchemy_session()
         self.cursor = None
 
     def cursor_manager(row_factory=dict_row):
@@ -111,8 +121,22 @@ class DatabaseClient:
 
         return decorator
 
-    def close(self):
-        self.connection.close()
+    def session_manager(method):
+        @wraps(method)
+        def wrapper(self, *args, **kwargs):
+            self.session = self.session_maker()
+            try:
+                result = method(self, *args, **kwargs)
+                self.session.commit()
+                return result
+            except Exception as e:
+                self.session.rollback()
+                raise e
+            finally:
+                self.session.close()
+                self.session = None
+
+        return wrapper
 
     @cursor_manager()
     def execute_raw_sql(
@@ -132,6 +156,11 @@ class DatabaseClient:
 
         if len(results) == 0:
             return None
+        return results
+
+    @session_manager
+    def execute_sqlalchemy(self, query: Callable):
+        results = self.session.execute(query())
         return results
 
     def add_new_user(self, email: str, password_digest: str) -> Optional[int]:
@@ -154,7 +183,9 @@ class DatabaseClient:
         :return:
         """
         results = self._select_from_single_relation(
-            relation_name="users", columns=["id"], where_mappings={"email": email}
+            relation_name="users",
+            columns=["id"],
+            where_mappings=[WhereMapping(column="email", value=email)],
         )
         if len(results) == 0:
             return None
@@ -186,7 +217,7 @@ class DatabaseClient:
         results = self._select_from_single_relation(
             relation_name="reset_tokens",
             columns=["id", "email", "create_date"],
-            where_mappings={"token": token},
+            where_mappings=[WhereMapping(column="token", value=token)],
         )
         if len(results) == 0:
             return None
@@ -231,7 +262,7 @@ class DatabaseClient:
         results = self._select_from_single_relation(
             relation_name="users",
             columns=["id", "email"],
-            where_mappings={"api_key": api_key},
+            where_mappings=[WhereMapping(column="api_key", value=api_key)],
         )
         if len(results) == 0:
             return None
@@ -249,8 +280,6 @@ class DatabaseClient:
             column_edit_mappings={"api_key": api_key},
         )
 
-
-
     @cursor_manager(row_factory=tuple_row)
     def get_approved_data_sources(self) -> list[tuple[Any, ...]]:
         """
@@ -266,8 +295,6 @@ class DatabaseClient:
         results = self.cursor.fetchall()
         # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
         return results
-
-
 
     MapInfo = namedtuple(
         "MapInfo",
@@ -355,7 +382,7 @@ class DatabaseClient:
         results = self._select_from_single_relation(
             relation_name="agencies",
             columns=columns,
-            where_mappings={"approved": "TRUE"},
+            where_mappings=[WhereMapping(column="approved", value=True)],
             limit=1000,
             page=page,
         )
@@ -552,7 +579,7 @@ class DatabaseClient:
         results = self._select_from_single_relation(
             relation_name="users",
             columns=["id", "password_digest", "api_key", "email"],
-            where_mappings={"email": email},
+            where_mappings=[WhereMapping(column="email", value=email)],
         )
         if len(results) == 0:
             raise UserNotFoundError(email)
@@ -565,40 +592,31 @@ class DatabaseClient:
             email=result["email"],
         )
 
-    @cursor_manager()
+    @session_manager
     def get_user_info_by_external_account_id(
         self, external_account_id: str, external_account_type: ExternalAccountTypeEnum
     ) -> UserInfo:
-        query = sql.SQL(
-            """
-            SELECT 
-                u.id,
-                u.email,
-                u.password_digest,
-                u.api_key
-            FROM 
-                users u
-            INNER JOIN 
-                external_accounts ea ON u.id = ea.user_id
-            WHERE 
-                ea.account_identifier = {external_account_identifier}
-                and ea.account_type = {external_account_type}
-        """
-        ).format(
-            external_account_identifier=sql.Literal(external_account_id),
-            external_account_type=sql.Literal(external_account_type.value),
-        )
-        self.cursor.execute(query)
+        u = aliased(User)
+        ea = aliased(ExternalAccount)
 
-        results = self.cursor.fetchone()
+        query = (
+            select(u.id, u.email, u.password_digest, u.api_key)
+            .join(ea, u.id == ea.user_id)
+            .where(
+                ea.account_identifier == external_account_id,
+                ea.account_type == external_account_type.value,
+            )
+        )
+        results = self.session.execute(query).mappings().one_or_none()
+
         if results is None:
             raise UserNotFoundError(external_account_id)
 
         return self.UserInfo(
-            id=results["id"],
-            password_digest=results["password_digest"],
-            api_key=results["api_key"],
-            email=results["email"],
+            id=results.id,
+            password_digest=results.password_digest,
+            api_key=results.api_key,
+            email=results.email,
         )
 
     @cursor_manager()
@@ -773,6 +791,17 @@ class DatabaseClient:
         results = self.cursor.fetchall()
         return [row["associated_column"] for row in results]
 
+    @staticmethod
+    def convert_to_column_reference(columns: list[str], relation: str) -> list[Column]:
+        """Converts a list of column strings to SQLAlchemy column references.
+
+        :param columns: List of column strings.
+        :param relation: Relation string.
+        :return:
+        """
+        relation_reference = TABLE_REFERENCE[relation]
+        return [getattr(relation_reference, column) for column in columns]
+
     @cursor_manager()
     def _update_entry_in_table(
         self,
@@ -829,7 +858,9 @@ class DatabaseClient:
             return self.cursor.fetchone()[column_to_return]
         return None
 
-    create_search_cache_entry = partialmethod(_create_entry_in_table, table_name="agency_url_search_cache")
+    create_search_cache_entry = partialmethod(
+        _create_entry_in_table, table_name="agency_url_search_cache"
+    )
 
     create_data_request = partialmethod(
         _create_entry_in_table, table_name="data_requests", column_to_return="id"
@@ -840,44 +871,56 @@ class DatabaseClient:
     )
 
     create_request_source_relation = partialmethod(
-        _create_entry_in_table, table_name="link_data_sources_data_requests", column_to_return="id"
+        _create_entry_in_table,
+        table_name="link_data_sources_data_requests",
+        column_to_return="id",
     )
 
-    add_new_data_source = partialmethod(_create_entry_in_table, table_name="data_sources", column_to_return="airtable_uid")
+    add_new_data_source = partialmethod(
+        _create_entry_in_table,
+        table_name="data_sources",
+        column_to_return="airtable_uid",
+    )
 
-
-
-    @cursor_manager()
+    @session_manager
     def _select_from_single_relation(
         self,
         relation_name: str,
-        columns: List[str],
-        where_mappings: Optional[dict] = None,
-        not_where_mappings: Optional[dict] = None,
+        columns: list[str],
+        where_mappings: Optional[list[WhereMapping]] = [True],
         limit: Optional[int] = PAGE_SIZE,
         page: Optional[int] = None,
         order_by: Optional[OrderByParameters] = None,
-    ):
+    ) -> list[dict]:
         """
         Selects a single relation from the database
         """
         offset = self.get_offset(page)
-        query = DynamicQueryConstructor.create_single_relation_selection_query(
-            relation_name, columns, where_mappings, not_where_mappings, limit, offset, order_by
+        column_references = self.convert_to_column_reference(
+            columns=columns, relation=relation_name
         )
-        self.cursor.execute(query)
-        results = self.cursor.fetchall()
+        query = DynamicQueryConstructor.create_single_relation_selection_query(
+            relation_name, column_references, where_mappings, limit, offset, order_by
+        )
+        results = self.session.execute(query()).mappings().all()
+        results = [dict(result) for result in results]
         return results
 
     get_data_requests = partialmethod(
         _select_from_single_relation, relation_name=Relations.DATA_REQUESTS.value
     )
 
-    get_agencies = partialmethod(_select_from_single_relation, relation_name=Relations.AGENCIES.value)
+    get_agencies = partialmethod(
+        _select_from_single_relation, relation_name=Relations.AGENCIES.value
+    )
 
-    get_data_sources = partialmethod(_select_from_single_relation, relation_name=Relations.DATA_SOURCES.value)
+    get_data_sources = partialmethod(
+        _select_from_single_relation, relation_name=Relations.DATA_SOURCES.value
+    )
 
-    get_request_source_relations = partialmethod(_select_from_single_relation, relation_name=Relations.RELATED_SOURCES.value)
+    get_request_source_relations = partialmethod(
+        _select_from_single_relation, relation_name=Relations.RELATED_SOURCES.value
+    )
 
     def get_related_data_sources(self, data_request_id: int) -> List[dict]:
         """
@@ -885,14 +928,15 @@ class DatabaseClient:
         :param data_request_id:
         :return:
         """
-        query = sql.SQL("""
+        query = sql.SQL(
+            """
             SELECT ds.airtable_uid, ds.name
             FROM link_data_sources_data_requests link
             INNER JOIN data_sources ds on link.source_id = ds.airtable_uid
             WHERE link.request_id = {request_id}
-        """).format(request_id=sql.Literal(data_request_id))
+        """
+        ).format(request_id=sql.Literal(data_request_id))
         return self.execute_composed_sql(query, return_results=True)
-
 
     def get_data_requests_for_creator(
         self, creator_user_id: str, columns: List[str]
@@ -900,7 +944,9 @@ class DatabaseClient:
         return self._select_from_single_relation(
             relation_name="data_requests",
             columns=columns,
-            where_mappings={"creator_user_id": creator_user_id},
+            where_mappings=[
+                WhereMapping(column="creator_user_id", value=creator_user_id)
+            ],
         )
 
     def user_is_creator_of_data_request(
@@ -909,7 +955,10 @@ class DatabaseClient:
         results = self._select_from_single_relation(
             relation_name="data_requests",
             columns=["id"],
-            where_mappings={"creator_user_id": user_id, "id": data_request_id},
+            where_mappings=[
+                WhereMapping(column="creator_user_id", value=int(user_id)),
+                WhereMapping(column="id", value=int(data_request_id)),
+            ],
         )
         return len(results) == 1
 
@@ -941,7 +990,9 @@ class DatabaseClient:
 
     delete_data_source = partialmethod(_delete_from_table, table_name="data_sources")
 
-    delete_request_source_relation = partialmethod(_delete_from_table, table_name=Relations.RELATED_SOURCES.value)
+    delete_request_source_relation = partialmethod(
+        _delete_from_table, table_name=Relations.RELATED_SOURCES.value
+    )
 
     @cursor_manager()
     def execute_composed_sql(self, query: sql.Composed, return_results: bool = False):
@@ -968,7 +1019,8 @@ class DatabaseClient:
         return self.execute_composed_sql(query, return_results=True)
 
     def get_agencies_without_homepage_urls(self) -> list[dict]:
-        return self.execute_raw_sql("""
+        return self.execute_raw_sql(
+            """
             SELECT
                 SUBMITTED_NAME,
                 JURISDICTION_TYPE,
@@ -990,4 +1042,5 @@ class DatabaseClient:
                 )
             ORDER BY COUNT_DATA_SOURCES DESC
             LIMIT 100 -- Limiting to 100 in acknowledgment of the search engine quota
-        """)
+        """
+        )

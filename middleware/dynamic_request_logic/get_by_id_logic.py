@@ -7,6 +7,7 @@ performed in a manner designed to be consistent among all endpoints using them.
 from flask import Response
 
 from database_client.enums import ColumnPermissionEnum
+from database_client.db_client_dataclasses import WhereMapping
 from middleware.column_permission_logic import (
     get_permitted_columns,
     RelationRoleParameters,
@@ -50,12 +51,19 @@ def get_by_id(
     """
     Get an entry by id
     """
+    try:
+        id = int(id)
+    except ValueError:
+        pass
 
     mp = middleware_parameters
     check_for_id(
         db_client=mp.db_client,
         table_name=mp.relation,
-        id_info=IDInfo(id_column_value=id, id_column_name=id_column_name),
+        id_info=IDInfo(
+            id_column_value=id,
+            id_column_name=id_column_name,
+        ),
     )
     relation_role = relation_role_parameters.get_relation_role_from_parameters(
         access_info=mp.access_info,
@@ -70,7 +78,7 @@ def get_by_id(
         mp.db_client,
         relation_name=mp.relation,
         columns=columns,
-        where_mappings={id_column_name: id},
+        where_mappings=[WhereMapping(column=id_column_name, value=id)],
     )
     return results_dependent_response(mp.entry_name, results)
 

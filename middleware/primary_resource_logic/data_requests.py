@@ -5,6 +5,7 @@ from typing import Optional
 from flask import make_response, Response
 from marshmallow import fields
 
+from database_client.db_client_dataclasses import WhereMapping
 from database_client.database_client import DatabaseClient
 from database_client.enums import ColumnPermissionEnum, RelationRoleEnum
 from middleware.access_logic import AccessInfo
@@ -63,7 +64,7 @@ class RelatedSourceByIDDTO(GetByIDBaseDTO):
 
 
 def get_data_requests_relation_role(
-    db_client: DatabaseClient, data_request_id: Optional[str], access_info: AccessInfo
+    db_client: DatabaseClient, data_request_id: Optional[int], access_info: AccessInfo
 ) -> RelationRoleEnum:
     """
     Determine the relation role for information on a data request
@@ -164,12 +165,13 @@ def get_formatted_data_requests(access_info, db_client, relation_role) -> list[d
 def get_standard_and_owner_zipped_data_requests(user_email, db_client):
     user_id = db_client.get_user_id(user_email)
     # Create two requests -- one where the user is the creator and one where the user is not
-    mapping = {"creator_user_id": user_id}
+    mapping = [WhereMapping(column="creator_user_id", eq=False, value=user_id)]
     zipped_standard_requests = get_data_requests_with_permitted_columns(
         db_client=db_client,
         relation_role=RelationRoleEnum.STANDARD,
-        not_where_mappings=mapping,
+        where_mappings=mapping,
     )
+    mapping = [WhereMapping(column="creator_user_id", value=user_id)]
     zipped_owner_requests = get_data_requests_with_permitted_columns(
         db_client=db_client,
         relation_role=RelationRoleEnum.OWNER,
@@ -183,8 +185,7 @@ def get_standard_and_owner_zipped_data_requests(user_email, db_client):
 def get_data_requests_with_permitted_columns(
     db_client,
     relation_role,
-    where_mappings: Optional[dict] = None,
-    not_where_mappings: Optional[dict] = None,
+    where_mappings: Optional[list[WhereMapping]] = [True],
 ) -> list[dict]:
 
     columns = get_permitted_columns(
@@ -196,7 +197,6 @@ def get_data_requests_with_permitted_columns(
     data_requests = db_client.get_data_requests(
         columns=columns,
         where_mappings=where_mappings,
-        not_where_mappings=not_where_mappings,
     )
     return data_requests
 
@@ -212,7 +212,7 @@ def allowed_to_delete_request(access_info, data_request_id, db_client):
 
 
 def delete_data_request_wrapper(
-    db_client: DatabaseClient, data_request_id: str, access_info: AccessInfo
+    db_client: DatabaseClient, data_request_id: int, access_info: AccessInfo
 ) -> Response:
     """
     Delete data requests
@@ -241,7 +241,7 @@ def delete_data_request_wrapper(
 def update_data_request_wrapper(
     db_client: DatabaseClient,
     dto: EntryDataRequestDTO,
-    data_request_id: str,
+    data_request_id: int,
     access_info: AccessInfo,
 ):
     """
