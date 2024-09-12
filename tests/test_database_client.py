@@ -18,11 +18,10 @@ from database_client.enums import (
     ColumnPermissionEnum,
     SortOrder,
 )
-from database_client.result_formatter import ResultFormatter
 from middleware.exceptions import (
     UserNotFoundError,
 )
-from middleware.models import ExternalAccount, TestTable, User
+from database_client.models import ExternalAccount, TestTable, User
 from middleware.enums import PermissionsEnum
 from tests.fixtures import (
     live_database_client,

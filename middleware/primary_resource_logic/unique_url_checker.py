@@ -1,14 +1,20 @@
 from dataclasses import dataclass
 import re
+
+from flask import Response
 from marshmallow import Schema, fields, validate
 
+from database_client.database_client import DatabaseClient
 from database_client.enums import ApprovalStatus
+from middleware.flask_response_manager import FlaskResponseManager
 from utilities.enums import SourceMappingEnum
 
 
 def normalize_url(source_url: str) -> str:
-    # Remove 'https://', 'http://', and 'www.' from the beginning
-    url = re.sub(r"^(https://|http://|www\.)", "", source_url)
+    # Remove 'https://', 'http://' from the beginning
+    url = re.sub(r"^(https://|http://)", "", source_url)
+    # Remove "www." from the beginning
+    url = re.sub(r"^www\.", "", url)
     # Remove trailing '/'
     url = url.rstrip("/")
 
@@ -23,6 +29,8 @@ class UniqueURLCheckerRequestSchema(Schema):
             "source": SourceMappingEnum.QUERY_ARGS,
             "transformation_function": normalize_url,
         },
+        require_tld=False,
+        relative=True
     )
 
 
@@ -32,7 +40,7 @@ class UniqueURLCheckerRequestDTO:
 
 
 class UniqueURLCheckerResponseInnerSchema(Schema):
-    url = fields.Str(
+    original_url = fields.Str(
         required=True,
         metadata={
             "description": "The URL of the duplicate.",
@@ -53,7 +61,6 @@ class UniqueURLCheckerResponseInnerSchema(Schema):
             "description": "The rejection note of the URL.",
             "source": SourceMappingEnum.JSON,
         },
-
     )
 
 class UniqueURLCheckerResponseOuterSchema(Schema):
@@ -73,3 +80,7 @@ class UniqueURLCheckerResponseOuterSchema(Schema):
         },
     )
 
+def unique_url_checker_wrapper(db_client: DatabaseClient, dto: UniqueURLCheckerRequestDTO) -> Response:
+    return FlaskResponseManager.make_response(
+        data={"duplicates": db_client.check_for_url_duplicates(dto.url)}
+    )

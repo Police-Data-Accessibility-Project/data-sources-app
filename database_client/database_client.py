@@ -1,10 +1,7 @@
 import json
 from collections import namedtuple
-from contextlib import contextmanager
-from datetime import datetime
-from functools import wraps, partial, partialmethod
+from functools import wraps, partialmethod
 from typing import Optional, Any, List, Callable
-import uuid
 
 import psycopg
 from psycopg import sql
@@ -12,7 +9,6 @@ from psycopg.rows import dict_row, tuple_row
 from sqlalchemy import select
 from sqlalchemy.orm import aliased
 from sqlalchemy.schema import Column
-from sqlalchemy.sql.expression import UnaryExpression
 
 from database_client.constants import PAGE_SIZE, TABLE_REFERENCE
 from database_client.db_client_dataclasses import OrderByParameters, WhereMapping
@@ -24,10 +20,8 @@ from database_client.enums import (
 )
 from middleware.exceptions import (
     UserNotFoundError,
-    TokenNotFoundError,
-    AccessTokenNotFoundError,
 )
-from middleware.models import (
+from database_client.models import (
     ExternalAccount,
     User,
 )

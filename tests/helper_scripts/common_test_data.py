@@ -80,6 +80,8 @@ def create_data_source_entry_for_url_duplicate_checking(db_client: DatabaseClien
             column_value_mappings={
                 "submitted_name": submitted_name,
                 "name": submitted_name,
+                "rejection_note": "Test rejection note",
+                "approval_status": "rejected",
                 "airtable_uid": "TEST_URL_DUPLICATE_SOURCE_ID",
                 "source_url": "https://duplicate-checker.com/",
 
