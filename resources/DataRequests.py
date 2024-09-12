@@ -133,7 +133,7 @@ Columns allowed to be updated by the user is determinant upon the user's access 
         return self.run_endpoint(
             update_data_request_wrapper,
             dto_populate_parameters=EntryDataRequestDTO.get_dto_populate_parameters(),
-            data_request_id=resource_id,
+            data_request_id=int(resource_id),
             access_info=access_info,
         )
 
@@ -154,7 +154,7 @@ Columns allowed to be updated by the user is determinant upon the user's access 
         """
         return self.run_endpoint(
             delete_data_request_wrapper,
-            data_request_id=resource_id,
+            data_request_id=int(resource_id),
             access_info=access_info,
         )
 

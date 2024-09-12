@@ -3,6 +3,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from database_client.database_client import DatabaseClient
+from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import ColumnPermissionEnum
 from middleware.dynamic_request_logic.common_functions import check_for_id
 from middleware.dynamic_request_logic.delete_logic import (
@@ -58,11 +60,11 @@ def test_results_dependent_response_with_results(monkeypatch):
 
     results_dependent_response(
         entry_name="test entry",
-        results=[1],
+        results=[{"test": 1}],
     )
 
     mock_message_response.assert_called_once_with(
-        message="test entry found", data=1, validation_schema=EntryDataResponseSchema
+        message="test entry found", data={"test": 1}, validation_schema=EntryDataResponseSchema
     )
 
 
@@ -122,7 +124,9 @@ def test_get_by_id(monkeypatch):
         mock.mp.db_client,
         relation_name=mock.mp.relation,
         columns=mock.get_permitted_columns.return_value,
-        where_mappings={mock.id_column_name: mock.id},
+        where_mappings=[
+            WhereMapping(column=mock.id_column_name, value=int(mock.id))
+        ],
     )
 
     mock.results_dependent_response.assert_called_once_with(

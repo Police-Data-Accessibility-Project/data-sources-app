@@ -19,7 +19,6 @@ def test_initialize_psycopg_connection():
     :return:
     """
     conn = initialize_psycopg_connection()
-    print(type(conn))
     assert isinstance(conn, PgConnection)
     assert conn.closed == 0
 

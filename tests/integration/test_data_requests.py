@@ -8,6 +8,7 @@ import pytest
 from flask.testing import FlaskClient
 
 from database_client.database_client import DatabaseClient
+from database_client.db_client_dataclasses import WhereMapping
 from middleware.constants import DATA_KEY
 from middleware.enums import PermissionsEnum
 from tests.fixtures import (
@@ -49,10 +50,16 @@ def ts(flask_client_with_db, dev_db_client):
 
 def test_data_requests_get(ts: DataRequestsTestSetup):
 
-    data_request_id_not_creator = create_data_request(ts.db_client, ts.submission_notes)
-    data_request_id_creator = create_data_request(
-        ts.db_client, ts.submission_notes, ts.tus.user_info.user_id
+    tus_not_creator = create_test_user_setup(ts.flask_client)
+    create_data_request_with_endpoint(
+        flask_client=ts.flask_client,
+        jwt_authorization_header=tus_not_creator.jwt_authorization_header,
     )
+    cdr = create_data_request_with_endpoint(
+        flask_client=ts.flask_client,
+        jwt_authorization_header=ts.tus.jwt_authorization_header,
+    )
+    data_request_id_creator = int(cdr.id)
 
     json_data = run_and_validate_request(
         flask_client=ts.flask_client,
@@ -136,8 +143,12 @@ def test_data_requests_post(ts: DataRequestsTestSetup):
     data_request_id = json_data["id"]
     user_id = ts.db_client.get_user_id(ts.tus.user_info.email)
     results = ts.db_client.get_data_requests(
-        columns=["id", "submission_notes", "creator_user_id"],
-        where_mappings={"id": data_request_id},
+        columns=[
+            "id",
+            "submission_notes",
+            "creator_user_id",
+        ],
+        where_mappings=[WhereMapping(column="id", value=int(data_request_id))],
     )
 
     assert len(results) == 1
@@ -200,7 +211,7 @@ def test_data_requests_by_id_put(ts: DataRequestsTestSetup):
 
     result = ts.db_client.get_data_requests(
         columns=["submission_notes"],
-        where_mappings={"id": data_request_id},
+        where_mappings=[WhereMapping(column="id", value=data_request_id)],
     )
 
     assert result[0]["submission_notes"] == ts.submission_notes
@@ -217,7 +228,7 @@ def test_data_requests_by_id_put(ts: DataRequestsTestSetup):
 
     result = ts.db_client.get_data_requests(
         columns=["submission_notes"],
-        where_mappings={"id": data_request_id},
+        where_mappings=[WhereMapping(column="id", value=data_request_id)],
     )
 
     assert result[0]["submission_notes"] == new_submission_notes
@@ -256,7 +267,7 @@ def test_data_requests_by_id_delete(ts: DataRequestsTestSetup):
     assert (
         ts.db_client.get_data_requests(
             columns=["submission_notes"],
-            where_mappings={"id": data_request_id},
+            where_mappings=[WhereMapping(column="id", value=data_request_id)],
         )
         == []
     )
