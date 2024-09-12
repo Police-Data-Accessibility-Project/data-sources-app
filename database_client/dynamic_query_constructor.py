@@ -138,7 +138,7 @@ class DynamicQueryConstructor:
         ]
 
     @staticmethod
-    def generate_new_typeahead_suggestion_query(search_term: str):
+    def generate_new_typeahead_locations_query(search_term: str):
         query = sql.SQL(
             """
         WITH combined AS (
@@ -149,7 +149,7 @@ class DynamicQueryConstructor:
                 state,
                 county,
                 locality
-            FROM typeahead_suggestions
+            FROM typeahead_locations
             WHERE display_name ILIKE {search_term_prefix}
             UNION ALL
             SELECT
@@ -159,23 +159,75 @@ class DynamicQueryConstructor:
                 state,
                 county,
                 locality
-            FROM typeahead_suggestions
+            FROM typeahead_locations
             WHERE display_name ILIKE {search_term_anywhere}
             AND display_name NOT ILIKE {search_term_prefix}
         )
-        SELECT DISTINCT 
-            sort_order,
-            display_name,
-            type,
-            state,
-            county,
-            locality
-        FROM combined
-        ORDER BY sort_order, display_name
-        LIMIT 10;
+        SELECT display_name, type, state, county, locality
+        FROM (
+            SELECT DISTINCT 
+                sort_order,
+                display_name,
+                type,
+                state,
+                county,
+                locality
+            FROM combined
+            ORDER BY sort_order, display_name
+            LIMIT 10
+        ) as results;
         """
         ).format(
             search_term_prefix=sql.Literal(f"{search_term}%"),
+            search_term_anywhere=sql.Literal(f"%{search_term}%"),
+        )
+        return query
+
+    @staticmethod
+    def generate_new_typeahead_agencies_query(search_term: str):
+        query = sql.SQL("""
+        WITH combined AS (
+            SELECT
+                1 AS sort_order,
+                name,
+                jurisdiction_type,
+                state_iso,
+                municipality,
+                county_name
+            FROM typeahead_agencies
+            WHERE name ILIKE {search_term}
+            UNION ALL
+            SELECT
+                2 AS sort_order,
+                name,
+                jurisdiction_type,
+                state_iso,
+                municipality,
+                county_name
+            FROM typeahead_agencies
+            WHERE name ILIKE {search_term_anywhere}
+            AND name NOT ILIKE {search_term}
+        )
+        SELECT
+            name as display_name,
+            jurisdiction_type,
+            state_iso as state,
+            municipality as locality,
+            county_name as county
+        FROM (
+            SELECT DISTINCT
+                sort_order,
+                name,
+                jurisdiction_type,
+                state_iso,
+                municipality,
+                county_name
+            FROM combined
+            ORDER BY sort_order, name
+            LIMIT 10
+        ) as results
+        """).format(
+            search_term=sql.Literal(f"{search_term}%"),
             search_term_anywhere=sql.Literal(f"%{search_term}%"),
         )
         return query

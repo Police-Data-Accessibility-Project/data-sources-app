@@ -19,6 +19,7 @@ RestxFields = Union[
     restx_fields.Integer,
     restx_fields.Boolean,
     restx_fields.List,
+    restx_fields.Nested,
     RestxModelPlaceholder
 ]
 DTOTypes = TypeVar("DTOTypes")

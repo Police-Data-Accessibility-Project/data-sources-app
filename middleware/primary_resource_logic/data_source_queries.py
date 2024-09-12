@@ -39,10 +39,12 @@ class DataSourceNotFoundError(Exception):
 class DataSourcesGetRequestSchemaMany(GetManyBaseSchema):
     approval_status = fields.Str(
         required=False,
-        description="Approval status of returned data sources.",
-        source=SourceMappingEnum.QUERY_ARGS,
         validate=validate.OneOf([e.value for e in ApprovalStatus]),
-        default="approved",
+        metadata={
+            "source": SourceMappingEnum.QUERY_ARGS,
+            "description": "The approval status of the data sources",
+            "default": "approved",
+        }
     )
 
 

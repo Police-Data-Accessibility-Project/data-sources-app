@@ -38,7 +38,7 @@ from resources.RequestResetPassword import RequestResetPassword
 from resources.ResetPassword import ResetPassword
 from resources.ResetTokenValidation import ResetTokenValidation
 from resources.Search import Search
-from resources.TypeaheadSuggestions import TypeaheadSuggestions
+from resources.TypeaheadSuggestions import TypeaheadLocations, TypeaheadAgencies
 from resources.User import User
 from tests.fixtures import client_with_mock_db, ClientWithMockDB
 
@@ -99,7 +99,9 @@ test_parameters = [
         DataSourceById, "/data-sources/<data_source_id>", [GET, PUT, DELETE]
     ),
     TestParameters(
-        DataRequestsRelatedSources, "/data-requests/<resource_id>/related-sources", [GET]
+        DataRequestsRelatedSources,
+        "/data-requests/<resource_id>/related-sources",
+        [GET],
     ),
     TestParameters(
         DataRequestsRelatedSourcesById,
@@ -109,7 +111,7 @@ test_parameters = [
     TestParameters(AgenciesByPage, "/agencies", [POST, GET]),
     TestParameters(AgenciesById, "/agencies/<agency_id>", [GET, PUT, DELETE]),
     TestParameters(Search, "/search/search-location-and-record-type", [GET]),
-    TestParameters(TypeaheadSuggestions, "/search/typeahead-suggestions", [GET]),
+    TestParameters(TypeaheadLocations, "/typeahead/locations", [GET]),
     TestParameters(Callback, "auth/callback", [GET]),
     TestParameters(LinkToGithub, "auth/link-to-github", [POST]),
     TestParameters(LoginWithGithub, "auth/login-with-github", [POST]),
@@ -120,6 +122,7 @@ test_parameters = [
         DataRequestsById, "/data-requests/<data_request_id>", [GET, PUT, DELETE]
     ),
     TestParameters(HomepageSearchCache, "/homepage-search-cache", [GET, POST]),
+    TestParameters(TypeaheadAgencies, "/typeahead/agencies", [GET]),
 ]
 
 

@@ -554,29 +554,41 @@ def test_get_typeahead_suggestion(live_database_client: DatabaseClient):
     setup_get_typeahead_suggestion_test_data(cursor)
 
     # Call the get_typeahead_suggestion function
-    results = live_database_client.get_typeahead_suggestions(search_term="xyl")
+    results = live_database_client.get_typeahead_locations(search_term="xyl")
 
     # Check that the results are as expected
     assert len(results) == 3
 
-    assert results[0].display_name == "Xylodammerung"
-    assert results[0].type == "Locality"
-    assert results[0].state == "Xylonsylvania"
-    assert results[0].county == "Arxylodon"
-    assert results[0].locality == "Xylodammerung"
+    assert results[0]["display_name"] == "Xylodammerung"
+    assert results[0]["type"] == "Locality"
+    assert results[0]["state"] == "Xylonsylvania"
+    assert results[0]["county"] == "Arxylodon"
+    assert results[0]["locality"] == "Xylodammerung"
 
-    assert results[1].display_name == "Xylonsylvania"
-    assert results[1].type == "State"
-    assert results[1].state == "Xylonsylvania"
-    assert results[1].county is None
-    assert results[1].locality is None
+    assert results[1]["display_name"] == "Xylonsylvania"
+    assert results[1]["type"] == "State"
+    assert results[1]["state"] == "Xylonsylvania"
+    assert results[1]["county"] is None
+    assert results[1]["locality"] is None
 
-    assert results[2].display_name == "Arxylodon"
-    assert results[2].type == "County"
-    assert results[2].state == "Xylonsylvania"
-    assert results[2].county == "Arxylodon"
-    assert results[2].locality is None
+    assert results[2]["display_name"] == "Arxylodon"
+    assert results[2]["type"] == "County"
+    assert results[2]["state"] == "Xylonsylvania"
+    assert results[2]["county"] == "Arxylodon"
+    assert results[2]["locality"] is None
 
+def test_get_typeahead_agencies(live_database_client):
+    # Insert test data into the database
+    cursor = live_database_client.connection.cursor()
+    setup_get_typeahead_suggestion_test_data(cursor)
+
+    results = live_database_client.get_typeahead_agencies(search_term="xyl")
+    assert len(results) == 1
+    assert results[0]["display_name"] == 'Xylodammerung Police Agency'
+    assert results[0]["jurisdiction_type"] == "state"
+    assert results[0]["state"] == "XY"
+    assert results[0]["county"] == "Arxylodon"
+    assert results[0]["locality"] == "Xylodammerung"
 
 def test_search_with_location_and_record_types_real_data(live_database_client):
     """

@@ -1,74 +1,68 @@
-from flask import Response, request
-from flask_restx import fields, reqparse
+from typing import Callable
+
+from flask import Response
 
 from config import limiter
-from middleware.primary_resource_logic.typeahead_suggestion_logic import get_typeahead_suggestions_wrapper
+from database_client.database_client import DatabaseClient
+from middleware.primary_resource_logic.typeahead_suggestion_logic import (
+    get_typeahead_results,
+    TypeaheadLocationsOuterResponseSchema,
+    TypeaheadAgenciesOuterResponseSchema,
+)
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+    TypeaheadSchema,
+    TypeaheadDTO,
+)
+from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
+    get_restx_param_documentation,
+)
+from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 from resources.PsycopgResource import handle_exceptions, PsycopgResource
-from resources.resource_helpers import create_outer_model
 
 from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_typeahead_suggestions = create_namespace(
-    namespace_attributes=AppNamespaces.SEARCH
+    namespace_attributes=AppNamespaces.TYPEAHEAD
 )
 
-request_parser = reqparse.RequestParser()
-request_parser.add_argument(
-    "query",
-    type=str,
-    location="args",
-    required=True,
-    help="The typeahead query to get suggestions for, such as `Pitts`",
+query_doc_info = get_restx_param_documentation(
+    namespace=namespace_typeahead_suggestions,
+    schema_class=TypeaheadSchema,
 )
 
-
-typeahead_suggestions_inner_model = namespace_typeahead_suggestions.model(
-    "TypeaheadSuggestionsInner",
-    {
-        "display_name": fields.String(
-            required=True,
-            description="The display name of the suggestion",
-            example="Pittsburgh",
-        ),
-        "type": fields.String(
-            required=True,
-            description="The type of suggestion. Either `State`, `County` or `Locality`",
-            example="Locality",
-        ),
-        "state": fields.String(
-            required=True,
-            description="The state of the suggestion",
-            example="Pennsylvania",
-        ),
-        "county": fields.String(
-            required=True,
-            description="The county of the suggestion",
-            example="Allegheny",
-        ),
-        "locality": fields.String(
-            required=True,
-            description="The locality of the suggestion",
-            example="Pittsburgh",
-        ),
-    },
+locations_doc_info = get_restx_param_documentation(
+    namespace=namespace_typeahead_suggestions,
+    schema_class=TypeaheadLocationsOuterResponseSchema,
 )
 
-typeahead_suggestions_outer_model = create_outer_model(
-    namespace_typeahead_suggestions,
-    typeahead_suggestions_inner_model,
-    "TypeaheadSuggestionsOuter",
+agencies_doc_info = get_restx_param_documentation(
+    namespace=namespace_typeahead_suggestions,
+    schema_class=TypeaheadAgenciesOuterResponseSchema,
 )
 
+def get_typeahead_kwargs(db_client_method: Callable) -> dict:
+    return {
+        "wrapper_function": get_typeahead_results,
+        "schema_populate_parameters": SchemaPopulateParameters(
+            schema_class=TypeaheadSchema,
+            dto_class=TypeaheadDTO,
+        ),
+        "db_client_method": db_client_method,
+    }
 
-@namespace_typeahead_suggestions.route("/typeahead-suggestions")
-class TypeaheadSuggestions(PsycopgResource):
+
+@namespace_typeahead_suggestions.route("/locations")
+class TypeaheadLocations(PsycopgResource):
 
     @handle_exceptions
-    @namespace_typeahead_suggestions.expect(request_parser)
-    @namespace_typeahead_suggestions.response(
-        200, "OK", typeahead_suggestions_outer_model
+    @namespace_typeahead_suggestions.doc(
+        description="Get suggestions for a typeahead query",
+        expect=[query_doc_info.parser],
+        responses={
+            200: ("OK. Suggestions returned.", locations_doc_info.model),
+            500: "Internal server error",
+        },
     )
-    @namespace_typeahead_suggestions.response(500, "Internal server error")
     @limiter.limit("10/second")
     def get(self) -> Response:
         """
@@ -78,7 +72,25 @@ class TypeaheadSuggestions(PsycopgResource):
         **Returns**
             - a list of location suggestions
         """
-        query = request.args.get("query")
-        with self.setup_database_client() as db_client:
-            response = get_typeahead_suggestions_wrapper(db_client, query)
-        return response
+        return self.run_endpoint(
+            **get_typeahead_kwargs(DatabaseClient.get_typeahead_locations)
+        )
+
+
+@namespace_typeahead_suggestions.route("/agencies")
+class TypeaheadAgencies(PsycopgResource):
+
+    @handle_exceptions
+    @limiter.limit("10/second")
+    @namespace_typeahead_suggestions.doc(
+        description="Get suggestions for a typeahead query",
+        expect=[query_doc_info.parser],
+        responses={
+            200: ("OK. Suggestions returned.", agencies_doc_info.model),
+            500: "Internal server error",
+        },
+    )
+    def get(self):
+        return self.run_endpoint(
+            **get_typeahead_kwargs(DatabaseClient.get_typeahead_agencies)
+        )

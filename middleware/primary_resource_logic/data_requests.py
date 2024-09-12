@@ -48,8 +48,10 @@ RELATED_SOURCES_RELATION = Relations.RELATED_SOURCES.value
 class RelatedSourceByIDSchema(GetByIDBaseSchema):
     data_source_id = fields.Str(
         required=True,
-        description="The ID of the data source",
-        source=SourceMappingEnum.PATH,
+        metadata={
+            "description": "The ID of the data source",
+            "source": SourceMappingEnum.PATH,
+        }
     )
 
 
