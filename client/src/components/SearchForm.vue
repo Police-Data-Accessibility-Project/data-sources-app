@@ -2,9 +2,9 @@
 	<Form
 		id="pdap-data-sources-search"
 		ref="formRef"
-		class="grid grid-cols-1 auto-rows-auto max-w-full gap-4"
+		class="grid grid-cols-1 auto-rows-auto max-w-full gap:0 md:gap-4"
 		:class="{
-			'md:grid-cols-2 lg:grid-cols-3  gap-4': !isSingleColumn,
+			'md:grid-cols-2 lg:grid-cols-3 gap-0': !isSingleColumn,
 		}"
 		:schema="SCHEMA"
 		@change="onChange"
@@ -208,7 +208,7 @@ const fetchTypeaheadResults = _debounce(
 				const {
 					data: { suggestions },
 				} = await axios.get(
-					`${import.meta.env.VITE_VUE_API_BASE_URL}/search/typeahead-suggestions`,
+					`${import.meta.env.VITE_VUE_API_BASE_URL}/typeahead/locations`,
 					{
 						headers: {
 							Authorization: import.meta.env.VITE_ADMIN_API_KEY,
