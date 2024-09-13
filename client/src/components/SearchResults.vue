@@ -1,160 +1,251 @@
 <template>
 	<div class="flex flex-col w-full gap-5">
-		<details
-			v-for="location in ALL_LOCATION_TYPES"
-			:key="location"
-			:open="location === mostSpecificLocationSearched"
-		>
-			<summary>
-				{{ getSummaryText(location) }}
-				{{
-					`(${results[location].count} ${pluralize('result', results[location].count)})`
-				}}
-				<FontAwesomeIcon :icon="faAngleUp" />
-			</summary>
-			<p
-				v-if="!results[location].count"
-				class="border-solid border-neutral-300 border-2 p-4 max-w-full"
+		<div class="flex w-full gap-2 h-14 items-center">
+			<h4
+				v-for="title of HEADING_TITLES"
+				:key="title + 'heading'"
+				class="block"
+				:class="getClassNameFromHeadingType(title)"
 			>
-				{{ `No ${location}-level results found` }}
-			</p>
-			<div
-				v-else
-				class="border-solid border-neutral-300 border-2 px-4 pb-4 pt-0 flex flex-col gap-2 lg:gap-4 max-h-[400px] md:max-h-[600px] overflow-scroll relative"
-			>
-				<div class="results-row">
-					<h4
-						v-for="title of HEADING_TITLES"
-						:key="title"
-						:class="title.split(' ').join('-').toLowerCase()"
-					>
-						{{ title }}
-					</h4>
-				</div>
-				<div
-					v-for="record of results[location].results"
-					:key="record.agency_name + record.record_type"
-					class="results-row"
+				{{ title }}
+			</h4>
+		</div>
+
+		<div ref="containerRef" class="w-full h-[100vh] relative overflow-y-scroll">
+			<Spinner
+				v-if="isLoading"
+				:show="isLoading"
+				:size="64"
+				text="Fetching search results..."
+			/>
+			<template v-else>
+				<!-- eslint-disable vue/no-v-for-template-key -->
+				<template
+					v-for="locale in ALL_LOCATION_TYPES"
+					:key="locale + 'results'"
 				>
-					<p class="agency">{{ record.agency_name }}</p>
-					<a
-						:href="record.source_url"
-						target="_blank"
-						rel="noreferrer"
-						class="record-type"
-					>
-						{{ record.record_type }}
-					</a>
-					<p class="location">
-						{{ record.municipality }}, {{ record.state_iso }}
-					</p>
-					<p class="time-frame">
-						{{
-							record.coverage_start
-								? getYearRange(record.coverage_start, record.coverage_end)
-								: 'Unknown'
-						}}
-					</p>
-				</div>
-			</div>
-		</details>
+					<!-- TODO: use non-existent hash div and scroll within this parent only -->
+					<template v-if="'count' in results[locale]">
+						<div
+							:id="'scroll-to-' + locale"
+							aria-hidden="true"
+							class="w-full"
+						/>
+						<!-- Header by agency -->
+						<template
+							v-for="agency in Object.keys(results[locale].sourcesByAgency)"
+							:key="agency + 'results'"
+						>
+							<div
+								class="flex sticky top-0 mb-4 justify-between bg-neutral-200 p-2 rounded-sm [&>*]:text-lg border-none"
+							>
+								<h5>{{ agency }}</h5>
+								<span class="pill">{{ locale }}</span>
+							</div>
+
+							<!-- Source within each agency -->
+							<div
+								v-for="source in results[locale].sourcesByAgency[agency]"
+								:key="source.agency_name"
+								class="flex gap-2 mb-4 p-2 h-auto lg:h-[91px] flex-wrap lg:flex-nowrap border-solid border-neutral-300 border-2 rounded-sm [&>*]:text-lg"
+							>
+								<!-- Source name and record type -->
+								<div :class="getClassNameFromHeadingType(HEADING_TITLES[0])">
+									<h6>
+										{{ source.data_source_name }}
+									</h6>
+									<span class="text-med pill w-max">
+										<RecordTypeIcon :record-type="source.record_type" />
+										{{ source.record_type }}
+									</span>
+								</div>
+
+								<!-- Time range -->
+								<p :class="getClassNameFromHeadingType(HEADING_TITLES[1])">
+									{{ getYearRange(source.coverage_start, source.coverage_end) }}
+								</p>
+
+								<!-- Description -->
+								<p :class="getClassNameFromHeadingType(HEADING_TITLES[2])">
+									{{ source.description ?? '—' }}
+								</p>
+
+								<!-- Formats and links to data source view and data source url -->
+								<div :class="getClassNameFromHeadingType(HEADING_TITLES[3])">
+									<!-- TODO: when API returns array correctly - uncomment this -->
+									<!-- <span
+										v-for="format of source.record_format"
+										:key="source.data_source_name + format"
+										:class="getClassNameFromHeadingType(HEADING_TITLES[3])"
+									>
+										{{ format }}
+									</span> -->
+									<!-- And remove this (and the associated utility function) -->
+									<span
+										v-for="format of formatFormatsBecauseAPIReturnsStringsRatherThanArrays(
+											source.record_format,
+										)"
+										:key="source.data_source_name + format"
+										class="format"
+									>
+										{{ format }}
+									</span>
+								</div>
+								<div class="links">
+									<RouterLink :to="`/data-source/${source.airtable_uid}`">
+										<FontAwesomeIcon :icon="faInfo" />
+									</RouterLink>
+									<a :href="source.source_url" target="_blank" rel="noreferrer">
+										<FontAwesomeIcon :icon="faLink" />
+										source
+									</a>
+								</div>
+							</div>
+						</template>
+					</template>
+				</template>
+			</template>
+		</div>
 	</div>
 </template>
 
 <script setup>
-import pluralize from '@/util/pluralize';
-
+import { ALL_LOCATION_TYPES } from '@/util/constants';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faAngleUp } from '@fortawesome/free-solid-svg-icons';
+import { faInfo, faLink } from '@fortawesome/free-solid-svg-icons';
+import { RecordTypeIcon, Spinner } from 'pdap-design-system';
+import { useRoute } from 'vue-router';
+import { ref, watchEffect } from 'vue';
+
+const route = useRoute();
 
 // constants
-const ALL_LOCATION_TYPES = ['locality', 'county', 'state', 'federal'];
 const HEADING_TITLES = [
-	'Agency',
-	'Record Type',
-	'Location',
-	// 'Access Type',
-	'Time Frame',
+	'agency, name, record type',
+	'time range',
+	'description',
+	'formats',
 ];
 
 // For now we have a single array, but we may need to do some parsing, per https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/409
-const { results, mostSpecificLocationSearched } = defineProps({
+const { results, isLoading } = defineProps({
 	results: Object,
-	mostSpecificLocationSearched: String,
+	isLoading: Boolean,
+});
+
+const containerRef = ref();
+// Handle scroll to on route hash change
+function handleScrollTo() {
+	if (route.hash) {
+		const scrollToTop = document.getElementById(
+			'scroll-to-' + route.hash.replace('#', ''),
+		)?.offsetTop;
+
+		containerRef.value?.scrollTo({ top: scrollToTop, behavior: 'smooth' });
+	}
+}
+watchEffect(handleScrollTo);
+
+// TODO: try to handle this with IntersectionObserver instead (i.e. set hash when div intersects, so hash remains up-to-date)
+defineExpose({
+	handleScrollTo,
 });
 
 /**
  * @param start {string} date string
  * @param end {string | undefined} date string
- * @returns string formatted YYYY - YYYY or YYYY - (if the `end` param is not passed)
+ * @returns string formatted YYYY - YYYY
  */
 function getYearRange(start, end) {
 	const startYear = new Date(start).getFullYear();
-	const endYear = new Date(end).getFullYear();
-	const endYearNormalizedForCurrentYear =
-		!end || endYear === new Date().getFullYear() ? '' : endYear;
+	const endYear = (end ? new Date(end) : new Date()).getFullYear();
 
-	return `${startYear} - ${endYearNormalizedForCurrentYear}`;
+	return start ? `${startYear} - ${endYear}` : '—';
 }
 
-function getSummaryText(text) {
-	if (text === 'locality') return 'local';
-	else return text;
+function getClassNameFromHeadingType(heading) {
+	return heading.replaceAll(',', '').split(' ').join('-');
+}
+
+function formatFormatsBecauseAPIReturnsStringsRatherThanArrays(str) {
+	if (!str) return [];
+	return str
+		.replaceAll('[', '')
+		.replaceAll(']', '')
+		.replaceAll('"', '')
+		.split(',')
+		.map((s) => s.trim());
 }
 </script>
 
 <style scoped>
-details summary {
-	@apply capitalize flex gap-4 items-center;
+/* TODO: decouple heading styling from heading level in design-system (or at least provide classes that can perform these overrides more efficiently) */
+h4 {
+	@apply m-0 text-med;
 }
 
-details[open] summary {
-	@apply mb-3 font-medium;
+h5,
+h6 {
+	@apply text-lg not-italic tracking-normal normal-case m-0;
 }
 
-details summary svg {
-	@apply transition-transform duration-150;
+.agency-name-record-type {
+	@apply w-1/2 lg:w-[30%] flex flex-col gap-2;
 }
 
-details[open] summary svg {
-	@apply rotate-180;
+.agency-name-record-type h6 {
+	/* Tailwind is a pain, and its line clamp class doesn't work, so defining here instead */
+	display: -webkit-box;
+	-webkit-line-clamp: 1;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
 }
 
-summary {
-	@apply cursor-pointer list-none;
+.time-range {
+	@apply w-[20%] lg:w-[15%] mb-0;
 }
 
-.results-row {
-	@apply flex items-center gap-2 md:gap-4;
+.description {
+	@apply hidden lg:block w-0 lg:w-[35%] leading-5;
+
+	/* Tailwind is a pain, and its line clamp class doesn't work, so defining here instead */
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
 }
 
-.results-row:first-of-type {
-	@apply sticky top-0 bg-neutral-50 pt-4;
+div.links {
+	@apply flex gap-2 w-full lg:w-auto;
 }
 
-.agency,
-.record-type,
-.location,
-.time-frame {
-	@apply basis-[calc(25%-8px)];
+h4.formats {
+	@apply w-[30%];
 }
 
-.agency,
-.record-type {
-	@apply md:basis-[calc(30%-16px)];
+div.formats {
+	@apply w-[25%] lg:w-[20%] overflow-hidden;
 }
 
-.location,
-.time-frame {
-	@apply md:basis-[calc(20%-16px)];
+.links {
+	@apply w-full lg:w-[10%];
 }
 
-.results-row h4 {
-	@apply text-[12px] sm:text-sm md:text-lg;
+div.agency-name-record-type {
+	@apply flex flex-col justify-start;
 }
 
-.results-row p,
-.results-row a {
-	@apply text-[10px] sm:text-xs md:text-sm;
+.pill {
+	@apply text-neutral-800 border-solid border-[1px] border-neutral-500 rounded-xl px-2 bg-neutral-200;
+}
+
+.format {
+	@apply pill w-min max-w-full px-1 text-med inline-block;
+
+	/* Tailwind is a pain, and its line clamp class doesn't work, so defining here instead */
+	display: -webkit-box;
+	-webkit-line-clamp: 1;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
 }
 </style>
