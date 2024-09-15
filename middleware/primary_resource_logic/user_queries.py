@@ -1,11 +1,15 @@
 from dataclasses import dataclass
+from http import HTTPStatus
 
+from flask import Response
 from marshmallow import Schema, fields
 from werkzeug.security import generate_password_hash
 from typing import Dict
 
 from database_client.database_client import DatabaseClient
-from middleware.exceptions import UserNotFoundError
+from middleware.common_response_formatting import message_response
+from middleware.exceptions import UserNotFoundError, DuplicateUserError
+from middleware.flask_response_manager import FlaskResponseManager
 from utilities.enums import SourceMappingEnum
 
 
@@ -14,22 +18,22 @@ class UserRequestSchema(Schema):
         required=True,
         metadata={
             "description": "The email of the user",
-            "source": SourceMappingEnum.JSON
-        }
+            "source": SourceMappingEnum.JSON,
+        },
     )
     password = fields.Str(
         required=True,
         metadata={
             "description": "The password of the user",
-            "source": SourceMappingEnum.JSON
-        }
+            "source": SourceMappingEnum.JSON,
+        },
     )
+
 
 @dataclass
 class UserRequest:
     email: str
     password: str
-
 
 
 def user_check_email(db_client: DatabaseClient, email: str) -> None:
@@ -45,7 +49,7 @@ def user_check_email(db_client: DatabaseClient, email: str) -> None:
         raise UserNotFoundError(email)
 
 
-def user_post_results(db_client: DatabaseClient, dto: UserRequest) -> None:
+def user_post_results(db_client: DatabaseClient, dto: UserRequest) -> Response:
     """
     Creates a new user with the provided email and password.
 
@@ -54,4 +58,14 @@ def user_post_results(db_client: DatabaseClient, dto: UserRequest) -> None:
     :param password: The password for the new user.
     """
     password_digest = generate_password_hash(dto.password)
-    db_client.add_new_user(dto.email, password_digest)
+    try:
+        db_client.add_new_user(dto.email, password_digest)
+    except DuplicateUserError:
+        return message_response(
+            status_code=HTTPStatus.CONFLICT,
+            message=f"User with email {dto.email} already exists.",
+        )
+    return message_response(
+        message="Successfully added user.",
+        status_code=HTTPStatus.OK,
+    )

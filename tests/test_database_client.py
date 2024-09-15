@@ -20,6 +20,7 @@ from database_client.enums import (
 )
 from middleware.exceptions import (
     UserNotFoundError,
+    DuplicateUserError,
 )
 from database_client.models import ExternalAccount, TestTable, User
 from middleware.enums import PermissionsEnum
@@ -58,6 +59,10 @@ def test_add_new_user(live_database_client: DatabaseClient):
 
     assert api_key is not None
     assert password_digest == "test_password"
+
+    # Adding same user should produce a DuplicateUserError
+    with pytest.raises(DuplicateUserError):
+        live_database_client.add_new_user(fake_email, "test_password")
 
 
 def test_get_user_id(live_database_client: DatabaseClient):
@@ -180,7 +185,9 @@ def test_select_from_single_relation_columns_only(
     ]
 
 
-def test_select_from_single_relation_where_mapping(live_database_client: DatabaseClient):
+def test_select_from_single_relation_where_mapping(
+    live_database_client: DatabaseClient,
+):
     results = live_database_client._select_from_single_relation(
         relation_name="test_table",
         columns=["pet_name"],
@@ -215,7 +222,9 @@ def test_select_from_single_relation_limit(live_database_client: DatabaseClient)
     ]
 
 
-def test_select_from_single_relation_limit_and_offset(live_database_client: DatabaseClient, monkeypatch):
+def test_select_from_single_relation_limit_and_offset(
+    live_database_client: DatabaseClient, monkeypatch
+):
     # Used alongside limit; we mock PAGE_SIZE to be one
     monkeypatch.setattr("database_client.database_client.PAGE_SIZE", 1)
 
@@ -247,7 +256,9 @@ def test_select_from_single_relation_order_by(live_database_client: DatabaseClie
     ]
 
 
-def test_select_from_single_relation_all_parameters(live_database_client: DatabaseClient, monkeypatch):
+def test_select_from_single_relation_all_parameters(
+    live_database_client: DatabaseClient, monkeypatch
+):
     # Used alongside limit; we mock PAGE_SIZE to be one
     monkeypatch.setattr("database_client.database_client.PAGE_SIZE", 1)
 
@@ -361,6 +372,7 @@ def test_delete_from_table(live_database_client, test_table_data):
         {"pet_name": "Arthur"},
         {"pet_name": "Simon"},
     ]
+
 
 def test_update_entry_in_table(live_database_client: DatabaseClient, test_table_data):
     results = live_database_client._select_from_single_relation(
@@ -790,7 +802,9 @@ def test_user_is_creator_of_data_request(live_database_client):
     assert results is False
 
 
-def test_get_column_permissions_as_permission_table(live_database_client: DatabaseClient):
+def test_get_column_permissions_as_permission_table(
+    live_database_client: DatabaseClient,
+):
     insert_test_column_permission_data(live_database_client)
 
     results = live_database_client.get_column_permissions_as_permission_table(
@@ -950,7 +964,6 @@ def test_check_for_url_duplicates(live_database_client):
     # for url in same_urls:
     #     results = live_database_client.check_for_url_duplicates(url)
     #     assert len(results) == 1
-
 
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts
