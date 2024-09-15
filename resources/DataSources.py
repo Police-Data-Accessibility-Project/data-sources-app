@@ -28,7 +28,7 @@ from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
 from resources.resource_helpers import (
     add_api_key_header_arg,
     add_jwt_header_arg,
-    create_response_dictionary,
+    create_response_dictionary, add_jwt_or_api_key_header_arg,
 )
 from utilities.namespace import create_namespace, AppNamespaces
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
@@ -46,6 +46,7 @@ data_sources_get_request_parser = get_restx_param_documentation(
     schema_class=DataSourcesGetRequestSchemaMany,
     model_name="DataSourcesGetRequest",
 ).parser
+add_jwt_or_api_key_header_arg(data_sources_get_request_parser)
 
 authorization_api_parser = namespace_data_source.parser()
 add_api_key_header_arg(authorization_api_parser)
@@ -53,6 +54,8 @@ add_api_key_header_arg(authorization_api_parser)
 authorization_jwt_parser = namespace_data_source.parser()
 add_jwt_header_arg(authorization_jwt_parser)
 
+jwt_or_api_key_parser = namespace_data_source.parser()
+add_jwt_or_api_key_header_arg(jwt_or_api_key_parser)
 
 @namespace_data_source.route("/<resource_id>")
 class DataSourceById(PsycopgResource):
@@ -69,8 +72,8 @@ class DataSourceById(PsycopgResource):
             success_message="Returns information on the specific data source.",
             success_model=models.entry_data_response_model,
         ),
+        expect=[jwt_or_api_key_parser],
     )
-    @namespace_data_source.expect(authorization_api_parser)
     def get(self, access_info: AccessInfo, resource_id: str) -> Response:
         """
         Retrieves details of a specific data source by its ID.
@@ -93,14 +96,12 @@ class DataSourceById(PsycopgResource):
     @authentication_required(
         [AccessTypeEnum.JWT], restrict_to_permissions=[PermissionsEnum.DB_WRITE]
     )
-    @namespace_data_source.expect(
-        authorization_jwt_parser, models.entry_data_request_model
-    )
     @namespace_data_source.doc(
         description="Update details of a specific data source by its ID.",
         responses=create_response_dictionary(
             success_message="Data source successfully updated.",
         ),
+        expect=[authorization_jwt_parser, models.entry_data_request_model]
     )
     def put(self, access_info: AccessInfo, resource_id: str) -> Response:
         """
@@ -131,8 +132,8 @@ class DataSourceById(PsycopgResource):
         responses=create_response_dictionary(
             success_message="Data source successfully deleted."
         ),
+        expect=[authorization_jwt_parser],
     )
-    @namespace_data_source.expect(authorization_jwt_parser)
     def delete(self, access_info: AccessInfo, resource_id: str) -> Response:
         """
         Deletes a data source by its ID.
@@ -167,9 +168,7 @@ class DataSources(PsycopgResource):
             success_message="Returns all requested data sources.",
             success_model=models.get_many_response_model,
         ),
-    )
-    @namespace_data_source.expect(
-        data_sources_get_request_parser, authorization_api_parser
+        expect=[data_sources_get_request_parser],
     )
     def get(self, access_info: AccessInfo) -> Response:
         """
@@ -193,15 +192,13 @@ class DataSources(PsycopgResource):
         allowed_access_methods=[AccessTypeEnum.JWT],
         restrict_to_permissions=[PermissionsEnum.DB_WRITE],
     )
-    @namespace_data_source.expect(
-        authorization_jwt_parser, models.entry_data_request_model
-    )
     @namespace_data_source.doc(
         description="Adds a new data source.",
         responses=create_response_dictionary(
             success_message="Data source successfully added.",
             success_model=models.id_and_message_model,
         ),
+        expect=[authorization_jwt_parser, models.entry_data_request_model]
     )
     def post(self, access_info: AccessInfo) -> Response:
         """

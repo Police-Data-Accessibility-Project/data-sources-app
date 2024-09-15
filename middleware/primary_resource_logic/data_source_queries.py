@@ -27,6 +27,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetByIDBaseDTO,
 )
 from middleware.common_response_formatting import format_list_response
+from utilities.common import match_string_to_enum
 from utilities.enums import SourceMappingEnum
 
 RELATION = Relations.DATA_SOURCES.value
@@ -37,12 +38,13 @@ class DataSourceNotFoundError(Exception):
 
 
 class DataSourcesGetRequestSchemaMany(GetManyBaseSchema):
-    approval_status = fields.Str(
+    approval_status = fields.Enum(
+        enum=ApprovalStatus,
+        by_value=fields.String,
         required=False,
-        validate=validate.OneOf([e.value for e in ApprovalStatus]),
         metadata={
             "source": SourceMappingEnum.QUERY_ARGS,
-            "description": "The approval status of the data sources",
+            "description": "The approval status of the data sources.",
             "default": "approved",
         }
     )

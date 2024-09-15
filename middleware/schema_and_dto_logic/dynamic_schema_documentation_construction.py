@@ -73,6 +73,12 @@ def add_description_info_from_validators(
 
 
 # region Classes
+def add_description_info_from_enum(field_value: marshmallow_fields.Enum, description: str):
+    enum_class = field_value.enum
+    description += f" Must be one of: {[x.value for x in enum_class]}."
+    return description
+
+
 class FieldInfo:
 
     def __init__(
@@ -100,6 +106,8 @@ class FieldInfo:
         field_value: marshmallow_fields,
     ) -> str:
         description = _get_required_argument("description", metadata, schema_class)
+        if isinstance(field_value, marshmallow_fields.Enum):
+            description = add_description_info_from_enum(field_value, description)
         return add_description_info_from_validators(field_value, description)
 
     def _map_field_type(self, field_type: type[MarshmallowFields]) -> Type[RestxFields]:

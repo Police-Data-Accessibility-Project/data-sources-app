@@ -33,11 +33,11 @@ class GetManyBaseSchema(Schema):
             "source": SourceMappingEnum.QUERY_ARGS
         }
     )
-    sort_order = fields.Str(
+    sort_order = fields.Enum(
         required=False,
-        validate=validate.OneOf([e.value for e in SortOrder]),
+        enum=SortOrder,
+        by_value=fields.Str,
         metadata={
-            "transformation_function": lambda value: get_valid_enum_value(SortOrder, value),
             "source": SourceMappingEnum.QUERY_ARGS,
             "description": "The order to sort the results by.",
         }
