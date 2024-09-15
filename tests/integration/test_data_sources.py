@@ -36,7 +36,7 @@ def test_data_sources_get(
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
-        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1",  # ENDPOINT,
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&approval_status=approved",  # ENDPOINT,
         headers=tus.api_authorization_header,
     )
     data = response_json["data"]

@@ -65,7 +65,7 @@ TEST_ID = -1
             "DataSources.add_new_data_source_wrapper",
             {"entry_data": {}},
         ),
-        ("/data-sources?page=1", "GET", "DataSources.get_data_sources_wrapper", {}),
+        ("/data-sources?page=1&approval_status=approved", "GET", "DataSources.get_data_sources_wrapper", {}),
         (
             "/data-requests/test_id/related-sources",
             "GET",

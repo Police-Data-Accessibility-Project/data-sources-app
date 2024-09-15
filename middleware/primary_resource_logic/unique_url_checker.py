@@ -45,13 +45,14 @@ class UniqueURLCheckerResponseInnerSchema(Schema):
             "source": SourceMappingEnum.JSON,
         },
     )
-    approval_status = fields.Str(
+    approval_status = fields.Enum(
         required=True,
+        enum=ApprovalStatus,
+        by_value=fields.Str,
         metadata={
             "description": "The approval status of the URL.",
             "source": SourceMappingEnum.JSON,
         },
-        validate=validate.OneOf([e.value for e in ApprovalStatus]),
     )
     rejection_note = fields.Str(
         required=False,
