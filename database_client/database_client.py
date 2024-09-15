@@ -20,6 +20,7 @@ from database_client.enums import (
 )
 from middleware.exceptions import (
     UserNotFoundError,
+    DuplicateUserError,
 )
 from database_client.models import (
     ExternalAccount,
@@ -164,11 +165,17 @@ class DatabaseClient:
         :param password_digest:
         :return:
         """
-        return self._create_entry_in_table(
-            table_name="users",
-            column_value_mappings={"email": email, "password_digest": password_digest},
-            column_to_return="id",
-        )
+        try:
+            return self._create_entry_in_table(
+                table_name="users",
+                column_value_mappings={
+                    "email": email,
+                    "password_digest": password_digest,
+                },
+                column_to_return="id",
+            )
+        except psycopg.errors.UniqueViolation:
+            raise DuplicateUserError
 
     def get_user_id(self, email: str) -> Optional[int]:
         """
@@ -1036,7 +1043,8 @@ class DatabaseClient:
                 )
             ORDER BY COUNT_DATA_SOURCES DESC
             LIMIT 100 -- Limiting to 100 in acknowledgment of the search engine quota
-        """)
+        """
+        )
 
     @cursor_manager()
     def check_for_url_duplicates(self, url: str) -> list[dict]:

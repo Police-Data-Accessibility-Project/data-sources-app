@@ -1,12 +1,19 @@
+from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
 
 from database_client.database_client import DatabaseClient
-from middleware.exceptions import UserNotFoundError
+from middleware.exceptions import UserNotFoundError, DuplicateUserError
 from middleware.primary_resource_logic.login_queries import try_logging_in
-from middleware.primary_resource_logic.user_queries import user_post_results, user_check_email
+from middleware.primary_resource_logic.user_queries import (
+    user_post_results,
+    user_check_email,
+)
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
+from tests.helper_scripts.common_mocks_and_patches import multi_monkeypatch
+
+PATCH_ROOT = "middleware.primary_resource_logic.user_queries"
 
 
 def test_user_post_query(monkeypatch):
@@ -14,7 +21,7 @@ def test_user_post_query(monkeypatch):
     mock.generate_password_hash.return_value = mock.password_digest
 
     monkeypatch.setattr(
-        "middleware.primary_resource_logic.user_queries.generate_password_hash", mock.generate_password_hash
+        f"{PATCH_ROOT}.generate_password_hash", mock.generate_password_hash
     )
 
     user_post_results(mock.db_client, mock.dto)
@@ -95,3 +102,25 @@ def test_try_logging_in_unsuccessful():
     assert_try_logging_in_preconditions(mock)
     mock.unauthorized_response.assert_called_once()
     mock.login_response.assert_not_called()
+
+
+def test_user_post_results_duplicate_user_error(monkeypatch):
+    mock = MagicMock()
+    multi_monkeypatch(
+        monkeypatch,
+        patch_root=PATCH_ROOT,
+        mock=mock,
+        functions_to_patch=[
+            "generate_password_hash",
+            "message_response",
+        ],
+    )
+    mock.db_client.add_new_user.side_effect = DuplicateUserError
+    user_post_results(mock.db_client, mock.dto)
+    mock.db_client.add_new_user.assert_called_once_with(
+        mock.dto.email, mock.generate_password_hash.return_value
+    )
+    mock.message_response.assert_called_once_with(
+        message=f"User with email {mock.dto.email} already exists.",
+        status_code=HTTPStatus.CONFLICT,
+    )
