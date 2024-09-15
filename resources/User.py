@@ -1,9 +1,12 @@
 from http import HTTPStatus
 
+from flask import Response
+
 from middleware.primary_resource_logic.reset_token_queries import set_user_password
 from middleware.primary_resource_logic.user_queries import user_post_results, UserRequest, UserRequestSchema
 from typing import Dict, Any
 
+from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 from resources.resource_helpers import add_api_key_header_arg
 from middleware.schema_and_dto_logic.model_helpers_with_schemas import create_user_model
 from utilities.namespace import create_namespace
@@ -27,10 +30,9 @@ class User(PsycopgResource):
 
     @handle_exceptions
     @namespace_user.expect(user_model)
-    @namespace_user.response(201, "Success: User created")
+    @namespace_user.response(HTTPStatus.OK, "Success: User created")
     @namespace_user.response(500, "Error: Internal server error")
-    @namespace_user.response(401, "Error: Unauthorized login failed.")
-    def post(self) -> Dict[str, Any]:
+    def post(self) -> Response:
         """
         Allows a new user to sign up by providing an email and password.
 
@@ -40,14 +42,14 @@ class User(PsycopgResource):
         Returns:
         - A dictionary containing a success message or an error message if the operation fails.
         """
-        dto = populate_schema_with_request_content(
-            schema_class=UserRequestSchema,
-            dto_class=UserRequest,
+        return self.run_endpoint(
+            wrapper_function=user_post_results,
+            schema_populate_parameters=SchemaPopulateParameters(
+                schema_class=UserRequestSchema,
+                dto_class=UserRequest,
+            ),
         )
-        with self.setup_database_client() as db_client:
-            user_post_results(db_client, dto)
 
-        return {"message": "Successfully added user"}
 
     # Endpoint for updating a user's password
     @handle_exceptions

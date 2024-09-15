@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from http import HTTPStatus
 
+from flask import Response
 from marshmallow import Schema, fields
 from werkzeug.security import generate_password_hash
 from typing import Dict
@@ -48,7 +49,7 @@ def user_check_email(db_client: DatabaseClient, email: str) -> None:
         raise UserNotFoundError(email)
 
 
-def user_post_results(db_client: DatabaseClient, dto: UserRequest) -> None:
+def user_post_results(db_client: DatabaseClient, dto: UserRequest) -> Response:
     """
     Creates a new user with the provided email and password.
 
@@ -60,7 +61,11 @@ def user_post_results(db_client: DatabaseClient, dto: UserRequest) -> None:
     try:
         db_client.add_new_user(dto.email, password_digest)
     except DuplicateUserError:
-        message_response(
+        return message_response(
             status_code=HTTPStatus.CONFLICT,
             message=f"User with email {dto.email} already exists.",
         )
+    return message_response(
+        message="Successfully added user.",
+        status_code=HTTPStatus.OK,
+    )
