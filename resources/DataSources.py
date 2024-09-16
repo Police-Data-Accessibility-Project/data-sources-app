@@ -1,6 +1,10 @@
 from flask import Response
 
-from middleware.access_logic import AccessInfo
+from middleware.access_logic import (
+    AccessInfo,
+    WRITE_ONLY_AUTH_INFO,
+    GET_AUTH_INFO,
+)
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     EntryDataRequestDTO,
     EntryDataRequestSchema,
@@ -8,8 +12,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetByIDBaseDTO,
 )
 from middleware.decorators import (
-    api_key_required,
-    authentication_required,
+    endpoint_info,
 )
 from middleware.primary_resource_logic.data_source_queries import (
     get_data_sources_wrapper,
@@ -21,41 +24,20 @@ from middleware.primary_resource_logic.data_source_queries import (
     DataSourcesGetRequestDTOMany,
     delete_data_source_wrapper,
 )
-from middleware.enums import PermissionsEnum, AccessTypeEnum
 from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
     CRUDModels,
 )
 from resources.resource_helpers import (
-    add_api_key_header_arg,
-    add_jwt_header_arg,
-    create_response_dictionary, add_jwt_or_api_key_header_arg,
+    create_response_dictionary,
 )
 from utilities.namespace import create_namespace, AppNamespaces
-from resources.PsycopgResource import PsycopgResource, handle_exceptions
-from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
-    get_restx_param_documentation,
-)
+from resources.PsycopgResource import PsycopgResource
+
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 
 namespace_data_source = create_namespace(AppNamespaces.DATA_SOURCES)
-
 models = CRUDModels(namespace_data_source)
 
-data_sources_get_request_parser = get_restx_param_documentation(
-    namespace=namespace_data_source,
-    schema_class=DataSourcesGetRequestSchemaMany,
-    model_name="DataSourcesGetRequest",
-).parser
-add_jwt_or_api_key_header_arg(data_sources_get_request_parser)
-
-authorization_api_parser = namespace_data_source.parser()
-add_api_key_header_arg(authorization_api_parser)
-
-authorization_jwt_parser = namespace_data_source.parser()
-add_jwt_header_arg(authorization_jwt_parser)
-
-jwt_or_api_key_parser = namespace_data_source.parser()
-add_jwt_or_api_key_header_arg(jwt_or_api_key_parser)
 
 @namespace_data_source.route("/<resource_id>")
 class DataSourceById(PsycopgResource):
@@ -64,15 +46,13 @@ class DataSourceById(PsycopgResource):
     Provides methods for retrieving and updating data source details.
     """
 
-    @handle_exceptions
-    @authentication_required([AccessTypeEnum.API_KEY, AccessTypeEnum.JWT])
-    @namespace_data_source.doc(
-        description="Get details of a specific data source by its ID.",
+    @endpoint_info(
+        namespace=namespace_data_source,
+        auth_info=GET_AUTH_INFO,
         responses=create_response_dictionary(
             success_message="Returns information on the specific data source.",
             success_model=models.entry_data_response_model,
         ),
-        expect=[jwt_or_api_key_parser],
     )
     def get(self, access_info: AccessInfo, resource_id: str) -> Response:
         """
@@ -92,16 +72,14 @@ class DataSourceById(PsycopgResource):
             ),
         )
 
-    @handle_exceptions
-    @authentication_required(
-        [AccessTypeEnum.JWT], restrict_to_permissions=[PermissionsEnum.DB_WRITE]
-    )
-    @namespace_data_source.doc(
+    @endpoint_info(
+        namespace=namespace_data_source,
+        auth_info=WRITE_ONLY_AUTH_INFO,
+        input_model=models.entry_data_request_model,
         description="Update details of a specific data source by its ID.",
         responses=create_response_dictionary(
             success_message="Data source successfully updated.",
         ),
-        expect=[authorization_jwt_parser, models.entry_data_request_model]
     )
     def put(self, access_info: AccessInfo, resource_id: str) -> Response:
         """
@@ -123,16 +101,12 @@ class DataSourceById(PsycopgResource):
             access_info=access_info,
         )
 
-    @handle_exceptions
-    @authentication_required(
-        [AccessTypeEnum.JWT], restrict_to_permissions=[PermissionsEnum.DB_WRITE]
-    )
-    @namespace_data_source.doc(
-        description="Delete a data source by its ID.",
+    @endpoint_info(
+        namespace=namespace_data_source,
+        auth_info=WRITE_ONLY_AUTH_INFO,
         responses=create_response_dictionary(
-            success_message="Data source successfully deleted."
+            success_message="Data source successfully deleted.",
         ),
-        expect=[authorization_jwt_parser],
     )
     def delete(self, access_info: AccessInfo, resource_id: str) -> Response:
         """
@@ -158,17 +132,15 @@ class DataSources(PsycopgResource):
     Provides methods for retrieving all data sources and adding new ones.
     """
 
-    @handle_exceptions
-    @authentication_required(
-        allowed_access_methods=[AccessTypeEnum.API_KEY, AccessTypeEnum.JWT],
-    )
-    @namespace_data_source.doc(
+    @endpoint_info(
+        namespace=namespace_data_source,
+        auth_info=GET_AUTH_INFO,
+        input_schema=DataSourcesGetRequestSchemaMany,
         description="Retrieves all data sources.",
         responses=create_response_dictionary(
             success_message="Returns all requested data sources.",
             success_model=models.get_many_response_model,
         ),
-        expect=[data_sources_get_request_parser],
     )
     def get(self, access_info: AccessInfo) -> Response:
         """
@@ -187,18 +159,14 @@ class DataSources(PsycopgResource):
             access_info=access_info,
         )
 
-    @handle_exceptions
-    @authentication_required(
-        allowed_access_methods=[AccessTypeEnum.JWT],
-        restrict_to_permissions=[PermissionsEnum.DB_WRITE],
-    )
-    @namespace_data_source.doc(
-        description="Adds a new data source.",
+    @endpoint_info(
+        namespace=namespace_data_source,
+        auth_info=WRITE_ONLY_AUTH_INFO,
         responses=create_response_dictionary(
             success_message="Data source successfully added.",
             success_model=models.id_and_message_model,
         ),
-        expect=[authorization_jwt_parser, models.entry_data_request_model]
+        description="Adds a new data source.",
     )
     def post(self, access_info: AccessInfo) -> Response:
         """
@@ -216,6 +184,8 @@ class DataSources(PsycopgResource):
     # This endpoint no longer works because of the other data source endpoint
     # It is interpreted as another data source id
     # But we have not yet decided whether to modify or remove it entirely
+
+
 # @namespace_data_source.route("/data-sources-map")
 # class DataSourcesMap(PsycopgResource):
 #     """

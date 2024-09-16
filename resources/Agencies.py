@@ -1,7 +1,7 @@
 from flask import Response
 from flask_restx import fields
 
-from middleware.access_logic import AccessInfo
+from middleware.access_logic import AccessInfo, GET_AUTH_INFO, WRITE_ONLY_AUTH_INFO
 from middleware.primary_resource_logic.agencies import (
     get_agencies,
     get_agency_by_id,
@@ -19,6 +19,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
 )
 from middleware.decorators import (
     authentication_required,
+    endpoint_info,
 )
 from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
 from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
@@ -33,6 +34,7 @@ from resources.resource_helpers import (
     add_jwt_or_api_key_header_arg,
     add_jwt_header_arg,
     create_response_dictionary,
+    column_permissions_description,
 )
 from utilities.namespace import create_namespace, AppNamespaces
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
@@ -54,16 +56,6 @@ page_parser.add_argument(
 )
 add_jwt_or_api_key_header_arg(page_parser)
 
-post_parser = namespace_agencies.parser()
-add_jwt_header_arg(post_parser)
-
-id_parser_get = namespace_agencies.parser()
-add_jwt_or_api_key_header_arg(id_parser_get)
-
-id_parser_admin = namespace_agencies.parser()
-add_jwt_header_arg(id_parser_admin)
-
-
 agencies_column_permissions = create_column_permissions_string_table(
     relation=Relations.AGENCIES.value
 )
@@ -74,20 +66,14 @@ agencies_column_permissions = create_column_permissions_string_table(
 class AgenciesByPage(PsycopgResource):
     """Represents a resource for fetching approved agency data from the database."""
 
-    @handle_exceptions
-    @authentication_required(
-        allowed_access_methods=[AccessTypeEnum.JWT, AccessTypeEnum.API_KEY],
-    )
-    @namespace_agencies.doc(
-        description=f"""
-Get a paginated list of approved agencies from the database.
-
-Columns returned are determined by the user's access level.
-
-## COLUMN PERMISSIONS
-
-{agencies_column_permissions}
-""",
+    @endpoint_info(
+        namespace=namespace_agencies,
+        auth_info=GET_AUTH_INFO,
+        description=column_permissions_description(
+            head_description="Get a paginated list of approved agencies",
+            sub_description="Columns returned are determined by the user's access level.",
+            column_permissions_str_table=agencies_column_permissions,
+        ),
         responses=create_response_dictionary(
             success_message="Returns a paginated list of approved agencies.",
             success_model=models.get_many_response_model,
@@ -109,26 +95,19 @@ Columns returned are determined by the user's access level.
             access_info=access_info,
         )
 
-    @handle_exceptions
-    @namespace_agencies.doc(
-        description=f"""
-        Adds a new agency.
-
-Columns permitted to be included by the user is determined by their level of access
-
-## COLUMN PERMISSIONS
-
-{agencies_column_permissions}
-        """,
+    @endpoint_info(
+        namespace=namespace_agencies,
+        auth_info=WRITE_ONLY_AUTH_INFO,
+        input_model=models.entry_data_request_model,
+        description=column_permissions_description(
+            head_description="Create a new agency",
+            sub_description="Columns permitted to be included by the user is determined by their level of access",
+            column_permissions_str_table=agencies_column_permissions,
+        ),
         responses=create_response_dictionary(
             success_message="Returns the id of the newly created agency.",
             success_model=models.id_and_message_model,
         ),
-    )
-    @namespace_agencies.expect(models.entry_data_request_model, post_parser)
-    @authentication_required(
-        allowed_access_methods=[AccessTypeEnum.JWT],
-        restrict_to_permissions=[PermissionsEnum.DB_WRITE],
     )
     def post(self, access_info: AccessInfo):
         return self.run_endpoint(
@@ -142,21 +121,14 @@ Columns permitted to be included by the user is determined by their level of acc
 @namespace_agencies.route("/<resource_id>")
 class AgenciesById(PsycopgResource):
 
-    @handle_exceptions
-    @authentication_required(
-        allowed_access_methods=[AccessTypeEnum.JWT, AccessTypeEnum.API_KEY],
-    )
-    @namespace_agencies.expect(id_parser_get)
-    @namespace_agencies.doc(
-        description=f"""
-        Get Agency by id
-
-Columns returned are determined by the user's access level.
-
-## COLUMN PERMISSIONS
-
-{agencies_column_permissions}
-        """,
+    @endpoint_info(
+        namespace=namespace_agencies,
+        auth_info=GET_AUTH_INFO,
+        description=column_permissions_description(
+            head_description="Get an agency by id",
+            sub_description="Columns returned are determined by the user's access level.",
+            column_permissions_str_table=agencies_column_permissions,
+        ),
         responses=create_response_dictionary(
             "Returns agency.", models.entry_data_response_model
         ),
@@ -171,23 +143,15 @@ Columns returned are determined by the user's access level.
             access_info=access_info,
         )
 
-    @handle_exceptions
-    @authentication_required(
-        allowed_access_methods=[AccessTypeEnum.JWT],
-        restrict_to_permissions=[PermissionsEnum.DB_WRITE],
-    )
-    @namespace_agencies.expect(id_parser_admin, models.entry_data_request_model)
-    @namespace_agencies.doc(
-        description=f"""
-        Updates Agency
-        
-Columns allowed to be updated by the user is determined by their level of access
-
-## COLUMN PERMISSIONS
-
-{agencies_column_permissions}
-
-""",
+    @endpoint_info(
+        namespace=namespace_agencies,
+        auth_info=WRITE_ONLY_AUTH_INFO,
+        input_model=models.entry_data_request_model,
+        description=column_permissions_description(
+            head_description="Updates an agency",
+            sub_description="Columns allowed to be updated by the user is determined by their level of access",
+            column_permissions_str_table=agencies_column_permissions,
+        ),
         responses=create_response_dictionary("Agency successfully updated."),
     )
     def put(self, resource_id: str, access_info: AccessInfo) -> Response:
@@ -198,14 +162,10 @@ Columns allowed to be updated by the user is determined by their level of access
             agency_id=resource_id,
         )
 
-    @handle_exceptions
-    @authentication_required(
-        allowed_access_methods=[AccessTypeEnum.JWT],
-        restrict_to_permissions=[PermissionsEnum.DB_WRITE],
-    )
-    @namespace_agencies.expect(id_parser_admin)
-    @namespace_agencies.doc(
-        description="Deletes Agency",
+    @endpoint_info(
+        namespace=namespace_agencies,
+        auth_info=WRITE_ONLY_AUTH_INFO,
+        description="Deletes an agency",
         responses=create_response_dictionary("Agency successfully deleted."),
     )
     def delete(self, resource_id: str, access_info: AccessInfo) -> Response:
