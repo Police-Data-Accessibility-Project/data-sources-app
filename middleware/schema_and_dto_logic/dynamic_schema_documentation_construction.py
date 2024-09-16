@@ -225,7 +225,9 @@ class RestxModelBuilder(RestxBuilder):
                 attribute=fi.field_name,
             )
 
-    def build_model(self) -> Model:
+    def build_model(self) -> Optional[Model]:
+        if self.model_dict == {}:
+            return None
         return self.namespace.model(self.model_name, self.model_dict)
 
     def _build_nested_field_as_model(self, fi: FieldInfo):
