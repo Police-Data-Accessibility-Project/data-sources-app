@@ -7,7 +7,7 @@ const HEADERS_BASIC = {
 	'Content-Type': 'application/json',
 };
 const SEARCH_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/search/search-location-and-record-type`;
-const DATA_SOURCE_BY_ID_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/data-sources/id`;
+const DATA_SOURCE_BY_ID_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/data-sources`;
 
 export const useSearchStore = defineStore('search', {
 	state: () => ({
