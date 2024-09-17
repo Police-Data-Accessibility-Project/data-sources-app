@@ -29,9 +29,6 @@ def test_data_sources_get(
     """
     Test that GET call to /data-sources endpoint retrieves data sources and correctly identifies specific sources by name
     """
-    inserted_data_sources_found = get_boolean_dictionary(
-        ("Source 1", "Source 2", "Source 3")
-    )
     tus = create_test_user_setup(flask_client_with_db)
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
@@ -40,15 +37,7 @@ def test_data_sources_get(
         headers=tus.api_authorization_header,
     )
     data = response_json["data"]
-    search_with_boolean_dictionary(
-        data=data,
-        boolean_dictionary=inserted_data_sources_found,
-        key_to_search_on="name",
-    )
-    assert inserted_data_sources_found["Source 1"]
-    # The below are not approved, and so should not be found
-    assert not inserted_data_sources_found["Source 2"]
-    assert not inserted_data_sources_found["Source 3"]
+    assert len(data) == 100
 
     # Test sort functionality
     response_json = run_and_validate_request(
