@@ -5,7 +5,7 @@ from typing import Optional
 from flask import make_response, Response
 from marshmallow import fields
 
-from database_client.db_client_dataclasses import WhereMapping
+from database_client.db_client_dataclasses import WhereMapping, OrderByParameters
 from database_client.database_client import DatabaseClient
 from database_client.enums import ColumnPermissionEnum, RelationRoleEnum
 from middleware.access_logic import AccessInfo
@@ -30,6 +30,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     EntryDataRequestDTO,
     GetByIDBaseDTO,
     GetByIDBaseSchema,
+    GetManyBaseDTO,
 )
 from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
 
@@ -51,7 +52,7 @@ class RelatedSourceByIDSchema(GetByIDBaseSchema):
         metadata={
             "description": "The ID of the data source",
             "source": SourceMappingEnum.PATH,
-        }
+        },
     )
 
 
@@ -128,10 +129,13 @@ def create_data_request_wrapper(
 
 
 def get_data_requests_wrapper(
-    db_client: DatabaseClient, access_info: AccessInfo
+        db_client: DatabaseClient,
+        dto: GetManyBaseDTO,
+        access_info: AccessInfo
 ) -> Response:
     """
     Get data requests
+    :param dto:
     :param db_client:
     :param access_info:
     :return:
@@ -141,7 +145,10 @@ def get_data_requests_wrapper(
         db_client, data_request_id=None, access_info=access_info
     )
     formatted_data_requests = get_formatted_data_requests(
-        access_info, db_client, relation_role
+        access_info=access_info,
+        db_client=db_client,
+        relation_role=relation_role,
+        dto=dto
     )
     formatted_list_response = format_list_response(formatted_data_requests)
 
@@ -151,18 +158,26 @@ def get_data_requests_wrapper(
     )
 
 
-def get_formatted_data_requests(access_info, db_client, relation_role) -> list[dict]:
+def get_formatted_data_requests(access_info, db_client, relation_role, dto: GetManyBaseDTO) -> list[dict]:
 
     if relation_role == RelationRoleEnum.ADMIN:
-        return get_data_requests_with_permitted_columns(db_client, relation_role)
+        return get_data_requests_with_permitted_columns(
+            db_client,
+            relation_role,
+            dto
+        )
     elif relation_role == RelationRoleEnum.STANDARD:
         return get_standard_and_owner_zipped_data_requests(
-            access_info.user_email, db_client
+            access_info.user_email, db_client, dto
         )
     raise ValueError(f"Invalid relation role: {relation_role}")
 
 
-def get_standard_and_owner_zipped_data_requests(user_email, db_client):
+def get_standard_and_owner_zipped_data_requests(
+        user_email,
+        db_client,
+        dto: GetManyBaseDTO
+):
     user_id = db_client.get_user_id(user_email)
     # Create two requests -- one where the user is the creator and one where the user is not
     mapping = [WhereMapping(column="creator_user_id", eq=False, value=user_id)]
@@ -170,12 +185,14 @@ def get_standard_and_owner_zipped_data_requests(user_email, db_client):
         db_client=db_client,
         relation_role=RelationRoleEnum.STANDARD,
         where_mappings=mapping,
+        dto=dto
     )
     mapping = [WhereMapping(column="creator_user_id", value=user_id)]
     zipped_owner_requests = get_data_requests_with_permitted_columns(
         db_client=db_client,
         relation_role=RelationRoleEnum.OWNER,
         where_mappings=mapping,
+        dto=dto
     )
     # Combine these so that the owner requests are listed first
     zipped_data_requests = zipped_owner_requests + zipped_standard_requests
@@ -185,6 +202,7 @@ def get_standard_and_owner_zipped_data_requests(user_email, db_client):
 def get_data_requests_with_permitted_columns(
     db_client,
     relation_role,
+    dto: GetManyBaseDTO,
     where_mappings: Optional[list[WhereMapping]] = [True],
 ) -> list[dict]:
 
@@ -197,6 +215,7 @@ def get_data_requests_with_permitted_columns(
     data_requests = db_client.get_data_requests(
         columns=columns,
         where_mappings=where_mappings,
+        order_by=OrderByParameters.construct_from_args(dto.sort_by, dto.sort_order),
     )
     return data_requests
 

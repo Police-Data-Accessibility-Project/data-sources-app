@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch, call
 import pytest
 
 from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import WhereMapping
+from database_client.db_client_dataclasses import WhereMapping, OrderByParameters
 from database_client.enums import RelationRoleEnum, ColumnPermissionEnum
 from middleware.access_logic import AccessInfo
 from middleware.dynamic_request_logic.supporting_classes import IDInfo
@@ -110,15 +110,16 @@ def test_get_data_requests_wrapper(
     monkeypatch,
 ):
     mock = MagicMock()
-    get_data_requests_wrapper(mock.db_client, mock.access_info)
+    get_data_requests_wrapper(mock.db_client, mock.dto, mock.access_info)
 
     mock_get_data_requests_relation_role.assert_called_once_with(
         mock.db_client, data_request_id=None, access_info=mock.access_info
     )
     mock_get_formatted_data_requests.assert_called_once_with(
-        mock.access_info,
-        mock.db_client,
-        mock_get_data_requests_relation_role.return_value,
+        access_info=mock.access_info,
+        db_client=mock.db_client,
+        relation_role=mock_get_data_requests_relation_role.return_value,
+        dto=mock.dto,
     )
 
     mock_format_list_response.assert_called_once_with(
@@ -152,6 +153,7 @@ def test_get_data_requests_with_permitted_columns(
     results = get_data_requests_with_permitted_columns(
         db_client=mock.db_client,
         relation_role=mock.relation_role,
+        dto=mock.dto,
         where_mappings=mock.where_mappings,
     )
 
@@ -168,6 +170,9 @@ def test_get_data_requests_with_permitted_columns(
     mock.db_client.get_data_requests.assert_called_once_with(
         columns=mock_get_permitted_columns.return_value,
         where_mappings=mock.where_mappings,
+        order_by=OrderByParameters(
+            sort_order=mock.dto.sort_order, sort_by=mock.dto.sort_by
+        ),
     )
 
 
@@ -178,9 +183,10 @@ def test_get_formatted_data_requests_admin(get_formatted_data_requests_mocks):
         db_client=mock.db_client,
         access_info=mock.access_info,
         relation_role=RelationRoleEnum.ADMIN,
+        dto=mock.dto,
     )
     mock.get_data_requests_with_permitted_columns.assert_called_once_with(
-        mock.db_client, RelationRoleEnum.ADMIN
+        mock.db_client, RelationRoleEnum.ADMIN, mock.dto
     )
     mock.get_standard_and_owner_zipped_data_requests.assert_not_called()
 
@@ -192,10 +198,11 @@ def test_get_formatted_data_requests_standard(get_formatted_data_requests_mocks)
         db_client=mock.db_client,
         access_info=mock.access_info,
         relation_role=RelationRoleEnum.STANDARD,
+        dto=mock.dto,
     )
     mock.get_data_requests_with_permitted_columns.assert_not_called()
     mock.get_standard_and_owner_zipped_data_requests.assert_called_once_with(
-        mock.access_info.user_email, mock.db_client
+        mock.access_info.user_email, mock.db_client, mock.dto
     )
 
 
@@ -207,6 +214,7 @@ def test_get_formatted_data_requests_owner(get_formatted_data_requests_mocks):
             db_client=mock.db_client,
             access_info=mock.access_info,
             relation_role=RelationRoleEnum.OWNER,
+            dto=mock.dto,
         )
     mock.get_data_requests_with_permitted_columns.assert_not_called()
     mock.get_standard_and_owner_zipped_data_requests.assert_not_called()
@@ -222,10 +230,12 @@ def test_get_standard_and_owner_zipped_data_requests(
     ]
     mock.db_client.get_user_id.return_value = mock.user_id
     zipped_data_requests = get_standard_and_owner_zipped_data_requests(
-        user_email=mock.user_email, db_client=mock.db_client
+        user_email=mock.user_email, db_client=mock.db_client, dto=mock.dto
     )
     assert zipped_data_requests == [mock.data_request_owner, mock.data_request_standard]
-    neq_expected_mapping = [WhereMapping(column="creator_user_id", eq=False, value=mock.user_id)]
+    neq_expected_mapping = [
+        WhereMapping(column="creator_user_id", eq=False, value=mock.user_id)
+    ]
     eq_expected_mapping = [WhereMapping(column="creator_user_id", value=mock.user_id)]
     mock_get_data_requests_with_permitted_columns.assert_has_calls(
         [
@@ -233,11 +243,13 @@ def test_get_standard_and_owner_zipped_data_requests(
                 db_client=mock.db_client,
                 relation_role=RelationRoleEnum.STANDARD,
                 where_mappings=neq_expected_mapping,
+                dto=mock.dto,
             ),
             call(
                 db_client=mock.db_client,
                 relation_role=RelationRoleEnum.OWNER,
                 where_mappings=eq_expected_mapping,
+                dto=mock.dto,
             ),
         ],
         any_order=True,
@@ -350,6 +362,10 @@ def _check_select_from_single_relation_called(mock: MagicMock):
         columns=["id"],
     )
 
+def setup_delete_data_request_db_client_mocks(mock: MagicMock, user_is_creator: bool = True):
+    mock.db_client._select_from_single_relation.return_value = [{"id": mock.link_id}]
+    mock.db_client.get_user_id.return_value = mock.user_id
+    mock.db_client.user_is_creator_of_data_request.return_value = user_is_creator
 
 @patch(f"{PATCH_ROOT}.DatabaseClient")
 def test_delete_data_request_related_source_happy_path(
@@ -357,18 +373,14 @@ def test_delete_data_request_related_source_happy_path(
     data_request_delete_related_source_mocks,
 ):
     mock = data_request_delete_related_source_mocks
-    mock.db_client._select_from_single_relation.return_value = [{"id": mock.link_id}]
-    mock.db_client.get_user_id.return_value = mock.user_id
-    mock.db_client.user_is_creator_of_data_request.return_value = True
+    setup_delete_data_request_db_client_mocks(mock)
 
     delete_data_request_related_source(
         db_client=mock.db_client,
         access_info=mock.access_info,
         dto=mock.dto,
     )
-    _check_select_from_single_relation_called(mock)
-    _check_get_user_id_called(mock)
-    _check_user_is_creator_of_data_request_called(mock)
+    _check_common_delete_data_request_calls(mock)
     _check_delete_request_source_relation_called(
         mock_DatabaseClient, mock, id_column_value=mock.link_id
     )
@@ -382,23 +394,26 @@ def test_delete_data_request_related_source_user_not_creator(
     data_request_delete_related_source_mocks,
 ):
     mock = data_request_delete_related_source_mocks
-    mock.db_client._select_from_single_relation.return_value = [{"id": mock.link_id}]
-    mock.db_client.get_user_id.return_value = mock.user_id
-    mock.db_client.user_is_creator_of_data_request.return_value = False
+    setup_delete_data_request_db_client_mocks(mock, user_is_creator=False)
+
     with pytest.raises(FakeAbort):
         delete_data_request_related_source(
             db_client=mock.db_client,
             access_info=mock.access_info,
             dto=mock.dto,
         )
-    _check_select_from_single_relation_called(mock)
-    _check_get_user_id_called(mock)
-    _check_user_is_creator_of_data_request_called(mock)
+    _check_common_delete_data_request_calls(mock)
     mock.delete_request_source_relation.assert_not_called()
     mock.flask_response_manager.abort.assert_called_once_with(
         message="You do not have permission to delete this Request-Source association.",
         code=HTTPStatus.FORBIDDEN,
     )
+
+
+def _check_common_delete_data_request_calls(mock: MagicMock):
+    _check_select_from_single_relation_called(mock)
+    _check_get_user_id_called(mock)
+    _check_user_is_creator_of_data_request_called(mock)
 
 
 @patch(f"{PATCH_ROOT}.DatabaseClient")
@@ -407,18 +422,15 @@ def test_delete_data_request_related_source_user_is_admin(
     data_request_delete_related_source_mocks,
 ):
     mock = data_request_delete_related_source_mocks
-    mock.db_client._select_from_single_relation.return_value = [{"id": mock.link_id}]
-    mock.db_client.get_user_id.return_value = mock.user_id
-    mock.db_client.user_is_creator_of_data_request.return_value = False
+    setup_delete_data_request_db_client_mocks(mock, user_is_creator=False)
+
     mock.access_info.permissions = [PermissionsEnum.DB_WRITE]
     delete_data_request_related_source(
         db_client=mock.db_client,
         access_info=mock.access_info,
         dto=mock.dto,
     )
-    _check_select_from_single_relation_called(mock)
-    _check_get_user_id_called(mock)
-    _check_user_is_creator_of_data_request_called(mock)
+    _check_common_delete_data_request_calls(mock)
     _check_delete_request_source_relation_called(
         mock_DatabaseClient, mock, id_column_value=mock.link_id
     )

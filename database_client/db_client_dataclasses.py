@@ -28,8 +28,8 @@ class OrderByParameters:
             return OrderByParameters(sort_by=sort_by, sort_order=sort_order)
         if sort_by is not None and sort_order is None:
             raise ValueError("If sort_by is provided, sort_order must also be provided")
-        if sort_by is None and sort_order is not None:
-            raise ValueError("If sort_order is provided, sort_by must also be provided")
+        if sort_by is None:
+            return None
         return None
     
     def build_order_by_clause(self, relation) -> Callable:

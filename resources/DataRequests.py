@@ -22,11 +22,14 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     EntryDataRequestDTO,
     GetByIDBaseSchema,
     GetByIDBaseDTO,
+    GetManyBaseSchema,
+    GetManyBaseDTO,
+    GET_MANY_SCHEMA_POPULATE_PARAMETERS,
 )
 from middleware.decorators import (
     endpoint_info,
 )
-from middleware.enums import  Relations
+from middleware.enums import Relations
 from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
     create_entry_data_request_model,
     create_id_and_message_model,
@@ -133,6 +136,7 @@ class DataRequests(PsycopgResource):
     @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=GET_AUTH_INFO,
+        input_schema=GetManyBaseSchema,
         description=column_permissions_description(
             head_description="Get data requests with optional filters",
             sub_description="For non-admins, data requests the user created will be returned first "
@@ -145,7 +149,11 @@ class DataRequests(PsycopgResource):
         ),
     )
     def get(self, access_info: AccessInfo) -> Response:
-        return self.run_endpoint(get_data_requests_wrapper, access_info=access_info)
+        return self.run_endpoint(
+            wrapper_function=get_data_requests_wrapper,
+            schema_populate_parameters=GET_MANY_SCHEMA_POPULATE_PARAMETERS,
+            access_info=access_info,
+        )
 
     @endpoint_info(
         namespace=namespace_data_requests,

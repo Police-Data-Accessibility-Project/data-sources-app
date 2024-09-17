@@ -1,7 +1,11 @@
 from flask import Response
-from flask_restx import fields
 
 from middleware.access_logic import AccessInfo, GET_AUTH_INFO, WRITE_ONLY_AUTH_INFO
+from middleware.column_permission_logic import create_column_permissions_string_table
+from middleware.decorators import (
+    endpoint_info,
+)
+from middleware.enums import Relations
 from middleware.primary_resource_logic.agencies import (
     get_agencies,
     get_agency_by_id,
@@ -9,35 +13,23 @@ from middleware.primary_resource_logic.agencies import (
     update_agency,
     delete_agency,
 )
-from middleware.column_permission_logic import create_column_permissions_string_table
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     EntryDataRequestDTO,
     GetManyBaseSchema,
-    GetManyBaseDTO,
     GetByIDBaseSchema,
     GetByIDBaseDTO,
+    GET_MANY_SCHEMA_POPULATE_PARAMETERS,
 )
-from middleware.decorators import (
-    authentication_required,
-    endpoint_info,
-)
-from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
 from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
-    create_entry_data_request_model,
-    create_id_and_message_model,
-    create_get_many_response_model,
-    create_entry_data_response_model,
     CRUDModels,
 )
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
+from resources.PsycopgResource import PsycopgResource
 from resources.resource_helpers import (
-    add_jwt_or_api_key_header_arg,
-    add_jwt_header_arg,
     create_response_dictionary,
     column_permissions_description,
 )
 from utilities.namespace import create_namespace, AppNamespaces
-from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
 namespace_agencies = create_namespace(
     AppNamespaces.AGENCIES,
@@ -45,30 +37,19 @@ namespace_agencies = create_namespace(
 
 models = CRUDModels(namespace_agencies)
 
-page_parser = namespace_agencies.parser()
-page_parser.add_argument(
-    "page",
-    type=int,
-    required=True,
-    location="path",
-    help="The page number of results to return.",
-    default=1,
-)
-add_jwt_or_api_key_header_arg(page_parser)
-
 agencies_column_permissions = create_column_permissions_string_table(
     relation=Relations.AGENCIES.value
 )
 
 
 @namespace_agencies.route("")
-@namespace_agencies.expect(page_parser)
 class AgenciesByPage(PsycopgResource):
     """Represents a resource for fetching approved agency data from the database."""
 
     @endpoint_info(
         namespace=namespace_agencies,
         auth_info=GET_AUTH_INFO,
+        input_schema=GetManyBaseSchema,
         description=column_permissions_description(
             head_description="Get a paginated list of approved agencies",
             sub_description="Columns returned are determined by the user's access level.",
@@ -88,10 +69,7 @@ class AgenciesByPage(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=get_agencies,
-            schema_populate_parameters=SchemaPopulateParameters(
-                schema_class=GetManyBaseSchema,
-                dto_class=GetManyBaseDTO,
-            ),
+            schema_populate_parameters=GET_MANY_SCHEMA_POPULATE_PARAMETERS,
             access_info=access_info,
         )
 
@@ -115,7 +93,6 @@ class AgenciesByPage(PsycopgResource):
             dto_populate_parameters=EntryDataRequestDTO.get_dto_populate_parameters(),
             access_info=access_info,
         )
-        pass
 
 
 @namespace_agencies.route("/<resource_id>")
