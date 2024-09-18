@@ -24,7 +24,6 @@ from resources.ApiKey import namespace_api_key
 from resources.Archives import namespace_archives
 from resources.DataSources import namespace_data_source
 from resources.Login import namespace_login
-from resources.QuickSearch import namespace_quick_search
 from resources.RefreshSession import namespace_refresh_session
 from resources.RequestResetPassword import namespace_request_reset_password
 from resources.ResetPassword import namespace_reset_password
@@ -44,7 +43,6 @@ NAMESPACES = [
     namespace_login,
     namespace_refresh_session,
     namespace_reset_password,
-    namespace_quick_search,
     namespace_typeahead_suggestions,
     namespace_search,
     namespace_auth,

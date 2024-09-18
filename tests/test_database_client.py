@@ -464,58 +464,6 @@ def test_update_last_cached(live_database_client: DatabaseClient):
 
     assert result["last_cached"].strftime("%Y-%m-%d %H:%M:%S") == new_last_cached
 
-
-def test_get_quick_search_results(live_database_client: DatabaseClient):
-    # Add new data sources to the database, some that satisfy the search criteria and some that don't
-    test_datetime = live_database_client.execute_raw_sql(query="SELECT NOW()")[0]
-
-    insert_test_agencies_and_sources_if_not_exist(
-        live_database_client.connection.cursor()
-    )
-
-    # Fetch the search results using the DatabaseClient method
-    result = live_database_client.get_quick_search_results(
-        search="Source 1", location="City A"
-    )
-
-    assert len(result) == 1
-    assert result[0].id == "SOURCE_UID_1"
-
-
-def test_add_quick_search_log(live_database_client: DatabaseClient):
-    # Add a quick search log to the database using the DatabaseClient method
-    search = f"{uuid.uuid4().hex} QSL"
-    location = "City QSL"
-    live_database_client.add_quick_search_log(
-        data_sources_count=1,
-        processed_data_source_matches=live_database_client.DataSourceMatches(
-            converted=[search],
-            ids=["SOURCE_UID_QSL"],
-        ),
-        processed_search_parameters=live_database_client.SearchParameters(
-            search=search, location=location
-        ),
-    )
-
-    # Fetch the quick search logs to confirm it was added successfully
-    rows = live_database_client.execute_raw_sql(
-        query="""
-        select search, location, results, result_count
-        from quick_search_query_logs
-        where search = %s and location = %s
-        """,
-        vars=(search, location),
-    )
-
-    assert len(rows) == 1
-    row = rows[0]
-    assert type(row) == dict
-    assert row["search"] == search
-    assert row["location"] == location
-    assert row["results"][0] == "SOURCE_UID_QSL"
-    assert row["result_count"] == 1
-
-
 def test_get_user_info(live_database_client):
     # Add a new user to the database
     email = uuid.uuid4().hex

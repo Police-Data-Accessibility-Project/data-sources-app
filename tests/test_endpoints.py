@@ -32,7 +32,6 @@ from resources.LinkToGithub import LinkToGithub
 from resources.Login import Login
 from resources.LoginWithGithub import LoginWithGithub
 from resources.Permissions import Permissions
-from resources.QuickSearch import QuickSearch
 from resources.RefreshSession import RefreshSession
 from resources.RequestResetPassword import RequestResetPassword
 from resources.ResetPassword import ResetPassword
@@ -89,7 +88,6 @@ test_parameters = [
     TestParameters(RequestResetPassword, "/request-reset-password", [POST]),
     TestParameters(ResetPassword, "/reset-password", [POST]),
     TestParameters(ResetTokenValidation, "/reset-token-validation", [POST]),
-    TestParameters(QuickSearch, "/quick-search/<search>/<location>", [GET]),
     TestParameters(Archives, "/archives", [GET, PUT]),
     TestParameters(DataSources, "/data-sources", [GET, POST]),
     # This endpoint no longer works because of the other data source endpoint

@@ -346,50 +346,6 @@ class DatabaseClient:
 
         return [self.MapInfo(*result) for result in results]
 
-    def get_agencies_from_page(self, page: int) -> list[dict[Any, ...]]:
-        """
-        Returns a list of up to 1000 agencies from the database from a given page.
-
-        :param page: The page number to pull the agencies from.
-        :return: A list of agency tuples.
-        """
-        columns = [
-            "name",
-            "homepage_url",
-            "count_data_sources",
-            "agency_type",
-            "multi_agency",
-            "submitted_name",
-            "jurisdiction_type",
-            "state_iso",
-            "municipality",
-            "zip_code",
-            "county_fips",
-            "county_name",
-            "lat",
-            "lng",
-            "data_sources",
-            "no_web_presence",
-            "airtable_agency_last_modified",
-            "data_sources_last_updated",
-            "approved",
-            "rejection_reason",
-            "last_approval_editor",
-            "agency_created",
-            "county_airtable_uid",
-            "defunct_year",
-            "airtable_uid",
-        ]
-        results = self._select_from_single_relation(
-            relation_name="agencies",
-            columns=columns,
-            where_mappings=[WhereMapping(column="approved", value=True)],
-            limit=1000,
-            page=page,
-        )
-
-        return results
-
     @staticmethod
     def get_offset(page: int) -> Optional[int]:
         """
@@ -503,69 +459,7 @@ class DatabaseClient:
         ],
     )
 
-    @cursor_manager()
-    def get_quick_search_results(
-        self, search: str, location: str
-    ) -> Optional[list[QuickSearchResult]]:
-        """
-        Executes the quick search SQL query with search and location terms.
-
-        :param search: The search term entered by the user.
-        :param location: The location term entered by the user.
-        :return: A list of QuickSearchResult namedtuples, each containing information of a data source resulting from the search. None if nothing is found.
-        """
-        print(f"Query parameters: '%{search}%', '%{location}%'")
-        sql_query = QUICK_SEARCH_SQL.format(search, location)
-
-        self.cursor.execute(sql_query)
-        data_sources = self.cursor.fetchall()
-
-        results = [
-            self.QuickSearchResult(
-                id=row["airtable_uid"],
-                data_source_name=row["data_source_name"],
-                description=row["description"],
-                record_type=row["record_type"],
-                url=row["source_url"],
-                format=row["record_format"],
-                coverage_start=row["coverage_start"],
-                coverage_end=row["coverage_end"],
-                agency_supplied=row["agency_supplied"],
-                agency_name=row["agency_name"],
-                municipality=row["municipality"],
-                state=row["state_iso"],
-            )
-            for row in data_sources
-        ]
-
-        return results
-
     DataSourceMatches = namedtuple("DataSourceMatches", ["converted", "ids"])
-    SearchParameters = namedtuple("SearchParameters", ["search", "location"])
-
-    def add_quick_search_log(
-        self,
-        data_sources_count: int,
-        processed_data_source_matches: DataSourceMatches,
-        processed_search_parameters: SearchParameters,
-    ) -> None:
-        """
-        Logs a quick search query in the database.
-
-        :param data_sources_count: Number of data sources in the search results.
-        :param processed_data_source_matches: DataSourceMatches namedtuple with a list of data sources processed so that the dates are converted to strings, and a list of resulting IDs.
-        :param processed_search_parameters: SearchParameters namedtuple with the search and location parameters
-        """
-        query_results = json.dumps(processed_data_source_matches.ids).replace("'", "")
-        self._create_entry_in_table(
-            table_name="quick_search_query_logs",
-            column_value_mappings={
-                "search": processed_search_parameters.search,
-                "location": processed_search_parameters.location,
-                "results": query_results,
-                "result_count": data_sources_count,
-            },
-        )
 
     UserInfo = namedtuple("UserInfo", ["id", "password_digest", "api_key", "email"])
 
