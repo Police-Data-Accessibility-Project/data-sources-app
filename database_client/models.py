@@ -8,6 +8,9 @@ from sqlalchemy import (
     String,
     ForeignKey,
     Enum,
+    Float,
+    Boolean,
+    DateTime,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, DATE, DATERANGE, TIMESTAMP
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -104,6 +107,42 @@ class Agency(Base):
         TIMESTAMP(timezone=True)
     )
     county_airtable_uid: Mapped[Optional[str]]
+
+
+class AgencyExpanded(Base):
+    __tablename__ = "agencies_expanded"
+    __table_args__ = {"schema": "public"}
+
+    # Define columns as per the view with refined data types
+    name = Column(String, nullable=False)
+    submitted_name = Column(String)
+    homepage_url = Column(String)
+    jurisdiction_type = Column(String)
+    state_iso = Column(String)
+    county_fips = Column(String)  # Matches the VARCHAR type in the agencies table
+    county_name = Column(String)
+    lat = Column(Float)
+    lng = Column(Float)
+    defunct_year = Column(String)
+    airtable_uid = Column(String, primary_key=True)  # Primary key
+    count_data_sources = Column(
+        BigInteger
+    )  # Matches the BIGINT type in the agencies table
+    agency_type = Column(String)
+    multi_agency = Column(Boolean)
+    zip_code = Column(String)
+    data_sources = Column(String)  # Assuming 'data_sources' is a VARCHAR field
+    no_web_presence = Column(Boolean)
+    airtable_agency_last_modified = Column(DateTime(timezone=True))
+    data_sources_last_updated = Column(DateTime)
+    approved = Column(Boolean)
+    rejection_reason = Column(String)
+    last_approval_editor = Column(String)
+    submitter_contact = Column(String)
+    agency_created = Column(DateTime(timezone=True))
+    county_airtable_uid = Column(String)
+    locality_id = Column(BigInteger)
+    locality_name = Column(String)
 
 
 class County(Base):
@@ -245,7 +284,9 @@ class LinkDataSourceDataRequest(Base):
     __table_args__ = {"schema": "public"}
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    source_id: Mapped[Text] = mapped_column(Text, ForeignKey("public.data_sources.airtable_uid"))
+    source_id: Mapped[Text] = mapped_column(
+        Text, ForeignKey("public.data_sources.airtable_uid")
+    )
     request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
 
 
@@ -275,7 +316,9 @@ class ResetToken(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     email: Mapped[Optional[Text]] = mapped_column(Text)
     token: Mapped[Optional[Text]] = mapped_column(Text)
-    create_date: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, server_default=func.current_timestamp())
+    create_date: Mapped[TIMESTAMP] = mapped_column(
+        TIMESTAMP, server_default=func.current_timestamp()
+    )
 
 
 class TestTable(Base):

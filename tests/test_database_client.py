@@ -429,12 +429,6 @@ def test_get_data_sources_for_map(live_database_client):
     assert found_source
 
 
-def test_get_agencies_from_page(live_database_client: DatabaseClient):
-    results = live_database_client.get_agencies_from_page(2)
-
-    assert len(results) > 0
-
-
 def test_get_offset():
     # Send a page number to the DatabaseClient method
     # Confirm that the correct offset is returned
@@ -898,6 +892,20 @@ def test_check_for_url_duplicates(live_database_client):
     duplicate_base_url = "duplicate-checker.com"
     results = live_database_client.check_for_url_duplicates(duplicate_base_url)
     assert len(results) == 1
+
+
+def test_add_agency(live_database_client):
+    pytest.fail("Test not implemented")
+
+    # Add a random agency with a random locality attached to an existing state and county
+
+    # Confirm that the locality properly populates the `locality` table,
+    #  and the id of the row in `locality` is the same as the corresponding agency row's `locality_id` column
+
+    # If you add another agency with the same locality, there should still be only
+    #  one row in the `locality` table, and both agency rows should point to it
+
+
     #
     #
     # # Add tests for multiple variants

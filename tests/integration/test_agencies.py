@@ -107,6 +107,9 @@ def test_agencies_post(ts: AgenciesTestSetup):
 
     assert results[0]["submitted_name"] == ts.submitted_name
 
+    ## Test that in the case of a new locality, that locality is also added to the `localities` table
+    pytest.fail("Test not implemented")
+
 
 def test_agencies_put(ts: AgenciesTestSetup):
 

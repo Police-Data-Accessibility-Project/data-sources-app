@@ -10,7 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import aliased
 from sqlalchemy.schema import Column
 
-from database_client.constants import PAGE_SIZE, TABLE_REFERENCE
+from database_client.constants import PAGE_SIZE, SQL_ALCHEMY_TABLE_REFERENCE
 from database_client.db_client_dataclasses import OrderByParameters, WhereMapping
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
@@ -56,22 +56,22 @@ QUICK_SEARCH_SQL = """
         data_sources.coverage_start,
         data_sources.coverage_end,
         data_sources.agency_supplied,
-        agencies.name AS agency_name,
-        agencies.municipality,
-        agencies.state_iso
+        a.name AS agency_name,
+        a.locality_name as municipality,
+        a.state_iso
     FROM
         agency_source_link
     INNER JOIN
         data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
     INNER JOIN
-        agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+        agencies_expanded a ON agency_source_link.agency_described_linked_uid = a.airtable_uid
     INNER JOIN
-        state_names ON agencies.state_iso = state_names.state_iso
+        state_names ON a.state_iso = state_names.state_iso
     WHERE
         (data_sources.name ILIKE '%{0}%' OR data_sources.description ILIKE '%{0}%' OR data_sources.record_type ILIKE '%{0}%' OR data_sources.tags ILIKE '%{0}%') 
-        AND (agencies.county_name ILIKE '%{1}%' OR substr(agencies.county_name,3,length(agencies.county_name)-4) || ' County' ILIKE '%{1}%' 
-            OR agencies.state_iso ILIKE '%{1}%' OR agencies.municipality ILIKE '%{1}%' OR agencies.agency_type ILIKE '%{1}%' OR agencies.jurisdiction_type ILIKE '%{1}%' 
-            OR agencies.name ILIKE '%{1}%' OR state_names.state_name ILIKE '%{1}%')
+        AND (a.county_name ILIKE '%{1}%' OR substr(a.county_name,3,length(a.county_name)-4) || ' County' ILIKE '%{1}%' 
+            OR a.state_iso ILIKE '%{1}%' OR a.locality_name ILIKE '%{1}%' OR a.agency_type ILIKE '%{1}%' OR a.jurisdiction_type ILIKE '%{1}%' 
+            OR a.name ILIKE '%{1}%' OR state_names.state_name ILIKE '%{1}%')
         AND data_sources.approval_status = 'approved'
         AND data_sources.url_status not in ('broken', 'none found')
 
@@ -327,7 +327,7 @@ class DatabaseClient:
                 agencies.airtable_uid as agency_id,
                 agencies.submitted_name as agency_name,
                 agencies.state_iso,
-                agencies.municipality,
+                localities.name as municipality,
                 agencies.county_name,
                 data_sources.record_type,
                 agencies.lat,
@@ -338,6 +338,8 @@ class DatabaseClient:
                 data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
             INNER JOIN
                 agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+            INNER JOIN
+                localities ON agencies.locality_id = localities.id
             WHERE
                 data_sources.approval_status = 'approved'
         """
@@ -694,7 +696,10 @@ class DatabaseClient:
         :param relation: Relation string.
         :return:
         """
-        relation_reference = TABLE_REFERENCE[relation]
+        try:
+            relation_reference = SQL_ALCHEMY_TABLE_REFERENCE[relation]
+        except KeyError:
+            raise ValueError(f"SQL Model does not exist in SQL_ALCHEMY_TABLE_REFERENCE: {relation}")
         return [getattr(relation_reference, column) for column in columns]
 
     @cursor_manager()
@@ -920,20 +925,20 @@ class DatabaseClient:
                 SUBMITTED_NAME,
                 JURISDICTION_TYPE,
                 STATE_ISO,
-                MUNICIPALITY,
+                LOCALITY_NAME as MUNICIPALITY,
                 COUNTY_NAME,
                 AIRTABLE_UID,
                 COUNT_DATA_SOURCES,
                 ZIP_CODE,
                 NO_WEB_PRESENCE -- Relevant
             FROM
-                PUBLIC.AGENCIES
+                PUBLIC.AGENCIES_EXPANDED
             WHERE 
                 approved = true
                 AND homepage_url is null
                 AND NOT EXISTS (
                     SELECT 1 FROM PUBLIC.AGENCY_URL_SEARCH_CACHE
-                    WHERE PUBLIC.AGENCIES.AIRTABLE_UID = PUBLIC.AGENCY_URL_SEARCH_CACHE.agency_airtable_uid
+                    WHERE PUBLIC.AGENCIES_EXPANDED.AIRTABLE_UID = PUBLIC.AGENCY_URL_SEARCH_CACHE.agency_airtable_uid
                 )
             ORDER BY COUNT_DATA_SOURCES DESC
             LIMIT 100 -- Limiting to 100 in acknowledgment of the search engine quota

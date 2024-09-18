@@ -7,6 +7,7 @@ from database_client.models import (
     ResetToken,
     TestTable,
     User,
+    AgencyExpanded,
 )
 
 AGENCY_APPROVED_COLUMNS = [
@@ -111,8 +112,9 @@ RESTRICTED_COLUMNS = [
 
 PAGE_SIZE = 100
 
-TABLE_REFERENCE = {
+SQL_ALCHEMY_TABLE_REFERENCE = {
     "agencies": Agency,
+    "agencies_expanded": AgencyExpanded,
     "data_requests": DataRequest,
     "data_sources": DataSource,
     "data_sources_archive_info": DataSourceArchiveInfo,

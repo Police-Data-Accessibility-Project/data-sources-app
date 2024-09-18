@@ -228,7 +228,7 @@ class DynamicQueryConstructor:
                 data_sources.coverage_end,
                 data_sources.agency_supplied,
                 agencies.name AS agency_name,
-                agencies.municipality,
+                localities.name as municipality,
                 agencies.state_iso,
                 agencies.jurisdiction_type
             FROM
@@ -241,6 +241,8 @@ class DynamicQueryConstructor:
                 state_names ON agencies.state_iso = state_names.state_iso
             INNER JOIN
                 counties ON agencies.county_fips = counties.fips
+            LEFT JOIN 
+                localities ON agencies.locality_id = localities.id
         """
         )
 
@@ -283,7 +285,7 @@ class DynamicQueryConstructor:
 
         if locality is not None:
             where_subclauses.append(
-                sql.SQL("LOWER(agencies.municipality) = LOWER({locality})").format(
+                sql.SQL("LOWER(localities.name) = LOWER({locality})").format(
                     locality=sql.Literal(locality)
                 )
             )

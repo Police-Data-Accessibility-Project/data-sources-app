@@ -46,6 +46,7 @@ class Relations(Enum):
     AGENCIES = "agencies"
     DATA_SOURCES = "data_sources"
     RELATED_SOURCES = "link_data_sources_data_requests"
+    AGENCIES_EXPANDED = "agencies_expanded"
 
 class Jurisdiction(Enum):
     """
