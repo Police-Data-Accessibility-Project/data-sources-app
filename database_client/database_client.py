@@ -737,6 +737,13 @@ class DatabaseClient:
         id_column_name="airtable_uid",
     )
 
+    def create_agency(
+            self,
+            column_value_mappings: dict[str, str],
+
+    ):
+        pass
+
     @cursor_manager()
     def _create_entry_in_table(
         self,
@@ -950,3 +957,18 @@ class DatabaseClient:
         query = DynamicQueryConstructor.get_distinct_source_urls_query(url)
         self.cursor.execute(query)
         return self.cursor.fetchall()
+
+    def get_columns_for_relation(self, relation: Relations) -> list[dict]:
+        """
+        Get columns for a given relation
+        :param relation:
+        :return:
+        """
+        results = self.execute_raw_sql("""
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+            AND table_name = %s
+        """, (relation.value,))
+
+        return [row["column_name"] for row in results]

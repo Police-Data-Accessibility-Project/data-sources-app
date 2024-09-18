@@ -7,7 +7,7 @@ from marshmallow import fields, Schema
 
 from database_client.database_client import DatabaseClient
 from database_client.result_formatter import dictify_namedtuple
-from middleware.enums import Jurisdiction
+from middleware.enums import JurisdictionSimplified
 from utilities.common import get_enums_from_string
 from utilities.enums import RecordCategories, SourceMappingEnum, ParserLocation
 from middleware.common_response_formatting import format_list_response
@@ -67,7 +67,7 @@ class SearchRequests:
     locality: Optional[str] = None
 
 
-def get_jursidiction_type_enum(jurisdiction_type_str: str) -> Optional[Jurisdiction]:
+def get_jursidiction_type_enum(jurisdiction_type_str: str) -> Optional[JurisdictionSimplified]:
     if jurisdiction_type_str in [
         "local",
         "school",
@@ -76,8 +76,8 @@ def get_jursidiction_type_enum(jurisdiction_type_str: str) -> Optional[Jurisdict
         "transit",
         "port",
     ]:
-        return Jurisdiction.LOCALITY
-    return Jurisdiction(jurisdiction_type_str)
+        return JurisdictionSimplified.LOCALITY
+    return JurisdictionSimplified(jurisdiction_type_str)
 
 
 def format_search_results(search_results: list[dict]) -> dict:
@@ -113,7 +113,7 @@ def format_search_results(search_results: list[dict]) -> dict:
     response = {"count": 0, "data": {}}
 
     # Create sub-dictionary for each jurisdiction
-    for jurisdiction in [j.value for j in Jurisdiction]:
+    for jurisdiction in [j.value for j in JurisdictionSimplified]:
         response["data"][jurisdiction] = {"count": 0, "results": []}
 
     for result in search_results:

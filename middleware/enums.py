@@ -47,12 +47,38 @@ class Relations(Enum):
     DATA_SOURCES = "data_sources"
     RELATED_SOURCES = "link_data_sources_data_requests"
     AGENCIES_EXPANDED = "agencies_expanded"
+    TEST_TABLE = "test_table"
 
-class Jurisdiction(Enum):
+class JurisdictionType(Enum):
     """
-    A list of valid agency jurisdictions for the database
+    A list of valid agency jurisdiction types
+    """
+    FEDERAL = "federal"
+    STATE = "state"
+    COUNTY = "county"
+    LOCAL = "local"
+    PORT = "port"
+    TRIBAL = "tribal"
+    TRANSIT = "transit"
+    SCHOOL = "school"
+    NONE = None
+
+
+class JurisdictionSimplified(Enum):
+    """
+    A simplified list of jurisdictions utilized in organizing search results
     """
     FEDERAL = "federal"
     STATE = "state"
     COUNTY = "county"
     LOCALITY = "locality"
+
+class AgencyType(Enum):
+    """
+    A list of valid agency types
+    """
+    NONE = None
+    AGGREGATED = "aggregated"
+    COURT = "court"
+    LAW_ENFORCEMENT_POLICE = "law enforcement/police"
+    CORRECTIONS = "corrections"

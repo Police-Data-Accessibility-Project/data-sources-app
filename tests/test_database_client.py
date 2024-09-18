@@ -23,7 +23,7 @@ from middleware.exceptions import (
     DuplicateUserError,
 )
 from database_client.models import ExternalAccount, TestTable, User
-from middleware.enums import PermissionsEnum
+from middleware.enums import PermissionsEnum, Relations
 from tests.fixtures import (
     live_database_client,
     test_table_data,
@@ -457,6 +457,7 @@ def test_update_last_cached(live_database_client: DatabaseClient):
     )[0]
 
     assert result["last_cached"].strftime("%Y-%m-%d %H:%M:%S") == new_last_cached
+
 
 def test_get_user_info(live_database_client):
     # Add a new user to the database
@@ -894,6 +895,17 @@ def test_check_for_url_duplicates(live_database_client):
     assert len(results) == 1
 
 
+def test_get_columns_for_relation(live_database_client):
+
+    columns = live_database_client.get_columns_for_relation(Relations.TEST_TABLE)
+
+    assert columns == [
+        "id",
+        "pet_name",
+        "species"
+    ]
+
+
 def test_add_agency(live_database_client):
     pytest.fail("Test not implemented")
 
@@ -904,7 +916,6 @@ def test_add_agency(live_database_client):
 
     # If you add another agency with the same locality, there should still be only
     #  one row in the `locality` table, and both agency rows should point to it
-
 
     #
     #

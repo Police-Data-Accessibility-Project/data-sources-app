@@ -11,6 +11,10 @@ from database_client.constants import PAGE_SIZE
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
 from middleware.enums import PermissionsEnum
+from middleware.primary_resource_logic.agencies import (
+    AgenciesGetSchema,
+    AgenciesGetManyResponseSchema,
+)
 
 from tests.fixtures import (
     dev_db_connection,
@@ -25,10 +29,13 @@ from tests.helper_scripts.helper_functions import (
 )
 from tests.helper_scripts.common_test_functions import (
     assert_expected_get_many_result,
-    call_and_validate_get_by_id_endpoint, )
+    call_and_validate_get_by_id_endpoint,
+)
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from tests.helper_scripts.simple_result_validators import check_response_status
-from tests.helper_scripts.helper_classes.IntegrationTestSetup import IntegrationTestSetup
+from tests.helper_scripts.helper_classes.IntegrationTestSetup import (
+    IntegrationTestSetup,
+)
 
 
 @dataclass
@@ -59,6 +66,8 @@ def test_agencies_get(flask_client_with_db, dev_db_client: DatabaseClient):
         headers=tus.api_authorization_header,
     )
 
+    AgenciesGetManyResponseSchema().load(response_json)
+
     assert_expected_get_many_result(
         response_json=response_json,
         expected_non_null_columns=["airtable_uid"],
@@ -70,7 +79,10 @@ def test_agencies_get_by_id(ts: AgenciesTestSetup):
     airtable_uid = uuid.uuid4().hex
     ts.db_client._create_entry_in_table(
         table_name="agencies",
-        column_value_mappings={"submitted_name": ts.submitted_name, "airtable_uid": airtable_uid},
+        column_value_mappings={
+            "submitted_name": ts.submitted_name,
+            "airtable_uid": airtable_uid,
+        },
     )
 
     call_and_validate_get_by_id_endpoint(
@@ -80,6 +92,9 @@ def test_agencies_get_by_id(ts: AgenciesTestSetup):
         expected_value_key="submitted_name",
         expected_value=ts.submitted_name,
     )
+
+    # TODO: Test that result matches expected schema
+    pytest.fail("Test not implemented")
 
 
 def test_agencies_post(ts: AgenciesTestSetup):
@@ -107,7 +122,10 @@ def test_agencies_post(ts: AgenciesTestSetup):
 
     assert results[0]["submitted_name"] == ts.submitted_name
 
-    ## Test that in the case of a new locality, that locality is also added to the `localities` table
+    # TODO: Test that result matches expected schema
+    pytest.fail("Test not implemented")
+
+    ## TODO: Test that in the case of a new locality, that locality is also added to the `localities` table
     pytest.fail("Test not implemented")
 
 
@@ -137,6 +155,9 @@ def test_agencies_put(ts: AgenciesTestSetup):
         headers=ts.tus.jwt_authorization_header,
         json={"entry_data": {"submitted_name": new_submitted_name}},
     )
+
+    # TODO: Test that result matches expected schema
+    pytest.fail("Test not implemented")
 
     results = ts.db_client._select_from_single_relation(
         relation_name="agencies",
@@ -172,6 +193,9 @@ def test_agencies_delete(ts: AgenciesTestSetup):
         endpoint=f"{AGENCIES_BASE_ENDPOINT}/{agency_id}",
         headers=ts.tus.jwt_authorization_header,
     )
+
+    # TODO: Test that result matches expected schema
+    pytest.fail("Test not implemented")
 
     results = ts.db_client._select_from_single_relation(
         relation_name="agencies",
