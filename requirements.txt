@@ -18,7 +18,7 @@ deprecation==2.1.0
 en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.6.0/en_core_web_sm-3.6.0-py3-none-any.whl#sha256=83276fc78a70045627144786b52e1f2728ad5e29e5e43916ec37ea9c26a11212
 exceptiongroup==1.1.3
 Flask==2.3.2
-Flask-Cors==4.0.0
+Flask-Cors==4.0.2
 Flask-RESTful==0.3.10
 gotrue==1.0.3
 gunicorn==21.2.0
