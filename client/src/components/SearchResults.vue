@@ -1,10 +1,9 @@
 <template>
 	<div class="flex flex-col w-full gap-5">
-		<div class="flex w-full gap-2 h-14 items-center">
+		<div class="heading-titles">
 			<h4
 				v-for="title of HEADING_TITLES"
 				:key="title + 'heading'"
-				class="block"
 				:class="getClassNameFromHeadingType(title)"
 			>
 				{{ title }}
@@ -24,7 +23,6 @@
 					v-for="locale in ALL_LOCATION_TYPES"
 					:key="locale + 'results'"
 				>
-					<!-- TODO: use non-existent hash div and scroll within this parent only -->
 					<template v-if="'count' in results[locale]">
 						<div
 							:id="'scroll-to-' + locale"
@@ -36,25 +34,24 @@
 							v-for="agency in Object.keys(results[locale].sourcesByAgency)"
 							:key="agency + 'results'"
 						>
-							<div
-								class="flex sticky top-0 mb-4 justify-between bg-neutral-200 p-2 rounded-sm [&>*]:text-lg border-none"
-							>
+							<div class="agency-heading-row">
 								<h5>{{ agency }}</h5>
 								<span class="pill">{{ locale }}</span>
 							</div>
 
 							<!-- Source within each agency -->
-							<div
+							<RouterLink
 								v-for="source in results[locale].sourcesByAgency[agency]"
 								:key="source.agency_name"
-								class="flex gap-2 mb-4 p-2 h-auto lg:h-[91px] flex-wrap lg:flex-nowrap border-solid border-neutral-300 border-2 rounded-sm [&>*]:text-lg"
+								:to="`/data-source/${source.airtable_uid}`"
+								class="agency-row group"
 							>
 								<!-- Source name and record type -->
 								<div :class="getClassNameFromHeadingType(HEADING_TITLES[0])">
 									<h6>
 										{{ source.data_source_name }}
 									</h6>
-									<span class="text-med pill w-max">
+									<span class="pill w-max">
 										<RecordTypeIcon :record-type="source.record_type" />
 										{{ source.record_type }}
 									</span>
@@ -92,15 +89,22 @@
 									</span>
 								</div>
 								<div class="links">
-									<RouterLink :to="`/data-source/${source.airtable_uid}`">
-										<FontAwesomeIcon :icon="faInfo" />
-									</RouterLink>
-									<a :href="source.source_url" target="_blank" rel="noreferrer">
+									<FontAwesomeIcon
+										class="hidden lg:inline top-1 text-brand-gold-600 group-hover:text-brand-gold-300"
+										:icon="faInfo"
+									/>
+									<a
+										:href="source.source_url"
+										target="_blank"
+										rel="noreferrer"
+										@keydown.stop.enter=""
+										@click.stop=""
+									>
 										<FontAwesomeIcon :icon="faLink" />
 										source
 									</a>
 								</div>
-							</div>
+							</RouterLink>
 						</template>
 					</template>
 				</template>
@@ -125,6 +129,7 @@ const HEADING_TITLES = [
 	'time range',
 	'description',
 	'formats',
+	'details',
 ];
 
 // For now we have a single array, but we may need to do some parsing, per https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/409
@@ -160,10 +165,11 @@ function getYearRange(start, end) {
 	const startYear = new Date(start).getFullYear();
 	const endYear = (end ? new Date(end) : new Date()).getFullYear();
 
-	return start ? `${startYear} - ${endYear}` : '—';
+	return start ? `${startYear} to ${endYear}` : '—';
 }
 
 function getClassNameFromHeadingType(heading) {
+	if (heading === 'details') return 'links';
 	return heading.replaceAll(',', '').split(' ').join('-');
 }
 
@@ -181,7 +187,7 @@ function formatFormatsBecauseAPIReturnsStringsRatherThanArrays(str) {
 <style scoped>
 /* TODO: decouple heading styling from heading level in design-system (or at least provide classes that can perform these overrides more efficiently) */
 h4 {
-	@apply m-0 text-med;
+	@apply m-0 block text-[.65rem] sm:text-med;
 }
 
 h5,
@@ -189,63 +195,111 @@ h6 {
 	@apply text-lg not-italic tracking-normal normal-case m-0;
 }
 
-.agency-name-record-type {
-	@apply w-1/2 lg:w-[30%] flex flex-col gap-2;
+.heading-titles,
+.agency-row {
+	/* Tailwind is a pain for complex grids, so using standard CSS */
+	grid-template-columns: 5fr 2fr 3fr;
+	grid-template-areas: 'name name name' 'range formats links';
+	grid-template-rows: repeat(2, auto);
 }
 
-.agency-name-record-type h6 {
-	/* Tailwind is a pain, and its line clamp class doesn't work, so defining here instead */
-	display: -webkit-box;
-	-webkit-line-clamp: 1;
-	-webkit-box-orient: vertical;
-	overflow: hidden;
-}
-
-.time-range {
-	@apply w-[20%] lg:w-[15%] mb-0;
-}
-
-.description {
-	@apply hidden lg:block w-0 lg:w-[35%] leading-5;
-
-	/* Tailwind is a pain, and its line clamp class doesn't work, so defining here instead */
-	display: -webkit-box;
-	-webkit-line-clamp: 3;
-	-webkit-box-orient: vertical;
-	overflow: hidden;
-}
-
-div.links {
-	@apply flex gap-2 w-full lg:w-auto;
+.heading-titles {
+	@apply w-full h-14 items-center grid gap-1 [&>*]:text-[.7rem] [&>*]:md:text-med [&>*]:lg:text-lg;
 }
 
 h4.formats {
-	@apply w-[30%];
+	@apply break-all overflow-hidden;
 }
 
-div.formats {
-	@apply w-[25%] lg:w-[20%] overflow-hidden;
+.agency-heading-row {
+	@apply flex items-center sticky top-0 mb-4 justify-between bg-neutral-200 p-2 rounded-sm [&>*]:text-xs [&>*]:md:text-med [&>*]:lg:text-lg border-none z-10;
 }
 
-.links {
-	@apply w-full lg:w-[10%];
+.agency-row {
+	@apply grid gap-4 mb-4 p-2 h-auto lg:h-[91px] border-solid border-neutral-300 border-2 rounded-sm [&>*]:text-sm [&>*]:md:text-med [&>*]:lg:text-lg text-neutral-950 hover:bg-neutral-100;
+}
+
+.agency-row * {
+	@apply [&>*]:text-sm [&>*]:md:text-med [&>*]:lg:text-lg;
+}
+
+/* @media (width >= 640px) {
+	.heading-titles {
+		grid-template-areas: 'name range formats links';
+	}
+
+	.agency-row {
+		grid-template-areas: 'name range formats' 'links links links';
+		grid-template-rows: repeat(2, auto);
+	}
+} */
+
+@media (width >= 1024px) {
+	.heading-titles,
+	.agency-row {
+		@apply gap-4;
+
+		grid-template-columns: 320px 125px 1fr 128px 115px;
+		grid-template-rows: repeat(1, auto);
+		grid-template-areas: 'name range description formats links';
+	}
+}
+
+.agency-name-record-type {
+	grid-area: name;
 }
 
 div.agency-name-record-type {
-	@apply flex flex-col justify-start;
+	@apply flex flex-col justify-start gap-2;
 }
 
+.agency-name-record-type h6 {
+	@apply line-clamp-1;
+}
+
+.time-range {
+	grid-area: range;
+	@apply mb-0 sm:min-w-24;
+}
+
+.description {
+	@apply hidden m-0;
+}
+
+@media (width >= 1024px) {
+	.description {
+		display: inline-block;
+	}
+
+	p.description {
+		@apply line-clamp-3 leading-5 max-h-[3.75rem];
+	}
+}
+
+div.links {
+	@apply flex h-auto gap-2;
+
+	grid-area: links;
+}
+
+.formats {
+	@apply flex flex-wrap gap-2 justify-start max-w-32 h-max;
+	grid-area: formats;
+}
+
+div.formats {
+	@apply overflow-hidden h-full;
+}
+
+/* .links {
+	@apply;
+} */
+
 .pill {
-	@apply text-neutral-800 border-solid border-[1px] border-neutral-500 rounded-xl px-2 bg-neutral-200;
+	@apply text-neutral-800 border-solid border-[1px] border-neutral-500 rounded-xl px-2 bg-neutral-200 text-xs sm:text-sm [&>*]:md:text-med [&>*]:lg:text-lg p-1 overflow-hidden;
 }
 
 .format {
-	@apply pill w-min max-w-full px-1 text-med inline-block;
-
-	/* Tailwind is a pain, and its line clamp class doesn't work, so defining here instead */
-	display: -webkit-box;
-	-webkit-line-clamp: 1;
-	-webkit-box-orient: vertical;
-	overflow: hidden;
+	@apply pill p-0 px-1 text-med inline-block w-min max-w-[8ch] h-min whitespace-nowrap text-ellipsis line-clamp-1;
 }
 </style>

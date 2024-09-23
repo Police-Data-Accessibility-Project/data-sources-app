@@ -10,7 +10,9 @@
 			<div class="flex flex-col sm:flex-row sm:justify-between mb-4">
 				<div>
 					<h1>Results for {{ getLocationText(searchData) }}</h1>
-					<nav class="flex gap-5">
+					<nav
+						class="flex gap-5 mb-4 [&>*]:text-[.72rem] [&>*]:xs:text-med [&>*]:sm:text-lg"
+					>
 						<span class="text-neutral-500">Jump to:</span>
 						<a
 							v-for="locale in ALL_LOCATION_TYPES"
