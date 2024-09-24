@@ -72,7 +72,7 @@
 					<SearchForm
 						:placeholder="getLocationText(searchData)"
 						button-copy="Update search"
-						@searched="isSearchShown = false"
+						@searched="onWindowWidthSetIsSearchShown"
 					/>
 				</div>
 			</transition>
