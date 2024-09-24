@@ -1,3 +1,4 @@
+from datetime import datetime, date
 from typing import Optional, Literal, get_args
 
 from sqlalchemy import (
@@ -70,6 +71,16 @@ RequestStatus = Literal[
     "Waiting for FOIA",
     "Waiting for requestor",
 ]
+JurisdictionType = Literal[
+    "school",
+    "county",
+    "local",
+    "port",
+    "tribal",
+    "transit",
+    "state",
+    "federal",
+]
 
 
 class Base(DeclarativeBase):
@@ -97,13 +108,21 @@ class Agency(Base):
             if key == "_sa_instance_state":
                 continue
             else:
-                yield key, getattr(self, key)
+                value = getattr(self, key)
+                value = (
+                    str(value)
+                    if type(value) == datetime or type(value) == date
+                    else value
+                )
+                yield key, value
 
     airtable_uid: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str]
     submitted_name: Mapped[Optional[str]]
     homepage_url: Mapped[Optional[str]]
-    jurisdiction_type: Mapped[Optional[str]]
+    jurisdiction_type: Mapped[JurisdictionType] = mapped_column(
+        Enum(*get_args(JurisdictionType)), name="jurisdiction_type"
+    )
     state_iso: Mapped[Optional[str]]
     municipality: Mapped[Optional[str]]
     county_fips: Mapped[Optional[str]] = mapped_column(
@@ -115,22 +134,23 @@ class Agency(Base):
     defunct_year: Mapped[Optional[str]]
     count_data_sources: Mapped[Optional[int]]
     agency_type: Mapped[Optional[str]]
-    multi_agency: Mapped[Optional[bool]]
+    multi_agency: Mapped[bool] = mapped_column(server_defaul=false())
     zip_code: Mapped[Optional[str]]
     data_sources: Mapped[Optional[str]]
-    no_web_presence: Mapped[Optional[bool]]
-    airtable_agency_last_modified: Mapped[Optional[TIMESTAMP]] = mapped_column(
-        TIMESTAMP(timezone=True)
+    no_web_presence: Mapped[bool] = mapped_column(server_default=false())
+    airtable_agency_last_modified: Mapped[TIMESTAMP] = mapped_column(
+        TIMESTAMP(timezone=True), server_default=func.current_timestamp()
     )
     data_sources_last_updated: Mapped[Optional[DATE]] = mapped_column(DATE)
-    approved: Mapped[Optional[bool]]
+    approved: Mapped[bool] = mapped_column(server_default=false())
     rejection_reason: Mapped[Optional[str]]
     last_approval_editor: Mapped[Optional[str]]
     submitter_contact: Mapped[Optional[str]]
-    agency_created: Mapped[Optional[TIMESTAMP]] = mapped_column(
-        TIMESTAMP(timezone=True)
+    agency_created: Mapped[TIMESTAMP] = mapped_column(
+        TIMESTAMP(timezone=True), server_default=func.current_timestamp()
     )
     county_airtable_uid: Mapped[Optional[str]]
+    location_id: Mapped[Optional[int]]
 
 
 class County(Base):
@@ -182,22 +202,19 @@ class DataSource(Base):
     __tablename__ = "data_sources"
 
     def __iter__(self):
-        # Custom __iter__ method for converting the class to a dictionary
         for key in self.__dict__:
             match key:
                 case "_sa_instance_state":
-                    # Removes the unnecessary instance state reference from the resulting dictionary
                     continue
                 case "airtable_uid":
                     yield key, self.airtable_uid
-                    # Include agency_ids directly after the data source's ID
                     yield "agency_ids", self.agency_ids
                 case "agencies":
-                    # Converts the Agency objects to a dictionary
-                    # See Agency.__iter__
                     yield key, [dict(agency) for agency in self.agencies]
                 case _:
-                    yield key, getattr(self, key)
+                    value = getattr(self, key)
+                    value = str(value) if type(value) == datetime else value
+                    yield key, value
 
     airtable_uid: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str]
@@ -255,7 +272,9 @@ class DataSource(Base):
     )
 
     agencies: Mapped[list[Agency]] = relationship(
-        secondary="public.agency_source_link", lazy="joined" # Use joined lazy loading so that DataSource and its Agencys are loaded at the same time
+        secondary="public.agency_source_link",
+        lazy="joined",
+        innerjoin=True,
     )
 
     @hybrid_property

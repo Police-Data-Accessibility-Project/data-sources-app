@@ -1046,34 +1046,45 @@ class DatabaseClient:
         )
 
     @session_manager
-    def execute_subquery(self):
-        from middleware.models import DataSource, Agency
-
+    def execute_subquery(
+        self,
+        relation_name: str,
+        subrelation_name: str,
+        linking_column: str,
+        columns: list[str],
+        subcolumns: list[str],
+        where_mappings: list[WhereMapping],
+    ) -> list[dict[str, Any]]:
+        column_references = self.convert_to_column_reference(
+            columns=columns, relation=relation_name
+        )
+        subcolumn_references = self.convert_to_column_reference(
+            columns=subcolumns, relation=subrelation_name
+        )
+        linking_column_reference = self.convert_to_column_reference(
+            columns=[linking_column], relation=relation_name
+        )
+        where_mappings = [
+            mapping.build_where_clause(relation_name) for mapping in where_mappings
+        ]
+        relation_reference = TABLE_REFERENCE[relation_name]
+        
         results = (
             self.session.execute(
-                # Columns cannot be specified in the select statement, instead they are selected in the load_only() function
-                select(DataSource) 
+                select(relation_reference)
                 .options(
-                    # DataSource.agencies references agencies related to the data source
-                    defaultload(DataSource.agencies).load_only(
-                        # Specify which columns to load from the sub-table (agencies)
-                        Agency.airtable_uid,
-                        Agency.name,
-                        # raiseload will raise an error if access to unloaded columns is attempted
+                    defaultload(*linking_column_reference).load_only(
+                        *subcolumn_references,
                         raiseload=True,
                     ),
-                    # Specify which columns to load from the primary table
-                    load_only(DataSource.airtable_uid, DataSource.name, raiseload=True),
+                    load_only(*column_references, raiseload=True),
                 )
-                .where(DataSource.airtable_uid == "rec00T2YLS2jU7Tbn")
+                .where(*where_mappings)
             )
-            .unique() # Call to unique is required for relationship joins
+            .unique()
             .all()
         )
 
-        # Dictionary conversion must happen before the session is closed or the objects will no longer be accessible
-        # Only loaded columns will appear in the resulting dictionary
-        # See DataSource.__iter__ for dict loading implementation
         dict_results = [dict(result[0]) for result in results]
 
         return dict_results

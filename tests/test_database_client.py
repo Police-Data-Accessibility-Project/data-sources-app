@@ -180,7 +180,9 @@ def test_select_from_single_relation_columns_only(
     ]
 
 
-def test_select_from_single_relation_where_mapping(live_database_client: DatabaseClient):
+def test_select_from_single_relation_where_mapping(
+    live_database_client: DatabaseClient,
+):
     results = live_database_client._select_from_single_relation(
         relation_name="test_table",
         columns=["pet_name"],
@@ -215,7 +217,9 @@ def test_select_from_single_relation_limit(live_database_client: DatabaseClient)
     ]
 
 
-def test_select_from_single_relation_limit_and_offset(live_database_client: DatabaseClient, monkeypatch):
+def test_select_from_single_relation_limit_and_offset(
+    live_database_client: DatabaseClient, monkeypatch
+):
     # Used alongside limit; we mock PAGE_SIZE to be one
     monkeypatch.setattr("database_client.database_client.PAGE_SIZE", 1)
 
@@ -247,7 +251,9 @@ def test_select_from_single_relation_order_by(live_database_client: DatabaseClie
     ]
 
 
-def test_select_from_single_relation_all_parameters(live_database_client: DatabaseClient, monkeypatch):
+def test_select_from_single_relation_all_parameters(
+    live_database_client: DatabaseClient, monkeypatch
+):
     # Used alongside limit; we mock PAGE_SIZE to be one
     monkeypatch.setattr("database_client.database_client.PAGE_SIZE", 1)
 
@@ -361,6 +367,7 @@ def test_delete_from_table(live_database_client, test_table_data):
         {"pet_name": "Arthur"},
         {"pet_name": "Simon"},
     ]
+
 
 def test_update_entry_in_table(live_database_client: DatabaseClient, test_table_data):
     results = live_database_client._select_from_single_relation(
@@ -577,6 +584,7 @@ def test_get_typeahead_locations(live_database_client: DatabaseClient):
     assert results[2]["county"] == "Arxylodon"
     assert results[2]["locality"] is None
 
+
 def test_get_typeahead_agencies(live_database_client):
     # Insert test data into the database
     cursor = live_database_client.connection.cursor()
@@ -584,11 +592,12 @@ def test_get_typeahead_agencies(live_database_client):
 
     results = live_database_client.get_typeahead_agencies(search_term="xyl")
     assert len(results) == 1
-    assert results[0]["display_name"] == 'Xylodammerung Police Agency'
+    assert results[0]["display_name"] == "Xylodammerung Police Agency"
     assert results[0]["jurisdiction_type"] == "state"
     assert results[0]["state"] == "XY"
     assert results[0]["county"] == "Arxylodon"
     assert results[0]["locality"] == "Xylodammerung"
+
 
 def test_search_with_location_and_record_types_real_data(live_database_client):
     """
@@ -788,7 +797,9 @@ def test_user_is_creator_of_data_request(live_database_client):
     assert results is False
 
 
-def test_get_column_permissions_as_permission_table(live_database_client: DatabaseClient):
+def test_get_column_permissions_as_permission_table(
+    live_database_client: DatabaseClient,
+):
     insert_test_column_permission_data(live_database_client)
 
     results = live_database_client.get_column_permissions_as_permission_table(
@@ -896,6 +907,7 @@ def test_get_related_data_sources(live_database_client):
             source["name"] for source in source_column_value_mappings
         ]
 
+
 def test_create_request_source_relation(live_database_client):
     # Create data source and request
 
@@ -960,6 +972,41 @@ def test_create_request_source_relation(live_database_client):
 
 def test_subquery(live_database_client: DatabaseClient):
     import json
-    result = live_database_client.execute_subquery()
+    from time import perf_counter
 
-    print(json.dumps(result, indent=4))
+    data_sources_columns = live_database_client.get_permitted_columns(
+        relation="data_sources",
+        role=RelationRoleEnum.ADMIN,
+        column_permission=ColumnPermissionEnum.READ,
+    )
+    agencies_columns = live_database_client.get_permitted_columns(
+        relation="agencies",
+        role=RelationRoleEnum.ADMIN,
+        column_permission=ColumnPermissionEnum.READ,
+    )
+    where_mappings = [WhereMapping(column="airtable_uid", value="rechI06qD4od759xT")]
+
+    # Run normal single select query
+    single_start = perf_counter()
+    live_database_client._select_from_single_relation(
+        relation_name="data_sources",
+        columns=data_sources_columns,
+        where_mappings=where_mappings,
+    )
+    single_stop = perf_counter()
+
+    # Run subquery select
+    subquery_start = perf_counter()
+    results = live_database_client.execute_subquery(
+        relation_name="data_sources",
+        subrelation_name="agencies",
+        linking_column="agencies",
+        columns=data_sources_columns,
+        subcolumns=agencies_columns,
+        where_mappings=where_mappings,
+    )
+    subquery_stop = perf_counter()
+
+    print(f"\nSingle select time: {single_stop - single_start}")
+    print(f"Subquery time: {subquery_stop - subquery_start}")
+    print(json.dumps(results, indent=4))
