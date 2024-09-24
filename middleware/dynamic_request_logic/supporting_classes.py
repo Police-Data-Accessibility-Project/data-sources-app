@@ -11,6 +11,8 @@ from middleware.column_permission_logic import (
     RelationRoleParameters,
     check_has_permission_to_edit_columns,
 )
+from middleware.custom_dataclasses import DeferredFunction
+from middleware.util_dynamic import execute_if_not_none
 
 
 @dataclass
@@ -49,13 +51,15 @@ class PutPostBase(ABC):
         middleware_parameters: MiddlewareParameters,
         entry: dict,
         relation_role_parameters: RelationRoleParameters = RelationRoleParameters(),
+        pre_database_client_method_with_parameters: Optional[DeferredFunction] = None,
     ):
         self.mp = middleware_parameters
         self.entry = entry
         self.relation_role_parameters = relation_role_parameters
+        self.pre_database_client_method_with_parameters = pre_database_client_method_with_parameters
 
     def pre_database_client_method_logic(self):
-        pass
+        execute_if_not_none(self.pre_database_client_method_with_parameters)
 
     @abstractmethod
     def call_database_client_method(self):

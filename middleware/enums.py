@@ -45,9 +45,21 @@ class Relations(Enum):
     DATA_REQUESTS = "data_requests"
     AGENCIES = "agencies"
     DATA_SOURCES = "data_sources"
+    DATA_SOURCES_ARCHIVE_INFO = "data_sources_archive_info"
+    LINK_DATA_SOURCES_DATA_REQUESTS = "link_data_sources_data_requests"
+    RECORD_CATEGORIES = "record_categories"
+    RECORD_TYPES = "record_types"
     RELATED_SOURCES = "link_data_sources_data_requests"
+    RESET_TOKENS = "reset_tokens"
     AGENCIES_EXPANDED = "agencies_expanded"
+    EXTERNAL_ACCOUNTS = "external_accounts"
     TEST_TABLE = "test_table"
+    US_STATES = "us_states"
+    COUNTIES = "counties"
+    LOCALITIES = "localities"
+    LOCATIONS = "locations"
+    LOCATIONS_EXPANDED = "locations_expanded"
+    USERS = "users"
 
 class JurisdictionType(Enum):
     """
@@ -61,7 +73,6 @@ class JurisdictionType(Enum):
     TRIBAL = "tribal"
     TRANSIT = "transit"
     SCHOOL = "school"
-    NONE = None
 
 
 class JurisdictionSimplified(Enum):
@@ -80,5 +91,5 @@ class AgencyType(Enum):
     NONE = None
     AGGREGATED = "aggregated"
     COURT = "court"
-    LAW_ENFORCEMENT_POLICE = "law enforcement/police"
-    CORRECTIONS = "corrections"
+    POLICE = "police"
+    JAIL = "jail"

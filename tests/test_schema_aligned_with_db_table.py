@@ -4,7 +4,7 @@ Test that a given schema's fields align with the columns of a database relation
 
 from middleware.enums import Relations
 from middleware.primary_resource_logic.agencies import (
-    AgenciesPostSchema,
+    AgencyInfoBaseSchema,
     AgenciesGetSchema,
 )
 from tests.fixtures import live_database_client
@@ -18,7 +18,7 @@ def test_agencies_post_schema_aligned_with_agencies_expanded(live_database_clien
     agencies_expanded_columns = live_database_client.get_columns_for_relation(
         Relations.AGENCIES_EXPANDED
     )
-    schema = AgenciesPostSchema()
+    schema = AgencyInfoBaseSchema()
     for field in schema.fields:
         assert field in agencies_expanded_columns
 

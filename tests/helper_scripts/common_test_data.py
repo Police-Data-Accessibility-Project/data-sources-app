@@ -62,6 +62,7 @@ def create_agency_entry_for_search_cache(db_client: DatabaseClient) -> str:
             "count_data_sources": 2000,  # AKA, an absurdly high number to guarantee it's the first result
             "approved": True,
             "homepage_url": None,
+            "jurisdiction_type": "Federal",
         },
     )
     return submitted_name

@@ -4,15 +4,13 @@ to be inherited by other get many requests.
 """
 
 from dataclasses import dataclass
-from typing import Optional, Type, Callable
+from typing import Optional
 
 from marshmallow import Schema, fields, validate
 
 from database_client.enums import SortOrder
 from middleware.schema_and_dto_logic.custom_fields import DataField
-from middleware.schema_and_dto_logic.custom_types import DTOTypes
-from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
-from utilities.common import get_valid_enum_value
+from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters, DTOPopulateParameters
 
 from utilities.enums import SourceMappingEnum
 
@@ -94,20 +92,6 @@ class EntryDataRequestSchema(Schema):
             "description": "The entry data field for adding and updating entries",
         },
     )
-
-
-@dataclass
-class DTOPopulateParameters:
-    """
-    Parameters for the dynamic DTO population function
-    """
-
-    dto_class: Type[DTOTypes]
-    source: Optional[SourceMappingEnum] = None
-    transformation_functions: Optional[dict[str, Callable]] = None
-    attribute_source_mapping: Optional[dict[str, SourceMappingEnum]] = None
-    # A schema to be used for validating the input of the class.
-    validation_schema: Optional[Type[Schema]] = None
 
 
 @dataclass

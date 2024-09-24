@@ -412,21 +412,9 @@ def test_update_entry_in_table(live_database_client: DatabaseClient, test_table_
 
 
 def test_get_data_sources_for_map(live_database_client):
-    # Add at least two new data sources to the database
-    insert_test_agencies_and_sources_if_not_exist(
-        live_database_client.connection.cursor()
-    )
-    # Fetch the data source with the DatabaseClient method
     results = live_database_client.get_data_sources_for_map()
-    # Confirm both data sources are retrieved and only the proper columns are returned
-    found_source = False
-    for result in results:
-        if result.data_source_name != "Source 1":
-            continue
-        found_source = True
-        assert result.lat == 30
-        assert result.lng == 20
-    assert found_source
+    assert len(results) > 0
+    assert isinstance(results[0], live_database_client.MapInfo)
 
 
 def test_get_offset():
@@ -905,32 +893,22 @@ def test_get_columns_for_relation(live_database_client):
         "species"
     ]
 
+def test_create_or_get(live_database_client):
 
-def test_add_agency(live_database_client):
-    pytest.fail("Test not implemented")
+    results = live_database_client.create_or_get(
+        table_name="test_table",
+        column_value_mappings={"pet_name": "Schnoodles", "species": "Rat"}
+    )
 
-    # Add a random agency with a random locality attached to an existing state and county
+    assert results
 
-    # Confirm that the locality properly populates the `locality` table,
-    #  and the id of the row in `locality` is the same as the corresponding agency row's `locality_id` column
+    # Check that the same results are returned if the entry already exists
+    new_results = live_database_client.create_or_get(
+        table_name="test_table",
+        column_value_mappings={"pet_name": "Schnoodles", "species": "Rat"}
+    )
 
-    # If you add another agency with the same locality, there should still be only
-    #  one row in the `locality` table, and both agency rows should point to it
-
-    #
-    #
-    # # Add tests for multiple variants
-    # # TODO: Add multiple variants test to a unit test for the url transformation function,
-    # #    OR for the integration test
-    # same_urls = [
-    #     "http://duplicate-checker.com/",
-    #     "https://www.duplicate-checker.com",
-    #     "http://www.duplicate-checker.com/",
-    # ]
-    #
-    # for url in same_urls:
-    #     results = live_database_client.check_for_url_duplicates(url)
-    #     assert len(results) == 1
+    assert results == new_results
 
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts

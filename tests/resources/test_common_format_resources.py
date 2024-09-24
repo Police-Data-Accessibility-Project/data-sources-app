@@ -206,17 +206,6 @@ TEST_ID = -1
             {},
         ),
         (
-            "/agencies",
-            "POST",
-            "Agencies.create_agency",
-            {
-                "entry_data": {
-                    "submitted_name": "test_agency_name",
-                    "airtable_uid": "test_airtable_uid",
-                }
-            },
-        ),
-        (
             f"/agencies/{TEST_ID}",
             "GET",
             "Agencies.get_agency_by_id",

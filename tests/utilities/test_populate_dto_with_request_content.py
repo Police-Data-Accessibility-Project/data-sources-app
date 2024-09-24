@@ -12,9 +12,14 @@ from tests.helper_scripts.common_mocks_and_patches import patch_request_args_get
 from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
     get_restx_param_documentation,
 )
-from middleware.schema_and_dto_logic.dynamic_schema_request_content_population import populate_schema_with_request_content
-from middleware.schema_and_dto_logic.dynamic_dto_request_content_population import populate_dto_with_request_content, \
-    _optionally_check_against_schema
+from middleware.schema_and_dto_logic.dynamic_schema_request_content_population import (
+    populate_schema_with_request_content,
+    InvalidSourceMappingError,
+)
+from middleware.schema_and_dto_logic.dynamic_dto_request_content_population import (
+    populate_dto_with_request_content,
+    _optionally_check_against_schema,
+)
 from middleware.schema_and_dto_logic.custom_exceptions import AttributeNotInClassError
 from utilities.enums import SourceMappingEnum
 from utilities.argument_checking_logic import (
@@ -206,6 +211,11 @@ class ExampleSchemaWithEnum(Schema):
     )
 
 
+@dataclass
+class ExampleDTOWithEnum:
+    example_enum: str
+
+
 def test_populate_schema_with_request_content(
     patched_request_args_get,
 ):
@@ -222,6 +232,91 @@ def test_populate_schema_with_request_content(
     assert obj.example_string == "json value"
     assert obj.example_query_string == "arg value"
     assert obj.example_form == "form value"
+
+
+class ExampleNestedSchema(Schema):
+    example_dto_with_enum = fields.Nested(
+        ExampleSchemaWithEnum,
+        required=True,
+        source=SourceMappingEnum.JSON,
+        description="An example description.",
+        metadata={
+            "nested_dto_class": ExampleDTOWithEnum,
+        },
+    )
+    example_dto = fields.Nested(
+        ExampleSchema,
+        required=True,
+        source=SourceMappingEnum.JSON,
+        description="An example description.",
+        metadata={"nested_dto_class": ExampleDTO},
+    )
+
+
+@dataclass
+class ExampleNestedDTO:
+    example_dto_with_enum: ExampleDTOWithEnum
+    example_dto: ExampleDTO
+
+
+class ExampleNestedSchemaWithIncorrectSource(Schema):
+    example_dto_with_enum = fields.Nested(
+        ExampleSchemaWithEnum,
+        required=True,
+        source=SourceMappingEnum.QUERY_ARGS,
+        description="An example query string.",
+    )
+    example_dto = fields.Nested(
+        ExampleSchema,
+        required=True,
+        source=SourceMappingEnum.JSON,
+        description="An example query string.",
+    )
+
+
+def test_populate_nested_schema_with_request_content_non_json_source_provided(
+    patched_request_args_get,
+):
+    """
+    If a schema is nested and the source is not JSON, an error should be raised
+    :param patched_request_args_get:
+    :return:
+    """
+    with pytest.raises(InvalidSourceMappingError):
+        populate_schema_with_request_content(
+            schema_class=ExampleNestedSchemaWithIncorrectSource,
+            dto_class=ExampleNestedDTO,
+        )
+
+
+def test_populate_nested_schema_with_request_content(
+    monkeypatch,
+):
+    mock = patch_request_args_get(
+        monkeypatch,
+        ROUTE_TO_PATCH,
+        {
+            "example_dto_with_enum": {"example_enum": "a"},
+            "example_dto": {
+                "example_string": "my example string",
+                "example_query_string": "my example query string",
+                "example_form": "form value",
+            },
+        },
+    )
+
+    obj = populate_schema_with_request_content(
+        schema_class=ExampleNestedSchema, dto_class=ExampleNestedDTO
+    )
+
+    assert isinstance(obj, ExampleNestedDTO)
+    assert obj.example_dto_with_enum.example_enum == "a"
+    assert obj.example_dto.example_string == "my example string"
+    assert (
+        obj.example_dto.example_query_string
+        == "my example query string"
+    )
+    assert obj.example_dto.example_form == "form value"
 
 
 def test_get_restx_param_documentation():

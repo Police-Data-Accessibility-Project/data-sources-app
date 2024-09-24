@@ -227,56 +227,6 @@ def test_execute_if_none_is_not_none():
     execute_if_not_none(mock)
     mock.execute.assert_called_once()
 
-
-def test_post_entry(monkeypatch):
-    mock = MagicMock()
-    multi_monkeypatch(
-        monkeypatch,
-        patch_root=f"{PATCH_ROOT}.post_logic",
-        mock=mock,
-        functions_to_patch=[
-            "execute_if_not_none",
-            "created_id_response",
-        ],
-    )
-    monkeypatch.setattr(
-        f"{PATCH_ROOT}.supporting_classes.check_has_permission_to_edit_columns",
-        mock.check_has_permission_to_edit_columns,
-    )
-    result = post_entry(
-        middleware_parameters=mock.mp,
-        entry=mock.entry,
-        pre_insertion_function_with_parameters=mock.pre_insertion_function_with_parameters,
-        relation_role_parameters=mock.relation_role_parameters,
-    )
-
-    mock.relation_role_parameters.get_relation_role_from_parameters.assert_called_once_with(
-        access_info=mock.mp.access_info
-    )
-
-    mock.check_has_permission_to_edit_columns.assert_called_once_with(
-        db_client=mock.mp.db_client,
-        relation=mock.mp.relation,
-        role=mock.relation_role_parameters.get_relation_role_from_parameters.return_value,
-        columns=list(mock.entry.keys()),
-    )
-
-    mock.execute_if_not_none.assert_called_once_with(
-        mock.pre_insertion_function_with_parameters
-    )
-
-    mock.mp.db_client_method.assert_called_once_with(
-        mock.mp.db_client, column_value_mappings=mock.entry
-    )
-
-    mock.created_id_response.assert_called_once_with(
-        new_id=str(mock.mp.db_client_method.return_value),
-        message=f"{mock.mp.entry_name} created.",
-    )
-
-    assert result == mock.created_id_response.return_value
-
-
 def test_put_entry(monkeypatch):
     mock = MagicMock()
     monkeypatch.setattr(

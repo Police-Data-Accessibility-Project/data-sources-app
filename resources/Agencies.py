@@ -13,7 +13,13 @@ from middleware.primary_resource_logic.agencies import (
     update_agency,
     delete_agency,
     AgenciesGetManyResponseSchema,
+    AgencyInfoBaseSchema,
     AgenciesPostSchema,
+    AgenciesPostDTO,
+    AgencyInfoPutSchema,
+    AgencyInfoPutDTO,
+    AgenciesPutSchema,
+    AgenciesPutDTO,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     EntryDataRequestDTO,
@@ -86,7 +92,10 @@ class AgenciesByPage(PsycopgResource):
     def post(self, access_info: AccessInfo):
         return self.run_endpoint(
             wrapper_function=create_agency,
-            dto_populate_parameters=EntryDataRequestDTO.get_dto_populate_parameters(),
+            schema_populate_parameters=SchemaPopulateParameters(
+                schema_class=AgenciesPostSchema,
+                dto_class=AgenciesPostDTO,
+            ),
             access_info=access_info,
         )
 
@@ -119,18 +128,13 @@ class AgenciesById(PsycopgResource):
     @endpoint_info(
         namespace=namespace_agencies,
         auth_info=WRITE_ONLY_AUTH_INFO,
-        input_model=models.entry_data_request_model,
-        description=column_permissions_description(
-            head_description="Updates an agency",
-            sub_description="Columns allowed to be updated by the user is determined by their level of access",
-            column_permissions_str_table=agencies_column_permissions,
-        ),
+        input_schema=AgenciesPutSchema,
+        description="Updates an agency",
         responses=create_response_dictionary("Agency successfully updated."),
     )
     def put(self, resource_id: str, access_info: AccessInfo) -> Response:
         return self.run_endpoint(
             update_agency,
-            dto_populate_parameters=EntryDataRequestDTO.get_dto_populate_parameters(),
             access_info=access_info,
             agency_id=resource_id,
         )

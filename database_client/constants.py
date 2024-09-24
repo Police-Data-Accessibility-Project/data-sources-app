@@ -8,6 +8,11 @@ from database_client.models import (
     TestTable,
     User,
     AgencyExpanded,
+    USState,
+    County,
+    Locality,
+    Location,
+    LocationExpanded,
 )
 
 AGENCY_APPROVED_COLUMNS = [
@@ -122,4 +127,9 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     "reset_tokens": ResetToken,
     "test_table": TestTable,
     "users": User,
+    "us_states": USState,
+    "counties": County,
+    "localities": Locality,
+    "locations": Location,
+    "locations_expanded": LocationExpanded,
 }

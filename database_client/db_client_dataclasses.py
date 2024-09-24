@@ -1,3 +1,4 @@
+import enum
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
@@ -64,3 +65,12 @@ class WhereMapping:
             return getattr(relation_reference, self.column) == self.value
         elif self.eq is False:
             return getattr(relation_reference, self.column) != self.value
+
+    @staticmethod
+    def from_dict(d: dict) -> list["WhereMapping"]:
+        results = []
+        for key, value in d.items():
+            if isinstance(value, enum.Enum):
+                value = value.value
+            results.append(WhereMapping(column=key, value=value))
+        return results

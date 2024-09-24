@@ -11,10 +11,14 @@ from sqlalchemy import (
     Float,
     Boolean,
     DateTime,
+    Integer,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, DATE, DATERANGE, TIMESTAMP
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.sql.expression import false, func
+
+from database_client.enums import LocationType
+from middleware.enums import Relations
 
 ExternalAccountType = Literal["github"]
 RecordType = Literal[
@@ -71,9 +75,12 @@ class Base(DeclarativeBase):
     pass
 
 
+PUBLIC_SCHEMA = {"schema": "public"}
+
+
 class Agency(Base):
-    __tablename__ = "agencies"
-    __table_args__ = {"schema": "public"}
+    __tablename__ = Relations.AGENCIES.value
+    __table_args__ = PUBLIC_SCHEMA
 
     airtable_uid: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str]
@@ -107,11 +114,14 @@ class Agency(Base):
         TIMESTAMP(timezone=True)
     )
     county_airtable_uid: Mapped[Optional[str]]
+    location_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("public.locations.id")
+    )
 
 
 class AgencyExpanded(Base):
-    __tablename__ = "agencies_expanded"
-    __table_args__ = {"schema": "public"}
+    __tablename__ = Relations.AGENCIES_EXPANDED.value
+    __table_args__ = PUBLIC_SCHEMA
 
     # Define columns as per the view with refined data types
     name = Column(String, nullable=False)
@@ -146,10 +156,11 @@ class AgencyExpanded(Base):
 
 
 class County(Base):
-    __tablename__ = "counties"
-    __table_args__ = {"schema": "public"}
+    __tablename__ = Relations.COUNTIES.value
+    __table_args__ = PUBLIC_SCHEMA
 
-    fips: Mapped[str] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    fips: Mapped[str] = mapped_column(Text)
     name: Mapped[Optional[Text]] = mapped_column(Text)
     name_ascii: Mapped[Optional[Text]] = mapped_column(Text)
     state_iso: Mapped[Optional[Text]] = mapped_column(Text)
@@ -160,11 +171,61 @@ class County(Base):
     airtable_uid: Mapped[Optional[Text]] = mapped_column(Text)
     airtable_county_last_modified: Mapped[Optional[Text]] = mapped_column(Text)
     airtable_county_created: Mapped[Optional[Text]] = mapped_column(Text)
+    state_id: Mapped[int] = mapped_column(ForeignKey("public.us_states.id"))
+
+
+class Locality(Base):
+    __tablename__ = Relations.LOCALITIES.value
+    __table_args__ = PUBLIC_SCHEMA
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[Optional[Text]] = mapped_column(Text)
+    county_id: Mapped[int] = mapped_column(ForeignKey("public.counties.id"))
+
+
+class Location(Base):
+    __tablename__ = Relations.LOCATIONS.value
+    __table_args__ = PUBLIC_SCHEMA
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    type: Mapped[Enum] = mapped_column(Enum(LocationType), nullable=False)
+    state_id: Mapped[int] = mapped_column(
+        ForeignKey("public.us_states.id"), nullable=False
+    )
+    county_id: Mapped[int] = mapped_column(ForeignKey("public.counties.id"))
+    locality_id: Mapped[int] = mapped_column(ForeignKey("public.localities.id"))
+
+
+class LocationExpanded(Base):
+    __tablename__ = Relations.LOCATIONS_EXPANDED.value
+    __table_args__ = {"schema": "public", "extend_existing": True}
+
+    id = Column(Integer, primary_key=True)
+    type = Column(
+        Enum(LocationType)
+    )  # Adjust the type if 'type' is more specific, like Enum or similar.
+    state_name = Column(String)
+    state_iso = Column(String)
+    county_name = Column(String)
+    county_fips = Column(String)
+    locality_name = Column(String)
+    state_id = Column(Integer)
+    county_id = Column(Integer)
+    locality_id = Column(Integer)
+
+
+class USState(Base):
+    __tablename__ = Relations.US_STATES.value
+    __table_args__ = PUBLIC_SCHEMA
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    state_iso: Mapped[str] = mapped_column(String(255), nullable=False)
+    state_name: Mapped[str] = mapped_column(String(255))
 
 
 class DataRequest(Base):
-    __tablename__ = "data_requests"
-    __table_args__ = {"schema": "public"}
+    __tablename__ = Relations.DATA_REQUESTS.value
+    __table_args__ = PUBLIC_SCHEMA
 
     id: Mapped[int] = mapped_column(primary_key=True)
     submission_notes: Mapped[Optional[Text]] = mapped_column(Text)
@@ -193,8 +254,8 @@ class DataRequest(Base):
 
 
 class DataSource(Base):
-    __tablename__ = "data_sources"
-    __table_args__ = {"schema": "public"}
+    __tablename__ = Relations.DATA_SOURCES.value
+    __table_args__ = PUBLIC_SCHEMA
 
     airtable_uid: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str]
@@ -253,8 +314,8 @@ class DataSource(Base):
 
 
 class DataSourceArchiveInfo(Base):
-    __tablename__ = "data_sources_archive_info"
-    __table_args__ = {"schema": "public"}
+    __tablename__ = Relations.DATA_SOURCES_ARCHIVE_INFO.value
+    __table_args__ = PUBLIC_SCHEMA
 
     airtable_uid: Mapped[str] = mapped_column(
         ForeignKey("public.data_sources.airtable_uid"), primary_key=True
@@ -265,8 +326,8 @@ class DataSourceArchiveInfo(Base):
 
 
 class ExternalAccount(Base):
-    __tablename__ = "external_accounts"
-    __table_args__ = {"schema": "public"}
+    __tablename__ = Relations.EXTERNAL_ACCOUNTS.value
+    __table_args__ = PUBLIC_SCHEMA
 
     row_id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
@@ -280,8 +341,8 @@ class ExternalAccount(Base):
 
 
 class LinkDataSourceDataRequest(Base):
-    __tablename__ = "link_data_sources_data_requests"
-    __table_args__ = {"schema": "public"}
+    __tablename__ = Relations.LINK_DATA_SOURCES_DATA_REQUESTS.value
+    __table_args__ = PUBLIC_SCHEMA
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     source_id: Mapped[Text] = mapped_column(
@@ -291,8 +352,8 @@ class LinkDataSourceDataRequest(Base):
 
 
 class RecordCategory(Base):
-    __tablename__ = "record_categories"
-    __table_args__ = {"schema": "public"}
+    __tablename__ = Relations.RECORD_CATEGORIES.value
+    __table_args__ = PUBLIC_SCHEMA
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255))
@@ -300,8 +361,8 @@ class RecordCategory(Base):
 
 
 class RecordType(Base):
-    __tablename__ = "record_types"
-    __table_args__ = {"schema": "public"}
+    __tablename__ = Relations.RECORD_TYPES.value
+    __table_args__ = PUBLIC_SCHEMA
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255))
@@ -310,8 +371,8 @@ class RecordType(Base):
 
 
 class ResetToken(Base):
-    __tablename__ = "reset_tokens"
-    __table_args__ = {"schema": "public"}
+    __tablename__ = Relations.RESET_TOKENS.value
+    __table_args__ = PUBLIC_SCHEMA
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     email: Mapped[Optional[Text]] = mapped_column(Text)
@@ -322,8 +383,8 @@ class ResetToken(Base):
 
 
 class TestTable(Base):
-    __tablename__ = "test_table"
-    __table_args__ = {"schema": "public"}
+    __tablename__ = Relations.TEST_TABLE.value
+    __table_args__ = PUBLIC_SCHEMA
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     pet_name: Mapped[Optional[str]] = mapped_column(String(255))
@@ -331,8 +392,8 @@ class TestTable(Base):
 
 
 class User(Base):
-    __tablename__ = "users"
-    __table_args__ = {"schema": "public"}
+    __tablename__ = Relations.USERS.value
+    __table_args__ = PUBLIC_SCHEMA
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     created_at: Mapped[Optional[TIMESTAMP]] = mapped_column(

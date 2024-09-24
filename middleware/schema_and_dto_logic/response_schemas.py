@@ -8,8 +8,16 @@ from marshmallow import Schema, fields
 from middleware.schema_and_dto_logic.custom_fields import EntryDataListField, DataField
 from utilities.enums import SourceMappingEnum
 
+class MessageSchema(Schema):
+    message = fields.String(
+        required=True,
+        metadata={
+            "description": "The success message",
+            "source": SourceMappingEnum.JSON,
+        },
+    )
 
-class IDAndMessageSchema(Schema):
+class IDAndMessageSchema(MessageSchema):
     id = fields.String(
         required=True,
         metadata={
@@ -17,23 +25,9 @@ class IDAndMessageSchema(Schema):
             "source": SourceMappingEnum.JSON,
         },
     )
-    message = fields.String(
-        required=True,
-        metadata={
-            "description": "The success message",
-            "source": SourceMappingEnum.JSON,
-            "example": "Success. Entry created",
-        },
-    )
 
 
-class GetManyResponseSchemaBase(Schema):
-    message = fields.String(
-        metadata={
-            "description": "The success message",
-            "source": SourceMappingEnum.JSON,
-        }
-    )
+class GetManyResponseSchemaBase(MessageSchema):
     count = fields.Integer(
         metadata={
             "description": "The total number of results",
@@ -53,7 +47,7 @@ class GetManyResponseSchema(GetManyResponseSchemaBase):
     )
 
 
-class EntryDataResponseSchema(Schema):
+class EntryDataResponseSchema(MessageSchema):
     """
     Note: This exists as a complement to EntryDataRequestSchema,
     but with the field name and description modified.
@@ -62,14 +56,6 @@ class EntryDataResponseSchema(Schema):
     rather than provided
     """
 
-    message = fields.String(
-        required=True,
-        metadata={
-            "description": "The success message",
-            "source": SourceMappingEnum.JSON,
-            "example": "Success. Entry created",
-        },
-    )
     data = DataField(
         required=True,
         metadata={
