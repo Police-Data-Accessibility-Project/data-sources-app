@@ -1,9 +1,10 @@
+import enum
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
 from sqlalchemy.sql.expression import asc, desc, BinaryExpression
 
-from database_client.constants import TABLE_REFERENCE
+from database_client.constants import SQL_ALCHEMY_TABLE_REFERENCE
 from database_client.enums import SortOrder
 
 
@@ -38,7 +39,7 @@ class OrderByParameters:
         :param relation:
         :return: Order by clause. Example: asc(DataSource.name)
         """
-        relation_reference = TABLE_REFERENCE[relation]
+        relation_reference = SQL_ALCHEMY_TABLE_REFERENCE[relation]
         order_by_func = ORDER_BY_REFERENCE[self.sort_order.value]
         return order_by_func(getattr(relation_reference, self.sort_by))
 
@@ -59,8 +60,17 @@ class WhereMapping:
         :param relation:
         :return: BinaryExpression. Example: Agency.municipality == "Pittsburgh"
         """        
-        relation_reference = TABLE_REFERENCE[relation]
+        relation_reference = SQL_ALCHEMY_TABLE_REFERENCE[relation]
         if self.eq is True:
             return getattr(relation_reference, self.column) == self.value
         elif self.eq is False:
             return getattr(relation_reference, self.column) != self.value
+
+    @staticmethod
+    def from_dict(d: dict) -> list["WhereMapping"]:
+        results = []
+        for key, value in d.items():
+            if isinstance(value, enum.Enum):
+                value = value.value
+            results.append(WhereMapping(column=key, value=value))
+        return results

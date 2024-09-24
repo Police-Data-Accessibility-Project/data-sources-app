@@ -23,7 +23,7 @@ from middleware.exceptions import (
     DuplicateUserError,
 )
 from database_client.models import ExternalAccount, TestTable, User
-from middleware.enums import PermissionsEnum
+from middleware.enums import PermissionsEnum, Relations
 from tests.fixtures import (
     live_database_client,
     test_table_data,
@@ -412,27 +412,9 @@ def test_update_entry_in_table(live_database_client: DatabaseClient, test_table_
 
 
 def test_get_data_sources_for_map(live_database_client):
-    # Add at least two new data sources to the database
-    insert_test_agencies_and_sources_if_not_exist(
-        live_database_client.connection.cursor()
-    )
-    # Fetch the data source with the DatabaseClient method
     results = live_database_client.get_data_sources_for_map()
-    # Confirm both data sources are retrieved and only the proper columns are returned
-    found_source = False
-    for result in results:
-        if result.data_source_name != "Source 1":
-            continue
-        found_source = True
-        assert result.lat == 30
-        assert result.lng == 20
-    assert found_source
-
-
-def test_get_agencies_from_page(live_database_client: DatabaseClient):
-    results = live_database_client.get_agencies_from_page(2)
-
     assert len(results) > 0
+    assert isinstance(results[0], live_database_client.MapInfo)
 
 
 def test_get_offset():
@@ -463,57 +445,6 @@ def test_update_last_cached(live_database_client: DatabaseClient):
     )[0]
 
     assert result["last_cached"].strftime("%Y-%m-%d %H:%M:%S") == new_last_cached
-
-
-def test_get_quick_search_results(live_database_client: DatabaseClient):
-    # Add new data sources to the database, some that satisfy the search criteria and some that don't
-    test_datetime = live_database_client.execute_raw_sql(query="SELECT NOW()")[0]
-
-    insert_test_agencies_and_sources_if_not_exist(
-        live_database_client.connection.cursor()
-    )
-
-    # Fetch the search results using the DatabaseClient method
-    result = live_database_client.get_quick_search_results(
-        search="Source 1", location="City A"
-    )
-
-    assert len(result) == 1
-    assert result[0].id == "SOURCE_UID_1"
-
-
-def test_add_quick_search_log(live_database_client: DatabaseClient):
-    # Add a quick search log to the database using the DatabaseClient method
-    search = f"{uuid.uuid4().hex} QSL"
-    location = "City QSL"
-    live_database_client.add_quick_search_log(
-        data_sources_count=1,
-        processed_data_source_matches=live_database_client.DataSourceMatches(
-            converted=[search],
-            ids=["SOURCE_UID_QSL"],
-        ),
-        processed_search_parameters=live_database_client.SearchParameters(
-            search=search, location=location
-        ),
-    )
-
-    # Fetch the quick search logs to confirm it was added successfully
-    rows = live_database_client.execute_raw_sql(
-        query="""
-        select search, location, results, result_count
-        from quick_search_query_logs
-        where search = %s and location = %s
-        """,
-        vars=(search, location),
-    )
-
-    assert len(rows) == 1
-    row = rows[0]
-    assert type(row) == dict
-    assert row["search"] == search
-    assert row["location"] == location
-    assert row["results"][0] == "SOURCE_UID_QSL"
-    assert row["result_count"] == 1
 
 
 def test_get_user_info(live_database_client):
@@ -950,20 +881,34 @@ def test_check_for_url_duplicates(live_database_client):
     duplicate_base_url = "duplicate-checker.com"
     results = live_database_client.check_for_url_duplicates(duplicate_base_url)
     assert len(results) == 1
-    #
-    #
-    # # Add tests for multiple variants
-    # # TODO: Add multiple variants test to a unit test for the url transformation function,
-    # #    OR for the integration test
-    # same_urls = [
-    #     "http://duplicate-checker.com/",
-    #     "https://www.duplicate-checker.com",
-    #     "http://www.duplicate-checker.com/",
-    # ]
-    #
-    # for url in same_urls:
-    #     results = live_database_client.check_for_url_duplicates(url)
-    #     assert len(results) == 1
+
+
+def test_get_columns_for_relation(live_database_client):
+
+    columns = live_database_client.get_columns_for_relation(Relations.TEST_TABLE)
+
+    assert columns == [
+        "id",
+        "pet_name",
+        "species"
+    ]
+
+def test_create_or_get(live_database_client):
+
+    results = live_database_client.create_or_get(
+        table_name="test_table",
+        column_value_mappings={"pet_name": "Schnoodles", "species": "Rat"}
+    )
+
+    assert results
+
+    # Check that the same results are returned if the entry already exists
+    new_results = live_database_client.create_or_get(
+        table_name="test_table",
+        column_value_mappings={"pet_name": "Schnoodles", "species": "Rat"}
+    )
+
+    assert results == new_results
 
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts

@@ -121,9 +121,9 @@ class DynamicQueryConstructor:
                 1 AS sort_order,
                 display_name,
                 type,
-                state,
-                county,
-                locality
+                state_name as state,
+                county_name as county,
+                locality_name as locality
             FROM typeahead_locations
             WHERE display_name ILIKE {search_term_prefix}
             UNION ALL
@@ -131,9 +131,9 @@ class DynamicQueryConstructor:
                 2 AS sort_order,
                 display_name,
                 type,
-                state,
-                county,
-                locality
+                state_name as state,
+                county_name as county,
+                locality_name as locality
             FROM typeahead_locations
             WHERE display_name ILIKE {search_term_anywhere}
             AND display_name NOT ILIKE {search_term_prefix}
@@ -228,8 +228,8 @@ class DynamicQueryConstructor:
                 data_sources.coverage_end,
                 data_sources.agency_supplied,
                 agencies.name AS agency_name,
-                agencies.municipality,
-                agencies.state_iso,
+                locations_expanded.locality_name as municipality,
+                locations_expanded.state_iso,
                 agencies.jurisdiction_type
             FROM
                 agency_source_link
@@ -238,15 +238,13 @@ class DynamicQueryConstructor:
             INNER JOIN
                 agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
             INNER JOIN
-                state_names ON agencies.state_iso = state_names.state_iso
-            INNER JOIN
-                counties ON agencies.county_fips = counties.fips
+				locations_expanded on agencies.location_id = locations_expanded.id
         """
         )
 
         join_conditions = []
         where_subclauses = [
-            sql.SQL("LOWER(state_names.state_name) = LOWER({state_name})").format(
+            sql.SQL("LOWER(locations_expanded.state_name) = LOWER({state_name})").format(
                 state_name=sql.Literal(state)
             ),
             sql.SQL("data_sources.approval_status = 'approved'"),
@@ -276,14 +274,14 @@ class DynamicQueryConstructor:
 
         if county is not None:
             where_subclauses.append(
-                sql.SQL("LOWER(counties.name) = LOWER({county_name})").format(
+                sql.SQL("LOWER(locations_expanded.county_name) = LOWER({county_name})").format(
                     county_name=sql.Literal(county)
                 )
             )
 
         if locality is not None:
             where_subclauses.append(
-                sql.SQL("LOWER(agencies.municipality) = LOWER({locality})").format(
+                sql.SQL("LOWER(locations_expanded.locality_name) = LOWER({locality})").format(
                     locality=sql.Literal(locality)
                 )
             )

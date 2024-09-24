@@ -16,6 +16,8 @@ MARSHMALLOW_TO_RESTX_FIELD_MAPPING = {
     marshmallow_fields.Nested: restx_fields.Nested,
     marshmallow_fields.URL: restx_fields.Url,
     marshmallow_fields.Enum: restx_fields.String,
+    marshmallow_fields.Float: restx_fields.Float,
+    marshmallow_fields.DateTime: restx_fields.DateTime,
     DataField: RestxModelPlaceholder.VARIABLE_COLUMNS,
     EntryDataListField: RestxModelPlaceholder.LIST_VARIABLE_COLUMNS,
     # Add more mappings as needed

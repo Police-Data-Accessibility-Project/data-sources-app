@@ -1,16 +1,17 @@
 import json
 from collections import namedtuple
+from enum import Enum
 from functools import wraps, partialmethod
 from typing import Optional, Any, List, Callable
 
 import psycopg
-from psycopg import sql
+from psycopg import sql, Cursor
 from psycopg.rows import dict_row, tuple_row
 from sqlalchemy import select
 from sqlalchemy.orm import aliased
 from sqlalchemy.schema import Column
 
-from database_client.constants import PAGE_SIZE, TABLE_REFERENCE
+from database_client.constants import PAGE_SIZE, SQL_ALCHEMY_TABLE_REFERENCE
 from database_client.db_client_dataclasses import OrderByParameters, WhereMapping
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
@@ -45,45 +46,12 @@ DATA_SOURCES_MAP_COLUMN = [
 ]
 
 
-QUICK_SEARCH_SQL = """
-    SELECT
-        data_sources.airtable_uid,
-        data_sources.name AS data_source_name,
-        data_sources.description,
-        data_sources.record_type,
-        data_sources.source_url,
-        data_sources.record_format,
-        data_sources.coverage_start,
-        data_sources.coverage_end,
-        data_sources.agency_supplied,
-        agencies.name AS agency_name,
-        agencies.municipality,
-        agencies.state_iso
-    FROM
-        agency_source_link
-    INNER JOIN
-        data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
-    INNER JOIN
-        agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
-    INNER JOIN
-        state_names ON agencies.state_iso = state_names.state_iso
-    WHERE
-        (data_sources.name ILIKE '%{0}%' OR data_sources.description ILIKE '%{0}%' OR data_sources.record_type ILIKE '%{0}%' OR data_sources.tags ILIKE '%{0}%') 
-        AND (agencies.county_name ILIKE '%{1}%' OR substr(agencies.county_name,3,length(agencies.county_name)-4) || ' County' ILIKE '%{1}%' 
-            OR agencies.state_iso ILIKE '%{1}%' OR agencies.municipality ILIKE '%{1}%' OR agencies.agency_type ILIKE '%{1}%' OR agencies.jurisdiction_type ILIKE '%{1}%' 
-            OR agencies.name ILIKE '%{1}%' OR state_names.state_name ILIKE '%{1}%')
-        AND data_sources.approval_status = 'approved'
-        AND data_sources.url_status not in ('broken', 'none found')
-
-"""
-
-
 class DatabaseClient:
 
     def __init__(self):
         self.connection = initialize_psycopg_connection()
         self.session_maker = initialize_sqlalchemy_session()
-        self.cursor = None
+        self.cursor: Optional[Cursor] = None
 
     def cursor_manager(row_factory=dict_row):
         """Decorator method for managing a cursor object.
@@ -135,7 +103,10 @@ class DatabaseClient:
 
     @cursor_manager()
     def execute_raw_sql(
-        self, query: str, vars: Optional[tuple] = None
+            self,
+            query: str,
+            vars: Optional[tuple] = None,
+            execute_many: bool = False
     ) -> Optional[list[dict[Any, ...]]]:
         """Executes an SQL query passed to the function.
 
@@ -143,7 +114,10 @@ class DatabaseClient:
         :param vars: A tuple of variables to replace placeholders in the SQL query, defaults to None
         :return: A list of dicts, or None if there are no results.
         """
-        self.cursor.execute(query, vars)
+        if execute_many:
+            self.cursor.executemany(query, vars)
+        else:
+            self.cursor.execute(query, vars)
         try:
             results = self.cursor.fetchall()
         except psycopg.ProgrammingError:
@@ -327,8 +301,8 @@ class DatabaseClient:
                 agencies.airtable_uid as agency_id,
                 agencies.submitted_name as agency_name,
                 agencies.state_iso,
-                agencies.municipality,
-                agencies.county_name,
+                le.locality_name as municipality,
+                le.county_name,
                 data_sources.record_type,
                 agencies.lat,
                 agencies.lng
@@ -338,6 +312,8 @@ class DatabaseClient:
                 data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
             INNER JOIN
                 agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+            INNER JOIN
+                locations_expanded le ON agencies.location_id = le.id
             WHERE
                 data_sources.approval_status = 'approved'
         """
@@ -345,50 +321,6 @@ class DatabaseClient:
         results = self.cursor.fetchall()
 
         return [self.MapInfo(*result) for result in results]
-
-    def get_agencies_from_page(self, page: int) -> list[dict[Any, ...]]:
-        """
-        Returns a list of up to 1000 agencies from the database from a given page.
-
-        :param page: The page number to pull the agencies from.
-        :return: A list of agency tuples.
-        """
-        columns = [
-            "name",
-            "homepage_url",
-            "count_data_sources",
-            "agency_type",
-            "multi_agency",
-            "submitted_name",
-            "jurisdiction_type",
-            "state_iso",
-            "municipality",
-            "zip_code",
-            "county_fips",
-            "county_name",
-            "lat",
-            "lng",
-            "data_sources",
-            "no_web_presence",
-            "airtable_agency_last_modified",
-            "data_sources_last_updated",
-            "approved",
-            "rejection_reason",
-            "last_approval_editor",
-            "agency_created",
-            "county_airtable_uid",
-            "defunct_year",
-            "airtable_uid",
-        ]
-        results = self._select_from_single_relation(
-            relation_name="agencies",
-            columns=columns,
-            where_mappings=[WhereMapping(column="approved", value=True)],
-            limit=1000,
-            page=page,
-        )
-
-        return results
 
     @staticmethod
     def get_offset(page: int) -> Optional[int]:
@@ -485,87 +417,7 @@ class DatabaseClient:
             id_column_name="airtable_uid",
         )
 
-    QuickSearchResult = namedtuple(
-        "QuickSearchResults",
-        [
-            "id",
-            "data_source_name",
-            "description",
-            "record_type",
-            "url",
-            "format",
-            "coverage_start",
-            "coverage_end",
-            "agency_supplied",
-            "agency_name",
-            "municipality",
-            "state",
-        ],
-    )
-
-    @cursor_manager()
-    def get_quick_search_results(
-        self, search: str, location: str
-    ) -> Optional[list[QuickSearchResult]]:
-        """
-        Executes the quick search SQL query with search and location terms.
-
-        :param search: The search term entered by the user.
-        :param location: The location term entered by the user.
-        :return: A list of QuickSearchResult namedtuples, each containing information of a data source resulting from the search. None if nothing is found.
-        """
-        print(f"Query parameters: '%{search}%', '%{location}%'")
-        sql_query = QUICK_SEARCH_SQL.format(search, location)
-
-        self.cursor.execute(sql_query)
-        data_sources = self.cursor.fetchall()
-
-        results = [
-            self.QuickSearchResult(
-                id=row["airtable_uid"],
-                data_source_name=row["data_source_name"],
-                description=row["description"],
-                record_type=row["record_type"],
-                url=row["source_url"],
-                format=row["record_format"],
-                coverage_start=row["coverage_start"],
-                coverage_end=row["coverage_end"],
-                agency_supplied=row["agency_supplied"],
-                agency_name=row["agency_name"],
-                municipality=row["municipality"],
-                state=row["state_iso"],
-            )
-            for row in data_sources
-        ]
-
-        return results
-
     DataSourceMatches = namedtuple("DataSourceMatches", ["converted", "ids"])
-    SearchParameters = namedtuple("SearchParameters", ["search", "location"])
-
-    def add_quick_search_log(
-        self,
-        data_sources_count: int,
-        processed_data_source_matches: DataSourceMatches,
-        processed_search_parameters: SearchParameters,
-    ) -> None:
-        """
-        Logs a quick search query in the database.
-
-        :param data_sources_count: Number of data sources in the search results.
-        :param processed_data_source_matches: DataSourceMatches namedtuple with a list of data sources processed so that the dates are converted to strings, and a list of resulting IDs.
-        :param processed_search_parameters: SearchParameters namedtuple with the search and location parameters
-        """
-        query_results = json.dumps(processed_data_source_matches.ids).replace("'", "")
-        self._create_entry_in_table(
-            table_name="quick_search_query_logs",
-            column_value_mappings={
-                "search": processed_search_parameters.search,
-                "location": processed_search_parameters.location,
-                "results": query_results,
-                "result_count": data_sources_count,
-            },
-        )
 
     UserInfo = namedtuple("UserInfo", ["id", "password_digest", "api_key", "email"])
 
@@ -663,7 +515,7 @@ class DatabaseClient:
         :param record_categories: The types of data sources to search for. If None, all data sources will be searched for.
         :param county: The county to search for data sources in. If None, all data sources will be searched for.
         :param locality: The locality to search for data sources in. If None, all data sources will be searched for.
-        :return: A list of QuickSearchResult objects.
+        :return: A list of dictionaries.
         """
         query = DynamicQueryConstructor.create_search_query(
             state=state,
@@ -800,7 +652,12 @@ class DatabaseClient:
         :param relation: Relation string.
         :return:
         """
-        relation_reference = TABLE_REFERENCE[relation]
+        try:
+            relation_reference = SQL_ALCHEMY_TABLE_REFERENCE[relation]
+        except KeyError:
+            raise ValueError(
+                f"SQL Model does not exist in SQL_ALCHEMY_TABLE_REFERENCE: {relation}"
+            )
         return [getattr(relation_reference, column) for column in columns]
 
     @cursor_manager()
@@ -838,6 +695,21 @@ class DatabaseClient:
         id_column_name="airtable_uid",
     )
 
+    # def create_agency(
+    #     self,
+    #     column_value_mappings: dict[str, str],
+    # ):
+    #     pass
+
+    def update_dictionary_enum_values(self, d: dict):
+        """
+        Update a dictionary's values such that any which are enums are converted to the enum value
+        Only works for flat, one-level dictionaries
+        :param d:
+        :return:
+        """
+        return {key: (value.value if isinstance(value, Enum) else value) for key, value in d.items()}
+
     @cursor_manager()
     def _create_entry_in_table(
         self,
@@ -851,6 +723,7 @@ class DatabaseClient:
         :param table_name: The name of the table to create an entry in.
         :param column_value_mappings: A dictionary mapping column names to their new values.
         """
+        column_value_mappings = self.update_dictionary_enum_values(column_value_mappings)
         query = DynamicQueryConstructor.create_insert_query(
             table_name, column_value_mappings, column_to_return
         )
@@ -883,6 +756,12 @@ class DatabaseClient:
         column_to_return="airtable_uid",
     )
 
+    create_locality = partialmethod(
+        _create_entry_in_table,
+        table_name=Relations.LOCALITIES.value,
+        column_to_return="id"
+    )
+
     @session_manager
     def _select_from_single_relation(
         self,
@@ -912,7 +791,7 @@ class DatabaseClient:
     )
 
     get_agencies = partialmethod(
-        _select_from_single_relation, relation_name=Relations.AGENCIES.value
+        _select_from_single_relation, relation_name=Relations.AGENCIES_EXPANDED.value
     )
 
     get_data_sources = partialmethod(
@@ -921,6 +800,12 @@ class DatabaseClient:
 
     get_request_source_relations = partialmethod(
         _select_from_single_relation, relation_name=Relations.RELATED_SOURCES.value
+    )
+
+    get_location_id = partialmethod(
+        _select_from_single_relation,
+        relation_name=Relations.LOCATIONS_EXPANDED.value,
+        columns=["id"],
     )
 
     def get_related_data_sources(self, data_request_id: int) -> List[dict]:
@@ -1026,20 +911,20 @@ class DatabaseClient:
                 SUBMITTED_NAME,
                 JURISDICTION_TYPE,
                 STATE_ISO,
-                MUNICIPALITY,
+                LOCALITY_NAME as MUNICIPALITY,
                 COUNTY_NAME,
                 AIRTABLE_UID,
                 COUNT_DATA_SOURCES,
                 ZIP_CODE,
                 NO_WEB_PRESENCE -- Relevant
             FROM
-                PUBLIC.AGENCIES
+                PUBLIC.AGENCIES_EXPANDED
             WHERE 
                 approved = true
                 AND homepage_url is null
                 AND NOT EXISTS (
                     SELECT 1 FROM PUBLIC.AGENCY_URL_SEARCH_CACHE
-                    WHERE PUBLIC.AGENCIES.AIRTABLE_UID = PUBLIC.AGENCY_URL_SEARCH_CACHE.agency_airtable_uid
+                    WHERE PUBLIC.AGENCIES_EXPANDED.AIRTABLE_UID = PUBLIC.AGENCY_URL_SEARCH_CACHE.agency_airtable_uid
                 )
             ORDER BY COUNT_DATA_SOURCES DESC
             LIMIT 100 -- Limiting to 100 in acknowledgment of the search engine quota
@@ -1051,3 +936,47 @@ class DatabaseClient:
         query = DynamicQueryConstructor.get_distinct_source_urls_query(url)
         self.cursor.execute(query)
         return self.cursor.fetchall()
+
+    def get_columns_for_relation(self, relation: Relations) -> list[dict]:
+        """
+        Get columns for a given relation
+        :param relation:
+        :return:
+        """
+        results = self.execute_raw_sql(
+            """
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+            AND table_name = %s
+        """,
+            (relation.value,),
+        )
+
+        return [row["column_name"] for row in results]
+
+    def create_or_get(
+        self,
+        table_name: str,
+        column_value_mappings: dict[str, str],
+        column_to_return: str = "id",
+    ):
+        """
+        Create a value and return the id if it doesn't exist; if it does, return the id for it
+        :param table_name:
+        :param column_value_mappings:
+        :param column_to_return:
+        :return:
+        """
+        try:
+            return self._create_entry_in_table(
+                table_name=table_name,
+                column_value_mappings=column_value_mappings,
+                column_to_return=column_to_return,
+            )
+        except psycopg.errors.UniqueViolation:
+            return self._select_from_single_relation(
+                relation_name=table_name,
+                columns=[column_to_return],
+                where_mappings=WhereMapping.from_dict(column_value_mappings),
+            )[0][column_to_return]

@@ -39,3 +39,11 @@ class ApprovalStatus(Enum):
     REJECTED = "rejected"
     PENDING = "pending"
     NEEDS_IDENTIFICATION = "needs identification"
+
+class LocationType(Enum):
+    """
+    Correlates to the location_type enum in the database
+    """
+    STATE = "State"
+    COUNTY = "County"
+    LOCALITY = "Locality"

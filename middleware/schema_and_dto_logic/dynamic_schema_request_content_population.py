@@ -1,10 +1,28 @@
+from dataclasses import dataclass
 from http import HTTPStatus
-from typing import Type
+from typing import Type, Optional
+
+import marshmallow
 
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.custom_types import SchemaTypes, DTOTypes
-from middleware.schema_and_dto_logic.util import _get_required_argument, _get_source_getting_function
+from middleware.schema_and_dto_logic.util import (
+    _get_required_argument,
+    _get_source_getting_function,
+)
 from utilities.enums import SourceMappingEnum
+
+
+@dataclass
+class NestedDTOInfo:
+    key: str
+    class_: Type
+
+
+@dataclass
+class SourceDataInfo:
+    data: dict
+    nested_dto_info_list: list[NestedDTOInfo]
 
 
 def populate_schema_with_request_content(
@@ -22,12 +40,27 @@ def populate_schema_with_request_content(
     # Get all declared fields from the schema
     schema_obj = schema_class()
     fields = schema_obj.fields
-    data = _get_data_from_sources(fields, schema_class)
+    source_data_info = _get_data_from_sources(fields, schema_class)
 
-    intermediate_data = validate_data(data, schema_obj)
+    intermediate_data = validate_data(source_data_info.data, schema_obj)
+
     _apply_transformation_functions_to_dict(fields, intermediate_data)
 
-    return dto_class(**intermediate_data)
+    return setup_dto_class(intermediate_data, dto_class, source_data_info.nested_dto_info_list)
+
+def setup_dto_class(
+        data: dict,
+        dto_class: Type[DTOTypes],
+        nested_dto_info_list: list[NestedDTOInfo]
+):
+    for nested_dto_info in nested_dto_info_list:
+        if nested_dto_info.key in data:
+            nested_dto = nested_dto_info.class_(**data[nested_dto_info.key])
+            data[nested_dto_info.key] = nested_dto
+        else:
+            data[nested_dto_info.key] = None
+    return dto_class(**data)
+
 
 
 def validate_data(data, schema_obj):
@@ -38,7 +71,12 @@ def validate_data(data, schema_obj):
     return intermediate_data
 
 
-def _get_data_from_sources(fields, schema_class):
+class InvalidSourceMappingError(Exception):
+    pass
+
+
+
+def _get_data_from_sources(fields: dict, schema_class: Type[SchemaTypes]) -> SourceDataInfo:
     """
     Get data from sources specified in the schema and field metadata
     :param fields:
@@ -46,16 +84,31 @@ def _get_data_from_sources(fields, schema_class):
     :return:
     """
     data = {}
+    nested_dto_info_list = []
     for field_name, field_value in fields.items():
         metadata = field_value.metadata
         source: SourceMappingEnum = _get_required_argument(
             "source", metadata, schema_class
         )
+        if isinstance(field_value, marshmallow.fields.Nested):
+            if source != SourceMappingEnum.JSON:
+                raise InvalidSourceMappingError(
+                    "Nested fields can only be populated from JSON sources"
+                )
+            if "nested_dto_class" not in metadata:
+                raise InvalidSourceMappingError(
+                    "Nested fields must have a 'nested_dto_class' metadata"
+                )
+            nested_dto_class = metadata["nested_dto_class"]
+            nested_dto_info_list.append(
+                NestedDTOInfo(key=field_name, class_=nested_dto_class)
+            )
+
         source_getting_function = _get_source_getting_function(source)
         val = source_getting_function(field_name)
         if val is not None:
             data[field_name] = val
-    return data
+    return SourceDataInfo(data=data, nested_dto_info_list=nested_dto_info_list)
 
 
 def _apply_transformation_functions_to_dict(fields: dict, intermediate_data: dict):

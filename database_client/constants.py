@@ -7,6 +7,12 @@ from database_client.models import (
     ResetToken,
     TestTable,
     User,
+    AgencyExpanded,
+    USState,
+    County,
+    Locality,
+    Location,
+    LocationExpanded,
 )
 
 AGENCY_APPROVED_COLUMNS = [
@@ -111,8 +117,9 @@ RESTRICTED_COLUMNS = [
 
 PAGE_SIZE = 100
 
-TABLE_REFERENCE = {
+SQL_ALCHEMY_TABLE_REFERENCE = {
     "agencies": Agency,
+    "agencies_expanded": AgencyExpanded,
     "data_requests": DataRequest,
     "data_sources": DataSource,
     "data_sources_archive_info": DataSourceArchiveInfo,
@@ -120,4 +127,9 @@ TABLE_REFERENCE = {
     "reset_tokens": ResetToken,
     "test_table": TestTable,
     "users": User,
+    "us_states": USState,
+    "counties": County,
+    "localities": Locality,
+    "locations": Location,
+    "locations_expanded": LocationExpanded,
 }

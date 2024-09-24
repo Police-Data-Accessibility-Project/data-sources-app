@@ -8,7 +8,7 @@ from utilities.namespace import create_namespace, AppNamespaces
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 from utilities.enums import SourceMappingEnum
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import DTOPopulateParameters
+from middleware.schema_and_dto_logic.non_dto_dataclasses import DTOPopulateParameters
 
 namespace_api_key = create_namespace(namespace_attributes=AppNamespaces.AUTH)
 

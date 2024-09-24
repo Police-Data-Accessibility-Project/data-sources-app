@@ -45,13 +45,51 @@ class Relations(Enum):
     DATA_REQUESTS = "data_requests"
     AGENCIES = "agencies"
     DATA_SOURCES = "data_sources"
+    DATA_SOURCES_ARCHIVE_INFO = "data_sources_archive_info"
+    LINK_DATA_SOURCES_DATA_REQUESTS = "link_data_sources_data_requests"
+    RECORD_CATEGORIES = "record_categories"
+    RECORD_TYPES = "record_types"
     RELATED_SOURCES = "link_data_sources_data_requests"
+    RESET_TOKENS = "reset_tokens"
+    AGENCIES_EXPANDED = "agencies_expanded"
+    EXTERNAL_ACCOUNTS = "external_accounts"
+    TEST_TABLE = "test_table"
+    US_STATES = "us_states"
+    COUNTIES = "counties"
+    LOCALITIES = "localities"
+    LOCATIONS = "locations"
+    LOCATIONS_EXPANDED = "locations_expanded"
+    USERS = "users"
 
-class Jurisdiction(Enum):
+class JurisdictionType(Enum):
     """
-    A list of valid agency jurisdictions for the database
+    A list of valid agency jurisdiction types
+    """
+    FEDERAL = "federal"
+    STATE = "state"
+    COUNTY = "county"
+    LOCAL = "local"
+    PORT = "port"
+    TRIBAL = "tribal"
+    TRANSIT = "transit"
+    SCHOOL = "school"
+
+
+class JurisdictionSimplified(Enum):
+    """
+    A simplified list of jurisdictions utilized in organizing search results
     """
     FEDERAL = "federal"
     STATE = "state"
     COUNTY = "county"
     LOCALITY = "locality"
+
+class AgencyType(Enum):
+    """
+    A list of valid agency types
+    """
+    NONE = None
+    AGGREGATED = "aggregated"
+    COURT = "court"
+    POLICE = "police"
+    JAIL = "jail"
