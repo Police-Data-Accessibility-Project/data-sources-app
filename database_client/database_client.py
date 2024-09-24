@@ -1,5 +1,6 @@
 import json
 from collections import namedtuple
+from enum import Enum
 from functools import wraps, partialmethod
 from typing import Optional, Any, List, Callable
 
@@ -301,7 +302,7 @@ class DatabaseClient:
                 agencies.submitted_name as agency_name,
                 agencies.state_iso,
                 le.locality_name as municipality,
-                agencies.county_name,
+                le.county_name,
                 data_sources.record_type,
                 agencies.lat,
                 agencies.lng
@@ -700,6 +701,15 @@ class DatabaseClient:
     # ):
     #     pass
 
+    def update_dictionary_enum_values(self, d: dict):
+        """
+        Update a dictionary's values such that any which are enums are converted to the enum value
+        Only works for flat, one-level dictionaries
+        :param d:
+        :return:
+        """
+        return {key: (value.value if isinstance(value, Enum) else value) for key, value in d.items()}
+
     @cursor_manager()
     def _create_entry_in_table(
         self,
@@ -713,6 +723,7 @@ class DatabaseClient:
         :param table_name: The name of the table to create an entry in.
         :param column_value_mappings: A dictionary mapping column names to their new values.
         """
+        column_value_mappings = self.update_dictionary_enum_values(column_value_mappings)
         query = DynamicQueryConstructor.create_insert_query(
             table_name, column_value_mappings, column_to_return
         )

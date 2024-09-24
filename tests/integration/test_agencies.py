@@ -111,7 +111,7 @@ def get_data_to_post(
         "agency_info": {
             "submitted_name": submitted_name,
             "airtable_uid": uuid.uuid4().hex,
-            "jurisdiction_type": jurisdiction_type,
+            "jurisdiction_type": jurisdiction_type.value,
         },
         "location_info": {
             "type": "Locality",
@@ -128,7 +128,7 @@ def test_agencies_post(ts: AgenciesTestSetup):
 
     data_to_post = get_data_to_post(
         submitted_name=ts.submitted_name,
-        jurisdiction_type=JurisdictionType.LOCAL.value,
+        jurisdiction_type=JurisdictionType.LOCAL,
         locality_name=uuid.uuid4().hex,
     )
     # Test once with an existing locality, and once with a new locality
@@ -170,7 +170,7 @@ def test_agencies_post(ts: AgenciesTestSetup):
 
     data_to_post = get_data_to_post(
         submitted_name=uuid.uuid4().hex,
-        jurisdiction_type=JurisdictionType.LOCAL.value,
+        jurisdiction_type=JurisdictionType.LOCAL,
         locality_name="Capitola",
     )
     # Test once with an existing locality, and once with a new locality
@@ -207,7 +207,7 @@ def test_agencies_post(ts: AgenciesTestSetup):
 def test_agencies_put(ts: AgenciesTestSetup):
     data_to_post = get_data_to_post(
         submitted_name=ts.submitted_name,
-        jurisdiction_type=JurisdictionType.LOCAL.value,
+        jurisdiction_type=JurisdictionType.LOCAL,
         locality_name=uuid.uuid4().hex,
     )
 

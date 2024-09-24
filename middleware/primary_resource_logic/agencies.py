@@ -472,14 +472,6 @@ class AgenciesGetSchema(AgencyInfoBaseSchema):
             "source": SourceMappingEnum.JSON,
         },
     )
-    county_airtable_uid = fields.Str(
-        required=False,
-        allow_none=True,
-        metadata={
-            "description": "The Airtable UID of the county.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
 
 
 class AgenciesGetByIDResponseSchema(MessageSchema):

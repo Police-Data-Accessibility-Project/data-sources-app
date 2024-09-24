@@ -1,4 +1,4 @@
-from typing import Optional, Literal, get_args
+from typing import Optional, Literal, get_args, Type
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import (
     Column,
@@ -20,8 +20,8 @@ from sqlalchemy.sql.expression import false, func
 from database_client.enums import LocationType
 from middleware.enums import Relations
 
-ExternalAccountType = Literal["github"]
-RecordType = Literal[
+ExternalAccountTypeLiteral = Literal["github"]
+RecordTypeLiteral = Literal[
     "Dispatch Recordings",
     "Arrest Records",
     "Citations",
@@ -58,7 +58,7 @@ RecordType = Literal[
     "Wanted Persons",
     "List of Data Sources",
 ]
-RequestStatus = Literal[
+RequestStatusLiteral = Literal[
     "Intake",
     "Active",
     "Complete",
@@ -68,6 +68,9 @@ RequestStatus = Literal[
     "Ready to start",
     "Waiting for FOIA",
     "Waiting for requestor",
+]
+JurisdictionTypeLiteral = Literal[
+    "federal", "state", "county", "local", "port", "tribal", "transit", "school"
 ]
 
 
@@ -86,7 +89,9 @@ class Agency(Base):
     name: Mapped[str]
     submitted_name: Mapped[Optional[str]]
     homepage_url: Mapped[Optional[str]]
-    jurisdiction_type: Mapped[Optional[str]]
+    jurisdiction_type: Mapped[JurisdictionTypeLiteral] = mapped_column(
+        Enum(*get_args(JurisdictionTypeLiteral)), name="jurisdiction_type"
+    )
     state_iso: Mapped[Optional[str]]
     municipality: Mapped[Optional[str]]
     county_fips: Mapped[Optional[str]] = mapped_column(
@@ -127,7 +132,9 @@ class AgencyExpanded(Base):
     name = Column(String, nullable=False)
     submitted_name = Column(String)
     homepage_url = Column(String)
-    jurisdiction_type = Column(String)
+    jurisdiction_type: Mapped[JurisdictionTypeLiteral] = mapped_column(
+        Enum(*get_args(JurisdictionTypeLiteral)), name="jurisdiction_type"
+    )
     state_iso = Column(String)
     county_fips = Column(String)  # Matches the VARCHAR type in the agencies table
     county_name = Column(String)
@@ -229,8 +236,8 @@ class DataRequest(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     submission_notes: Mapped[Optional[Text]] = mapped_column(Text)
-    request_status: Mapped[RequestStatus] = mapped_column(
-        Enum(*get_args(RequestStatus)), name="request_status", server_default="Intake"
+    request_status: Mapped[RequestStatusLiteral] = mapped_column(
+        Enum(*get_args(RequestStatusLiteral)), name="request_status", server_default="Intake"
     )
     submitter_email: Mapped[Optional[Text]] = mapped_column(Text)
     location_described_submitted: Mapped[Optional[Text]] = mapped_column(Text)
@@ -244,8 +251,8 @@ class DataRequest(Base):
     creator_user_id: Mapped[Optional[int]]
     github_issue_url: Mapped[Optional[Text]] = mapped_column(Text)
     internal_notes: Mapped[Optional[Text]] = mapped_column(Text)
-    record_types_required: Mapped[Optional[ARRAY[RecordType]]] = mapped_column(
-        ARRAY(Enum(*get_args(RecordType), name="record_type"))
+    record_types_required: Mapped[Optional[ARRAY[RecordTypeLiteral]]] = mapped_column(
+        ARRAY(Enum(*get_args(RecordTypeLiteral), name="record_type"))
     )
     pdap_response: Mapped[Optional[Text]] = mapped_column(Text)
     coverage_range: Mapped[Optional[DATERANGE]] = mapped_column(DATERANGE)
@@ -331,8 +338,8 @@ class ExternalAccount(Base):
 
     row_id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
-    account_type: Mapped[ExternalAccountType] = mapped_column(
-        Enum(*get_args(ExternalAccountType)), name="account_type"
+    account_type: Mapped[ExternalAccountTypeLiteral] = mapped_column(
+        Enum(*get_args(ExternalAccountTypeLiteral)), name="account_type"
     )
     account_identifier: Mapped[str] = mapped_column(String(255))
     linked_at: Mapped[Optional[TIMESTAMP]] = mapped_column(

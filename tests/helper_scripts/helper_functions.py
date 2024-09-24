@@ -17,7 +17,12 @@ from middleware.custom_dataclasses import (
     OAuthCallbackInfo,
     FlaskSessionCallbackInfo,
 )
-from middleware.enums import CallbackFunctionsEnum, PermissionsEnum, Relations
+from middleware.enums import (
+    CallbackFunctionsEnum,
+    PermissionsEnum,
+    Relations,
+    JurisdictionType,
+)
 from resources.ApiKey import API_KEY_ROUTE
 from tests.helper_scripts.common_test_data import TEST_RESPONSE
 from tests.helper_scripts.simple_result_validators import check_response_status
@@ -39,31 +44,37 @@ def insert_test_agencies_and_sources(cursor: psycopg.Cursor) -> None:
     location_id_1 = db_client._select_from_single_relation(
         relation_name=Relations.LOCATIONS_EXPANDED.value,
         columns=["id"],
-        where_mappings=WhereMapping.from_dict({
-            "locality_name": "New Rochelle",
-            "state_iso": "NY",
-            "county_name": "Westchester",
-        }),
+        where_mappings=WhereMapping.from_dict(
+            {
+                "locality_name": "New Rochelle",
+                "state_iso": "NY",
+                "county_name": "Westchester",
+            }
+        ),
     )[0]["id"]
 
     location_id_2 = db_client._select_from_single_relation(
         relation_name=Relations.LOCATIONS_EXPANDED.value,
         columns=["id"],
-        where_mappings=WhereMapping.from_dict({
-            "locality_name": "Saint Peters",
-            "state_iso": "MO",
-            "county_name": "St. Charles",
-        }),
+        where_mappings=WhereMapping.from_dict(
+            {
+                "locality_name": "Saint Peters",
+                "state_iso": "MO",
+                "county_name": "St. Charles",
+            }
+        ),
     )[0]["id"]
 
     location_id_3 = db_client._select_from_single_relation(
         relation_name=Relations.LOCATIONS_EXPANDED.value,
         columns=["id"],
-        where_mappings=WhereMapping.from_dict({
-            "locality_name": "Folly Beach",
-            "state_iso": "SC",
-            "county_name": "Charleston",
-        }),
+        where_mappings=WhereMapping.from_dict(
+            {
+                "locality_name": "Folly Beach",
+                "state_iso": "SC",
+                "county_name": "Charleston",
+            }
+        ),
     )[0]["id"]
 
     DatabaseClient().execute_raw_sql(
@@ -87,15 +98,16 @@ def insert_test_agencies_and_sources(cursor: psycopg.Cursor) -> None:
             'Type C', 'http://src3.com', 'pending', 'available');
         """
     )
-    db_client.execute_raw_sql("""
+    db_client.execute_raw_sql(
+        """
         INSERT INTO public.agencies
-        (airtable_uid, name, location_id, count_data_sources, lat, lng)
+        (airtable_uid, name, location_id, count_data_sources, lat, lng, jurisdiction_type)
         VALUES 
-            ('Agency_UID_1', 'Agency A', %s, 3, 30, 20),
-            ('Agency_UID_2', 'Agency B', %s, 2, 40, 50),
-            ('Agency_UID_3', 'Agency C', %s, 1, 90, 60);
+            ('Agency_UID_1', 'Agency A', %s, 3, 30, 20, 'state'),
+            ('Agency_UID_2', 'Agency B', %s, 2, 40, 50, 'state'),
+            ('Agency_UID_3', 'Agency C', %s, 1, 90, 60, 'state');
     """,
-      vars=(location_id_1, location_id_2, location_id_3),
+        vars=(location_id_1, location_id_2, location_id_3),
     )
 
     db_client.execute_raw_sql(
@@ -392,28 +404,27 @@ def setup_get_typeahead_suggestion_test_data(cursor: Optional[psycopg.Cursor] = 
                 "fips": "12345",
                 "name": "Arxylodon",
                 "state_iso": "XY",
-                "state_id": state_id
+                "state_id": state_id,
             },
             column_to_return="id",
         )
 
         locality_id = db_client.create_or_get(
             table_name=Relations.LOCALITIES.value,
-            column_value_mappings={
-                "name": "Xylodammerung",
-                "county_id": county_id
-            },
+            column_value_mappings={"name": "Xylodammerung", "county_id": county_id},
             column_to_return="id",
         )
 
         location_id = db_client._select_from_single_relation(
             relation_name=Relations.LOCATIONS.value,
             columns=["id"],
-            where_mappings=WhereMapping.from_dict({
-                "locality_id": locality_id,
-                "county_id": county_id,
-                "state_id": state_id
-            }),
+            where_mappings=WhereMapping.from_dict(
+                {
+                    "locality_id": locality_id,
+                    "county_id": county_id,
+                    "state_id": state_id,
+                }
+            ),
         )[0]["id"]
 
         db_client.create_or_get(
@@ -421,7 +432,7 @@ def setup_get_typeahead_suggestion_test_data(cursor: Optional[psycopg.Cursor] = 
             column_value_mappings={
                 "name": "Xylodammerung Police Agency",
                 "airtable_uid": "XY_SOURCE_UID",
-                "jurisdiction_type": "state",
+                "jurisdiction_type": JurisdictionType.STATE,
                 "location_id": location_id,
             },
             column_to_return="airtable_uid",
@@ -435,7 +446,9 @@ def setup_get_typeahead_suggestion_test_data(cursor: Optional[psycopg.Cursor] = 
         db_client.execute_raw_sql("CALL refresh_typeahead_locations();")
 
     except psycopg.errors.UniqueViolation:
-        db_client.execute_raw_sql("ROLLBACK TO SAVEPOINT typeahead_suggestion_test_savepoint")
+        db_client.execute_raw_sql(
+            "ROLLBACK TO SAVEPOINT typeahead_suggestion_test_savepoint"
+        )
 
 
 def patch_post_callback_functions(
