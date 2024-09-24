@@ -1051,11 +1051,12 @@ class DatabaseClient:
 
         results = (
             self.session.execute(
-                select(DataSource)
+                # Columns cannot be specified in the select statement, instead they are selected in the load_only() function
+                select(DataSource) 
                 .options(
                     # DataSource.agencies references agencies related to the data source
                     defaultload(DataSource.agencies).load_only(
-                        # Specify which columns to load from the subtable (agencies)
+                        # Specify which columns to load from the sub-table (agencies)
                         Agency.airtable_uid,
                         Agency.name,
                         # raiseload will raise an error if access to unloaded columns is attempted
@@ -1066,12 +1067,13 @@ class DatabaseClient:
                 )
                 .where(DataSource.airtable_uid == "rec00T2YLS2jU7Tbn")
             )
-            .unique()
+            .unique() # Call to unique is required for relationship joins
             .all()
         )
 
-        # Dictionary conversion must happen before the session is closed or objects will no longer be accessible
+        # Dictionary conversion must happen before the session is closed or the objects will no longer be accessible
         # Only loaded columns will appear in the resulting dictionary
+        # See DataSource.__iter__ for dict loading implementation
         dict_results = [dict(result[0]) for result in results]
 
         return dict_results

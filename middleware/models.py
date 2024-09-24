@@ -194,6 +194,7 @@ class DataSource(Base):
                     yield "agency_ids", self.agency_ids
                 case "agencies":
                     # Converts the Agency objects to a dictionary
+                    # See Agency.__iter__
                     yield key, [dict(agency) for agency in self.agencies]
                 case _:
                     yield key, getattr(self, key)
@@ -254,7 +255,7 @@ class DataSource(Base):
     )
 
     agencies: Mapped[list[Agency]] = relationship(
-        secondary="public.agency_source_link", lazy="joined"
+        secondary="public.agency_source_link", lazy="joined" # Use joined lazy loading so that DataSource and its Agencys are loaded at the same time
     )
 
     @hybrid_property
