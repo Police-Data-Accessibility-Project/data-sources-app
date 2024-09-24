@@ -185,7 +185,8 @@ class DynamicQueryConstructor:
 
     @staticmethod
     def generate_new_typeahead_agencies_query(search_term: str):
-        query = sql.SQL("""
+        query = sql.SQL(
+            """
         WITH combined AS (
             SELECT
                 1 AS sort_order,
@@ -226,7 +227,8 @@ class DynamicQueryConstructor:
             ORDER BY sort_order, name
             LIMIT 10
         ) as results
-        """).format(
+        """
+        ).format(
             search_term=sql.Literal(f"{search_term}%"),
             search_term_anywhere=sql.Literal(f"%{search_term}%"),
         )
@@ -431,9 +433,16 @@ class DynamicQueryConstructor:
         :return:
         """
         if type(where_mappings) == dict:
-            where_mappings = [WhereMapping(column=list(where_mappings.keys())[0], value=list(where_mappings.values())[0])]
+            where_mappings = [
+                WhereMapping(
+                    column=list(where_mappings.keys())[0],
+                    value=list(where_mappings.values())[0],
+                )
+            ]
         if where_mappings != [True]:
-            where_mappings = [mapping.build_where_clause(relation) for mapping in where_mappings]
+            where_mappings = [
+                mapping.build_where_clause(relation) for mapping in where_mappings
+            ]
         if order_by is not None:
             order_by = order_by.build_order_by_clause(relation)
 
@@ -448,8 +457,7 @@ class DynamicQueryConstructor:
 
     @staticmethod
     def build_where_subclauses_from_mappings(
-            not_where_mappings: Optional[dict] = None,
-            where_mappings: Optional[dict] = None
+        not_where_mappings: Optional[dict] = None, where_mappings: Optional[dict] = None
     ):
         where_clauses = []
         if where_mappings is not None:

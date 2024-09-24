@@ -956,3 +956,10 @@ def test_create_request_source_relation(live_database_client):
 #
 #     assert len(results) == 1
 #     assert results[0].data_source_name == 'Xylodammerung Police Department Stops'
+
+
+def test_subquery(live_database_client: DatabaseClient):
+    import json
+    result = live_database_client.execute_subquery()
+
+    print(json.dumps(result, indent=4))

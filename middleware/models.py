@@ -1,5 +1,5 @@
 from typing import Optional, Literal, get_args
-from flask_sqlalchemy import SQLAlchemy
+
 from sqlalchemy import (
     Column,
     BigInteger,
@@ -10,7 +10,14 @@ from sqlalchemy import (
     Enum,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, DATE, DATERANGE, TIMESTAMP
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    join,
+    Mapped,
+    mapped_column,
+    relationship,
+)
 from sqlalchemy.sql.expression import false, func
 
 
@@ -66,12 +73,31 @@ RequestStatus = Literal[
 
 
 class Base(DeclarativeBase):
-    pass
+    __table_args__ = {"schema": "public"}
+    type_annotation_map = {text: Text}
+
+
+class AgencySourceLink(Base):
+    __tablename__ = "agency_source_link"
+
+    link_id: Mapped[int]
+    airtable_uid: Mapped[str] = mapped_column(
+        ForeignKey("public.data_sources.airtable_uid"), primary_key=True
+    )
+    agency_described_linked_uid: Mapped[str] = mapped_column(
+        ForeignKey("public.agencies.airtable_uid"), primary_key=True
+    )
 
 
 class Agency(Base):
     __tablename__ = "agencies"
-    __table_args__ = {"schema": "public"}
+
+    def __iter__(self):
+        for key in self.__dict__:
+            if key == "_sa_instance_state":
+                continue
+            else:
+                yield key, getattr(self, key)
 
     airtable_uid: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str]
@@ -109,7 +135,6 @@ class Agency(Base):
 
 class County(Base):
     __tablename__ = "counties"
-    __table_args__ = {"schema": "public"}
 
     fips: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[Optional[Text]] = mapped_column(Text)
@@ -126,12 +151,11 @@ class County(Base):
 
 class DataRequest(Base):
     __tablename__ = "data_requests"
-    __table_args__ = {"schema": "public"}
 
     id: Mapped[int] = mapped_column(primary_key=True)
     submission_notes: Mapped[Optional[Text]] = mapped_column(Text)
     request_status: Mapped[RequestStatus] = mapped_column(
-        Enum(*get_args(RequestStatus)), name="request_status", server_defualt="Intake"
+        Enum(*get_args(RequestStatus)), name="request_status", server_default="Intake"
     )
     submitter_email: Mapped[Optional[Text]] = mapped_column(Text)
     location_described_submitted: Mapped[Optional[Text]] = mapped_column(Text)
@@ -156,7 +180,23 @@ class DataRequest(Base):
 
 class DataSource(Base):
     __tablename__ = "data_sources"
-    __table_args__ = {"schema": "public"}
+
+    def __iter__(self):
+        # Custom __iter__ method for converting the class to a dictionary
+        for key in self.__dict__:
+            match key:
+                case "_sa_instance_state":
+                    # Removes the unnecessary instance state reference from the resulting dictionary
+                    continue
+                case "airtable_uid":
+                    yield key, self.airtable_uid
+                    # Include agency_ids directly after the data source's ID
+                    yield "agency_ids", self.agency_ids
+                case "agencies":
+                    # Converts the Agency objects to a dictionary
+                    yield key, [dict(agency) for agency in self.agencies]
+                case _:
+                    yield key, getattr(self, key)
 
     airtable_uid: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str]
@@ -206,17 +246,24 @@ class DataSource(Base):
     url_button: Mapped[Optional[str]]
     tags_other: Mapped[Optional[str]]
     broken_source_url_as_of: Mapped[Optional[DATE]] = mapped_column(DATE)
-    access_notes: Mapped[Optional[Text]] = mapped_column(Text)
-    url_status: Mapped[Optional[Text]] = mapped_column(Text)
-    approval_status: Mapped[Optional[Text]] = mapped_column(Text)
+    access_notes: Mapped[Optional[text]]
+    url_status: Mapped[Optional[text]]
+    approval_status: Mapped[Optional[text]]
     record_type_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("public.record_types.id")
     )
 
+    agencies: Mapped[list[Agency]] = relationship(
+        secondary="public.agency_source_link", lazy="joined"
+    )
+
+    @hybrid_property
+    def agency_ids(self) -> list[str]:
+        return [agency.airtable_uid for agency in self.agencies]
+
 
 class DataSourceArchiveInfo(Base):
     __tablename__ = "data_sources_archive_info"
-    __table_args__ = {"schema": "public"}
 
     airtable_uid: Mapped[str] = mapped_column(
         ForeignKey("public.data_sources.airtable_uid"), primary_key=True
@@ -243,16 +290,16 @@ class ExternalAccount(Base):
 
 class LinkDataSourceDataRequest(Base):
     __tablename__ = "link_data_sources_data_requests"
-    __table_args__ = {"schema": "public"}
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    source_id: Mapped[Text] = mapped_column(Text, ForeignKey("public.data_sources.airtable_uid"))
+    source_id: Mapped[Text] = mapped_column(
+        Text, ForeignKey("public.data_sources.airtable_uid")
+    )
     request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
 
 
 class RecordCategory(Base):
     __tablename__ = "record_categories"
-    __table_args__ = {"schema": "public"}
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255))
@@ -261,7 +308,6 @@ class RecordCategory(Base):
 
 class RecordType(Base):
     __tablename__ = "record_types"
-    __table_args__ = {"schema": "public"}
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255))
@@ -271,17 +317,17 @@ class RecordType(Base):
 
 class ResetToken(Base):
     __tablename__ = "reset_tokens"
-    __table_args__ = {"schema": "public"}
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     email: Mapped[Optional[Text]] = mapped_column(Text)
     token: Mapped[Optional[Text]] = mapped_column(Text)
-    create_date: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, server_default=func.current_timestamp())
+    create_date: Mapped[TIMESTAMP] = mapped_column(
+        TIMESTAMP, server_default=func.current_timestamp()
+    )
 
 
 class TestTable(Base):
     __tablename__ = "test_table"
-    __table_args__ = {"schema": "public"}
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     pet_name: Mapped[Optional[str]] = mapped_column(String(255))
@@ -290,7 +336,6 @@ class TestTable(Base):
 
 class User(Base):
     __tablename__ = "users"
-    __table_args__ = {"schema": "public"}
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     created_at: Mapped[Optional[TIMESTAMP]] = mapped_column(

@@ -10,7 +10,7 @@ import psycopg
 from psycopg import sql
 from psycopg.rows import dict_row, tuple_row
 from sqlalchemy import select
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, defaultload, load_only
 from sqlalchemy.schema import Column
 from sqlalchemy.sql.expression import UnaryExpression
 
@@ -1044,3 +1044,34 @@ class DatabaseClient:
             LIMIT 100 -- Limiting to 100 in acknowledgment of the search engine quota
         """
         )
+
+    @session_manager
+    def execute_subquery(self):
+        from middleware.models import DataSource, Agency
+
+        results = (
+            self.session.execute(
+                select(DataSource)
+                .options(
+                    # DataSource.agencies references agencies related to the data source
+                    defaultload(DataSource.agencies).load_only(
+                        # Specify which columns to load from the subtable (agencies)
+                        Agency.airtable_uid,
+                        Agency.name,
+                        # raiseload will raise an error if access to unloaded columns is attempted
+                        raiseload=True,
+                    ),
+                    # Specify which columns to load from the primary table
+                    load_only(DataSource.airtable_uid, DataSource.name, raiseload=True),
+                )
+                .where(DataSource.airtable_uid == "rec00T2YLS2jU7Tbn")
+            )
+            .unique()
+            .all()
+        )
+
+        # Dictionary conversion must happen before the session is closed or objects will no longer be accessible
+        # Only loaded columns will appear in the resulting dictionary
+        dict_results = [dict(result[0]) for result in results]
+
+        return dict_results
