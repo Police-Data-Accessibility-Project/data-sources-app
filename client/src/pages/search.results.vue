@@ -1,5 +1,7 @@
 <template>
-	<main class="flex gap-4 flex-col-reverse lg:flex-row lg:gap-x-8">
+	<main
+		class="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-4 xl:gap-x-8 max-w-[1800px] mx-auto"
+	>
 		<template v-if="!isLoading && error">
 			<h1>Error loading search results</h1>
 			<p>Please refresh the page to try again.</p>
@@ -38,7 +40,7 @@
 					</nav>
 				</div>
 				<Button
-					class="max-h-12"
+					class="hidden sm:block max-h-12"
 					intent="secondary"
 					@click="() => console.log('Follow button pressed')"
 				>
@@ -54,9 +56,11 @@
 		</section>
 
 		<!-- Aside for handling filtering and saved searches -->
-		<aside class="w-full lg:w-[30%]">
+		<aside
+			class="w-full row-start-1 row-end-2 xl:col-start-2 xl:col-end-3 relative z-20"
+		>
 			<Button
-				class="mb-12 w-full lg:hidden"
+				class="mb-2 w-full xl:hidden"
 				intent="secondary"
 				@click="isSearchShown = !isSearchShown"
 			>
@@ -64,17 +68,12 @@
 			</Button>
 
 			<transition>
-				<div v-if="isSearchShown">
-					<h4 class="w-full">Search location</h4>
-					<div
-						class="border-solid border-2 border-neutral-500 p-3 w-full md:w-max"
-					>
-						{{ getLocationText(searchData) }}
-					</div>
-
-					<h4 class="w-full mt-12">Types of data</h4>
-					<!-- TODO: update search form props to handle this use case fully (button copy etc.) -->
-					<SearchForm :is-single-column="true" />
+				<div v-if="isSearchShown" class="@container">
+					<SearchForm
+						:placeholder="getLocationText(searchData)"
+						button-copy="Update search"
+						@searched="isSearchShown = false"
+					/>
 				</div>
 			</transition>
 		</aside>
@@ -157,7 +156,7 @@ onUnmounted(() => {
 
 // Utilities and handlers
 function onWindowWidthSetIsSearchShown() {
-	if (window.innerWidth > 1024) isSearchShown.value = true;
+	if (window.innerWidth > 1280) isSearchShown.value = true;
 	else isSearchShown.value = false;
 }
 </script>

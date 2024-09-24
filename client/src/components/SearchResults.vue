@@ -198,13 +198,13 @@ h6 {
 .heading-titles,
 .agency-row {
 	/* Tailwind is a pain for complex grids, so using standard CSS */
-	grid-template-columns: 5fr 2fr 3fr;
-	grid-template-areas: 'name name name' 'range formats links';
+	grid-template-columns: 6fr 2fr 1fr;
+	grid-template-areas: 'name name name' 'range formats formats';
 	grid-template-rows: repeat(2, auto);
 }
 
 .heading-titles {
-	@apply w-full h-14 items-center grid gap-1 [&>*]:text-[.7rem] [&>*]:md:text-med [&>*]:lg:text-lg;
+	@apply w-full items-center grid gap-1 gap-y-3 [&>*]:text-[.7rem] [&>*]:md:text-med [&>*]:lg:text-lg p-2 border-solid border-neutral-300 border-2 lg:border-none;
 }
 
 h4.formats {
@@ -212,7 +212,7 @@ h4.formats {
 }
 
 .agency-heading-row {
-	@apply flex items-center sticky top-0 mb-4 justify-between bg-neutral-200 p-2 rounded-sm [&>*]:text-xs [&>*]:md:text-med [&>*]:lg:text-lg border-none z-10;
+	@apply flex items-center sticky top-0 mb-4 justify-between bg-neutral-100 p-2 rounded-sm [&>*]:text-xs [&>*]:md:text-med [&>*]:lg:text-lg border-solid border-neutral-300 border-2 z-10;
 }
 
 .agency-row {
@@ -223,16 +223,14 @@ h4.formats {
 	@apply [&>*]:text-sm [&>*]:md:text-med [&>*]:lg:text-lg;
 }
 
-/* @media (width >= 640px) {
-	.heading-titles {
-		grid-template-areas: 'name range formats links';
-	}
-
+@media (width >= 768px) {
+	.heading-titles,
 	.agency-row {
-		grid-template-areas: 'name range formats' 'links links links';
-		grid-template-rows: repeat(2, auto);
+		/* Tailwind is a pain for complex grids, so using standard CSS */
+		grid-template-columns: 5fr 2fr 3fr;
+		grid-template-areas: 'name name name' 'range formats links';
 	}
-} */
+}
 
 @media (width >= 1024px) {
 	.heading-titles,
@@ -276,8 +274,12 @@ div.agency-name-record-type {
 	}
 }
 
+h4.links {
+	@apply hidden md:block;
+}
+
 div.links {
-	@apply flex h-auto gap-2;
+	@apply hidden md:flex h-auto gap-2;
 
 	grid-area: links;
 }
@@ -290,10 +292,6 @@ div.links {
 div.formats {
 	@apply overflow-hidden h-full;
 }
-
-/* .links {
-	@apply;
-} */
 
 .pill {
 	@apply text-neutral-800 border-solid border-[1px] border-neutral-500 rounded-xl px-2 bg-neutral-200 text-xs sm:text-sm [&>*]:md:text-med [&>*]:lg:text-lg p-1 overflow-hidden;

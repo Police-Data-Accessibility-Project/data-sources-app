@@ -63,7 +63,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watchEffect } from 'vue';
+import { ref, computed } from 'vue';
 import statesToAbbreviations from '@/util/statesToAbbreviations';
 
 /* Props and emits */
@@ -93,17 +93,6 @@ const isListOpen = computed(
 		(itemsToDisplay.value?.length && inputRef?.value?.value) ||
 		(typeof itemsToDisplay.value === 'undefined' && input.value.length > 1),
 );
-
-watchEffect(() => {
-	if (inputRef?.value) {
-		document
-			.querySelector(':root')
-			.style.setProperty(
-				'--typeahead-input-height',
-				inputRef.value.scrollHeight + 'px',
-			);
-	}
-});
 
 /* Methods */
 function onInput(e) {
@@ -193,19 +182,11 @@ function clearInput() {
 
 <style>
 .pdap-typeahead {
-	@apply relative gap-4 leading-normal w-full flex flex-col;
-}
-
-.pdap-typeahead-expanded {
-	@apply pb-[var(--typeahead-input-height)];
+	@apply relative leading-normal w-full flex flex-col;
 }
 
 .pdap-typeahead label {
 	@apply max-w-[max-content] text-lg py-1 font-medium;
-}
-
-.pdap-typeahead-input {
-	@apply max-h-[60px];
 }
 
 .pdap-typeahead-input,
@@ -224,15 +205,15 @@ function clearInput() {
 }
 
 .pdap-typeahead-list {
-	@apply w-[calc(100vw-3rem)];
+	@apply absolute top-full w-full z-50;
 }
 
 .pdap-typeahead-list-item {
-	@apply w-full mt-1 max-w-[unset] p-2 flex items-center gap-6;
+	@apply w-full mt-1 max-w-[unset] p-2 flex items-center gap-6 text-sm @md:text-lg;
 }
 
 .pdap-typeahead-list-item .locale-type {
-	@apply border-solid border-2 border-neutral-700 dark:border-neutral-400 rounded-full text-neutral-700 dark:text-neutral-400 text-sm px-2 py-1;
+	@apply border-solid border-2 border-neutral-700 dark:border-neutral-400 rounded-full text-neutral-700 dark:text-neutral-400 text-xs @md:text-sm px-2 py-1;
 }
 
 .pdap-typeahead-list-item .select {
