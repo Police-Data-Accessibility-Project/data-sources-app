@@ -32,7 +32,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetByIDBaseSchema,
     GetManyBaseDTO,
 )
-from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
+from middleware.enums import AuthAccessTypeEnum, PermissionsEnum, Relations
 
 from middleware.common_response_formatting import (
     format_list_response,
@@ -74,7 +74,7 @@ def get_data_requests_relation_role(
     :param access_info:
     :return:
     """
-    if access_info.access_type == AccessTypeEnum.API_KEY:
+    if access_info.access_type == AuthAccessTypeEnum.API_KEY:
         return RelationRoleEnum.STANDARD
     if PermissionsEnum.DB_WRITE in access_info.permissions:
         return RelationRoleEnum.ADMIN

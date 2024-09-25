@@ -9,7 +9,7 @@ from database_client.database_client import DatabaseClient
 from database_client.enums import RelationRoleEnum, ColumnPermissionEnum
 from middleware.access_logic import AccessInfo
 from middleware.custom_dataclasses import DeferredFunction
-from middleware.enums import PermissionsEnum, AccessTypeEnum
+from middleware.enums import PermissionsEnum, AuthAccessTypeEnum
 from middleware.flask_response_manager import FlaskResponseManager
 
 
@@ -105,7 +105,7 @@ def create_column_permissions_string_table(
     return table
 
 def get_relation_role(access_info: AccessInfo) -> RelationRoleEnum:
-    if access_info.access_type == AccessTypeEnum.API_KEY:
+    if access_info.access_type == AuthAccessTypeEnum.API_KEY:
         return RelationRoleEnum.STANDARD
     if PermissionsEnum.DB_WRITE in access_info.permissions:
         return RelationRoleEnum.ADMIN

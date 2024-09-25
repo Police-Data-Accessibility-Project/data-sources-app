@@ -8,7 +8,7 @@ from marshmallow import Schema
 
 from middleware.access_logic import get_authentication, AuthenticationInfo
 from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
-from middleware.enums import PermissionsEnum, AccessTypeEnum
+from middleware.enums import PermissionsEnum, AuthAccessTypeEnum
 from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
     get_restx_param_documentation,
 )
@@ -51,7 +51,7 @@ def permissions_required(permissions: PermissionsEnum):
 
 
 def authentication_required(
-    allowed_access_methods: list[AccessTypeEnum],
+    allowed_access_methods: list[AuthAccessTypeEnum],
     restrict_to_permissions: Optional[list[PermissionsEnum]] = None,
 ):
     """
@@ -121,8 +121,8 @@ def endpoint_info(
 
 def _add_auth_info_to_parser(auth_info: AuthenticationInfo, parser: RequestParser):
     # Depending on auth info, add authentication information to input parser
-    jwt_allowed = AccessTypeEnum.JWT in auth_info.allowed_access_methods
-    api_allowed = AccessTypeEnum.API_KEY in auth_info.allowed_access_methods
+    jwt_allowed = AuthAccessTypeEnum.JWT in auth_info.allowed_access_methods
+    api_allowed = AuthAccessTypeEnum.API_KEY in auth_info.allowed_access_methods
 
     if jwt_allowed and api_allowed:
         add_jwt_or_api_key_header_arg(parser)

@@ -2,7 +2,7 @@ from flask_restx import fields
 
 from middleware.access_logic import AccessInfo
 from middleware.decorators import authentication_required
-from middleware.enums import AccessTypeEnum, PermissionsEnum
+from middleware.enums import AuthAccessTypeEnum, PermissionsEnum
 from middleware.primary_resource_logic.homepage_search_cache import (
     get_agencies_without_homepage_urls,
     update_search_cache,
@@ -56,7 +56,7 @@ class HomepageSearchCache(PsycopgResource):
 
     @handle_exceptions
     @authentication_required(
-        allowed_access_methods=[AccessTypeEnum.JWT],
+        allowed_access_methods=[AuthAccessTypeEnum.JWT],
         restrict_to_permissions=[PermissionsEnum.DB_WRITE],
     )
     @namespace_homepage_search_cache.expect(parser)
@@ -78,7 +78,7 @@ class HomepageSearchCache(PsycopgResource):
 
     @handle_exceptions
     @authentication_required(
-        allowed_access_methods=[AccessTypeEnum.JWT],
+        allowed_access_methods=[AuthAccessTypeEnum.JWT],
         restrict_to_permissions=[PermissionsEnum.DB_WRITE],
     )
     @namespace_homepage_search_cache.expect(parser, post_model)

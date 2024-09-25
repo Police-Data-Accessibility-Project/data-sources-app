@@ -34,7 +34,7 @@ class PermissionsActionEnum(Enum):
         return [member.value for member in cls]
 
 
-class AccessTypeEnum(Enum):
+class AuthAccessTypeEnum(Enum):
     JWT = auto()
     API_KEY = auto()
 
@@ -93,3 +93,11 @@ class AgencyType(Enum):
     COURT = "court"
     POLICE = "police"
     JAIL = "jail"
+
+class URLStatus(Enum):
+    """
+    A list of valid URL statuses
+    """
+    BROKEN = "broken"
+    OK = "ok"
+    NONE_FOUND = "none found"

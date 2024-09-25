@@ -6,7 +6,7 @@ from flask import request
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from flask_restx import abort
 
-from middleware.enums import PermissionsEnum, AccessTypeEnum
+from middleware.enums import PermissionsEnum, AuthAccessTypeEnum
 from database_client.helper_functions import get_db_client
 from middleware.exceptions import (
     InvalidAPIKeyException,
@@ -23,19 +23,19 @@ class AuthenticationInfo:
     A dataclass providing information on how the user was authenticated
     """
 
-    allowed_access_methods: list[AccessTypeEnum]
+    allowed_access_methods: list[AuthAccessTypeEnum]
     restrict_to_permissions: Optional[list[PermissionsEnum]] = None
 
 WRITE_ONLY_AUTH_INFO = AuthenticationInfo(
-    allowed_access_methods=[AccessTypeEnum.JWT],
+    allowed_access_methods=[AuthAccessTypeEnum.JWT],
     restrict_to_permissions=[PermissionsEnum.DB_WRITE],
 )
 # Allow owners of a resource to use the endpoint as well, instead of only admin-level users
 OWNER_WRITE_ONLY_AUTH_INFO = AuthenticationInfo(
-    allowed_access_methods=[AccessTypeEnum.JWT],
+    allowed_access_methods=[AuthAccessTypeEnum.JWT],
 )
 GET_AUTH_INFO = AuthenticationInfo(
-    allowed_access_methods=[AccessTypeEnum.API_KEY, AccessTypeEnum.JWT],
+    allowed_access_methods=[AuthAccessTypeEnum.API_KEY, AuthAccessTypeEnum.JWT],
 )
 
 
@@ -46,7 +46,7 @@ class AccessInfo:
     """
 
     user_email: str
-    access_type: AccessTypeEnum
+    access_type: AuthAccessTypeEnum
     permissions: list[PermissionsEnum] = None
 
 
@@ -63,7 +63,7 @@ def get_access_info_from_jwt() -> Optional[AccessInfo]:
 def get_jwt_access_info_with_permissions(user_email):
     permissions = get_user_permissions(user_email)
     return AccessInfo(
-        user_email=user_email, access_type=AccessTypeEnum.JWT, permissions=permissions
+        user_email=user_email, access_type=AuthAccessTypeEnum.JWT, permissions=permissions
     )
 
 
@@ -123,7 +123,7 @@ def check_permissions_with_access_info(
 
 
 def get_authentication_error_message(
-    allowed_access_methods: list[AccessTypeEnum],
+    allowed_access_methods: list[AuthAccessTypeEnum],
 ) -> str:
     f"""
     Please provide a valid form of one of the following: {[access_method.value for access_method in allowed_access_methods]} 
@@ -131,7 +131,7 @@ def get_authentication_error_message(
 
 
 def get_authentication(
-    allowed_access_methods: list[AccessTypeEnum],
+    allowed_access_methods: list[AuthAccessTypeEnum],
     restrict_to_permissions: Optional[list[PermissionsEnum]] = None,
 ) -> AccessInfo:
     """
@@ -163,22 +163,22 @@ def get_authentication(
 
 
 def try_api_key_authentication(
-    allowed_access_methods: list[AccessTypeEnum],
+    allowed_access_methods: list[AuthAccessTypeEnum],
 ) -> Optional[AccessInfo]:
     """Helper function to attempt API key authentication."""
-    if AccessTypeEnum.API_KEY in allowed_access_methods:
+    if AuthAccessTypeEnum.API_KEY in allowed_access_methods:
         user_email = get_user_email_from_api_key()
         if user_email:
-            return AccessInfo(user_email=user_email, access_type=AccessTypeEnum.API_KEY)
+            return AccessInfo(user_email=user_email, access_type=AuthAccessTypeEnum.API_KEY)
     return None
 
 
 def try_jwt_authentication(
-    allowed_access_methods: list[AccessTypeEnum],
+    allowed_access_methods: list[AuthAccessTypeEnum],
     restrict_to_permissions: Optional[list[PermissionsEnum]] = None,
 ) -> Optional[AccessInfo]:
     """Helper function to attempt JWT authentication and check permissions."""
-    if AccessTypeEnum.JWT not in allowed_access_methods:
+    if AuthAccessTypeEnum.JWT not in allowed_access_methods:
         return None
     access_info = get_access_info_from_jwt()
     if not access_info:

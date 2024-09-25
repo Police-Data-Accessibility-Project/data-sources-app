@@ -9,7 +9,7 @@ from middleware.decorators import (
     api_key_required,
     permissions_required, authentication_required,
 )
-from middleware.enums import PermissionsEnum, AccessTypeEnum
+from middleware.enums import PermissionsEnum, AuthAccessTypeEnum
 
 
 @pytest.fixture
@@ -53,7 +53,7 @@ def dummy_permissions_required_route():
 @pytest.fixture
 def dummy_authentication_required_route():
     @authentication_required(
-        allowed_access_methods=[AccessTypeEnum.API_KEY],
+        allowed_access_methods=[AuthAccessTypeEnum.API_KEY],
         restrict_to_permissions=[PermissionsEnum.READ_ALL_USER_INFO],
     )
     def _dummy_route(access_info: AccessInfo):
@@ -79,5 +79,5 @@ def test_authentication_required(dummy_authentication_required_route, monkeypatc
 
     dummy_authentication_required_route()
     mock_get_authentication.assert_called_once_with(
-        [AccessTypeEnum.API_KEY], [PermissionsEnum.READ_ALL_USER_INFO]
+        [AuthAccessTypeEnum.API_KEY], [PermissionsEnum.READ_ALL_USER_INFO]
     )

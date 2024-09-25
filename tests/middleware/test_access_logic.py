@@ -13,7 +13,7 @@ from middleware.access_logic import (
     get_access_info_from_jwt, get_jwt_access_info_with_permissions,
 )
 from middleware.exceptions import InvalidAPIKeyException, InvalidAuthorizationHeaderException
-from middleware.enums import PermissionsEnum, AccessTypeEnum
+from middleware.enums import PermissionsEnum, AuthAccessTypeEnum
 from middleware.security import check_permissions
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_mocks_and_patches import patch_request_headers, patch_abort
@@ -105,7 +105,7 @@ def get_access_info_mocks():
         (
             AccessInfo(
                 user_email="test_email",
-                access_type=AccessTypeEnum.JWT,
+                access_type=AuthAccessTypeEnum.JWT,
                 permissions=[PermissionsEnum.READ_ALL_USER_INFO],
             ),
             [PermissionsEnum.READ_ALL_USER_INFO],
@@ -114,7 +114,7 @@ def get_access_info_mocks():
         (
             AccessInfo(
                 user_email="test_email",
-                access_type=AccessTypeEnum.JWT,
+                access_type=AuthAccessTypeEnum.JWT,
                 permissions=[PermissionsEnum.READ_ALL_USER_INFO],
             ),
             [PermissionsEnum.READ_ALL_USER_INFO, PermissionsEnum.DB_WRITE],
@@ -148,20 +148,20 @@ def test_check_permissions_with_access_info(
     (
         # Happy path
         (
-            [AccessTypeEnum.API_KEY, AccessTypeEnum.JWT],
+            [AuthAccessTypeEnum.API_KEY, AuthAccessTypeEnum.JWT],
             "test_email",
             AccessInfo(
                 user_email="test_email",
-                access_type=AccessTypeEnum.API_KEY,
+                access_type=AuthAccessTypeEnum.API_KEY,
             )
         ),
         (
-            [AccessTypeEnum.JWT],
+            [AuthAccessTypeEnum.JWT],
             "test_email",
             None,
         ),
         (
-            [AccessTypeEnum.API_KEY],
+            [AuthAccessTypeEnum.API_KEY],
             None,
             None,
         )
@@ -178,7 +178,7 @@ def test_try_api_key_authentication(
 
     result = try_api_key_authentication(allowed_access_methods)
 
-    if (AccessTypeEnum.API_KEY in allowed_access_methods):
+    if (AuthAccessTypeEnum.API_KEY in allowed_access_methods):
         mock_get_user_email.assert_called_once()
     else:
         mock_get_user_email.assert_not_called()
@@ -192,23 +192,23 @@ def test_try_api_key_authentication(
     (
         # Happy path
         (
-            [AccessTypeEnum.JWT],
+            [AuthAccessTypeEnum.JWT],
             [PermissionsEnum.READ_ALL_USER_INFO],
             AccessInfo(
                 user_email="test_email",
-                access_type=AccessTypeEnum.JWT,
+                access_type=AuthAccessTypeEnum.JWT,
                 permissions=[PermissionsEnum.READ_ALL_USER_INFO],
             ),
             AccessInfo(
                 user_email="test_email",
-                access_type=AccessTypeEnum.JWT,
+                access_type=AuthAccessTypeEnum.JWT,
                 permissions=[PermissionsEnum.READ_ALL_USER_INFO],
             ),
             True,
             True
         ),
         (
-            [AccessTypeEnum.JWT],
+            [AuthAccessTypeEnum.JWT],
             [PermissionsEnum.READ_ALL_USER_INFO],
             None,
             None,
@@ -216,23 +216,23 @@ def test_try_api_key_authentication(
             True
         ),
         (
-            [AccessTypeEnum.JWT],
+            [AuthAccessTypeEnum.JWT],
             None,
             AccessInfo(
                 user_email="test_email",
-                access_type=AccessTypeEnum.JWT,
+                access_type=AuthAccessTypeEnum.JWT,
                 permissions=[PermissionsEnum.READ_ALL_USER_INFO],
             ),
             AccessInfo(
                 user_email="test_email",
-                access_type=AccessTypeEnum.JWT,
+                access_type=AuthAccessTypeEnum.JWT,
                 permissions=[PermissionsEnum.READ_ALL_USER_INFO],
             ),
             False,
             True
         ),
         (
-            [AccessTypeEnum.API_KEY],
+            [AuthAccessTypeEnum.API_KEY],
             None,
             None,
             None,
@@ -286,13 +286,13 @@ def test_try_jwt_authentication(
         (
             AccessInfo(
                 user_email="test_email",
-                access_type=AccessTypeEnum.API_KEY,
+                access_type=AuthAccessTypeEnum.API_KEY,
                 permissions=[PermissionsEnum.READ_ALL_USER_INFO],
             ),
             None,
             AccessInfo(
                 user_email="test_email",
-                access_type=AccessTypeEnum.API_KEY,
+                access_type=AuthAccessTypeEnum.API_KEY,
                 permissions=[PermissionsEnum.READ_ALL_USER_INFO],
             ),
             False
@@ -301,12 +301,12 @@ def test_try_jwt_authentication(
             None,
             AccessInfo(
                 user_email="test_email",
-                access_type=AccessTypeEnum.JWT,
+                access_type=AuthAccessTypeEnum.JWT,
                 permissions=[PermissionsEnum.READ_ALL_USER_INFO],
             ),
             AccessInfo(
                 user_email="test_email",
-                access_type=AccessTypeEnum.JWT,
+                access_type=AuthAccessTypeEnum.JWT,
                 permissions=[PermissionsEnum.READ_ALL_USER_INFO],
             ),
             False
@@ -494,7 +494,7 @@ def test_get_jwt_access_info_with_permissions(
 
     assert result == AccessInfo(
         user_email=mock.user_email,
-        access_type=AccessTypeEnum.JWT,
+        access_type=AuthAccessTypeEnum.JWT,
         permissions=mock.permissions
     )
 

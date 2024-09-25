@@ -13,7 +13,7 @@ from middleware.column_permission_logic import (
     RelationRoleParameters,
 )
 from middleware.custom_dataclasses import DeferredFunction
-from middleware.enums import PermissionsEnum, AccessTypeEnum
+from middleware.enums import PermissionsEnum, AuthAccessTypeEnum
 
 
 def test_get_permitted_columns():
@@ -128,14 +128,14 @@ def test_create_column_permissions_string_table(mock_DatabaseClient: MagicMock):
 @pytest.mark.parametrize(
     "access_type, permissions, expected_result",
     (
-        (AccessTypeEnum.API_KEY, [], RelationRoleEnum.STANDARD),
-        (AccessTypeEnum.API_KEY, [PermissionsEnum.DB_WRITE], RelationRoleEnum.STANDARD),
-        (AccessTypeEnum.JWT, [], RelationRoleEnum.STANDARD),
-        (AccessTypeEnum.JWT, [PermissionsEnum.DB_WRITE], RelationRoleEnum.ADMIN),
+        (AuthAccessTypeEnum.API_KEY, [], RelationRoleEnum.STANDARD),
+        (AuthAccessTypeEnum.API_KEY, [PermissionsEnum.DB_WRITE], RelationRoleEnum.STANDARD),
+        (AuthAccessTypeEnum.JWT, [], RelationRoleEnum.STANDARD),
+        (AuthAccessTypeEnum.JWT, [PermissionsEnum.DB_WRITE], RelationRoleEnum.ADMIN),
     ),
 )
 def test_get_relation_role(
-    access_type: AccessTypeEnum,
+    access_type: AuthAccessTypeEnum,
     permissions: List[PermissionsEnum],
     expected_result: RelationRoleEnum,
 ):
@@ -168,7 +168,7 @@ def test_get_relation_role_parameters_override(
 
     assert rrp.get_relation_role_from_parameters(
         access_info=AccessInfo(
-            access_type=AccessTypeEnum.API_KEY,
+            access_type=AuthAccessTypeEnum.API_KEY,
             user_email="test_user",
         )
     ) == RelationRoleEnum.ADMIN

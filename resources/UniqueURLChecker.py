@@ -2,7 +2,7 @@ from flask import Response
 
 from middleware.access_logic import AccessInfo
 from middleware.decorators import authentication_required
-from middleware.enums import AccessTypeEnum
+from middleware.enums import AuthAccessTypeEnum
 from middleware.primary_resource_logic.unique_url_checker import (
     UniqueURLCheckerRequestSchema,
     UniqueURLCheckerResponseOuterSchema,
@@ -38,7 +38,7 @@ class UniqueURLChecker(PsycopgResource):
 
     @handle_exceptions
     @authentication_required(
-        allowed_access_methods=[AccessTypeEnum.API_KEY],
+        allowed_access_methods=[AuthAccessTypeEnum.API_KEY],
     )
     @namespace_url_checker.doc(
         description="Check if a URL is unique",

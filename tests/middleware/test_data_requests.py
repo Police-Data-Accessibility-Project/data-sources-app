@@ -9,7 +9,7 @@ from database_client.db_client_dataclasses import WhereMapping, OrderByParameter
 from database_client.enums import RelationRoleEnum, ColumnPermissionEnum
 from middleware.access_logic import AccessInfo
 from middleware.dynamic_request_logic.supporting_classes import IDInfo
-from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
+from middleware.enums import AuthAccessTypeEnum, PermissionsEnum, Relations
 from middleware.primary_resource_logic.data_requests import (
     get_data_requests_relation_role,
     RELATION,
@@ -36,27 +36,27 @@ PATCH_ROOT = "middleware.primary_resource_logic.data_requests"
 @pytest.mark.parametrize(
     "access_type, is_owner, permissions, data_request_id, expected_relation_role",
     (
-        (AccessTypeEnum.API_KEY, False, [], 1, RelationRoleEnum.STANDARD),
-        (AccessTypeEnum.JWT, False, [], 1, RelationRoleEnum.STANDARD),
+        (AuthAccessTypeEnum.API_KEY, False, [], 1, RelationRoleEnum.STANDARD),
+        (AuthAccessTypeEnum.JWT, False, [], 1, RelationRoleEnum.STANDARD),
         (
-            AccessTypeEnum.JWT,
-            False,
-            [PermissionsEnum.DB_WRITE],
-            1,
-            RelationRoleEnum.ADMIN,
+                AuthAccessTypeEnum.JWT,
+                False,
+                [PermissionsEnum.DB_WRITE],
+                1,
+                RelationRoleEnum.ADMIN,
         ),
-        (AccessTypeEnum.JWT, True, [], 1, RelationRoleEnum.OWNER),
+        (AuthAccessTypeEnum.JWT, True, [], 1, RelationRoleEnum.OWNER),
         (
-            AccessTypeEnum.JWT,
-            False,
-            [PermissionsEnum.READ_ALL_USER_INFO],
-            None,
-            RelationRoleEnum.STANDARD,
+                AuthAccessTypeEnum.JWT,
+                False,
+                [PermissionsEnum.READ_ALL_USER_INFO],
+                None,
+                RelationRoleEnum.STANDARD,
         ),
     ),
 )
 def test_get_data_requests_relation_role(
-    access_type: AccessTypeEnum,
+    access_type: AuthAccessTypeEnum,
     is_owner: bool,
     permissions: list[PermissionsEnum],
     data_request_id: Optional[int],
