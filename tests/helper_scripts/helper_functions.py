@@ -113,7 +113,7 @@ def insert_test_agencies_and_sources(cursor: psycopg.Cursor) -> None:
     db_client.execute_raw_sql(
         """
         INSERT INTO public.agency_source_link
-        (airtable_uid, agency_described_linked_uid)
+        (data_source_uid, agency_uid)
         VALUES
             ('SOURCE_UID_1', 'Agency_UID_1'),
             ('SOURCE_UID_2', 'Agency_UID_2'),
