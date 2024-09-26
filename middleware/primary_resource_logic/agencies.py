@@ -431,36 +431,11 @@ class AgenciesGetSchema(AgencyInfoBaseSchema):
     )
     county_fips = COUNTY_FIPS_FIELD
     locality_name = LOCALITY_NAME_FIELD
-    count_data_sources = fields.Int(
-        required=False,
-        allow_none=True,
-        metadata={
-            "description": "The number of data sources associated with the agency.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    data_sources = fields.Str(
-        required=False,
-        allow_none=True,
-        metadata={
-            "description": "The list of data sources associated with the agency.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
     airtable_agency_last_modified = fields.DateTime(
         required=False,
         format="rfc",
         metadata={
             "description": "When the agency was last modified",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    data_sources_last_updated = fields.DateTime(
-        required=False,
-        allow_none=True,
-        format="rfc",
-        metadata={
-            "description": "When the data sources were last updated",
             "source": SourceMappingEnum.JSON,
         },
     )

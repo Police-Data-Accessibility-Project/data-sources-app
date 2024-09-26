@@ -309,9 +309,9 @@ class DatabaseClient:
             FROM
                 agency_source_link
             INNER JOIN
-                data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
+                data_sources ON agency_source_link.data_source_uid = data_sources.airtable_uid
             INNER JOIN
-                agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+                agencies ON agency_source_link.agency_uid = agencies.airtable_uid
             INNER JOIN
                 locations_expanded le ON agencies.location_id = le.id
             WHERE
@@ -914,11 +914,11 @@ class DatabaseClient:
                 LOCALITY_NAME as MUNICIPALITY,
                 COUNTY_NAME,
                 AIRTABLE_UID,
-                COUNT_DATA_SOURCES,
                 ZIP_CODE,
                 NO_WEB_PRESENCE -- Relevant
             FROM
-                PUBLIC.AGENCIES_EXPANDED
+                PUBLIC.AGENCIES_EXPANDED 
+                INNER JOIN NUM_DATA_SOURCES_PER_AGENCY num ON num.agency_uid = AGENCIES_EXPANDED.AIRTABLE_UID 
             WHERE 
                 approved = true
                 AND homepage_url is null
@@ -926,7 +926,7 @@ class DatabaseClient:
                     SELECT 1 FROM PUBLIC.AGENCY_URL_SEARCH_CACHE
                     WHERE PUBLIC.AGENCIES_EXPANDED.AIRTABLE_UID = PUBLIC.AGENCY_URL_SEARCH_CACHE.agency_airtable_uid
                 )
-            ORDER BY COUNT_DATA_SOURCES DESC
+            ORDER BY NUM.DATA_SOURCE_COUNT DESC
             LIMIT 100 -- Limiting to 100 in acknowledgment of the search engine quota
         """
         )

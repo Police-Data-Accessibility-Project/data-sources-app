@@ -52,7 +52,8 @@ NAMESPACES = [
     namespace_permissions,
     namespace_create_test_user,
     namespace_data_requests,
-    namespace_homepage_search_cache,
+    # Below should not be enabled until https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/458
+    # namespace_homepage_search_cache,
     namespace_url_checker
 ]
 

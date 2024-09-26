@@ -184,21 +184,22 @@ TEST_ID = -1
             "DataRequests.delete_data_request_wrapper",
             {},
         ),
-        (
-            "/homepage-search-cache",
-            "POST",
-            "HomepageSearchCache.update_search_cache",
-            {
-                "search_results": ["test_result_1", "test_result_2"],
-                "agency_airtable_uid": "test_airtable_uid",
-            },
-        ),
-        (
-            "/homepage-search-cache",
-            "GET",
-            "HomepageSearchCache.get_agencies_without_homepage_urls",
-            {},
-        ),
+        # Below should not be used until: https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/458
+        # (
+        #     "/homepage-search-cache",
+        #     "POST",
+        #     "HomepageSearchCache.update_search_cache",
+        #     {
+        #         "search_results": ["test_result_1", "test_result_2"],
+        #         "agency_airtable_uid": "test_airtable_uid",
+        #     },
+        # ),
+        # (
+        #     "/homepage-search-cache",
+        #     "GET",
+        #     "HomepageSearchCache.get_agencies_without_homepage_urls",
+        #     {},
+        # ),
         (
             "/agencies?page=1",
             "GET",

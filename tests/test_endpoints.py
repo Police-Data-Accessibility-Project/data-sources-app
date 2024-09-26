@@ -120,7 +120,8 @@ test_parameters = [
     TestParameters(
         DataRequestsById, "/data-requests/<data_request_id>", [GET, PUT, DELETE]
     ),
-    TestParameters(HomepageSearchCache, "/homepage-search-cache", [GET, POST]),
+    # Commented out until: https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/458
+    # TestParameters(HomepageSearchCache, "/homepage-search-cache", [GET, POST]),
     TestParameters(TypeaheadAgencies, "/typeahead/agencies", [GET]),
     TestParameters(UniqueURLChecker, "/check/unique-url", [GET]),
 ]

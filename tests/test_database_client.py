@@ -762,48 +762,48 @@ def test_get_column_permissions_as_permission_table(
         },
     ]
 
+# Commented out until: https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/458
+# def test_get_agencies_without_homepage_urls(live_database_client):
+#     submitted_name = create_agency_entry_for_search_cache(
+#         db_client=live_database_client
+#     )
+#
+#     results = live_database_client.get_agencies_without_homepage_urls()
+#     assert len(results) > 1
+#     assert results[0]["submitted_name"] == submitted_name
+#     assert list(results[0].keys()) == [
+#         "submitted_name",
+#         "jurisdiction_type",
+#         "state_iso",
+#         "municipality",
+#         "county_name",
+#         "airtable_uid",
+#         "count_data_sources",
+#         "zip_code",
+#         "no_web_presence",
+#     ]
 
-def test_get_agencies_without_homepage_urls(live_database_client):
-    submitted_name = create_agency_entry_for_search_cache(
-        db_client=live_database_client
-    )
-
-    results = live_database_client.get_agencies_without_homepage_urls()
-    assert len(results) > 1
-    assert results[0]["submitted_name"] == submitted_name
-    assert list(results[0].keys()) == [
-        "submitted_name",
-        "jurisdiction_type",
-        "state_iso",
-        "municipality",
-        "county_name",
-        "airtable_uid",
-        "count_data_sources",
-        "zip_code",
-        "no_web_presence",
-    ]
-
-
-def test_create_search_cache_entry(live_database_client):
-    submitted_name = create_agency_entry_for_search_cache(
-        db_client=live_database_client
-    )
-
-    result_to_update = live_database_client.get_agencies_without_homepage_urls()[0]
-
-    airtable_uid = result_to_update["airtable_uid"]
-
-    fake_search_result = "found_results"
-    live_database_client.create_search_cache_entry(
-        column_value_mappings={
-            "agency_airtable_uid": airtable_uid,
-            "search_result": fake_search_result,
-        }
-    )
-
-    # Check the first result is now different
-    new_result = live_database_client.get_agencies_without_homepage_urls()[0]
-    assert new_result["airtable_uid"] != airtable_uid
+# Commented out until: https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/458
+# def test_create_search_cache_entry(live_database_client):
+#     submitted_name = create_agency_entry_for_search_cache(
+#         db_client=live_database_client
+#     )
+#
+#     result_to_update = live_database_client.get_agencies_without_homepage_urls()[0]
+#
+#     airtable_uid = result_to_update["airtable_uid"]
+#
+#     fake_search_result = "found_results"
+#     live_database_client.create_search_cache_entry(
+#         column_value_mappings={
+#             "agency_airtable_uid": airtable_uid,
+#             "search_result": fake_search_result,
+#         }
+#     )
+#
+#     # Check the first result is now different
+#     new_result = live_database_client.get_agencies_without_homepage_urls()[0]
+#     assert new_result["airtable_uid"] != airtable_uid
 
 
 def test_get_related_data_sources(live_database_client):
