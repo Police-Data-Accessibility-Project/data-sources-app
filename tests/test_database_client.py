@@ -11,7 +11,11 @@ import pytest
 from sqlalchemy import insert, select, update
 
 from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import OrderByParameters, WhereMapping
+from database_client.db_client_dataclasses import (
+    OrderByParameters,
+    SubqueryParameters,
+    WhereMapping,
+)
 from database_client.enums import (
     ExternalAccountTypeEnum,
     RelationRoleEnum,
@@ -985,18 +989,26 @@ def test_subquery(live_database_client: DatabaseClient):
         column_permission=ColumnPermissionEnum.READ,
     )
     where_mappings = [WhereMapping(column="airtable_uid", value="rechI06qD4od759xT")]
+    subquery_parameters = [
+        SubqueryParameters(
+            relation_name="agencies",
+            columns=agencies_columns,
+            linking_column="agencies",
+        )
+    ]
 
     # Run normal single select query
     single_start = perf_counter()
-    live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_single_relation(
         relation_name="data_sources",
         columns=data_sources_columns,
         where_mappings=where_mappings,
+        subquery_parameters=subquery_parameters,
     )
     single_stop = perf_counter()
 
     # Run subquery select
-    subquery_start = perf_counter()
+    """subquery_start = perf_counter()
     results = live_database_client.execute_subquery(
         relation_name="data_sources",
         subrelation_name="agencies",
@@ -1005,8 +1017,8 @@ def test_subquery(live_database_client: DatabaseClient):
         subcolumns=agencies_columns,
         where_mappings=where_mappings,
     )
-    subquery_stop = perf_counter()
+    subquery_stop = perf_counter()"""
 
     print(f"\nSingle select time: {single_stop - single_start}")
-    print(f"Subquery time: {subquery_stop - subquery_start}")
+    # print(f"Subquery time: {subquery_stop - subquery_start}")
     print(json.dumps(results, indent=4))
