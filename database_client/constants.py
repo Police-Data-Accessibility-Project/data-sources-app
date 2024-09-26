@@ -110,14 +110,3 @@ RESTRICTED_COLUMNS = [
 ]
 
 PAGE_SIZE = 100
-
-TABLE_REFERENCE = {
-    "agencies": Agency,
-    "data_requests": DataRequest,
-    "data_sources": DataSource,
-    "data_sources_archive_info": DataSourceArchiveInfo,
-    "link_data_sources_data_requests": LinkDataSourceDataRequest,
-    "reset_tokens": ResetToken,
-    "test_table": TestTable,
-    "users": User,
-}

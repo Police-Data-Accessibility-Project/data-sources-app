@@ -14,8 +14,12 @@ from sqlalchemy.orm import aliased, defaultload, load_only
 from sqlalchemy.schema import Column
 from sqlalchemy.sql.expression import UnaryExpression
 
-from database_client.constants import PAGE_SIZE, TABLE_REFERENCE
-from database_client.db_client_dataclasses import OrderByParameters, WhereMapping
+from database_client.constants import PAGE_SIZE
+from database_client.db_client_dataclasses import (
+    OrderByParameters,
+    SubqueryParameters,
+    WhereMapping,
+)
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
     ExternalAccountTypeEnum,
@@ -28,7 +32,9 @@ from middleware.exceptions import (
     AccessTokenNotFoundError,
 )
 from middleware.models import (
+    convert_to_column_reference,
     ExternalAccount,
+    TABLE_REFERENCE,
     User,
 )
 from middleware.enums import PermissionsEnum, Relations
@@ -791,17 +797,6 @@ class DatabaseClient:
         results = self.cursor.fetchall()
         return [row["associated_column"] for row in results]
 
-    @staticmethod
-    def convert_to_column_reference(columns: list[str], relation: str) -> list[Column]:
-        """Converts a list of column strings to SQLAlchemy column references.
-
-        :param columns: List of column strings.
-        :param relation: Relation string.
-        :return:
-        """
-        relation_reference = TABLE_REFERENCE[relation]
-        return [getattr(relation_reference, column) for column in columns]
-
     @cursor_manager()
     def _update_entry_in_table(
         self,
@@ -891,19 +886,32 @@ class DatabaseClient:
         limit: Optional[int] = PAGE_SIZE,
         page: Optional[int] = None,
         order_by: Optional[OrderByParameters] = None,
+        subquery_parameters: Optional[list[SubqueryParameters]] = [],
     ) -> list[dict]:
         """
         Selects a single relation from the database
         """
         offset = self.get_offset(page)
-        column_references = self.convert_to_column_reference(
+        column_references = convert_to_column_reference(
             columns=columns, relation=relation_name
         )
         query = DynamicQueryConstructor.create_single_relation_selection_query(
-            relation_name, column_references, where_mappings, limit, offset, order_by
+            relation_name,
+            column_references,
+            where_mappings,
+            limit,
+            offset,
+            order_by,
+            subquery_parameters,
         )
-        results = self.session.execute(query()).mappings().all()
-        results = [dict(result) for result in results]
+        results = self.session.execute(query()).mappings().unique().all()
+
+        if subquery_parameters:
+            results = [
+                dict(result[[key for key in result.keys()][0]]) for result in results
+            ]
+        else:
+            results = [dict(result) for result in results]
         return results
 
     get_data_requests = partialmethod(
@@ -1055,20 +1063,20 @@ class DatabaseClient:
         subcolumns: list[str],
         where_mappings: list[WhereMapping],
     ) -> list[dict[str, Any]]:
-        column_references = self.convert_to_column_reference(
+        column_references = convert_to_column_reference(
             columns=columns, relation=relation_name
         )
-        subcolumn_references = self.convert_to_column_reference(
+        subcolumn_references = convert_to_column_reference(
             columns=subcolumns, relation=subrelation_name
         )
-        linking_column_reference = self.convert_to_column_reference(
+        linking_column_reference = convert_to_column_reference(
             columns=[linking_column], relation=relation_name
         )
         where_mappings = [
             mapping.build_where_clause(relation_name) for mapping in where_mappings
         ]
         relation_reference = TABLE_REFERENCE[relation_name]
-        
+
         results = (
             self.session.execute(
                 select(relation_reference)

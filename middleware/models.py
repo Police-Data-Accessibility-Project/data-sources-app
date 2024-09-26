@@ -92,10 +92,10 @@ class AgencySourceLink(Base):
     __tablename__ = "agency_source_link"
 
     link_id: Mapped[int]
-    airtable_uid: Mapped[str] = mapped_column(
+    data_source_uid: Mapped[str] = mapped_column(
         ForeignKey("public.data_sources.airtable_uid"), primary_key=True
     )
-    agency_described_linked_uid: Mapped[str] = mapped_column(
+    agency_uid: Mapped[str] = mapped_column(
         ForeignKey("public.agencies.airtable_uid"), primary_key=True
     )
 
@@ -134,7 +134,7 @@ class Agency(Base):
     defunct_year: Mapped[Optional[str]]
     count_data_sources: Mapped[Optional[int]]
     agency_type: Mapped[Optional[str]]
-    multi_agency: Mapped[bool] = mapped_column(server_defaul=false())
+    multi_agency: Mapped[bool] = mapped_column(server_default=false())
     zip_code: Mapped[Optional[str]]
     data_sources: Mapped[Optional[str]]
     no_web_presence: Mapped[bool] = mapped_column(server_default=false())
@@ -370,3 +370,25 @@ class User(Base):
         server_default=text("generate_api_key()")
     )
     role: Mapped[Optional[Text]] = mapped_column(Text)
+
+
+TABLE_REFERENCE = {
+    "agencies": Agency,
+    "data_requests": DataRequest,
+    "data_sources": DataSource,
+    "data_sources_archive_info": DataSourceArchiveInfo,
+    "link_data_sources_data_requests": LinkDataSourceDataRequest,
+    "reset_tokens": ResetToken,
+    "test_table": TestTable,
+    "users": User,
+}
+
+def convert_to_column_reference(columns: list[str], relation: str) -> list[Column]:
+    """Converts a list of column strings to SQLAlchemy column references.
+
+    :param columns: List of column strings.
+    :param relation: Relation string.
+    :return:
+    """
+    relation_reference = TABLE_REFERENCE[relation]
+    return [getattr(relation_reference, column) for column in columns]
