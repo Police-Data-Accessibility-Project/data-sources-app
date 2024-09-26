@@ -136,6 +136,7 @@ class AgencyExpanded(Base):
         Enum(*get_args(JurisdictionTypeLiteral)), name="jurisdiction_type"
     )
     state_iso = Column(String)
+    state_name = Column(String)
     county_fips = Column(String)  # Matches the VARCHAR type in the agencies table
     county_name = Column(String)
     lat = Column(Float)

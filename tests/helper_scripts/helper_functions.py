@@ -101,11 +101,11 @@ def insert_test_agencies_and_sources(cursor: psycopg.Cursor) -> None:
     db_client.execute_raw_sql(
         """
         INSERT INTO public.agencies
-        (airtable_uid, name, location_id, count_data_sources, lat, lng, jurisdiction_type)
+        (airtable_uid, name, location_id, lat, lng, jurisdiction_type)
         VALUES 
-            ('Agency_UID_1', 'Agency A', %s, 3, 30, 20, 'state'),
-            ('Agency_UID_2', 'Agency B', %s, 2, 40, 50, 'state'),
-            ('Agency_UID_3', 'Agency C', %s, 1, 90, 60, 'state');
+            ('Agency_UID_1', 'Agency A', %s, 30, 20, 'state'),
+            ('Agency_UID_2', 'Agency B', %s, 40, 50, 'state'),
+            ('Agency_UID_3', 'Agency C', %s, 90, 60, 'state');
     """,
         vars=(location_id_1, location_id_2, location_id_3),
     )
@@ -113,7 +113,7 @@ def insert_test_agencies_and_sources(cursor: psycopg.Cursor) -> None:
     db_client.execute_raw_sql(
         """
         INSERT INTO public.agency_source_link
-        (airtable_uid, agency_described_linked_uid)
+        (data_source_uid, agency_uid)
         VALUES
             ('SOURCE_UID_1', 'Agency_UID_1'),
             ('SOURCE_UID_2', 'Agency_UID_2'),
