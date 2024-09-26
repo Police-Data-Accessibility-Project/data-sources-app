@@ -5,8 +5,8 @@ from typing import Callable, Optional
 
 from psycopg import sql
 from sqlalchemy import select
+from sqlalchemy.orm import load_only
 from sqlalchemy.schema import Column
-from sqlalchemy.sql.expression import UnaryExpression
 
 from database_client.constants import (
     AGENCY_APPROVED_COLUMNS,
@@ -15,7 +15,12 @@ from database_client.constants import (
     RESTRICTED_DATA_SOURCE_COLUMNS,
     RESTRICTED_COLUMNS,
 )
-from database_client.db_client_dataclasses import OrderByParameters, WhereMapping
+from database_client.db_client_dataclasses import (
+    OrderByParameters,
+    SubqueryParameters,
+    WhereMapping,
+)
+from middleware.models import TABLE_REFERENCE
 from utilities.enums import RecordCategories
 
 TableColumn = namedtuple("TableColumn", ["table", "column"])
@@ -414,22 +419,24 @@ class DynamicQueryConstructor:
         return sql.SQL(" WHERE ") + sql.SQL(" AND ").join(where_subclauses)
 
     @staticmethod
-    def create_single_relation_selection_query(
+    def create_selection_query(
         relation: str,
         columns: list[Column],
-        where_mappings: Optional[list[WhereMapping | dict]] = [True],
+        where_mappings: Optional[list[WhereMapping] | dict] = [True],
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         order_by: Optional[OrderByParameters] = None,
+        subquery_parameters: Optional[list[SubqueryParameters]] = [],
     ) -> Callable:
         """
-        Creates a SELECT query for a single relation (table or view)
+        Creates a SELECT query for a relation (table or view)
         that selects the given columns with the given where mappings
         :param columns: List of database column references. Example: [User.name, User.email]
         :param where_mappings: List of WhereMapping objects for conditional selection.
         :param limit:
         :param offset:
         :param order_by:
+        :param subquery_parameters: List of SubqueryParameters objects for executing subqueries.
         :return:
         """
         if type(where_mappings) == dict:
@@ -445,9 +452,16 @@ class DynamicQueryConstructor:
             ]
         if order_by is not None:
             order_by = order_by.build_order_by_clause(relation)
+        if subquery_parameters:
+            subquery_parameters = [
+                parameter.build_subquery(relation) for parameter in subquery_parameters
+            ]
+            subquery_parameters.append(load_only(*columns))
+            columns = [TABLE_REFERENCE[relation]]
 
         base_query = (
             lambda: select(*columns)
+            .options(*subquery_parameters)
             .where(*where_mappings)
             .order_by(order_by)
             .limit(limit)

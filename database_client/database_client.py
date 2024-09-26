@@ -895,7 +895,7 @@ class DatabaseClient:
         column_references = convert_to_column_reference(
             columns=columns, relation=relation_name
         )
-        query = DynamicQueryConstructor.create_single_relation_selection_query(
+        query = DynamicQueryConstructor.create_selection_query(
             relation_name,
             column_references,
             where_mappings,
