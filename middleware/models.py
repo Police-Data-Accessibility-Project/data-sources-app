@@ -1,10 +1,11 @@
 from datetime import datetime, date
 from typing import Optional, Literal, get_args
+from typing_extensions import Annotated
 
 from sqlalchemy import (
     Column,
     BigInteger,
-    text,
+    text as text_func,
     Text,
     String,
     ForeignKey,
@@ -83,9 +84,24 @@ JurisdictionType = Literal[
 ]
 
 
+text = Annotated[Text, None]
+timestamp_tz = Annotated[
+    TIMESTAMP, mapped_column(TIMESTAMP(timezone=True), server_default=func.now())
+]
+timestamp = Annotated[TIMESTAMP, None]
+daterange = Annotated[DATERANGE, None]
+str_255 = Annotated[String, 255]
+
+
 class Base(DeclarativeBase):
     __table_args__ = {"schema": "public"}
-    type_annotation_map = {text: Text}
+    type_annotation_map = {
+        text: Text,
+        date: DATE,
+        timestamp: TIMESTAMP,
+        daterange: DATERANGE,
+        str_255: String(255),
+    }
 
 
 class AgencySourceLink(Base):
@@ -120,9 +136,7 @@ class Agency(Base):
     name: Mapped[str]
     submitted_name: Mapped[Optional[str]]
     homepage_url: Mapped[Optional[str]]
-    jurisdiction_type: Mapped[JurisdictionType] = mapped_column(
-        Enum(*get_args(JurisdictionType)), name="jurisdiction_type"
-    )
+    jurisdiction_type: Mapped[JurisdictionType]
     state_iso: Mapped[Optional[str]]
     municipality: Mapped[Optional[str]]
     county_fips: Mapped[Optional[str]] = mapped_column(
@@ -138,16 +152,16 @@ class Agency(Base):
     zip_code: Mapped[Optional[str]]
     data_sources: Mapped[Optional[str]]
     no_web_presence: Mapped[bool] = mapped_column(server_default=false())
-    airtable_agency_last_modified: Mapped[TIMESTAMP] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=func.current_timestamp()
+    airtable_agency_last_modified: Mapped[timestamp_tz] = mapped_column(
+        server_default=func.current_timestamp()
     )
-    data_sources_last_updated: Mapped[Optional[DATE]] = mapped_column(DATE)
+    data_sources_last_updated: Mapped[Optional[date]]
     approved: Mapped[bool] = mapped_column(server_default=false())
     rejection_reason: Mapped[Optional[str]]
     last_approval_editor: Mapped[Optional[str]]
     submitter_contact: Mapped[Optional[str]]
-    agency_created: Mapped[TIMESTAMP] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=func.current_timestamp()
+    agency_created: Mapped[timestamp_tz] = mapped_column(
+        server_default=func.current_timestamp()
     )
     county_airtable_uid: Mapped[Optional[str]]
     location_id: Mapped[Optional[int]]
@@ -157,44 +171,38 @@ class County(Base):
     __tablename__ = "counties"
 
     fips: Mapped[str] = mapped_column(primary_key=True)
-    name: Mapped[Optional[Text]] = mapped_column(Text)
-    name_ascii: Mapped[Optional[Text]] = mapped_column(Text)
-    state_iso: Mapped[Optional[Text]] = mapped_column(Text)
+    name: Mapped[Optional[text]]
+    name_ascii: Mapped[Optional[text]]
+    state_iso: Mapped[Optional[text]]
     lat: Mapped[Optional[float]]
     lng: Mapped[Optional[float]]
     population: Mapped[Optional[int]]
-    agencies: Mapped[Optional[Text]] = mapped_column(Text)
-    airtable_uid: Mapped[Optional[Text]] = mapped_column(Text)
-    airtable_county_last_modified: Mapped[Optional[Text]] = mapped_column(Text)
-    airtable_county_created: Mapped[Optional[Text]] = mapped_column(Text)
+    agencies: Mapped[Optional[text]]
+    airtable_uid: Mapped[Optional[text]]
+    airtable_county_last_modified: Mapped[Optional[text]]
+    airtable_county_created: Mapped[Optional[text]]
 
 
 class DataRequest(Base):
     __tablename__ = "data_requests"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    submission_notes: Mapped[Optional[Text]] = mapped_column(Text)
-    request_status: Mapped[RequestStatus] = mapped_column(
-        Enum(*get_args(RequestStatus)), name="request_status", server_default="Intake"
-    )
-    submitter_email: Mapped[Optional[Text]] = mapped_column(Text)
-    location_described_submitted: Mapped[Optional[Text]] = mapped_column(Text)
-    archive_reason: Mapped[Optional[Text]] = mapped_column(Text)
-    date_created: Mapped[TIMESTAMP] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("now()")
-    )
-    date_status_last_changed: Mapped[Optional[TIMESTAMP]] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("now()")
-    )
+    submission_notes: Mapped[Optional[text]]
+    request_status: Mapped[RequestStatus] = mapped_column(server_default="Intake")
+    submitter_email: Mapped[Optional[text]]
+    location_described_submitted: Mapped[Optional[text]]
+    archive_reason: Mapped[Optional[text]]
+    date_created: Mapped[timestamp_tz]
+    date_status_last_changed: Mapped[Optional[timestamp_tz]]
     creator_user_id: Mapped[Optional[int]]
-    github_issue_url: Mapped[Optional[Text]] = mapped_column(Text)
-    internal_notes: Mapped[Optional[Text]] = mapped_column(Text)
+    github_issue_url: Mapped[Optional[text]]
+    internal_notes: Mapped[Optional[text]]
     record_types_required: Mapped[Optional[ARRAY[RecordType]]] = mapped_column(
         ARRAY(Enum(*get_args(RecordType), name="record_type"))
     )
-    pdap_response: Mapped[Optional[Text]] = mapped_column(Text)
-    coverage_range: Mapped[Optional[DATERANGE]] = mapped_column(DATERANGE)
-    data_requirements: Mapped[Optional[Text]] = mapped_column(Text)
+    pdap_response: Mapped[Optional[text]]
+    coverage_range: Mapped[Optional[daterange]]
+    data_requirements: Mapped[Optional[text]]
     withdrawn: Mapped[Optional[bool]] = mapped_column(server_default=false())
 
 
@@ -226,9 +234,9 @@ class DataSource(Base):
     supplying_entity: Mapped[Optional[str]]
     agency_originated: Mapped[Optional[bool]]
     agency_aggregation: Mapped[Optional[str]]
-    coverage_start: Mapped[Optional[DATE]] = mapped_column(DATE)
-    coverage_end: Mapped[Optional[DATE]] = mapped_column(DATE)
-    source_last_updated: Mapped[Optional[DATE]] = mapped_column(DATE)
+    coverage_start: Mapped[Optional[date]]
+    coverage_end: Mapped[Optional[date]]
+    source_last_updated: Mapped[Optional[date]]
     detail_level: Mapped[Optional[str]]
     number_of_records_available: Mapped[Optional[int]]
     size: Mapped[Optional[str]]
@@ -242,11 +250,11 @@ class DataSource(Base):
     originating_entity: Mapped[Optional[str]]
     retention_schedule: Mapped[Optional[str]]
     scraper_url: Mapped[Optional[str]]
-    data_source_created: Mapped[Optional[TIMESTAMP]] = mapped_column(
-        TIMESTAMP(timezone=True)
+    data_source_created: Mapped[Optional[timestamp_tz]] = mapped_column(
+        server_default=None
     )
-    airtable_source_last_modified: Mapped[Optional[TIMESTAMP]] = mapped_column(
-        TIMESTAMP(timezone=True)
+    airtable_source_last_modified: Mapped[Optional[timestamp_tz]] = mapped_column(
+        server_default=None
     )
     url_broken: Mapped[Optional[bool]]
     submission_notes: Mapped[Optional[str]]
@@ -263,7 +271,7 @@ class DataSource(Base):
     data_source_request: Mapped[Optional[str]]
     url_button: Mapped[Optional[str]]
     tags_other: Mapped[Optional[str]]
-    broken_source_url_as_of: Mapped[Optional[DATE]] = mapped_column(DATE)
+    broken_source_url_as_of: Mapped[Optional[date]]
     access_notes: Mapped[Optional[text]]
     url_status: Mapped[Optional[text]]
     approval_status: Mapped[Optional[text]]
@@ -289,8 +297,8 @@ class DataSourceArchiveInfo(Base):
         ForeignKey("public.data_sources.airtable_uid"), primary_key=True
     )
     update_frequency: Mapped[Optional[str]]
-    last_cached: Mapped[Optional[TIMESTAMP]] = mapped_column(TIMESTAMP)
-    next_cached: Mapped[Optional[TIMESTAMP]] = mapped_column(TIMESTAMP)
+    last_cached: Mapped[Optional[timestamp]]
+    next_cached: Mapped[Optional[timestamp]]
 
 
 class ExternalAccount(Base):
@@ -299,21 +307,17 @@ class ExternalAccount(Base):
 
     row_id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
-    account_type: Mapped[ExternalAccountType] = mapped_column(
-        Enum(*get_args(ExternalAccountType)), name="account_type"
-    )
-    account_identifier: Mapped[str] = mapped_column(String(255))
-    linked_at: Mapped[Optional[TIMESTAMP]] = mapped_column(
-        TIMESTAMP, server_default=text("now()")
-    )
+    account_type: Mapped[ExternalAccountType]
+    account_identifier: Mapped[str_255]
+    linked_at: Mapped[Optional[timestamp]] = mapped_column(server_default=func.now())
 
 
 class LinkDataSourceDataRequest(Base):
     __tablename__ = "link_data_sources_data_requests"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    source_id: Mapped[Text] = mapped_column(
-        Text, ForeignKey("public.data_sources.airtable_uid")
+    source_id: Mapped[text] = mapped_column(
+        ForeignKey("public.data_sources.airtable_uid")
     )
     request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
 
@@ -322,27 +326,27 @@ class RecordCategory(Base):
     __tablename__ = "record_categories"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(255))
-    description: Mapped[Optional[Text]] = mapped_column(Text)
+    name: Mapped[str_255]
+    description: Mapped[Optional[text]]
 
 
 class RecordType(Base):
     __tablename__ = "record_types"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(255))
+    name: Mapped[str_255]
     category_id: Mapped[int] = mapped_column(ForeignKey("public.record_categories.id"))
-    description: Mapped[Optional[Text]] = mapped_column(Text)
+    description: Mapped[Optional[text]]
 
 
 class ResetToken(Base):
     __tablename__ = "reset_tokens"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    email: Mapped[Optional[Text]] = mapped_column(Text)
-    token: Mapped[Optional[Text]] = mapped_column(Text)
-    create_date: Mapped[TIMESTAMP] = mapped_column(
-        TIMESTAMP, server_default=func.current_timestamp()
+    email: Mapped[Optional[text]]
+    token: Mapped[Optional[text]]
+    create_date: Mapped[timestamp] = mapped_column(
+        server_default=func.current_timestamp()
     )
 
 
@@ -350,26 +354,22 @@ class TestTable(Base):
     __tablename__ = "test_table"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    pet_name: Mapped[Optional[str]] = mapped_column(String(255))
-    species: Mapped[Optional[str]] = mapped_column(String(255))
+    pet_name: Mapped[Optional[str_255]]
+    species: Mapped[Optional[str_255]]
 
 
 class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    created_at: Mapped[Optional[TIMESTAMP]] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("now()")
-    )
-    updated_at: Mapped[Optional[TIMESTAMP]] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("now()")
-    )
-    email: Mapped[Text] = mapped_column(Text, unique=True)
-    password_digest: Mapped[Optional[Text]] = mapped_column(Text)
+    created_at: Mapped[Optional[timestamp_tz]]
+    updated_at: Mapped[Optional[timestamp_tz]]
+    email: Mapped[text] = mapped_column(unique=True)
+    password_digest: Mapped[Optional[text]]
     api_key: Mapped[Optional[str]] = mapped_column(
-        server_default=text("generate_api_key()")
+        server_default=text_func("generate_api_key()")
     )
-    role: Mapped[Optional[Text]] = mapped_column(Text)
+    role: Mapped[Optional[text]]
 
 
 TABLE_REFERENCE = {
@@ -382,6 +382,7 @@ TABLE_REFERENCE = {
     "test_table": TestTable,
     "users": User,
 }
+
 
 def convert_to_column_reference(columns: list[str], relation: str) -> list[Column]:
     """Converts a list of column strings to SQLAlchemy column references.
