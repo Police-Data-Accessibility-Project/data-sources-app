@@ -34,7 +34,7 @@ def test_user_post_query(test_user_post_query_mocks):
     mock.generate_password_hash.return_value = mock.password_digest
     user_post_results(mock.db_client, mock.dto)
     mock.generate_password_hash.assert_called_once_with(mock.dto.password)
-    mock.db_client.add_new_user.assert_called_once_with(
+    mock.db_client.create_new_user.assert_called_once_with(
         mock.dto.email, mock.password_digest
     )
     mock.message_response.assert_called_once_with(
@@ -116,9 +116,9 @@ def test_try_logging_in_unsuccessful():
 
 def test_user_post_results_duplicate_user_error(test_user_post_query_mocks):
     mock = test_user_post_query_mocks
-    mock.db_client.add_new_user.side_effect = DuplicateUserError
+    mock.db_client.create_new_user.side_effect = DuplicateUserError
     user_post_results(mock.db_client, mock.dto)
-    mock.db_client.add_new_user.assert_called_once_with(
+    mock.db_client.create_new_user.assert_called_once_with(
         mock.dto.email, mock.generate_password_hash.return_value
     )
     mock.message_response.assert_called_once_with(

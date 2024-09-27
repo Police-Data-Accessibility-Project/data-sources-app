@@ -132,7 +132,7 @@ class DatabaseClient:
         results = self.session.execute(query())
         return results
 
-    def add_new_user(self, email: str, password_digest: str) -> Optional[int]:
+    def create_new_user(self, email: str, password_digest: str) -> Optional[int]:
         """
         Adds a new user to the database.
         :param email:
@@ -748,6 +748,11 @@ class DatabaseClient:
         _create_entry_in_table,
         table_name="link_data_sources_data_requests",
         column_to_return="id",
+    )
+
+    create_user_followed_search_link = partialmethod(
+        _create_entry_in_table,
+        table_name=Relations.LINK_USER_FOLLOWED_LOCATION.value,
     )
 
     add_new_data_source = partialmethod(
