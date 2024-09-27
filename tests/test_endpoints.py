@@ -32,13 +32,13 @@ from resources.LinkToGithub import LinkToGithub
 from resources.Login import Login
 from resources.LoginWithGithub import LoginWithGithub
 from resources.Permissions import Permissions
-from resources.QuickSearch import QuickSearch
 from resources.RefreshSession import RefreshSession
 from resources.RequestResetPassword import RequestResetPassword
 from resources.ResetPassword import ResetPassword
 from resources.ResetTokenValidation import ResetTokenValidation
 from resources.Search import Search
 from resources.TypeaheadSuggestions import TypeaheadLocations, TypeaheadAgencies
+from resources.UniqueURLChecker import UniqueURLChecker
 from resources.User import User
 from tests.fixtures import client_with_mock_db, ClientWithMockDB
 
@@ -88,7 +88,6 @@ test_parameters = [
     TestParameters(RequestResetPassword, "/request-reset-password", [POST]),
     TestParameters(ResetPassword, "/reset-password", [POST]),
     TestParameters(ResetTokenValidation, "/reset-token-validation", [POST]),
-    TestParameters(QuickSearch, "/quick-search/<search>/<location>", [GET]),
     TestParameters(Archives, "/archives", [GET, PUT]),
     TestParameters(DataSources, "/data-sources", [GET, POST]),
     # This endpoint no longer works because of the other data source endpoint
@@ -121,8 +120,10 @@ test_parameters = [
     TestParameters(
         DataRequestsById, "/data-requests/<data_request_id>", [GET, PUT, DELETE]
     ),
-    TestParameters(HomepageSearchCache, "/homepage-search-cache", [GET, POST]),
+    # Commented out until: https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/458
+    # TestParameters(HomepageSearchCache, "/homepage-search-cache", [GET, POST]),
     TestParameters(TypeaheadAgencies, "/typeahead/agencies", [GET]),
+    TestParameters(UniqueURLChecker, "/check/unique-url", [GET]),
 ]
 
 

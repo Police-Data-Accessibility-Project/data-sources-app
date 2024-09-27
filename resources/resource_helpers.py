@@ -185,23 +185,25 @@ def create_search_model(namespace: Namespace) -> Model:
     return search_result_outer_model
 
 
-def create_outer_model(namespace: Namespace, inner_model: Model, name: str) -> Model:
-    return namespace.model(
-        name,
-        {
-            "count": fields.Integer(
-                required=True,
-                description=f"Count of {inner_model.name} items",
-                attribute="count",
-            ),
-            "data": fields.List(
-                fields.Nested(
-                    inner_model,
-                    required=True,
-                    description=f"List of {inner_model.name} items",
-                ),
-                attribute="data",
-            ),
-        },
-    )
+def column_permissions_description(
+    head_description: str,
+    sub_description: str,
+    column_permissions_str_table: str
+) -> str:
+    """
+    Creates a formatted description for column permissions
+    :param head_description:
+    :param sub_description:
+    :param column_permissions_str_table:
+    :return:
+    """
+    return f"""
+    {head_description}
 
+{sub_description}
+
+## COLUMN PERMISSIONS    
+
+{column_permissions_str_table}
+
+    """

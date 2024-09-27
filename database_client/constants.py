@@ -1,4 +1,4 @@
-from middleware.models import (
+from database_client.models import (
     Agency,
     DataRequest,
     DataSource,
@@ -7,6 +7,12 @@ from middleware.models import (
     ResetToken,
     TestTable,
     User,
+    AgencyExpanded,
+    USState,
+    County,
+    Locality,
+    Location,
+    LocationExpanded,
 )
 
 AGENCY_APPROVED_COLUMNS = [

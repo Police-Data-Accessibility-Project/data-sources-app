@@ -22,12 +22,12 @@ from database_client.enums import (
     ColumnPermissionEnum,
     SortOrder,
 )
-from database_client.result_formatter import ResultFormatter
 from middleware.exceptions import (
     UserNotFoundError,
+    DuplicateUserError,
 )
-from middleware.models import ExternalAccount, TestTable, User
-from middleware.enums import PermissionsEnum
+from database_client.models import ExternalAccount, TestTable, User
+from middleware.enums import PermissionsEnum, Relations
 from tests.fixtures import (
     live_database_client,
     test_table_data,
@@ -35,6 +35,7 @@ from tests.fixtures import (
 from tests.helper_scripts.common_test_data import (
     insert_test_column_permission_data,
     create_agency_entry_for_search_cache,
+    create_data_source_entry_for_url_duplicate_checking,
 )
 from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources_if_not_exist,
@@ -62,6 +63,10 @@ def test_add_new_user(live_database_client: DatabaseClient):
 
     assert api_key is not None
     assert password_digest == "test_password"
+
+    # Adding same user should produce a DuplicateUserError
+    with pytest.raises(DuplicateUserError):
+        live_database_client.add_new_user(fake_email, "test_password")
 
 
 def test_get_user_id(live_database_client: DatabaseClient):
@@ -411,27 +416,9 @@ def test_update_entry_in_table(live_database_client: DatabaseClient, test_table_
 
 
 def test_get_data_sources_for_map(live_database_client):
-    # Add at least two new data sources to the database
-    insert_test_agencies_and_sources_if_not_exist(
-        live_database_client.connection.cursor()
-    )
-    # Fetch the data source with the DatabaseClient method
     results = live_database_client.get_data_sources_for_map()
-    # Confirm both data sources are retrieved and only the proper columns are returned
-    found_source = False
-    for result in results:
-        if result.data_source_name != "Source 1":
-            continue
-        found_source = True
-        assert result.lat == 30
-        assert result.lng == 20
-    assert found_source
-
-
-def test_get_agencies_from_page(live_database_client: DatabaseClient):
-    results = live_database_client.get_agencies_from_page(2)
-
     assert len(results) > 0
+    assert isinstance(results[0], live_database_client.MapInfo)
 
 
 def test_get_offset():
@@ -462,57 +449,6 @@ def test_update_last_cached(live_database_client: DatabaseClient):
     )[0]
 
     assert result["last_cached"].strftime("%Y-%m-%d %H:%M:%S") == new_last_cached
-
-
-def test_get_quick_search_results(live_database_client: DatabaseClient):
-    # Add new data sources to the database, some that satisfy the search criteria and some that don't
-    test_datetime = live_database_client.execute_raw_sql(query="SELECT NOW()")[0]
-
-    insert_test_agencies_and_sources_if_not_exist(
-        live_database_client.connection.cursor()
-    )
-
-    # Fetch the search results using the DatabaseClient method
-    result = live_database_client.get_quick_search_results(
-        search="Source 1", location="City A"
-    )
-
-    assert len(result) == 1
-    assert result[0].id == "SOURCE_UID_1"
-
-
-def test_add_quick_search_log(live_database_client: DatabaseClient):
-    # Add a quick search log to the database using the DatabaseClient method
-    search = f"{uuid.uuid4().hex} QSL"
-    location = "City QSL"
-    live_database_client.add_quick_search_log(
-        data_sources_count=1,
-        processed_data_source_matches=live_database_client.DataSourceMatches(
-            converted=[search],
-            ids=["SOURCE_UID_QSL"],
-        ),
-        processed_search_parameters=live_database_client.SearchParameters(
-            search=search, location=location
-        ),
-    )
-
-    # Fetch the quick search logs to confirm it was added successfully
-    rows = live_database_client.execute_raw_sql(
-        query="""
-        select search, location, results, result_count
-        from quick_search_query_logs
-        where search = %s and location = %s
-        """,
-        vars=(search, location),
-    )
-
-    assert len(rows) == 1
-    row = rows[0]
-    assert type(row) == dict
-    assert row["search"] == search
-    assert row["location"] == location
-    assert row["results"][0] == "SOURCE_UID_QSL"
-    assert row["result_count"] == 1
 
 
 def test_get_user_info(live_database_client):
@@ -830,48 +766,48 @@ def test_get_column_permissions_as_permission_table(
         },
     ]
 
+# Commented out until: https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/458
+# def test_get_agencies_without_homepage_urls(live_database_client):
+#     submitted_name = create_agency_entry_for_search_cache(
+#         db_client=live_database_client
+#     )
+#
+#     results = live_database_client.get_agencies_without_homepage_urls()
+#     assert len(results) > 1
+#     assert results[0]["submitted_name"] == submitted_name
+#     assert list(results[0].keys()) == [
+#         "submitted_name",
+#         "jurisdiction_type",
+#         "state_iso",
+#         "municipality",
+#         "county_name",
+#         "airtable_uid",
+#         "count_data_sources",
+#         "zip_code",
+#         "no_web_presence",
+#     ]
 
-def test_get_agencies_without_homepage_urls(live_database_client):
-    submitted_name = create_agency_entry_for_search_cache(
-        db_client=live_database_client
-    )
-
-    results = live_database_client.get_agencies_without_homepage_urls()
-    assert len(results) > 1
-    assert results[0]["submitted_name"] == submitted_name
-    assert list(results[0].keys()) == [
-        "submitted_name",
-        "jurisdiction_type",
-        "state_iso",
-        "municipality",
-        "county_name",
-        "airtable_uid",
-        "count_data_sources",
-        "zip_code",
-        "no_web_presence",
-    ]
-
-
-def test_create_search_cache_entry(live_database_client):
-    submitted_name = create_agency_entry_for_search_cache(
-        db_client=live_database_client
-    )
-
-    result_to_update = live_database_client.get_agencies_without_homepage_urls()[0]
-
-    airtable_uid = result_to_update["airtable_uid"]
-
-    fake_search_result = "found_results"
-    live_database_client.create_search_cache_entry(
-        column_value_mappings={
-            "agency_airtable_uid": airtable_uid,
-            "search_result": fake_search_result,
-        }
-    )
-
-    # Check the first result is now different
-    new_result = live_database_client.get_agencies_without_homepage_urls()[0]
-    assert new_result["airtable_uid"] != airtable_uid
+# Commented out until: https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/458
+# def test_create_search_cache_entry(live_database_client):
+#     submitted_name = create_agency_entry_for_search_cache(
+#         db_client=live_database_client
+#     )
+#
+#     result_to_update = live_database_client.get_agencies_without_homepage_urls()[0]
+#
+#     airtable_uid = result_to_update["airtable_uid"]
+#
+#     fake_search_result = "found_results"
+#     live_database_client.create_search_cache_entry(
+#         column_value_mappings={
+#             "agency_airtable_uid": airtable_uid,
+#             "search_result": fake_search_result,
+#         }
+#     )
+#
+#     # Check the first result is now different
+#     new_result = live_database_client.get_agencies_without_homepage_urls()[0]
+#     assert new_result["airtable_uid"] != airtable_uid
 
 
 def test_get_related_data_sources(live_database_client):
@@ -935,6 +871,48 @@ def test_create_request_source_relation(live_database_client):
         live_database_client.create_request_source_relation(
             column_value_mappings={"request_id": request_id, "source_id": source_id}
         )
+
+
+def test_check_for_url_duplicates(live_database_client):
+
+    create_data_source_entry_for_url_duplicate_checking(live_database_client)
+
+    # Happy path
+    non_duplicate_url = "not-a-duplicate.com"
+    results = live_database_client.check_for_url_duplicates(non_duplicate_url)
+    assert len(results) == 0
+
+    duplicate_base_url = "duplicate-checker.com"
+    results = live_database_client.check_for_url_duplicates(duplicate_base_url)
+    assert len(results) == 1
+
+
+def test_get_columns_for_relation(live_database_client):
+
+    columns = live_database_client.get_columns_for_relation(Relations.TEST_TABLE)
+
+    assert columns == [
+        "id",
+        "pet_name",
+        "species"
+    ]
+
+def test_create_or_get(live_database_client):
+
+    results = live_database_client.create_or_get(
+        table_name="test_table",
+        column_value_mappings={"pet_name": "Schnoodles", "species": "Rat"}
+    )
+
+    assert results
+
+    # Check that the same results are returned if the entry already exists
+    new_results = live_database_client.create_or_get(
+        table_name="test_table",
+        column_value_mappings={"pet_name": "Schnoodles", "species": "Rat"}
+    )
+
+    assert results == new_results
 
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts

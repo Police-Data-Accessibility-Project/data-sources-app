@@ -8,10 +8,35 @@ from flask_restx import abort
 
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from database_client.helper_functions import get_db_client
-from middleware.exceptions import InvalidAPIKeyException, InvalidAuthorizationHeaderException
+from middleware.exceptions import (
+    InvalidAPIKeyException,
+    InvalidAuthorizationHeaderException,
+)
 from middleware.primary_resource_logic.permissions_logic import get_user_permissions
 
 JWT_OR_API_KEY_NEEDED_ERROR_MESSAGE = "Please provide an API key with the format 'Basic <api_key>' OR an access token with the format 'Bearer <access_token>' in the request header in the 'Authorization' key "
+
+
+@dataclass
+class AuthenticationInfo:
+    """
+    A dataclass providing information on how the user was authenticated
+    """
+
+    allowed_access_methods: list[AccessTypeEnum]
+    restrict_to_permissions: Optional[list[PermissionsEnum]] = None
+
+WRITE_ONLY_AUTH_INFO = AuthenticationInfo(
+    allowed_access_methods=[AccessTypeEnum.JWT],
+    restrict_to_permissions=[PermissionsEnum.DB_WRITE],
+)
+# Allow owners of a resource to use the endpoint as well, instead of only admin-level users
+OWNER_WRITE_ONLY_AUTH_INFO = AuthenticationInfo(
+    allowed_access_methods=[AccessTypeEnum.JWT],
+)
+GET_AUTH_INFO = AuthenticationInfo(
+    allowed_access_methods=[AccessTypeEnum.API_KEY, AccessTypeEnum.JWT],
+)
 
 
 @dataclass
@@ -23,6 +48,7 @@ class AccessInfo:
     user_email: str
     access_type: AccessTypeEnum
     permissions: list[PermissionsEnum] = None
+
 
 def get_access_info_from_jwt() -> Optional[AccessInfo]:
     jwt_in_request = verify_jwt_in_request()
@@ -39,7 +65,6 @@ def get_jwt_access_info_with_permissions(user_email):
     return AccessInfo(
         user_email=user_email, access_type=AccessTypeEnum.JWT, permissions=permissions
     )
-
 
 
 def get_user_email_from_api_key() -> Optional[str]:
@@ -81,12 +106,14 @@ def get_api_key_from_request_header() -> str:
 
 
 def permission_denied_abort() -> None:
-    abort(code=HTTPStatus.FORBIDDEN, message="You do not have permission to access this endpoint")
+    abort(
+        code=HTTPStatus.FORBIDDEN,
+        message="You do not have permission to access this endpoint",
+    )
 
 
 def check_permissions_with_access_info(
-        access_info: AccessInfo,
-        permissions: list[PermissionsEnum]
+    access_info: AccessInfo, permissions: list[PermissionsEnum]
 ) -> None:
     if access_info is None:
         return permission_denied_abort()
@@ -94,10 +121,14 @@ def check_permissions_with_access_info(
         if permission not in access_info.permissions:
             return permission_denied_abort()
 
-def get_authentication_error_message(allowed_access_methods: list[AccessTypeEnum]) -> str:
+
+def get_authentication_error_message(
+    allowed_access_methods: list[AccessTypeEnum],
+) -> str:
     f"""
     Please provide a valid form of one of the following: {[access_method.value for access_method in allowed_access_methods]} 
     """
+
 
 def get_authentication(
     allowed_access_methods: list[AccessTypeEnum],
@@ -118,15 +149,22 @@ def get_authentication(
         return access_info
 
     # Try to authenticate using JWT if allowed
-    access_info = try_jwt_authentication(allowed_access_methods, restrict_to_permissions)
+    access_info = try_jwt_authentication(
+        allowed_access_methods, restrict_to_permissions
+    )
     if access_info:
         return access_info
 
     # If neither method succeeds, abort with an unauthorized error
-    abort(HTTPStatus.UNAUTHORIZED, message=get_authentication_error_message(allowed_access_methods))
+    abort(
+        HTTPStatus.UNAUTHORIZED,
+        message=get_authentication_error_message(allowed_access_methods),
+    )
 
 
-def try_api_key_authentication(allowed_access_methods: list[AccessTypeEnum]) -> Optional[AccessInfo]:
+def try_api_key_authentication(
+    allowed_access_methods: list[AccessTypeEnum],
+) -> Optional[AccessInfo]:
     """Helper function to attempt API key authentication."""
     if AccessTypeEnum.API_KEY in allowed_access_methods:
         user_email = get_user_email_from_api_key()

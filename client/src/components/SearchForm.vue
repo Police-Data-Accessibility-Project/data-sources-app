@@ -1,69 +1,35 @@
 <template>
+	<div
+		class="col-span-1 flex flex-col gap-6 mt-8 @md:col-span-2 @lg:col-span-3 @md:flex-row @md:gap-0"
+	>
+		<TypeaheadInput
+			:id="TYPEAHEAD_ID"
+			:items="items"
+			:placeholder="placeholder ?? 'Enter a place'"
+			@select-item="onSelectRecord"
+			@on-input="fetchTypeaheadResults"
+		>
+			<!-- Pass label as slot to typeahead -->
+			<template #label>
+				<label class="col-span-2" :for="TYPEAHEAD_ID">
+					<h4 class="uppercase">Search location</h4>
+				</label>
+			</template>
+		</TypeaheadInput>
+	</div>
+
+	<h4 class="w-full mt-8">Types of data</h4>
 	<Form
 		id="pdap-data-sources-search"
 		ref="formRef"
-		class="grid grid-cols-1 auto-rows-auto max-w-full gap-4"
-		:class="{
-			'md:grid-cols-2 lg:grid-cols-3  gap-4': !isSingleColumn,
-		}"
+		class="grid grid-cols-1 auto-rows-auto max-w-full gap:0 @md:gap-4 @md:grid-cols-2 @lg:grid-cols-3 gap-0"
 		:schema="SCHEMA"
 		@change="onChange"
 		@submit="submit"
 	>
-		<div
-			class="col-span-1 flex flex-col gap-6"
-			:class="{
-				'md:col-span-2 lg:col-span-3 md:flex-row md:gap-0': !isSingleColumn,
-			}"
-		>
-			<TypeaheadInput
-				:id="TYPEAHEAD_ID"
-				class=""
-				:items="items"
-				placeholder="Enter a place"
-				@select-item="onSelectRecord"
-				@on-input="fetchTypeaheadResults"
-			>
-				<!-- Pass label as slot to typeahead -->
-				<template #label>
-					<label class="col-span-2 mt-6 mb-4" :for="TYPEAHEAD_ID">
-						From where? Example,
-						<router-link
-							:to="{
-								path: '/search/results',
-								query: {
-									state: 'Pennsylvania',
-									county: 'Allegheny',
-									locality: 'Pittsburgh',
-								},
-							}"
-						>
-							Pittsburgh, Allegheny, PA
-						</router-link>
-						or
-						<router-link
-							:to="{
-								path: '/search/results',
-								query: {
-									state: 'Pennsylvania',
-								},
-							}"
-						>
-							Pennsylvania
-						</router-link>
-					</label>
-				</template>
-			</TypeaheadInput>
-
-			<Button
-				class="max-h-[calc(var(--typeahead-input-height)+10px)] self-end"
-				:disabled="!selectedRecord"
-				intent="primary"
-				type="submit"
-			>
-				Search Data
-			</Button>
-		</div>
+		<Button :disabled="!selectedRecord" intent="primary" type="submit">
+			{{ buttonCopy ?? 'Search' }}
+		</Button>
 	</Form>
 </template>
 
@@ -77,9 +43,12 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-const { isSingleColumn } = defineProps({
-	isSingleColumn: Boolean,
+const { buttonCopy } = defineProps({
+	buttonCopy: String,
+	placeholder: String,
 });
+
+const emit = defineEmits('searched');
 
 /* constants */
 const TYPEAHEAD_ID = 'pdap-search-typeahead';
@@ -142,6 +111,7 @@ function submit(values) {
 	const params = new URLSearchParams(buildParams(values));
 	const path = `/search/results?${params.toString()}`;
 	router.push(path);
+	emit('searched');
 }
 
 function buildParams(values) {
@@ -208,7 +178,7 @@ const fetchTypeaheadResults = _debounce(
 				const {
 					data: { suggestions },
 				} = await axios.get(
-					`${import.meta.env.VITE_VUE_API_BASE_URL}/search/typeahead-suggestions`,
+					`${import.meta.env.VITE_VUE_API_BASE_URL}/typeahead/locations`,
 					{
 						headers: {
 							Authorization: import.meta.env.VITE_ADMIN_API_KEY,

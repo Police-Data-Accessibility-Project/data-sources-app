@@ -73,6 +73,12 @@ def add_description_info_from_validators(
 
 
 # region Classes
+def add_description_info_from_enum(field_value: marshmallow_fields.Enum, description: str):
+    enum_class = field_value.enum
+    description += f" Must be one of: {[x.value for x in enum_class]}."
+    return description
+
+
 class FieldInfo:
 
     def __init__(
@@ -100,6 +106,8 @@ class FieldInfo:
         field_value: marshmallow_fields,
     ) -> str:
         description = _get_required_argument("description", metadata, schema_class)
+        if isinstance(field_value, marshmallow_fields.Enum):
+            description = add_description_info_from_enum(field_value, description)
         return add_description_info_from_validators(field_value, description)
 
     def _map_field_type(self, field_type: type[MarshmallowFields]) -> Type[RestxFields]:
@@ -217,7 +225,9 @@ class RestxModelBuilder(RestxBuilder):
                 attribute=fi.field_name,
             )
 
-    def build_model(self) -> Model:
+    def build_model(self) -> Optional[Model]:
+        if self.model_dict == {}:
+            return None
         return self.namespace.model(self.model_name, self.model_dict)
 
     def _build_nested_field_as_model(self, fi: FieldInfo):

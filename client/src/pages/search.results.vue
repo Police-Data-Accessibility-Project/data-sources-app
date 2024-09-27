@@ -1,63 +1,81 @@
 <template>
-	<main :class="{ content: !isLoading && !error, loading: isLoading }">
-		<Spinner :show="isLoading" :size="64" text="Fetching search results..." />
-
-		<div v-if="!isLoading && error">
+	<main
+		class="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-4 xl:gap-x-8 max-w-[1800px] mx-auto"
+	>
+		<template v-if="!isLoading && error">
 			<h1>Error loading search results</h1>
 			<p>Please refresh the page to try again.</p>
-		</div>
+		</template>
 
 		<!-- Search results -->
-		<section class="results">
+		<section class="w-full h-full">
 			<div class="flex flex-col sm:flex-row sm:justify-between mb-4">
-				<h1>{{ searchData.results.count }} Search Results</h1>
+				<div>
+					<h1>Results for {{ getLocationText(searchData) }}</h1>
+					<nav
+						class="flex gap-5 mb-4 [&>*]:text-[.72rem] [&>*]:xs:text-med [&>*]:sm:text-lg"
+					>
+						<span class="text-neutral-500">Jump to:</span>
+						<a
+							v-for="locale in ALL_LOCATION_TYPES"
+							:key="`${locale} anchor`"
+							class="capitalize"
+							:class="{
+								'text-neutral-500 pointer-events-none cursor-auto':
+									!searchData.results[locale].count,
+							}"
+							:href="`#${locale}`"
+							@click="
+								() =>
+									// If route hash already includes locale, handle scroll manually
+									route.hash.includes(locale) &&
+									searchResultsRef.handleScrollTo()
+							"
+						>
+							{{ getAnchorLinkText(locale) }}
+							<span v-if="searchData.results[locale].count">
+								({{ searchData.results[locale].count }})
+							</span>
+						</a>
+					</nav>
+				</div>
 				<Button
-					class="max-h-12"
+					class="hidden sm:block max-h-12"
 					intent="secondary"
-					@click="() => console.log('New source button pressed')"
+					@click="() => console.log('Follow button pressed')"
 				>
-					Submit a Source
+					Follow
 				</Button>
 			</div>
 			<SearchResults
-				:results="searchData.results.data"
-				:most-specific-location-searched="searchData.searched"
+				v-if="!error"
+				ref="searchResultsRef"
+				:results="searchData.results"
+				:is-loading="isLoading"
 			/>
 		</section>
 
-		<!-- Open requests -->
-		<section class="requests">
-			<div class="flex flex-col mb-4 sm:flex-row sm:justify-between">
-				<h2>Open Requests</h2>
-				<Button
-					class="max-h-12"
-					intent="secondary"
-					@click="() => console.log('New request button pressed')"
-				>
-					New Request
-				</Button>
-			</div>
-			<div
-				class="w-full h-[200px] border-solid border-neutral-300 border-2 p-4"
-			>
-				TBD
-			</div>
-		</section>
-
 		<!-- Aside for handling filtering and saved searches -->
-		<aside class="sidebar w-full @container">
-			<h5 class="w-full not-italic">
-				Get notified about updates to sources and requests:
-			</h5>
+		<aside
+			class="w-full row-start-1 row-end-2 xl:col-start-2 xl:col-end-3 relative z-20"
+		>
 			<Button
+				class="mb-2 w-full xl:hidden"
 				intent="secondary"
-				@click="() => console.log('Get notified button pressed')"
+				@click="isSearchShown = !isSearchShown"
 			>
-				Follow {{ getFollowText(searchData) }}
+				{{ isSearchShown ? 'Hide search' : 'Show search' }}
 			</Button>
 
-			<h5 class="w-full not-italic mt-12">Search again:</h5>
-			<SearchForm :is-single-column="true" />
+			<transition>
+				<div v-if="isSearchShown" class="@container">
+					<SearchForm
+						:placeholder="getLocationText(searchData)"
+						button-copy="Update search"
+						@searched="onWindowWidthSetIsSearchShown"
+					/>
+				</div>
+			</transition>
 		</aside>
 	</main>
 </template>
@@ -66,81 +84,97 @@
 // Data loader
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic';
 import { useSearchStore } from '@/stores/search';
-import statesToAbbreviations from '@/util/statesToAbbreviations';
+import { NavigationResult } from 'unplugin-vue-router/runtime';
+import { onMounted, onUnmounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
+import _isEqual from 'lodash/_baseIsEqual';
+import { ALL_LOCATION_TYPES } from '@/util/constants';
+import {
+	getMostNarrowSearchLocationWithResults,
+	groupResultsByAgency,
+	normalizeLocaleForHash,
+	getLocationText,
+	getAnchorLinkText,
+} from '@/util/searchResults';
 
 const { search } = useSearchStore();
+const results = ref(null);
+const params = ref(null);
 
 export const useSearchData = defineBasicLoader(
 	'/search/results',
 	async (route) => {
-		const results = await search(route.query);
-		const searched = getMostNarrowSearchLocation(route.query);
+		const searched = getMostNarrowSearchLocationWithResults(route.query);
+		// If query matches cached query, return cached results
+		if (_isEqual(params.value, route.query) && results.value) {
+			return {
+				results: groupResultsByAgency(results.value),
+				searched,
+				params: route.query,
+			};
+		}
+
+		// Otherwise, fetch, cache, and return
+		const res = await search(route.query);
+		results.value = res;
+		params.value = route.query;
+
+		// Initial fetch - get hash
+		const hash = normalizeLocaleForHash(searched, res);
+		if (!route.hash) {
+			return new NavigationResult({ ...route, hash: `#${hash}` });
+		}
+
 		return {
-			results,
+			results: groupResultsByAgency(res),
 			searched,
 			params: route.query,
 		};
 	},
 );
-
-function getMostNarrowSearchLocation(params) {
-	if ('locality' in params) return 'locality';
-	if ('county' in params) return 'county';
-	if ('state' in params) return 'state';
-	if ('federal' in params) return 'federal';
-}
 </script>
 
 <script setup>
-import { Button, Spinner } from 'pdap-design-system';
+import { Button } from 'pdap-design-system';
 import SearchResults from '@/components/SearchResults.vue';
 import SearchForm from '@/components/SearchForm.vue';
 
 const { data: searchData, isLoading, error } = useSearchData();
+const route = useRoute();
+const searchResultsRef = ref();
+const isSearchShown = ref(false);
 
-function getFollowText({ searched, params }) {
-	switch (searched) {
-		case 'locality':
-			return `${params.locality}, ${statesToAbbreviations.get(params.state)}`;
-		case 'county':
-			return `${params.county} ${statesToAbbreviations.get(params.state) === 'LA' ? 'Parish' : 'County'}, ${params.state}`;
-		case 'state':
-			return params.state;
-		default:
-			return 'Federal';
-	}
+// lifecycle methods
+onMounted(() => {
+	onWindowWidthSetIsSearchShown();
+	window.addEventListener('resize', onWindowWidthSetIsSearchShown);
+});
+
+onUnmounted(() => {
+	window.removeEventListener('resize', onWindowWidthSetIsSearchShown);
+});
+
+// Utilities and handlers
+function onWindowWidthSetIsSearchShown() {
+	if (window.innerWidth > 1280) isSearchShown.value = true;
+	else isSearchShown.value = false;
 }
 </script>
 
 <style scoped>
-.loading {
-	@apply flex items-center justify-center;
+h1 {
+	/* TODO: decouple heading styling from heading level in design-system (or at least provide classes that can perform these overrides more efficiently) */
+	@apply text-brand-wine dark:text-neutral-500 font-semibold text-lg tracking-[.07em] uppercase;
 }
 
-.content {
-	@apply grid gap-4 md:gap-x-8;
-	grid-template-areas: 'results' 'requests' 'sidebar';
+.v-enter-active,
+.v-leave-active {
+	transition: opacity 0.5s ease;
 }
 
-.results {
-	grid-area: results;
-}
-
-.requests {
-	grid-area: requests;
-}
-
-.sidebar {
-	grid-area: sidebar;
-}
-
-@media (min-width: 1024px) {
-	.content {
-		grid-template-areas:
-			'results sidebar'
-			'requests sidebar';
-		grid-template-columns: 1fr minmax(25%, 30%);
-	}
+.v-enter-from,
+.v-leave-to {
+	opacity: 0;
 }
 </style>
 

@@ -1,7 +1,10 @@
+from typing import Optional
+
 from flask import Response
 
 from middleware.column_permission_logic import RelationRoleParameters, check_has_permission_to_edit_columns
 from middleware.common_response_formatting import message_response
+from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.supporting_classes import MiddlewareParameters, PutPostBase
 
 
@@ -12,12 +15,14 @@ class PutLogic(PutPostBase):
         middleware_parameters: MiddlewareParameters,
         entry: dict,
         entry_id: str,
+        pre_database_client_method_with_parameters: Optional[DeferredFunction] = None,
         relation_role_parameters: RelationRoleParameters = RelationRoleParameters(),
     ):
         super().__init__(
             middleware_parameters=middleware_parameters,
             entry=entry,
             relation_role_parameters=relation_role_parameters,
+            pre_database_client_method_with_parameters=pre_database_client_method_with_parameters
         )
         self.entry_id = entry_id
 
@@ -35,6 +40,7 @@ def put_entry(
     middleware_parameters: MiddlewareParameters,
     entry: dict,
     entry_id: str,
+    pre_update_method_with_parameters: Optional[DeferredFunction] = None,
     relation_role_parameters: RelationRoleParameters = RelationRoleParameters(),
 ) -> Response:
 
@@ -43,22 +49,6 @@ def put_entry(
         entry=entry,
         entry_id=entry_id,
         relation_role_parameters=relation_role_parameters,
+        pre_database_client_method_with_parameters=pre_update_method_with_parameters
     )
     return put_logic.execute()
-
-    # mp = middleware_parameters
-    # relation_role = relation_role_parameters.get_relation_role_from_parameters(
-    #     access_info=mp.access_info,
-    # )
-    # check_has_permission_to_edit_columns(
-    #     db_client=mp.db_client,
-    #     relation=mp.relation,
-    #     role=relation_role,
-    #     columns=list(entry.keys()),
-    # )
-    # mp.db_client_method(
-    #     mp.db_client,
-    #     column_edit_mappings=entry,
-    #     entry_id=entry_id,
-    # )
-    # return message_response(message=f"{mp.entry_name} updated.")

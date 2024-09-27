@@ -12,8 +12,7 @@ from middleware.argument_checking_logic import check_for_mutually_exclusive_argu
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from middleware.schema_and_dto_logic.dynamic_schema_request_content_population import populate_schema_with_request_content
 from middleware.schema_and_dto_logic.dynamic_dto_request_content_population import populate_dto_with_request_content
-from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import DTOPopulateParameters
+from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters, DTOPopulateParameters
 
 
 def handle_exceptions(
@@ -41,7 +40,9 @@ def handle_exceptions(
 
     @functools.wraps(func)
     def wrapper(
-        self, *args: Any, **kwargs: Any
+            self: "PsycopgResource",
+            *args: Any,
+            **kwargs: Any
     ) -> Union[Any, Tuple[Dict[str, str], int]]:
         try:
             return func(self, *args, **kwargs)

@@ -63,7 +63,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watchEffect } from 'vue';
+import { ref, computed, watchEffect, onMounted, onUnmounted } from 'vue';
 import statesToAbbreviations from '@/util/statesToAbbreviations';
 
 /* Props and emits */
@@ -95,17 +95,31 @@ const isListOpen = computed(
 );
 
 watchEffect(() => {
-	if (inputRef?.value) {
-		document
-			.querySelector(':root')
-			.style.setProperty(
-				'--typeahead-input-height',
-				inputRef.value.scrollHeight + 'px',
-			);
+	if (inputRef.value) {
+		setInputPositionForList();
 	}
 });
 
+onMounted(() => {
+	window.addEventListener('resize', setInputPositionForList);
+});
+
+onUnmounted(() => {
+	window.removeEventListener('resize', setInputPositionForList);
+});
+
 /* Methods */
+function setInputPositionForList() {
+	console.debug('setInputPositionForList');
+	document.documentElement.style.setProperty(
+		'--typeaheadBottom',
+		inputRef.value.offsetTop + inputRef.value.offsetHeight + 'px',
+	);
+	document.documentElement.style.setProperty(
+		'--typeaheadListWidth',
+		inputRef.value.offsetWidth + 'px',
+	);
+}
 function onInput(e) {
 	emit('onInput', e);
 }
@@ -193,19 +207,11 @@ function clearInput() {
 
 <style>
 .pdap-typeahead {
-	@apply relative gap-4 leading-normal w-full flex flex-col;
-}
-
-.pdap-typeahead-expanded {
-	@apply pb-[var(--typeahead-input-height)];
+	@apply leading-normal w-full flex flex-col;
 }
 
 .pdap-typeahead label {
 	@apply max-w-[max-content] text-lg py-1 font-medium;
-}
-
-.pdap-typeahead-input {
-	@apply max-h-[60px];
 }
 
 .pdap-typeahead-input,
@@ -224,15 +230,15 @@ function clearInput() {
 }
 
 .pdap-typeahead-list {
-	@apply w-[calc(100vw-3rem)];
+	@apply absolute w-[var(--typeaheadListWidth)] top-[var(--typeaheadBottom)] z-50 overflow-scroll;
 }
 
 .pdap-typeahead-list-item {
-	@apply w-full mt-1 max-w-[unset] p-2 flex items-center gap-6;
+	@apply mt-1 max-w-[unset] p-2 flex items-center gap-6 text-sm @md:text-lg;
 }
 
 .pdap-typeahead-list-item .locale-type {
-	@apply border-solid border-2 border-neutral-700 dark:border-neutral-400 rounded-full text-neutral-700 dark:text-neutral-400 text-sm px-2 py-1;
+	@apply border-solid border-2 border-neutral-700 dark:border-neutral-400 rounded-full text-neutral-700 dark:text-neutral-400 text-xs @md:text-sm px-2 py-1;
 }
 
 .pdap-typeahead-list-item .select {

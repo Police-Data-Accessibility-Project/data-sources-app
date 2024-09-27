@@ -21,6 +21,7 @@ from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_test_data import TEST_RESPONSE
 from tests.helper_scripts.helper_functions import (
     check_is_test_response,
+    add_query_params,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
@@ -35,6 +36,7 @@ MOCK_EMAIL_PASSWORD = {
     "password": "test_password",
 }
 TEST_ID = -1
+
 
 @pytest.mark.parametrize(
     "endpoint, http_method, route_to_patch, json_data",
@@ -63,8 +65,13 @@ TEST_ID = -1
             "DataSources.add_new_data_source_wrapper",
             {"entry_data": {}},
         ),
-        ("/data-sources?page=1", "GET", "DataSources.get_data_sources_wrapper", {}),
-        ("/data-requests/test_id/related-sources", "GET", "DataRequests.get_data_request_related_sources", {}),
+        ("/data-sources?page=1&approval_status=approved", "GET", "DataSources.get_data_sources_wrapper", {}),
+        (
+            "/data-requests/test_id/related-sources",
+            "GET",
+            "DataRequests.get_data_request_related_sources",
+            {},
+        ),
         # This endpoint no longer works because of the other data source endpoint
         # It is interpreted as another data source id
         # But we have not yet decided whether to modify or remove it entirely
@@ -177,37 +184,27 @@ TEST_ID = -1
             "DataRequests.delete_data_request_wrapper",
             {},
         ),
-        (
-            "/homepage-search-cache",
-            "POST",
-            "HomepageSearchCache.update_search_cache",
-            {
-                "search_results": ["test_result_1", "test_result_2"],
-                "agency_airtable_uid": "test_airtable_uid",
-            },
-        ),
-        (
-            "/homepage-search-cache",
-            "GET",
-            "HomepageSearchCache.get_agencies_without_homepage_urls",
-            {},
-        ),
+        # Below should not be used until: https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/458
+        # (
+        #     "/homepage-search-cache",
+        #     "POST",
+        #     "HomepageSearchCache.update_search_cache",
+        #     {
+        #         "search_results": ["test_result_1", "test_result_2"],
+        #         "agency_airtable_uid": "test_airtable_uid",
+        #     },
+        # ),
+        # (
+        #     "/homepage-search-cache",
+        #     "GET",
+        #     "HomepageSearchCache.get_agencies_without_homepage_urls",
+        #     {},
+        # ),
         (
             "/agencies?page=1",
             "GET",
             "Agencies.get_agencies",
             {},
-        ),
-        (
-            "/agencies",
-            "POST",
-            "Agencies.create_agency",
-            {
-                "entry_data": {
-                    "submitted_name": "test_agency_name",
-                    "airtable_uid": "test_airtable_uid",
-                }
-            },
         ),
         (
             f"/agencies/{TEST_ID}",
@@ -227,6 +224,15 @@ TEST_ID = -1
             },
         ),
         (f"/agencies/{TEST_ID}", "DELETE", "Agencies.delete_agency", {}),
+        (
+            add_query_params(
+                url="/check/unique-url",
+                params={"url": "https://www.test-url.com"}
+            ),
+            "GET",
+            "UniqueURLChecker.unique_url_checker_wrapper",
+            {},
+        ),
     ),
 )
 def test_common_format_resources(

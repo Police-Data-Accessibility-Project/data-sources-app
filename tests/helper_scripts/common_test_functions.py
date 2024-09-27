@@ -9,6 +9,7 @@ from flask_jwt_extended import decode_token
 
 from database_client.constants import PAGE_SIZE
 from database_client.database_client import DatabaseClient
+from middleware.schema_and_dto_logic.response_schemas import EntryDataResponseSchema
 from tests.helper_scripts.helper_classes.IntegrationTestSetup import IntegrationTestSetup
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from tests.helper_scripts.simple_result_validators import check_response_status, assert_is_oauth_redirect_link
@@ -87,6 +88,7 @@ def call_and_validate_get_by_id_endpoint(
         http_method="get",
         endpoint=f"{base_endpoint}/{id_name}",
         headers=its.tus.jwt_authorization_header,
+        expected_schema=EntryDataResponseSchema
     )
 
     assert expected_value_key in json_data["data"]

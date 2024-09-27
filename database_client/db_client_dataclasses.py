@@ -1,3 +1,4 @@
+import enum
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
@@ -8,7 +9,7 @@ from sqlalchemy.sql.base import ExecutableOption
 from sqlalchemy.sql.expression import asc, desc, BinaryExpression
 
 from database_client.enums import SortOrder
-from middleware.models import convert_to_column_reference, TABLE_REFERENCE
+from middleware.models import convert_to_column_reference, SQL_ALCHEMY_TABLE_REFERENCE
 
 
 ORDER_BY_REFERENCE = {
@@ -34,8 +35,8 @@ class OrderByParameters:
             return OrderByParameters(sort_by=sort_by, sort_order=sort_order)
         if sort_by is not None and sort_order is None:
             raise ValueError("If sort_by is provided, sort_order must also be provided")
-        if sort_by is None and sort_order is not None:
-            raise ValueError("If sort_order is provided, sort_by must also be provided")
+        if sort_by is None:
+            return None
         return None
 
     def build_order_by_clause(self, relation) -> Callable[[Column], UnaryExpression]:
@@ -44,7 +45,7 @@ class OrderByParameters:
         :param relation:
         :return: Order by clause. Example: asc(DataSource.name)
         """
-        relation_reference = TABLE_REFERENCE[relation]
+        relation_reference = SQL_ALCHEMY_TABLE_REFERENCE[relation]
         order_by_func = ORDER_BY_REFERENCE[self.sort_order.value]
         return order_by_func(getattr(relation_reference, self.sort_by))
 
@@ -64,12 +65,21 @@ class WhereMapping:
 
         :param relation:
         :return: BinaryExpression. Example: Agency.municipality == "Pittsburgh"
-        """
-        relation_reference = TABLE_REFERENCE[relation]
+        """        
+        relation_reference = SQL_ALCHEMY_TABLE_REFERENCE[relation]
         if self.eq is True:
             return getattr(relation_reference, self.column) == self.value
         elif self.eq is False:
             return getattr(relation_reference, self.column) != self.value
+
+    @staticmethod
+    def from_dict(d: dict) -> list["WhereMapping"]:
+        results = []
+        for key, value in d.items():
+            if isinstance(value, enum.Enum):
+                value = value.value
+            results.append(WhereMapping(column=key, value=value))
+        return results
 
 
 @dataclass

@@ -15,6 +15,7 @@ from app import create_app
 from database_client.database_client import DatabaseClient
 from middleware.enums import PermissionsEnum
 from middleware.util import get_env_variable
+from tests.helper_scripts.common_mocks_and_patches import patch_and_return_mock
 from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources,
     create_test_user_setup,
@@ -198,14 +199,21 @@ def bypass_authentication_required(monkeypatch):
     :param monkeypatch:
     :return:
     """
+    access_info_mock = MagicMock()
     monkeypatch.setattr(
         "middleware.decorators.get_authentication",
-        lambda a, b: None,
+        lambda a, b: access_info_mock,
     )
+    return access_info_mock
 
 
 # endregion
 
+@pytest.fixture
+def mock_database_client(monkeypatch):
+    mock = patch_and_return_mock(f"resources.PsycopgResource.DatabaseClient", monkeypatch)
+    mock.return_value = MagicMock()
+    return mock.return_value
 
 @pytest.fixture
 def live_database_client() -> DatabaseClient:

@@ -212,16 +212,4 @@ describe('TypeaheadInput', () => {
 
 		expect(vm.itemsToDisplay).toEqual(MOCK_ITEMS);
 	});
-
-	it('sets --typeahead-input-height CSS variable', async () => {
-		const wrapper = mountComponent();
-		const input = getInput(wrapper);
-
-		const root = document.querySelector(':root');
-		const inputHeight = input.element.scrollHeight;
-
-		expect(root.style.getPropertyValue('--typeahead-input-height')).toBe(
-			`${inputHeight}px`,
-		);
-	});
 });

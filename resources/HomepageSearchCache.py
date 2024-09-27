@@ -12,7 +12,7 @@ from resources.PsycopgResource import PsycopgResource, handle_exceptions
 from resources.resource_helpers import add_jwt_header_arg
 from utilities.namespace import create_namespace
 from utilities.enums import SourceMappingEnum
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import DTOPopulateParameters
+from middleware.schema_and_dto_logic.non_dto_dataclasses import DTOPopulateParameters
 
 namespace_homepage_search_cache = create_namespace()
 

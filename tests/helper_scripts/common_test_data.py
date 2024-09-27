@@ -5,6 +5,7 @@ from collections import namedtuple
 import psycopg
 
 from database_client.database_client import DatabaseClient
+from middleware.enums import JurisdictionType
 
 ResponseTuple = namedtuple("ResponseTuple", ["response", "status_code"])
 
@@ -62,6 +63,36 @@ def create_agency_entry_for_search_cache(db_client: DatabaseClient) -> str:
             "count_data_sources": 2000,  # AKA, an absurdly high number to guarantee it's the first result
             "approved": True,
             "homepage_url": None,
+            "jurisdiction_type": JurisdictionType.FEDERAL.value,
         },
     )
     return submitted_name
+
+
+def create_data_source_entry_for_url_duplicate_checking(db_client: DatabaseClient) -> str:
+    """
+    Create an entry in `Data Sources` guaranteed to appear in the URL duplicate checking functionality
+    :param db_client:
+    :return:
+    """
+    submitted_name = "TEST URL DUPLICATE NAME"
+    try:
+        db_client._create_entry_in_table(
+            table_name="data_sources",
+            column_value_mappings={
+                "submitted_name": submitted_name,
+                "name": submitted_name,
+                "rejection_note": "Test rejection note",
+                "approval_status": "rejected",
+                "airtable_uid": "TEST_URL_DUPLICATE_SOURCE_ID",
+                "source_url": "https://duplicate-checker.com/",
+
+            })
+        db_client.execute_raw_sql("""
+            call refresh_distinct_source_urls();
+        """)
+    except psycopg.errors.UniqueViolation:
+        pass  # Already added
+    except Exception as e:
+        # Rollback
+        db_client.connection.rollback()
