@@ -10,21 +10,27 @@ from sqlalchemy import (
     String,
     ForeignKey,
     Enum,
+    Float,
+    Boolean,
+    DateTime,
+    Integer,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, DATE, DATERANGE, TIMESTAMP
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
     DeclarativeBase,
-    join,
     Mapped,
     mapped_column,
     relationship,
 )
 from sqlalchemy.sql.expression import false, func
 
+from database_client.enums import LocationType
+from middleware.enums import Relations
 
-ExternalAccountType = Literal["github"]
-RecordType = Literal[
+
+ExternalAccountTypeLiteral = Literal["github"]
+RecordTypeLiteral = Literal[
     "Dispatch Recordings",
     "Arrest Records",
     "Citations",
@@ -61,7 +67,7 @@ RecordType = Literal[
     "Wanted Persons",
     "List of Data Sources",
 ]
-RequestStatus = Literal[
+RequestStatusLiteral = Literal[
     "Intake",
     "Active",
     "Complete",
@@ -72,15 +78,8 @@ RequestStatus = Literal[
     "Waiting for FOIA",
     "Waiting for requestor",
 ]
-JurisdictionType = Literal[
-    "school",
-    "county",
-    "local",
-    "port",
-    "tribal",
-    "transit",
-    "state",
-    "federal",
+JurisdictionTypeLiteral = Literal[
+    "federal", "state", "county", "local", "port", "tribal", "transit", "school"
 ]
 
 
@@ -117,7 +116,7 @@ class AgencySourceLink(Base):
 
 
 class Agency(Base):
-    __tablename__ = "agencies"
+    __tablename__ = Relations.AGENCIES.value
 
     def __iter__(self):
         for key in self.__dict__:
@@ -136,7 +135,7 @@ class Agency(Base):
     name: Mapped[str]
     submitted_name: Mapped[Optional[str]]
     homepage_url: Mapped[Optional[str]]
-    jurisdiction_type: Mapped[JurisdictionType]
+    jurisdiction_type: Mapped[JurisdictionTypeLiteral]
     state_iso: Mapped[Optional[str]]
     municipality: Mapped[Optional[str]]
     county_fips: Mapped[Optional[str]] = mapped_column(
@@ -167,8 +166,46 @@ class Agency(Base):
     location_id: Mapped[Optional[int]]
 
 
+class AgencyExpanded(Base):
+    __tablename__ = Relations.AGENCIES_EXPANDED.value
+
+    # Define columns as per the view with refined data types
+    name = Column(String, nullable=False)
+    submitted_name = Column(String)
+    homepage_url = Column(String)
+    jurisdiction_type: Mapped[JurisdictionTypeLiteral] = mapped_column(
+        Enum(*get_args(JurisdictionTypeLiteral)), name="jurisdiction_type"
+    )
+    state_iso = Column(String)
+    state_name = Column(String)
+    county_fips = Column(String)  # Matches the VARCHAR type in the agencies table
+    county_name = Column(String)
+    lat = Column(Float)
+    lng = Column(Float)
+    defunct_year = Column(String)
+    airtable_uid = Column(String, primary_key=True)  # Primary key
+    count_data_sources = Column(
+        BigInteger
+    )  # Matches the BIGINT type in the agencies table
+    agency_type = Column(String)
+    multi_agency = Column(Boolean)
+    zip_code = Column(String)
+    data_sources = Column(String)  # Assuming 'data_sources' is a VARCHAR field
+    no_web_presence = Column(Boolean)
+    airtable_agency_last_modified = Column(DateTime(timezone=True))
+    data_sources_last_updated = Column(DateTime)
+    approved = Column(Boolean)
+    rejection_reason = Column(String)
+    last_approval_editor = Column(String)
+    submitter_contact = Column(String)
+    agency_created = Column(DateTime(timezone=True))
+    county_airtable_uid = Column(String)
+    locality_id = Column(BigInteger)
+    locality_name = Column(String)
+
+
 class County(Base):
-    __tablename__ = "counties"
+    __tablename__ = Relations.COUNTIES.value
 
     fips: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[Optional[text]]
@@ -183,12 +220,60 @@ class County(Base):
     airtable_county_created: Mapped[Optional[text]]
 
 
+class Locality(Base):
+    __tablename__ = Relations.LOCALITIES.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[Optional[Text]] = mapped_column(Text)
+    county_id: Mapped[int] = mapped_column(ForeignKey("public.counties.id"))
+
+
+class Location(Base):
+    __tablename__ = Relations.LOCATIONS.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    type: Mapped[Enum] = mapped_column(Enum(LocationType), nullable=False)
+    state_id: Mapped[int] = mapped_column(
+        ForeignKey("public.us_states.id"), nullable=False
+    )
+    county_id: Mapped[int] = mapped_column(ForeignKey("public.counties.id"))
+    locality_id: Mapped[int] = mapped_column(ForeignKey("public.localities.id"))
+
+
+class LocationExpanded(Base):
+    __tablename__ = Relations.LOCATIONS_EXPANDED.value
+    __table_args__ = {"extend_existing": True}
+
+    id = Column(Integer, primary_key=True)
+    type = Column(
+        Enum(LocationType)
+    )  # Adjust the type if 'type' is more specific, like Enum or similar.
+    state_name = Column(String)
+    state_iso = Column(String)
+    county_name = Column(String)
+    county_fips = Column(String)
+    locality_name = Column(String)
+    state_id = Column(Integer)
+    county_id = Column(Integer)
+    locality_id = Column(Integer)
+
+
+class USState(Base):
+    __tablename__ = Relations.US_STATES.value
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    state_iso: Mapped[str] = mapped_column(String(255), nullable=False)
+    state_name: Mapped[str] = mapped_column(String(255))
+
+
 class DataRequest(Base):
-    __tablename__ = "data_requests"
+    __tablename__ = Relations.DATA_REQUESTS.value
 
     id: Mapped[int] = mapped_column(primary_key=True)
     submission_notes: Mapped[Optional[text]]
-    request_status: Mapped[RequestStatus] = mapped_column(server_default="Intake")
+    request_status: Mapped[RequestStatusLiteral] = mapped_column(
+        server_default="Intake"
+    )
     submitter_email: Mapped[Optional[text]]
     location_described_submitted: Mapped[Optional[text]]
     archive_reason: Mapped[Optional[text]]
@@ -197,8 +282,8 @@ class DataRequest(Base):
     creator_user_id: Mapped[Optional[int]]
     github_issue_url: Mapped[Optional[text]]
     internal_notes: Mapped[Optional[text]]
-    record_types_required: Mapped[Optional[ARRAY[RecordType]]] = mapped_column(
-        ARRAY(Enum(*get_args(RecordType), name="record_type"))
+    record_types_required: Mapped[Optional[ARRAY[RecordTypeLiteral]]] = mapped_column(
+        ARRAY(Enum(*get_args(RecordTypeLiteral), name="record_type"))
     )
     pdap_response: Mapped[Optional[text]]
     coverage_range: Mapped[Optional[daterange]]
@@ -207,7 +292,7 @@ class DataRequest(Base):
 
 
 class DataSource(Base):
-    __tablename__ = "data_sources"
+    __tablename__ = Relations.DATA_SOURCES.value
 
     def __iter__(self):
         for key in self.__dict__:
@@ -291,7 +376,7 @@ class DataSource(Base):
 
 
 class DataSourceArchiveInfo(Base):
-    __tablename__ = "data_sources_archive_info"
+    __tablename__ = Relations.DATA_SOURCES_ARCHIVE_INFO.value
 
     airtable_uid: Mapped[str] = mapped_column(
         ForeignKey("public.data_sources.airtable_uid"), primary_key=True
@@ -302,18 +387,17 @@ class DataSourceArchiveInfo(Base):
 
 
 class ExternalAccount(Base):
-    __tablename__ = "external_accounts"
-    __table_args__ = {"schema": "public"}
+    __tablename__ = Relations.EXTERNAL_ACCOUNTS.value
 
     row_id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
-    account_type: Mapped[ExternalAccountType]
+    account_type: Mapped[ExternalAccountTypeLiteral]
     account_identifier: Mapped[str_255]
     linked_at: Mapped[Optional[timestamp]] = mapped_column(server_default=func.now())
 
 
 class LinkDataSourceDataRequest(Base):
-    __tablename__ = "link_data_sources_data_requests"
+    __tablename__ = Relations.LINK_DATA_SOURCES_DATA_REQUESTS.value
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     source_id: Mapped[text] = mapped_column(
@@ -323,7 +407,7 @@ class LinkDataSourceDataRequest(Base):
 
 
 class RecordCategory(Base):
-    __tablename__ = "record_categories"
+    __tablename__ = Relations.RECORD_CATEGORIES.value
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str_255]
@@ -331,7 +415,7 @@ class RecordCategory(Base):
 
 
 class RecordType(Base):
-    __tablename__ = "record_types"
+    __tablename__ = Relations.RECORD_TYPES.value
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str_255]
@@ -340,7 +424,7 @@ class RecordType(Base):
 
 
 class ResetToken(Base):
-    __tablename__ = "reset_tokens"
+    __tablename__ = Relations.RESET_TOKENS.value
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     email: Mapped[Optional[text]]
@@ -351,7 +435,7 @@ class ResetToken(Base):
 
 
 class TestTable(Base):
-    __tablename__ = "test_table"
+    __tablename__ = Relations.TEST_TABLE.value
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     pet_name: Mapped[Optional[str_255]]
@@ -359,7 +443,7 @@ class TestTable(Base):
 
 
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = Relations.USERS.value
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     created_at: Mapped[Optional[timestamp_tz]]
