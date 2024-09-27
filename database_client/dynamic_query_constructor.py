@@ -20,7 +20,7 @@ from database_client.db_client_dataclasses import (
     SubqueryParameters,
     WhereMapping,
 )
-from middleware.models import TABLE_REFERENCE
+from database_client.models import SQL_ALCHEMY_TABLE_REFERENCE
 from utilities.enums import RecordCategories
 
 TableColumn = namedtuple("TableColumn", ["table", "column"])
@@ -430,7 +430,7 @@ class DynamicQueryConstructor:
                 parameter.build_subquery(relation) for parameter in subquery_parameters
             ]
             subquery_parameters.append(load_only(*columns))
-            columns = [TABLE_REFERENCE[relation]]
+            columns = [SQL_ALCHEMY_TABLE_REFERENCE[relation]]
 
         base_query = (
             lambda: select(*columns)

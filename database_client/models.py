@@ -406,6 +406,14 @@ class LinkDataSourceDataRequest(Base):
     request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
 
 
+class LinkUserFollowedLocation(Base):
+    __tablename__ = Relations.LINK_USER_FOLLOWED_LOCATION.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
+    location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
+
+
 class RecordCategory(Base):
     __tablename__ = Relations.RECORD_CATEGORIES.value
 
@@ -456,8 +464,9 @@ class User(Base):
     role: Mapped[Optional[text]]
 
 
-TABLE_REFERENCE = {
+SQL_ALCHEMY_TABLE_REFERENCE = {
     "agencies": Agency,
+    "agencies_expanded": AgencyExpanded,
     "data_requests": DataRequest,
     "data_sources": DataSource,
     "data_sources_archive_info": DataSourceArchiveInfo,
@@ -465,6 +474,12 @@ TABLE_REFERENCE = {
     "reset_tokens": ResetToken,
     "test_table": TestTable,
     "users": User,
+    "us_states": USState,
+    "counties": County,
+    "localities": Locality,
+    "locations": Location,
+    "locations_expanded": LocationExpanded,
+    "link_user_followed_location": LinkUserFollowedLocation,
 }
 
 
@@ -475,5 +490,10 @@ def convert_to_column_reference(columns: list[str], relation: str) -> list[Colum
     :param relation: Relation string.
     :return:
     """
-    relation_reference = TABLE_REFERENCE[relation]
+    try:
+        relation_reference = SQL_ALCHEMY_TABLE_REFERENCE[relation]
+    except KeyError:
+        raise ValueError(
+            f"SQL Model does not exist in SQL_ALCHEMY_TABLE_REFERENCE: {relation}"
+        )
     return [getattr(relation_reference, column) for column in columns]

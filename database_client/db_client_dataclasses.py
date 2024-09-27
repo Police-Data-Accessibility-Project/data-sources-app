@@ -9,7 +9,7 @@ from sqlalchemy.sql.base import ExecutableOption
 from sqlalchemy.sql.expression import asc, desc, BinaryExpression
 
 from database_client.enums import SortOrder
-from middleware.models import convert_to_column_reference, SQL_ALCHEMY_TABLE_REFERENCE
+from database_client.models import convert_to_column_reference, SQL_ALCHEMY_TABLE_REFERENCE
 
 
 ORDER_BY_REFERENCE = {
