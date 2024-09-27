@@ -525,7 +525,7 @@ def create_test_user_setup_db_client(
         permissions = [permissions]
     email = uuid.uuid4().hex
     password_digest = uuid.uuid4().hex
-    user_id = db_client.add_new_user(email, password_digest)
+    user_id = db_client.create_new_user(email, password_digest)
     api_key = db_client.get_user_info(email).api_key
     for permission in permissions:
         db_client.add_user_permission(email, permission)
@@ -539,7 +539,7 @@ def create_test_user_setup_db_client(
 def create_test_user_db_client(db_client: DatabaseClient) -> UserInfo:
     email = uuid.uuid4().hex
     password_digest = uuid.uuid4().hex
-    user_id = db_client.add_new_user(email, password_digest)
+    user_id = db_client.create_new_user(email, password_digest)
     return UserInfo(email, password_digest, user_id)
 
 

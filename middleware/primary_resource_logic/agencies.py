@@ -117,7 +117,8 @@ class AgencyInfoBaseSchema(Schema):
             "description": "The zip code of the agency's location.",
             "source": SourceMappingEnum.JSON,
         },
-        validate=validate.Length(5),
+        # TODO: Re-enable when all zip codes are of expected length
+        # validate=validate.Length(min=5),
     )
     no_web_presence = fields.Bool(
         required=False,

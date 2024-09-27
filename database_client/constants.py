@@ -13,6 +13,7 @@ from database_client.models import (
     Locality,
     Location,
     LocationExpanded,
+    LinkUserFollowedLocation,
 )
 
 AGENCY_APPROVED_COLUMNS = [
@@ -132,4 +133,5 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     "localities": Locality,
     "locations": Location,
     "locations_expanded": LocationExpanded,
+    "link_user_followed_location": LinkUserFollowedLocation,
 }
