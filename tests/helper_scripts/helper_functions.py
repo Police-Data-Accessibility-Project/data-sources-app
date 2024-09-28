@@ -41,7 +41,7 @@ def insert_test_agencies_and_sources(cursor: psycopg.Cursor) -> None:
     :return:
     """
     db_client = DatabaseClient()
-    location_id_1 = db_client._select_from_single_relation(
+    location_id_1 = db_client._select_from_relation(
         relation_name=Relations.LOCATIONS_EXPANDED.value,
         columns=["id"],
         where_mappings=WhereMapping.from_dict(
@@ -53,7 +53,7 @@ def insert_test_agencies_and_sources(cursor: psycopg.Cursor) -> None:
         ),
     )[0]["id"]
 
-    location_id_2 = db_client._select_from_single_relation(
+    location_id_2 = db_client._select_from_relation(
         relation_name=Relations.LOCATIONS_EXPANDED.value,
         columns=["id"],
         where_mappings=WhereMapping.from_dict(
@@ -65,7 +65,7 @@ def insert_test_agencies_and_sources(cursor: psycopg.Cursor) -> None:
         ),
     )[0]["id"]
 
-    location_id_3 = db_client._select_from_single_relation(
+    location_id_3 = db_client._select_from_relation(
         relation_name=Relations.LOCATIONS_EXPANDED.value,
         columns=["id"],
         where_mappings=WhereMapping.from_dict(
@@ -415,7 +415,7 @@ def setup_get_typeahead_suggestion_test_data(cursor: Optional[psycopg.Cursor] = 
             column_to_return="id",
         )
 
-        location_id = db_client._select_from_single_relation(
+        location_id = db_client._select_from_relation(
             relation_name=Relations.LOCATIONS.value,
             columns=["id"],
             where_mappings=WhereMapping.from_dict(

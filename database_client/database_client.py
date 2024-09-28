@@ -163,7 +163,7 @@ class DatabaseClient:
         :param email:
         :return:
         """
-        results = self._select_from_single_relation(
+        results = self._select_from_relation(
             relation_name="users",
             columns=["id"],
             where_mappings=[WhereMapping(column="email", value=email)],
@@ -195,7 +195,7 @@ class DatabaseClient:
         :param token: The reset token to check.
         :return: ResetTokenInfo if the token exists; otherwise, None.
         """
-        results = self._select_from_single_relation(
+        results = self._select_from_relation(
             relation_name="reset_tokens",
             columns=["id", "email", "create_date"],
             where_mappings=[WhereMapping(column="token", value=token)],
@@ -240,7 +240,7 @@ class DatabaseClient:
         :param api_key: The api key to check.
         :return: RoleInfo if the token exists; otherwise, None.
         """
-        results = self._select_from_single_relation(
+        results = self._select_from_relation(
             relation_name="users",
             columns=["id", "email"],
             where_mappings=[WhereMapping(column="api_key", value=api_key)],
@@ -435,7 +435,7 @@ class DatabaseClient:
         :raise UserNotFoundError: If no user is found.
         :return: UserInfo namedtuple containing the user's information.
         """
-        results = self._select_from_single_relation(
+        results = self._select_from_relation(
             relation_name="users",
             columns=["id", "password_digest", "api_key", "email"],
             where_mappings=[WhereMapping(column="email", value=email)],
@@ -758,7 +758,7 @@ class DatabaseClient:
     )
 
     @session_manager
-    def _select_from_single_relation(
+    def _select_from_relation(
         self,
         relation_name: str,
         columns: list[str],
@@ -795,23 +795,23 @@ class DatabaseClient:
         return results
 
     get_data_requests = partialmethod(
-        _select_from_single_relation, relation_name=Relations.DATA_REQUESTS.value
+        _select_from_relation, relation_name=Relations.DATA_REQUESTS.value
     )
 
     get_agencies = partialmethod(
-        _select_from_single_relation, relation_name=Relations.AGENCIES_EXPANDED.value
+        _select_from_relation, relation_name=Relations.AGENCIES_EXPANDED.value
     )
 
     get_data_sources = partialmethod(
-        _select_from_single_relation, relation_name=Relations.DATA_SOURCES.value
+        _select_from_relation, relation_name=Relations.DATA_SOURCES.value
     )
 
     get_request_source_relations = partialmethod(
-        _select_from_single_relation, relation_name=Relations.RELATED_SOURCES.value
+        _select_from_relation, relation_name=Relations.RELATED_SOURCES.value
     )
 
     get_location_id = partialmethod(
-        _select_from_single_relation,
+        _select_from_relation,
         relation_name=Relations.LOCATIONS_EXPANDED.value,
         columns=["id"],
     )
@@ -835,7 +835,7 @@ class DatabaseClient:
     def get_data_requests_for_creator(
         self, creator_user_id: str, columns: List[str]
     ) -> List[str]:
-        return self._select_from_single_relation(
+        return self._select_from_relation(
             relation_name="data_requests",
             columns=columns,
             where_mappings=[
@@ -846,7 +846,7 @@ class DatabaseClient:
     def user_is_creator_of_data_request(
         self, user_id: int, data_request_id: int
     ) -> bool:
-        results = self._select_from_single_relation(
+        results = self._select_from_relation(
             relation_name="data_requests",
             columns=["id"],
             where_mappings=[
@@ -983,7 +983,7 @@ class DatabaseClient:
                 column_to_return=column_to_return,
             )
         except psycopg.errors.UniqueViolation:
-            return self._select_from_single_relation(
+            return self._select_from_relation(
                 relation_name=table_name,
                 columns=[column_to_return],
                 where_mappings=WhereMapping.from_dict(column_value_mappings),

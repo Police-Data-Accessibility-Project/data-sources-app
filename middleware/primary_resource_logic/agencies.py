@@ -560,7 +560,7 @@ def _get_county_id(db_client, location_info_dict) -> int:
         "state_iso": location_info_dict["state_iso"],
         "type": LocationType.COUNTY,
     }
-    results = db_client._select_from_single_relation(
+    results = db_client._select_from_relation(
         relation_name=Relations.LOCATIONS_EXPANDED.value,
         columns=["county_id"],
         where_mappings=WhereMapping.from_dict(county_dict),

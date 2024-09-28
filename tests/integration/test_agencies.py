@@ -281,7 +281,7 @@ def test_agencies_delete(ts: AgenciesTestSetup):
         expected_schema=MessageSchema,
     )
 
-    results = ts.db_client._select_from_single_relation(
+    results = ts.db_client._select_from_relation(
         relation_name="agencies",
         columns=["submitted_name"],
         where_mappings=[WhereMapping(column="airtable_uid", value=agency_id)],

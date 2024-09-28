@@ -354,14 +354,14 @@ def test_delete_id_not_found(monkeypatch, mock_flask_response_manager):
         data_source_id=mock.data_source_id,
     )
     mock.access_info = MagicMock()
-    mock.db_client._select_from_single_relation.return_value = []
+    mock.db_client._select_from_relation.return_value = []
     with pytest.raises(FakeAbort):
         delete_entry(
             middleware_parameters=mock.mp,
             id_info=mock.id_info,
             permission_checking_function=mock.permission_checking_function,
         )
-    mock.mp.db_client._select_from_single_relation.assert_called_once_with(
+    mock.mp.db_client._select_from_relation.assert_called_once_with(
         relation_name=mock.mp.relation,
         where_mappings=mock.id_info.where_mappings,
         columns=[mock.id_info.id_column_name],
@@ -416,7 +416,7 @@ def test_check_requested_columns_invalid_columns(
 
 def test_check_for_id_happy_path(mock_flask_response_manager):
     mock = MagicMock()
-    mock.db_client._select_from_single_relation.return_value = [{"id": 1}]
+    mock.db_client._select_from_relation.return_value = [{"id": 1}]
     mock.id_info.id_column_name = "id"
 
     result = check_for_id(
@@ -425,7 +425,7 @@ def test_check_for_id_happy_path(mock_flask_response_manager):
 
     assert result == 1
 
-    mock.db_client._select_from_single_relation.assert_called_once_with(
+    mock.db_client._select_from_relation.assert_called_once_with(
         relation_name=mock.table_name,
         where_mappings=mock.id_info.where_mappings,
         columns=[mock.id_info.id_column_name],
@@ -435,7 +435,7 @@ def test_check_for_id_happy_path(mock_flask_response_manager):
 
 def test_check_for_id_no_id(mock_flask_response_manager):
     mock = MagicMock()
-    mock.db_client._select_from_single_relation.return_value = []
+    mock.db_client._select_from_relation.return_value = []
     mock.id_info.id_column_name = "id"
 
     with pytest.raises(FakeAbort) as e:
@@ -443,7 +443,7 @@ def test_check_for_id_no_id(mock_flask_response_manager):
             table_name=mock.table_name, id_info=mock.id_info, db_client=mock.db_client
         )
 
-    mock.db_client._select_from_single_relation.assert_called_once_with(
+    mock.db_client._select_from_relation.assert_called_once_with(
         relation_name=mock.table_name,
         where_mappings=mock.id_info.where_mappings,
         columns=[mock.id_info.id_column_name],
