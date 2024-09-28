@@ -207,7 +207,8 @@ class AgencyExpanded(Base):
 class County(Base):
     __tablename__ = Relations.COUNTIES.value
 
-    fips: Mapped[str] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    fips: Mapped[str]
     name: Mapped[Optional[text]]
     name_ascii: Mapped[Optional[text]]
     state_iso: Mapped[Optional[text]]
@@ -218,6 +219,7 @@ class County(Base):
     airtable_uid: Mapped[Optional[text]]
     airtable_county_last_modified: Mapped[Optional[text]]
     airtable_county_created: Mapped[Optional[text]]
+    state_id: Mapped[Optional[int]]
 
 
 class Locality(Base):
@@ -274,7 +276,6 @@ class DataRequest(Base):
     request_status: Mapped[RequestStatusLiteral] = mapped_column(
         server_default="Intake"
     )
-    submitter_email: Mapped[Optional[text]]
     location_described_submitted: Mapped[Optional[text]]
     archive_reason: Mapped[Optional[text]]
     date_created: Mapped[timestamp_tz]
@@ -283,12 +284,11 @@ class DataRequest(Base):
     github_issue_url: Mapped[Optional[text]]
     internal_notes: Mapped[Optional[text]]
     record_types_required: Mapped[Optional[ARRAY[RecordTypeLiteral]]] = mapped_column(
-        ARRAY(Enum(*get_args(RecordTypeLiteral), name="record_type"))
+        ARRAY(Enum(*get_args(RecordTypeLiteral), name="record_type"), as_tuple=True)
     )
     pdap_response: Mapped[Optional[text]]
     coverage_range: Mapped[Optional[daterange]]
     data_requirements: Mapped[Optional[text]]
-    withdrawn: Mapped[Optional[bool]] = mapped_column(server_default=false())
 
 
 class DataSource(Base):
@@ -496,4 +496,11 @@ def convert_to_column_reference(columns: list[str], relation: str) -> list[Colum
         raise ValueError(
             f"SQL Model does not exist in SQL_ALCHEMY_TABLE_REFERENCE: {relation}"
         )
-    return [getattr(relation_reference, column) for column in columns]
+    
+    def get_attribute(column: str) -> Column:
+        try:
+            return getattr(relation_reference, column)
+        except AttributeError:
+            pass
+
+    return [get_attribute(column) for column in columns]
