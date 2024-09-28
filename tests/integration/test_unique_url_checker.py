@@ -2,7 +2,7 @@ from database_client.database_client import DatabaseClient
 from middleware.primary_resource_logic.unique_url_checker import (
     UniqueURLCheckerResponseOuterSchema,
 )
-from tests.fixtures import flask_client_with_db, live_database_client, integration_test_admin_setup
+from tests.conftest import flask_client_with_db, live_database_client, integration_test_admin_setup
 from tests.helper_scripts.common_test_data import (
     create_data_source_entry_for_url_duplicate_checking,
 )

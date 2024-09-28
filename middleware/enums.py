@@ -38,10 +38,12 @@ class AccessTypeEnum(Enum):
     JWT = auto()
     API_KEY = auto()
 
+
 class Relations(Enum):
     """
     A list of valid relations for the database
     """
+
     DATA_REQUESTS = "data_requests"
     AGENCIES = "agencies"
     DATA_SOURCES = "data_sources"
@@ -62,10 +64,12 @@ class Relations(Enum):
     LOCATIONS_EXPANDED = "locations_expanded"
     USERS = "users"
 
+
 class JurisdictionType(Enum):
     """
     A list of valid agency jurisdiction types
     """
+
     FEDERAL = "federal"
     STATE = "state"
     COUNTY = "county"
@@ -80,17 +84,59 @@ class JurisdictionSimplified(Enum):
     """
     A simplified list of jurisdictions utilized in organizing search results
     """
+
     FEDERAL = "federal"
     STATE = "state"
     COUNTY = "county"
     LOCALITY = "locality"
 
+
 class AgencyType(Enum):
     """
     A list of valid agency types
     """
+
     NONE = None
     AGGREGATED = "aggregated"
     COURT = "court"
     POLICE = "police"
     JAIL = "jail"
+
+
+class RecordType(Enum):
+    ACCIDENT_REPORTS = "Accident Reports"
+    ARREST_RECORDS = "Arrest Records"
+    CALLS_FOR_SERVICE = "Calls for Service"
+    CAR_GPS = "Car GPS"
+    CITATIONS = "Citations"
+    DISPATCH_LOGS = "Dispatch Logs"
+    DISPATCH_RECORDINGS = "Dispatch Recordings"
+    FIELD_CONTACTS = "Field Contacts"
+    INCIDENT_REPORTS = "Incident Reports"
+    MISC_POLICE_ACTIVITY = "Misc Police Activity"
+    OFFICER_INVOLVED_SHOOTINGS = "Officer Involved Shootings"
+    STOPS = "Stops"
+    SURVEYS = "Surveys"
+    USE_OF_FORCE_REPORTS = "Use of Force Reports"
+    VEHICLE_PURSUITS = "Vehicle Pursuits"
+    COMPLAINTS_MISCONDUCT = "Complaints & Misconduct"
+    DAILY_ACTIVITY_LOGS = "Daily Activity Logs"
+    TRAINING_HIRING_INFO = "Training & Hiring Info"
+    PERSONNEL_RECORDS = "Personnel Records"
+    ANNUAL_MONTHLY_REPORTS = "Annual & Monthly Reports"
+    BUDGETS_FINANCES = "Budgets & Finances"
+    CONTACT_INFO_AGENCY_META = "Contact Info & Agency Meta"
+    GEOGRAPHIC = "Geographic"
+    LIST_OF_DATA_SOURCES = "List of Data Sources"
+    POLICIES_CONTRACTS = "Policies & Contracts"
+    CRIME_MAPS_REPORTS = "Crime Maps & Reports"
+    CRIME_STATISTICS = "Crime Statistics"
+    MEDIA_BULLETINS = "Media Bulletins"
+    RECORDS_REQUEST_INFO = "Records Request Info"
+    RESOURCES = "Resources"
+    SEX_OFFENDER_REGISTRY = "Sex Offender Registry"
+    WANTED_PERSONS = "Wanted Persons"
+    BOOKING_REPORTS = "Booking Reports"
+    COURT_CASES = "Court Cases"
+    INCARCERATION_RECORDS = "Incarceration Records"
+    OTHER = "Other"

@@ -1,14 +1,28 @@
 """
 Test that a given schema's fields align with the columns of a database relation
 """
+from marshmallow import Schema
 
+from database_client.database_client import DatabaseClient
 from middleware.enums import Relations
 from middleware.primary_resource_logic.agencies import (
     AgencyInfoBaseSchema,
     AgenciesGetSchema,
 )
-from tests.fixtures import live_database_client
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests import DataRequestsSchema
+from tests.conftest import live_database_client
 
+
+def assert_relation_columns_and_schema_fields_aligned(
+    live_database_client: DatabaseClient,
+    relation: Relations,
+    schema: Schema
+):
+    schema_fields = [field for field in schema.fields]
+    relation_columns = live_database_client.get_columns_for_relation(relation)
+    schema_fields.sort()
+    relation_columns.sort()
+    assert schema_fields == relation_columns
 
 def test_agencies_post_schema_aligned_with_agencies_expanded(live_database_client):
     """
@@ -28,13 +42,16 @@ def test_agencies_get_schema_aligned_with_agencies_expanded(live_database_client
     Test that the fields of AgenciesGetSchema are equivalent to the columns of `agencies_expanded`
     :return:
     """
-    agencies_expanded_columns = live_database_client.get_columns_for_relation(
-        Relations.AGENCIES_EXPANDED
+    assert_relation_columns_and_schema_fields_aligned(
+        live_database_client,
+        Relations.AGENCIES_EXPANDED,
+        AgenciesGetSchema()
     )
-    schema = AgenciesGetSchema()
-    schema_fields = [field for field in schema.fields]
 
-    schema_fields.sort()
-    agencies_expanded_columns.sort()
 
-    assert schema_fields == agencies_expanded_columns
+def test_data_request_schema_aligned_with_data_requests_table(live_database_client):
+    assert_relation_columns_and_schema_fields_aligned(
+        live_database_client,
+        Relations.DATA_REQUESTS,
+        DataRequestsSchema()
+    )

@@ -47,3 +47,17 @@ class LocationType(Enum):
     STATE = "State"
     COUNTY = "County"
     LOCALITY = "Locality"
+
+class RequestStatus(Enum):
+    """
+    Correlates to the request_status enum in the database
+    """
+    INTAKE = "Intake"
+    ACTIVE = "Active"
+    COMPLETE = "Complete"
+    REQUEST_WITHDRAWN = "Request withdrawn"
+    WAITING_FOR_SCRAPER = "Waiting for scraper"
+    ARCHIVED = "Archived"
+    READY_TO_START = "Ready to start"
+    WAITING_FOR_FOIA = "Waiting for FOIA"
+    WAITING_FOR_REQUESTOR = "Waiting for requestor"

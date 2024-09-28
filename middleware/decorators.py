@@ -81,8 +81,9 @@ def authentication_required(
 def endpoint_info(
     namespace: Namespace,
     auth_info: AuthenticationInfo,
-    input_schema: Optional[Type[Schema]] = None,
+    input_schema: Optional[Schema] = None,
     input_model: Optional[Model] = None,
+    input_model_name: Optional[str] = None,
     **doc_kwargs
 ):
     """
@@ -100,6 +101,7 @@ def endpoint_info(
         namespace=namespace,
         input_schema=input_schema,
         input_model=input_model,
+        input_model_name=input_model_name,
     )
     _add_auth_info_to_parser(auth_info=auth_info, parser=input_doc_info.parser)
 
@@ -134,7 +136,12 @@ def _add_auth_info_to_parser(auth_info: AuthenticationInfo, parser: RequestParse
         raise Exception("Must have at least one access method")
 
 
-def _get_input_doc_info(namespace, input_schema, input_model=None) -> FlaskRestxDocInfo:
+def _get_input_doc_info(
+        namespace,
+        input_schema,
+        input_model=None,
+        input_model_name: Optional[str] = None
+) -> FlaskRestxDocInfo:
     check_for_mutually_exclusive_arguments(input_schema, input_model)
     if input_model is not None:
         return FlaskRestxDocInfo(
@@ -150,6 +157,6 @@ def _get_input_doc_info(namespace, input_schema, input_model=None) -> FlaskRestx
     # Assume input schema is defined
     return get_restx_param_documentation(
         namespace=namespace,
-        schema_class=input_schema,
-        model_name=input_schema.__name__,
+        schema=input_schema,
+        model_name=input_schema.__class__.__name__ if input_model_name is None else input_model_name,
     )

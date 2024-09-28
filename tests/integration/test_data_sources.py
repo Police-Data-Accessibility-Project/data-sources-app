@@ -7,12 +7,7 @@ import psycopg
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
-from tests.fixtures import (
-    connection_with_test_data,
-    flask_client_with_db,
-    db_client_with_test_data,
-    test_user_admin,
-)
+from tests.conftest import connection_with_test_data, db_client_with_test_data, flask_client_with_db, test_user_admin
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
 from tests.helper_scripts.helper_functions import (
     get_boolean_dictionary,

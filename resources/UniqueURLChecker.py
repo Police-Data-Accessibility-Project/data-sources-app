@@ -21,12 +21,12 @@ namespace_url_checker = create_namespace(namespace_attributes=AppNamespaces.CHEC
 
 request_doc_info = get_restx_param_documentation(
     namespace=namespace_url_checker,
-    schema_class=UniqueURLCheckerRequestSchema,
+    schema=UniqueURLCheckerRequestSchema,
 )
 
 response_doc_info = get_restx_param_documentation(
     namespace=namespace_url_checker,
-    schema_class=UniqueURLCheckerResponseOuterSchema,
+    schema=UniqueURLCheckerResponseOuterSchema,
 )
 add_api_key_header_arg(
     request_doc_info.parser
@@ -52,7 +52,7 @@ class UniqueURLChecker(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=unique_url_checker_wrapper,
             schema_populate_parameters=SchemaPopulateParameters(
-                schema_class=UniqueURLCheckerRequestSchema,
+                schema=UniqueURLCheckerRequestSchema(),
                 dto_class=UniqueURLCheckerRequestDTO,
             ),
         )

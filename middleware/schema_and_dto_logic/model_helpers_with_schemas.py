@@ -25,6 +25,7 @@ def create_user_model(namespace: Namespace) -> Model:
     doc_info = get_restx_param_documentation(
         namespace,
         UserRequestSchema,
+        model_name="UserEmailAndPassword",
     )
     return doc_info.model
 
@@ -37,10 +38,10 @@ def create_entry_data_request_model(namespace: Namespace) -> Model:
     return doc_info.model
 
 
-def create_entry_data_response_model(namespace: Namespace) -> Model:
+def create_entry_data_response_model(namespace: Namespace, entry_data_response_schema=EntryDataResponseSchema) -> Model:
     doc_info = get_restx_param_documentation(
         namespace,
-        EntryDataResponseSchema,
+        schema=entry_data_response_schema,
     )
     return doc_info.model
 
@@ -56,7 +57,7 @@ def create_id_and_message_model(namespace: Namespace) -> Model:
 def create_get_many_response_model(namespace: Namespace, get_many_response_schema=GetManyResponseSchema) -> Model:
     doc_info = get_restx_param_documentation(
         namespace=namespace,
-        schema_class=get_many_response_schema,
+        schema=get_many_response_schema,
     )
     return doc_info.model
 

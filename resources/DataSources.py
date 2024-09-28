@@ -68,7 +68,7 @@ class DataSourceById(PsycopgResource):
             data_source_by_id_wrapper,
             access_info=access_info,
             schema_populate_parameters=SchemaPopulateParameters(
-                schema_class=GetByIDBaseSchema, dto_class=GetByIDBaseDTO
+                schema=GetByIDBaseSchema(), dto_class=GetByIDBaseDTO
             ),
         )
 
@@ -95,7 +95,7 @@ class DataSourceById(PsycopgResource):
             wrapper_function=update_data_source_wrapper,
             schema_populate_parameters=SchemaPopulateParameters(
                 dto_class=EntryDataRequestDTO,
-                schema_class=EntryDataRequestSchema,
+                schema=EntryDataRequestSchema(),
             ),
             data_source_id=resource_id,
             access_info=access_info,
@@ -135,7 +135,7 @@ class DataSources(PsycopgResource):
     @endpoint_info(
         namespace=namespace_data_source,
         auth_info=GET_AUTH_INFO,
-        input_schema=DataSourcesGetRequestSchemaMany,
+        input_schema=DataSourcesGetRequestSchemaMany(),
         description="Retrieves all data sources.",
         responses=create_response_dictionary(
             success_message="Returns all requested data sources.",
@@ -153,7 +153,7 @@ class DataSources(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=get_data_sources_wrapper,
             schema_populate_parameters=SchemaPopulateParameters(
-                schema_class=DataSourcesGetRequestSchemaMany,
+                schema=DataSourcesGetRequestSchemaMany(),
                 dto_class=DataSourcesGetRequestDTOMany,
             ),
             access_info=access_info,

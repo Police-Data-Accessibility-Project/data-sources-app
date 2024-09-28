@@ -225,7 +225,7 @@ def test_populate_schema_with_request_content(
     mock_request.form.get = MagicMock(return_value="form value")
 
     obj = populate_schema_with_request_content(
-        schema_class=ExampleSchema, dto_class=ExampleDTO
+        schema=ExampleSchema(), dto_class=ExampleDTO
     )
 
     assert isinstance(obj, ExampleDTO)
@@ -284,7 +284,7 @@ def test_populate_nested_schema_with_request_content_non_json_source_provided(
     """
     with pytest.raises(InvalidSourceMappingError):
         populate_schema_with_request_content(
-            schema_class=ExampleNestedSchemaWithIncorrectSource,
+            schema=ExampleNestedSchemaWithIncorrectSource(),
             dto_class=ExampleNestedDTO,
         )
 
@@ -306,7 +306,7 @@ def test_populate_nested_schema_with_request_content(
     )
 
     obj = populate_schema_with_request_content(
-        schema_class=ExampleNestedSchema, dto_class=ExampleNestedDTO
+        schema=ExampleNestedSchema(), dto_class=ExampleNestedDTO
     )
 
     assert isinstance(obj, ExampleNestedDTO)
@@ -323,7 +323,7 @@ def test_get_restx_param_documentation():
 
     result = get_restx_param_documentation(
         namespace=Namespace(name="test", path="/test", description="test"),
-        schema_class=ExampleSchemaWithoutForm,
+        schema=ExampleSchemaWithoutForm,
         model_name="ExampleDTOWithoutForm",
     )
 
@@ -344,7 +344,7 @@ def test_get_restx_param_documentation_with_enum():
 
     result = get_restx_param_documentation(
         namespace=Namespace(name="test", path="/test", description="test"),
-        schema_class=ExampleSchemaWithEnum,
+        schema=ExampleSchemaWithEnum,
         model_name="ExampleDTOWithEnum",
     )
 

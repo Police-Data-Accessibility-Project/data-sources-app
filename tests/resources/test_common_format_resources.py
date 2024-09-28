@@ -8,17 +8,12 @@ from unittest.mock import MagicMock
 import pytest
 
 from resources.ApiKey import API_KEY_ROUTE
-from tests.fixtures import (
-    client_with_mock_db,
-    bypass_api_key_required,
-    bypass_permissions_required,
-    bypass_jwt_required,
-    bypass_authentication_required,
-)
+from tests.conftest import client_with_mock_db, bypass_api_key_required, bypass_permissions_required, \
+    bypass_jwt_required, bypass_authentication_required
 from http import HTTPStatus
 
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
-from tests.helper_scripts.common_test_data import TEST_RESPONSE
+from tests.helper_scripts.constants import TEST_RESPONSE
 from tests.helper_scripts.helper_functions import (
     check_is_test_response,
     add_query_params,

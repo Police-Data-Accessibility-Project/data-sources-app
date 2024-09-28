@@ -13,7 +13,7 @@ import pytest
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
 from middleware.enums import Relations
-from tests.fixtures import live_database_client
+from tests.conftest import live_database_client
 
 ID_COLUMN = "state_iso"
 FAKE_STATE_INFO = {"state_iso": "ZZ", "state_name": "Zaldoniza"}

@@ -258,7 +258,6 @@ class DataRequest(Base):
     pdap_response: Mapped[Optional[Text]] = mapped_column(Text)
     coverage_range: Mapped[Optional[DATERANGE]] = mapped_column(DATERANGE)
     data_requirements: Mapped[Optional[Text]] = mapped_column(Text)
-    withdrawn: Mapped[Optional[bool]] = mapped_column(server_default=false())
 
 
 class DataSource(Base):

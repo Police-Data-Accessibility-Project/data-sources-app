@@ -3,7 +3,7 @@ from middleware.callback_flask_sessions_logic import setup_callback_session
 from middleware.callback_oauth_logic import redirect_to_github_authorization
 from middleware.enums import CallbackFunctionsEnum
 from resources.PsycopgResource import PsycopgResource
-from resources.User import namespace_user
+from resources.User import namespace_user_old
 from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_create_user_with_github = create_namespace(AppNamespaces.AUTH)
@@ -12,7 +12,7 @@ namespace_create_user_with_github = create_namespace(AppNamespaces.AUTH)
 @namespace_create_user_with_github.route("/create-user-with-github")
 class CreateUserWithGithub(PsycopgResource):
 
-    @namespace_user.doc(
+    @namespace_user_old.doc(
         description="""
         Creates a new user with Github account
         """,

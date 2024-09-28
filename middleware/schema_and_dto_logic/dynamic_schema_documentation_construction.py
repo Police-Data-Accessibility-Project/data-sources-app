@@ -73,7 +73,9 @@ def add_description_info_from_validators(
 
 
 # region Classes
-def add_description_info_from_enum(field_value: marshmallow_fields.Enum, description: str):
+def add_description_info_from_enum(
+    field_value: marshmallow_fields.Enum, description: str
+):
     enum_class = field_value.enum
     description += f" Must be one of: {[x.value for x in enum_class]}."
     return description
@@ -97,7 +99,9 @@ class FieldInfo:
         )
         self.required = field_value.required
         self.restx_field_type = self._map_field_type(self.marshmallow_field_type)
-        self.source = _get_required_argument("source", self.metadata, self.parent_schema_class)
+        self.source = _get_required_argument(
+            "source", self.metadata, self.parent_schema_class
+        )
 
     def _get_description(
         self,
@@ -183,9 +187,7 @@ class RestxModelBuilder(RestxBuilder):
             return self._build_nested_field_as_model(fi)
         if fi.restx_field_type == restx_fields.List:
             return self._build_list_field(fi)
-        return fi.restx_field_type(
-            required=fi.required, description=fi.description
-        )
+        return fi.restx_field_type(required=fi.required, description=fi.description)
 
     def _build_list_field(self, fi: FieldInfo):
         # Get interior field of Marshmallow List
@@ -198,8 +200,6 @@ class RestxModelBuilder(RestxBuilder):
         inner_restx_field = self._get_restx_field(inner_field_info)
 
         return restx_fields.List(inner_restx_field, attribute=fi.field_name)
-
-
 
     def build_restx_submodel(self, placeholder: RestxModelPlaceholder, fi: FieldInfo):
         """
@@ -232,8 +232,7 @@ class RestxModelBuilder(RestxBuilder):
 
     def _build_nested_field_as_model(self, fi: FieldInfo):
         sub_schema = fi.marshmallow_field_value.schema
-        sub_schema_class = type(sub_schema)
-        fields = MarshmallowFieldSorter(sub_schema_class).model_fields
+        fields = MarshmallowFieldSorter(sub_schema).model_fields
         submodel_builder = RestxModelBuilder(
             namespace=self.namespace,
             model_name=f"{self.model_name} {fi.field_name}",
@@ -254,13 +253,16 @@ class MarshmallowFieldSorter:
     Sorts Marshmallow fields into either a list of parser fields and a list of model fields
     """
 
-    def __init__(self, schema_class: type[SchemaTypes]):
+    def __init__(self, schema: SchemaTypes):
         self.parser_fields = []
         self.model_fields = []
-        self.sort_fields(schema_class)
+        self.sort_fields(schema)
 
-    def sort_fields(self, schema_class: type[SchemaTypes]):
-        fields = schema_class().fields
+    def sort_fields(self, schema: SchemaTypes):
+        if hasattr(schema, "dump_fields"):
+            fields = schema.dump_fields
+        else:
+            fields = schema._declared_fields
         for field_name, field_value in fields.items():
             fi = FieldInfo(
                 field_name=field_name,
@@ -281,16 +283,16 @@ class RestxParamDocumentationBuilder:
     def __init__(
         self,
         namespace: Namespace,
-        schema_class: Type[SchemaTypes],
+        schema: SchemaTypes,
         model_name: Optional[str] = None,
     ):
-        model_name = model_name or schema_class.__name__
+        model_name = model_name or schema.__class__.__name__
         self.parser_builder = RestxParserBuilder(namespace.parser())
         self.model_builder = RestxModelBuilder(
             namespace=namespace, model_name=model_name
         )
         self.namespace = namespace  #
-        self.schema_class = schema_class
+        self.schema_class = schema
 
     def build(self) -> FlaskRestxDocInfo:
         self._populate_fields()
@@ -307,7 +309,7 @@ class RestxParamDocumentationBuilder:
 
 def get_restx_param_documentation(
     namespace: Namespace,
-    schema_class: Type[SchemaTypes],
+    schema: SchemaTypes,
     model_name: Optional[str] = None,
 ):
     """
@@ -318,11 +320,11 @@ def get_restx_param_documentation(
         * default: The default value for the field
         * location: The location of url parameters (either "path" or "query")
     :param namespace:
-    :param schema_class:
+    :param schema:
     :param model_name:
     :return:
     """
-    builder = RestxParamDocumentationBuilder(namespace, schema_class, model_name)
+    builder = RestxParamDocumentationBuilder(namespace, schema, model_name)
     return builder.build()
 
 

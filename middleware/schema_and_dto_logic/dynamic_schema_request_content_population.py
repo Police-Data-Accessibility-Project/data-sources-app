@@ -26,7 +26,7 @@ class SourceDataInfo:
 
 
 def populate_schema_with_request_content(
-    schema_class: Type[SchemaTypes], dto_class: Type[DTOTypes]
+    schema: SchemaTypes, dto_class: Type[DTOTypes]
 ) -> DTOTypes:
     """
     Populates a marshmallow schema with request content, given custom arguments in the schema fields
@@ -38,11 +38,10 @@ def populate_schema_with_request_content(
     :return:
     """
     # Get all declared fields from the schema
-    schema_obj = schema_class()
-    fields = schema_obj.fields
-    source_data_info = _get_data_from_sources(fields, schema_class)
+    fields = schema.fields
+    source_data_info = _get_data_from_sources(fields, schema)
 
-    intermediate_data = validate_data(source_data_info.data, schema_obj)
+    intermediate_data = validate_data(source_data_info.data, schema)
 
     _apply_transformation_functions_to_dict(fields, intermediate_data)
 
@@ -76,11 +75,11 @@ class InvalidSourceMappingError(Exception):
 
 
 
-def _get_data_from_sources(fields: dict, schema_class: Type[SchemaTypes]) -> SourceDataInfo:
+def _get_data_from_sources(fields: dict, schema: SchemaTypes) -> SourceDataInfo:
     """
     Get data from sources specified in the schema and field metadata
     :param fields:
-    :param schema_class:
+    :param schema:
     :return:
     """
     data = {}
@@ -88,7 +87,7 @@ def _get_data_from_sources(fields: dict, schema_class: Type[SchemaTypes]) -> Sou
     for field_name, field_value in fields.items():
         metadata = field_value.metadata
         source: SourceMappingEnum = _get_required_argument(
-            "source", metadata, schema_class
+            "source", metadata, schema
         )
         if isinstance(field_value, marshmallow.fields.Nested):
             if source != SourceMappingEnum.JSON:

@@ -19,6 +19,7 @@ class AppNamespaces(Enum):
     )
     TYPEAHEAD = NamespaceAttributes(path="typeahead", description="Typeahead Namespace")
     CHECK = NamespaceAttributes(path="check", description="Check Namespace")
+    USER = NamespaceAttributes(path="user", description="User Profile Namespace")
 
 
 def create_namespace(

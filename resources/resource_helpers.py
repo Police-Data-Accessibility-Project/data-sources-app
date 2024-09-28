@@ -1,6 +1,7 @@
 """
 Helper scripts for the Resource classes
 """
+
 from http import HTTPStatus
 from typing import Optional
 
@@ -53,6 +54,7 @@ def create_id_and_message_model(namespace: Namespace) -> Model:
         },
     )
 
+
 def create_variable_columns_model(namespace: Namespace, name_snake_case: str) -> Model:
     """
     Creates a generic model for an entry with variable columns
@@ -72,7 +74,10 @@ def create_variable_columns_model(namespace: Namespace, name_snake_case: str) ->
         },
     )
 
-def create_response_dictionary(success_message: str, success_model: Model = None) -> dict:
+
+def create_response_dictionary(
+    success_message: str, success_model: Model = None
+) -> dict:
     success_msg = "Success. " + success_message
 
     if success_model is not None:
@@ -86,6 +91,7 @@ def create_response_dictionary(success_message: str, success_model: Model = None
         HTTPStatus.BAD_REQUEST: "Bad request. Missing or bad authentication or parameters",
         HTTPStatus.FORBIDDEN: "Unauthorized. Forbidden or invalid authentication.",
     }
+
 
 def create_jwt_tokens_model(namespace: Namespace) -> Model:
     return namespace.model(
@@ -158,13 +164,13 @@ def create_search_model(namespace: Namespace) -> Model:
             ),
             "county": fields.Nested(
                 search_result_inner_wrapper_model,
-                description="Results for the county jurisdiction"
+                description="Results for the county jurisdiction",
             ),
             "locality": fields.Nested(
                 search_result_inner_wrapper_model,
-                description="Results for the locality jurisdiction"
+                description="Results for the locality jurisdiction",
             ),
-        }
+        },
     )
 
     search_result_outer_model = namespace.model(
@@ -187,8 +193,8 @@ def create_search_model(namespace: Namespace) -> Model:
 
 def column_permissions_description(
     head_description: str,
-    sub_description: str,
-    column_permissions_str_table: str
+    column_permissions_str_table: str,
+    sub_description: str = "",
 ) -> str:
     """
     Creates a formatted description for column permissions
