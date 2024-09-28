@@ -4,7 +4,7 @@ import psycopg
 from flask_jwt_extended import get_jwt_identity, decode_token
 
 from database_client.database_client import DatabaseClient
-from tests.fixtures import dev_db_connection, flask_client_with_db
+from tests.conftest import dev_db_connection, flask_client_with_db
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     login_and_return_jwt_tokens,

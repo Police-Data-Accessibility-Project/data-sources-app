@@ -1,3 +1,6 @@
+from collections import namedtuple
+from http import HTTPStatus
+
 from database_client.enums import SortOrder
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyBaseDTO
 
@@ -13,26 +16,31 @@ AGENCIES_BASE_ENDPOINT = "/api/agencies"
 AGENCIES_BY_ID_ENDPOINT = AGENCIES_BASE_ENDPOINT + "/{agency_id}"
 
 
+GET_MANY_TEST_QUERY_ARGS = "query_dict,expected_dto"
 GET_MANY_TEST_QUERY_PARAMS = (
         ({"page": "1"}, GetManyBaseDTO(page=1, sort_order=SortOrder.DESCENDING)),
         (
-            {"page": "1", "sort_by": "agency_name"},
-            GetManyBaseDTO(page=1, sort_by="agency_name", sort_order=SortOrder.DESCENDING),
+            {"page": "1", "sort_by": "column1"},
+            GetManyBaseDTO(page=1, sort_by="column1", sort_order=SortOrder.DESCENDING),
         ),
         (
-            {"page": "1", "sort_by": "agency_name", "sort_order": "DESC"},
+            {"page": "1", "sort_by": "column1", "sort_order": "DESC"},
             GetManyBaseDTO(
-                page=1, sort_by="agency_name", sort_order=SortOrder.DESCENDING
+                page=1, sort_by="column1", sort_order=SortOrder.DESCENDING
             ),
         ),
         (
-            {"page": "1", "sort_by": "agency_name", "sort_order": "ASC"},
+            {"page": "1", "sort_by": "column1", "sort_order": "ASC"},
             GetManyBaseDTO(
-                page=1, sort_by="agency_name", sort_order=SortOrder.ASCENDING
+                page=1, sort_by="column1", sort_order=SortOrder.ASCENDING
             ),
         ),
         (
             {"page": "1", "requested_columns": "column1,column2"},
             GetManyBaseDTO(page=1, requested_columns=["column1", "column2"], sort_order=SortOrder.DESCENDING),
         ),
+)
+ResponseTuple = namedtuple("ResponseTuple", ["response", "status_code"])
+TEST_RESPONSE = ResponseTuple(
+    response={"message": "Test Response"}, status_code=HTTPStatus.IM_A_TEAPOT
 )

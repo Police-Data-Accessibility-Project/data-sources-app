@@ -1,33 +1,20 @@
-from http import HTTPStatus
-
 import pytest
-from flask.testing import FlaskClient
-from marshmallow import fields
 
-from database_client.enums import SortOrder, LocationType
+from database_client.enums import LocationType
 from middleware.enums import JurisdictionType, AgencyType
 from middleware.primary_resource_logic.agencies import (
     AgenciesPostDTO,
     AgencyInfoPostDTO,
     LocationInfoDTO,
-    AgenciesPutDTO,
-    AgencyInfoPutDTO,
-    AgencyInfoPutSchema,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyBaseDTO
-from tests.fixtures import (
-    mock_database_client,
-    client_with_mock_db,
-    ClientWithMockDB,
-    bypass_authentication_required,
-)
+from tests.conftest import ClientWithMockDB, client_with_mock_db, bypass_authentication_required, mock_database_client
 from tests.helper_scripts.common_mocks_and_patches import patch_and_return_mock
 from tests.helper_scripts.constants import (
     GET_MANY_TEST_QUERY_PARAMS,
     AGENCIES_BASE_ENDPOINT,
 )
 from tests.helper_scripts.helper_functions import add_query_params
-from tests.helper_scripts.simple_result_validators import check_response_status
 
 
 @pytest.mark.parametrize(

@@ -22,7 +22,7 @@ namespace_permissions = create_namespace(namespace_attributes=AppNamespaces.AUTH
 
 doc_info = get_restx_param_documentation(
     namespace=namespace_permissions,
-    schema_class=PermissionsRequestSchema,
+    schema=PermissionsRequestSchema,
     model_name="PermissionRequest",
 )
 
@@ -82,7 +82,7 @@ class Permissions(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=update_permissions_wrapper,
             schema_populate_parameters=SchemaPopulateParameters(
-                schema_class=PermissionsRequestSchema,
+                schema=PermissionsRequestSchema(),
                 dto_class=PermissionsRequest,
             )
         )

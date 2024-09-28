@@ -27,24 +27,24 @@ namespace_typeahead_suggestions = create_namespace(
 
 query_doc_info = get_restx_param_documentation(
     namespace=namespace_typeahead_suggestions,
-    schema_class=TypeaheadSchema,
+    schema=TypeaheadSchema,
 )
 
 locations_doc_info = get_restx_param_documentation(
     namespace=namespace_typeahead_suggestions,
-    schema_class=TypeaheadLocationsOuterResponseSchema,
+    schema=TypeaheadLocationsOuterResponseSchema,
 )
 
 agencies_doc_info = get_restx_param_documentation(
     namespace=namespace_typeahead_suggestions,
-    schema_class=TypeaheadAgenciesOuterResponseSchema,
+    schema=TypeaheadAgenciesOuterResponseSchema,
 )
 
 def get_typeahead_kwargs(db_client_method: Callable) -> dict:
     return {
         "wrapper_function": get_typeahead_results,
         "schema_populate_parameters": SchemaPopulateParameters(
-            schema_class=TypeaheadSchema,
+            schema=TypeaheadSchema(),
             dto_class=TypeaheadDTO,
         ),
         "db_client_method": db_client_method,

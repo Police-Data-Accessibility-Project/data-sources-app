@@ -19,6 +19,7 @@ from middleware.custom_dataclasses import (
 from middleware.dynamic_request_logic.common_functions import check_for_id
 from middleware.dynamic_request_logic.delete_logic import delete_entry
 from middleware.dynamic_request_logic.get_by_id_logic import get_by_id
+from middleware.dynamic_request_logic.get_many_logic import get_many
 from middleware.dynamic_request_logic.post_logic import post_entry, PostLogic
 from middleware.dynamic_request_logic.put_logic import put_entry
 from middleware.dynamic_request_logic.supporting_classes import (
@@ -35,9 +36,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
 from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
 
 from middleware.common_response_formatting import (
-    format_list_response,
     multiple_results_response,
-    created_id_response,
     message_response,
 )
 from utilities.enums import SourceMappingEnum
@@ -129,9 +128,7 @@ def create_data_request_wrapper(
 
 
 def get_data_requests_wrapper(
-        db_client: DatabaseClient,
-        dto: GetManyBaseDTO,
-        access_info: AccessInfo
+    db_client: DatabaseClient, dto: GetManyBaseDTO, access_info: AccessInfo
 ) -> Response:
     """
     Get data requests
@@ -140,63 +137,16 @@ def get_data_requests_wrapper(
     :param access_info:
     :return:
     """
-
-    relation_role = get_data_requests_relation_role(
-        db_client, data_request_id=None, access_info=access_info
+    return get_many(
+        middleware_parameters=MiddlewareParameters(
+            db_client=db_client,
+            access_info=access_info,
+            entry_name="data requests",
+            relation=RELATION,
+            db_client_method=DatabaseClient.get_data_requests,
+        ),
+        page=dto.page
     )
-    formatted_data_requests = get_formatted_data_requests(
-        access_info=access_info,
-        db_client=db_client,
-        relation_role=relation_role,
-        dto=dto
-    )
-    formatted_list_response = format_list_response(formatted_data_requests)
-
-    return make_response(
-        formatted_list_response,
-        HTTPStatus.OK,
-    )
-
-
-def get_formatted_data_requests(access_info, db_client, relation_role, dto: GetManyBaseDTO) -> list[dict]:
-
-    if relation_role == RelationRoleEnum.ADMIN:
-        return get_data_requests_with_permitted_columns(
-            db_client,
-            relation_role,
-            dto
-        )
-    elif relation_role == RelationRoleEnum.STANDARD:
-        return get_standard_and_owner_zipped_data_requests(
-            access_info.user_email, db_client, dto
-        )
-    raise ValueError(f"Invalid relation role: {relation_role}")
-
-
-def get_standard_and_owner_zipped_data_requests(
-        user_email,
-        db_client,
-        dto: GetManyBaseDTO
-):
-    user_id = db_client.get_user_id(user_email)
-    # Create two requests -- one where the user is the creator and one where the user is not
-    mapping = [WhereMapping(column="creator_user_id", eq=False, value=user_id)]
-    zipped_standard_requests = get_data_requests_with_permitted_columns(
-        db_client=db_client,
-        relation_role=RelationRoleEnum.STANDARD,
-        where_mappings=mapping,
-        dto=dto
-    )
-    mapping = [WhereMapping(column="creator_user_id", value=user_id)]
-    zipped_owner_requests = get_data_requests_with_permitted_columns(
-        db_client=db_client,
-        relation_role=RelationRoleEnum.OWNER,
-        where_mappings=mapping,
-        dto=dto
-    )
-    # Combine these so that the owner requests are listed first
-    zipped_data_requests = zipped_owner_requests + zipped_standard_requests
-    return zipped_data_requests
 
 
 def get_data_requests_with_permitted_columns(

@@ -24,12 +24,7 @@ from middleware.schema_and_dto_logic.response_schemas import (
     IDAndMessageSchema,
 )
 
-from tests.fixtures import (
-    dev_db_connection,
-    flask_client_with_db,
-    dev_db_client,
-    integration_test_admin_setup,
-)
+from tests.conftest import dev_db_connection, dev_db_client, flask_client_with_db, integration_test_admin_setup
 from tests.helper_scripts.constants import AGENCIES_BASE_ENDPOINT
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup_db_client,

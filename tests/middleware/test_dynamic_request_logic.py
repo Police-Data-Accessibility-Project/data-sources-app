@@ -27,7 +27,7 @@ from middleware.primary_resource_logic.data_requests import RelatedSourceByIDDTO
 
 from middleware.schema_and_dto_logic.response_schemas import EntryDataResponseSchema
 from middleware.util_dynamic import call_if_not_none, execute_if_not_none
-from tests.fixtures import mock_flask_response_manager, FakeAbort
+from tests.conftest import FakeAbort, mock_flask_response_manager
 from tests.helper_scripts.common_mocks_and_patches import (
     patch_and_return_mock,
     multi_monkeypatch,

@@ -3,7 +3,7 @@
 from http import HTTPStatus
 import psycopg
 
-from tests.fixtures import dev_db_connection, flask_client_with_db
+from tests.conftest import dev_db_connection, flask_client_with_db
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
 )

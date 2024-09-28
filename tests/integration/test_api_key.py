@@ -4,7 +4,7 @@ from http import HTTPStatus
 
 from database_client.database_client import DatabaseClient
 from resources.ApiKey import API_KEY_ROUTE
-from tests.fixtures import dev_db_connection, flask_client_with_db, dev_db_client
+from tests.conftest import dev_db_connection, dev_db_client, flask_client_with_db
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
 )

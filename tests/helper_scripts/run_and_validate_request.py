@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Optional, Type
+from typing import Optional, Type, Union
 
 from flask.testing import FlaskClient
 from marshmallow import Schema
@@ -14,7 +14,7 @@ def run_and_validate_request(
     endpoint: str,
     expected_response_status: HTTPStatus = HTTPStatus.OK,
     expected_json_content: Optional[dict] = None,
-    expected_schema: Optional[Type[Schema]] = None,
+    expected_schema: Optional[Union[Type[Schema], Schema]] = None,
     query_parameters: Optional[dict] = None,
     **request_kwargs,
 ):
@@ -44,9 +44,13 @@ def run_and_validate_request(
         try:
             assert response.json == expected_json_content
         except AssertionError:
-            raise AssertionError(f"Expected {expected_json_content} but got {response.json}")
+            raise AssertionError(
+                f"Expected {expected_json_content} but got {response.json}"
+            )
 
     if expected_schema is not None:
-        expected_schema().load(response.json)
+        if not isinstance(expected_schema, Schema):
+            expected_schema = expected_schema()
+        expected_schema.load(response.json)
 
     return response.json

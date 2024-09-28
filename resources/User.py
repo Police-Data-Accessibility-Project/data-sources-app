@@ -13,25 +13,25 @@ from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 from middleware.schema_and_dto_logic.dynamic_schema_request_content_population import populate_schema_with_request_content
 
-namespace_user = create_namespace()
+namespace_user_old = create_namespace()
 
 # Define the user model for request parsing and validation
-user_model = create_user_model(namespace_user)
+user_model = create_user_model(namespace_user_old)
 
-authorization_parser = namespace_user.parser()
+authorization_parser = namespace_user_old.parser()
 add_api_key_header_arg(authorization_parser)
 
 
-@namespace_user.route("/user")
+@namespace_user_old.route("/user")
 class User(PsycopgResource):
     """
     A resource for user management, allowing new users to sign up and existing users to update their passwords.
     """
 
     @handle_exceptions
-    @namespace_user.expect(user_model)
-    @namespace_user.response(HTTPStatus.OK, "Success: User created")
-    @namespace_user.response(500, "Error: Internal server error")
+    @namespace_user_old.expect(user_model)
+    @namespace_user_old.response(HTTPStatus.OK, "Success: User created")
+    @namespace_user_old.response(500, "Error: Internal server error")
     def post(self) -> Response:
         """
         Allows a new user to sign up by providing an email and password.
@@ -45,7 +45,7 @@ class User(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=user_post_results,
             schema_populate_parameters=SchemaPopulateParameters(
-                schema_class=UserRequestSchema,
+                schema=UserRequestSchema(),
                 dto_class=UserRequest,
             ),
         )
@@ -53,10 +53,10 @@ class User(PsycopgResource):
 
     # Endpoint for updating a user's password
     @handle_exceptions
-    @namespace_user.expect(authorization_parser, user_model)
-    @namespace_user.response(201, "Success: User password successfully updated")
-    @namespace_user.response(500, "Error: Internal server error")
-    @namespace_user.doc(
+    @namespace_user_old.expect(authorization_parser, user_model)
+    @namespace_user_old.response(201, "Success: User password successfully updated")
+    @namespace_user_old.response(500, "Error: Internal server error")
+    @namespace_user_old.doc(
         description="Update user password.",
     )
     def put(self) -> Dict[str, Any]:
@@ -70,7 +70,7 @@ class User(PsycopgResource):
         - A dictionary containing a success message or an error message if the operation fails.
         """
         dto = populate_schema_with_request_content(
-            schema_class=UserRequestSchema,
+            schema=UserRequestSchema(),
             dto_class=UserRequest,
         )
         with self.setup_database_client() as db_client:
