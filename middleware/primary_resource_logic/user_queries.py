@@ -59,7 +59,7 @@ def user_post_results(db_client: DatabaseClient, dto: UserRequest) -> Response:
     """
     password_digest = generate_password_hash(dto.password)
     try:
-        db_client.add_new_user(dto.email, password_digest)
+        db_client.create_new_user(dto.email, password_digest)
     except DuplicateUserError:
         return message_response(
             status_code=HTTPStatus.CONFLICT,

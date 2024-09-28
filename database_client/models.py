@@ -405,6 +405,13 @@ class LinkDataSourceDataRequest(Base):
     )
     request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
 
+class LinkUserFollowedLocation(Base):
+    __tablename__ = Relations.LINK_USER_FOLLOWED_LOCATION.value
+    __table_args__ = PUBLIC_SCHEMA
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
+    location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
 
 class LinkUserFollowedLocation(Base):
     __tablename__ = Relations.LINK_USER_FOLLOWED_LOCATION.value

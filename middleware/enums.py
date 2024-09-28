@@ -47,6 +47,7 @@ class Relations(Enum):
     DATA_SOURCES = "data_sources"
     DATA_SOURCES_ARCHIVE_INFO = "data_sources_archive_info"
     LINK_DATA_SOURCES_DATA_REQUESTS = "link_data_sources_data_requests"
+    LINK_USER_FOLLOWED_LOCATION = "link_user_followed_location"
     RECORD_CATEGORIES = "record_categories"
     RECORD_TYPES = "record_types"
     RELATED_SOURCES = "link_data_sources_data_requests"

@@ -13,6 +13,7 @@ from database_client.models import (
     Locality,
     Location,
     LocationExpanded,
+    LinkUserFollowedLocation,
 )
 
 AGENCY_APPROVED_COLUMNS = [
