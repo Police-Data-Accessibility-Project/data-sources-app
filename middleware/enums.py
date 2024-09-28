@@ -61,7 +61,6 @@ class Relations(Enum):
     LOCATIONS = "locations"
     LOCATIONS_EXPANDED = "locations_expanded"
     USERS = "users"
-    LINK_USER_FOLLOWED_LOCATION = "link_user_followed_location"
 
 class JurisdictionType(Enum):
     """
