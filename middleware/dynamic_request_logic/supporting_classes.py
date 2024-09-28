@@ -6,6 +6,7 @@ from flask import Response
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import RelationRoleEnum
+from database_client.db_client_dataclasses import SubqueryParameters
 from middleware.access_logic import AccessInfo
 from middleware.column_permission_logic import (
     RelationRoleParameters,
@@ -28,6 +29,7 @@ class MiddlewareParameters:
     # Additional arguments for the Database Client method beyond those provided in the given method
     db_client_additional_args: dict = field(default_factory=dict)
     entry_name: str = "entry"
+    subquery_params: list[SubqueryParameters] = field(default_factory=list)
 
 
 class IDInfo:

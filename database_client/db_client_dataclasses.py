@@ -89,8 +89,11 @@ class SubqueryParameters:
     """
 
     relation_name: str
-    columns: list[str]
     linking_column: str
+    columns: list[str] = None
+
+    def set_columns(self, columns: list[str]) -> None:
+        self.columns = columns
 
     def build_subquery(self, primary_relation: str) -> ExecutableOption:
         """Creates a SQLAlchemy ExecutableOption for subquerying.

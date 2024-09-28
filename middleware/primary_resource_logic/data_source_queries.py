@@ -5,7 +5,7 @@ from flask import make_response, Response
 from marshmallow import fields, validate
 
 from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import OrderByParameters, WhereMapping
+from database_client.db_client_dataclasses import OrderByParameters, SubqueryParameters, WhereMapping
 from database_client.enums import ApprovalStatus
 from database_client.result_formatter import ResultFormatter
 from middleware.access_logic import AccessInfo
@@ -31,6 +31,7 @@ from utilities.common import match_string_to_enum
 from utilities.enums import SourceMappingEnum
 
 RELATION = Relations.DATA_SOURCES.value
+SUBQUERY_PARAMS = [SubqueryParameters(relation_name=Relations.AGENCIES.value, linking_column="agencies")]
 
 
 class DataSourceNotFoundError(Exception):
@@ -92,6 +93,7 @@ def data_source_by_id_wrapper(
             db_client_method=DatabaseClient.get_data_sources,
             db_client=db_client,
             entry_name="data source",
+            subquery_params=SUBQUERY_PARAMS,
         ),
         id=dto.resource_id,
         id_column_name="airtable_uid",
