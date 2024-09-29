@@ -219,7 +219,7 @@ class County(Base):
     airtable_uid: Mapped[Optional[text]]
     airtable_county_last_modified: Mapped[Optional[text]]
     airtable_county_created: Mapped[Optional[text]]
-    state_id: Mapped[Optional[int]]
+    state_id: Mapped[Optional[int]] = mapped_column(ForeignKey("public.us_states.id"))
 
 
 class Locality(Base):
@@ -404,6 +404,7 @@ class LinkDataSourceDataRequest(Base):
     )
     request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
 
+
 class LinkUserFollowedLocation(Base):
     __tablename__ = Relations.LINK_USER_FOLLOWED_LOCATION.value
 
@@ -494,7 +495,7 @@ def convert_to_column_reference(columns: list[str], relation: str) -> list[Colum
         raise ValueError(
             f"SQL Model does not exist in SQL_ALCHEMY_TABLE_REFERENCE: {relation}"
         )
-    
+
     def get_attribute(column: str) -> Column:
         try:
             return getattr(relation_reference, column)

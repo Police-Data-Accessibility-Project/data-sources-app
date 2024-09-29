@@ -26,7 +26,14 @@ from middleware.exceptions import (
     UserNotFoundError,
     DuplicateUserError,
 )
-from database_client.models import ExternalAccount, TestTable, User
+from database_client.models import (
+    Agency,
+    AgencySourceLink,
+    DataSource,
+    ExternalAccount,
+    TestTable,
+    User,
+)
 from middleware.enums import PermissionsEnum, Relations
 from tests.conftest import live_database_client, test_table_data
 from tests.helper_scripts.common_test_data import (
@@ -285,6 +292,59 @@ def test_select_from_relation_all_parameters(
 
     assert results == [
         {"pet_name": "Arthur"},
+    ]
+
+
+def test_select_from_relation_subquery(live_database_client: DatabaseClient):
+    agency_id = uuid.uuid4().hex
+    data_source_id = uuid.uuid4().hex
+    agency_name = uuid.uuid4().hex
+    data_source_name = uuid.uuid4().hex
+
+    live_database_client.execute_sqlalchemy(
+        lambda: insert(Agency).values(
+            airtable_uid=agency_id, name=agency_name, jurisdiction_type="federal"
+        )
+    )
+    live_database_client.execute_sqlalchemy(
+        lambda: insert(DataSource).values(
+            airtable_uid=data_source_id, name=data_source_name
+        )
+    )
+    live_database_client.execute_sqlalchemy(
+        lambda: insert(AgencySourceLink).values(
+            data_source_uid=data_source_id, agency_uid=agency_id
+        )
+    )
+
+    where_mappings = [WhereMapping(column="airtable_uid", value=data_source_id)]
+    subquery_parameters = [
+        SubqueryParameters(
+            relation_name="agencies",
+            columns=["airtable_uid", "name"],
+            linking_column="agencies",
+        )
+    ]
+
+    results = live_database_client._select_from_relation(
+        relation_name="data_sources",
+        columns=["airtable_uid", "name"],
+        where_mappings=where_mappings,
+        subquery_parameters=subquery_parameters,
+    )
+
+    assert results == [
+        {
+            "name": data_source_name,
+            "airtable_uid": data_source_id,
+            "agency_ids": [agency_id],
+            "agencies": [
+                {
+                    "name": agency_name,
+                    "airtable_uid": agency_id,
+                }
+            ],
+        }
     ]
 
 
@@ -763,6 +823,7 @@ def test_get_column_permissions_as_permission_table(
         },
     ]
 
+
 # Commented out until: https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/458
 # def test_get_agencies_without_homepage_urls(live_database_client):
 #     submitted_name = create_agency_entry_for_search_cache(
@@ -888,17 +949,14 @@ def test_get_columns_for_relation(live_database_client):
 
     columns = live_database_client.get_columns_for_relation(Relations.TEST_TABLE)
 
-    assert columns == [
-        "id",
-        "pet_name",
-        "species"
-    ]
+    assert columns == ["id", "pet_name", "species"]
+
 
 def test_create_or_get(live_database_client):
 
     results = live_database_client.create_or_get(
         table_name="test_table",
-        column_value_mappings={"pet_name": "Schnoodles", "species": "Rat"}
+        column_value_mappings={"pet_name": "Schnoodles", "species": "Rat"},
     )
 
     assert results
@@ -906,7 +964,7 @@ def test_create_or_get(live_database_client):
     # Check that the same results are returned if the entry already exists
     new_results = live_database_client.create_or_get(
         table_name="test_table",
-        column_value_mappings={"pet_name": "Schnoodles", "species": "Rat"}
+        column_value_mappings={"pet_name": "Schnoodles", "species": "Rat"},
     )
 
     assert results == new_results
@@ -947,53 +1005,3 @@ def test_create_or_get(live_database_client):
 #
 #     assert len(results) == 1
 #     assert results[0].data_source_name == 'Xylodammerung Police Department Stops'
-
-
-def test_subquery(live_database_client: DatabaseClient):
-    import json
-    from time import perf_counter
-
-    data_sources_columns = live_database_client.get_permitted_columns(
-        relation="data_sources",
-        role=RelationRoleEnum.ADMIN,
-        column_permission=ColumnPermissionEnum.READ,
-    )
-    agencies_columns = live_database_client.get_permitted_columns(
-        relation="agencies",
-        role=RelationRoleEnum.ADMIN,
-        column_permission=ColumnPermissionEnum.READ,
-    )
-    where_mappings = [WhereMapping(column="airtable_uid", value="rechI06qD4od759xT")]
-    subquery_parameters = [
-        SubqueryParameters(
-            relation_name="agencies",
-            columns=agencies_columns,
-            linking_column="agencies",
-        )
-    ]
-
-    # Run normal single select query
-    single_start = perf_counter()
-    results = live_database_client._select_from_relation(
-        relation_name="data_sources",
-        columns=data_sources_columns,
-        where_mappings=where_mappings,
-        subquery_parameters=subquery_parameters,
-    )
-    single_stop = perf_counter()
-
-    # Run subquery select
-    """subquery_start = perf_counter()
-    results = live_database_client.execute_subquery(
-        relation_name="data_sources",
-        subrelation_name="agencies",
-        linking_column="agencies",
-        columns=data_sources_columns,
-        subcolumns=agencies_columns,
-        where_mappings=where_mappings,
-    )
-    subquery_stop = perf_counter()"""
-
-    print(f"\nSingle select time: {single_stop - single_start}")
-    # print(f"Subquery time: {subquery_stop - subquery_start}")
-    print(json.dumps(results, indent=4))
