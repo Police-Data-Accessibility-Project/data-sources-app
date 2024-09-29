@@ -24,7 +24,7 @@ from middleware.enums import (
     JurisdictionType,
 )
 from resources.ApiKey import API_KEY_ROUTE
-from tests.helper_scripts.common_test_data import TEST_RESPONSE
+from tests.helper_scripts.constants import TEST_RESPONSE
 from tests.helper_scripts.simple_result_validators import check_response_status
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_classes.UserInfo import UserInfo

@@ -1,8 +1,7 @@
 from typing import Any
 from unittest.mock import MagicMock, patch
 
-from tests.helper_scripts.common_test_data import TEST_RESPONSE
-
+from tests.helper_scripts.constants import TEST_RESPONSE
 
 
 def multi_monkeypatch(

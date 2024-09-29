@@ -131,7 +131,7 @@ class PsycopgResource(Resource):
             )
         elif schema_populate_parameters is not None:
             dto = populate_schema_with_request_content(
-                schema_class=schema_populate_parameters.schema_class,
+                schema=schema_populate_parameters.schema,
                 dto_class=schema_populate_parameters.dto_class,
             )
         with self.setup_database_client() as db_client:

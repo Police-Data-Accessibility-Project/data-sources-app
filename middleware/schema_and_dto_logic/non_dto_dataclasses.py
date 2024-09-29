@@ -17,7 +17,7 @@ class FlaskRestxDocInfo:
 
 @dataclass
 class SchemaPopulateParameters:
-    schema_class: Type[SchemaTypes]
+    schema: SchemaTypes
     dto_class: Type[DTOTypes]
 
 

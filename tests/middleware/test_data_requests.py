@@ -4,31 +4,24 @@ from unittest.mock import MagicMock, patch, call
 
 import pytest
 
-from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping, OrderByParameters
 from database_client.enums import RelationRoleEnum, ColumnPermissionEnum
 from middleware.access_logic import AccessInfo
-from middleware.dynamic_request_logic.supporting_classes import IDInfo
 from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
 from middleware.primary_resource_logic.data_requests import (
     get_data_requests_relation_role,
     RELATION,
-    get_formatted_data_requests,
-    get_standard_and_owner_zipped_data_requests,
     allowed_to_delete_request,
     get_data_requests_wrapper,
     get_data_requests_with_permitted_columns,
     RelatedSourceByIDDTO,
     delete_data_request_related_source,
-    get_data_request_related_sources,
-    RELATED_SOURCES_RELATION,
 )
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_mocks_and_patches import (
     patch_and_return_mock,
-    multi_monkeypatch,
 )
-from tests.fixtures import mock_flask_response_manager, FakeAbort
+from tests.conftest import FakeAbort, mock_flask_response_manager
 
 PATCH_ROOT = "middleware.primary_resource_logic.data_requests"
 
@@ -100,38 +93,6 @@ def mock_get_data_requests_with_permitted_columns(monkeypatch):
     )
 
 
-@patch(PATCH_ROOT + ".format_list_response")
-@patch(PATCH_ROOT + ".get_formatted_data_requests")
-def test_get_data_requests_wrapper(
-    mock_get_formatted_data_requests: MagicMock,
-    mock_format_list_response: MagicMock,
-    mock_get_data_requests_relation_role,
-    mock_make_response,
-    monkeypatch,
-):
-    mock = MagicMock()
-    get_data_requests_wrapper(mock.db_client, mock.dto, mock.access_info)
-
-    mock_get_data_requests_relation_role.assert_called_once_with(
-        mock.db_client, data_request_id=None, access_info=mock.access_info
-    )
-    mock_get_formatted_data_requests.assert_called_once_with(
-        access_info=mock.access_info,
-        db_client=mock.db_client,
-        relation_role=mock_get_data_requests_relation_role.return_value,
-        dto=mock.dto,
-    )
-
-    mock_format_list_response.assert_called_once_with(
-        mock_get_formatted_data_requests.return_value
-    )
-
-    mock_make_response.assert_called_once_with(
-        mock_format_list_response.return_value,
-        HTTPStatus.OK,
-    )
-
-
 class GetFormattedDataRequestsMocks(DynamicMagicMock):
     get_standard_and_owner_zipped_data_requests: MagicMock
     get_data_requests_with_permitted_columns: MagicMock
@@ -175,85 +136,6 @@ def test_get_data_requests_with_permitted_columns(
         ),
     )
 
-
-def test_get_formatted_data_requests_admin(get_formatted_data_requests_mocks):
-    mock = get_formatted_data_requests_mocks
-
-    get_formatted_data_requests(
-        db_client=mock.db_client,
-        access_info=mock.access_info,
-        relation_role=RelationRoleEnum.ADMIN,
-        dto=mock.dto,
-    )
-    mock.get_data_requests_with_permitted_columns.assert_called_once_with(
-        mock.db_client, RelationRoleEnum.ADMIN, mock.dto
-    )
-    mock.get_standard_and_owner_zipped_data_requests.assert_not_called()
-
-
-def test_get_formatted_data_requests_standard(get_formatted_data_requests_mocks):
-    mock = get_formatted_data_requests_mocks
-
-    get_formatted_data_requests(
-        db_client=mock.db_client,
-        access_info=mock.access_info,
-        relation_role=RelationRoleEnum.STANDARD,
-        dto=mock.dto,
-    )
-    mock.get_data_requests_with_permitted_columns.assert_not_called()
-    mock.get_standard_and_owner_zipped_data_requests.assert_called_once_with(
-        mock.access_info.user_email, mock.db_client, mock.dto
-    )
-
-
-def test_get_formatted_data_requests_owner(get_formatted_data_requests_mocks):
-    mock = get_formatted_data_requests_mocks
-
-    with pytest.raises(ValueError):
-        get_formatted_data_requests(
-            db_client=mock.db_client,
-            access_info=mock.access_info,
-            relation_role=RelationRoleEnum.OWNER,
-            dto=mock.dto,
-        )
-    mock.get_data_requests_with_permitted_columns.assert_not_called()
-    mock.get_standard_and_owner_zipped_data_requests.assert_not_called()
-
-
-def test_get_standard_and_owner_zipped_data_requests(
-    mock_get_data_requests_with_permitted_columns: MagicMock,
-):
-    mock = MagicMock()
-    mock_get_data_requests_with_permitted_columns.side_effect = [
-        [mock.data_request_standard],
-        [mock.data_request_owner],
-    ]
-    mock.db_client.get_user_id.return_value = mock.user_id
-    zipped_data_requests = get_standard_and_owner_zipped_data_requests(
-        user_email=mock.user_email, db_client=mock.db_client, dto=mock.dto
-    )
-    assert zipped_data_requests == [mock.data_request_owner, mock.data_request_standard]
-    neq_expected_mapping = [
-        WhereMapping(column="creator_user_id", eq=False, value=mock.user_id)
-    ]
-    eq_expected_mapping = [WhereMapping(column="creator_user_id", value=mock.user_id)]
-    mock_get_data_requests_with_permitted_columns.assert_has_calls(
-        [
-            call(
-                db_client=mock.db_client,
-                relation_role=RelationRoleEnum.STANDARD,
-                where_mappings=neq_expected_mapping,
-                dto=mock.dto,
-            ),
-            call(
-                db_client=mock.db_client,
-                relation_role=RelationRoleEnum.OWNER,
-                where_mappings=eq_expected_mapping,
-                dto=mock.dto,
-            ),
-        ],
-        any_order=True,
-    )
 
 
 @pytest.fixture

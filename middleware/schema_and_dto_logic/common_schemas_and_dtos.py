@@ -64,7 +64,7 @@ class GetManyBaseDTO:
 
 
 GET_MANY_SCHEMA_POPULATE_PARAMETERS = SchemaPopulateParameters(
-    schema_class=GetManyBaseSchema,
+    schema=GetManyBaseSchema(),
     dto_class=GetManyBaseDTO,
 )
 

@@ -37,6 +37,11 @@ from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
     create_entry_data_response_model,
 )
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests import (
+    GetManyDataRequestsSchema,
+    DataRequestsSchema,
+    DataRequestsPostSchema,
+)
 from resources.PsycopgResource import PsycopgResource
 from resources.resource_helpers import (
     create_response_dictionary,
@@ -47,8 +52,12 @@ from utilities.namespace import create_namespace, AppNamespaces
 namespace_data_requests = create_namespace(AppNamespaces.DATA_REQUESTS)
 
 entry_data_requests_model = create_entry_data_request_model(namespace_data_requests)
-entry_data_response_model = create_entry_data_response_model(namespace_data_requests)
-data_requests_outer_model = create_get_many_response_model(namespace_data_requests)
+entry_data_response_model = create_entry_data_response_model(
+    namespace_data_requests, entry_data_response_schema=DataRequestsSchema()
+)
+data_requests_outer_model = create_get_many_response_model(
+    namespace_data_requests, get_many_response_schema=GetManyDataRequestsSchema()
+)
 id_and_message_model = create_id_and_message_model(namespace_data_requests)
 
 data_requests_column_permissions = create_column_permissions_string_table(
@@ -82,13 +91,22 @@ class DataRequestsById(PsycopgResource):
             get_data_request_by_id_wrapper,
             access_info=access_info,
             schema_populate_parameters=SchemaPopulateParameters(
-                schema_class=GetByIDBaseSchema, dto_class=GetByIDBaseDTO
+                schema=GetByIDBaseSchema(), dto_class=GetByIDBaseDTO
             ),
         )
 
     @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=OWNER_WRITE_ONLY_AUTH_INFO,
+        input_schema=DataRequestsSchema(
+            exclude=[
+                "id",
+                "date_created",
+                "date_status_last_changed",
+                "creator_user_id",
+            ]
+        ),
+        input_model_name="DataRequestPutSchema",
         description=column_permissions_description(
             head_description="Update data request",
             sub_description="Columns returned are determinant upon the user's "
@@ -136,11 +154,9 @@ class DataRequests(PsycopgResource):
     @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=GET_AUTH_INFO,
-        input_schema=GetManyBaseSchema,
+        input_schema=GetManyBaseSchema(),
         description=column_permissions_description(
             head_description="Get data requests with optional filters",
-            sub_description="For non-admins, data requests the user created will be returned first "
-            "and will include additional columns to reflect ownership",
             column_permissions_str_table=data_requests_column_permissions,
         ),
         responses=create_response_dictionary(
@@ -158,6 +174,15 @@ class DataRequests(PsycopgResource):
     @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=OWNER_WRITE_ONLY_AUTH_INFO,
+        input_schema=DataRequestsPostSchema(
+            only=[
+                "entry_data.submission_notes",
+                "entry_data.location_described_submitted",
+                "entry_data.coverage_range",
+                "entry_data.data_requirements",
+            ]
+        ),
+        input_model_name="DataRequestPostSchema",
         description=column_permissions_description(
             head_description="Create new data request",
             sub_description="Columns permitted to be included by the user is determined by their level of access",
@@ -196,7 +221,7 @@ class DataRequestsRelatedSources(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=get_data_request_related_sources,
             schema_populate_parameters=SchemaPopulateParameters(
-                schema_class=GetByIDBaseSchema, dto_class=GetByIDBaseDTO
+                schema=GetByIDBaseSchema(), dto_class=GetByIDBaseDTO
             ),
         )
 
@@ -220,7 +245,7 @@ class DataRequestsRelatedSourcesById(PsycopgResource):
             access_info=access_info,
             schema_populate_parameters=SchemaPopulateParameters(
                 dto_class=RelatedSourceByIDDTO,
-                schema_class=RelatedSourceByIDSchema,
+                schema=RelatedSourceByIDSchema(),
             ),
         )
 
@@ -239,7 +264,7 @@ class DataRequestsRelatedSourcesById(PsycopgResource):
             wrapper_function=delete_data_request_related_source,
             schema_populate_parameters=SchemaPopulateParameters(
                 dto_class=RelatedSourceByIDDTO,
-                schema_class=RelatedSourceByIDSchema,
+                schema=RelatedSourceByIDSchema(),
             ),
             access_info=access_info,
         )

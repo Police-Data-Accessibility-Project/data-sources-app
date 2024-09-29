@@ -8,13 +8,13 @@ from utilities.enums import SourceMappingEnum
 
 
 def _get_required_argument(
-    argument_name: str, metadata: dict, schema_class: Type[SchemaTypes]
+    argument_name: str, metadata: dict, schema_class: SchemaTypes
 ) -> Any:
     try:
         return metadata[argument_name]
     except KeyError:
         raise MissingArgumentError(
-            f"The argument {argument_name} must be specified as a fields argument in class {schema_class.__name__} (as in `Fields.Str({argument_name}=value`)"
+            f"The argument {argument_name} must be specified as a fields argument in class {schema_class.__class__.__name__} (as in `Fields.Str({argument_name}=value`)"
         )
 
 
@@ -28,3 +28,9 @@ def _get_source_getting_function(source: SourceMappingEnum) -> Callable:
         SourceMappingEnum.PATH: request.view_args.get,
     }
     return source_mapping[source]
+
+def get_json_metadata(description: str) -> dict:
+    return {
+        "description": description,
+        "source": SourceMappingEnum.JSON,
+    }

@@ -14,7 +14,7 @@ from middleware.primary_resource_logic.reset_token_queries import (
     InvalidTokenError,
 )
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
-from tests.fixtures import mock_flask_response_manager
+from tests.conftest import mock_flask_response_manager
 
 
 class RequestResetPasswordMocks(DynamicMagicMock):

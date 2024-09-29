@@ -29,13 +29,14 @@ from resources.RequestResetPassword import namespace_request_reset_password
 from resources.ResetPassword import namespace_reset_password
 from resources.ResetTokenValidation import namespace_reset_token_validation
 from resources.UniqueURLChecker import namespace_url_checker
-from resources.User import namespace_user
+from resources.User import namespace_user_old
 from resources.CreateTestUserWithElevatedPermissions import namespace_create_test_user
+from resources.UserProfile import namespace_user
 
 NAMESPACES = [
     namespace_api_key,
     namespace_request_reset_password,
-    namespace_user,
+    namespace_user_old,
     namespace_reset_token_validation,
     namespace_archives,
     namespace_agencies,
@@ -54,7 +55,8 @@ NAMESPACES = [
     namespace_data_requests,
     # Below should not be enabled until https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/458
     # namespace_homepage_search_cache,
-    namespace_url_checker
+    namespace_url_checker,
+    namespace_user
 ]
 
 MY_PREFIX = "/api"

@@ -18,7 +18,7 @@ namespace_search = create_namespace(namespace_attributes=AppNamespaces.SEARCH)
 
 doc_info = get_restx_param_documentation(
     namespace=namespace_search,
-    schema_class=SearchRequestSchema,
+    schema=SearchRequestSchema,
     model_name="SearchRequest",
 )
 request_parser = doc_info.parser
@@ -62,7 +62,7 @@ class Search(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=search_wrapper,
             schema_populate_parameters=SchemaPopulateParameters(
-                schema_class=SearchRequestSchema,
+                schema=SearchRequestSchema(),
                 dto_class=SearchRequests,
             ),
         )

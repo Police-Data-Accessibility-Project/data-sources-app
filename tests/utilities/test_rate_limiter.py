@@ -1,8 +1,8 @@
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
-from tests.fixtures import client_with_mock_db, bypass_jwt_required
-from tests.helper_scripts.common_test_data import TEST_RESPONSE
+from tests.conftest import client_with_mock_db, bypass_jwt_required
+from tests.helper_scripts.constants import TEST_RESPONSE
 from tests.helper_scripts.simple_result_validators import check_response_status
 
 

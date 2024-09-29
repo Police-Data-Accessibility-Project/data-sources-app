@@ -8,7 +8,7 @@ from tests.helper_scripts.helper_functions import (
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from tests.helper_scripts.simple_result_validators import check_response_status
-from tests.fixtures import dev_db_connection, flask_client_with_db
+from tests.conftest import dev_db_connection, flask_client_with_db
 
 
 def test_reset_token_validation(flask_client_with_db, dev_db_connection, mocker):

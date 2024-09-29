@@ -1,17 +1,13 @@
 import uuid
-from http import HTTPStatus
 from collections import namedtuple
 
 import psycopg
+from flask.testing import FlaskClient
 
 from database_client.database_client import DatabaseClient
 from middleware.enums import JurisdictionType
-
-ResponseTuple = namedtuple("ResponseTuple", ["response", "status_code"])
-
-TEST_RESPONSE = ResponseTuple(
-    response={"message": "Test Response"}, status_code=HTTPStatus.IM_A_TEAPOT
-)
+from tests.helper_scripts.constants import DATA_REQUESTS_BASE_ENDPOINT
+from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
 
 def insert_test_column_permission_data(db_client: DatabaseClient):
@@ -96,3 +92,20 @@ def create_data_source_entry_for_url_duplicate_checking(db_client: DatabaseClien
     except Exception as e:
         # Rollback
         db_client.connection.rollback()
+
+TestDataRequestInfo = namedtuple("TestDataRequestInfo", ["id", "submission_notes"])
+
+def create_test_data_request(
+        flask_client: FlaskClient,
+        jwt_authorization_header: dict
+) -> TestDataRequestInfo:
+    submission_notes = uuid.uuid4().hex
+    json = run_and_validate_request(
+        flask_client=flask_client,
+        http_method="post",
+        endpoint=DATA_REQUESTS_BASE_ENDPOINT,
+        headers=jwt_authorization_header,
+        json={"entry_data": {"submission_notes": submission_notes}},
+    )
+
+    return TestDataRequestInfo(id=json["id"], submission_notes=submission_notes)

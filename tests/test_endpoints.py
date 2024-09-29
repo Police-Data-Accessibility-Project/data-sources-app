@@ -40,7 +40,11 @@ from resources.Search import Search
 from resources.TypeaheadSuggestions import TypeaheadLocations, TypeaheadAgencies
 from resources.UniqueURLChecker import UniqueURLChecker
 from resources.User import User
-from tests.fixtures import client_with_mock_db, ClientWithMockDB
+from resources.UserProfile import (
+    USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL,
+    UserDataRequests,
+)
+from tests.conftest import ClientWithMockDB, client_with_mock_db
 
 # Define constants for HTTP methods
 GET = "get"
@@ -124,6 +128,7 @@ test_parameters = [
     # TestParameters(HomepageSearchCache, "/homepage-search-cache", [GET, POST]),
     TestParameters(TypeaheadAgencies, "/typeahead/agencies", [GET]),
     TestParameters(UniqueURLChecker, "/check/unique-url", [GET]),
+    TestParameters(UserDataRequests, USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL, [GET]),
 ]
 
 

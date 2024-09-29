@@ -44,7 +44,7 @@ namespace_agencies = create_namespace(
 )
 
 models = CRUDModels(
-    namespace_agencies, get_many_response_schema=AgenciesGetManyResponseSchema
+    namespace_agencies, get_many_response_schema=AgenciesGetManyResponseSchema()
 )
 
 agencies_column_permissions = create_column_permissions_string_table(
@@ -59,7 +59,7 @@ class AgenciesByPage(PsycopgResource):
     @endpoint_info(
         namespace=namespace_agencies,
         auth_info=GET_AUTH_INFO,
-        input_schema=GetManyBaseSchema,
+        input_schema=GetManyBaseSchema(),
         description="Get a paginated list of approved agencies",
         responses=create_response_dictionary(
             success_message="Returns a paginated list of approved agencies.",
@@ -82,7 +82,7 @@ class AgenciesByPage(PsycopgResource):
     @endpoint_info(
         namespace=namespace_agencies,
         auth_info=WRITE_ONLY_AUTH_INFO,
-        input_schema=AgenciesPostSchema,
+        input_schema=AgenciesPostSchema(),
         description="Create a new agency",
         responses=create_response_dictionary(
             success_message="Returns the id of the newly created agency.",
@@ -93,7 +93,7 @@ class AgenciesByPage(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=create_agency,
             schema_populate_parameters=SchemaPopulateParameters(
-                schema_class=AgenciesPostSchema,
+                schema=AgenciesPostSchema(),
                 dto_class=AgenciesPostDTO,
             ),
             access_info=access_info,
@@ -119,7 +119,7 @@ class AgenciesById(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=get_agency_by_id,
             schema_populate_parameters=SchemaPopulateParameters(
-                schema_class=GetByIDBaseSchema,
+                schema=GetByIDBaseSchema(),
                 dto_class=GetByIDBaseDTO,
             ),
             access_info=access_info,
@@ -128,7 +128,7 @@ class AgenciesById(PsycopgResource):
     @endpoint_info(
         namespace=namespace_agencies,
         auth_info=WRITE_ONLY_AUTH_INFO,
-        input_schema=AgenciesPutSchema,
+        input_schema=AgenciesPutSchema(),
         description="Updates an agency",
         responses=create_response_dictionary("Agency successfully updated."),
     )

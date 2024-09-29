@@ -28,10 +28,7 @@ from middleware.exceptions import (
 )
 from database_client.models import ExternalAccount, TestTable, User
 from middleware.enums import PermissionsEnum, Relations
-from tests.fixtures import (
-    live_database_client,
-    test_table_data,
-)
+from tests.conftest import live_database_client, test_table_data
 from tests.helper_scripts.common_test_data import (
     insert_test_column_permission_data,
     create_agency_entry_for_search_cache,
