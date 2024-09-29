@@ -3,8 +3,13 @@ from typing import Optional
 
 from flask import Response
 
-from database_client.enums import ColumnPermissionEnum
-from middleware.column_permission_logic import RelationRoleParameters, get_permitted_columns, get_invalid_columns
+from database_client.enums import ColumnPermissionEnum, RelationRoleEnum
+from database_client.db_client_dataclasses import SubqueryParameters
+from middleware.column_permission_logic import (
+    RelationRoleParameters,
+    get_permitted_columns,
+    get_invalid_columns,
+)
 from middleware.common_response_formatting import multiple_results_response
 from middleware.dynamic_request_logic.supporting_classes import MiddlewareParameters
 from middleware.flask_response_manager import FlaskResponseManager
@@ -39,11 +44,16 @@ def get_many(
         permitted_columns, requested_columns
     )
 
+    mp.subquery_params = process_subquery_parameters(
+        requested_columns, relation_role, mp
+    )
+
     results = mp.db_client_method(
         mp.db_client,
         relation_name=mp.relation,
         columns=permitted_columns,
         page=page,
+        subquery_parameters=mp.subquery_params,
         **mp.db_client_additional_args,
     )
     return multiple_results_response(message=f"{mp.entry_name} found", data=results)
@@ -56,6 +66,28 @@ def optionally_limit_to_requested_columns(
         check_requested_columns(requested_columns, permitted_columns)
         permitted_columns = requested_columns
     return permitted_columns
+
+
+def process_subquery_parameters(
+    requested_columns: list[str],
+    relation_role: RelationRoleEnum,
+    mp: MiddlewareParameters,
+) -> list[SubqueryParameters] | list[None]:
+    if requested_columns is None:
+        [
+            parameter.set_columns(
+                get_permitted_columns(
+                    db_client=mp.db_client,
+                    relation=parameter.relation_name,
+                    role=relation_role,
+                    column_permission=ColumnPermissionEnum.READ,
+                )
+            )
+            for parameter in mp.subquery_params
+        ]
+        return mp.subquery_params
+    else:
+        return []
 
 
 def check_requested_columns(requested_columns: list[str], permitted_columns: list[str]):

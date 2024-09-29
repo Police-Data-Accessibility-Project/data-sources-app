@@ -367,7 +367,6 @@ class DataSource(Base):
     agencies: Mapped[list[Agency]] = relationship(
         secondary="public.agency_source_link",
         lazy="joined",
-        innerjoin=True,
     )
 
     @hybrid_property

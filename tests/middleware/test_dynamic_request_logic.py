@@ -147,6 +147,7 @@ def test_get_many(monkeypatch):
             "get_permitted_columns",
             "optionally_limit_to_requested_columns",
             "multiple_results_response",
+            "process_subquery_parameters",
         ],
     )
     result = get_many(
@@ -176,6 +177,7 @@ def test_get_many(monkeypatch):
         relation_name=mock.mp.relation,
         columns=mock.optionally_limit_to_requested_columns.return_value,
         page=mock.page,
+        subquery_parameters=mock.process_subquery_parameters.return_value,
     )
 
     mock.multiple_results_response.assert_called_once_with(

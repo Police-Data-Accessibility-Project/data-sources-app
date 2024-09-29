@@ -78,6 +78,7 @@ def get_data_sources_wrapper(
                 ],
             },
             entry_name="data source",
+            subquery_params=SUBQUERY_PARAMS
         ),
         page=dto.page,
     )
