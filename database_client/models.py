@@ -1,9 +1,11 @@
-from typing import Optional, Literal, get_args, Type
-from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime, date
+from typing import Optional, Literal, get_args
+from typing_extensions import Annotated
+
 from sqlalchemy import (
     Column,
     BigInteger,
-    text,
+    text as text_func,
     Text,
     String,
     ForeignKey,
@@ -14,11 +16,18 @@ from sqlalchemy import (
     Integer,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, DATE, DATERANGE, TIMESTAMP
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    mapped_column,
+    relationship,
+)
 from sqlalchemy.sql.expression import false, func
 
 from database_client.enums import LocationType
 from middleware.enums import Relations
+
 
 ExternalAccountTypeLiteral = Literal["github"]
 RecordTypeLiteral = Literal[
@@ -74,24 +83,59 @@ JurisdictionTypeLiteral = Literal[
 ]
 
 
+text = Annotated[Text, None]
+timestamp_tz = Annotated[
+    TIMESTAMP, mapped_column(TIMESTAMP(timezone=True), server_default=func.now())
+]
+timestamp = Annotated[TIMESTAMP, None]
+daterange = Annotated[DATERANGE, None]
+str_255 = Annotated[String, 255]
+
+
 class Base(DeclarativeBase):
-    pass
+    __table_args__ = {"schema": "public"}
+    type_annotation_map = {
+        text: Text,
+        date: DATE,
+        timestamp: TIMESTAMP,
+        daterange: DATERANGE,
+        str_255: String(255),
+    }
 
 
-PUBLIC_SCHEMA = {"schema": "public"}
+class AgencySourceLink(Base):
+    __tablename__ = "agency_source_link"
+
+    link_id: Mapped[int]
+    data_source_uid: Mapped[str] = mapped_column(
+        ForeignKey("public.data_sources.airtable_uid"), primary_key=True
+    )
+    agency_uid: Mapped[str] = mapped_column(
+        ForeignKey("public.agencies.airtable_uid"), primary_key=True
+    )
 
 
 class Agency(Base):
     __tablename__ = Relations.AGENCIES.value
-    __table_args__ = PUBLIC_SCHEMA
+
+    def __iter__(self):
+        for key in self.__dict__:
+            if key == "_sa_instance_state":
+                continue
+            else:
+                value = getattr(self, key)
+                value = (
+                    str(value)
+                    if type(value) == datetime or type(value) == date
+                    else value
+                )
+                yield key, value
 
     airtable_uid: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str]
     submitted_name: Mapped[Optional[str]]
     homepage_url: Mapped[Optional[str]]
-    jurisdiction_type: Mapped[JurisdictionTypeLiteral] = mapped_column(
-        Enum(*get_args(JurisdictionTypeLiteral)), name="jurisdiction_type"
-    )
+    jurisdiction_type: Mapped[JurisdictionTypeLiteral]
     state_iso: Mapped[Optional[str]]
     municipality: Mapped[Optional[str]]
     county_fips: Mapped[Optional[str]] = mapped_column(
@@ -103,30 +147,27 @@ class Agency(Base):
     defunct_year: Mapped[Optional[str]]
     count_data_sources: Mapped[Optional[int]]
     agency_type: Mapped[Optional[str]]
-    multi_agency: Mapped[Optional[bool]]
+    multi_agency: Mapped[bool] = mapped_column(server_default=false())
     zip_code: Mapped[Optional[str]]
     data_sources: Mapped[Optional[str]]
-    no_web_presence: Mapped[Optional[bool]]
-    airtable_agency_last_modified: Mapped[Optional[TIMESTAMP]] = mapped_column(
-        TIMESTAMP(timezone=True)
+    no_web_presence: Mapped[bool] = mapped_column(server_default=false())
+    airtable_agency_last_modified: Mapped[timestamp_tz] = mapped_column(
+        server_default=func.current_timestamp()
     )
-    data_sources_last_updated: Mapped[Optional[DATE]] = mapped_column(DATE)
-    approved: Mapped[Optional[bool]]
+    data_sources_last_updated: Mapped[Optional[date]]
+    approved: Mapped[bool] = mapped_column(server_default=false())
     rejection_reason: Mapped[Optional[str]]
     last_approval_editor: Mapped[Optional[str]]
     submitter_contact: Mapped[Optional[str]]
-    agency_created: Mapped[Optional[TIMESTAMP]] = mapped_column(
-        TIMESTAMP(timezone=True)
+    agency_created: Mapped[timestamp_tz] = mapped_column(
+        server_default=func.current_timestamp()
     )
     county_airtable_uid: Mapped[Optional[str]]
-    location_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("public.locations.id")
-    )
+    location_id: Mapped[Optional[int]]
 
 
 class AgencyExpanded(Base):
     __tablename__ = Relations.AGENCIES_EXPANDED.value
-    __table_args__ = PUBLIC_SCHEMA
 
     # Define columns as per the view with refined data types
     name = Column(String, nullable=False)
@@ -165,26 +206,24 @@ class AgencyExpanded(Base):
 
 class County(Base):
     __tablename__ = Relations.COUNTIES.value
-    __table_args__ = PUBLIC_SCHEMA
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    fips: Mapped[str] = mapped_column(Text)
-    name: Mapped[Optional[Text]] = mapped_column(Text)
-    name_ascii: Mapped[Optional[Text]] = mapped_column(Text)
-    state_iso: Mapped[Optional[Text]] = mapped_column(Text)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    fips: Mapped[str]
+    name: Mapped[Optional[text]]
+    name_ascii: Mapped[Optional[text]]
+    state_iso: Mapped[Optional[text]]
     lat: Mapped[Optional[float]]
     lng: Mapped[Optional[float]]
     population: Mapped[Optional[int]]
-    agencies: Mapped[Optional[Text]] = mapped_column(Text)
-    airtable_uid: Mapped[Optional[Text]] = mapped_column(Text)
-    airtable_county_last_modified: Mapped[Optional[Text]] = mapped_column(Text)
-    airtable_county_created: Mapped[Optional[Text]] = mapped_column(Text)
-    state_id: Mapped[int] = mapped_column(ForeignKey("public.us_states.id"))
+    agencies: Mapped[Optional[text]]
+    airtable_uid: Mapped[Optional[text]]
+    airtable_county_last_modified: Mapped[Optional[text]]
+    airtable_county_created: Mapped[Optional[text]]
+    state_id: Mapped[Optional[int]] = mapped_column(ForeignKey("public.us_states.id"))
 
 
 class Locality(Base):
     __tablename__ = Relations.LOCALITIES.value
-    __table_args__ = PUBLIC_SCHEMA
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[Optional[Text]] = mapped_column(Text)
@@ -193,7 +232,6 @@ class Locality(Base):
 
 class Location(Base):
     __tablename__ = Relations.LOCATIONS.value
-    __table_args__ = PUBLIC_SCHEMA
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     type: Mapped[Enum] = mapped_column(Enum(LocationType), nullable=False)
@@ -206,7 +244,7 @@ class Location(Base):
 
 class LocationExpanded(Base):
     __tablename__ = Relations.LOCATIONS_EXPANDED.value
-    __table_args__ = {"schema": "public", "extend_existing": True}
+    __table_args__ = {"extend_existing": True}
 
     id = Column(Integer, primary_key=True)
     type = Column(
@@ -224,7 +262,6 @@ class LocationExpanded(Base):
 
 class USState(Base):
     __tablename__ = Relations.US_STATES.value
-    __table_args__ = PUBLIC_SCHEMA
 
     id: Mapped[int] = mapped_column(primary_key=True)
     state_iso: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -233,36 +270,44 @@ class USState(Base):
 
 class DataRequest(Base):
     __tablename__ = Relations.DATA_REQUESTS.value
-    __table_args__ = PUBLIC_SCHEMA
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    submission_notes: Mapped[Optional[Text]] = mapped_column(Text)
+    submission_notes: Mapped[Optional[text]]
     request_status: Mapped[RequestStatusLiteral] = mapped_column(
-        Enum(*get_args(RequestStatusLiteral)), name="request_status", server_default="Intake"
+        server_default="Intake"
     )
-    submitter_email: Mapped[Optional[Text]] = mapped_column(Text)
-    location_described_submitted: Mapped[Optional[Text]] = mapped_column(Text)
-    archive_reason: Mapped[Optional[Text]] = mapped_column(Text)
-    date_created: Mapped[TIMESTAMP] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("now()")
-    )
-    date_status_last_changed: Mapped[Optional[TIMESTAMP]] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("now()")
-    )
+    location_described_submitted: Mapped[Optional[text]]
+    archive_reason: Mapped[Optional[text]]
+    date_created: Mapped[timestamp_tz]
+    date_status_last_changed: Mapped[Optional[timestamp_tz]]
     creator_user_id: Mapped[Optional[int]]
-    github_issue_url: Mapped[Optional[Text]] = mapped_column(Text)
-    internal_notes: Mapped[Optional[Text]] = mapped_column(Text)
+    github_issue_url: Mapped[Optional[text]]
+    internal_notes: Mapped[Optional[text]]
     record_types_required: Mapped[Optional[ARRAY[RecordTypeLiteral]]] = mapped_column(
-        ARRAY(Enum(*get_args(RecordTypeLiteral), name="record_type"))
+        ARRAY(Enum(*get_args(RecordTypeLiteral), name="record_type"), as_tuple=True)
     )
-    pdap_response: Mapped[Optional[Text]] = mapped_column(Text)
-    coverage_range: Mapped[Optional[DATERANGE]] = mapped_column(DATERANGE)
-    data_requirements: Mapped[Optional[Text]] = mapped_column(Text)
+    pdap_response: Mapped[Optional[text]]
+    coverage_range: Mapped[Optional[daterange]]
+    data_requirements: Mapped[Optional[text]]
 
 
 class DataSource(Base):
     __tablename__ = Relations.DATA_SOURCES.value
-    __table_args__ = PUBLIC_SCHEMA
+
+    def __iter__(self):
+        for key in self.__dict__:
+            match key:
+                case "_sa_instance_state":
+                    continue
+                case "airtable_uid":
+                    yield key, self.airtable_uid
+                    yield "agency_ids", self.agency_ids
+                case "agencies":
+                    yield key, [dict(agency) for agency in self.agencies]
+                case _:
+                    value = getattr(self, key)
+                    value = str(value) if type(value) == datetime else value
+                    yield key, value
 
     airtable_uid: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str]
@@ -274,9 +319,9 @@ class DataSource(Base):
     supplying_entity: Mapped[Optional[str]]
     agency_originated: Mapped[Optional[bool]]
     agency_aggregation: Mapped[Optional[str]]
-    coverage_start: Mapped[Optional[DATE]] = mapped_column(DATE)
-    coverage_end: Mapped[Optional[DATE]] = mapped_column(DATE)
-    source_last_updated: Mapped[Optional[DATE]] = mapped_column(DATE)
+    coverage_start: Mapped[Optional[date]]
+    coverage_end: Mapped[Optional[date]]
+    source_last_updated: Mapped[Optional[date]]
     detail_level: Mapped[Optional[str]]
     number_of_records_available: Mapped[Optional[int]]
     size: Mapped[Optional[str]]
@@ -290,11 +335,11 @@ class DataSource(Base):
     originating_entity: Mapped[Optional[str]]
     retention_schedule: Mapped[Optional[str]]
     scraper_url: Mapped[Optional[str]]
-    data_source_created: Mapped[Optional[TIMESTAMP]] = mapped_column(
-        TIMESTAMP(timezone=True)
+    data_source_created: Mapped[Optional[timestamp_tz]] = mapped_column(
+        server_default=None
     )
-    airtable_source_last_modified: Mapped[Optional[TIMESTAMP]] = mapped_column(
-        TIMESTAMP(timezone=True)
+    airtable_source_last_modified: Mapped[Optional[timestamp_tz]] = mapped_column(
+        server_default=None
     )
     url_broken: Mapped[Optional[bool]]
     submission_notes: Mapped[Optional[str]]
@@ -311,114 +356,150 @@ class DataSource(Base):
     data_source_request: Mapped[Optional[str]]
     url_button: Mapped[Optional[str]]
     tags_other: Mapped[Optional[str]]
-    broken_source_url_as_of: Mapped[Optional[DATE]] = mapped_column(DATE)
-    access_notes: Mapped[Optional[Text]] = mapped_column(Text)
-    url_status: Mapped[Optional[Text]] = mapped_column(Text)
-    approval_status: Mapped[Optional[Text]] = mapped_column(Text)
+    broken_source_url_as_of: Mapped[Optional[date]]
+    access_notes: Mapped[Optional[text]]
+    url_status: Mapped[Optional[text]]
+    approval_status: Mapped[Optional[text]]
     record_type_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("public.record_types.id")
     )
 
+    agencies: Mapped[list[Agency]] = relationship(
+        secondary="public.agency_source_link",
+        lazy="joined",
+    )
+
+    @hybrid_property
+    def agency_ids(self) -> list[str]:
+        return [agency.airtable_uid for agency in self.agencies]
+
 
 class DataSourceArchiveInfo(Base):
     __tablename__ = Relations.DATA_SOURCES_ARCHIVE_INFO.value
-    __table_args__ = PUBLIC_SCHEMA
 
     airtable_uid: Mapped[str] = mapped_column(
         ForeignKey("public.data_sources.airtable_uid"), primary_key=True
     )
     update_frequency: Mapped[Optional[str]]
-    last_cached: Mapped[Optional[TIMESTAMP]] = mapped_column(TIMESTAMP)
-    next_cached: Mapped[Optional[TIMESTAMP]] = mapped_column(TIMESTAMP)
+    last_cached: Mapped[Optional[timestamp]]
+    next_cached: Mapped[Optional[timestamp]]
 
 
 class ExternalAccount(Base):
     __tablename__ = Relations.EXTERNAL_ACCOUNTS.value
-    __table_args__ = PUBLIC_SCHEMA
 
     row_id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
-    account_type: Mapped[ExternalAccountTypeLiteral] = mapped_column(
-        Enum(*get_args(ExternalAccountTypeLiteral)), name="account_type"
-    )
-    account_identifier: Mapped[str] = mapped_column(String(255))
-    linked_at: Mapped[Optional[TIMESTAMP]] = mapped_column(
-        TIMESTAMP, server_default=text("now()")
-    )
+    account_type: Mapped[ExternalAccountTypeLiteral]
+    account_identifier: Mapped[str_255]
+    linked_at: Mapped[Optional[timestamp]] = mapped_column(server_default=func.now())
 
 
 class LinkDataSourceDataRequest(Base):
     __tablename__ = Relations.LINK_DATA_SOURCES_DATA_REQUESTS.value
-    __table_args__ = PUBLIC_SCHEMA
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    source_id: Mapped[Text] = mapped_column(
-        Text, ForeignKey("public.data_sources.airtable_uid")
+    source_id: Mapped[text] = mapped_column(
+        ForeignKey("public.data_sources.airtable_uid")
     )
     request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
 
+
 class LinkUserFollowedLocation(Base):
     __tablename__ = Relations.LINK_USER_FOLLOWED_LOCATION.value
-    __table_args__ = PUBLIC_SCHEMA
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
     location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
 
+
 class RecordCategory(Base):
     __tablename__ = Relations.RECORD_CATEGORIES.value
-    __table_args__ = PUBLIC_SCHEMA
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(255))
-    description: Mapped[Optional[Text]] = mapped_column(Text)
+    name: Mapped[str_255]
+    description: Mapped[Optional[text]]
 
 
 class RecordType(Base):
     __tablename__ = Relations.RECORD_TYPES.value
-    __table_args__ = PUBLIC_SCHEMA
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(255))
+    name: Mapped[str_255]
     category_id: Mapped[int] = mapped_column(ForeignKey("public.record_categories.id"))
-    description: Mapped[Optional[Text]] = mapped_column(Text)
+    description: Mapped[Optional[text]]
 
 
 class ResetToken(Base):
     __tablename__ = Relations.RESET_TOKENS.value
-    __table_args__ = PUBLIC_SCHEMA
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    email: Mapped[Optional[Text]] = mapped_column(Text)
-    token: Mapped[Optional[Text]] = mapped_column(Text)
-    create_date: Mapped[TIMESTAMP] = mapped_column(
-        TIMESTAMP, server_default=func.current_timestamp()
+    email: Mapped[Optional[text]]
+    token: Mapped[Optional[text]]
+    create_date: Mapped[timestamp] = mapped_column(
+        server_default=func.current_timestamp()
     )
 
 
 class TestTable(Base):
     __tablename__ = Relations.TEST_TABLE.value
-    __table_args__ = PUBLIC_SCHEMA
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    pet_name: Mapped[Optional[str]] = mapped_column(String(255))
-    species: Mapped[Optional[str]] = mapped_column(String(255))
+    pet_name: Mapped[Optional[str_255]]
+    species: Mapped[Optional[str_255]]
 
 
 class User(Base):
     __tablename__ = Relations.USERS.value
-    __table_args__ = PUBLIC_SCHEMA
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    created_at: Mapped[Optional[TIMESTAMP]] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("now()")
-    )
-    updated_at: Mapped[Optional[TIMESTAMP]] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=text("now()")
-    )
-    email: Mapped[Text] = mapped_column(Text, unique=True)
-    password_digest: Mapped[Optional[Text]] = mapped_column(Text)
+    created_at: Mapped[Optional[timestamp_tz]]
+    updated_at: Mapped[Optional[timestamp_tz]]
+    email: Mapped[text] = mapped_column(unique=True)
+    password_digest: Mapped[Optional[text]]
     api_key: Mapped[Optional[str]] = mapped_column(
-        server_default=text("generate_api_key()")
+        server_default=text_func("generate_api_key()")
     )
-    role: Mapped[Optional[Text]] = mapped_column(Text)
+    role: Mapped[Optional[text]]
+
+
+SQL_ALCHEMY_TABLE_REFERENCE = {
+    "agencies": Agency,
+    "agencies_expanded": AgencyExpanded,
+    "data_requests": DataRequest,
+    "data_sources": DataSource,
+    "data_sources_archive_info": DataSourceArchiveInfo,
+    "link_data_sources_data_requests": LinkDataSourceDataRequest,
+    "reset_tokens": ResetToken,
+    "test_table": TestTable,
+    "users": User,
+    "us_states": USState,
+    "counties": County,
+    "localities": Locality,
+    "locations": Location,
+    "locations_expanded": LocationExpanded,
+    "link_user_followed_location": LinkUserFollowedLocation,
+}
+
+
+def convert_to_column_reference(columns: list[str], relation: str) -> list[Column]:
+    """Converts a list of column strings to SQLAlchemy column references.
+
+    :param columns: List of column strings.
+    :param relation: Relation string.
+    :return:
+    """
+    try:
+        relation_reference = SQL_ALCHEMY_TABLE_REFERENCE[relation]
+    except KeyError:
+        raise ValueError(
+            f"SQL Model does not exist in SQL_ALCHEMY_TABLE_REFERENCE: {relation}"
+        )
+
+    def get_attribute(column: str) -> Column:
+        try:
+            return getattr(relation_reference, column)
+        except AttributeError:
+            pass
+
+    return [get_attribute(column) for column in columns]

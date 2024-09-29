@@ -41,7 +41,6 @@ def results_dependent_response(entry_name: str, results):
     )
 
 
-
 def get_by_id(
     middleware_parameters: MiddlewareParameters,
     id: str,
@@ -74,11 +73,22 @@ def get_by_id(
         role=relation_role,
         column_permission=ColumnPermissionEnum.READ,
     )
+    [
+        parameter.set_columns(
+            get_permitted_columns(
+                db_client=mp.db_client,
+                relation=parameter.relation_name,
+                role=relation_role,
+                column_permission=ColumnPermissionEnum.READ,
+            )
+        )
+        for parameter in mp.subquery_params
+    ]
     results = mp.db_client_method(
         mp.db_client,
         relation_name=mp.relation,
         columns=columns,
         where_mappings=[WhereMapping(column=id_column_name, value=id)],
+        subquery_parameters=mp.subquery_params
     )
     return results_dependent_response(mp.entry_name, results)
-

@@ -11,7 +11,11 @@ import pytest
 from sqlalchemy import insert, select, update
 
 from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import OrderByParameters, WhereMapping
+from database_client.db_client_dataclasses import (
+    OrderByParameters,
+    SubqueryParameters,
+    WhereMapping,
+)
 from database_client.enums import (
     ExternalAccountTypeEnum,
     RelationRoleEnum,
@@ -22,7 +26,14 @@ from middleware.exceptions import (
     UserNotFoundError,
     DuplicateUserError,
 )
-from database_client.models import ExternalAccount, TestTable, User
+from database_client.models import (
+    Agency,
+    AgencySourceLink,
+    DataSource,
+    ExternalAccount,
+    TestTable,
+    User,
+)
 from middleware.enums import PermissionsEnum, Relations
 from tests.conftest import live_database_client, test_table_data
 from tests.helper_scripts.common_test_data import (
@@ -167,10 +178,10 @@ def test_update_user_api_key(live_database_client: DatabaseClient):
     assert user_info.api_key == "test_api_key"
 
 
-def test_select_from_single_relation_columns_only(
+def test_select_from_relation_columns_only(
     test_table_data, live_database_client: DatabaseClient
 ):
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name="test_table",
         columns=["pet_name"],
     )
@@ -182,10 +193,10 @@ def test_select_from_single_relation_columns_only(
     ]
 
 
-def test_select_from_single_relation_where_mapping(
+def test_select_from_relation_where_mapping(
     live_database_client: DatabaseClient,
 ):
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name="test_table",
         columns=["pet_name"],
         where_mappings=[WhereMapping(column="species", value="Aardvark")],
@@ -195,7 +206,7 @@ def test_select_from_single_relation_where_mapping(
         {"pet_name": "Arthur"},
     ]
 
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name="test_table",
         columns=["pet_name"],
         where_mappings=[WhereMapping(column="species", eq=False, value="Aardvark")],
@@ -207,8 +218,8 @@ def test_select_from_single_relation_where_mapping(
     ]
 
 
-def test_select_from_single_relation_limit(live_database_client: DatabaseClient):
-    results = live_database_client._select_from_single_relation(
+def test_select_from_relation_limit(live_database_client: DatabaseClient):
+    results = live_database_client._select_from_relation(
         relation_name="test_table",
         columns=["pet_name"],
         limit=1,
@@ -219,7 +230,7 @@ def test_select_from_single_relation_limit(live_database_client: DatabaseClient)
     ]
 
 
-def test_select_from_single_relation_limit_and_offset(
+def test_select_from_relation_limit_and_offset(
     live_database_client: DatabaseClient, monkeypatch
 ):
     # Used alongside limit; we mock PAGE_SIZE to be one
@@ -227,7 +238,7 @@ def test_select_from_single_relation_limit_and_offset(
 
     live_database_client.get_offset = MagicMock(return_value=1)
 
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name="test_table",
         columns=["pet_name"],
         limit=1,
@@ -239,8 +250,8 @@ def test_select_from_single_relation_limit_and_offset(
     ]
 
 
-def test_select_from_single_relation_order_by(live_database_client: DatabaseClient):
-    results = live_database_client._select_from_single_relation(
+def test_select_from_relation_order_by(live_database_client: DatabaseClient):
+    results = live_database_client._select_from_relation(
         relation_name="test_table",
         columns=["pet_name"],
         order_by=OrderByParameters(sort_by="species", sort_order=SortOrder.ASCENDING),
@@ -253,7 +264,7 @@ def test_select_from_single_relation_order_by(live_database_client: DatabaseClie
     ]
 
 
-def test_select_from_single_relation_all_parameters(
+def test_select_from_relation_all_parameters(
     live_database_client: DatabaseClient, monkeypatch
 ):
     # Used alongside limit; we mock PAGE_SIZE to be one
@@ -264,7 +275,7 @@ def test_select_from_single_relation_all_parameters(
         lambda: insert(TestTable).values(pet_name="Ezekiel", species="Cat")
     )
 
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name="test_table",
         columns=["pet_name"],
         where_mappings=[
@@ -284,6 +295,59 @@ def test_select_from_single_relation_all_parameters(
     ]
 
 
+def test_select_from_relation_subquery(live_database_client: DatabaseClient):
+    agency_id = uuid.uuid4().hex
+    data_source_id = uuid.uuid4().hex
+    agency_name = uuid.uuid4().hex
+    data_source_name = uuid.uuid4().hex
+
+    live_database_client.execute_sqlalchemy(
+        lambda: insert(Agency).values(
+            airtable_uid=agency_id, name=agency_name, jurisdiction_type="federal"
+        )
+    )
+    live_database_client.execute_sqlalchemy(
+        lambda: insert(DataSource).values(
+            airtable_uid=data_source_id, name=data_source_name
+        )
+    )
+    live_database_client.execute_sqlalchemy(
+        lambda: insert(AgencySourceLink).values(
+            data_source_uid=data_source_id, agency_uid=agency_id
+        )
+    )
+
+    where_mappings = [WhereMapping(column="airtable_uid", value=data_source_id)]
+    subquery_parameters = [
+        SubqueryParameters(
+            relation_name="agencies",
+            columns=["airtable_uid", "name"],
+            linking_column="agencies",
+        )
+    ]
+
+    results = live_database_client._select_from_relation(
+        relation_name="data_sources",
+        columns=["airtable_uid", "name"],
+        where_mappings=where_mappings,
+        subquery_parameters=subquery_parameters,
+    )
+
+    assert results == [
+        {
+            "name": data_source_name,
+            "airtable_uid": data_source_id,
+            "agency_ids": [agency_id],
+            "agencies": [
+                {
+                    "name": agency_name,
+                    "airtable_uid": agency_id,
+                }
+            ],
+        }
+    ]
+
+
 def test_create_entry_in_table_return_columns(live_database_client, test_table_data):
     id = live_database_client._create_entry_in_table(
         table_name="test_table",
@@ -294,7 +358,7 @@ def test_create_entry_in_table_return_columns(live_database_client, test_table_d
         column_to_return="id",
     )
 
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name="test_table",
         columns=["pet_name", "species"],
         where_mappings=[WhereMapping(column="id", value=id)],
@@ -316,7 +380,7 @@ def test_create_entry_in_table_no_return_columns(live_database_client, test_tabl
 
     assert id is None
 
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name="test_table",
         columns=["pet_name"],
         where_mappings=[WhereMapping(column="species", value="Monkey")],
@@ -343,7 +407,7 @@ def test_get_approved_data_sources(live_database_client: DatabaseClient):
 
 
 def test_delete_from_table(live_database_client, test_table_data):
-    initial_results = live_database_client._select_from_single_relation(
+    initial_results = live_database_client._select_from_relation(
         relation_name="test_table",
         columns=["pet_name"],
     )
@@ -360,7 +424,7 @@ def test_delete_from_table(live_database_client, test_table_data):
         id_column_value="Cat",
     )
 
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name="test_table",
         columns=["pet_name"],
     )
@@ -372,7 +436,7 @@ def test_delete_from_table(live_database_client, test_table_data):
 
 
 def test_update_entry_in_table(live_database_client: DatabaseClient, test_table_data):
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name="test_table",
         columns=["pet_name"],
         where_mappings=[WhereMapping(column="species", value="Cat")],
@@ -389,7 +453,7 @@ def test_update_entry_in_table(live_database_client: DatabaseClient, test_table_
         id_column_name="pet_name",
     )
 
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name="test_table",
         columns=["pet_name"],
         where_mappings=[WhereMapping(column="species", value="Cat")],
@@ -397,7 +461,7 @@ def test_update_entry_in_table(live_database_client: DatabaseClient, test_table_
 
     assert results == []
 
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name="test_table",
         columns=["pet_name"],
         where_mappings=[WhereMapping(column="species", value="Lion")],
@@ -435,7 +499,7 @@ def test_update_last_cached(live_database_client: DatabaseClient):
     live_database_client.update_last_cached("SOURCE_UID_1", new_last_cached)
 
     # Fetch the data source from the database to confirm the change
-    result = live_database_client._select_from_single_relation(
+    result = live_database_client._select_from_relation(
         relation_name="data_sources_archive_info",
         columns=["last_cached"],
         where_mappings=[WhereMapping(column="airtable_uid", value="SOURCE_UID_1")],
@@ -759,6 +823,7 @@ def test_get_column_permissions_as_permission_table(
         },
     ]
 
+
 # Commented out until: https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/458
 # def test_get_agencies_without_homepage_urls(live_database_client):
 #     submitted_name = create_agency_entry_for_search_cache(
@@ -884,17 +949,14 @@ def test_get_columns_for_relation(live_database_client):
 
     columns = live_database_client.get_columns_for_relation(Relations.TEST_TABLE)
 
-    assert columns == [
-        "id",
-        "pet_name",
-        "species"
-    ]
+    assert columns == ["id", "pet_name", "species"]
+
 
 def test_create_or_get(live_database_client):
 
     results = live_database_client.create_or_get(
         table_name="test_table",
-        column_value_mappings={"pet_name": "Schnoodles", "species": "Rat"}
+        column_value_mappings={"pet_name": "Schnoodles", "species": "Rat"},
     )
 
     assert results
@@ -902,7 +964,7 @@ def test_create_or_get(live_database_client):
     # Check that the same results are returned if the entry already exists
     new_results = live_database_client.create_or_get(
         table_name="test_table",
-        column_value_mappings={"pet_name": "Schnoodles", "species": "Rat"}
+        column_value_mappings={"pet_name": "Schnoodles", "species": "Rat"},
     )
 
     assert results == new_results

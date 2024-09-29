@@ -8,11 +8,15 @@ import psycopg
 from psycopg import sql, Cursor
 from psycopg.rows import dict_row, tuple_row
 from sqlalchemy import select
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, defaultload, load_only
 from sqlalchemy.schema import Column
 
-from database_client.constants import PAGE_SIZE, SQL_ALCHEMY_TABLE_REFERENCE
-from database_client.db_client_dataclasses import OrderByParameters, WhereMapping
+from database_client.constants import PAGE_SIZE
+from database_client.db_client_dataclasses import (
+    OrderByParameters,
+    SubqueryParameters,
+    WhereMapping,
+)
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
     ExternalAccountTypeEnum,
@@ -24,7 +28,9 @@ from middleware.exceptions import (
     DuplicateUserError,
 )
 from database_client.models import (
+    convert_to_column_reference,
     ExternalAccount,
+    SQL_ALCHEMY_TABLE_REFERENCE,
     User,
 )
 from middleware.enums import PermissionsEnum, Relations
@@ -157,7 +163,7 @@ class DatabaseClient:
         :param email:
         :return:
         """
-        results = self._select_from_single_relation(
+        results = self._select_from_relation(
             relation_name="users",
             columns=["id"],
             where_mappings=[WhereMapping(column="email", value=email)],
@@ -189,7 +195,7 @@ class DatabaseClient:
         :param token: The reset token to check.
         :return: ResetTokenInfo if the token exists; otherwise, None.
         """
-        results = self._select_from_single_relation(
+        results = self._select_from_relation(
             relation_name="reset_tokens",
             columns=["id", "email", "create_date"],
             where_mappings=[WhereMapping(column="token", value=token)],
@@ -234,7 +240,7 @@ class DatabaseClient:
         :param api_key: The api key to check.
         :return: RoleInfo if the token exists; otherwise, None.
         """
-        results = self._select_from_single_relation(
+        results = self._select_from_relation(
             relation_name="users",
             columns=["id", "email"],
             where_mappings=[WhereMapping(column="api_key", value=api_key)],
@@ -429,7 +435,7 @@ class DatabaseClient:
         :raise UserNotFoundError: If no user is found.
         :return: UserInfo namedtuple containing the user's information.
         """
-        results = self._select_from_single_relation(
+        results = self._select_from_relation(
             relation_name="users",
             columns=["id", "password_digest", "api_key", "email"],
             where_mappings=[WhereMapping(column="email", value=email)],
@@ -644,22 +650,6 @@ class DatabaseClient:
         results = self.cursor.fetchall()
         return [row["associated_column"] for row in results]
 
-    @staticmethod
-    def convert_to_column_reference(columns: list[str], relation: str) -> list[Column]:
-        """Converts a list of column strings to SQLAlchemy column references.
-
-        :param columns: List of column strings.
-        :param relation: Relation string.
-        :return:
-        """
-        try:
-            relation_reference = SQL_ALCHEMY_TABLE_REFERENCE[relation]
-        except KeyError:
-            raise ValueError(
-                f"SQL Model does not exist in SQL_ALCHEMY_TABLE_REFERENCE: {relation}"
-            )
-        return [getattr(relation_reference, column) for column in columns]
-
     @cursor_manager()
     def _update_entry_in_table(
         self,
@@ -768,7 +758,7 @@ class DatabaseClient:
     )
 
     @session_manager
-    def _select_from_single_relation(
+    def _select_from_relation(
         self,
         relation_name: str,
         columns: list[str],
@@ -776,39 +766,52 @@ class DatabaseClient:
         limit: Optional[int] = PAGE_SIZE,
         page: Optional[int] = None,
         order_by: Optional[OrderByParameters] = None,
+        subquery_parameters: Optional[list[SubqueryParameters]] = [],
     ) -> list[dict]:
         """
         Selects a single relation from the database
         """
         offset = self.get_offset(page)
-        column_references = self.convert_to_column_reference(
+        column_references = convert_to_column_reference(
             columns=columns, relation=relation_name
         )
-        query = DynamicQueryConstructor.create_single_relation_selection_query(
-            relation_name, column_references, where_mappings, limit, offset, order_by
+        query = DynamicQueryConstructor.create_selection_query(
+            relation_name,
+            column_references,
+            where_mappings,
+            limit,
+            offset,
+            order_by,
+            subquery_parameters,
         )
-        results = self.session.execute(query()).mappings().all()
-        results = [dict(result) for result in results]
+        results = self.session.execute(query()).mappings().unique().all()
+
+        if subquery_parameters:
+            results = [
+                dict(result[[key for key in result.keys()][0]]) for result in results
+            ]
+        else:
+            results = [dict(result) for result in results]
         return results
 
     get_data_requests = partialmethod(
-        _select_from_single_relation, relation_name=Relations.DATA_REQUESTS.value
+        _select_from_relation, relation_name=Relations.DATA_REQUESTS.value
     )
 
     get_agencies = partialmethod(
-        _select_from_single_relation, relation_name=Relations.AGENCIES_EXPANDED.value
+        _select_from_relation, relation_name=Relations.AGENCIES_EXPANDED.value
     )
 
     get_data_sources = partialmethod(
-        _select_from_single_relation, relation_name=Relations.DATA_SOURCES.value
+        _select_from_relation, relation_name=Relations.DATA_SOURCES.value
     )
 
     get_request_source_relations = partialmethod(
-        _select_from_single_relation, relation_name=Relations.RELATED_SOURCES.value
+        _select_from_relation, relation_name=Relations.RELATED_SOURCES.value
     )
 
     get_location_id = partialmethod(
-        _select_from_single_relation,
+        _select_from_relation,
         relation_name=Relations.LOCATIONS_EXPANDED.value,
         columns=["id"],
     )
@@ -832,7 +835,7 @@ class DatabaseClient:
     def get_data_requests_for_creator(
         self, creator_user_id: str, columns: List[str]
     ) -> List[str]:
-        return self._select_from_single_relation(
+        return self._select_from_relation(
             relation_name="data_requests",
             columns=columns,
             where_mappings=[
@@ -843,7 +846,7 @@ class DatabaseClient:
     def user_is_creator_of_data_request(
         self, user_id: int, data_request_id: int
     ) -> bool:
-        results = self._select_from_single_relation(
+        results = self._select_from_relation(
             relation_name="data_requests",
             columns=["id"],
             where_mappings=[
@@ -980,7 +983,7 @@ class DatabaseClient:
                 column_to_return=column_to_return,
             )
         except psycopg.errors.UniqueViolation:
-            return self._select_from_single_relation(
+            return self._select_from_relation(
                 relation_name=table_name,
                 columns=[column_to_return],
                 where_mappings=WhereMapping.from_dict(column_value_mappings),

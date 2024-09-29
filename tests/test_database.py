@@ -75,21 +75,21 @@ def test_locations(
 
     ID_COLUMN_ARRAY = ["id"]
     # First, validate that all rows are present initially in their respective tables
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name="us_states",
         columns=ID_COLUMN_ARRAY,
         where_mappings=WhereMapping.from_dict(FAKE_STATE_INFO),
     )
     assert fake_locations_info.state_id == results[0]["id"]
 
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name="counties",
         columns=ID_COLUMN_ARRAY,
         where_mappings=WhereMapping.from_dict(FAKE_COUNTY_INFO),
     )
     assert fake_locations_info.county_id == results[0]["id"]
 
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name="localities",
         columns=ID_COLUMN_ARRAY,
         where_mappings=WhereMapping.from_dict(FAKE_LOCALITY_INFO),
@@ -97,7 +97,7 @@ def test_locations(
     assert fake_locations_info.locality_id == results[0]["id"]
 
     # Assert locations are present in `locations`
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name="locations",
         columns=["state_id", "county_id", "locality_id"],
         where_mappings=WhereMapping.from_dict(
@@ -142,7 +142,7 @@ def test_locations(
         id_column_value=fake_locations_info.locality_id,
     )
 
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name="locations",
         columns=["state_id", "county_id", "locality_id"],
         where_mappings=WhereMapping.from_dict(
@@ -164,7 +164,7 @@ def test_locations(
         id_column_value=fake_locations_info.county_id,
     )
 
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name="locations",
         columns=["state_id", "county_id", "locality_id"],
         where_mappings=WhereMapping.from_dict(
@@ -186,7 +186,7 @@ def test_locations(
         id_column_value=fake_locations_info.state_id,
     )
 
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name="locations",
         columns=["state_id", "county_id", "locality_id"],
         where_mappings=WhereMapping.from_dict(
@@ -204,7 +204,7 @@ LinkUserFollowedTestInfo = namedtuple(
 def link_user_followed_test_info(
     live_database_client: DatabaseClient
 ) -> LinkUserFollowedTestInfo:
-    county_id = live_database_client._select_from_single_relation(
+    county_id = live_database_client._select_from_relation(
         relation_name=Relations.LOCATIONS_EXPANDED.value,
         columns=["county_id"],
         where_mappings=WhereMapping.from_dict(
@@ -264,7 +264,7 @@ def test_link_user_followed_locations_link_exists(
 ):
     test_info = link_user_followed_test_info
 
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name=Relations.LINK_USER_FOLLOWED_LOCATION.value,
         columns=["user_id"],
         where_mappings=WhereMapping.from_dict({"location_id": test_info.location_id}),
@@ -272,7 +272,7 @@ def test_link_user_followed_locations_link_exists(
     assert len(results) == 1
     assert results[0]["user_id"] == test_info.user_id
 
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name=Relations.LINK_USER_FOLLOWED_LOCATION.value,
         columns=["location_id"],
         where_mappings=WhereMapping.from_dict({"user_id": test_info.user_id}),
@@ -305,13 +305,13 @@ def test_link_user_followed_locations_link_location_deletion_cascade(
     assert_link_user_followed_location_deleted(live_database_client, test_info)
 
 def assert_link_user_followed_location_deleted(live_database_client, test_info):
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name=Relations.LINK_USER_FOLLOWED_LOCATION.value,
         columns=["user_id"],
         where_mappings=WhereMapping.from_dict({"location_id": test_info.location_id}),
     )
     assert len(results) == 0
-    results = live_database_client._select_from_single_relation(
+    results = live_database_client._select_from_relation(
         relation_name=Relations.LINK_USER_FOLLOWED_LOCATION.value,
         columns=["location_id"],
         where_mappings=WhereMapping.from_dict({"user_id": test_info.user_id}),

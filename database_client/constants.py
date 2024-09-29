@@ -117,21 +117,3 @@ RESTRICTED_COLUMNS = [
 ]
 
 PAGE_SIZE = 100
-
-SQL_ALCHEMY_TABLE_REFERENCE = {
-    "agencies": Agency,
-    "agencies_expanded": AgencyExpanded,
-    "data_requests": DataRequest,
-    "data_sources": DataSource,
-    "data_sources_archive_info": DataSourceArchiveInfo,
-    "link_data_sources_data_requests": LinkDataSourceDataRequest,
-    "reset_tokens": ResetToken,
-    "test_table": TestTable,
-    "users": User,
-    "us_states": USState,
-    "counties": County,
-    "localities": Locality,
-    "locations": Location,
-    "locations_expanded": LocationExpanded,
-    "link_user_followed_location": LinkUserFollowedLocation,
-}

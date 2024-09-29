@@ -234,8 +234,8 @@ def _check_user_is_creator_of_data_request_called(mock: MagicMock):
     )
 
 
-def _check_select_from_single_relation_called(mock: MagicMock):
-    mock.db_client._select_from_single_relation.assert_called_once_with(
+def _check_select_from_relation_called(mock: MagicMock):
+    mock.db_client._select_from_relation.assert_called_once_with(
         relation_name=Relations.RELATED_SOURCES.value,
         where_mappings={
             "request_id": mock.resource_id,
@@ -245,7 +245,7 @@ def _check_select_from_single_relation_called(mock: MagicMock):
     )
 
 def setup_delete_data_request_db_client_mocks(mock: MagicMock, user_is_creator: bool = True):
-    mock.db_client._select_from_single_relation.return_value = [{"id": mock.link_id}]
+    mock.db_client._select_from_relation.return_value = [{"id": mock.link_id}]
     mock.db_client.get_user_id.return_value = mock.user_id
     mock.db_client.user_is_creator_of_data_request.return_value = user_is_creator
 
@@ -293,7 +293,7 @@ def test_delete_data_request_related_source_user_not_creator(
 
 
 def _check_common_delete_data_request_calls(mock: MagicMock):
-    _check_select_from_single_relation_called(mock)
+    _check_select_from_relation_called(mock)
     _check_get_user_id_called(mock)
     _check_user_is_creator_of_data_request_called(mock)
 

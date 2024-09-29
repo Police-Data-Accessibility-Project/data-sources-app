@@ -17,7 +17,7 @@ def check_for_id(
     Check for existence of ID, aborting if it is not found
     :return:
     """
-    result = db_client._select_from_single_relation(
+    result = db_client._select_from_relation(
         relation_name=table_name,
         where_mappings=id_info.where_mappings,
         columns=[id_info.id_column_name]
