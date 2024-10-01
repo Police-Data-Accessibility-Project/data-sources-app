@@ -317,3 +317,5 @@ def assert_link_user_followed_location_deleted(live_database_client, test_info):
         where_mappings=WhereMapping.from_dict({"user_id": test_info.user_id}),
     )
     assert len(results) == 0
+
+# TODO: Add test for data sources integrity.

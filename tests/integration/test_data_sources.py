@@ -7,6 +7,7 @@ import psycopg
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources import DataSourcesGetByIDSchema
 from tests.conftest import connection_with_test_data, db_client_with_test_data, flask_client_with_db, test_user_admin
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
 from tests.helper_scripts.helper_functions import (
@@ -113,6 +114,7 @@ def test_data_sources_by_id_get(
         http_method="get",
         endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}/SOURCE_UID_1",
         headers=tus.api_authorization_header,
+        expected_schema=DataSourcesGetByIDSchema
     )
 
     assert response_json["data"]["source_url"] == "http://src1.com"
@@ -162,7 +164,6 @@ def test_data_sources_by_id_delete(
             "source_url": "http://src1.com",
             "approval_status": "approved",
             "url_status": "available",
-            "record_type": "Type A",
         },
         column_to_return="airtable_uid",
     )

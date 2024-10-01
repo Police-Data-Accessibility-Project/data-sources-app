@@ -261,22 +261,6 @@ class DatabaseClient:
             column_edit_mappings={"api_key": api_key},
         )
 
-    @cursor_manager(row_factory=tuple_row)
-    def get_approved_data_sources(self) -> list[tuple[Any, ...]]:
-        """
-        Fetches all approved data sources and their related agency information from the database.
-
-        :param columns: List of column names to use in the SELECT statement.
-        :return: A list of tuples, each containing details of a data source and its related agency.
-        """
-
-        sql_query = DynamicQueryConstructor.build_get_approved_data_sources_query()
-
-        self.cursor.execute(sql_query)
-        results = self.cursor.fetchall()
-        # NOTE: Very big tuple, perhaps very long NamedTuple to be implemented later
-        return results
-
     MapInfo = namedtuple(
         "MapInfo",
         [
@@ -302,26 +286,24 @@ class DatabaseClient:
         """
         sql_query = """
             SELECT
-                data_sources.airtable_uid as data_source_id,
-                data_sources.name,
-                agencies.airtable_uid as agency_id,
-                agencies.submitted_name as agency_name,
-                agencies.state_iso,
-                le.locality_name as municipality,
-                le.county_name,
-                data_sources.record_type,
-                agencies.lat,
-                agencies.lng
+                DATA_SOURCES.AIRTABLE_UID AS DATA_SOURCE_ID,
+                DATA_SOURCES.NAME,
+                AGENCIES.AIRTABLE_UID AS AGENCY_ID,
+                AGENCIES.SUBMITTED_NAME AS AGENCY_NAME,
+                AGENCIES.STATE_ISO,
+                LE.LOCALITY_NAME AS MUNICIPALITY,
+                LE.COUNTY_NAME,
+                RT.NAME RECORD_TYPE,
+                AGENCIES.LAT,
+                AGENCIES.LNG
             FROM
-                agency_source_link
-            INNER JOIN
-                data_sources ON agency_source_link.data_source_uid = data_sources.airtable_uid
-            INNER JOIN
-                agencies ON agency_source_link.agency_uid = agencies.airtable_uid
-            INNER JOIN
-                locations_expanded le ON agencies.location_id = le.id
+                AGENCY_SOURCE_LINK
+                INNER JOIN DATA_SOURCES ON AGENCY_SOURCE_LINK.DATA_SOURCE_UID = DATA_SOURCES.AIRTABLE_UID
+                INNER JOIN AGENCIES ON AGENCY_SOURCE_LINK.AGENCY_UID = AGENCIES.AIRTABLE_UID
+                INNER JOIN LOCATIONS_EXPANDED LE ON AGENCIES.LOCATION_ID = LE.ID
+                INNER JOIN RECORD_TYPES RT ON RT.ID = DATA_SOURCES.RECORD_TYPE_ID
             WHERE
-                data_sources.approval_status = 'approved'
+                DATA_SOURCES.APPROVAL_STATUS = 'approved'
         """
         self.cursor.execute(sql_query)
         results = self.cursor.fetchall()

@@ -2,11 +2,7 @@ import pytest
 
 from database_client.enums import LocationType
 from middleware.enums import JurisdictionType, AgencyType
-from middleware.primary_resource_logic.agencies import (
-    AgenciesPostDTO,
-    AgencyInfoPostDTO,
-    LocationInfoDTO,
-)
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies import AgencyInfoPostDTO, LocationInfoDTO, AgenciesPostDTO
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyBaseDTO
 from tests.conftest import ClientWithMockDB, client_with_mock_db, bypass_authentication_required, mock_database_client
 from tests.helper_scripts.common_mocks_and_patches import patch_and_return_mock

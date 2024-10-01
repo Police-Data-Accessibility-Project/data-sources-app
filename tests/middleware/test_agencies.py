@@ -6,9 +6,9 @@ from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import LocationType
 from middleware.primary_resource_logic.agencies import (
     get_location_id,
-    LocationInfoDTO,
     InvalidLocationError,
 )
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies import LocationInfoDTO
 
 
 @pytest.fixture

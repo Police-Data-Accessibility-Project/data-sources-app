@@ -61,3 +61,50 @@ class RequestStatus(Enum):
     READY_TO_START = "Ready to start"
     WAITING_FOR_FOIA = "Waiting for FOIA"
     WAITING_FOR_REQUESTOR = "Waiting for requestor"
+
+class DetailLevel(Enum):
+    """
+    Correlates to the detail_level enum in the database
+    """
+    INDIVIDUAL = "Individual record"
+    AGGREGATED = "Aggregated records"
+    SUMMARIZED = "Summarized totals"
+
+class AccessType(Enum):
+    """
+    Correlates to the access_type enum in the database
+    """
+    WEB_PAGE = "Web page"
+    DOWNLOAD = "Download"
+    API = "API"
+
+class RetentionSchedule(Enum):
+    """
+    Correlates to the retention_schedule enum in the database
+    """
+    ONE_TO_TEN_YEARS = "1-10 years"
+    LESS_THAN_ONE_WEEK = "< 1 week"
+    ONE_DAY = "1 day"
+    FUTURE_ONLY = "Future only"
+    LESS_THAN_ONE_DAY = "< 1 day"
+    LESS_THAN_ONE_YEAR = "< 1 year"
+    ONE_MONTH = "1 month"
+    ONE_WEEK = "1 week"
+    GREATER_THAN_TEN_YEARS = "> 10 years"
+
+class URLStatus(Enum):
+    """
+    Correlates to the url_status enum in the database
+    """
+    AVAILABLE = "available"
+    BROKEN = "broken"
+    OK = "ok"
+    NONE_FOUND = "none found"
+
+class UpdateMethod(Enum):
+    """
+    Correlates to the update_method enum in the database
+    """
+    INSERT = "Insert"
+    NO_UPDATES = "No updates"
+    OVERWRITE = "Overwrite"

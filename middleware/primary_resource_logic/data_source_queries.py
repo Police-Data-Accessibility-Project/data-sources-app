@@ -90,7 +90,7 @@ def data_source_by_id_wrapper(
     return get_by_id(
         middleware_parameters=MiddlewareParameters(
             access_info=access_info,
-            relation=RELATION,
+            relation=Relations.DATA_SOURCES_EXPANDED.value,
             db_client_method=DatabaseClient.get_data_sources,
             db_client=db_client,
             entry_name="data source",
