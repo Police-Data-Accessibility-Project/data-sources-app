@@ -89,7 +89,7 @@
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic';
 import { useSearchStore } from '@/stores/search';
 import { NavigationResult } from 'unplugin-vue-router/runtime';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onBeforeUpdate, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import _isEqual from 'lodash/_baseIsEqual';
 import { ALL_LOCATION_TYPES } from '@/util/constants';
@@ -113,7 +113,6 @@ export const useSearchData = defineBasicLoader(
 		// If query matches cached query, return cached results
 		if (_isEqual(params.value, route.query) && results.value) {
 			const r = groupResultsByAgency(results.value);
-			// setMostRecentSearchIds(getAllIdsSearched(r));
 
 			return {
 				results: r,
@@ -134,7 +133,6 @@ export const useSearchData = defineBasicLoader(
 		}
 
 		const r = groupResultsByAgency(res);
-		// setMostRecentSearchIds(getAllIdsSearched(r));
 
 		return {
 			results: r,
@@ -160,6 +158,10 @@ onMounted(() => {
 	onWindowWidthSetIsSearchShown();
 	setMostRecentSearchIds(getAllIdsSearched(searchData.value.results));
 	window.addEventListener('resize', onWindowWidthSetIsSearchShown);
+});
+
+onBeforeUpdate(() => {
+	setMostRecentSearchIds(getAllIdsSearched(searchData.value.results));
 });
 
 onUnmounted(() => {
