@@ -44,11 +44,13 @@ models = CRUDModels(namespace_data_source)
 get_by_id_model = get_restx_param_documentation(
         namespace=namespace_data_source,
         schema=DataSourcesGetByIDSchema,
+        model_name="DataSourcesGetByIDSchema",
     ).model
 
 get_many_model = get_restx_param_documentation(
         namespace=namespace_data_source,
         schema=DataSourcesGetManySchema,
+        model_name="DataSourcesGetManySchema",
     ).model
 
 
