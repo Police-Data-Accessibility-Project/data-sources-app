@@ -74,7 +74,7 @@ class AccessType(Enum):
     """
     Correlates to the access_type enum in the database
     """
-    WEB_PAGE = "Web page"
+    WEB_PAGE = "Webpage"
     DOWNLOAD = "Download"
     API = "API"
 
@@ -108,3 +108,12 @@ class UpdateMethod(Enum):
     INSERT = "Insert"
     NO_UPDATES = "No updates"
     OVERWRITE = "Overwrite"
+
+class AgencyAggregation(Enum):
+    """
+    Correlates to the agency_aggregation enum in the database
+    """
+    COUNTY = "county"
+    LOCAL = "local"
+    STATE = "state"
+    FEDERAL = "federal"

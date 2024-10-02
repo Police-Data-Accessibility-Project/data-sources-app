@@ -8,7 +8,7 @@ from middleware.primary_resource_logic.agencies import (
     get_location_id,
     InvalidLocationError,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies import LocationInfoDTO
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import LocationInfoDTO
 
 
 @pytest.fixture

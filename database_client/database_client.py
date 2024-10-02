@@ -766,14 +766,14 @@ class DatabaseClient:
             order_by,
             subquery_parameters,
         )
-        results = self.session.execute(query()).mappings().unique().all()
+        raw_results = self.session.execute(query()).mappings().unique().all()
 
         if subquery_parameters:
             results = [
-                dict(result[[key for key in result.keys()][0]]) for result in results
+                dict(result[[key for key in result.keys()][0]]) for result in raw_results
             ]
         else:
-            results = [dict(result) for result in results]
+            results = [dict(result) for result in raw_results]
         return results
 
     get_data_requests = partialmethod(

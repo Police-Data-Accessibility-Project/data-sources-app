@@ -14,9 +14,9 @@ from sqlalchemy import (
     Float,
     Boolean,
     DateTime,
-    Integer,
+    Integer, UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, DATE, DATERANGE, TIMESTAMP, ENUM as pgEnum
+from sqlalchemy.dialects.postgresql import ARRAY, DATE, DATERANGE, TIMESTAMP, ENUM as pgEnum, JSON
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
     DeclarativeBase,
@@ -177,7 +177,7 @@ class Agency(Base):
     data_sources_last_updated: Mapped[Optional[date]]
     approved: Mapped[bool] = mapped_column(server_default=false())
     rejection_reason: Mapped[Optional[str]]
-    last_approval_editor: Mapped[Optional[str]]
+    last_approval_editor = Column(String, nullable=True)
     submitter_contact: Mapped[Optional[str]]
     agency_created: Mapped[timestamp_tz] = mapped_column(
         server_default=func.current_timestamp()
@@ -187,7 +187,22 @@ class Agency(Base):
 
 
 class AgencyExpanded(Base):
+    # TODO: Update so that this can be inherited from Agency, and duplicate code can be eliminated
     __tablename__ = Relations.AGENCIES_EXPANDED.value
+
+    def __iter__(self):
+        for key in self.__dict__:
+            if key == "_sa_instance_state":
+                continue
+            else:
+                value = getattr(self, key)
+                value = (
+                    str(value)
+                    if type(value) == datetime or type(value) == date
+                    else value
+                )
+                yield key, value
+
 
     # Define columns as per the view with refined data types
     name = Column(String, nullable=False)
@@ -216,7 +231,7 @@ class AgencyExpanded(Base):
     data_sources_last_updated = Column(DateTime)
     approved = Column(Boolean)
     rejection_reason = Column(String)
-    last_approval_editor = Column(String)
+    last_approval_editor = Column(String, nullable=True)
     submitter_contact = Column(String)
     agency_created = Column(DateTime(timezone=True))
     county_airtable_uid = Column(String)
@@ -342,7 +357,7 @@ class DataSource(Base):
     updated_at: Mapped[Optional[date]]
     detail_level: Mapped[Optional[DetailLevelLiteral]]
     # Note: Below is an array of enums in Postgres but this is cumbersome to convey in SQLAlchemy terms
-    access_types = Column(ARRAY(String))
+    access_types = Column(ARRAY(pgEnum(*[e.value for e in AccessType], name="access_type")))
     record_download_option_provided: Mapped[Optional[bool]]
     data_portal_type: Mapped[Optional[str]]
     record_formats = Column(ARRAY(String))
@@ -357,7 +372,7 @@ class DataSource(Base):
     )
     submission_notes: Mapped[Optional[str]]
     rejection_note: Mapped[Optional[str]]
-    last_approval_editor: Mapped[Optional[str]]
+    last_approval_editor = Column(JSON, nullable=True)
     submitter_contact_info: Mapped[Optional[str]]
     agency_described_submitted: Mapped[Optional[str]]
     agency_described_not_in_database: Mapped[Optional[str]]
@@ -371,14 +386,18 @@ class DataSource(Base):
         ForeignKey("public.record_types.id")
     )
 
-    agencies: Mapped[list[Agency]] = relationship(
+    agencies: Mapped[list[AgencyExpanded]] = relationship(
+        argument="AgencyExpanded",
         secondary="public.agency_source_link",
+        primaryjoin="AgencySourceLink.data_source_uid == DataSource.airtable_uid",
+        secondaryjoin="AgencySourceLink.agency_uid == AgencyExpanded.airtable_uid",
         lazy="joined",
     )
 
     @hybrid_property
     def agency_ids(self) -> list[str]:
         return [agency.airtable_uid for agency in self.agencies]
+
 
 class DataSourceExpanded(DataSource):
     airtable_uid = mapped_column(None, ForeignKey("public.data_sources.airtable_uid"), primary_key=True)

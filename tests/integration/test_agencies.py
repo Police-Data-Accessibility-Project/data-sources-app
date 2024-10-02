@@ -4,13 +4,13 @@ import email.utils
 import time
 import uuid
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import pytest
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
 from middleware.enums import JurisdictionType
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies import AgenciesGetByIDResponseSchema, \
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import AgenciesGetByIDResponseSchema, \
     AgenciesGetManyResponseSchema
 from middleware.schema_and_dto_logic.response_schemas import (
     MessageSchema,
@@ -109,7 +109,7 @@ def get_data_to_post(
 
 def test_agencies_post(ts: AgenciesTestSetup):
 
-    start_of_test_datetime = datetime.utcnow()
+    start_of_test_datetime = datetime.now(timezone.utc)
 
     data_to_post = get_data_to_post(
         submitted_name=ts.submitted_name,
@@ -136,11 +136,12 @@ def test_agencies_post(ts: AgenciesTestSetup):
 
     agency_created = json_data["data"]["agency_created"]
     last_modified = json_data["data"]["airtable_agency_last_modified"]
-    assert agency_created == last_modified
+    assert agency_created == last_modified, "Agency created should be equal to last modified"
     assert (
-        email.utils.parsedate_to_datetime(agency_created).utcnow()
+        # Within one minute to account for minor database/app discrepancies
+        datetime.fromisoformat(agency_created) + timedelta(minutes=1)
         > start_of_test_datetime
-    )
+    ), "Agency created should be after start of test"
 
     assert json_data["data"]["submitted_name"] == ts.submitted_name
 
@@ -232,8 +233,8 @@ def test_agencies_put(ts: AgenciesTestSetup):
     agency_created = json_data["data"]["agency_created"]
     last_modified = json_data["data"]["airtable_agency_last_modified"]
     assert (
-        email.utils.parsedate_to_datetime(agency_created)
-        < email.utils.parsedate_to_datetime(last_modified)
+        datetime.fromisoformat(agency_created)
+        < datetime.fromisoformat(last_modified)
     )
 
 

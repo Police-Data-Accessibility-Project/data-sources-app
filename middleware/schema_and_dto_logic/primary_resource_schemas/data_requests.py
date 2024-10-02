@@ -40,10 +40,10 @@ class DataRequestsSchema(Schema):
         ),
     )
     date_created = fields.DateTime(
-        format="rfc", metadata=get_json_metadata("When the data request was created.")
+        format="iso", metadata=get_json_metadata("When the data request was created.")
     )
     date_status_last_changed = fields.DateTime(
-        format="rfc",
+        format="iso",
         metadata=get_json_metadata(
             "The date and time when the status of the request was last changed."
         ),

@@ -230,7 +230,7 @@ class DynamicQueryConstructor:
                 data_sources.description,
                 record_types.name AS record_type,
                 data_sources.source_url,
-                data_sources.record_format,
+                data_sources.record_formats,
                 data_sources.coverage_start,
                 data_sources.coverage_end,
                 data_sources.agency_supplied,

@@ -5,11 +5,11 @@ from database_client.enums import (
     DetailLevel,
     AccessType,
     RetentionSchedule,
-    URLStatus, ApprovalStatus,
+    URLStatus, ApprovalStatus, AgencyAggregation,
 )
 from middleware.enums import RecordType
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies import AgenciesGetSchema
-from middleware.schema_and_dto_logic.response_schemas import GetManyResponseSchemaBase
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import AgenciesGetSchema
+from middleware.schema_and_dto_logic.response_schemas import GetManyResponseSchemaBase, MessageSchema
 from middleware.schema_and_dto_logic.util import get_json_metadata
 
 
@@ -64,7 +64,8 @@ class DataSourceBaseSchema(Schema):
         ),
     )
     agency_aggregation = fields.Enum(
-        enum=LocationType,
+        enum=AgencyAggregation,
+        by_value=fields.Str,
         metadata=get_json_metadata(
             "If present, the Data Source describes multiple agencies."
         ),
@@ -103,8 +104,7 @@ class DataSourceBaseSchema(Schema):
         fields.Enum(
             enum=AccessType,
             by_value=fields.Str,
-            # TODO: Fix description
-            metadata=get_json_metadata("The type of access. Editable only by admins."),
+            metadata=get_json_metadata("The ways the data source can be accessed. Editable only by admins."),
         ),
         allow_none=True,
     )
@@ -129,8 +129,7 @@ class DataSourceBaseSchema(Schema):
     retention_schedule = fields.Enum(
         enum=RetentionSchedule,
         by_value=fields.Str,
-        # TODO: Fix description
-        metadata=get_json_metadata("The retention schedule. Editable only by admins."),
+        metadata=get_json_metadata("How long are records kept? Are there published guidelines regarding how long important information must remain accessible for future use? Editable only by admins."),
         allow_none=True,
     )
     airtable_uid = fields.String(
@@ -154,7 +153,7 @@ class DataSourceBaseSchema(Schema):
     rejection_note = fields.String(
         allow_none=True, metadata=get_json_metadata("Why the note was rejected.")
     )
-    last_approval_editor = fields.String(
+    last_approval_editor = fields.Dict(
         allow_none=True,
         metadata=get_json_metadata("Who provided approval for the data source."),
     )
@@ -207,7 +206,7 @@ class DataSourceBaseSchema(Schema):
         by_value=fields.String,
         required=True,
     )
-    record_type_id = fields.String(
+    record_type_id = fields.Integer(
         metadata=get_json_metadata("The record type id associated with the data source"),
         allow_none=True
     )
@@ -234,8 +233,17 @@ class DataSourceGetSchema(DataSourceBaseSchema):
         metadata=get_json_metadata("The agencies associated with the data source."),
     )
 
-class DataSourcesGetByIDSchema(GetManyResponseSchemaBase):
+class DataSourcesGetByIDSchema(MessageSchema):
     data = fields.Nested(
         DataSourceGetSchema,
         metadata=get_json_metadata("The result"),
+    )
+
+class DataSourcesGetManySchema(GetManyResponseSchemaBase):
+    data = fields.List(
+        cls_or_instance=fields.Nested(
+            nested=DataSourceGetSchema,
+            metadata=get_json_metadata("The list of results"),
+        ),
+        metadata=get_json_metadata("The list of results"),
     )

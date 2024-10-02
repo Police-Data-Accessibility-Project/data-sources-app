@@ -117,7 +117,7 @@ class AgencyInfoBaseSchema(Schema):
             "source": SourceMappingEnum.JSON,
         },
     )
-    last_approval_editor = fields.Str(
+    last_approval_editor = fields.String(
         required=False,
         allow_none=True,
         metadata={
@@ -406,7 +406,7 @@ class AgenciesGetSchema(AgencyInfoBaseSchema):
     locality_name = LOCALITY_NAME_FIELD
     airtable_agency_last_modified = fields.DateTime(
         required=False,
-        format="rfc",
+        format="iso",
         metadata={
             "description": "When the agency was last modified",
             "source": SourceMappingEnum.JSON,
@@ -414,7 +414,7 @@ class AgenciesGetSchema(AgencyInfoBaseSchema):
     )
     agency_created = fields.DateTime(
         required=False,
-        format="rfc",
+        format="iso",
         metadata={
             "description": "When the agency was created",
             "source": SourceMappingEnum.JSON,

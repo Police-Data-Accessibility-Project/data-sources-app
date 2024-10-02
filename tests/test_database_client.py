@@ -320,7 +320,7 @@ def test_select_from_relation_subquery(live_database_client: DatabaseClient):
     where_mappings = [WhereMapping(column="airtable_uid", value=data_source_id)]
     subquery_parameters = [
         SubqueryParameters(
-            relation_name="agencies",
+            relation_name=Relations.AGENCIES_EXPANDED.value,
             columns=["airtable_uid", "name"],
             linking_column="agencies",
         )
