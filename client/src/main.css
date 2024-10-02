@@ -8,4 +8,8 @@
   .truncate-text {
     @apply overflow-hidden whitespace-nowrap overflow-ellipsis
   }
+
+  .pill {
+    @apply text-neutral-800 border-solid border-[1px] border-neutral-500 rounded-xl px-2 bg-neutral-200 text-xs sm:text-sm [&>*]:md:text-med [&>*]:lg:text-lg p-1 overflow-hidden;
+  }
 }

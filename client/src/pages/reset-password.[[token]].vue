@@ -162,13 +162,10 @@ onMounted(validateToken);
 
 // Handlers
 async function validateToken() {
-	console.debug('validateToken running', { token });
 	if (!token) return;
 
 	try {
 		const response = await user.validateResetPasswordToken(token);
-
-		console.debug('validateToken', { response });
 
 		if (300 < response.status >= 200) {
 			isExpiredToken.value = false;

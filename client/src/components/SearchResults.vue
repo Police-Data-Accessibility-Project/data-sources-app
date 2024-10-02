@@ -10,7 +10,7 @@
 			</h4>
 		</div>
 
-		<div ref="containerRef" class="w-full h-[100vh] relative overflow-y-scroll">
+		<div ref="containerRef" class="w-full h-[60vh] relative overflow-y-scroll">
 			<Spinner
 				v-if="isLoading"
 				:show="isLoading"
@@ -51,7 +51,7 @@
 									<h6>
 										{{ source.data_source_name }}
 									</h6>
-									<span class="pill w-max">
+									<span class="pill flex items-center gap-2 w-max">
 										<RecordTypeIcon :record-type="source.record_type" />
 										{{ source.record_type }}
 									</span>
@@ -132,7 +132,6 @@ const HEADING_TITLES = [
 	'details',
 ];
 
-// For now we have a single array, but we may need to do some parsing, per https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/409
 const { results, isLoading } = defineProps({
 	results: Object,
 	isLoading: Boolean,
@@ -173,6 +172,9 @@ function getClassNameFromHeadingType(heading) {
 	return heading.replaceAll(',', '').split(' ').join('-');
 }
 
+/**
+ * TODO: remove this function when API returns arrays
+ */
 function formatFormatsBecauseAPIReturnsStringsRatherThanArrays(str) {
 	if (!str) return [];
 	return str
@@ -185,6 +187,9 @@ function formatFormatsBecauseAPIReturnsStringsRatherThanArrays(str) {
 </script>
 
 <style scoped>
+@import url('../main.css');
+@tailwind utilities;
+
 /* TODO: decouple heading styling from heading level in design-system (or at least provide classes that can perform these overrides more efficiently) */
 h4 {
 	@apply m-0 block text-[.65rem] sm:text-med;
@@ -212,7 +217,7 @@ h4.formats {
 }
 
 .agency-heading-row {
-	@apply flex items-center sticky top-0 mb-4 justify-between bg-neutral-100 p-2 rounded-sm [&>*]:text-xs [&>*]:md:text-med [&>*]:lg:text-lg border-solid border-neutral-300 border-2 z-10;
+	@apply flex items-center sticky top-0 mb-4 justify-between gap-4 bg-neutral-100 p-2 rounded-sm [&>*]:text-xs [&>*]:md:text-med [&>*]:lg:text-lg border-solid border-neutral-300 border-2 z-10;
 }
 
 .agency-row {
@@ -291,10 +296,6 @@ div.links {
 
 div.formats {
 	@apply overflow-hidden h-full;
-}
-
-.pill {
-	@apply text-neutral-800 border-solid border-[1px] border-neutral-500 rounded-xl px-2 bg-neutral-200 text-xs sm:text-sm [&>*]:md:text-med [&>*]:lg:text-lg p-1 overflow-hidden;
 }
 
 .format {
