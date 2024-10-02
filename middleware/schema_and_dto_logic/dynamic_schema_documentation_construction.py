@@ -95,7 +95,7 @@ class FieldInfo:
         self.parent_schema_class = type(field_value.parent)
         self.metadata = field_value.metadata
         self.description = self._get_description(
-            self.metadata, self.parent_schema_class, self.marshmallow_field_value
+            self.metadata, self.parent_schema_class, self.marshmallow_field_value, field_name
         )
         self.required = field_value.required
         self.restx_field_type = self._map_field_type(self.marshmallow_field_type)
@@ -108,8 +108,9 @@ class FieldInfo:
         metadata: dict,
         schema_class: Type[SchemaTypes],
         field_value: marshmallow_fields,
+        field_name: str
     ) -> str:
-        description = _get_required_argument("description", metadata, schema_class)
+        description = _get_required_argument("description", metadata, schema_class, field_name)
         if isinstance(field_value, marshmallow_fields.Enum):
             description = add_description_info_from_enum(field_value, description)
         return add_description_info_from_validators(field_value, description)

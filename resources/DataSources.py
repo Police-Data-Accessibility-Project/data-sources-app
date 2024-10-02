@@ -24,9 +24,12 @@ from middleware.primary_resource_logic.data_source_queries import (
     DataSourcesGetRequestDTOMany,
     delete_data_source_wrapper,
 )
+from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import get_restx_param_documentation
 from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
     CRUDModels,
 )
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourcesGetByIDSchema, \
+    DataSourcesGetManySchema
 from resources.resource_helpers import (
     create_response_dictionary,
 )
@@ -37,6 +40,16 @@ from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulatePa
 
 namespace_data_source = create_namespace(AppNamespaces.DATA_SOURCES)
 models = CRUDModels(namespace_data_source)
+
+get_by_id_model = get_restx_param_documentation(
+        namespace=namespace_data_source,
+        schema=DataSourcesGetByIDSchema,
+    ).model
+
+get_many_model = get_restx_param_documentation(
+        namespace=namespace_data_source,
+        schema=DataSourcesGetManySchema,
+    ).model
 
 
 @namespace_data_source.route("/<resource_id>")
@@ -51,7 +64,7 @@ class DataSourceById(PsycopgResource):
         auth_info=GET_AUTH_INFO,
         responses=create_response_dictionary(
             success_message="Returns information on the specific data source.",
-            success_model=models.entry_data_response_model,
+            success_model=get_by_id_model,
         ),
     )
     def get(self, access_info: AccessInfo, resource_id: str) -> Response:
@@ -139,7 +152,7 @@ class DataSources(PsycopgResource):
         description="Retrieves all data sources.",
         responses=create_response_dictionary(
             success_message="Returns all requested data sources.",
-            success_model=models.get_many_response_model,
+            success_model=get_many_model,
         ),
     )
     def get(self, access_info: AccessInfo) -> Response:

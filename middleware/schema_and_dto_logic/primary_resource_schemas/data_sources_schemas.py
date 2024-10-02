@@ -32,14 +32,14 @@ class DataSourceBaseSchema(Schema):
     description = fields.String(
         allow_none=True,
         metadata=get_json_metadata(
-            "Information to give clarity and confidence about what this source is, how it was "
+            description="Information to give clarity and confidence about what this source is, how it was "
             "processed, and whether the person reading the description might want to use it. "
             "Especially important if the source is difficult to preview or categorize."
         ),
     )
 
     source_url = fields.String(
-        required=True,
+        required=False,
         metadata=get_json_metadata(
             "A URL where these records can be found or are referenced."
         ),
@@ -107,17 +107,35 @@ class DataSourceBaseSchema(Schema):
             metadata=get_json_metadata("The ways the data source can be accessed. Editable only by admins."),
         ),
         allow_none=True,
+        metadata=get_json_metadata(
+            "The ways the data source can be accessed. Editable only by admins."
+        ),
     )
-    record_download_option_provided = fields.Boolean(allow_none=True)
-    data_portal_type = fields.String(allow_none=True)
+    record_download_option_provided = fields.Boolean(
+        allow_none=True,
+        metadata=get_json_metadata("Is there a way to download the data source's records?"),
+    )
+    data_portal_type = fields.String(
+        allow_none=True,
+        metadata=get_json_metadata("The data portal type of the data source."),
+    )
     record_formats = fields.List(
-        fields.String,
+        fields.String(
+            metadata=get_json_metadata("What formats the data source can be obtained in."),
+        ),
         allow_none=True,
         metadata=get_json_metadata("What formats the data source can be obtained in.")
     )
-    update_method = fields.String(allow_none=True)
+    # TODO: Update to include UpdateMethodEnum
+    update_method = fields.String(
+        allow_none=True,
+        metadata=get_json_metadata("How is the data source updated?"),
+    )
     tags = fields.List(
-        fields.String(allow_none=True),
+        fields.String(
+            allow_none=True,
+            metadata=get_json_metadata("Are there any keyword descriptors which might help people find this in a search? Try to limit tags to information which can't be contained in other properties."),
+        ),
         metadata=get_json_metadata("Are there any keyword descriptors which might help people find this in a search? Try to limit tags to information which can't be contained in other properties."),
         allow_none=True
     )
@@ -125,7 +143,10 @@ class DataSourceBaseSchema(Schema):
         metadata=get_json_metadata("A URL where supplementary information about the source is published."),
         allow_none=True
     )
-    originating_entity = fields.String(allow_none=True)
+    originating_entity = fields.String(
+        allow_none=True,
+        metadata=get_json_metadata("Who is the originator of the data source?"),
+    )
     retention_schedule = fields.Enum(
         enum=RetentionSchedule,
         by_value=fields.Str,
@@ -141,7 +162,7 @@ class DataSourceBaseSchema(Schema):
         metadata=get_json_metadata("URL for the webscraper that produces this source"),
     )
     created_at = fields.DateTime(
-        required=True,
+        required=False,
         metadata=get_json_metadata("The date and time the data source was created."),
     )
     submission_notes = fields.String(
@@ -153,7 +174,7 @@ class DataSourceBaseSchema(Schema):
     rejection_note = fields.String(
         allow_none=True, metadata=get_json_metadata("Why the note was rejected.")
     )
-    last_approval_editor = fields.Dict(
+    last_approval_editor = fields.String(
         allow_none=True,
         metadata=get_json_metadata("Who provided approval for the data source."),
     )
@@ -188,6 +209,7 @@ class DataSourceBaseSchema(Schema):
         ),
     )
     broken_source_url_as_of = fields.Date(
+        required=False,
         allow_none=True,
         format="iso",
         metadata=get_json_metadata("When the url was marked as broken."),
@@ -199,12 +221,14 @@ class DataSourceBaseSchema(Schema):
     url_status = fields.Enum(
         URLStatus,
         by_value=fields.String,
-        allow_none=True
+        allow_none=True,
+        metadata=get_json_metadata("The status of the url. Editable only by admins."),
     )
     approval_status = fields.Enum(
         ApprovalStatus,
         by_value=fields.String,
-        required=True,
+        metadata=get_json_metadata("The approval status of the data source. Editable only by admins."),
+        required=False,
     )
     record_type_id = fields.Integer(
         metadata=get_json_metadata("The record type id associated with the data source"),
@@ -223,12 +247,17 @@ class DataSourceGetSchema(DataSourceBaseSchema):
         metadata=get_json_metadata("The type of data source. Editable only by admins."),
     )
     agency_ids = fields.List(
-        fields.String,
+        fields.String(
+            metadata=get_json_metadata("The IDs of the agencies associated with the data source."),
+        ),
         allow_none=True,
         metadata=get_json_metadata("The IDs of the agencies associated with the data source."),
     )
     agencies = fields.List(
-        fields.Nested(AgenciesGetSchema),
+        fields.Nested(
+            AgenciesGetSchema,
+            metadata=get_json_metadata("The agencies associated with the data source."),
+        ),
         allow_none=True,
         metadata=get_json_metadata("The agencies associated with the data source."),
     )
