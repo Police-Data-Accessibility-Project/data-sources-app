@@ -1,4 +1,4 @@
-from typing import Type, Any, Callable
+from typing import Type, Any, Callable, Optional
 
 from flask import request
 
@@ -8,13 +8,14 @@ from utilities.enums import SourceMappingEnum
 
 
 def _get_required_argument(
-    argument_name: str, metadata: dict, schema_class: SchemaTypes
+    argument_name: str, metadata: dict, schema_class: SchemaTypes, field_name: Optional[str] = None
 ) -> Any:
     try:
         return metadata[argument_name]
     except KeyError:
+        name = field_name if field_name else schema_class.__class__.__name__
         raise MissingArgumentError(
-            f"The argument {argument_name} must be specified as a fields argument in class {schema_class.__class__.__name__} (as in `Fields.Str({argument_name}=value`)"
+            f"The argument {argument_name} must be specified as a metadata argument in class {name} (as in `Fields.Str(metadata={argument_name}:value`)"
         )
 
 

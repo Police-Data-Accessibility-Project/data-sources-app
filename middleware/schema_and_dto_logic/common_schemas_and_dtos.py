@@ -2,7 +2,7 @@
 The base schema to use for get many requests,
 to be inherited by other get many requests.
 """
-
+import ast
 from dataclasses import dataclass
 from typing import Optional
 
@@ -45,7 +45,7 @@ class GetManyBaseSchema(Schema):
         required=False,
         metadata={
             "source": SourceMappingEnum.QUERY_ARGS,
-            "transformation_function": lambda value: value.split(","),
+            "transformation_function": lambda value: ast.literal_eval(value) if value else None,
             "description": "A comma-delimited list of the columns to return in the results. Defaults to all permitted if not provided.",
         },
     )

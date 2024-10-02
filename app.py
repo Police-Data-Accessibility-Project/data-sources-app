@@ -1,7 +1,8 @@
 import os
-from datetime import timedelta
+from datetime import timedelta, date, datetime
 
 from flask import Flask
+from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 
 from resources.Callback import namespace_auth
@@ -91,6 +92,12 @@ def get_flask_app_cookie_encryption_key() -> str:
     return os.getenv("FLASK_APP_COOKIE_ENCRYPTION_KEY")
 
 
+class UpdatedJSONProvider(DefaultJSONProvider):
+    def default(self, o):
+        if isinstance(o, date) or isinstance(o, datetime):
+            return o.isoformat()
+        return super().default(o)
+
 def create_app() -> Flask:
     psycopg2_connection = initialize_psycopg_connection()
     config.connection = psycopg2_connection
@@ -98,6 +105,7 @@ def create_app() -> Flask:
     for namespace in NAMESPACES:
         api.add_namespace(namespace)
     app = Flask(__name__)
+    app.json = UpdatedJSONProvider(app)
 
     # JWT settings
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")

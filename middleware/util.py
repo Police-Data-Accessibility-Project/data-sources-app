@@ -1,4 +1,5 @@
 import os
+from enum import Enum
 
 from dotenv import dotenv_values, find_dotenv
 
@@ -19,4 +20,5 @@ def get_env_variable(name: str) -> str:
         raise ValueError(f"Environment variable '{name}' is not set or is empty.")
     return value
 
-
+def get_enum_values(en: type[Enum]):
+    return [e.value for e in en]

@@ -228,9 +228,9 @@ class DynamicQueryConstructor:
                 data_sources.airtable_uid,
                 data_sources.name AS data_source_name,
                 data_sources.description,
-                data_sources.record_type,
+                record_types.name AS record_type,
                 data_sources.source_url,
-                data_sources.record_format,
+                data_sources.record_formats,
                 data_sources.coverage_start,
                 data_sources.coverage_end,
                 data_sources.agency_supplied,
@@ -246,6 +246,8 @@ class DynamicQueryConstructor:
                 agencies ON agency_source_link.agency_uid = agencies.airtable_uid
             INNER JOIN
 				locations_expanded on agencies.location_id = locations_expanded.id
+            INNER JOIN 
+                record_types on record_types.id = data_sources.record_type_id
         """
         )
 
@@ -262,8 +264,6 @@ class DynamicQueryConstructor:
             join_conditions.append(
                 sql.SQL(
                     """
-                INNER JOIN
-                    record_types ON data_sources.record_type_id = record_types.id
                 INNER JOIN
                     record_categories ON record_types.category_id = record_categories.id
             """
@@ -412,6 +412,8 @@ class DynamicQueryConstructor:
         :param subquery_parameters: List of SubqueryParameters objects for executing subqueries.
         :return:
         """
+        if len(columns) == 0:
+            raise ValueError("No columns provided")
         if type(where_mappings) == dict:
             where_mappings = [
                 WhereMapping(

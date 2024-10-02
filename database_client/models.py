@@ -2,6 +2,7 @@ from datetime import datetime, date
 from typing import Optional, Literal, get_args
 from typing_extensions import Annotated
 
+
 from sqlalchemy import (
     Column,
     BigInteger,
@@ -13,9 +14,9 @@ from sqlalchemy import (
     Float,
     Boolean,
     DateTime,
-    Integer,
+    Integer, UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, DATE, DATERANGE, TIMESTAMP
+from sqlalchemy.dialects.postgresql import ARRAY, DATE, DATERANGE, TIMESTAMP, ENUM as pgEnum, JSON
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
     DeclarativeBase,
@@ -25,9 +26,9 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.sql.expression import false, func
 
-from database_client.enums import LocationType
+from database_client.enums import LocationType, AccessType, URLStatus, ApprovalStatus
 from middleware.enums import Relations
-
+from middleware.util import get_enum_values
 
 ExternalAccountTypeLiteral = Literal["github"]
 RecordTypeLiteral = Literal[
@@ -81,7 +82,26 @@ RequestStatusLiteral = Literal[
 JurisdictionTypeLiteral = Literal[
     "federal", "state", "county", "local", "port", "tribal", "transit", "school"
 ]
-
+ApprovalStatusLiteral = Literal[
+    "rejected", "approved", "needs identification", "pending"
+]
+URLStatusLiteral = Literal["available", "none found", "ok", "broken"]
+RetentionScheduleLiteral = Literal[
+    "1-10 years",
+    "< 1 week",
+    "1 day",
+    "Future only",
+    "< 1 day",
+    "< 1 year",
+    "1 month",
+    "1 week",
+    "> 10 years",
+]
+DetailLevelLiteral = Literal[
+    "Individual record", "Aggregated records", "Summarized totals"
+]
+AccessTypeLiteral = Literal["Web page", "API", "Download"]
+UpdateMethodLiteral = Literal["Insert", "No updates", "Overwrite"]
 
 text = Annotated[Text, None]
 timestamp_tz = Annotated[
@@ -157,7 +177,7 @@ class Agency(Base):
     data_sources_last_updated: Mapped[Optional[date]]
     approved: Mapped[bool] = mapped_column(server_default=false())
     rejection_reason: Mapped[Optional[str]]
-    last_approval_editor: Mapped[Optional[str]]
+    last_approval_editor = Column(String, nullable=True)
     submitter_contact: Mapped[Optional[str]]
     agency_created: Mapped[timestamp_tz] = mapped_column(
         server_default=func.current_timestamp()
@@ -167,11 +187,26 @@ class Agency(Base):
 
 
 class AgencyExpanded(Base):
+    # TODO: Update so that this can be inherited from Agency, and duplicate code can be eliminated
     __tablename__ = Relations.AGENCIES_EXPANDED.value
+
+    def __iter__(self):
+        for key in self.__dict__:
+            if key == "_sa_instance_state":
+                continue
+            else:
+                value = getattr(self, key)
+                value = (
+                    str(value)
+                    if type(value) == datetime or type(value) == date
+                    else value
+                )
+                yield key, value
+
 
     # Define columns as per the view with refined data types
     name = Column(String, nullable=False)
-    submitted_name = Column(String)
+    submitted_name = Column(String, nullable=False)
     homepage_url = Column(String)
     jurisdiction_type: Mapped[JurisdictionTypeLiteral] = mapped_column(
         Enum(*get_args(JurisdictionTypeLiteral)), name="jurisdiction_type"
@@ -196,7 +231,7 @@ class AgencyExpanded(Base):
     data_sources_last_updated = Column(DateTime)
     approved = Column(Boolean)
     rejection_reason = Column(String)
-    last_approval_editor = Column(String)
+    last_approval_editor = Column(String, nullable=True)
     submitter_contact = Column(String)
     agency_created = Column(DateTime(timezone=True))
     county_airtable_uid = Column(String)
@@ -290,7 +325,6 @@ class DataRequest(Base):
     coverage_range: Mapped[Optional[daterange]]
     data_requirements: Mapped[Optional[text]]
 
-
 class DataSource(Base):
     __tablename__ = Relations.DATA_SOURCES.value
 
@@ -313,7 +347,6 @@ class DataSource(Base):
     name: Mapped[str]
     submitted_name: Mapped[Optional[str]]
     description: Mapped[Optional[str]]
-    record_type: Mapped[Optional[str]]
     source_url: Mapped[Optional[str]]
     agency_supplied: Mapped[Optional[bool]]
     supplying_entity: Mapped[Optional[str]]
@@ -321,51 +354,43 @@ class DataSource(Base):
     agency_aggregation: Mapped[Optional[str]]
     coverage_start: Mapped[Optional[date]]
     coverage_end: Mapped[Optional[date]]
-    source_last_updated: Mapped[Optional[date]]
-    detail_level: Mapped[Optional[str]]
-    number_of_records_available: Mapped[Optional[int]]
-    size: Mapped[Optional[str]]
-    access_type: Mapped[Optional[str]]
+    updated_at: Mapped[Optional[date]]
+    detail_level: Mapped[Optional[DetailLevelLiteral]]
+    # Note: Below is an array of enums in Postgres but this is cumbersome to convey in SQLAlchemy terms
+    access_types = Column(ARRAY(pgEnum(*[e.value for e in AccessType], name="access_type")))
     record_download_option_provided: Mapped[Optional[bool]]
     data_portal_type: Mapped[Optional[str]]
-    record_format: Mapped[Optional[str]]
-    update_method: Mapped[Optional[str]]
+    record_formats = Column(ARRAY(String))
+    update_method: Mapped[Optional[UpdateMethodLiteral]]
     tags: Mapped[Optional[str]]
     readme_url: Mapped[Optional[str]]
     originating_entity: Mapped[Optional[str]]
-    retention_schedule: Mapped[Optional[str]]
+    retention_schedule: Mapped[Optional[RetentionScheduleLiteral]]
     scraper_url: Mapped[Optional[str]]
-    data_source_created: Mapped[Optional[timestamp_tz]] = mapped_column(
-        server_default=None
+    created_at: Mapped[Optional[timestamp_tz]] = mapped_column(
+        server_default=func.now()
     )
-    airtable_source_last_modified: Mapped[Optional[timestamp_tz]] = mapped_column(
-        server_default=None
-    )
-    url_broken: Mapped[Optional[bool]]
     submission_notes: Mapped[Optional[str]]
     rejection_note: Mapped[Optional[str]]
     last_approval_editor: Mapped[Optional[str]]
     submitter_contact_info: Mapped[Optional[str]]
     agency_described_submitted: Mapped[Optional[str]]
     agency_described_not_in_database: Mapped[Optional[str]]
-    approved: Mapped[Optional[bool]]
-    record_type_other: Mapped[Optional[str]]
     data_portal_type_other: Mapped[Optional[str]]
-    private_access_instructions: Mapped[Optional[str]]
-    records_not_online: Mapped[Optional[bool]]
     data_source_request: Mapped[Optional[str]]
-    url_button: Mapped[Optional[str]]
-    tags_other: Mapped[Optional[str]]
     broken_source_url_as_of: Mapped[Optional[date]]
     access_notes: Mapped[Optional[text]]
-    url_status: Mapped[Optional[text]]
-    approval_status: Mapped[Optional[text]]
+    url_status: Mapped[URLStatusLiteral]
+    approval_status: Mapped[ApprovalStatusLiteral]
     record_type_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("public.record_types.id")
     )
 
-    agencies: Mapped[list[Agency]] = relationship(
+    agencies: Mapped[list[AgencyExpanded]] = relationship(
+        argument="AgencyExpanded",
         secondary="public.agency_source_link",
+        primaryjoin="AgencySourceLink.data_source_uid == DataSource.airtable_uid",
+        secondaryjoin="AgencySourceLink.agency_uid == AgencyExpanded.airtable_uid",
         lazy="joined",
     )
 
@@ -373,6 +398,17 @@ class DataSource(Base):
     def agency_ids(self) -> list[str]:
         return [agency.airtable_uid for agency in self.agencies]
 
+
+class DataSourceExpanded(DataSource):
+    airtable_uid = mapped_column(None, ForeignKey("public.data_sources.airtable_uid"), primary_key=True)
+
+    __tablename__ = Relations.DATA_SOURCES_EXPANDED.value
+    __table_args__ = {
+        "polymorphic_identity": "data_source_expanded",
+        "inherit_conditions": (DataSource.airtable_uid == airtable_uid),
+    }
+
+    record_type_name: Mapped[Optional[str]]
 
 class DataSourceArchiveInfo(Base):
     __tablename__ = Relations.DATA_SOURCES_ARCHIVE_INFO.value
@@ -468,6 +504,7 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     "agencies_expanded": AgencyExpanded,
     "data_requests": DataRequest,
     "data_sources": DataSource,
+    "data_sources_expanded": DataSourceExpanded,
     "data_sources_archive_info": DataSourceArchiveInfo,
     "link_data_sources_data_requests": LinkDataSourceDataRequest,
     "reset_tokens": ResetToken,
@@ -500,6 +537,6 @@ def convert_to_column_reference(columns: list[str], relation: str) -> list[Colum
         try:
             return getattr(relation_reference, column)
         except AttributeError:
-            pass
+            raise AttributeError(f"Column \"{column}\" does not exist in SQLAlchemy Table Model")
 
     return [get_attribute(column) for column in columns]

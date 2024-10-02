@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from http import HTTPStatus
 
-from flask import make_response, Response
+from flask import make_response, Response, request
 from marshmallow import fields, validate
 
 from database_client.database_client import DatabaseClient
@@ -31,7 +31,7 @@ from utilities.common import match_string_to_enum
 from utilities.enums import SourceMappingEnum
 
 RELATION = Relations.DATA_SOURCES.value
-SUBQUERY_PARAMS = [SubqueryParameters(relation_name=Relations.AGENCIES.value, linking_column="agencies")]
+SUBQUERY_PARAMS = [SubqueryParameters(relation_name=Relations.AGENCIES_EXPANDED.value, linking_column="agencies")]
 
 
 class DataSourceNotFoundError(Exception):
@@ -65,7 +65,7 @@ def get_data_sources_wrapper(
     return get_many(
         middleware_parameters=MiddlewareParameters(
             access_info=access_info,
-            relation=RELATION,
+            relation=Relations.DATA_SOURCES_EXPANDED.value,
             db_client_method=DatabaseClient.get_data_sources,
             db_client=db_client,
             db_client_additional_args={
@@ -81,6 +81,7 @@ def get_data_sources_wrapper(
             subquery_params=SUBQUERY_PARAMS
         ),
         page=dto.page,
+        requested_columns=dto.requested_columns
     )
 
 
@@ -90,7 +91,7 @@ def data_source_by_id_wrapper(
     return get_by_id(
         middleware_parameters=MiddlewareParameters(
             access_info=access_info,
-            relation=RELATION,
+            relation=Relations.DATA_SOURCES_EXPANDED.value,
             db_client_method=DatabaseClient.get_data_sources,
             db_client=db_client,
             entry_name="data source",

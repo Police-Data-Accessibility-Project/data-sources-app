@@ -1,3 +1,4 @@
+import urllib.parse
 from collections import namedtuple
 from http import HTTPStatus
 
@@ -36,8 +37,8 @@ GET_MANY_TEST_QUERY_PARAMS = (
             ),
         ),
         (
-            {"page": "1", "requested_columns": "column1,column2"},
-            GetManyBaseDTO(page=1, requested_columns=["column1", "column2"], sort_order=SortOrder.DESCENDING),
+            {"page": "1", "requested_columns": str(["columnA", "columnB"])},
+            GetManyBaseDTO(page=1, requested_columns=["columnA", "columnB"], sort_order=SortOrder.DESCENDING),
         ),
 )
 ResponseTuple = namedtuple("ResponseTuple", ["response", "status_code"])

@@ -303,7 +303,7 @@ def test_select_from_relation_subquery(live_database_client: DatabaseClient):
 
     live_database_client.execute_sqlalchemy(
         lambda: insert(Agency).values(
-            airtable_uid=agency_id, name=agency_name, jurisdiction_type="federal"
+            airtable_uid=agency_id, submitted_name=agency_name, jurisdiction_type="federal"
         )
     )
     live_database_client.execute_sqlalchemy(
@@ -320,7 +320,7 @@ def test_select_from_relation_subquery(live_database_client: DatabaseClient):
     where_mappings = [WhereMapping(column="airtable_uid", value=data_source_id)]
     subquery_parameters = [
         SubqueryParameters(
-            relation_name="agencies",
+            relation_name=Relations.AGENCIES_EXPANDED.value,
             columns=["airtable_uid", "name"],
             linking_column="agencies",
         )
@@ -389,21 +389,6 @@ def test_create_entry_in_table_no_return_columns(live_database_client, test_tabl
     assert results == [
         {"pet_name": "George"},
     ]
-
-
-def test_get_approved_data_sources(live_database_client: DatabaseClient):
-    # Add new data sources and agencies to the database, at least two approved and one unapproved
-    insert_test_agencies_and_sources_if_not_exist(
-        live_database_client.connection.cursor()
-    )
-
-    # Fetch the data sources with the DatabaseClient method
-    data_sources = live_database_client.get_approved_data_sources()
-
-    # Confirm only all approved data sources are retrieved
-    NUMBER_OF_DATA_SOURCE_COLUMNS = 42
-    assert len(data_sources) > 0
-    assert len(data_sources[0]) == NUMBER_OF_DATA_SOURCE_COLUMNS
 
 
 def test_delete_from_table(live_database_client, test_table_data):

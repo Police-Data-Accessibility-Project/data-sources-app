@@ -83,29 +83,29 @@ def insert_test_agencies_and_sources(cursor: psycopg.Cursor) -> None:
         PUBLIC.DATA_SOURCES (
             airtable_uid,
             NAME,
+            SUBMITTED_NAME,
             DESCRIPTION,
-            RECORD_TYPE,
             SOURCE_URL,
             APPROVAL_STATUS,
             URL_STATUS
         )
         VALUES
-        ('SOURCE_UID_1','Source 1','Description of src1',
-            'Type A','http://src1.com','approved','available'),
-        ('SOURCE_UID_2','Source 2','Description of src2',
-            'Type B','http://src2.com','needs identification','available'),
-        ('SOURCE_UID_3','Source 3', 'Description of src3',
-            'Type C', 'http://src3.com', 'pending', 'available');
+        ('SOURCE_UID_1','Source 1', 'Source 1','Description of src1',
+            'http://src1.com','approved','available'),
+        ('SOURCE_UID_2','Source 2', 'Source 2','Description of src2',
+            'http://src2.com','needs identification','available'),
+        ('SOURCE_UID_3','Source 3', 'Source 3','Description of src3',
+            'http://src3.com', 'pending', 'available');
         """
     )
     db_client.execute_raw_sql(
         """
         INSERT INTO public.agencies
-        (airtable_uid, name, location_id, lat, lng, jurisdiction_type)
+        (airtable_uid, name, submitted_name, location_id, lat, lng, jurisdiction_type)
         VALUES 
-            ('Agency_UID_1', 'Agency A', %s, 30, 20, 'state'),
-            ('Agency_UID_2', 'Agency B', %s, 40, 50, 'state'),
-            ('Agency_UID_3', 'Agency C', %s, 90, 60, 'state');
+            ('Agency_UID_1', 'Agency A', 'Agency A', %s, 30, 20, 'state'),
+            ('Agency_UID_2', 'Agency B', 'Agency B', %s, 40, 50, 'state'),
+            ('Agency_UID_3', 'Agency C', 'Agency C', %s, 90, 60, 'state');
     """,
         vars=(location_id_1, location_id_2, location_id_3),
     )
@@ -352,14 +352,13 @@ def insert_test_data_source(db_client: DatabaseClient) -> str:
             airtable_uid,
             NAME,
             DESCRIPTION,
-            RECORD_TYPE,
             SOURCE_URL,
             APPROVAL_STATUS,
             URL_STATUS
         )
         VALUES
         (%s,'Example Data Source', 'Example Description',
-            'Type A','http://src1.com','approved','available')
+            'http://src1.com','approved','available')
         """,
         vars=(test_uid,),
     )
@@ -430,7 +429,7 @@ def setup_get_typeahead_suggestion_test_data(cursor: Optional[psycopg.Cursor] = 
         db_client.create_or_get(
             table_name=Relations.AGENCIES.value,
             column_value_mappings={
-                "name": "Xylodammerung Police Agency",
+                "submitted_name": "Xylodammerung Police Agency",
                 "airtable_uid": "XY_SOURCE_UID",
                 "jurisdiction_type": JurisdictionType.STATE,
                 "location_id": location_id,

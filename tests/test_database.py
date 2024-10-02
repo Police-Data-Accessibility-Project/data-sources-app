@@ -6,6 +6,7 @@ which test the database-external views and functions
 
 import uuid
 from collections import namedtuple
+from datetime import datetime
 
 import psycopg
 import pytest
@@ -317,3 +318,42 @@ def assert_link_user_followed_location_deleted(live_database_client, test_info):
         where_mappings=WhereMapping.from_dict({"user_id": test_info.user_id}),
     )
     assert len(results) == 0
+
+def test_data_sources_created_at_updated_at(
+    live_database_client
+):
+    # Create bare-minimum fake data source
+    data_source_id = live_database_client.add_new_data_source(
+        column_value_mappings={
+            "name": uuid.uuid4().hex,
+            "airtable_uid": uuid.uuid4().hex,
+        }
+    )
+    result = live_database_client._select_from_relation(
+        relation_name=Relations.DATA_SOURCES.value,
+        columns=["created_at", "updated_at"],
+        where_mappings=WhereMapping.from_dict({"airtable_uid": data_source_id}),
+    )
+
+    # Get `created_at` and `updated_at` for data source
+    created_at = result[0]["created_at"]
+    updated_at = result[0]["updated_at"]
+
+    # Confirm they are equivalent
+    assert created_at == updated_at
+
+    # Update data source
+    live_database_client.update_data_source(
+        entry_id=data_source_id,
+        column_edit_mappings={"name": uuid.uuid4().hex},
+    )
+
+    # Get `updated_at` for data source
+    result = live_database_client._select_from_relation(
+        relation_name=Relations.DATA_SOURCES.value,
+        columns=["updated_at"],
+        where_mappings=WhereMapping.from_dict({"airtable_uid": data_source_id}),
+    )
+
+    # Confirm `updated_at` is now greater than `created_at`
+    assert result[0]["updated_at"] > created_at
