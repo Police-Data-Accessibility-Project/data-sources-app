@@ -120,7 +120,13 @@ export const DATA_SOURCE_UI_SHAPE = [
 	{
 		header: 'Data Source Meta',
 		records: [
-			{ title: 'Scraper URL', key: 'scraper_url' },
+			{
+				title: 'Scraper URL',
+				key: 'scraper_url',
+				component: 'a',
+				attributes: { target: '_blank', rel: 'noreferrer' },
+				classNames: 'w-full inline-block truncate-text',
+			},
 			{ title: 'Created', key: 'data_source_created', isDate: true },
 			{ title: 'Agency ID', key: 'agency_id' },
 			{ title: 'Data Source ID', key: 'data_source_id' },
