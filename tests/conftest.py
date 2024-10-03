@@ -121,7 +121,7 @@ def client_with_mock_db(mocker, monkeypatch) -> ClientWithMockDB:
         yield ClientWithMockDB(client, mock_db)
 
 
-@pytest.fixture
+@pytest.fixture()
 def flask_client_with_db(monkeypatch):
     """
     Creates a client with database connection
@@ -297,3 +297,4 @@ def mock_flask_response_manager(monkeypatch):
     # Create a fake abort exception to use in tests
     mock.abort.side_effect = FakeAbort
     return mock
+

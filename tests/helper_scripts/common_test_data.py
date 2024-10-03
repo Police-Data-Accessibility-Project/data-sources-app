@@ -1,12 +1,16 @@
 import uuid
 from collections import namedtuple
+from typing import Optional
 
 import psycopg
 from flask.testing import FlaskClient
 
 from database_client.database_client import DatabaseClient
 from middleware.enums import JurisdictionType
+from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint, CreatedDataSource
 from tests.helper_scripts.constants import DATA_REQUESTS_BASE_ENDPOINT
+from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
+from tests.helper_scripts.helper_functions import create_test_user_setup, create_admin_test_user_setup
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
 
@@ -109,3 +113,38 @@ def create_test_data_request(
     )
 
     return TestDataRequestInfo(id=json["id"], submission_notes=submission_notes)
+
+class TestDataCreator:
+
+    def __init__(self, flask_client: FlaskClient):
+        self.flask_client = flask_client
+        self.db_client = DatabaseClient()
+        self.admin_tus: Optional[TestUserSetup] = None
+
+    def get_admin_tus(self) -> TestUserSetup:
+        """
+        Lazy load the TestUserSetup object for the admin user.
+        :return:
+        """
+        if self.admin_tus is None:
+            self.admin_tus = create_admin_test_user_setup(self.flask_client)
+        return self.admin_tus
+
+    def data_source(self) -> CreatedDataSource:
+        return create_data_source_with_endpoint(
+            flask_client=self.flask_client,
+            jwt_authorization_header=self.get_admin_tus().jwt_authorization_header,
+        )
+
+    def data_request(self, user_tus: TestUserSetup):
+        return create_test_data_request(
+            flask_client=self.flask_client,
+            jwt_authorization_header=user_tus.jwt_authorization_header
+        )
+
+    def standard_user(self) -> TestUserSetup:
+        """
+        Creates a user with no special permissions.
+        :return:
+        """
+        return create_test_user_setup(self.flask_client)

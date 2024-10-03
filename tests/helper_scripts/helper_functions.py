@@ -514,6 +514,15 @@ def create_test_user_setup(
         jwt_authorization_header={"Authorization": f"Bearer {jwt_tokens.access_token}"},
     )
 
+def create_admin_test_user_setup(
+    flask_client: FlaskClient
+) -> TestUserSetup:
+    db_client = DatabaseClient()
+    tus_admin = create_test_user_setup(flask_client, permissions=[PermissionsEnum.READ_ALL_USER_INFO, PermissionsEnum.DB_WRITE])
+    return tus_admin
+
+
+
 
 def create_test_user_setup_db_client(
     db_client: DatabaseClient, permissions: Optional[list[PermissionsEnum]] = None

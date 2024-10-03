@@ -35,6 +35,7 @@ def create_data_source_with_endpoint(
             "entry_data": {
                 "name": cds.name,
                 "airtable_uid": cds.id,
+                "source_url": "http://src1.com",
             }
         },
     )

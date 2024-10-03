@@ -214,6 +214,7 @@ class DataRequestsRelatedSources(PsycopgResource):
         description="""Get sources related to a data request""",
         responses=create_response_dictionary(
             success_message="Related sources successfully retrieved.",
+            # TODO: the below is either the wrong model or is named wrong. Figure out which is which.
             success_model=data_requests_outer_model,
         ),
     )

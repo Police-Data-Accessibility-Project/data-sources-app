@@ -11,7 +11,9 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schem
     DataSourcesGetManySchema
 from middleware.schema_and_dto_logic.response_schemas import GetManyResponseSchema
 from tests.conftest import connection_with_test_data, db_client_with_test_data, flask_client_with_db, test_user_admin
+from conftest import test_data_creator, monkeysession
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
+from tests.helper_scripts.common_test_data import TestDataCreator
 from tests.helper_scripts.helper_functions import (
     get_boolean_dictionary,
     create_test_user_setup,
@@ -93,17 +95,13 @@ def test_data_sources_get_many_limit_columns(
 
 
 def test_data_sources_post(
-    flask_client_with_db,
     db_client_with_test_data: DatabaseClient,
-    test_user_admin,
+    test_data_creator: TestDataCreator
 ):
     """
     Test that POST call to /data-sources endpoint successfully creates a new data source with a unique name and verifies its existence in the database
     """
-    cds = create_data_source_with_endpoint(
-        flask_client=flask_client_with_db,
-        jwt_authorization_header=test_user_admin.jwt_authorization_header,
-    )
+    cds = test_data_creator.data_source()
 
     rows = db_client_with_test_data.execute_raw_sql(
         query="""
@@ -115,91 +113,84 @@ def test_data_sources_post(
 
 
 def test_data_sources_by_id_get(
-    flask_client_with_db, connection_with_test_data: psycopg.Connection
+    test_data_creator: TestDataCreator
 ):
     """
     Test that GET call to /data-sources-by-id/<data_source_id> endpoint retrieves the data source with the correct homepage URL
     """
 
-    tus = create_test_user_setup(flask_client_with_db)
+    tus = create_test_user_setup(test_data_creator.flask_client)
+    cds = test_data_creator.data_source()
     response_json = run_and_validate_request(
-        flask_client=flask_client_with_db,
+        flask_client=test_data_creator.flask_client,
         http_method="get",
-        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}/SOURCE_UID_1",
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}/{cds.id}",
         headers=tus.api_authorization_header,
         expected_schema=DataSourcesGetByIDSchema
     )
 
-    assert response_json["data"]["source_url"] == "http://src1.com"
+    assert response_json["data"]["name"] == cds.name
 
 
 def test_data_sources_by_id_put(
-    flask_client_with_db, db_client_with_test_data: DatabaseClient, test_user_admin
+    test_data_creator: TestDataCreator
 ):
     """
     Test that PUT call to /data-sources-by-id/<data_source_id> endpoint successfully updates the description of the data source and verifies the change in the database
     """
+    tdc = test_data_creator
+    cdr = tdc.data_source()
 
     desc = str(uuid.uuid4())
     run_and_validate_request(
-        flask_client=flask_client_with_db,
+        flask_client=tdc.flask_client,
         http_method="put",
-        endpoint=f"/api/data-sources/SOURCE_UID_1",
-        headers=test_user_admin.jwt_authorization_header,
+        endpoint=f"/api/data-sources/{cdr.id}",
+        headers=tdc.get_admin_tus().jwt_authorization_header,
         json={
             "entry_data": {"description": desc},
         },
     )
 
-    result = db_client_with_test_data.get_data_sources(
+    result = tdc.db_client.get_data_sources(
         columns=["description"],
         where_mappings=[
-            WhereMapping(column="airtable_uid", value="SOURCE_UID_1")
+            WhereMapping(column="airtable_uid", value=cdr.id)
         ]
     )
     assert result[0]["description"] == desc
 
 
 def test_data_sources_by_id_delete(
-    flask_client_with_db, db_client_with_test_data: DatabaseClient, test_user_admin
+    test_data_creator: TestDataCreator,
 ):
     """
     Test that DELETE call to /data-sources-by-id/<data_source_id> endpoint successfully deletes the data source and verifies the change in the database
     """
     # Insert new entry
+    tdc = test_data_creator
 
-    airtable_uid = db_client_with_test_data._create_entry_in_table(
-        "data_sources",
-        column_value_mappings={
-            "airtable_uid": uuid.uuid4().hex,
-            "name": "Test",
-            "description": "Test",
-            "source_url": "http://src1.com",
-            "approval_status": "approved",
-            "url_status": "available",
-        },
-        column_to_return="airtable_uid",
-    )
+    ds_info = tdc.data_source()
 
-    result = db_client_with_test_data.get_data_sources(
+    result = tdc.db_client.get_data_sources(
         columns=["description"],
         where_mappings=[
-            WhereMapping(column="airtable_uid", value=airtable_uid)
+            WhereMapping(column="airtable_uid", value=ds_info.id)
         ]
     )
     assert len(result) == 1
 
     run_and_validate_request(
-        flask_client=flask_client_with_db,
+        flask_client=tdc.flask_client,
         http_method="delete",
-        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}/{airtable_uid}",
-        headers=test_user_admin.jwt_authorization_header,
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}/{ds_info.id}",
+        headers=tdc.get_admin_tus().jwt_authorization_header,
     )
 
-    result = db_client_with_test_data.get_data_sources(
+    result = tdc.db_client.get_data_sources(
         columns=["description"],
         where_mappings=[
-            WhereMapping(column="airtable_uid", value=airtable_uid)
+            WhereMapping(column="airtable_uid", value=ds_info.id)
         ]
     )
 
