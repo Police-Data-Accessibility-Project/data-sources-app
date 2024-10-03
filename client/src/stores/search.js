@@ -13,7 +13,12 @@ export const useSearchStore = defineStore('search', {
 	state: () => ({
 		/** Searches performed during session. Will remove later and add to user's saved searches instead, once API support is completed */
 		sessionSearches: [],
+		/** Needed for `NEXT` / `BACK` functionality in data source id view */
+		mostRecentSearchIds: [],
 	}),
+	persist: {
+		storage: sessionStorage,
+	},
 	actions: {
 		async search(params) {
 			const response = await axios.get(SEARCH_URL, {
@@ -30,6 +35,11 @@ export const useSearchStore = defineStore('search', {
 		async getDataSource(id) {
 			return await axios.get(`${DATA_SOURCE_BY_ID_URL}/${id}`, {
 				headers: HEADERS_BASIC,
+			});
+		},
+		setMostRecentSearchIds(ids) {
+			this.$patch({
+				mostRecentSearchIds: ids,
 			});
 		},
 	},

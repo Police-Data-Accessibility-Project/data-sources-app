@@ -15,7 +15,9 @@ export const useUserStore = defineStore('user', {
 	state: () => ({
 		email: '',
 	}),
-	persist: true,
+	persist: {
+		storage: sessionStorage,
+	},
 	actions: {
 		async signup(email, password) {
 			const auth = useAuthStore();

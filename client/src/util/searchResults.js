@@ -69,3 +69,18 @@ export function getAnchorLinkText(locale) {
 	if (locale === 'locality') return 'local';
 	else return locale;
 }
+
+export function getAllIdsSearched(resultsByAgency) {
+	const ids = [];
+	ALL_LOCATION_TYPES.forEach((locale) => {
+		if (resultsByAgency[locale].count) {
+			Object.values(resultsByAgency[locale].sourcesByAgency)
+				.flatMap((arr) => arr)
+				.forEach((source) => {
+					ids.push(source.airtable_uid);
+				});
+		}
+	});
+
+	return ids;
+}
