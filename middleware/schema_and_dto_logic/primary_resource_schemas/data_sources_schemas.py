@@ -8,9 +8,11 @@ from database_client.enums import (
     URLStatus, ApprovalStatus, AgencyAggregation,
 )
 from middleware.enums import RecordType
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyBaseSchema
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import AgenciesGetSchema
 from middleware.schema_and_dto_logic.response_schemas import GetManyResponseSchemaBase, MessageSchema
 from middleware.schema_and_dto_logic.util import get_json_metadata
+from utilities.enums import SourceMappingEnum
 
 
 class DataSourceBaseSchema(Schema):
@@ -235,17 +237,19 @@ class DataSourceBaseSchema(Schema):
         allow_none=True
     )
 
-class DataSourceGetSchema(DataSourceBaseSchema):
-    """
-    The schema for getting a single data source.
-    Include the base schema as well as data from connected tables, including agencies and record types.
-    """
+class DataSourceExpandedSchema(DataSourceBaseSchema):
     record_type_name = fields.Enum(
         enum=RecordType,
         by_value=fields.Str,
         allow_none=True,
         metadata=get_json_metadata("The type of data source. Editable only by admins."),
     )
+
+class DataSourceGetSchema(DataSourceExpandedSchema):
+    """
+    The schema for getting a single data source.
+    Include the base schema as well as data from connected tables, including agencies and record types.
+    """
     agency_ids = fields.List(
         fields.String(
             metadata=get_json_metadata("The IDs of the agencies associated with the data source."),
@@ -275,4 +279,17 @@ class DataSourcesGetManySchema(GetManyResponseSchemaBase):
             metadata=get_json_metadata("The list of results"),
         ),
         metadata=get_json_metadata("The list of results"),
+    )
+
+
+class DataSourcesGetManyRequestSchema(GetManyBaseSchema):
+    approval_status = fields.Enum(
+        enum=ApprovalStatus,
+        by_value=fields.String,
+        required=False,
+        metadata={
+            "source": SourceMappingEnum.QUERY_ARGS,
+            "description": "The approval status of the data sources.",
+            "default": "approved",
+        }
     )
