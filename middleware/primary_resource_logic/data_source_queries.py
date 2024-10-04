@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from http import HTTPStatus
 
-from flask import make_response, Response, request
-from marshmallow import fields, validate
+from flask import make_response, Response
 
 from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import OrderByParameters, SubqueryParameters, WhereMapping
+from database_client.db_client_dataclasses import OrderByParameters, WhereMapping
+from database_client.subquery_logic import SubqueryParameters, SubqueryParameterManager
 from database_client.enums import ApprovalStatus
 from database_client.result_formatter import ResultFormatter
 from middleware.access_logic import AccessInfo
@@ -21,38 +21,25 @@ from middleware.dynamic_request_logic.supporting_classes import (
 
 from middleware.enums import Relations
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    GetManyBaseSchema,
     GetManyBaseDTO,
     EntryDataRequestDTO,
     GetByIDBaseDTO,
 )
 from middleware.common_response_formatting import format_list_response
-from utilities.common import match_string_to_enum
-from utilities.enums import SourceMappingEnum
 
 RELATION = Relations.DATA_SOURCES.value
-SUBQUERY_PARAMS = [SubqueryParameters(relation_name=Relations.AGENCIES_EXPANDED.value, linking_column="agencies")]
+SUBQUERY_PARAMS = [
+    SubqueryParameterManager.agencies()
+    # SubqueryParameters(relation_name=Relations.AGENCIES_EXPANDED.value, linking_column="agencies")
+]
 
 
 class DataSourceNotFoundError(Exception):
     pass
 
 
-class DataSourcesGetRequestSchemaMany(GetManyBaseSchema):
-    approval_status = fields.Enum(
-        enum=ApprovalStatus,
-        by_value=fields.String,
-        required=False,
-        metadata={
-            "source": SourceMappingEnum.QUERY_ARGS,
-            "description": "The approval status of the data sources.",
-            "default": "approved",
-        }
-    )
-
-
 @dataclass
-class DataSourcesGetRequestDTOMany(GetManyBaseDTO):
+class DataSourcesGetManyRequestDTO(GetManyBaseDTO):
     approval_status: ApprovalStatus = ApprovalStatus.APPROVED
     page_number: int = 1
 
@@ -60,7 +47,7 @@ class DataSourcesGetRequestDTOMany(GetManyBaseDTO):
 def get_data_sources_wrapper(
     db_client: DatabaseClient,
     access_info: AccessInfo,
-    dto: DataSourcesGetRequestDTOMany,
+    dto: DataSourcesGetManyRequestDTO,
 ) -> Response:
     return get_many(
         middleware_parameters=MiddlewareParameters(
@@ -78,7 +65,7 @@ def get_data_sources_wrapper(
                 ],
             },
             entry_name="data source",
-            subquery_params=SUBQUERY_PARAMS
+            subquery_parameters=SUBQUERY_PARAMS
         ),
         page=dto.page,
         requested_columns=dto.requested_columns
@@ -95,7 +82,7 @@ def data_source_by_id_wrapper(
             db_client_method=DatabaseClient.get_data_sources,
             db_client=db_client,
             entry_name="data source",
-            subquery_params=SUBQUERY_PARAMS,
+            subquery_parameters=SUBQUERY_PARAMS,
         ),
         id=dto.resource_id,
         id_column_name="airtable_uid",
