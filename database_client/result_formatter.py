@@ -1,13 +1,12 @@
 from collections import namedtuple
 from typing import Any
 
+from sqlalchemy import RowMapping
+
 from database_client.constants import (
-    DATA_SOURCES_APPROVED_COLUMNS,
-    ARCHIVE_INFO_APPROVED_COLUMNS,
     DATA_SOURCES_MAP_COLUMN,
-    DATA_SOURCES_OUTPUT_COLUMNS,
-    AGENCY_APPROVED_COLUMNS,
 )
+from database_client.subquery_logic import SubqueryParameters
 from utilities.common import convert_dates_to_strings, format_arrays
 
 
@@ -46,25 +45,31 @@ class ResultFormatter:
         )
 
     @staticmethod
-    def zip_get_approved_data_sources_results(results: list[tuple]) -> list[dict]:
-        return ResultFormatter.convert_data_source_matches(
-            DATA_SOURCES_OUTPUT_COLUMNS, results
-        )
+    def format_result_with_subquery_parameters(
+        row_mappings: list[RowMapping],
+        primary_columns: list[str],
+        subquery_parameters: list[SubqueryParameters]
+    ) -> list[dict]:
+        formatted_results = []
+        for row_mapping in row_mappings:
+            formatted_result = {}
+            key = list(row_mapping.keys())[0]
+            row_object = row_mapping[key]
+            for column in primary_columns:
+                formatted_result[column] = getattr(row_object, column)
+            for subquery_parameter in subquery_parameters:
+                relationship_entities = getattr(row_object, subquery_parameter.linking_column)
+                subquery_results = []
+                for relationship_entity in relationship_entities:
+                    subquery_result = {}
+                    for column in subquery_parameter.columns:
+                        subquery_result[column] = getattr(relationship_entity, column)
+                    subquery_results.append(subquery_result)
+                formatted_result[subquery_parameter.linking_column] = subquery_results
+            formatted_results.append(formatted_result)
+        return formatted_results
 
-    @staticmethod
-    def zip_get_data_source_by_id_results(results: tuple[Any, ...]) -> dict[str, Any]:
-        data_source_and_agency_columns = (
-            DATA_SOURCES_APPROVED_COLUMNS
-            + AGENCY_APPROVED_COLUMNS
-            + ARCHIVE_INFO_APPROVED_COLUMNS
-        )
-        data_source_and_agency_columns.extend(
-            ["data_source_id", "agency_id", "agency_name"]
-        )
-        # Convert to a list and only return the first (and only)
-        return ResultFormatter.convert_data_source_matches(
-            data_source_and_agency_columns, [results]
-        )[0]
+
 
 
 def dictify_namedtuple(result: list[namedtuple]) -> list[dict[str, Any]]:
