@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from typing import Optional, Literal, get_args
+from typing import Optional, Literal, get_args, Callable
 from typing_extensions import Annotated
 
 
@@ -139,17 +139,8 @@ class Agency(Base):
     __tablename__ = Relations.AGENCIES.value
 
     def __iter__(self):
-        for key in self.__dict__:
-            if key == "_sa_instance_state":
-                continue
-            else:
-                value = getattr(self, key)
-                value = (
-                    str(value)
-                    if type(value) == datetime or type(value) == date
-                    else value
-                )
-                yield key, value
+        yield from iter_with_special_cases(self)
+
 
     airtable_uid: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str]
@@ -165,16 +156,13 @@ class Agency(Base):
     lat: Mapped[Optional[float]]
     lng: Mapped[Optional[float]]
     defunct_year: Mapped[Optional[str]]
-    count_data_sources: Mapped[Optional[int]]
     agency_type: Mapped[Optional[str]]
     multi_agency: Mapped[bool] = mapped_column(server_default=false())
     zip_code: Mapped[Optional[str]]
-    data_sources: Mapped[Optional[str]]
     no_web_presence: Mapped[bool] = mapped_column(server_default=false())
     airtable_agency_last_modified: Mapped[timestamp_tz] = mapped_column(
         server_default=func.current_timestamp()
     )
-    data_sources_last_updated: Mapped[Optional[date]]
     approved: Mapped[bool] = mapped_column(server_default=false())
     rejection_reason: Mapped[Optional[str]]
     last_approval_editor = Column(String, nullable=True)
@@ -182,7 +170,6 @@ class Agency(Base):
     agency_created: Mapped[timestamp_tz] = mapped_column(
         server_default=func.current_timestamp()
     )
-    county_airtable_uid: Mapped[Optional[str]]
     location_id: Mapped[Optional[int]]
 
 
@@ -191,17 +178,8 @@ class AgencyExpanded(Base):
     __tablename__ = Relations.AGENCIES_EXPANDED.value
 
     def __iter__(self):
-        for key in self.__dict__:
-            if key == "_sa_instance_state":
-                continue
-            else:
-                value = getattr(self, key)
-                value = (
-                    str(value)
-                    if type(value) == datetime or type(value) == date
-                    else value
-                )
-                yield key, value
+        yield from iter_with_special_cases(self)
+
 
 
     # Define columns as per the view with refined data types
@@ -219,23 +197,16 @@ class AgencyExpanded(Base):
     lng = Column(Float)
     defunct_year = Column(String)
     airtable_uid = Column(String, primary_key=True)  # Primary key
-    count_data_sources = Column(
-        BigInteger
-    )  # Matches the BIGINT type in the agencies table
     agency_type = Column(String)
     multi_agency = Column(Boolean)
     zip_code = Column(String)
-    data_sources = Column(String)  # Assuming 'data_sources' is a VARCHAR field
     no_web_presence = Column(Boolean)
     airtable_agency_last_modified = Column(DateTime(timezone=True))
-    data_sources_last_updated = Column(DateTime)
     approved = Column(Boolean)
     rejection_reason = Column(String)
     last_approval_editor = Column(String, nullable=True)
     submitter_contact = Column(String)
     agency_created = Column(DateTime(timezone=True))
-    county_airtable_uid = Column(String)
-    locality_id = Column(BigInteger)
     locality_name = Column(String)
 
 
@@ -306,6 +277,21 @@ class USState(Base):
 class DataRequest(Base):
     __tablename__ = Relations.DATA_REQUESTS.value
 
+    def __iter__(self):
+
+        special_cases = {
+            "id": lambda instance: [
+                ("id", instance.id),
+                ("data_source_ids", instance.data_source_ids),
+            ],
+            "data_sources": lambda instance: [
+                ("data_sources", [dict(source) for source in instance.data_sources])
+            ],
+        }
+
+        yield from iter_with_special_cases(self, special_cases=special_cases)
+
+
     id: Mapped[int] = mapped_column(primary_key=True)
     submission_notes: Mapped[Optional[text]]
     request_status: Mapped[RequestStatusLiteral] = mapped_column(
@@ -325,23 +311,57 @@ class DataRequest(Base):
     coverage_range: Mapped[Optional[daterange]]
     data_requirements: Mapped[Optional[text]]
 
+    data_sources: Mapped[list["DataSourceExpanded"]] = relationship(
+        argument="DataSourceExpanded",
+        secondary="public.link_data_sources_data_requests",
+        primaryjoin="DataRequest.id == LinkDataSourceDataRequest.request_id",
+        secondaryjoin="DataSourceExpanded.airtable_uid == LinkDataSourceDataRequest.source_id",
+        lazy="joined",
+    )
+
+    @hybrid_property
+    def data_source_ids(self) -> list[str]:
+        return [source.airtable_uid for source in self.data_sources]
+
+
+def iter_with_special_cases(instance, special_cases=None):
+    """Generates key-value pairs for an instance, applying special case handling."""
+    if special_cases is None:
+        special_cases = {}
+    for key in instance.__dict__.copy():
+        # Skip the _sa_instance_state key
+        if key == "_sa_instance_state":
+            continue
+
+        # Handle keys with special cases defined in the special_cases dictionary
+        if key in special_cases:
+            mapped_key_value_pairs = special_cases[key](instance).copy()
+            for mapped_key, mapped_value in mapped_key_value_pairs:
+                yield mapped_key, mapped_value
+        else:
+            # General case for other keys
+            value = getattr(instance, key)
+            if isinstance(value, datetime) or isinstance(value, date):
+                value = str(value)  # Convert datetime to string if needed
+            yield key, value
+
+
 class DataSource(Base):
     __tablename__ = Relations.DATA_SOURCES.value
 
     def __iter__(self):
-        for key in self.__dict__:
-            match key:
-                case "_sa_instance_state":
-                    continue
-                case "airtable_uid":
-                    yield key, self.airtable_uid
-                    yield "agency_ids", self.agency_ids
-                case "agencies":
-                    yield key, [dict(agency) for agency in self.agencies]
-                case _:
-                    value = getattr(self, key)
-                    value = str(value) if type(value) == datetime else value
-                    yield key, value
+
+        special_cases = {
+            "airtable_uid": lambda instance: [
+                ("airtable_uid", instance.airtable_uid),
+                ("agency_ids", instance.agency_ids),
+            ],
+            "agencies": lambda instance: [
+                ("agencies", [dict(agency) for agency in instance.agencies])
+            ],
+        }
+        yield from iter_with_special_cases(self, special_cases)
+
 
     airtable_uid: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str]
