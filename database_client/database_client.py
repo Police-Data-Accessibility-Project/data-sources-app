@@ -14,9 +14,10 @@ from sqlalchemy.schema import Column
 from database_client.constants import PAGE_SIZE
 from database_client.db_client_dataclasses import (
     OrderByParameters,
-    SubqueryParameters,
     WhereMapping,
 )
+from database_client.result_formatter import ResultFormatter
+from database_client.subquery_logic import SubqueryParameters
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
     ExternalAccountTypeEnum,
@@ -769,9 +770,11 @@ class DatabaseClient:
         raw_results = self.session.execute(query()).mappings().unique().all()
 
         if subquery_parameters:
-            results = [
-                dict(result[[key for key in result.keys()][0]]) for result in raw_results
-            ]
+            results = ResultFormatter.format_result_with_subquery_parameters(
+                row_mappings=raw_results,
+                primary_columns=columns,
+                subquery_parameters=subquery_parameters
+            )
         else:
             results = [dict(result) for result in raw_results]
         return results
