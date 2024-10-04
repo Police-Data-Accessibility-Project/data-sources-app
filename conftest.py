@@ -9,6 +9,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 #from middleware.models import db
 
 from app import create_app
+from config import limiter
 from middleware.util import get_env_variable
 from tests.helper_scripts.common_test_data import TestDataCreator
 
@@ -62,5 +63,7 @@ def test_data_creator(monkeysession) -> TestDataCreator:
         "app.get_flask_app_cookie_encryption_key", mock_get_flask_app_secret_key
     )
     app = create_app()
+    # Disable rate limiting for tests
+    limiter.enabled = False
     with app.test_client() as client:
         yield TestDataCreator(client)

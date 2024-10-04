@@ -13,9 +13,9 @@ from sqlalchemy import insert, select, update
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import (
     OrderByParameters,
-    SubqueryParameters,
     WhereMapping,
 )
+from database_client.subquery_logic import SubqueryParameters, SubqueryParameterManager
 from database_client.enums import (
     ExternalAccountTypeEnum,
     RelationRoleEnum,
@@ -954,6 +954,21 @@ def test_create_or_get(live_database_client):
 
     assert results == new_results
 
+def test_get_data_requests(live_database_client):
+    results = live_database_client.get_data_requests(
+        columns=["id"],
+        subquery_parameters=[SubqueryParameterManager.data_sources()]
+    )
+    assert results
+
+def test_get_data_sources(live_database_client):
+    results = live_database_client.get_data_sources(
+        columns=["airtable_uid"],
+        subquery_parameters=[SubqueryParameterManager.agencies(
+            columns=["airtable_uid"],
+        )]
+    )
+    assert results
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts
 # def test_search_with_location_and_record_types_test_data(live_database_client, xylonslyvania_test_data):

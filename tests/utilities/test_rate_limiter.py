@@ -1,6 +1,9 @@
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
+import pytest
+
+from config import limiter
 from tests.conftest import client_with_mock_db, bypass_jwt_required
 from tests.helper_scripts.constants import TEST_RESPONSE
 from tests.helper_scripts.simple_result_validators import check_response_status
@@ -21,8 +24,19 @@ def post_refresh_session_request(client_with_mock_db, ip_address="127.0.0.1"):
         json={"refresh_token": "test_refresh_token"},
     )
 
+@pytest.fixture
+def enable_rate_limiter_for_testing():
+    """
+    During testing, the rate limiter is typically disabled.
+    Here, it is enabled for the duration of a single test
+    And reset before each test
+    """
+    limiter.enabled = True
+    limiter.reset()
+    yield
+    limiter.enabled = False
 
-def test_rate_limiter_explicit_limit(client_with_mock_db, monkeypatch):
+def test_rate_limiter_explicit_limit(client_with_mock_db, monkeypatch, enable_rate_limiter_for_testing):
     """
     Test the rate limiter's explicit limit decorator using the login endpoint,
     which is rate limited at 5 requests per minute
@@ -48,7 +62,7 @@ def test_rate_limiter_explicit_limit(client_with_mock_db, monkeypatch):
 
 
 def test_rate_limiter_default_limit(
-    client_with_mock_db, monkeypatch, bypass_jwt_required
+    client_with_mock_db, monkeypatch, bypass_jwt_required, enable_rate_limiter_for_testing
 ):
     """
     Test the rate limiter's default limit decorator using the refresh-session endpoint

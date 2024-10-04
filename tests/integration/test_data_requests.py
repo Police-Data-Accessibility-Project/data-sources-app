@@ -11,7 +11,7 @@ from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
 from middleware.constants import DATA_KEY
 from middleware.enums import PermissionsEnum
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests import (
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
     GetByIDDataRequestsResponseSchema,
 )
 from tests.conftest import dev_db_client, flask_client_with_db
@@ -233,7 +233,7 @@ def test_data_requests_by_id_delete(test_data_creator):
 
     flask_client = tdc.flask_client
 
-    tdr = create_test_data_request(flask_client, tus_owner.jwt_authorization_header)
+    tdr = tdc.data_request(tus_owner)
 
     data_request_id = int(tdr.id)
 
