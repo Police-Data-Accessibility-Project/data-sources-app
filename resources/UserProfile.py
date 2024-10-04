@@ -7,7 +7,7 @@ from middleware.primary_resource_logic.user_profile import get_owner_data_reques
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyBaseSchema, \
     GET_MANY_SCHEMA_POPULATE_PARAMETERS
 from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import get_restx_param_documentation
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests import GetManyDataRequestsSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import GetManyDataRequestsSchema
 from resources.PsycopgResource import PsycopgResource
 from resources.resource_helpers import create_response_dictionary
 from utilities.namespace import AppNamespaces, create_namespace
