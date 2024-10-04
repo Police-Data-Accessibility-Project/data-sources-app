@@ -37,7 +37,7 @@ from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
     create_entry_data_response_model,
 )
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests import (
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
     GetManyDataRequestsSchema,
     DataRequestsSchema,
     DataRequestsPostSchema,

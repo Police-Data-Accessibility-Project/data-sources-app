@@ -20,8 +20,7 @@ from middleware.primary_resource_logic.data_source_queries import (
     get_data_sources_for_map_wrapper,
     add_new_data_source_wrapper,
     update_data_source_wrapper,
-    DataSourcesGetRequestSchemaMany,
-    DataSourcesGetRequestDTOMany,
+    DataSourcesGetManyRequestDTO,
     delete_data_source_wrapper,
 )
 from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import get_restx_param_documentation
@@ -29,7 +28,7 @@ from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
     CRUDModels,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourcesGetByIDSchema, \
-    DataSourcesGetManySchema
+    DataSourcesGetManySchema, DataSourcesGetManyRequestSchema
 from resources.resource_helpers import (
     create_response_dictionary,
 )
@@ -150,7 +149,7 @@ class DataSources(PsycopgResource):
     @endpoint_info(
         namespace=namespace_data_source,
         auth_info=GET_AUTH_INFO,
-        input_schema=DataSourcesGetRequestSchemaMany(),
+        input_schema=DataSourcesGetManyRequestSchema(),
         description="Retrieves all data sources.",
         responses=create_response_dictionary(
             success_message="Returns all requested data sources.",
@@ -168,8 +167,8 @@ class DataSources(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=get_data_sources_wrapper,
             schema_populate_parameters=SchemaPopulateParameters(
-                schema=DataSourcesGetRequestSchemaMany(),
-                dto_class=DataSourcesGetRequestDTOMany,
+                schema=DataSourcesGetManyRequestSchema(),
+                dto_class=DataSourcesGetManyRequestDTO,
             ),
             access_info=access_info,
         )
