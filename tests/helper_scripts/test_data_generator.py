@@ -6,6 +6,7 @@ class TestDataGenerator:
     """
     A class for generating test data.
     """
+    # TODO: Deprecate in favor of TestDataCreator
 
     def __init__(self, cursor: psycopg.Cursor):
         self.cursor = cursor
