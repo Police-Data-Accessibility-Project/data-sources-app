@@ -73,6 +73,7 @@ def get_by_id(
         role=relation_role,
         column_permission=ColumnPermissionEnum.READ,
     )
+    # TODO: Extract to separate function
     [
         parameter.set_columns(
             get_permitted_columns(
@@ -82,13 +83,13 @@ def get_by_id(
                 column_permission=ColumnPermissionEnum.READ,
             )
         )
-        for parameter in mp.subquery_params
+        for parameter in mp.subquery_parameters
     ]
     results = mp.db_client_method(
         mp.db_client,
         relation_name=mp.relation,
         columns=columns,
         where_mappings=[WhereMapping(column=id_column_name, value=id)],
-        subquery_parameters=mp.subquery_params
+        subquery_parameters=mp.subquery_parameters
     )
     return results_dependent_response(mp.entry_name, results)
