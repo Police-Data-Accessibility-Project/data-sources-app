@@ -67,85 +67,9 @@ def test_get_data_requests_relation_role(
     assert relation_role == expected_relation_role
 
 
-@pytest.fixture
-def mock_check_has_permission_to_edit_columns(monkeypatch):
-    return patch_and_return_mock(
-        f"{PATCH_ROOT}.check_has_permission_to_edit_columns", monkeypatch
-    )
-
-
-@pytest.fixture
-def mock_get_data_requests_relation_role(monkeypatch):
-    return patch_and_return_mock(
-        f"{PATCH_ROOT}.get_data_requests_relation_role", monkeypatch
-    )
-
-
-@pytest.fixture
-def mock_message_response(monkeypatch):
-    return patch_and_return_mock(f"{PATCH_ROOT}.message_response", monkeypatch)
-
-
-@pytest.fixture
-def mock_get_data_requests_with_permitted_columns(monkeypatch):
-    return patch_and_return_mock(
-        f"{PATCH_ROOT}.get_data_requests_with_permitted_columns", monkeypatch
-    )
-
-
 class GetFormattedDataRequestsMocks(DynamicMagicMock):
     get_standard_and_owner_zipped_data_requests: MagicMock
     get_data_requests_with_permitted_columns: MagicMock
-
-
-@pytest.fixture
-def get_formatted_data_requests_mocks():
-    return GetFormattedDataRequestsMocks(
-        patch_root=PATCH_ROOT,
-    )
-
-
-@patch(PATCH_ROOT + ".get_permitted_columns")
-def test_get_data_requests_with_permitted_columns(
-    mock_get_permitted_columns: MagicMock,
-):
-    mock = MagicMock()
-
-    results = get_data_requests_with_permitted_columns(
-        db_client=mock.db_client,
-        relation_role=mock.relation_role,
-        dto=mock.dto,
-        where_mappings=mock.where_mappings,
-    )
-
-    assert results == mock.db_client.get_data_requests.return_value
-
-    # assert results == mock.zipped_data_requests
-
-    mock_get_permitted_columns.assert_called_once_with(
-        db_client=mock.db_client,
-        relation=RELATION,
-        role=mock.relation_role,
-        column_permission=ColumnPermissionEnum.READ,
-    )
-    mock.db_client.get_data_requests.assert_called_once_with(
-        columns=mock_get_permitted_columns.return_value,
-        where_mappings=mock.where_mappings,
-        order_by=OrderByParameters(
-            sort_order=mock.dto.sort_order, sort_by=mock.dto.sort_by
-        ),
-    )
-
-
-
-@pytest.fixture
-def mock_abort(monkeypatch):
-    return patch_and_return_mock(f"{PATCH_ROOT}.abort", monkeypatch)
-
-
-@pytest.fixture
-def mock_make_response(monkeypatch):
-    return patch_and_return_mock(f"{PATCH_ROOT}.make_response", monkeypatch)
 
 
 def check_allowed_to_delete_request_mock_calls(mock: MagicMock):
