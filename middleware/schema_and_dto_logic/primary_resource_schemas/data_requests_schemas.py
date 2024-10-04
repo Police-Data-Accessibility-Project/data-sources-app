@@ -102,12 +102,6 @@ class DataRequestsPostSchema(Schema):
     )
 
 class DataRequestsGetSchema(DataRequestsSchema):
-    data_source_ids = fields.List(
-        fields.Str(
-            metadata=get_json_metadata("The data source IDs associated with the data request")
-        ),
-        required=True,
-        metadata=get_json_metadata("The data source IDs associated with the data request"))
     data_sources = fields.List(
         fields.Nested(
             nested=DataSourceExpandedSchema,
