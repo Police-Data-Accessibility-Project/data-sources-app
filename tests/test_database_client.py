@@ -39,7 +39,7 @@ from tests.conftest import live_database_client, test_table_data
 from tests.helper_scripts.common_test_data import (
     insert_test_column_permission_data,
     create_agency_entry_for_search_cache,
-    create_data_source_entry_for_url_duplicate_checking,
+    create_data_source_entry_for_url_duplicate_checking, TestDataCreator,
 )
 from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources_if_not_exist,
@@ -47,6 +47,7 @@ from tests.helper_scripts.helper_functions import (
     create_test_user_db_client,
 )
 from utilities.enums import RecordCategories
+from conftest import test_data_creator, monkeysession
 
 
 def test_add_new_user(live_database_client: DatabaseClient):
@@ -953,8 +954,14 @@ def test_create_or_get(live_database_client):
 
     assert results == new_results
 
-def test_get_data_requests(live_database_client):
-    results = live_database_client.get_data_requests(
+def test_get_data_requests(test_data_creator: TestDataCreator):
+    # There should be at least one data request in the DataRequests directory
+    tdc = test_data_creator
+    tdc.data_request(tdc.get_admin_tus())
+
+    # Create a data request
+
+    results = tdc.db_client.get_data_requests(
         columns=["id"],
         subquery_parameters=[SubqueryParameterManager.data_sources()]
     )
