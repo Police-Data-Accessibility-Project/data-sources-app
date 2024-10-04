@@ -8,6 +8,7 @@ from marshmallow import fields
 from database_client.db_client_dataclasses import WhereMapping, OrderByParameters
 from database_client.database_client import DatabaseClient
 from database_client.enums import ColumnPermissionEnum, RelationRoleEnum
+from database_client.subquery_logic import SubqueryParameterManager
 from middleware.access_logic import AccessInfo
 from middleware.column_permission_logic import (
     get_permitted_columns,
@@ -44,6 +45,7 @@ from utilities.enums import SourceMappingEnum
 RELATION = Relations.DATA_REQUESTS.value
 RELATED_SOURCES_RELATION = Relations.RELATED_SOURCES.value
 
+DATA_REQUESTS_SUBQUERY_PARAMS = [SubqueryParameterManager.data_sources()]
 
 class RelatedSourceByIDSchema(GetByIDBaseSchema):
     data_source_id = fields.Str(
@@ -144,6 +146,7 @@ def get_data_requests_wrapper(
             entry_name="data requests",
             relation=RELATION,
             db_client_method=DatabaseClient.get_data_requests,
+            subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS
         ),
         page=dto.page
     )
@@ -166,6 +169,8 @@ def get_data_requests_with_permitted_columns(
         columns=columns,
         where_mappings=where_mappings,
         order_by=OrderByParameters.construct_from_args(dto.sort_by, dto.sort_order),
+        subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS
+
     )
     return data_requests
 
@@ -256,6 +261,7 @@ def get_data_request_by_id_wrapper(
             access_info=access_info,
             db_client_method=DatabaseClient.get_data_requests,
             entry_name="Data request",
+            subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS
         ),
         relation_role_parameters=RelationRoleParameters(
             relation_role_function_with_params=DeferredFunction(
