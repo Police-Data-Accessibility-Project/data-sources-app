@@ -424,14 +424,13 @@ class DynamicQueryConstructor:
             ]
         if order_by is not None:
             order_by = order_by.build_order_by_clause(relation)
+        load_options = []
         if subquery_parameters:
-            load_options = []
             for parameter in subquery_parameters:
                 load_options.append(parameter.build_subquery_load_option(relation))
             load_options.append(load_only(*columns))
             primary_relation_columns = [SQL_ALCHEMY_TABLE_REFERENCE[relation]]
         else:
-            load_options = []
             primary_relation_columns = columns
 
         base_query = (
