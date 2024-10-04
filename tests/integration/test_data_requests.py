@@ -12,8 +12,9 @@ from database_client.db_client_dataclasses import WhereMapping
 from middleware.constants import DATA_KEY
 from middleware.enums import PermissionsEnum
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
-    GetByIDDataRequestsResponseSchema,
+    GetByIDDataRequestsResponseSchema, GetManyDataRequestsSchema,
 )
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourceExpandedSchema
 from tests.conftest import dev_db_client, flask_client_with_db
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
 from tests.helper_scripts.common_test_data import create_test_data_request, TestDataCreator
@@ -66,18 +67,25 @@ def test_data_requests_get(
         http_method="get",
         endpoint=DATA_REQUESTS_BASE_ENDPOINT,
         headers=tus_creator.jwt_authorization_header,
-        # Commented out due to some data which violates schema
-        # expected_schema=GetManyDataRequestsSchema(
-        #     exclude=[
-        #         "data.archive_reason",
-        #         "data.creator_user_id",
-        #         "data.internal_notes",
-        #     ],
-        # ),
+        expected_schema=GetManyDataRequestsSchema(
+            exclude=[
+                "data.archive_reason",
+                "data.creator_user_id",
+                "data.internal_notes",
+            ],
+        ),
     )
     assert len(json_data[DATA_KEY]) > 0
-    assert isinstance(json_data[DATA_KEY], list)
-    assert isinstance(json_data[DATA_KEY][0], dict)
+
+    # Validate that at least one entry returned has data_sources
+    an_entry_has_data_sources = False
+    for entry in json_data[DATA_KEY]:
+        data_sources = entry["data_sources"]
+        if len(data_sources) > 0:
+            DataSourceExpandedSchema().load(data_sources[0])
+            an_entry_has_data_sources = True
+            break
+    assert an_entry_has_data_sources
 
     # Give user admin permission
     tdc.db_client.add_user_permission(

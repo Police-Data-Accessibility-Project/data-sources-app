@@ -42,6 +42,7 @@ class DataSourceBaseSchema(Schema):
 
     source_url = fields.String(
         required=False,
+        allow_none=True,
         metadata=get_json_metadata(
             "A URL where these records can be found or are referenced."
         ),
