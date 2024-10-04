@@ -337,7 +337,6 @@ def test_select_from_relation_subquery(live_database_client: DatabaseClient):
         {
             "name": data_source_name,
             "airtable_uid": data_source_id,
-            "agency_ids": [agency_id],
             "agencies": [
                 {
                     "name": agency_name,
