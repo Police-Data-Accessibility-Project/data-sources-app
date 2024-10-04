@@ -8,7 +8,8 @@ from flask.testing import FlaskClient
 from database_client.database_client import DatabaseClient
 from middleware.enums import JurisdictionType
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint, CreatedDataSource
-from tests.helper_scripts.constants import DATA_REQUESTS_BASE_ENDPOINT
+from tests.helper_scripts.constants import DATA_REQUESTS_BASE_ENDPOINT, AGENCIES_BASE_ENDPOINT, \
+    DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_functions import create_test_user_setup, create_admin_test_user_setup
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
@@ -114,6 +115,30 @@ def create_test_data_request(
 
     return TestDataRequestInfo(id=json["id"], submission_notes=submission_notes)
 
+TestAgencyInfo = namedtuple("TestAgencyInfo", ["id", "submitted_name"])
+
+def create_test_agency(
+        flask_client: FlaskClient,
+        jwt_authorization_header: dict
+):
+    submitted_name = uuid.uuid4().hex
+    locality_name = uuid.uuid4().hex
+    sample_agency_post_parameters = get_sample_agency_post_parameters(
+        submitted_name=submitted_name,
+        locality_name=locality_name,
+        jurisdiction_type=JurisdictionType.LOCAL
+    )
+
+    json = run_and_validate_request(
+        flask_client=flask_client,
+        http_method="post",
+        endpoint=AGENCIES_BASE_ENDPOINT,
+        headers=jwt_authorization_header,
+        json=sample_agency_post_parameters
+    )
+
+    return TestAgencyInfo(id=json["id"], submitted_name=submitted_name)
+
 class TestDataCreator:
 
     def __init__(self, flask_client: FlaskClient):
@@ -142,9 +167,77 @@ class TestDataCreator:
             jwt_authorization_header=user_tus.jwt_authorization_header
         )
 
+    def agency(self) -> TestAgencyInfo:
+        return create_test_agency(
+            flask_client=self.flask_client,
+            jwt_authorization_header=self.get_admin_tus().jwt_authorization_header
+        )
+
+    def link_data_request_to_data_source(self, data_source_id, data_request_id):
+        run_and_validate_request(
+            flask_client=self.flask_client,
+            http_method="post",
+            endpoint=DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT.format(
+                data_request_id=data_request_id,
+                source_id=data_source_id
+            ),
+            headers=self.get_admin_tus().jwt_authorization_header
+        )
+
+    def link_data_source_to_agency(self, data_source_id, agency_id):
+        raise NotImplementedError()
+
+
     def standard_user(self) -> TestUserSetup:
         """
         Creates a user with no special permissions.
         :return:
         """
         return create_test_user_setup(self.flask_client)
+
+    def select_only_complex_linked_resources(self):
+        """
+        Create the following:
+        * An agency
+        * A data source linked to that agency
+        * A standard user
+        * A data request linked to that data source, created by that user
+        This data source is meant to persist and not be edited, to reduce setup time.
+        :return:
+        """
+        agency_info = self.agency()
+        # TODO: Link agency with data source
+        raise NotImplementedError()
+        data_source_info = self.data_source()
+        standard_user_tus = self.standard_user()
+        data_request_info = self.data_request(standard_user_tus)
+
+        self.link_data_request_to_data_source(
+            data_source_id=data_source_info.id,
+            data_request_id=data_request_info.id
+        )
+
+        # TODO: Create a tuple providing all 4 id's -- for the user, the data_source, the agency, and the data_request
+
+
+
+
+def get_sample_agency_post_parameters(
+    submitted_name, locality_name, jurisdiction_type: JurisdictionType
+) -> dict:
+    """
+    Obtains information to be passed to an `/agencies` POST request
+    """
+    return {
+        "agency_info": {
+            "submitted_name": submitted_name,
+            "airtable_uid": uuid.uuid4().hex,
+            "jurisdiction_type": jurisdiction_type.value,
+        },
+        "location_info": {
+            "type": "Locality",
+            "state_iso": "CA",
+            "county_fips": "06087",
+            "locality_name": locality_name,
+        },
+    }
