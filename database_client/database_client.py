@@ -668,12 +668,6 @@ class DatabaseClient:
         id_column_name="airtable_uid",
     )
 
-    # def create_agency(
-    #     self,
-    #     column_value_mappings: dict[str, str],
-    # ):
-    #     pass
-
     def update_dictionary_enum_values(self, d: dict):
         """
         Update a dictionary's values such that any which are enums are converted to the enum value
