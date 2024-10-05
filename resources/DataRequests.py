@@ -71,12 +71,7 @@ class DataRequestsById(PsycopgResource):
     @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=GET_AUTH_INFO,
-        description=column_permissions_description(
-            head_description="Get data request by id",
-            sub_description="Columns returned are determinant upon the user's "
-            "access level and/or relation to the data request",
-            column_permissions_str_table=data_requests_column_permissions,
-        ),
+        description="Get data request by id",
         responses=create_response_dictionary(
             success_message="Returns information on the specific data request.",
             success_model=entry_data_response_model,
@@ -155,10 +150,7 @@ class DataRequests(PsycopgResource):
         namespace=namespace_data_requests,
         auth_info=GET_AUTH_INFO,
         input_schema=GetManyBaseSchema(),
-        description=column_permissions_description(
-            head_description="Get data requests with optional filters",
-            column_permissions_str_table=data_requests_column_permissions,
-        ),
+        description="Get data requests with optional filters",
         responses=create_response_dictionary(
             success_message="Returns a paginated list of data requests.",
             success_model=data_requests_outer_model,

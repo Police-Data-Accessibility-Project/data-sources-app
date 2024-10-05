@@ -282,6 +282,32 @@ class DataSourcesGetManySchema(GetManyResponseSchemaBase):
         metadata=get_json_metadata("The list of results"),
     )
 
+class DataSourcesPostSchema(Schema):
+    entry_data = fields.Nested(
+        nested=DataSourceExpandedSchema(
+            exclude=[
+                "name",
+                "updated_at",
+                "created_at",
+                "record_type_id"
+            ]
+        ),
+        metadata=get_json_metadata("The data source to be created"),
+    )
+
+class DataSourcesPutSchema(Schema):
+    entry_data = fields.Nested(
+        nested=DataSourceExpandedSchema(
+            exclude=[
+                "name",
+                "updated_at",
+                "created_at",
+                "rejection_note",
+                "record_type_id"
+            ]
+        ),
+        metadata=get_json_metadata("The data source to be updated"),
+    )
 
 class DataSourcesGetManyRequestSchema(GetManyBaseSchema):
     approval_status = fields.Enum(

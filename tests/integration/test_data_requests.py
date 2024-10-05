@@ -34,7 +34,7 @@ from tests.helper_scripts.run_and_validate_request import run_and_validate_reque
 from tests.helper_scripts.helper_classes.IntegrationTestSetup import (
     IntegrationTestSetup,
 )
-from conftest import test_data_creator, monkeysession
+from conftest import test_data_creator_session_scope, monkeysession
 
 
 @dataclass
@@ -52,10 +52,10 @@ def ts(flask_client_with_db, dev_db_client):
 
 
 def test_data_requests_get(
-        test_data_creator: TestDataCreator,
+        test_data_creator_session_scope: TestDataCreator,
     ):
 
-    tdc = test_data_creator
+    tdc = test_data_creator_session_scope
 
     tus_creator = tdc.standard_user()
 
@@ -104,9 +104,9 @@ def test_data_requests_get(
 
 
 def test_data_requests_post(
-        test_data_creator: TestDataCreator,
+        test_data_creator_session_scope: TestDataCreator,
 ):
-    tdc = test_data_creator
+    tdc = test_data_creator_session_scope
     standard_tus = tdc.standard_user()
 
     submission_notes = uuid.uuid4().hex
@@ -155,9 +155,9 @@ def test_data_requests_post(
 
 
 def test_data_requests_by_id_get(
-        test_data_creator: TestDataCreator,
+        test_data_creator_session_scope: TestDataCreator,
 ):
-    tdc = test_data_creator
+    tdc = test_data_creator_session_scope
     admin_tus = tdc.get_admin_tus()
 
     tdr = tdc.data_request(admin_tus)
@@ -195,9 +195,9 @@ def test_data_requests_by_id_get(
 
 
 def test_data_requests_by_id_put(
-        test_data_creator: TestDataCreator,
+        test_data_creator_session_scope: TestDataCreator,
 ):
-    tdc = test_data_creator
+    tdc = test_data_creator_session_scope
     standard_tus = tdc.standard_user()
 
 
@@ -232,8 +232,8 @@ def test_data_requests_by_id_put(
     )
 
 
-def test_data_requests_by_id_delete(test_data_creator):
-    tdc = test_data_creator
+def test_data_requests_by_id_delete(test_data_creator_session_scope):
+    tdc = test_data_creator_session_scope
 
     tus_admin = tdc.get_admin_tus()
     tus_owner = tdc.standard_user()
@@ -369,9 +369,9 @@ def related_agencies_test_setup(integration_test_setup: IntegrationTestSetup):
 
 
 def test_data_request_by_id_related_sources(
-    test_data_creator: TestDataCreator,
+        test_data_creator_session_scope: TestDataCreator,
 ):
-    tdc = test_data_creator
+    tdc = test_data_creator_session_scope
     flask_client = tdc.flask_client
 
     tus_admin = tdc.get_admin_tus()

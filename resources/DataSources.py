@@ -28,7 +28,7 @@ from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
     CRUDModels,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourcesGetByIDSchema, \
-    DataSourcesGetManySchema, DataSourcesGetManyRequestSchema
+    DataSourcesGetManySchema, DataSourcesGetManyRequestSchema, DataSourcesPostSchema, DataSourcesPutSchema
 from resources.resource_helpers import (
     create_response_dictionary,
 )
@@ -89,7 +89,7 @@ class DataSourceById(PsycopgResource):
     @endpoint_info(
         namespace=namespace_data_source,
         auth_info=WRITE_ONLY_AUTH_INFO,
-        input_model=models.entry_data_request_model,
+        input_schema=DataSourcesPutSchema(),
         description="Update details of a specific data source by its ID.",
         responses=create_response_dictionary(
             success_message="Data source successfully updated.",
@@ -180,6 +180,7 @@ class DataSources(PsycopgResource):
             success_message="Data source successfully added.",
             success_model=models.id_and_message_model,
         ),
+        input_schema=DataSourcesPostSchema(),
         description="Adds a new data source.",
     )
     def post(self, access_info: AccessInfo) -> Response:
