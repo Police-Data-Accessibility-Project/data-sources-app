@@ -95,11 +95,13 @@ class DataRequestsSchema(Schema):
         ),
     )
 
+
 class DataRequestsPostSchema(Schema):
     entry_data = fields.Nested(
         nested=DataRequestsSchema,
         metadata=get_json_metadata("The data request to be created"),
     )
+
 
 class GetManyDataRequestsSchema(GetManyResponseSchemaBase):
     data = fields.List(

@@ -35,12 +35,11 @@ class IntegrationTestSetup:
             **request_kwargs,
         )
 
+
 @pytest.fixture
-def integration_test_setup(
-    flask_client_with_db: FlaskClient
-):
+def integration_test_setup(flask_client_with_db: FlaskClient):
     return IntegrationTestSetup(
         flask_client=flask_client_with_db,
         db_client=DatabaseClient(),
-        tus=create_test_user_setup(flask_client_with_db)
+        tus=create_test_user_setup(flask_client_with_db),
     )

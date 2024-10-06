@@ -57,7 +57,7 @@ NAMESPACES = [
     # Below should not be enabled until https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/458
     # namespace_homepage_search_cache,
     namespace_url_checker,
-    namespace_user
+    namespace_user,
 ]
 
 MY_PREFIX = "/api"
@@ -97,6 +97,7 @@ class UpdatedJSONProvider(DefaultJSONProvider):
         if isinstance(o, date) or isinstance(o, datetime):
             return o.isoformat()
         return super().default(o)
+
 
 def create_app() -> Flask:
     psycopg2_connection = initialize_psycopg_connection()

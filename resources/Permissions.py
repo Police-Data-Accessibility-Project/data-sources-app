@@ -14,8 +14,8 @@ from resources.PsycopgResource import handle_exceptions, PsycopgResource
 from resources.resource_helpers import add_jwt_header_arg
 from utilities.namespace import AppNamespaces, create_namespace
 from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
-
-    get_restx_param_documentation, )
+    get_restx_param_documentation,
+)
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 
 namespace_permissions = create_namespace(namespace_attributes=AppNamespaces.AUTH)
@@ -84,5 +84,5 @@ class Permissions(PsycopgResource):
             schema_populate_parameters=SchemaPopulateParameters(
                 schema=PermissionsRequestSchema(),
                 dto_class=PermissionsRequest,
-            )
+            ),
         )

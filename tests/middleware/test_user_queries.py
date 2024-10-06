@@ -15,6 +15,7 @@ from tests.helper_scripts.common_mocks_and_patches import multi_monkeypatch
 
 PATCH_ROOT = "middleware.primary_resource_logic.user_queries"
 
+
 @pytest.fixture
 def test_user_post_query_mocks(monkeypatch) -> MagicMock:
     mock = MagicMock()
@@ -28,6 +29,7 @@ def test_user_post_query_mocks(monkeypatch) -> MagicMock:
         ],
     )
     return mock
+
 
 def test_user_post_query(test_user_post_query_mocks):
     mock = test_user_post_query_mocks

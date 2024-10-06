@@ -65,7 +65,9 @@ def create_agency_entry_for_search_cache(db_client: DatabaseClient) -> str:
     return submitted_name
 
 
-def create_data_source_entry_for_url_duplicate_checking(db_client: DatabaseClient) -> str:
+def create_data_source_entry_for_url_duplicate_checking(
+    db_client: DatabaseClient,
+) -> str:
     """
     Create an entry in `Data Sources` guaranteed to appear in the URL duplicate checking functionality
     :param db_client:
@@ -82,22 +84,25 @@ def create_data_source_entry_for_url_duplicate_checking(db_client: DatabaseClien
                 "approval_status": "rejected",
                 "airtable_uid": "TEST_URL_DUPLICATE_SOURCE_ID",
                 "source_url": "https://duplicate-checker.com/",
-
-            })
-        db_client.execute_raw_sql("""
+            },
+        )
+        db_client.execute_raw_sql(
+            """
             call refresh_distinct_source_urls();
-        """)
+        """
+        )
     except psycopg.errors.UniqueViolation:
         pass  # Already added
     except Exception as e:
         # Rollback
         db_client.connection.rollback()
 
+
 TestDataRequestInfo = namedtuple("TestDataRequestInfo", ["id", "submission_notes"])
 
+
 def create_test_data_request(
-        flask_client: FlaskClient,
-        jwt_authorization_header: dict
+    flask_client: FlaskClient, jwt_authorization_header: dict
 ) -> TestDataRequestInfo:
     submission_notes = uuid.uuid4().hex
     json = run_and_validate_request(

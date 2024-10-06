@@ -16,7 +16,11 @@ from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import LocationInfoDTO, AgenciesPutSchema, AgenciesPostDTO
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import (
+    LocationInfoDTO,
+    AgenciesPutSchema,
+    AgenciesPostDTO,
+)
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyBaseDTO,
     GetByIDBaseDTO,

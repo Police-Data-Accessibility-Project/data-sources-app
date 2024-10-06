@@ -1,2 +1,1 @@
-
 DATA_KEY = "data"

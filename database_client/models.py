@@ -14,9 +14,17 @@ from sqlalchemy import (
     Float,
     Boolean,
     DateTime,
-    Integer, UniqueConstraint,
+    Integer,
+    UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, DATE, DATERANGE, TIMESTAMP, ENUM as pgEnum, JSON
+from sqlalchemy.dialects.postgresql import (
+    ARRAY,
+    DATE,
+    DATERANGE,
+    TIMESTAMP,
+    ENUM as pgEnum,
+    JSON,
+)
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
     DeclarativeBase,
@@ -203,7 +211,6 @@ class AgencyExpanded(Base):
                 )
                 yield key, value
 
-
     # Define columns as per the view with refined data types
     name = Column(String, nullable=False)
     submitted_name = Column(String, nullable=False)
@@ -325,6 +332,7 @@ class DataRequest(Base):
     coverage_range: Mapped[Optional[daterange]]
     data_requirements: Mapped[Optional[text]]
 
+
 class DataSource(Base):
     __tablename__ = Relations.DATA_SOURCES.value
 
@@ -357,7 +365,9 @@ class DataSource(Base):
     updated_at: Mapped[Optional[date]]
     detail_level: Mapped[Optional[DetailLevelLiteral]]
     # Note: Below is an array of enums in Postgres but this is cumbersome to convey in SQLAlchemy terms
-    access_types = Column(ARRAY(pgEnum(*[e.value for e in AccessType], name="access_type")))
+    access_types = Column(
+        ARRAY(pgEnum(*[e.value for e in AccessType], name="access_type"))
+    )
     record_download_option_provided: Mapped[Optional[bool]]
     data_portal_type: Mapped[Optional[str]]
     record_formats = Column(ARRAY(String))
@@ -400,7 +410,9 @@ class DataSource(Base):
 
 
 class DataSourceExpanded(DataSource):
-    airtable_uid = mapped_column(None, ForeignKey("public.data_sources.airtable_uid"), primary_key=True)
+    airtable_uid = mapped_column(
+        None, ForeignKey("public.data_sources.airtable_uid"), primary_key=True
+    )
 
     __tablename__ = Relations.DATA_SOURCES_EXPANDED.value
     __table_args__ = {
@@ -409,6 +421,7 @@ class DataSourceExpanded(DataSource):
     }
 
     record_type_name: Mapped[Optional[str]]
+
 
 class DataSourceArchiveInfo(Base):
     __tablename__ = Relations.DATA_SOURCES_ARCHIVE_INFO.value
@@ -537,6 +550,8 @@ def convert_to_column_reference(columns: list[str], relation: str) -> list[Colum
         try:
             return getattr(relation_reference, column)
         except AttributeError:
-            raise AttributeError(f"Column \"{column}\" does not exist in SQLAlchemy Table Model")
+            raise AttributeError(
+                f'Column "{column}" does not exist in SQLAlchemy Table Model'
+            )
 
     return [get_attribute(column) for column in columns]

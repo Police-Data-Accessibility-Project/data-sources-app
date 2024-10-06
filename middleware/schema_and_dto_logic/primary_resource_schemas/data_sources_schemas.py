@@ -5,11 +5,18 @@ from database_client.enums import (
     DetailLevel,
     AccessType,
     RetentionSchedule,
-    URLStatus, ApprovalStatus, AgencyAggregation,
+    URLStatus,
+    ApprovalStatus,
+    AgencyAggregation,
 )
 from middleware.enums import RecordType
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import AgenciesGetSchema
-from middleware.schema_and_dto_logic.response_schemas import GetManyResponseSchemaBase, MessageSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import (
+    AgenciesGetSchema,
+)
+from middleware.schema_and_dto_logic.response_schemas import (
+    GetManyResponseSchemaBase,
+    MessageSchema,
+)
 from middleware.schema_and_dto_logic.util import get_json_metadata
 
 
@@ -17,6 +24,7 @@ class DataSourceBaseSchema(Schema):
     """
     This schema correlates with the data_source table in the database
     """
+
     name = fields.String(
         required=True,
         metadata=get_json_metadata(
@@ -104,7 +112,9 @@ class DataSourceBaseSchema(Schema):
         fields.Enum(
             enum=AccessType,
             by_value=fields.Str,
-            metadata=get_json_metadata("The ways the data source can be accessed. Editable only by admins."),
+            metadata=get_json_metadata(
+                "The ways the data source can be accessed. Editable only by admins."
+            ),
         ),
         allow_none=True,
         metadata=get_json_metadata(
@@ -113,7 +123,9 @@ class DataSourceBaseSchema(Schema):
     )
     record_download_option_provided = fields.Boolean(
         allow_none=True,
-        metadata=get_json_metadata("Is there a way to download the data source's records?"),
+        metadata=get_json_metadata(
+            "Is there a way to download the data source's records?"
+        ),
     )
     data_portal_type = fields.String(
         allow_none=True,
@@ -121,10 +133,12 @@ class DataSourceBaseSchema(Schema):
     )
     record_formats = fields.List(
         fields.String(
-            metadata=get_json_metadata("What formats the data source can be obtained in."),
+            metadata=get_json_metadata(
+                "What formats the data source can be obtained in."
+            ),
         ),
         allow_none=True,
-        metadata=get_json_metadata("What formats the data source can be obtained in.")
+        metadata=get_json_metadata("What formats the data source can be obtained in."),
     )
     # TODO: Update to include UpdateMethodEnum
     update_method = fields.String(
@@ -134,14 +148,20 @@ class DataSourceBaseSchema(Schema):
     tags = fields.List(
         fields.String(
             allow_none=True,
-            metadata=get_json_metadata("Are there any keyword descriptors which might help people find this in a search? Try to limit tags to information which can't be contained in other properties."),
+            metadata=get_json_metadata(
+                "Are there any keyword descriptors which might help people find this in a search? Try to limit tags to information which can't be contained in other properties."
+            ),
         ),
-        metadata=get_json_metadata("Are there any keyword descriptors which might help people find this in a search? Try to limit tags to information which can't be contained in other properties."),
-        allow_none=True
+        metadata=get_json_metadata(
+            "Are there any keyword descriptors which might help people find this in a search? Try to limit tags to information which can't be contained in other properties."
+        ),
+        allow_none=True,
     )
     readme_url = fields.String(
-        metadata=get_json_metadata("A URL where supplementary information about the source is published."),
-        allow_none=True
+        metadata=get_json_metadata(
+            "A URL where supplementary information about the source is published."
+        ),
+        allow_none=True,
     )
     originating_entity = fields.String(
         allow_none=True,
@@ -150,7 +170,9 @@ class DataSourceBaseSchema(Schema):
     retention_schedule = fields.Enum(
         enum=RetentionSchedule,
         by_value=fields.Str,
-        metadata=get_json_metadata("How long are records kept? Are there published guidelines regarding how long important information must remain accessible for future use? Editable only by admins."),
+        metadata=get_json_metadata(
+            "How long are records kept? Are there published guidelines regarding how long important information must remain accessible for future use? Editable only by admins."
+        ),
         allow_none=True,
     )
     airtable_uid = fields.String(
@@ -215,8 +237,7 @@ class DataSourceBaseSchema(Schema):
         metadata=get_json_metadata("When the url was marked as broken."),
     )
     access_notes = fields.String(
-        metadata=get_json_metadata("How the source can be accessed,"),
-        allow_none=True
+        metadata=get_json_metadata("How the source can be accessed,"), allow_none=True
     )
     url_status = fields.Enum(
         URLStatus,
@@ -227,19 +248,25 @@ class DataSourceBaseSchema(Schema):
     approval_status = fields.Enum(
         ApprovalStatus,
         by_value=fields.String,
-        metadata=get_json_metadata("The approval status of the data source. Editable only by admins."),
+        metadata=get_json_metadata(
+            "The approval status of the data source. Editable only by admins."
+        ),
         required=False,
     )
     record_type_id = fields.Integer(
-        metadata=get_json_metadata("The record type id associated with the data source"),
-        allow_none=True
+        metadata=get_json_metadata(
+            "The record type id associated with the data source"
+        ),
+        allow_none=True,
     )
+
 
 class DataSourceGetSchema(DataSourceBaseSchema):
     """
     The schema for getting a single data source.
     Include the base schema as well as data from connected tables, including agencies and record types.
     """
+
     record_type_name = fields.Enum(
         enum=RecordType,
         by_value=fields.Str,
@@ -248,10 +275,14 @@ class DataSourceGetSchema(DataSourceBaseSchema):
     )
     agency_ids = fields.List(
         fields.String(
-            metadata=get_json_metadata("The IDs of the agencies associated with the data source."),
+            metadata=get_json_metadata(
+                "The IDs of the agencies associated with the data source."
+            ),
         ),
         allow_none=True,
-        metadata=get_json_metadata("The IDs of the agencies associated with the data source."),
+        metadata=get_json_metadata(
+            "The IDs of the agencies associated with the data source."
+        ),
     )
     agencies = fields.List(
         fields.Nested(
@@ -262,11 +293,13 @@ class DataSourceGetSchema(DataSourceBaseSchema):
         metadata=get_json_metadata("The agencies associated with the data source."),
     )
 
+
 class DataSourcesGetByIDSchema(MessageSchema):
     data = fields.Nested(
         DataSourceGetSchema,
         metadata=get_json_metadata("The result"),
     )
+
 
 class DataSourcesGetManySchema(GetManyResponseSchemaBase):
     data = fields.List(

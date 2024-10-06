@@ -14,9 +14,14 @@ from database_client.database_client import DatabaseClient
 from middleware.enums import PermissionsEnum
 from middleware.util import get_env_variable
 from tests.helper_scripts.common_mocks_and_patches import patch_and_return_mock
-from tests.helper_scripts.helper_classes.IntegrationTestSetup import IntegrationTestSetup
+from tests.helper_scripts.helper_classes.IntegrationTestSetup import (
+    IntegrationTestSetup,
+)
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
-from tests.helper_scripts.helper_functions import insert_test_agencies_and_sources, create_test_user_setup
+from tests.helper_scripts.helper_functions import (
+    insert_test_agencies_and_sources,
+    create_test_user_setup,
+)
 from tests.helper_scripts.test_data_generator import TestDataGenerator
 
 
@@ -78,8 +83,7 @@ def dev_db_client() -> DatabaseClient:
 
 
 @pytest.fixture
-def connection_with_test_data(
-) -> psycopg.Connection:
+def connection_with_test_data() -> psycopg.Connection:
     """
     Insert test agencies and sources into test data.
 
@@ -201,7 +205,9 @@ def bypass_authentication_required(monkeypatch):
 
 @pytest.fixture
 def mock_database_client(monkeypatch):
-    mock = patch_and_return_mock(f"resources.PsycopgResource.DatabaseClient", monkeypatch)
+    mock = patch_and_return_mock(
+        f"resources.PsycopgResource.DatabaseClient", monkeypatch
+    )
     mock.return_value = MagicMock()
     return mock.return_value
 
@@ -268,16 +274,20 @@ def test_table_data(live_database_client: DatabaseClient):
     :return:
     """
 
-    live_database_client.execute_raw_sql("""
+    live_database_client.execute_raw_sql(
+        """
     DELETE FROM test_table;
-    """)
+    """
+    )
 
-    live_database_client.execute_raw_sql("""
+    live_database_client.execute_raw_sql(
+        """
     INSERT INTO test_table (pet_name, species) VALUES 
     ('Arthur', 'Aardvark'),
     ('Jimbo', 'Cat'),
     ('Simon', 'Bear');
-    """)
+    """
+    )
 
 
 class FakeAbort(Exception):
@@ -292,7 +302,9 @@ def mock_flask_response_manager(monkeypatch):
     :return:
     """
     mock = MagicMock()
-    monkeypatch.setattr("middleware.flask_response_manager.make_response", mock.make_response)
+    monkeypatch.setattr(
+        "middleware.flask_response_manager.make_response", mock.make_response
+    )
     monkeypatch.setattr("middleware.flask_response_manager.abort", mock.abort)
     # Create a fake abort exception to use in tests
     mock.abort.side_effect = FakeAbort

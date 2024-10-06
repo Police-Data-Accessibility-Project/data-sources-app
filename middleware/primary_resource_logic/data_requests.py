@@ -145,7 +145,7 @@ def get_data_requests_wrapper(
             relation=RELATION,
             db_client_method=DatabaseClient.get_data_requests,
         ),
-        page=dto.page
+        page=dto.page,
     )
 
 

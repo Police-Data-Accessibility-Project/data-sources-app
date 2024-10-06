@@ -40,6 +40,7 @@ agencies_doc_info = get_restx_param_documentation(
     schema=TypeaheadAgenciesOuterResponseSchema,
 )
 
+
 def get_typeahead_kwargs(db_client_method: Callable) -> dict:
     return {
         "wrapper_function": get_typeahead_results,

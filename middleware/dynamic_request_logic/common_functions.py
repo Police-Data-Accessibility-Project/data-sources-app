@@ -1,6 +1,7 @@
 """
 Contains functions common across multiple dynamic request functions
 """
+
 from http import HTTPStatus
 
 from database_client.database_client import DatabaseClient
@@ -20,7 +21,7 @@ def check_for_id(
     result = db_client._select_from_relation(
         relation_name=table_name,
         where_mappings=id_info.where_mappings,
-        columns=[id_info.id_column_name]
+        columns=[id_info.id_column_name],
     )
     if len(result) == 0:
         FlaskResponseManager.abort(

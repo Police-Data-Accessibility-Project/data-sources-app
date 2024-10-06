@@ -198,12 +198,13 @@ def test_locations(
 
 
 LinkUserFollowedTestInfo = namedtuple(
-    "LinkUserFollowedTestInfo",
-    ["user_id", "locality_id", "location_id"])
+    "LinkUserFollowedTestInfo", ["user_id", "locality_id", "location_id"]
+)
+
 
 @pytest.fixture
 def link_user_followed_test_info(
-    live_database_client: DatabaseClient
+    live_database_client: DatabaseClient,
 ) -> LinkUserFollowedTestInfo:
     county_id = live_database_client._select_from_relation(
         relation_name=Relations.LOCATIONS_EXPANDED.value,
@@ -241,8 +242,8 @@ def link_user_followed_test_info(
 
     live_database_client.create_user_followed_search_link(
         column_value_mappings={
-                "user_id": user_id,
-                "location_id": location_id,
+            "user_id": user_id,
+            "location_id": location_id,
         }
     )
 
@@ -254,10 +255,8 @@ def link_user_followed_test_info(
         (Relations.USERS, user_id),
     ):
         live_database_client._delete_from_table(
-            table_name=relation.value,
-            id_column_value=id_
+            table_name=relation.value, id_column_value=id_
         )
-
 
 
 def test_link_user_followed_locations_link_exists(
@@ -281,17 +280,18 @@ def test_link_user_followed_locations_link_exists(
     assert len(results) == 1
     assert results[0]["location_id"] == test_info.location_id
 
+
 def test_link_user_followed_locations_link_user_deletion_cascade(
     live_database_client: DatabaseClient, link_user_followed_test_info
 ):
     test_info = link_user_followed_test_info
 
     live_database_client._delete_from_table(
-        table_name=Relations.USERS.value,
-        id_column_value=test_info.user_id
+        table_name=Relations.USERS.value, id_column_value=test_info.user_id
     )
 
     assert_link_user_followed_location_deleted(live_database_client, test_info)
+
 
 def test_link_user_followed_locations_link_location_deletion_cascade(
     live_database_client: DatabaseClient, link_user_followed_test_info
@@ -299,11 +299,11 @@ def test_link_user_followed_locations_link_location_deletion_cascade(
     test_info = link_user_followed_test_info
 
     live_database_client._delete_from_table(
-        table_name=Relations.LOCALITIES.value,
-        id_column_value=test_info.locality_id
+        table_name=Relations.LOCALITIES.value, id_column_value=test_info.locality_id
     )
 
     assert_link_user_followed_location_deleted(live_database_client, test_info)
+
 
 def assert_link_user_followed_location_deleted(live_database_client, test_info):
     results = live_database_client._select_from_relation(
@@ -319,9 +319,8 @@ def assert_link_user_followed_location_deleted(live_database_client, test_info):
     )
     assert len(results) == 0
 
-def test_data_sources_created_at_updated_at(
-    live_database_client
-):
+
+def test_data_sources_created_at_updated_at(live_database_client):
     # Create bare-minimum fake data source
     data_source_id = live_database_client.add_new_data_source(
         column_value_mappings={

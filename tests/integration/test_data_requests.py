@@ -171,7 +171,7 @@ def test_data_requests_by_id_get(ts: DataRequestsTestSetup):
         http_method="get",
         endpoint=DATA_REQUESTS_BY_ID_ENDPOINT + str(tdr.id),
         headers=ts.tus.jwt_authorization_header,
-        expected_schema=GetByIDDataRequestsResponseSchema
+        expected_schema=GetByIDDataRequestsResponseSchema,
     )
 
     assert jwt_json_data[DATA_KEY]["submission_notes"] == tdr.submission_notes

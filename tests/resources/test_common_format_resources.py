@@ -8,8 +8,13 @@ from unittest.mock import MagicMock
 import pytest
 
 from resources.ApiKey import API_KEY_ROUTE
-from tests.conftest import client_with_mock_db, bypass_api_key_required, bypass_permissions_required, \
-    bypass_jwt_required, bypass_authentication_required
+from tests.conftest import (
+    client_with_mock_db,
+    bypass_api_key_required,
+    bypass_permissions_required,
+    bypass_jwt_required,
+    bypass_authentication_required,
+)
 from http import HTTPStatus
 
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
@@ -60,7 +65,12 @@ TEST_ID = -1
             "DataSources.add_new_data_source_wrapper",
             {"entry_data": {}},
         ),
-        ("/data-sources?page=1&approval_status=approved", "GET", "DataSources.get_data_sources_wrapper", {}),
+        (
+            "/data-sources?page=1&approval_status=approved",
+            "GET",
+            "DataSources.get_data_sources_wrapper",
+            {},
+        ),
         (
             "/data-requests/test_id/related-sources",
             "GET",
@@ -221,8 +231,7 @@ TEST_ID = -1
         (f"/agencies/{TEST_ID}", "DELETE", "Agencies.delete_agency", {}),
         (
             add_query_params(
-                url="/check/unique-url",
-                params={"url": "https://www.test-url.com"}
+                url="/check/unique-url", params={"url": "https://www.test-url.com"}
             ),
             "GET",
             "UniqueURLChecker.unique_url_checker_wrapper",

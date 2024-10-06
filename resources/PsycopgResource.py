@@ -10,9 +10,16 @@ from config import config
 from database_client.database_client import DatabaseClient
 from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
-from middleware.schema_and_dto_logic.dynamic_schema_request_content_population import populate_schema_with_request_content
-from middleware.schema_and_dto_logic.dynamic_dto_request_content_population import populate_dto_with_request_content
-from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters, DTOPopulateParameters
+from middleware.schema_and_dto_logic.dynamic_schema_request_content_population import (
+    populate_schema_with_request_content,
+)
+from middleware.schema_and_dto_logic.dynamic_dto_request_content_population import (
+    populate_dto_with_request_content,
+)
+from middleware.schema_and_dto_logic.non_dto_dataclasses import (
+    SchemaPopulateParameters,
+    DTOPopulateParameters,
+)
 
 
 def handle_exceptions(
@@ -40,9 +47,7 @@ def handle_exceptions(
 
     @functools.wraps(func)
     def wrapper(
-            self: "PsycopgResource",
-            *args: Any,
-            **kwargs: Any
+        self: "PsycopgResource", *args: Any, **kwargs: Any
     ) -> Union[Any, Tuple[Dict[str, str], int]]:
         try:
             return func(self, *args, **kwargs)
@@ -115,7 +120,9 @@ class PsycopgResource(Resource):
         **wrapper_kwargs: Any,
     ) -> Response:
 
-        check_for_mutually_exclusive_arguments(schema_populate_parameters, dto_populate_parameters)
+        check_for_mutually_exclusive_arguments(
+            schema_populate_parameters, dto_populate_parameters
+        )
 
         if dto_populate_parameters is None and schema_populate_parameters is None:
             with self.setup_database_client() as db_client:
@@ -127,7 +134,7 @@ class PsycopgResource(Resource):
                 source=dto_populate_parameters.source,
                 attribute_source_mapping=dto_populate_parameters.attribute_source_mapping,
                 transformation_functions=dto_populate_parameters.transformation_functions,
-                validation_schema=dto_populate_parameters.validation_schema
+                validation_schema=dto_populate_parameters.validation_schema,
             )
         elif schema_populate_parameters is not None:
             dto = populate_schema_with_request_content(

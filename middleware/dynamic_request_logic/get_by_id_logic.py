@@ -4,6 +4,7 @@ They are designed such that a variety of parameters are provided, and then funct
 performed in a manner designed to be consistent among all endpoints using them.
 
 """
+
 from flask import Response
 
 from database_client.enums import ColumnPermissionEnum
@@ -89,6 +90,6 @@ def get_by_id(
         relation_name=mp.relation,
         columns=columns,
         where_mappings=[WhereMapping(column=id_column_name, value=id)],
-        subquery_parameters=mp.subquery_params
+        subquery_parameters=mp.subquery_params,
     )
     return results_dependent_response(mp.entry_name, results)

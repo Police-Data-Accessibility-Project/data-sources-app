@@ -60,6 +60,5 @@ class ApiKey(PsycopgResource):
             dto_populate_parameters=DTOPopulateParameters(
                 source=SourceMappingEnum.JSON,
                 dto_class=UserRequest,
-            )
+            ),
         )
-

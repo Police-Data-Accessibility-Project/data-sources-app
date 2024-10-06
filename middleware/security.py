@@ -7,7 +7,10 @@ from database_client.helper_functions import get_db_client
 from middleware.access_logic import (
     get_api_key_from_request_header,
 )
-from middleware.exceptions import InvalidAPIKeyException, InvalidAuthorizationHeaderException
+from middleware.exceptions import (
+    InvalidAPIKeyException,
+    InvalidAuthorizationHeaderException,
+)
 from middleware.enums import PermissionsEnum
 from middleware.primary_resource_logic.permissions_logic import PermissionsManager
 
@@ -46,4 +49,3 @@ def check_permissions(permission: PermissionsEnum) -> None:
             code=HTTPStatus.FORBIDDEN,
             message="You do not have permission to access this endpoint",
         )
-

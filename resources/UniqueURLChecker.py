@@ -28,9 +28,7 @@ response_doc_info = get_restx_param_documentation(
     namespace=namespace_url_checker,
     schema=UniqueURLCheckerResponseOuterSchema,
 )
-add_api_key_header_arg(
-    request_doc_info.parser
-)
+add_api_key_header_arg(request_doc_info.parser)
 
 
 @namespace_url_checker.route("/unique-url")

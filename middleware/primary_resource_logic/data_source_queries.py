@@ -5,7 +5,11 @@ from flask import make_response, Response, request
 from marshmallow import fields, validate
 
 from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import OrderByParameters, SubqueryParameters, WhereMapping
+from database_client.db_client_dataclasses import (
+    OrderByParameters,
+    SubqueryParameters,
+    WhereMapping,
+)
 from database_client.enums import ApprovalStatus
 from database_client.result_formatter import ResultFormatter
 from middleware.access_logic import AccessInfo
@@ -31,7 +35,11 @@ from utilities.common import match_string_to_enum
 from utilities.enums import SourceMappingEnum
 
 RELATION = Relations.DATA_SOURCES.value
-SUBQUERY_PARAMS = [SubqueryParameters(relation_name=Relations.AGENCIES_EXPANDED.value, linking_column="agencies")]
+SUBQUERY_PARAMS = [
+    SubqueryParameters(
+        relation_name=Relations.AGENCIES_EXPANDED.value, linking_column="agencies"
+    )
+]
 
 
 class DataSourceNotFoundError(Exception):
@@ -47,7 +55,7 @@ class DataSourcesGetRequestSchemaMany(GetManyBaseSchema):
             "source": SourceMappingEnum.QUERY_ARGS,
             "description": "The approval status of the data sources.",
             "default": "approved",
-        }
+        },
     )
 
 
@@ -74,14 +82,16 @@ def get_data_sources_wrapper(
                     sort_order=dto.sort_order,
                 ),
                 "where_mappings": [
-                    WhereMapping(column="approval_status", value=dto.approval_status.value)
+                    WhereMapping(
+                        column="approval_status", value=dto.approval_status.value
+                    )
                 ],
             },
             entry_name="data source",
-            subquery_params=SUBQUERY_PARAMS
+            subquery_params=SUBQUERY_PARAMS,
         ),
         page=dto.page,
-        requested_columns=dto.requested_columns
+        requested_columns=dto.requested_columns,
     )
 
 

@@ -33,12 +33,12 @@ class DatabaseSessionSingleton:
 
     def _initialize_sqlalchemy_session(self) -> SQLAlchemySession:
         """
-        Initializes a connection to a PostgreSQL database using SQLAlchemy obtained from an environment variable. 
+        Initializes a connection to a PostgreSQL database using SQLAlchemy obtained from an environment variable.
         If the connection fails, it raises a DatabaseInitializationError.
 
         :return: A SQLAlchemy session object if successful.
         """
-        try: 
+        try:
             do_database_url = get_env_variable("DO_DATABASE_URL")
             do_database_url = "postgresql+psycopg" + do_database_url[10:]
 
@@ -52,11 +52,9 @@ class DatabaseSessionSingleton:
 
 def initialize_sqlalchemy_session() -> SQLAlchemySession:
     """
-    Initializes a connection to a PostgreSQL database using SQLAlchemy obtained from an environment variable. 
+    Initializes a connection to a PostgreSQL database using SQLAlchemy obtained from an environment variable.
     If the connection fails, it returns a default dictionary indicating no data sources are available.
 
     :return: A SQLAlchemy session object if successful, or a dictionary with a count of 0 and an empty data list upon failure.
     """
     return DatabaseSessionSingleton().get_session()
-
-

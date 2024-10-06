@@ -3,7 +3,11 @@ from tests.helper_scripts.helper_functions import (
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from tests.helper_scripts.simple_result_validators import check_response_status
-from tests.conftest import dev_db_connection, flask_client_with_db, bypass_api_key_required
+from tests.conftest import (
+    dev_db_connection,
+    flask_client_with_db,
+    bypass_api_key_required,
+)
 
 
 def test_search_get(flask_client_with_db, bypass_api_key_required):

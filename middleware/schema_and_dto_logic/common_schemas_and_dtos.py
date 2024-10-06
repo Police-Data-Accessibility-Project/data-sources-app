@@ -2,6 +2,7 @@
 The base schema to use for get many requests,
 to be inherited by other get many requests.
 """
+
 import ast
 from dataclasses import dataclass
 from typing import Optional
@@ -10,7 +11,10 @@ from marshmallow import Schema, fields, validate
 
 from database_client.enums import SortOrder
 from middleware.schema_and_dto_logic.custom_fields import DataField
-from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters, DTOPopulateParameters
+from middleware.schema_and_dto_logic.non_dto_dataclasses import (
+    SchemaPopulateParameters,
+    DTOPopulateParameters,
+)
 
 from utilities.enums import SourceMappingEnum
 
@@ -45,7 +49,9 @@ class GetManyBaseSchema(Schema):
         required=False,
         metadata={
             "source": SourceMappingEnum.QUERY_ARGS,
-            "transformation_function": lambda value: ast.literal_eval(value) if value else None,
+            "transformation_function": lambda value: (
+                ast.literal_eval(value) if value else None
+            ),
             "description": "A comma-delimited list of the columns to return in the results. Defaults to all permitted if not provided.",
         },
     )

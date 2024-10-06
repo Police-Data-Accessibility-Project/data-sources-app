@@ -44,7 +44,7 @@ class TypeaheadBaseResponseSchema(Schema):
             "description": "The county of the suggestion",
             "example": "Allegheny",
         },
-        allow_none=True
+        allow_none=True,
     )
     locality = fields.String(
         required=True,
@@ -53,9 +53,8 @@ class TypeaheadBaseResponseSchema(Schema):
             "description": "The locality of the suggestion",
             "example": "Pittsburgh",
         },
-        allow_none=True
+        allow_none=True,
     )
-
 
 
 class TypeaheadLocationsResponseSchema(TypeaheadBaseResponseSchema):
@@ -96,6 +95,7 @@ class TypeaheadAgenciesResponseSchema(TypeaheadBaseResponseSchema):
             "example": "school",
         },
     )
+
 
 # TODO: Use these in the integration tests
 class TypeaheadAgenciesOuterResponseSchema(Schema):

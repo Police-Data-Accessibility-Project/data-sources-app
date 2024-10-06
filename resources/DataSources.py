@@ -24,12 +24,16 @@ from middleware.primary_resource_logic.data_source_queries import (
     DataSourcesGetRequestDTOMany,
     delete_data_source_wrapper,
 )
-from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import get_restx_param_documentation
+from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
+    get_restx_param_documentation,
+)
 from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
     CRUDModels,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourcesGetByIDSchema, \
-    DataSourcesGetManySchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
+    DataSourcesGetByIDSchema,
+    DataSourcesGetManySchema,
+)
 from resources.resource_helpers import (
     create_response_dictionary,
 )
@@ -42,16 +46,16 @@ namespace_data_source = create_namespace(AppNamespaces.DATA_SOURCES)
 models = CRUDModels(namespace_data_source)
 
 get_by_id_model = get_restx_param_documentation(
-        namespace=namespace_data_source,
-        schema=DataSourcesGetByIDSchema,
-        model_name="DataSourcesGetByIDSchema",
-    ).model
+    namespace=namespace_data_source,
+    schema=DataSourcesGetByIDSchema,
+    model_name="DataSourcesGetByIDSchema",
+).model
 
 get_many_model = get_restx_param_documentation(
-        namespace=namespace_data_source,
-        schema=DataSourcesGetManySchema,
-        model_name="DataSourcesGetManySchema",
-    ).model
+    namespace=namespace_data_source,
+    schema=DataSourcesGetManySchema,
+    model_name="DataSourcesGetManySchema",
+).model
 
 
 @namespace_data_source.route("/<resource_id>")

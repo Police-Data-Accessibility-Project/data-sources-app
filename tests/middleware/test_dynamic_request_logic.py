@@ -64,7 +64,9 @@ def test_results_dependent_response_with_results(monkeypatch):
     )
 
     mock_message_response.assert_called_once_with(
-        message="test entry found", data={"test": 1}, validation_schema=EntryDataResponseSchema
+        message="test entry found",
+        data={"test": 1},
+        validation_schema=EntryDataResponseSchema,
     )
 
 
@@ -124,10 +126,8 @@ def test_get_by_id(monkeypatch):
         mock.mp.db_client,
         relation_name=mock.mp.relation,
         columns=mock.get_permitted_columns.return_value,
-        where_mappings=[
-            WhereMapping(column=mock.id_column_name, value=int(mock.id))
-        ],
-        subquery_parameters=mock.mp.subquery_params
+        where_mappings=[WhereMapping(column=mock.id_column_name, value=int(mock.id))],
+        subquery_parameters=mock.mp.subquery_params,
     )
 
     mock.results_dependent_response.assert_called_once_with(
@@ -229,6 +229,7 @@ def test_execute_if_none_is_not_none():
     mock = MagicMock()
     execute_if_not_none(mock)
     mock.execute.assert_called_once()
+
 
 def test_put_entry(monkeypatch):
     mock = MagicMock()

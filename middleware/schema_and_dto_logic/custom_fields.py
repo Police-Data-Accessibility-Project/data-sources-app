@@ -13,6 +13,7 @@ class DataField(fields.Dict):
 
         return result
 
+
 class EntryDataListField(fields.List):
     def _deserialize(self, value, attr, data, **kwargs):
         # First call parent deserialization logic
@@ -22,6 +23,8 @@ class EntryDataListField(fields.List):
         for entry in result:
             for entry_val in entry:
                 if isinstance(entry_val, dict):
-                    raise ValidationError(f"Nested dictionaries not allowed: {entry_val} in {entry}")
+                    raise ValidationError(
+                        f"Nested dictionaries not allowed: {entry_val} in {entry}"
+                    )
 
         return result

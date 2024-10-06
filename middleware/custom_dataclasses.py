@@ -43,5 +43,3 @@ class DeferredFunction:
 
     def execute(self, **additional_parameters):
         return self.function(**self.base_parameters, **additional_parameters)
-
-

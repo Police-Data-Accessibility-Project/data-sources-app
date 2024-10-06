@@ -7,10 +7,17 @@ import psycopg
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourcesGetByIDSchema, \
-    DataSourcesGetManySchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
+    DataSourcesGetByIDSchema,
+    DataSourcesGetManySchema,
+)
 from middleware.schema_and_dto_logic.response_schemas import GetManyResponseSchema
-from tests.conftest import connection_with_test_data, db_client_with_test_data, flask_client_with_db, test_user_admin
+from tests.conftest import (
+    connection_with_test_data,
+    db_client_with_test_data,
+    flask_client_with_db,
+    test_user_admin,
+)
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
 from tests.helper_scripts.helper_functions import (
     get_boolean_dictionary,
@@ -33,7 +40,7 @@ def test_data_sources_get(
         http_method="get",
         endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&approval_status=approved",  # ENDPOINT,
         headers=tus.api_authorization_header,
-        expected_schema=DataSourcesGetManySchema
+        expected_schema=DataSourcesGetManySchema,
     )
     data = response_json["data"]
     assert len(data) == 100
@@ -127,7 +134,7 @@ def test_data_sources_by_id_get(
         http_method="get",
         endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}/SOURCE_UID_1",
         headers=tus.api_authorization_header,
-        expected_schema=DataSourcesGetByIDSchema
+        expected_schema=DataSourcesGetByIDSchema,
     )
 
     assert response_json["data"]["source_url"] == "http://src1.com"
@@ -153,9 +160,7 @@ def test_data_sources_by_id_put(
 
     result = db_client_with_test_data.get_data_sources(
         columns=["description"],
-        where_mappings=[
-            WhereMapping(column="airtable_uid", value="SOURCE_UID_1")
-        ]
+        where_mappings=[WhereMapping(column="airtable_uid", value="SOURCE_UID_1")],
     )
     assert result[0]["description"] == desc
 
@@ -183,9 +188,7 @@ def test_data_sources_by_id_delete(
 
     result = db_client_with_test_data.get_data_sources(
         columns=["description"],
-        where_mappings=[
-            WhereMapping(column="airtable_uid", value=airtable_uid)
-        ]
+        where_mappings=[WhereMapping(column="airtable_uid", value=airtable_uid)],
     )
     assert len(result) == 1
 
@@ -198,9 +201,7 @@ def test_data_sources_by_id_delete(
 
     result = db_client_with_test_data.get_data_sources(
         columns=["description"],
-        where_mappings=[
-            WhereMapping(column="airtable_uid", value=airtable_uid)
-        ]
+        where_mappings=[WhereMapping(column="airtable_uid", value=airtable_uid)],
     )
 
     assert len(result) == 0

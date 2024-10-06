@@ -10,14 +10,20 @@ import pytest
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
 from middleware.enums import JurisdictionType
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import AgenciesGetByIDResponseSchema, \
-    AgenciesGetManyResponseSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import (
+    AgenciesGetByIDResponseSchema,
+    AgenciesGetManyResponseSchema,
+)
 from middleware.schema_and_dto_logic.response_schemas import (
     MessageSchema,
     IDAndMessageSchema,
 )
 
-from tests.conftest import dev_db_client, flask_client_with_db, integration_test_admin_setup
+from tests.conftest import (
+    dev_db_client,
+    flask_client_with_db,
+    integration_test_admin_setup,
+)
 from tests.helper_scripts.constants import AGENCIES_BASE_ENDPOINT
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup_db_client,
@@ -136,7 +142,9 @@ def test_agencies_post(ts: AgenciesTestSetup):
 
     agency_created = json_data["data"]["agency_created"]
     last_modified = json_data["data"]["airtable_agency_last_modified"]
-    assert agency_created == last_modified, "Agency created should be equal to last modified"
+    assert (
+        agency_created == last_modified
+    ), "Agency created should be equal to last modified"
     assert (
         # Within one minute to account for minor database/app discrepancies
         datetime.fromisoformat(agency_created) + timedelta(minutes=1)
@@ -232,11 +240,9 @@ def test_agencies_put(ts: AgenciesTestSetup):
 
     agency_created = json_data["data"]["agency_created"]
     last_modified = json_data["data"]["airtable_agency_last_modified"]
-    assert (
-        datetime.fromisoformat(agency_created)
-        < datetime.fromisoformat(last_modified)
+    assert datetime.fromisoformat(agency_created) < datetime.fromisoformat(
+        last_modified
     )
-
 
     assert json_data["data"]["submitted_name"] == new_submitted_name
 

@@ -58,7 +58,9 @@ class PutPostBase(ABC):
         self.mp = middleware_parameters
         self.entry = entry
         self.relation_role_parameters = relation_role_parameters
-        self.pre_database_client_method_with_parameters = pre_database_client_method_with_parameters
+        self.pre_database_client_method_with_parameters = (
+            pre_database_client_method_with_parameters
+        )
 
     def pre_database_client_method_logic(self):
         execute_if_not_none(self.pre_database_client_method_with_parameters)
@@ -88,4 +90,3 @@ class PutPostBase(ABC):
         self.pre_database_client_method_logic()
         self.call_database_client_method()
         return self.make_response()
-

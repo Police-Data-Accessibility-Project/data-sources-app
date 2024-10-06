@@ -253,9 +253,9 @@ class DynamicQueryConstructor:
 
         join_conditions = []
         where_subclauses = [
-            sql.SQL("LOWER(locations_expanded.state_name) = LOWER({state_name})").format(
-                state_name=sql.Literal(state)
-            ),
+            sql.SQL(
+                "LOWER(locations_expanded.state_name) = LOWER({state_name})"
+            ).format(state_name=sql.Literal(state)),
             sql.SQL("data_sources.approval_status = 'approved'"),
             sql.SQL("data_sources.url_status NOT IN ('broken', 'none found')"),
         ]
@@ -281,16 +281,16 @@ class DynamicQueryConstructor:
 
         if county is not None:
             where_subclauses.append(
-                sql.SQL("LOWER(locations_expanded.county_name) = LOWER({county_name})").format(
-                    county_name=sql.Literal(county)
-                )
+                sql.SQL(
+                    "LOWER(locations_expanded.county_name) = LOWER({county_name})"
+                ).format(county_name=sql.Literal(county))
             )
 
         if locality is not None:
             where_subclauses.append(
-                sql.SQL("LOWER(locations_expanded.locality_name) = LOWER({locality})").format(
-                    locality=sql.Literal(locality)
-                )
+                sql.SQL(
+                    "LOWER(locations_expanded.locality_name) = LOWER({locality})"
+                ).format(locality=sql.Literal(locality))
             )
 
         query = sql.Composed(

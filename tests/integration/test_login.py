@@ -9,13 +9,13 @@ from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     login_and_return_jwt_tokens,
 )
-from tests.helper_scripts.common_test_functions import assert_api_key_exists_for_email, \
-    assert_jwt_token_matches_user_email
+from tests.helper_scripts.common_test_functions import (
+    assert_api_key_exists_for_email,
+    assert_jwt_token_matches_user_email,
+)
 
 
-def test_login_post(
-    flask_client_with_db, dev_db_connection: psycopg.Connection
-):
+def test_login_post(flask_client_with_db, dev_db_connection: psycopg.Connection):
     """
     Test that POST call to /login endpoint successfully logs in a user, creates a session token, and verifies the session token exists only once in the database with the correct email
     """
