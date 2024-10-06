@@ -8,7 +8,7 @@ import psycopg
 
 from database_client.database_client import DatabaseClient
 from middleware.enums import PermissionsEnum
-from tests.conftest import dev_db_connection, dev_db_client, flask_client_with_db, test_user_admin
+from tests.conftest import dev_db_client, flask_client_with_db, test_user_admin
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     create_api_key,

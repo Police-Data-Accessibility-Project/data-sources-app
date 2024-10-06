@@ -279,20 +279,18 @@ def login_and_return_jwt_tokens(
     )
 
 
-def get_user_password_digest(cursor: psycopg.Cursor, user_info):
+def get_user_password_digest(user_info):
     """
     Get the associated password digest of a user (given their email) from the database
-    :param cursor:
     :param user_info:
     :return:
     """
-    cursor.execute(
+    return DatabaseClient().execute_raw_sql(
         """
         SELECT password_digest from users where email = %s
     """,
         (user_info.email,),
-    )
-    return cursor.fetchone()[0]
+    )[0]
 
 
 def request_reset_password_api(client_with_db, mocker, user_info):

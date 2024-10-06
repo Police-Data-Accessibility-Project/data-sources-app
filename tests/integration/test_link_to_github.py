@@ -2,8 +2,9 @@ from http import HTTPStatus
 
 import psycopg
 
+from database_client.database_client import DatabaseClient
 from middleware.enums import CallbackFunctionsEnum
-from tests.conftest import dev_db_connection, flask_client_with_db
+from tests.conftest import flask_client_with_db
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     create_api_key,
@@ -18,7 +19,7 @@ from tests.helper_scripts.simple_result_validators import check_response_status
 
 
 def test_link_to_github(
-    flask_client_with_db, dev_db_connection: psycopg.Connection, monkeypatch
+    flask_client_with_db, monkeypatch
 ):
     tus = create_test_user_setup(flask_client_with_db)
     mock_setup_callback_session = patch_setup_callback_session(
@@ -54,10 +55,13 @@ def test_link_to_github(
         endpoint="auth/callback",
     )
 
-    cursor = dev_db_connection.cursor()
-    cursor.execute(
-        "SELECT account_type, account_identifier FROM user_external_accounts WHERE email = %s",
-        (tus.user_info.email,),
-    )
-    result = cursor.fetchone()
-    assert result == ("github", github_user_info.user_id)
+    db_client = DatabaseClient()
+    result = db_client.execute_raw_sql(
+        query="SELECT account_type, account_identifier FROM user_external_accounts WHERE email = %s",
+        vars=(tus.user_info.email,),
+    )[0]
+    assert result == {
+        "account_identifier": github_user_info.user_id,
+        "account_type": "github",
+    }
+

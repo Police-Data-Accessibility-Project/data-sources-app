@@ -5,10 +5,9 @@ import uuid
 
 import psycopg
 
-from tests.conftest import dev_db_connection, dev_db_client, flask_client_with_db
+from tests.conftest import dev_db_client, flask_client_with_db
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
-    get_user_password_digest,
     request_reset_password_api,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
