@@ -14,10 +14,11 @@ from middleware.enums import PermissionsEnum
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
     GetByIDDataRequestsResponseSchema, GetManyDataRequestsSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourceExpandedSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourceExpandedSchema, \
+    DataSourcesGetManySchema
 from tests.conftest import dev_db_client, flask_client_with_db
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
-from tests.helper_scripts.common_test_data import create_test_data_request, TestDataCreator
+from tests.helper_scripts.common_test_data import create_test_data_request, TestDataCreatorFlask
 from tests.helper_scripts.constants import (
     DATA_REQUESTS_BASE_ENDPOINT,
     DATA_REQUESTS_BY_ID_ENDPOINT,
@@ -34,7 +35,7 @@ from tests.helper_scripts.run_and_validate_request import run_and_validate_reque
 from tests.helper_scripts.helper_classes.IntegrationTestSetup import (
     IntegrationTestSetup,
 )
-from conftest import test_data_creator_session_scope, monkeysession
+from conftest import test_data_creator_flask, monkeysession
 
 
 @dataclass
@@ -52,15 +53,21 @@ def ts(flask_client_with_db, dev_db_client):
 
 
 def test_data_requests_get(
-        test_data_creator_session_scope: TestDataCreator,
+        test_data_creator_flask: TestDataCreatorFlask,
     ):
 
-    tdc = test_data_creator_session_scope
+    tdc = test_data_creator_flask
 
     tus_creator = tdc.standard_user()
 
     # Creator creates a data request
-    tdc.data_request(tus_creator)
+    dr_info = tdc.data_request(tus_creator)
+    # Create a data source and associate with that request
+    ds_info = tdc.data_source()
+    tdc.link_data_request_to_data_source(
+        data_request_id=dr_info.id,
+        data_source_id=ds_info.id,
+    )
 
     json_data = run_and_validate_request(
         flask_client=tdc.flask_client,
@@ -104,9 +111,9 @@ def test_data_requests_get(
 
 
 def test_data_requests_post(
-        test_data_creator_session_scope: TestDataCreator,
+        test_data_creator_flask: TestDataCreatorFlask,
 ):
-    tdc = test_data_creator_session_scope
+    tdc = test_data_creator_flask
     standard_tus = tdc.standard_user()
 
     submission_notes = uuid.uuid4().hex
@@ -155,9 +162,9 @@ def test_data_requests_post(
 
 
 def test_data_requests_by_id_get(
-        test_data_creator_session_scope: TestDataCreator,
+        test_data_creator_flask: TestDataCreatorFlask,
 ):
-    tdc = test_data_creator_session_scope
+    tdc = test_data_creator_flask
     admin_tus = tdc.get_admin_tus()
 
     tdr = tdc.data_request(admin_tus)
@@ -195,9 +202,9 @@ def test_data_requests_by_id_get(
 
 
 def test_data_requests_by_id_put(
-        test_data_creator_session_scope: TestDataCreator,
+        test_data_creator_flask: TestDataCreatorFlask,
 ):
-    tdc = test_data_creator_session_scope
+    tdc = test_data_creator_flask
     standard_tus = tdc.standard_user()
 
 
@@ -232,8 +239,8 @@ def test_data_requests_by_id_put(
     )
 
 
-def test_data_requests_by_id_delete(test_data_creator_session_scope):
-    tdc = test_data_creator_session_scope
+def test_data_requests_by_id_delete(test_data_creator_flask):
+    tdc = test_data_creator_flask
 
     tus_admin = tdc.get_admin_tus()
     tus_owner = tdc.standard_user()
@@ -308,6 +315,7 @@ def get_data_request_related_sources_with_endpoint(
         ),
         headers=api_authorization_header,
         expected_json_content=expected_json_content,
+        expected_schema=DataSourcesGetManySchema()
     )
 
 
@@ -369,9 +377,9 @@ def related_agencies_test_setup(integration_test_setup: IntegrationTestSetup):
 
 
 def test_data_request_by_id_related_sources(
-        test_data_creator_session_scope: TestDataCreator,
+        test_data_creator_flask: TestDataCreatorFlask,
 ):
-    tdc = test_data_creator_session_scope
+    tdc = test_data_creator_flask
     flask_client = tdc.flask_client
 
     tus_admin = tdc.get_admin_tus()
@@ -387,7 +395,7 @@ def test_data_request_by_id_related_sources(
     def get_data_request_related_sources_with_given_data_request_id(
         api_authorization_header: dict, expected_json_content: Optional[dict] = None
     ):
-        get_data_request_related_sources_with_endpoint(
+        return get_data_request_related_sources_with_endpoint(
             flask_client=flask_client,
             api_authorization_header=api_authorization_header,
             data_request_id=cdr.id,
@@ -450,21 +458,16 @@ def test_data_request_by_id_related_sources(
     )
 
     # USER_OWNER and USER_NON_OWNER gets related sources of data request, and should see the one added
-    RESULTS_RESPONSE = {
-        "count": 1,
-        "data": [{"airtable_uid": cds.id, "name": cds.name}],
-        "message": "Related sources found.",
-    }
 
-    get_data_request_related_sources_with_given_data_request_id(
+    response_json_owner = get_data_request_related_sources_with_given_data_request_id(
         api_authorization_header=tus_owner.api_authorization_header,
-        expected_json_content=RESULTS_RESPONSE,
     )
 
-    get_data_request_related_sources_with_given_data_request_id(
+    response_json_nonowner = get_data_request_related_sources_with_given_data_request_id(
         api_authorization_header=tus_non_owner.api_authorization_header,
-        expected_json_content=RESULTS_RESPONSE,
     )
+    assert response_json_owner == response_json_nonowner
+    assert response_json_owner["count"] == 1
 
     def delete_related_source(
         expected_response_status: HTTPStatus,

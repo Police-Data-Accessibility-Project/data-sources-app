@@ -14,6 +14,7 @@ from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_functions import create_test_user_setup, create_admin_test_user_setup
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
+TestUserDBInfo = namedtuple("TestUserDBInfo", ["id", "email", "password_digest"])
 
 def insert_test_column_permission_data(db_client: DatabaseClient):
     try:
@@ -139,7 +140,10 @@ def create_test_agency(
 
     return TestAgencyInfo(id=json["id"], submitted_name=submitted_name)
 
-class TestDataCreator:
+class TestDataCreatorFlask:
+    """
+    Creates test data for Flask integration tests, using a FlaskClient
+    """
 
     def __init__(self, flask_client: FlaskClient):
         self.flask_client = flask_client
@@ -241,3 +245,63 @@ def get_sample_agency_post_parameters(
             "locality_name": locality_name,
         },
     }
+
+class TestDataCreatorDBClient:
+    """
+    Creates test data for DatabaseClient tests, using a DatabaseClient
+    """
+    def __init__(self):
+        self.db_client = DatabaseClient()
+
+    def user(self) -> TestUserDBInfo:
+        email = uuid.uuid4().hex
+        pw_digest = uuid.uuid4().hex
+
+        user_id = self.db_client.create_new_user(
+            email=email,
+            password_digest=pw_digest
+        )
+        return TestUserDBInfo(
+            id=user_id,
+            email=email,
+            password_digest=pw_digest
+        )
+
+    def data_source(self) -> CreatedDataSource:
+        cds = CreatedDataSource(
+            id=uuid.uuid4().hex,
+            name=uuid.uuid4().hex
+        )
+        source_column_value_mapping = {
+            "airtable_uid": cds.id,
+            "name": cds.name,
+        }
+        self.db_client.add_new_data_source(
+            column_value_mappings=source_column_value_mapping
+        )
+        return cds
+
+    def data_request(self, user_id: Optional[int] = None) -> TestDataRequestInfo:
+        if user_id is None:
+            user_id = self.user().id
+
+        submission_notes = uuid.uuid4().hex
+        data_request_id = self.db_client.create_data_request(
+            column_value_mappings={
+                "submission_notes": submission_notes,
+                "creator_user_id": user_id
+            }
+        )
+        return TestDataRequestInfo(
+            id=data_request_id,
+            submission_notes=submission_notes
+        )
+
+    def link_data_request_to_data_source(self, data_request_id: int, data_source_id: str):
+        self.db_client.create_request_source_relation(
+            column_value_mappings={
+                "source_id": data_source_id,
+                "request_id": data_request_id
+            }
+        )
+

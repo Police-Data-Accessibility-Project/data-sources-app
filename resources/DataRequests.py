@@ -42,6 +42,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_sche
     DataRequestsSchema,
     DataRequestsPostSchema,
 )
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourcesGetManySchema
 from resources.PsycopgResource import PsycopgResource
 from resources.resource_helpers import (
     create_response_dictionary,
@@ -57,6 +58,9 @@ entry_data_response_model = create_entry_data_response_model(
 )
 data_requests_outer_model = create_get_many_response_model(
     namespace_data_requests, get_many_response_schema=GetManyDataRequestsSchema()
+)
+data_sources_outer_model = create_get_many_response_model(
+    namespace_data_requests, get_many_response_schema=DataSourcesGetManySchema()
 )
 id_and_message_model = create_id_and_message_model(namespace_data_requests)
 
@@ -80,7 +84,6 @@ class DataRequestsById(PsycopgResource):
     def get(self, access_info: AccessInfo, resource_id: str) -> Response:
         """
         Get data request by id
-        :return:
         """
         return self.run_endpoint(
             get_data_request_by_id_wrapper,
@@ -102,20 +105,14 @@ class DataRequestsById(PsycopgResource):
             ]
         ),
         input_model_name="DataRequestPutSchema",
-        description=column_permissions_description(
-            head_description="Update data request",
-            sub_description="Columns returned are determinant upon the user's "
-            "access level and/or relation to the data request",
-            column_permissions_str_table=data_requests_column_permissions,
-        ),
+        description="Update data request",
         responses=create_response_dictionary(
             success_message="Data request successfully updated.",
         ),
     )
     def put(self, resource_id: str, access_info: AccessInfo) -> Response:
         """
-        Update data request
-        :return:
+        Update data request. Non-admins can only update their own data requests.
         """
         return self.run_endpoint(
             update_data_request_wrapper,
@@ -157,6 +154,9 @@ class DataRequests(PsycopgResource):
         ),
     )
     def get(self, access_info: AccessInfo) -> Response:
+        """
+        Get data requests
+        """
         return self.run_endpoint(
             wrapper_function=get_data_requests_wrapper,
             schema_populate_parameters=GET_MANY_SCHEMA_POPULATE_PARAMETERS,
@@ -175,11 +175,7 @@ class DataRequests(PsycopgResource):
             ]
         ),
         input_model_name="DataRequestPostSchema",
-        description=column_permissions_description(
-            head_description="Create new data request",
-            sub_description="Columns permitted to be included by the user is determined by their level of access",
-            column_permissions_str_table=data_requests_column_permissions,
-        ),
+        description="Create new data request",
         responses=create_response_dictionary(
             success_message="Data request successfully created.",
             success_model=id_and_message_model,
@@ -187,8 +183,7 @@ class DataRequests(PsycopgResource):
     )
     def post(self, access_info: AccessInfo) -> Response:
         """
-        Creates a new data request
-        :return:
+        Create a new data request.
         """
         return self.run_endpoint(
             wrapper_function=create_data_request_wrapper,
@@ -206,11 +201,13 @@ class DataRequestsRelatedSources(PsycopgResource):
         description="""Get sources related to a data request""",
         responses=create_response_dictionary(
             success_message="Related sources successfully retrieved.",
-            # TODO: the below is either the wrong model or is named wrong. Figure out which is which.
-            success_model=data_requests_outer_model,
+            success_model=data_sources_outer_model,
         ),
     )
     def get(self, resource_id: str, access_info: AccessInfo) -> Response:
+        """
+        Get sources marked as related to a data request.
+        """
         return self.run_endpoint(
             wrapper_function=get_data_request_related_sources,
             schema_populate_parameters=SchemaPopulateParameters(
@@ -233,6 +230,9 @@ class DataRequestsRelatedSourcesById(PsycopgResource):
     def post(
         self, resource_id: str, data_source_id: str, access_info: AccessInfo
     ) -> Response:
+        """
+        Mark a data source as related to a data request
+        """
         return self.run_endpoint(
             wrapper_function=create_data_request_related_source,
             access_info=access_info,
@@ -253,6 +253,9 @@ class DataRequestsRelatedSourcesById(PsycopgResource):
     def delete(
         self, resource_id: str, data_source_id: str, access_info: AccessInfo
     ) -> Response:
+        """
+        Remove an association of a data source with a data request
+        """
         return self.run_endpoint(
             wrapper_function=delete_data_request_related_source,
             schema_populate_parameters=SchemaPopulateParameters(

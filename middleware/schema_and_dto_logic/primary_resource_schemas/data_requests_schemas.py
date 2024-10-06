@@ -68,7 +68,7 @@ class DataRequestsSchema(Schema):
             enum=RecordType,
             by_value=fields.Str,
             metadata=get_json_metadata(
-                "The record types associated with the data request."
+                "The record types associated with the data request. Editable only by admins."
             ),
         ),
         allow_none=True,

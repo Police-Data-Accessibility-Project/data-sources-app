@@ -967,3 +967,27 @@ class DatabaseClient:
                 columns=[column_to_return],
                 where_mappings=WhereMapping.from_dict(column_value_mappings),
             )[0][column_to_return]
+
+    @session_manager
+    def get_linked_rows(
+        self,
+        link_table: Relations,
+        left_id: str,
+        left_link_column: str,
+        right_link_column: str,
+        linked_relation: Relations,
+        linked_relation_linking_column: str,
+        columns_to_retrieve: list[str],
+    ):
+        LinkTable = SQL_ALCHEMY_TABLE_REFERENCE[link_table.value]
+        LinkedRelation = SQL_ALCHEMY_TABLE_REFERENCE[linked_relation.value]
+
+        query_with_select = self.session.query(*[getattr(LinkedRelation, column) for column in columns_to_retrieve])
+        query_with_join = query_with_select.join(LinkTable, getattr(LinkTable, right_link_column) == getattr(LinkedRelation, linked_relation_linking_column))
+        query_with_filter = query_with_join.filter(getattr(LinkTable, left_link_column) == left_id)
+
+        tuple_results = query_with_filter.all()
+
+        return ResultFormatter.tuples_to_column_value_dict(
+            columns=columns_to_retrieve, tuples=tuple_results
+        )

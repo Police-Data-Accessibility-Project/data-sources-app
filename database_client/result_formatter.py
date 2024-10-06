@@ -17,30 +17,30 @@ class ResultFormatter:
     """
 
     @staticmethod
-    def convert_data_source_matches(
-        data_source_output_columns: list[str], results: list[tuple]
+    def tuples_to_column_value_dict(
+        columns: list[str], tuples: list[tuple]
     ) -> list[dict]:
         """
         Combine a list of output columns with a list of results,
         and produce a list of dictionaries where the keys correspond
         to the output columns and the values correspond to the results
-        :param data_source_output_columns:
-        :param results:
+        :param columns:
+        :param tuples:
         :return:
         """
         # TODO: Rename to a more general title
-        data_source_matches = [
-            dict(zip(data_source_output_columns, result)) for result in results
+        zipped_results = [
+            dict(zip(columns, result)) for result in tuples
         ]
-        data_source_matches_converted = []
-        for data_source_match in data_source_matches:
-            data_source_match = convert_dates_to_strings(data_source_match)
-            data_source_matches_converted.append(format_arrays(data_source_match))
-        return data_source_matches_converted
+        formatted_results = []
+        for zipped_result in zipped_results:
+            zipped_result = convert_dates_to_strings(zipped_result)
+            formatted_results.append(format_arrays(zipped_result))
+        return formatted_results
 
     @staticmethod
     def zip_get_datas_sources_for_map_results(results: list[tuple]) -> list[dict]:
-        return ResultFormatter.convert_data_source_matches(
+        return ResultFormatter.tuples_to_column_value_dict(
             DATA_SOURCES_MAP_COLUMN, results
         )
 

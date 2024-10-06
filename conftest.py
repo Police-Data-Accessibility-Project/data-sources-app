@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from app import create_app
 from config import limiter
 from middleware.util import get_env_variable
-from tests.helper_scripts.common_test_data import TestDataCreator
+from tests.helper_scripts.common_test_data import TestDataCreatorFlask, TestDataCreatorDBClient
 
 # Load environment variables
 dotenv.load_dotenv()
@@ -57,7 +57,7 @@ def monkeysession(request):
 
 
 @pytest.fixture(scope="session")
-def test_data_creator_session_scope(monkeysession) -> TestDataCreator:
+def test_data_creator_flask(monkeysession) -> TestDataCreatorFlask:
     mock_get_flask_app_secret_key = MagicMock(return_value="test")
     monkeysession.setattr(
         "app.get_flask_app_cookie_encryption_key", mock_get_flask_app_secret_key
@@ -66,5 +66,9 @@ def test_data_creator_session_scope(monkeysession) -> TestDataCreator:
     # Disable rate limiting for tests
     limiter.enabled = False
     with app.test_client() as client:
-        yield TestDataCreator(client)
+        yield TestDataCreatorFlask(client)
     limiter.enabled = True
+
+@pytest.fixture(scope="session")
+def test_data_creator_db_client() -> TestDataCreatorDBClient:
+    yield TestDataCreatorDBClient()

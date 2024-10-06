@@ -39,7 +39,7 @@ from tests.conftest import live_database_client, test_table_data
 from tests.helper_scripts.common_test_data import (
     insert_test_column_permission_data,
     create_agency_entry_for_search_cache,
-    create_data_source_entry_for_url_duplicate_checking, TestDataCreator,
+    create_data_source_entry_for_url_duplicate_checking, TestDataCreatorFlask, TestDataCreatorDBClient,
 )
 from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources_if_not_exist,
@@ -47,6 +47,7 @@ from tests.helper_scripts.helper_functions import (
     create_test_user_db_client,
 )
 from utilities.enums import RecordCategories
+from conftest import test_data_creator_db_client
 
 
 def test_add_new_user(live_database_client: DatabaseClient):
@@ -953,11 +954,13 @@ def test_create_or_get(live_database_client):
 
     assert results == new_results
 
-def test_get_data_requests(live_database_client):
-    # There should be at least one data request in the DataRequests directory
+def test_get_data_requests(test_data_creator_db_client: TestDataCreatorDBClient):
+    tdc = test_data_creator_db_client
 
+    # Create a data request to ensure there's at least one data request in the database
+    tdc.data_request()
 
-    results = live_database_client.get_data_requests(
+    results = tdc.db_client.get_data_requests(
         columns=["id"],
         subquery_parameters=[SubqueryParameterManager.data_sources()]
     )
@@ -971,6 +974,37 @@ def test_get_data_sources(live_database_client):
         )]
     )
     assert results
+
+def test_get_linked_rows(
+    test_data_creator_db_client: TestDataCreatorDBClient,
+):
+    tdc = test_data_creator_db_client
+
+    # Create a data request to ensure there's at least one data request in the database
+    dr_id = tdc.data_request().id
+    ds_info = tdc.data_source()
+    tdc.link_data_request_to_data_source(
+        data_request_id=dr_id,
+        data_source_id=ds_info.id,
+    )
+    #
+    results = tdc.db_client.get_linked_rows(
+        link_table=Relations.LINK_DATA_SOURCES_DATA_REQUESTS,
+        left_id=dr_id,
+        left_link_column="request_id",
+        right_link_column="source_id",
+        linked_relation=Relations.DATA_SOURCES,
+        linked_relation_linking_column="airtable_uid",
+        columns_to_retrieve=[
+            "airtable_uid",
+            "name",
+        ]
+    )
+
+    assert len(results) > 0
+    assert results[0]["name"] == ds_info.name
+    assert results[0]["airtable_uid"] == ds_info.id
+
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts
 # def test_search_with_location_and_record_types_test_data(live_database_client, xylonslyvania_test_data):
