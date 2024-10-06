@@ -315,7 +315,12 @@ def get_data_request_related_sources_with_endpoint(
         ),
         headers=api_authorization_header,
         expected_json_content=expected_json_content,
-        expected_schema=DataSourcesGetManySchema()
+        expected_schema=DataSourcesGetManySchema(
+            exclude=[
+                "data.agencies"
+            ],
+            partial=True
+        )
     )
 
 

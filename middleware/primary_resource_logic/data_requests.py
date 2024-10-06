@@ -275,13 +275,31 @@ def get_data_request_by_id_wrapper(
 
 
 def get_data_request_related_sources(db_client: DatabaseClient, dto: GetByIDBaseDTO):
+    # TODO: Generalize for other related source-getting.
     check_for_id(
         db_client=db_client,
         table_name=RELATION,
         id_info=IDInfo(id_column_value=int(dto.resource_id)),
     )
-    results = db_client.get_related_data_sources(data_request_id=int(dto.resource_id))
-    return multiple_results_response(message=f"Related sources found.", data=results)
+    permitted_columns = get_permitted_columns(
+        db_client=db_client,
+        relation=Relations.DATA_SOURCES_EXPANDED.value,
+        role=RelationRoleEnum.STANDARD,
+        column_permission=ColumnPermissionEnum.READ,
+    )
+    results = db_client.get_linked_rows(
+        link_table=Relations.LINK_DATA_SOURCES_DATA_REQUESTS,
+        left_id=int(dto.resource_id),
+        left_link_column="request_id",
+        right_link_column="source_id",
+        linked_relation=Relations.DATA_SOURCES_EXPANDED,
+        linked_relation_linking_column="airtable_uid",
+        columns_to_retrieve=permitted_columns
+    )
+    results.update({
+        "message": "Related sources found.",
+    })
+    return FlaskResponseManager.make_response(data=results)
 
 
 def check_can_create_data_request_related_source(relation_role: RelationRoleEnum):
