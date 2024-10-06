@@ -44,7 +44,7 @@ def test_data_sources_get(
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
-        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&sort_by=name&sort_order=ASC",
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&sort_by=name&sort_order=ASC&approval_status=approved",
         headers=tus.api_authorization_header,
         expected_schema=DataSourcesGetManySchema,
     )
@@ -53,7 +53,7 @@ def test_data_sources_get(
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
-        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&sort_by=name&sort_order=DESC",
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&sort_by=name&sort_order=DESC&approval_status=approved",
         headers=tus.api_authorization_header,
     )
     data_desc = response_json["data"]
@@ -84,7 +84,8 @@ def test_data_sources_get_many_limit_columns(
                 "data.name",
                 "data.submitted_name",
                 "data.airtable_uid",
-            ]
+            ],
+            partial=True
         ),
     )
     data = response_json["data"]

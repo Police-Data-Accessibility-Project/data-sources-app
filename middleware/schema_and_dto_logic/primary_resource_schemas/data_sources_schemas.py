@@ -277,14 +277,6 @@ class DataSourceGetSchema(DataSourceExpandedSchema):
     The schema for getting a single data source.
     Include the base schema as well as data from connected tables, including agencies and record types.
     """
-    agency_ids = fields.List(
-        fields.String(
-            metadata=get_json_metadata("The IDs of the agencies associated with the data source."),
-        ),
-        required=True,
-        allow_none=True,
-        metadata=get_json_metadata("The IDs of the agencies associated with the data source."),
-    )
     agencies = fields.List(
         fields.Nested(
             AgenciesGetSchema,
@@ -345,7 +337,7 @@ class DataSourcesGetManyRequestSchema(GetManyBaseSchema):
     approval_status = fields.Enum(
         enum=ApprovalStatus,
         by_value=fields.String,
-        required=True,
+        required=False,
         metadata={
             "source": SourceMappingEnum.QUERY_ARGS,
             "description": "The approval status of the data sources.",
