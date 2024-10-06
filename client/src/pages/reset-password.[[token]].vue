@@ -8,7 +8,6 @@
 					: 'We sent you an email with a link to reset your password. Please follow the link in the email to proceed'
 			}}
 		</p>
-		<RouterLink v-if="token" to="/login">Click here to log in </RouterLink>
 	</main>
 	<main
 		v-else-if="!success && token"
@@ -48,37 +47,7 @@
 			@change="onChange"
 			@submit="onSubmitChangePassword"
 		>
-			<ul class="text-med mb-8">
-				Passwords must be at least 8 characters and include:
-				<li
-					:class="{
-						valid: validation.uppercase,
-					}"
-				>
-					1 uppercase letter
-				</li>
-				<li
-					:class="{
-						valid: validation.lowercase,
-					}"
-				>
-					1 lowercase letter
-				</li>
-				<li
-					:class="{
-						valid: validation.number,
-					}"
-				>
-					1 number
-				</li>
-				<li
-					:class="{
-						valid: validation.specialCharacter,
-					}"
-				>
-					1 special character
-				</li>
-			</ul>
+			<PasswordValidationChecker ref="passwordRef" />
 
 			<Button class="max-w-full" type="submit">
 				{{ loading ? 'Loading...' : 'Change password' }}
@@ -106,8 +75,9 @@
 
 <script setup>
 import { Button, Form } from 'pdap-design-system';
+import PasswordValidationChecker from '@/components/PasswordValidationChecker.vue';
 import { useUserStore } from '@/stores/user';
-import { onMounted, reactive, ref, watchEffect } from 'vue';
+import { onMounted, ref, watchEffect } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 
 // Constants
@@ -173,18 +143,12 @@ const {
 const user = useUserStore();
 
 // Reactive vars
+const passwordRef = ref();
 const error = ref(undefined);
 const isExpiredToken = ref(false);
 const hasValidatedToken = ref(false);
 const loading = ref(false);
 const success = ref(false);
-
-const validation = reactive({
-	uppercase: false,
-	lowercase: false,
-	number: false,
-	specialCharacter: false,
-});
 
 // Effects
 // Clear error on success
@@ -217,7 +181,7 @@ async function validateToken() {
  * Handles clearing pw-match form errors on change if they exist
  */
 function onChange(formValues) {
-	updatePasswordValidation(formValues);
+	passwordRef.value.updatePasswordValidation(formValues.password);
 
 	if (error.value) {
 		handleValidatePasswordMatch(formValues);
@@ -236,46 +200,6 @@ function handleValidatePasswordMatch(formValues) {
 	}
 }
 
-function isPasswordValid() {
-	if (!Object.values(validation).every(Boolean)) {
-		error.value = 'Password is not valid';
-		return false;
-	} else {
-		if (error.value) error.value = undefined;
-		return true;
-	}
-}
-
-function updatePasswordValidation({ password }) {
-	// Test uppercase
-	if (/[A-Z]/gm.test(password)) {
-		validation.uppercase = true;
-	} else {
-		validation.uppercase = false;
-	}
-
-	// Test lowercase
-	if (/[a-z]/gm.test(password)) {
-		validation.lowercase = true;
-	} else {
-		validation.lowercase = false;
-	}
-
-	// Test number
-	if (/[0-9]/gm.test(password)) {
-		validation.number = true;
-	} else {
-		validation.number = false;
-	}
-
-	// Test special char
-	if (/[#?!@$%^&*-]/gm.test(password)) {
-		validation.specialCharacter = true;
-	} else {
-		validation.specialCharacter = false;
-	}
-}
-
 async function onSubmitRequestReset(formValues) {
 	try {
 		loading.value = true;
@@ -290,7 +214,15 @@ async function onSubmitRequestReset(formValues) {
 }
 
 async function onSubmitChangePassword(formValues) {
-	if (!handleValidatePasswordMatch(formValues) || !isPasswordValid()) return;
+	const isPasswordValid = passwordRef.value.isPasswordValid();
+
+	if (!isPasswordValid) {
+		error.value = 'Password is not valid';
+	} else {
+		if (error.value) error.value = undefined;
+	}
+
+	if (!handleValidatePasswordMatch(formValues) || !isPasswordValid) return;
 
 	try {
 		loading.value = true;
@@ -308,9 +240,3 @@ async function onSubmitChangePassword(formValues) {
 	}
 }
 </script>
-
-<style scoped>
-.valid {
-	@apply text-green-700 dark:text-green-300;
-}
-</style>

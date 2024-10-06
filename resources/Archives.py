@@ -1,15 +1,15 @@
-from flask_jwt_extended import jwt_required
+from flask import Response
 from flask_restx import fields
 
 from middleware.decorators import api_key_required, permissions_required
-from middleware.archives_queries import (
+from middleware.primary_resource_logic.archives_queries import (
     archives_get_query,
     update_archives_data,
 )
 from flask_restful import request
 
 import json
-from typing import Dict, Any
+from typing import Any
 
 from middleware.enums import PermissionsEnum
 from resources.resource_helpers import add_api_key_header_arg, add_jwt_header_arg
@@ -95,7 +95,7 @@ class Archives(PsycopgResource):
         },
     )
     @namespace_archives.expect(archives_header_post_parser, archives_post_model)
-    def put(self) -> Dict[str, str]:
+    def put(self) -> Response:
         """
         Updates the archive data based on the provided JSON payload.
 
@@ -115,8 +115,9 @@ class Archives(PsycopgResource):
             if "broken_source_url_as_of" in data
             else None
         )
-
-        with self.setup_database_client() as db_client:
-            response = update_archives_data(db_client, id, last_cached, broken_as_of)
-
-        return response
+        return self.run_endpoint(
+            update_archives_data,
+            data_id=id,
+            last_cached=last_cached,
+            broken_as_of=broken_as_of,
+        )

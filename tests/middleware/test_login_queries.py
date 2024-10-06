@@ -6,13 +6,16 @@ from flask import Response
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
-from middleware.login_queries import (
+from middleware.primary_resource_logic.login_queries import (
     generate_api_key,
     get_api_key_for_user,
     refresh_session,
     try_logging_in_with_github_id,
 )
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
+
+
+PATCH_ROOT = "middleware.primary_resource_logic.login_queries"
 
 
 def test_generate_api_key():
@@ -29,7 +32,7 @@ class GetAPIKeyForUserMocks(DynamicMagicMock):
 
 def setup_get_api_for_user_mocks():
     mock = GetAPIKeyForUserMocks(
-        patch_root="middleware.login_queries",
+        patch_root=PATCH_ROOT,
     )
 
     mock.db_client.get_user_info.return_value = DatabaseClient.UserInfo(
@@ -88,11 +91,11 @@ class RefreshSessionMocks(DynamicMagicMock):
 @pytest.fixture
 def setup_refresh_session_mocks():
     mock = RefreshSessionMocks(
-        patch_root="middleware.login_queries",
+        patch_root=PATCH_ROOT,
     )
     mock.db_client.get_session_token_info.return_value = mock.session_token_info
     mock.create_session_token.return_value = mock.new_token
-    mock.session_token_info.id = mock.mock_user_id
+    mock.session_token_info.resource_id = mock.mock_user_id
     mock.session_token_info.email = mock.mock_email
 
     return mock
@@ -115,7 +118,7 @@ def assert_try_logging_in_with_github_id_precondition_calls(
 @pytest.fixture
 def setup_try_logging_in_with_github_id_mocks():
     mock = TryLoggingInWithGithubIdMocks(
-        patch_root="middleware.login_queries",
+        patch_root=PATCH_ROOT,
         return_values={
             "unauthorized_response": MagicMock(spec=Response),
             "login_response": MagicMock(spec=Response),
@@ -164,7 +167,7 @@ class RefreshSessionMocks(DynamicMagicMock):
 
 def test_refresh_session():
     mock = RefreshSessionMocks(
-        patch_root="middleware.login_queries",
+        patch_root=PATCH_ROOT,
     )
     mock.get_jwt_identity.return_value = mock.identity
     mock.create_access_token.return_value = mock.access_token

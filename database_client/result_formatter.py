@@ -29,6 +29,7 @@ class ResultFormatter:
         :param results:
         :return:
         """
+        # TODO: Rename to a more general title
         data_source_matches = [
             dict(zip(data_source_output_columns, result)) for result in results
         ]
@@ -37,14 +38,6 @@ class ResultFormatter:
             data_source_match = convert_dates_to_strings(data_source_match)
             data_source_matches_converted.append(format_arrays(data_source_match))
         return data_source_matches_converted
-
-    @staticmethod
-    def zip_needs_identification_data_source_results(
-        results: list[tuple],
-    ) -> list[dict]:
-        return ResultFormatter.convert_data_source_matches(
-            DATA_SOURCES_APPROVED_COLUMNS + ARCHIVE_INFO_APPROVED_COLUMNS, results
-        )
 
     @staticmethod
     def zip_get_datas_sources_for_map_results(results: list[tuple]) -> list[dict]:

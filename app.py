@@ -1,11 +1,14 @@
 import os
-from datetime import timedelta
+from datetime import timedelta, date, datetime
 
 from flask import Flask
+from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 
 from resources.Callback import namespace_auth
 from resources.CreateUserWithGithub import namespace_create_user_with_github
+from resources.DataRequests import namespace_data_requests
+from resources.HomepageSearchCache import namespace_homepage_search_cache
 from resources.LinkToGithub import namespace_link_to_github
 from resources.LoginWithGithub import namespace_login_with_github
 from resources.Permissions import namespace_permissions
@@ -16,24 +19,25 @@ from resources.TypeaheadSuggestions import (
 from flask_restx import Api
 
 from config import config, oauth, limiter, jwt
-from middleware.initialize_psycopg2_connection import initialize_psycopg2_connection
+from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from resources.Agencies import namespace_agencies
 from resources.ApiKey import namespace_api_key
 from resources.Archives import namespace_archives
 from resources.DataSources import namespace_data_source
 from resources.Login import namespace_login
-from resources.QuickSearch import namespace_quick_search
 from resources.RefreshSession import namespace_refresh_session
 from resources.RequestResetPassword import namespace_request_reset_password
 from resources.ResetPassword import namespace_reset_password
 from resources.ResetTokenValidation import namespace_reset_token_validation
-from resources.User import namespace_user
+from resources.UniqueURLChecker import namespace_url_checker
+from resources.User import namespace_user_old
 from resources.CreateTestUserWithElevatedPermissions import namespace_create_test_user
+from resources.UserProfile import namespace_user
 
 NAMESPACES = [
     namespace_api_key,
     namespace_request_reset_password,
-    namespace_user,
+    namespace_user_old,
     namespace_reset_token_validation,
     namespace_archives,
     namespace_agencies,
@@ -41,7 +45,6 @@ NAMESPACES = [
     namespace_login,
     namespace_refresh_session,
     namespace_reset_password,
-    namespace_quick_search,
     namespace_typeahead_suggestions,
     namespace_search,
     namespace_auth,
@@ -50,6 +53,11 @@ NAMESPACES = [
     namespace_create_user_with_github,
     namespace_permissions,
     namespace_create_test_user,
+    namespace_data_requests,
+    # Below should not be enabled until https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/458
+    # namespace_homepage_search_cache,
+    namespace_url_checker,
+    namespace_user,
 ]
 
 MY_PREFIX = "/api"
@@ -84,13 +92,21 @@ def get_flask_app_cookie_encryption_key() -> str:
     return os.getenv("FLASK_APP_COOKIE_ENCRYPTION_KEY")
 
 
+class UpdatedJSONProvider(DefaultJSONProvider):
+    def default(self, o):
+        if isinstance(o, date) or isinstance(o, datetime):
+            return o.isoformat()
+        return super().default(o)
+
+
 def create_app() -> Flask:
-    psycopg2_connection = initialize_psycopg2_connection()
+    psycopg2_connection = initialize_psycopg_connection()
     config.connection = psycopg2_connection
     api = Api()
     for namespace in NAMESPACES:
         api.add_namespace(namespace)
     app = Flask(__name__)
+    app.json = UpdatedJSONProvider(app)
 
     # JWT settings
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")

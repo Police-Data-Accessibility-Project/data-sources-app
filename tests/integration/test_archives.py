@@ -4,15 +4,14 @@ import datetime
 from http import HTTPStatus
 import json
 
-import psycopg2
+import psycopg
 
 from database_client.database_client import DatabaseClient
 from middleware.enums import PermissionsEnum
-from tests.fixtures import (
+from tests.conftest import (
     dev_db_connection,
-    flask_client_with_db,
-    db_cursor,
     dev_db_client,
+    flask_client_with_db,
     test_user_admin,
 )
 from tests.helper_scripts.helper_functions import (
@@ -21,9 +20,9 @@ from tests.helper_scripts.helper_functions import (
     insert_test_data_source,
     create_test_user_setup,
     create_test_user_setup_db_client,
-    check_response_status,
-    run_and_validate_request,
 )
+from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helper_scripts.simple_result_validators import check_response_status
 
 ENDPOINT = "/api/archives"
 

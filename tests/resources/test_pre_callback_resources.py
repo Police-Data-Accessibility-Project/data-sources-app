@@ -8,9 +8,9 @@ import pytest
 
 from middleware.enums import CallbackFunctionsEnum
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
-from tests.helper_scripts.common_test_data import TEST_RESPONSE
-from tests.helper_scripts.helper_functions import check_response_status
-from tests.fixtures import client_with_mock_db, bypass_api_key_required
+from tests.helper_scripts.constants import TEST_RESPONSE
+from tests.helper_scripts.simple_result_validators import check_response_status
+from tests.conftest import client_with_mock_db, bypass_api_key_required
 
 
 class TestPreCallbackResources(DynamicMagicMock):

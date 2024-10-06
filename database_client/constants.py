@@ -1,3 +1,21 @@
+from database_client.models import (
+    Agency,
+    DataRequest,
+    DataSource,
+    DataSourceArchiveInfo,
+    LinkDataSourceDataRequest,
+    ResetToken,
+    TestTable,
+    User,
+    AgencyExpanded,
+    USState,
+    County,
+    Locality,
+    Location,
+    LocationExpanded,
+    LinkUserFollowedLocation,
+)
+
 AGENCY_APPROVED_COLUMNS = [
     "homepage_url",
     "count_data_sources",
@@ -27,7 +45,6 @@ DATA_SOURCES_APPROVED_COLUMNS = [
     "name",
     "submitted_name",
     "description",
-    "record_type",
     "source_url",
     "agency_supplied",
     "supplying_entity",
@@ -36,11 +53,9 @@ DATA_SOURCES_APPROVED_COLUMNS = [
     "agency_aggregation",
     "coverage_start",
     "coverage_end",
-    "source_last_updated",
+    "updated_at",
     "retention_schedule",
     "detail_level",
-    "number_of_records_available",
-    "size",
     "access_type",
     "data_portal_type",
     "record_format",
@@ -48,7 +63,7 @@ DATA_SOURCES_APPROVED_COLUMNS = [
     "tags",
     "readme_url",
     "scraper_url",
-    "data_source_created",
+    "created_at",
     "airtable_source_last_modified",
     "url_status",
     "rejection_note",
@@ -58,7 +73,6 @@ DATA_SOURCES_APPROVED_COLUMNS = [
     "approval_status",
     "record_type_other",
     "data_portal_type_other",
-    "records_not_online",
     "data_source_request",
     "url_button",
     "tags_other",
@@ -97,3 +111,5 @@ RESTRICTED_COLUMNS = [
     "airtable_uid",
     "airtable_source_last_modified",
 ]
+
+PAGE_SIZE = 100

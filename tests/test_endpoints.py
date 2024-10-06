@@ -12,30 +12,39 @@ from unittest.mock import patch
 from flask.testing import FlaskClient
 from flask_restful import Resource
 
-from resources.Agencies import Agencies
+from resources.Agencies import AgenciesByPage, AgenciesById
 from resources.ApiKey import ApiKey, API_KEY_ROUTE
 from resources.Archives import Archives
 from resources.Callback import Callback
 from resources.CreateUserWithGithub import CreateUserWithGithub
+from resources.DataRequests import (
+    DataRequests,
+    DataRequestsById,
+    DataRequestsRelatedSourcesById,
+    DataRequestsRelatedSources,
+)
 from resources.DataSources import (
     DataSources,
-    DataSourcesMap,
-    DataSourcesNeedsIdentification,
     DataSourceById,
 )
+from resources.HomepageSearchCache import HomepageSearchCache
 from resources.LinkToGithub import LinkToGithub
 from resources.Login import Login
 from resources.LoginWithGithub import LoginWithGithub
 from resources.Permissions import Permissions
-from resources.QuickSearch import QuickSearch
 from resources.RefreshSession import RefreshSession
 from resources.RequestResetPassword import RequestResetPassword
 from resources.ResetPassword import ResetPassword
 from resources.ResetTokenValidation import ResetTokenValidation
 from resources.Search import Search
-from resources.TypeaheadSuggestions import TypeaheadSuggestions
+from resources.TypeaheadSuggestions import TypeaheadLocations, TypeaheadAgencies
+from resources.UniqueURLChecker import UniqueURLChecker
 from resources.User import User
-from tests.fixtures import client_with_mock_db, ClientWithMockDB
+from resources.UserProfile import (
+    USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL,
+    UserDataRequests,
+)
+from tests.conftest import ClientWithMockDB, client_with_mock_db
 
 # Define constants for HTTP methods
 GET = "get"
@@ -50,19 +59,28 @@ def run_endpoint_tests(
     methods = [GET, POST, PUT, DELETE]
     for method in methods:
         if method in allowed_methods:
-            with patch.object(
-                class_type, method, return_value="Mocked response"
-            ) as mock_method:
-                response = getattr(client, method)(endpoint)
-                assert (
-                    response.status_code == HTTPStatus.OK.value
-                ), f"{method.upper()} {endpoint} failed with status code {response.status_code}, expected 200"
-                mock_method.assert_called_once(), f"{method.upper()} {endpoint} should have called the {method} method on {class_type.__name__}"
+            check_method_exists(class_type, client, endpoint, method)
         else:
-            response = getattr(client, method)(endpoint)
-            assert (
-                response.status_code == HTTPStatus.METHOD_NOT_ALLOWED.value
-            ), f"{method.upper()} {endpoint} failed with status code {response.status_code}, expected 405"
+            check_method_not_allowed(client, endpoint, method)
+
+
+def check_method_not_allowed(client, endpoint, method):
+
+    response = getattr(client, method)(endpoint)
+    assert (
+        response.status_code == HTTPStatus.METHOD_NOT_ALLOWED.value
+    ), f"{method.upper()} {endpoint} failed with status code {response.status_code}, expected 405"
+
+
+def check_method_exists(class_type, client, endpoint, method):
+    with patch.object(
+        class_type, method, return_value="Mocked response"
+    ) as mock_method:
+        response = getattr(client, method)(endpoint)
+        assert (
+            response.status_code == HTTPStatus.OK.value
+        ), f"{method.upper()} {endpoint} failed with status code {response.status_code}, expected 200"
+        mock_method.assert_called_once(), f"{method.upper()} {endpoint} should have called the {method} method on {class_type.__name__}"
 
 
 TestParameters = namedtuple("Resource", ["class_type", "endpoint", "allowed_methods"])
@@ -74,22 +92,43 @@ test_parameters = [
     TestParameters(RequestResetPassword, "/request-reset-password", [POST]),
     TestParameters(ResetPassword, "/reset-password", [POST]),
     TestParameters(ResetTokenValidation, "/reset-token-validation", [POST]),
-    TestParameters(QuickSearch, "/quick-search/<search>/<location>", [GET]),
     TestParameters(Archives, "/archives", [GET, PUT]),
     TestParameters(DataSources, "/data-sources", [GET, POST]),
-    TestParameters(DataSourcesMap, "/data-sources-map", [GET]),
+    # This endpoint no longer works because of the other data source endpoint
+    # It is interpreted as another data source id
+    # But we have not yet decided whether to modify or remove it entirely
+    # TestParameters(DataSourcesMap, "/data-sources/data-sources-map", [GET]),
     TestParameters(
-        DataSourcesNeedsIdentification, "/data-sources-needs-identification", [GET]
+        DataSourceById, "/data-sources/<data_source_id>", [GET, PUT, DELETE]
     ),
-    TestParameters(DataSourceById, "/data-sources-by-id/<data_source_id>", [GET, PUT]),
-    TestParameters(Agencies, "/agencies/<page>", [GET]),
+    TestParameters(
+        DataRequestsRelatedSources,
+        "/data-requests/<resource_id>/related-sources",
+        [GET],
+    ),
+    TestParameters(
+        DataRequestsRelatedSourcesById,
+        "/data-requests/<resource-id>/related-sources/<source-id>",
+        [POST, DELETE],
+    ),
+    TestParameters(AgenciesByPage, "/agencies", [POST, GET]),
+    TestParameters(AgenciesById, "/agencies/<agency_id>", [GET, PUT, DELETE]),
     TestParameters(Search, "/search/search-location-and-record-type", [GET]),
-    TestParameters(TypeaheadSuggestions, "/search/typeahead-suggestions", [GET]),
+    TestParameters(TypeaheadLocations, "/typeahead/locations", [GET]),
     TestParameters(Callback, "auth/callback", [GET]),
     TestParameters(LinkToGithub, "auth/link-to-github", [POST]),
     TestParameters(LoginWithGithub, "auth/login-with-github", [POST]),
     TestParameters(CreateUserWithGithub, "auth/create-user-with-github", [POST]),
     TestParameters(Permissions, "auth/permissions", [GET, PUT]),
+    TestParameters(DataRequests, "/data-requests", [GET, POST]),
+    TestParameters(
+        DataRequestsById, "/data-requests/<data_request_id>", [GET, PUT, DELETE]
+    ),
+    # Commented out until: https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/458
+    # TestParameters(HomepageSearchCache, "/homepage-search-cache", [GET, POST]),
+    TestParameters(TypeaheadAgencies, "/typeahead/agencies", [GET]),
+    TestParameters(UniqueURLChecker, "/check/unique-url", [GET]),
+    TestParameters(UserDataRequests, USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL, [GET]),
 ]
 
 

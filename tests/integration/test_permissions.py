@@ -1,18 +1,16 @@
 from typing import Union, Dict, List, Optional
 
-from psycopg2.extras import DictCursor
-
 from database_client.database_client import DatabaseClient
 from middleware.enums import PermissionsEnum
 from tests.helper_scripts.helper_functions import (
-    check_response_status,
     create_test_user_setup,
-    run_and_validate_request,
 )
-from tests.fixtures import (
+from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helper_scripts.simple_result_validators import check_response_status
+from tests.conftest import (
+    dev_db_connection,
     flask_client_with_db,
     bypass_api_key_required,
-    dev_db_connection,
     test_user_admin,
 )
 

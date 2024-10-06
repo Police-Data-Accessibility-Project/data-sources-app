@@ -1,4 +1,5 @@
 import os
+from enum import Enum
 
 from dotenv import dotenv_values, find_dotenv
 
@@ -20,12 +21,5 @@ def get_env_variable(name: str) -> str:
     return value
 
 
-def format_list_response(data: list) -> dict:
-    """
-    Format a list of dictionaries into a dictionary with the count and data keys.
-    Args:
-        data (list): A list of dictionaries to format.
-    Returns:
-        dict: A dictionary with the count and data keys.
-    """
-    return {"count": len(data), "data": data}
+def get_enum_values(en: type[Enum]):
+    return [e.value for e in en]

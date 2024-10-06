@@ -10,19 +10,24 @@ from middleware.callback_flask_sessions_logic import (
     get_callback_params,
     get_callback_function,
 )
-from middleware.dataclasses import (
+from middleware.custom_dataclasses import (
     GithubUserInfo,
     FlaskSessionCallbackInfo,
     OAuthCallbackInfo,
 )
 from middleware.enums import CallbackFunctionsEnum
-from middleware.login_queries import try_logging_in_with_github_id
+from middleware.primary_resource_logic.login_queries import (
+    try_logging_in_with_github_id,
+)
 from middleware.callback_oauth_logic import (
     get_github_user_id,
     get_github_user_email,
     get_github_oauth_access_token,
 )
-from middleware.user_queries import user_post_results, UserRequest
+from middleware.primary_resource_logic.user_queries import (
+    user_post_results,
+    UserRequest,
+)
 
 
 @dataclass

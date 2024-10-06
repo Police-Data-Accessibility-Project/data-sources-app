@@ -2,16 +2,14 @@
 
 from http import HTTPStatus
 
-import psycopg2.extensions
-
 from database_client.database_client import DatabaseClient
 from resources.ApiKey import API_KEY_ROUTE
-from tests.fixtures import dev_db_connection, flask_client_with_db, dev_db_client
+from tests.conftest import dev_db_connection, dev_db_client, flask_client_with_db
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
-    check_response_status,
-    run_and_validate_request,
 )
+from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helper_scripts.simple_result_validators import check_response_status
 
 
 def test_api_key_post(flask_client_with_db, dev_db_client):

@@ -1,27 +1,30 @@
 import pytest
 from unittest.mock import MagicMock, patch, call
 from http import HTTPStatus
-from flask import Response, make_response
+from flask import Response
 
-from middleware.custom_exceptions import UserNotFoundError
+from middleware.exceptions import UserNotFoundError
 from middleware.enums import PermissionsEnum, PermissionsActionEnum
-from middleware.permissions_logic import (
+from middleware.primary_resource_logic.permissions_logic import (
     PermissionsManager,
     manage_user_permissions,
     update_permissions_wrapper,
 )
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
+PATCH_ROOT = "middleware.primary_resource_logic.permissions_logic"
+
 
 class PermissionsManagerMocks(DynamicMagicMock):
     make_response: MagicMock
+    message_response: MagicMock
     abort: MagicMock
 
 
 @pytest.fixture
 def mock():
     mock = PermissionsManagerMocks(
-        patch_root="middleware.permissions_logic",
+        patch_root=PATCH_ROOT,
     )
     mock.db_client.get_user_permissions.return_value = [
         PermissionsEnum.READ_ALL_USER_INFO
@@ -61,7 +64,7 @@ def test_add_user_permission_success(mock):
     mock.db_client.add_user_permission.assert_called_with(
         mock.user_email, PermissionsEnum.DB_WRITE
     )
-    mock.make_response.assert_called_with("Permission added", HTTPStatus.OK)
+    mock.message_response.assert_called_with("Permission added")
 
 
 def test_add_user_permission_conflict(mock):
@@ -69,7 +72,7 @@ def test_add_user_permission_conflict(mock):
 
     pm.add_user_permission(PermissionsEnum.READ_ALL_USER_INFO)
 
-    mock.make_response.assert_called_with(
+    mock.message_response.assert_called_with(
         f"Permission {PermissionsEnum.READ_ALL_USER_INFO.value} already exists for user",
         HTTPStatus.CONFLICT,
     )
@@ -83,7 +86,7 @@ def test_remove_user_permission_success(mock):
     mock.db_client.remove_user_permission.assert_called_with(
         mock.user_email, PermissionsEnum.READ_ALL_USER_INFO
     )
-    mock.make_response.assert_called_with("Permission removed", HTTPStatus.OK)
+    mock.message_response.assert_called_with("Permission removed")
 
 
 def test_remove_user_permission_not_found(mock):
@@ -91,7 +94,7 @@ def test_remove_user_permission_not_found(mock):
 
     pm.remove_user_permission(PermissionsEnum.DB_WRITE)
 
-    mock.make_response.assert_called_with(
+    mock.message_response.assert_called_with(
         f"Permission {PermissionsEnum.DB_WRITE.value} does not exist for user. Cannot remove.",
         HTTPStatus.CONFLICT,
     )
@@ -161,7 +164,7 @@ class UpdatePermissionsWrapperMock(DynamicMagicMock):
 
 def test_update_permissions_wrapper():
     mock = UpdatePermissionsWrapperMock(
-        patch_root="middleware.permissions_logic",
+        patch_root=PATCH_ROOT,
     )
     mock.get_valid_enum_value.side_effect = [mock.action_enum, mock.permission_enum]
     update_permissions_wrapper(mock.db_client, mock.dto)

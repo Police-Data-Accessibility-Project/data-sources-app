@@ -1,9 +1,12 @@
 import uuid
 from collections import namedtuple
 from datetime import datetime
-from typing import Optional
+from typing import Callable, Optional
 
-from psycopg2 import sql
+from psycopg import sql
+from sqlalchemy import select
+from sqlalchemy.orm import load_only
+from sqlalchemy.schema import Column
 
 from database_client.constants import (
     AGENCY_APPROVED_COLUMNS,
@@ -12,6 +15,12 @@ from database_client.constants import (
     RESTRICTED_DATA_SOURCE_COLUMNS,
     RESTRICTED_COLUMNS,
 )
+from database_client.db_client_dataclasses import (
+    OrderByParameters,
+    SubqueryParameters,
+    WhereMapping,
+)
+from database_client.models import SQL_ALCHEMY_TABLE_REFERENCE
 from utilities.enums import RecordCategories
 
 TableColumn = namedtuple("TableColumn", ["table", "column"])
@@ -83,82 +92,13 @@ class DynamicQueryConstructor:
             FROM
                 agency_source_link
             INNER JOIN
-                data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
+                data_sources ON agency_source_link.data_source_uid = data_sources.airtable_uid
             INNER JOIN
-                agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+                agencies ON agency_source_link.agency_uid = agencies.airtable_uid
             INNER JOIN
                 data_sources_archive_info ON data_sources.airtable_uid = data_sources_archive_info.airtable_uid
             WHERE
                 data_sources.approval_status = 'approved'
-        """
-        ).format(fields=fields)
-        return sql_query
-
-    @staticmethod
-    def build_data_source_by_id_results_query() -> sql.Composed:
-        data_sources_columns = DynamicQueryConstructor.create_table_columns(
-            table="data_sources", columns=DATA_SOURCES_APPROVED_COLUMNS
-        )
-        agencies_approved_columns = DynamicQueryConstructor.create_table_columns(
-            table="agencies", columns=AGENCY_APPROVED_COLUMNS
-        )
-        archive_info_columns = DynamicQueryConstructor.create_table_columns(
-            table="data_sources_archive_info", columns=ARCHIVE_INFO_APPROVED_COLUMNS
-        )
-        alias_columns = [
-            TableColumnAlias(table="agencies", column="name", alias="agency_name"),
-            TableColumnAlias(
-                table="agencies", column="airtable_uid", alias="agency_id"
-            ),
-            TableColumnAlias(
-                table="data_sources", column="airtable_uid", alias="data_source_id"
-            ),
-        ]
-        fields = DynamicQueryConstructor.build_fields(
-            columns_only=data_sources_columns
-            + agencies_approved_columns
-            + archive_info_columns,
-            columns_and_alias=alias_columns,
-        )
-        sql_query = sql.SQL(
-            """
-            SELECT
-                {fields}
-            FROM
-                agency_source_link
-            INNER JOIN
-                data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
-            INNER JOIN
-                agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
-            INNER JOIN
-                data_sources_archive_info ON data_sources.airtable_uid = data_sources_archive_info.airtable_uid
-            WHERE
-                data_sources.approval_status = 'approved' AND data_sources.airtable_uid = %s
-        """
-        ).format(fields=fields)
-        return sql_query
-
-    @staticmethod
-    def build_needs_identification_data_source_query():
-        data_sources_columns = DynamicQueryConstructor.create_table_columns(
-            table="data_sources", columns=DATA_SOURCES_APPROVED_COLUMNS
-        )
-        archive_info_columns = DynamicQueryConstructor.create_table_columns(
-            table="data_sources_archive_info", columns=ARCHIVE_INFO_APPROVED_COLUMNS
-        )
-        fields = DynamicQueryConstructor.build_fields(
-            columns_only=data_sources_columns,
-        )
-        sql_query = sql.SQL(
-            """
-            SELECT
-                {fields}
-            FROM
-                data_sources
-            INNER JOIN
-                data_sources_archive_info ON data_sources.airtable_uid = data_sources_archive_info.airtable_uid
-            WHERE
-                approval_status = 'needs identification'
         """
         ).format(fields=fields)
         return sql_query
@@ -178,33 +118,7 @@ class DynamicQueryConstructor:
         ]
 
     @staticmethod
-    def create_new_data_source_query(data: dict) -> sql.Composed:
-        """
-        Creates a query to add a new data source to the database.
-
-        :param data: A dictionary containing the data source details.
-        """
-        # Remove restricted keys
-        for key in data.keys():
-            if key in RESTRICTED_COLUMNS:
-                data.pop(key)
-
-        # Add default values
-        data.update(
-            {
-                "approval_status": False,
-                "url_status": ["ok"],
-                "data_source_created": datetime.now().strftime("%Y-%m-%d"),
-                "airtable_uid": str(uuid.uuid4()),
-            }
-        )
-
-        return DynamicQueryConstructor.create_insert_query(
-            table_name="data_sources", column_value_mappings=data
-        )
-
-    @staticmethod
-    def generate_new_typeahead_suggestion_query(search_term: str):
+    def generate_new_typeahead_locations_query(search_term: str):
         query = sql.SQL(
             """
         WITH combined AS (
@@ -212,36 +126,90 @@ class DynamicQueryConstructor:
                 1 AS sort_order,
                 display_name,
                 type,
-                state,
-                county,
-                locality
-            FROM typeahead_suggestions
+                state_name as state,
+                county_name as county,
+                locality_name as locality
+            FROM typeahead_locations
             WHERE display_name ILIKE {search_term_prefix}
             UNION ALL
             SELECT
                 2 AS sort_order,
                 display_name,
                 type,
-                state,
-                county,
-                locality
-            FROM typeahead_suggestions
+                state_name as state,
+                county_name as county,
+                locality_name as locality
+            FROM typeahead_locations
             WHERE display_name ILIKE {search_term_anywhere}
             AND display_name NOT ILIKE {search_term_prefix}
         )
-        SELECT DISTINCT 
-            sort_order,
-            display_name,
-            type,
-            state,
-            county,
-            locality
-        FROM combined
-        ORDER BY sort_order, display_name
-        LIMIT 10;
+        SELECT display_name, type, state, county, locality
+        FROM (
+            SELECT DISTINCT 
+                sort_order,
+                display_name,
+                type,
+                state,
+                county,
+                locality
+            FROM combined
+            ORDER BY sort_order, display_name
+            LIMIT 10
+        ) as results;
         """
         ).format(
             search_term_prefix=sql.Literal(f"{search_term}%"),
+            search_term_anywhere=sql.Literal(f"%{search_term}%"),
+        )
+        return query
+
+    @staticmethod
+    def generate_new_typeahead_agencies_query(search_term: str):
+        query = sql.SQL(
+            """
+        WITH combined AS (
+            SELECT
+                1 AS sort_order,
+                name,
+                jurisdiction_type,
+                state_iso,
+                municipality,
+                county_name
+            FROM typeahead_agencies
+            WHERE name ILIKE {search_term}
+            UNION ALL
+            SELECT
+                2 AS sort_order,
+                name,
+                jurisdiction_type,
+                state_iso,
+                municipality,
+                county_name
+            FROM typeahead_agencies
+            WHERE name ILIKE {search_term_anywhere}
+            AND name NOT ILIKE {search_term}
+        )
+        SELECT
+            name as display_name,
+            jurisdiction_type,
+            state_iso as state,
+            municipality as locality,
+            county_name as county
+        FROM (
+            SELECT DISTINCT
+                sort_order,
+                name,
+                jurisdiction_type,
+                state_iso,
+                municipality,
+                county_name
+            FROM combined
+            ORDER BY sort_order, name
+            LIMIT 10
+        ) as results
+        """
+        ).format(
+            search_term=sql.Literal(f"{search_term}%"),
             search_term_anywhere=sql.Literal(f"%{search_term}%"),
         )
         return query
@@ -260,33 +228,34 @@ class DynamicQueryConstructor:
                 data_sources.airtable_uid,
                 data_sources.name AS data_source_name,
                 data_sources.description,
-                data_sources.record_type,
+                record_types.name AS record_type,
                 data_sources.source_url,
-                data_sources.record_format,
+                data_sources.record_formats,
                 data_sources.coverage_start,
                 data_sources.coverage_end,
                 data_sources.agency_supplied,
                 agencies.name AS agency_name,
-                agencies.municipality,
-                agencies.state_iso
+                locations_expanded.locality_name as municipality,
+                locations_expanded.state_iso,
+                agencies.jurisdiction_type
             FROM
                 agency_source_link
             INNER JOIN
-                data_sources ON agency_source_link.airtable_uid = data_sources.airtable_uid
+                data_sources ON agency_source_link.data_source_uid = data_sources.airtable_uid
             INNER JOIN
-                agencies ON agency_source_link.agency_described_linked_uid = agencies.airtable_uid
+                agencies ON agency_source_link.agency_uid = agencies.airtable_uid
             INNER JOIN
-                state_names ON agencies.state_iso = state_names.state_iso
-            INNER JOIN
-                counties ON agencies.county_fips = counties.fips
+				locations_expanded on agencies.location_id = locations_expanded.id
+            INNER JOIN 
+                record_types on record_types.id = data_sources.record_type_id
         """
         )
 
         join_conditions = []
-        where_conditions = [
-            sql.SQL("LOWER(state_names.state_name) = LOWER({state_name})").format(
-                state_name=sql.Literal(state)
-            ),
+        where_subclauses = [
+            sql.SQL(
+                "LOWER(locations_expanded.state_name) = LOWER({state_name})"
+            ).format(state_name=sql.Literal(state)),
             sql.SQL("data_sources.approval_status = 'approved'"),
             sql.SQL("data_sources.url_status NOT IN ('broken', 'none found')"),
         ]
@@ -296,42 +265,39 @@ class DynamicQueryConstructor:
                 sql.SQL(
                     """
                 INNER JOIN
-                    record_types ON data_sources.record_type_id = record_types.id
-                INNER JOIN
                     record_categories ON record_types.category_id = record_categories.id
             """
                 )
             )
 
-            record_type_str_tup = tuple(
+            record_type_str_list = [
                 [record_type.value for record_type in record_categories]
-            )
-            where_conditions.append(
-                sql.SQL("record_categories.name in {record_types}").format(
-                    record_types=sql.Literal(record_type_str_tup)
+            ]
+            where_subclauses.append(
+                sql.SQL("record_categories.name = ANY({record_types})").format(
+                    record_types=sql.Literal(record_type_str_list)
                 )
             )
 
         if county is not None:
-            where_conditions.append(
-                sql.SQL("LOWER(counties.name) = LOWER({county_name})").format(
-                    county_name=sql.Literal(county)
-                )
+            where_subclauses.append(
+                sql.SQL(
+                    "LOWER(locations_expanded.county_name) = LOWER({county_name})"
+                ).format(county_name=sql.Literal(county))
             )
 
         if locality is not None:
-            where_conditions.append(
-                sql.SQL("LOWER(agencies.municipality) = LOWER({locality})").format(
-                    locality=sql.Literal(locality)
-                )
+            where_subclauses.append(
+                sql.SQL(
+                    "LOWER(locations_expanded.locality_name) = LOWER({locality})"
+                ).format(locality=sql.Literal(locality))
             )
 
         query = sql.Composed(
             [
                 base_query,
                 sql.SQL(" ").join(join_conditions),
-                sql.SQL(" WHERE "),
-                sql.SQL(" AND ").join(where_conditions),
+                DynamicQueryConstructor.build_full_where_clause(where_subclauses),
             ]
         )
 
@@ -422,39 +388,170 @@ class DynamicQueryConstructor:
         return query
 
     @staticmethod
-    def create_single_relation_selection_query(
+    def build_full_where_clause(where_subclauses: list[sql.Composed]) -> sql.Composed:
+        return sql.SQL(" WHERE ") + sql.SQL(" AND ").join(where_subclauses)
+
+    @staticmethod
+    def create_selection_query(
         relation: str,
-        columns: list[str],
-        where_mappings: Optional[dict] = None,
+        columns: list[Column],
+        where_mappings: Optional[list[WhereMapping] | dict] = [True],
         limit: Optional[int] = None,
         offset: Optional[int] = None,
-    ):
+        order_by: Optional[OrderByParameters] = None,
+        subquery_parameters: Optional[list[SubqueryParameters]] = [],
+    ) -> Callable:
         """
-        Creates a SELECT query for a single relation (table or view)
+        Creates a SELECT query for a relation (table or view)
         that selects the given columns with the given where mappings
-        :param relation:
-        :param columns:
-        :param where_mappings: And-joined simple where conditionals (of column = value)
+        :param columns: List of database column references. Example: [User.name, User.email]
+        :param where_mappings: List of WhereMapping objects for conditional selection.
+        :param limit:
+        :param offset:
+        :param order_by:
+        :param subquery_parameters: List of SubqueryParameters objects for executing subqueries.
         :return:
         """
+        if len(columns) == 0:
+            raise ValueError("No columns provided")
+        if type(where_mappings) == dict:
+            where_mappings = [
+                WhereMapping(
+                    column=list(where_mappings.keys())[0],
+                    value=list(where_mappings.values())[0],
+                )
+            ]
+        if where_mappings != [True]:
+            where_mappings = [
+                mapping.build_where_clause(relation) for mapping in where_mappings
+            ]
+        if order_by is not None:
+            order_by = order_by.build_order_by_clause(relation)
+        if subquery_parameters:
+            subquery_parameters = [
+                parameter.build_subquery(relation) for parameter in subquery_parameters
+            ]
+            subquery_parameters.append(load_only(*columns))
+            columns = [SQL_ALCHEMY_TABLE_REFERENCE[relation]]
+
+        base_query = (
+            lambda: select(*columns)
+            .options(*subquery_parameters)
+            .where(*where_mappings)
+            .order_by(order_by)
+            .limit(limit)
+            .offset(offset)
+        )
+        return base_query
+
+    @staticmethod
+    def build_where_subclauses_from_mappings(
+        not_where_mappings: Optional[dict] = None, where_mappings: Optional[dict] = None
+    ):
+        where_clauses = []
+        if where_mappings is not None:
+            # Create list of where clauses
+            where_clauses.extend(
+                DynamicQueryConstructor.get_where_eq_clauses(where_mappings)
+            )
+        if not_where_mappings is not None:
+            # Create list of not where clauses
+            where_clauses.extend(
+                DynamicQueryConstructor.get_where_neq_clauses(not_where_mappings)
+            )
+        return where_clauses
+
+    @staticmethod
+    def get_offset_clause(offset):
+        return sql.SQL(" OFFSET {offset}").format(offset=sql.Literal(offset))
+
+    @staticmethod
+    def get_limit_clause(limit):
+        return sql.SQL(" LIMIT {limit}").format(limit=sql.Literal(limit))
+
+    @staticmethod
+    def get_where_neq_clauses(not_where_mappings):
+        where_neq_clauses = [
+            sql.SQL(" ({column} != {value} or {column} is null) ").format(
+                column=sql.Identifier(column), value=sql.Literal(value)
+            )
+            for column, value in not_where_mappings.items()
+        ]
+        return where_neq_clauses
+
+    @staticmethod
+    def get_where_eq_clauses(where_mappings):
+        where_eq_clauses = [
+            sql.SQL(" {column} = {value} ").format(
+                column=sql.Identifier(column), value=sql.Literal(value)
+            )
+            for column, value in where_mappings.items()
+        ]
+        return where_eq_clauses
+
+    @staticmethod
+    def get_select_clause(columns, relation):
         base_query = sql.SQL("SELECT {columns} FROM {relation}").format(
             columns=sql.SQL(", ").join([sql.Identifier(column) for column in columns]),
             relation=sql.Identifier(relation),
         )
-        if where_mappings is not None:
-            where_clause = sql.SQL("WHERE {where_clause}").format(
-                where_clause=sql.SQL(" AND ").join(
-                    [
-                        sql.SQL(" {column} = {value} ").format(
-                            column=sql.Identifier(column), value=sql.Literal(value)
-                        )
-                        for column, value in where_mappings.items()
-                    ]
-                )
-            )
-            base_query += where_clause
-        if limit is not None:
-            base_query += sql.SQL(" LIMIT {limit}").format(limit=sql.Literal(limit))
-        if offset is not None:
-            base_query += sql.SQL(" OFFSET {offset}").format(offset=sql.Literal(offset))
         return base_query
+
+    @staticmethod
+    def get_column_permissions_as_permission_table_query(
+        relation: str, relation_roles: list[str]
+    ) -> sql.Composed:
+
+        max_case_queries = []
+        for role in relation_roles:
+            max_case_query = sql.SQL(
+                " MAX(CASE WHEN CP.relation_role = {role} THEN CP.ACCESS_PERMISSION ELSE NULL END) AS {role_alias} "
+            ).format(role=sql.Literal(role), role_alias=sql.Identifier(role))
+            max_case_queries.append(max_case_query)
+
+        query = sql.SQL(
+            """
+        SELECT
+            RC.ASSOCIATED_COLUMN,
+            {max_case_queries}
+        FROM
+            PUBLIC.COLUMN_PERMISSION CP
+        INNER JOIN PUBLIC.relation_column RC ON CP.rc_id = RC.id
+        WHERE
+            RC.relation = {relation}
+        GROUP BY
+            RC.ASSOCIATED_COLUMN, rc.id
+        ORDER BY
+            RC.id;
+        
+        """
+        ).format(
+            max_case_queries=sql.SQL(", ").join(max_case_queries),
+            relation=sql.Literal(relation),
+        )
+        return query
+
+    @staticmethod
+    def get_order_by_clause(order_by: OrderByParameters):
+        return sql.SQL(
+            """
+            ORDER BY {column} {order}
+            """
+        ).format(
+            column=sql.Identifier(order_by.sort_by),
+            order=sql.SQL(order_by.sort_order.value),
+        )
+
+    @staticmethod
+    def get_distinct_source_urls_query(url: str) -> sql.Composed:
+        query = sql.SQL(
+            """
+            SELECT 
+                original_url,
+                rejection_note,
+                approval_status
+            FROM distinct_source_urls
+            WHERE base_url = {url}
+            """
+        ).format(url=sql.Literal(url))
+        return query

@@ -1,7 +1,7 @@
 from flask import request, Response
 from flask_restx import fields
 
-from middleware.reset_token_queries import (
+from middleware.primary_resource_logic.reset_token_queries import (
     reset_token_validation,
 )
 
@@ -39,8 +39,6 @@ class ResetTokenValidation(PsycopgResource):
         If the token matches a row in the database, 'Token is valid' is returned.
         :return:
         """
-        with self.setup_database_client() as db_client:
-            response = reset_token_validation(
-                db_client, token=request.json.get("token")
-            )
-        return response
+        return self.run_endpoint(
+            reset_token_validation, token=request.json.get("token")
+        )

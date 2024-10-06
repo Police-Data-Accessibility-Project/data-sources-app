@@ -16,13 +16,13 @@ from middleware.callback_primary_logic import (
     link_github_account,
     get_github_user_info,
 )
-from middleware.dataclasses import (
+from middleware.custom_dataclasses import (
     FlaskSessionCallbackInfo,
     OAuthCallbackInfo,
     GithubUserInfo,
 )
 from middleware.enums import CallbackFunctionsEnum
-from middleware.user_queries import UserRequest
+from middleware.primary_resource_logic.user_queries import UserRequest
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 PATCH_PREFIX = "middleware.callback_primary_logic"
@@ -307,7 +307,6 @@ def test_link_github_account():
     mock = LinkGithubAccountMocks(patch_root=PATCH_PREFIX)
     mock.github_user_info.user_email = mock.pdap_account_email
     mock.db_client.get_user_info.return_value = mock.db_client_user_info
-    mock.db_client_user_info.id = MagicMock()
 
     link_github_account(
         db_client=mock.db_client,

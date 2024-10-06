@@ -1,16 +1,14 @@
-from flask import request, Response
+from flask import Response
 from flask_restx import fields
 
-from middleware.login_queries import get_api_key_for_user
-from middleware.user_queries import UserRequest
-from resources.resource_helpers import create_user_model
+from middleware.primary_resource_logic.login_queries import get_api_key_for_user
+from middleware.primary_resource_logic.user_queries import UserRequest
+from middleware.schema_and_dto_logic.model_helpers_with_schemas import create_user_model
 from utilities.namespace import create_namespace, AppNamespaces
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
-from utilities.populate_dto_with_request_content import (
-    populate_dto_with_request_content,
-    SourceMappingEnum,
-)
+from utilities.enums import SourceMappingEnum
+from middleware.schema_and_dto_logic.non_dto_dataclasses import DTOPopulateParameters
 
 namespace_api_key = create_namespace(namespace_attributes=AppNamespaces.AUTH)
 
@@ -57,10 +55,10 @@ class ApiKey(PsycopgResource):
         Returns:
         - dict: A dictionary containing the generated API key, or None if an error occurs.
         """
-        dto = populate_dto_with_request_content(
-            object_class=UserRequest,
-            source=SourceMappingEnum.JSON,
+        return self.run_endpoint(
+            wrapper_function=get_api_key_for_user,
+            dto_populate_parameters=DTOPopulateParameters(
+                source=SourceMappingEnum.JSON,
+                dto_class=UserRequest,
+            ),
         )
-        with self.setup_database_client() as db_client:
-            response = get_api_key_for_user(db_client, dto)
-        return response

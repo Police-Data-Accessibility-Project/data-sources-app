@@ -1,19 +1,19 @@
 from http import HTTPStatus
 
-from psycopg2.extras import DictCursor
-
 from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
 from middleware.enums import CallbackFunctionsEnum
-from tests.fixtures import dev_db_connection, flask_client_with_db
+from tests.conftest import dev_db_connection, flask_client_with_db
 from tests.helper_scripts.helper_functions import (
-    check_response_status,
     patch_post_callback_functions,
     patch_setup_callback_session,
     create_fake_github_user_info,
-    assert_expected_pre_callback_response,
-    run_and_validate_request,
 )
+from tests.helper_scripts.common_test_functions import (
+    assert_expected_pre_callback_response,
+)
+from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helper_scripts.simple_result_validators import check_response_status
 
 
 def test_create_user_with_github_post(

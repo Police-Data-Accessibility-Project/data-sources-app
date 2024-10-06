@@ -128,4 +128,8 @@ To create a user with elevated permissions, use the `/dev/create-test-user-with-
 That endpoint will provide you with a randomly generated email, password, and api key to use to test endpoints. The permissions are such that all endpoints should be available to you for use.
 To obtain a short-live d JWT for use in the `Bearer` endpoints, use the `/login` endpoint with the provided email and password to receive the requisite JWT.
 
+## SQLAlchemy
 
+Using SQLAlchemy for database queries is encouraged but optional. For more information, read the [SQLAlchemy documentation](https://docs.sqlalchemy.org/en/20/index.html).
+
+Please note that we use ORM Declaritive models and SQLAlchemy 2.0 syntax.

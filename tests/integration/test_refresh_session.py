@@ -4,17 +4,17 @@ import urllib.parse
 from http import HTTPStatus
 
 from middleware.enums import PermissionsEnum
-from tests.fixtures import (
+from tests.conftest import (
     dev_db_connection,
-    flask_client_with_db,
     dev_db_client,
+    flask_client_with_db,
     test_user_admin,
 )
 from tests.helper_scripts.helper_functions import (
     login_and_return_jwt_tokens,
-    run_and_validate_request,
     create_test_user_setup_db_client,
 )
+from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
 
 def test_refresh_session_post(test_user_admin, flask_client_with_db):
