@@ -69,7 +69,14 @@ class ResultFormatter:
             formatted_results.append(formatted_result)
         return formatted_results
 
-
+    @staticmethod
+    def format_with_metadata(
+        data: list[dict],
+    ) -> dict:
+        return {
+            "count": len(data),
+            "data": data,
+        }
 
 
 def dictify_namedtuple(result: list[namedtuple]) -> list[dict[str, Any]]:

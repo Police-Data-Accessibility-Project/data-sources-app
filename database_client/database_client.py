@@ -5,6 +5,7 @@ from functools import wraps, partialmethod
 from typing import Optional, Any, List, Callable
 
 import psycopg
+from click.testing import Result
 from psycopg import sql, Cursor
 from psycopg.rows import dict_row, tuple_row
 from sqlalchemy import select
@@ -988,6 +989,8 @@ class DatabaseClient:
 
         tuple_results = query_with_filter.all()
 
-        return ResultFormatter.tuples_to_column_value_dict(
-            columns=columns_to_retrieve, tuples=tuple_results
+        return ResultFormatter.format_with_metadata(
+            data=ResultFormatter.tuples_to_column_value_dict(
+                columns=columns_to_retrieve, tuples=tuple_results
+            )
         )

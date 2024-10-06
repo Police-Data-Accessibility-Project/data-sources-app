@@ -1001,9 +1001,9 @@ def test_get_linked_rows(
         ]
     )
 
-    assert len(results) > 0
-    assert results[0]["name"] == ds_info.name
-    assert results[0]["airtable_uid"] == ds_info.id
+    assert results["count"] == len(results["data"]) > 0
+    assert results["data"][0]["name"] == ds_info.name
+    assert results["data"][0]["airtable_uid"] == ds_info.id
 
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts
