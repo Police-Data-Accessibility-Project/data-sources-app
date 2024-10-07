@@ -228,6 +228,7 @@ class ResponseInfo:
         self.success_message = success_message
         self.response_dictionary = response_dictionary
 
+# TODO: Move the two below classes to a separate file
 class EndpointSchemaConfig:
     def __init__(
             self,
@@ -240,7 +241,7 @@ class EndpointSchemaConfig:
         self.input_dto_class = input_dto_class
 
 
-class EndpointSchemaConfigs(EndpointSchemaConfig, Enum):
+class EndpointSchemaConfigs(Enum):
     DATA_REQUESTS_GET_MANY = EndpointSchemaConfig(
         input_schema=GetManyBaseSchema(),
         output_schema=GetManyDataRequestsSchema(),

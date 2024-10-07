@@ -137,7 +137,13 @@ def endpoint_info_2(
     )
     _add_auth_info_to_parser(auth_info=auth_info, parser=input_doc_info.parser)
 
-    _update_doc_kwargs(doc_kwargs, input_doc_info, namespace, response_info, schema_config.value)
+    _update_doc_kwargs(
+        doc_kwargs,
+        input_doc_info,
+        namespace,
+        response_info,
+        schema_config.value.output_schema
+    )
 
     def decorator(func: Callable):
         @wraps(func)
@@ -154,13 +160,19 @@ def endpoint_info_2(
     return decorator
 
 
-def _update_doc_kwargs(doc_kwargs, input_doc_info, namespace, response_info, schema_config):
+def _update_doc_kwargs(
+        doc_kwargs: dict,
+        input_doc_info: FlaskRestxDocInfo,
+        namespace: Namespace,
+        response_info: ResponseInfo,
+        output_schema: Schema
+):
     if response_info.response_dictionary is None:
         doc_kwargs["responses"] = create_response_dictionary(
             success_message=response_info.success_message,
             success_model=get_restx_param_documentation(
                 namespace=namespace,
-                schema=schema_config.input_schema
+                schema=output_schema,
             ).model
         )
     else:
