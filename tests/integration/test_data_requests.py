@@ -16,6 +16,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_sche
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourceExpandedSchema, \
     DataSourcesGetManySchema
+from resources.resource_helpers import EndpointSchemaConfigs
 from tests.conftest import dev_db_client, flask_client_with_db
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
 from tests.helper_scripts.common_test_data import create_test_data_request, TestDataCreatorFlask
@@ -69,18 +70,15 @@ def test_data_requests_get(
         data_source_id=ds_info.id,
     )
 
+    expected_schema = EndpointSchemaConfigs.DATA_REQUESTS_GET_MANY.value.output_schema
+    # Modify exclude to accoutn for old data which did not have archive_reason and creator_user_id
+    expected_schema.exclude.update(["data.archive_reason", "data.creator_user_id", "data.internal_notes"])
     json_data = run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="get",
         endpoint=DATA_REQUESTS_BASE_ENDPOINT,
         headers=tus_creator.jwt_authorization_header,
-        expected_schema=GetManyDataRequestsSchema(
-            exclude=[
-                "data.archive_reason",
-                "data.creator_user_id",
-                "data.internal_notes",
-            ],
-        ),
+        expected_schema=expected_schema,
     )
     assert len(json_data[DATA_KEY]) > 0
 

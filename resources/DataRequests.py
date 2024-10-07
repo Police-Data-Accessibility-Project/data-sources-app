@@ -27,7 +27,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GET_MANY_SCHEMA_POPULATE_PARAMETERS,
 )
 from middleware.decorators import (
-    endpoint_info,
+    endpoint_info, endpoint_info_2,
 )
 from middleware.enums import Relations
 from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
@@ -46,7 +46,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schem
 from resources.PsycopgResource import PsycopgResource
 from resources.resource_helpers import (
     create_response_dictionary,
-    column_permissions_description,
+    column_permissions_description, EndpointSchemaConfigs, ResponseInfo,
 )
 from utilities.namespace import create_namespace, AppNamespaces
 
@@ -145,15 +145,14 @@ class DataRequestsById(PsycopgResource):
 @namespace_data_requests.route("")
 class DataRequests(PsycopgResource):
 
-    @endpoint_info(
+    @endpoint_info_2(
         namespace=namespace_data_requests,
         auth_info=GET_AUTH_INFO,
-        input_schema=GetManyBaseSchema(),
-        description="Get data requests with optional filters",
-        responses=create_response_dictionary(
+        schema_config=EndpointSchemaConfigs.DATA_REQUESTS_GET_MANY,
+        response_info=ResponseInfo(
             success_message="Returns a paginated list of data requests.",
-            success_model=data_requests_outer_model,
         ),
+        description="Get data requests with optional filters",
     )
     def get(self, access_info: AccessInfo) -> Response:
         """

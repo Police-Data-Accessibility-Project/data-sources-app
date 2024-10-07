@@ -18,7 +18,7 @@ from resources.PsycopgResource import handle_exceptions
 from resources.resource_helpers import (
     add_jwt_or_api_key_header_arg,
     add_jwt_header_arg,
-    add_api_key_header_arg,
+    add_api_key_header_arg, EndpointSchemaConfig, ResponseInfo, create_response_dictionary, EndpointSchemaConfigs,
 )
 
 
@@ -121,6 +121,51 @@ def endpoint_info(
         return wrapper
 
     return decorator
+
+def endpoint_info_2(
+    namespace: Namespace,
+    auth_info: AuthenticationInfo,
+    schema_config: EndpointSchemaConfigs,
+    response_info: ResponseInfo,
+    **doc_kwargs
+):
+    # TODO: Replace original endpoint info with this, and rename to `endpoint_info`
+    input_doc_info = get_restx_param_documentation(
+        namespace=namespace,
+        schema=schema_config.value.input_schema,
+        model_name=f"{schema_config.name}_input",
+    )
+    _add_auth_info_to_parser(auth_info=auth_info, parser=input_doc_info.parser)
+
+    _update_doc_kwargs(doc_kwargs, input_doc_info, namespace, response_info, schema_config.value)
+
+    def decorator(func: Callable):
+        @wraps(func)
+        @handle_exceptions
+        @authentication_required(
+            auth_info.allowed_access_methods, auth_info.restrict_to_permissions
+        )
+        @namespace.doc(**doc_kwargs)
+        def wrapper(*args, **kwargs):
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+def _update_doc_kwargs(doc_kwargs, input_doc_info, namespace, response_info, schema_config):
+    if response_info.response_dictionary is None:
+        doc_kwargs["responses"] = create_response_dictionary(
+            success_message=response_info.success_message,
+            success_model=get_restx_param_documentation(
+                namespace=namespace,
+                schema=schema_config.input_schema
+            ).model
+        )
+    else:
+        doc_kwargs["responses"] = response_info.response_dictionary
+    doc_kwargs["expect"] = [input_doc_info.model, input_doc_info.parser]
 
 
 def _add_auth_info_to_parser(auth_info: AuthenticationInfo, parser: RequestParser):
