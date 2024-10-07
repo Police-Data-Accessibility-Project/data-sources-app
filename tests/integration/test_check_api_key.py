@@ -18,7 +18,7 @@ from tests.helper_scripts.common_mocks_and_patches import (
     patch_request_headers,
     patch_abort,
 )
-from tests.conftest import dev_db_connection, db_cursor, live_database_client
+from tests.conftest import live_database_client
 from tests.helper_scripts.helper_functions import create_test_user_setup_db_client
 
 

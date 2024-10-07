@@ -3,7 +3,7 @@ from http import HTTPStatus
 from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
 from middleware.enums import CallbackFunctionsEnum
-from tests.conftest import dev_db_connection, flask_client_with_db
+from tests.conftest import flask_client_with_db
 from tests.helper_scripts.helper_functions import (
     patch_post_callback_functions,
     patch_setup_callback_session,
@@ -17,7 +17,7 @@ from tests.helper_scripts.simple_result_validators import check_response_status
 
 
 def test_create_user_with_github_post(
-    flask_client_with_db, dev_db_connection, monkeypatch
+    flask_client_with_db, monkeypatch
 ):
 
     github_user_info = create_fake_github_user_info()

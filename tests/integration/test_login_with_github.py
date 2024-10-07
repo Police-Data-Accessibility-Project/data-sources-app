@@ -3,7 +3,7 @@ from http import HTTPStatus
 from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
 from middleware.enums import CallbackFunctionsEnum
-from tests.conftest import dev_db_connection, dev_db_client, flask_client_with_db
+from tests.conftest import dev_db_client, flask_client_with_db
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     patch_post_callback_functions,

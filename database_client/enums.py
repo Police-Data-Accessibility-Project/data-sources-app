@@ -1,3 +1,6 @@
+"""
+Enums utilized within the Database Client
+"""
 from enum import Enum
 
 

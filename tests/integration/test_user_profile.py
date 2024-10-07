@@ -1,4 +1,4 @@
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests import (
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
     GetManyDataRequestsSchema,
 )
 from resources.UserProfile import USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL

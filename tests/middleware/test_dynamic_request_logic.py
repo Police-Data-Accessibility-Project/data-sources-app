@@ -4,7 +4,8 @@ from unittest.mock import MagicMock
 import pytest
 
 from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import SubqueryParameters, WhereMapping
+from database_client.db_client_dataclasses import WhereMapping
+from database_client.subquery_logic import SubqueryParameters
 from database_client.enums import ColumnPermissionEnum
 from middleware.dynamic_request_logic.common_functions import check_for_id
 from middleware.dynamic_request_logic.delete_logic import (
@@ -126,8 +127,10 @@ def test_get_by_id(monkeypatch):
         mock.mp.db_client,
         relation_name=mock.mp.relation,
         columns=mock.get_permitted_columns.return_value,
-        where_mappings=[WhereMapping(column=mock.id_column_name, value=int(mock.id))],
-        subquery_parameters=mock.mp.subquery_params,
+        where_mappings=[
+            WhereMapping(column=mock.id_column_name, value=int(mock.id))
+        ],
+        subquery_parameters=mock.mp.subquery_parameters
     )
 
     mock.results_dependent_response.assert_called_once_with(

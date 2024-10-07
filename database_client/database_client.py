@@ -5,6 +5,7 @@ from functools import wraps, partialmethod
 from typing import Optional, Any, List, Callable
 
 import psycopg
+from click.testing import Result
 from psycopg import sql, Cursor
 from psycopg.rows import dict_row, tuple_row
 from sqlalchemy import select
@@ -14,9 +15,10 @@ from sqlalchemy.schema import Column
 from database_client.constants import PAGE_SIZE
 from database_client.db_client_dataclasses import (
     OrderByParameters,
-    SubqueryParameters,
     WhereMapping,
 )
+from database_client.result_formatter import ResultFormatter
+from database_client.subquery_logic import SubqueryParameters
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
     ExternalAccountTypeEnum,
@@ -664,12 +666,6 @@ class DatabaseClient:
         id_column_name="airtable_uid",
     )
 
-    # def create_agency(
-    #     self,
-    #     column_value_mappings: dict[str, str],
-    # ):
-    #     pass
-
     def update_dictionary_enum_values(self, d: dict):
         """
         Update a dictionary's values such that any which are enums are converted to the enum value
@@ -771,10 +767,11 @@ class DatabaseClient:
         raw_results = self.session.execute(query()).mappings().unique().all()
 
         if subquery_parameters:
-            results = [
-                dict(result[[key for key in result.keys()][0]])
-                for result in raw_results
-            ]
+            results = ResultFormatter.format_result_with_subquery_parameters(
+                row_mappings=raw_results,
+                primary_columns=columns,
+                subquery_parameters=subquery_parameters
+            )
         else:
             results = [dict(result) for result in raw_results]
         return results
@@ -973,3 +970,29 @@ class DatabaseClient:
                 columns=[column_to_return],
                 where_mappings=WhereMapping.from_dict(column_value_mappings),
             )[0][column_to_return]
+
+    @session_manager
+    def get_linked_rows(
+        self,
+        link_table: Relations,
+        left_id: str,
+        left_link_column: str,
+        right_link_column: str,
+        linked_relation: Relations,
+        linked_relation_linking_column: str,
+        columns_to_retrieve: list[str],
+    ):
+        LinkTable = SQL_ALCHEMY_TABLE_REFERENCE[link_table.value]
+        LinkedRelation = SQL_ALCHEMY_TABLE_REFERENCE[linked_relation.value]
+
+        query_with_select = self.session.query(*[getattr(LinkedRelation, column) for column in columns_to_retrieve])
+        query_with_join = query_with_select.join(LinkTable, getattr(LinkTable, right_link_column) == getattr(LinkedRelation, linked_relation_linking_column))
+        query_with_filter = query_with_join.filter(getattr(LinkTable, left_link_column) == left_id)
+
+        tuple_results = query_with_filter.all()
+
+        return ResultFormatter.format_with_metadata(
+            data=ResultFormatter.tuples_to_column_value_dict(
+                columns=columns_to_retrieve, tuples=tuple_results
+            )
+        )

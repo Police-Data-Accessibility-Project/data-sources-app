@@ -14,14 +14,13 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
 from middleware.decorators import (
     endpoint_info,
 )
-from middleware.primary_resource_logic.data_source_queries import (
+from middleware.primary_resource_logic.data_sources_logic import (
     get_data_sources_wrapper,
     data_source_by_id_wrapper,
     get_data_sources_for_map_wrapper,
     add_new_data_source_wrapper,
     update_data_source_wrapper,
-    DataSourcesGetRequestSchemaMany,
-    DataSourcesGetRequestDTOMany,
+    DataSourcesGetManyRequestDTO,
     delete_data_source_wrapper,
 )
 from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
@@ -30,10 +29,8 @@ from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction i
 from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
     CRUDModels,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
-    DataSourcesGetByIDSchema,
-    DataSourcesGetManySchema,
-)
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourcesGetByIDSchema, \
+    DataSourcesGetManySchema, DataSourcesGetManyRequestSchema, DataSourcesPostSchema, DataSourcesPutSchema
 from resources.resource_helpers import (
     create_response_dictionary,
 )
@@ -94,7 +91,7 @@ class DataSourceById(PsycopgResource):
     @endpoint_info(
         namespace=namespace_data_source,
         auth_info=WRITE_ONLY_AUTH_INFO,
-        input_model=models.entry_data_request_model,
+        input_schema=DataSourcesPutSchema(),
         description="Update details of a specific data source by its ID.",
         responses=create_response_dictionary(
             success_message="Data source successfully updated.",
@@ -154,7 +151,7 @@ class DataSources(PsycopgResource):
     @endpoint_info(
         namespace=namespace_data_source,
         auth_info=GET_AUTH_INFO,
-        input_schema=DataSourcesGetRequestSchemaMany(),
+        input_schema=DataSourcesGetManyRequestSchema(),
         description="Retrieves all data sources.",
         responses=create_response_dictionary(
             success_message="Returns all requested data sources.",
@@ -172,8 +169,8 @@ class DataSources(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=get_data_sources_wrapper,
             schema_populate_parameters=SchemaPopulateParameters(
-                schema=DataSourcesGetRequestSchemaMany(),
-                dto_class=DataSourcesGetRequestDTOMany,
+                schema=DataSourcesGetManyRequestSchema(),
+                dto_class=DataSourcesGetManyRequestDTO,
             ),
             access_info=access_info,
         )
@@ -185,6 +182,7 @@ class DataSources(PsycopgResource):
             success_message="Data source successfully added.",
             success_model=models.id_and_message_model,
         ),
+        input_schema=DataSourcesPostSchema(),
         description="Adds a new data source.",
     )
     def post(self, access_info: AccessInfo) -> Response:

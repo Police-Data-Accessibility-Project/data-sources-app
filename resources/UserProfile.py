@@ -13,7 +13,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
 from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
     get_restx_param_documentation,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests import (
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
     GetManyDataRequestsSchema,
 )
 from resources.PsycopgResource import PsycopgResource

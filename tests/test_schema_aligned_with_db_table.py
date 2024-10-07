@@ -10,7 +10,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas i
     AgencyInfoBaseSchema,
     AgenciesGetSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests import (
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
     DataRequestsSchema,
 )
 from tests.conftest import live_database_client

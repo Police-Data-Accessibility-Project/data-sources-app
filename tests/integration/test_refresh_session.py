@@ -4,12 +4,7 @@ import urllib.parse
 from http import HTTPStatus
 
 from middleware.enums import PermissionsEnum
-from tests.conftest import (
-    dev_db_connection,
-    dev_db_client,
-    flask_client_with_db,
-    test_user_admin,
-)
+from tests.conftest import flask_client_with_db, test_user_admin
 from tests.helper_scripts.helper_functions import (
     login_and_return_jwt_tokens,
     create_test_user_setup_db_client,

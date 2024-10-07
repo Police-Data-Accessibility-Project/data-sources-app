@@ -1,6 +1,5 @@
 """Integration tests for /agencies endpoint"""
 
-import email.utils
 import time
 import uuid
 from dataclasses import dataclass
@@ -19,11 +18,8 @@ from middleware.schema_and_dto_logic.response_schemas import (
     IDAndMessageSchema,
 )
 
-from tests.conftest import (
-    dev_db_client,
-    flask_client_with_db,
-    integration_test_admin_setup,
-)
+from tests.conftest import dev_db_client, flask_client_with_db, integration_test_admin_setup
+from tests.helper_scripts.common_test_data import get_sample_agency_post_parameters
 from tests.helper_scripts.constants import AGENCIES_BASE_ENDPOINT
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup_db_client,
@@ -95,29 +91,11 @@ def test_agencies_get_by_id(ts: AgenciesTestSetup):
     assert response_json["data"]["airtable_uid"] == airtable_uid
 
 
-def get_data_to_post(
-    submitted_name, locality_name, jurisdiction_type: JurisdictionType
-) -> dict:
-    return {
-        "agency_info": {
-            "submitted_name": submitted_name,
-            "airtable_uid": uuid.uuid4().hex,
-            "jurisdiction_type": jurisdiction_type.value,
-        },
-        "location_info": {
-            "type": "Locality",
-            "state_iso": "CA",
-            "county_fips": "06087",
-            "locality_name": locality_name,
-        },
-    }
-
-
 def test_agencies_post(ts: AgenciesTestSetup):
 
     start_of_test_datetime = datetime.now(timezone.utc)
 
-    data_to_post = get_data_to_post(
+    data_to_post = get_sample_agency_post_parameters(
         submitted_name=ts.submitted_name,
         jurisdiction_type=JurisdictionType.LOCAL,
         locality_name=uuid.uuid4().hex,
@@ -162,7 +140,7 @@ def test_agencies_post(ts: AgenciesTestSetup):
 
     # Test with an existing locality
 
-    data_to_post = get_data_to_post(
+    data_to_post = get_sample_agency_post_parameters(
         submitted_name=uuid.uuid4().hex,
         jurisdiction_type=JurisdictionType.LOCAL,
         locality_name="Capitola",
@@ -199,7 +177,7 @@ def test_agencies_post(ts: AgenciesTestSetup):
 
 
 def test_agencies_put(ts: AgenciesTestSetup):
-    data_to_post = get_data_to_post(
+    data_to_post = get_sample_agency_post_parameters(
         submitted_name=ts.submitted_name,
         jurisdiction_type=JurisdictionType.LOCAL,
         locality_name=uuid.uuid4().hex,
