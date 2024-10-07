@@ -2,12 +2,12 @@ from marshmallow import fields, Schema
 
 from database_client.enums import RequestStatus
 from middleware.enums import RecordType
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourceExpandedSchema
 from middleware.schema_and_dto_logic.response_schemas import (
     GetManyResponseSchemaBase,
     MessageSchema,
 )
 from middleware.schema_and_dto_logic.util import get_json_metadata
-from utilities.enums import SourceMappingEnum
 
 
 class DataRequestsSchema(Schema):
@@ -68,7 +68,7 @@ class DataRequestsSchema(Schema):
             enum=RecordType,
             by_value=fields.Str,
             metadata=get_json_metadata(
-                "The record types associated with the data request."
+                "The record types associated with the data request. Editable only by admins."
             ),
         ),
         allow_none=True,
@@ -95,16 +95,27 @@ class DataRequestsSchema(Schema):
         ),
     )
 
+
 class DataRequestsPostSchema(Schema):
     entry_data = fields.Nested(
         nested=DataRequestsSchema,
         metadata=get_json_metadata("The data request to be created"),
     )
 
+class DataRequestsGetSchema(DataRequestsSchema):
+    data_sources = fields.List(
+        fields.Nested(
+            nested=DataSourceExpandedSchema,
+            metadata=get_json_metadata("The data sources associated with the data request")
+        ),
+        required=True,
+        metadata=get_json_metadata("The data sources associated with the data request")
+    )
+
 class GetManyDataRequestsSchema(GetManyResponseSchemaBase):
     data = fields.List(
         cls_or_instance=fields.Nested(
-            nested=DataRequestsSchema,
+            nested=DataRequestsGetSchema,
             metadata=get_json_metadata("The list of data requests"),
         ),
         metadata=get_json_metadata("The list of results"),
@@ -113,6 +124,6 @@ class GetManyDataRequestsSchema(GetManyResponseSchemaBase):
 
 class GetByIDDataRequestsResponseSchema(MessageSchema):
     data = fields.Nested(
-        nested=DataRequestsSchema,
+        nested=DataRequestsGetSchema,
         metadata=get_json_metadata("The data request result"),
     )

@@ -7,7 +7,9 @@ from middleware.enums import CallbackFunctionsEnum
 from middleware.callback_oauth_logic import redirect_to_github_authorization
 from resources.PsycopgResource import PsycopgResource
 from utilities.namespace import create_namespace, AppNamespaces
-from middleware.schema_and_dto_logic.dynamic_dto_request_content_population import populate_dto_with_request_content
+from middleware.schema_and_dto_logic.dynamic_dto_request_content_population import (
+    populate_dto_with_request_content,
+)
 from utilities.enums import SourceMappingEnum
 
 namespace_link_to_github = create_namespace(AppNamespaces.AUTH)

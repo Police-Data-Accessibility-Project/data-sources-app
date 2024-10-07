@@ -39,4 +39,6 @@ class ResetTokenValidation(PsycopgResource):
         If the token matches a row in the database, 'Token is valid' is returned.
         :return:
         """
-        return self.run_endpoint(reset_token_validation, token=request.json.get("token"))
+        return self.run_endpoint(
+            reset_token_validation, token=request.json.get("token")
+        )

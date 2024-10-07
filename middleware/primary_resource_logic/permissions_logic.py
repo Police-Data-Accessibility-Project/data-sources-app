@@ -30,29 +30,31 @@ class PermissionsRequestSchema(Schema):
         metadata={
             "description": "The email of the user for which to retrieve permissions.",
             "source": SourceMappingEnum.QUERY_ARGS,
-            "location": ParserLocation.QUERY.value
-        }
+            "location": ParserLocation.QUERY.value,
+        },
     )
     permission = fields.Str(
         required=True,
         metadata={
             "description": "The permission to add or remove. \n {allowable_permissions_str}",
-            "source": SourceMappingEnum.JSON
-        }
+            "source": SourceMappingEnum.JSON,
+        },
     )
     action = fields.Str(
         required=True,
         metadata={
             "source": SourceMappingEnum.JSON,
             "description": "The action to perform. \n {allowable_actions_str}",
-        }
+        },
     )
+
 
 @dataclass
 class PermissionsRequest:
     user_email: str
     permission: str
     action: str
+
 
 class PermissionsManager:
     """

@@ -12,7 +12,7 @@ MarshmallowFields = Union[
     marshmallow_fields.Bool,
     marshmallow_fields.Email,
     marshmallow_fields.List,
-    DataField
+    DataField,
 ]
 RestxFields = Union[
     restx_fields.String,
@@ -20,7 +20,7 @@ RestxFields = Union[
     restx_fields.Boolean,
     restx_fields.List,
     restx_fields.Nested,
-    RestxModelPlaceholder
+    RestxModelPlaceholder,
 ]
 DTOTypes = TypeVar("DTOTypes")
 SchemaTypes = TypeVar("SchemaTypes", bound=Schema)

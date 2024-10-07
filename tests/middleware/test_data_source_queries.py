@@ -11,9 +11,6 @@ from tests.helper_scripts.helper_functions import (
 )
 
 
-
-
-
 class DataSourceByIDWrapperMocks(DynamicMagicMock):
     data_source_by_id_query: MagicMock
     make_response: MagicMock
@@ -32,4 +29,3 @@ def assert_data_source_by_id_wrapper_calls(mock, expected_json: dict):
         data_source_id="SOURCE_UID_1", db_client=mock.db_client
     )
     mock.make_response.assert_called_with(expected_json, HTTPStatus.OK.value)
-

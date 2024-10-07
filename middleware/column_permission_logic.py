@@ -23,6 +23,7 @@ def get_permitted_columns(
         relation=relation, role=role, column_permission=column_permission
     )
 
+
 def get_invalid_columns(
     requested_columns: list[str],
     permitted_columns: list[str],
@@ -58,8 +59,7 @@ def check_has_permission_to_edit_columns(
         column_permission=ColumnPermissionEnum.WRITE,
     )
     invalid_columns = get_invalid_columns(
-        requested_columns=columns,
-        permitted_columns=writeable_columns
+        requested_columns=columns, permitted_columns=writeable_columns
     )
     if len(invalid_columns) == 0:
         return
@@ -72,9 +72,8 @@ def check_has_permission_to_edit_columns(
         """,
     )
 
-def create_column_permissions_string_table(
-    relation: str
-):
+
+def create_column_permissions_string_table(relation: str):
     """
     Creates a table of column permissions for the given relation
     this is to be displayed in the swagger ui
@@ -91,7 +90,7 @@ def create_column_permissions_string_table(
     header_row = f"| {header_row} |"
 
     # Create the separator row
-    separator_row = "|".join(['-' * len(header) for header in headers])
+    separator_row = "|".join(["-" * len(header) for header in headers])
     separator_row = f"|{separator_row}|"
 
     # Create the data rows
@@ -103,6 +102,7 @@ def create_column_permissions_string_table(
     # Combine all rows
     table = "\n".join([header_row, separator_row] + data_rows)
     return table
+
 
 def get_relation_role(access_info: AccessInfo) -> RelationRoleEnum:
     if access_info.access_type == AccessTypeEnum.API_KEY:
@@ -120,12 +120,8 @@ class RelationRoleParameters:
     relation_role_override: Optional[RelationRoleEnum] = None
 
     def get_relation_role_from_parameters(
-        self,
-        access_info: AccessInfo
+        self, access_info: AccessInfo
     ) -> RelationRoleEnum:
         if self.relation_role_override is not None:
             return self.relation_role_override
-        return self.relation_role_function_with_params.execute(
-            access_info=access_info
-        )
-
+        return self.relation_role_function_with_params.execute(access_info=access_info)

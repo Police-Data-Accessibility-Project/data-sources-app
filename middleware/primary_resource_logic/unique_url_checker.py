@@ -28,7 +28,7 @@ class UniqueURLCheckerRequestSchema(Schema):
             "description": "The URL to check.",
             "source": SourceMappingEnum.QUERY_ARGS,
             "transformation_function": normalize_url,
-        }
+        },
     )
 
 
@@ -62,6 +62,7 @@ class UniqueURLCheckerResponseInnerSchema(Schema):
         },
     )
 
+
 class UniqueURLCheckerResponseOuterSchema(Schema):
     duplicates = fields.List(
         fields.Nested(
@@ -79,7 +80,10 @@ class UniqueURLCheckerResponseOuterSchema(Schema):
         },
     )
 
-def unique_url_checker_wrapper(db_client: DatabaseClient, dto: UniqueURLCheckerRequestDTO) -> Response:
+
+def unique_url_checker_wrapper(
+    db_client: DatabaseClient, dto: UniqueURLCheckerRequestDTO
+) -> Response:
     return FlaskResponseManager.make_response(
         data={"duplicates": db_client.check_for_url_duplicates(dto.url)}
     )

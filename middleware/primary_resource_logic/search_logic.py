@@ -25,37 +25,37 @@ class SearchRequestSchema(Schema):
         metadata={
             "description": "The state of the search.",
             "source": SourceMappingEnum.QUERY_ARGS,
-            "location": ParserLocation.QUERY.value
-        }
+            "location": ParserLocation.QUERY.value,
+        },
     )
     record_categories = fields.Str(
         required=False,
         metadata={
             "transformation_function": transform_record_categories,
             "description": "The record categories of the search. If empty, all categories will be searched."
-                "Multiple record categories can be provided as a comma-separated list, eg. 'Police & Public "
-                           "Interactions,Agency-published Resources'."
-                "Allowable record categories include: \n  * "
-                + "\n  * ".join([e.value for e in RecordCategories]),
+            "Multiple record categories can be provided as a comma-separated list, eg. 'Police & Public "
+            "Interactions,Agency-published Resources'."
+            "Allowable record categories include: \n  * "
+            + "\n  * ".join([e.value for e in RecordCategories]),
             "source": SourceMappingEnum.QUERY_ARGS,
-            "location": ParserLocation.QUERY.value
-        }
+            "location": ParserLocation.QUERY.value,
+        },
     )
     county = fields.Str(
         required=False,
         metadata={
             "description": "The county of the search. If empty, all counties for the given state will be searched.",
             "source": SourceMappingEnum.QUERY_ARGS,
-            "location": ParserLocation.QUERY.value
-        }
+            "location": ParserLocation.QUERY.value,
+        },
     )
     locality = fields.Str(
         required=False,
         metadata={
             "description": "The locality of the search. If empty, all localities for the given county will be searched.",
             "source": SourceMappingEnum.QUERY_ARGS,
-            "location": ParserLocation.QUERY.value
-        }
+            "location": ParserLocation.QUERY.value,
+        },
     )
 
 
@@ -67,7 +67,9 @@ class SearchRequests:
     locality: Optional[str] = None
 
 
-def get_jursidiction_type_enum(jurisdiction_type_str: str) -> Optional[JurisdictionSimplified]:
+def get_jursidiction_type_enum(
+    jurisdiction_type_str: str,
+) -> Optional[JurisdictionSimplified]:
     if jurisdiction_type_str in [
         "local",
         "school",

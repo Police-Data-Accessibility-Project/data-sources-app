@@ -115,4 +115,9 @@ class Archives(PsycopgResource):
             if "broken_source_url_as_of" in data
             else None
         )
-        return self.run_endpoint(update_archives_data, data_id=id, last_cached=last_cached, broken_as_of=broken_as_of)
+        return self.run_endpoint(
+            update_archives_data,
+            data_id=id,
+            last_cached=last_cached,
+            broken_as_of=broken_as_of,
+        )

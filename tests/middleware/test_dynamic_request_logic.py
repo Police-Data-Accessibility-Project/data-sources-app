@@ -4,7 +4,8 @@ from unittest.mock import MagicMock
 import pytest
 
 from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import SubqueryParameters, WhereMapping
+from database_client.db_client_dataclasses import WhereMapping
+from database_client.subquery_logic import SubqueryParameters
 from database_client.enums import ColumnPermissionEnum
 from middleware.dynamic_request_logic.common_functions import check_for_id
 from middleware.dynamic_request_logic.delete_logic import (
@@ -64,7 +65,9 @@ def test_results_dependent_response_with_results(monkeypatch):
     )
 
     mock_message_response.assert_called_once_with(
-        message="test entry found", data={"test": 1}, validation_schema=EntryDataResponseSchema
+        message="test entry found",
+        data={"test": 1},
+        validation_schema=EntryDataResponseSchema,
     )
 
 
@@ -127,7 +130,7 @@ def test_get_by_id(monkeypatch):
         where_mappings=[
             WhereMapping(column=mock.id_column_name, value=int(mock.id))
         ],
-        subquery_parameters=mock.mp.subquery_params
+        subquery_parameters=mock.mp.subquery_parameters
     )
 
     mock.results_dependent_response.assert_called_once_with(
@@ -229,6 +232,7 @@ def test_execute_if_none_is_not_none():
     mock = MagicMock()
     execute_if_not_none(mock)
     mock.execute.assert_called_once()
+
 
 def test_put_entry(monkeypatch):
     mock = MagicMock()

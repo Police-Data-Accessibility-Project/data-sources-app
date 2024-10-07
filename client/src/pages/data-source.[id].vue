@@ -193,7 +193,6 @@ export const useDataSourceData = defineBasicLoader(
 	'/data-source/:id',
 	async (route) => {
 		const results = await getDataSource(route.params.id);
-
 		return results?.data?.data;
 	},
 );
@@ -211,21 +210,19 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const route = useRoute();
 const { mostRecentSearchIds } = useSearchStore();
+const { data: dataSource, isLoading, error } = useDataSourceData();
 
 const currentIdIndex = computed(() =>
 	mostRecentSearchIds.indexOf(route.params.id),
 );
 const nextIdIndex = computed(() =>
-	currentIdIndex.value < mostRecentSearchIds.length
+	currentIdIndex.value < mostRecentSearchIds.length - 1
 		? currentIdIndex.value + 1
 		: null,
 );
 const previousIdIndex = computed(() =>
 	currentIdIndex.value > 0 ? currentIdIndex.value - 1 : null,
 );
-
-const { data: dataSource, isLoading, error } = useDataSourceData();
-
 const isDescriptionExpanded = ref(false);
 const showExpandDescriptionButton = ref(false);
 const descriptionRef = ref();

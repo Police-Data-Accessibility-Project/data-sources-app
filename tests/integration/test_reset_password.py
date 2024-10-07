@@ -5,10 +5,9 @@ import uuid
 
 import psycopg
 
-from tests.conftest import dev_db_connection, dev_db_client, flask_client_with_db
+from tests.conftest import dev_db_client, flask_client_with_db
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
-    get_user_password_digest,
     request_reset_password_api,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
@@ -67,8 +66,12 @@ def test_reset_password_user_cant_reset_another_users_password(
 ):
     user_info_1 = create_test_user_api(flask_client_with_db)
     user_info_2 = create_test_user_api(flask_client_with_db)
-    password_digest_user_2 = dev_db_client.get_user_info(user_info_2.email).password_digest
-    password_digest_user_1 = dev_db_client.get_user_info(user_info_1.email).password_digest
+    password_digest_user_2 = dev_db_client.get_user_info(
+        user_info_2.email
+    ).password_digest
+    password_digest_user_1 = dev_db_client.get_user_info(
+        user_info_1.email
+    ).password_digest
     token = request_reset_password_api(flask_client_with_db, mocker, user_info_1)
     new_password = str(uuid.uuid4())
 

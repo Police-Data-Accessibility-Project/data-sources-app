@@ -166,12 +166,16 @@ def test_get_relation_role_parameters_override(
         relation_role_override=RelationRoleEnum.ADMIN,
     )
 
-    assert rrp.get_relation_role_from_parameters(
-        access_info=AccessInfo(
-            access_type=AccessTypeEnum.API_KEY,
-            user_email="test_user",
+    assert (
+        rrp.get_relation_role_from_parameters(
+            access_info=AccessInfo(
+                access_type=AccessTypeEnum.API_KEY,
+                user_email="test_user",
+            )
         )
-    ) == RelationRoleEnum.ADMIN
+        == RelationRoleEnum.ADMIN
+    )
+
 
 def test_get_relation_role_parameters_no_override(
     mock_relation_role_function_with_params: MagicMock,
@@ -181,9 +185,7 @@ def test_get_relation_role_parameters_no_override(
     )
 
     mock_access_info = MagicMock()
-    rrp.get_relation_role_from_parameters(
-        access_info=mock_access_info
-    )
+    rrp.get_relation_role_from_parameters(access_info=mock_access_info)
 
     mock_relation_role_function_with_params.execute.assert_called_with(
         access_info=mock_access_info

@@ -3,13 +3,11 @@ from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
 from sqlalchemy.sql.expression import UnaryExpression
-from sqlalchemy.orm import defaultload
 from sqlalchemy.schema import Column
-from sqlalchemy.sql.base import ExecutableOption
 from sqlalchemy.sql.expression import asc, desc, BinaryExpression
 
 from database_client.enums import SortOrder
-from database_client.models import convert_to_column_reference, SQL_ALCHEMY_TABLE_REFERENCE
+from database_client.models import SQL_ALCHEMY_TABLE_REFERENCE
 
 
 ORDER_BY_REFERENCE = {
@@ -65,7 +63,7 @@ class WhereMapping:
 
         :param relation:
         :return: BinaryExpression. Example: Agency.municipality == "Pittsburgh"
-        """        
+        """
         relation_reference = SQL_ALCHEMY_TABLE_REFERENCE[relation]
         if self.eq is True:
             return getattr(relation_reference, self.column) == self.value
@@ -82,30 +80,3 @@ class WhereMapping:
         return results
 
 
-@dataclass
-class SubqueryParameters:
-    """
-    Contains parameters for executing a subquery
-    """
-
-    relation_name: str
-    linking_column: str
-    columns: list[str] = None
-
-    def set_columns(self, columns: list[str]) -> None:
-        self.columns = columns
-
-    def build_subquery(self, primary_relation: str) -> ExecutableOption:
-        """Creates a SQLAlchemy ExecutableOption for subquerying.
-
-        :param primary_relation:
-        :return: ExecutableOption. Example: defaultload(DataSource.agencies).load_only(Agency.name)
-        """
-        column_references = convert_to_column_reference(
-            columns=self.columns, relation=self.relation_name
-        )
-        linking_column_reference = convert_to_column_reference(
-            columns=[self.linking_column], relation=primary_relation
-        )
-
-        return defaultload(*linking_column_reference).load_only(*column_references)

@@ -44,4 +44,6 @@ class RequestResetPassword(PsycopgResource):
         Returns:
         - A dictionary containing a success message and the reset token, or an error message if an exception occurs.
         """
-        return self.run_endpoint(request_reset_password, email=request.json.get("email"))
+        return self.run_endpoint(
+            request_reset_password, email=request.json.get("email")
+        )

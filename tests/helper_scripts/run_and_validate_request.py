@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Optional, Type, Union
+from typing import Optional, Type, Union, Literal
 
 from flask.testing import FlaskClient
 from marshmallow import Schema
@@ -7,10 +7,11 @@ from marshmallow import Schema
 from tests.helper_scripts.helper_functions import add_query_params
 from tests.helper_scripts.simple_result_validators import check_response_status
 
+http_methods = Literal["get", "post", "put", "patch", "delete"]
 
 def run_and_validate_request(
     flask_client: FlaskClient,
-    http_method: str,
+    http_method: http_methods,
     endpoint: str,
     expected_response_status: HTTPStatus = HTTPStatus.OK,
     expected_json_content: Optional[dict] = None,

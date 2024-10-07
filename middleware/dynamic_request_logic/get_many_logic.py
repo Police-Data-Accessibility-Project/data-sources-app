@@ -4,7 +4,7 @@ from typing import Optional
 from flask import Response
 
 from database_client.enums import ColumnPermissionEnum, RelationRoleEnum
-from database_client.db_client_dataclasses import SubqueryParameters
+from database_client.subquery_logic import SubqueryParameters
 from middleware.column_permission_logic import (
     RelationRoleParameters,
     get_permitted_columns,
@@ -44,7 +44,7 @@ def get_many(
         permitted_columns, requested_columns
     )
 
-    mp.subquery_params = process_subquery_parameters(
+    mp.subquery_parameters = process_subquery_parameters(
         requested_columns, relation_role, mp
     )
 
@@ -53,7 +53,7 @@ def get_many(
         relation_name=mp.relation,
         columns=permitted_columns,
         page=page,
-        subquery_parameters=mp.subquery_params,
+        subquery_parameters=mp.subquery_parameters,
         **mp.db_client_additional_args,
     )
     return multiple_results_response(message=f"{mp.entry_name} found", data=results)
@@ -83,9 +83,9 @@ def process_subquery_parameters(
                     column_permission=ColumnPermissionEnum.READ,
                 )
             )
-            for parameter in mp.subquery_params
+            for parameter in mp.subquery_parameters
         ]
-        return mp.subquery_params
+        return mp.subquery_parameters
     else:
         return []
 

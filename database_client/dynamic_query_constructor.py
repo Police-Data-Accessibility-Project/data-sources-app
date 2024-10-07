@@ -9,18 +9,15 @@ from sqlalchemy.orm import load_only
 from sqlalchemy.schema import Column
 
 from database_client.constants import (
-    AGENCY_APPROVED_COLUMNS,
     DATA_SOURCES_APPROVED_COLUMNS,
     ARCHIVE_INFO_APPROVED_COLUMNS,
-    RESTRICTED_DATA_SOURCE_COLUMNS,
-    RESTRICTED_COLUMNS,
 )
 from database_client.db_client_dataclasses import (
     OrderByParameters,
-    SubqueryParameters,
     WhereMapping,
 )
-from database_client.models import SQL_ALCHEMY_TABLE_REFERENCE
+from database_client.subquery_logic import SubqueryParameters
+from database_client.models import SQL_ALCHEMY_TABLE_REFERENCE, convert_to_column_reference
 from utilities.enums import RecordCategories
 
 TableColumn = namedtuple("TableColumn", ["table", "column"])
@@ -253,9 +250,9 @@ class DynamicQueryConstructor:
 
         join_conditions = []
         where_subclauses = [
-            sql.SQL("LOWER(locations_expanded.state_name) = LOWER({state_name})").format(
-                state_name=sql.Literal(state)
-            ),
+            sql.SQL(
+                "LOWER(locations_expanded.state_name) = LOWER({state_name})"
+            ).format(state_name=sql.Literal(state)),
             sql.SQL("data_sources.approval_status = 'approved'"),
             sql.SQL("data_sources.url_status NOT IN ('broken', 'none found')"),
         ]
@@ -281,16 +278,16 @@ class DynamicQueryConstructor:
 
         if county is not None:
             where_subclauses.append(
-                sql.SQL("LOWER(locations_expanded.county_name) = LOWER({county_name})").format(
-                    county_name=sql.Literal(county)
-                )
+                sql.SQL(
+                    "LOWER(locations_expanded.county_name) = LOWER({county_name})"
+                ).format(county_name=sql.Literal(county))
             )
 
         if locality is not None:
             where_subclauses.append(
-                sql.SQL("LOWER(locations_expanded.locality_name) = LOWER({locality})").format(
-                    locality=sql.Literal(locality)
-                )
+                sql.SQL(
+                    "LOWER(locations_expanded.locality_name) = LOWER({locality})"
+                ).format(locality=sql.Literal(locality))
             )
 
         query = sql.Composed(
@@ -427,16 +424,18 @@ class DynamicQueryConstructor:
             ]
         if order_by is not None:
             order_by = order_by.build_order_by_clause(relation)
+        load_options = []
         if subquery_parameters:
-            subquery_parameters = [
-                parameter.build_subquery(relation) for parameter in subquery_parameters
-            ]
-            subquery_parameters.append(load_only(*columns))
-            columns = [SQL_ALCHEMY_TABLE_REFERENCE[relation]]
+            for parameter in subquery_parameters:
+                load_options.append(parameter.build_subquery_load_option(relation))
+            load_options.append(load_only(*columns))
+            primary_relation_columns = [SQL_ALCHEMY_TABLE_REFERENCE[relation]]
+        else:
+            primary_relation_columns = columns
 
         base_query = (
-            lambda: select(*columns)
-            .options(*subquery_parameters)
+            lambda: select(*primary_relation_columns)
+            .options(*load_options)
             .where(*where_mappings)
             .order_by(order_by)
             .limit(limit)

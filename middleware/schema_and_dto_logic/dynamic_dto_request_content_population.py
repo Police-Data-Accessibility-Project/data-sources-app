@@ -1,6 +1,9 @@
 from typing import Type, Optional, Callable, Any
 
-from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments, check_for_either_or_argument
+from middleware.argument_checking_logic import (
+    check_for_mutually_exclusive_arguments,
+    check_for_either_or_argument,
+)
 from middleware.schema_and_dto_logic.custom_exceptions import AttributeNotInClassError
 from middleware.schema_and_dto_logic.custom_types import DTOTypes, ValidationSchema
 from middleware.schema_and_dto_logic.util import _get_source_getting_function
@@ -79,7 +82,8 @@ def _apply_transformation_functions(
 
 
 def _get_class_attribute_values_from_request(
-    object_class: Type[DTOTypes], source: SourceMappingEnum = SourceMappingEnum.QUERY_ARGS
+    object_class: Type[DTOTypes],
+    source: SourceMappingEnum = SourceMappingEnum.QUERY_ARGS,
 ) -> dict[str, Any]:
     """
     Apply getter on all defined class attributes, returning a list of values

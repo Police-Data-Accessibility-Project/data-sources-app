@@ -2,18 +2,19 @@ from database_client.database_client import DatabaseClient
 from middleware.primary_resource_logic.unique_url_checker import (
     UniqueURLCheckerResponseOuterSchema,
 )
-from tests.conftest import flask_client_with_db, live_database_client, integration_test_admin_setup
+from tests.conftest import (
+    flask_client_with_db,
+    live_database_client,
+    integration_test_admin_setup,
+)
 from tests.helper_scripts.common_test_data import (
     create_data_source_entry_for_url_duplicate_checking,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
 
-
 def test_unique_url_checker(
-        flask_client_with_db,
-        live_database_client,
-        integration_test_admin_setup
+    flask_client_with_db, live_database_client, integration_test_admin_setup
 ):
     ENDPOINT = "check/unique-url"
     header = integration_test_admin_setup.tus.api_authorization_header
@@ -28,7 +29,7 @@ def test_unique_url_checker(
         query_parameters={"url": non_duplicate_url},
         expected_json_content={"duplicates": []},
         expected_schema=UniqueURLCheckerResponseOuterSchema,
-        headers=header
+        headers=header,
     )
 
     # Add tests for multiple variants
@@ -53,5 +54,5 @@ def test_unique_url_checker(
                 ]
             },
             expected_schema=UniqueURLCheckerResponseOuterSchema,
-            headers=header
+            headers=header,
         )

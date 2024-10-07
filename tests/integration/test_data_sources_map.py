@@ -2,7 +2,7 @@
 
 from http import HTTPStatus
 import psycopg
-from tests.conftest import dev_db_connection, connection_with_test_data, flask_client_with_db
+from tests.conftest import connection_with_test_data, flask_client_with_db
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     create_api_key,

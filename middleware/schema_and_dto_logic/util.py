@@ -8,7 +8,10 @@ from utilities.enums import SourceMappingEnum
 
 
 def _get_required_argument(
-    argument_name: str, metadata: dict, schema_class: SchemaTypes, field_name: Optional[str] = None
+    argument_name: str,
+    metadata: dict,
+    schema_class: SchemaTypes,
+    field_name: Optional[str] = None,
 ) -> Any:
     try:
         return metadata[argument_name]
@@ -29,6 +32,7 @@ def _get_source_getting_function(source: SourceMappingEnum) -> Callable:
         SourceMappingEnum.PATH: request.view_args.get,
     }
     return source_mapping[source]
+
 
 def get_json_metadata(description: str) -> dict:
     return {

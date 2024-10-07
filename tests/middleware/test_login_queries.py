@@ -17,6 +17,7 @@ from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 PATCH_ROOT = "middleware.primary_resource_logic.login_queries"
 
+
 def test_generate_api_key():
     api_key = generate_api_key()
     assert len(api_key) == 32

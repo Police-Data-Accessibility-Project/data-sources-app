@@ -13,8 +13,12 @@ from middleware.primary_resource_logic.agencies import (
     update_agency,
     delete_agency,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import AgenciesPostSchema, AgenciesPutSchema, AgenciesPostDTO, \
-    AgenciesGetManyResponseSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import (
+    AgenciesPostSchema,
+    AgenciesPutSchema,
+    AgenciesPostDTO,
+    AgenciesGetManyResponseSchema,
+)
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyBaseSchema,
     GetByIDBaseSchema,

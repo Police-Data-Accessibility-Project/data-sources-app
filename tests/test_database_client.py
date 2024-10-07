@@ -13,9 +13,9 @@ from sqlalchemy import insert, select, update
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import (
     OrderByParameters,
-    SubqueryParameters,
     WhereMapping,
 )
+from database_client.subquery_logic import SubqueryParameters, SubqueryParameterManager
 from database_client.enums import (
     ExternalAccountTypeEnum,
     RelationRoleEnum,
@@ -39,7 +39,7 @@ from tests.conftest import live_database_client, test_table_data
 from tests.helper_scripts.common_test_data import (
     insert_test_column_permission_data,
     create_agency_entry_for_search_cache,
-    create_data_source_entry_for_url_duplicate_checking,
+    create_data_source_entry_for_url_duplicate_checking, TestDataCreatorFlask, TestDataCreatorDBClient,
 )
 from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources_if_not_exist,
@@ -47,6 +47,7 @@ from tests.helper_scripts.helper_functions import (
     create_test_user_db_client,
 )
 from utilities.enums import RecordCategories
+from conftest import test_data_creator_db_client
 
 
 def test_add_new_user(live_database_client: DatabaseClient):
@@ -303,7 +304,9 @@ def test_select_from_relation_subquery(live_database_client: DatabaseClient):
 
     live_database_client.execute_sqlalchemy(
         lambda: insert(Agency).values(
-            airtable_uid=agency_id, submitted_name=agency_name, jurisdiction_type="federal"
+            airtable_uid=agency_id,
+            submitted_name=agency_name,
+            jurisdiction_type="federal",
         )
     )
     live_database_client.execute_sqlalchemy(
@@ -337,7 +340,6 @@ def test_select_from_relation_subquery(live_database_client: DatabaseClient):
         {
             "name": data_source_name,
             "airtable_uid": data_source_id,
-            "agency_ids": [agency_id],
             "agencies": [
                 {
                     "name": agency_name,
@@ -953,6 +955,57 @@ def test_create_or_get(live_database_client):
     )
 
     assert results == new_results
+
+def test_get_data_requests(test_data_creator_db_client: TestDataCreatorDBClient):
+    tdc = test_data_creator_db_client
+
+    # Create a data request to ensure there's at least one data request in the database
+    tdc.data_request()
+
+    results = tdc.db_client.get_data_requests(
+        columns=["id"],
+        subquery_parameters=[SubqueryParameterManager.data_sources()]
+    )
+    assert results
+
+def test_get_data_sources(live_database_client):
+    results = live_database_client.get_data_sources(
+        columns=["airtable_uid"],
+        subquery_parameters=[SubqueryParameterManager.agencies(
+            columns=["airtable_uid"],
+        )]
+    )
+    assert results
+
+def test_get_linked_rows(
+    test_data_creator_db_client: TestDataCreatorDBClient,
+):
+    tdc = test_data_creator_db_client
+
+    # Create a data request to ensure there's at least one data request in the database
+    dr_id = tdc.data_request().id
+    ds_info = tdc.data_source()
+    tdc.link_data_request_to_data_source(
+        data_request_id=dr_id,
+        data_source_id=ds_info.id,
+    )
+    #
+    results = tdc.db_client.get_linked_rows(
+        link_table=Relations.LINK_DATA_SOURCES_DATA_REQUESTS,
+        left_id=dr_id,
+        left_link_column="request_id",
+        right_link_column="source_id",
+        linked_relation=Relations.DATA_SOURCES,
+        linked_relation_linking_column="airtable_uid",
+        columns_to_retrieve=[
+            "airtable_uid",
+            "name",
+        ]
+    )
+
+    assert results["count"] == len(results["data"]) > 0
+    assert results["data"][0]["name"] == ds_info.name
+    assert results["data"][0]["airtable_uid"] == ds_info.id
 
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts

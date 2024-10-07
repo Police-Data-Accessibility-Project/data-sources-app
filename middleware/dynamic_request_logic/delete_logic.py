@@ -4,7 +4,10 @@ from typing import Optional
 from middleware.common_response_formatting import message_response
 from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.common_functions import check_for_id
-from middleware.dynamic_request_logic.supporting_classes import MiddlewareParameters, IDInfo
+from middleware.dynamic_request_logic.supporting_classes import (
+    MiddlewareParameters,
+    IDInfo,
+)
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.util_dynamic import call_if_not_none
 
@@ -38,8 +41,6 @@ def delete_entry(
     )
 
     mp.db_client_method(
-        mp.db_client,
-        id_column_name=id_info.id_column_name,
-        id_column_value=entry_id
+        mp.db_client, id_column_name=id_info.id_column_name, id_column_value=entry_id
     )
     return message_response(f"{mp.entry_name} deleted.")

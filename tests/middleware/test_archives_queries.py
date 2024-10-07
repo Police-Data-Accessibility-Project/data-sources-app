@@ -11,7 +11,9 @@ from middleware.primary_resource_logic.archives_queries import (
 @pytest.fixture
 def make_response_mock(monkeypatch):
     mock = MagicMock()
-    monkeypatch.setattr("middleware.primary_resource_logic.archives_queries.make_response", mock)
+    monkeypatch.setattr(
+        "middleware.primary_resource_logic.archives_queries.make_response", mock
+    )
     return mock
 
 

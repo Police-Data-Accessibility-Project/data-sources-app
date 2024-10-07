@@ -7,7 +7,8 @@ from pytest_mock import mocker
 from middleware.access_logic import AccessInfo
 from middleware.decorators import (
     api_key_required,
-    permissions_required, authentication_required,
+    permissions_required,
+    authentication_required,
 )
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 
@@ -70,6 +71,7 @@ def test_permissions_required(dummy_permissions_required_route, monkeypatch):
 
     dummy_permissions_required_route()
     mock_check_permissions.assert_called_once_with(PermissionsEnum.READ_ALL_USER_INFO)
+
 
 def test_authentication_required(dummy_authentication_required_route, monkeypatch):
     mock_get_authentication = MagicMock()

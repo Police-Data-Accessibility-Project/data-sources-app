@@ -1,4 +1,4 @@
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests import (
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
     GetManyDataRequestsSchema,
 )
 from resources.UserProfile import USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL
@@ -20,9 +20,7 @@ def test_user_profile_data_requests(flask_client_with_db):
         endpoint=f"{USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL}?page=1",
         headers=tus.jwt_authorization_header,
         expected_json_content={"count": 0, "data": [], "message": ""},
-        expected_schema=GetManyDataRequestsSchema(
-            exclude=["data.internal_notes"]
-        ),
+        expected_schema=GetManyDataRequestsSchema(exclude=["data.internal_notes"]),
     )
 
     # Add a data request
@@ -34,9 +32,7 @@ def test_user_profile_data_requests(flask_client_with_db):
         http_method="get",
         endpoint=f"{USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL}?page=1",
         headers=tus.jwt_authorization_header,
-        expected_schema=GetManyDataRequestsSchema(
-            exclude=["data.internal_notes"]
-        ),
+        expected_schema=GetManyDataRequestsSchema(exclude=["data.internal_notes"]),
     )
     assert len(json_response["data"]) == 1
     assert json_response["data"][0]["id"] == int(tdr.id)
