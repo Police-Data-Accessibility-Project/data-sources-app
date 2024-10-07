@@ -754,10 +754,12 @@ class DatabaseClient:
                 for mapping in where_mappings
             ]
 
+        # Iterate through all properties of the Table
         for name, descriptor in inspect(
             mapped_table.__class__
         ).all_orm_descriptors.items():
             if type(descriptor) == hybrid_method and name in METADATA_METHOD_NAMES:
+                # Retrieve and call the metadata method
                 metadata_result = mapped_table.__getattribute__(name)(
                     where_conditions=where_mappings,
                     limit=limit,

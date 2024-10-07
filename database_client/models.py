@@ -135,7 +135,7 @@ class Base(DeclarativeBase):
 
 class CountMetadata:
     @hybrid_method
-    def count(cls, where_conditions: list[bool], limit: int, offset: int, **kwargs):
+    def count(cls, where_conditions: list[bool], limit: int, offset: int, **kwargs) -> int:
         session = Session.object_session(cls)
         if session:
             return session.scalar(
