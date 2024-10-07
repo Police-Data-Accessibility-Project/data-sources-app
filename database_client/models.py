@@ -369,7 +369,7 @@ def iter_with_special_cases(instance, special_cases=None):
             yield key, value
 
 
-class DataSource(Base):
+class DataSource(Base, CountMetadata):
     __tablename__ = Relations.DATA_SOURCES.value
 
     def __iter__(self):
