@@ -60,7 +60,9 @@ data_requests_outer_model = create_get_many_response_model(
     namespace_data_requests, get_many_response_schema=GetManyDataRequestsSchema()
 )
 data_sources_outer_model = create_get_many_response_model(
-    namespace_data_requests, get_many_response_schema=DataSourcesGetManySchema()
+    namespace_data_requests, get_many_response_schema=DataSourcesGetManySchema(
+        exclude=["data.agencies"]
+    )
 )
 id_and_message_model = create_id_and_message_model(namespace_data_requests)
 
