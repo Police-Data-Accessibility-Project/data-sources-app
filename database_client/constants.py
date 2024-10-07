@@ -1,21 +1,3 @@
-from database_client.models import (
-    Agency,
-    DataRequest,
-    DataSource,
-    DataSourceArchiveInfo,
-    LinkDataSourceDataRequest,
-    ResetToken,
-    TestTable,
-    User,
-    AgencyExpanded,
-    USState,
-    County,
-    Locality,
-    Location,
-    LocationExpanded,
-    LinkUserFollowedLocation,
-)
-
 AGENCY_APPROVED_COLUMNS = [
     "homepage_url",
     "count_data_sources",
@@ -110,6 +92,9 @@ RESTRICTED_COLUMNS = [
     "approval_status",
     "airtable_uid",
     "airtable_source_last_modified",
+]
+METADATA_METHOD_NAMES = [
+    "count"
 ]
 
 PAGE_SIZE = 100

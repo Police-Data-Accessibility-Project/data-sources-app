@@ -990,3 +990,26 @@ def test_create_or_get(live_database_client):
 #
 #     assert len(results) == 1
 #     assert results[0].data_source_name == 'Xylodammerung Police Department Stops'
+
+
+def test_metadata(live_database_client: DatabaseClient):
+    import json
+    where_mappings = [WhereMapping(column="scraper_url", eq=False, value=None)]
+    subquery_parameters = [
+        SubqueryParameters(
+            relation_name=Relations.AGENCIES_EXPANDED.value,
+            columns=["airtable_uid", "name"],
+            linking_column="agencies",
+        )
+    ]
+
+    results = live_database_client._select_from_relation(
+        relation_name="data_sources",
+        columns=["airtable_uid", "name"],
+        where_mappings=where_mappings,
+        subquery_parameters=subquery_parameters,
+        build_metadata=True,
+    )
+
+    print(json.dumps(results, indent=4))
+

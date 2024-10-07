@@ -8,10 +8,12 @@ import psycopg
 from psycopg import sql, Cursor
 from psycopg.rows import dict_row, tuple_row
 from sqlalchemy import select
+from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import aliased, defaultload, load_only
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, Table
 
-from database_client.constants import PAGE_SIZE
+from database_client.constants import METADATA_METHOD_NAMES, PAGE_SIZE
 from database_client.db_client_dataclasses import (
     OrderByParameters,
     SubqueryParameters,
@@ -109,10 +111,7 @@ class DatabaseClient:
 
     @cursor_manager()
     def execute_raw_sql(
-            self,
-            query: str,
-            vars: Optional[tuple] = None,
-            execute_many: bool = False
+        self, query: str, vars: Optional[tuple] = None, execute_many: bool = False
     ) -> Optional[list[dict[Any, ...]]]:
         """Executes an SQL query passed to the function.
 
@@ -680,7 +679,10 @@ class DatabaseClient:
         :param d:
         :return:
         """
-        return {key: (value.value if isinstance(value, Enum) else value) for key, value in d.items()}
+        return {
+            key: (value.value if isinstance(value, Enum) else value)
+            for key, value in d.items()
+        }
 
     @cursor_manager()
     def _create_entry_in_table(
@@ -695,7 +697,9 @@ class DatabaseClient:
         :param table_name: The name of the table to create an entry in.
         :param column_value_mappings: A dictionary mapping column names to their new values.
         """
-        column_value_mappings = self.update_dictionary_enum_values(column_value_mappings)
+        column_value_mappings = self.update_dictionary_enum_values(
+            column_value_mappings
+        )
         query = DynamicQueryConstructor.create_insert_query(
             table_name, column_value_mappings, column_to_return
         )
@@ -736,8 +740,36 @@ class DatabaseClient:
     create_locality = partialmethod(
         _create_entry_in_table,
         table_name=Relations.LOCALITIES.value,
-        column_to_return="id"
+        column_to_return="id",
     )
+
+    def build_metadata(
+        self,
+        mapped_table: Table,
+        where_mappings: list[WhereMapping] | list[bool],
+        limit: int,
+        offset: int,
+    ) -> dict[str, Any]:
+        metadata_dict = {}
+
+        if where_mappings != [True]:
+            where_mappings = [
+                mapping.build_where_clause(mapped_table.__tablename__)
+                for mapping in where_mappings
+            ]
+
+        for name, descriptor in inspect(
+            mapped_table.__class__
+        ).all_orm_descriptors.items():
+            if type(descriptor) == hybrid_method and name in METADATA_METHOD_NAMES:
+                metadata_result = mapped_table.__getattribute__(name)(
+                    where_conditions=where_mappings,
+                    limit=limit,
+                    offset=offset,
+                )
+                metadata_dict[name] = metadata_result
+        
+        return metadata_dict
 
     @session_manager
     def _select_from_relation(
@@ -749,6 +781,7 @@ class DatabaseClient:
         page: Optional[int] = None,
         order_by: Optional[OrderByParameters] = None,
         subquery_parameters: Optional[list[SubqueryParameters]] = [],
+        build_metadata: Optional[bool] = False,
     ) -> list[dict]:
         """
         Selects a single relation from the database
@@ -767,13 +800,19 @@ class DatabaseClient:
             subquery_parameters,
         )
         raw_results = self.session.execute(query()).mappings().unique().all()
+        table_key = [key for key in raw_results[0].keys()][0]
 
         if subquery_parameters:
-            results = [
-                dict(result[[key for key in result.keys()][0]]) for result in raw_results
-            ]
+            results = [dict(result[table_key]) for result in raw_results]
         else:
             results = [dict(result) for result in raw_results]
+
+        if build_metadata is True:
+            metadata_dict = self.build_metadata(
+                raw_results[0][table_key], where_mappings, limit, offset
+            )
+            results = {"data": results, "metadata": metadata_dict}
+
         return results
 
     get_data_requests = partialmethod(
