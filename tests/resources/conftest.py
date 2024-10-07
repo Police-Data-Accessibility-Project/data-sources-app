@@ -4,7 +4,12 @@ from unittest.mock import MagicMock
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
-from tests.conftest import ClientWithMockDB, client_with_mock_db, mock_database_client, bypass_authentication_required
+from tests.conftest import (
+    ClientWithMockDB,
+    client_with_mock_db,
+    mock_database_client,
+    bypass_authentication_required,
+)
 
 
 @dataclass

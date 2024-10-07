@@ -26,7 +26,9 @@ export const useAuthStore = defineStore('auth', {
 		},
 		redirectTo: null,
 	}),
-	persist: true,
+	persist: {
+		storage: sessionStorage,
+	},
 	actions: {
 		async login(email, password) {
 			const user = useUserStore();

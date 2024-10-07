@@ -8,8 +8,10 @@ class UserNotFoundError(Exception):
         self.message = message.format(email=self.email)
         super().__init__(self.message)
 
+
 class DuplicateUserError(Exception):
     pass
+
 
 class TokenNotFoundError(Exception):
     """Raised when the token is not found in the database."""

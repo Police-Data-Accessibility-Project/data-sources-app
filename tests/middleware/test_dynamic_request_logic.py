@@ -65,7 +65,9 @@ def test_results_dependent_response_with_results(monkeypatch):
     )
 
     mock_message_response.assert_called_once_with(
-        message="test entry found", data={"test": 1}, validation_schema=EntryDataResponseSchema
+        message="test entry found",
+        data={"test": 1},
+        validation_schema=EntryDataResponseSchema,
     )
 
 
@@ -230,6 +232,7 @@ def test_execute_if_none_is_not_none():
     mock = MagicMock()
     execute_if_not_none(mock)
     mock.execute.assert_called_once()
+
 
 def test_put_entry(monkeypatch):
     mock = MagicMock()

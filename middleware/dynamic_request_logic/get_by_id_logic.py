@@ -4,6 +4,7 @@ They are designed such that a variety of parameters are provided, and then funct
 performed in a manner designed to be consistent among all endpoints using them.
 
 """
+
 from flask import Response
 
 from database_client.enums import ColumnPermissionEnum

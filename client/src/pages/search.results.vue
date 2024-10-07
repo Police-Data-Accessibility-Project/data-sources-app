@@ -11,9 +11,11 @@
 		<section class="w-full h-full">
 			<div class="flex flex-col sm:flex-row sm:justify-between mb-4">
 				<div>
-					<h1>Results for {{ getLocationText(searchData) }}</h1>
+					<h1>
+						Results {{ searchData && 'for ' + getLocationText(searchData) }}
+					</h1>
 					<nav
-						class="flex gap-5 mb-4 [&>*]:text-[.72rem] [&>*]:xs:text-med [&>*]:sm:text-lg"
+						class="flex gap-2 mb-4 [&>*]:text-[.72rem] [&>*]:xs:text-med [&>*]:sm:text-lg sm:gap-4"
 					>
 						<span class="text-neutral-500">Jump to:</span>
 						<a
@@ -70,7 +72,9 @@
 			<transition>
 				<div v-if="isSearchShown" class="@container">
 					<SearchForm
-						:placeholder="getLocationText(searchData)"
+						:placeholder="
+							searchData ? getLocationText(searchData) : 'Enter a place'
+						"
 						button-copy="Update search"
 						@searched="onWindowWidthSetIsSearchShown"
 					/>
@@ -85,7 +89,7 @@
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic';
 import { useSearchStore } from '@/stores/search';
 import { NavigationResult } from 'unplugin-vue-router/runtime';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onBeforeUpdate, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import _isEqual from 'lodash/_baseIsEqual';
 import { ALL_LOCATION_TYPES } from '@/util/constants';
@@ -95,9 +99,10 @@ import {
 	normalizeLocaleForHash,
 	getLocationText,
 	getAnchorLinkText,
+	getAllIdsSearched,
 } from '@/util/searchResults';
 
-const { search } = useSearchStore();
+const { search, setMostRecentSearchIds } = useSearchStore();
 const results = ref(null);
 const params = ref(null);
 
@@ -107,8 +112,10 @@ export const useSearchData = defineBasicLoader(
 		const searched = getMostNarrowSearchLocationWithResults(route.query);
 		// If query matches cached query, return cached results
 		if (_isEqual(params.value, route.query) && results.value) {
+			const r = groupResultsByAgency(results.value);
+
 			return {
-				results: groupResultsByAgency(results.value),
+				results: r,
 				searched,
 				params: route.query,
 			};
@@ -119,14 +126,16 @@ export const useSearchData = defineBasicLoader(
 		results.value = res;
 		params.value = route.query;
 
-		// Initial fetch - get hash
+		// On initial fetch - get hash
 		const hash = normalizeLocaleForHash(searched, res);
 		if (!route.hash) {
 			return new NavigationResult({ ...route, hash: `#${hash}` });
 		}
 
+		const r = groupResultsByAgency(res);
+
 		return {
-			results: groupResultsByAgency(res),
+			results: r,
 			searched,
 			params: route.query,
 		};
@@ -147,7 +156,12 @@ const isSearchShown = ref(false);
 // lifecycle methods
 onMounted(() => {
 	onWindowWidthSetIsSearchShown();
+	setMostRecentSearchIds(getAllIdsSearched(searchData.value.results));
 	window.addEventListener('resize', onWindowWidthSetIsSearchShown);
+});
+
+onBeforeUpdate(() => {
+	setMostRecentSearchIds(getAllIdsSearched(searchData.value.results));
 });
 
 onUnmounted(() => {

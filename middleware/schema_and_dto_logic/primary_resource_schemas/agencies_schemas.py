@@ -5,7 +5,10 @@ from marshmallow import fields, Schema, validate, validates_schema, ValidationEr
 
 from database_client.enums import LocationType
 from middleware.enums import JurisdictionType, AgencyType
-from middleware.schema_and_dto_logic.response_schemas import MessageSchema, GetManyResponseSchemaBase
+from middleware.schema_and_dto_logic.response_schemas import (
+    MessageSchema,
+    GetManyResponseSchemaBase,
+)
 from utilities.enums import SourceMappingEnum
 
 
@@ -202,7 +205,10 @@ class LocationInfoSchema(Schema):
         if location_type == LocationType.STATE:
             if data.get("state_iso") is None:
                 raise ValidationError("state_iso is required for location type STATE.")
-            if data.get("county_fips") is not None or data.get("locality_name") is not None:
+            if (
+                data.get("county_fips") is not None
+                or data.get("locality_name") is not None
+            ):
                 raise ValidationError(
                     "county_fips and locality_name must be None for location type STATE."
                 )

@@ -61,14 +61,16 @@ def get_data_sources_wrapper(
                     sort_order=dto.sort_order,
                 ),
                 "where_mappings": [
-                    WhereMapping(column="approval_status", value=dto.approval_status.value)
+                    WhereMapping(
+                        column="approval_status", value=dto.approval_status.value
+                    )
                 ],
             },
             entry_name="data source",
-            subquery_parameters=SUBQUERY_PARAMS
+            subquery_parameters=SUBQUERY_PARAMS,
         ),
         page=dto.page,
-        requested_columns=dto.requested_columns
+        requested_columns=dto.requested_columns,
     )
 
 

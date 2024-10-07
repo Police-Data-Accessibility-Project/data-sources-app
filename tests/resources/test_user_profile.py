@@ -21,11 +21,12 @@ def user_profile_data_requests_setup(resource_test_setup: ResourceTestSetup):
 
     return rts
 
+
 @pytest.mark.parametrize(GET_MANY_TEST_QUERY_ARGS, GET_MANY_TEST_QUERY_PARAMS)
 def test_user_profile_data_requests_get_many_parameters(
-        query_dict: dict,
-        expected_dto: GetManyBaseDTO,
-        user_profile_data_requests_setup: ResourceTestSetup,
+    query_dict: dict,
+    expected_dto: GetManyBaseDTO,
+    user_profile_data_requests_setup: ResourceTestSetup,
 ):
     ts = user_profile_data_requests_setup
     endpoint = add_query_params(

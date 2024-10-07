@@ -312,10 +312,7 @@ def test_populate_nested_schema_with_request_content(
     assert isinstance(obj, ExampleNestedDTO)
     assert obj.example_dto_with_enum.example_enum == "a"
     assert obj.example_dto.example_string == "my example string"
-    assert (
-        obj.example_dto.example_query_string
-        == "my example query string"
-    )
+    assert obj.example_dto.example_query_string == "my example query string"
     assert obj.example_dto.example_form == "form value"
 
 

@@ -148,7 +148,7 @@ def get_data_requests_wrapper(
             db_client_method=DatabaseClient.get_data_requests,
             subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS
         ),
-        page=dto.page
+        page=dto.page,
     )
 
 

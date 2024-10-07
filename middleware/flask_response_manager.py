@@ -3,6 +3,7 @@ This FlaskResponseManager is a wrapper class designed to consolidate calls to ma
 through a single point of entry, which can be mocked as well as enable additional
 logic to be added as necessary.
 """
+
 from http import HTTPStatus
 from typing import Optional, Type
 
@@ -29,7 +30,10 @@ class FlaskResponseManager:
         try:
             validation_schema().load(data)
         except ValidationError as e:
-            abort(code=HTTPStatus.INTERNAL_SERVER_ERROR, message=f"Error validating response schema: {e}")
+            abort(
+                code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                message=f"Error validating response schema: {e}",
+            )
 
     @classmethod
     def abort(cls, code: int, message: str) -> Response:

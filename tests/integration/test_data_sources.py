@@ -7,8 +7,10 @@ import psycopg
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourcesGetByIDSchema, \
-    DataSourcesGetManySchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
+    DataSourcesGetByIDSchema,
+    DataSourcesGetManySchema,
+)
 from middleware.schema_and_dto_logic.response_schemas import GetManyResponseSchema
 from tests.conftest import connection_with_test_data, db_client_with_test_data, flask_client_with_db, test_user_admin
 from conftest import test_data_creator_flask, monkeysession
@@ -35,7 +37,7 @@ def test_data_sources_get(
         http_method="get",
         endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&approval_status=approved",  # ENDPOINT,
         headers=tus.api_authorization_header,
-        expected_schema=DataSourcesGetManySchema
+        expected_schema=DataSourcesGetManySchema,
     )
     data = response_json["data"]
     assert len(data) == 100
@@ -127,7 +129,7 @@ def test_data_sources_by_id_get(
         http_method="get",
         endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}/{cds.id}",
         headers=tus.api_authorization_header,
-        expected_schema=DataSourcesGetByIDSchema
+        expected_schema=DataSourcesGetByIDSchema,
     )
 
     assert response_json["data"]["name"] == cds.name
@@ -155,9 +157,7 @@ def test_data_sources_by_id_put(
 
     result = tdc.db_client.get_data_sources(
         columns=["description"],
-        where_mappings=[
-            WhereMapping(column="airtable_uid", value=cdr.id)
-        ]
+        where_mappings=[WhereMapping(column="airtable_uid", value=cdr.id)],
     )
     assert result[0]["description"] == desc
 
@@ -175,9 +175,7 @@ def test_data_sources_by_id_delete(
 
     result = tdc.db_client.get_data_sources(
         columns=["description"],
-        where_mappings=[
-            WhereMapping(column="airtable_uid", value=ds_info.id)
-        ]
+        where_mappings=[WhereMapping(column="airtable_uid", value=ds_info.id)],
     )
     assert len(result) == 1
 
@@ -190,9 +188,7 @@ def test_data_sources_by_id_delete(
 
     result = tdc.db_client.get_data_sources(
         columns=["description"],
-        where_mappings=[
-            WhereMapping(column="airtable_uid", value=ds_info.id)
-        ]
+        where_mappings=[WhereMapping(column="airtable_uid", value=ds_info.id)],
     )
 
     assert len(result) == 0

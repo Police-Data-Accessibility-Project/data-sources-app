@@ -95,6 +95,7 @@ class DataRequestsSchema(Schema):
         ),
     )
 
+
 class DataRequestsPostSchema(Schema):
     entry_data = fields.Nested(
         nested=DataRequestsSchema,

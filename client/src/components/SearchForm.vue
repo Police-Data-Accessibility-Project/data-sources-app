@@ -48,7 +48,7 @@ const { buttonCopy } = defineProps({
 	placeholder: String,
 });
 
-const emit = defineEmits('searched');
+const emit = defineEmits(['searched']);
 
 /* constants */
 const TYPEAHEAD_ID = 'pdap-search-typeahead';

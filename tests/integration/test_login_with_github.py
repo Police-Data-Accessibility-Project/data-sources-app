@@ -10,8 +10,11 @@ from tests.helper_scripts.helper_functions import (
     patch_setup_callback_session,
     create_fake_github_user_info,
 )
-from tests.helper_scripts.common_test_functions import assert_expected_pre_callback_response, \
-    assert_api_key_exists_for_email, assert_jwt_token_matches_user_email
+from tests.helper_scripts.common_test_functions import (
+    assert_expected_pre_callback_response,
+    assert_api_key_exists_for_email,
+    assert_jwt_token_matches_user_email,
+)
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from tests.helper_scripts.simple_result_validators import check_response_status
 

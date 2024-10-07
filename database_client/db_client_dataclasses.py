@@ -63,7 +63,7 @@ class WhereMapping:
 
         :param relation:
         :return: BinaryExpression. Example: Agency.municipality == "Pittsburgh"
-        """        
+        """
         relation_reference = SQL_ALCHEMY_TABLE_REFERENCE[relation]
         if self.eq is True:
             return getattr(relation_reference, self.column) == self.value

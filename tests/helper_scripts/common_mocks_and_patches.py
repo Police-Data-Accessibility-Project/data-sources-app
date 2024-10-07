@@ -5,10 +5,8 @@ from tests.helper_scripts.constants import TEST_RESPONSE
 
 
 def multi_monkeypatch(
-        monkeypatch: patch,
-        patch_root: str,
-        mock: MagicMock,
-        functions_to_patch: list[str]) -> None:
+    monkeypatch: patch, patch_root: str, mock: MagicMock, functions_to_patch: list[str]
+) -> None:
     """
     Patches the given mock with all functions in the given list
     Each function will be accessible from the mock via an attribute with the same name as the funciton.
@@ -20,9 +18,9 @@ def multi_monkeypatch(
     """
     for function_name in functions_to_patch:
         monkeypatch.setattr(
-            target=f"{patch_root}.{function_name}",
-            name=mock.__getattr__(function_name)
+            target=f"{patch_root}.{function_name}", name=mock.__getattr__(function_name)
         )
+
 
 def patch_test_response_to_resource(monkeypatch, path) -> MagicMock:
     """
@@ -62,6 +60,7 @@ def patch_and_return_mock(path: str, monkeypatch) -> MagicMock:
     mock = MagicMock()
     monkeypatch.setattr(path, mock)
     return mock
+
 
 def patch_make_response(path: str, monkeypatch) -> MagicMock:
     mock = MagicMock()

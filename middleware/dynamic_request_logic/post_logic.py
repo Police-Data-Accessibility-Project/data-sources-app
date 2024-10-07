@@ -34,7 +34,6 @@ class PostLogic(PutPostBase):
         )
         self.id_val = None
 
-
     def call_database_client_method(self):
         try:
             self.id_val = self.mp.db_client_method(

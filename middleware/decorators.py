@@ -78,6 +78,7 @@ def authentication_required(
 
     return decorator
 
+
 def endpoint_info(
     namespace: Namespace,
     auth_info: AuthenticationInfo,
@@ -110,7 +111,9 @@ def endpoint_info(
     def decorator(func: Callable):
         @wraps(func)
         @handle_exceptions
-        @authentication_required(auth_info.allowed_access_methods, auth_info.restrict_to_permissions)
+        @authentication_required(
+            auth_info.allowed_access_methods, auth_info.restrict_to_permissions
+        )
         @namespace.doc(**doc_kwargs)
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
@@ -118,7 +121,6 @@ def endpoint_info(
         return wrapper
 
     return decorator
-
 
 
 def _add_auth_info_to_parser(auth_info: AuthenticationInfo, parser: RequestParser):
@@ -137,10 +139,7 @@ def _add_auth_info_to_parser(auth_info: AuthenticationInfo, parser: RequestParse
 
 
 def _get_input_doc_info(
-        namespace,
-        input_schema,
-        input_model=None,
-        input_model_name: Optional[str] = None
+    namespace, input_schema, input_model=None, input_model_name: Optional[str] = None
 ) -> FlaskRestxDocInfo:
     check_for_mutually_exclusive_arguments(input_schema, input_model)
     if input_model is not None:
@@ -158,5 +157,9 @@ def _get_input_doc_info(
     return get_restx_param_documentation(
         namespace=namespace,
         schema=input_schema,
-        model_name=input_schema.__class__.__name__ if input_model_name is None else input_model_name,
+        model_name=(
+            input_schema.__class__.__name__
+            if input_model_name is None
+            else input_model_name
+        ),
     )

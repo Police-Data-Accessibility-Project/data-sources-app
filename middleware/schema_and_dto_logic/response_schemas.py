@@ -8,6 +8,7 @@ from marshmallow import Schema, fields
 from middleware.schema_and_dto_logic.custom_fields import EntryDataListField, DataField
 from utilities.enums import SourceMappingEnum
 
+
 class MessageSchema(Schema):
     message = fields.String(
         required=True,
@@ -16,6 +17,7 @@ class MessageSchema(Schema):
             "source": SourceMappingEnum.JSON,
         },
     )
+
 
 class IDAndMessageSchema(MessageSchema):
     id = fields.String(
@@ -33,7 +35,7 @@ class GetManyResponseSchemaBase(MessageSchema):
         metadata={
             "description": "The total number of results",
             "source": SourceMappingEnum.JSON,
-        }
+        },
     )
 
 

@@ -111,10 +111,7 @@ class DatabaseClient:
 
     @cursor_manager()
     def execute_raw_sql(
-            self,
-            query: str,
-            vars: Optional[tuple] = None,
-            execute_many: bool = False
+        self, query: str, vars: Optional[tuple] = None, execute_many: bool = False
     ) -> Optional[list[dict[Any, ...]]]:
         """Executes an SQL query passed to the function.
 
@@ -676,7 +673,10 @@ class DatabaseClient:
         :param d:
         :return:
         """
-        return {key: (value.value if isinstance(value, Enum) else value) for key, value in d.items()}
+        return {
+            key: (value.value if isinstance(value, Enum) else value)
+            for key, value in d.items()
+        }
 
     @cursor_manager()
     def _create_entry_in_table(
@@ -691,7 +691,9 @@ class DatabaseClient:
         :param table_name: The name of the table to create an entry in.
         :param column_value_mappings: A dictionary mapping column names to their new values.
         """
-        column_value_mappings = self.update_dictionary_enum_values(column_value_mappings)
+        column_value_mappings = self.update_dictionary_enum_values(
+            column_value_mappings
+        )
         query = DynamicQueryConstructor.create_insert_query(
             table_name, column_value_mappings, column_to_return
         )
@@ -732,7 +734,7 @@ class DatabaseClient:
     create_locality = partialmethod(
         _create_entry_in_table,
         table_name=Relations.LOCALITIES.value,
-        column_to_return="id"
+        column_to_return="id",
     )
 
     @session_manager

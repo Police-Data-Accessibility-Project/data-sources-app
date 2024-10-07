@@ -110,7 +110,6 @@ onUnmounted(() => {
 
 /* Methods */
 function setInputPositionForList() {
-	console.debug('setInputPositionForList');
 	document.documentElement.style.setProperty(
 		'--typeaheadBottom',
 		inputRef.value.offsetTop + inputRef.value.offsetHeight + 'px',

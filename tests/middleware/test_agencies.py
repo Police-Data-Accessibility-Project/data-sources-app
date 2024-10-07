@@ -8,7 +8,9 @@ from middleware.primary_resource_logic.agencies import (
     get_location_id,
     InvalidLocationError,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import LocationInfoDTO
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import (
+    LocationInfoDTO,
+)
 
 
 @pytest.fixture
@@ -60,4 +62,3 @@ def test_get_location_id_invalid_county(mock):
     mock.db_client.get_location_id.side_effect = [[], []]
     with pytest.raises(InvalidLocationError):
         get_location_id(db_client=mock.db_client, location_info=COUNTY_DTO)
-

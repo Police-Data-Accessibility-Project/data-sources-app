@@ -14,6 +14,7 @@ from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 PATCH_ROOT = "middleware.primary_resource_logic.permissions_logic"
 
+
 class PermissionsManagerMocks(DynamicMagicMock):
     make_response: MagicMock
     message_response: MagicMock

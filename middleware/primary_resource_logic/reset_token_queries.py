@@ -31,15 +31,16 @@ class RequestResetPasswordRequestSchema(Schema):
         metadata={
             "description": "The email of the user",
             "source": SourceMappingEnum.JSON,
-        }
+        },
     )
     token = fields.Str(
         required=True,
         metadata={
             "description": "The token of the user",
             "source": SourceMappingEnum.JSON,
-        }
+        },
     )
+
 
 class ResetPasswordSchema(Schema):
     email = fields.Str(
@@ -47,22 +48,23 @@ class ResetPasswordSchema(Schema):
         metadata={
             "description": "The email of the user",
             "source": SourceMappingEnum.JSON,
-        }
+        },
     )
     password = fields.Str(
         required=True,
         metadata={
             "description": "The new password of the user",
             "source": SourceMappingEnum.JSON,
-        }
+        },
     )
     token = fields.Str(
         required=True,
         metadata={
             "description": "The token of the user",
             "source": SourceMappingEnum.JSON,
-        }
+        },
     )
+
 
 @dataclass
 class ResetPasswordDTO:
@@ -91,9 +93,7 @@ def request_reset_password(db_client: DatabaseClient, email) -> Response:
     )
 
 
-def reset_password(
-    db_client: DatabaseClient, dto: ResetPasswordDTO
-) -> Response:
+def reset_password(db_client: DatabaseClient, dto: ResetPasswordDTO) -> Response:
     """
     Resets a user's password if the provided token is valid and not expired.
     :param db_client:
@@ -107,19 +107,16 @@ def reset_password(
         return invalid_token_response()
     validate_emails_match(dto.email, token_email)
 
-    set_user_password(
-        db_client=db_client,
-        email=token_email,
-        password=dto.password
+    set_user_password(db_client=db_client, email=token_email, password=dto.password)
+    return FlaskResponseManager.make_response(
+        {"message": "Successfully updated password"}, HTTPStatus.OK
     )
-    return FlaskResponseManager.make_response({"message": "Successfully updated password"}, HTTPStatus.OK)
 
 
 def validate_emails_match(request_email: str, token_email: str):
     if token_email != request_email:
         FlaskResponseManager.abort(
-            code=HTTPStatus.BAD_REQUEST,
-            message="Invalid token."
+            code=HTTPStatus.BAD_REQUEST, message="Invalid token."
         )
 
 

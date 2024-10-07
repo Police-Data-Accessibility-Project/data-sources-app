@@ -304,7 +304,9 @@ def test_select_from_relation_subquery(live_database_client: DatabaseClient):
 
     live_database_client.execute_sqlalchemy(
         lambda: insert(Agency).values(
-            airtable_uid=agency_id, submitted_name=agency_name, jurisdiction_type="federal"
+            airtable_uid=agency_id,
+            submitted_name=agency_name,
+            jurisdiction_type="federal",
         )
     )
     live_database_client.execute_sqlalchemy(
