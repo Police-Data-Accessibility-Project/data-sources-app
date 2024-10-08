@@ -25,7 +25,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetByIDBaseDTO,
     GET_MANY_SCHEMA_POPULATE_PARAMETERS,
 )
-from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
+from middleware.schema_and_dto_logic.dynamic_logic.model_helpers_with_schemas import (
     CRUDModels,
 )
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters

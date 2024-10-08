@@ -9,14 +9,14 @@ from flask_restx.reqparse import RequestParser
 from marshmallow import Schema, fields, validate, ValidationError
 
 from tests.helper_scripts.common_mocks_and_patches import patch_request_args_get
-from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
+from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_construction import (
     get_restx_param_documentation,
 )
-from middleware.schema_and_dto_logic.dynamic_schema_request_content_population import (
+from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import (
     populate_schema_with_request_content,
     InvalidSourceMappingError,
 )
-from middleware.schema_and_dto_logic.dynamic_dto_request_content_population import (
+from middleware.schema_and_dto_logic.dynamic_logic.dynamic_dto_request_content_population import (
     populate_dto_with_request_content,
     _optionally_check_against_schema,
 )

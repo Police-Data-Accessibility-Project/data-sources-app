@@ -5,7 +5,6 @@ from middleware.access_logic import (
     GET_AUTH_INFO,
     OWNER_WRITE_ONLY_AUTH_INFO,
 )
-from middleware.column_permission_logic import create_column_permissions_string_table
 from middleware.primary_resource_logic.data_requests import (
     create_data_request_wrapper,
     get_data_requests_wrapper,
@@ -15,38 +14,23 @@ from middleware.primary_resource_logic.data_requests import (
     delete_data_request_related_source,
     get_data_request_related_sources,
     create_data_request_related_source,
-    RelatedSourceByIDDTO,
-    RelatedSourceByIDSchema,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     EntryDataRequestDTO,
     GetByIDBaseSchema,
     GetByIDBaseDTO,
-    GetManyBaseSchema,
-    GetManyBaseDTO,
-    GET_MANY_SCHEMA_POPULATE_PARAMETERS,
 )
 from middleware.decorators import (
     endpoint_info, endpoint_info_2,
 )
-from middleware.enums import Relations
-from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
-    create_entry_data_request_model,
-    create_id_and_message_model,
-    create_get_many_response_model,
-    create_entry_data_response_model,
-)
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
-    GetManyDataRequestsSchema,
     DataRequestsSchema,
-    DataRequestsPostSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourcesGetManySchema
 from resources.PsycopgResource import PsycopgResource
 from resources.resource_helpers import (
     create_response_dictionary,
-    column_permissions_description, ResponseInfo,
+    ResponseInfo,
 )
 from resources.endpoint_schema_config import SchemaConfigs
 from utilities.namespace import create_namespace, AppNamespaces
