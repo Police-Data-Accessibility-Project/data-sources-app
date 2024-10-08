@@ -9,7 +9,7 @@ from middleware.primary_resource_logic.unique_url_checker import (
     unique_url_checker_wrapper,
     UniqueURLCheckerRequestDTO,
 )
-from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
+from middleware.schema_and_dto_logic.dynamic_schema_logic.dynamic_schema_documentation_construction import (
     get_restx_param_documentation,
 )
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters

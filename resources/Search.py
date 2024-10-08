@@ -8,7 +8,7 @@ from middleware.primary_resource_logic.search_logic import (
 from middleware.decorators import api_key_required
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 from resources.resource_helpers import add_api_key_header_arg, create_search_model
-from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
+from middleware.schema_and_dto_logic.dynamic_schema_logic.dynamic_schema_documentation_construction import (
     get_restx_param_documentation,
 )
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters

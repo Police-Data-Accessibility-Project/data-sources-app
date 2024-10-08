@@ -1,6 +1,5 @@
-import functools
 from functools import wraps
-from typing import Callable, Optional, Any, Type
+from typing import Callable, Optional
 
 from flask_restx import Namespace, Model
 from flask_restx.reqparse import RequestParser
@@ -9,7 +8,7 @@ from marshmallow import Schema
 from middleware.access_logic import get_authentication, AuthenticationInfo
 from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
 from middleware.enums import PermissionsEnum, AccessTypeEnum
-from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
+from middleware.schema_and_dto_logic.dynamic_schema_logic.dynamic_schema_documentation_construction import (
     get_restx_param_documentation,
 )
 from middleware.schema_and_dto_logic.non_dto_dataclasses import FlaskRestxDocInfo
@@ -19,7 +18,7 @@ from resources.resource_helpers import (
     add_jwt_or_api_key_header_arg,
     add_jwt_header_arg,
     add_api_key_header_arg, ResponseInfo, create_response_dictionary, )
-from resources.endpoint_schema_config import EndpointSchemaConfig, SchemaConfigs
+from resources.endpoint_schema_config import SchemaConfigs
 
 
 def api_key_required(func):

@@ -10,10 +10,10 @@ from config import config
 from database_client.database_client import DatabaseClient
 from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
-from middleware.schema_and_dto_logic.dynamic_schema_request_content_population import (
+from middleware.schema_and_dto_logic.dynamic_schema_logic.dynamic_schema_request_content_population import (
     populate_schema_with_request_content,
 )
-from middleware.schema_and_dto_logic.dynamic_dto_request_content_population import (
+from middleware.schema_and_dto_logic.dynamic_schema_logic.dynamic_dto_request_content_population import (
     populate_dto_with_request_content,
 )
 from middleware.schema_and_dto_logic.non_dto_dataclasses import (

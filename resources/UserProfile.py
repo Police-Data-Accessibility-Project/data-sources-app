@@ -1,6 +1,6 @@
 from flask import Response
 
-from middleware.access_logic import GET_AUTH_INFO, AuthenticationInfo, AccessInfo
+from middleware.access_logic import AuthenticationInfo, AccessInfo
 from middleware.decorators import endpoint_info
 from middleware.enums import AccessTypeEnum
 from middleware.primary_resource_logic.user_profile import (
@@ -10,7 +10,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyBaseSchema,
     GET_MANY_SCHEMA_POPULATE_PARAMETERS,
 )
-from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
+from middleware.schema_and_dto_logic.dynamic_schema_logic.dynamic_schema_documentation_construction import (
     get_restx_param_documentation,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (

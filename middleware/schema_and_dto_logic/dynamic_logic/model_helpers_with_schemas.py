@@ -11,7 +11,7 @@ from middleware.primary_resource_logic.user_queries import UserRequestSchema
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     EntryDataRequestSchema,
 )
-from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
+from middleware.schema_and_dto_logic.dynamic_schema_logic.dynamic_schema_documentation_construction import (
     get_restx_param_documentation,
 )
 from middleware.schema_and_dto_logic.common_response_schemas import (
