@@ -14,21 +14,14 @@ from middleware.primary_resource_logic.agencies import (
     delete_agency,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import (
-    AgenciesPostSchema,
-    AgenciesPutSchema,
-    AgenciesPostDTO,
     AgenciesGetManyResponseSchema,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    GetManyRequestsBaseSchema,
-    GetByIDBaseSchema,
-    GetByIDBaseDTO,
     GET_MANY_SCHEMA_POPULATE_PARAMETERS,
 )
 from middleware.schema_and_dto_logic.dynamic_logic.model_helpers_with_schemas import (
     CRUDModels,
 )
-from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 from resources.PsycopgResource import PsycopgResource
 from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import (
@@ -54,15 +47,14 @@ agencies_column_permissions = create_column_permissions_string_table(
 class AgenciesByPage(PsycopgResource):
     """Represents a resource for fetching approved agency data from the database."""
 
-    @endpoint_info(
+    @endpoint_info_2(
         namespace=namespace_agencies,
         auth_info=GET_AUTH_INFO,
-        input_schema=GetManyRequestsBaseSchema(),
-        description="Get a paginated list of approved agencies",
-        responses=create_response_dictionary(
-            success_message="Returns a paginated list of approved agencies.",
-            success_model=models.get_many_response_model,
+        schema_config=SchemaConfigs.AGENCIES_GET_MANY,
+        response_info=ResponseInfo(
+            success_message="Returns a paginated list of approved agencies."
         ),
+        description="Get a paginated list of approved agencies",
     )
     def get(self, access_info: AccessInfo) -> Response:
         """
@@ -77,16 +69,6 @@ class AgenciesByPage(PsycopgResource):
             access_info=access_info,
         )
 
-    # @endpoint_info(
-    #     namespace=namespace_agencies,
-    #     auth_info=WRITE_ONLY_AUTH_INFO,
-    #     input_schema=AgenciesPostSchema(),
-    #     description="Create a new agency",
-    #     responses=create_response_dictionary(
-    #         success_message="Returns the id of the newly created agency.",
-    #         success_model=models.id_and_message_model,
-    #     ),
-    # )
     @endpoint_info_2(
         namespace=namespace_agencies,
         auth_info=WRITE_ONLY_AUTH_INFO,

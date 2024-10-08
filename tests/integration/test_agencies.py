@@ -60,7 +60,7 @@ def test_agencies_get(flask_client_with_db, dev_db_client: DatabaseClient):
         http_method="get",
         endpoint=AGENCIES_BASE_ENDPOINT + "?page=2",
         headers=tus.api_authorization_header,
-        expected_schema=AgenciesGetManyResponseSchema,
+        expected_schema=SchemaConfigs.AGENCIES_GET_MANY.value.output_schema,
     )
 
     assert_expected_get_many_result(
@@ -109,7 +109,7 @@ def test_agencies_post(ts: AgenciesTestSetup):
         endpoint=AGENCIES_BASE_ENDPOINT,
         headers=ts.tus.jwt_authorization_header,
         json=data_to_post,
-        expected_schema=IDAndMessageSchema,
+        expected_schema=SchemaConfigs.AGENCIES_POST.value.output_schema,
     )
 
     json_data = run_and_validate_request(
@@ -207,7 +207,7 @@ def test_agencies_put(ts: AgenciesTestSetup):
         endpoint=BY_ID_ENDPOINT,
         headers=ts.tus.jwt_authorization_header,
         json={"agency_info": {"submitted_name": new_submitted_name}},
-        expected_schema=MessageSchema,
+        expected_schema=SchemaConfigs.AGENCIES_BY_ID_PUT.value.output_schema,
     )
 
     json_data = run_and_validate_request(
