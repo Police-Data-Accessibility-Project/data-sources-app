@@ -8,7 +8,8 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyReque
     GetByIDBaseSchema, GetByIDBaseDTO
 from middleware.schema_and_dto_logic.custom_types import DTOTypes
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import AgenciesGetByIDResponseSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import AgenciesGetByIDResponseSchema, \
+    AgenciesPutSchema, AgenciesPostSchema, AgenciesPostDTO
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import GetManyDataRequestsSchema, \
     DataRequestsSchema, DataRequestsPostSchema, GetByIDDataRequestsResponseSchema
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourcesGetManySchema
@@ -88,5 +89,20 @@ class SchemaConfigs(Enum):
         input_schema=GetByIDBaseSchema(),
         output_schema=AgenciesGetByIDResponseSchema(),
         input_dto_class=GetByIDBaseDTO
+    )
+    # AGENCIES_GET_MANY = EndpointSchemaConfig(
+    #     input_schema=GetManyRequestsBaseSchema(),
+    #     output_schema=AgenciesGetManyResponseSchema(),
+    #     input_dto_class=GetManyBaseDTO
+    # )
+    # TODO: Update Integration Tests
+    AGENCIES_POST = EndpointSchemaConfig(
+        input_schema=AgenciesPostSchema(),
+        input_dto_class=AgenciesPostDTO,
+        output_schema=IDAndMessageSchema()
+    )
+    AGENCIES_BY_ID_PUT = EndpointSchemaConfig(
+        input_schema=AgenciesPutSchema(),
+        output_schema=None
     )
     #endregion

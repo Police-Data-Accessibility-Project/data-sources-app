@@ -128,6 +128,11 @@ def endpoint_info_2(
     response_info: ResponseInfo,
     **doc_kwargs
 ):
+    """
+    A more sophisticated form of `endpoint_info`, with more robust
+    schema and response definition.
+    Designed to eventually replace all instances of endpoint_info
+    """
     # TODO: Replace original endpoint info with this, and rename to `endpoint_info`
     input_doc_info = get_restx_param_documentation(
         namespace=namespace,

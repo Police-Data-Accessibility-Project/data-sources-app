@@ -77,23 +77,28 @@ class AgenciesByPage(PsycopgResource):
             access_info=access_info,
         )
 
-    @endpoint_info(
+    # @endpoint_info(
+    #     namespace=namespace_agencies,
+    #     auth_info=WRITE_ONLY_AUTH_INFO,
+    #     input_schema=AgenciesPostSchema(),
+    #     description="Create a new agency",
+    #     responses=create_response_dictionary(
+    #         success_message="Returns the id of the newly created agency.",
+    #         success_model=models.id_and_message_model,
+    #     ),
+    # )
+    @endpoint_info_2(
         namespace=namespace_agencies,
         auth_info=WRITE_ONLY_AUTH_INFO,
-        input_schema=AgenciesPostSchema(),
-        description="Create a new agency",
-        responses=create_response_dictionary(
-            success_message="Returns the id of the newly created agency.",
-            success_model=models.id_and_message_model,
-        ),
+        schema_config=SchemaConfigs.AGENCIES_POST,
+        response_info=ResponseInfo(
+            success_message="Returns the id of the newly created agency."
+        )
     )
     def post(self, access_info: AccessInfo):
         return self.run_endpoint(
             wrapper_function=create_agency,
-            schema_populate_parameters=SchemaPopulateParameters(
-                schema=AgenciesPostSchema(),
-                dto_class=AgenciesPostDTO,
-            ),
+            schema_populate_parameters=SchemaConfigs.AGENCIES_POST.value.get_schema_populate_parameters(),
             access_info=access_info,
         )
 
@@ -101,18 +106,6 @@ class AgenciesByPage(PsycopgResource):
 @namespace_agencies.route("/<resource_id>")
 class AgenciesById(PsycopgResource):
 
-    # @endpoint_info(
-    #     namespace=namespace_agencies,
-    #     auth_info=GET_AUTH_INFO,
-    #     description=column_permissions_description(
-    #         head_description="Get an agency by id",
-    #         sub_description="Columns returned are determined by the user's access level.",
-    #         column_permissions_str_table=agencies_column_permissions,
-    #     ),
-    #     responses=create_response_dictionary(
-    #         "Returns agency.", models.entry_data_response_model
-    #     ),
-    # )
     @endpoint_info_2(
         namespace=namespace_agencies,
         auth_info=GET_AUTH_INFO,
@@ -133,12 +126,14 @@ class AgenciesById(PsycopgResource):
             access_info=access_info,
         )
 
-    @endpoint_info(
+    @endpoint_info_2(
         namespace=namespace_agencies,
         auth_info=WRITE_ONLY_AUTH_INFO,
-        input_schema=AgenciesPutSchema(),
+        schema_config=SchemaConfigs.AGENCIES_BY_ID_PUT,
+        response_info=ResponseInfo(
+            success_message="Returns information on the specific agency."
+        ),
         description="Updates an agency",
-        responses=create_response_dictionary("Agency successfully updated."),
     )
     def put(self, resource_id: str, access_info: AccessInfo) -> Response:
         return self.run_endpoint(
