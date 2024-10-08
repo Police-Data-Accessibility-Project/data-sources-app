@@ -4,7 +4,7 @@ from typing import Optional, Type
 from marshmallow import Schema
 
 from middleware.primary_resource_logic.data_requests import RelatedSourceByIDSchema, RelatedSourceByIDDTO
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyBaseSchema, GetManyBaseDTO, \
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyRequestsBaseSchema, GetManyBaseDTO, \
     GetByIDBaseSchema, GetByIDBaseDTO
 from middleware.schema_and_dto_logic.custom_types import DTOTypes
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
@@ -34,7 +34,7 @@ class EndpointSchemaConfig:
 
 class SchemaConfigs(Enum):
     DATA_REQUESTS_GET_MANY = EndpointSchemaConfig(
-        input_schema=GetManyBaseSchema(),
+        input_schema=GetManyRequestsBaseSchema(),
         output_schema=GetManyDataRequestsSchema(),
         input_dto_class=GetManyBaseDTO
     )

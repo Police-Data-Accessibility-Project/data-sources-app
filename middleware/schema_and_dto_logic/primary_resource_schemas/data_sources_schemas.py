@@ -10,7 +10,7 @@ from database_client.enums import (
     AgencyAggregation,
 )
 from middleware.enums import RecordType
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyBaseSchema
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyRequestsBaseSchema
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import (
     AgenciesGetSchema,
 )
@@ -362,7 +362,7 @@ class DataSourcesPutSchema(Schema):
         metadata=get_json_metadata("The data source to be updated"),
     )
 
-class DataSourcesGetManyRequestSchema(GetManyBaseSchema):
+class DataSourcesGetManyRequestSchema(GetManyRequestsBaseSchema):
     approval_status = fields.Enum(
         enum=ApprovalStatus,
         by_value=fields.String,

@@ -7,7 +7,7 @@ from middleware.primary_resource_logic.user_profile import (
     get_owner_data_requests_wrapper,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    GetManyBaseSchema,
+    GetManyRequestsBaseSchema,
     GET_MANY_SCHEMA_POPULATE_PARAMETERS,
 )
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_construction import (
@@ -43,7 +43,7 @@ class UserDataRequests(PsycopgResource):
         auth_info=AuthenticationInfo(
             allowed_access_methods=[AccessTypeEnum.JWT],
         ),
-        input_schema=GetManyBaseSchema(),
+        input_schema=GetManyRequestsBaseSchema(),
         description="Get data requests created by user",
         responses=create_response_dictionary(
             success_message="Returns a paginated list of data requests.",

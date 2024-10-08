@@ -20,7 +20,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas i
     AgenciesGetManyResponseSchema,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    GetManyBaseSchema,
+    GetManyRequestsBaseSchema,
     GetByIDBaseSchema,
     GetByIDBaseDTO,
     GET_MANY_SCHEMA_POPULATE_PARAMETERS,
@@ -56,7 +56,7 @@ class AgenciesByPage(PsycopgResource):
     @endpoint_info(
         namespace=namespace_agencies,
         auth_info=GET_AUTH_INFO,
-        input_schema=GetManyBaseSchema(),
+        input_schema=GetManyRequestsBaseSchema(),
         description="Get a paginated list of approved agencies",
         responses=create_response_dictionary(
             success_message="Returns a paginated list of approved agencies.",
