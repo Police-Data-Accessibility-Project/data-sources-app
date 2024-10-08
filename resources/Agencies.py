@@ -3,7 +3,7 @@ from flask import Response
 from middleware.access_logic import AccessInfo, GET_AUTH_INFO, WRITE_ONLY_AUTH_INFO
 from middleware.column_permission_logic import create_column_permissions_string_table
 from middleware.decorators import (
-    endpoint_info,
+    endpoint_info, endpoint_info_2,
 )
 from middleware.enums import Relations
 from middleware.primary_resource_logic.agencies import (
@@ -30,9 +30,10 @@ from middleware.schema_and_dto_logic.dynamic_logic.model_helpers_with_schemas im
 )
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 from resources.PsycopgResource import PsycopgResource
+from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import (
     create_response_dictionary,
-    column_permissions_description,
+    column_permissions_description, ResponseInfo,
 )
 from utilities.namespace import create_namespace, AppNamespaces
 
@@ -100,25 +101,35 @@ class AgenciesByPage(PsycopgResource):
 @namespace_agencies.route("/<resource_id>")
 class AgenciesById(PsycopgResource):
 
-    @endpoint_info(
+    # @endpoint_info(
+    #     namespace=namespace_agencies,
+    #     auth_info=GET_AUTH_INFO,
+    #     description=column_permissions_description(
+    #         head_description="Get an agency by id",
+    #         sub_description="Columns returned are determined by the user's access level.",
+    #         column_permissions_str_table=agencies_column_permissions,
+    #     ),
+    #     responses=create_response_dictionary(
+    #         "Returns agency.", models.entry_data_response_model
+    #     ),
+    # )
+    @endpoint_info_2(
         namespace=namespace_agencies,
         auth_info=GET_AUTH_INFO,
+        schema_config=SchemaConfigs.AGENCIES_BY_ID_GET,
+        response_info=ResponseInfo(
+            success_message="Returns information on the specific agency."
+        ),
         description=column_permissions_description(
             head_description="Get an agency by id",
             sub_description="Columns returned are determined by the user's access level.",
             column_permissions_str_table=agencies_column_permissions,
         ),
-        responses=create_response_dictionary(
-            "Returns agency.", models.entry_data_response_model
-        ),
     )
     def get(self, resource_id: str, access_info: AccessInfo) -> Response:
         return self.run_endpoint(
             wrapper_function=get_agency_by_id,
-            schema_populate_parameters=SchemaPopulateParameters(
-                schema=GetByIDBaseSchema(),
-                dto_class=GetByIDBaseDTO,
-            ),
+            schema_populate_parameters=SchemaConfigs.AGENCIES_BY_ID_GET.value.get_schema_populate_parameters(),
             access_info=access_info,
         )
 

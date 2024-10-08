@@ -9,6 +9,9 @@ from middleware.schema_and_dto_logic.util import get_json_metadata
 
 
 class DataRequestsSchema(Schema):
+    """
+    Reflects the columns in the `data_requests` database table
+    """
     id = fields.Integer(
         metadata=get_json_metadata("The ID of the data request"),
     )

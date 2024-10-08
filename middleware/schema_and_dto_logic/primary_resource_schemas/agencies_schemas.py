@@ -327,6 +327,7 @@ class AgenciesPostPutBaseSchema(Schema):
 
 
 class AgenciesPostSchema(AgenciesPostPutBaseSchema):
+    #
     agency_info = get_agency_info_field(
         schema=AgencyInfoPostSchema,
         dto_class=AgencyInfoPostDTO,
@@ -339,6 +340,7 @@ class AgenciesPostSchema(AgenciesPostPutBaseSchema):
 
 
 class AgenciesPutSchema(AgenciesPostPutBaseSchema):
+    #
     agency_info = get_agency_info_field(
         schema=AgencyInfoPutSchema,
         dto_class=AgencyInfoPutDTO,

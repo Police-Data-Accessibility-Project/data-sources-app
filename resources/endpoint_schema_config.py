@@ -8,6 +8,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyReque
     GetByIDBaseSchema, GetByIDBaseDTO
 from middleware.schema_and_dto_logic.custom_types import DTOTypes
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import AgenciesGetByIDResponseSchema
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import GetManyDataRequestsSchema, \
     DataRequestsSchema, DataRequestsPostSchema, GetByIDDataRequestsResponseSchema
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourcesGetManySchema
@@ -33,6 +34,7 @@ class EndpointSchemaConfig:
 
 
 class SchemaConfigs(Enum):
+    #region Data Requests
     DATA_REQUESTS_GET_MANY = EndpointSchemaConfig(
         input_schema=GetManyRequestsBaseSchema(),
         output_schema=GetManyDataRequestsSchema(),
@@ -80,3 +82,11 @@ class SchemaConfigs(Enum):
         input_schema=RelatedSourceByIDSchema(),
         input_dto_class=RelatedSourceByIDDTO
     )
+    #endregion
+    #region Agencies
+    AGENCIES_BY_ID_GET = EndpointSchemaConfig(
+        input_schema=GetByIDBaseSchema(),
+        output_schema=AgenciesGetByIDResponseSchema(),
+        input_dto_class=GetByIDBaseDTO
+    )
+    #endregion

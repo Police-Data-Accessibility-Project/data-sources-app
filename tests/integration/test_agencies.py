@@ -17,6 +17,7 @@ from middleware.schema_and_dto_logic.common_response_schemas import (
     MessageSchema,
     IDAndMessageSchema,
 )
+from resources.endpoint_schema_config import SchemaConfigs
 
 from tests.conftest import dev_db_client, flask_client_with_db, integration_test_admin_setup
 from tests.helper_scripts.common_test_data import get_sample_agency_post_parameters
@@ -85,7 +86,7 @@ def test_agencies_get_by_id(ts: AgenciesTestSetup):
         http_method="get",
         endpoint=AGENCIES_BASE_ENDPOINT + f"/{airtable_uid}",
         headers=ts.tus.jwt_authorization_header,
-        expected_schema=AgenciesGetByIDResponseSchema,
+        expected_schema=SchemaConfigs.AGENCIES_BY_ID_GET.value.output_schema,
     )
 
     assert response_json["data"]["airtable_uid"] == airtable_uid
