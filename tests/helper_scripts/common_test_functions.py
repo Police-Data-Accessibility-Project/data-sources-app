@@ -9,7 +9,7 @@ from flask_jwt_extended import decode_token
 
 from database_client.constants import PAGE_SIZE
 from database_client.database_client import DatabaseClient
-from middleware.schema_and_dto_logic.response_schemas import EntryDataResponseSchema
+from middleware.schema_and_dto_logic.common_response_schemas import EntryDataResponseSchema
 from tests.helper_scripts.helper_classes.IntegrationTestSetup import (
     IntegrationTestSetup,
 )

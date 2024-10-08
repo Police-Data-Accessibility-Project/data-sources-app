@@ -13,7 +13,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas i
     AgenciesGetByIDResponseSchema,
     AgenciesGetManyResponseSchema,
 )
-from middleware.schema_and_dto_logic.response_schemas import (
+from middleware.schema_and_dto_logic.common_response_schemas import (
     MessageSchema,
     IDAndMessageSchema,
 )

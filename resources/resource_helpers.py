@@ -1,23 +1,13 @@
 """
 Helper scripts for the Resource classes
 """
-from enum import Enum
 from http import HTTPStatus
-from typing import Optional, Type
+from typing import Optional
 
-from dataclasses import dataclass
 from flask_restx import Namespace, Model, fields
 from flask_restx.reqparse import RequestParser
-from marshmallow import Schema
 
 from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyBaseSchema, GetManyBaseDTO
-from middleware.schema_and_dto_logic.custom_types import DTOTypes
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import DataRequestsSchema, \
-    GetManyDataRequestsSchema, DataRequestsPostSchema
-
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourcesGetManySchema
-from middleware.schema_and_dto_logic.response_schemas import IDAndMessageSchema
 
 
 def add_api_key_header_arg(parser: RequestParser):
@@ -228,53 +218,4 @@ class ResponseInfo:
         self.success_message = success_message
         self.response_dictionary = response_dictionary
 
-# TODO: Move the two below classes to a separate file
-class EndpointSchemaConfig:
-    def __init__(
-            self,
-            input_schema: Optional[Schema] = None,
-            output_schema: Optional[Schema] = None,
-            input_dto_class: Optional[Type[DTOTypes]] = None,
-    ):
-        self.input_schema = input_schema
-        self.output_schema = output_schema
-        self.input_dto_class = input_dto_class
 
-
-class EndpointSchemaConfigs(Enum):
-    DATA_REQUESTS_GET_MANY = EndpointSchemaConfig(
-        input_schema=GetManyBaseSchema(),
-        output_schema=GetManyDataRequestsSchema(),
-        input_dto_class=GetManyBaseDTO
-    )
-    DATA_REQUESTS_BY_ID_GET = EndpointSchemaConfig(
-        input_schema=None,
-        output_schema=DataRequestsSchema()
-    )
-    DATA_REQUESTS_BY_ID_PUT = EndpointSchemaConfig(
-        input_schema=DataRequestsSchema(
-            exclude=[
-                "id",
-                "date_created",
-                "date_status_last_changed",
-                "creator_user_id",
-            ]
-        ),
-        output_schema=None
-    )
-    DATA_REQUESTS_POST = EndpointSchemaConfig(
-        input_schema=DataRequestsPostSchema(
-            only=[
-                "entry_data.submission_notes",
-                "entry_data.location_described_submitted",
-                "entry_data.coverage_range",
-                "entry_data.data_requirements",
-            ]
-        ),
-        output_schema=IDAndMessageSchema()
-    )
-    DATA_REQUESTS_RELATED_SOURCES_GET = EndpointSchemaConfig(
-        output_schema=DataSourcesGetManySchema(
-            exclude=["data.agencies"]
-        )
-    )

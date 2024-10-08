@@ -5,7 +5,7 @@ from marshmallow import fields, Schema, validate, validates_schema, ValidationEr
 
 from database_client.enums import LocationType
 from middleware.enums import JurisdictionType, AgencyType
-from middleware.schema_and_dto_logic.response_schemas import (
+from middleware.schema_and_dto_logic.common_response_schemas import (
     MessageSchema,
     GetManyResponseSchemaBase,
 )

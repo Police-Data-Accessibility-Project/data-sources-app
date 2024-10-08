@@ -14,7 +14,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyBaseS
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import (
     AgenciesGetSchema,
 )
-from middleware.schema_and_dto_logic.response_schemas import (
+from middleware.schema_and_dto_logic.common_response_schemas import (
     GetManyResponseSchemaBase,
     MessageSchema,
 )

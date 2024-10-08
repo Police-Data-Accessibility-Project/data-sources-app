@@ -18,8 +18,8 @@ from resources.PsycopgResource import handle_exceptions
 from resources.resource_helpers import (
     add_jwt_or_api_key_header_arg,
     add_jwt_header_arg,
-    add_api_key_header_arg, EndpointSchemaConfig, ResponseInfo, create_response_dictionary, EndpointSchemaConfigs,
-)
+    add_api_key_header_arg, ResponseInfo, create_response_dictionary, )
+from resources.endpoint_schema_config import EndpointSchemaConfig, SchemaConfigs
 
 
 def api_key_required(func):
@@ -125,7 +125,7 @@ def endpoint_info(
 def endpoint_info_2(
     namespace: Namespace,
     auth_info: AuthenticationInfo,
-    schema_config: EndpointSchemaConfigs,
+    schema_config: SchemaConfigs,
     response_info: ResponseInfo,
     **doc_kwargs
 ):
@@ -168,16 +168,24 @@ def _update_doc_kwargs(
         output_schema: Schema
 ):
     if response_info.response_dictionary is None:
+        output_model = _get_output_model(namespace, output_schema)
         doc_kwargs["responses"] = create_response_dictionary(
             success_message=response_info.success_message,
-            success_model=get_restx_param_documentation(
-                namespace=namespace,
-                schema=output_schema,
-            ).model
+            success_model=output_model
         )
     else:
         doc_kwargs["responses"] = response_info.response_dictionary
     doc_kwargs["expect"] = [input_doc_info.model, input_doc_info.parser]
+
+
+def _get_output_model(namespace: Namespace, output_schema: Schema) -> Optional[Model]:
+    if output_schema is not None:
+        return get_restx_param_documentation(
+            namespace=namespace,
+            schema=output_schema,
+        ).model
+    else:
+        return None
 
 
 def _add_auth_info_to_parser(auth_info: AuthenticationInfo, parser: RequestParser):

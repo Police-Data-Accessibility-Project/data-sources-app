@@ -3,7 +3,7 @@ from marshmallow import fields, Schema
 from database_client.enums import RequestStatus
 from middleware.enums import RecordType
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourceExpandedSchema
-from middleware.schema_and_dto_logic.response_schemas import (
+from middleware.schema_and_dto_logic.common_response_schemas import (
     GetManyResponseSchemaBase,
     MessageSchema,
 )
@@ -102,7 +102,7 @@ class DataRequestsPostSchema(Schema):
         metadata=get_json_metadata("The data request to be created"),
     )
 
-class DataRequestsGetSchema(DataRequestsSchema):
+class DataRequestsRelatedSourcesSchema(DataRequestsSchema):
     data_sources = fields.List(
         fields.Nested(
             nested=DataSourceExpandedSchema,
@@ -115,7 +115,7 @@ class DataRequestsGetSchema(DataRequestsSchema):
 class GetManyDataRequestsSchema(GetManyResponseSchemaBase):
     data = fields.List(
         cls_or_instance=fields.Nested(
-            nested=DataRequestsGetSchema,
+            nested=DataRequestsRelatedSourcesSchema,
             metadata=get_json_metadata("The list of data requests"),
         ),
         metadata=get_json_metadata("The list of results"),
@@ -124,6 +124,6 @@ class GetManyDataRequestsSchema(GetManyResponseSchemaBase):
 
 class GetByIDDataRequestsResponseSchema(MessageSchema):
     data = fields.Nested(
-        nested=DataRequestsGetSchema,
+        nested=DataRequestsRelatedSourcesSchema,
         metadata=get_json_metadata("The data request result"),
     )

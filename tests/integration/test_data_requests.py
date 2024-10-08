@@ -16,7 +16,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_sche
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourceExpandedSchema, \
     DataSourcesGetManySchema
-from resources.resource_helpers import EndpointSchemaConfigs
+from resources.endpoint_schema_config import SchemaConfigs
 from tests.conftest import dev_db_client, flask_client_with_db
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
 from tests.helper_scripts.common_test_data import create_test_data_request, TestDataCreatorFlask
@@ -70,8 +70,8 @@ def test_data_requests_get(
         data_source_id=ds_info.id,
     )
 
-    expected_schema = EndpointSchemaConfigs.DATA_REQUESTS_GET_MANY.value.output_schema
-    # Modify exclude to accoutn for old data which did not have archive_reason and creator_user_id
+    expected_schema = SchemaConfigs.DATA_REQUESTS_GET_MANY.value.output_schema
+    # Modify exclude to account for old data which did not have archive_reason and creator_user_id
     expected_schema.exclude.update(["data.archive_reason", "data.creator_user_id", "data.internal_notes"])
     json_data = run_and_validate_request(
         flask_client=tdc.flask_client,
@@ -168,19 +168,17 @@ def test_data_requests_by_id_get(
 
     tdr = tdc.data_request(admin_tus)
 
+    expected_schema = SchemaConfigs.DATA_REQUESTS_BY_ID_GET.value.output_schema
+    # Modify exclude to account for old data which did not have archive_reason and creator_user_id
+    expected_schema.exclude.update(["data.archive_reason", "data.creator_user_id", "data.internal_notes"])
+
     # Run with API header
     api_json_data = run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="get",
         endpoint=DATA_REQUESTS_BY_ID_ENDPOINT + str(tdr.id),
         headers=admin_tus.api_authorization_header,
-        expected_schema=GetByIDDataRequestsResponseSchema(
-            exclude=[
-                "data.archive_reason",
-                "data.creator_user_id",
-                "data.internal_notes",
-            ],
-        ),
+        expected_schema=expected_schema,
     )
 
     assert api_json_data[DATA_KEY]["submission_notes"] == tdr.submission_notes
@@ -191,7 +189,7 @@ def test_data_requests_by_id_get(
         http_method="get",
         endpoint=DATA_REQUESTS_BY_ID_ENDPOINT + str(tdr.id),
         headers=admin_tus.jwt_authorization_header,
-        expected_schema=GetByIDDataRequestsResponseSchema,
+        expected_schema=expected_schema,
     )
 
     assert jwt_json_data[DATA_KEY]["submission_notes"] == tdr.submission_notes
@@ -314,12 +312,7 @@ def get_data_request_related_sources_with_endpoint(
         ),
         headers=api_authorization_header,
         expected_json_content=expected_json_content,
-        expected_schema=DataSourcesGetManySchema(
-            exclude=[
-                "data.agencies"
-            ],
-            partial=True
-        )
+        expected_schema=SchemaConfigs.DATA_REQUESTS_RELATED_SOURCES_GET.value.output_schema,
     )
 
 
