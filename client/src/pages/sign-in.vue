@@ -1,15 +1,34 @@
 <template>
 	<main class="pdap-flex-container mx-auto max-w-2xl">
 		<h1>Sign In</h1>
-		<Form
+		<FormV2
 			id="login"
 			class="flex flex-col"
 			data-test="login-form"
 			name="login"
 			:error="error"
-			:schema="FORM_SCHEMA"
+			:schema="VALIDATION_SCHEMA"
 			@submit="onSubmit"
 		>
+			<InputText
+				id="email"
+				autofill="email"
+				data-test="email"
+				name="email"
+				label="Email"
+				type="text"
+				placeholder="Your email address"
+			/>
+			<InputPassword
+				id="password"
+				autofill="password"
+				data-test="password"
+				name="password"
+				label="Password"
+				type="password"
+				placeholder="Your password"
+			/>
+
 			<Button
 				class="max-w-full"
 				:is-loading="loading"
@@ -19,7 +38,7 @@
 				<Spinner v-if="loading" :show="loading" />
 				{{ !loading ? 'Sign in' : '' }}
 			</Button>
-		</Form>
+		</FormV2>
 		<div
 			class="flex flex-col items-start sm:flex-row sm:items-center sm:gap-4 w-full"
 		>
@@ -44,7 +63,13 @@
 
 <script setup>
 // Imports
-import { Button, Form, Spinner } from 'pdap-design-system';
+import {
+	Button,
+	FormV2,
+	InputPassword,
+	InputText,
+	Spinner,
+} from 'pdap-design-system';
 import { onMounted, ref } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
@@ -52,17 +77,13 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 // Constants
-const FORM_SCHEMA = [
+const VALIDATION_SCHEMA = [
 	{
-		autofill: 'email',
-		'data-test': 'email',
-		id: 'email',
 		name: 'email',
-		label: 'Email',
-		type: 'text',
-		placeholder: 'Your email address',
-		value: '',
 		validators: {
+			required: {
+				value: true,
+			},
 			email: {
 				message: 'Please provide your email address',
 				value: true,
@@ -70,15 +91,11 @@ const FORM_SCHEMA = [
 		},
 	},
 	{
-		autofill: 'password',
-		'data-test': 'password',
-		id: 'password',
 		name: 'password',
-		label: 'Password',
-		type: 'password',
-		placeholder: 'Your password',
-		value: '',
 		validators: {
+			required: {
+				value: true,
+			},
 			password: {
 				message: 'Please provide your password',
 				value: true,
