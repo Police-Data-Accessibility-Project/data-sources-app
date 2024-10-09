@@ -5,14 +5,15 @@ from marshmallow import Schema
 
 from middleware.primary_resource_logic.data_requests import RelatedSourceByIDSchema, RelatedSourceByIDDTO
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyRequestsBaseSchema, GetManyBaseDTO, \
-    GetByIDBaseSchema, GetByIDBaseDTO
+    GetByIDBaseSchema, GetByIDBaseDTO, EntryDataRequestDTO, EntryDataRequestSchema
 from middleware.schema_and_dto_logic.custom_types import DTOTypes
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import AgenciesGetByIDResponseSchema, \
     AgenciesPutSchema, AgenciesPostSchema, AgenciesPostDTO, AgenciesGetManyResponseSchema
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import GetManyDataRequestsSchema, \
     DataRequestsSchema, DataRequestsPostSchema, GetByIDDataRequestsResponseSchema
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourcesGetManySchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourcesGetManySchema, \
+    DataSourcesGetByIDSchema, DataSourcesPostSchema, DataSourcesPutSchema
 from middleware.schema_and_dto_logic.common_response_schemas import IDAndMessageSchema, MessageSchema
 
 
@@ -104,4 +105,25 @@ class SchemaConfigs(Enum):
         input_schema=AgenciesPutSchema(),
         output_schema=MessageSchema()
     )
+    #endregion
+    #region Data Sources
+    DATA_SOURCES_GET_MANY = EndpointSchemaConfig(
+        input_schema=GetManyRequestsBaseSchema(),
+        output_schema=DataSourcesGetManySchema(),
+        input_dto_class=GetManyBaseDTO
+    )
+    DATA_SOURCES_GET_BY_ID = EndpointSchemaConfig(
+        input_schema=GetByIDBaseSchema(),
+        output_schema=DataSourcesGetByIDSchema(),
+        input_dto_class=GetByIDBaseDTO
+    )
+    DATA_SOURCES_POST = EndpointSchemaConfig(
+        input_schema=DataSourcesPostSchema(),
+        input_dto_class=EntryDataRequestDTO,
+    )
+    DATA_SOURCES_PUT = EndpointSchemaConfig(
+        input_schema=DataSourcesPutSchema(),
+        input_dto_class=EntryDataRequestSchema
+    )
+
     #endregion

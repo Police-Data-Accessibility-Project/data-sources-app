@@ -13,14 +13,8 @@ from middleware.primary_resource_logic.agencies import (
     update_agency,
     delete_agency,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import (
-    AgenciesGetManyResponseSchema,
-)
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GET_MANY_SCHEMA_POPULATE_PARAMETERS,
-)
-from middleware.schema_and_dto_logic.dynamic_logic.model_helpers_with_schemas import (
-    CRUDModels,
 )
 from resources.PsycopgResource import PsycopgResource
 from resources.endpoint_schema_config import SchemaConfigs
@@ -33,15 +27,9 @@ from utilities.namespace import create_namespace, AppNamespaces
 namespace_agencies = create_namespace(
     AppNamespaces.AGENCIES,
 )
-
-models = CRUDModels(
-    namespace_agencies, get_many_response_schema=AgenciesGetManyResponseSchema()
-)
-
 agencies_column_permissions = create_column_permissions_string_table(
     relation=Relations.AGENCIES.value
 )
-
 
 @namespace_agencies.route("")
 class AgenciesByPage(PsycopgResource):

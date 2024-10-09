@@ -12,6 +12,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schem
     DataSourcesGetManySchema,
 )
 from middleware.schema_and_dto_logic.common_response_schemas import GetManyResponseSchema
+from resources.endpoint_schema_config import SchemaConfigs
 from tests.conftest import connection_with_test_data, db_client_with_test_data, flask_client_with_db, test_user_admin
 from conftest import test_data_creator_flask, monkeysession
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
@@ -37,7 +38,7 @@ def test_data_sources_get(
         http_method="get",
         endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&approval_status=approved",  # ENDPOINT,
         headers=tus.api_authorization_header,
-        expected_schema=DataSourcesGetManySchema,
+        expected_schema=SchemaConfigs.DATA_SOURCES_GET_MANY.value.output_schema,
     )
     data = response_json["data"]
     assert len(data) == 100
@@ -48,7 +49,7 @@ def test_data_sources_get(
         http_method="get",
         endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&sort_by=name&sort_order=ASC&approval_status=approved",
         headers=tus.api_authorization_header,
-        expected_schema=DataSourcesGetManySchema,
+        expected_schema=SchemaConfigs.DATA_SOURCES_GET_MANY.value.output_schema,
     )
     data_asc = response_json["data"]
 
@@ -74,21 +75,22 @@ def test_data_sources_get_many_limit_columns(
     tus = create_test_user_setup(flask_client_with_db)
     allowed_columns = ["name", "submitted_name", "airtable_uid"]
     url_encoded_column_string = urllib.parse.quote_plus(str(allowed_columns))
+    expected_schema = SchemaConfigs.DATA_SOURCES_GET_MANY.value.output_schema
+    expected_schema.only = [
+        "message",
+        "count",
+        "data.name",
+        "data.submitted_name",
+        "data.airtable_uid",
+    ]
+    expected_schema.partial = True
+
     response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
         endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&requested_columns={url_encoded_column_string}",
         headers=tus.api_authorization_header,
-        expected_schema=DataSourcesGetManySchema(
-            only=[
-                "message",
-                "count",
-                "data.name",
-                "data.submitted_name",
-                "data.airtable_uid",
-            ],
-            partial=True
-        ),
+        expected_schema=expected_schema,
     )
     data = response_json["data"]
 
@@ -129,7 +131,7 @@ def test_data_sources_by_id_get(
         http_method="get",
         endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}/{cds.id}",
         headers=tus.api_authorization_header,
-        expected_schema=DataSourcesGetByIDSchema,
+        expected_schema=SchemaConfigs.DATA_SOURCES_GET_BY_ID.value.output_schema,
     )
 
     assert response_json["data"]["name"] == cds.name
