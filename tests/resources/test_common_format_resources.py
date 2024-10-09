@@ -63,7 +63,12 @@ TEST_ID = -1
             "/data-sources",
             "POST",
             "DataSources.add_new_data_source_wrapper",
-            {"entry_data": {}},
+            {"entry_data": {
+                "submitted_name": "test_name",
+                "description": "test_description",
+                "airtable_uid": "test_airtable_uid",
+                "approval_status": "approved",
+            }},
         ),
         (
             "/data-sources?page=1&approval_status=approved",

@@ -1,5 +1,7 @@
 import os
+from dataclasses import is_dataclass, asdict
 from enum import Enum
+from typing import Any, Dict
 
 from dotenv import dotenv_values, find_dotenv
 
@@ -23,3 +25,13 @@ def get_env_variable(name: str) -> str:
 
 def get_enum_values(en: type[Enum]):
     return [e.value for e in en]
+
+def dataclass_to_filtered_dict(instance: Any) -> Dict[str, Any]:
+    """
+    Convert a dataclass instance to a dictionary, filtering out any None values.
+    :param instance:
+    :return:
+    """
+    if not is_dataclass(instance):
+        raise TypeError(f"Expected a dataclass instance, but got {type(instance).__name__}")
+    return {key: value for key, value in asdict(instance).items() if value is not None}

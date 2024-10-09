@@ -1,5 +1,5 @@
 """
-These include helpers for constructing models and parsers
+These include helpers for constructing Flask-Restx models and parsers
 That rely on schemas
 
 They are isolated from other code to prevent circular imports.
@@ -11,10 +11,10 @@ from middleware.primary_resource_logic.user_queries import UserRequestSchema
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     EntryDataRequestSchema,
 )
-from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
+from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_construction import (
     get_restx_param_documentation,
 )
-from middleware.schema_and_dto_logic.response_schemas import (
+from middleware.schema_and_dto_logic.common_response_schemas import (
     IDAndMessageSchema,
     GetManyResponseSchema,
     EntryDataResponseSchema,

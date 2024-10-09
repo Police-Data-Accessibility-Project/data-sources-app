@@ -1,12 +1,13 @@
 """
 Helper scripts for the Resource classes
 """
-
 from http import HTTPStatus
 from typing import Optional
 
 from flask_restx import Namespace, Model, fields
 from flask_restx.reqparse import RequestParser
+
+from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
 
 
 def add_api_key_header_arg(parser: RequestParser):
@@ -42,19 +43,6 @@ def add_jwt_or_api_key_header_arg(parser: RequestParser):
     )
 
 
-def create_id_and_message_model(namespace: Namespace) -> Model:
-    return namespace.model(
-        "IdAndMessage",
-        {
-            "id": fields.Integer(description="The id of the created entry"),
-            "message": fields.String(
-                description="The success message",
-                example="Success. Entry created",
-            ),
-        },
-    )
-
-
 def create_variable_columns_model(namespace: Namespace, name_snake_case: str) -> Model:
     """
     Creates a generic model for an entry with variable columns
@@ -76,7 +64,7 @@ def create_variable_columns_model(namespace: Namespace, name_snake_case: str) ->
 
 
 def create_response_dictionary(
-    success_message: str, success_model: Model = None
+        success_message: str, success_model: Model = None
 ) -> dict:
     success_msg = "Success. " + success_message
 
@@ -108,7 +96,6 @@ def create_jwt_tokens_model(namespace: Namespace) -> Model:
 
 
 def create_search_model(namespace: Namespace) -> Model:
-
     search_result_inner_model = namespace.model(
         "SearchResultInner",
         {
@@ -192,9 +179,9 @@ def create_search_model(namespace: Namespace) -> Model:
 
 
 def column_permissions_description(
-    head_description: str,
-    column_permissions_str_table: str,
-    sub_description: str = "",
+        head_description: str,
+        column_permissions_str_table: str,
+        sub_description: str = "",
 ) -> str:
     """
     Creates a formatted description for column permissions
@@ -213,3 +200,22 @@ def column_permissions_description(
 {column_permissions_str_table}
 
     """
+
+class ResponseInfo:
+    """
+    A configuration dataclasses for defining common information in a response
+    """
+
+    def __init__(
+        self,
+        success_message: Optional[str] = None,
+        response_dictionary: Optional[dict] = None,
+    ):
+        check_for_mutually_exclusive_arguments(
+            arg1=success_message, arg2=response_dictionary
+        )
+
+        self.success_message = success_message
+        self.response_dictionary = response_dictionary
+
+

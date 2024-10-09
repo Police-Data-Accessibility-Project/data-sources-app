@@ -13,10 +13,11 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas i
     AgenciesGetByIDResponseSchema,
     AgenciesGetManyResponseSchema,
 )
-from middleware.schema_and_dto_logic.response_schemas import (
+from middleware.schema_and_dto_logic.common_response_schemas import (
     MessageSchema,
     IDAndMessageSchema,
 )
+from resources.endpoint_schema_config import SchemaConfigs
 
 from tests.conftest import dev_db_client, flask_client_with_db, integration_test_admin_setup
 from tests.helper_scripts.common_test_data import get_sample_agency_post_parameters
@@ -59,7 +60,7 @@ def test_agencies_get(flask_client_with_db, dev_db_client: DatabaseClient):
         http_method="get",
         endpoint=AGENCIES_BASE_ENDPOINT + "?page=2",
         headers=tus.api_authorization_header,
-        expected_schema=AgenciesGetManyResponseSchema,
+        expected_schema=SchemaConfigs.AGENCIES_GET_MANY.value.output_schema,
     )
 
     assert_expected_get_many_result(
@@ -85,7 +86,7 @@ def test_agencies_get_by_id(ts: AgenciesTestSetup):
         http_method="get",
         endpoint=AGENCIES_BASE_ENDPOINT + f"/{airtable_uid}",
         headers=ts.tus.jwt_authorization_header,
-        expected_schema=AgenciesGetByIDResponseSchema,
+        expected_schema=SchemaConfigs.AGENCIES_BY_ID_GET.value.output_schema,
     )
 
     assert response_json["data"]["airtable_uid"] == airtable_uid
@@ -108,7 +109,7 @@ def test_agencies_post(ts: AgenciesTestSetup):
         endpoint=AGENCIES_BASE_ENDPOINT,
         headers=ts.tus.jwt_authorization_header,
         json=data_to_post,
-        expected_schema=IDAndMessageSchema,
+        expected_schema=SchemaConfigs.AGENCIES_POST.value.output_schema,
     )
 
     json_data = run_and_validate_request(
@@ -206,7 +207,7 @@ def test_agencies_put(ts: AgenciesTestSetup):
         endpoint=BY_ID_ENDPOINT,
         headers=ts.tus.jwt_authorization_header,
         json={"agency_info": {"submitted_name": new_submitted_name}},
-        expected_schema=MessageSchema,
+        expected_schema=SchemaConfigs.AGENCIES_BY_ID_PUT.value.output_schema,
     )
 
     json_data = run_and_validate_request(

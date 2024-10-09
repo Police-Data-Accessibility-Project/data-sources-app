@@ -1,16 +1,17 @@
 from marshmallow import fields, Schema
 
-from database_client.enums import RequestStatus
+from database_client.enums import RequestStatus, RequestUrgency
 from middleware.enums import RecordType
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourceExpandedSchema
-from middleware.schema_and_dto_logic.response_schemas import (
-    GetManyResponseSchemaBase,
-    MessageSchema,
-)
+from middleware.schema_and_dto_logic.schema_helpers import create_post_schema, create_get_many_schema, \
+    create_get_by_id_schema
 from middleware.schema_and_dto_logic.util import get_json_metadata
 
 
 class DataRequestsSchema(Schema):
+    """
+    Reflects the columns in the `data_requests` database table
+    """
     id = fields.Integer(
         metadata=get_json_metadata("The ID of the data request"),
     )
@@ -94,15 +95,16 @@ class DataRequestsSchema(Schema):
             "Detailed requirements for the data being requested."
         ),
     )
-
-
-class DataRequestsPostSchema(Schema):
-    entry_data = fields.Nested(
-        nested=DataRequestsSchema,
-        metadata=get_json_metadata("The data request to be created"),
+    request_urgency = fields.Enum(
+        enum=RequestUrgency,
+        by_value=fields.Str,
+        metadata=get_json_metadata(
+            "The urgency of the request."
+        ),
     )
 
-class DataRequestsGetSchema(DataRequestsSchema):
+
+class DataRequestsGetSchemaBase(DataRequestsSchema):
     data_sources = fields.List(
         fields.Nested(
             nested=DataSourceExpandedSchema,
@@ -112,18 +114,18 @@ class DataRequestsGetSchema(DataRequestsSchema):
         metadata=get_json_metadata("The data sources associated with the data request")
     )
 
-class GetManyDataRequestsSchema(GetManyResponseSchemaBase):
-    data = fields.List(
-        cls_or_instance=fields.Nested(
-            nested=DataRequestsGetSchema,
-            metadata=get_json_metadata("The list of data requests"),
-        ),
-        metadata=get_json_metadata("The list of results"),
-    )
 
+DataRequestsPostSchema = create_post_schema(
+    entry_data_schema=DataRequestsSchema(),
+    description="Data request to be created",
+)
 
-class GetByIDDataRequestsResponseSchema(MessageSchema):
-    data = fields.Nested(
-        nested=DataRequestsGetSchema,
-        metadata=get_json_metadata("The data request result"),
-    )
+GetManyDataRequestsSchema = create_get_many_schema(
+    data_list_schema=DataRequestsGetSchemaBase,
+    description="The list of data requests",
+)
+
+GetByIDDataRequestsResponseSchema = create_get_by_id_schema(
+    data_schema=DataRequestsGetSchemaBase,
+    description="The data request result",
+)

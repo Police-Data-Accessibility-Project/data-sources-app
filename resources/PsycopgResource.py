@@ -10,10 +10,10 @@ from config import config
 from database_client.database_client import DatabaseClient
 from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
-from middleware.schema_and_dto_logic.dynamic_schema_request_content_population import (
+from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import (
     populate_schema_with_request_content,
 )
-from middleware.schema_and_dto_logic.dynamic_dto_request_content_population import (
+from middleware.schema_and_dto_logic.dynamic_logic.dynamic_dto_request_content_population import (
     populate_dto_with_request_content,
 )
 from middleware.schema_and_dto_logic.non_dto_dataclasses import (
@@ -59,6 +59,9 @@ def handle_exceptions(
             else:
                 message = str(e)
             print(message)
+
+            # TODO: Add logic so that if app is in testing/debug mode, the error is raised rather than aborted
+            # TODO: Add test for handle_exception logic explicitly
 
             if hasattr(e, "code"):
                 abort(code=e.code, message=message)

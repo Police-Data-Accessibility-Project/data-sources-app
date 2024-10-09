@@ -19,7 +19,7 @@ from middleware.schema_and_dto_logic.non_dto_dataclasses import (
 from utilities.enums import SourceMappingEnum
 
 
-class GetManyBaseSchema(Schema):
+class GetManyRequestsBaseSchema(Schema):
     page = fields.Integer(
         validate=validate.Range(min=1),
         load_default=1,
@@ -70,7 +70,7 @@ class GetManyBaseDTO:
 
 
 GET_MANY_SCHEMA_POPULATE_PARAMETERS = SchemaPopulateParameters(
-    schema=GetManyBaseSchema(),
+    schema=GetManyRequestsBaseSchema(),
     dto_class=GetManyBaseDTO,
 )
 
@@ -101,7 +101,7 @@ class EntryDataRequestSchema(Schema):
 
 
 @dataclass
-class EntryDataRequestDTO:
+class EntryCreateUpdateRequestDTO:
     """
     Contains data for creating or updating an entry
     """
@@ -111,7 +111,7 @@ class EntryDataRequestDTO:
     @classmethod
     def get_dto_populate_parameters(cls) -> DTOPopulateParameters:
         return DTOPopulateParameters(
-            dto_class=EntryDataRequestDTO,
+            dto_class=EntryCreateUpdateRequestDTO,
             source=SourceMappingEnum.JSON,
             validation_schema=EntryDataRequestSchema,
         )

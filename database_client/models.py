@@ -110,6 +110,13 @@ DetailLevelLiteral = Literal[
 ]
 AccessTypeLiteral = Literal["Web page", "API", "Download"]
 UpdateMethodLiteral = Literal["Insert", "No updates", "Overwrite"]
+RequestUrgencyLiteral = Literal[
+    'Urgent (Less than a week)',
+    'Somewhat urgent (Less than a month)',
+    'Not urgent (A few months)',
+    'Long-term (6 months or more)',
+    'Indefinite/Unknown',
+]
 
 text = Annotated[Text, None]
 timestamp_tz = Annotated[
@@ -317,6 +324,10 @@ class DataRequest(Base):
     pdap_response: Mapped[Optional[text]]
     coverage_range: Mapped[Optional[daterange]]
     data_requirements: Mapped[Optional[text]]
+    request_urgency: Mapped[RequestUrgencyLiteral] = mapped_column(
+        server_default='Indefinite/Unknown'
+    )
+
 
     data_sources: Mapped[list["DataSourceExpanded"]] = relationship(
         argument="DataSourceExpanded",

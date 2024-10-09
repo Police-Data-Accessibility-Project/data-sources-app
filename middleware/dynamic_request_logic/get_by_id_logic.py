@@ -21,7 +21,7 @@ from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,
 )
-from middleware.schema_and_dto_logic.response_schemas import EntryDataResponseSchema
+from middleware.schema_and_dto_logic.common_response_schemas import EntryDataResponseSchema
 
 
 def results_dependent_response(entry_name: str, results):

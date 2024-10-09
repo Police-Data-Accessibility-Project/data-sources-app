@@ -13,7 +13,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     TypeaheadSchema,
     TypeaheadDTO,
 )
-from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
+from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_construction import (
     get_restx_param_documentation,
 )
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
