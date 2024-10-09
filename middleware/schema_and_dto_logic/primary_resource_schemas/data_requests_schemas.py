@@ -1,6 +1,6 @@
 from marshmallow import fields, Schema
 
-from database_client.enums import RequestStatus
+from database_client.enums import RequestStatus, RequestUrgency
 from middleware.enums import RecordType
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourceExpandedSchema
 from middleware.schema_and_dto_logic.schema_helpers import create_post_schema, create_get_many_schema, \
@@ -93,6 +93,13 @@ class DataRequestsSchema(Schema):
         allow_none=True,
         metadata=get_json_metadata(
             "Detailed requirements for the data being requested."
+        ),
+    )
+    request_urgency = fields.Enum(
+        enum=RequestUrgency,
+        by_value=fields.Str,
+        metadata=get_json_metadata(
+            "The urgency of the request."
         ),
     )
 

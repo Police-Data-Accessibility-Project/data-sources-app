@@ -9,6 +9,7 @@ from flask.testing import FlaskClient
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
+from database_client.enums import RequestUrgency
 from middleware.constants import DATA_KEY
 from middleware.enums import PermissionsEnum
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
@@ -121,7 +122,12 @@ def test_data_requests_post(
         http_method="post",
         endpoint=DATA_REQUESTS_BASE_ENDPOINT,
         headers=standard_tus.jwt_authorization_header,
-        json={"entry_data": {"submission_notes": submission_notes}},
+        json={"entry_data":
+            {
+                "submission_notes": submission_notes,
+                "request_urgency": RequestUrgency.URGENT.value
+            }
+        },
     )
 
     data_request_id = json_data["id"]
@@ -131,6 +137,7 @@ def test_data_requests_post(
             "id",
             "submission_notes",
             "creator_user_id",
+            "request_urgency",
         ],
         where_mappings=[WhereMapping(column="id", value=int(data_request_id))],
     )
@@ -138,6 +145,7 @@ def test_data_requests_post(
     assert len(results) == 1
     assert results[0]["submission_notes"] == submission_notes
     assert results[0]["creator_user_id"] == user_id
+    assert results[0]["request_urgency"] == RequestUrgency.URGENT.value
 
     # Check that response is forbidden for standard user using API header
     run_and_validate_request(

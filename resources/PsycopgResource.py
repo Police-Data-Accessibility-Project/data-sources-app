@@ -60,6 +60,9 @@ def handle_exceptions(
                 message = str(e)
             print(message)
 
+            # TODO: Add logic so that if app is in testing/debug mode, the error is raised rather than aborted
+            # TODO: Add test for handle_exception logic explicitly
+
             if hasattr(e, "code"):
                 abort(code=e.code, message=message)
             else:

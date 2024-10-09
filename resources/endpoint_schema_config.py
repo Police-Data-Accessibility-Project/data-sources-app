@@ -64,6 +64,7 @@ class SchemaConfigs(Enum):
                 "entry_data.location_described_submitted",
                 "entry_data.coverage_range",
                 "entry_data.data_requirements",
+                "entry_data.request_urgency",
             ]
         ),
         output_schema=IDAndMessageSchema()

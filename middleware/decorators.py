@@ -134,12 +134,17 @@ def endpoint_info_2(
     Designed to eventually replace all instances of endpoint_info
     """
     # TODO: Replace original endpoint info with this, and rename to `endpoint_info`
-    input_doc_info = get_restx_param_documentation(
-        namespace=namespace,
-        schema=schema_config.value.input_schema,
-        model_name=f"{schema_config.name}_input",
-    )
-    _add_auth_info_to_parser(auth_info=auth_info, parser=input_doc_info.parser)
+    if schema_config.value.input_schema is not None:
+        input_doc_info = get_restx_param_documentation(
+            namespace=namespace,
+            schema=schema_config.value.input_schema,
+            model_name=f"{schema_config.name}_input",
+        )
+    else:
+        input_doc_info = None
+
+    if input_doc_info is not None:
+        _add_auth_info_to_parser(auth_info=auth_info, parser=input_doc_info.parser)
 
     _update_doc_kwargs(
         doc_kwargs,
@@ -166,11 +171,19 @@ def endpoint_info_2(
 
 def _update_doc_kwargs(
         doc_kwargs: dict,
-        input_doc_info: FlaskRestxDocInfo,
+        input_doc_info: Optional[FlaskRestxDocInfo],
         namespace: Namespace,
         response_info: ResponseInfo,
         output_schema: Schema
 ):
+    _update_responses(doc_kwargs, namespace, output_schema, response_info)
+
+    if input_doc_info is None:
+        return
+    doc_kwargs["expect"] = [input_doc_info.model, input_doc_info.parser]
+
+
+def _update_responses(doc_kwargs, namespace, output_schema, response_info):
     if response_info.response_dictionary is None:
         output_model = _get_output_model(namespace, output_schema)
         doc_kwargs["responses"] = create_response_dictionary(
@@ -179,7 +192,6 @@ def _update_doc_kwargs(
         )
     else:
         doc_kwargs["responses"] = response_info.response_dictionary
-    doc_kwargs["expect"] = [input_doc_info.model, input_doc_info.parser]
 
 
 def _get_output_model(namespace: Namespace, output_schema: Schema) -> Optional[Model]:

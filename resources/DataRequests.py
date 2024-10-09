@@ -40,14 +40,24 @@ namespace_data_requests = create_namespace(AppNamespaces.DATA_REQUESTS)
 @namespace_data_requests.route("/<resource_id>")
 class DataRequestsById(PsycopgResource):
 
-    @endpoint_info(
+    # TODO: More thoroughly update to endpoint_info_2
+    # @endpoint_info(
+    #     namespace=namespace_data_requests,
+    #     auth_info=GET_AUTH_INFO,
+    #     description="Get data request by id",
+    #     responses=create_response_dictionary(
+    #         success_message="Returns information on the specific data request.",
+    #         success_model=SchemaConfigs.DATA_REQUESTS_BY_ID_GET.value.output_schema,
+    #     ),
+    # )
+    @endpoint_info_2(
         namespace=namespace_data_requests,
         auth_info=GET_AUTH_INFO,
-        description="Get data request by id",
-        responses=create_response_dictionary(
+        schema_config=SchemaConfigs.DATA_REQUESTS_BY_ID_GET,
+        response_info=ResponseInfo(
             success_message="Returns information on the specific data request.",
-            success_model=SchemaConfigs.DATA_REQUESTS_BY_ID_GET.value.output_schema,
         ),
+        description="Get data request by id",
     )
     def get(self, access_info: AccessInfo, resource_id: str) -> Response:
         """
@@ -61,6 +71,7 @@ class DataRequestsById(PsycopgResource):
             ),
         )
 
+    # TODO: Modify to endpoint_info_2
     @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=OWNER_WRITE_ONLY_AUTH_INFO,
