@@ -16,7 +16,7 @@ from middleware.primary_resource_logic.data_requests import (
     create_data_request_related_source,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    EntryDataRequestDTO,
+    EntryCreateUpdateRequestDTO,
     GetByIDBaseSchema,
     GetByIDBaseDTO,
 )
@@ -84,7 +84,7 @@ class DataRequestsById(PsycopgResource):
         """
         return self.run_endpoint(
             update_data_request_wrapper,
-            dto_populate_parameters=EntryDataRequestDTO.get_dto_populate_parameters(),
+            dto_populate_parameters=EntryCreateUpdateRequestDTO.get_dto_populate_parameters(),
             data_request_id=int(resource_id),
             access_info=access_info,
         )
@@ -139,31 +139,13 @@ class DataRequests(PsycopgResource):
         ),
         description="Create new data request",
     )
-    # @endpoint_info(
-    #     namespace=namespace_data_requests,
-    #     auth_info=OWNER_WRITE_ONLY_AUTH_INFO,
-    #     input_schema=DataRequestsPostSchema(
-    #         only=[
-    #             "entry_data.submission_notes",
-    #             "entry_data.location_described_submitted",
-    #             "entry_data.coverage_range",
-    #             "entry_data.data_requirements",
-    #         ]
-    #     ),
-    #     input_model_name="DataRequestPostSchema",
-    #     description="Create new data request",
-    #     responses=create_response_dictionary(
-    #         success_message="Data request successfully created.",
-    #         success_model=id_and_message_model,
-    #     ),
-    # )
     def post(self, access_info: AccessInfo) -> Response:
         """
         Create a new data request.
         """
         return self.run_endpoint(
             wrapper_function=create_data_request_wrapper,
-            dto_populate_parameters=EntryDataRequestDTO.get_dto_populate_parameters(),
+            dto_populate_parameters=EntryCreateUpdateRequestDTO.get_dto_populate_parameters(),
             access_info=access_info,
         )
 
@@ -171,15 +153,6 @@ class DataRequests(PsycopgResource):
 @namespace_data_requests.route("/<resource_id>/related-sources")
 class DataRequestsRelatedSources(PsycopgResource):
 
-    # @endpoint_info(
-    #     namespace=namespace_data_requests,
-    #     auth_info=GET_AUTH_INFO,
-    #     description="""Get sources related to a data request""",
-    #     responses=create_response_dictionary(
-    #         success_message="Related sources successfully retrieved.",
-    #         success_model=data_sources_outer_model,
-    #     ),
-    # )
     @endpoint_info_2(
         namespace=namespace_data_requests,
         auth_info=GET_AUTH_INFO,
@@ -202,14 +175,6 @@ class DataRequestsRelatedSources(PsycopgResource):
 @namespace_data_requests.route("/<resource_id>/related-sources/<data_source_id>")
 class DataRequestsRelatedSourcesById(PsycopgResource):
 
-    @endpoint_info(
-        namespace=namespace_data_requests,
-        auth_info=OWNER_WRITE_ONLY_AUTH_INFO,
-        description="""Add an association of a data source with a data request""",
-        responses=create_response_dictionary(
-            success_message="Data source successfully associated with data request.",
-        ),
-    )
     @endpoint_info_2(
         namespace=namespace_data_requests,
         auth_info=OWNER_WRITE_ONLY_AUTH_INFO,

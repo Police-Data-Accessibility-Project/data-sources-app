@@ -8,6 +8,7 @@ from collections import namedtuple
 
 from flask.testing import FlaskClient
 
+from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.constants import DATA_SOURCES_BASE_ENDPOINT
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
@@ -35,11 +36,12 @@ def create_data_source_with_endpoint(
         headers=jwt_authorization_header,
         json={
             "entry_data": {
-                "name": cds.name,
+                "submitted_name": cds.name,
                 "airtable_uid": cds.id,
                 "source_url": "http://src1.com",
             }
         },
+        expected_schema=SchemaConfigs.DATA_SOURCES_POST.value.output_schema,
     )
 
     return cds

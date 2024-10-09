@@ -1,3 +1,7 @@
+from dataclasses import dataclass
+from datetime import date
+from typing import Optional, List
+
 from marshmallow import Schema, fields
 
 from database_client.enums import (
@@ -10,7 +14,7 @@ from database_client.enums import (
     AgencyAggregation,
 )
 from middleware.enums import RecordType
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyRequestsBaseSchema
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyRequestsBaseSchema, EntryCreateUpdateRequestDTO
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import (
     AgenciesGetSchema,
 )
@@ -21,6 +25,46 @@ from middleware.schema_and_dto_logic.common_response_schemas import (
 from middleware.schema_and_dto_logic.util import get_json_metadata
 from utilities.enums import SourceMappingEnum
 
+@dataclass
+class DataSourceEntryDataPostDTO:
+    airtable_uid: str
+    submitted_name: str
+    description: Optional[str] = None
+    approval_status: Optional[ApprovalStatus] = None
+    source_url: Optional[str] = None
+    agency_supplied: Optional[bool] = None
+    supplying_entity: Optional[str] = None
+    agency_originated: Optional[bool] = None
+    agency_aggregation: Optional[AgencyAggregation] = None
+    coverage_start: Optional[date] = None
+    coverage_end: Optional[date] = None
+    detail_level: Optional[DetailLevel] = None
+    access_types: Optional[List[AccessType]] = None
+    record_download_option_provided: Optional[bool] = None
+    data_portal_type: Optional[str] = None
+    record_formats: Optional[List[str]] = None
+    update_method: Optional[str] = None
+    tags: Optional[List[str]] = None
+    readme_url: Optional[str] = None
+    originating_entity: Optional[str] = None
+    retention_schedule: Optional[RetentionSchedule] = None
+    scraper_url: Optional[str] = None
+    submission_notes: Optional[str] = None
+    rejection_note: Optional[str] = None
+    last_approval_editor: Optional[str] = None
+    submitter_contact_info: Optional[str] = None
+    agency_described_submitted: Optional[str] = None
+    agency_described_not_in_database: Optional[str] = None
+    data_portal_type_other: Optional[str] = None
+    data_source_request: Optional[str] = None
+    broken_source_url_as_of: Optional[date] = None
+    access_notes: Optional[str] = None
+    url_status: Optional[URLStatus] = None
+    record_type_name: Optional[RecordType] = None
+
+@dataclass
+class DataSourcesPostDTO:
+    entry_data: DataSourceEntryDataPostDTO
 
 class DataSourceBaseSchema(Schema):
     """
@@ -341,10 +385,14 @@ class DataSourcesPostSchema(Schema):
                 "updated_at",
                 "created_at",
                 "record_type_id"
-            ]
+            ],
+            partial=True
         ),
         required=True,
-        metadata=get_json_metadata("The data source to be created"),
+        metadata=get_json_metadata(
+            description="The data source to be created",
+            nested_dto_class=DataSourceEntryDataPostDTO,
+        ),
     )
 
 class DataSourcesPutSchema(Schema):

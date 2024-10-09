@@ -5,7 +5,7 @@ from marshmallow import Schema
 
 from middleware.primary_resource_logic.data_requests import RelatedSourceByIDSchema, RelatedSourceByIDDTO
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyRequestsBaseSchema, GetManyBaseDTO, \
-    GetByIDBaseSchema, GetByIDBaseDTO, EntryDataRequestDTO, EntryDataRequestSchema
+    GetByIDBaseSchema, GetByIDBaseDTO, EntryCreateUpdateRequestDTO, EntryDataRequestSchema
 from middleware.schema_and_dto_logic.custom_types import DTOTypes
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import AgenciesGetByIDResponseSchema, \
@@ -13,7 +13,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas i
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import GetManyDataRequestsSchema, \
     DataRequestsSchema, DataRequestsPostSchema, GetByIDDataRequestsResponseSchema
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourcesGetManySchema, \
-    DataSourcesGetByIDSchema, DataSourcesPostSchema, DataSourcesPutSchema
+    DataSourcesGetByIDSchema, DataSourcesPostSchema, DataSourcesPutSchema, DataSourcesPostDTO
 from middleware.schema_and_dto_logic.common_response_schemas import IDAndMessageSchema, MessageSchema
 
 
@@ -119,7 +119,8 @@ class SchemaConfigs(Enum):
     )
     DATA_SOURCES_POST = EndpointSchemaConfig(
         input_schema=DataSourcesPostSchema(),
-        input_dto_class=EntryDataRequestDTO,
+        input_dto_class=DataSourcesPostDTO,
+        output_schema=IDAndMessageSchema()
     )
     DATA_SOURCES_PUT = EndpointSchemaConfig(
         input_schema=DataSourcesPutSchema(),

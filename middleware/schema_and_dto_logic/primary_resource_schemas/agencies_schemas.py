@@ -283,7 +283,7 @@ class LocationInfoDTO:
 
 def get_agency_info_field(
     schema: type[AgencyInfoBaseSchema],
-    dto_class: type[Union[AgencyInfoPutDTO, AgencyInfoPostDTO]],
+    nested_dto_class: type[Union[AgencyInfoPutDTO, AgencyInfoPostDTO]],
 ) -> fields.Nested:
     return fields.Nested(
         schema,
@@ -291,7 +291,7 @@ def get_agency_info_field(
         metadata={
             "description": "Information about the agency",
             "source": SourceMappingEnum.JSON,
-            "nested_dto_class": dto_class,
+            "nested_dto_class": nested_dto_class,
         },
     )
 
@@ -330,7 +330,7 @@ class AgenciesPostSchema(AgenciesPostPutBaseSchema):
     #
     agency_info = get_agency_info_field(
         schema=AgencyInfoPostSchema,
-        dto_class=AgencyInfoPostDTO,
+        nested_dto_class=AgencyInfoPostDTO,
     )
 
     @validates_schema
@@ -343,7 +343,7 @@ class AgenciesPutSchema(AgenciesPostPutBaseSchema):
     #
     agency_info = get_agency_info_field(
         schema=AgencyInfoPutSchema,
-        dto_class=AgencyInfoPutDTO,
+        nested_dto_class=AgencyInfoPutDTO,
     )
 
     @validates_schema

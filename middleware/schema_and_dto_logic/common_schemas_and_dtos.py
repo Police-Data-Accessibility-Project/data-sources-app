@@ -101,7 +101,7 @@ class EntryDataRequestSchema(Schema):
 
 
 @dataclass
-class EntryDataRequestDTO:
+class EntryCreateUpdateRequestDTO:
     """
     Contains data for creating or updating an entry
     """
@@ -111,7 +111,7 @@ class EntryDataRequestDTO:
     @classmethod
     def get_dto_populate_parameters(cls) -> DTOPopulateParameters:
         return DTOPopulateParameters(
-            dto_class=EntryDataRequestDTO,
+            dto_class=EntryCreateUpdateRequestDTO,
             source=SourceMappingEnum.JSON,
             validation_schema=EntryDataRequestSchema,
         )
