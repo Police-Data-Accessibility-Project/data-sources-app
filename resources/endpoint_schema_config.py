@@ -15,6 +15,9 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_sche
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourcesGetManySchema, \
     DataSourcesGetByIDSchema, DataSourcesPostSchema, DataSourcesPutSchema, DataSourcesPostDTO
 from middleware.schema_and_dto_logic.common_response_schemas import IDAndMessageSchema, MessageSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.github_issue_app_schemas import \
+    GithubDataRequestsIssuesPostRequestSchema, GithubDataRequestsIssuesPostResponseSchema, \
+    GithubDataRequestsIssuesPostDTO
 
 
 class EndpointSchemaConfig:
@@ -127,5 +130,14 @@ class SchemaConfigs(Enum):
         input_schema=DataSourcesPutSchema(),
         input_dto_class=EntryDataRequestSchema
     )
-
     #endregion
+
+    #region Github
+    GITHUB_DATA_REQUESTS_ISSUES_POST = EndpointSchemaConfig(
+        input_schema=GithubDataRequestsIssuesPostRequestSchema(),
+        output_schema=GithubDataRequestsIssuesPostResponseSchema(),
+        input_dto_class=GithubDataRequestsIssuesPostDTO
+    )
+    #endregion
+
+

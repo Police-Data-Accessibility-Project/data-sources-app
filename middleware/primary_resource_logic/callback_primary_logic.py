@@ -6,7 +6,7 @@ from flask import Response, make_response
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
-from middleware.callback_flask_sessions_logic import (
+from middleware.third_party_interaction_logic.callback_flask_sessions_logic import (
     get_callback_params,
     get_callback_function,
 )
@@ -19,7 +19,7 @@ from middleware.enums import CallbackFunctionsEnum
 from middleware.primary_resource_logic.login_queries import (
     try_logging_in_with_github_id,
 )
-from middleware.callback_oauth_logic import (
+from middleware.third_party_interaction_logic.callback_oauth_logic import (
     get_github_user_id,
     get_github_user_email,
     get_github_oauth_access_token,

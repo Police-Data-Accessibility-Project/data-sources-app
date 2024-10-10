@@ -18,7 +18,6 @@ from middleware.schema_and_dto_logic.non_dto_dataclasses import (
 
 from utilities.enums import SourceMappingEnum
 
-
 class GetManyRequestsBaseSchema(Schema):
     page = fields.Integer(
         validate=validate.Range(min=1),

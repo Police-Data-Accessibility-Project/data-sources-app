@@ -463,12 +463,13 @@ def patch_post_callback_functions(
             callback_params=callback_params,
         )
     )
+    PATCH_ROOT = "middleware.primary_resource_logic.callback_primary_logic"
     monkeypatch.setattr(
-        "middleware.callback_primary_logic.get_oauth_callback_info",
+        f"{PATCH_ROOT}.get_oauth_callback_info",
         mock_get_oauth_callback_info,
     )
     monkeypatch.setattr(
-        "middleware.callback_primary_logic.get_flask_session_callback_info",
+        f"{PATCH_ROOT}.get_flask_session_callback_info",
         mock_get_flask_session_callback_info,
     )
 
