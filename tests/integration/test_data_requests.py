@@ -154,7 +154,7 @@ def test_data_requests_post(
         endpoint=DATA_REQUESTS_BASE_ENDPOINT,
         headers=standard_tus.api_authorization_header,
         json={"entry_data": {"submission_notes": submission_notes}},
-        expected_response_status=HTTPStatus.INTERNAL_SERVER_ERROR,
+        expected_response_status=HTTPStatus.UNAUTHORIZED,
     )
 
     # Check that response is forbidden if using invalid columns

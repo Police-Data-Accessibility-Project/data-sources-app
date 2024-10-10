@@ -8,6 +8,7 @@ from flask_cors import CORS
 from resources.Callback import namespace_auth
 from resources.CreateUserWithGithub import namespace_create_user_with_github
 from resources.DataRequests import namespace_data_requests
+from resources.GithubIssues import namespace_github
 from resources.HomepageSearchCache import namespace_homepage_search_cache
 from resources.LinkToGithub import namespace_link_to_github
 from resources.LoginWithGithub import namespace_login_with_github
@@ -58,6 +59,7 @@ NAMESPACES = [
     # namespace_homepage_search_cache,
     namespace_url_checker,
     namespace_user,
+    namespace_github
 ]
 
 MY_PREFIX = "/api"

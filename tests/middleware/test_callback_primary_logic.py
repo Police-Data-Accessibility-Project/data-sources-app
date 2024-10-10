@@ -6,7 +6,7 @@ import pytest
 from flask import Response
 
 from database_client.enums import ExternalAccountTypeEnum
-from middleware.callback_primary_logic import (
+from middleware.primary_resource_logic.callback_primary_logic import (
     get_flask_session_callback_info,
     get_oauth_callback_info,
     callback_outer_wrapper,
@@ -25,7 +25,7 @@ from middleware.enums import CallbackFunctionsEnum
 from middleware.primary_resource_logic.user_queries import UserRequest
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
-PATCH_PREFIX = "middleware.callback_primary_logic"
+PATCH_PREFIX = "middleware.primary_resource_logic.callback_primary_logic"
 
 
 class GetFlaskSessionCallbackInfoMocks(DynamicMagicMock):

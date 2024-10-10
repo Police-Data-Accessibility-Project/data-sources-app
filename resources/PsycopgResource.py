@@ -1,3 +1,4 @@
+import os
 from contextlib import contextmanager
 from http import HTTPStatus
 import functools
@@ -54,22 +55,18 @@ def handle_exceptions(
         except Exception as e:
             self.get_connection().rollback()
 
-            if hasattr(e, "data") and "message" in e.data:
-                message = e.data["message"]
-            else:
-                message = str(e)
+
+            message = _get_message_from_exception(e)
             print(message)
 
-            # TODO: Add logic so that if app is in testing/debug mode, the error is raised rather than aborted
-            # TODO: Add test for handle_exception logic explicitly
+            raise e
 
-            if hasattr(e, "code"):
-                abort(code=e.code, message=message)
-            else:
-                abort(
-                    code=HTTPStatus.INTERNAL_SERVER_ERROR.value,
-                    message=message,
-                )
+    def _get_message_from_exception(e):
+        if hasattr(e, "data") and "message" in e.data:
+            message = e.data["message"]
+        else:
+            message = str(e)
+        return message
 
     return wrapper
 
