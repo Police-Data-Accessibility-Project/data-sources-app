@@ -11,9 +11,16 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schem
     DataSourcesGetByIDSchema,
     DataSourcesGetManySchema,
 )
-from middleware.schema_and_dto_logic.common_response_schemas import GetManyResponseSchema
+from middleware.schema_and_dto_logic.common_response_schemas import (
+    GetManyResponseSchema,
+)
 from resources.endpoint_schema_config import SchemaConfigs
-from tests.conftest import connection_with_test_data, db_client_with_test_data, flask_client_with_db, test_user_admin
+from tests.conftest import (
+    connection_with_test_data,
+    db_client_with_test_data,
+    flask_client_with_db,
+    test_user_admin,
+)
 from conftest import test_data_creator_flask, monkeysession
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
 from tests.helper_scripts.common_test_data import TestDataCreatorFlask
@@ -101,7 +108,7 @@ def test_data_sources_get_many_limit_columns(
 
 def test_data_sources_post(
     db_client_with_test_data: DatabaseClient,
-        test_data_creator_flask: TestDataCreatorFlask
+    test_data_creator_flask: TestDataCreatorFlask,
 ):
     """
     Test that POST call to /data-sources endpoint successfully creates a new data source with a unique name and verifies its existence in the database
@@ -117,9 +124,7 @@ def test_data_sources_post(
     len(rows) == 1
 
 
-def test_data_sources_by_id_get(
-        test_data_creator_flask: TestDataCreatorFlask
-):
+def test_data_sources_by_id_get(test_data_creator_flask: TestDataCreatorFlask):
     """
     Test that GET call to /data-sources-by-id/<data_source_id> endpoint retrieves the data source with the correct homepage URL
     """
@@ -137,9 +142,7 @@ def test_data_sources_by_id_get(
     assert response_json["data"]["name"] == cds.name
 
 
-def test_data_sources_by_id_put(
-        test_data_creator_flask: TestDataCreatorFlask
-):
+def test_data_sources_by_id_put(test_data_creator_flask: TestDataCreatorFlask):
     """
     Test that PUT call to /data-sources-by-id/<data_source_id> endpoint successfully updates the description of the data source and verifies the change in the database
     """
@@ -165,7 +168,7 @@ def test_data_sources_by_id_put(
 
 
 def test_data_sources_by_id_delete(
-        test_data_creator_flask: TestDataCreatorFlask,
+    test_data_creator_flask: TestDataCreatorFlask,
 ):
     """
     Test that DELETE call to /data-sources-by-id/<data_source_id> endpoint successfully deletes the data source and verifies the change in the database

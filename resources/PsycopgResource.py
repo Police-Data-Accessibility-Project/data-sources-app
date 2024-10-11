@@ -55,7 +55,6 @@ def handle_exceptions(
         except Exception as e:
             self.get_connection().rollback()
 
-
             message = _get_message_from_exception(e)
             print(message)
 

@@ -20,7 +20,8 @@ from database_client.enums import (
     ExternalAccountTypeEnum,
     RelationRoleEnum,
     ColumnPermissionEnum,
-    SortOrder, RequestStatus,
+    SortOrder,
+    RequestStatus,
 )
 from middleware.exceptions import (
     UserNotFoundError,
@@ -39,8 +40,11 @@ from tests.conftest import live_database_client, test_table_data, clear_data_req
 from tests.helper_scripts.common_test_data import (
     insert_test_column_permission_data,
     create_agency_entry_for_search_cache,
-    create_data_source_entry_for_url_duplicate_checking, TestDataCreatorFlask, TestDataCreatorDBClient,
-    get_random_number_for_testing, TestDataRequestInfo,
+    create_data_source_entry_for_url_duplicate_checking,
+    TestDataCreatorFlask,
+    TestDataCreatorDBClient,
+    get_random_number_for_testing,
+    TestDataRequestInfo,
 )
 from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources_if_not_exist,
@@ -957,6 +961,7 @@ def test_create_or_get(live_database_client):
 
     assert results == new_results
 
+
 def test_get_data_requests(test_data_creator_db_client: TestDataCreatorDBClient):
     tdc = test_data_creator_db_client
 
@@ -964,19 +969,22 @@ def test_get_data_requests(test_data_creator_db_client: TestDataCreatorDBClient)
     tdc.data_request()
 
     results = tdc.db_client.get_data_requests(
-        columns=["id"],
-        subquery_parameters=[SubqueryParameterManager.data_sources()]
+        columns=["id"], subquery_parameters=[SubqueryParameterManager.data_sources()]
     )
     assert results
+
 
 def test_get_data_sources(live_database_client):
     results = live_database_client.get_data_sources(
         columns=["airtable_uid"],
-        subquery_parameters=[SubqueryParameterManager.agencies(
-            columns=["airtable_uid"],
-        )]
+        subquery_parameters=[
+            SubqueryParameterManager.agencies(
+                columns=["airtable_uid"],
+            )
+        ],
     )
     assert results
+
 
 def test_get_linked_rows(
     test_data_creator_db_client: TestDataCreatorDBClient,
@@ -1001,40 +1009,41 @@ def test_get_linked_rows(
         columns_to_retrieve=[
             "airtable_uid",
             "name",
-        ]
+        ],
     )
 
     assert results["count"] == len(results["data"]) > 0
     assert results["data"][0]["name"] == ds_info.name
     assert results["data"][0]["airtable_uid"] == ds_info.id
 
+
 def test_get_unarchived_data_requests_with_issues(
-        test_data_creator_db_client: TestDataCreatorDBClient,
-        clear_data_requests
+    test_data_creator_db_client: TestDataCreatorDBClient, clear_data_requests
 ):
     # Add data requests with issues
     tdc = test_data_creator_db_client
 
     def create_data_request_with_issue_and_request_status(
-        request_status: RequestStatus
+        request_status: RequestStatus,
     ) -> TestDataRequestInfo:
-        dr_info = tdc.data_request(
-            request_status=request_status.value
-        )
+        dr_info = tdc.data_request(request_status=request_status.value)
         issue_number = get_random_number_for_testing()
         tdc.db_client.create_data_request_github_info(
             column_value_mappings={
                 "data_request_id": dr_info.id,
                 "github_issue_url": f"https://github.com/test-org/test-repo/issues/{issue_number}",
-                "github_issue_number": issue_number
+                "github_issue_number": issue_number,
             }
         )
 
         return dr_info
 
-    dr_info_active = create_data_request_with_issue_and_request_status(RequestStatus.ACTIVE)
-    dr_info_archived = create_data_request_with_issue_and_request_status(RequestStatus.ARCHIVED)
-
+    dr_info_active = create_data_request_with_issue_and_request_status(
+        RequestStatus.ACTIVE
+    )
+    dr_info_archived = create_data_request_with_issue_and_request_status(
+        RequestStatus.ARCHIVED
+    )
 
     results = tdc.db_client.get_unarchived_data_requests_with_issues()
 
@@ -1046,8 +1055,6 @@ def test_get_unarchived_data_requests_with_issues(
     assert result.github_issue_url
     assert result.github_issue_number
     assert result.request_status == RequestStatus.ACTIVE
-
-
 
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts

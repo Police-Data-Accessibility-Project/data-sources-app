@@ -13,14 +13,20 @@ from database_client.enums import RequestUrgency
 from middleware.constants import DATA_KEY
 from middleware.enums import PermissionsEnum
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
-    GetByIDDataRequestsResponseSchema, GetManyDataRequestsSchema,
+    GetByIDDataRequestsResponseSchema,
+    GetManyDataRequestsSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourceExpandedSchema, \
-    DataSourcesGetManySchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
+    DataSourceExpandedSchema,
+    DataSourcesGetManySchema,
+)
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.conftest import dev_db_client, flask_client_with_db
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
-from tests.helper_scripts.common_test_data import create_test_data_request, TestDataCreatorFlask
+from tests.helper_scripts.common_test_data import (
+    create_test_data_request,
+    TestDataCreatorFlask,
+)
 from tests.helper_scripts.constants import (
     DATA_REQUESTS_BASE_ENDPOINT,
     DATA_REQUESTS_BY_ID_ENDPOINT,
@@ -55,8 +61,8 @@ def ts(flask_client_with_db, dev_db_client):
 
 
 def test_data_requests_get(
-        test_data_creator_flask: TestDataCreatorFlask,
-    ):
+    test_data_creator_flask: TestDataCreatorFlask,
+):
 
     tdc = test_data_creator_flask
 
@@ -73,7 +79,9 @@ def test_data_requests_get(
 
     expected_schema = SchemaConfigs.DATA_REQUESTS_GET_MANY.value.output_schema
     # Modify exclude to account for old data which did not have archive_reason and creator_user_id
-    expected_schema.exclude.update(["data.archive_reason", "data.creator_user_id", "data.internal_notes"])
+    expected_schema.exclude.update(
+        ["data.archive_reason", "data.creator_user_id", "data.internal_notes"]
+    )
     json_data = run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="get",
@@ -111,7 +119,7 @@ def test_data_requests_get(
 
 
 def test_data_requests_post(
-        test_data_creator_flask: TestDataCreatorFlask,
+    test_data_creator_flask: TestDataCreatorFlask,
 ):
     tdc = test_data_creator_flask
     standard_tus = tdc.standard_user()
@@ -122,10 +130,10 @@ def test_data_requests_post(
         http_method="post",
         endpoint=DATA_REQUESTS_BASE_ENDPOINT,
         headers=standard_tus.jwt_authorization_header,
-        json={"entry_data":
-            {
+        json={
+            "entry_data": {
                 "submission_notes": submission_notes,
-                "request_urgency": RequestUrgency.URGENT.value
+                "request_urgency": RequestUrgency.URGENT.value,
             }
         },
     )
@@ -169,7 +177,7 @@ def test_data_requests_post(
 
 
 def test_data_requests_by_id_get(
-        test_data_creator_flask: TestDataCreatorFlask,
+    test_data_creator_flask: TestDataCreatorFlask,
 ):
     tdc = test_data_creator_flask
     admin_tus = tdc.get_admin_tus()
@@ -178,7 +186,9 @@ def test_data_requests_by_id_get(
 
     expected_schema = SchemaConfigs.DATA_REQUESTS_BY_ID_GET.value.output_schema
     # Modify exclude to account for old data which did not have archive_reason and creator_user_id
-    expected_schema.exclude.update(["data.archive_reason", "data.creator_user_id", "data.internal_notes"])
+    expected_schema.exclude.update(
+        ["data.archive_reason", "data.creator_user_id", "data.internal_notes"]
+    )
 
     # Run with API header
     api_json_data = run_and_validate_request(
@@ -207,11 +217,10 @@ def test_data_requests_by_id_get(
 
 
 def test_data_requests_by_id_put(
-        test_data_creator_flask: TestDataCreatorFlask,
+    test_data_creator_flask: TestDataCreatorFlask,
 ):
     tdc = test_data_creator_flask
     standard_tus = tdc.standard_user()
-
 
     tdr = tdc.data_request(standard_tus)
     data_request_id = tdr.id
@@ -274,9 +283,7 @@ def test_data_requests_by_id_delete(test_data_creator_flask):
     )
 
     # Check that request is denied if user is not owner and does not have DB_WRITE permission
-    new_tdr = create_test_data_request(
-        flask_client, tus_owner.jwt_authorization_header
-    )
+    new_tdr = create_test_data_request(flask_client, tus_owner.jwt_authorization_header)
 
     NEW_ENDPOINT = DATA_REQUESTS_BY_ID_ENDPOINT + str(new_tdr.id)
 
@@ -382,7 +389,7 @@ def related_agencies_test_setup(integration_test_setup: IntegrationTestSetup):
 
 
 def test_data_request_by_id_related_sources(
-        test_data_creator_flask: TestDataCreatorFlask,
+    test_data_creator_flask: TestDataCreatorFlask,
 ):
     tdc = test_data_creator_flask
     flask_client = tdc.flask_client
@@ -468,8 +475,10 @@ def test_data_request_by_id_related_sources(
         api_authorization_header=tus_owner.api_authorization_header,
     )
 
-    response_json_nonowner = get_data_request_related_sources_with_given_data_request_id(
-        api_authorization_header=tus_non_owner.api_authorization_header,
+    response_json_nonowner = (
+        get_data_request_related_sources_with_given_data_request_id(
+            api_authorization_header=tus_non_owner.api_authorization_header,
+        )
     )
     assert response_json_owner == response_json_nonowner
     assert response_json_owner["count"] == 1

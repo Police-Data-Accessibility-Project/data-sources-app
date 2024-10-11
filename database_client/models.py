@@ -111,11 +111,11 @@ DetailLevelLiteral = Literal[
 AccessTypeLiteral = Literal["Web page", "API", "Download"]
 UpdateMethodLiteral = Literal["Insert", "No updates", "Overwrite"]
 RequestUrgencyLiteral = Literal[
-    'Urgent (Less than a week)',
-    'Somewhat urgent (Less than a month)',
-    'Not urgent (A few months)',
-    'Long-term (6 months or more)',
-    'Indefinite/Unknown',
+    "Urgent (Less than a week)",
+    "Somewhat urgent (Less than a month)",
+    "Not urgent (A few months)",
+    "Long-term (6 months or more)",
+    "Indefinite/Unknown",
 ]
 
 text = Annotated[Text, None]
@@ -156,7 +156,6 @@ class Agency(Base):
     def __iter__(self):
         yield from iter_with_special_cases(self)
 
-
     airtable_uid: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str]
     submitted_name: Mapped[Optional[str]]
@@ -194,7 +193,6 @@ class AgencyExpanded(Base):
 
     def __iter__(self):
         yield from iter_with_special_cases(self)
-
 
     # Define columns as per the view with refined data types
     name = Column(String, nullable=False)
@@ -305,7 +303,6 @@ class DataRequest(Base):
 
         yield from iter_with_special_cases(self, special_cases=special_cases)
 
-
     id: Mapped[int] = mapped_column(primary_key=True)
     submission_notes: Mapped[Optional[text]]
     request_status: Mapped[RequestStatusLiteral] = mapped_column(
@@ -324,9 +321,8 @@ class DataRequest(Base):
     coverage_range: Mapped[Optional[daterange]]
     data_requirements: Mapped[Optional[text]]
     request_urgency: Mapped[RequestUrgencyLiteral] = mapped_column(
-        server_default='Indefinite/Unknown'
+        server_default="Indefinite/Unknown"
     )
-
 
     data_sources: Mapped[list["DataSourceExpanded"]] = relationship(
         argument="DataSourceExpanded",
@@ -340,15 +336,13 @@ class DataRequest(Base):
     def data_source_ids(self) -> list[str]:
         return [source.airtable_uid for source in self.data_sources]
 
+
 class DataRequestExpanded(DataRequest):
-    id = mapped_column(
-        None, ForeignKey("public.data_requests.id"), primary_key=True
-    )
+    id = mapped_column(None, ForeignKey("public.data_requests.id"), primary_key=True)
 
     __tablename__ = Relations.DATA_REQUESTS_EXPANDED.value
     github_issue_url: Mapped[Optional[text]]
     github_issue_number: Mapped[Optional[int]]
-
 
 
 def iter_with_special_cases(instance, special_cases=None):
@@ -388,7 +382,6 @@ class DataSource(Base):
             ],
         }
         yield from iter_with_special_cases(self, special_cases)
-
 
     airtable_uid: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str]
@@ -460,7 +453,6 @@ class DataSourceExpanded(DataSource):
     }
 
     record_type_name: Mapped[Optional[str]]
-
 
 
 class DataSourceArchiveInfo(Base):

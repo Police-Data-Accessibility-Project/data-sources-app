@@ -3,14 +3,16 @@ from marshmallow import Schema, fields
 from utilities.enums import SourceMappingEnum
 from dataclasses import dataclass
 
+
 class GithubDataRequestsIssuesPostRequestSchema(Schema):
     data_request_id = fields.Str(
         required=True,
         metadata={
             "description": "The id of the data request",
             "source": SourceMappingEnum.PATH,
-        }
+        },
     )
+
 
 class GithubDataRequestsIssuesPostResponseSchema(Schema):
     message = fields.Str(
@@ -27,6 +29,7 @@ class GithubDataRequestsIssuesPostResponseSchema(Schema):
             "source": SourceMappingEnum.JSON,
         },
     )
+
 
 @dataclass
 class GithubDataRequestsIssuesPostDTO:

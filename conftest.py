@@ -12,7 +12,10 @@ from app import create_app
 from config import limiter
 from database_client.database_client import DatabaseClient
 from middleware.util import get_env_variable
-from tests.helper_scripts.common_test_data import TestDataCreatorFlask, TestDataCreatorDBClient
+from tests.helper_scripts.common_test_data import (
+    TestDataCreatorFlask,
+    TestDataCreatorDBClient,
+)
 
 # Load environment variables
 dotenv.load_dotenv()
@@ -31,7 +34,6 @@ def test_client():
     with app.test_client() as testing_client:
         with app.app_context():
             yield testing_client
-
 
 
 @pytest.fixture
@@ -72,8 +74,7 @@ def test_data_creator_flask(monkeysession) -> TestDataCreatorFlask:
         yield TestDataCreatorFlask(client)
     limiter.enabled = True
 
+
 @pytest.fixture(scope="session")
 def test_data_creator_db_client() -> TestDataCreatorDBClient:
     yield TestDataCreatorDBClient()
-
-

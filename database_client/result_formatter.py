@@ -9,8 +9,14 @@ from database_client.constants import (
 from database_client.subquery_logic import SubqueryParameters
 from utilities.common import format_arrays
 
+
 class SubqueryResultFormatter:
-    def __init__(self, row_mappings: list[RowMapping], primary_columns: list[str], subquery_parameters: list[SubqueryParameters]):
+    def __init__(
+        self,
+        row_mappings: list[RowMapping],
+        primary_columns: list[str],
+        subquery_parameters: list[SubqueryParameters],
+    ):
         self.row_mappings = row_mappings
         self.primary_columns = primary_columns
         self.subquery_parameters = subquery_parameters
@@ -36,12 +42,18 @@ class SubqueryResultFormatter:
 
     def _add_subquery_parameters(self, formatted_result: dict, row_object: Any) -> None:
         for subquery_parameter in self.subquery_parameters:
-            relationship_entities = getattr(row_object, subquery_parameter.linking_column)
+            relationship_entities = getattr(
+                row_object, subquery_parameter.linking_column
+            )
             subquery_results = [
-                {column: getattr(relationship_entity, column) for column in subquery_parameter.columns}
+                {
+                    column: getattr(relationship_entity, column)
+                    for column in subquery_parameter.columns
+                }
                 for relationship_entity in relationship_entities
             ]
             formatted_result[subquery_parameter.linking_column] = subquery_results
+
 
 class ResultFormatter:
     """
@@ -61,9 +73,7 @@ class ResultFormatter:
         :param tuples:
         :return:
         """
-        zipped_results = [
-            dict(zip(columns, result)) for result in tuples
-        ]
+        zipped_results = [dict(zip(columns, result)) for result in tuples]
         formatted_results = []
         for zipped_result in zipped_results:
             formatted_results.append(format_arrays(zipped_result))
@@ -79,12 +89,13 @@ class ResultFormatter:
     def format_result_with_subquery_parameters(
         row_mappings: list[RowMapping],
         primary_columns: list[str],
-        subquery_parameters: list[SubqueryParameters]
+        subquery_parameters: list[SubqueryParameters],
     ) -> list[dict]:
         srf = SubqueryResultFormatter(
             row_mappings=row_mappings,
             primary_columns=primary_columns,
-            subquery_parameters=subquery_parameters)
+            subquery_parameters=subquery_parameters,
+        )
         return srf.format_results()
 
     @staticmethod

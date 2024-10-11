@@ -2,9 +2,14 @@ from marshmallow import fields, Schema
 
 from database_client.enums import RequestStatus, RequestUrgency
 from middleware.enums import RecordType
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourceExpandedSchema
-from middleware.schema_and_dto_logic.schema_helpers import create_post_schema, create_get_many_schema, \
-    create_get_by_id_schema
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
+    DataSourceExpandedSchema,
+)
+from middleware.schema_and_dto_logic.schema_helpers import (
+    create_post_schema,
+    create_get_many_schema,
+    create_get_by_id_schema,
+)
 from middleware.schema_and_dto_logic.util import get_json_metadata
 
 
@@ -12,6 +17,7 @@ class DataRequestsSchema(Schema):
     """
     Reflects the columns in the `data_requests` database table
     """
+
     id = fields.Integer(
         metadata=get_json_metadata("The ID of the data request"),
     )
@@ -104,9 +110,7 @@ class DataRequestsSchema(Schema):
     request_urgency = fields.Enum(
         enum=RequestUrgency,
         by_value=fields.Str,
-        metadata=get_json_metadata(
-            "The urgency of the request."
-        ),
+        metadata=get_json_metadata("The urgency of the request."),
     )
 
 
@@ -114,10 +118,12 @@ class DataRequestsGetSchemaBase(DataRequestsSchema):
     data_sources = fields.List(
         fields.Nested(
             nested=DataSourceExpandedSchema,
-            metadata=get_json_metadata("The data sources associated with the data request")
+            metadata=get_json_metadata(
+                "The data sources associated with the data request"
+            ),
         ),
         required=True,
-        metadata=get_json_metadata("The data sources associated with the data request")
+        metadata=get_json_metadata("The data sources associated with the data request"),
     )
 
 

@@ -8,6 +8,7 @@ from database_client.enums import RequestStatus
 from middleware.util import get_env_variable
 from dataclasses import dataclass
 
+
 @dataclass
 class GithubIssueInfo:
     url: str
@@ -21,9 +22,7 @@ def create_github_issue(title: str, body: str) -> GithubIssueInfo:
     :param body: The body of the issue
     :return:
     """
-    auth = Auth.Token(
-        get_env_variable("GH_API_ACCESS_TOKEN")
-    )
+    auth = Auth.Token(get_env_variable("GH_API_ACCESS_TOKEN"))
 
     g = Github(auth=auth)
     repo_name = get_env_variable("GH_ISSUE_REPO_NAME")
@@ -33,10 +32,8 @@ def create_github_issue(title: str, body: str) -> GithubIssueInfo:
 
     issue = repo.create_issue(title=title, body=body)
 
-    return GithubIssueInfo(
-        url=issue.url,
-        number=issue.number
-    )
+    return GithubIssueInfo(url=issue.url, number=issue.number)
+
 
 class GithubIssueProjectInfo:
 
@@ -56,7 +53,7 @@ class GithubIssueProjectInfo:
 
 
 def generate_graphql_query(issue_numbers: list[int]):
-    issue_template = '''
+    issue_template = """
     issue_{num}: issue(number: {num}) {{
       projectItems(first: 5) {{
         nodes {{
@@ -67,24 +64,25 @@ def generate_graphql_query(issue_numbers: list[int]):
           }}
         }}
       }}
-    }}'''
+    }}"""
 
-    issues = "\n".join([issue_template.format(num=issue_number) for issue_number in issue_numbers])
+    issues = "\n".join(
+        [issue_template.format(num=issue_number) for issue_number in issue_numbers]
+    )
 
     owner = get_env_variable("GH_ISSUE_REPO_OWNER")
     repository_name = get_env_variable("GH_ISSUE_REPO_NAME")
-    full_query = '''
+    full_query = """
     query {{
       repository(owner: "{owner}", name: "{repository_name}") {{
         {issues}
       }}
-    }}'''.format(
-        owner=owner,
-        repository_name=repository_name,
-        issues=issues
+    }}""".format(
+        owner=owner, repository_name=repository_name, issues=issues
     )
 
     return full_query
+
 
 def convert_graph_ql_result_to_issue_info(result: dict):
     gipi = GithubIssueProjectInfo()
@@ -99,15 +97,13 @@ def convert_graph_ql_result_to_issue_info(result: dict):
         for node in nodes:
             status = node.get("status")
             name = status.get("name")
-            gipi.add_project_status(
-                issue_number=issue_number,
-                project_status=name
-            )
+            gipi.add_project_status(issue_number=issue_number, project_status=name)
 
     return gipi
 
+
 def get_github_issue_project_statuses(
-    issue_numbers: list[int]
+    issue_numbers: list[int],
 ) -> GithubIssueProjectInfo:
 
     query = generate_graphql_query(issue_numbers)
@@ -120,7 +116,7 @@ def get_github_issue_project_statuses(
             "Authorization": f"Bearer {token}",
         },
         json={"query": query},
-        timeout=10
+        timeout=10,
     )
 
     gipi = convert_graph_ql_result_to_issue_info(response.json())

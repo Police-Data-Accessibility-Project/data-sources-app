@@ -24,6 +24,7 @@ def post_refresh_session_request(client_with_mock_db, ip_address="127.0.0.1"):
         json={"refresh_token": "test_refresh_token"},
     )
 
+
 @pytest.fixture(scope="function")
 def enable_rate_limiter_for_testing():
     """
@@ -36,7 +37,10 @@ def enable_rate_limiter_for_testing():
     yield
     limiter.enabled = False
 
-def test_rate_limiter_explicit_limit(client_with_mock_db, monkeypatch, enable_rate_limiter_for_testing):
+
+def test_rate_limiter_explicit_limit(
+    client_with_mock_db, monkeypatch, enable_rate_limiter_for_testing
+):
     """
     Test the rate limiter's explicit limit decorator using the login endpoint,
     which is rate limited at 5 requests per minute

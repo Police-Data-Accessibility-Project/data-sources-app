@@ -26,7 +26,9 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetByIDBaseDTO,
 )
 from middleware.common_response_formatting import format_list_response
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourceEntryDataPostDTO
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
+    DataSourceEntryDataPostDTO,
+)
 from middleware.util import dataclass_to_filtered_dict
 
 RELATION = Relations.DATA_SOURCES.value
@@ -152,5 +154,5 @@ def add_new_data_source_wrapper(
             relation=RELATION,
             db_client_method=DatabaseClient.add_new_data_source,
         ),
-        entry=dataclass_to_filtered_dict(dto.entry_data)
+        entry=dataclass_to_filtered_dict(dto.entry_data),
     )

@@ -47,6 +47,7 @@ RELATED_SOURCES_RELATION = Relations.RELATED_SOURCES.value
 
 DATA_REQUESTS_SUBQUERY_PARAMS = [SubqueryParameterManager.data_sources()]
 
+
 class RelatedSourceByIDSchema(GetByIDBaseSchema):
     data_source_id = fields.Str(
         required=True,
@@ -146,7 +147,7 @@ def get_data_requests_wrapper(
             entry_name="data requests",
             relation=Relations.DATA_REQUESTS_EXPANDED.value,
             db_client_method=DatabaseClient.get_data_requests,
-            subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS
+            subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS,
         ),
         page=dto.page,
     )
@@ -169,8 +170,7 @@ def get_data_requests_with_permitted_columns(
         columns=columns,
         where_mappings=where_mappings,
         order_by=OrderByParameters.construct_from_args(dto.sort_by, dto.sort_order),
-        subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS
-
+        subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS,
     )
     return data_requests
 
@@ -261,7 +261,7 @@ def get_data_request_by_id_wrapper(
             access_info=access_info,
             db_client_method=DatabaseClient.get_data_requests,
             entry_name="Data request",
-            subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS
+            subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS,
         ),
         relation_role_parameters=RelationRoleParameters(
             relation_role_function_with_params=DeferredFunction(
@@ -294,11 +294,13 @@ def get_data_request_related_sources(db_client: DatabaseClient, dto: GetByIDBase
         right_link_column="source_id",
         linked_relation=Relations.DATA_SOURCES_EXPANDED,
         linked_relation_linking_column="airtable_uid",
-        columns_to_retrieve=permitted_columns
+        columns_to_retrieve=permitted_columns,
     )
-    results.update({
-        "message": "Related sources found.",
-    })
+    results.update(
+        {
+            "message": "Related sources found.",
+        }
+    )
     return FlaskResponseManager.make_response(data=results)
 
 

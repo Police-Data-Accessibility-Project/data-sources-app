@@ -21,7 +21,8 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetByIDBaseDTO,
 )
 from middleware.decorators import (
-    endpoint_info, endpoint_info_2,
+    endpoint_info,
+    endpoint_info_2,
 )
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
@@ -36,6 +37,7 @@ from resources.endpoint_schema_config import SchemaConfigs
 from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_data_requests = create_namespace(AppNamespaces.DATA_REQUESTS)
+
 
 @namespace_data_requests.route("/<resource_id>")
 class DataRequestsById(PsycopgResource):

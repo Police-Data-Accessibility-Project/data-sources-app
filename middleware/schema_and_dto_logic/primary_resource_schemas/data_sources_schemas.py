@@ -14,7 +14,10 @@ from database_client.enums import (
     AgencyAggregation,
 )
 from middleware.enums import RecordType
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyRequestsBaseSchema, EntryCreateUpdateRequestDTO
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+    GetManyRequestsBaseSchema,
+    EntryCreateUpdateRequestDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import (
     AgenciesGetSchema,
 )
@@ -24,6 +27,7 @@ from middleware.schema_and_dto_logic.common_response_schemas import (
 )
 from middleware.schema_and_dto_logic.util import get_json_metadata
 from utilities.enums import SourceMappingEnum
+
 
 @dataclass
 class DataSourceEntryDataPostDTO:
@@ -62,9 +66,11 @@ class DataSourceEntryDataPostDTO:
     url_status: Optional[URLStatus] = None
     record_type_name: Optional[RecordType] = None
 
+
 @dataclass
 class DataSourcesPostDTO:
     entry_data: DataSourceEntryDataPostDTO
+
 
 class DataSourceBaseSchema(Schema):
     """
@@ -312,7 +318,7 @@ class DataSourceBaseSchema(Schema):
     access_notes = fields.String(
         metadata=get_json_metadata("How the source can be accessed,"),
         required=True,
-        allow_none=True
+        allow_none=True,
     )
     url_status = fields.Enum(
         URLStatus,
@@ -343,11 +349,13 @@ class DataSourceExpandedSchema(DataSourceBaseSchema):
         metadata=get_json_metadata("The type of data source. Editable only by admins."),
     )
 
+
 class DataSourceGetSchema(DataSourceExpandedSchema):
     """
     The schema for getting a single data source.
     Include the base schema as well as data from connected tables, including agencies and record types.
     """
+
     agencies = fields.List(
         fields.Nested(
             AgenciesGetSchema,
@@ -377,16 +385,11 @@ class DataSourcesGetManySchema(GetManyResponseSchemaBase):
         metadata=get_json_metadata("The list of results"),
     )
 
+
 class DataSourcesPostSchema(Schema):
     entry_data = fields.Nested(
         nested=DataSourceExpandedSchema(
-            exclude=[
-                "name",
-                "updated_at",
-                "created_at",
-                "record_type_id"
-            ],
-            partial=True
+            exclude=["name", "updated_at", "created_at", "record_type_id"], partial=True
         ),
         required=True,
         metadata=get_json_metadata(
@@ -394,6 +397,7 @@ class DataSourcesPostSchema(Schema):
             nested_dto_class=DataSourceEntryDataPostDTO,
         ),
     )
+
 
 class DataSourcesPutSchema(Schema):
     entry_data = fields.Nested(
@@ -403,12 +407,13 @@ class DataSourcesPutSchema(Schema):
                 "updated_at",
                 "created_at",
                 "rejection_note",
-                "record_type_id"
+                "record_type_id",
             ]
         ),
         required=True,
         metadata=get_json_metadata("The data source to be updated"),
     )
+
 
 class DataSourcesGetManyRequestSchema(GetManyRequestsBaseSchema):
     approval_status = fields.Enum(
@@ -419,5 +424,5 @@ class DataSourcesGetManyRequestSchema(GetManyRequestsBaseSchema):
             "source": SourceMappingEnum.QUERY_ARGS,
             "description": "The approval status of the data sources.",
             "default": "approved",
-        }
+        },
     )

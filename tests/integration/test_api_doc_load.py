@@ -5,9 +5,7 @@ from tests.helper_scripts.run_and_validate_request import run_and_validate_reque
 from tests.helper_scripts.simple_result_validators import check_response_status
 
 
-def test_api_doc_load(
-    flask_client_with_db
-):
+def test_api_doc_load(flask_client_with_db):
     """
     Call the API doc endpoint and confirm it returns a 200 status
     :param flask_client_with_db:
@@ -15,9 +13,7 @@ def test_api_doc_load(
     """
 
     response = flask_client_with_db.open(
-        '/api/swagger.json',
-        method='get',
-        follow_redirects=True
+        "/api/swagger.json", method="get", follow_redirects=True
     )
     check_response_status(response, HTTPStatus.OK)
     print(response)
