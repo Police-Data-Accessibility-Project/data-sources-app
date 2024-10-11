@@ -247,7 +247,7 @@ TEST_ID = -1
                 data_request_id="123"
             ),
             "POST",
-            "GithubIssues.add_data_request_as_github_issue",
+            "GithubDataRequestsIssues.add_data_request_as_github_issue",
             {},
         )
     ),

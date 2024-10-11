@@ -119,7 +119,8 @@ def get_github_issue_project_statuses(
         headers={
             "Authorization": f"Bearer {token}",
         },
-        json={"query": query}
+        json={"query": query},
+        timeout=10
     )
 
     gipi = convert_graph_ql_result_to_issue_info(response.json())
