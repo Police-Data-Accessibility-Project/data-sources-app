@@ -9,6 +9,7 @@ from tests.helper_scripts.simple_result_validators import check_response_status
 
 http_methods = Literal["get", "post", "put", "patch", "delete"]
 
+
 def run_and_validate_request(
     flask_client: FlaskClient,
     http_method: http_methods,

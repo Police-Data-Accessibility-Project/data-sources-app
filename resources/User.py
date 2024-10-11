@@ -12,7 +12,9 @@ from typing import Dict, Any
 
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 from resources.resource_helpers import add_api_key_header_arg
-from middleware.schema_and_dto_logic.dynamic_logic.model_helpers_with_schemas import create_user_model
+from middleware.schema_and_dto_logic.dynamic_logic.model_helpers_with_schemas import (
+    create_user_model,
+)
 from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import (

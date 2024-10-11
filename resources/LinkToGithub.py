@@ -1,10 +1,14 @@
 from flask_restx import reqparse
 
 from config import limiter
-from middleware.third_party_interaction_logic.callback_flask_sessions_logic import setup_callback_session
+from middleware.third_party_interaction_logic.callback_flask_sessions_logic import (
+    setup_callback_session,
+)
 from middleware.primary_resource_logic.callback_primary_logic import LinkToGithubRequest
 from middleware.enums import CallbackFunctionsEnum
-from middleware.third_party_interaction_logic.callback_oauth_logic import redirect_to_github_authorization
+from middleware.third_party_interaction_logic.callback_oauth_logic import (
+    redirect_to_github_authorization,
+)
 from resources.PsycopgResource import PsycopgResource
 from utilities.namespace import create_namespace, AppNamespaces
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_dto_request_content_population import (

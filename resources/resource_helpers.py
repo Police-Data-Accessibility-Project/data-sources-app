@@ -1,6 +1,7 @@
 """
 Helper scripts for the Resource classes
 """
+
 from http import HTTPStatus
 from typing import Optional
 
@@ -64,7 +65,7 @@ def create_variable_columns_model(namespace: Namespace, name_snake_case: str) ->
 
 
 def create_response_dictionary(
-        success_message: str, success_model: Model = None
+    success_message: str, success_model: Model = None
 ) -> dict:
     success_msg = "Success. " + success_message
 
@@ -179,9 +180,9 @@ def create_search_model(namespace: Namespace) -> Model:
 
 
 def column_permissions_description(
-        head_description: str,
-        column_permissions_str_table: str,
-        sub_description: str = "",
+    head_description: str,
+    column_permissions_str_table: str,
+    sub_description: str = "",
 ) -> str:
     """
     Creates a formatted description for column permissions
@@ -201,6 +202,7 @@ def column_permissions_description(
 
     """
 
+
 class ResponseInfo:
     """
     A configuration dataclasses for defining common information in a response
@@ -217,5 +219,3 @@ class ResponseInfo:
 
         self.success_message = success_message
         self.response_dictionary = response_dictionary
-
-

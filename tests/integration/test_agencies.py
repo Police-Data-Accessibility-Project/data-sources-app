@@ -19,7 +19,11 @@ from middleware.schema_and_dto_logic.common_response_schemas import (
 )
 from resources.endpoint_schema_config import SchemaConfigs
 
-from tests.conftest import dev_db_client, flask_client_with_db, integration_test_admin_setup
+from tests.conftest import (
+    dev_db_client,
+    flask_client_with_db,
+    integration_test_admin_setup,
+)
 from tests.helper_scripts.common_test_data import get_sample_agency_post_parameters
 from tests.helper_scripts.constants import AGENCIES_BASE_ENDPOINT
 from tests.helper_scripts.helper_functions import (

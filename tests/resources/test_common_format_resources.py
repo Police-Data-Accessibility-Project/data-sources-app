@@ -18,7 +18,10 @@ from tests.conftest import (
 from http import HTTPStatus
 
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
-from tests.helper_scripts.constants import TEST_RESPONSE, GITHUB_DATA_REQUESTS_ISSUES_ENDPOINT
+from tests.helper_scripts.constants import (
+    TEST_RESPONSE,
+    GITHUB_DATA_REQUESTS_ISSUES_ENDPOINT,
+)
 from tests.helper_scripts.helper_functions import (
     check_is_test_response,
     add_query_params,
@@ -63,12 +66,14 @@ TEST_ID = -1
             "/data-sources",
             "POST",
             "DataSources.add_new_data_source_wrapper",
-            {"entry_data": {
-                "submitted_name": "test_name",
-                "description": "test_description",
-                "airtable_uid": "test_airtable_uid",
-                "approval_status": "approved",
-            }},
+            {
+                "entry_data": {
+                    "submitted_name": "test_name",
+                    "description": "test_description",
+                    "airtable_uid": "test_airtable_uid",
+                    "approval_status": "approved",
+                }
+            },
         ),
         (
             "/data-sources?page=1&approval_status=approved",
@@ -243,13 +248,11 @@ TEST_ID = -1
             {},
         ),
         (
-            GITHUB_DATA_REQUESTS_ISSUES_ENDPOINT.format(
-                data_request_id="123"
-            ),
+            GITHUB_DATA_REQUESTS_ISSUES_ENDPOINT.format(data_request_id="123"),
             "POST",
-            "GithubIssues.add_data_request_as_github_issue",
+            "GithubDataRequests.add_data_request_as_github_issue",
             {},
-        )
+        ),
     ),
 )
 def test_common_format_resources(

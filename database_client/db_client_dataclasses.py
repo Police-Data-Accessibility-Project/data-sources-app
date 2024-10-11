@@ -78,5 +78,3 @@ class WhereMapping:
                 value = value.value
             results.append(WhereMapping(column=key, value=value))
         return results
-
-

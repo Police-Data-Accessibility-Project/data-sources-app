@@ -17,7 +17,10 @@ from resources.PsycopgResource import handle_exceptions
 from resources.resource_helpers import (
     add_jwt_or_api_key_header_arg,
     add_jwt_header_arg,
-    add_api_key_header_arg, ResponseInfo, create_response_dictionary, )
+    add_api_key_header_arg,
+    ResponseInfo,
+    create_response_dictionary,
+)
 from resources.endpoint_schema_config import SchemaConfigs
 
 
@@ -84,7 +87,7 @@ def endpoint_info(
     input_schema: Optional[Schema] = None,
     input_model: Optional[Model] = None,
     input_model_name: Optional[str] = None,
-    **doc_kwargs
+    **doc_kwargs,
 ):
     """
 
@@ -121,12 +124,13 @@ def endpoint_info(
 
     return decorator
 
+
 def endpoint_info_2(
     namespace: Namespace,
     auth_info: AuthenticationInfo,
     schema_config: SchemaConfigs,
     response_info: ResponseInfo,
-    **doc_kwargs
+    **doc_kwargs,
 ):
     """
     A more sophisticated form of `endpoint_info`, with more robust
@@ -151,7 +155,7 @@ def endpoint_info_2(
         input_doc_info,
         namespace,
         response_info,
-        schema_config.value.output_schema
+        schema_config.value.output_schema,
     )
 
     def decorator(func: Callable):
@@ -170,11 +174,11 @@ def endpoint_info_2(
 
 
 def _update_doc_kwargs(
-        doc_kwargs: dict,
-        input_doc_info: Optional[FlaskRestxDocInfo],
-        namespace: Namespace,
-        response_info: ResponseInfo,
-        output_schema: Schema
+    doc_kwargs: dict,
+    input_doc_info: Optional[FlaskRestxDocInfo],
+    namespace: Namespace,
+    response_info: ResponseInfo,
+    output_schema: Schema,
 ):
     _update_responses(doc_kwargs, namespace, output_schema, response_info)
 
@@ -187,8 +191,7 @@ def _update_responses(doc_kwargs, namespace, output_schema, response_info):
     if response_info.response_dictionary is None:
         output_model = _get_output_model(namespace, output_schema)
         doc_kwargs["responses"] = create_response_dictionary(
-            success_message=response_info.success_message,
-            success_model=output_model
+            success_message=response_info.success_message, success_model=output_model
         )
     else:
         doc_kwargs["responses"] = response_info.response_dictionary

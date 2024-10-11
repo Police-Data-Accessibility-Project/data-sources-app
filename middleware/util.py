@@ -26,6 +26,7 @@ def get_env_variable(name: str) -> str:
 def get_enum_values(en: type[Enum]):
     return [e.value for e in en]
 
+
 def dataclass_to_filtered_dict(instance: Any) -> Dict[str, Any]:
     """
     Convert a dataclass instance to a dictionary, filtering out any None values.
@@ -33,5 +34,7 @@ def dataclass_to_filtered_dict(instance: Any) -> Dict[str, Any]:
     :return:
     """
     if not is_dataclass(instance):
-        raise TypeError(f"Expected a dataclass instance, but got {type(instance).__name__}")
+        raise TypeError(
+            f"Expected a dataclass instance, but got {type(instance).__name__}"
+        )
     return {key: value for key, value in asdict(instance).items() if value is not None}

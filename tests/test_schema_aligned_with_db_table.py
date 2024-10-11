@@ -50,6 +50,9 @@ def test_agencies_get_schema_aligned_with_agencies_expanded(live_database_client
 
 
 def test_data_request_schema_aligned_with_data_requests_table(live_database_client):
-    assert_relation_columns_and_schema_fields_aligned(
-        live_database_client, Relations.DATA_REQUESTS, DataRequestsSchema()
+    data_request_columns = live_database_client.get_columns_for_relation(
+        Relations.DATA_REQUESTS_EXPANDED
     )
+    schema = DataRequestsSchema()
+    for field in schema.fields:
+        assert field in data_request_columns

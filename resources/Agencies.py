@@ -3,7 +3,8 @@ from flask import Response
 from middleware.access_logic import AccessInfo, GET_AUTH_INFO, WRITE_ONLY_AUTH_INFO
 from middleware.column_permission_logic import create_column_permissions_string_table
 from middleware.decorators import (
-    endpoint_info, endpoint_info_2,
+    endpoint_info,
+    endpoint_info_2,
 )
 from middleware.enums import Relations
 from middleware.primary_resource_logic.agencies import (
@@ -20,7 +21,8 @@ from resources.PsycopgResource import PsycopgResource
 from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import (
     create_response_dictionary,
-    column_permissions_description, ResponseInfo,
+    column_permissions_description,
+    ResponseInfo,
 )
 from utilities.namespace import create_namespace, AppNamespaces
 
@@ -30,6 +32,7 @@ namespace_agencies = create_namespace(
 agencies_column_permissions = create_column_permissions_string_table(
     relation=Relations.AGENCIES.value
 )
+
 
 @namespace_agencies.route("")
 class AgenciesByPage(PsycopgResource):
@@ -63,7 +66,7 @@ class AgenciesByPage(PsycopgResource):
         schema_config=SchemaConfigs.AGENCIES_POST,
         response_info=ResponseInfo(
             success_message="Returns the id of the newly created agency."
-        )
+        ),
     )
     def post(self, access_info: AccessInfo):
         return self.run_endpoint(

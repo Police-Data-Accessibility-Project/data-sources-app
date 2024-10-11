@@ -12,9 +12,7 @@ from tests.helper_scripts.run_and_validate_request import run_and_validate_reque
 from tests.helper_scripts.simple_result_validators import check_response_status
 
 
-def test_request_reset_password_post(
-    flask_client_with_db, mocker
-):
+def test_request_reset_password_post(flask_client_with_db, mocker):
     """
     Test that POST call to /request-reset-password endpoint successfully initiates a password reset request, sends a single email via Mailgun, and verifies the reset token is correctly associated with the user's email in the database
     """
