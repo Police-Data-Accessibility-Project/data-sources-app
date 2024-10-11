@@ -316,7 +316,6 @@ class DataRequest(Base):
     date_created: Mapped[timestamp_tz]
     date_status_last_changed: Mapped[Optional[timestamp_tz]]
     creator_user_id: Mapped[Optional[int]]
-    github_issue_url: Mapped[Optional[text]]
     internal_notes: Mapped[Optional[text]]
     record_types_required: Mapped[Optional[ARRAY[RecordTypeLiteral]]] = mapped_column(
         ARRAY(Enum(*get_args(RecordTypeLiteral), name="record_type"), as_tuple=True)
@@ -340,6 +339,16 @@ class DataRequest(Base):
     @hybrid_property
     def data_source_ids(self) -> list[str]:
         return [source.airtable_uid for source in self.data_sources]
+
+class DataRequestExpanded(DataRequest):
+    id = mapped_column(
+        None, ForeignKey("public.data_requests.id"), primary_key=True
+    )
+
+    __tablename__ = Relations.DATA_REQUESTS_EXPANDED.value
+    github_issue_url: Mapped[Optional[text]]
+    github_issue_number: Mapped[Optional[int]]
+
 
 
 def iter_with_special_cases(instance, special_cases=None):
@@ -453,6 +462,7 @@ class DataSourceExpanded(DataSource):
     record_type_name: Mapped[Optional[str]]
 
 
+
 class DataSourceArchiveInfo(Base):
     __tablename__ = Relations.DATA_SOURCES_ARCHIVE_INFO.value
 
@@ -546,6 +556,7 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     "agencies": Agency,
     "agencies_expanded": AgencyExpanded,
     "data_requests": DataRequest,
+    "data_requests_expanded": DataRequestExpanded,
     "data_sources": DataSource,
     "data_sources_expanded": DataSourceExpanded,
     "data_sources_archive_info": DataSourceArchiveInfo,

@@ -228,3 +228,13 @@ def mock_flask_response_manager(monkeypatch):
     mock.abort.side_effect = FakeAbort
     return mock
 
+@pytest.fixture
+def clear_data_requests(dev_db_client: DatabaseClient):
+    """
+    Clear `data_requests` and associated tables
+    :param dev_db_client:
+    :return:
+    """
+    dev_db_client.execute_raw_sql(
+        "DELETE FROM DATA_REQUESTS;"
+    )

@@ -1,3 +1,4 @@
+import random
 import uuid
 from collections import namedtuple
 from typing import Optional
@@ -286,7 +287,7 @@ class TestDataCreatorDBClient:
         )
         return cds
 
-    def data_request(self, user_id: Optional[int] = None) -> TestDataRequestInfo:
+    def data_request(self, user_id: Optional[int] = None, **column_value_kwargs) -> TestDataRequestInfo:
         if user_id is None:
             user_id = self.user().id
 
@@ -294,7 +295,8 @@ class TestDataCreatorDBClient:
         data_request_id = self.db_client.create_data_request(
             column_value_mappings={
                 "submission_notes": submission_notes,
-                "creator_user_id": user_id
+                "creator_user_id": user_id,
+                **column_value_kwargs
             }
         )
         return TestDataRequestInfo(
@@ -310,3 +312,7 @@ class TestDataCreatorDBClient:
             }
         )
 
+
+def get_random_number_for_testing():
+    number = random.randint(1, 999999999)
+    return number

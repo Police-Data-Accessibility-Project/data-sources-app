@@ -138,6 +138,11 @@ class SchemaConfigs(Enum):
         output_schema=GithubDataRequestsIssuesPostResponseSchema(),
         input_dto_class=GithubDataRequestsIssuesPostDTO
     )
+    GITHUB_DATA_REQUESTS_SYNCHRONIZE_POST = EndpointSchemaConfig(
+        input_schema=None,
+        output_schema=MessageSchema(),
+        input_dto_class=None
+    )
     #endregion
 
 

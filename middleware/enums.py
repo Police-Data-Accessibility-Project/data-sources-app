@@ -44,7 +44,9 @@ class Relations(Enum):
     A list of valid relations for the database
     """
 
+    DATA_REQUESTS_EXPANDED = "data_requests_expanded"
     DATA_REQUESTS = "data_requests"
+    DATA_REQUESTS_GITHUB_ISSUE_INFO = "data_requests_github_issue_info"
     AGENCIES = "agencies"
     DATA_SOURCES = "data_sources"
     DATA_SOURCES_EXPANDED = "data_sources_expanded"

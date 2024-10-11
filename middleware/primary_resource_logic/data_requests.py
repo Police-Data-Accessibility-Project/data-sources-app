@@ -144,7 +144,7 @@ def get_data_requests_wrapper(
             db_client=db_client,
             access_info=access_info,
             entry_name="data requests",
-            relation=RELATION,
+            relation=Relations.DATA_REQUESTS_EXPANDED.value,
             db_client_method=DatabaseClient.get_data_requests,
             subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS
         ),
@@ -257,7 +257,7 @@ def get_data_request_by_id_wrapper(
     return get_by_id(
         middleware_parameters=MiddlewareParameters(
             db_client=db_client,
-            relation=RELATION,
+            relation=Relations.DATA_REQUESTS_EXPANDED.value,
             access_info=access_info,
             db_client_method=DatabaseClient.get_data_requests,
             entry_name="Data request",

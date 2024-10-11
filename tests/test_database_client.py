@@ -20,7 +20,7 @@ from database_client.enums import (
     ExternalAccountTypeEnum,
     RelationRoleEnum,
     ColumnPermissionEnum,
-    SortOrder,
+    SortOrder, RequestStatus,
 )
 from middleware.exceptions import (
     UserNotFoundError,
@@ -35,11 +35,12 @@ from database_client.models import (
     User,
 )
 from middleware.enums import PermissionsEnum, Relations
-from tests.conftest import live_database_client, test_table_data
+from tests.conftest import live_database_client, test_table_data, clear_data_requests
 from tests.helper_scripts.common_test_data import (
     insert_test_column_permission_data,
     create_agency_entry_for_search_cache,
     create_data_source_entry_for_url_duplicate_checking, TestDataCreatorFlask, TestDataCreatorDBClient,
+    get_random_number_for_testing, TestDataRequestInfo,
 )
 from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources_if_not_exist,
@@ -1006,6 +1007,47 @@ def test_get_linked_rows(
     assert results["count"] == len(results["data"]) > 0
     assert results["data"][0]["name"] == ds_info.name
     assert results["data"][0]["airtable_uid"] == ds_info.id
+
+def test_get_unarchived_data_requests_with_issues(
+        test_data_creator_db_client: TestDataCreatorDBClient,
+        clear_data_requests
+):
+    # Add data requests with issues
+    tdc = test_data_creator_db_client
+
+    def create_data_request_with_issue_and_request_status(
+        request_status: RequestStatus
+    ) -> TestDataRequestInfo:
+        dr_info = tdc.data_request(
+            request_status=request_status.value
+        )
+        issue_number = get_random_number_for_testing()
+        tdc.db_client.create_data_request_github_info(
+            column_value_mappings={
+                "data_request_id": dr_info.id,
+                "github_issue_url": f"https://github.com/test-org/test-repo/issues/{issue_number}",
+                "github_issue_number": issue_number
+            }
+        )
+
+        return dr_info
+
+    dr_info_active = create_data_request_with_issue_and_request_status(RequestStatus.ACTIVE)
+    dr_info_archived = create_data_request_with_issue_and_request_status(RequestStatus.ARCHIVED)
+
+
+    results = tdc.db_client.get_unarchived_data_requests_with_issues()
+
+    assert len(results) == 1
+    result = results[0]
+
+    assert result.data_request_id == dr_info_active.id
+    # Check result contains all requisite columns
+    assert result.github_issue_url
+    assert result.github_issue_number
+    assert result.request_status == RequestStatus.ACTIVE
+
+
 
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts

@@ -10,6 +10,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 
 from app import create_app
 from config import limiter
+from database_client.database_client import DatabaseClient
 from middleware.util import get_env_variable
 from tests.helper_scripts.common_test_data import TestDataCreatorFlask, TestDataCreatorDBClient
 
@@ -74,3 +75,5 @@ def test_data_creator_flask(monkeysession) -> TestDataCreatorFlask:
 @pytest.fixture(scope="session")
 def test_data_creator_db_client() -> TestDataCreatorDBClient:
     yield TestDataCreatorDBClient()
+
+

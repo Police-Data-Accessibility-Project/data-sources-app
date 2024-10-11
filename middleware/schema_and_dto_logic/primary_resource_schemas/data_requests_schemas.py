@@ -58,6 +58,12 @@ class DataRequestsSchema(Schema):
             "If applicable, the URL to the issue on Github. Editable only by admins."
         ),
     )
+    github_issue_number = fields.Integer(
+        allow_none=True,
+        metadata=get_json_metadata(
+            "If applicable, the number of the issue on Github. Editable only by admins."
+        ),
+    )
     internal_notes = fields.String(
         allow_none=True,
         metadata=get_json_metadata(

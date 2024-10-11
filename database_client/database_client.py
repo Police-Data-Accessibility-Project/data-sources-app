@@ -23,7 +23,7 @@ from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
     ExternalAccountTypeEnum,
     RelationRoleEnum,
-    ColumnPermissionEnum,
+    ColumnPermissionEnum, RequestStatus,
 )
 from middleware.exceptions import (
     UserNotFoundError,
@@ -33,7 +33,7 @@ from database_client.models import (
     convert_to_column_reference,
     ExternalAccount,
     SQL_ALCHEMY_TABLE_REFERENCE,
-    User,
+    User, DataRequestExpanded,
 )
 from middleware.enums import PermissionsEnum, Relations
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
@@ -52,6 +52,7 @@ DATA_SOURCES_MAP_COLUMN = [
     "lat",
     "lng",
 ]
+
 
 
 class DatabaseClient:
@@ -731,6 +732,11 @@ class DatabaseClient:
         column_to_return="airtable_uid",
     )
 
+    create_data_request_github_info = partialmethod(
+        _create_entry_in_table,
+        table_name=Relations.DATA_REQUESTS_GITHUB_ISSUE_INFO.value,
+    )
+
     create_locality = partialmethod(
         _create_entry_in_table,
         table_name=Relations.LOCALITIES.value,
@@ -777,7 +783,7 @@ class DatabaseClient:
         return results
 
     get_data_requests = partialmethod(
-        _select_from_relation, relation_name=Relations.DATA_REQUESTS.value
+        _select_from_relation, relation_name=Relations.DATA_REQUESTS_EXPANDED.value
     )
 
     get_agencies = partialmethod(
@@ -996,3 +1002,31 @@ class DatabaseClient:
                 columns=columns_to_retrieve, tuples=tuple_results
             )
         )
+
+    DataRequestIssueInfo = namedtuple("DataRequestIssueInfo", ["data_request_id", "github_issue_url", "github_issue_number", "request_status"])
+
+    @session_manager
+    def get_unarchived_data_requests_with_issues(self) -> list[DataRequestIssueInfo]:
+        dre = aliased(DataRequestExpanded)
+
+        select_statement = select(
+            dre.id,
+            dre.github_issue_url,
+            dre.github_issue_number,
+            dre.request_status
+        )
+
+        with_filter = select_statement.filter(
+            (dre.request_status != RequestStatus.ARCHIVED.value)
+            & (dre.github_issue_url is not None)
+        )
+
+        results = self.session.execute(with_filter).mappings().all()
+
+        return [self.DataRequestIssueInfo(
+            data_request_id=result["id"],
+            github_issue_url=result["github_issue_url"],
+            github_issue_number=result["github_issue_number"],
+            request_status=RequestStatus(result["request_status"])
+        ) for result in results]
+
