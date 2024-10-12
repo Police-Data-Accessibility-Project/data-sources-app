@@ -9,8 +9,6 @@ from click.testing import Result
 from psycopg import sql, Cursor
 from psycopg.rows import dict_row, tuple_row
 from sqlalchemy import select
-from sqlalchemy.ext.hybrid import hybrid_method
-from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import aliased, defaultload, load_only
 from sqlalchemy.schema import Column, Table
 
@@ -739,36 +737,6 @@ class DatabaseClient:
         column_to_return="id",
     )
 
-    def build_metadata(
-        self,
-        mapped_table: Table,
-        where_mappings: list[WhereMapping] | list[bool],
-        limit: int,
-        offset: int,
-    ) -> dict[str, Any]:
-        metadata_dict = {}
-
-        if where_mappings != [True]:
-            where_mappings = [
-                mapping.build_where_clause(mapped_table.__tablename__)
-                for mapping in where_mappings
-            ]
-
-        # Iterate through all properties of the Table
-        for name, descriptor in inspect(
-            mapped_table.__class__
-        ).all_orm_descriptors.items():
-            if type(descriptor) == hybrid_method and name in METADATA_METHOD_NAMES:
-                # Retrieve and call the metadata method
-                metadata_result = mapped_table.__getattribute__(name)(
-                    where_conditions=where_mappings,
-                    limit=limit,
-                    offset=offset,
-                )
-                metadata_dict[name] = metadata_result
-        
-        return metadata_dict
-
     @session_manager
     def _select_from_relation(
         self,
@@ -798,22 +766,22 @@ class DatabaseClient:
             subquery_parameters,
         )
         raw_results = self.session.execute(query()).mappings().unique().all()
-        table_key = [key for key in raw_results[0].keys()][0]
 
-        if subquery_parameters:
-            results = ResultFormatter.format_result_with_subquery_parameters(
-                row_mappings=raw_results,
-                primary_columns=columns,
-                subquery_parameters=subquery_parameters
-            )
+        table_key = ""
+        if len(raw_results) > 0:
+            table_key = [key for key in raw_results[0].keys()][0]
+
+        if subquery_parameters and table_key:
+            results = [dict(result[table_key]) for result in raw_results]
         else:
             results = [dict(result) for result in raw_results]
 
         if build_metadata is True:
-            metadata_dict = self.build_metadata(
-                raw_results[0][table_key], where_mappings, limit, offset
+            results = ResultFormatter.format_with_metadata(
+                results,
+                relation_name,
+                subquery_parameters,
             )
-            results = {"data": results, "metadata": metadata_dict}
 
         return results
 
@@ -1026,9 +994,17 @@ class DatabaseClient:
         LinkTable = SQL_ALCHEMY_TABLE_REFERENCE[link_table.value]
         LinkedRelation = SQL_ALCHEMY_TABLE_REFERENCE[linked_relation.value]
 
-        query_with_select = self.session.query(*[getattr(LinkedRelation, column) for column in columns_to_retrieve])
-        query_with_join = query_with_select.join(LinkTable, getattr(LinkTable, right_link_column) == getattr(LinkedRelation, linked_relation_linking_column))
-        query_with_filter = query_with_join.filter(getattr(LinkTable, left_link_column) == left_id)
+        query_with_select = self.session.query(
+            *[getattr(LinkedRelation, column) for column in columns_to_retrieve]
+        )
+        query_with_join = query_with_select.join(
+            LinkTable,
+            getattr(LinkTable, right_link_column)
+            == getattr(LinkedRelation, linked_relation_linking_column),
+        )
+        query_with_filter = query_with_join.filter(
+            getattr(LinkTable, left_link_column) == left_id
+        )
 
         tuple_results = query_with_filter.all()
 

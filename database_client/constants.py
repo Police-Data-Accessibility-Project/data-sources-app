@@ -53,7 +53,8 @@ DATA_SOURCES_MAP_COLUMN = [
     "lng",
 ]
 METADATA_METHOD_NAMES = [
-    "count"
+    "count",
+    "count_subquery",
 ]
 
 PAGE_SIZE = 100

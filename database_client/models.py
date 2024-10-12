@@ -32,7 +32,6 @@ from sqlalchemy.orm import (
     Mapped,
     mapped_column,
     relationship,
-    Session,
 )
 from sqlalchemy.sql.expression import false, func
 
@@ -135,17 +134,33 @@ class Base(DeclarativeBase):
 
 class CountMetadata:
     @hybrid_method
-    def count(cls, where_conditions: list[bool], limit: int, offset: int, **kwargs) -> int:
-        session = Session.object_session(cls)
-        if session:
-            return session.scalar(
-                select(func.count())
-                .select_from(cls.__table__)
-                .where(*where_conditions)
-                .limit(limit)
-                .offset(offset)
-            )
-        return None
+    def count(
+        cls,
+        data: list[dict],
+        **kwargs,
+    ) -> int:
+        return {"count": len(data)}
+
+
+class CountSubqueryMetadata:
+    @hybrid_method
+    def count_subquery(cls, data: list[dict], subquery_parameters, **kwargs):
+        if not subquery_parameters:
+            return None
+
+        subquery_counts = {}
+        for subquery_param in subquery_parameters:
+            linking_column = subquery_param.linking_column
+            key = linking_column + "_count"
+
+            if linking_column not in data[0]:
+                subquery_counts.update({key: 0})
+                continue
+
+            count = len(data[0][linking_column])
+            subquery_counts.update({key: count})
+
+        return subquery_counts
 
 
 class AgencySourceLink(Base):
@@ -160,12 +175,11 @@ class AgencySourceLink(Base):
     )
 
 
-class Agency(Base):
+class Agency(Base, CountMetadata):
     __tablename__ = Relations.AGENCIES.value
 
     def __iter__(self):
         yield from iter_with_special_cases(self)
-
 
     airtable_uid: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str]
@@ -297,7 +311,7 @@ class USState(Base):
     state_name: Mapped[str] = mapped_column(String(255))
 
 
-class DataRequest(Base):
+class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
     __tablename__ = Relations.DATA_REQUESTS.value
 
     def __iter__(self):
@@ -305,15 +319,28 @@ class DataRequest(Base):
         special_cases = {
             "id": lambda instance: [
                 ("id", instance.id),
-                ("data_source_ids", instance.data_source_ids),
+                (
+                    (
+                        "data_source_ids",
+                        instance.data_source_ids if instance.data_source_ids else None,
+                    )
+                ),
             ],
             "data_sources": lambda instance: [
-                ("data_sources", [dict(source) for source in instance.data_sources])
+                (
+                    (
+                        "data_sources",
+                        (
+                            [dict(source) for source in instance.data_sources]
+                            if instance.data_sources
+                            else None
+                        ),
+                    )
+                )
             ],
         }
 
         yield from iter_with_special_cases(self, special_cases=special_cases)
-
 
     id: Mapped[int] = mapped_column(primary_key=True)
     submission_notes: Mapped[Optional[text]]
@@ -360,7 +387,8 @@ def iter_with_special_cases(instance, special_cases=None):
         if key in special_cases:
             mapped_key_value_pairs = special_cases[key](instance).copy()
             for mapped_key, mapped_value in mapped_key_value_pairs:
-                yield mapped_key, mapped_value
+                if mapped_value is not None:
+                    yield mapped_key, mapped_value
         else:
             # General case for other keys
             value = getattr(instance, key)
@@ -377,14 +405,20 @@ class DataSource(Base, CountMetadata):
         special_cases = {
             "airtable_uid": lambda instance: [
                 ("airtable_uid", instance.airtable_uid),
-                ("agency_ids", instance.agency_ids),
+                ("agency_ids", instance.agency_ids if instance.agency_ids else None),
             ],
             "agencies": lambda instance: [
-                ("agencies", [dict(agency) for agency in instance.agencies])
+                (
+                    "agencies",
+                    (
+                        [dict(agency) for agency in instance.agencies]
+                        if instance.agencies
+                        else None
+                    ),
+                )
             ],
         }
         yield from iter_with_special_cases(self, special_cases)
-
 
     airtable_uid: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str]

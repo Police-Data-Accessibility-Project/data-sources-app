@@ -1064,5 +1064,6 @@ def test_metadata(live_database_client: DatabaseClient):
         build_metadata=True,
     )
 
-    print(json.dumps(results, indent=4))
+
+    print(json.dumps(results["metadata"], indent=4))
 

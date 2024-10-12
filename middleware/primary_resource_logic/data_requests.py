@@ -47,6 +47,7 @@ RELATED_SOURCES_RELATION = Relations.RELATED_SOURCES.value
 
 DATA_REQUESTS_SUBQUERY_PARAMS = [SubqueryParameterManager.data_sources()]
 
+
 class RelatedSourceByIDSchema(GetByIDBaseSchema):
     data_source_id = fields.Str(
         required=True,
@@ -146,7 +147,7 @@ def get_data_requests_wrapper(
             entry_name="data requests",
             relation=RELATION,
             db_client_method=DatabaseClient.get_data_requests,
-            subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS
+            subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS,
         ),
         page=dto.page,
     )
@@ -169,8 +170,7 @@ def get_data_requests_with_permitted_columns(
         columns=columns,
         where_mappings=where_mappings,
         order_by=OrderByParameters.construct_from_args(dto.sort_by, dto.sort_order),
-        subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS
-
+        subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS,
     )
     return data_requests
 
@@ -261,7 +261,7 @@ def get_data_request_by_id_wrapper(
             access_info=access_info,
             db_client_method=DatabaseClient.get_data_requests,
             entry_name="Data request",
-            subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS
+            subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS,
         ),
         relation_role_parameters=RelationRoleParameters(
             relation_role_function_with_params=DeferredFunction(
@@ -287,18 +287,34 @@ def get_data_request_related_sources(db_client: DatabaseClient, dto: GetByIDBase
         role=RelationRoleEnum.STANDARD,
         column_permission=ColumnPermissionEnum.READ,
     )
-    results = db_client.get_linked_rows(
-        link_table=Relations.LINK_DATA_SOURCES_DATA_REQUESTS,
-        left_id=int(dto.resource_id),
-        left_link_column="request_id",
-        right_link_column="source_id",
-        linked_relation=Relations.DATA_SOURCES_EXPANDED,
-        linked_relation_linking_column="airtable_uid",
-        columns_to_retrieve=permitted_columns
+    results = db_client.get_data_requests(
+        columns=["id"],
+        where_mappings=[WhereMapping(column="id", value=int(dto.resource_id))],
+        subquery_parameters=[
+            SubqueryParameterManager.get_subquery_params(
+                relation=Relations.DATA_SOURCES_EXPANDED,
+                linking_column="data_sources",
+                columns=permitted_columns,
+            )
+        ],
+        build_metadata=True,
     )
-    results.update({
-        "message": "Related sources found.",
-    })
+
+    metadata = results["metadata"]
+    metadata["count"] = metadata["data_sources_count"]
+    metadata.pop("data_sources_count")
+    if metadata["count"] == 0:
+        results["data"] = []
+    else:
+        results["data"] = results["data"][0]["data_sources"]
+    results["metadata"] = metadata
+
+    results.update(
+        {
+            "message": "Related sources found.",
+        }
+    )
+
     return FlaskResponseManager.make_response(data=results)
 
 

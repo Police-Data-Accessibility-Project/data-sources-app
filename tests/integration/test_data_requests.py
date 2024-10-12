@@ -409,7 +409,7 @@ def test_data_request_by_id_related_sources(
         )
 
     # USER_OWNER and USER_NON_OWNER gets related sources of data request, and should see none
-    NO_RESULTS_RESPONSE = {"count": 0, "data": [], "message": "Related sources found."}
+    NO_RESULTS_RESPONSE = {"metadata": {"count": 0}, "data": [], "message": "Related sources found."}
 
     get_data_request_related_sources_with_given_data_request_id(
         api_authorization_header=tus_owner.api_authorization_header,
@@ -473,7 +473,7 @@ def test_data_request_by_id_related_sources(
         api_authorization_header=tus_non_owner.api_authorization_header,
     )
     assert response_json_owner == response_json_nonowner
-    assert response_json_owner["count"] == 1
+    assert response_json_owner["metadata"]["count"] == 1
 
     def delete_related_source(
         expected_response_status: HTTPStatus,
