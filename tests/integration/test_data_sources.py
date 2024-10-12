@@ -85,7 +85,7 @@ def test_data_sources_get_many_limit_columns(
     expected_schema = SchemaConfigs.DATA_SOURCES_GET_MANY.value.output_schema
     expected_schema.only = [
         "message",
-        "count",
+        "metadata",
         "data.name",
         "data.submitted_name",
         "data.airtable_uid",

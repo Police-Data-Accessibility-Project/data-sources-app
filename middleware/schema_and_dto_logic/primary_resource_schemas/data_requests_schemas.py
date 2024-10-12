@@ -125,6 +125,15 @@ class DataRequestsGetSchemaBase(DataRequestsSchema):
         required=True,
         metadata=get_json_metadata("The data sources associated with the data request"),
     )
+    data_source_ids = fields.List(
+        fields.String(
+            allow_none=True,
+            metadata=get_json_metadata(
+                "The data source ids associated with the data request."
+            ),
+        ),
+        metadata=get_json_metadata("The data source ids associated with the data request."),
+    )
 
 
 DataRequestsPostSchema = create_post_schema(

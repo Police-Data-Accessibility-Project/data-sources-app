@@ -148,6 +148,7 @@ def get_data_requests_wrapper(
             relation=Relations.DATA_REQUESTS_EXPANDED.value,
             db_client_method=DatabaseClient.get_data_requests,
             subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS,
+            db_client_additional_args={"build_metadata": True},
         ),
         page=dto.page,
     )
@@ -158,6 +159,7 @@ def get_data_requests_with_permitted_columns(
     relation_role,
     dto: GetManyBaseDTO,
     where_mappings: Optional[list[WhereMapping]] = [True],
+    build_metadata: Optional[bool] = False,
 ) -> list[dict]:
 
     columns = get_permitted_columns(
@@ -171,6 +173,7 @@ def get_data_requests_with_permitted_columns(
         where_mappings=where_mappings,
         order_by=OrderByParameters.construct_from_args(dto.sort_by, dto.sort_order),
         subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS,
+        build_metadata=build_metadata,
     )
     return data_requests
 

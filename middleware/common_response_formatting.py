@@ -20,7 +20,8 @@ def format_list_response(data: list, message: str = "") -> dict:
     Returns:
         dict: A dictionary with the count and data keys.
     """
-    return {"message": message, "count": len(data), DATA_KEY: data}
+    data.update({"message": message})
+    return data
 
 
 def multiple_results_response(data: list, message: str = "") -> Response:

@@ -138,6 +138,17 @@ class Base(DeclarativeBase):
         str_255: String(255),
     }
 
+    @hybrid_method
+    def to_dict(cls, subquery_parameters):
+        # Calls the class's __iter__ implementation
+        dict_result = dict(cls)
+
+        for param in subquery_parameters:
+            if param.linking_column not in dict_result:
+                dict_result[param.linking_column] = []
+
+        return dict_result
+
 
 class CountMetadata:
     @hybrid_method
@@ -151,19 +162,16 @@ class CountMetadata:
 
 class CountSubqueryMetadata:
     @hybrid_method
-    def count_subquery(cls, data: list[dict], subquery_parameters, **kwargs):
-        if not subquery_parameters:
+    def count_subquery(
+        cls, data: list[dict], subquery_parameters, **kwargs
+    ) -> Optional[dict[str, int]]:
+        if not subquery_parameters or len(data) != 1:
             return None
 
         subquery_counts = {}
         for subquery_param in subquery_parameters:
             linking_column = subquery_param.linking_column
             key = linking_column + "_count"
-
-            if linking_column not in data[0]:
-                subquery_counts.update({key: 0})
-                continue
-
             count = len(data[0][linking_column])
             subquery_counts.update({key: count})
 

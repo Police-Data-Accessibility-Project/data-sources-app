@@ -345,6 +345,7 @@ def test_select_from_relation_subquery(live_database_client: DatabaseClient):
         {
             "name": data_source_name,
             "airtable_uid": data_source_id,
+            "agency_ids": [agency_id],
             "agencies": [
                 {
                     "name": agency_name,
@@ -1012,7 +1013,7 @@ def test_get_linked_rows(
         ],
     )
 
-    assert results["count"] == len(results["data"]) > 0
+    assert results["metadata"]["count"] == len(results["data"]) > 0
     assert results["data"][0]["name"] == ds_info.name
     assert results["data"][0]["airtable_uid"] == ds_info.id
 
@@ -1100,7 +1101,7 @@ def test_metadata(live_database_client: DatabaseClient):
     subquery_parameters = [
         SubqueryParameters(
             relation_name=Relations.AGENCIES_EXPANDED.value,
-            columns=["airtable_uid", "name"],
+            columns=,
             linking_column="agencies",
         )
     ]

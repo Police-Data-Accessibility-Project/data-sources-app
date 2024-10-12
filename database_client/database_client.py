@@ -779,7 +779,8 @@ class DatabaseClient:
             table_key = [key for key in raw_results[0].keys()][0]
 
         if subquery_parameters and table_key:
-            results = [dict(result[table_key]) for result in raw_results]
+            # Calls models.Base.to_dict() method
+            results = [result[table_key].to_dict(subquery_parameters) for result in raw_results]
         else:
             results = [dict(result) for result in raw_results]
 
@@ -1018,7 +1019,8 @@ class DatabaseClient:
         return ResultFormatter.format_with_metadata(
             data=ResultFormatter.tuples_to_column_value_dict(
                 columns=columns_to_retrieve, tuples=tuple_results
-            )
+            ),
+            relation_name=linked_relation.value,
         )
 
     DataRequestIssueInfo = namedtuple(

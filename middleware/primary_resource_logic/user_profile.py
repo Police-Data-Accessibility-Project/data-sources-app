@@ -19,6 +19,7 @@ def get_owner_data_requests_wrapper(
         relation_role=RelationRoleEnum.OWNER,
         dto=dto,
         where_mappings=WhereMapping.from_dict({"creator_user_id": user_id}),
+        build_metadata=True
     )
     formatted_list_response = format_list_response(data_requests)
 
