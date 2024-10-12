@@ -6,7 +6,7 @@ from marshmallow import Schema
 
 from middleware.constants import DATA_KEY
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.response_schemas import (
+from middleware.schema_and_dto_logic.common_response_schemas import (
     IDAndMessageSchema,
     GetManyResponseSchema,
 )

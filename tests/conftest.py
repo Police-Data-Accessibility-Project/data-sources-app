@@ -16,8 +16,10 @@ from tests.helper_scripts.helper_classes.IntegrationTestSetup import (
     IntegrationTestSetup,
 )
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
-from tests.helper_scripts.helper_functions import insert_test_agencies_and_sources, create_test_user_setup
-
+from tests.helper_scripts.helper_functions import (
+    insert_test_agencies_and_sources,
+    create_test_user_setup,
+)
 
 
 @pytest.fixture
@@ -228,3 +230,12 @@ def mock_flask_response_manager(monkeypatch):
     mock.abort.side_effect = FakeAbort
     return mock
 
+
+@pytest.fixture
+def clear_data_requests(dev_db_client: DatabaseClient):
+    """
+    Clear `data_requests` and associated tables
+    :param dev_db_client:
+    :return:
+    """
+    dev_db_client.execute_raw_sql("DELETE FROM DATA_REQUESTS;")

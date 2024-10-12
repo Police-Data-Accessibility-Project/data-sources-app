@@ -15,9 +15,7 @@ from tests.helper_scripts.common_test_functions import (
 )
 
 
-def test_login_post(
-    flask_client_with_db
-):
+def test_login_post(flask_client_with_db):
     """
     Test that POST call to /login endpoint successfully logs in a user, creates a session token, and verifies the session token exists only once in the database with the correct email
     """

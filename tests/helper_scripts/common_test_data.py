@@ -1,3 +1,4 @@
+import random
 import uuid
 from collections import namedtuple
 from typing import Optional
@@ -7,14 +8,24 @@ from flask.testing import FlaskClient
 
 from database_client.database_client import DatabaseClient
 from middleware.enums import JurisdictionType
-from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint, CreatedDataSource
-from tests.helper_scripts.constants import DATA_REQUESTS_BASE_ENDPOINT, AGENCIES_BASE_ENDPOINT, \
-    DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT
+from tests.helper_scripts.common_endpoint_calls import (
+    create_data_source_with_endpoint,
+    CreatedDataSource,
+)
+from tests.helper_scripts.constants import (
+    DATA_REQUESTS_BASE_ENDPOINT,
+    AGENCIES_BASE_ENDPOINT,
+    DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT,
+)
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
-from tests.helper_scripts.helper_functions import create_test_user_setup, create_admin_test_user_setup
+from tests.helper_scripts.helper_functions import (
+    create_test_user_setup,
+    create_admin_test_user_setup,
+)
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
 TestUserDBInfo = namedtuple("TestUserDBInfo", ["id", "email", "password_digest"])
+
 
 def insert_test_column_permission_data(db_client: DatabaseClient):
     try:
@@ -121,18 +132,17 @@ def create_test_data_request(
 
     return TestDataRequestInfo(id=json["id"], submission_notes=submission_notes)
 
+
 TestAgencyInfo = namedtuple("TestAgencyInfo", ["id", "submitted_name"])
 
-def create_test_agency(
-        flask_client: FlaskClient,
-        jwt_authorization_header: dict
-):
+
+def create_test_agency(flask_client: FlaskClient, jwt_authorization_header: dict):
     submitted_name = uuid.uuid4().hex
     locality_name = uuid.uuid4().hex
     sample_agency_post_parameters = get_sample_agency_post_parameters(
         submitted_name=submitted_name,
         locality_name=locality_name,
-        jurisdiction_type=JurisdictionType.LOCAL
+        jurisdiction_type=JurisdictionType.LOCAL,
     )
 
     json = run_and_validate_request(
@@ -140,10 +150,11 @@ def create_test_agency(
         http_method="post",
         endpoint=AGENCIES_BASE_ENDPOINT,
         headers=jwt_authorization_header,
-        json=sample_agency_post_parameters
+        json=sample_agency_post_parameters,
     )
 
     return TestAgencyInfo(id=json["id"], submitted_name=submitted_name)
+
 
 class TestDataCreatorFlask:
     """
@@ -173,13 +184,13 @@ class TestDataCreatorFlask:
     def data_request(self, user_tus: TestUserSetup):
         return create_test_data_request(
             flask_client=self.flask_client,
-            jwt_authorization_header=user_tus.jwt_authorization_header
+            jwt_authorization_header=user_tus.jwt_authorization_header,
         )
 
     def agency(self) -> TestAgencyInfo:
         return create_test_agency(
             flask_client=self.flask_client,
-            jwt_authorization_header=self.get_admin_tus().jwt_authorization_header
+            jwt_authorization_header=self.get_admin_tus().jwt_authorization_header,
         )
 
     def link_data_request_to_data_source(self, data_source_id, data_request_id):
@@ -187,15 +198,13 @@ class TestDataCreatorFlask:
             flask_client=self.flask_client,
             http_method="post",
             endpoint=DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT.format(
-                data_request_id=data_request_id,
-                source_id=data_source_id
+                data_request_id=data_request_id, source_id=data_source_id
             ),
-            headers=self.get_admin_tus().jwt_authorization_header
+            headers=self.get_admin_tus().jwt_authorization_header,
         )
 
     def link_data_source_to_agency(self, data_source_id, agency_id):
         raise NotImplementedError()
-
 
     def standard_user(self) -> TestUserSetup:
         """
@@ -222,13 +231,10 @@ class TestDataCreatorFlask:
         data_request_info = self.data_request(standard_user_tus)
 
         self.link_data_request_to_data_source(
-            data_source_id=data_source_info.id,
-            data_request_id=data_request_info.id
+            data_source_id=data_source_info.id, data_request_id=data_request_info.id
         )
 
         # TODO: Create a tuple providing all 4 id's -- for the user, the data_source, the agency, and the data_request
-
-
 
 
 def get_sample_agency_post_parameters(
@@ -251,10 +257,12 @@ def get_sample_agency_post_parameters(
         },
     }
 
+
 class TestDataCreatorDBClient:
     """
     Creates test data for DatabaseClient tests, using a DatabaseClient
     """
+
     def __init__(self):
         self.db_client = DatabaseClient()
 
@@ -262,21 +270,11 @@ class TestDataCreatorDBClient:
         email = uuid.uuid4().hex
         pw_digest = uuid.uuid4().hex
 
-        user_id = self.db_client.create_new_user(
-            email=email,
-            password_digest=pw_digest
-        )
-        return TestUserDBInfo(
-            id=user_id,
-            email=email,
-            password_digest=pw_digest
-        )
+        user_id = self.db_client.create_new_user(email=email, password_digest=pw_digest)
+        return TestUserDBInfo(id=user_id, email=email, password_digest=pw_digest)
 
     def data_source(self) -> CreatedDataSource:
-        cds = CreatedDataSource(
-            id=uuid.uuid4().hex,
-            name=uuid.uuid4().hex
-        )
+        cds = CreatedDataSource(id=uuid.uuid4().hex, name=uuid.uuid4().hex)
         source_column_value_mapping = {
             "airtable_uid": cds.id,
             "name": cds.name,
@@ -286,7 +284,9 @@ class TestDataCreatorDBClient:
         )
         return cds
 
-    def data_request(self, user_id: Optional[int] = None) -> TestDataRequestInfo:
+    def data_request(
+        self, user_id: Optional[int] = None, **column_value_kwargs
+    ) -> TestDataRequestInfo:
         if user_id is None:
             user_id = self.user().id
 
@@ -294,19 +294,25 @@ class TestDataCreatorDBClient:
         data_request_id = self.db_client.create_data_request(
             column_value_mappings={
                 "submission_notes": submission_notes,
-                "creator_user_id": user_id
+                "creator_user_id": user_id,
+                **column_value_kwargs,
             }
         )
         return TestDataRequestInfo(
-            id=data_request_id,
-            submission_notes=submission_notes
+            id=data_request_id, submission_notes=submission_notes
         )
 
-    def link_data_request_to_data_source(self, data_request_id: int, data_source_id: str):
+    def link_data_request_to_data_source(
+        self, data_request_id: int, data_source_id: str
+    ):
         self.db_client.create_request_source_relation(
             column_value_mappings={
                 "source_id": data_source_id,
-                "request_id": data_request_id
+                "request_id": data_request_id,
             }
         )
 
+
+def get_random_number_for_testing():
+    number = random.randint(1, 999999999)
+    return number

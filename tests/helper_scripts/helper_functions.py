@@ -463,12 +463,13 @@ def patch_post_callback_functions(
             callback_params=callback_params,
         )
     )
+    PATCH_ROOT = "middleware.primary_resource_logic.callback_primary_logic"
     monkeypatch.setattr(
-        "middleware.callback_primary_logic.get_oauth_callback_info",
+        f"{PATCH_ROOT}.get_oauth_callback_info",
         mock_get_oauth_callback_info,
     )
     monkeypatch.setattr(
-        "middleware.callback_primary_logic.get_flask_session_callback_info",
+        f"{PATCH_ROOT}.get_flask_session_callback_info",
         mock_get_flask_session_callback_info,
     )
 
@@ -512,14 +513,14 @@ def create_test_user_setup(
         jwt_authorization_header={"Authorization": f"Bearer {jwt_tokens.access_token}"},
     )
 
-def create_admin_test_user_setup(
-    flask_client: FlaskClient
-) -> TestUserSetup:
+
+def create_admin_test_user_setup(flask_client: FlaskClient) -> TestUserSetup:
     db_client = DatabaseClient()
-    tus_admin = create_test_user_setup(flask_client, permissions=[PermissionsEnum.READ_ALL_USER_INFO, PermissionsEnum.DB_WRITE])
+    tus_admin = create_test_user_setup(
+        flask_client,
+        permissions=[PermissionsEnum.READ_ALL_USER_INFO, PermissionsEnum.DB_WRITE],
+    )
     return tus_admin
-
-
 
 
 def create_test_user_setup_db_client(

@@ -111,6 +111,13 @@ DetailLevelLiteral = Literal[
 ]
 AccessTypeLiteral = Literal["Web page", "API", "Download"]
 UpdateMethodLiteral = Literal["Insert", "No updates", "Overwrite"]
+RequestUrgencyLiteral = Literal[
+    "Urgent (Less than a week)",
+    "Somewhat urgent (Less than a month)",
+    "Not urgent (A few months)",
+    "Long-term (6 months or more)",
+    "Indefinite/Unknown",
+]
 
 text = Annotated[Text, None]
 timestamp_tz = Annotated[
@@ -352,7 +359,6 @@ class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
     date_created: Mapped[timestamp_tz]
     date_status_last_changed: Mapped[Optional[timestamp_tz]]
     creator_user_id: Mapped[Optional[int]]
-    github_issue_url: Mapped[Optional[text]]
     internal_notes: Mapped[Optional[text]]
     record_types_required: Mapped[Optional[ARRAY[RecordTypeLiteral]]] = mapped_column(
         ARRAY(Enum(*get_args(RecordTypeLiteral), name="record_type"), as_tuple=True)
@@ -360,6 +366,9 @@ class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
     pdap_response: Mapped[Optional[text]]
     coverage_range: Mapped[Optional[daterange]]
     data_requirements: Mapped[Optional[text]]
+    request_urgency: Mapped[RequestUrgencyLiteral] = mapped_column(
+        server_default="Indefinite/Unknown"
+    )
 
     data_sources: Mapped[list["DataSourceExpanded"]] = relationship(
         argument="DataSourceExpanded",
@@ -372,6 +381,14 @@ class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
     @hybrid_property
     def data_source_ids(self) -> list[str]:
         return [source.airtable_uid for source in self.data_sources]
+
+
+class DataRequestExpanded(DataRequest):
+    id = mapped_column(None, ForeignKey("public.data_requests.id"), primary_key=True)
+
+    __tablename__ = Relations.DATA_REQUESTS_EXPANDED.value
+    github_issue_url: Mapped[Optional[text]]
+    github_issue_number: Mapped[Optional[int]]
 
 
 def iter_with_special_cases(instance, special_cases=None):
@@ -585,6 +602,7 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     "agencies": Agency,
     "agencies_expanded": AgencyExpanded,
     "data_requests": DataRequest,
+    "data_requests_expanded": DataRequestExpanded,
     "data_sources": DataSource,
     "data_sources_expanded": DataSourceExpanded,
     "data_sources_archive_info": DataSourceArchiveInfo,

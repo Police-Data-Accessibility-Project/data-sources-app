@@ -29,7 +29,7 @@ from middleware.dynamic_request_logic.supporting_classes import (
 )
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    EntryDataRequestDTO,
+    EntryCreateUpdateRequestDTO,
     GetByIDBaseDTO,
     GetByIDBaseSchema,
     GetManyBaseDTO,
@@ -93,14 +93,14 @@ def get_data_requests_relation_role(
 
 
 def add_creator_user_id(
-    db_client: DatabaseClient, user_email: str, dto: EntryDataRequestDTO
+    db_client: DatabaseClient, user_email: str, dto: EntryCreateUpdateRequestDTO
 ):
     user_id = db_client.get_user_id(user_email)
     dto.entry_data.update({"creator_user_id": user_id})
 
 
 def create_data_request_wrapper(
-    db_client: DatabaseClient, dto: EntryDataRequestDTO, access_info: AccessInfo
+    db_client: DatabaseClient, dto: EntryCreateUpdateRequestDTO, access_info: AccessInfo
 ) -> Response:
     """
     Create a data request
@@ -145,7 +145,7 @@ def get_data_requests_wrapper(
             db_client=db_client,
             access_info=access_info,
             entry_name="data requests",
-            relation=RELATION,
+            relation=Relations.DATA_REQUESTS_EXPANDED.value,
             db_client_method=DatabaseClient.get_data_requests,
             subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS,
         ),
@@ -214,7 +214,7 @@ def delete_data_request_wrapper(
 
 def update_data_request_wrapper(
     db_client: DatabaseClient,
-    dto: EntryDataRequestDTO,
+    dto: EntryCreateUpdateRequestDTO,
     data_request_id: int,
     access_info: AccessInfo,
 ):
@@ -257,7 +257,7 @@ def get_data_request_by_id_wrapper(
     return get_by_id(
         middleware_parameters=MiddlewareParameters(
             db_client=db_client,
-            relation=RELATION,
+            relation=Relations.DATA_REQUESTS_EXPANDED.value,
             access_info=access_info,
             db_client_method=DatabaseClient.get_data_requests,
             entry_name="Data request",

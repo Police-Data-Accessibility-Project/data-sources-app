@@ -20,9 +20,7 @@ from tests.helper_scripts.run_and_validate_request import run_and_validate_reque
 from tests.helper_scripts.simple_result_validators import check_response_status
 
 
-def test_link_to_github(
-    flask_client_with_db, monkeypatch
-):
+def test_link_to_github(flask_client_with_db, monkeypatch):
     tus = create_test_user_setup(flask_client_with_db)
     mock_setup_callback_session = patch_setup_callback_session(
         monkeypatch, "LinkToGithub"
@@ -66,4 +64,3 @@ def test_link_to_github(
         "account_identifier": github_user_info.user_id,
         "account_type": "github",
     }
-

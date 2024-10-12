@@ -6,33 +6,40 @@ from middleware.access_logic import (
     GET_AUTH_INFO,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    EntryDataRequestDTO,
+    EntryCreateUpdateRequestDTO,
     EntryDataRequestSchema,
     GetByIDBaseSchema,
     GetByIDBaseDTO,
 )
 from middleware.decorators import (
     endpoint_info,
+    endpoint_info_2,
 )
 from middleware.primary_resource_logic.data_sources_logic import (
     get_data_sources_wrapper,
     data_source_by_id_wrapper,
-    get_data_sources_for_map_wrapper,
     add_new_data_source_wrapper,
     update_data_source_wrapper,
     DataSourcesGetManyRequestDTO,
     delete_data_source_wrapper,
 )
-from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
+from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_construction import (
     get_restx_param_documentation,
 )
-from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
+from middleware.schema_and_dto_logic.dynamic_logic.model_helpers_with_schemas import (
     CRUDModels,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourcesGetByIDSchema, \
-    DataSourcesGetManySchema, DataSourcesGetManyRequestSchema, DataSourcesPostSchema, DataSourcesPutSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
+    DataSourcesGetByIDSchema,
+    DataSourcesGetManySchema,
+    DataSourcesGetManyRequestSchema,
+    DataSourcesPostSchema,
+    DataSourcesPutSchema,
+)
+from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import (
     create_response_dictionary,
+    ResponseInfo,
 )
 from utilities.namespace import create_namespace, AppNamespaces
 from resources.PsycopgResource import PsycopgResource
@@ -40,19 +47,6 @@ from resources.PsycopgResource import PsycopgResource
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 
 namespace_data_source = create_namespace(AppNamespaces.DATA_SOURCES)
-models = CRUDModels(namespace_data_source)
-
-get_by_id_model = get_restx_param_documentation(
-    namespace=namespace_data_source,
-    schema=DataSourcesGetByIDSchema,
-    model_name="DataSourcesGetByIDSchema",
-).model
-
-get_many_model = get_restx_param_documentation(
-    namespace=namespace_data_source,
-    schema=DataSourcesGetManySchema,
-    model_name="DataSourcesGetManySchema",
-).model
 
 
 @namespace_data_source.route("/<resource_id>")
@@ -62,13 +56,14 @@ class DataSourceById(PsycopgResource):
     Provides methods for retrieving and updating data source details.
     """
 
-    @endpoint_info(
+    @endpoint_info_2(
         namespace=namespace_data_source,
         auth_info=GET_AUTH_INFO,
-        responses=create_response_dictionary(
+        schema_config=SchemaConfigs.DATA_SOURCES_GET_BY_ID,
+        response_info=ResponseInfo(
             success_message="Returns information on the specific data source.",
-            success_model=get_by_id_model,
         ),
+        description="Get details of a specific data source by its ID.",
     )
     def get(self, access_info: AccessInfo, resource_id: str) -> Response:
         """
@@ -88,14 +83,14 @@ class DataSourceById(PsycopgResource):
             ),
         )
 
-    @endpoint_info(
+    @endpoint_info_2(
         namespace=namespace_data_source,
         auth_info=WRITE_ONLY_AUTH_INFO,
-        input_schema=DataSourcesPutSchema(),
-        description="Update details of a specific data source by its ID.",
-        responses=create_response_dictionary(
+        schema_config=SchemaConfigs.DATA_SOURCES_PUT,
+        response_info=ResponseInfo(
             success_message="Data source successfully updated.",
         ),
+        description="Update details of a specific data source by its ID.",
     )
     def put(self, access_info: AccessInfo, resource_id: str) -> Response:
         """
@@ -110,7 +105,7 @@ class DataSourceById(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=update_data_source_wrapper,
             schema_populate_parameters=SchemaPopulateParameters(
-                dto_class=EntryDataRequestDTO,
+                dto_class=EntryCreateUpdateRequestDTO,
                 schema=EntryDataRequestSchema(),
             ),
             data_source_id=resource_id,
@@ -148,15 +143,14 @@ class DataSources(PsycopgResource):
     Provides methods for retrieving all data sources and adding new ones.
     """
 
-    @endpoint_info(
+    @endpoint_info_2(
         namespace=namespace_data_source,
         auth_info=GET_AUTH_INFO,
-        input_schema=DataSourcesGetManyRequestSchema(),
-        description="Retrieves all data sources.",
-        responses=create_response_dictionary(
+        schema_config=SchemaConfigs.DATA_SOURCES_GET_MANY,
+        response_info=ResponseInfo(
             success_message="Returns all requested data sources.",
-            success_model=get_many_model,
         ),
+        description="Retrieves all data sources.",
     )
     def get(self, access_info: AccessInfo) -> Response:
         """
@@ -175,14 +169,13 @@ class DataSources(PsycopgResource):
             access_info=access_info,
         )
 
-    @endpoint_info(
+    @endpoint_info_2(
         namespace=namespace_data_source,
         auth_info=WRITE_ONLY_AUTH_INFO,
-        responses=create_response_dictionary(
+        schema_config=SchemaConfigs.DATA_SOURCES_POST,
+        response_info=ResponseInfo(
             success_message="Data source successfully added.",
-            success_model=models.id_and_message_model,
         ),
-        input_schema=DataSourcesPostSchema(),
         description="Adds a new data source.",
     )
     def post(self, access_info: AccessInfo) -> Response:
@@ -194,7 +187,7 @@ class DataSources(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=add_new_data_source_wrapper,
-            dto_populate_parameters=EntryDataRequestDTO.get_dto_populate_parameters(),
+            schema_populate_parameters=SchemaConfigs.DATA_SOURCES_POST.value.get_schema_populate_parameters(),
             access_info=access_info,
         )
 

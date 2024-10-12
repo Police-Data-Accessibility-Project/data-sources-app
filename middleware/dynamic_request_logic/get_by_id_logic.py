@@ -21,7 +21,9 @@ from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,
 )
-from middleware.schema_and_dto_logic.response_schemas import EntryDataResponseSchema
+from middleware.schema_and_dto_logic.common_response_schemas import (
+    EntryDataResponseSchema,
+)
 
 
 def results_dependent_response(entry_name: str, results):
@@ -91,6 +93,6 @@ def get_by_id(
         relation_name=mp.relation,
         columns=columns,
         where_mappings=[WhereMapping(column=id_column_name, value=id)],
-        subquery_parameters=mp.subquery_parameters
+        subquery_parameters=mp.subquery_parameters,
     )
     return results_dependent_response(mp.entry_name, results)

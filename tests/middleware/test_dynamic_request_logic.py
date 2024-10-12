@@ -26,7 +26,9 @@ from middleware.dynamic_request_logic.put_logic import put_entry
 from middleware.dynamic_request_logic.supporting_classes import IDInfo
 from middleware.primary_resource_logic.data_requests import RelatedSourceByIDDTO
 
-from middleware.schema_and_dto_logic.response_schemas import EntryDataResponseSchema
+from middleware.schema_and_dto_logic.common_response_schemas import (
+    EntryDataResponseSchema,
+)
 from middleware.util_dynamic import call_if_not_none, execute_if_not_none
 from tests.conftest import FakeAbort, mock_flask_response_manager
 from tests.helper_scripts.common_mocks_and_patches import (
@@ -127,10 +129,8 @@ def test_get_by_id(monkeypatch):
         mock.mp.db_client,
         relation_name=mock.mp.relation,
         columns=mock.get_permitted_columns.return_value,
-        where_mappings=[
-            WhereMapping(column=mock.id_column_name, value=int(mock.id))
-        ],
-        subquery_parameters=mock.mp.subquery_parameters
+        where_mappings=[WhereMapping(column=mock.id_column_name, value=int(mock.id))],
+        subquery_parameters=mock.mp.subquery_parameters,
     )
 
     mock.results_dependent_response.assert_called_once_with(

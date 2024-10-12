@@ -1,4 +1,5 @@
 <template>
+	<!-- TODO: split this out to multiple routes -->
 	<main v-if="success" class="pdap-flex-container">
 		<h1>Success</h1>
 		<p data-test="success-subheading">
@@ -36,67 +37,74 @@
 			</RouterLink>
 		</p>
 
-		<Form
+		<FormV2
 			v-else
 			id="reset-password"
 			data-test="reset-password-form"
 			class="flex flex-col"
 			name="reset-password"
 			:error="error"
-			:schema="FORM_SCHEMA_CHANGE_PASSWORD"
+			:schema="VALIDATION_SCHEMA_CHANGE_PASSWORD"
 			@change="onChange"
 			@submit="onSubmitChangePassword"
+			@input="onResetInput"
 		>
+			<InputPassword
+				v-for="input of FORM_INPUTS_CHANGE_PASSWORD"
+				v-bind="{ ...input }"
+				:key="input.name"
+			/>
+
 			<PasswordValidationChecker ref="passwordRef" />
 
 			<Button class="max-w-full" type="submit">
 				{{ loading ? 'Loading...' : 'Change password' }}
 			</Button>
-		</Form>
+		</FormV2>
 	</main>
 
 	<main v-else class="pdap-flex-container mx-auto max-w-2xl">
 		<h1>Request a link to reset your password</h1>
-		<Form
+		<FormV2
 			id="reset-password"
 			data-test="reset-password-form"
 			class="flex flex-col"
 			name="reset-password"
 			:error="error"
-			:schema="FORM_SCHEMA_REQUEST_PASSWORD"
+			:schema="VALIDATION_SCHEMA_REQUEST_PASSWORD"
 			@submit="onSubmitRequestReset"
 		>
+			<InputText
+				id="email"
+				autofill="email"
+				data-test="email"
+				name="email"
+				label="Email"
+				placeholder="Your email address"
+			/>
 			<Button class="max-w-full" type="submit">
 				{{ loading ? 'Loading...' : 'Request password reset' }}
 			</Button>
-		</Form>
+		</FormV2>
 	</main>
 </template>
 
 <script setup>
-import { Button, Form } from 'pdap-design-system';
+import { Button, FormV2, InputPassword, InputText } from 'pdap-design-system';
 import PasswordValidationChecker from '@/components/PasswordValidationChecker.vue';
 import { useUserStore } from '@/stores/user';
 import { onMounted, ref, watchEffect } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 
 // Constants
-const FORM_SCHEMA_CHANGE_PASSWORD = [
+const FORM_INPUTS_CHANGE_PASSWORD = [
 	{
 		autofill: 'password',
 		'data-test': 'password',
 		id: 'password',
 		name: 'password',
 		label: 'Password',
-		type: 'password',
 		placeholder: 'Your updated password',
-		value: '',
-		validators: {
-			password: {
-				message: 'Please provide your password',
-				value: true,
-			},
-		},
 	},
 	{
 		autofill: 'password',
@@ -104,10 +112,29 @@ const FORM_SCHEMA_CHANGE_PASSWORD = [
 		id: 'confirmPassword',
 		name: 'confirmPassword',
 		label: 'Confirm Password',
-		type: 'password',
 		placeholder: 'Confirm your updated password',
-		value: '',
+	},
+];
+const VALIDATION_SCHEMA_CHANGE_PASSWORD = [
+	{
+		name: 'password',
+		label: 'Password',
 		validators: {
+			required: {
+				value: true,
+			},
+			password: {
+				message: 'Please provide your password',
+				value: true,
+			},
+		},
+	},
+	{
+		name: 'confirmPassword',
+		validators: {
+			required: {
+				value: true,
+			},
 			password: {
 				message: 'Please confirm your password',
 				value: true,
@@ -116,17 +143,13 @@ const FORM_SCHEMA_CHANGE_PASSWORD = [
 	},
 ];
 
-const FORM_SCHEMA_REQUEST_PASSWORD = [
+const VALIDATION_SCHEMA_REQUEST_PASSWORD = [
 	{
-		autofill: 'email',
-		'data-test': 'email',
-		id: 'email',
 		name: 'email',
-		label: 'Email',
-		type: 'text',
-		placeholder: 'Your email address',
-		value: '',
 		validators: {
+			required: {
+				value: true,
+			},
 			email: {
 				message: 'Please provide your email address',
 				value: true,
@@ -185,6 +208,12 @@ function onChange(formValues) {
 
 	if (error.value) {
 		handleValidatePasswordMatch(formValues);
+	}
+}
+
+function onResetInput(e) {
+	if (e.target.name === 'password') {
+		passwordRef.value.updatePasswordValidation(e.target.value);
 	}
 }
 

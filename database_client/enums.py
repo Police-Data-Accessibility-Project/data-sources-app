@@ -1,6 +1,7 @@
 """
 Enums utilized within the Database Client
 """
+
 from enum import Enum
 
 
@@ -140,3 +141,15 @@ class AgencyAggregation(Enum):
     LOCAL = "local"
     STATE = "state"
     FEDERAL = "federal"
+
+
+class RequestUrgency(Enum):
+    """
+    Correlates to the request_urgency enum in the database
+    """
+
+    URGENT = "Urgent (Less than a week)"
+    SOMEWHAT_URGENT = "Somewhat urgent (Less than a month)"
+    NOT_URGENT = "Not urgent (A few months)"
+    LONG_TERM = "Long-term (6 months or more)"
+    INDEFINITE = "Indefinite/Unknown"

@@ -8,6 +8,8 @@ from typing import Optional
 from flask_restx import Namespace, Model, fields
 from flask_restx.reqparse import RequestParser
 
+from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
+
 
 def add_api_key_header_arg(parser: RequestParser):
     parser.add_argument(
@@ -39,19 +41,6 @@ def add_jwt_or_api_key_header_arg(parser: RequestParser):
         location="headers",
         help="API key or access token required to access this endpoint",
         default="Basic YOUR_API_KEY OR Bearer YOUR_ACCESS_TOKEN",
-    )
-
-
-def create_id_and_message_model(namespace: Namespace) -> Model:
-    return namespace.model(
-        "IdAndMessage",
-        {
-            "id": fields.Integer(description="The id of the created entry"),
-            "message": fields.String(
-                description="The success message",
-                example="Success. Entry created",
-            ),
-        },
     )
 
 
@@ -108,7 +97,6 @@ def create_jwt_tokens_model(namespace: Namespace) -> Model:
 
 
 def create_search_model(namespace: Namespace) -> Model:
-
     search_result_inner_model = namespace.model(
         "SearchResultInner",
         {
@@ -213,3 +201,21 @@ def column_permissions_description(
 {column_permissions_str_table}
 
     """
+
+
+class ResponseInfo:
+    """
+    A configuration dataclasses for defining common information in a response
+    """
+
+    def __init__(
+        self,
+        success_message: Optional[str] = None,
+        response_dictionary: Optional[dict] = None,
+    ):
+        check_for_mutually_exclusive_arguments(
+            arg1=success_message, arg2=response_dictionary
+        )
+
+        self.success_message = success_message
+        self.response_dictionary = response_dictionary

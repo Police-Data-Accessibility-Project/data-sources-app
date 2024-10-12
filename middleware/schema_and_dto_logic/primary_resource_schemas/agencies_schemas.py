@@ -5,7 +5,7 @@ from marshmallow import fields, Schema, validate, validates_schema, ValidationEr
 
 from database_client.enums import LocationType
 from middleware.enums import JurisdictionType, AgencyType
-from middleware.schema_and_dto_logic.response_schemas import (
+from middleware.schema_and_dto_logic.common_response_schemas import (
     MessageSchema,
     GetManyResponseSchemaBase,
 )
@@ -283,7 +283,7 @@ class LocationInfoDTO:
 
 def get_agency_info_field(
     schema: type[AgencyInfoBaseSchema],
-    dto_class: type[Union[AgencyInfoPutDTO, AgencyInfoPostDTO]],
+    nested_dto_class: type[Union[AgencyInfoPutDTO, AgencyInfoPostDTO]],
 ) -> fields.Nested:
     return fields.Nested(
         schema,
@@ -291,7 +291,7 @@ def get_agency_info_field(
         metadata={
             "description": "Information about the agency",
             "source": SourceMappingEnum.JSON,
-            "nested_dto_class": dto_class,
+            "nested_dto_class": nested_dto_class,
         },
     )
 
@@ -327,9 +327,10 @@ class AgenciesPostPutBaseSchema(Schema):
 
 
 class AgenciesPostSchema(AgenciesPostPutBaseSchema):
+    #
     agency_info = get_agency_info_field(
         schema=AgencyInfoPostSchema,
-        dto_class=AgencyInfoPostDTO,
+        nested_dto_class=AgencyInfoPostDTO,
     )
 
     @validates_schema
@@ -339,9 +340,10 @@ class AgenciesPostSchema(AgenciesPostPutBaseSchema):
 
 
 class AgenciesPutSchema(AgenciesPostPutBaseSchema):
+    #
     agency_info = get_agency_info_field(
         schema=AgencyInfoPutSchema,
-        dto_class=AgencyInfoPutDTO,
+        nested_dto_class=AgencyInfoPutDTO,
     )
 
     @validates_schema

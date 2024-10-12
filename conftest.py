@@ -10,8 +10,12 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 
 from app import create_app
 from config import limiter
+from database_client.database_client import DatabaseClient
 from middleware.util import get_env_variable
-from tests.helper_scripts.common_test_data import TestDataCreatorFlask, TestDataCreatorDBClient
+from tests.helper_scripts.common_test_data import (
+    TestDataCreatorFlask,
+    TestDataCreatorDBClient,
+)
 
 # Load environment variables
 dotenv.load_dotenv()
@@ -30,7 +34,6 @@ def test_client():
     with app.test_client() as testing_client:
         with app.app_context():
             yield testing_client
-
 
 
 @pytest.fixture
@@ -63,11 +66,14 @@ def test_data_creator_flask(monkeysession) -> TestDataCreatorFlask:
         "app.get_flask_app_cookie_encryption_key", mock_get_flask_app_secret_key
     )
     app = create_app()
+    app.config["TESTING"] = True
+    app.config["PROPAGATE_EXCEPTIONS"] = True
     # Disable rate limiting for tests
     limiter.enabled = False
     with app.test_client() as client:
         yield TestDataCreatorFlask(client)
     limiter.enabled = True
+
 
 @pytest.fixture(scope="session")
 def test_data_creator_db_client() -> TestDataCreatorDBClient:

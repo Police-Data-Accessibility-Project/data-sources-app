@@ -1,3 +1,4 @@
+import os
 from contextlib import contextmanager
 from http import HTTPStatus
 import functools
@@ -10,10 +11,10 @@ from config import config
 from database_client.database_client import DatabaseClient
 from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
-from middleware.schema_and_dto_logic.dynamic_schema_request_content_population import (
+from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import (
     populate_schema_with_request_content,
 )
-from middleware.schema_and_dto_logic.dynamic_dto_request_content_population import (
+from middleware.schema_and_dto_logic.dynamic_logic.dynamic_dto_request_content_population import (
     populate_dto_with_request_content,
 )
 from middleware.schema_and_dto_logic.non_dto_dataclasses import (
@@ -54,19 +55,17 @@ def handle_exceptions(
         except Exception as e:
             self.get_connection().rollback()
 
-            if hasattr(e, "data") and "message" in e.data:
-                message = e.data["message"]
-            else:
-                message = str(e)
+            message = _get_message_from_exception(e)
             print(message)
 
-            if hasattr(e, "code"):
-                abort(code=e.code, message=message)
-            else:
-                abort(
-                    code=HTTPStatus.INTERNAL_SERVER_ERROR.value,
-                    message=message,
-                )
+            raise e
+
+    def _get_message_from_exception(e):
+        if hasattr(e, "data") and "message" in e.data:
+            message = e.data["message"]
+        else:
+            message = str(e)
+        return message
 
     return wrapper
 

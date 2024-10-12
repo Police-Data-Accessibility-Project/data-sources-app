@@ -19,22 +19,38 @@
 	</div>
 
 	<h4 class="w-full mt-8">Types of data</h4>
-	<Form
+	<FormV2
 		id="pdap-data-sources-search"
 		ref="formRef"
 		class="grid grid-cols-1 auto-rows-auto max-w-full gap:0 @md:gap-4 @md:grid-cols-2 @lg:grid-cols-3 gap-0"
-		:schema="SCHEMA"
 		@change="onChange"
 		@submit="submit"
 	>
+		<InputCheckbox
+			v-for="{ id, defaultChecked, name, label } in CHECKBOXES"
+			:id="id"
+			:key="name"
+			:default-checked="defaultChecked"
+			:name="name"
+		>
+			<template #label>
+				{{ label }} <RecordTypeIcon :record-type="label" />
+			</template>
+		</InputCheckbox>
+
 		<Button :disabled="!selectedRecord" intent="primary" type="submit">
 			{{ buttonCopy ?? 'Search' }}
 		</Button>
-	</Form>
+	</FormV2>
 </template>
 
 <script setup>
-import { Button, Form } from 'pdap-design-system';
+import {
+	Button,
+	FormV2,
+	InputCheckbox,
+	RecordTypeIcon,
+} from 'pdap-design-system';
 import TypeaheadInput from '@/components/TypeaheadInput.vue';
 import axios from 'axios';
 import { ref } from 'vue';
@@ -52,54 +68,42 @@ const emit = defineEmits(['searched']);
 
 /* constants */
 const TYPEAHEAD_ID = 'pdap-search-typeahead';
-const SCHEMA = [
+const CHECKBOXES = [
 	{
 		id: 'all-data-types',
 		defaultChecked: true,
 		name: 'all-data-types',
 		label: 'All data types',
-		type: 'checkbox',
-		value: '',
 	},
 	{
 		id: 'interactions',
 		defaultChecked: false,
 		name: 'police-and-public-interactions',
 		label: 'Police & public interactions',
-		type: 'checkbox',
-		value: '',
 	},
 	{
 		id: 'info-officers',
 		defaultChecked: false,
 		name: 'info-about-officers',
 		label: 'Info about officers',
-		type: 'checkbox',
-		value: '',
 	},
 	{
 		id: 'info-agencies',
 		defaultChecked: false,
 		name: 'info-about-agencies',
 		label: 'Info about agencies',
-		type: 'checkbox',
-		value: '',
 	},
 	{
 		id: 'agency-published-resources',
 		defaultChecked: false,
 		name: 'agency-published-resources',
 		label: 'Agency-published resources',
-		type: 'checkbox',
-		value: '',
 	},
 	{
 		id: 'jails-and-courts',
 		defaultChecked: false,
 		name: 'jails-and-courts',
 		label: 'Jails and courts specific',
-		type: 'checkbox',
-		value: '',
 	},
 ];
 
@@ -132,17 +136,17 @@ function buildParams(values) {
 	/* Handle form values from checkboxes */
 	// Return obj without setting record_types if 'all-data-types' is true or no checkboxes checked
 	if (
-		values['all-data-types'] === 'true' ||
-		Object.values(values).every((val) => !val || val === 'false')
+		values['all-data-types'] ||
+		Object.values(values).every((val) => !val || !val)
 	) {
 		return obj;
 	}
 	// Otherwise set record_types array
 	const inputIdsToRecordTypes = new Map(
-		SCHEMA.map(({ name, label }) => [name, label]),
+		CHECKBOXES.map(({ name, label }) => [name, label]),
 	);
 	obj.record_categories = Object.entries(values)
-		.map(([key, val]) => val === 'true' && inputIdsToRecordTypes.get(key))
+		.map(([key, val]) => val && inputIdsToRecordTypes.get(key))
 		.filter(Boolean);
 
 	return obj;
@@ -153,15 +157,21 @@ function onChange(values, event) {
 		if (event.target.checked) {
 			const update = {};
 			Object.entries(values).forEach(([key, val]) => {
-				if (key !== 'all-data-types' && val === 'true') {
-					update[key] = 'false';
+				if (key !== 'all-data-types' && val) {
+					update[key] = false;
+					const checkbox = document.querySelector(`input[name=${key}]`);
+					checkbox.checked = false;
 				}
 			});
 			formRef.value.setValues({ ...values, ...update });
 		}
 	} else {
-		if (values['all-data-types'] === 'true' && event.target.checked) {
-			formRef.value.setValues({ ...values, ['all-data-types']: 'false' });
+		const allTypesCheckbox = document.querySelector(
+			'input[name="all-data-types"]',
+		);
+		if (allTypesCheckbox.checked && event.target.checked) {
+			formRef.value.setValues({ ...values, ['all-data-types']: false });
+			allTypesCheckbox.checked = false;
 		}
 	}
 }

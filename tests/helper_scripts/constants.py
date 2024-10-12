@@ -20,6 +20,11 @@ DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT = (
 AGENCIES_BASE_ENDPOINT = "/api/agencies"
 AGENCIES_BY_ID_ENDPOINT = AGENCIES_BASE_ENDPOINT + "/{agency_id}"
 
+GITHUB_DATA_REQUESTS_ISSUES_ENDPOINT = (
+    "/api/github/data-requests/issues/{data_request_id}"
+)
+GITHUB_DATA_REQUESTS_SYNCHRONIZE = "/api/github/data-requests/synchronize"
+
 
 GET_MANY_TEST_QUERY_ARGS = "query_dict,expected_dto"
 GET_MANY_TEST_QUERY_PARAMS = (
