@@ -16,7 +16,6 @@ from sqlalchemy import (
     DateTime,
     Integer,
     UniqueConstraint,
-    select,
 )
 from sqlalchemy.dialects.postgresql import (
     ARRAY,
@@ -429,7 +428,7 @@ def iter_with_special_cases(instance, special_cases=None):
             yield key, value
 
 
-class DataSource(Base, CountMetadata):
+class DataSource(Base, CountMetadata, CountSubqueryMetadata):
     __tablename__ = Relations.DATA_SOURCES.value
 
     def __iter__(self):

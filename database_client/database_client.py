@@ -10,7 +10,7 @@ from psycopg import sql, Cursor
 from psycopg.rows import dict_row, tuple_row
 from sqlalchemy import select
 from sqlalchemy.orm import aliased, defaultload, load_only
-from sqlalchemy.schema import Column, Table
+from sqlalchemy.schema import Column
 
 from database_client.constants import METADATA_METHOD_NAMES, PAGE_SIZE
 from database_client.db_client_dataclasses import (
