@@ -139,15 +139,21 @@ class Base(DeclarativeBase):
     }
 
     @hybrid_method
-    def to_dict(cls, subquery_parameters):
+    def to_dict(cls, subquery_parameters=[]):
         # Calls the class's __iter__ implementation
         dict_result = dict(cls)
+        keyorder = cls.__mapper__.column_attrs.items()
 
         for param in subquery_parameters:
             if param.linking_column not in dict_result:
                 dict_result[param.linking_column] = []
 
-        return dict_result
+        sorted_dict = {
+            col: dict_result[col] for col, descriptor in keyorder if col in dict_result
+        }
+        sorted_dict.update(dict_result)
+
+        return sorted_dict
 
 
 class CountMetadata:
@@ -224,6 +230,7 @@ class Agency(Base, CountMetadata):
     agency_created: Mapped[timestamp_tz] = mapped_column(
         server_default=func.current_timestamp()
     )
+    county_airtable_uid: Mapped[Optional[str]]
     location_id: Mapped[Optional[int]]
 
 
@@ -346,7 +353,7 @@ class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
                     (
                         "data_sources",
                         (
-                            [dict(source) for source in instance.data_sources]
+                            [source.to_dict() for source in instance.data_sources]
                             if instance.data_sources
                             else None
                         ),
@@ -436,7 +443,7 @@ class DataSource(Base, CountMetadata):
                 (
                     "agencies",
                     (
-                        [dict(agency) for agency in instance.agencies]
+                        [agency.to_dict() for agency in instance.agencies]
                         if instance.agencies
                         else None
                     ),
