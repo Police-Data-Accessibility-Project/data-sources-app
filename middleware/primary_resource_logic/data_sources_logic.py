@@ -69,6 +69,7 @@ def get_data_sources_wrapper(
                         column="approval_status", value=dto.approval_status.value
                     )
                 ],
+                "build_metadata": True,
             },
             entry_name="data source",
             subquery_parameters=SUBQUERY_PARAMS,

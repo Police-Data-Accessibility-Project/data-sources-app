@@ -45,6 +45,7 @@ def get_agencies(
             entry_name="agencies",
             relation=Relations.AGENCIES_EXPANDED.value,
             db_client_method=DatabaseClient.get_agencies,
+            db_client_additional_args={"build_metadata": True},
         ),
         page=dto.page,
     )

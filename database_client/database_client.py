@@ -12,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import aliased, defaultload, load_only
 from sqlalchemy.schema import Column
 
-from database_client.constants import PAGE_SIZE
+from database_client.constants import METADATA_METHOD_NAMES, PAGE_SIZE
 from database_client.db_client_dataclasses import (
     OrderByParameters,
     WhereMapping,
@@ -754,6 +754,7 @@ class DatabaseClient:
         page: Optional[int] = None,
         order_by: Optional[OrderByParameters] = None,
         subquery_parameters: Optional[list[SubqueryParameters]] = [],
+        build_metadata: Optional[bool] = False,
     ) -> list[dict]:
         """
         Selects a single relation from the database
@@ -773,14 +774,23 @@ class DatabaseClient:
         )
         raw_results = self.session.execute(query()).mappings().unique().all()
 
-        if subquery_parameters:
-            results = ResultFormatter.format_result_with_subquery_parameters(
-                row_mappings=raw_results,
-                primary_columns=columns,
-                subquery_parameters=subquery_parameters,
-            )
+        table_key = ""
+        if len(raw_results) > 0:
+            table_key = [key for key in raw_results[0].keys()][0]
+
+        if subquery_parameters and table_key:
+            # Calls models.Base.to_dict() method
+            results = [result[table_key].to_dict(subquery_parameters) for result in raw_results]
         else:
             results = [dict(result) for result in raw_results]
+
+        if build_metadata is True:
+            results = ResultFormatter.format_with_metadata(
+                results,
+                relation_name,
+                subquery_parameters,
+            )
+
         return results
 
     get_data_requests = partialmethod(
@@ -1009,7 +1019,8 @@ class DatabaseClient:
         return ResultFormatter.format_with_metadata(
             data=ResultFormatter.tuples_to_column_value_dict(
                 columns=columns_to_retrieve, tuples=tuple_results
-            )
+            ),
+            relation_name=linked_relation.value,
         )
 
     DataRequestIssueInfo = namedtuple(

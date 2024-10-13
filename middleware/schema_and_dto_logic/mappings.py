@@ -19,6 +19,7 @@ MARSHMALLOW_TO_RESTX_FIELD_MAPPING = {
     marshmallow_fields.Float: restx_fields.Float,
     marshmallow_fields.DateTime: restx_fields.DateTime,
     marshmallow_fields.Date: restx_fields.Date,
+    marshmallow_fields.Dict: restx_fields.Raw,
     DataField: RestxModelPlaceholder.VARIABLE_COLUMNS,
     EntryDataListField: RestxModelPlaceholder.LIST_VARIABLE_COLUMNS,
     # Add more mappings as needed

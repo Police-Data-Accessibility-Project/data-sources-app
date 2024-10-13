@@ -365,6 +365,15 @@ class DataSourceGetSchema(DataSourceExpandedSchema):
         required=True,
         metadata=get_json_metadata("The agencies associated with the data source."),
     )
+    agency_ids = fields.List(
+        fields.String(
+            allow_none=True,
+            metadata=get_json_metadata(
+                "The agency ids associated with the data source."
+            ),
+        ),
+        metadata=get_json_metadata("The agency ids associated with the data source."),
+    )
 
 
 class DataSourcesGetByIDSchema(MessageSchema):

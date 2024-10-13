@@ -30,10 +30,10 @@ class IDAndMessageSchema(MessageSchema):
 
 
 class GetManyResponseSchemaBase(MessageSchema):
-    count = fields.Integer(
+    metadata = fields.Dict(
         required=True,
         metadata={
-            "description": "The total number of results",
+            "description": "Metadata of the results",
             "source": SourceMappingEnum.JSON,
         },
     )

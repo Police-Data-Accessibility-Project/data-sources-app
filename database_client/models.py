@@ -25,7 +25,7 @@ from sqlalchemy.dialects.postgresql import (
     ENUM as pgEnum,
     JSON,
 )
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -137,6 +137,51 @@ class Base(DeclarativeBase):
         str_255: String(255),
     }
 
+    @hybrid_method
+    def to_dict(cls, subquery_parameters=[]):
+        # Calls the class's __iter__ implementation
+        dict_result = dict(cls)
+        keyorder = cls.__mapper__.column_attrs.items()
+
+        for param in subquery_parameters:
+            if param.linking_column not in dict_result:
+                dict_result[param.linking_column] = []
+
+        sorted_dict = {
+            col: dict_result[col] for col, descriptor in keyorder if col in dict_result
+        }
+        sorted_dict.update(dict_result)
+
+        return sorted_dict
+
+
+class CountMetadata:
+    @hybrid_method
+    def count(
+        cls,
+        data: list[dict],
+        **kwargs,
+    ) -> int:
+        return {"count": len(data)}
+
+
+class CountSubqueryMetadata:
+    @hybrid_method
+    def count_subquery(
+        cls, data: list[dict], subquery_parameters, **kwargs
+    ) -> Optional[dict[str, int]]:
+        if not subquery_parameters or len(data) != 1:
+            return None
+
+        subquery_counts = {}
+        for subquery_param in subquery_parameters:
+            linking_column = subquery_param.linking_column
+            key = linking_column + "_count"
+            count = len(data[0][linking_column])
+            subquery_counts.update({key: count})
+
+        return subquery_counts
+
 
 class AgencySourceLink(Base):
     __tablename__ = "agency_source_link"
@@ -150,7 +195,7 @@ class AgencySourceLink(Base):
     )
 
 
-class Agency(Base):
+class Agency(Base, CountMetadata):
     __tablename__ = Relations.AGENCIES.value
 
     def __iter__(self):
@@ -184,6 +229,7 @@ class Agency(Base):
     agency_created: Mapped[timestamp_tz] = mapped_column(
         server_default=func.current_timestamp()
     )
+    county_airtable_uid: Mapped[Optional[str]]
     location_id: Mapped[Optional[int]]
 
 
@@ -286,7 +332,7 @@ class USState(Base):
     state_name: Mapped[str] = mapped_column(String(255))
 
 
-class DataRequest(Base):
+class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
     __tablename__ = Relations.DATA_REQUESTS.value
 
     def __iter__(self):
@@ -294,10 +340,24 @@ class DataRequest(Base):
         special_cases = {
             "id": lambda instance: [
                 ("id", instance.id),
-                ("data_source_ids", instance.data_source_ids),
+                (
+                    (
+                        "data_source_ids",
+                        instance.data_source_ids if instance.data_source_ids else None,
+                    )
+                ),
             ],
             "data_sources": lambda instance: [
-                ("data_sources", [dict(source) for source in instance.data_sources])
+                (
+                    (
+                        "data_sources",
+                        (
+                            [source.to_dict() for source in instance.data_sources]
+                            if instance.data_sources
+                            else None
+                        ),
+                    )
+                )
             ],
         }
 
@@ -358,7 +418,8 @@ def iter_with_special_cases(instance, special_cases=None):
         if key in special_cases:
             mapped_key_value_pairs = special_cases[key](instance).copy()
             for mapped_key, mapped_value in mapped_key_value_pairs:
-                yield mapped_key, mapped_value
+                if mapped_value is not None:
+                    yield mapped_key, mapped_value
         else:
             # General case for other keys
             value = getattr(instance, key)
@@ -367,7 +428,7 @@ def iter_with_special_cases(instance, special_cases=None):
             yield key, value
 
 
-class DataSource(Base):
+class DataSource(Base, CountMetadata, CountSubqueryMetadata):
     __tablename__ = Relations.DATA_SOURCES.value
 
     def __iter__(self):
@@ -375,10 +436,17 @@ class DataSource(Base):
         special_cases = {
             "airtable_uid": lambda instance: [
                 ("airtable_uid", instance.airtable_uid),
-                ("agency_ids", instance.agency_ids),
+                ("agency_ids", instance.agency_ids if instance.agency_ids else None),
             ],
             "agencies": lambda instance: [
-                ("agencies", [dict(agency) for agency in instance.agencies])
+                (
+                    "agencies",
+                    (
+                        [agency.to_dict() for agency in instance.agencies]
+                        if instance.agencies
+                        else None
+                    ),
+                )
             ],
         }
         yield from iter_with_special_cases(self, special_cases)

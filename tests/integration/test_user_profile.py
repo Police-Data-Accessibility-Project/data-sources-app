@@ -19,7 +19,7 @@ def test_user_profile_data_requests(flask_client_with_db):
         http_method="get",
         endpoint=f"{USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL}?page=1",
         headers=tus.jwt_authorization_header,
-        expected_json_content={"count": 0, "data": [], "message": ""},
+        expected_json_content={"metadata": {"count": 0}, "data": [], "message": ""},
         expected_schema=GetManyDataRequestsSchema(exclude=["data.internal_notes"]),
     )
 

@@ -52,6 +52,9 @@ DATA_SOURCES_MAP_COLUMN = [
     "lat",
     "lng",
 ]
-
+METADATA_METHOD_NAMES = [
+    "count",
+    "count_subquery",
+]
 
 PAGE_SIZE = 100
