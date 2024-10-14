@@ -77,7 +77,6 @@ def test_agencies_post_schema():
         data = {
             "agency_info": {
                 "submitted_name": "test",
-                "airtable_uid": "test",
                 "jurisdiction_type": jurisdiction_type.value,
             }
         }

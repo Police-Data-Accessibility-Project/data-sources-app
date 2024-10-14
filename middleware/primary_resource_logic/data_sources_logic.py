@@ -92,7 +92,7 @@ def data_source_by_id_wrapper(
             subquery_parameters=SUBQUERY_PARAMS,
         ),
         id=dto.resource_id,
-        id_column_name="airtable_uid",
+        id_column_name="id",
     )
 
 
@@ -119,8 +119,8 @@ def delete_data_source_wrapper(
             entry_name="data source",
         ),
         id_info=IDInfo(
-            id_column_name="airtable_uid",
-            id_column_value=data_source_id,
+            id_column_name="id",
+            id_column_value=int(data_source_id),
         ),
     )
 

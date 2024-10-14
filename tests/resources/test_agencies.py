@@ -73,7 +73,6 @@ def test_agencies_post_json_full(
             "lat": 1.3,
             "lng": 4.8,
             "defunct_year": "test_defunct_year",
-            "airtable_uid": "test_airtable_uid",
             "agency_type": AgencyType.JAIL.value,
             "multi_agency": True,
             "zip_code": "12345",
@@ -106,7 +105,6 @@ def test_agencies_post_json_full(
                 lat=1.3,
                 lng=4.8,
                 defunct_year="test_defunct_year",
-                airtable_uid="test_airtable_uid",
                 agency_type=AgencyType.JAIL,
                 multi_agency=True,
                 zip_code="12345",
@@ -150,7 +148,6 @@ def test_agencies_post_json_minimal_no_location_info(
         "agency_info": {
             "submitted_name": "test_agency_name",
             "jurisdiction_type": JurisdictionType.FEDERAL.value,
-            "airtable_uid": "test_airtable_uid",
             "agency_type": AgencyType.JAIL.value,
         }
     }
@@ -170,7 +167,6 @@ def test_agencies_post_json_minimal_no_location_info(
                 lat=None,
                 lng=None,
                 defunct_year=None,
-                airtable_uid="test_airtable_uid",
                 agency_type=AgencyType.JAIL,
                 multi_agency=False,
                 zip_code=None,
@@ -209,7 +205,6 @@ def test_agencies_post_json_minimal_with_location_info(
         "agency_info": {
             "submitted_name": "test_agency_name",
             "jurisdiction_type": JurisdictionType.STATE.value,
-            "airtable_uid": "test_airtable_uid",
             "agency_type": AgencyType.JAIL.value,
         },
         "location_info": {
@@ -233,7 +228,6 @@ def test_agencies_post_json_minimal_with_location_info(
                 lat=None,
                 lng=None,
                 defunct_year=None,
-                airtable_uid="test_airtable_uid",
                 agency_type=AgencyType.JAIL,
                 multi_agency=False,
                 zip_code=None,

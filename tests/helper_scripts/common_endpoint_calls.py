@@ -25,10 +25,7 @@ def create_data_source_with_endpoint(
     :param jwt_authorization_header:
     :return:
     """
-    cds = CreatedDataSource(
-        name=uuid.uuid4().hex,
-        id=uuid.uuid4().hex,
-    )
+    name = uuid.uuid4().hex
     json = run_and_validate_request(
         flask_client=flask_client,
         http_method="post",
@@ -36,12 +33,15 @@ def create_data_source_with_endpoint(
         headers=jwt_authorization_header,
         json={
             "entry_data": {
-                "submitted_name": cds.name,
-                "airtable_uid": cds.id,
+                "submitted_name": name,
                 "source_url": "http://src1.com",
             }
         },
         expected_schema=SchemaConfigs.DATA_SOURCES_POST.value.output_schema,
     )
+    id_ = json["id"]
 
-    return cds
+    return CreatedDataSource(
+        id=id_,
+        name=name,
+    )

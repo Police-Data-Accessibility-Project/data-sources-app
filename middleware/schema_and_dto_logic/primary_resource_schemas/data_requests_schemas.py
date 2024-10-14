@@ -126,7 +126,7 @@ class DataRequestsGetSchemaBase(DataRequestsSchema):
         metadata=get_json_metadata("The data sources associated with the data request"),
     )
     data_source_ids = fields.List(
-        fields.String(
+        fields.Integer(
             allow_none=True,
             metadata=get_json_metadata(
                 "The data source ids associated with the data request."

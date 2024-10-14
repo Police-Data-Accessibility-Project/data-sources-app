@@ -31,7 +31,6 @@ from utilities.enums import SourceMappingEnum
 
 @dataclass
 class DataSourceEntryDataPostDTO:
-    airtable_uid: str
     submitted_name: str
     description: Optional[str] = None
     approval_status: Optional[ApprovalStatus] = None
@@ -366,7 +365,7 @@ class DataSourceGetSchema(DataSourceExpandedSchema):
         metadata=get_json_metadata("The agencies associated with the data source."),
     )
     agency_ids = fields.List(
-        fields.String(
+        fields.Integer(
             allow_none=True,
             metadata=get_json_metadata(
                 "The agency ids associated with the data source."

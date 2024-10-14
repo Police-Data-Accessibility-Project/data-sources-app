@@ -82,7 +82,6 @@ def insert_test_agencies_and_sources(cursor: psycopg.Cursor) -> None:
         """
         INSERT INTO
         PUBLIC.DATA_SOURCES (
-            airtable_uid,
             NAME,
             SUBMITTED_NAME,
             DESCRIPTION,
@@ -91,11 +90,11 @@ def insert_test_agencies_and_sources(cursor: psycopg.Cursor) -> None:
             URL_STATUS
         )
         VALUES
-        ('SOURCE_UID_1','Source 1', 'Source 1','Description of src1',
+        ('Source 1', 'Source 1','Description of src1',
             'http://src1.com','approved','available'),
-        ('SOURCE_UID_2','Source 2', 'Source 2','Description of src2',
+        ('Source 2', 'Source 2','Description of src2',
             'http://src2.com','needs identification','available'),
-        ('SOURCE_UID_3','Source 3', 'Source 3','Description of src3',
+        ('Source 3', 'Source 3','Description of src3',
             'http://src3.com', 'pending', 'available');
         """
     )
