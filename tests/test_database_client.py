@@ -8,6 +8,7 @@ from unittest.mock import MagicMock
 
 import psycopg.errors
 import pytest
+import sqlalchemy
 from sqlalchemy import insert, select, update
 
 from database_client.database_client import DatabaseClient
@@ -918,7 +919,7 @@ def test_create_request_source_relation(live_database_client):
     live_database_client.create_request_source_relation(
         column_value_mappings={"request_id": request_id, "source_id": source_id}
     )
-    with pytest.raises(psycopg.errors.UniqueViolation):
+    with pytest.raises(sqlalchemy.exc.IntegrityError):
         live_database_client.create_request_source_relation(
             column_value_mappings={"request_id": request_id, "source_id": source_id}
         )
@@ -1056,6 +1057,46 @@ def test_get_unarchived_data_requests_with_issues(
     assert result.github_issue_url
     assert result.github_issue_number
     assert result.request_status == RequestStatus.ACTIVE
+
+def test_user_followed_searches_logic(test_data_creator_db_client: TestDataCreatorDBClient):
+    tdc = test_data_creator_db_client
+
+    # Create a standard user
+    user_info = tdc.user()
+
+    # Have that user follow two searches
+    link_id = tdc.db_client.create_followed_search(
+        column_value_mappings={
+            "user_id": user_info.id,
+            "location_id": 1,
+        },
+        column_to_return = "id"
+    )
+
+    tdc.db_client.create_followed_search(
+        column_value_mappings={
+            "user_id": user_info.id,
+            "location_id": 2,
+        }
+    )
+
+
+    # Get the user's followed searches
+    results = tdc.db_client.get_user_followed_searches(
+        left_id=user_info.id
+    )
+    assert len(results["data"]) == 2
+
+    # Unfollow one of the searches
+    tdc.db_client.delete_followed_search(
+        id_column_value=link_id
+    )
+
+    # Get the user's followed searches, and ensure the un-followed search is gone
+    results = tdc.db_client.get_user_followed_searches(
+        left_id=user_info.id
+    )
+    assert len(results["data"]) == 1
 
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts

@@ -35,7 +35,6 @@ def multiple_results_response(data: list, message: str = "") -> Response:
     return FlaskResponseManager.make_response(
         format_list_response(data=data, message=message),
         HTTPStatus.OK,
-        validation_schema=GetManyResponseSchema,
     )
 
 

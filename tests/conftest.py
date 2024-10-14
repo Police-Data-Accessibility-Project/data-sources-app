@@ -83,6 +83,8 @@ def flask_client_with_db(monkeypatch):
         "app.get_flask_app_cookie_encryption_key", mock_get_flask_app_secret_key
     )
     app = create_app()
+    app.config["TESTING"] = True
+    app.config["PROPAGATE_EXCEPTIONS"] = True
     with app.test_client() as client:
         yield client
 

@@ -238,7 +238,10 @@ class RestxModelBuilder(RestxBuilder):
 
     def _build_nested_field_as_model(self, fi: FieldInfo):
         sub_schema = fi.marshmallow_field_value.schema
+        sorter = MarshmallowFieldSorter(sub_schema)
+        self._raise_if_nonzero_parser_fields(fi, sorter)
         fields = MarshmallowFieldSorter(sub_schema).model_fields
+        self._raise_if_no_model_fields(fi, fields)
         submodel_builder = RestxModelBuilder(
             namespace=self.namespace,
             model_name=f"{self.model_name} {fi.field_name}",
@@ -249,6 +252,16 @@ class RestxModelBuilder(RestxBuilder):
         return restx_fields.Nested(
             submodel, required=fi.required, description=fi.description
         )
+
+    def _raise_if_nonzero_parser_fields(self, fi, sorter):
+        if len(sorter.parser_fields) != 0:
+            raise ValueError(
+                f"Nested Model `{fi.field_name}` in model `{self.model_name}` has fields that are identified as parser fields."
+            )
+
+    def _raise_if_no_model_fields(self, fi, fields):
+        if len(fields) == 0:
+            raise ValueError(f"Nested model {fi.field_name} has no fields")
 
 
 # endregion

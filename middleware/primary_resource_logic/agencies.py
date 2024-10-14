@@ -76,10 +76,9 @@ def get_location_id(db_client: DatabaseClient, location_info: LocationInfoDTO):
     location_info_dict = asdict(location_info)
     location_info_where_mappings = WhereMapping.from_dict(location_info_dict)
     # Get location id
-    results = db_client.get_location_id(where_mappings=location_info_where_mappings)
-    location_exists = len(results) > 0
-    if location_exists:
-        return results[0]["id"]
+    location_id = db_client.get_location_id(where_mappings=location_info_where_mappings)
+    if location_id is not None:
+        return location_id
     _raise_if_not_locality(location_info, location_info_dict)
 
     # In the case of a nonexistent locality, this can be added,
@@ -93,9 +92,7 @@ def get_location_id(db_client: DatabaseClient, location_info: LocationInfoDTO):
             "county_id": county_id,
         }
     )
-    return db_client.get_location_id(where_mappings=location_info_where_mappings)[0][
-        "id"
-    ]
+    return db_client.get_location_id(where_mappings=location_info_where_mappings)
 
 
 def _raise_if_not_locality(location_info, location_info_dict):
