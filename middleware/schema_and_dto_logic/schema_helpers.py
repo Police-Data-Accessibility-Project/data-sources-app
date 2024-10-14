@@ -30,6 +30,7 @@ def create_get_many_schema(data_list_schema: Schema, description: str) -> Type[S
             ),
             metadata=get_json_metadata(description),
         )
+    GetManySchema.__name__ = f"GetMany{data_list_schema.__class__.__name__}"
 
     return GetManySchema
 

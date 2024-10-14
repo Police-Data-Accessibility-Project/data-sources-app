@@ -8,7 +8,7 @@ from middleware.primary_resource_logic.data_requests import (
     RelatedSourceByIDDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import SearchRequestSchema, \
-    FollowSearchRequestSchema, GetUserFollowedSearchesSchema, SearchRequests
+    GetUserFollowedSearchesSchema, SearchRequests, FollowSearchResponseSchema
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyRequestsBaseSchema,
     GetManyBaseDTO,
@@ -168,12 +168,12 @@ class SchemaConfigs(Enum):
         output_schema=GetUserFollowedSearchesSchema(),
     )
     SEARCH_FOLLOW_POST = EndpointSchemaConfig(
-        input_schema=FollowSearchRequestSchema,
+        input_schema=FollowSearchResponseSchema(),
         input_dto_class=SearchRequests,
         output_schema=MessageSchema(),
     )
     SEARCH_FOLLOW_DELETE = EndpointSchemaConfig(
-        input_schema=FollowSearchRequestSchema,
+        input_schema=FollowSearchResponseSchema(),
         input_dto_class=SearchRequests,
         output_schema=MessageSchema(),
     )

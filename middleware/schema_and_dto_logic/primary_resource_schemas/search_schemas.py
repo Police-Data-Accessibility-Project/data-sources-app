@@ -4,6 +4,7 @@ from typing import Optional
 from marshmallow import Schema, fields, validates_schema, ValidationError
 
 from middleware.schema_and_dto_logic.schema_helpers import create_get_many_schema
+from middleware.schema_and_dto_logic.util import get_json_metadata
 from utilities.common import get_enums_from_string
 from utilities.enums import RecordCategories, SourceMappingEnum, ParserLocation
 
@@ -59,11 +60,23 @@ class SearchRequestSchema(Schema):
             raise ValidationError("If locality is provided, county must also be provided.")
 
 
-FollowSearchRequestSchema = SearchRequestSchema(
-    exclude=["record_categories"],
-)
+class FollowSearchResponseSchema(Schema):
+    state = fields.Str(
+        required=True,
+        metadata=get_json_metadata(
+            "The state of the search."),
+    )
+    county = fields.Str(
+        required=False,
+        metadata=get_json_metadata("The county of the search. If empty, all counties for the given state will be searched."),
+    )
+    locality = fields.Str(
+        required=False,
+        metadata=get_json_metadata("The locality of the search. If empty, all localities for the given county will be searched."),
+    )
+
 GetUserFollowedSearchesSchema = create_get_many_schema(
-    data_list_schema=FollowSearchRequestSchema,
+    data_list_schema=FollowSearchResponseSchema(),
     description="The searches that the user follows.",
 )
 
