@@ -25,6 +25,8 @@ GITHUB_DATA_REQUESTS_ISSUES_ENDPOINT = (
 )
 GITHUB_DATA_REQUESTS_SYNCHRONIZE = "/api/github/data-requests/synchronize"
 
+SEARCH_FOLLOW_BASE_ENDPOINT = "/api/search/follow"
+
 
 GET_MANY_TEST_QUERY_ARGS = "query_dict,expected_dto"
 GET_MANY_TEST_QUERY_PARAMS = (

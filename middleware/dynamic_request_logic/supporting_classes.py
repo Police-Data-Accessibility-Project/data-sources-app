@@ -54,6 +54,7 @@ class PutPostBase(ABC):
         entry: dict,
         relation_role_parameters: RelationRoleParameters = RelationRoleParameters(),
         pre_database_client_method_with_parameters: Optional[DeferredFunction] = None,
+        check_for_permission: bool = True,
     ):
         self.mp = middleware_parameters
         self.entry = entry
@@ -61,6 +62,7 @@ class PutPostBase(ABC):
         self.pre_database_client_method_with_parameters = (
             pre_database_client_method_with_parameters
         )
+        self.check_for_permission = check_for_permission
 
     def pre_database_client_method_logic(self):
         execute_if_not_none(self.pre_database_client_method_with_parameters)
@@ -69,7 +71,7 @@ class PutPostBase(ABC):
     def call_database_client_method(self):
         raise NotImplementedError
 
-    def check_for_permission(self, relation_role: RelationRoleEnum):
+    def check_can_edit_columns(self, relation_role: RelationRoleEnum):
         check_has_permission_to_edit_columns(
             db_client=self.mp.db_client,
             relation=self.mp.relation,
@@ -82,11 +84,11 @@ class PutPostBase(ABC):
         raise NotImplementedError
 
     def execute(self) -> Response:
-
-        relation_role = self.relation_role_parameters.get_relation_role_from_parameters(
-            access_info=self.mp.access_info
-        )
-        self.check_for_permission(relation_role)
+        if self.check_for_permission:
+            relation_role = self.relation_role_parameters.get_relation_role_from_parameters(
+                access_info=self.mp.access_info
+            )
+            self.check_can_edit_columns(relation_role)
         self.pre_database_client_method_logic()
         self.call_database_client_method()
         return self.make_response()

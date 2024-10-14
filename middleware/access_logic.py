@@ -50,6 +50,10 @@ class AccessInfo:
     access_type: AccessTypeEnum
     permissions: list[PermissionsEnum] = None
 
+    def get_user_id(self) -> Optional[int]:
+        db_client = get_db_client()
+        return db_client.get_user_id(self.user_email)
+
 
 def get_access_info_from_jwt() -> Optional[AccessInfo]:
     jwt_in_request = verify_jwt_in_request()

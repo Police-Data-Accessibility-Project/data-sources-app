@@ -1,7 +1,7 @@
 import pytest
 
 from database_client.database_client import DatabaseClient
-from middleware.primary_resource_logic.search_logic import SearchRequests
+from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import SearchRequests
 from tests.conftest import client_with_mock_db, bypass_api_key_required
 from tests.helper_scripts.constants import TEST_RESPONSE
 from tests.helper_scripts.helper_functions import (

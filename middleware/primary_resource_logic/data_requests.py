@@ -63,7 +63,7 @@ class RelatedSourceByIDDTO(GetByIDBaseDTO):
     data_source_id: int
 
     def get_where_mapping(self):
-        return {"source_id": self.data_source_id, "request_id": self.resource_id}
+        return {"source_id": self.data_source_id, "request_id": int(self.resource_id)}
 
 
 def get_data_requests_relation_role(
@@ -331,7 +331,7 @@ def check_can_create_data_request_related_source(relation_role: RelationRoleEnum
 
 class CreateDataRequestRelatedSourceLogic(PostLogic):
 
-    def check_for_permission(self, relation_role: RelationRoleEnum):
+    def check_can_edit_columns(self, relation_role: RelationRoleEnum):
         check_can_create_data_request_related_source(relation_role)
 
     def make_response(self) -> Response:

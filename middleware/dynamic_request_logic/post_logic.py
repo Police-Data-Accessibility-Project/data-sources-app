@@ -2,6 +2,7 @@ from http import HTTPStatus
 from typing import Optional, Callable, Type
 
 import psycopg.errors
+import sqlalchemy
 from flask import Response
 
 from middleware.column_permission_logic import (
@@ -25,12 +26,14 @@ class PostLogic(PutPostBase):
         entry: dict,
         relation_role_parameters: RelationRoleParameters = RelationRoleParameters(),
         pre_database_client_method_with_parameters: Optional[DeferredFunction] = None,
+        check_for_permission: bool = True,
     ):
         super().__init__(
             middleware_parameters=middleware_parameters,
             entry=entry,
             relation_role_parameters=relation_role_parameters,
             pre_database_client_method_with_parameters=pre_database_client_method_with_parameters,
+            check_for_permission=check_for_permission,
         )
         self.id_val = None
 
@@ -39,7 +42,7 @@ class PostLogic(PutPostBase):
             self.id_val = self.mp.db_client_method(
                 self.mp.db_client, column_value_mappings=self.entry
             )
-        except psycopg.errors.UniqueViolation:
+        except sqlalchemy.exc.IntegrityError:
             FlaskResponseManager.abort(
                 code=HTTPStatus.CONFLICT,
                 message=f"{self.mp.entry_name} already exists.",
@@ -57,6 +60,7 @@ def post_entry(
     pre_insertion_function_with_parameters: Optional[DeferredFunction] = None,
     relation_role_parameters: RelationRoleParameters = RelationRoleParameters(),
     post_logic_class: Optional[Type[PostLogic]] = PostLogic,
+    check_for_permission: bool = True,
 ) -> Response:
 
     post_logic = post_logic_class(
@@ -64,6 +68,7 @@ def post_entry(
         entry=entry,
         pre_database_client_method_with_parameters=pre_insertion_function_with_parameters,
         relation_role_parameters=relation_role_parameters,
+        check_for_permission=check_for_permission,
     )
     return post_logic.execute()
 

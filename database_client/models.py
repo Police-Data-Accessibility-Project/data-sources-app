@@ -306,7 +306,7 @@ class Location(Base):
     locality_id: Mapped[int] = mapped_column(ForeignKey("public.localities.id"))
 
 
-class LocationExpanded(Base):
+class LocationExpanded(Base, CountMetadata):
     __tablename__ = Relations.LOCATIONS_EXPANDED.value
     __table_args__ = {"extend_existing": True}
 
@@ -323,6 +323,13 @@ class LocationExpanded(Base):
     county_id = Column(Integer)
     locality_id = Column(Integer)
 
+class ExternalAccount(Base):
+    __tablename__ = Relations.EXTERNAL_ACCOUNTS.value
+    row_id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
+    account_type: Mapped[ExternalAccountTypeLiteral]
+    account_identifier: Mapped[str_255]
+    linked_at: Mapped[Optional[timestamp]] = mapped_column(server_default=func.now())
 
 class USState(Base):
     __tablename__ = Relations.US_STATES.value
@@ -534,16 +541,6 @@ class DataSourceArchiveInfo(Base):
     next_cached: Mapped[Optional[timestamp]]
 
 
-class ExternalAccount(Base):
-    __tablename__ = Relations.EXTERNAL_ACCOUNTS.value
-
-    row_id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
-    account_type: Mapped[ExternalAccountTypeLiteral]
-    account_identifier: Mapped[str_255]
-    linked_at: Mapped[Optional[timestamp]] = mapped_column(server_default=func.now())
-
-
 class LinkDataSourceDataRequest(Base):
     __tablename__ = Relations.LINK_DATA_SOURCES_DATA_REQUESTS.value
 
@@ -553,8 +550,15 @@ class LinkDataSourceDataRequest(Base):
     )
     request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
 
+class DataRequestsGithubIssueInfo(Base):
+    __tablename__ = Relations.DATA_REQUESTS_GITHUB_ISSUE_INFO.value
 
-class LinkUserFollowedLocation(Base):
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    data_request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
+    github_issue_url: Mapped[str]
+    github_issue_number: Mapped[int]
+
+class LinkUserFollowedLocation(Base, CountMetadata):
     __tablename__ = Relations.LINK_USER_FOLLOWED_LOCATION.value
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -630,6 +634,8 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     "locations": Location,
     "locations_expanded": LocationExpanded,
     "link_user_followed_location": LinkUserFollowedLocation,
+    "external_accounts": ExternalAccount,
+    "data_requests_github_issue_info": DataRequestsGithubIssueInfo,
 }
 
 

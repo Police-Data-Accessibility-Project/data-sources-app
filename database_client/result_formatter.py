@@ -116,15 +116,16 @@ class ResultFormatter:
         for name, descriptor in inspect(
             relation_reference
         ).all_orm_descriptors.items():
-            if type(descriptor) == hybrid_method and name in METADATA_METHOD_NAMES:
-                # Retrieve and call the metadata method
-                metadata_result = getattr(relation_reference, name)(
-                    data=data,
-                    subquery_parameters=subquery_parameters,
-                )
-                if metadata_result is not None:
-                    metadata_dict.update(metadata_result)
-        
+            # Retrieve and call the metadata method
+            if type(descriptor) != hybrid_method or name not in METADATA_METHOD_NAMES:
+                continue
+            metadata_result = getattr(relation_reference, name)(
+                data=data,
+                subquery_parameters=subquery_parameters,
+            )
+            if metadata_result is not None:
+                metadata_dict.update(metadata_result)
+
         return {
             "metadata": metadata_dict,
             "data": data,

@@ -234,13 +234,13 @@ def link_user_followed_test_info(
                 "locality_id": locality_id,
             }
         )
-    )[0]["id"]
+    )
 
     user_id = live_database_client.create_new_user(
         email=uuid.uuid4().hex, password_digest=uuid.uuid4().hex
     )
 
-    live_database_client.create_user_followed_search_link(
+    live_database_client.create_followed_search(
         column_value_mappings={
             "user_id": user_id,
             "location_id": location_id,

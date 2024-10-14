@@ -400,6 +400,7 @@ class DynamicQueryConstructor:
         offset: Optional[int] = None,
         order_by: Optional[OrderByParameters] = None,
         subquery_parameters: Optional[list[SubqueryParameters]] = [],
+        alias_mappings: Optional[dict[str, str]] = None,
     ) -> Callable:
         """
         Creates a SELECT query for a relation (table or view)
@@ -435,6 +436,9 @@ class DynamicQueryConstructor:
             primary_relation_columns = [SQL_ALCHEMY_TABLE_REFERENCE[relation]]
         else:
             primary_relation_columns = columns
+
+        if alias_mappings is not None:
+            DynamicQueryConstructor.apply_alias_mappings(columns, alias_mappings)
 
         base_query = (
             lambda: select(*primary_relation_columns)
@@ -557,3 +561,7 @@ class DynamicQueryConstructor:
             """
         ).format(url=sql.Literal(url))
         return query
+
+    @staticmethod
+    def apply_alias_mappings(columns, alias_mappings):
+        pass
