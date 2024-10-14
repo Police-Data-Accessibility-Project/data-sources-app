@@ -168,12 +168,16 @@ class SchemaConfigs(Enum):
         output_schema=GetUserFollowedSearchesSchema(),
     )
     SEARCH_FOLLOW_POST = EndpointSchemaConfig(
-        input_schema=FollowSearchResponseSchema(),
+        input_schema=SearchRequestSchema(
+            exclude=["record_categories"],
+        ),
         input_dto_class=SearchRequests,
         output_schema=MessageSchema(),
     )
     SEARCH_FOLLOW_DELETE = EndpointSchemaConfig(
-        input_schema=FollowSearchResponseSchema(),
+        input_schema=SearchRequestSchema(
+            exclude=["record_categories"],
+        ),
         input_dto_class=SearchRequests,
         output_schema=MessageSchema(),
     )
