@@ -225,7 +225,7 @@ class DynamicQueryConstructor:
         base_query = sql.SQL(
             """
             SELECT
-                data_sources.airtable_uid,
+                data_sources.id,
                 data_sources.name AS data_source_name,
                 data_sources.description,
                 record_types.name AS record_type,
@@ -241,9 +241,9 @@ class DynamicQueryConstructor:
             FROM
                 agency_source_link
             INNER JOIN
-                data_sources ON agency_source_link.data_source_uid = data_sources.airtable_uid
+                data_sources ON agency_source_link.data_source_id = data_sources.id
             INNER JOIN
-                agencies ON agency_source_link.agency_uid = agencies.airtable_uid
+                agencies ON agency_source_link.agency_id = agencies.id
             INNER JOIN
 				locations_expanded on agencies.location_id = locations_expanded.id
             INNER JOIN 

@@ -246,7 +246,6 @@ def get_sample_agency_post_parameters(
     return {
         "agency_info": {
             "submitted_name": submitted_name,
-            "airtable_uid": uuid.uuid4().hex,
             "jurisdiction_type": jurisdiction_type.value,
         },
         "location_info": {
@@ -276,13 +275,24 @@ class TestDataCreatorDBClient:
     def data_source(self) -> CreatedDataSource:
         cds = CreatedDataSource(id=uuid.uuid4().hex, name=uuid.uuid4().hex)
         source_column_value_mapping = {
-            "airtable_uid": cds.id,
             "name": cds.name,
         }
-        self.db_client.add_new_data_source(
+        id = self.db_client.add_new_data_source(
             column_value_mappings=source_column_value_mapping
         )
-        return cds
+        return CreatedDataSource(
+            id=id, name=cds.name
+        )
+
+    def agency(self) -> TestAgencyInfo:
+        agency_name = uuid.uuid4().hex
+        agency_id = self.db_client.create_agency(
+            column_value_mappings={
+                "submitted_name": agency_name,
+                "jurisdiction_type": JurisdictionType.FEDERAL.value
+            }
+        )
+        return TestAgencyInfo(id=agency_id, submitted_name=agency_name)
 
     def data_request(
         self, user_id: Optional[int] = None, **column_value_kwargs
@@ -307,7 +317,7 @@ class TestDataCreatorDBClient:
     ):
         self.db_client.create_request_source_relation(
             column_value_mappings={
-                "source_id": data_source_id,
+                "data_source_id": data_source_id,
                 "request_id": data_request_id,
             }
         )

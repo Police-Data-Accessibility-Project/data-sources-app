@@ -140,13 +140,6 @@ class AgencyInfoBaseSchema(Schema):
 
 class AgencyInfoPostSchema(AgencyInfoBaseSchema):
     submitted_name = get_submitted_name_field(required=True)
-    airtable_uid = fields.Str(
-        required=True,
-        metadata={
-            "description": "The Airtable UID of the agency.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
     jurisdiction_type = get_jurisdiction_type_field(required=True)
 
 
@@ -258,7 +251,6 @@ class AgencyInfoPutDTO:
 class AgencyInfoPostDTO:
     submitted_name: str
     jurisdiction_type: JurisdictionType
-    airtable_uid: str
     agency_type: AgencyType
     multi_agency: bool = False
     no_web_presence: bool = False
@@ -375,10 +367,10 @@ class AgenciesPutDTO:
 
 
 class AgenciesGetSchema(AgencyInfoBaseSchema):
-    airtable_uid = fields.Str(
+    id = fields.Integer(
         required=True,
         metadata={
-            "description": "The Airtable UID of the agency.",
+            "description": "The id of the agency.",
             "source": SourceMappingEnum.JSON,
         },
     )

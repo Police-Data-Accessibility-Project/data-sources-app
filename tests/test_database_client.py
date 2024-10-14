@@ -302,55 +302,44 @@ def test_select_from_relation_all_parameters(
     ]
 
 
-def test_select_from_relation_subquery(live_database_client: DatabaseClient):
-    agency_id = uuid.uuid4().hex
-    data_source_id = uuid.uuid4().hex
-    agency_name = uuid.uuid4().hex
-    data_source_name = uuid.uuid4().hex
+def test_select_from_relation_subquery(
+    test_data_creator_db_client: TestDataCreatorDBClient,
+):
+    tdc = test_data_creator_db_client
+    agency_info = tdc.agency()
+    data_source_info = tdc.data_source()
 
-    live_database_client.execute_sqlalchemy(
-        lambda: insert(Agency).values(
-            airtable_uid=agency_id,
-            submitted_name=agency_name,
-            jurisdiction_type="federal",
-        )
-    )
-    live_database_client.execute_sqlalchemy(
-        lambda: insert(DataSource).values(
-            airtable_uid=data_source_id, name=data_source_name
-        )
-    )
-    live_database_client.execute_sqlalchemy(
+    tdc.db_client.execute_sqlalchemy(
         lambda: insert(AgencySourceLink).values(
-            data_source_uid=data_source_id, agency_uid=agency_id
+            data_source_id=data_source_info.id, agency_id=agency_info.id
         )
     )
 
-    where_mappings = [WhereMapping(column="airtable_uid", value=data_source_id)]
+    where_mappings = [WhereMapping(column="id", value=data_source_info.id)]
     subquery_parameters = [
         SubqueryParameters(
             relation_name=Relations.AGENCIES_EXPANDED.value,
-            columns=["airtable_uid", "name"],
+            columns=["id", "submitted_name"],
             linking_column="agencies",
         )
     ]
 
-    results = live_database_client._select_from_relation(
+    results = tdc.db_client._select_from_relation(
         relation_name="data_sources",
-        columns=["airtable_uid", "name"],
+        columns=["id", "name"],
         where_mappings=where_mappings,
         subquery_parameters=subquery_parameters,
     )
 
     assert results == [
         {
-            "name": data_source_name,
-            "airtable_uid": data_source_id,
-            "agency_ids": [agency_id],
+            "name": data_source_info.name,
+            "id": data_source_info.id,
+            "agency_ids": [agency_info.id],
             "agencies": [
                 {
-                    "name": agency_name,
-                    "airtable_uid": agency_id,
+                    "submitted_name": agency_info.submitted_name,
+                    "id": agency_info.id,
                 }
             ],
         }
@@ -483,20 +472,25 @@ def test_get_data_sources_to_archive(live_database_client: DatabaseClient):
     assert len(results) > 0
 
 
-def test_update_last_cached(live_database_client: DatabaseClient):
+def test_update_last_cached(
+        test_data_creator_db_client: TestDataCreatorDBClient,
+        live_database_client: DatabaseClient
+):
+    tdc = test_data_creator_db_client
     # Add a new data source to the database
-    insert_test_agencies_and_sources_if_not_exist(
-        live_database_client.connection.cursor()
-    )
+    ds_info = tdc.data_source()
     # Update the data source's last_cached value with the DatabaseClient method
     new_last_cached = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    live_database_client.update_last_cached("SOURCE_UID_1", new_last_cached)
+    live_database_client.update_last_cached(
+        id=ds_info.id,
+        last_cached=new_last_cached
+    )
 
     # Fetch the data source from the database to confirm the change
     result = live_database_client._select_from_relation(
-        relation_name="data_sources_archive_info",
+        relation_name=Relations.DATA_SOURCES_ARCHIVE_INFO.value,
         columns=["last_cached"],
-        where_mappings=[WhereMapping(column="airtable_uid", value="SOURCE_UID_1")],
+        where_mappings=[WhereMapping(column="data_source_id", value=ds_info.id)],
     )[0]
 
     assert result["last_cached"].strftime("%Y-%m-%d %H:%M:%S") == new_last_cached
@@ -862,32 +856,34 @@ def test_get_column_permissions_as_permission_table(
 #     assert new_result["airtable_uid"] != airtable_uid
 
 
-def test_get_related_data_sources(live_database_client):
+def test_get_related_data_sources(
+    test_data_creator_db_client: TestDataCreatorDBClient,
+    live_database_client
+):
+    tdc = test_data_creator_db_client
 
     # Create two data sources
     source_column_value_mappings = []
     source_ids = []
     for i in range(2):
+        data_source_info = tdc.data_source()
         source_column_value_mapping = {
-            "airtable_uid": uuid.uuid4().hex,
-            "name": uuid.uuid4().hex,
+            "id": data_source_info.id,
+            "name": data_source_info.name,
         }
-        source_id = live_database_client.add_new_data_source(
-            column_value_mappings=source_column_value_mapping
-        )
+        source_id = data_source_info.id
         source_column_value_mappings.append(source_column_value_mapping)
         source_ids.append(source_id)
 
     # Create a request
-    submission_notes = uuid.uuid4().hex
-    request_id = live_database_client.create_data_request(
-        column_value_mappings={"submission_notes": submission_notes}
-    )
+    data_request_info = tdc.data_request()
+    request_id = data_request_info.id
+    submission_notes = data_request_info.submission_notes
 
     # Associate them in the link table
     for source_id in source_ids:
         live_database_client.create_request_source_relation(
-            column_value_mappings={"request_id": request_id, "source_id": source_id}
+            column_value_mappings={"request_id": request_id, "data_source_id": source_id}
         )
 
     results = live_database_client.get_related_data_sources(data_request_id=request_id)
@@ -900,28 +896,25 @@ def test_get_related_data_sources(live_database_client):
         ]
 
 
-def test_create_request_source_relation(live_database_client):
+def test_create_request_source_relation(
+        test_data_creator_db_client: TestDataCreatorDBClient,
+        live_database_client
+):
+    tdc = test_data_creator_db_client
     # Create data source and request
+    source_info = tdc.data_source()
+    source_id = source_info.id
+    request_info = tdc.data_request()
+    request_id = request_info.id
 
-    source_id = live_database_client.add_new_data_source(
-        column_value_mappings={
-            "airtable_uid": uuid.uuid4().hex,
-            "name": uuid.uuid4().hex,
-        }
-    )
-
-    # Create a request
-    request_id = live_database_client.create_data_request(
-        column_value_mappings={"submission_notes": uuid.uuid4().hex}
-    )
 
     # Try to add twice and get a unique violation
     live_database_client.create_request_source_relation(
-        column_value_mappings={"request_id": request_id, "source_id": source_id}
+        column_value_mappings={"request_id": request_id, "data_source_id": source_id}
     )
     with pytest.raises(sqlalchemy.exc.IntegrityError):
         live_database_client.create_request_source_relation(
-            column_value_mappings={"request_id": request_id, "source_id": source_id}
+            column_value_mappings={"request_id": request_id, "data_source_id": source_id}
         )
 
 
@@ -978,10 +971,10 @@ def test_get_data_requests(test_data_creator_db_client: TestDataCreatorDBClient)
 
 def test_get_data_sources(live_database_client):
     results = live_database_client.get_data_sources(
-        columns=["airtable_uid"],
+        columns=["id"],
         subquery_parameters=[
             SubqueryParameterManager.agencies(
-                columns=["airtable_uid"],
+                columns=["id"],
             )
         ],
     )
@@ -1005,18 +998,18 @@ def test_get_linked_rows(
         link_table=Relations.LINK_DATA_SOURCES_DATA_REQUESTS,
         left_id=dr_id,
         left_link_column="request_id",
-        right_link_column="source_id",
+        right_link_column="data_source_id",
         linked_relation=Relations.DATA_SOURCES,
-        linked_relation_linking_column="airtable_uid",
+        linked_relation_linking_column="id",
         columns_to_retrieve=[
-            "airtable_uid",
+            "id",
             "name",
         ],
     )
 
     assert results["metadata"]["count"] == len(results["data"]) > 0
     assert results["data"][0]["name"] == ds_info.name
-    assert results["data"][0]["airtable_uid"] == ds_info.id
+    assert results["data"][0]["id"] == ds_info.id
 
 
 def test_get_unarchived_data_requests_with_issues(

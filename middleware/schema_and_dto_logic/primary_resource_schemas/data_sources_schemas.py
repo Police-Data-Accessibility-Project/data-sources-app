@@ -247,9 +247,9 @@ class DataSourceBaseSchema(Schema):
         required=True,
         allow_none=True,
     )
-    airtable_uid = fields.String(
+    id = fields.Integer(
         required=True,
-        metadata=get_json_metadata("The airtable uid associated with the data source"),
+        metadata=get_json_metadata("The id associated with the data source"),
     )
     scraper_url = fields.String(
         required=True,
@@ -398,7 +398,7 @@ class DataSourcesGetManySchema(GetManyResponseSchemaBase):
 class DataSourcesPostSchema(Schema):
     entry_data = fields.Nested(
         nested=DataSourceExpandedSchema(
-            exclude=["name", "updated_at", "created_at", "record_type_id"], partial=True
+            exclude=["id", "name", "updated_at", "created_at", "record_type_id"], partial=True
         ),
         required=True,
         metadata=get_json_metadata(

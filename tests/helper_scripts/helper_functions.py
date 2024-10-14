@@ -386,9 +386,6 @@ def give_user_admin_role(connection: psycopg.Connection, user_info: UserInfo):
 def setup_get_typeahead_suggestion_test_data(cursor: Optional[psycopg.Cursor] = None):
     db_client = DatabaseClient()
     try:
-        # db_client.execute_raw_sql(
-        #     query="SAVEPOINT typeahead_suggestion_test_savepoint",
-        # )
 
         state_id = db_client.create_or_get(
             table_name=Relations.US_STATES.value,
@@ -425,29 +422,23 @@ def setup_get_typeahead_suggestion_test_data(cursor: Optional[psycopg.Cursor] = 
             ),
         )[0]["id"]
 
-        db_client.create_or_get(
+        agency_id = db_client.create_or_get(
             table_name=Relations.AGENCIES.value,
             column_value_mappings={
                 "submitted_name": "Xylodammerung Police Agency",
-                "airtable_uid": "XY_SOURCE_UID",
                 "jurisdiction_type": JurisdictionType.STATE,
                 "location_id": location_id,
             },
-            column_to_return="airtable_uid",
+            column_to_return="id",
         )
 
-        # db_client.execute_raw_sql(
-        #     query="SAVEPOINT typeahead_suggestion_test_savepoint;",
-        # )
 
         db_client.execute_raw_sql("CALL refresh_typeahead_agencies();")
         db_client.execute_raw_sql("CALL refresh_typeahead_locations();")
 
     except sqlalchemy.exc.IntegrityError:
         pass
-        # db_client.execute_raw_sql(
-        #     "ROLLBACK TO SAVEPOINT typeahead_suggestion_test_savepoint"
-        # )
+
 
 
 def patch_post_callback_functions(

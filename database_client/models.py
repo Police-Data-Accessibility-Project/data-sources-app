@@ -187,11 +187,11 @@ class AgencySourceLink(Base):
     __tablename__ = "agency_source_link"
 
     link_id: Mapped[int]
-    data_source_uid: Mapped[str] = mapped_column(
-        ForeignKey("public.data_sources.airtable_uid"), primary_key=True
+    data_source_id: Mapped[str] = mapped_column(
+        ForeignKey("public.data_sources.id"), primary_key=True
     )
-    agency_uid: Mapped[str] = mapped_column(
-        ForeignKey("public.agencies.airtable_uid"), primary_key=True
+    agency_id: Mapped[str] = mapped_column(
+        ForeignKey("public.agencies.id"), primary_key=True
     )
 
 
@@ -201,7 +201,7 @@ class Agency(Base, CountMetadata):
     def __iter__(self):
         yield from iter_with_special_cases(self)
 
-    airtable_uid: Mapped[str] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     submitted_name: Mapped[Optional[str]]
     homepage_url: Mapped[Optional[str]]
@@ -229,7 +229,6 @@ class Agency(Base, CountMetadata):
     agency_created: Mapped[timestamp_tz] = mapped_column(
         server_default=func.current_timestamp()
     )
-    county_airtable_uid: Mapped[Optional[str]]
     location_id: Mapped[Optional[int]]
 
 
@@ -254,7 +253,7 @@ class AgencyExpanded(Base):
     lat = Column(Float)
     lng = Column(Float)
     defunct_year = Column(String)
-    airtable_uid = Column(String, primary_key=True)  # Primary key
+    id = Column(Integer, primary_key=True)  # Primary key
     agency_type = Column(String)
     multi_agency = Column(Boolean)
     zip_code = Column(String)
@@ -280,7 +279,6 @@ class County(Base):
     lng: Mapped[Optional[float]]
     population: Mapped[Optional[int]]
     agencies: Mapped[Optional[text]]
-    airtable_uid: Mapped[Optional[text]]
     airtable_county_last_modified: Mapped[Optional[text]]
     airtable_county_created: Mapped[Optional[text]]
     state_id: Mapped[Optional[int]] = mapped_column(ForeignKey("public.us_states.id"))
@@ -395,13 +393,13 @@ class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
         argument="DataSourceExpanded",
         secondary="public.link_data_sources_data_requests",
         primaryjoin="DataRequest.id == LinkDataSourceDataRequest.request_id",
-        secondaryjoin="DataSourceExpanded.airtable_uid == LinkDataSourceDataRequest.source_id",
+        secondaryjoin="DataSourceExpanded.id == LinkDataSourceDataRequest.data_source_id",
         lazy="joined",
     )
 
     @hybrid_property
-    def data_source_ids(self) -> list[str]:
-        return [source.airtable_uid for source in self.data_sources]
+    def data_source_ids(self) -> list[int]:
+        return [source.id for source in self.data_sources]
 
 
 class DataRequestExpanded(DataRequest):
@@ -441,8 +439,8 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
     def __iter__(self):
 
         special_cases = {
-            "airtable_uid": lambda instance: [
-                ("airtable_uid", instance.airtable_uid),
+            "id": lambda instance: [
+                ("id", instance.id),
                 ("agency_ids", instance.agency_ids if instance.agency_ids else None),
             ],
             "agencies": lambda instance: [
@@ -458,7 +456,7 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
         }
         yield from iter_with_special_cases(self, special_cases)
 
-    airtable_uid: Mapped[str] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     submitted_name: Mapped[Optional[str]]
     description: Mapped[Optional[str]]
@@ -506,25 +504,25 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
     agencies: Mapped[list[AgencyExpanded]] = relationship(
         argument="AgencyExpanded",
         secondary="public.agency_source_link",
-        primaryjoin="AgencySourceLink.data_source_uid == DataSource.airtable_uid",
-        secondaryjoin="AgencySourceLink.agency_uid == AgencyExpanded.airtable_uid",
+        primaryjoin="AgencySourceLink.data_source_id == DataSource.id",
+        secondaryjoin="AgencySourceLink.agency_id == AgencyExpanded.id",
         lazy="joined",
     )
 
     @hybrid_property
     def agency_ids(self) -> list[str]:
-        return [agency.airtable_uid for agency in self.agencies]
+        return [agency.id for agency in self.agencies]
 
 
 class DataSourceExpanded(DataSource):
-    airtable_uid = mapped_column(
-        None, ForeignKey("public.data_sources.airtable_uid"), primary_key=True
+    id = mapped_column(
+        None, ForeignKey("public.data_sources.id"), primary_key=True
     )
 
     __tablename__ = Relations.DATA_SOURCES_EXPANDED.value
     __table_args__ = {
         "polymorphic_identity": "data_source_expanded",
-        "inherit_conditions": (DataSource.airtable_uid == airtable_uid),
+        "inherit_conditions": (DataSource.id == id),
     }
 
     record_type_name: Mapped[Optional[str]]
@@ -533,8 +531,8 @@ class DataSourceExpanded(DataSource):
 class DataSourceArchiveInfo(Base):
     __tablename__ = Relations.DATA_SOURCES_ARCHIVE_INFO.value
 
-    airtable_uid: Mapped[str] = mapped_column(
-        ForeignKey("public.data_sources.airtable_uid"), primary_key=True
+    data_source_id: Mapped[str] = mapped_column(
+        ForeignKey("public.data_sources.id"), primary_key=True
     )
     update_frequency: Mapped[Optional[str]]
     last_cached: Mapped[Optional[timestamp]]
@@ -545,8 +543,8 @@ class LinkDataSourceDataRequest(Base):
     __tablename__ = Relations.LINK_DATA_SOURCES_DATA_REQUESTS.value
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    source_id: Mapped[text] = mapped_column(
-        ForeignKey("public.data_sources.airtable_uid")
+    data_source_id: Mapped[text] = mapped_column(
+        ForeignKey("public.data_sources.id")
     )
     request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
 

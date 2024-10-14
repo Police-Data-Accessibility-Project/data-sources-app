@@ -69,31 +69,30 @@ def test_agencies_get(flask_client_with_db, dev_db_client: DatabaseClient):
 
     assert_expected_get_many_result(
         response_json=response_json,
-        expected_non_null_columns=["airtable_uid"],
+        expected_non_null_columns=["id"],
     )
 
 
 def test_agencies_get_by_id(ts: AgenciesTestSetup):
     # Add data via db client
-    airtable_uid = uuid.uuid4().hex
-    ts.db_client._create_entry_in_table(
+    agency_id = ts.db_client._create_entry_in_table(
         table_name="agencies",
         column_value_mappings={
             "submitted_name": ts.submitted_name,
-            "airtable_uid": airtable_uid,
             "jurisdiction_type": JurisdictionType.FEDERAL.value,
         },
+        column_to_return="id",
     )
 
     response_json = run_and_validate_request(
         flask_client=ts.flask_client,
         http_method="get",
-        endpoint=AGENCIES_BASE_ENDPOINT + f"/{airtable_uid}",
+        endpoint=AGENCIES_BASE_ENDPOINT + f"/{agency_id}",
         headers=ts.tus.jwt_authorization_header,
         expected_schema=SchemaConfigs.AGENCIES_BY_ID_GET.value.output_schema,
     )
 
-    assert response_json["data"]["airtable_uid"] == airtable_uid
+    assert response_json["data"]["id"] == agency_id
 
 
 def test_agencies_post(ts: AgenciesTestSetup):
@@ -115,11 +114,12 @@ def test_agencies_post(ts: AgenciesTestSetup):
         json=data_to_post,
         expected_schema=SchemaConfigs.AGENCIES_POST.value.output_schema,
     )
+    id_ = json_data["id"]
 
     json_data = run_and_validate_request(
         flask_client=ts.flask_client,
         http_method="get",
-        endpoint=f"{AGENCIES_BASE_ENDPOINT}/{data_to_post['agency_info']['airtable_uid']}",
+        endpoint=f"{AGENCIES_BASE_ENDPOINT}/{id_}",
         headers=ts.tus.jwt_authorization_header,
     )
 
@@ -161,10 +161,12 @@ def test_agencies_post(ts: AgenciesTestSetup):
         expected_schema=IDAndMessageSchema,
     )
 
+    id_ = json_data["id"]
+
     json_data = run_and_validate_request(
         flask_client=ts.flask_client,
         http_method="get",
-        endpoint=f"{AGENCIES_BASE_ENDPOINT}/{data_to_post['agency_info']['airtable_uid']}",
+        endpoint=f"{AGENCIES_BASE_ENDPOINT}/{id_}",
         headers=ts.tus.jwt_authorization_header,
     )
 
@@ -240,7 +242,6 @@ def test_agencies_delete(ts: AgenciesTestSetup):
         json={
             "agency_info": {
                 "submitted_name": ts.submitted_name,
-                "airtable_uid": uuid.uuid4().hex,
                 "jurisdiction_type": JurisdictionType.FEDERAL.value,
             }
         },
@@ -259,7 +260,7 @@ def test_agencies_delete(ts: AgenciesTestSetup):
     results = ts.db_client._select_from_relation(
         relation_name="agencies",
         columns=["submitted_name"],
-        where_mappings=[WhereMapping(column="airtable_uid", value=agency_id)],
+        where_mappings=[WhereMapping(column="id", value=int(agency_id))],
     )
 
     assert len(results) == 0

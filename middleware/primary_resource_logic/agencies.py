@@ -63,7 +63,6 @@ def get_agency_by_id(
             db_client_method=DatabaseClient.get_agencies,
         ),
         id=dto.resource_id,
-        id_column_name="airtable_uid",
     )
 
 
@@ -205,7 +204,7 @@ def update_agency(
             db_client_method=DatabaseClient.update_agency,
         ),
         entry=entry_data,
-        entry_id=agency_id,
+        entry_id=int(agency_id),
         pre_update_method_with_parameters=deferred_function,
     )
 
@@ -221,5 +220,5 @@ def delete_agency(
             relation=Relations.AGENCIES.value,
             db_client_method=DatabaseClient.delete_agency,
         ),
-        id_info=IDInfo(id_column_name="airtable_uid", id_column_value=agency_id),
+        id_info=IDInfo(id_column_value=int(agency_id)),
     )
