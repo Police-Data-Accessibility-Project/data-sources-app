@@ -99,7 +99,6 @@ def create_data_source_entry_for_url_duplicate_checking(
                 "name": submitted_name,
                 "rejection_note": "Test rejection note",
                 "approval_status": "rejected",
-                "airtable_uid": "TEST_URL_DUPLICATE_SOURCE_ID",
                 "source_url": "https://duplicate-checker.com/",
             },
         )
@@ -113,6 +112,7 @@ def create_data_source_entry_for_url_duplicate_checking(
     except Exception as e:
         # Rollback
         db_client.connection.rollback()
+        raise e
 
 
 TestDataRequestInfo = namedtuple("TestDataRequestInfo", ["id", "submission_notes"])
