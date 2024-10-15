@@ -213,7 +213,8 @@ const { mostRecentSearchIds } = useSearchStore();
 const { data: dataSource, isLoading, error } = useDataSourceData();
 
 const currentIdIndex = computed(() =>
-	mostRecentSearchIds.indexOf(route.params.id),
+	// Route params are strings, but the ids are stored as numbers, so cast first
+	mostRecentSearchIds.indexOf(Number(route.params.id)),
 );
 const nextIdIndex = computed(() =>
 	currentIdIndex.value < mostRecentSearchIds.length - 1

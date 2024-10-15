@@ -43,7 +43,7 @@
 							<RouterLink
 								v-for="source in results[locale].sourcesByAgency[agency]"
 								:key="source.agency_name"
-								:to="`/data-source/${source.airtable_uid}`"
+								:to="`/data-source/${source.id}`"
 								class="agency-row group"
 							>
 								<!-- Source name and record type -->
