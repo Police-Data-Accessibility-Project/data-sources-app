@@ -52,7 +52,7 @@ def put_entry(
     put_logic = PutLogic(
         middleware_parameters=middleware_parameters,
         entry=entry,
-        entry_id=entry_id,
+        entry_id=int(entry_id),
         relation_role_parameters=relation_role_parameters,
         pre_database_client_method_with_parameters=pre_update_method_with_parameters,
     )

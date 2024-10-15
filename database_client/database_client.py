@@ -288,9 +288,9 @@ class DatabaseClient:
         """
         sql_query = """
             SELECT
-                DATA_SOURCES.AIRTABLE_UID AS DATA_SOURCE_ID,
+                DATA_SOURCES.id AS DATA_SOURCE_ID,
                 DATA_SOURCES.NAME,
-                AGENCIES.AIRTABLE_UID AS AGENCY_ID,
+                AGENCIES.ID AS AGENCY_ID,
                 AGENCIES.SUBMITTED_NAME AS AGENCY_NAME,
                 AGENCIES.STATE_ISO,
                 LE.LOCALITY_NAME AS MUNICIPALITY,
@@ -300,8 +300,8 @@ class DatabaseClient:
                 AGENCIES.LNG
             FROM
                 AGENCY_SOURCE_LINK
-                INNER JOIN DATA_SOURCES ON AGENCY_SOURCE_LINK.DATA_SOURCE_UID = DATA_SOURCES.AIRTABLE_UID
-                INNER JOIN AGENCIES ON AGENCY_SOURCE_LINK.AGENCY_UID = AGENCIES.AIRTABLE_UID
+                INNER JOIN DATA_SOURCES ON AGENCY_SOURCE_LINK.DATA_SOURCE_ID = DATA_SOURCES.ID
+                INNER JOIN AGENCIES ON AGENCY_SOURCE_LINK.AGENCY_ID = AGENCIES.ID
                 INNER JOIN LOCATIONS_EXPANDED LE ON AGENCIES.LOCATION_ID = LE.ID
                 INNER JOIN RECORD_TYPES RT ON RT.ID = DATA_SOURCES.RECORD_TYPE_ID
             WHERE
@@ -348,7 +348,7 @@ class DatabaseClient:
         """
         sql_query = """
         SELECT
-            data_sources.airtable_uid,
+            data_sources.id,
             source_url,
             update_frequency,
             last_cached,
@@ -358,7 +358,7 @@ class DatabaseClient:
         INNER JOIN
             data_sources_archive_info
         ON
-            data_sources.airtable_uid = data_sources_archive_info.airtable_uid
+            data_sources.id = data_sources_archive_info.data_source_id
         WHERE 
             approval_status = 'approved' AND (last_cached IS NULL OR update_frequency IS NOT NULL) AND broken_source_url_as_of IS NULL AND url_status <> 'broken' AND source_url IS NOT NULL
         """
@@ -367,7 +367,7 @@ class DatabaseClient:
 
         results = [
             self.ArchiveInfo(
-                id=row["airtable_uid"],
+                id=row["id"],
                 url=row["source_url"],
                 update_frequency=row["update_frequency"],
                 last_cached=row["last_cached"],
@@ -382,7 +382,7 @@ class DatabaseClient:
         """
         Updates the data_sources table setting the url_status to 'broken' for a given id.
 
-        :param id: The airtable_uid of the data source.
+        :param id: The id of the data source.
         :param broken_as_of: The date when the source was identified as broken.
         """
         self.update_data_source(
@@ -397,14 +397,14 @@ class DatabaseClient:
         """
         Updates the last_cached field in the data_sources_archive_info table for a given id.
 
-        :param id: The airtable_uid of the data source.
+        :param id: The id of the data source.
         :param last_cached: The last cached date to be updated.
         """
         self._update_entry_in_table(
-            table_name="data_sources_archive_info",
+            table_name=Relations.DATA_SOURCES_ARCHIVE_INFO.value,
             entry_id=id,
             column_edit_mappings={"last_cached": last_cached},
-            id_column_name="airtable_uid",
+            id_column_name="data_source_id",
         )
 
     DataSourceMatches = namedtuple("DataSourceMatches", ["converted", "ids"])
@@ -658,7 +658,7 @@ class DatabaseClient:
 
 
     update_data_source = partialmethod(
-        _update_entry_in_table, table_name="data_sources", id_column_name="airtable_uid"
+        _update_entry_in_table, table_name="data_sources", id_column_name="id"
     )
 
     update_data_request = partialmethod(
@@ -669,7 +669,7 @@ class DatabaseClient:
     update_agency = partialmethod(
         _update_entry_in_table,
         table_name="agencies",
-        id_column_name="airtable_uid",
+        id_column_name="id",
     )
 
     def update_dictionary_enum_values(self, d: dict):
@@ -725,19 +725,19 @@ class DatabaseClient:
     )
 
     create_agency = partialmethod(
-        _create_entry_in_table, table_name="agencies", column_to_return="airtable_uid"
+        _create_entry_in_table, table_name="agencies", column_to_return="id"
     )
 
     create_request_source_relation = partialmethod(
         _create_entry_in_table,
-        table_name="link_data_sources_data_requests",
+        table_name=Relations.LINK_DATA_SOURCES_DATA_REQUESTS.value,
         column_to_return="id",
     )
 
     add_new_data_source = partialmethod(
         _create_entry_in_table,
         table_name="data_sources",
-        column_to_return="airtable_uid",
+        column_to_return="id",
     )
 
     create_data_request_github_info = partialmethod(
@@ -880,9 +880,9 @@ class DatabaseClient:
         """
         query = sql.SQL(
             """
-            SELECT ds.airtable_uid, ds.name
+            SELECT ds.id, ds.name
             FROM link_data_sources_data_requests link
-            INNER JOIN data_sources ds on link.source_id = ds.airtable_uid
+            INNER JOIN data_sources ds on link.data_source_id = ds.id
             WHERE link.request_id = {request_id}
         """
         ).format(request_id=sql.Literal(data_request_id))
@@ -979,18 +979,18 @@ class DatabaseClient:
                 STATE_ISO,
                 LOCALITY_NAME as MUNICIPALITY,
                 COUNTY_NAME,
-                AIRTABLE_UID,
+                ID,
                 ZIP_CODE,
                 NO_WEB_PRESENCE -- Relevant
             FROM
                 PUBLIC.AGENCIES_EXPANDED 
-                INNER JOIN NUM_DATA_SOURCES_PER_AGENCY num ON num.agency_uid = AGENCIES_EXPANDED.AIRTABLE_UID 
+                INNER JOIN NUM_DATA_SOURCES_PER_AGENCY num ON num.agency_uid = AGENCIES_EXPANDED.id 
             WHERE 
                 approved = true
                 AND homepage_url is null
                 AND NOT EXISTS (
                     SELECT 1 FROM PUBLIC.AGENCY_URL_SEARCH_CACHE
-                    WHERE PUBLIC.AGENCIES_EXPANDED.AIRTABLE_UID = PUBLIC.AGENCY_URL_SEARCH_CACHE.agency_airtable_uid
+                    WHERE PUBLIC.AGENCIES_EXPANDED.id = PUBLIC.AGENCY_URL_SEARCH_CACHE.agency_id
                 )
             ORDER BY NUM.DATA_SOURCE_COUNT DESC
             LIMIT 100 -- Limiting to 100 in acknowledgment of the search engine quota

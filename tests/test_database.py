@@ -15,6 +15,8 @@ from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
 from middleware.enums import Relations
 from tests.conftest import live_database_client
+from conftest import test_data_creator_db_client
+from tests.helper_scripts.common_test_data import TestDataCreatorDBClient
 
 ID_COLUMN = "state_iso"
 FAKE_STATE_INFO = {"state_iso": "ZZ", "state_name": "Zaldoniza"}
@@ -320,18 +322,16 @@ def assert_link_user_followed_location_deleted(live_database_client, test_info):
     assert len(results) == 0
 
 
-def test_data_sources_created_at_updated_at(live_database_client):
+def test_data_sources_created_at_updated_at(
+        test_data_creator_db_client: TestDataCreatorDBClient,
+        live_database_client):
+    tdc = test_data_creator_db_client
     # Create bare-minimum fake data source
-    data_source_id = live_database_client.add_new_data_source(
-        column_value_mappings={
-            "name": uuid.uuid4().hex,
-            "airtable_uid": uuid.uuid4().hex,
-        }
-    )
+    data_source_id = tdc.data_source().id
     result = live_database_client._select_from_relation(
         relation_name=Relations.DATA_SOURCES.value,
         columns=["created_at", "updated_at"],
-        where_mappings=WhereMapping.from_dict({"airtable_uid": data_source_id}),
+        where_mappings=WhereMapping.from_dict({"id": data_source_id}),
     )
 
     # Get `created_at` and `updated_at` for data source
@@ -351,7 +351,7 @@ def test_data_sources_created_at_updated_at(live_database_client):
     result = live_database_client._select_from_relation(
         relation_name=Relations.DATA_SOURCES.value,
         columns=["updated_at"],
-        where_mappings=WhereMapping.from_dict({"airtable_uid": data_source_id}),
+        where_mappings=WhereMapping.from_dict({"id": data_source_id}),
     )
 
     # Confirm `updated_at` is now greater than `created_at`

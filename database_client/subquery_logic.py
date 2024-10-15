@@ -60,5 +60,5 @@ class SubqueryParameterManager:
         get_subquery_params,
         relation=Relations.DATA_SOURCES_EXPANDED,
         linking_column="data_sources",
-        columns=["airtable_uid", "submitted_name"],
+        columns=["id", "submitted_name"],
     )

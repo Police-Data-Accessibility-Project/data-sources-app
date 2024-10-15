@@ -63,7 +63,7 @@ class RelatedSourceByIDDTO(GetByIDBaseDTO):
     data_source_id: int
 
     def get_where_mapping(self):
-        return {"source_id": self.data_source_id, "request_id": int(self.resource_id)}
+        return {"data_source_id": int(self.data_source_id), "request_id": int(self.resource_id)}
 
 
 def get_data_requests_relation_role(

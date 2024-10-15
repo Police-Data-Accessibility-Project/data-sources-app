@@ -70,7 +70,6 @@ TEST_ID = -1
                 "entry_data": {
                     "submitted_name": "test_name",
                     "description": "test_description",
-                    "airtable_uid": "test_airtable_uid",
                     "approval_status": "approved",
                 }
             },
@@ -234,7 +233,6 @@ TEST_ID = -1
             {
                 "entry_data": {
                     "submitted_name": "test_agency_name",
-                    "airtable_uid": "test_airtable_uid",
                 }
             },
         ),

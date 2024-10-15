@@ -9,6 +9,7 @@ import psycopg
 from database_client.database_client import DatabaseClient
 from middleware.enums import PermissionsEnum
 from tests.conftest import dev_db_client, flask_client_with_db, test_user_admin
+from tests.helper_scripts.common_test_data import TestDataCreatorFlask
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     create_api_key,
@@ -18,6 +19,7 @@ from tests.helper_scripts.helper_functions import (
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from tests.helper_scripts.simple_result_validators import check_response_status
+from conftest import test_data_creator_flask, monkeysession
 
 ENDPOINT = "/api/archives"
 
@@ -41,17 +43,19 @@ def test_archives_get(flask_client_with_db, dev_db_client: DatabaseClient):
 
 
 def test_archives_put(
-    flask_client_with_db, dev_db_client: DatabaseClient, test_user_admin
+    test_data_creator_flask: TestDataCreatorFlask,
 ):
     """
     Test that PUT call to /archives endpoint successfully updates the data source with last_cached and broken_source_url_as_of fields
     """
-    data_source_id = insert_test_data_source(dev_db_client)
+    tdc = test_data_creator_flask
+    data_source_id = tdc.data_source().id
     last_cached = datetime.datetime(year=2020, month=3, day=4)
     broken_as_of = datetime.date(year=1993, month=11, day=13)
+    test_user_admin = tdc.get_admin_tus()
     test_user_admin.jwt_authorization_header["Content-Type"] = "application/json"
     run_and_validate_request(
-        flask_client=flask_client_with_db,
+        flask_client=tdc.flask_client,
         http_method="put",
         endpoint=ENDPOINT,
         headers=test_user_admin.jwt_authorization_header,
@@ -64,14 +68,14 @@ def test_archives_put(
         ),
     )
 
-    row = dev_db_client.execute_raw_sql(
+    row = tdc.db_client.execute_raw_sql(
         query="""
         SELECT last_cached, broken_source_url_as_of 
         FROM data_sources 
-        INNER JOIN data_sources_archive_info ON data_sources.airtable_uid = data_sources_archive_info.airtable_uid 
-        WHERE data_sources.airtable_uid = %s
+        INNER JOIN data_sources_archive_info ON data_sources.id = data_sources_archive_info.data_source_id 
+        WHERE data_sources.id = %s
         """,
-        vars=(data_source_id,),
+        vars=(int(data_source_id),),
     )
     assert row[0]["last_cached"] == last_cached
     assert row[0]["broken_source_url_as_of"] == broken_as_of

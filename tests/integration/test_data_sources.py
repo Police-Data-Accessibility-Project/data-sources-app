@@ -34,7 +34,7 @@ from tests.helper_scripts.constants import DATA_SOURCES_BASE_ENDPOINT
 
 
 def test_data_sources_get(
-    flask_client_with_db, connection_with_test_data: psycopg.Connection
+    flask_client_with_db
 ):
     """
     Test that GET call to /data-sources endpoint retrieves data sources and correctly identifies specific sources by name
@@ -72,7 +72,7 @@ def test_data_sources_get(
 
 
 def test_data_sources_get_many_limit_columns(
-    flask_client_with_db, connection_with_test_data: psycopg.Connection
+    flask_client_with_db
 ):
     """
     Test that GET call to /data-sources endpoint properly limits by columns
@@ -80,7 +80,7 @@ def test_data_sources_get_many_limit_columns(
     """
 
     tus = create_test_user_setup(flask_client_with_db)
-    allowed_columns = ["name", "submitted_name", "airtable_uid"]
+    allowed_columns = ["name", "submitted_name", "id"]
     url_encoded_column_string = urllib.parse.quote_plus(str(allowed_columns))
     expected_schema = SchemaConfigs.DATA_SOURCES_GET_MANY.value.output_schema
     expected_schema.only = [
@@ -88,7 +88,7 @@ def test_data_sources_get_many_limit_columns(
         "metadata",
         "data.name",
         "data.submitted_name",
-        "data.airtable_uid",
+        "data.id",
     ]
     expected_schema.partial = True
 
@@ -107,15 +107,15 @@ def test_data_sources_get_many_limit_columns(
 
 
 def test_data_sources_post(
-    db_client_with_test_data: DatabaseClient,
     test_data_creator_flask: TestDataCreatorFlask,
 ):
     """
     Test that POST call to /data-sources endpoint successfully creates a new data source with a unique name and verifies its existence in the database
     """
-    cds = test_data_creator_flask.data_source()
+    tdc = test_data_creator_flask
+    cds = tdc.data_source()
 
-    rows = db_client_with_test_data.execute_raw_sql(
+    rows = tdc.db_client.execute_raw_sql(
         query="""
         SELECT * from data_sources WHERE name=%s
         """,
@@ -162,7 +162,7 @@ def test_data_sources_by_id_put(test_data_creator_flask: TestDataCreatorFlask):
 
     result = tdc.db_client.get_data_sources(
         columns=["description"],
-        where_mappings=[WhereMapping(column="airtable_uid", value=cdr.id)],
+        where_mappings=[WhereMapping(column="id", value=int(cdr.id))],
     )
     assert result[0]["description"] == desc
 
@@ -180,7 +180,7 @@ def test_data_sources_by_id_delete(
 
     result = tdc.db_client.get_data_sources(
         columns=["description"],
-        where_mappings=[WhereMapping(column="airtable_uid", value=ds_info.id)],
+        where_mappings=[WhereMapping(column="id", value=int(ds_info.id))],
     )
     assert len(result) == 1
 
@@ -193,7 +193,7 @@ def test_data_sources_by_id_delete(
 
     result = tdc.db_client.get_data_sources(
         columns=["description"],
-        where_mappings=[WhereMapping(column="airtable_uid", value=ds_info.id)],
+        where_mappings=[WhereMapping(column="id", value=int(ds_info.id))],
     )
 
     assert len(result) == 0
