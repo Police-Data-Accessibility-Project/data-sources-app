@@ -364,23 +364,32 @@ def test_approval_status_updated_at(
     tdc = test_data_creator_db_client
     # Create bare-minimum fake data source
     data_source_id = tdc.data_source().id
-    initial_approval_status_updated_at = tdc.db_client._select_single_entry_from_relation(
-        relation_name=Relations.DATA_SOURCES.value,
-        columns=["approval_status_updated_at"],
-        where_mappings=WhereMapping.from_dict({"id": data_source_id}),
-    )["approval_status_updated_at"]
+
+    def get_approval_status_updated_at():
+        return tdc.db_client._select_single_entry_from_relation(
+            relation_name=Relations.DATA_SOURCES.value,
+            columns=["approval_status_updated_at"],
+            where_mappings=WhereMapping.from_dict({"id": data_source_id}),
+        )["approval_status_updated_at"]
+
+    def update_data_source(column_edit_mappings):
+        tdc.db_client.update_data_source(
+            entry_id=data_source_id,
+            column_edit_mappings=column_edit_mappings,
+        )
+
+    initial_approval_status_updated_at = get_approval_status_updated_at()
 
     # Update approval status
-    tdc.db_client.update_data_source(
-        entry_id=data_source_id,
-        column_edit_mappings={"approval_status": ApprovalStatus.APPROVED.value},
-    )
+    update_data_source({"approval_status": ApprovalStatus.APPROVED.value})
     # Get `approval_status_updated_at` for data request
-    approval_status_updated_at = tdc.db_client._select_single_entry_from_relation(
-        relation_name=Relations.DATA_SOURCES.value,
-        columns=["approval_status_updated_at"],
-        where_mappings=WhereMapping.from_dict({"id": data_source_id}),
-    )["approval_status_updated_at"]
+    approval_status_updated_at = get_approval_status_updated_at()
 
     # Confirm `approval_status_updated_at` is now greater than `initial_approval_status_updated_at`
     assert approval_status_updated_at > initial_approval_status_updated_at
+
+    # Make an edit to a different column and confirm that `approval_status_updated_at` is not updated
+    update_data_source({"submitted_name": uuid.uuid4().hex})
+
+    new_approval_status_updated_at = get_approval_status_updated_at()
+    assert approval_status_updated_at == new_approval_status_updated_at
