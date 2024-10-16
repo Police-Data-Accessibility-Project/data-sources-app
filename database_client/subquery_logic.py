@@ -18,6 +18,7 @@ class SubqueryParameters:
     linking_column: str
     columns: list[str] = None
 
+
     def set_columns(self, columns: list[str]) -> None:
         self.columns = columns
 
@@ -47,7 +48,9 @@ class SubqueryParameterManager:
         relation: Relations, linking_column: str, columns: list[str] = None
     ) -> SubqueryParameters:
         return SubqueryParameters(
-            relation_name=relation.value, linking_column=linking_column, columns=columns
+            relation_name=relation.value,
+            linking_column=linking_column,
+            columns=columns
         )
 
     agencies = partialmethod(
@@ -56,9 +59,18 @@ class SubqueryParameterManager:
         linking_column="agencies",
     )
 
-    data_sources = partialmethod(
-        get_subquery_params,
-        relation=Relations.DATA_SOURCES_EXPANDED,
-        linking_column="data_sources",
-        columns=["id", "submitted_name"],
-    )
+    @staticmethod
+    def data_sources():
+        return SubqueryParameterManager.get_subquery_params(
+            relation=Relations.DATA_SOURCES_EXPANDED,
+            linking_column="data_sources",
+            columns=["id", "submitted_name"],
+        )
+
+    @staticmethod
+    def locations():
+        return SubqueryParameterManager.get_subquery_params(
+            relation=Relations.LOCATIONS_EXPANDED,
+            linking_column="locations",
+            columns=["type", "state_iso", "county_fips", "locality_name"],
+        )

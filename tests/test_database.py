@@ -13,6 +13,7 @@ import pytest
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
+from database_client.enums import ApprovalStatus
 from middleware.enums import Relations
 from tests.conftest import live_database_client
 from conftest import test_data_creator_db_client
@@ -356,3 +357,30 @@ def test_data_sources_created_at_updated_at(
 
     # Confirm `updated_at` is now greater than `created_at`
     assert result[0]["updated_at"] > created_at
+
+def test_approval_status_updated_at(
+    test_data_creator_db_client: TestDataCreatorDBClient,
+):
+    tdc = test_data_creator_db_client
+    # Create bare-minimum fake data source
+    data_source_id = tdc.data_source().id
+    initial_approval_status_updated_at = tdc.db_client._select_single_entry_from_relation(
+        relation_name=Relations.DATA_SOURCES.value,
+        columns=["approval_status_updated_at"],
+        where_mappings=WhereMapping.from_dict({"id": data_source_id}),
+    )["approval_status_updated_at"]
+
+    # Update approval status
+    tdc.db_client.update_data_source(
+        entry_id=data_source_id,
+        column_edit_mappings={"approval_status": ApprovalStatus.APPROVED.value},
+    )
+    # Get `approval_status_updated_at` for data request
+    approval_status_updated_at = tdc.db_client._select_single_entry_from_relation(
+        relation_name=Relations.DATA_SOURCES.value,
+        columns=["approval_status_updated_at"],
+        where_mappings=WhereMapping.from_dict({"id": data_source_id}),
+    )["approval_status_updated_at"]
+
+    # Confirm `approval_status_updated_at` is now greater than `initial_approval_status_updated_at`
+    assert approval_status_updated_at > initial_approval_status_updated_at

@@ -112,7 +112,7 @@ def insert_test_agencies_and_sources(cursor: psycopg.Cursor) -> None:
 
     db_client.execute_raw_sql(
         """
-        INSERT INTO public.agency_source_link
+        INSERT INTO public.link_agencies_data_sources
         (data_source_uid, agency_uid)
         VALUES
             ('SOURCE_UID_1', 'Agency_UID_1'),

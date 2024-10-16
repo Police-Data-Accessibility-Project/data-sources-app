@@ -7,6 +7,7 @@ import psycopg
 from flask.testing import FlaskClient
 
 from database_client.database_client import DatabaseClient
+from database_client.enums import RequestUrgency
 from middleware.enums import JurisdictionType
 from tests.helper_scripts.common_endpoint_calls import (
     create_data_source_with_endpoint,
@@ -127,7 +128,13 @@ def create_test_data_request(
         http_method="post",
         endpoint=DATA_REQUESTS_BASE_ENDPOINT,
         headers=jwt_authorization_header,
-        json={"entry_data": {"submission_notes": submission_notes}},
+        json={
+            "request_info": {
+                "submission_notes": submission_notes,
+                "title": uuid.uuid4().hex,
+                "request_urgency": RequestUrgency.INDEFINITE.value,
+            }
+        },
     )
 
     return TestDataRequestInfo(id=json["id"], submission_notes=submission_notes)
@@ -187,10 +194,34 @@ class TestDataCreatorFlask:
             jwt_authorization_header=user_tus.jwt_authorization_header,
         )
 
-    def agency(self) -> TestAgencyInfo:
-        return create_test_agency(
+    def agency(self, location_info: Optional[dict] = None) -> TestAgencyInfo:
+        submitted_name = uuid.uuid4().hex
+        locality_name = uuid.uuid4().hex
+        sample_agency_post_parameters = get_sample_agency_post_parameters(
+            submitted_name=submitted_name,
+            locality_name=locality_name,
+            jurisdiction_type=JurisdictionType.LOCAL,
+            location_info=location_info,
+        )
+
+        json = run_and_validate_request(
             flask_client=self.flask_client,
-            jwt_authorization_header=self.get_admin_tus().jwt_authorization_header,
+            http_method="post",
+            endpoint=AGENCIES_BASE_ENDPOINT,
+            headers=self.get_admin_tus().jwt_authorization_header,
+            json=sample_agency_post_parameters,
+        )
+
+        return TestAgencyInfo(id=json["id"], submitted_name=submitted_name)
+
+    def link_data_source_to_agency(self, data_source_id, agency_id):
+        run_and_validate_request(
+            flask_client=self.flask_client,
+            http_method="post",
+            endpoint=DATA_SOURCES_POST_DELETE_RELATED_AGENCY_ENDPOINT.format(
+                data_source_id=data_source_id, agency_id=agency_id
+            ),
+            headers=self.get_admin_tus().jwt_authorization_header,
         )
 
     def link_data_request_to_data_source(self, data_source_id, data_request_id):
@@ -236,24 +267,39 @@ class TestDataCreatorFlask:
 
         # TODO: Create a tuple providing all 4 id's -- for the user, the data_source, the agency, and the data_request
 
+def get_sample_location_info(name: Optional[str] = None) -> dict:
+    if name is None:
+        name = uuid.uuid4().hex
+    return {
+        "type": "Locality",
+        "state_iso": "CA",
+        "county_fips": "06087",
+        "locality_name": name,
+    }
 
 def get_sample_agency_post_parameters(
-    submitted_name, locality_name, jurisdiction_type: JurisdictionType
+    submitted_name,
+    locality_name,
+    jurisdiction_type: JurisdictionType,
+    location_info: Optional[dict] = None
 ) -> dict:
     """
     Obtains information to be passed to an `/agencies` POST request
     """
+
+    if location_info is None:
+        location_info = {
+            "type": "Locality",
+            "state_iso": "CA",
+            "county_fips": "06087",
+            "locality_name": locality_name,
+        }
     return {
         "agency_info": {
             "submitted_name": submitted_name,
             "jurisdiction_type": jurisdiction_type.value,
         },
-        "location_info": {
-            "type": "Locality",
-            "state_iso": "CA",
-            "county_fips": "06087",
-            "locality_name": locality_name,
-        },
+        "location_info": location_info,
     }
 
 
@@ -304,6 +350,7 @@ class TestDataCreatorDBClient:
         data_request_id = self.db_client.create_data_request(
             column_value_mappings={
                 "submission_notes": submission_notes,
+                "title": uuid.uuid4().hex,
                 "creator_user_id": user_id,
                 **column_value_kwargs,
             }

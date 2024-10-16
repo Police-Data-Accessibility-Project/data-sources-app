@@ -124,7 +124,9 @@ def test_synchronize_github_issue(
         run_and_validate_request(
             flask_client=tdc.flask_client,
             http_method="put",
-            endpoint=DATA_REQUESTS_BY_ID_ENDPOINT + str(data_request_id),
+            endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
+                data_request_id=data_request_id
+            ),
             headers=tdc.get_admin_tus().jwt_authorization_header,
             json={
                 "entry_data": {"request_status": request_status.value},
@@ -220,7 +222,9 @@ def test_synchronize_github_issue(
         response_json = run_and_validate_request(
             flask_client=tdc.flask_client,
             http_method="get",
-            endpoint=DATA_REQUESTS_BY_ID_ENDPOINT + str(data_request_id),
+            endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
+                data_request_id=data_request_id
+            ),
             headers=tdc.get_admin_tus().jwt_authorization_header,
         )
         assert response_json["data"]["github_issue_url"] == github_issue_url

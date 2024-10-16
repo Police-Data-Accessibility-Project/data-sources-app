@@ -30,7 +30,7 @@ from middleware.exceptions import (
 )
 from database_client.models import (
     Agency,
-    AgencySourceLink,
+    LinkAgencyDataSource,
     DataSource,
     ExternalAccount,
     TestTable,
@@ -310,7 +310,7 @@ def test_select_from_relation_subquery(
     data_source_info = tdc.data_source()
 
     tdc.db_client.execute_sqlalchemy(
-        lambda: insert(AgencySourceLink).values(
+        lambda: insert(LinkAgencyDataSource).values(
             data_source_id=data_source_info.id, agency_id=agency_info.id
         )
     )
@@ -741,6 +741,7 @@ def test_get_data_requests_for_creator(live_database_client: DatabaseClient):
         live_database_client.create_data_request(
             column_value_mappings={
                 "submission_notes": submission_notes,
+                "title": uuid.uuid4().hex,
                 "creator_user_id": test_user.user_id,
             }
         )
@@ -762,6 +763,7 @@ def test_user_is_creator_of_data_request(live_database_client):
     data_request_id = live_database_client.create_data_request(
         column_value_mappings={
             "submission_notes": submission_notes,
+            "title": uuid.uuid4().hex,
             "creator_user_id": test_user.user_id,
         }
     )
@@ -773,7 +775,10 @@ def test_user_is_creator_of_data_request(live_database_client):
 
     # Test with entry where user is not listed as creator
     data_request_id = live_database_client.create_data_request(
-        column_value_mappings={"submission_notes": submission_notes}
+        column_value_mappings={
+            "submission_notes": submission_notes,
+            "title": uuid.uuid4().hex,
+        }
     )
 
     results = live_database_client.user_is_creator_of_data_request(

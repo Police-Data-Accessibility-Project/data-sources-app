@@ -4,10 +4,9 @@ from database_client.enums import LocationType
 from middleware.enums import JurisdictionType, AgencyType
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import (
     AgencyInfoPostDTO,
-    LocationInfoDTO,
     AgenciesPostDTO,
 )
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyBaseDTO
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyBaseDTO, LocationInfoDTO
 from tests.conftest import (
     ClientWithMockDB,
     client_with_mock_db,

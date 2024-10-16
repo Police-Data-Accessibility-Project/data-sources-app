@@ -43,15 +43,6 @@ namespace_data_requests = create_namespace(AppNamespaces.DATA_REQUESTS)
 class DataRequestsById(PsycopgResource):
 
     # TODO: More thoroughly update to endpoint_info_2
-    # @endpoint_info(
-    #     namespace=namespace_data_requests,
-    #     auth_info=GET_AUTH_INFO,
-    #     description="Get data request by id",
-    #     responses=create_response_dictionary(
-    #         success_message="Returns information on the specific data request.",
-    #         success_model=SchemaConfigs.DATA_REQUESTS_BY_ID_GET.value.output_schema,
-    #     ),
-    # )
     @endpoint_info_2(
         namespace=namespace_data_requests,
         auth_info=GET_AUTH_INFO,
@@ -158,7 +149,7 @@ class DataRequests(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=create_data_request_wrapper,
-            dto_populate_parameters=EntryCreateUpdateRequestDTO.get_dto_populate_parameters(),
+            schema_populate_parameters=SchemaConfigs.DATA_REQUESTS_POST.value.get_schema_populate_parameters(),
             access_info=access_info,
         )
 

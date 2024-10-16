@@ -2,6 +2,8 @@ from marshmallow import fields, Schema
 
 from database_client.enums import RequestStatus, RequestUrgency
 from middleware.enums import RecordType
+from middleware.primary_resource_logic.data_requests import DataRequestsPostDTO, RequestInfoPostDTO
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import LocationInfoSchema, LocationInfoDTO
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
     DataSourceExpandedSchema,
 )
@@ -21,6 +23,10 @@ class DataRequestsSchema(Schema):
     id = fields.Integer(
         metadata=get_json_metadata("The ID of the data request"),
     )
+    title = fields.String(
+        metadata=get_json_metadata("The title of the data request"),
+        required=True,
+    )
     submission_notes = fields.String(
         allow_none=True,
         metadata=get_json_metadata(
@@ -34,12 +40,7 @@ class DataRequestsSchema(Schema):
             "The current status of the data request. Editable only by admins."
         ),
     )
-    location_described_submitted = fields.String(
-        allow_none=True,
-        metadata=get_json_metadata(
-            "Description of the location relevant to the request, if applicable."
-        ),
-    )
+
     archive_reason = fields.String(
         allow_none=True,
         metadata=get_json_metadata(
@@ -117,7 +118,9 @@ class DataRequestsSchema(Schema):
 class DataRequestsGetSchemaBase(DataRequestsSchema):
     data_sources = fields.List(
         fields.Nested(
-            nested=DataSourceExpandedSchema,
+            nested=DataSourceExpandedSchema(
+                only=['id', 'submitted_name']
+            ),
             metadata=get_json_metadata(
                 "The data sources associated with the data request"
             ),
@@ -134,12 +137,61 @@ class DataRequestsGetSchemaBase(DataRequestsSchema):
         ),
         metadata=get_json_metadata("The data source ids associated with the data request."),
     )
+    locations = fields.List(
+        fields.Nested(
+            nested=LocationInfoSchema(),
+            metadata=get_json_metadata(
+                "The locations associated with the data request"
+            ),
+        ),
+        required=True,
+        metadata=get_json_metadata("The locations associated with the data request"),
+    )
+    location_ids = fields.List(
+        fields.Integer(
+            allow_none=True,
+            metadata=get_json_metadata(
+                "The location ids associated with the data request."
+            ),
+        ),
+        metadata=get_json_metadata("The location ids associated with the data request."),
+    )
 
 
-DataRequestsPostSchema = create_post_schema(
-    entry_data_schema=DataRequestsSchema(),
-    description="Data request to be created",
-)
+# DataRequestsPostSchema = create_post_schema(
+#     entry_data_schema=DataRequestsSchema(),
+#     description="Data request to be created",
+# )
+class DataRequestsPostSchema(Schema):
+    request_info = fields.Nested(
+        nested=DataRequestsSchema(
+            only=[
+                "title",
+                "submission_notes",
+                "data_requirements",
+                "request_urgency",
+                "coverage_range",
+            ]
+        ),
+        metadata=get_json_metadata(
+            "The information about the data request to be created",
+            nested_dto_class=RequestInfoPostDTO
+        ),
+        required=True,
+    )
+    location_infos = fields.List(
+        fields.Nested(
+            nested=LocationInfoSchema(),
+            metadata=get_json_metadata(
+                "The locations associated with the data request",
+                nested_dto_class=LocationInfoDTO
+            ),
+        ),
+        required=False,
+        allow_none=True,
+        metadata=get_json_metadata("The locations associated with the data request"),
+    )
+
 
 GetManyDataRequestsSchema = create_get_many_schema(
     data_list_schema=DataRequestsGetSchemaBase,

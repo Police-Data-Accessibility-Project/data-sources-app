@@ -125,3 +125,4 @@ class AgenciesById(PsycopgResource):
         return self.run_endpoint(
             delete_agency, agency_id=resource_id, access_info=access_info
         )
+

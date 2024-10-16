@@ -48,6 +48,14 @@ def assert_expected_get_many_result(
         assert column in data[0]
         assert data[0][column] is not None
 
+def assert_contains_key_value_pairs(
+    dict_to_check: dict,
+    key_value_pairs: dict,
+):
+    for key, value in key_value_pairs.items():
+        assert key in dict_to_check
+        assert dict_to_check[key] == value
+
 
 def test_delete_endpoint(
     add_entry_db_client_method: callable,

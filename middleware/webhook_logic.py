@@ -3,6 +3,7 @@ import os
 
 import requests
 
+from middleware.third_party_interaction_logic.mailgun_logic import send_via_mailgun
 from middleware.util import get_env_variable
 
 
@@ -23,14 +24,8 @@ def send_password_reset_link(email, token):
         f"To reset your password, click the following link: "
         f"{get_env_variable('VITE_VUE_APP_BASE_URL')}/reset-password/{token}"
     )
-    r = requests.post(
-        "https://api.mailgun.net/v3/mail.pdap.io/messages",
-        auth=("api", get_env_variable("MAILGUN_KEY")),
-        data={
-            "from": "mail@pdap.io",
-            "to": [email],
-            "subject": "PDAP Data Sources Reset Password",
-            "text": body,
-        },
-        timeout=5,
+    send_via_mailgun(
+        to_email=email,
+        subject="PDAP Data Sources Reset Password",
+        body=body,
     )

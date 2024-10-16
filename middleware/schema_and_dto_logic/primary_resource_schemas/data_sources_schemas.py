@@ -338,6 +338,11 @@ class DataSourceBaseSchema(Schema):
         ),
         allow_none=True,
     )
+    approval_status_updated_at = fields.DateTime(
+        metadata=get_json_metadata(
+            "The date and time the approval status was last updated"
+        )
+    )
 
 
 class DataSourceExpandedSchema(DataSourceBaseSchema):

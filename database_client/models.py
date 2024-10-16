@@ -117,6 +117,11 @@ RequestUrgencyLiteral = Literal[
     "Long-term (6 months or more)",
     "Indefinite/Unknown",
 ]
+LocationTypeLiteral = Literal[
+    "State",
+    "County",
+    "Locality"
+]
 
 text = Annotated[Text, None]
 timestamp_tz = Annotated[
@@ -138,7 +143,7 @@ class Base(DeclarativeBase):
     }
 
     @hybrid_method
-    def to_dict(cls, subquery_parameters=[]):
+    def to_dict(cls, subquery_parameters=[]) -> dict:
         # Calls the class's __iter__ implementation
         dict_result = dict(cls)
         keyorder = cls.__mapper__.column_attrs.items()
@@ -183,10 +188,10 @@ class CountSubqueryMetadata:
         return subquery_counts
 
 
-class AgencySourceLink(Base):
-    __tablename__ = "agency_source_link"
+class LinkAgencyDataSource(Base):
+    __tablename__ = Relations.LINK_AGENCIES_DATA_SOURCES.value
 
-    link_id: Mapped[int]
+    id: Mapped[int]
     data_source_id: Mapped[str] = mapped_column(
         ForeignKey("public.data_sources.id"), primary_key=True
     )
@@ -303,15 +308,18 @@ class Location(Base):
     county_id: Mapped[int] = mapped_column(ForeignKey("public.counties.id"))
     locality_id: Mapped[int] = mapped_column(ForeignKey("public.localities.id"))
 
+    def __iter__(self):
+        yield from iter_with_special_cases(self)
+
 
 class LocationExpanded(Base, CountMetadata):
     __tablename__ = Relations.LOCATIONS_EXPANDED.value
     __table_args__ = {"extend_existing": True}
 
     id = Column(Integer, primary_key=True)
-    type = Column(
-        Enum(LocationType)
-    )  # Adjust the type if 'type' is more specific, like Enum or similar.
+    type: Mapped[LocationTypeLiteral] = mapped_column(
+        Enum(*get_args(LocationTypeLiteral)), name="type"
+    )
     state_name = Column(String)
     state_iso = Column(String)
     county_name = Column(String)
@@ -320,6 +328,9 @@ class LocationExpanded(Base, CountMetadata):
     state_id = Column(Integer)
     county_id = Column(Integer)
     locality_id = Column(Integer)
+
+    def __iter__(self):
+        yield from iter_with_special_cases(self)
 
 class ExternalAccount(Base):
     __tablename__ = Relations.EXTERNAL_ACCOUNTS.value
@@ -336,7 +347,6 @@ class USState(Base):
     state_iso: Mapped[str] = mapped_column(String(255), nullable=False)
     state_name: Mapped[str] = mapped_column(String(255))
 
-
 class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
     __tablename__ = Relations.DATA_REQUESTS.value
 
@@ -351,6 +361,9 @@ class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
                         instance.data_source_ids if instance.data_source_ids else None,
                     )
                 ),
+                (
+                    "location_ids", instance.location_ids if instance.location_ids else None
+                )
             ],
             "data_sources": lambda instance: [
                 (
@@ -364,6 +377,16 @@ class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
                     )
                 )
             ],
+            "locations": lambda instance: [
+                (
+                    "locations",
+                    (
+                        [location.to_dict() for location in instance.locations]
+                        if instance.locations
+                        else None
+                    ),
+                )
+            ],
         }
 
         yield from iter_with_special_cases(self, special_cases=special_cases)
@@ -373,7 +396,6 @@ class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
     request_status: Mapped[RequestStatusLiteral] = mapped_column(
         server_default="Intake"
     )
-    location_described_submitted: Mapped[Optional[text]]
     archive_reason: Mapped[Optional[text]]
     date_created: Mapped[timestamp_tz]
     date_status_last_changed: Mapped[Optional[timestamp_tz]]
@@ -388,7 +410,9 @@ class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
     request_urgency: Mapped[RequestUrgencyLiteral] = mapped_column(
         server_default="Indefinite/Unknown"
     )
+    title: Mapped[text]
 
+    # TODO: Is there a way to generalize the below logic?
     data_sources: Mapped[list["DataSourceExpanded"]] = relationship(
         argument="DataSourceExpanded",
         secondary="public.link_data_sources_data_requests",
@@ -396,10 +420,21 @@ class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
         secondaryjoin="DataSourceExpanded.id == LinkDataSourceDataRequest.data_source_id",
         lazy="joined",
     )
+    locations: Mapped[list["LocationExpanded"]] = relationship(
+        argument="LocationExpanded",
+        secondary="public.link_locations_data_requests",
+        primaryjoin="DataRequest.id == LinkLocationDataRequest.data_request_id",
+        secondaryjoin="LocationExpanded.id == LinkLocationDataRequest.location_id",
+        lazy="joined",
+    )
 
     @hybrid_property
     def data_source_ids(self) -> list[int]:
         return [source.id for source in self.data_sources]
+
+    @hybrid_property
+    def location_ids(self) -> list[int]:
+        return [location.id for location in self.locations]
 
 
 class DataRequestExpanded(DataRequest):
@@ -500,12 +535,13 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
     record_type_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("public.record_types.id")
     )
+    approval_status_updated_at: Mapped[Optional[timestamp_tz]]
 
     agencies: Mapped[list[AgencyExpanded]] = relationship(
         argument="AgencyExpanded",
-        secondary="public.agency_source_link",
-        primaryjoin="AgencySourceLink.data_source_id == DataSource.id",
-        secondaryjoin="AgencySourceLink.agency_id == AgencyExpanded.id",
+        secondary="public.link_agencies_data_sources",
+        primaryjoin="LinkAgencyDataSource.data_source_id == DataSource.id",
+        secondaryjoin="LinkAgencyDataSource.agency_id == AgencyExpanded.id",
         lazy="joined",
     )
 
@@ -613,10 +649,18 @@ class User(Base):
     )
     role: Mapped[Optional[text]]
 
+class LinkLocationDataRequest(Base):
+    __tablename__ = Relations.LINK_LOCATIONS_DATA_REQUESTS.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
+    data_request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
 
 SQL_ALCHEMY_TABLE_REFERENCE = {
     "agencies": Agency,
     "agencies_expanded": AgencyExpanded,
+    "link_agencies_data_sources": LinkAgencyDataSource,
+    Relations.LINK_LOCATIONS_DATA_REQUESTS.value: LinkLocationDataRequest,
     "data_requests": DataRequest,
     "data_requests_expanded": DataRequestExpanded,
     "data_sources": DataSource,
@@ -656,7 +700,7 @@ def convert_to_column_reference(columns: list[str], relation: str) -> list[Colum
             return getattr(relation_reference, column)
         except AttributeError:
             raise AttributeError(
-                f'Column "{column}" does not exist in SQLAlchemy Table Model'
+                f'Column "{column}" does not exist in SQLAlchemy Table Model for "{relation}"'
             )
 
     return [get_attribute(column) for column in columns]

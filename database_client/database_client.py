@@ -299,7 +299,7 @@ class DatabaseClient:
                 AGENCIES.LAT,
                 AGENCIES.LNG
             FROM
-                AGENCY_SOURCE_LINK
+                LINK_AGENCIES_DATA_SOURCES AS AGENCY_SOURCE_LINK
                 INNER JOIN DATA_SOURCES ON AGENCY_SOURCE_LINK.DATA_SOURCE_ID = DATA_SOURCES.ID
                 INNER JOIN AGENCIES ON AGENCY_SOURCE_LINK.AGENCY_ID = AGENCIES.ID
                 INNER JOIN LOCATIONS_EXPANDED LE ON AGENCIES.LOCATION_ID = LE.ID
@@ -734,6 +734,18 @@ class DatabaseClient:
         column_to_return="id",
     )
 
+    create_data_source_agency_relation = partialmethod(
+        _create_entry_in_table,
+        table_name=Relations.LINK_AGENCIES_DATA_SOURCES.value,
+        column_to_return="id",
+    )
+
+    create_request_location_relation = partialmethod(
+        _create_entry_in_table,
+        table_name=Relations.LINK_LOCATIONS_DATA_REQUESTS.value,
+        column_to_return="id",
+    )
+
     add_new_data_source = partialmethod(
         _create_entry_in_table,
         table_name="data_sources",
@@ -942,6 +954,10 @@ class DatabaseClient:
 
     delete_followed_search = partialmethod(
         _delete_from_table, table_name=Relations.LINK_USER_FOLLOWED_LOCATION.value
+    )
+
+    delete_data_source_agency_relation = partialmethod(
+        _delete_from_table, table_name=Relations.LINK_AGENCIES_DATA_SOURCES.value
     )
 
 

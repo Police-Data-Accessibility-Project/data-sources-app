@@ -25,7 +25,7 @@ from tests.conftest import dev_db_client, flask_client_with_db
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
 from tests.helper_scripts.common_test_data import (
     create_test_data_request,
-    TestDataCreatorFlask,
+    TestDataCreatorFlask, get_sample_location_info,
 )
 from tests.helper_scripts.constants import (
     DATA_REQUESTS_BASE_ENDPOINT,
@@ -125,35 +125,61 @@ def test_data_requests_post(
     standard_tus = tdc.standard_user()
 
     submission_notes = uuid.uuid4().hex
+
+    location_info_1 = get_sample_location_info()
+    location_info_2 = get_sample_location_info()
+
+    json_request = {
+            "request_info": {
+                "submission_notes": submission_notes,
+                "title": uuid.uuid4().hex,
+                "request_urgency": RequestUrgency.URGENT.value,
+            },
+            "location_infos": [
+                location_info_1,
+                location_info_2
+            ]
+
+        }
+
     json_data = run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="post",
         endpoint=DATA_REQUESTS_BASE_ENDPOINT,
         headers=standard_tus.jwt_authorization_header,
-        json={
-            "entry_data": {
-                "submission_notes": submission_notes,
-                "request_urgency": RequestUrgency.URGENT.value,
-            }
-        },
+        json=json_request,
     )
 
-    data_request_id = json_data["id"]
+    # Test that data request was created and can now be retrieved
+    json_data = run_and_validate_request(
+        flask_client=tdc.flask_client,
+        http_method="get",
+        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
+            data_request_id=json_data["id"]
+        ),
+        headers=standard_tus.jwt_authorization_header,
+        expected_schema=SchemaConfigs.DATA_REQUESTS_BY_ID_GET.value.output_schema,
+    )
+
+    data = json_data[DATA_KEY]
+
+    assert len(data) > 0
+    locations = data["locations"]
+    assert len(locations) == 2
+    for location in locations:
+        if location["locality_name"] == location_info_1["locality_name"]:
+            continue
+        if location["locality_name"] == location_info_2["locality_name"]:
+            continue
+        assert False
+
+
+    assert data["submission_notes"] == submission_notes
     user_id = tdc.db_client.get_user_id(standard_tus.user_info.email)
-    results = tdc.db_client.get_data_requests(
-        columns=[
-            "id",
-            "submission_notes",
-            "creator_user_id",
-            "request_urgency",
-        ],
-        where_mappings=[WhereMapping(column="id", value=int(data_request_id))],
-    )
+    assert data["creator_user_id"] == user_id
+    assert data["request_urgency"] == RequestUrgency.URGENT.value
 
-    assert len(results) == 1
-    assert results[0]["submission_notes"] == submission_notes
-    assert results[0]["creator_user_id"] == user_id
-    assert results[0]["request_urgency"] == RequestUrgency.URGENT.value
+
 
     # Check that response is forbidden for standard user using API header
     run_and_validate_request(
@@ -161,18 +187,25 @@ def test_data_requests_post(
         http_method="post",
         endpoint=DATA_REQUESTS_BASE_ENDPOINT,
         headers=standard_tus.api_authorization_header,
-        json={"entry_data": {"submission_notes": submission_notes}},
+        json=json_request,
         expected_response_status=HTTPStatus.UNAUTHORIZED,
     )
 
-    # Check that response is forbidden if using invalid columns
+    # Check that response fails if using invalid columns
     run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="post",
         endpoint=DATA_REQUESTS_BASE_ENDPOINT,
         headers=standard_tus.jwt_authorization_header,
-        json={"entry_data": {"id": 1}},
-        expected_response_status=HTTPStatus.FORBIDDEN,
+        json={
+            "request_info": {
+                "submission_notes": submission_notes,
+                "title": uuid.uuid4().hex,
+                "request_urgency": RequestUrgency.URGENT.value,
+                "invalid_column": uuid.uuid4().hex
+            }
+        },
+        expected_response_status=HTTPStatus.BAD_REQUEST,
     )
 
 
@@ -194,7 +227,9 @@ def test_data_requests_by_id_get(
     api_json_data = run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="get",
-        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT + str(tdr.id),
+        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
+            data_request_id=tdr.id
+        ),
         headers=admin_tus.api_authorization_header,
         expected_schema=expected_schema,
     )
@@ -205,7 +240,9 @@ def test_data_requests_by_id_get(
     jwt_json_data = run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="get",
-        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT + str(tdr.id),
+        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
+            data_request_id=tdr.id
+        ),
         headers=admin_tus.jwt_authorization_header,
         expected_schema=expected_schema,
     )
@@ -230,7 +267,9 @@ def test_data_requests_by_id_put(
     json_data = run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="put",
-        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT + str(data_request_id),
+        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
+            data_request_id=data_request_id
+        ),
         headers=standard_tus.jwt_authorization_header,
         json={"entry_data": {"submission_notes": new_submission_notes}},
     )
@@ -246,7 +285,9 @@ def test_data_requests_by_id_put(
     run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="put",
-        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT + str(data_request_id),
+        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
+            data_request_id=data_request_id
+        ),
         headers=standard_tus.jwt_authorization_header,
         json={"entry_data": {"request_status": "approved"}},
         expected_response_status=HTTPStatus.FORBIDDEN,
@@ -270,7 +311,9 @@ def test_data_requests_by_id_delete(test_data_creator_flask):
     json_data = run_and_validate_request(
         flask_client=flask_client,
         http_method="delete",
-        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT + str(data_request_id),
+        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
+            data_request_id=data_request_id
+        ),
         headers=tus_owner.jwt_authorization_header,
     )
 
@@ -285,7 +328,7 @@ def test_data_requests_by_id_delete(test_data_creator_flask):
     # Check that request is denied if user is not owner and does not have DB_WRITE permission
     new_tdr = create_test_data_request(flask_client, tus_owner.jwt_authorization_header)
 
-    NEW_ENDPOINT = DATA_REQUESTS_BY_ID_ENDPOINT + str(new_tdr.id)
+    NEW_ENDPOINT = DATA_REQUESTS_BY_ID_ENDPOINT.format(data_request_id=new_tdr.id)
 
     run_and_validate_request(
         flask_client=flask_client,

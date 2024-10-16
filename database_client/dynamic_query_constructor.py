@@ -90,7 +90,7 @@ class DynamicQueryConstructor:
             SELECT
                 {fields}
             FROM
-                agency_source_link
+                link_agencies_data_sources as agency_source_link
             INNER JOIN
                 data_sources ON agency_source_link.data_source_uid = data_sources.airtable_uid
             INNER JOIN
@@ -239,7 +239,7 @@ class DynamicQueryConstructor:
                 locations_expanded.state_iso,
                 agencies.jurisdiction_type
             FROM
-                agency_source_link
+                LINK_AGENCIES_DATA_SOURCES AS agency_source_link
             INNER JOIN
                 data_sources ON agency_source_link.data_source_id = data_sources.id
             INNER JOIN
