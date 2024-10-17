@@ -7,9 +7,29 @@ from database_client.enums import LocationType, RequestStatus
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from tests.helper_scripts.common_test_data import TestDataCreatorFlask, TestDataCreatorDBClient
 from conftest import test_data_creator_flask, monkeysession
+from tests.helper_scripts.helper_classes.EndpointCaller import EndpointCallInfo
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_functions import add_query_params
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+
+PITTSBURGH_LOCATION_INFO = {
+    "type": LocationType.LOCALITY.value,
+    "state_iso": "PA",
+    "county_fips": "42003",
+    "locality_name": "Pittsburgh",
+}
+
+OHIO_LOCATION_INFO = {
+    "type": LocationType.STATE.value,
+    "state_iso": "OH",
+}
+
+ORANGE_COUNTY_LOCATION_INFO = {
+    "type": LocationType.COUNTY.value,
+    "state_iso": "CA",
+    "county_fips": "06059",
+}
+
 
 
 def test_notifications_followed_searches(
@@ -22,25 +42,8 @@ def test_notifications_followed_searches(
     tdc_db = TestDataCreatorDBClient()
 
     # Create agency and tie to location (Pittsburgh)
-    pittsburgh_location_info = {
-        "type": LocationType.LOCALITY.value,
-        "state_iso": "PA",
-        "county_fips": "42003",
-        "locality_name": "Pittsburgh",
-    }
 
-    ohio_location_info = {
-        "type": LocationType.STATE.value,
-        "state_iso": "OH",
-    }
-
-    orange_county_location_info = {
-        "type": LocationType.COUNTY.value,
-        "state_iso": "CA",
-        "county_fips": "06059",
-    }
-
-    agency_info = tdc.agency(location_info=pittsburgh_location_info)
+    agency_info = tdc.agency(location_info=PITTSBURGH_LOCATION_INFO)
 
 
 
@@ -54,7 +57,7 @@ def test_notifications_followed_searches(
 
     # Create data request with request_status of `Active` and associate with location 'Ohio'
     dr_info_active_ohio = tdc.data_request(
-        location_info=ohio_location_info
+        location_info=OHIO_LOCATION_INFO
     )
     tdc.update_data_request_status(
         data_request_id=dr_info_active_ohio.id,
@@ -63,7 +66,7 @@ def test_notifications_followed_searches(
 
     # Create data request with request_status of `Complete` and associate with location 'Orange County, California'
     dr_info_complete_orange_county = tdc.data_request(
-        location_info=orange_county_location_info
+        location_info=ORANGE_COUNTY_LOCATION_INFO
     )
     tdc.update_data_request_status(
         data_request_id=dr_info_complete_orange_county.id,
@@ -88,7 +91,7 @@ def test_notifications_followed_searches(
     )
 
     dr_info_active_ohio_not_included = tdc.data_request(
-        location_info=ohio_location_info
+        location_info=OHIO_LOCATION_INFO
     )
     tdc.db_client.update_data_request(
         entry_id=dr_info_active_ohio_not_included.id,
@@ -99,7 +102,7 @@ def test_notifications_followed_searches(
     )
 
     dr_info_complete_orange_county_not_included = tdc.data_request(
-        location_info=orange_county_location_info
+        location_info=ORANGE_COUNTY_LOCATION_INFO
     )
     tdc.db_client.update_data_request(
         entry_id=dr_info_complete_orange_county_not_included.id,
@@ -126,16 +129,14 @@ def test_notifications_followed_searches(
         if "locality_name" in location_info:
             param_dict["locality"] = location_info["locality_name"]
 
-        full_endpoint = add_query_params(
-            url=USER_FOLLOW_LOCATION_ENDPOINT,
-            params=param_dict
-        )
-        run_and_validate_request(
-            flask_client=tdc.flask_client,
-            http_method="post",
-            endpoint=full_endpoint,
-            headers=user_info.jwt_authorization_header,
-            expected_schema=MessageSchema
+        tdc.endpoint_caller.follow_location(
+            eci=EndpointCallInfo(
+                authorization_header=user_info.jwt_authorization_header,
+                expected_json_content={
+                    "message": "Location successfully followed"
+                },
+                query_parameters=param_dict
+            )
         )
 
     follow_location(user_info=tus_1, location_info=pittsburgh_location_info)
@@ -179,3 +180,8 @@ def test_notifications_followed_searches(
     # )
     # TODO: Create separate middleware test for `format_and_send_notification`
 
+def test_notifications_permission_denied():
+    """
+    Test that for basic admins and standard users, they are not able to call the endpoint
+    """
+    pytest.fail("Not implemented yet")

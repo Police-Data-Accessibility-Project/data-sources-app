@@ -19,6 +19,7 @@ from tests.helper_scripts.constants import (
     DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT, DATA_SOURCES_POST_DELETE_RELATED_AGENCY_ENDPOINT,
     DATA_REQUESTS_BY_ID_ENDPOINT, AGENCIES_BY_ID_ENDPOINT,
 )
+from tests.helper_scripts.helper_classes.EndpointCaller import EndpointCaller
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup,
@@ -176,6 +177,7 @@ class TestDataCreatorFlask:
 
     def __init__(self, flask_client: FlaskClient):
         self.flask_client = flask_client
+        self.endpoint_caller = EndpointCaller(flask_client)
         self.db_client = DatabaseClient()
         self.admin_tus: Optional[TestUserSetup] = None
 
