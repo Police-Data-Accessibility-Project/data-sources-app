@@ -11,6 +11,7 @@ from middleware.column_permission_logic import (
     get_invalid_columns,
 )
 from middleware.common_response_formatting import multiple_results_response
+from middleware.dynamic_request_logic.common_functions import optionally_get_permitted_columns_to_subquery_parameters_
 from middleware.dynamic_request_logic.supporting_classes import MiddlewareParameters
 from middleware.flask_response_manager import FlaskResponseManager
 
@@ -44,7 +45,7 @@ def get_many(
         permitted_columns, requested_columns
     )
 
-    mp.subquery_parameters = process_subquery_parameters(
+    process_subquery_parameters(
         requested_columns, relation_role, mp
     )
 
@@ -72,23 +73,14 @@ def process_subquery_parameters(
     requested_columns: list[str],
     relation_role: RelationRoleEnum,
     mp: MiddlewareParameters,
-) -> list[SubqueryParameters] | list[None]:
+):
     if requested_columns is None:
-        [
-            parameter.set_columns(
-                get_permitted_columns(
-                    db_client=mp.db_client,
-                    relation=parameter.relation_name,
-                    role=relation_role,
-                    column_permission=ColumnPermissionEnum.READ,
-                )
-            )
-            for parameter in mp.subquery_parameters
-        ]
-        return mp.subquery_parameters
+        optionally_get_permitted_columns_to_subquery_parameters_(
+            mp=mp,
+            relation_role=relation_role,
+        )
     else:
-        return []
-
+        mp.subquery_parameters = []
 
 def check_requested_columns(requested_columns: list[str], permitted_columns: list[str]):
     """

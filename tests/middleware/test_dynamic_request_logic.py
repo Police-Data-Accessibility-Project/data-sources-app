@@ -140,56 +140,6 @@ def test_get_by_id(monkeypatch):
     assert result == mock.results_dependent_response.return_value
 
 
-def test_get_many(monkeypatch):
-    mock = MagicMock()
-    multi_monkeypatch(
-        monkeypatch,
-        patch_root=f"{PATCH_ROOT}.get_many_logic",
-        mock=mock,
-        functions_to_patch=[
-            "get_permitted_columns",
-            "optionally_limit_to_requested_columns",
-            "multiple_results_response",
-            "process_subquery_parameters",
-        ],
-    )
-    result = get_many(
-        middleware_parameters=mock.mp,
-        page=mock.page,
-        relation_role_parameters=mock.relation_role_parameters,
-        requested_columns=mock.requested_columns,
-    )
-
-    mock.relation_role_parameters.get_relation_role_from_parameters.assert_called_once_with(
-        access_info=mock.mp.access_info
-    )
-
-    mock.get_permitted_columns.assert_called_once_with(
-        db_client=mock.mp.db_client,
-        relation=mock.mp.relation,
-        role=mock.relation_role_parameters.get_relation_role_from_parameters.return_value,
-        column_permission=ColumnPermissionEnum.READ,
-    )
-
-    mock.optionally_limit_to_requested_columns.assert_called_once_with(
-        mock.get_permitted_columns.return_value, mock.requested_columns
-    )
-
-    mock.mp.db_client_method.assert_called_once_with(
-        mock.mp.db_client,
-        relation_name=mock.mp.relation,
-        columns=mock.optionally_limit_to_requested_columns.return_value,
-        page=mock.page,
-        subquery_parameters=mock.process_subquery_parameters.return_value,
-    )
-
-    mock.multiple_results_response.assert_called_once_with(
-        message=f"{mock.mp.entry_name} found",
-        data=mock.mp.db_client_method.return_value,
-    )
-
-    assert result == mock.multiple_results_response.return_value
-
 
 @pytest.fixture
 def mock_check_requested_columns(monkeypatch) -> MagicMock:

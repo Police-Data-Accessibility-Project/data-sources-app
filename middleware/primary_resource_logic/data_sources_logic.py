@@ -9,10 +9,14 @@ from database_client.subquery_logic import SubqueryParameters, SubqueryParameter
 from database_client.enums import ApprovalStatus
 from database_client.result_formatter import ResultFormatter
 from middleware.access_logic import AccessInfo
+from middleware.column_permission_logic import RelationRoleParameters
+from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.delete_logic import delete_entry
 from middleware.dynamic_request_logic.get_by_id_logic import get_by_id
 from middleware.dynamic_request_logic.get_many_logic import get_many
-from middleware.dynamic_request_logic.post_logic import post_entry
+from middleware.dynamic_request_logic.get_related_resource_logic import GetRelatedResourcesParameters, \
+    get_related_resource
+from middleware.dynamic_request_logic.post_logic import post_entry, PostLogic
 from middleware.dynamic_request_logic.put_logic import put_entry
 from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
@@ -20,12 +24,13 @@ from middleware.dynamic_request_logic.supporting_classes import (
 )
 
 from middleware.enums import Relations
+from middleware.primary_resource_logic.data_requests import RelatedSourceByIDDTO
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyBaseDTO,
     EntryCreateUpdateRequestDTO,
     GetByIDBaseDTO,
 )
-from middleware.common_response_formatting import format_list_response
+from middleware.common_response_formatting import format_list_response, message_response
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
     DataSourceEntryDataPostDTO,
 )
@@ -157,3 +162,66 @@ def add_new_data_source_wrapper(
         ),
         entry=dataclass_to_filtered_dict(dto.entry_data),
     )
+
+#region Related Resources
+
+def get_data_source_related_agencies(
+    db_client: DatabaseClient,
+    dto: GetByIDBaseDTO
+) -> Response:
+    return get_related_resource(
+        get_related_resources_parameters=GetRelatedResourcesParameters(
+            db_client=db_client,
+            dto=dto,
+            db_client_method=DatabaseClient.get_data_sources,
+            primary_relation=Relations.DATA_SOURCES,
+            related_relation=Relations.AGENCIES_EXPANDED,
+            linking_column="agencies",
+            metadata_count_name="agencies_count",
+            resource_name="agencies"
+        )
+    )
+
+
+class CreateDataSourceRelatedAgenciesLogic(PostLogic):
+
+    def make_response(self) -> Response:
+        return message_response("Agency successfully associated with data source.")
+
+def create_data_source_related_agency(
+    db_client: DatabaseClient,
+    access_info: AccessInfo,
+    dto: RelatedSourceByIDDTO,
+) -> Response:
+    post_logic = CreateDataSourceRelatedAgenciesLogic(
+        middleware_parameters=MiddlewareParameters(
+            db_client=db_client,
+            access_info=access_info,
+            entry_name="Data source-agency association",
+            relation=RELATION,
+            db_client_method=DatabaseClient.create_data_source_agency_relation,
+        ),
+        entry=dto.get_where_mapping(),
+        check_for_permission=False
+    )
+    return post_logic.execute()
+
+def delete_data_source_related_agency(
+    db_client: DatabaseClient,
+    access_info: AccessInfo,
+    dto: RelatedSourceByIDDTO,
+) -> Response:
+    return delete_entry(
+        middleware_parameters=MiddlewareParameters(
+            db_client=db_client,
+            access_info=access_info,
+            entry_name="Data source-agency association",
+            relation=Relations.LINK_AGENCIES_DATA_SOURCES.value,
+            db_client_method=DatabaseClient.delete_data_source_agency_relation,
+        ),
+        id_info=IDInfo(
+            additional_where_mappings=dto.get_where_mapping(),
+        ),
+    )
+
+#endregion

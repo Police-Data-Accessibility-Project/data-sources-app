@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from http import HTTPStatus
 from typing import Optional
 
@@ -7,8 +7,8 @@ from marshmallow import fields
 
 from database_client.db_client_dataclasses import WhereMapping, OrderByParameters
 from database_client.database_client import DatabaseClient
-from database_client.enums import ColumnPermissionEnum, RelationRoleEnum
-from database_client.subquery_logic import SubqueryParameterManager
+from database_client.enums import ColumnPermissionEnum, RelationRoleEnum, RequestUrgency
+from database_client.subquery_logic import SubqueryParameterManager, SubqueryParameters
 from middleware.access_logic import AccessInfo
 from middleware.column_permission_logic import (
     get_permitted_columns,
@@ -21,6 +21,8 @@ from middleware.dynamic_request_logic.common_functions import check_for_id
 from middleware.dynamic_request_logic.delete_logic import delete_entry
 from middleware.dynamic_request_logic.get_by_id_logic import get_by_id
 from middleware.dynamic_request_logic.get_many_logic import get_many
+from middleware.dynamic_request_logic.get_related_resource_logic import get_related_resource, \
+    GetRelatedResourcesParameters
 from middleware.dynamic_request_logic.post_logic import post_entry, PostLogic
 from middleware.dynamic_request_logic.put_logic import put_entry
 from middleware.dynamic_request_logic.supporting_classes import (
@@ -28,24 +30,31 @@ from middleware.dynamic_request_logic.supporting_classes import (
     IDInfo,
 )
 from middleware.flask_response_manager import FlaskResponseManager
+from middleware.location_logic import get_location_id, InvalidLocationError
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     EntryCreateUpdateRequestDTO,
     GetByIDBaseDTO,
     GetByIDBaseSchema,
-    GetManyBaseDTO,
+    GetManyBaseDTO, LocationInfoDTO,
 )
 from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
 
 from middleware.common_response_formatting import (
     multiple_results_response,
-    message_response,
+    message_response, created_id_response,
 )
 from utilities.enums import SourceMappingEnum
 
 RELATION = Relations.DATA_REQUESTS.value
 RELATED_SOURCES_RELATION = Relations.RELATED_SOURCES.value
 
-DATA_REQUESTS_SUBQUERY_PARAMS = [SubqueryParameterManager.data_sources()]
+
+
+def get_data_requests_subquery_params() -> list[SubqueryParameters]:
+    return [
+        SubqueryParameterManager.data_sources(),
+        SubqueryParameterManager.locations(),
+    ]
 
 
 class RelatedSourceByIDSchema(GetByIDBaseSchema):
@@ -65,6 +74,18 @@ class RelatedSourceByIDDTO(GetByIDBaseDTO):
     def get_where_mapping(self):
         return {"data_source_id": int(self.data_source_id), "request_id": int(self.resource_id)}
 
+@dataclass
+class RequestInfoPostDTO:
+    title: str
+    submission_notes: str
+    request_urgency: RequestUrgency
+    coverage_range: Optional[str] = None
+    data_requirements: Optional[str] = None
+
+@dataclass
+class DataRequestsPostDTO:
+    request_info: RequestInfoPostDTO
+    location_infos: Optional[list[LocationInfoDTO]] = None
 
 def get_data_requests_relation_role(
     db_client: DatabaseClient, data_request_id: Optional[int], access_info: AccessInfo
@@ -100,7 +121,7 @@ def add_creator_user_id(
 
 
 def create_data_request_wrapper(
-    db_client: DatabaseClient, dto: EntryCreateUpdateRequestDTO, access_info: AccessInfo
+    db_client: DatabaseClient, dto: DataRequestsPostDTO, access_info: AccessInfo
 ) -> Response:
     """
     Create a data request
@@ -109,25 +130,52 @@ def create_data_request_wrapper(
     :param data_request_data:
     :return:
     """
-    return post_entry(
-        middleware_parameters=MiddlewareParameters(
-            db_client=db_client,
-            access_info=access_info,
-            entry_name="Data request",
-            relation=RELATION,
-            db_client_method=DatabaseClient.create_data_request,
-        ),
-        entry=dto.entry_data,
-        pre_insertion_function_with_parameters=DeferredFunction(
-            function=add_creator_user_id,
-            db_client=db_client,
-            user_email=access_info.user_email,
-            dto=dto,
-        ),
-        relation_role_parameters=RelationRoleParameters(
-            relation_role_override=RelationRoleEnum.OWNER
-        ),
+    # Check that location ids are valid, and get location ids for linking
+    location_ids = _get_location_ids(db_client, dto)
+
+    column_value_mappings_raw = asdict(dto.request_info)
+    user_id = db_client.get_user_id(access_info.user_email)
+    column_value_mappings_raw["creator_user_id"] = user_id
+
+    # Insert the data request, get data request id
+    dr_id = db_client.create_data_request(
+        column_value_mappings=column_value_mappings_raw,
+        column_to_return="id"
     )
+
+    # Insert location ids into linking table
+    for location_id in location_ids:
+        db_client.create_request_location_relation(
+            column_value_mappings={
+                "data_request_id": dr_id,
+                "location_id": location_id
+            }
+        )
+
+    # Return data request id
+    return created_id_response(
+        new_id=str(dr_id), message=f"Data request created."
+    )
+
+
+def _get_location_ids(db_client, dto):
+    location_ids = []
+    if dto.location_infos is None:
+        return location_ids
+    for location_info in dto.location_infos:
+        try:
+            location_id = get_location_id(
+                db_client=db_client,
+                location_info=location_info
+            )
+        except InvalidLocationError:
+            FlaskResponseManager.abort(
+                code=HTTPStatus.BAD_REQUEST,
+                message=f"Invalid location: {asdict(location_info)}"
+            )
+
+        location_ids.append(location_id)
+    return location_ids
 
 
 def get_data_requests_wrapper(
@@ -147,7 +195,7 @@ def get_data_requests_wrapper(
             entry_name="data requests",
             relation=Relations.DATA_REQUESTS_EXPANDED.value,
             db_client_method=DatabaseClient.get_data_requests,
-            subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS,
+            subquery_parameters=get_data_requests_subquery_params(),
             db_client_additional_args={"build_metadata": True},
         ),
         page=dto.page,
@@ -172,7 +220,7 @@ def get_data_requests_with_permitted_columns(
         columns=columns,
         where_mappings=where_mappings,
         order_by=OrderByParameters.construct_from_args(dto.sort_by, dto.sort_order),
-        subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS,
+        subquery_parameters=get_data_requests_subquery_params(),
         build_metadata=build_metadata,
     )
     return data_requests
@@ -213,6 +261,7 @@ def delete_data_request_wrapper(
             db_client=db_client,
         ),
     )
+
 
 
 def update_data_request_wrapper(
@@ -264,7 +313,7 @@ def get_data_request_by_id_wrapper(
             access_info=access_info,
             db_client_method=DatabaseClient.get_data_requests,
             entry_name="Data request",
-            subquery_parameters=DATA_REQUESTS_SUBQUERY_PARAMS,
+            subquery_parameters=get_data_requests_subquery_params(),
         ),
         relation_role_parameters=RelationRoleParameters(
             relation_role_function_with_params=DeferredFunction(
@@ -278,47 +327,19 @@ def get_data_request_by_id_wrapper(
 
 
 def get_data_request_related_sources(db_client: DatabaseClient, dto: GetByIDBaseDTO):
-    # TODO: Generalize for other related source-getting.
-    check_for_id(
-        db_client=db_client,
-        table_name=RELATION,
-        id_info=IDInfo(id_column_value=int(dto.resource_id)),
-    )
-    permitted_columns = get_permitted_columns(
-        db_client=db_client,
-        relation=Relations.DATA_SOURCES_EXPANDED.value,
-        role=RelationRoleEnum.STANDARD,
-        column_permission=ColumnPermissionEnum.READ,
-    )
-    results = db_client.get_data_requests(
-        columns=["id"],
-        where_mappings=[WhereMapping(column="id", value=int(dto.resource_id))],
-        subquery_parameters=[
-            SubqueryParameterManager.get_subquery_params(
-                relation=Relations.DATA_SOURCES_EXPANDED,
-                linking_column="data_sources",
-                columns=permitted_columns,
-            )
-        ],
-        build_metadata=True,
-    )
 
-    metadata = results["metadata"]
-    metadata["count"] = metadata["data_sources_count"]
-    metadata.pop("data_sources_count")
-    if metadata["count"] == 0:
-        results["data"] = []
-    else:
-        results["data"] = results["data"][0]["data_sources"]
-    results["metadata"] = metadata
-
-    results.update(
-        {
-            "message": "Related sources found.",
-        }
+    return get_related_resource(
+        get_related_resources_parameters=GetRelatedResourcesParameters(
+            db_client=db_client,
+            dto=dto,
+            db_client_method=DatabaseClient.get_data_requests,
+            primary_relation=Relations.DATA_REQUESTS,
+            related_relation=Relations.DATA_SOURCES_EXPANDED,
+            linking_column="data_sources",
+            metadata_count_name="data_sources_count",
+            resource_name="sources"
+        )
     )
-
-    return FlaskResponseManager.make_response(data=results)
 
 
 def check_can_create_data_request_related_source(relation_role: RelationRoleEnum):

@@ -16,7 +16,8 @@ from middleware.column_permission_logic import (
 from middleware.common_response_formatting import (
     message_response,
 )
-from middleware.dynamic_request_logic.common_functions import check_for_id
+from middleware.dynamic_request_logic.common_functions import check_for_id, \
+    optionally_get_permitted_columns_to_subquery_parameters_
 from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,
@@ -77,17 +78,8 @@ def get_by_id(
         column_permission=ColumnPermissionEnum.READ,
     )
     # TODO: Extract to separate function
-    [
-        parameter.set_columns(
-            get_permitted_columns(
-                db_client=mp.db_client,
-                relation=parameter.relation_name,
-                role=relation_role,
-                column_permission=ColumnPermissionEnum.READ,
-            )
-        )
-        for parameter in mp.subquery_parameters
-    ]
+    optionally_get_permitted_columns_to_subquery_parameters_(mp, relation_role)
+
     results = mp.db_client_method(
         mp.db_client,
         relation_name=mp.relation,
@@ -96,3 +88,5 @@ def get_by_id(
         subquery_parameters=mp.subquery_parameters,
     )
     return results_dependent_response(mp.entry_name, results)
+
+

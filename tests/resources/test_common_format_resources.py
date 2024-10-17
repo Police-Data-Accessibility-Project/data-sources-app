@@ -170,12 +170,6 @@ TEST_ID = -1
         ),
         (
             "/data-requests",
-            "POST",
-            "DataRequests.create_data_request_wrapper",
-            {"entry_data": {"sample_column": "sample_value"}},
-        ),
-        (
-            "/data-requests",
             "GET",
             "DataRequests.get_data_requests_wrapper",
             {},

@@ -5,7 +5,7 @@ from marshmallow import Schema
 
 from middleware.primary_resource_logic.data_requests import (
     RelatedSourceByIDSchema,
-    RelatedSourceByIDDTO,
+    RelatedSourceByIDDTO, DataRequestsPostDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import SearchRequestSchema, \
     GetUserFollowedSearchesSchema, SearchRequests, FollowSearchResponseSchema
@@ -24,7 +24,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas i
     AgenciesPutSchema,
     AgenciesPostSchema,
     AgenciesPostDTO,
-    AgenciesGetManyResponseSchema,
+    AgenciesGetManyResponseSchema, RelatedAgencyByIDSchema, RelatedAgencyByIDDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
     GetManyDataRequestsSchema,
@@ -89,15 +89,8 @@ class SchemaConfigs(Enum):
         output_schema=None,
     )
     DATA_REQUESTS_POST = EndpointSchemaConfig(
-        input_schema=DataRequestsPostSchema(
-            only=[
-                "entry_data.submission_notes",
-                "entry_data.location_described_submitted",
-                "entry_data.coverage_range",
-                "entry_data.data_requirements",
-                "entry_data.request_urgency",
-            ]
-        ),
+        input_schema=DataRequestsPostSchema(),
+        input_dto_class=DataRequestsPostDTO,
         output_schema=IDAndMessageSchema(),
     )
     DATA_REQUESTS_RELATED_SOURCES_GET = EndpointSchemaConfig(
@@ -150,6 +143,19 @@ class SchemaConfigs(Enum):
     )
     DATA_SOURCES_PUT = EndpointSchemaConfig(
         input_schema=DataSourcesPutSchema(), input_dto_class=EntryDataRequestSchema
+    )
+    DATA_SOURCES_RELATED_AGENCIES_GET = EndpointSchemaConfig(
+        input_schema=GetByIDBaseSchema(),
+        output_schema=AgenciesGetManyResponseSchema(),
+        input_dto_class=GetByIDBaseDTO
+    )
+    DATA_SOURCES_RELATED_AGENCIES_POST = EndpointSchemaConfig(
+        input_schema=RelatedAgencyByIDSchema(),
+        input_dto_class=RelatedAgencyByIDDTO
+    )
+    DATA_SOURCES_RELATED_AGENCIES_DELETE = EndpointSchemaConfig(
+        input_schema=RelatedAgencyByIDSchema(),
+        input_dto_class=RelatedAgencyByIDDTO
     )
     # endregion
 

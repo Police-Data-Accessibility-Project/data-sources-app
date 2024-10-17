@@ -30,7 +30,7 @@ from tests.helper_scripts.helper_functions import (
     create_test_user_setup_db_client,
 )
 from tests.helper_scripts.common_test_functions import (
-    assert_expected_get_many_result,
+    assert_expected_get_many_result, assert_contains_key_value_pairs,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from tests.helper_scripts.helper_classes.IntegrationTestSetup import (
@@ -98,30 +98,40 @@ def test_agencies_get_by_id(ts: AgenciesTestSetup):
 def test_agencies_post(ts: AgenciesTestSetup):
 
     start_of_test_datetime = datetime.now(timezone.utc)
+    # Test once with an existing locality, and once with a new locality
 
+    def run_post(
+        json: dict,
+    ):
+        return run_and_validate_request(
+            flask_client=ts.flask_client,
+            http_method="post",
+            endpoint=AGENCIES_BASE_ENDPOINT,
+            headers=ts.tus.jwt_authorization_header,
+            json=json,
+            expected_schema=SchemaConfigs.AGENCIES_POST.value.output_schema,
+        )
+
+    def run_get(
+        id_: str,
+    ):
+        return run_and_validate_request(
+            flask_client=ts.flask_client,
+            http_method="get",
+            endpoint=f"{AGENCIES_BASE_ENDPOINT}/{id_}",
+            headers=ts.tus.jwt_authorization_header,
+        )
+
+    # Test with a new locality
     data_to_post = get_sample_agency_post_parameters(
         submitted_name=ts.submitted_name,
         jurisdiction_type=JurisdictionType.LOCAL,
         locality_name=uuid.uuid4().hex,
     )
-    # Test once with an existing locality, and once with a new locality
-
-    json_data = run_and_validate_request(
-        flask_client=ts.flask_client,
-        http_method="post",
-        endpoint=AGENCIES_BASE_ENDPOINT,
-        headers=ts.tus.jwt_authorization_header,
-        json=data_to_post,
-        expected_schema=SchemaConfigs.AGENCIES_POST.value.output_schema,
-    )
+    json_data = run_post(data_to_post)
     id_ = json_data["id"]
 
-    json_data = run_and_validate_request(
-        flask_client=ts.flask_client,
-        http_method="get",
-        endpoint=f"{AGENCIES_BASE_ENDPOINT}/{id_}",
-        headers=ts.tus.jwt_authorization_header,
-    )
+    json_data = run_get(id_)
 
     agency_created = json_data["data"]["agency_created"]
     last_modified = json_data["data"]["airtable_agency_last_modified"]
@@ -134,52 +144,36 @@ def test_agencies_post(ts: AgenciesTestSetup):
         > start_of_test_datetime
     ), "Agency created should be after start of test"
 
-    assert json_data["data"]["submitted_name"] == ts.submitted_name
-
-    assert json_data["data"]["state_iso"] == "CA"
-    assert json_data["data"]["county_name"] == "Santa Cruz"
-    assert (
-        json_data["data"]["locality_name"]
-        == data_to_post["location_info"]["locality_name"]
+    assert_contains_key_value_pairs(
+        dict_to_check=json_data["data"],
+        key_value_pairs={
+            "submitted_name": ts.submitted_name,
+            "state_iso": "CA",
+            "county_name": "Santa Cruz",
+            "locality_name": data_to_post["location_info"]["locality_name"],
+        }
     )
 
-    # Test with an existing locality
-
+    # Test with a new locality
     data_to_post = get_sample_agency_post_parameters(
         submitted_name=uuid.uuid4().hex,
         jurisdiction_type=JurisdictionType.LOCAL,
         locality_name="Capitola",
     )
-    # Test once with an existing locality, and once with a new locality
-
-    json_data = run_and_validate_request(
-        flask_client=ts.flask_client,
-        http_method="post",
-        endpoint=AGENCIES_BASE_ENDPOINT,
-        headers=ts.tus.jwt_authorization_header,
-        json=data_to_post,
-        expected_schema=IDAndMessageSchema,
-    )
+    json_data = run_post(data_to_post)
 
     id_ = json_data["id"]
 
-    json_data = run_and_validate_request(
-        flask_client=ts.flask_client,
-        http_method="get",
-        endpoint=f"{AGENCIES_BASE_ENDPOINT}/{id_}",
-        headers=ts.tus.jwt_authorization_header,
-    )
+    json_data = run_get(id_)
 
-    assert (
-        json_data["data"]["submitted_name"]
-        == data_to_post["agency_info"]["submitted_name"]
-    )
-
-    assert json_data["data"]["state_iso"] == "CA"
-    assert json_data["data"]["county_name"] == "Santa Cruz"
-    assert (
-        json_data["data"]["locality_name"]
-        == data_to_post["location_info"]["locality_name"]
+    assert_contains_key_value_pairs(
+        dict_to_check=json_data["data"],
+        key_value_pairs={
+            "submitted_name": data_to_post["agency_info"]["submitted_name"],
+            "state_iso": "CA",
+            "county_name": "Santa Cruz",
+            "locality_name": data_to_post["location_info"]["locality_name"],
+        }
     )
 
 
