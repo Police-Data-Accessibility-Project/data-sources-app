@@ -7,7 +7,7 @@ import psycopg
 from flask.testing import FlaskClient
 
 from database_client.database_client import DatabaseClient
-from database_client.enums import RequestUrgency
+from database_client.enums import RequestUrgency, RequestStatus
 from middleware.enums import JurisdictionType
 from tests.helper_scripts.common_endpoint_calls import (
     create_data_source_with_endpoint,
@@ -16,7 +16,8 @@ from tests.helper_scripts.common_endpoint_calls import (
 from tests.helper_scripts.constants import (
     DATA_REQUESTS_BASE_ENDPOINT,
     AGENCIES_BASE_ENDPOINT,
-    DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT,
+    DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT, DATA_SOURCES_POST_DELETE_RELATED_AGENCY_ENDPOINT,
+    DATA_REQUESTS_BY_ID_ENDPOINT, AGENCIES_BY_ID_ENDPOINT,
 )
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_functions import (
@@ -120,21 +121,26 @@ TestDataRequestInfo = namedtuple("TestDataRequestInfo", ["id", "submission_notes
 
 
 def create_test_data_request(
-    flask_client: FlaskClient, jwt_authorization_header: dict
+    flask_client: FlaskClient, jwt_authorization_header: dict, location_info: Optional[dict] = None
 ) -> TestDataRequestInfo:
     submission_notes = uuid.uuid4().hex
+    json_to_post = {
+        "request_info": {
+            "submission_notes": submission_notes,
+            "title": uuid.uuid4().hex,
+            "request_urgency": RequestUrgency.INDEFINITE.value,
+        }
+    }
+
+    if location_info is not None:
+        json_to_post["location_infos"] = [location_info]
+
     json = run_and_validate_request(
         flask_client=flask_client,
         http_method="post",
         endpoint=DATA_REQUESTS_BASE_ENDPOINT,
         headers=jwt_authorization_header,
-        json={
-            "request_info": {
-                "submission_notes": submission_notes,
-                "title": uuid.uuid4().hex,
-                "request_urgency": RequestUrgency.INDEFINITE.value,
-            }
-        },
+        json=json_to_post,
     )
 
     return TestDataRequestInfo(id=json["id"], submission_notes=submission_notes)
@@ -182,16 +188,38 @@ class TestDataCreatorFlask:
             self.admin_tus = create_admin_test_user_setup(self.flask_client)
         return self.admin_tus
 
-    def data_source(self) -> CreatedDataSource:
-        return create_data_source_with_endpoint(
+    def data_source(self, location_info: Optional[dict] = None) -> CreatedDataSource:
+        ds_info = create_data_source_with_endpoint(
             flask_client=self.flask_client,
             jwt_authorization_header=self.get_admin_tus().jwt_authorization_header,
         )
 
-    def data_request(self, user_tus: TestUserSetup):
+        if location_info is not None:
+            run_and_validate_request(
+                flask_client=self.flask_client,
+                http_method="post",
+                endpoint=DATA_SOURCES_POST_UPDATE_LOCATION_ENDPOINT.format(
+                    data_source_id=ds_info.id
+                ),
+                headers=self.get_admin_tus().jwt_authorization_header,
+                json=location_info,
+            )
+
+    def data_request(self, user_tus: Optional[TestUserSetup] = None, location_info: Optional[dict] = None) -> TestDataRequestInfo:
+        if user_tus is None:
+            user_tus = self.get_admin_tus()
         return create_test_data_request(
             flask_client=self.flask_client,
             jwt_authorization_header=user_tus.jwt_authorization_header,
+        )
+
+    def update_data_request_status(self, data_request_id: int, status: RequestStatus):
+        run_and_validate_request(
+            flask_client=self.flask_client,
+            http_method="put",
+            endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(data_request_id=data_request_id),
+            headers=self.get_admin_tus().jwt_authorization_header,
+            json={"request_status": status.value},
         )
 
     def agency(self, location_info: Optional[dict] = None) -> TestAgencyInfo:
@@ -213,6 +241,15 @@ class TestDataCreatorFlask:
         )
 
         return TestAgencyInfo(id=json["id"], submitted_name=submitted_name)
+
+    def update_agency(self, agency_id: int, data_to_update: dict):
+        run_and_validate_request(
+            flask_client=self.flask_client,
+            http_method="put",
+            endpoint=AGENCIES_BY_ID_ENDPOINT.format(agency_id=agency_id),
+            headers=self.get_admin_tus().jwt_authorization_header,
+            json=data_to_update
+        )
 
     def link_data_source_to_agency(self, data_source_id, agency_id):
         run_and_validate_request(
@@ -330,6 +367,12 @@ class TestDataCreatorDBClient:
             id=id, name=cds.name
         )
 
+    def update_data_source(self, data_source_id: int, column_value_mappings: dict):
+        self.db_client.update_data_source(
+            entry_id=data_source_id,
+            column_edit_mappings=column_value_mappings
+        )
+
     def agency(self) -> TestAgencyInfo:
         agency_name = uuid.uuid4().hex
         agency_id = self.db_client.create_agency(
@@ -339,6 +382,12 @@ class TestDataCreatorDBClient:
             }
         )
         return TestAgencyInfo(id=agency_id, submitted_name=agency_name)
+
+    def update_agency(self, agency_id: int, column_value_mappings: dict):
+        self.db_client.update_agency(
+            entry_id=agency_id,
+            column_value_mappings=column_value_mappings
+        )
 
     def data_request(
         self, user_id: Optional[int] = None, **column_value_kwargs
