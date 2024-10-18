@@ -132,7 +132,7 @@ def bypass_authentication_required(monkeypatch):
     access_info_mock = MagicMock()
     monkeypatch.setattr(
         "middleware.decorators.get_authentication",
-        lambda a, b: access_info_mock,
+        lambda a, b, c: access_info_mock,
     )
     return access_info_mock
 

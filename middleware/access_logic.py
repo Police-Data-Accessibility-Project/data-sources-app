@@ -23,7 +23,8 @@ class AuthenticationInfo:
     A dataclass providing information on how the user was authenticated
     """
 
-    allowed_access_methods: list[AccessTypeEnum]
+    allowed_access_methods: Optional[list[AccessTypeEnum]] = None
+    no_auth: bool = False
     restrict_to_permissions: Optional[list[PermissionsEnum]] = None
 
 
@@ -38,6 +39,7 @@ OWNER_WRITE_ONLY_AUTH_INFO = AuthenticationInfo(
 GET_AUTH_INFO = AuthenticationInfo(
     allowed_access_methods=[AccessTypeEnum.API_KEY, AccessTypeEnum.JWT],
 )
+NO_AUTH_INFO = AuthenticationInfo(no_auth=True)
 
 
 @dataclass
@@ -138,7 +140,8 @@ def get_authentication_error_message(
 def get_authentication(
     allowed_access_methods: list[AccessTypeEnum],
     restrict_to_permissions: Optional[list[PermissionsEnum]] = None,
-) -> AccessInfo:
+    no_auth: bool = False,
+) -> Optional[AccessInfo]:
     """
     Authenticate the user based on allowed access methods and optionally restrict permissions.
 
@@ -147,6 +150,8 @@ def get_authentication(
     :return: AccessInfo object containing user email and access type.
     :raises HTTPException: If authentication fails.
     """
+    if no_auth:
+        return None
 
     # Try to authenticate using API key if allowed
     access_info = try_api_key_authentication(allowed_access_methods)

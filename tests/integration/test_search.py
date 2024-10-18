@@ -23,37 +23,16 @@ def test_search_get(flask_client_with_db, bypass_api_key_required):
         http_method="get",
         endpoint="/search/search-location-and-record-type?state=Pennsylvania&county=Allegheny&locality=Pittsburgh&record_categories=Police%20%26%20Public%20Interactions",
         headers=tus.api_authorization_header,
+        expected_schema=SchemaConfigs.SEARCH_LOCATION_AND_RECORD_TYPE_GET.value.output_schema
     )
 
     jurisdictions = ["federal", "state", "county", "locality"]
 
-    assert list(data.keys()) == ["count", "data"]
-    assert list(data["data"].keys()).sort() == jurisdictions.sort()
     assert data["count"] > 0
 
     jurisdiction_count = 0
     for jurisdiction in jurisdictions:
-        assert list(data["data"][jurisdiction].keys()) == ["count", "results"]
         jurisdiction_count += data["data"][jurisdiction]["count"]
-        if data["data"][jurisdiction]["count"] > 0:
-            assert (
-                list(data["data"][jurisdiction]["results"][0].keys()).sort()
-                == [
-                    "agency_name",
-                    "agency_supplied",
-                    "coverage_end",
-                    "coverage_start",
-                    "data_source_name",
-                    "description",
-                    "jurisdiction_type",
-                    "record_format",
-                    "id",
-                    "municipality",
-                    "record_type",
-                    "state",
-                    "url",
-                ].sort()
-            )
 
     assert jurisdiction_count == data["count"]
 

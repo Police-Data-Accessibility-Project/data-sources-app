@@ -55,6 +55,7 @@ def permissions_required(permissions: PermissionsEnum):
 def authentication_required(
     allowed_access_methods: list[AccessTypeEnum],
     restrict_to_permissions: Optional[list[PermissionsEnum]] = None,
+    no_auth: bool = False,
 ):
     """
     Checks if the user has access to the resource,
@@ -71,7 +72,7 @@ def authentication_required(
         @wraps(func)
         def wrapper(*args, **kwargs):
             kwargs["access_info"] = get_authentication(
-                allowed_access_methods, restrict_to_permissions
+                allowed_access_methods, restrict_to_permissions, no_auth=no_auth
             )
 
             return func(*args, **kwargs)
@@ -114,7 +115,9 @@ def endpoint_info(
         @wraps(func)
         @handle_exceptions
         @authentication_required(
-            auth_info.allowed_access_methods, auth_info.restrict_to_permissions
+            allowed_access_methods=auth_info.allowed_access_methods,
+            restrict_to_permissions=auth_info.restrict_to_permissions,
+            no_auth=auth_info.no_auth
         )
         @namespace.doc(**doc_kwargs)
         def wrapper(*args, **kwargs):
@@ -162,7 +165,9 @@ def endpoint_info_2(
         @wraps(func)
         @handle_exceptions
         @authentication_required(
-            auth_info.allowed_access_methods, auth_info.restrict_to_permissions
+            allowed_access_methods=auth_info.allowed_access_methods,
+            restrict_to_permissions=auth_info.restrict_to_permissions,
+            no_auth=auth_info.no_auth
         )
         @namespace.doc(**doc_kwargs)
         def wrapper(*args, **kwargs):
@@ -208,6 +213,8 @@ def _get_output_model(namespace: Namespace, output_schema: Schema) -> Optional[M
 
 
 def _add_auth_info_to_parser(auth_info: AuthenticationInfo, parser: RequestParser):
+    if auth_info.no_auth:
+        return
     # Depending on auth info, add authentication information to input parser
     jwt_allowed = AccessTypeEnum.JWT in auth_info.allowed_access_methods
     api_allowed = AccessTypeEnum.API_KEY in auth_info.allowed_access_methods
