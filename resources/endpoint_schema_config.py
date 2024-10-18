@@ -8,7 +8,8 @@ from middleware.primary_resource_logic.data_requests import (
     RelatedSourceByIDDTO, DataRequestsPostDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import SearchRequestSchema, \
-    GetUserFollowedSearchesSchema, SearchRequests, FollowSearchResponseSchema
+    GetUserFollowedSearchesSchema, SearchRequests, FollowSearchResponseSchema, SearchResultsInnerSchema, \
+    SearchResponseSchema
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyRequestsBaseSchema,
     GetManyBaseDTO,
@@ -170,6 +171,11 @@ class SchemaConfigs(Enum):
     )
     # endregion
     #region Search
+    SEARCH_LOCATION_AND_RECORD_TYPE_GET = EndpointSchemaConfig(
+        input_schema=SearchRequestSchema(),
+        output_schema=SearchResponseSchema(),
+        input_dto_class=SearchRequests
+    )
     SEARCH_FOLLOW_GET = EndpointSchemaConfig(
         output_schema=GetUserFollowedSearchesSchema(),
     )
