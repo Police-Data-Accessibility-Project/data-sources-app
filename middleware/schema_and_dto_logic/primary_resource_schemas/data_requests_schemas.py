@@ -181,7 +181,9 @@ class DataRequestsPostSchema(Schema):
     )
     location_infos = fields.List(
         fields.Nested(
-            nested=LocationInfoSchema(),
+            nested=LocationInfoSchema(
+                exclude=["id"]
+            ),
             metadata=get_json_metadata(
                 "The locations associated with the data request",
                 nested_dto_class=LocationInfoDTO
