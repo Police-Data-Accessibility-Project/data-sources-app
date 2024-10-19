@@ -1,4 +1,4 @@
-from marshmallow import fields, Schema
+from marshmallow import fields, Schema, post_load
 
 from database_client.enums import RequestStatus, RequestUrgency
 from middleware.enums import RecordType
@@ -194,6 +194,13 @@ class DataRequestsPostSchema(Schema):
         allow_none=True,
         metadata=get_json_metadata("The locations associated with the data request"),
     )
+
+    @post_load
+    def location_infos_convert_empty_list_to_none(self, in_data, **kwargs):
+        location_infos = in_data.get("location_infos", None)
+        if location_infos == []:
+            in_data["location_infos"] = None
+        return in_data
 
 
 GetManyDataRequestsSchema = create_get_many_schema(
