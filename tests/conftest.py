@@ -67,6 +67,8 @@ def client_with_mock_db(mocker, monkeypatch) -> ClientWithMockDB:
     mock_db = mocker.MagicMock()
     monkeypatch.setattr("app.initialize_psycopg_connection", lambda: mock_db)
     app = create_app()
+    app.config["TESTING"] = True
+    app.config["PROPAGATE_EXCEPTIONS"] = True
     with app.test_client() as client:
         yield ClientWithMockDB(client, mock_db)
 
@@ -132,7 +134,7 @@ def bypass_authentication_required(monkeypatch):
     access_info_mock = MagicMock()
     monkeypatch.setattr(
         "middleware.decorators.get_authentication",
-        lambda a, b, c: access_info_mock,
+        lambda a, b, no_auth: access_info_mock,
     )
     return access_info_mock
 
