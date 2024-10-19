@@ -111,11 +111,11 @@ DetailLevelLiteral = Literal[
 AccessTypeLiteral = Literal["Web page", "API", "Download"]
 UpdateMethodLiteral = Literal["Insert", "No updates", "Overwrite"]
 RequestUrgencyLiteral = Literal[
-    "Urgent (Less than a week)",
-    "Somewhat urgent (Less than a month)",
-    "Not urgent (A few months)",
-    "Long-term (6 months or more)",
-    "Indefinite/Unknown",
+    "urgent",
+    "somewhat_urgent",
+    "not_urgent",
+    "long_term",
+    "indefinite_unknown",
 ]
 LocationTypeLiteral = Literal[
     "State",
