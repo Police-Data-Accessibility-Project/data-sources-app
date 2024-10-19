@@ -25,7 +25,7 @@ from tests.conftest import dev_db_client, flask_client_with_db
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
 from tests.helper_scripts.common_test_data import (
     create_test_data_request,
-    TestDataCreatorFlask, get_sample_location_info,
+    TestDataCreatorFlask,
 )
 from tests.helper_scripts.constants import (
     DATA_REQUESTS_BASE_ENDPOINT,
@@ -126,8 +126,18 @@ def test_data_requests_post(
 
     submission_notes = uuid.uuid4().hex
 
-    location_info_1 = get_sample_location_info()
-    location_info_2 = get_sample_location_info()
+    location_info_1 = {
+        "type": "Locality",
+        "state": "California",
+        "county": "Orange",
+        "locality": 'Laguna Hills',
+    }
+    location_info_2 = {
+        "type": "Locality",
+        "state": "California",
+        "county": "Orange",
+        "locality": 'Seal Beach',
+    }
 
     json_request = {
             "request_info": {
@@ -167,9 +177,9 @@ def test_data_requests_post(
     locations = data["locations"]
     assert len(locations) == 2
     for location in locations:
-        if location["locality_name"] == location_info_1["locality_name"]:
+        if location["locality_name"] == location_info_1["locality"]:
             continue
-        if location["locality_name"] == location_info_2["locality_name"]:
+        if location["locality_name"] == location_info_2["locality"]:
             continue
         assert False
 

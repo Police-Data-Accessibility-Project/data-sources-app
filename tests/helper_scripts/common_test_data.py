@@ -267,15 +267,6 @@ class TestDataCreatorFlask:
 
         # TODO: Create a tuple providing all 4 id's -- for the user, the data_source, the agency, and the data_request
 
-def get_sample_location_info(name: Optional[str] = None) -> dict:
-    if name is None:
-        name = uuid.uuid4().hex
-    return {
-        "type": "Locality",
-        "state_iso": "CA",
-        "county_fips": "06087",
-        "locality_name": name,
-    }
 
 def get_sample_agency_post_parameters(
     submitted_name,

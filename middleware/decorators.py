@@ -145,7 +145,7 @@ def endpoint_info_2(
         input_doc_info = get_restx_param_documentation(
             namespace=namespace,
             schema=schema_config.value.input_schema,
-            model_name=f"{schema_config.name}_input",
+            model_name=f"{schema_config.name}_{namespace.name}_input",
         )
     else:
         input_doc_info = None
@@ -193,12 +193,15 @@ def _update_doc_kwargs(
 
 
 def _update_responses(doc_kwargs, namespace, output_schema, response_info):
+    output_model = _get_output_model(namespace, output_schema)
     if response_info.response_dictionary is None:
-        output_model = _get_output_model(namespace, output_schema)
         doc_kwargs["responses"] = create_response_dictionary(
             success_message=response_info.success_message, success_model=output_model
         )
     else:
+        if output_model is not None:
+            response_info.response_dictionary[200] = response_info.response_dictionary[200], output_model
+
         doc_kwargs["responses"] = response_info.response_dictionary
 
 
@@ -207,6 +210,7 @@ def _get_output_model(namespace: Namespace, output_schema: Schema) -> Optional[M
         return get_restx_param_documentation(
             namespace=namespace,
             schema=output_schema,
+            model_name=f"{namespace.name}_{output_schema.__class__.__name__}_output",
         ).model
     else:
         return None
