@@ -43,6 +43,7 @@ from middleware.common_response_formatting import (
     multiple_results_response,
     message_response, created_id_response,
 )
+from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import DataRequestLocationInfoPostDTO
 from utilities.enums import SourceMappingEnum
 
 RELATION = Relations.DATA_REQUESTS.value
@@ -85,7 +86,31 @@ class RequestInfoPostDTO:
 @dataclass
 class DataRequestsPostDTO:
     request_info: RequestInfoPostDTO
-    location_infos: Optional[list[LocationInfoDTO]] = None
+    location_infos: Optional[list[DataRequestLocationInfoPostDTO]] = None
+
+def get_location_id_for_data_requests(
+    db_client: DatabaseClient, location_info: dict
+) -> int:
+    """
+    Get the location id for the data request
+    :param db_client:
+    :param location_info:
+    :return:
+    """
+    # Rename keys to match where mappings
+    revised_location_info = {
+        "type": location_info["type"],
+        "state_name": location_info["state"],
+        "county_name": location_info["county"],
+        "locality_name": location_info["locality"],
+    }
+
+    location_id = db_client.get_location_id(
+        where_mappings=WhereMapping.from_dict(revised_location_info)
+    )
+    if location_id is None:
+        raise InvalidLocationError()
+    return location_id
 
 def get_data_requests_relation_role(
     db_client: DatabaseClient, data_request_id: Optional[int], access_info: AccessInfo
@@ -158,20 +183,20 @@ def create_data_request_wrapper(
     )
 
 
-def _get_location_ids(db_client, dto):
+def _get_location_ids(db_client, dto: DataRequestsPostDTO):
     location_ids = []
     if dto.location_infos is None:
         return location_ids
     for location_info in dto.location_infos:
         try:
-            location_id = get_location_id(
+            location_id = get_location_id_for_data_requests(
                 db_client=db_client,
                 location_info=location_info
             )
         except InvalidLocationError:
             FlaskResponseManager.abort(
                 code=HTTPStatus.BAD_REQUEST,
-                message=f"Invalid location: {asdict(location_info)}"
+                message=f"Invalid location: {location_info}"
             )
 
         location_ids.append(location_id)
