@@ -7,15 +7,20 @@ from middleware.primary_resource_logic.data_requests import (
     RelatedSourceByIDSchema,
     RelatedSourceByIDDTO, DataRequestsPostDTO,
 )
+from middleware.primary_resource_logic.typeahead_suggestion_logic import TypeaheadLocationsOuterResponseSchema, \
+    TypeaheadAgenciesOuterResponseSchema
+from middleware.primary_resource_logic.unique_url_checker import UniqueURLCheckerRequestSchema, \
+    UniqueURLCheckerResponseOuterSchema, UniqueURLCheckerRequestDTO
 from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import SearchRequestSchema, \
-    GetUserFollowedSearchesSchema, SearchRequests, FollowSearchResponseSchema
+    GetUserFollowedSearchesSchema, SearchRequests, FollowSearchResponseSchema, SearchResultsInnerSchema, \
+    SearchResponseSchema
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyRequestsBaseSchema,
     GetManyBaseDTO,
     GetByIDBaseSchema,
     GetByIDBaseDTO,
     EntryCreateUpdateRequestDTO,
-    EntryDataRequestSchema,
+    EntryDataRequestSchema, TypeaheadDTO, TypeaheadQuerySchema,
 )
 from middleware.schema_and_dto_logic.custom_types import DTOTypes
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
@@ -57,6 +62,12 @@ class EndpointSchemaConfig:
         output_schema: Optional[Schema] = None,
         input_dto_class: Optional[Type[DTOTypes]] = None,
     ):
+        """
+
+        :param input_schema: Describes the schema to be input on a request
+        :param output_schema: Describes the schema to be output on a successful request
+        :param input_dto_class: Describes the DTO which will be populated based on the input schema.
+        """
         self.input_schema = input_schema
         self.output_schema = output_schema
         self.input_dto_class = input_dto_class
@@ -170,6 +181,11 @@ class SchemaConfigs(Enum):
     )
     # endregion
     #region Search
+    SEARCH_LOCATION_AND_RECORD_TYPE_GET = EndpointSchemaConfig(
+        input_schema=SearchRequestSchema(),
+        output_schema=SearchResponseSchema(),
+        input_dto_class=SearchRequests
+    )
     SEARCH_FOLLOW_GET = EndpointSchemaConfig(
         output_schema=GetUserFollowedSearchesSchema(),
     )
@@ -188,4 +204,23 @@ class SchemaConfigs(Enum):
         output_schema=MessageSchema(),
     )
 
+    #endregion
+    #region Typeahead
+    TYPEAHEAD_LOCATIONS = EndpointSchemaConfig(
+        input_schema=TypeaheadQuerySchema(),
+        output_schema=TypeaheadLocationsOuterResponseSchema(),
+        input_dto_class=TypeaheadDTO
+    )
+    TYPEAHEAD_AGENCIES = EndpointSchemaConfig(
+        input_schema=TypeaheadQuerySchema(),
+        output_schema=TypeaheadAgenciesOuterResponseSchema(),
+        input_dto_class=TypeaheadDTO
+    )
+    #endregion
+    #region Checker
+    CHECKER_GET = EndpointSchemaConfig(
+        input_schema=UniqueURLCheckerRequestSchema(),
+        output_schema=UniqueURLCheckerResponseOuterSchema(),
+        input_dto_class=UniqueURLCheckerRequestDTO
+    )
     #endregion

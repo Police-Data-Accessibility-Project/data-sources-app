@@ -118,7 +118,7 @@ class EntryCreateUpdateRequestDTO:
         )
 
 
-class TypeaheadSchema(Schema):
+class TypeaheadQuerySchema(Schema):
     query = fields.Str(
         required=True,
         metadata={

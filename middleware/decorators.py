@@ -55,6 +55,7 @@ def permissions_required(permissions: PermissionsEnum):
 def authentication_required(
     allowed_access_methods: list[AccessTypeEnum],
     restrict_to_permissions: Optional[list[PermissionsEnum]] = None,
+    no_auth: bool = False,
 ):
     """
     Checks if the user has access to the resource,
@@ -71,7 +72,7 @@ def authentication_required(
         @wraps(func)
         def wrapper(*args, **kwargs):
             kwargs["access_info"] = get_authentication(
-                allowed_access_methods, restrict_to_permissions
+                allowed_access_methods, restrict_to_permissions, no_auth=no_auth
             )
 
             return func(*args, **kwargs)
@@ -114,7 +115,9 @@ def endpoint_info(
         @wraps(func)
         @handle_exceptions
         @authentication_required(
-            auth_info.allowed_access_methods, auth_info.restrict_to_permissions
+            allowed_access_methods=auth_info.allowed_access_methods,
+            restrict_to_permissions=auth_info.restrict_to_permissions,
+            no_auth=auth_info.no_auth
         )
         @namespace.doc(**doc_kwargs)
         def wrapper(*args, **kwargs):
@@ -142,7 +145,7 @@ def endpoint_info_2(
         input_doc_info = get_restx_param_documentation(
             namespace=namespace,
             schema=schema_config.value.input_schema,
-            model_name=f"{schema_config.name}_input",
+            model_name=f"{schema_config.name}_{namespace.name}_input",
         )
     else:
         input_doc_info = None
@@ -162,7 +165,9 @@ def endpoint_info_2(
         @wraps(func)
         @handle_exceptions
         @authentication_required(
-            auth_info.allowed_access_methods, auth_info.restrict_to_permissions
+            allowed_access_methods=auth_info.allowed_access_methods,
+            restrict_to_permissions=auth_info.restrict_to_permissions,
+            no_auth=auth_info.no_auth
         )
         @namespace.doc(**doc_kwargs)
         def wrapper(*args, **kwargs):
@@ -188,12 +193,15 @@ def _update_doc_kwargs(
 
 
 def _update_responses(doc_kwargs, namespace, output_schema, response_info):
+    output_model = _get_output_model(namespace, output_schema)
     if response_info.response_dictionary is None:
-        output_model = _get_output_model(namespace, output_schema)
         doc_kwargs["responses"] = create_response_dictionary(
             success_message=response_info.success_message, success_model=output_model
         )
     else:
+        if output_model is not None:
+            response_info.response_dictionary[200] = response_info.response_dictionary[200], output_model
+
         doc_kwargs["responses"] = response_info.response_dictionary
 
 
@@ -202,12 +210,15 @@ def _get_output_model(namespace: Namespace, output_schema: Schema) -> Optional[M
         return get_restx_param_documentation(
             namespace=namespace,
             schema=output_schema,
+            model_name=f"{namespace.name}_{output_schema.__class__.__name__}_output",
         ).model
     else:
         return None
 
 
 def _add_auth_info_to_parser(auth_info: AuthenticationInfo, parser: RequestParser):
+    if auth_info.no_auth:
+        return
     # Depending on auth info, add authentication information to input parser
     jwt_allowed = AccessTypeEnum.JWT in auth_info.allowed_access_methods
     api_allowed = AccessTypeEnum.API_KEY in auth_info.allowed_access_methods

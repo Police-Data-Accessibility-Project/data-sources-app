@@ -1,14 +1,15 @@
-from marshmallow import fields, Schema
+from marshmallow import fields, Schema, post_load
 
 from database_client.enums import RequestStatus, RequestUrgency
 from middleware.enums import RecordType
-from middleware.primary_resource_logic.data_requests import DataRequestsPostDTO, RequestInfoPostDTO
+from middleware.primary_resource_logic.data_requests import RequestInfoPostDTO
+from middleware.primary_resource_logic.typeahead_suggestion_logic import TypeaheadLocationsResponseSchema
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import LocationInfoSchema, LocationInfoDTO
+from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import DataRequestLocationInfoPostDTO
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
     DataSourceExpandedSchema,
 )
 from middleware.schema_and_dto_logic.schema_helpers import (
-    create_post_schema,
     create_get_many_schema,
     create_get_by_id_schema,
 )
@@ -181,16 +182,25 @@ class DataRequestsPostSchema(Schema):
     )
     location_infos = fields.List(
         fields.Nested(
-            nested=LocationInfoSchema(),
+            nested=TypeaheadLocationsResponseSchema(
+                exclude=["display_name"]
+            ),
             metadata=get_json_metadata(
                 "The locations associated with the data request",
-                nested_dto_class=LocationInfoDTO
+                nested_dto_class=DataRequestLocationInfoPostDTO
             ),
         ),
         required=False,
         allow_none=True,
         metadata=get_json_metadata("The locations associated with the data request"),
     )
+
+    @post_load
+    def location_infos_convert_empty_list_to_none(self, in_data, **kwargs):
+        location_infos = in_data.get("location_infos", None)
+        if location_infos == []:
+            in_data["location_infos"] = None
+        return in_data
 
 
 GetManyDataRequestsSchema = create_get_many_schema(

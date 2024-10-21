@@ -37,6 +37,7 @@ class PermissionsActionEnum(Enum):
 class AccessTypeEnum(Enum):
     JWT = auto()
     API_KEY = auto()
+    NO_AUTH = auto()
 
 
 class Relations(Enum):

@@ -56,11 +56,12 @@ def patch_abort(monkeypatch, path: str) -> MagicMock:
     return mock
 
 
-def patch_and_return_mock(path: str, monkeypatch) -> MagicMock:
+def patch_and_return_mock(path: str, monkeypatch, returns_test_response: bool = False) -> MagicMock:
     mock = MagicMock()
+    if returns_test_response:
+        mock.return_value = TEST_RESPONSE
     monkeypatch.setattr(path, mock)
     return mock
-
 
 def patch_make_response(path: str, monkeypatch) -> MagicMock:
     mock = MagicMock()

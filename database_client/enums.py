@@ -148,8 +148,8 @@ class RequestUrgency(Enum):
     Correlates to the request_urgency enum in the database
     """
 
-    URGENT = "Urgent (Less than a week)"
-    SOMEWHAT_URGENT = "Somewhat urgent (Less than a month)"
-    NOT_URGENT = "Not urgent (A few months)"
-    LONG_TERM = "Long-term (6 months or more)"
-    INDEFINITE = "Indefinite/Unknown"
+    URGENT = "urgent"  # Less than a week
+    SOMEWHAT_URGENT = "somewhat_urgent"  # Less than a month
+    NOT_URGENT = "not_urgent"  # A few months
+    LONG_TERM = "long_term"  # A year or more
+    INDEFINITE = "indefinite_unknown"  # Indefinite or unknown length of time
