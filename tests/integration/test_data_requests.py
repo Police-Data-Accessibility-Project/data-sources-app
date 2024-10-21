@@ -124,6 +124,38 @@ def test_data_requests_post(
     tdc = test_data_creator_flask
     standard_tus = tdc.standard_user()
 
+    def post_data_request(
+        json_request: dict,
+        use_authorization_header=True,
+        expected_response_status: HTTPStatus = HTTPStatus.OK
+    ) -> dict:
+        if use_authorization_header:
+            header = standard_tus.jwt_authorization_header
+        else:
+            header = standard_tus.api_authorization_header
+        return run_and_validate_request(
+            flask_client=tdc.flask_client,
+            http_method="post",
+            endpoint=DATA_REQUESTS_BASE_ENDPOINT,
+            headers=header,
+            json=json_request,
+            expected_response_status=expected_response_status
+        )
+
+    def get_data_request(
+        data_request_id: int
+    ):
+        return run_and_validate_request(
+        flask_client=tdc.flask_client,
+        http_method="get",
+        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
+            data_request_id=data_request_id
+        ),
+        headers=standard_tus.jwt_authorization_header,
+        expected_schema=SchemaConfigs.DATA_REQUESTS_BY_ID_GET.value.output_schema,
+    )
+
+
     submission_notes = uuid.uuid4().hex
 
     location_info_1 = {
@@ -153,24 +185,10 @@ def test_data_requests_post(
 
         }
 
-    json_data = run_and_validate_request(
-        flask_client=tdc.flask_client,
-        http_method="post",
-        endpoint=DATA_REQUESTS_BASE_ENDPOINT,
-        headers=standard_tus.jwt_authorization_header,
-        json=json_request,
-    )
+    json_data = post_data_request(json_request)
 
     # Test that data request was created and can now be retrieved
-    json_data = run_and_validate_request(
-        flask_client=tdc.flask_client,
-        http_method="get",
-        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
-            data_request_id=json_data["id"]
-        ),
-        headers=standard_tus.jwt_authorization_header,
-        expected_schema=SchemaConfigs.DATA_REQUESTS_BY_ID_GET.value.output_schema,
-    )
+    json_data = get_data_request(json_data["id"])
 
     data = json_data[DATA_KEY]
 
@@ -190,25 +208,32 @@ def test_data_requests_post(
     assert data["creator_user_id"] == user_id
     assert data["request_urgency"] == RequestUrgency.URGENT.value
 
+    # Test that if no location info is provided, the result has no locations associated with it
+    json_request = {
+        "request_info": {
+            "submission_notes": submission_notes,
+            "title": uuid.uuid4().hex,
+            "request_urgency": RequestUrgency.URGENT.value,
+        },
+    }
+    json_data = post_data_request(json_request)
+    json_data = get_data_request(json_data["id"])
+    data = json_data[DATA_KEY]
+
+    locations = data["locations"]
+    assert len(locations) == 0
 
 
     # Check that response is forbidden for standard user using API header
-    run_and_validate_request(
-        flask_client=tdc.flask_client,
-        http_method="post",
-        endpoint=DATA_REQUESTS_BASE_ENDPOINT,
-        headers=standard_tus.api_authorization_header,
-        json=json_request,
-        expected_response_status=HTTPStatus.UNAUTHORIZED,
+    post_data_request(
+        json_request,
+        use_authorization_header=False,
+        expected_response_status=HTTPStatus.UNAUTHORIZED
     )
 
     # Check that response fails if using invalid columns
-    run_and_validate_request(
-        flask_client=tdc.flask_client,
-        http_method="post",
-        endpoint=DATA_REQUESTS_BASE_ENDPOINT,
-        headers=standard_tus.jwt_authorization_header,
-        json={
+    post_data_request(
+        json_request={
             "request_info": {
                 "submission_notes": submission_notes,
                 "title": uuid.uuid4().hex,
