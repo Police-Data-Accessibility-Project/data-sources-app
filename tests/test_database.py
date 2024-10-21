@@ -6,18 +6,19 @@ which test the database-external views and functions
 
 import uuid
 from collections import namedtuple
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import psycopg
 import pytest
+from psycopg import sql
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import ApprovalStatus
+from database_client.enums import ApprovalStatus, LocationType, RequestStatus
 from middleware.enums import Relations
 from tests.conftest import live_database_client
 from conftest import test_data_creator_db_client
-from tests.helper_scripts.common_test_data import TestDataCreatorDBClient
+from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import TestDataCreatorDBClient
 
 ID_COLUMN = "state_iso"
 FAKE_STATE_INFO = {"state_iso": "ZZ", "state_name": "Zaldoniza"}
@@ -393,3 +394,288 @@ def test_approval_status_updated_at(
 
     new_approval_status_updated_at = get_approval_status_updated_at()
     assert approval_status_updated_at == new_approval_status_updated_at
+
+
+def test_qualifying_notifications_view(test_data_creator_db_client: TestDataCreatorDBClient):
+    tdc = test_data_creator_db_client
+    tdc.clear_test_data()
+    old_date = datetime.now() - timedelta(days=60)
+
+    # Set all non-test data sources and data requests to the old date
+    tdc.db_client.execute_raw_sql(sql.SQL("""
+    UPDATE data_sources
+    SET approval_status_updated_at = {old_date}
+    WHERE NAME NOT ILIKE 'Test%'
+    """).format(old_date=old_date))
+
+    tdc.db_client.execute_raw_sql(sql.SQL("""
+    UPDATE data_requests
+    SET date_status_last_changed = {old_date}
+    WHERE SUBMISSION_NOTES NOT ILIKE 'Test%'
+    """).format(old_date=old_date))
+
+    # Create two locations
+    location_1_id = tdc.locality()
+    location_2_id = tdc.locality()
+
+
+    # Create agency and tie to location
+    agency_id = tdc.agency(
+        location_id=location_1_id
+    )
+
+    def create_data_source(old_status_updated_at: bool = False):
+        ds_info = tdc.data_source(
+            approval_status=ApprovalStatus.APPROVED
+        )
+        tdc.link_data_source_to_agency(
+            data_source_id=ds_info.id,
+            agency_id=agency_id.id,
+        )
+        if old_status_updated_at:
+            tdc.db_client.update_data_source(
+                entry_id=ds_info.id,
+                column_edit_mappings={"approval_status_updated_at": old_date}
+            )
+        return ds_info
+
+    def create_data_request(
+        request_status: RequestStatus,
+        old_status_updated_at: bool = False
+    ):
+        dr_info = tdc.data_request()
+        tdc.db_client.update_data_request(
+            column_edit_mappings={
+                "request_status": request_status.value
+            },
+            entry_id=dr_info.id
+        )
+        tdc.db_client.create_request_location_relation(
+            column_value_mappings={
+                "data_request_id": dr_info.id,
+                "location_id": location_2_id
+            }
+        )
+        if old_status_updated_at:
+            tdc.db_client.update_data_request(
+                entry_id=dr_info.id,
+                column_edit_mappings={"date_status_last_changed": old_date}
+            )
+        return dr_info
+
+    # Create two data sources tied to the agency; set both to approve,
+    # but have one's `status_updated_at` be changed to two months ago,
+    ds_info_1 = create_data_source()
+    ds_info_2 = create_data_source(old_status_updated_at=True)
+
+    # Create two data requests tied to location_2; set both to 'Ready to Start'
+    # and have one's `status_updated_at` be changed to two months ago.
+    dr_open_info_1 = create_data_request(RequestStatus.READY_TO_START)
+    dr_open_info_2 = create_data_request(RequestStatus.READY_TO_START, old_status_updated_at=True)
+
+    # Create two data requests tied to location_2; set both to 'Complete'
+    # and have one's `status_updated_at` be changed to two months ago.
+    dr_active_info_1 = create_data_request(RequestStatus.COMPLETE)
+    dr_active_info_2 = create_data_request(RequestStatus.COMPLETE, old_status_updated_at=True)
+
+    # Select from `qualifying_notifications_view`
+    # and confirm that only the three recent results are in notifications
+    # and that their location ids are correct
+    results = tdc.db_client._select_from_relation(
+        relation_name=Relations.QUALIFYING_NOTIFICATIONS.value,
+        columns=[
+            "id",
+            "location_id"
+        ]
+    )
+
+    assert len(results) == 3
+    d = {}
+    for result in results:
+        d[result["id"]] = result["location_id"]
+    assert d[ds_info_1.id] == location_1_id
+    assert d[dr_open_info_1.id] == location_2_id
+    assert d[dr_active_info_1.id] == location_2_id
+
+
+def test_dependent_locations_view(test_data_creator_db_client: TestDataCreatorDBClient):
+    tdc = test_data_creator_db_client
+    tdc.clear_test_data()
+    def get_location_id(d: dict):
+        return tdc.db_client.get_location_id(
+            where_mappings=WhereMapping.from_dict(d)
+        )
+
+    def is_dependent_location(
+        dependent_location_id: int,
+        parent_location_id: int
+    ):
+        results = tdc.db_client._select_from_relation(
+            relation_name=Relations.DEPENDENT_LOCATIONS.value,
+            columns=["dependent_location_id"],
+            where_mappings={
+                "parent_location_id": parent_location_id,
+                "dependent_location_id": dependent_location_id
+            }
+        )
+        return len(results) == 1
+
+    # Get location IDs for Pittsburgh, Allegheny County, and Pennsylvania
+    pittsburgh_id = get_location_id({
+        "state_iso": "PA",
+        "county_name": "Allegheny",
+        "locality_name": "Pittsburgh",
+    })
+
+    allegheny_county_id = get_location_id({
+        "state_iso": "PA",
+        "county_name": "Allegheny",
+        "type": LocationType.COUNTY,
+    })
+
+    pennsylvania_id = get_location_id({
+        "state_iso": "PA",
+        "type": LocationType.STATE,
+    })
+
+    # Confirm that in the dependent locations view, Pittsburgh is a
+    # dependent location of both Allegheny County and Pennsylvania
+    assert is_dependent_location(
+        dependent_location_id=pittsburgh_id,
+        parent_location_id=allegheny_county_id
+    )
+
+    assert is_dependent_location(
+        dependent_location_id=pittsburgh_id,
+        parent_location_id=pennsylvania_id
+    )
+
+    # Confirm that in the dependent locations view, Allegheny County is
+    # a dependent location of Pennsylvania
+    assert is_dependent_location(
+        dependent_location_id=allegheny_county_id,
+        parent_location_id=pennsylvania_id
+    )
+
+    # Get location ID for California
+    california_id = get_location_id({
+        "state_iso": "CA",
+        "type": LocationType.STATE,
+    })
+
+    # Confirm that in the dependent locations view, Allegheny County is NOT
+    # a dependent location of California
+    assert not is_dependent_location(
+        dependent_location_id=allegheny_county_id,
+        parent_location_id=california_id
+    )
+
+    # And that Pittsburgh is NOT a dependent location of California
+    assert not is_dependent_location(
+        dependent_location_id=pittsburgh_id,
+        parent_location_id=california_id
+    )
+
+    # Get location for Orange County, California
+    orange_county_id = get_location_id({
+        "state_iso": "CA",
+        "county_name": "Orange",
+        "type": LocationType.COUNTY,
+    })
+
+    # Confirm that in the dependent locations view, Pittsburgh is NOT
+    # a dependent location of Orange County
+    assert not is_dependent_location(
+        dependent_location_id=pittsburgh_id,
+        parent_location_id=orange_county_id
+    )
+
+
+def test_user_pending_notifications_view(
+    test_data_creator_db_client: TestDataCreatorDBClient,
+):
+    tdc = test_data_creator_db_client
+    tdc.clear_test_data()
+
+    location_both_following = tdc.locality()
+    location_1_following = tdc.locality()
+    location_2_following = tdc.locality()
+
+    # Create two users
+    tus_1 = tdc.user()
+    tus_2 = tdc.user()
+    # Have them both follow the same location
+    tdc.user_follow_location(
+        user_id=tus_1.id,
+        location_id=location_both_following
+    )
+    # Have them both follow a location the other is not following
+    tdc.user_follow_location(
+        user_id=tus_1.id,
+        location_id=location_1_following
+    )
+    tdc.user_follow_location(
+        user_id=tus_2.id,
+        location_id=location_2_following
+    )
+
+    # For these locations, create qualifying events, each of a different type
+
+    # Data Source Approved (Both)
+    agency_info = tdc.agency(location_both_following)
+    ds_info = tdc.data_source(
+        approval_status=ApprovalStatus.APPROVED
+    )
+    tdc.link_data_source_to_agency(
+        data_source_id=ds_info.id,
+        agency_id=agency_info.id
+    )
+
+    # Data Request Opened (1)
+    dr_info_1 = tdc.data_request(
+        request_status=RequestStatus.READY_TO_START
+    )
+    tdc.link_data_request_to_location(
+        data_request_id=dr_info_1.id,
+        location_id=location_both_following
+    )
+
+    # Data Request Completed (2)
+    dr_info_2 = tdc.data_request(
+        request_status=RequestStatus.COMPLETE
+    )
+    tdc.link_data_request_to_location(
+        data_request_id=dr_info_2.id,
+        location_id=location_both_following
+    )
+
+
+    # Confirm that four rows exist when pulled; two for user_1, two for user_2
+    # And that the names, ids, and types are as expected
+    results = tdc.db_client._select_from_relation(
+        relation_name=Relations.USER_PENDING_NOTIFICATIONS.value,
+        columns=[
+            "user_id",
+            "event_name",
+            "entity_id",
+            "entity_type",
+            "entity_name",
+        ]
+    )
+
+    assert len(results) == 4
+    # Count number for each user
+    user_1_count = 0
+    user_2_count = 0
+    for result in results:
+        if result["user_id"] == tus_1.id:
+            user_1_count += 1
+            assert result["entity_id"] in (ds_info.id, dr_info_1.id)
+        elif result["user_id"] == tus_2.id:
+            user_2_count += 1
+            assert result["entity_id"] in (ds_info.id, dr_info_2.id)
+        else:
+            pytest.fail(f"Unexpected user id {result['user_id']}")
+
+    assert user_1_count == 2
+    assert user_2_count == 2

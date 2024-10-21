@@ -14,8 +14,8 @@ from database_client.database_client import DatabaseClient
 from middleware.util import get_env_variable
 from tests.helper_scripts.common_test_data import (
     TestDataCreatorFlask,
-    TestDataCreatorDBClient,
 )
+from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import TestDataCreatorDBClient
 
 # Load environment variables
 dotenv.load_dotenv()

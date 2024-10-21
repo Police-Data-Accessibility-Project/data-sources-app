@@ -1,11 +1,14 @@
 import datetime
 from unittest.mock import MagicMock
+from venv import create
 
 import pytest
+from port_for.docopt import Optional
 
 from database_client.enums import LocationType, RequestStatus
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
-from tests.helper_scripts.common_test_data import TestDataCreatorFlask, TestDataCreatorDBClient
+from tests.helper_scripts.common_test_data import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import TestDataCreatorDBClient
 from conftest import test_data_creator_flask, monkeysession
 from tests.helper_scripts.helper_classes.EndpointCaller import EndpointCallInfo
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
@@ -42,10 +45,7 @@ def test_notifications_followed_searches(
     tdc_db = TestDataCreatorDBClient()
 
     # Create agency and tie to location (Pittsburgh)
-
     agency_info = tdc.agency(location_info=PITTSBURGH_LOCATION_INFO)
-
-
 
     # Create data source with approval status of "approved" and associate with agency
     ds_info = tdc.data_source()
@@ -56,20 +56,33 @@ def test_notifications_followed_searches(
     )
 
     # Create data request with request_status of `Active` and associate with location 'Ohio'
-    dr_info_active_ohio = tdc.data_request(
-        location_info=OHIO_LOCATION_INFO
-    )
-    tdc.update_data_request_status(
-        data_request_id=dr_info_active_ohio.id,
+    def create_test_notification_data_request(
+        location_info: dict,
+        status: RequestStatus,
+        status_updated_at: Optional[datetime] = None
+    ):
+        dr_info = tdc.data_request(
+            location_info=location_info
+        )
+        update_mappings = {
+            "request_status": status.value
+        }
+        if status_updated_at is not None:
+            update_mappings["status_updated_at"] = status_updated_at
+
+        tdc.db_client.update_data_request(
+            entry_id=dr_info.id,
+            column_edit_mappings=update_mappings
+        )
+        return dr_info
+    dr_info_active_ohio = create_test_notification_data_request(
+        location_info=OHIO_LOCATION_INFO,
         status=RequestStatus.ACTIVE,
     )
 
     # Create data request with request_status of `Complete` and associate with location 'Orange County, California'
-    dr_info_complete_orange_county = tdc.data_request(
-        location_info=ORANGE_COUNTY_LOCATION_INFO
-    )
-    tdc.update_data_request_status(
-        data_request_id=dr_info_complete_orange_county.id,
+    dr_info_complete_orange_county = create_test_notification_data_request(
+        location_info=ORANGE_COUNTY_LOCATION_INFO,
         status=RequestStatus.COMPLETE,
     )
 
@@ -90,26 +103,18 @@ def test_notifications_followed_searches(
         }
     )
 
-    dr_info_active_ohio_not_included = tdc.data_request(
-        location_info=OHIO_LOCATION_INFO
-    )
-    tdc.db_client.update_data_request(
-        entry_id=dr_info_active_ohio_not_included.id,
-        column_edit_mappings={
-            "request_status": RequestStatus.ACTIVE.value,
-            "status_updated_at": datetime_two_months_ago
-        }
+    dr_info_active_ohio_not_included = create_test_notification_data_request(
+        location_info=OHIO_LOCATION_INFO,
+        status=RequestStatus.ACTIVE,
+        status_updated_at=datetime_two_months_ago
     )
 
-    dr_info_complete_orange_county_not_included = tdc.data_request(
-        location_info=ORANGE_COUNTY_LOCATION_INFO
-    )
-    tdc.db_client.update_data_request(
-        entry_id=dr_info_complete_orange_county_not_included.id,
-        column_edit_mappings={
-            "request_status": RequestStatus.COMPLETE.value,
-            "status_updated_at": datetime_two_months_ago
-        }
+
+
+    dr_info_complete_orange_county_not_included = create_test_notification_data_request(
+        location_info=ORANGE_COUNTY_LOCATION_INFO,
+        status=RequestStatus.COMPLETE,
+        status_updated_at=datetime_two_months_ago
     )
 
     # Create additional requests and data sources associated with locations not included in the above
@@ -139,9 +144,9 @@ def test_notifications_followed_searches(
             )
         )
 
-    follow_location(user_info=tus_1, location_info=pittsburgh_location_info)
-    follow_location(user_info=tus_1, location_info=ohio_location_info)
-    follow_location(user_info=tus_1, location_info=orange_county_location_info)
+
+    for location in [PITTSBURGH_LOCATION_INFO, OHIO_LOCATION_INFO, ORANGE_COUNTY_LOCATION_INFO]:
+        follow_location(user_info=tus_1, location_info=location)
 
     # Create a different user and have them follow a different location
     # which has no triggering data; they should not receive any notifications

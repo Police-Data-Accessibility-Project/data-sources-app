@@ -873,7 +873,7 @@ class DatabaseClient:
             raise RuntimeError(f"Expected 1 result but found {len(results)}")
         return results[0]
 
-    def get_location_id(self, where_mappings: list[WhereMapping]) -> Optional[int]:
+    def get_location_id(self, where_mappings: Union[list[WhereMapping], dict]) -> Optional[int]:
         result = self._select_single_entry_from_relation(
             relation_name=Relations.LOCATIONS_EXPANDED.value,
             columns=["id"],

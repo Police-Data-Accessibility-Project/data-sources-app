@@ -1,6 +1,5 @@
 import random
 import uuid
-from collections import namedtuple
 from typing import Optional
 
 import psycopg
@@ -26,8 +25,7 @@ from tests.helper_scripts.helper_functions import (
     create_admin_test_user_setup,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-
-TestUserDBInfo = namedtuple("TestUserDBInfo", ["id", "email", "password_digest"])
+from tests.helper_scripts.test_dataclasses import TestDataRequestInfo, TestAgencyInfo
 
 
 def insert_test_column_permission_data(db_client: DatabaseClient):
@@ -118,9 +116,6 @@ def create_data_source_entry_for_url_duplicate_checking(
         raise e
 
 
-TestDataRequestInfo = namedtuple("TestDataRequestInfo", ["id", "submission_notes"])
-
-
 def create_test_data_request(
     flask_client: FlaskClient, jwt_authorization_header: dict, location_info: Optional[dict] = None
 ) -> TestDataRequestInfo:
@@ -145,9 +140,6 @@ def create_test_data_request(
     )
 
     return TestDataRequestInfo(id=json["id"], submission_notes=submission_notes)
-
-
-TestAgencyInfo = namedtuple("TestAgencyInfo", ["id", "submitted_name"])
 
 
 def create_test_agency(flask_client: FlaskClient, jwt_authorization_header: dict):
@@ -340,85 +332,6 @@ def get_sample_agency_post_parameters(
         },
         "location_info": location_info,
     }
-
-
-class TestDataCreatorDBClient:
-    """
-    Creates test data for DatabaseClient tests, using a DatabaseClient
-    """
-
-    def __init__(self):
-        self.db_client = DatabaseClient()
-
-    def user(self) -> TestUserDBInfo:
-        email = uuid.uuid4().hex
-        pw_digest = uuid.uuid4().hex
-
-        user_id = self.db_client.create_new_user(email=email, password_digest=pw_digest)
-        return TestUserDBInfo(id=user_id, email=email, password_digest=pw_digest)
-
-    def data_source(self) -> CreatedDataSource:
-        cds = CreatedDataSource(id=uuid.uuid4().hex, name=uuid.uuid4().hex)
-        source_column_value_mapping = {
-            "name": cds.name,
-        }
-        id = self.db_client.add_new_data_source(
-            column_value_mappings=source_column_value_mapping
-        )
-        return CreatedDataSource(
-            id=id, name=cds.name
-        )
-
-    def update_data_source(self, data_source_id: int, column_value_mappings: dict):
-        self.db_client.update_data_source(
-            entry_id=data_source_id,
-            column_edit_mappings=column_value_mappings
-        )
-
-    def agency(self) -> TestAgencyInfo:
-        agency_name = uuid.uuid4().hex
-        agency_id = self.db_client.create_agency(
-            column_value_mappings={
-                "submitted_name": agency_name,
-                "jurisdiction_type": JurisdictionType.FEDERAL.value
-            }
-        )
-        return TestAgencyInfo(id=agency_id, submitted_name=agency_name)
-
-    def update_agency(self, agency_id: int, column_value_mappings: dict):
-        self.db_client.update_agency(
-            entry_id=agency_id,
-            column_value_mappings=column_value_mappings
-        )
-
-    def data_request(
-        self, user_id: Optional[int] = None, **column_value_kwargs
-    ) -> TestDataRequestInfo:
-        if user_id is None:
-            user_id = self.user().id
-
-        submission_notes = uuid.uuid4().hex
-        data_request_id = self.db_client.create_data_request(
-            column_value_mappings={
-                "submission_notes": submission_notes,
-                "title": uuid.uuid4().hex,
-                "creator_user_id": user_id,
-                **column_value_kwargs,
-            }
-        )
-        return TestDataRequestInfo(
-            id=data_request_id, submission_notes=submission_notes
-        )
-
-    def link_data_request_to_data_source(
-        self, data_request_id: int, data_source_id: str
-    ):
-        self.db_client.create_request_source_relation(
-            column_value_mappings={
-                "data_source_id": data_source_id,
-                "request_id": data_request_id,
-            }
-        )
 
 
 def get_random_number_for_testing():

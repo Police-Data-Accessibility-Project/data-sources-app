@@ -656,6 +656,27 @@ class LinkLocationDataRequest(Base):
     location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
     data_request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
 
+class DependentLocation(Base):
+    __tablename__ = Relations.DEPENDENT_LOCATIONS.value
+    __mapper_args__ = {
+        "primary_key": ["parent_location_id", "dependent_location_id"]
+    }
+
+    parent_location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
+    dependent_location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
+
+class QualifyingNotification(Base):
+    __tablename__ = Relations.QUALIFYING_NOTIFICATIONS.value
+    __mapper_args__ = {
+        "primary_key": ["id", "id_type"]
+    }
+
+    event_name: Mapped[str]
+    id: Mapped[int]
+    id_type: Mapped[str]
+    name: Mapped[str]
+    location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
+
 SQL_ALCHEMY_TABLE_REFERENCE = {
     "agencies": Agency,
     "agencies_expanded": AgencyExpanded,
@@ -678,6 +699,8 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     "link_user_followed_location": LinkUserFollowedLocation,
     "external_accounts": ExternalAccount,
     "data_requests_github_issue_info": DataRequestsGithubIssueInfo,
+    Relations.DEPENDENT_LOCATIONS.value: DependentLocation,
+    Relations.QUALIFYING_NOTIFICATIONS.value: QualifyingNotification
 }
 
 

@@ -9,6 +9,7 @@ from unittest.mock import MagicMock
 import psycopg.errors
 import pytest
 import sqlalchemy
+from marshmallow import Schema
 from sqlalchemy import insert, select, update
 
 from database_client.database_client import DatabaseClient
@@ -22,7 +23,7 @@ from database_client.enums import (
     RelationRoleEnum,
     ColumnPermissionEnum,
     SortOrder,
-    RequestStatus,
+    RequestStatus, ApprovalStatus,
 )
 from middleware.exceptions import (
     UserNotFoundError,
@@ -43,10 +44,10 @@ from tests.helper_scripts.common_test_data import (
     create_agency_entry_for_search_cache,
     create_data_source_entry_for_url_duplicate_checking,
     TestDataCreatorFlask,
-    TestDataCreatorDBClient,
     get_random_number_for_testing,
-    TestDataRequestInfo,
 )
+from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import TestDataCreatorDBClient
+from tests.helper_scripts.test_dataclasses import TestDataRequestInfo
 from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources_if_not_exist,
     setup_get_typeahead_suggestion_test_data,
@@ -1096,6 +1097,60 @@ def test_user_followed_searches_logic(test_data_creator_db_client: TestDataCreat
     )
     assert len(results["data"]) == 1
 
+def test_get_notifications_no_results(live_database_client):
+    """
+    Tests that `get_notifications` returns an empty list when there are no notifications
+    :param live_database_client:
+    :return:
+    """
+
+class NotificationsDBClientOutputSchema(Schema):
+    sources_added = fields.List(fields.Nested(SourceDBClientOutputSchema()))
+    requests_opened = fields.List(fields.Nested(DataRequestDBClientOutputSchema()))
+    requests_closed = fields.List(fields.Nested(DataRequestDBClientOutputSchema()))
+
+def test_get_notifications(test_data_creator_db_client):
+    tdc = test_data_creator_db_client
+    tdc.clear_test_data()
+
+    location_id = tdc.locality()
+
+    # Create agency and tie to location
+    agency_id = tdc.agency(
+        location_id=location_id
+    )
+
+    # Create data source with approval status of "approved" and associate with agency
+    ds_info = tdc.data_source(
+        approval_status=ApprovalStatus.APPROVED
+    )
+    tdc.link_data_source_to_agency(
+        data_source_id=ds_info.id,
+        agency_id=agency_id.id,
+    )
+
+
+    # Create standard user and have them follow location
+    user_info = tdc.user()
+    tdc.db_client.create_followed_search(
+        column_value_mappings={
+            "user_id": user_info.id,
+            "location_id": location_id
+        }
+    )
+
+    # Call `get_notifications`
+    results = tdc.db_client.get_notifications()
+
+    #
+
+def test_get_notifications_source_approved_state_is_state(test_data_creator_db_client):
+    """
+    Test that when user is subscribed to state, and a newly created source is associated with agency
+    connected to that state, then the source appears in `get_notifications`
+    :param test_data_creator_db_client:
+    :return:
+    """
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts
 # def test_search_with_location_and_record_types_test_data(live_database_client, xylonslyvania_test_data):

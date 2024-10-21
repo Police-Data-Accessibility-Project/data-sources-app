@@ -68,6 +68,8 @@ class Relations(Enum):
     LOCATIONS = "locations"
     LOCATIONS_EXPANDED = "locations_expanded"
     USERS = "users"
+    DEPENDENT_LOCATIONS = "dependent_locations"
+    QUALIFYING_NOTIFICATIONS = "qualifying_notifications"
 
 
 class JurisdictionType(Enum):
