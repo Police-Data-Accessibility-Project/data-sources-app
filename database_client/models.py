@@ -405,7 +405,7 @@ class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
         ARRAY(Enum(*get_args(RecordTypeLiteral), name="record_type"), as_tuple=True)
     )
     pdap_response: Mapped[Optional[text]]
-    coverage_range: Mapped[Optional[daterange]]
+    coverage_range: Mapped[Optional[str]]
     data_requirements: Mapped[Optional[text]]
     request_urgency: Mapped[RequestUrgencyLiteral] = mapped_column(
         server_default="Indefinite/Unknown"

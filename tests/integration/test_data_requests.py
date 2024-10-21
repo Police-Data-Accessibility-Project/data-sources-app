@@ -144,6 +144,7 @@ def test_data_requests_post(
                 "submission_notes": submission_notes,
                 "title": uuid.uuid4().hex,
                 "request_urgency": RequestUrgency.URGENT.value,
+                "coverage_range": "2000-2005"
             },
             "location_infos": [
                 location_info_1,
