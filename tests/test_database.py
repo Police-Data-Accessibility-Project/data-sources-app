@@ -6,7 +6,7 @@ which test the database-external views and functions
 
 import uuid
 from collections import namedtuple
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import psycopg
 import pytest
@@ -400,6 +400,7 @@ def test_qualifying_notifications_view(test_data_creator_db_client: TestDataCrea
     tdc = test_data_creator_db_client
     tdc.clear_test_data()
     old_date = datetime.now() - timedelta(days=60)
+    notification_valid_date = datetime.now() - timedelta(days=30)
 
     # Set all non-test data sources and data requests to the old date
     tdc.db_client.execute_raw_sql(sql.SQL("""
@@ -424,7 +425,7 @@ def test_qualifying_notifications_view(test_data_creator_db_client: TestDataCrea
         location_id=location_1_id
     )
 
-    def create_data_source(old_status_updated_at: bool = False):
+    def create_data_source(updated_at_datetime: datetime):
         ds_info = tdc.data_source(
             approval_status=ApprovalStatus.APPROVED
         )
@@ -432,16 +433,15 @@ def test_qualifying_notifications_view(test_data_creator_db_client: TestDataCrea
             data_source_id=ds_info.id,
             agency_id=agency_id.id,
         )
-        if old_status_updated_at:
-            tdc.db_client.update_data_source(
-                entry_id=ds_info.id,
-                column_edit_mappings={"approval_status_updated_at": old_date}
-            )
+        tdc.db_client.update_data_source(
+            entry_id=ds_info.id,
+            column_edit_mappings={"approval_status_updated_at": updated_at_datetime}
+        )
         return ds_info
 
     def create_data_request(
         request_status: RequestStatus,
-        old_status_updated_at: bool = False
+        updated_at_datetime: datetime
     ):
         dr_info = tdc.data_request()
         tdc.db_client.update_data_request(
@@ -456,27 +456,26 @@ def test_qualifying_notifications_view(test_data_creator_db_client: TestDataCrea
                 "location_id": location_2_id
             }
         )
-        if old_status_updated_at:
-            tdc.db_client.update_data_request(
-                entry_id=dr_info.id,
-                column_edit_mappings={"date_status_last_changed": old_date}
-            )
+        tdc.db_client.update_data_request(
+            entry_id=dr_info.id,
+            column_edit_mappings={"date_status_last_changed": updated_at_datetime}
+        )
         return dr_info
 
     # Create two data sources tied to the agency; set both to approve,
     # but have one's `status_updated_at` be changed to two months ago,
-    ds_info_1 = create_data_source()
-    ds_info_2 = create_data_source(old_status_updated_at=True)
+    ds_info_1 = create_data_source(notification_valid_date)
+    ds_info_2 = create_data_source(old_date)
 
     # Create two data requests tied to location_2; set both to 'Ready to Start'
     # and have one's `status_updated_at` be changed to two months ago.
-    dr_open_info_1 = create_data_request(RequestStatus.READY_TO_START)
-    dr_open_info_2 = create_data_request(RequestStatus.READY_TO_START, old_status_updated_at=True)
+    dr_open_info_1 = create_data_request(RequestStatus.READY_TO_START, notification_valid_date)
+    dr_open_info_2 = create_data_request(RequestStatus.READY_TO_START, old_date)
 
     # Create two data requests tied to location_2; set both to 'Complete'
     # and have one's `status_updated_at` be changed to two months ago.
-    dr_active_info_1 = create_data_request(RequestStatus.COMPLETE)
-    dr_active_info_2 = create_data_request(RequestStatus.COMPLETE, old_status_updated_at=True)
+    dr_active_info_1 = create_data_request(RequestStatus.COMPLETE, notification_valid_date)
+    dr_active_info_2 = create_data_request(RequestStatus.COMPLETE, old_date)
 
     # Select from `qualifying_notifications_view`
     # and confirm that only the three recent results are in notifications
@@ -484,7 +483,7 @@ def test_qualifying_notifications_view(test_data_creator_db_client: TestDataCrea
     results = tdc.db_client._select_from_relation(
         relation_name=Relations.QUALIFYING_NOTIFICATIONS.value,
         columns=[
-            "id",
+            "entity_id",
             "location_id"
         ]
     )
@@ -492,7 +491,7 @@ def test_qualifying_notifications_view(test_data_creator_db_client: TestDataCrea
     assert len(results) == 3
     d = {}
     for result in results:
-        d[result["id"]] = result["location_id"]
+        d[result["entity_id"]] = result["location_id"]
     assert d[ds_info_1.id] == location_1_id
     assert d[dr_open_info_1.id] == location_2_id
     assert d[dr_active_info_1.id] == location_2_id
@@ -594,12 +593,37 @@ def test_dependent_locations_view(test_data_creator_db_client: TestDataCreatorDB
 def test_user_pending_notifications_view(
     test_data_creator_db_client: TestDataCreatorDBClient,
 ):
+    current_time = datetime.now(
+        tz=timezone.utc
+    )
+
     tdc = test_data_creator_db_client
     tdc.clear_test_data()
 
     location_both_following = tdc.locality()
-    location_1_following = tdc.locality()
-    location_2_following = tdc.locality()
+    location_state_for_2 = tdc.db_client.get_location_id(
+        where_mappings={
+            "state_iso": "CA",
+            "type": LocationType.STATE.value
+        }
+    )
+    location_county_for_1 = tdc.db_client.get_location_id(
+        where_mappings={
+            "state_iso": "OH",
+            "county_name": "Cuyahoga",
+            "type": LocationType.COUNTY.value
+        }
+    )
+
+    # These are both designed to be fake
+    locality_1_following = tdc.locality(
+        state_iso='OH',
+        county_name='Cuyahoga'
+    )
+    locality_2_following = tdc.locality(
+        state_iso='CA',
+        county_name='Orange'
+    )
 
     # Create two users
     tus_1 = tdc.user()
@@ -609,14 +633,20 @@ def test_user_pending_notifications_view(
         user_id=tus_1.id,
         location_id=location_both_following
     )
-    # Have them both follow a location the other is not following
-    tdc.user_follow_location(
-        user_id=tus_1.id,
-        location_id=location_1_following
-    )
     tdc.user_follow_location(
         user_id=tus_2.id,
-        location_id=location_2_following
+        location_id=location_both_following
+    )
+    # Have them both follow a location the other is not following
+    # User 1 will follow a county, rather than a locality, but should still pick up the locality
+    tdc.user_follow_location(
+        user_id=tus_1.id,
+        location_id=location_county_for_1
+    )
+    # User 2 will follow a state, rather than a locality, but should still pick up the locality
+    tdc.user_follow_location(
+        user_id=tus_2.id,
+        location_id=location_state_for_2
     )
 
     # For these locations, create qualifying events, each of a different type
@@ -637,7 +667,7 @@ def test_user_pending_notifications_view(
     )
     tdc.link_data_request_to_location(
         data_request_id=dr_info_1.id,
-        location_id=location_both_following
+        location_id=locality_1_following
     )
 
     # Data Request Completed (2)
@@ -646,7 +676,7 @@ def test_user_pending_notifications_view(
     )
     tdc.link_data_request_to_location(
         data_request_id=dr_info_2.id,
-        location_id=location_both_following
+        location_id=locality_2_following
     )
 
 
@@ -656,10 +686,12 @@ def test_user_pending_notifications_view(
         relation_name=Relations.USER_PENDING_NOTIFICATIONS.value,
         columns=[
             "user_id",
-            "event_name",
+            "email",
+            "event_type",
             "entity_id",
             "entity_type",
             "entity_name",
+            "event_timestamp"
         ]
     )
 
@@ -668,6 +700,7 @@ def test_user_pending_notifications_view(
     user_1_count = 0
     user_2_count = 0
     for result in results:
+        assert result["event_timestamp"] > current_time
         if result["user_id"] == tus_1.id:
             user_1_count += 1
             assert result["entity_id"] in (ds_info.id, dr_info_1.id)

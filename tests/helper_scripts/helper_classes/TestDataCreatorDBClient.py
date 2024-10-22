@@ -1,7 +1,7 @@
 import uuid
 from typing import Optional
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, and_
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import ApprovalStatus
@@ -38,14 +38,21 @@ class TDCSQLAlchemyHelper:
             like_text="TEST_%"
         )
 
-    def get_county_id(self, county_name: str) -> int:
-        # Note: This assumes a county name is unique
-        # This isn't always true, but should suffice for testing
+    def get_county_id(self, county_name: str, state_iso: str = "PA") -> int:
+        state_id = self.get_state_id(state_iso=state_iso)
         table = SQL_ALCHEMY_TABLE_REFERENCE[Relations.COUNTIES.value]
-        column_name = getattr(table, "name")
+        state_id_column = getattr(table, "state_id")
+        county_name_column = getattr(table, "name")
+        county_id_column = getattr(table, "id")
+        query = select(county_id_column).where(and_(county_name_column == county_name, state_id_column == state_id))
+        result = self.db_client.execute_sqlalchemy(lambda: query)
+        return [row[0] for row in result][0]
+
+    def get_state_id(self, state_iso: str) -> int:
+        table = SQL_ALCHEMY_TABLE_REFERENCE[Relations.US_STATES.value]
+        column_name = getattr(table, "state_iso")
         column_id = getattr(table, "id")
-        where_clause = column_name == county_name
-        query = select(column_id).where(column_name == county_name)
+        query = select(column_id).where(column_name == state_iso)
         result = self.db_client.execute_sqlalchemy(lambda: query)
         return [row[0] for row in result][0]
 
@@ -56,7 +63,7 @@ class TestDataCreatorDBClient:
     """
 
     def __init__(self):
-        self.db_client = DatabaseClient()
+        self.db_client: DatabaseClient = DatabaseClient()
         self.helper = TDCSQLAlchemyHelper()
 
     def test_name(self):
@@ -92,9 +99,17 @@ class TestDataCreatorDBClient:
             like_column_name="name",
         )
 
-    def locality(self) -> int:
+    def locality(
+        self,
+        state_iso: str = "PA",
+        county_name: str = "Allegheny",
+    ) -> int:
+
         # Create locality and return location id
-        county_id = self.helper.get_county_id(county_name="Allegheny")
+        county_id = self.helper.get_county_id(
+            county_name=county_name,
+            state_iso=state_iso
+        )
         locality_name = self.test_name()
         locality_id = self.db_client.create_locality(
             column_value_mappings={

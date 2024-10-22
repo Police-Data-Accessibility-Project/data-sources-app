@@ -47,6 +47,7 @@ from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,
 )
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import TestDataCreatorDBClient
+from tests.helper_scripts.helper_schemas import TestGetPendingNotificationsOutputSchema
 from tests.helper_scripts.test_dataclasses import TestDataRequestInfo
 from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources_if_not_exist,
@@ -1104,12 +1105,7 @@ def test_get_notifications_no_results(live_database_client):
     :return:
     """
 
-class NotificationsDBClientOutputSchema(Schema):
-    sources_added = fields.List(fields.Nested(SourceDBClientOutputSchema()))
-    requests_opened = fields.List(fields.Nested(DataRequestDBClientOutputSchema()))
-    requests_closed = fields.List(fields.Nested(DataRequestDBClientOutputSchema()))
-
-def test_get_notifications(test_data_creator_db_client):
+def test_get_pending_notifications(test_data_creator_db_client):
     tdc = test_data_creator_db_client
     tdc.clear_test_data()
 
@@ -1129,7 +1125,6 @@ def test_get_notifications(test_data_creator_db_client):
         agency_id=agency_id.id,
     )
 
-
     # Create standard user and have them follow location
     user_info = tdc.user()
     tdc.db_client.create_followed_search(
@@ -1140,17 +1135,12 @@ def test_get_notifications(test_data_creator_db_client):
     )
 
     # Call `get_notifications`
-    results = tdc.db_client.get_notifications()
+    results = tdc.db_client.get_pending_notifications()
+    schema = TestGetPendingNotificationsOutputSchema(
+        many=True
+    )
+    schema.load(results)
 
-    #
-
-def test_get_notifications_source_approved_state_is_state(test_data_creator_db_client):
-    """
-    Test that when user is subscribed to state, and a newly created source is associated with agency
-    connected to that state, then the source appears in `get_notifications`
-    :param test_data_creator_db_client:
-    :return:
-    """
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts
 # def test_search_with_location_and_record_types_test_data(live_database_client, xylonslyvania_test_data):

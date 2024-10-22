@@ -668,14 +668,31 @@ class DependentLocation(Base):
 class QualifyingNotification(Base):
     __tablename__ = Relations.QUALIFYING_NOTIFICATIONS.value
     __mapper_args__ = {
-        "primary_key": ["id", "id_type"]
+        "primary_key": ["entity_id", "entity_type"]
     }
 
-    event_name: Mapped[str]
-    id: Mapped[int]
-    id_type: Mapped[str]
-    name: Mapped[str]
+    event_type: Mapped[str]
+    entity_id: Mapped[int]
+    entity_type: Mapped[str]
+    entity_name: Mapped[str]
     location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
+    event_timestamp: Mapped[timestamp]
+
+
+class UserPendingNotification(Base):
+    __tablename__ = Relations.USER_PENDING_NOTIFICATIONS.value
+    __mapper_args__ = {
+        "primary_key": ["user_id", "entity_id"]
+    }
+    event_type: Mapped[str]
+    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
+    email: Mapped[str]
+    entity_id: Mapped[int]
+    entity_type: Mapped[str]
+    entity_name: Mapped[str]
+    location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
+    event_timestamp: Mapped[timestamp]
+
 
 SQL_ALCHEMY_TABLE_REFERENCE = {
     "agencies": Agency,
@@ -700,7 +717,8 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     "external_accounts": ExternalAccount,
     "data_requests_github_issue_info": DataRequestsGithubIssueInfo,
     Relations.DEPENDENT_LOCATIONS.value: DependentLocation,
-    Relations.QUALIFYING_NOTIFICATIONS.value: QualifyingNotification
+    Relations.QUALIFYING_NOTIFICATIONS.value: QualifyingNotification,
+    Relations.USER_PENDING_NOTIFICATIONS.value: UserPendingNotification
 }
 
 
@@ -727,3 +745,4 @@ def convert_to_column_reference(columns: list[str], relation: str) -> list[Colum
             )
 
     return [get_attribute(column) for column in columns]
+

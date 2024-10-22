@@ -71,6 +71,7 @@ class Relations(Enum):
     USERS = "users"
     DEPENDENT_LOCATIONS = "dependent_locations"
     QUALIFYING_NOTIFICATIONS = "qualifying_notifications"
+    USER_PENDING_NOTIFICATIONS = "user_pending_notifications"
 
 
 class JurisdictionType(Enum):
