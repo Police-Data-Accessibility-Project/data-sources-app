@@ -24,7 +24,7 @@ router.beforeEach(async (to, _, next) => {
 	const auth = useAuthStore();
 
 	if (to.meta.auth && !auth.userId) {
-		auth.redirectTo = to.path;
+		auth.redirectTo = to;
 		next({ path: '/sign-in', replace: true });
 	} else {
 		next();
