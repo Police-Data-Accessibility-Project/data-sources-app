@@ -2,6 +2,7 @@
 
 import uuid
 from collections import namedtuple
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 from http import HTTPStatus
 from unittest.mock import MagicMock
@@ -562,3 +563,7 @@ def add_query_params(url, params: dict):
 
     # Rebuild the URL with the updated query parameters
     return urlunparse(url_parts)
+
+
+def get_notification_valid_date():
+    return datetime.now(timezone.utc) - timedelta(days=30)

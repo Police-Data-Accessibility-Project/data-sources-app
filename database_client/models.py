@@ -122,6 +122,13 @@ LocationTypeLiteral = Literal[
     "County",
     "Locality"
 ]
+EventTypeLiteral = Literal[
+    'Request Ready to Start',
+    'Request Complete',
+    'Data Source Approved'
+]
+EntityTypeLiteral = Literal["Data Request", "Data Source"]
+
 
 text = Annotated[Text, None]
 timestamp_tz = Annotated[
@@ -249,7 +256,7 @@ class AgencyExpanded(Base):
     submitted_name = Column(String, nullable=False)
     homepage_url = Column(String)
     jurisdiction_type: Mapped[JurisdictionTypeLiteral] = mapped_column(
-        Enum(*get_args(JurisdictionTypeLiteral)), name="jurisdiction_type"
+        Enum(*get_args(JurisdictionTypeLiteral), name="jurisdiction_type")
     )
     state_iso = Column(String)
     state_name = Column(String)
@@ -656,6 +663,65 @@ class LinkLocationDataRequest(Base):
     location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
     data_request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
 
+class DependentLocation(Base):
+    __tablename__ = Relations.DEPENDENT_LOCATIONS.value
+    __mapper_args__ = {
+        "primary_key": ["parent_location_id", "dependent_location_id"]
+    }
+
+    parent_location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
+    dependent_location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
+
+class QualifyingNotification(Base):
+    __tablename__ = Relations.QUALIFYING_NOTIFICATIONS.value
+    __mapper_args__ = {
+        "primary_key": ["entity_id", "entity_type"]
+    }
+
+    event_type: Mapped[str]
+    entity_id: Mapped[int]
+    entity_type: Mapped[str]
+    entity_name: Mapped[str]
+    location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
+    event_timestamp: Mapped[timestamp]
+
+
+class UserPendingNotification(Base):
+    __tablename__ = Relations.USER_PENDING_NOTIFICATIONS.value
+    __mapper_args__ = {
+        "primary_key": ["user_id", "entity_id"]
+    }
+    event_type: Mapped[EventTypeLiteral] = mapped_column(
+        Enum(*get_args(EventTypeLiteral), name="event_type")
+    )
+    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
+    email: Mapped[str]
+    entity_id: Mapped[int]
+    entity_type: Mapped[EntityTypeLiteral] = mapped_column(
+        Enum(*get_args(EntityTypeLiteral), name="entity_type")
+    )
+    entity_name: Mapped[str]
+    location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
+    event_timestamp: Mapped[timestamp]
+
+class UserNotificationQueue(Base):
+    __tablename__ = Relations.USER_NOTIFICATION_QUEUE.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    event_type: Mapped[EventTypeLiteral] = mapped_column(
+        Enum(*get_args(EventTypeLiteral), name="event_type")
+    )
+    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
+    email: Mapped[str]
+    entity_id: Mapped[int]
+    entity_type: Mapped[EntityTypeLiteral] = mapped_column(
+        Enum(*get_args(EntityTypeLiteral), name="entity_type")
+    )
+    entity_name: Mapped[str]
+    event_timestamp: Mapped[timestamp]
+    sent_at: Mapped[Optional[timestamp]]
+
+
 SQL_ALCHEMY_TABLE_REFERENCE = {
     "agencies": Agency,
     "agencies_expanded": AgencyExpanded,
@@ -678,6 +744,10 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     "link_user_followed_location": LinkUserFollowedLocation,
     "external_accounts": ExternalAccount,
     "data_requests_github_issue_info": DataRequestsGithubIssueInfo,
+    Relations.DEPENDENT_LOCATIONS.value: DependentLocation,
+    Relations.QUALIFYING_NOTIFICATIONS.value: QualifyingNotification,
+    Relations.USER_PENDING_NOTIFICATIONS.value: UserPendingNotification,
+    Relations.USER_NOTIFICATION_QUEUE.value: UserNotificationQueue
 }
 
 
@@ -704,3 +774,4 @@ def convert_to_column_reference(columns: list[str], relation: str) -> list[Colum
             )
 
     return [get_attribute(column) for column in columns]
+
