@@ -27,5 +27,5 @@ def send_password_reset_link(email, token):
     send_via_mailgun(
         to_email=email,
         subject="PDAP Data Sources Reset Password",
-        body=body,
+        text=body,
     )

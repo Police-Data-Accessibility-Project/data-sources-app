@@ -122,6 +122,13 @@ LocationTypeLiteral = Literal[
     "County",
     "Locality"
 ]
+EventTypeLiteral = Literal[
+    'Request Ready to Start',
+    'Request Complete',
+    'Data Source Approved'
+]
+EntityTypeLiteral = Literal["Data Request", "Data Source"]
+
 
 text = Annotated[Text, None]
 timestamp_tz = Annotated[
@@ -249,7 +256,7 @@ class AgencyExpanded(Base):
     submitted_name = Column(String, nullable=False)
     homepage_url = Column(String)
     jurisdiction_type: Mapped[JurisdictionTypeLiteral] = mapped_column(
-        Enum(*get_args(JurisdictionTypeLiteral)), name="jurisdiction_type"
+        Enum(*get_args(JurisdictionTypeLiteral), name="jurisdiction_type")
     )
     state_iso = Column(String)
     state_name = Column(String)
@@ -684,14 +691,35 @@ class UserPendingNotification(Base):
     __mapper_args__ = {
         "primary_key": ["user_id", "entity_id"]
     }
-    event_type: Mapped[str]
+    event_type: Mapped[EventTypeLiteral] = mapped_column(
+        Enum(*get_args(EventTypeLiteral), name="event_type")
+    )
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
     email: Mapped[str]
     entity_id: Mapped[int]
-    entity_type: Mapped[str]
+    entity_type: Mapped[EntityTypeLiteral] = mapped_column(
+        Enum(*get_args(EntityTypeLiteral), name="entity_type")
+    )
     entity_name: Mapped[str]
     location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
     event_timestamp: Mapped[timestamp]
+
+class UserNotificationQueue(Base):
+    __tablename__ = Relations.USER_NOTIFICATION_QUEUE.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    event_type: Mapped[EventTypeLiteral] = mapped_column(
+        Enum(*get_args(EventTypeLiteral), name="event_type")
+    )
+    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
+    email: Mapped[str]
+    entity_id: Mapped[int]
+    entity_type: Mapped[EntityTypeLiteral] = mapped_column(
+        Enum(*get_args(EntityTypeLiteral), name="entity_type")
+    )
+    entity_name: Mapped[str]
+    event_timestamp: Mapped[timestamp]
+    sent_at: Mapped[Optional[timestamp]]
 
 
 SQL_ALCHEMY_TABLE_REFERENCE = {
@@ -718,7 +746,8 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     "data_requests_github_issue_info": DataRequestsGithubIssueInfo,
     Relations.DEPENDENT_LOCATIONS.value: DependentLocation,
     Relations.QUALIFYING_NOTIFICATIONS.value: QualifyingNotification,
-    Relations.USER_PENDING_NOTIFICATIONS.value: UserPendingNotification
+    Relations.USER_PENDING_NOTIFICATIONS.value: UserPendingNotification,
+    Relations.USER_NOTIFICATION_QUEUE.value: UserNotificationQueue
 }
 
 

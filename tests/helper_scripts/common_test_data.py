@@ -7,7 +7,7 @@ from flask.testing import FlaskClient
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import RequestUrgency, RequestStatus
-from middleware.enums import JurisdictionType
+from middleware.enums import JurisdictionType, PermissionsEnum
 from tests.helper_scripts.common_endpoint_calls import (
     create_data_source_with_endpoint,
     CreatedDataSource,
@@ -199,6 +199,8 @@ class TestDataCreatorFlask:
                 json=location_info,
             )
 
+        return ds_info
+
     def data_request(self, user_tus: Optional[TestUserSetup] = None, location_info: Optional[dict] = None) -> TestDataRequestInfo:
         if user_tus is None:
             user_tus = self.get_admin_tus()
@@ -274,6 +276,13 @@ class TestDataCreatorFlask:
         :return:
         """
         return create_test_user_setup(self.flask_client)
+
+    def notifications_user(self) -> TestUserSetup:
+        """
+        Creates a user with notifications permissions.
+        :return:
+        """
+        return create_test_user_setup(self.flask_client, permissions=[PermissionsEnum.NOTIFICATIONS])
 
     def select_only_complex_linked_resources(self):
         """

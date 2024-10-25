@@ -4,10 +4,11 @@ from typing import Optional
 from sqlalchemy import delete, select, and_
 
 from database_client.database_client import DatabaseClient
-from database_client.enums import ApprovalStatus
+from database_client.enums import ApprovalStatus, RequestStatus, EventType
 from database_client.models import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import JurisdictionType, Relations
 from tests.helper_scripts.common_endpoint_calls import CreatedDataSource
+from tests.helper_scripts.helper_functions import get_notification_valid_date
 from tests.helper_scripts.test_dataclasses import TestUserDBInfo, TestAgencyInfo, TestDataRequestInfo
 
 
@@ -56,6 +57,13 @@ class TDCSQLAlchemyHelper:
         result = self.db_client.execute_sqlalchemy(lambda: query)
         return [row[0] for row in result][0]
 
+    def clear_user_notification_queue(self):
+        table = SQL_ALCHEMY_TABLE_REFERENCE[Relations.USER_NOTIFICATION_QUEUE.value]
+        query = delete(table)
+        self.db_client.execute_sqlalchemy(lambda: query)
+
+
+
 
 class TestDataCreatorDBClient:
     """
@@ -99,6 +107,10 @@ class TestDataCreatorDBClient:
             like_column_name="name",
         )
 
+        self.helper.clear_user_notification_queue()
+
+
+
     def locality(
         self,
         state_iso: str = "PA",
@@ -124,6 +136,29 @@ class TestDataCreatorDBClient:
         )
         return location_id
 
+    def create_valid_notification_event(
+            self,
+            event_type: EventType = EventType.DATA_SOURCE_APPROVED,
+            user_id: Optional[int] = None
+    ) -> int:
+        """
+        Create valid notification event and return the id of the created event entity
+        :event_type:
+        :user_id: A user id to follow the given notification event; creates one if none provided
+        :return:
+        """
+        if user_id is None:
+            user_id = self.user().id
+
+        vnec = ValidNotificationEventCreator(self)
+        if event_type == EventType.DATA_SOURCE_APPROVED:
+            return vnec.data_source_approved(user_id)
+        elif event_type == EventType.REQUEST_READY_TO_START:
+            return vnec.data_request_ready_to_start(user_id)
+        elif event_type == EventType.REQUEST_COMPLETE:
+            return vnec.data_request_completed(user_id)
+        else:
+            raise ValueError(f"Invalid event type: {event_type}")
 
 
     def user(self) -> TestUserDBInfo:
@@ -133,8 +168,8 @@ class TestDataCreatorDBClient:
         user_id = self.db_client.create_new_user(email=email, password_digest=pw_digest)
         return TestUserDBInfo(id=user_id, email=email, password_digest=pw_digest)
 
-    def data_source(self, approval_status: Optional[ApprovalStatus]) -> CreatedDataSource:
-        cds = CreatedDataSource(id=uuid.uuid4().hex, name=uuid.uuid4().hex)
+    def data_source(self, approval_status: Optional[ApprovalStatus] = None) -> CreatedDataSource:
+        cds = CreatedDataSource(id=uuid.uuid4().hex, name=self.test_name())
         source_column_value_mapping = {
             "name": cds.name,
         }
@@ -235,3 +270,62 @@ class TestDataCreatorDBClient:
                 "request_id": data_request_id,
             }
         )
+
+
+class ValidNotificationEventCreator:
+    def __init__(self, tdc: TestDataCreatorDBClient):
+        self.tdc = tdc
+        self.notification_valid_date = get_notification_valid_date()
+
+    def data_source_approved(self, user_id: int) -> int:
+        locality_location_id = self.tdc.locality()
+        agency_info = self.tdc.agency(locality_location_id)
+        ds_info = self.tdc.data_source(
+            approval_status=ApprovalStatus.APPROVED
+        )
+        self.tdc.link_data_source_to_agency(
+            data_source_id=ds_info.id,
+            agency_id=agency_info.id
+        )
+        self.tdc.db_client.update_data_source(
+            entry_id=ds_info.id,
+            column_edit_mappings={"approval_status_updated_at": self.notification_valid_date}
+        )
+        self.tdc.user_follow_location(
+            user_id=user_id,
+            location_id=locality_location_id
+        )
+        return ds_info.id
+
+    def _create_data_request(self, request_status: RequestStatus, user_id: int) -> int:
+        dr_info = self.tdc.data_request()
+        locality_location_id = self.tdc.locality()
+        self.tdc.db_client.update_data_request(
+            column_edit_mappings={
+                "request_status": request_status.value
+            },
+            entry_id=dr_info.id
+        )
+        self.tdc.db_client.create_request_location_relation(
+            column_value_mappings={
+                "data_request_id": dr_info.id,
+                "location_id": locality_location_id
+            }
+        )
+        self.tdc.db_client.update_data_request(
+            entry_id=dr_info.id,
+            column_edit_mappings={"date_status_last_changed": self.notification_valid_date}
+        )
+        self.tdc.user_follow_location(
+            user_id=user_id,
+            location_id=locality_location_id
+        )
+        return dr_info.id
+
+
+    def data_request_ready_to_start(self, user_id: int):
+        return self._create_data_request(RequestStatus.READY_TO_START, user_id)
+
+    def data_request_completed(self, user_id: int):
+        return self._create_data_request(RequestStatus.COMPLETE, user_id)
+

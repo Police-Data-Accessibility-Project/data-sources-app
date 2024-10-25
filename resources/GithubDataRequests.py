@@ -20,9 +20,9 @@ class GithubDataRequestsIssues(PsycopgResource):
         auth_info=WRITE_ONLY_AUTH_INFO,
         schema_config=SchemaConfigs.GITHUB_DATA_REQUESTS_ISSUES_POST,
         response_info=ResponseInfo(
-            success_message="Returns the id of the newly created issue."
+            success_message="Issue created."
         ),
-        description="Create  GitHub issue for data request",
+        description="Create GitHub issue for data request",
     )
     def post(self, data_request_id: int, access_info: AccessInfo):
         """

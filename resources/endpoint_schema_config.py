@@ -11,6 +11,7 @@ from middleware.primary_resource_logic.typeahead_suggestion_logic import Typeahe
     TypeaheadAgenciesOuterResponseSchema
 from middleware.primary_resource_logic.unique_url_checker import UniqueURLCheckerRequestSchema, \
     UniqueURLCheckerResponseOuterSchema, UniqueURLCheckerRequestDTO
+from middleware.schema_and_dto_logic.primary_resource_schemas.notifications_schemas import NotificationsResponseSchema
 from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import SearchRequestSchema, \
     GetUserFollowedSearchesSchema, SearchRequests, FollowSearchResponseSchema, SearchResultsInnerSchema, \
     SearchResponseSchema
@@ -224,3 +225,7 @@ class SchemaConfigs(Enum):
         input_dto_class=UniqueURLCheckerRequestDTO
     )
     #endregion
+    #region Notifications
+    NOTIFICATIONS_POST = EndpointSchemaConfig(
+        output_schema=NotificationsResponseSchema(),
+    )

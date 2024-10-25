@@ -3,7 +3,7 @@ Module for testing database client functionality against a live database
 """
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from unittest.mock import MagicMock
 
 import psycopg.errors
@@ -46,13 +46,14 @@ from tests.helper_scripts.common_test_data import (
     TestDataCreatorFlask,
     get_random_number_for_testing,
 )
+from tests.helper_scripts.helper_classes.AnyOrder import AnyOrder
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import TestDataCreatorDBClient
 from tests.helper_scripts.helper_schemas import TestGetPendingNotificationsOutputSchema
 from tests.helper_scripts.test_dataclasses import TestDataRequestInfo
 from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources_if_not_exist,
     setup_get_typeahead_suggestion_test_data,
-    create_test_user_db_client,
+    create_test_user_db_client, get_notification_valid_date,
 )
 from utilities.enums import RecordCategories
 from conftest import test_data_creator_db_client
@@ -1140,6 +1141,116 @@ def test_get_pending_notifications(test_data_creator_db_client):
         many=True
     )
     schema.load(results)
+
+def get_user_notification_queue(db_client: DatabaseClient):
+    return db_client._select_from_relation(
+        relation_name=Relations.USER_NOTIFICATION_QUEUE.value,
+        columns=[
+            "id",
+            "entity_id",
+            "sent_at",
+        ],
+    )
+
+def test_optionally_update_user_notification_queue(test_data_creator_db_client):
+    tdc = test_data_creator_db_client
+    tdc.clear_test_data()
+
+    # Confirm that the queue is empty
+    queue = get_user_notification_queue(tdc.db_client)
+    assert len(queue) == 0
+
+    entity_id = tdc.create_valid_notification_event()
+
+    # Call method
+    tdc.db_client.optionally_update_user_notification_queue()
+
+    # Confirm queue is populated with one entry
+    queue = get_user_notification_queue(tdc.db_client)
+    assert len(queue) == 1
+    assert queue[0]["entity_id"] == entity_id
+
+    # Modify `sent_at` column for the entry
+    expected_sent_at = datetime.now(timezone.utc)
+    tdc.db_client._update_entry_in_table(
+        table_name=Relations.USER_NOTIFICATION_QUEUE.value,
+        entry_id=queue[0]["id"],
+        column_edit_mappings={
+            "sent_at": expected_sent_at
+        }
+    )
+
+
+
+    # Try calling method again
+    tdc.db_client.optionally_update_user_notification_queue()
+
+    # Confirm queue remains populated with the same entry, with the `sent_at` column remaining unchanged
+    queue = get_user_notification_queue(tdc.db_client)
+    assert len(queue) == 1
+    assert queue[0]["entity_id"] == entity_id
+    assert queue[0]["sent_at"] == expected_sent_at
+
+
+    # Change `event_timestamp` of entry to two months ago
+    two_months_ago_event_timestamp = datetime.now(timezone.utc) - timedelta(days=60)
+    tdc.db_client._update_entry_in_table(
+        table_name=Relations.USER_NOTIFICATION_QUEUE.value,
+        entry_id=queue[0]["id"],
+        column_edit_mappings={
+            "event_timestamp": two_months_ago_event_timestamp
+        }
+    )
+    # Change also original entry to two months ago, to ensure it is not pulled again
+    tdc.db_client._update_entry_in_table(
+        table_name=Relations.DATA_SOURCES.value,
+        entry_id=queue[0]["entity_id"],
+        column_edit_mappings={
+            "approval_status_updated_at": two_months_ago_event_timestamp
+        }
+    )
+
+    # Create new valid notification event
+    new_entity_id = tdc.create_valid_notification_event()
+
+    # Call method again
+    tdc.db_client.optionally_update_user_notification_queue()
+
+    # Confirm former entry is no longer in the queue, and new entry is present
+    queue = get_user_notification_queue(tdc.db_client)
+    assert len(queue) == 1
+    assert queue[0]["entity_id"] == new_entity_id
+
+def test_get_next_user_events_and_mark_user_events_as_sent(test_data_creator_db_client):
+    tdc = test_data_creator_db_client
+    tdc.clear_test_data()
+
+    # Create a notification event for an (implicitly created) user
+    entity_id = tdc.create_valid_notification_event()
+
+    # Create another user with two notification events
+    user_id = tdc.user().id
+    entity_id_2 = tdc.create_valid_notification_event(user_id=user_id)
+    entity_id_3 = tdc.create_valid_notification_event(user_id=user_id)
+
+    tdc.db_client.optionally_update_user_notification_queue()
+
+    # Retrieve the single-event user and mark as sent,
+    event_batch = tdc.db_client.get_next_user_event_batch()
+    assert len(event_batch.events) == 1
+    assert event_batch.events[0].entity_id == entity_id
+    tdc.db_client.mark_user_events_as_sent(event_batch.user_id)
+
+    # Run for the two-event user
+    event_batch = tdc.db_client.get_next_user_event_batch()
+    assert len(event_batch.events) == 2
+    assert AnyOrder([event.entity_id for event in event_batch.events]) == [entity_id_2, entity_id_3] or AnyOrder([event.entity_id for event in event_batch.events]) == [entity_id_2, entity_id_3]
+
+    tdc.db_client.mark_user_events_as_sent(event_batch.user_id)
+
+    event_batch = tdc.db_client.get_next_user_event_batch()
+    assert event_batch is None
+
 
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts

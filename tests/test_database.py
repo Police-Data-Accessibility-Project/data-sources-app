@@ -6,9 +6,8 @@ which test the database-external views and functions
 
 import uuid
 from collections import namedtuple
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
-import psycopg
 import pytest
 from psycopg import sql
 
@@ -19,6 +18,7 @@ from middleware.enums import Relations
 from tests.conftest import live_database_client
 from conftest import test_data_creator_db_client
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import TestDataCreatorDBClient
+from tests.helper_scripts.helper_functions import get_notification_valid_date
 
 ID_COLUMN = "state_iso"
 FAKE_STATE_INFO = {"state_iso": "ZZ", "state_name": "Zaldoniza"}
@@ -400,7 +400,7 @@ def test_qualifying_notifications_view(test_data_creator_db_client: TestDataCrea
     tdc = test_data_creator_db_client
     tdc.clear_test_data()
     old_date = datetime.now() - timedelta(days=60)
-    notification_valid_date = datetime.now() - timedelta(days=30)
+    notification_valid_date = get_notification_valid_date()
 
     # Set all non-test data sources and data requests to the old date
     tdc.db_client.execute_raw_sql(sql.SQL("""
@@ -593,9 +593,7 @@ def test_dependent_locations_view(test_data_creator_db_client: TestDataCreatorDB
 def test_user_pending_notifications_view(
     test_data_creator_db_client: TestDataCreatorDBClient,
 ):
-    current_time = datetime.now(
-        tz=timezone.utc
-    )
+    notification_valid_date = get_notification_valid_date()
 
     tdc = test_data_creator_db_client
     tdc.clear_test_data()
@@ -660,6 +658,10 @@ def test_user_pending_notifications_view(
         data_source_id=ds_info.id,
         agency_id=agency_info.id
     )
+    tdc.db_client.update_data_source(
+        entry_id=ds_info.id,
+        column_edit_mappings={"approval_status_updated_at": notification_valid_date}
+    )
 
     # Data Request Opened (1)
     dr_info_1 = tdc.data_request(
@@ -669,6 +671,10 @@ def test_user_pending_notifications_view(
         data_request_id=dr_info_1.id,
         location_id=locality_1_following
     )
+    tdc.db_client.update_data_request(
+        entry_id=dr_info_1.id,
+        column_edit_mappings={"date_status_last_changed": notification_valid_date}
+    )
 
     # Data Request Completed (2)
     dr_info_2 = tdc.data_request(
@@ -677,6 +683,10 @@ def test_user_pending_notifications_view(
     tdc.link_data_request_to_location(
         data_request_id=dr_info_2.id,
         location_id=locality_2_following
+    )
+    tdc.db_client.update_data_request(
+        entry_id=dr_info_2.id,
+        column_edit_mappings={"date_status_last_changed": notification_valid_date}
     )
 
 
@@ -700,7 +710,7 @@ def test_user_pending_notifications_view(
     user_1_count = 0
     user_2_count = 0
     for result in results:
-        assert result["event_timestamp"] > current_time
+        assert result["event_timestamp"] == notification_valid_date
         if result["user_id"] == tus_1.id:
             user_1_count += 1
             assert result["entity_id"] in (ds_info.id, dr_info_1.id)
