@@ -25,24 +25,25 @@ class Notifications(PsycopgResource):
         response_info=ResponseInfo(
             success_message="Notifications sent.",
         ),
-        description="Sends notifications to all users.",
+        description="Sends notifications about events to users following their associated locations.",
     )
     def post(self, access_info: AccessInfo):
         """
         Sends notification to all users.
         This endpoint will pull qualifying events for locations which users have subscribed to
-        And send updates on those events to the users that are subscribed to those events.
+        And send updates on those events to the associated users
 
         Qualifying events include:
         * A data source associated with a followed location is approved
         * A data request associated with a followed location is started
         * A data request associated with a followed location is completed
-        Note that in this case, "followed location" includes both the location followed
-        as well as any locations which are subdivisions of the location
+
+        Note that "followed location" includes both the location explicitly followed by the user
+        as well as any locations which are subdivisions of the location followed
         (i.e. counties and localities for states, localities for counties).
 
         This endpoint, as designed, will send notifications for qualifying events that occurred
-        in the month prior to the month in which the endpoint was called.
+        in the month *prior to the month* in which the endpoint was called.
 
         :param access_info:
         :return:
