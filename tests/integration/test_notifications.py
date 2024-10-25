@@ -11,7 +11,7 @@ from tests.helper_scripts.common_test_data import TestDataCreatorFlask
 from tests.helper_scripts.constants import NOTIFICATIONS_BASE_ENDPOINT
 from tests.helper_scripts.helper_classes.AnyOrder import AnyOrder
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import TestDataCreatorDBClient
-from conftest import test_data_creator_flask
+from conftest import test_data_creator_flask, monkeysession
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
