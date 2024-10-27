@@ -12,6 +12,7 @@ class RecordCategories(Enum):
     RESOURCE = "Agency-published Resources"
     JAIL = "Jails & Courts"
     OTHER = "Other"
+    ALL = "All"
 
 
 class SourceMappingEnum(Enum):

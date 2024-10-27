@@ -74,6 +74,10 @@ class Relations(Enum):
     QUALIFYING_NOTIFICATIONS = "qualifying_notifications"
     USER_PENDING_NOTIFICATIONS = "user_pending_notifications"
     USER_NOTIFICATION_QUEUE = "user_notification_queue"
+    RECENT_SEARCHES = "recent_searches"
+    RECENT_SEARCHES_EXPANDED = "recent_searches_expanded"
+    LINK_RECENT_SEARCH_RECORD_CATEGORIES = "link_recent_search_record_categories"
+
 
 
 class JurisdictionType(Enum):

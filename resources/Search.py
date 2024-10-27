@@ -1,6 +1,6 @@
 from flask import Response
 
-from middleware.access_logic import GET_AUTH_INFO, WRITE_ONLY_AUTH_INFO, OWNER_WRITE_ONLY_AUTH_INFO, AccessInfo, \
+from middleware.access_logic import GET_AUTH_INFO, WRITE_ONLY_AUTH_INFO, STANDARD_JWT_AUTH_INFO, AccessInfo, \
     NO_AUTH_INFO
 from middleware.primary_resource_logic.search_logic import (
     search_wrapper,
@@ -28,7 +28,7 @@ class Search(PsycopgResource):
 
     @endpoint_info_2(
         namespace=namespace_search,
-        auth_info=NO_AUTH_INFO,
+        auth_info=GET_AUTH_INFO,
         schema_config=SchemaConfigs.SEARCH_LOCATION_AND_RECORD_TYPE_GET,
         response_info=ResponseInfo(
             success_message="Search successful."
@@ -40,14 +40,8 @@ class Search(PsycopgResource):
         Performs a search using the provided search terms and location.
 
         Performs a search using the provided record type and location parameters.
-        It attempts to find relevant data sources in the database.
 
-        Record Types:
-        - "Police & Public Interactions"
-        - "Info about Officers"
-        - "Info about Agencies"
-        - "Agency-published Resources"
-        - "Jails & Courts"
+        It attempts to find relevant data sources in the database.
 
         Source of truth for record types can be found at https://app.gitbook.com/o/-MXypK5ySzExtEzQU6se/s/-MXyolqTg_voOhFyAcr-/activities/data-dictionaries/record-types-taxonomy
 
@@ -56,6 +50,7 @@ class Search(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=search_wrapper,
+            access_info=access_info,
             schema_populate_parameters=SchemaConfigs.SEARCH_LOCATION_AND_RECORD_TYPE_GET.value.get_schema_populate_parameters(),
         )
 
@@ -87,7 +82,7 @@ class SearchFollow(PsycopgResource):
 
     @endpoint_info_2(
         namespace=namespace_search,
-        auth_info=OWNER_WRITE_ONLY_AUTH_INFO,
+        auth_info=STANDARD_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.SEARCH_FOLLOW_POST,
         response_info=ResponseInfo(
             success_message="Returns result of search follow request."
@@ -108,7 +103,7 @@ class SearchFollow(PsycopgResource):
 
     @endpoint_info_2(
         namespace=namespace_search,
-        auth_info=OWNER_WRITE_ONLY_AUTH_INFO,
+        auth_info=STANDARD_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.SEARCH_FOLLOW_DELETE,
         response_info=ResponseInfo(
             success_message="Returns result of search unfollow request."

@@ -14,11 +14,13 @@ from psycopg import sql
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import ApprovalStatus, LocationType, RequestStatus
+from database_client.models import RecentSearch
 from middleware.enums import Relations
 from tests.conftest import live_database_client
 from conftest import test_data_creator_db_client
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import TestDataCreatorDBClient
 from tests.helper_scripts.helper_functions import get_notification_valid_date
+from utilities.enums import RecordCategories
 
 ID_COLUMN = "state_iso"
 FAKE_STATE_INFO = {"state_iso": "ZZ", "state_name": "Zaldoniza"}
@@ -722,3 +724,134 @@ def test_user_pending_notifications_view(
 
     assert user_1_count == 2
     assert user_2_count == 2
+
+def test_link_recent_search_record_types_rows_deleted_on_recent_searches_delete(
+    test_data_creator_db_client: TestDataCreatorDBClient
+):
+    tdc = test_data_creator_db_client
+
+    user_info = tdc.user()
+    location_id = tdc.locality()
+
+
+    # Insert into recent searches and link_recent_search_record_types
+    tdc.db_client.create_search_record(
+        user_id=user_info.id,
+        location_id=location_id,
+        record_categories=[RecordCategories.AGENCIES, RecordCategories.JAIL]
+    )
+
+    # Delete recent searches
+    recent_search = tdc.db_client._select_from_relation(
+        relation_name=Relations.RECENT_SEARCHES.value,
+        columns=["id"],
+        where_mappings={
+            "user_id": user_info.id,
+            "location_id": location_id
+        },
+    )
+
+    recent_search_id = recent_search[0]["id"]
+
+    def get_link_table_rows():
+        return tdc.db_client._select_from_relation(
+            relation_name=Relations.LINK_RECENT_SEARCH_RECORD_CATEGORIES.value,
+            columns=["id"],
+            where_mappings={
+                "recent_search_id": recent_search_id
+            },
+        )
+
+    # Confirm that two rows exist in the link table
+    link_table_rows = get_link_table_rows()
+    assert len(link_table_rows) == 2
+
+    tdc.db_client._delete_from_table(
+        table_name=Relations.RECENT_SEARCHES.value,
+        id_column_value=recent_search[0]["id"]
+    )
+
+    # Confirm that no row exists in the link table
+    results = get_link_table_rows()
+    assert len(results) == 0
+
+
+def test_recent_searches_row_limit_maintained(
+        test_data_creator_db_client: TestDataCreatorDBClient
+):
+    tdc = test_data_creator_db_client
+
+    user_1 = tdc.user()
+    user_2 = tdc.user()
+    location_id = tdc.locality()
+
+    # Add a search for each user
+    def create_search_record(user_id: int):
+        tdc.db_client.create_search_record(
+            user_id=user_id,
+            location_id=location_id,
+            record_categories=[RecordCategories.ALL]
+        )
+
+    create_search_record(user_1.id)
+    create_search_record(user_2.id)
+
+    # Get the search record id for each user
+    def get_search_record_id(user_id: int):
+        results = tdc.db_client._select_from_relation(
+            relation_name=Relations.RECENT_SEARCHES.value,
+            columns=["id"],
+            where_mappings={
+                "user_id": user_id,
+                "location_id": location_id
+            },
+        )
+        return results[0]["id"]
+
+    user_1_search_record_id = get_search_record_id(user_1.id)
+    user_2_search_record_id = get_search_record_id(user_2.id)
+
+    # For each user, add 49 additional rows
+    def add_49_rows(user_id: int):
+        session = tdc.db_client.session_maker()
+        objects = []
+        for i in range(49):
+            objects.append(
+                RecentSearch(
+                    user_id=user_id,
+                    location_id=location_id
+                )
+            )
+        session.bulk_save_objects(objects)
+        session.commit()
+
+    add_49_rows(user_1.id)
+    add_49_rows(user_2.id)
+
+    # Add one more search to user 1
+    create_search_record(user_1.id)
+
+    # Get recent searches for both users
+    def get_recent_searches(user_id: int) -> list[int]:
+        results = tdc.db_client._select_from_relation(
+            relation_name=Relations.RECENT_SEARCHES.value,
+            columns=["id"],
+            where_mappings={
+                "user_id": user_id,
+                "location_id": location_id
+            },
+        )
+        return [result["id"] for result in results]
+
+    user_1_recent_searches = get_recent_searches(user_1.id)
+    user_2_recent_searches = get_recent_searches(user_2.id)
+
+    # Confirm that both users have 50 recent searches
+    assert len(user_1_recent_searches) == 50
+    assert len(user_2_recent_searches) == 50
+
+    # Confirm that the original recent search id is no longer in the list for user 1
+    assert user_1_search_record_id not in user_1_recent_searches
+
+    # Confirm that the original recent search id remains in the list for user 2
+    assert user_2_search_record_id in user_2_recent_searches

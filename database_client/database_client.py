@@ -10,6 +10,7 @@ import psycopg
 import sqlalchemy.exc
 from click.testing import Result
 from dateutil.relativedelta import relativedelta
+from numpy.core.records import record
 from psycopg import sql, Cursor
 from psycopg.rows import dict_row, tuple_row
 from sqlalchemy import select, MetaData, delete, update, insert
@@ -40,7 +41,7 @@ from database_client.models import (
     ExternalAccount,
     SQL_ALCHEMY_TABLE_REFERENCE,
     User,
-    DataRequestExpanded, UserNotificationQueue,
+    DataRequestExpanded, UserNotificationQueue, RecentSearch, LinkRecentSearchRecordCategories, RecordCategory,
 )
 from middleware.enums import PermissionsEnum, Relations
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
@@ -1287,5 +1288,47 @@ class DatabaseClient:
     def mark_user_events_as_sent(self, user_id: int):
         queue = UserNotificationQueue
 
-        with (self.session.begin()):
+        with self.session.begin():
             self.session.query(queue).filter(queue.user_id == user_id).update({queue.sent_at: datetime.now()}, synchronize_session=False)
+
+    @session_manager
+    def create_search_record(
+        self,
+        user_id: int,
+        location_id: int,
+        record_categories: Union[list[RecordCategories], RecordCategories]
+    ):
+        if isinstance(record_categories, RecordCategories):
+            record_categories = [record_categories]
+
+        with self.session.begin():
+            # Insert into recent_search table and get recent_search_id
+            query = insert(RecentSearch).values({
+                "user_id": user_id,
+                "location_id": location_id
+            }).returning(RecentSearch.id)
+            result = self.session.execute(query)
+            recent_search_id = result.fetchone()[0]
+
+            # For all record types, insert into link table
+            for record_type in record_categories:
+                query = select(RecordCategory).filter(RecordCategory.name == record_type.value)
+                rc_id = self.session.execute(query).fetchone()[0].id
+
+                query = insert(LinkRecentSearchRecordCategories).values({
+                    "recent_search_id": recent_search_id,
+                    "record_category_id": rc_id
+                })
+                self.session.execute(query)
+
+    def get_user_recent_searches(self, user_id: int):
+        return self._select_from_relation(
+            relation_name=Relations.RECENT_SEARCHES_EXPANDED.value,
+            columns=["state_iso", "county_name", "locality_name", "location_type", "record_categories"],
+            where_mappings={"user_id": user_id},
+            build_metadata=True
+        )
+
+
+
+

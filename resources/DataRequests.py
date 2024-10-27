@@ -3,7 +3,7 @@ from flask import Response
 from middleware.access_logic import (
     AccessInfo,
     GET_AUTH_INFO,
-    OWNER_WRITE_ONLY_AUTH_INFO,
+    STANDARD_JWT_AUTH_INFO,
 )
 from middleware.primary_resource_logic.data_requests import (
     create_data_request_wrapper,
@@ -67,7 +67,7 @@ class DataRequestsById(PsycopgResource):
     # TODO: Modify to endpoint_info_2
     @endpoint_info(
         namespace=namespace_data_requests,
-        auth_info=OWNER_WRITE_ONLY_AUTH_INFO,
+        auth_info=STANDARD_JWT_AUTH_INFO,
         input_schema=DataRequestsSchema(
             exclude=[
                 "id",
@@ -95,7 +95,7 @@ class DataRequestsById(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_data_requests,
-        auth_info=OWNER_WRITE_ONLY_AUTH_INFO,
+        auth_info=STANDARD_JWT_AUTH_INFO,
         description="Delete a data request by its ID",
         responses=create_response_dictionary(
             success_message="Data request successfully deleted."
@@ -136,7 +136,7 @@ class DataRequests(PsycopgResource):
 
     @endpoint_info_2(
         namespace=namespace_data_requests,
-        auth_info=OWNER_WRITE_ONLY_AUTH_INFO,
+        auth_info=STANDARD_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_REQUESTS_POST,
         response_info=ResponseInfo(
             success_message="Data request successfully created.",
@@ -181,7 +181,7 @@ class DataRequestsRelatedSourcesById(PsycopgResource):
 
     @endpoint_info_2(
         namespace=namespace_data_requests,
-        auth_info=OWNER_WRITE_ONLY_AUTH_INFO,
+        auth_info=STANDARD_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_REQUESTS_RELATED_SOURCES_POST,
         response_info=ResponseInfo(
             success_message="Data source successfully associated with data request.",
@@ -202,7 +202,7 @@ class DataRequestsRelatedSourcesById(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_data_requests,
-        auth_info=OWNER_WRITE_ONLY_AUTH_INFO,
+        auth_info=STANDARD_JWT_AUTH_INFO,
         description="""Delete an association of a data source with a data request""",
         responses=create_response_dictionary(
             success_message="Successfully removed data source association from data request.",

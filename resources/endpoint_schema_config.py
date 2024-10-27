@@ -54,6 +54,8 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.github_issue_app_s
     GithubDataRequestsIssuesPostResponseSchema,
     GithubDataRequestsIssuesPostDTO,
 )
+from middleware.schema_and_dto_logic.primary_resource_schemas.user_profile_schemas import \
+    GetUserRecentSearchesOuterSchema
 
 
 class EndpointSchemaConfig:
@@ -229,3 +231,8 @@ class SchemaConfigs(Enum):
     NOTIFICATIONS_POST = EndpointSchemaConfig(
         output_schema=NotificationsResponseSchema(),
     )
+    #region User Profile
+    USER_PROFILE_RECENT_SEARCHES = EndpointSchemaConfig(
+        output_schema=GetUserRecentSearchesOuterSchema(exclude=['message']),
+    )
+    #endregion
