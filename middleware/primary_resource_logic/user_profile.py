@@ -24,3 +24,12 @@ def get_owner_data_requests_wrapper(
     formatted_list_response = format_list_response(data_requests)
 
     return FlaskResponseManager.make_response(formatted_list_response)
+
+def get_user_recent_searches(
+    db_client: DatabaseClient, access_info: AccessInfo
+):
+    recent_searches = db_client.get_user_recent_searches(
+        user_id=access_info.get_user_id()
+    )
+
+    return FlaskResponseManager.make_response(recent_searches)

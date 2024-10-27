@@ -35,7 +35,7 @@ from database_client.models import (
     DataSource,
     ExternalAccount,
     TestTable,
-    User,
+    User, SQL_ALCHEMY_TABLE_REFERENCE,
 )
 from middleware.enums import PermissionsEnum, Relations
 from tests.conftest import live_database_client, test_table_data, clear_data_requests
@@ -650,14 +650,18 @@ def test_search_with_location_and_record_types_real_data_multiple_records(
     live_database_client,
 ):
     state_parameter = "Pennsylvania"
-    record_types = []
+    record_categories = []
     last_count = 0
+    # Exclude the ALL pseudo-category
+    applicable_record_categories = [
+        e for e in RecordCategories if e != RecordCategories.ALL
+    ]
 
     # Check that when more record types are added, the number of results increases
-    for record_type in [e for e in RecordCategories]:
-        record_types.append(record_type)
+    for record_category in applicable_record_categories:
+        record_categories.append(record_category)
         results = live_database_client.search_with_location_and_record_type(
-            state=state_parameter, record_categories=record_types
+            state=state_parameter, record_categories=record_categories
         )
         assert len(results) > last_count
         last_count = len(results)
@@ -1251,6 +1255,90 @@ def test_get_next_user_events_and_mark_user_events_as_sent(test_data_creator_db_
     event_batch = tdc.db_client.get_next_user_event_batch()
     assert event_batch is None
 
+def test_insert_search_record(
+    test_data_creator_db_client: TestDataCreatorDBClient
+):
+    tdc = test_data_creator_db_client
+    user_info = tdc.user()
+    location_id = tdc.locality()
+
+    def assert_are_expected_record_categories(
+        rc_ids: list[int],
+        record_categories: list[RecordCategories]
+    ):
+        table = SQL_ALCHEMY_TABLE_REFERENCE[Relations.RECORD_CATEGORIES.value]
+        name_column = getattr(table, "name")
+        id_column = getattr(table, "id")
+        query = select(name_column).where(id_column.in_(rc_ids))
+        result = tdc.db_client.execute_sqlalchemy(lambda: query)
+        result = [row[0] for row in result]
+        result.sort()
+        rc_values = [rc.value for rc in record_categories]
+        rc_values.sort()
+        assert result == rc_values
+
+    def get_recent_searches():
+        return tdc.db_client._select_from_relation(
+            relation_name=Relations.RECENT_SEARCHES.value,
+            columns=["id"],
+            where_mappings={
+                "user_id": user_info.id,
+                "location_id": location_id
+            },
+            order_by=OrderByParameters(
+                sort_by="created_at",
+                sort_order=SortOrder.ASCENDING
+            )
+        )
+
+    def get_link_recent_search_record_types(recent_search_id: int):
+        return tdc.db_client._select_from_relation(
+            relation_name=Relations.LINK_RECENT_SEARCH_RECORD_CATEGORIES.value,
+            columns=["record_category_id"],
+            where_mappings={
+                "recent_search_id": recent_search_id
+            }
+        )
+
+    tdc.db_client.create_search_record(
+        user_id=user_info.id,
+        location_id=location_id,
+        record_categories=RecordCategories.ALL
+    )
+
+    # Confirm record exists in both `recent_searches` and `link_recent_search_record_types` tables
+    recent_search_results = get_recent_searches()
+    assert len(recent_search_results) == 1
+
+    link_results = get_link_recent_search_record_types(recent_search_results[0]["id"])
+
+    assert len(link_results) == 1
+
+    # Confirm record category is all
+    assert_are_expected_record_categories(
+        rc_ids=[link_results[0]["record_category_id"]],
+        record_categories=[RecordCategories.ALL]
+    )
+
+    tdc.db_client.create_search_record(
+        user_id=user_info.id,
+        location_id=location_id,
+        record_categories=[RecordCategories.AGENCIES, RecordCategories.JAIL]
+    )
+
+    # Confirm two records now exists in `recent_searches` table associated with this information
+    recent_search_results = get_recent_searches()
+    assert len(recent_search_results) == 2
+
+    # And that the second links to an `AGENCIES` and `JAIL` entry in `link_recent_search_record_types` table
+    search_id = recent_search_results[1]["id"]
+    link_results = get_link_recent_search_record_types(search_id)
+    rc_ids = [link_result["record_category_id"] for link_result in link_results]
+
+    assert_are_expected_record_categories(
+        rc_ids=rc_ids,
+        record_categories=[RecordCategories.AGENCIES, RecordCategories.JAIL]
+    )
 
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts

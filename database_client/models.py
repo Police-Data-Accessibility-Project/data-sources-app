@@ -611,6 +611,7 @@ class RecordCategory(Base):
     __tablename__ = Relations.RECORD_CATEGORIES.value
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    # TODO: Update so that names reference literals
     name: Mapped[str_255]
     description: Mapped[Optional[text]]
 
@@ -721,6 +722,41 @@ class UserNotificationQueue(Base):
     event_timestamp: Mapped[timestamp]
     sent_at: Mapped[Optional[timestamp]]
 
+class RecentSearch(Base):
+    __tablename__ = Relations.RECENT_SEARCHES.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
+    location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
+    created_at: Mapped[timestamp] = mapped_column(
+        server_default=func.current_timestamp()
+    )
+
+class LinkRecentSearchRecordCategories(Base):
+    __tablename__ = Relations.LINK_RECENT_SEARCH_RECORD_CATEGORIES.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    recent_search_id: Mapped[int] = mapped_column(ForeignKey("public.recent_searches.id"))
+    record_category_id: Mapped[int] = mapped_column(
+        ForeignKey("public.record_categories.id")
+    )
+
+# TODO: Change user_id references in models to be from singular factory function or constant, to avoid duplication
+# Do the same for other common foreign keys, or for things such as primary keys
+
+class RecentSearchExpanded(Base, CountMetadata):
+    __tablename__ = Relations.RECENT_SEARCHES_EXPANDED.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
+    location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
+    state_iso: Mapped[str]
+    county_name: Mapped[str]
+    locality_name: Mapped[str]
+    location_type: Mapped[LocationTypeLiteral]
+    record_categories = mapped_column(ARRAY(String, as_tuple=True))
+
+
 
 SQL_ALCHEMY_TABLE_REFERENCE = {
     "agencies": Agency,
@@ -747,7 +783,11 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     Relations.DEPENDENT_LOCATIONS.value: DependentLocation,
     Relations.QUALIFYING_NOTIFICATIONS.value: QualifyingNotification,
     Relations.USER_PENDING_NOTIFICATIONS.value: UserPendingNotification,
-    Relations.USER_NOTIFICATION_QUEUE.value: UserNotificationQueue
+    Relations.USER_NOTIFICATION_QUEUE.value: UserNotificationQueue,
+    Relations.RECENT_SEARCHES.value: RecentSearch,
+    Relations.LINK_RECENT_SEARCH_RECORD_CATEGORIES.value: LinkRecentSearchRecordCategories,
+    Relations.RECORD_CATEGORIES.value: RecordCategory,
+    Relations.RECENT_SEARCHES_EXPANDED.value: RecentSearchExpanded
 }
 
 
