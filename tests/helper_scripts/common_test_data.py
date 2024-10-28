@@ -19,6 +19,7 @@ from tests.helper_scripts.constants import (
     DATA_REQUESTS_BY_ID_ENDPOINT, AGENCIES_BY_ID_ENDPOINT,
 )
 from tests.helper_scripts.helper_classes.EndpointCaller import EndpointCaller
+from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import TestDataCreatorDBClient
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup,
@@ -200,6 +201,10 @@ class TestDataCreatorFlask:
             )
 
         return ds_info
+
+    def clear_test_data(self):
+        tdc_db = TestDataCreatorDBClient()
+        tdc_db.clear_test_data()
 
     def data_request(self, user_tus: Optional[TestUserSetup] = None, location_info: Optional[dict] = None) -> TestDataRequestInfo:
         if user_tus is None:

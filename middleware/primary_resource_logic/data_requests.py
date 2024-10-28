@@ -43,7 +43,8 @@ from middleware.common_response_formatting import (
     multiple_results_response,
     message_response, created_id_response,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import DataRequestLocationInfoPostDTO
+from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import DataRequestLocationInfoPostDTO, \
+    GetManyDataRequestsRequestsDTO
 from utilities.enums import SourceMappingEnum
 
 RELATION = Relations.DATA_REQUESTS.value
@@ -204,7 +205,7 @@ def _get_location_ids(db_client, dto: DataRequestsPostDTO):
 
 
 def get_data_requests_wrapper(
-    db_client: DatabaseClient, dto: GetManyBaseDTO, access_info: AccessInfo
+    db_client: DatabaseClient, dto: GetManyDataRequestsRequestsDTO, access_info: AccessInfo
 ) -> Response:
     """
     Get data requests
@@ -213,6 +214,9 @@ def get_data_requests_wrapper(
     :param access_info:
     :return:
     """
+    db_client_additional_args = {"build_metadata": True}
+    if dto.request_status is not None:
+        db_client_additional_args["where_mappings"] = {"request_status": dto.request_status.value}
     return get_many(
         middleware_parameters=MiddlewareParameters(
             db_client=db_client,
@@ -221,7 +225,7 @@ def get_data_requests_wrapper(
             relation=Relations.DATA_REQUESTS_EXPANDED.value,
             db_client_method=DatabaseClient.get_data_requests,
             subquery_parameters=get_data_requests_subquery_params(),
-            db_client_additional_args={"build_metadata": True},
+            db_client_additional_args=db_client_additional_args,
         ),
         page=dto.page,
     )
