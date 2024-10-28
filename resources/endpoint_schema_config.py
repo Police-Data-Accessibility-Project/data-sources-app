@@ -11,6 +11,7 @@ from middleware.primary_resource_logic.typeahead_suggestion_logic import Typeahe
     TypeaheadAgenciesOuterResponseSchema
 from middleware.primary_resource_logic.unique_url_checker import UniqueURLCheckerRequestSchema, \
     UniqueURLCheckerResponseOuterSchema, UniqueURLCheckerRequestDTO
+from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import GetManyDataRequestsRequestsDTO
 from middleware.schema_and_dto_logic.primary_resource_schemas.notifications_schemas import NotificationsResponseSchema
 from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import SearchRequestSchema, \
     GetUserFollowedSearchesSchema, SearchRequests, FollowSearchResponseSchema, SearchResultsInnerSchema, \
@@ -33,17 +34,17 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas i
     AgenciesGetManyResponseSchema, RelatedAgencyByIDSchema, RelatedAgencyByIDDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
-    GetManyDataRequestsSchema,
+    GetManyDataRequestsResponseSchema,
     DataRequestsSchema,
     DataRequestsPostSchema,
-    GetByIDDataRequestsResponseSchema,
+    GetByIDDataRequestsResponseSchema, GetManyDataRequestsRequestsSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
     DataSourcesGetManySchema,
     DataSourcesGetByIDSchema,
     DataSourcesPostSchema,
     DataSourcesPutSchema,
-    DataSourcesPostDTO,
+    DataSourcesPostDTO, DataSourcesGetManyRequestSchema,
 )
 from middleware.schema_and_dto_logic.common_response_schemas import (
     IDAndMessageSchema,
@@ -84,9 +85,9 @@ class EndpointSchemaConfig:
 class SchemaConfigs(Enum):
     # region Data Requests
     DATA_REQUESTS_GET_MANY = EndpointSchemaConfig(
-        input_schema=GetManyRequestsBaseSchema(),
-        output_schema=GetManyDataRequestsSchema(),
-        input_dto_class=GetManyBaseDTO,
+        input_schema=GetManyDataRequestsRequestsSchema(),
+        output_schema=GetManyDataRequestsResponseSchema(),
+        input_dto_class=GetManyDataRequestsRequestsDTO,
     )
     DATA_REQUESTS_BY_ID_GET = EndpointSchemaConfig(
         input_schema=None, output_schema=GetByIDDataRequestsResponseSchema()
@@ -141,7 +142,7 @@ class SchemaConfigs(Enum):
     # endregion
     # region Data Sources
     DATA_SOURCES_GET_MANY = EndpointSchemaConfig(
-        input_schema=GetManyRequestsBaseSchema(),
+        input_schema=DataSourcesGetManyRequestSchema(),
         output_schema=DataSourcesGetManySchema(),
         input_dto_class=GetManyBaseDTO,
     )

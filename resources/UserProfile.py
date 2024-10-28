@@ -14,7 +14,7 @@ from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_
     get_restx_param_documentation,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
-    GetManyDataRequestsSchema,
+    GetManyDataRequestsResponseSchema,
 )
 from resources.PsycopgResource import PsycopgResource
 from resources.endpoint_schema_config import SchemaConfigs
@@ -28,7 +28,7 @@ USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL = f"/api/user/{DATA_REQUESTS_PARTIAL_END
 
 user_data_requests_model = get_restx_param_documentation(
     namespace=namespace_user,
-    schema=GetManyDataRequestsSchema(exclude=["data.internal_notes"]),
+    schema=GetManyDataRequestsResponseSchema(exclude=["data.internal_notes"]),
     model_name="GetManyBaseSchema",
 ).model
 
