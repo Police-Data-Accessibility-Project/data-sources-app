@@ -37,7 +37,7 @@ def create_data_source_with_endpoint(
                 "source_url": "http://src1.com",
             }
         },
-        expected_schema=SchemaConfigs.DATA_SOURCES_POST.value.output_schema,
+        expected_schema=SchemaConfigs.DATA_SOURCES_POST.value.primary_output_schema,
     )
     id_ = json["id"]
 

@@ -10,8 +10,8 @@ from middleware.primary_resource_logic.login_queries import (
     generate_api_key,
     get_api_key_for_user,
     refresh_session,
-    try_logging_in_with_github_id,
 )
+from middleware.primary_resource_logic.callback_primary_logic import try_logging_in_with_github_id
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
@@ -127,37 +127,6 @@ def setup_try_logging_in_with_github_id_mocks():
 
     mock.github_user_info.user_id = mock.github_user_id
     return mock
-
-
-def test_try_logging_in_with_github_id_happy_path(
-    setup_try_logging_in_with_github_id_mocks,
-):
-    mock = setup_try_logging_in_with_github_id_mocks
-
-    mock.db_client.get_user_info_by_external_account_id.return_value = mock.user_info
-
-    result = try_logging_in_with_github_id(mock.db_client, mock.github_user_info)
-
-    assert_try_logging_in_with_github_id_precondition_calls(mock)
-
-    assert result == mock.login_response.return_value
-    mock.login_response.assert_called_once_with(mock.user_info)
-
-
-def test_try_logging_in_with_github_id_unauthorized(
-    setup_try_logging_in_with_github_id_mocks,
-):
-    mock = setup_try_logging_in_with_github_id_mocks
-
-    mock.db_client.get_user_info_by_external_account_id.return_value = None
-
-    result = try_logging_in_with_github_id(mock.db_client, mock.github_user_info)
-
-    assert_try_logging_in_with_github_id_precondition_calls(mock)
-
-    assert result == mock.unauthorized_response.return_value
-    mock.unauthorized_response.assert_called_once()
-
 
 class RefreshSessionMocks(DynamicMagicMock):
     get_jwt_identity: MagicMock

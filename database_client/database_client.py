@@ -458,7 +458,10 @@ class DatabaseClient:
         results = self.session.execute(query).mappings().one_or_none()
 
         if results is None:
-            raise UserNotFoundError(external_account_id)
+            raise UserNotFoundError(
+                identifier=external_account_id,
+                identifier_name="Github Account ID"
+            )
 
         return self.UserInfo(
             id=results.id,

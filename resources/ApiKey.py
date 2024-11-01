@@ -2,7 +2,7 @@ from flask import Response
 from flask_restx import fields
 
 from middleware.primary_resource_logic.login_queries import get_api_key_for_user
-from middleware.primary_resource_logic.user_queries import UserRequest
+from middleware.primary_resource_logic.user_queries import UserRequestDTO
 from middleware.schema_and_dto_logic.dynamic_logic.model_helpers_with_schemas import (
     create_user_model,
 )
@@ -61,6 +61,6 @@ class ApiKey(PsycopgResource):
             wrapper_function=get_api_key_for_user,
             dto_populate_parameters=DTOPopulateParameters(
                 source=SourceMappingEnum.JSON,
-                dto_class=UserRequest,
+                dto_class=UserRequestDTO,
             ),
         )

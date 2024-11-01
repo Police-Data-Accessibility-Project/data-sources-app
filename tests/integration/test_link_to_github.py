@@ -4,6 +4,7 @@ import psycopg
 
 from database_client.database_client import DatabaseClient
 from middleware.enums import CallbackFunctionsEnum
+from resources.endpoint_schema_config import SchemaConfigs
 from tests.conftest import flask_client_with_db
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
@@ -49,11 +50,14 @@ def test_link_to_github(flask_client_with_db, monkeypatch):
         callback_functions_enum=CallbackFunctionsEnum.LINK_TO_GITHUB,
         callback_params=mock_params,
     )
-    run_and_validate_request(
+    response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
         endpoint="auth/callback",
+        expected_schema=SchemaConfigs.AUTH_GITHUB_LINK.value.primary_output_schema,
     )
+    message = response_json["message"]
+    assert message == "Successfully linked Github account"
 
     db_client = DatabaseClient()
     result = db_client.execute_raw_sql(

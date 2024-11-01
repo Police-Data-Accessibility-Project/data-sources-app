@@ -94,7 +94,7 @@ def test_data_requests_get(
     )
 
 
-    expected_schema = SchemaConfigs.DATA_REQUESTS_GET_MANY.value.output_schema
+    expected_schema = SchemaConfigs.DATA_REQUESTS_GET_MANY.value.primary_output_schema
     # Modify exclude to account for old data which did not have archive_reason and creator_user_id
     expected_schema.exclude.update(
         ["data.archive_reason", "data.creator_user_id", "data.internal_notes"]
@@ -186,7 +186,7 @@ def test_data_requests_post(
             data_request_id=data_request_id
         ),
         headers=standard_tus.jwt_authorization_header,
-        expected_schema=SchemaConfigs.DATA_REQUESTS_BY_ID_GET.value.output_schema,
+        expected_schema=SchemaConfigs.DATA_REQUESTS_BY_ID_GET.value.primary_output_schema,
     )
 
 
@@ -287,7 +287,7 @@ def test_data_requests_by_id_get(
 
     tdr = tdc.data_request(admin_tus)
 
-    expected_schema = SchemaConfigs.DATA_REQUESTS_BY_ID_GET.value.output_schema
+    expected_schema = SchemaConfigs.DATA_REQUESTS_BY_ID_GET.value.primary_output_schema
     # Modify exclude to account for old data which did not have archive_reason and creator_user_id
     expected_schema.exclude.update(
         ["data.archive_reason", "data.creator_user_id", "data.internal_notes"]
@@ -440,7 +440,7 @@ def get_data_request_related_sources_with_endpoint(
         ),
         headers=api_authorization_header,
         expected_json_content=expected_json_content,
-        expected_schema=SchemaConfigs.DATA_REQUESTS_RELATED_SOURCES_GET.value.output_schema,
+        expected_schema=SchemaConfigs.DATA_REQUESTS_RELATED_SOURCES_GET.value.primary_output_schema,
     )
 
 

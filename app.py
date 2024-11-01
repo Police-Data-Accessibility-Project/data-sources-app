@@ -5,8 +5,8 @@ from flask import Flask
 from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 
+from middleware.util import get_env_variable
 from resources.Callback import namespace_auth
-from resources.CreateUserWithGithub import namespace_create_user_with_github
 from resources.DataRequests import namespace_data_requests
 from resources.GithubDataRequests import namespace_github
 from resources.HomepageSearchCache import namespace_homepage_search_cache
@@ -52,7 +52,6 @@ NAMESPACES = [
     namespace_auth,
     namespace_link_to_github,
     namespace_login_with_github,
-    namespace_create_user_with_github,
     namespace_permissions,
     namespace_create_test_user,
     namespace_data_requests,
@@ -93,7 +92,7 @@ class ReverseProxied(object):
 
 
 def get_flask_app_cookie_encryption_key() -> str:
-    return os.getenv("FLASK_APP_COOKIE_ENCRYPTION_KEY")
+    return get_env_variable("FLASK_APP_COOKIE_ENCRYPTION_KEY")
 
 
 class UpdatedJSONProvider(DefaultJSONProvider):

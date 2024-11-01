@@ -31,7 +31,7 @@ class UserRequestSchema(Schema):
 
 
 @dataclass
-class UserRequest:
+class UserRequestDTO:
     email: str
     password: str
 
@@ -49,7 +49,7 @@ def user_check_email(db_client: DatabaseClient, email: str) -> None:
         raise UserNotFoundError(email)
 
 
-def user_post_results(db_client: DatabaseClient, dto: UserRequest) -> Response:
+def user_post_results(db_client: DatabaseClient, dto: UserRequestDTO) -> Response:
     """
     Creates a new user with the provided email and password.
 

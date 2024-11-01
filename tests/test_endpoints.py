@@ -16,7 +16,6 @@ from resources.Agencies import AgenciesByPage, AgenciesById
 from resources.ApiKey import ApiKey, API_KEY_ROUTE
 from resources.Archives import Archives
 from resources.Callback import Callback
-from resources.CreateUserWithGithub import CreateUserWithGithub
 from resources.DataRequests import (
     DataRequests,
     DataRequestsById,
@@ -117,8 +116,7 @@ test_parameters = [
     TestParameters(TypeaheadLocations, "/typeahead/locations", [GET]),
     TestParameters(Callback, "auth/callback", [GET]),
     TestParameters(LinkToGithub, "auth/link-to-github", [POST]),
-    TestParameters(LoginWithGithub, "auth/login-with-github", [POST]),
-    TestParameters(CreateUserWithGithub, "auth/create-user-with-github", [POST]),
+    TestParameters(LoginWithGithub, "auth/login-with-github", [GET]),
     TestParameters(Permissions, "auth/permissions", [GET, PUT]),
     TestParameters(DataRequests, "/data-requests", [GET, POST]),
     TestParameters(
