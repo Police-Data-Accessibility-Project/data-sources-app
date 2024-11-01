@@ -7,6 +7,9 @@ import psycopg
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
+from database_client.enums import LocationType, AgencyAggregation, DetailLevel, AccessType, RetentionSchedule, \
+    URLStatus, ApprovalStatus, UpdateMethod
+from middleware.enums import AccessTypeEnum, RecordType
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
     DataSourcesGetByIDSchema,
     DataSourcesGetManySchema,
@@ -150,22 +153,60 @@ def test_data_sources_by_id_put(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
     cdr = tdc.data_source()
 
-    desc = str(uuid.uuid4())
+    entry_data = {
+        "submitted_name": uuid.uuid4().hex,
+        "description": uuid.uuid4().hex,
+        "source_url": uuid.uuid4().hex,
+        "agency_supplied": True,
+        "supplying_entity": uuid.uuid4().hex,
+        "agency_originated": True,
+        "agency_aggregation": AgencyAggregation.FEDERAL.value,
+        "coverage_start": "2020-01-01",
+        "coverage_end": "2020-12-31",
+        "detail_level": DetailLevel.INDIVIDUAL.value,
+        "access_types": [AccessType.API.value, AccessType.WEB_PAGE.value, AccessType.DOWNLOAD.value],
+        "record_download_option_provided": True,
+        "data_portal_type": uuid.uuid4().hex,
+        "record_formats": [uuid.uuid4().hex, uuid.uuid4().hex],
+        "update_method": UpdateMethod.INSERT.value,
+        "tags": [uuid.uuid4().hex, uuid.uuid4().hex],
+        "readme_url": uuid.uuid4().hex,
+        "originating_entity": uuid.uuid4().hex,
+        "retention_schedule": RetentionSchedule.ONE_TO_TEN_YEARS.value,
+        "scraper_url": uuid.uuid4().hex,
+        "submission_notes": uuid.uuid4().hex,
+        "submitter_contact_info": uuid.uuid4().hex,
+        "agency_described_submitted": uuid.uuid4().hex,
+        "agency_described_not_in_database": uuid.uuid4().hex,
+        "data_portal_type_other": uuid.uuid4().hex,
+        "access_notes": uuid.uuid4().hex,
+        "url_status": URLStatus.OK.value,
+        "approval_status": ApprovalStatus.APPROVED.value,
+        "record_type_name": RecordType.ARREST_RECORDS.value,
+    }
+
     run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="put",
         endpoint=f"/api/data-sources/{cdr.id}",
         headers=tdc.get_admin_tus().jwt_authorization_header,
         json={
-            "entry_data": {"description": desc},
+            "entry_data": entry_data
         },
     )
 
-    result = tdc.db_client.get_data_sources(
-        columns=["description"],
-        where_mappings=[WhereMapping(column="id", value=int(cdr.id))],
+    response_json = run_and_validate_request(
+        flask_client=tdc.flask_client,
+        http_method="get",
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}/{cdr.id}",
+        headers=tdc.get_admin_tus().jwt_authorization_header,
+        expected_schema=SchemaConfigs.DATA_SOURCES_GET_BY_ID.value.primary_output_schema,
     )
-    assert result[0]["description"] == desc
+
+    data = response_json["data"]
+    for key, value in entry_data.items():
+        assert data[key] == value
+
 
 
 def test_data_sources_by_id_delete(
