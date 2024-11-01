@@ -128,6 +128,12 @@ EventTypeLiteral = Literal[
     'Data Source Approved'
 ]
 EntityTypeLiteral = Literal["Data Request", "Data Source"]
+AgencyAggregationLiteral = Literal[
+    "county",
+    "local",
+    "state",
+    "federal"
+]
 
 
 text = Annotated[Text, None]
@@ -506,7 +512,7 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
     agency_supplied: Mapped[Optional[bool]]
     supplying_entity: Mapped[Optional[str]]
     agency_originated: Mapped[Optional[bool]]
-    agency_aggregation: Mapped[Optional[str]]
+    agency_aggregation: Mapped[Optional[AgencyAggregationLiteral]]
     coverage_start: Mapped[Optional[date]]
     coverage_end: Mapped[Optional[date]]
     updated_at: Mapped[Optional[date]]
@@ -519,7 +525,7 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
     data_portal_type: Mapped[Optional[str]]
     record_formats = Column(ARRAY(String))
     update_method: Mapped[Optional[UpdateMethodLiteral]]
-    tags: Mapped[Optional[str]]
+    tags = Column(ARRAY(String))
     readme_url: Mapped[Optional[str]]
     originating_entity: Mapped[Optional[str]]
     retention_schedule: Mapped[Optional[RetentionScheduleLiteral]]
@@ -787,7 +793,8 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     Relations.RECENT_SEARCHES.value: RecentSearch,
     Relations.LINK_RECENT_SEARCH_RECORD_CATEGORIES.value: LinkRecentSearchRecordCategories,
     Relations.RECORD_CATEGORIES.value: RecordCategory,
-    Relations.RECENT_SEARCHES_EXPANDED.value: RecentSearchExpanded
+    Relations.RECENT_SEARCHES_EXPANDED.value: RecentSearchExpanded,
+    Relations.RECORD_TYPES.value: RecordType
 }
 
 
