@@ -7,7 +7,7 @@ logic to be added as necessary.
 from http import HTTPStatus
 from typing import Optional, Type
 
-from flask import make_response, Response
+from flask import make_response, Response, redirect
 from flask_restx import abort
 from marshmallow import Schema, ValidationError
 
@@ -38,3 +38,10 @@ class FlaskResponseManager:
     @classmethod
     def abort(cls, code: int, message: str) -> Response:
         abort(code=code, message=message)
+
+    @classmethod
+    def redirect(cls, url: str, data: Optional[dict]) -> Response:
+        if data is not None:
+            response = make_response(data, HTTPStatus.FOUND)
+            return redirect(url, code=HTTPStatus.FOUND, Response=response)
+        return redirect(url, code=HTTPStatus.FOUND)

@@ -5,7 +5,7 @@ from flask import Response
 from middleware.primary_resource_logic.reset_token_queries import set_user_password
 from middleware.primary_resource_logic.user_queries import (
     user_post_results,
-    UserRequest,
+    UserRequestDTO,
     UserRequestSchema,
 )
 from typing import Dict, Any
@@ -54,7 +54,7 @@ class User(PsycopgResource):
             wrapper_function=user_post_results,
             schema_populate_parameters=SchemaPopulateParameters(
                 schema=UserRequestSchema(),
-                dto_class=UserRequest,
+                dto_class=UserRequestDTO,
             ),
         )
 
@@ -78,7 +78,7 @@ class User(PsycopgResource):
         """
         dto = populate_schema_with_request_content(
             schema=UserRequestSchema(),
-            dto_class=UserRequest,
+            dto_class=UserRequestDTO,
         )
         with self.setup_database_client() as db_client:
             set_user_password(db_client, dto.email, dto.password)

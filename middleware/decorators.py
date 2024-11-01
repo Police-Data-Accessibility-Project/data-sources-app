@@ -1,4 +1,5 @@
 from functools import wraps
+from http import HTTPStatus
 from typing import Callable, Optional
 
 from flask_restx import Namespace, Model
@@ -21,7 +22,7 @@ from resources.resource_helpers import (
     ResponseInfo,
     create_response_dictionary,
 )
-from resources.endpoint_schema_config import SchemaConfigs
+from resources.endpoint_schema_config import SchemaConfigs, OutputSchemaManager
 
 
 def api_key_required(func):
@@ -154,11 +155,11 @@ def endpoint_info_2(
         _add_auth_info_to_parser(auth_info=auth_info, parser=input_doc_info.parser)
 
     _update_doc_kwargs(
-        doc_kwargs,
-        input_doc_info,
-        namespace,
-        response_info,
-        schema_config.value.output_schema,
+        doc_kwargs=doc_kwargs,
+        input_doc_info=input_doc_info,
+        namespace=namespace,
+        response_info=response_info,
+        output_schema_manager=schema_config.value.output_schema_manager,
     )
 
     def decorator(func: Callable):
@@ -183,26 +184,49 @@ def _update_doc_kwargs(
     input_doc_info: Optional[FlaskRestxDocInfo],
     namespace: Namespace,
     response_info: ResponseInfo,
-    output_schema: Schema,
+    output_schema_manager: OutputSchemaManager
 ):
-    _update_responses(doc_kwargs, namespace, output_schema, response_info)
+    _update_responses(
+        doc_kwargs=doc_kwargs,
+        namespace=namespace,
+        response_info=response_info,
+        output_schema_manager=output_schema_manager
+    )
 
     if input_doc_info is None:
         return
     doc_kwargs["expect"] = [input_doc_info.model, input_doc_info.parser]
 
 
-def _update_responses(doc_kwargs, namespace, output_schema, response_info):
-    output_model = _get_output_model(namespace, output_schema)
+def _update_responses(
+    doc_kwargs: dict,
+    namespace: Namespace,
+    response_info: ResponseInfo,
+    output_schema_manager: OutputSchemaManager
+):
+
+
     if response_info.response_dictionary is None:
-        doc_kwargs["responses"] = create_response_dictionary(
-            success_message=response_info.success_message, success_model=output_model
+        primary_output_model = _get_output_model(
+            namespace=namespace,
+            output_schema=output_schema_manager.get_output_schema(HTTPStatus.OK)
+        )
+        response_dictionary = create_response_dictionary(
+            success_message=response_info.success_message, success_model=primary_output_model
         )
     else:
-        if output_model is not None:
-            response_info.response_dictionary[200] = response_info.response_dictionary[200], output_model
+        for status_code, schema in output_schema_manager.get_output_schemas().items():
+            model = _get_output_model(
+                namespace=namespace,
+                output_schema=schema
+            )
 
-        doc_kwargs["responses"] = response_info.response_dictionary
+            if model is not None:
+                response_info.response_dictionary[status_code] = response_info.response_dictionary[status_code], model
+
+        response_dictionary = response_info.response_dictionary
+
+    doc_kwargs["responses"] = response_dictionary
 
 
 def _get_output_model(namespace: Namespace, output_schema: Schema) -> Optional[Model]:

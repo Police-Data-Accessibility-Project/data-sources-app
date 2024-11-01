@@ -46,7 +46,7 @@ def test_data_sources_get(
         http_method="get",
         endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&approval_status=approved",  # ENDPOINT,
         headers=tus.api_authorization_header,
-        expected_schema=SchemaConfigs.DATA_SOURCES_GET_MANY.value.output_schema,
+        expected_schema=SchemaConfigs.DATA_SOURCES_GET_MANY.value.primary_output_schema,
     )
     data = response_json["data"]
     assert len(data) == 100
@@ -57,7 +57,7 @@ def test_data_sources_get(
         http_method="get",
         endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&sort_by=name&sort_order=ASC&approval_status=approved",
         headers=tus.api_authorization_header,
-        expected_schema=SchemaConfigs.DATA_SOURCES_GET_MANY.value.output_schema,
+        expected_schema=SchemaConfigs.DATA_SOURCES_GET_MANY.value.primary_output_schema,
     )
     data_asc = response_json["data"]
 
@@ -83,7 +83,7 @@ def test_data_sources_get_many_limit_columns(
     tus = create_test_user_setup(flask_client_with_db)
     allowed_columns = ["name", "submitted_name", "id"]
     url_encoded_column_string = urllib.parse.quote_plus(str(allowed_columns))
-    expected_schema = SchemaConfigs.DATA_SOURCES_GET_MANY.value.output_schema
+    expected_schema = SchemaConfigs.DATA_SOURCES_GET_MANY.value.primary_output_schema
     expected_schema.only = [
         "message",
         "metadata",
@@ -137,7 +137,7 @@ def test_data_sources_by_id_get(test_data_creator_flask: TestDataCreatorFlask):
         http_method="get",
         endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}/{cds.id}",
         headers=tus.api_authorization_header,
-        expected_schema=SchemaConfigs.DATA_SOURCES_GET_BY_ID.value.output_schema,
+        expected_schema=SchemaConfigs.DATA_SOURCES_GET_BY_ID.value.primary_output_schema,
     )
 
     assert response_json["data"]["name"] == cds.name
@@ -217,7 +217,7 @@ def test_data_source_by_id_related_agencies(
                 data_source_id=ds_info.id
             ),
             headers=tdc.get_admin_tus().jwt_authorization_header,
-            expected_schema=SchemaConfigs.AGENCIES_GET_MANY.value.output_schema,
+            expected_schema=SchemaConfigs.AGENCIES_GET_MANY.value.primary_output_schema,
         )
 
     json_data = get_related_agencies()

@@ -23,7 +23,7 @@ def test_search_get(flask_client_with_db, bypass_api_key_required):
         http_method="get",
         endpoint="/search/search-location-and-record-type?state=Pennsylvania&county=Allegheny&locality=Pittsburgh&record_categories=Police%20%26%20Public%20Interactions",
         headers=tus.api_authorization_header,
-        expected_schema=SchemaConfigs.SEARCH_LOCATION_AND_RECORD_TYPE_GET.value.output_schema
+        expected_schema=SchemaConfigs.SEARCH_LOCATION_AND_RECORD_TYPE_GET.value.primary_output_schema
     )
 
     jurisdictions = ["federal", "state", "county", "locality"]
@@ -81,7 +81,7 @@ def test_search_follow(test_data_creator_flask):
             endpoint=endpoint,
             expected_json_content=expected_json_content,
             expected_response_status=expected_response_status,
-            expected_schema=SchemaConfigs.SEARCH_FOLLOW_POST.value.output_schema,
+            expected_schema=SchemaConfigs.SEARCH_FOLLOW_POST.value.primary_output_schema,
         )
 
     def call_follow_delete(
@@ -94,7 +94,7 @@ def test_search_follow(test_data_creator_flask):
             http_method="delete",
             endpoint=endpoint,
             expected_json_content=expected_json_content,
-            expected_schema=SchemaConfigs.SEARCH_FOLLOW_DELETE.value.output_schema,
+            expected_schema=SchemaConfigs.SEARCH_FOLLOW_DELETE.value.primary_output_schema,
         )
 
     def call_follow_get(
@@ -106,7 +106,7 @@ def test_search_follow(test_data_creator_flask):
             http_method="get",
             endpoint=SEARCH_FOLLOW_BASE_ENDPOINT,
             expected_json_content=expected_json_content,
-            expected_schema=SchemaConfigs.SEARCH_FOLLOW_GET.value.output_schema,
+            expected_schema=SchemaConfigs.SEARCH_FOLLOW_GET.value.primary_output_schema,
         )
 
     no_results_json = {

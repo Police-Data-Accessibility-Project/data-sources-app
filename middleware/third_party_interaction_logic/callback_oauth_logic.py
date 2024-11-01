@@ -6,7 +6,7 @@ Because it involves interactions with a third party app, the ability to test its
 
 from flask import url_for
 from config import oauth
-
+from middleware.flask_response_manager import FlaskResponseManager
 
 REDIRECT_ENDPOINT = "auth_callback"
 
@@ -19,6 +19,12 @@ def redirect_to_github_authorization():
     return oauth.github.authorize_redirect(
         endpoint=redirect_uri,
     )
+    # return FlaskResponseManager.redirect(
+    #     url=response.location,
+    #     data={
+    #         "url": response.location,
+    #     }
+    # )
 
 
 def get_github_user_email(token: str) -> str:

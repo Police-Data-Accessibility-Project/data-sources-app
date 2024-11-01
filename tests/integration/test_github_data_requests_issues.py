@@ -55,7 +55,7 @@ def test_github_data_requests_issues_post(
 
     def call_endpoint(
         expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_schema: Schema = SchemaConfigs.GITHUB_DATA_REQUESTS_ISSUES_POST.value.output_schema,
+        expected_schema: Schema = SchemaConfigs.GITHUB_DATA_REQUESTS_ISSUES_POST.value.primary_output_schema,
         expected_json_content: dict = None,
         user_tus: TestUserSetup = tdc.get_admin_tus(),
     ):
