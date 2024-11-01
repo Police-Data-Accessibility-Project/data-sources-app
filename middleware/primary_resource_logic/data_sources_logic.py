@@ -136,6 +136,8 @@ def update_data_source_wrapper(
     access_info: AccessInfo,
     data_source_id: str,
 ) -> Response:
+    entry_data = dto.entry_data
+    optionally_swap_record_type_name_with_id(db_client, entry_data)
     return put_entry(
         middleware_parameters=MiddlewareParameters(
             db_client=db_client,
@@ -144,9 +146,18 @@ def update_data_source_wrapper(
             db_client_method=DatabaseClient.update_data_source,
             access_info=access_info,
         ),
-        entry=dto.entry_data,
+        entry=entry_data,
         entry_id=data_source_id,
     )
+
+
+def optionally_swap_record_type_name_with_id(db_client, entry_data):
+    if "record_type_name" in entry_data:
+        record_type_id = db_client.get_record_type_id_by_name(
+            record_type_name=entry_data["record_type_name"]
+        )
+        entry_data["record_type_id"] = record_type_id
+        del entry_data["record_type_name"]
 
 
 def add_new_data_source_wrapper(
