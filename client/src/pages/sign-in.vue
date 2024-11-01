@@ -128,7 +128,7 @@ async function onSubmit(formValues) {
 		await auth.login(email, password);
 
 		error.value = undefined;
-		router.push({ path: auth.redirectTo || '/' });
+		router.push(auth.redirectTo ?? '/');
 	} catch (err) {
 		error.value = 'Something went wrong, please try again.';
 	} finally {

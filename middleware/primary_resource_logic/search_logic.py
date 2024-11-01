@@ -13,6 +13,7 @@ from middleware.enums import JurisdictionSimplified, Relations
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import SearchRequests
 from middleware.common_response_formatting import message_response
+from utilities.enums import RecordCategories
 
 
 def get_jurisdiction_type_enum(
@@ -78,16 +79,40 @@ def format_search_results(search_results: list[dict]) -> dict:
 
 def search_wrapper(
         db_client: DatabaseClient,
+        access_info: AccessInfo,
         dto: SearchRequests,
 ) -> Response:
+    location_id = try_getting_location_id_and_raise_error_if_not_found(
+        db_client=db_client,
+        dto=dto,
+    )
+    explicit_record_categories = get_explicit_record_categories(dto.record_categories)
+    db_client.create_search_record(
+        user_id=access_info.get_user_id(),
+        location_id=location_id,
+        # Pass originally provided record categories
+        record_categories=dto.record_categories,
+    )
     search_results = db_client.search_with_location_and_record_type(
         state=dto.state,
-        record_categories=dto.record_categories,
+        # Pass modified record categories, which breaks down ALL into individual categories
+        record_categories=explicit_record_categories,
         county=dto.county,
         locality=dto.locality,
     )
     formatted_search_results = format_search_results(search_results)
     return make_response(formatted_search_results, HTTPStatus.OK)
+
+
+def get_explicit_record_categories(record_categories = list[RecordCategories]) -> list[RecordCategories]:
+    if record_categories == [RecordCategories.ALL]:
+        return [rc for rc in RecordCategories if rc != RecordCategories.ALL]
+    elif len(record_categories) > 1 and RecordCategories.ALL in record_categories:
+        FlaskResponseManager.abort(
+            message="ALL cannot be provided with other record categories.",
+            code=HTTPStatus.BAD_REQUEST,
+        )
+    return record_categories
 
 
 def try_getting_location_id_and_raise_error_if_not_found(

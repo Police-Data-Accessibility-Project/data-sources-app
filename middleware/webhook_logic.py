@@ -22,10 +22,10 @@ def post_to_webhook(msg: str):
 def send_password_reset_link(email, token):
     body = (
         f"To reset your password, click the following link: "
-        f"{get_env_variable('VITE_VUE_APP_BASE_URL')}/reset-password/{token}"
+        f"{get_env_variable('VITE_VUE_APP_BASE_URL')}reset-password/{token}"
     )
     send_via_mailgun(
         to_email=email,
         subject="PDAP Data Sources Reset Password",
-        body=body,
+        text=body,
     )

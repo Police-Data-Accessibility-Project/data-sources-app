@@ -3,8 +3,10 @@ from typing import Optional
 
 from marshmallow import Schema
 
+from middleware.enums import Relations
 from resources.endpoint_schema_config import SchemaConfigs
-from tests.helper_scripts.constants import SEARCH_FOLLOW_BASE_ENDPOINT
+from tests.helper_scripts.common_test_data import TestDataCreatorFlask
+from tests.helper_scripts.constants import SEARCH_FOLLOW_BASE_ENDPOINT, USER_PROFILE_RECENT_SEARCHES_ENDPOINT
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup, add_query_params,
@@ -13,13 +15,19 @@ from tests.helper_scripts.run_and_validate_request import run_and_validate_reque
 from tests.helper_scripts.simple_result_validators import check_response_status
 from tests.conftest import flask_client_with_db, bypass_api_key_required
 from conftest import test_data_creator_flask, monkeysession
+from utilities.enums import RecordCategories
 
+ENDPOINT_SEARCH_LOCATION_AND_RECORD_TYPE = "/search/search-location-and-record-type"
 
-def test_search_get(flask_client_with_db, bypass_api_key_required):
-    tus = create_test_user_setup(flask_client_with_db)
+def test_search_get(
+    test_data_creator_flask: TestDataCreatorFlask,
+    bypass_api_key_required
+):
+    tdc = test_data_creator_flask
+    tus = tdc.standard_user()
 
     data = run_and_validate_request(
-        flask_client=flask_client_with_db,
+        flask_client=tdc.flask_client,
         http_method="get",
         endpoint="/search/search-location-and-record-type?state=Pennsylvania&county=Allegheny&locality=Pittsburgh&record_categories=Police%20%26%20Public%20Interactions",
         headers=tus.api_authorization_header,
@@ -35,6 +43,76 @@ def test_search_get(flask_client_with_db, bypass_api_key_required):
         jurisdiction_count += data["data"][jurisdiction]["count"]
 
     assert jurisdiction_count == data["count"]
+
+    # Check that search shows up in user's recent searches
+    data = run_and_validate_request(
+        flask_client=tdc.flask_client,
+        http_method="get",
+        endpoint=USER_PROFILE_RECENT_SEARCHES_ENDPOINT,
+        headers=tus.jwt_authorization_header,
+        expected_schema=SchemaConfigs.USER_PROFILE_RECENT_SEARCHES.value.output_schema
+    )
+
+    assert data["metadata"]["count"] == 1
+
+    assert data["data"][0] == {
+        "state_iso": "PA",
+        "county_name": "Allegheny",
+        "locality_name": "Pittsburgh",
+        "location_type": "Locality",
+        "record_categories": ["Police & Public Interactions"],
+    }
+
+
+def test_search_get_record_categories_all(
+    test_data_creator_flask: TestDataCreatorFlask,
+    bypass_api_key_required
+):
+    """
+    All record categories can be provided in one of two ways:
+    By explicitly passing an "ALL" value in the `record_categories` parameter
+    Or by providing every non-ALL value in the `record_categories` parameter
+    """
+    tdc = test_data_creator_flask
+    tus = tdc.standard_user()
+
+    def run_search(record_categories: list[RecordCategories]) -> dict:
+        record_string = [rc.value for rc in record_categories]
+        params = {
+                "state": "Pennsylvania",
+                "county": "Allegheny",
+                "locality": "Pittsburgh"
+            }
+        if len(record_string) > 0:
+            params["record_categories"] = ",".join(record_string)
+        url = add_query_params(
+            ENDPOINT_SEARCH_LOCATION_AND_RECORD_TYPE,
+            params=params
+        )
+
+        return run_and_validate_request(
+            flask_client=tdc.flask_client,
+            http_method="get",
+            endpoint=url,
+            headers=tus.api_authorization_header,
+            expected_schema=SchemaConfigs.SEARCH_LOCATION_AND_RECORD_TYPE_GET.value.output_schema
+        )
+
+    data_all_explicit = run_search(record_categories=[RecordCategories.ALL])
+    assert data_all_explicit["count"] > 0
+
+    # Check that the count is the same as if every record type is provided
+    data_all_implicit = run_search(record_categories=[rc for rc in RecordCategories if rc != RecordCategories.ALL])
+    assert data_all_implicit["count"] > 0
+    assert data_all_implicit["count"] == data_all_explicit["count"]
+
+    # Check that the count is the same if no record type is provided
+    data_empty = run_search(record_categories=[])
+    assert data_empty["count"] > 0
+    assert data_empty["count"] == data_all_explicit["count"]
+
+
+
 
 def test_search_follow(test_data_creator_flask):
     tdc = test_data_creator_flask

@@ -3,12 +3,13 @@ Module for testing database client functionality against a live database
 """
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from unittest.mock import MagicMock
 
 import psycopg.errors
 import pytest
 import sqlalchemy
+from marshmallow import Schema
 from sqlalchemy import insert, select, update
 
 from database_client.database_client import DatabaseClient
@@ -22,7 +23,7 @@ from database_client.enums import (
     RelationRoleEnum,
     ColumnPermissionEnum,
     SortOrder,
-    RequestStatus,
+    RequestStatus, ApprovalStatus,
 )
 from middleware.exceptions import (
     UserNotFoundError,
@@ -34,7 +35,7 @@ from database_client.models import (
     DataSource,
     ExternalAccount,
     TestTable,
-    User,
+    User, SQL_ALCHEMY_TABLE_REFERENCE,
 )
 from middleware.enums import PermissionsEnum, Relations
 from tests.conftest import live_database_client, test_table_data, clear_data_requests
@@ -43,14 +44,16 @@ from tests.helper_scripts.common_test_data import (
     create_agency_entry_for_search_cache,
     create_data_source_entry_for_url_duplicate_checking,
     TestDataCreatorFlask,
-    TestDataCreatorDBClient,
     get_random_number_for_testing,
-    TestDataRequestInfo,
 )
+from tests.helper_scripts.helper_classes.AnyOrder import AnyOrder
+from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import TestDataCreatorDBClient
+from tests.helper_scripts.helper_schemas import TestGetPendingNotificationsOutputSchema
+from tests.helper_scripts.test_dataclasses import TestDataRequestInfo
 from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources_if_not_exist,
     setup_get_typeahead_suggestion_test_data,
-    create_test_user_db_client,
+    create_test_user_db_client, get_notification_valid_date,
 )
 from utilities.enums import RecordCategories
 from conftest import test_data_creator_db_client
@@ -647,14 +650,18 @@ def test_search_with_location_and_record_types_real_data_multiple_records(
     live_database_client,
 ):
     state_parameter = "Pennsylvania"
-    record_types = []
+    record_categories = []
     last_count = 0
+    # Exclude the ALL pseudo-category
+    applicable_record_categories = [
+        e for e in RecordCategories if e != RecordCategories.ALL
+    ]
 
     # Check that when more record types are added, the number of results increases
-    for record_type in [e for e in RecordCategories]:
-        record_types.append(record_type)
+    for record_category in applicable_record_categories:
+        record_categories.append(record_category)
         results = live_database_client.search_with_location_and_record_type(
-            state=state_parameter, record_categories=record_types
+            state=state_parameter, record_categories=record_categories
         )
         assert len(results) > last_count
         last_count = len(results)
@@ -1095,6 +1102,243 @@ def test_user_followed_searches_logic(test_data_creator_db_client: TestDataCreat
         left_id=user_info.id
     )
     assert len(results["data"]) == 1
+
+def test_get_notifications_no_results(live_database_client):
+    """
+    Tests that `get_notifications` returns an empty list when there are no notifications
+    :param live_database_client:
+    :return:
+    """
+
+def test_get_pending_notifications(test_data_creator_db_client):
+    tdc = test_data_creator_db_client
+    tdc.clear_test_data()
+
+    location_id = tdc.locality()
+
+    # Create agency and tie to location
+    agency_id = tdc.agency(
+        location_id=location_id
+    )
+
+    # Create data source with approval status of "approved" and associate with agency
+    ds_info = tdc.data_source(
+        approval_status=ApprovalStatus.APPROVED
+    )
+    tdc.link_data_source_to_agency(
+        data_source_id=ds_info.id,
+        agency_id=agency_id.id,
+    )
+
+    # Create standard user and have them follow location
+    user_info = tdc.user()
+    tdc.db_client.create_followed_search(
+        column_value_mappings={
+            "user_id": user_info.id,
+            "location_id": location_id
+        }
+    )
+
+    # Call `get_notifications`
+    results = tdc.db_client.get_pending_notifications()
+    schema = TestGetPendingNotificationsOutputSchema(
+        many=True
+    )
+    schema.load(results)
+
+def get_user_notification_queue(db_client: DatabaseClient):
+    return db_client._select_from_relation(
+        relation_name=Relations.USER_NOTIFICATION_QUEUE.value,
+        columns=[
+            "id",
+            "entity_id",
+            "sent_at",
+        ],
+    )
+
+def test_optionally_update_user_notification_queue(test_data_creator_db_client):
+    tdc = test_data_creator_db_client
+    tdc.clear_test_data()
+
+    # Confirm that the queue is empty
+    queue = get_user_notification_queue(tdc.db_client)
+    assert len(queue) == 0
+
+    entity_id = tdc.create_valid_notification_event()
+
+    # Call method
+    tdc.db_client.optionally_update_user_notification_queue()
+
+    # Confirm queue is populated with one entry
+    queue = get_user_notification_queue(tdc.db_client)
+    assert len(queue) == 1
+    assert queue[0]["entity_id"] == entity_id
+
+    # Modify `sent_at` column for the entry
+    expected_sent_at = datetime.now(timezone.utc)
+    tdc.db_client._update_entry_in_table(
+        table_name=Relations.USER_NOTIFICATION_QUEUE.value,
+        entry_id=queue[0]["id"],
+        column_edit_mappings={
+            "sent_at": expected_sent_at
+        }
+    )
+
+
+
+    # Try calling method again
+    tdc.db_client.optionally_update_user_notification_queue()
+
+    # Confirm queue remains populated with the same entry, with the `sent_at` column remaining unchanged
+    queue = get_user_notification_queue(tdc.db_client)
+    assert len(queue) == 1
+    assert queue[0]["entity_id"] == entity_id
+    assert queue[0]["sent_at"] == expected_sent_at
+
+
+    # Change `event_timestamp` of entry to two months ago
+    two_months_ago_event_timestamp = datetime.now(timezone.utc) - timedelta(days=60)
+    tdc.db_client._update_entry_in_table(
+        table_name=Relations.USER_NOTIFICATION_QUEUE.value,
+        entry_id=queue[0]["id"],
+        column_edit_mappings={
+            "event_timestamp": two_months_ago_event_timestamp
+        }
+    )
+    # Change also original entry to two months ago, to ensure it is not pulled again
+    tdc.db_client._update_entry_in_table(
+        table_name=Relations.DATA_SOURCES.value,
+        entry_id=queue[0]["entity_id"],
+        column_edit_mappings={
+            "approval_status_updated_at": two_months_ago_event_timestamp
+        }
+    )
+
+    # Create new valid notification event
+    new_entity_id = tdc.create_valid_notification_event()
+
+    # Call method again
+    tdc.db_client.optionally_update_user_notification_queue()
+
+    # Confirm former entry is no longer in the queue, and new entry is present
+    queue = get_user_notification_queue(tdc.db_client)
+    assert len(queue) == 1
+    assert queue[0]["entity_id"] == new_entity_id
+
+def test_get_next_user_events_and_mark_user_events_as_sent(test_data_creator_db_client):
+    tdc = test_data_creator_db_client
+    tdc.clear_test_data()
+
+    # Create a notification event for an (implicitly created) user
+    entity_id = tdc.create_valid_notification_event()
+
+    # Create another user with two notification events
+    user_id = tdc.user().id
+    entity_id_2 = tdc.create_valid_notification_event(user_id=user_id)
+    entity_id_3 = tdc.create_valid_notification_event(user_id=user_id)
+
+    tdc.db_client.optionally_update_user_notification_queue()
+
+    # Retrieve the single-event user and mark as sent,
+    event_batch = tdc.db_client.get_next_user_event_batch()
+    assert len(event_batch.events) == 1
+    assert event_batch.events[0].entity_id == entity_id
+    tdc.db_client.mark_user_events_as_sent(event_batch.user_id)
+
+    # Run for the two-event user
+    event_batch = tdc.db_client.get_next_user_event_batch()
+    assert len(event_batch.events) == 2
+    assert AnyOrder([event.entity_id for event in event_batch.events]) == [entity_id_2, entity_id_3] or AnyOrder([event.entity_id for event in event_batch.events]) == [entity_id_2, entity_id_3]
+
+    tdc.db_client.mark_user_events_as_sent(event_batch.user_id)
+
+    event_batch = tdc.db_client.get_next_user_event_batch()
+    assert event_batch is None
+
+def test_insert_search_record(
+    test_data_creator_db_client: TestDataCreatorDBClient
+):
+    tdc = test_data_creator_db_client
+    user_info = tdc.user()
+    location_id = tdc.locality()
+
+    def assert_are_expected_record_categories(
+        rc_ids: list[int],
+        record_categories: list[RecordCategories]
+    ):
+        table = SQL_ALCHEMY_TABLE_REFERENCE[Relations.RECORD_CATEGORIES.value]
+        name_column = getattr(table, "name")
+        id_column = getattr(table, "id")
+        query = select(name_column).where(id_column.in_(rc_ids))
+        result = tdc.db_client.execute_sqlalchemy(lambda: query)
+        result = [row[0] for row in result]
+        result.sort()
+        rc_values = [rc.value for rc in record_categories]
+        rc_values.sort()
+        assert result == rc_values
+
+    def get_recent_searches():
+        return tdc.db_client._select_from_relation(
+            relation_name=Relations.RECENT_SEARCHES.value,
+            columns=["id"],
+            where_mappings={
+                "user_id": user_info.id,
+                "location_id": location_id
+            },
+            order_by=OrderByParameters(
+                sort_by="created_at",
+                sort_order=SortOrder.ASCENDING
+            )
+        )
+
+    def get_link_recent_search_record_types(recent_search_id: int):
+        return tdc.db_client._select_from_relation(
+            relation_name=Relations.LINK_RECENT_SEARCH_RECORD_CATEGORIES.value,
+            columns=["record_category_id"],
+            where_mappings={
+                "recent_search_id": recent_search_id
+            }
+        )
+
+    tdc.db_client.create_search_record(
+        user_id=user_info.id,
+        location_id=location_id,
+        record_categories=RecordCategories.ALL
+    )
+
+    # Confirm record exists in both `recent_searches` and `link_recent_search_record_types` tables
+    recent_search_results = get_recent_searches()
+    assert len(recent_search_results) == 1
+
+    link_results = get_link_recent_search_record_types(recent_search_results[0]["id"])
+
+    assert len(link_results) == 1
+
+    # Confirm record category is all
+    assert_are_expected_record_categories(
+        rc_ids=[link_results[0]["record_category_id"]],
+        record_categories=[RecordCategories.ALL]
+    )
+
+    tdc.db_client.create_search_record(
+        user_id=user_info.id,
+        location_id=location_id,
+        record_categories=[RecordCategories.AGENCIES, RecordCategories.JAIL]
+    )
+
+    # Confirm two records now exists in `recent_searches` table associated with this information
+    recent_search_results = get_recent_searches()
+    assert len(recent_search_results) == 2
+
+    # And that the second links to an `AGENCIES` and `JAIL` entry in `link_recent_search_record_types` table
+    search_id = recent_search_results[1]["id"]
+    link_results = get_link_recent_search_record_types(search_id)
+    rc_ids = [link_result["record_category_id"] for link_result in link_results]
+
+    assert_are_expected_record_categories(
+        rc_ids=rc_ids,
+        record_categories=[RecordCategories.AGENCIES, RecordCategories.JAIL]
+    )
 
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts

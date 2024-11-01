@@ -1,12 +1,16 @@
 import json
 from collections import namedtuple
+from datetime import datetime, timezone
 from enum import Enum
 from functools import wraps, partialmethod
+from operator import and_
 from typing import Optional, Any, List, Callable, Union
 
 import psycopg
 import sqlalchemy.exc
 from click.testing import Result
+from dateutil.relativedelta import relativedelta
+from numpy.core.records import record
 from psycopg import sql, Cursor
 from psycopg.rows import dict_row, tuple_row
 from sqlalchemy import select, MetaData, delete, update, insert
@@ -25,8 +29,9 @@ from database_client.enums import (
     ExternalAccountTypeEnum,
     RelationRoleEnum,
     ColumnPermissionEnum,
-    RequestStatus,
+    RequestStatus, EntityType, EventType,
 )
+from middleware.custom_dataclasses import EventInfo, EventBatch
 from middleware.exceptions import (
     UserNotFoundError,
     DuplicateUserError,
@@ -36,7 +41,7 @@ from database_client.models import (
     ExternalAccount,
     SQL_ALCHEMY_TABLE_REFERENCE,
     User,
-    DataRequestExpanded,
+    DataRequestExpanded, UserNotificationQueue, RecentSearch, LinkRecentSearchRecordCategories, RecordCategory,
 )
 from middleware.enums import PermissionsEnum, Relations
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
@@ -642,7 +647,7 @@ class DatabaseClient:
         self,
         table_name: str,
         entry_id: Any,
-        column_edit_mappings: dict[str, str],
+        column_edit_mappings: dict[str, Any],
         id_column_name: str = "id",
     ):
         """
@@ -807,7 +812,13 @@ class DatabaseClient:
 
         return results
 
-    def _process_results(self, build_metadata, raw_results, relation_name, subquery_parameters):
+    def _process_results(
+            self,
+            build_metadata: bool,
+            raw_results,
+            relation_name,
+            subquery_parameters
+    ):
         table_key = self._build_table_key_if_results(raw_results)
         results = self._dictify_results(raw_results, subquery_parameters, table_key)
         results = self._optionally_build_metadata(build_metadata, relation_name, results, subquery_parameters)
@@ -818,7 +829,7 @@ class DatabaseClient:
             where_mappings = WhereMapping.from_dict(where_mappings)
         return where_mappings
 
-    def _optionally_build_metadata(self, build_metadata, relation_name, results, subquery_parameters):
+    def _optionally_build_metadata(self, build_metadata: bool, relation_name, results, subquery_parameters):
         if build_metadata is True:
             results = ResultFormatter.format_with_metadata(
                 results,
@@ -827,7 +838,12 @@ class DatabaseClient:
             )
         return results
 
-    def _dictify_results(self, raw_results, subquery_parameters, table_key):
+    def _dictify_results(
+            self,
+            raw_results,
+            subquery_parameters: Optional[list[SubqueryParameters]],
+            table_key
+    ):
         if subquery_parameters and table_key:
             # Calls models.Base.to_dict() method
             results = [result[table_key].to_dict(subquery_parameters) for result in raw_results]
@@ -857,6 +873,19 @@ class DatabaseClient:
         _select_from_relation, relation_name=Relations.RELATED_SOURCES.value
     )
 
+    get_pending_notifications = partialmethod(
+        _select_from_relation,
+        relation_name=Relations.USER_PENDING_NOTIFICATIONS.value,
+        columns=[
+            "user_id",
+            "email",
+            "event_type",
+            "entity_id",
+            "entity_type",
+            "entity_name",
+        ]
+    )
+
     def _select_single_entry_from_relation(
         self,
         relation_name: str,
@@ -876,7 +905,7 @@ class DatabaseClient:
             raise RuntimeError(f"Expected 1 result but found {len(results)}")
         return results[0]
 
-    def get_location_id(self, where_mappings: list[WhereMapping]) -> Optional[int]:
+    def get_location_id(self, where_mappings: Union[list[WhereMapping], dict]) -> Optional[int]:
         result = self._select_single_entry_from_relation(
             relation_name=Relations.LOCATIONS_EXPANDED.value,
             columns=["id"],
@@ -1157,4 +1186,152 @@ class DatabaseClient:
                 request_status=RequestStatus(result["request_status"]),
             )
             for result in results
-]
+        ]
+
+    @session_manager
+    def optionally_update_user_notification_queue(self):
+        """
+        Clears and repopulates the user notification queue with new notifications if it does not contain
+        any events from the prior month.
+        Otherwise, does nothing.
+        :return:
+        """
+        with self.session.begin():
+            queue = SQL_ALCHEMY_TABLE_REFERENCE[Relations.USER_NOTIFICATION_QUEUE.value]
+
+            # Get beginning and end of prior month
+            # Get the current time
+            now = datetime.now()
+
+            # First day, hour, and minute of the current month
+            first_day_current_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+            # First day, hour, and minute of the prior month
+            first_day_prior_month = first_day_current_month - relativedelta(months=1)
+
+            query = (
+                select(queue)
+                .where(
+                    and_(
+                        queue.event_timestamp >= first_day_prior_month,
+                        queue.event_timestamp < first_day_current_month,
+                    )
+                )
+            )
+
+            results = self.session.execute(query).all()
+
+            # If any results are present within the given daterange, then do nothing
+            if len(results) != 0:
+                return
+
+            # Delete all rows from the queue
+            self.session.query(queue).delete()
+
+
+            # Insert all new rows from UserPendingNotification table
+            user_pending_notification = SQL_ALCHEMY_TABLE_REFERENCE[Relations.USER_PENDING_NOTIFICATIONS.value]
+
+
+            results = [result for result in self.session.query(
+                user_pending_notification
+            )]
+
+            for result in results:
+                self.session.add(
+                    queue(
+                        user_id=result.user_id,
+                        entity_id=result.entity_id,
+                        entity_type=result.entity_type,
+                        entity_name=result.entity_name,
+                        email=result.email,
+                        event_type=result.event_type,
+                        event_timestamp=result.event_timestamp,
+                    )
+                )
+
+    @session_manager
+    def get_next_user_event_batch(self) -> Optional[EventBatch]:
+
+        queue = UserNotificationQueue
+
+        with ((((self.session.begin())))):
+            next_user_info = self.session \
+                .query(queue) \
+                .filter(queue.sent_at.is_(None)) \
+                .order_by(queue.event_timestamp.asc()) \
+                .first()
+
+            if next_user_info is None:
+                return None
+            user_email = next_user_info.email
+            next_user_id = next_user_info.user_id
+
+            user_events = self.session.query(queue).filter(queue.user_id == next_user_id).filter(queue.sent_at.is_(None))
+
+        events = []
+        for user_event in user_events:
+            event_info = EventInfo(
+                event_id=user_event.id,
+                event_type=EventType(user_event.event_type),
+                entity_id=user_event.entity_id,
+                entity_type=EntityType(user_event.entity_type),
+                entity_name=user_event.entity_name,
+            )
+
+            events.append(event_info)
+
+        return EventBatch(
+            user_id=next_user_id,
+            user_email=user_email,
+            events=events
+        )
+
+    @session_manager
+    def mark_user_events_as_sent(self, user_id: int):
+        queue = UserNotificationQueue
+
+        with self.session.begin():
+            self.session.query(queue).filter(queue.user_id == user_id).update({queue.sent_at: datetime.now()}, synchronize_session=False)
+
+    @session_manager
+    def create_search_record(
+        self,
+        user_id: int,
+        location_id: int,
+        record_categories: Union[list[RecordCategories], RecordCategories]
+    ):
+        if isinstance(record_categories, RecordCategories):
+            record_categories = [record_categories]
+
+        with self.session.begin():
+            # Insert into recent_search table and get recent_search_id
+            query = insert(RecentSearch).values({
+                "user_id": user_id,
+                "location_id": location_id
+            }).returning(RecentSearch.id)
+            result = self.session.execute(query)
+            recent_search_id = result.fetchone()[0]
+
+            # For all record types, insert into link table
+            for record_type in record_categories:
+                query = select(RecordCategory).filter(RecordCategory.name == record_type.value)
+                rc_id = self.session.execute(query).fetchone()[0].id
+
+                query = insert(LinkRecentSearchRecordCategories).values({
+                    "recent_search_id": recent_search_id,
+                    "record_category_id": rc_id
+                })
+                self.session.execute(query)
+
+    def get_user_recent_searches(self, user_id: int):
+        return self._select_from_relation(
+            relation_name=Relations.RECENT_SEARCHES_EXPANDED.value,
+            columns=["state_iso", "county_name", "locality_name", "location_type", "record_categories"],
+            where_mappings={"user_id": user_id},
+            build_metadata=True
+        )
+
+
+
+

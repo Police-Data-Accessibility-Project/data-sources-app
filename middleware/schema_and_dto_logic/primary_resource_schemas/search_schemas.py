@@ -26,6 +26,7 @@ class SearchRequestSchema(Schema):
     )
     record_categories = fields.Str(
         required=False,
+        load_default="All",
         metadata={
             "transformation_function": transform_record_categories,
             "description": "The record categories of the search. If empty, all categories will be searched."

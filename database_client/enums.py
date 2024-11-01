@@ -153,3 +153,12 @@ class RequestUrgency(Enum):
     NOT_URGENT = "not_urgent"  # A few months
     LONG_TERM = "long_term"  # A year or more
     INDEFINITE = "indefinite_unknown"  # Indefinite or unknown length of time
+
+class EntityType(Enum):
+    DATA_SOURCE = "Data Source"
+    DATA_REQUEST = "Data Request"
+
+class EventType(Enum):
+    REQUEST_READY_TO_START = "Request Ready to Start"
+    REQUEST_COMPLETE = "Request Complete"
+    DATA_SOURCE_APPROVED = "Data Source Approved"

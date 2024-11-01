@@ -4,6 +4,8 @@
 	>
 		<TypeaheadInput
 			:id="TYPEAHEAD_ID"
+			ref="typeaheadRef"
+			:format-item-for-display="formatText"
 			:items="items"
 			:placeholder="placeholder ?? 'Enter a place'"
 			@select-item="onSelectRecord"
@@ -11,14 +13,22 @@
 		>
 			<!-- Pass label as slot to typeahead -->
 			<template #label>
-				<label class="col-span-2" :for="TYPEAHEAD_ID">
-					<h4 class="uppercase">Search location</h4>
-				</label>
+				<h4 class="uppercase">Search location</h4>
+			</template>
+
+			<!-- Item to render passed as scoped slot -->
+			<template #item="item">
+				<!-- eslint-disable-next-line vue/no-v-html This data is coming from our API, so we can trust it-->
+				<span v-html="typeaheadRef?.boldMatchText(formatText(item))" />
+				<span class="locale-type">
+					{{ item.type }}
+				</span>
+				<span class="select">Select</span>
 			</template>
 		</TypeaheadInput>
 	</div>
 
-	<h4 class="w-full mt-8">Types of data</h4>
+	<h4 class="w-full mt-8 like-h4">Types of data</h4>
 	<FormV2
 		id="pdap-data-sources-search"
 		ref="formRef"
@@ -42,6 +52,14 @@
 			{{ buttonCopy ?? 'Search' }}
 		</Button>
 	</FormV2>
+	<div>
+		<p class="text-lg mt-8 mb-4">
+			If you have a question to answer, we can help
+		</p>
+		<RouterLink class="pdap-button-primary" to="/request">
+			Make a Request
+		</RouterLink>
+	</div>
 </template>
 
 <script setup>
@@ -54,8 +72,9 @@ import {
 import TypeaheadInput from '@/components/TypeaheadInput.vue';
 import axios from 'axios';
 import { ref } from 'vue';
-import { debounce as _debounce } from 'lodash';
-import { useRouter } from 'vue-router';
+import statesToAbbreviations from '@/util/statesToAbbreviations';
+import _debounce from 'lodash/debounce';
+import { useRouter, RouterLink } from 'vue-router';
 
 const router = useRouter();
 
@@ -110,12 +129,25 @@ const CHECKBOXES = [
 const items = ref([]);
 const selectedRecord = ref();
 const formRef = ref();
+const typeaheadRef = ref();
 
 function submit(values) {
 	const params = new URLSearchParams(buildParams(values));
 	const path = `/search/results?${params.toString()}`;
 	router.push(path);
 	emit('searched');
+}
+
+function formatText(item) {
+	switch (item.type) {
+		case 'Locality':
+			return `${item.display_name} ${item.county} ${statesToAbbreviations.get(item.state)}`;
+		case 'County':
+			return `${item.display_name} ${statesToAbbreviations.get(item.state)}`;
+		case 'State':
+		default:
+			return item.display_name;
+	}
 }
 
 function buildParams(values) {
@@ -181,6 +213,7 @@ function onSelectRecord(item) {
 	items.value = [];
 }
 
+// Tried to move this to a store, but it slows and gets glitchy when not used directly in the component. Investigate, since it's now repeated here and in /request
 const fetchTypeaheadResults = _debounce(
 	async (e) => {
 		try {
@@ -211,3 +244,13 @@ const fetchTypeaheadResults = _debounce(
 	{ leading: true, trailing: true },
 );
 </script>
+
+<style scoped>
+.select {
+	@apply ml-auto;
+}
+
+.locale-type {
+	@apply border-solid border-2 border-neutral-700 dark:border-neutral-400 rounded-full text-neutral-700 dark:text-neutral-400 text-xs @md:text-sm px-2 py-1;
+}
+</style>

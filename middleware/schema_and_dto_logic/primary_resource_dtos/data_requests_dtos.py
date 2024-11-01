@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from typing import Optional
 
 from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import LocationType
+from database_client.enums import LocationType, RequestStatus
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyBaseDTO
 
 
 @dataclass
@@ -22,3 +23,7 @@ class DataRequestLocationInfoPostDTO:
         if self.locality is not None:
             d["locality"] = self.locality
         return WhereMapping.from_dict(d)
+
+@dataclass
+class GetManyDataRequestsRequestsDTO(GetManyBaseDTO):
+    request_status: Optional[RequestStatus] = None

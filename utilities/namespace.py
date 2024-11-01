@@ -21,6 +21,9 @@ class AppNamespaces(Enum):
     CHECK = NamespaceAttributes(path="check", description="Check Namespace")
     USER = NamespaceAttributes(path="user", description="User Profile Namespace")
     GITHUB = NamespaceAttributes(path="github", description="Github Namespace")
+    NOTIFICATIONS = NamespaceAttributes(
+        path="notifications", description="Notifications Namespace"
+    )
 
 
 def create_namespace(
