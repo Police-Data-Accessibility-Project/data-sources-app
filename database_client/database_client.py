@@ -1332,6 +1332,15 @@ class DatabaseClient:
             build_metadata=True
         )
 
+    def get_record_type_id_by_name(self, record_type_name: str):
+        return self._select_single_entry_from_relation(
+            relation_name=Relations.RECORD_TYPES.value,
+            columns=["id"],
+            where_mappings={
+                "name": record_type_name
+            }
+        )["id"]
+
 
 
 
