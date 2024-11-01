@@ -74,7 +74,7 @@ def test_notifications_followed_searches(
             "message": "Notifications sent successfully.",
             "count": 2
         },
-        expected_schema=SchemaConfigs.NOTIFICATIONS_POST.value.output_schema
+        expected_schema=SchemaConfigs.NOTIFICATIONS_POST.value.primary_output_schema
     )
     mock_format_and_send_notifications.assert_has_calls(
         any_order=True,

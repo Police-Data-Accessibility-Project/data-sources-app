@@ -50,7 +50,7 @@ def test_search_get(
         http_method="get",
         endpoint=USER_PROFILE_RECENT_SEARCHES_ENDPOINT,
         headers=tus.jwt_authorization_header,
-        expected_schema=SchemaConfigs.USER_PROFILE_RECENT_SEARCHES.value.output_schema
+        expected_schema=SchemaConfigs.USER_PROFILE_RECENT_SEARCHES.value.primary_output_schema
     )
 
     assert data["metadata"]["count"] == 1
@@ -95,7 +95,7 @@ def test_search_get_record_categories_all(
             http_method="get",
             endpoint=url,
             headers=tus.api_authorization_header,
-            expected_schema=SchemaConfigs.SEARCH_LOCATION_AND_RECORD_TYPE_GET.value.output_schema
+            expected_schema=SchemaConfigs.SEARCH_LOCATION_AND_RECORD_TYPE_GET.value.primary_output_schema
         )
 
     data_all_explicit = run_search(record_categories=[RecordCategories.ALL])

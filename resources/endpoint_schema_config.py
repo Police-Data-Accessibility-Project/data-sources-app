@@ -254,11 +254,11 @@ class SchemaConfigs(Enum):
     #endregion
     #region Notifications
     NOTIFICATIONS_POST = EndpointSchemaConfig(
-        output_schema=NotificationsResponseSchema(),
+        primary_output_schema=NotificationsResponseSchema(),
     )
     #region User Profile
     USER_PROFILE_RECENT_SEARCHES = EndpointSchemaConfig(
-        output_schema=GetUserRecentSearchesOuterSchema(exclude=['message']),
+        primary_output_schema=GetUserRecentSearchesOuterSchema(exclude=['message']),
     )
     #endregion
     #region Auth
