@@ -8,18 +8,13 @@ from middleware.access_logic import NO_AUTH_INFO, AccessInfo
 from middleware.decorators import endpoint_info_2
 from middleware.primary_resource_logic.typeahead_suggestion_logic import (
     get_typeahead_results,
-    TypeaheadLocationsOuterResponseSchema,
-    TypeaheadAgenciesOuterResponseSchema,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     TypeaheadQuerySchema,
     TypeaheadDTO,
 )
-from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_construction import (
-    get_restx_param_documentation,
-)
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
-from resources.PsycopgResource import handle_exceptions, PsycopgResource
+from resources.PsycopgResource import PsycopgResource
 from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import ResponseInfo
 

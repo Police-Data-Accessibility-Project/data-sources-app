@@ -206,7 +206,7 @@ class TestDataCreatorFlask:
         tdc_db = TestDataCreatorDBClient()
         tdc_db.clear_test_data()
 
-    def data_request(self, user_tus: Optional[TestUserSetup] = None, location_info: Optional[dict] = None) -> TestDataRequestInfo:
+    def data_request(self, user_tus: Optional[TestUserSetup] = None) -> TestDataRequestInfo:
         if user_tus is None:
             user_tus = self.get_admin_tus()
         return create_test_data_request(

@@ -9,7 +9,7 @@ from flask.testing import FlaskClient
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import RequestUrgency
+from database_client.enums import RequestUrgency, LocationType
 from middleware.constants import DATA_KEY
 from middleware.enums import PermissionsEnum
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
@@ -31,11 +31,13 @@ from tests.helper_scripts.constants import (
     DATA_REQUESTS_BASE_ENDPOINT,
     DATA_REQUESTS_BY_ID_ENDPOINT,
     DATA_REQUESTS_GET_RELATED_SOURCE_ENDPOINT,
-    DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT,
+    DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT, DATA_REQUESTS_RELATED_LOCATIONS,
+    DATA_REQUESTS_POST_DELETE_RELATED_LOCATIONS_ENDPOINT,
 )
 from tests.helper_scripts.helper_classes.IntegrationTestSetup import (
     integration_test_setup,
 )
+from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup, add_query_params,
 )
@@ -628,3 +630,123 @@ def test_data_request_by_id_related_sources(
         api_authorization_header=tus_non_owner.api_authorization_header,
         expected_json_content=NO_RESULTS_RESPONSE,
     )
+
+def test_link_unlink_data_requests_with_locations(
+    test_data_creator_flask: TestDataCreatorFlask
+):
+    tdc = test_data_creator_flask
+    cdr = tdc.data_request()
+    admin_tus = tdc.get_admin_tus()
+
+    location_get_endpoint = DATA_REQUESTS_RELATED_LOCATIONS.format(
+        data_request_id=cdr.id
+    )
+
+
+    def get_locations(
+            tus: TestUserSetup = admin_tus,
+            expected_response_status: HTTPStatus = HTTPStatus.OK,
+            expected_schema = SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_GET.value.primary_output_schema
+    ):
+        return run_and_validate_request(
+            flask_client=tdc.flask_client,
+            http_method="get",
+            endpoint=location_get_endpoint,
+            headers=tus.jwt_authorization_header,
+            expected_response_status=expected_response_status,
+            expected_schema=expected_schema
+
+        )["data"]
+
+    data = get_locations()
+    assert data == []
+
+    # Add location
+    location_id = tdc.db_client.get_location_id(
+        where_mappings={
+            "state_name": "Pennsylvania",
+            "county_name": "Allegheny",
+            "locality_name": "Pittsburgh",
+        }
+    )
+
+    location_post_delete_endpoint = DATA_REQUESTS_POST_DELETE_RELATED_LOCATIONS_ENDPOINT.format(
+        data_request_id=cdr.id,
+        location_id=location_id
+    )
+
+    def post_location_association(
+        tus: TestUserSetup = admin_tus,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_schema=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_DELETE.value.primary_output_schema,
+        expected_json_content: Optional[dict] = None
+    ):
+
+        run_and_validate_request(
+            flask_client=tdc.flask_client,
+            http_method="post",
+            endpoint=location_post_delete_endpoint,
+            headers=tus.jwt_authorization_header,
+            expected_response_status=expected_response_status,
+            expected_schema=expected_schema,
+            expected_json_content=expected_json_content
+        )
+
+    post_location_association(
+        expected_json_content={"message": "Location successfully associated with request."}
+    )
+
+    data = get_locations()
+    assert data == [
+        {
+            "id": location_id,
+            "state_name": "Pennsylvania",
+            "state_iso": "PA",
+            "county_name": "Allegheny",
+            "county_fips": "42003",
+            "locality_name": "Pittsburgh",
+            "type": LocationType.LOCALITY.value
+        }
+    ]
+
+    def delete_location_association(
+        tus: TestUserSetup = admin_tus,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_schema=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_DELETE.value.primary_output_schema,
+        expected_json_content: Optional[dict] = None
+    ):
+        run_and_validate_request(
+            flask_client=tdc.flask_client,
+            http_method="delete",
+            endpoint=location_post_delete_endpoint,
+            headers=tus.jwt_authorization_header,
+            expected_response_status=expected_response_status,
+            expected_schema=expected_schema,
+            expected_json_content=expected_json_content
+        )
+
+
+    # Test that a standard user add or remove a location association
+    standard_tus = tdc.standard_user()
+
+    post_location_association(
+        tus=standard_tus,
+        expected_response_status=HTTPStatus.FORBIDDEN,
+        expected_schema=None
+    )
+
+    delete_location_association(
+        tus=standard_tus,
+        expected_response_status=HTTPStatus.FORBIDDEN,
+        expected_schema=None
+    )
+
+    # Finally delete the location association
+    delete_location_association(
+        expected_json_content={"message": "Request-Location association deleted."}
+    )
+
+    data = get_locations()
+    assert data == []
+
+

@@ -13,7 +13,8 @@ from middleware.primary_resource_logic.data_requests import (
     get_data_request_by_id_wrapper,
     delete_data_request_related_source,
     get_data_request_related_sources,
-    create_data_request_related_source,
+    create_data_request_related_source, get_data_request_related_locations, create_data_request_related_location,
+    delete_data_request_related_location,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     EntryCreateUpdateRequestDTO,
@@ -219,3 +220,71 @@ class DataRequestsRelatedSourcesById(PsycopgResource):
             schema_populate_parameters=SchemaConfigs.DATA_REQUESTS_RELATED_SOURCES_POST.value.get_schema_populate_parameters(),
             access_info=access_info,
         )
+
+@namespace_data_requests.route("/<resource_id>/related-locations")
+class DataRequestsRelatedLocations(PsycopgResource):
+
+    @endpoint_info_2(
+        namespace=namespace_data_requests,
+        auth_info=GET_AUTH_INFO,
+        schema_config=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_GET,
+        response_info=ResponseInfo(
+            success_message="Related locations successfully retrieved.",
+        ),
+        description="Get locations related to a data request",
+    )
+    def get(self, resource_id: str, access_info: AccessInfo) -> Response:
+        """
+        Get locations marked as related to a data request.
+        """
+        return self.run_endpoint(
+            wrapper_function=get_data_request_related_locations,
+            schema_populate_parameters=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_GET.value.get_schema_populate_parameters(),
+        )
+
+
+@namespace_data_requests.route("/<resource_id>/related-locations/<location_id>")
+class DataRequestsRelatedLocationsById(PsycopgResource):
+
+    @endpoint_info_2(
+        namespace=namespace_data_requests,
+        auth_info=STANDARD_JWT_AUTH_INFO,
+        schema_config=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_POST,
+        response_info=ResponseInfo(
+            success_message="Location successfully associated with data request.",
+        ),
+        description="Mark a location as related to a data request",
+    )
+    def post(
+        self, resource_id: str, location_id: str, access_info: AccessInfo
+    ):
+        """
+        Mark a location as related to a data request
+        """
+        return self.run_endpoint(
+            wrapper_function=create_data_request_related_location,
+            access_info=access_info,
+            schema_populate_parameters=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_POST.value.get_schema_populate_parameters(),
+        )
+
+    @endpoint_info_2(
+        namespace=namespace_data_requests,
+        auth_info=STANDARD_JWT_AUTH_INFO,
+        schema_config=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_POST,
+        description="""Delete an association of a location with a data request""",
+        response_info=ResponseInfo(
+            success_message="Successfully removed location association from data request.",
+        )
+    )
+    def delete(
+        self, resource_id: str, location_id: str, access_info: AccessInfo
+    ):
+        """
+        Remove an association of a location with a data request
+        """
+        return self.run_endpoint(
+            wrapper_function=delete_data_request_related_location,
+            schema_populate_parameters=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_POST.value.get_schema_populate_parameters(),
+            access_info=access_info,
+        )
+

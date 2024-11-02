@@ -984,6 +984,10 @@ class DatabaseClient:
         _delete_from_table, table_name=Relations.RELATED_SOURCES.value
     )
 
+    delete_request_location_relation = partialmethod(
+        _delete_from_table, table_name=Relations.LINK_LOCATIONS_DATA_REQUESTS.value
+    )
+
     delete_followed_search = partialmethod(
         _delete_from_table, table_name=Relations.LINK_USER_FOLLOWED_LOCATION.value
     )
