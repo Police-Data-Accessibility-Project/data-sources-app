@@ -63,7 +63,7 @@ def generate_api_key() -> str:
     return uuid.uuid4().hex
 
 
-def get_api_key_for_user(db_client: DatabaseClient, dto: UserRequestDTO) -> Response:
+def create_api_key_for_user(db_client: DatabaseClient, dto: UserRequestDTO) -> Response:
     """
     Tries to log in a user. If successful, generates API key
 

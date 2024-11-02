@@ -8,7 +8,7 @@ from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
 from middleware.primary_resource_logic.login_queries import (
     generate_api_key,
-    get_api_key_for_user,
+    create_api_key_for_user,
     refresh_session,
 )
 from middleware.primary_resource_logic.callback_primary_logic import try_logging_in_with_github_id
@@ -51,7 +51,7 @@ def test_get_api_key_for_user_success(monkeypatch):
     mock.generate_api_key.return_value = mock.api_key
 
     # Call function
-    get_api_key_for_user(mock.db_client, mock.dto)
+    create_api_key_for_user(mock.db_client, mock.dto)
 
     assert_get_api_key_for_user_precondition_calls(mock)
 
@@ -67,7 +67,7 @@ def test_get_api_key_for_user_failure():
 
     mock.check_password_hash.return_value = False
 
-    get_api_key_for_user(mock.db_client, mock.dto)
+    create_api_key_for_user(mock.db_client, mock.dto)
 
     assert_get_api_key_for_user_precondition_calls(mock)
 
