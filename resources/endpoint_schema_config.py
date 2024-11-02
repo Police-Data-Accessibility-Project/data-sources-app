@@ -7,10 +7,10 @@ from marshmallow import Schema
 from middleware.primary_resource_logic.callback_primary_logic import LinkToGithubRequestDTO
 from middleware.primary_resource_logic.data_requests import (
     RelatedSourceByIDSchema,
-    RelatedSourceByIDDTO, DataRequestsPostDTO,
+    RelatedSourceByIDDTO, DataRequestsPostDTO, RelatedLocationsByIDDTO,
 )
-from middleware.primary_resource_logic.typeahead_suggestion_logic import TypeaheadLocationsOuterResponseSchema, \
-    TypeaheadAgenciesOuterResponseSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import \
+    TypeaheadAgenciesOuterResponseSchema, TypeaheadLocationsOuterResponseSchema, TypeaheadLocationsResponseSchema
 from middleware.primary_resource_logic.unique_url_checker import UniqueURLCheckerRequestSchema, \
     UniqueURLCheckerResponseOuterSchema, UniqueURLCheckerRequestDTO
 from middleware.primary_resource_logic.user_queries import UserRequestSchema, UserRequestDTO
@@ -19,15 +19,13 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.auth_schemas impor
 from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import GetManyDataRequestsRequestsDTO
 from middleware.schema_and_dto_logic.primary_resource_schemas.notifications_schemas import NotificationsResponseSchema
 from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import SearchRequestSchema, \
-    GetUserFollowedSearchesSchema, SearchRequests, FollowSearchResponseSchema, SearchResultsInnerSchema, \
-    SearchResponseSchema
+    GetUserFollowedSearchesSchema, SearchRequests, SearchResponseSchema
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyRequestsBaseSchema,
     GetManyBaseDTO,
     GetByIDBaseSchema,
     GetByIDBaseDTO,
-    EntryCreateUpdateRequestDTO,
-    EntryDataRequestSchema, TypeaheadDTO, TypeaheadQuerySchema,
+    EntryDataRequestSchema, TypeaheadDTO, TypeaheadQuerySchema, LocationInfoExpandedSchema,
 )
 from middleware.schema_and_dto_logic.custom_types import DTOTypes
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
@@ -42,7 +40,8 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_sche
     GetManyDataRequestsResponseSchema,
     DataRequestsSchema,
     DataRequestsPostSchema,
-    GetByIDDataRequestsResponseSchema, GetManyDataRequestsRequestsSchema,
+    GetByIDDataRequestsResponseSchema, GetManyDataRequestsRequestsSchema, DataRequestsRelatedLocationAddRemoveSchema,
+    GetManyDataRequestsRelatedLocationsSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
     DataSourcesGetManySchema,
@@ -142,6 +141,21 @@ class SchemaConfigs(Enum):
     )
     DATA_REQUESTS_RELATED_SOURCES_DELETE = EndpointSchemaConfig(
         input_schema=RelatedSourceByIDSchema(), input_dto_class=RelatedSourceByIDDTO
+    )
+    DATA_REQUESTS_RELATED_LOCATIONS_GET = EndpointSchemaConfig(
+        input_schema=GetByIDBaseSchema(),
+        input_dto_class=GetByIDBaseDTO,
+        primary_output_schema=GetManyDataRequestsRelatedLocationsSchema(),
+    )
+    DATA_REQUESTS_RELATED_LOCATIONS_POST = EndpointSchemaConfig(
+        input_schema=DataRequestsRelatedLocationAddRemoveSchema(),
+        input_dto_class=RelatedLocationsByIDDTO,
+        primary_output_schema=MessageSchema(),
+    )
+    DATA_REQUESTS_RELATED_LOCATIONS_DELETE = EndpointSchemaConfig(
+        input_schema=DataRequestsRelatedLocationAddRemoveSchema(),
+        input_dto_class=RelatedLocationsByIDDTO,
+        primary_output_schema=MessageSchema(),
     )
     # endregion
     # region Agencies

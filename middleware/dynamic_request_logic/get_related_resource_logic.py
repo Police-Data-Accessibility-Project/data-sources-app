@@ -1,3 +1,5 @@
+from typing import Optional
+
 from flask import Response
 
 from database_client.database_client import DatabaseClient
@@ -24,7 +26,8 @@ class GetRelatedResourcesParameters:
     resource_name: str = "resource"
 
 def get_related_resource(
-    get_related_resources_parameters: GetRelatedResourcesParameters
+    get_related_resources_parameters: GetRelatedResourcesParameters,
+    permitted_columns: Optional[list] = None,
 ) -> Response:
     # Technically, it'd make more sense as "grrp", but "gerp" rolls off the tongue better
     gerp = get_related_resources_parameters
@@ -35,12 +38,13 @@ def get_related_resource(
         ),
         db_client=gerp.db_client,
     )
-    permitted_columns = get_permitted_columns(
-        db_client=gerp.db_client,
-        relation=gerp.related_relation.value,
-        role=RelationRoleEnum.STANDARD,
-        column_permission=ColumnPermissionEnum.READ,
-    )
+    if permitted_columns is None:
+        permitted_columns = get_permitted_columns(
+            db_client=gerp.db_client,
+            relation=gerp.related_relation.value,
+            role=RelationRoleEnum.STANDARD,
+            column_permission=ColumnPermissionEnum.READ,
+        )
     subquery_parameters = [
         SubqueryParameterManager.get_subquery_params(
             relation=gerp.related_relation,

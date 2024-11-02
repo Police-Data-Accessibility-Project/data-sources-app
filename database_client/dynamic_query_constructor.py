@@ -128,7 +128,8 @@ class DynamicQueryConstructor:
                 type,
                 state_name as state,
                 county_name as county,
-                locality_name as locality
+                locality_name as locality,
+                location_id
             FROM typeahead_locations
             WHERE display_name ILIKE {search_term_prefix}
             UNION ALL
@@ -138,12 +139,13 @@ class DynamicQueryConstructor:
                 type,
                 state_name as state,
                 county_name as county,
-                locality_name as locality
+                locality_name as locality,
+                location_id
             FROM typeahead_locations
             WHERE display_name ILIKE {search_term_anywhere}
             AND display_name NOT ILIKE {search_term_prefix}
         )
-        SELECT display_name, type, state, county, locality
+        SELECT display_name, type, state, county, locality, location_id
         FROM (
             SELECT DISTINCT 
                 sort_order,
@@ -151,7 +153,8 @@ class DynamicQueryConstructor:
                 type,
                 state,
                 county,
-                locality
+                locality,
+                location_id
             FROM combined
             ORDER BY sort_order, display_name
             LIMIT 10

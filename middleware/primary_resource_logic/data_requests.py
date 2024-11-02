@@ -77,6 +77,13 @@ class RelatedSourceByIDDTO(GetByIDBaseDTO):
         return {"data_source_id": int(self.data_source_id), "request_id": int(self.resource_id)}
 
 @dataclass
+class RelatedLocationsByIDDTO(GetByIDBaseDTO):
+    location_id: int
+
+    def get_where_mapping(self):
+        return {"location_id": int(self.location_id), "data_request_id": int(self.resource_id)}
+
+@dataclass
 class RequestInfoPostDTO:
     title: str
     submission_notes: str
@@ -370,8 +377,32 @@ def get_data_request_related_sources(db_client: DatabaseClient, dto: GetByIDBase
         )
     )
 
+def get_data_request_related_locations(
+    db_client: DatabaseClient, dto: GetByIDBaseDTO
+) -> Response:
+    return get_related_resource(
+        get_related_resources_parameters=GetRelatedResourcesParameters(
+            db_client=db_client,
+            dto=dto,
+            db_client_method=DatabaseClient.get_data_requests,
+            primary_relation=Relations.DATA_REQUESTS,
+            related_relation=Relations.LOCATIONS_EXPANDED,
+            linking_column="locations",
+            metadata_count_name="locations_count",
+            resource_name="locations"
+        ),
+        permitted_columns=[
+            "id",
+            "state_name",
+            "state_iso",
+            "county_name",
+            "county_fips",
+            "locality_name",
+            "type"
+        ]
+    )
 
-def check_can_create_data_request_related_source(relation_role: RelationRoleEnum):
+def check_has_admin_or_owner_role(relation_role: RelationRoleEnum):
     if relation_role not in [RelationRoleEnum.OWNER, RelationRoleEnum.ADMIN]:
         FlaskResponseManager.abort(
             code=HTTPStatus.FORBIDDEN,
@@ -382,11 +413,18 @@ def check_can_create_data_request_related_source(relation_role: RelationRoleEnum
 class CreateDataRequestRelatedSourceLogic(PostLogic):
 
     def check_can_edit_columns(self, relation_role: RelationRoleEnum):
-        check_can_create_data_request_related_source(relation_role)
+        check_has_admin_or_owner_role(relation_role)
 
     def make_response(self) -> Response:
         return message_response("Data source successfully associated with request.")
 
+class CreateDataRequestRelatedLocationLogic(PostLogic):
+
+    def check_can_edit_columns(self, relation_role: RelationRoleEnum):
+        check_has_admin_or_owner_role(relation_role)
+
+    def make_response(self) -> Response:
+        return message_response("Location successfully associated with request.")
 
 def create_data_request_related_source(
     db_client: DatabaseClient, access_info: AccessInfo, dto: RelatedSourceByIDDTO
@@ -432,3 +470,47 @@ def delete_data_request_related_source(
             db_client=db_client,
         ),
     )
+
+def create_data_request_related_location(
+    db_client: DatabaseClient, access_info: AccessInfo, dto: RelatedLocationsByIDDTO
+):
+    post_logic = CreateDataRequestRelatedLocationLogic(
+        middleware_parameters=MiddlewareParameters(
+            db_client=db_client,
+            access_info=access_info,
+            entry_name="Request-Location association",
+            relation=Relations.LINK_LOCATIONS_DATA_REQUESTS.value,
+            db_client_method=DatabaseClient.create_request_location_relation,
+        ),
+        entry=dto.get_where_mapping(),
+        relation_role_parameters=RelationRoleParameters(
+            relation_role_function_with_params=DeferredFunction(
+                function=get_data_requests_relation_role,
+                data_request_id=dto.resource_id,
+                db_client=db_client,
+            )
+        ),
+    )
+    return post_logic.execute()
+
+def delete_data_request_related_location(
+    db_client: DatabaseClient, access_info: AccessInfo, dto: RelatedLocationsByIDDTO
+):
+    return delete_entry(
+        middleware_parameters=MiddlewareParameters(
+            db_client=db_client,
+            access_info=access_info,
+            entry_name="Request-Location association",
+            relation=Relations.LINK_LOCATIONS_DATA_REQUESTS.value,
+            db_client_method=DatabaseClient.delete_request_location_relation,
+        ),
+        id_info=IDInfo(
+            additional_where_mappings=dto.get_where_mapping(),
+        ),
+        permission_checking_function=DeferredFunction(
+            allowed_to_delete_request,
+            access_info=access_info,
+            data_request_id=dto.resource_id,
+            db_client=db_client,
+        ),
+)

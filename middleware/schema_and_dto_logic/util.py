@@ -47,3 +47,10 @@ def get_query_metadata(description: str, **kwargs) -> dict:
         "source": SourceMappingEnum.QUERY_ARGS,
         **kwargs,
     }
+
+def get_path_metadata(description: str, **kwargs) -> dict:
+    return {
+        "description": description,
+        "source": SourceMappingEnum.PATH,
+        **kwargs,
+    }
