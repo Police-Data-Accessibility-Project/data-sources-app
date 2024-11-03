@@ -13,7 +13,8 @@ from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_
     get_restx_param_documentation,
 )
 from middleware.schema_and_dto_logic.non_dto_dataclasses import FlaskRestxDocInfo
-from middleware.security import check_api_key, check_permissions
+from middleware.security import check_permissions
+from middleware.primary_resource_logic.api_key_logic import check_api_key
 from resources.PsycopgResource import handle_exceptions
 from resources.resource_helpers import (
     add_jwt_or_api_key_header_arg,

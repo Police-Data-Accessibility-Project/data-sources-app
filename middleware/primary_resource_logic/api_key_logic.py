@@ -1,0 +1,56 @@
+import uuid
+from http import HTTPStatus
+
+from flask import Response, make_response
+from flask_restx import abort
+from werkzeug.security import check_password_hash
+
+from database_client.database_client import DatabaseClient
+from database_client.helper_functions import get_db_client
+from middleware.access_logic import get_api_key_from_request_header
+from middleware.exceptions import InvalidAPIKeyException, InvalidAuthorizationHeaderException
+from middleware.primary_resource_logic.user_queries import UserRequestDTO
+
+
+def generate_api_key() -> str:
+    return uuid.uuid4().hex
+
+
+def create_api_key_for_user(db_client: DatabaseClient, dto: UserRequestDTO) -> Response:
+    """
+    Tries to log in a user. If successful, generates API key
+
+    :param db_client: A DatabaseClient object.
+    :param email: User's email.
+    :param password: User's password.
+    :return: A response object with a message and status code.
+    """
+    user_data = db_client.get_user_info(dto.email)
+
+    if check_password_hash(user_data.password_digest, dto.password):
+        api_key = generate_api_key()
+        db_client.update_user_api_key(user_id=user_data.id, api_key=api_key)
+        payload = {"api_key": api_key}
+        return make_response(payload, HTTPStatus.OK)
+
+    return make_response(
+        {"message": "Invalid email or password"}, HTTPStatus.UNAUTHORIZED
+    )
+
+
+def check_api_key_associated_with_user(db_client: DatabaseClient, api_key: str) -> None:
+    user_identifiers = db_client.get_user_by_api_key(api_key)
+    if user_identifiers is None:
+        abort(HTTPStatus.UNAUTHORIZED, "Invalid API Key")
+
+
+INVALID_API_KEY_MESSAGE = "Please provide an API key in the request header in the 'Authorization' key with the format 'Basic <api_key>'"
+
+
+def check_api_key() -> None:
+    try:
+        api_key = get_api_key_from_request_header()
+        db_client = get_db_client()
+        check_api_key_associated_with_user(db_client, api_key)
+    except (InvalidAPIKeyException, InvalidAuthorizationHeaderException):
+        abort(code=HTTPStatus.UNAUTHORIZED, message=INVALID_API_KEY_MESSAGE)

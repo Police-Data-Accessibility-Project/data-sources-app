@@ -1,4 +1,3 @@
-import uuid
 from http import HTTPStatus
 
 from flask import Response, make_response, jsonify
@@ -56,32 +55,6 @@ def login_response(
             refresh_token=refresh_token,
         ),
         HTTPStatus.OK,
-    )
-
-
-def generate_api_key() -> str:
-    return uuid.uuid4().hex
-
-
-def create_api_key_for_user(db_client: DatabaseClient, dto: UserRequestDTO) -> Response:
-    """
-    Tries to log in a user. If successful, generates API key
-
-    :param db_client: A DatabaseClient object.
-    :param email: User's email.
-    :param password: User's password.
-    :return: A response object with a message and status code.
-    """
-    user_data = db_client.get_user_info(dto.email)
-
-    if check_password_hash(user_data.password_digest, dto.password):
-        api_key = generate_api_key()
-        db_client.update_user_api_key(user_id=user_data.id, api_key=api_key)
-        payload = {"api_key": api_key}
-        return make_response(payload, HTTPStatus.OK)
-
-    return make_response(
-        {"message": "Invalid email or password"}, HTTPStatus.UNAUTHORIZED
     )
 
 

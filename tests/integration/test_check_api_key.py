@@ -13,7 +13,11 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from middleware.security import check_api_key, INVALID_API_KEY_MESSAGE
+from database_client.database_client import DatabaseClient
+from middleware.exceptions import InvalidAuthorizationHeaderException, InvalidAPIKeyException
+from middleware.primary_resource_logic.api_key_logic import INVALID_API_KEY_MESSAGE, check_api_key, \
+    check_api_key_associated_with_user, create_api_key_for_user
+from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_mocks_and_patches import (
     patch_request_headers,
     patch_abort,
@@ -22,9 +26,11 @@ from tests.conftest import live_database_client
 from tests.helper_scripts.helper_functions import create_test_user_setup_db_client
 
 
+PATCH_API_KEY_ROOT = "middleware.primary_resource_logic.api_key_logic"
+
 @pytest.fixture
 def mock_abort(monkeypatch) -> MagicMock:
-    return patch_abort(monkeypatch, path="middleware.security")
+    return patch_abort(monkeypatch, path=PATCH_API_KEY_ROOT)
 
 
 PATCH_REQUESTS_ROOT = "middleware.access_logic"
@@ -80,7 +86,7 @@ def test_check_api_key_valid_authorization_header(
         code=HTTPStatus.UNAUTHORIZED, message=INVALID_API_KEY_MESSAGE
     )
 
-
+#
 def test_check_api_key_api_key_not_associated_with_user(monkeypatch, mock_abort):
 
     patch_request_headers(
@@ -91,3 +97,49 @@ def test_check_api_key_api_key_not_associated_with_user(monkeypatch, mock_abort)
 
     check_api_key()
     mock_abort.assert_called_once_with(HTTPStatus.UNAUTHORIZED, "Invalid API Key")
+
+
+def test_check_api_key_associated_with_user_happy_path(mock_abort):
+    mock = MagicMock()
+    mock.db_client.get_user_by_api_key.return_value = mock.user_id
+    check_api_key_associated_with_user(mock.db_client, mock.api_key)
+    mock.db_client.get_user_by_api_key.assert_called_once_with(mock.api_key)
+    mock_abort.assert_not_called()
+
+
+def test_check_api_key_associated_with_user_invalid_api_key(mock_abort):
+    mock = MagicMock()
+    mock.db_client.get_user_by_api_key.return_value = None
+    check_api_key_associated_with_user(mock.db_client, mock.api_key)
+    mock.db_client.get_user_by_api_key.assert_called_once_with(mock.api_key)
+    mock_abort.assert_called_once_with(HTTPStatus.UNAUTHORIZED, "Invalid API Key")
+
+
+class CheckApiKeyMocks(DynamicMagicMock):
+    get_db_client: MagicMock
+    get_api_key_from_request_header: MagicMock
+    check_api_key_associated_with_user: MagicMock
+
+
+@pytest.mark.parametrize(
+    "exception",
+    [
+        InvalidAuthorizationHeaderException,
+        InvalidAPIKeyException,
+    ],
+)
+def test_check_api_key_invalid_api_key(exception, mock_abort):
+    mock = CheckApiKeyMocks(
+        patch_root=PATCH_API_KEY_ROOT,
+    )
+    mock.get_api_key_from_request_header.side_effect = exception
+
+    check_api_key()
+
+    mock.get_api_key_from_request_header.assert_called_once()
+    mock.get_db_client.assert_not_called()
+    mock.check_api_key_associated_with_user.assert_not_called()
+    mock_abort.assert_called_once_with(
+        code=HTTPStatus.UNAUTHORIZED, message=INVALID_API_KEY_MESSAGE
+    )
+

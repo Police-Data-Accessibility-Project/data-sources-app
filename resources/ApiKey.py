@@ -1,7 +1,7 @@
 from flask import Response
 from flask_restx import fields
 
-from middleware.primary_resource_logic.login_queries import create_api_key_for_user
+from middleware.primary_resource_logic.api_key_logic import create_api_key_for_user
 from middleware.primary_resource_logic.user_queries import UserRequestDTO
 from middleware.schema_and_dto_logic.dynamic_logic.model_helpers_with_schemas import (
     create_user_model,

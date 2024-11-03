@@ -4,14 +4,11 @@ from unittest.mock import MagicMock
 import pytest
 from flask import Response
 
-from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
 from middleware.primary_resource_logic.login_queries import (
-    generate_api_key,
-    create_api_key_for_user,
     refresh_session,
 )
-from middleware.primary_resource_logic.callback_primary_logic import try_logging_in_with_github_id
+from middleware.primary_resource_logic.api_key_logic import generate_api_key
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
@@ -22,65 +19,6 @@ def test_generate_api_key():
     api_key = generate_api_key()
     assert len(api_key) == 32
     assert all(c in "0123456789abcdef" for c in api_key)
-
-
-class GetAPIKeyForUserMocks(DynamicMagicMock):
-    check_password_hash: MagicMock
-    generate_api_key: MagicMock
-    make_response: MagicMock
-
-
-def setup_get_api_for_user_mocks():
-    mock = GetAPIKeyForUserMocks(
-        patch_root=PATCH_ROOT,
-    )
-
-    mock.db_client.get_user_info.return_value = DatabaseClient.UserInfo(
-        id=mock.user_id,
-        password_digest=mock.password_digest,
-        api_key=None,
-        email=mock.email,
-    )
-    mock.generate_api_key.return_value = mock.api_key
-    return mock
-
-
-def test_get_api_key_for_user_success(monkeypatch):
-    mock = setup_get_api_for_user_mocks()
-    mock.check_password_hash.return_value = True
-    mock.generate_api_key.return_value = mock.api_key
-
-    # Call function
-    create_api_key_for_user(mock.db_client, mock.dto)
-
-    assert_get_api_key_for_user_precondition_calls(mock)
-
-    mock.generate_api_key.assert_called()
-    mock.db_client.update_user_api_key.assert_called_with(
-        user_id=mock.user_id, api_key=mock.api_key
-    )
-    mock.make_response.assert_called_with({"api_key": mock.api_key}, HTTPStatus.OK)
-
-
-def test_get_api_key_for_user_failure():
-    mock = setup_get_api_for_user_mocks()
-
-    mock.check_password_hash.return_value = False
-
-    create_api_key_for_user(mock.db_client, mock.dto)
-
-    assert_get_api_key_for_user_precondition_calls(mock)
-
-    mock.generate_api_key.assert_not_called()
-    mock.db_client.update_user_api_key.assert_not_called()
-    mock.make_response.assert_called_with(
-        {"message": "Invalid email or password"}, HTTPStatus.UNAUTHORIZED
-    )
-
-
-def assert_get_api_key_for_user_precondition_calls(mock: GetAPIKeyForUserMocks):
-    mock.db_client.get_user_info.assert_called_with(mock.dto.email)
-    mock.check_password_hash.assert_called_with(mock.password_digest, mock.dto.password)
 
 
 class RefreshSessionMocks(DynamicMagicMock):
