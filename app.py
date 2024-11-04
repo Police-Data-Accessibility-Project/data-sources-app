@@ -23,7 +23,7 @@ from flask_restx import Api
 from config import config, oauth, limiter, jwt
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from resources.Agencies import namespace_agencies
-from resources.ApiKey import namespace_api_key
+from resources.ApiKeyResource import namespace_api_key
 from resources.Archives import namespace_archives
 from resources.DataSources import namespace_data_source
 from resources.Login import namespace_login

@@ -1,6 +1,6 @@
 """Integration tests for /api_key endpoint"""
-
-from resources.ApiKey import API_KEY_ROUTE
+from middleware.api_key import ApiKey
+from resources.ApiKeyResource import API_KEY_ROUTE, ApiKeyResource
 from tests.conftest import dev_db_client, flask_client_with_db
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
@@ -24,8 +24,9 @@ def test_api_key_post(flask_client_with_db, dev_db_client):
 
     # Check that API key aligned with user
     new_user_info = dev_db_client.get_user_info(user_info.email)
-    assert new_user_info.api_key == response_json.get(
-        "api_key"
-    ), "API key returned not aligned with user API key in database"
+    api_key_raw = response_json.get("api_key")
+    api_key = ApiKey(raw_key=api_key_raw)
+
+    assert new_user_info.api_key == api_key.key_hash, "API key returned not aligned with user API key in database"
 
 

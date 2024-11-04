@@ -24,15 +24,14 @@ from conftest import test_data_creator_flask, monkeysession
 ENDPOINT = "/api/archives"
 
 
-def test_archives_get(flask_client_with_db, dev_db_client: DatabaseClient):
+def test_archives_get(test_data_creator_flask: TestDataCreatorFlask):
     """
     Test that GET call to /archives endpoint successfully retrieves a non-zero amount of data
     """
-    tus = create_test_user_setup_db_client(
-        dev_db_client,
-    )
+    tdc = test_data_creator_flask
+    tus = tdc.standard_user()
     response_json = run_and_validate_request(
-        flask_client=flask_client_with_db,
+        flask_client=tdc.flask_client,
         http_method="get",
         endpoint=ENDPOINT,
         headers=tus.api_authorization_header,

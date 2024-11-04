@@ -24,7 +24,7 @@ from tests.conftest import (
     flask_client_with_db,
     integration_test_admin_setup,
 )
-from tests.helper_scripts.common_test_data import get_sample_agency_post_parameters
+from tests.helper_scripts.common_test_data import get_sample_agency_post_parameters, TestDataCreatorFlask
 from tests.helper_scripts.constants import AGENCIES_BASE_ENDPOINT
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup_db_client,
@@ -36,6 +36,7 @@ from tests.helper_scripts.run_and_validate_request import run_and_validate_reque
 from tests.helper_scripts.helper_classes.IntegrationTestSetup import (
     IntegrationTestSetup,
 )
+from conftest import test_data_creator_flask, monkeysession
 
 
 @dataclass
@@ -53,14 +54,15 @@ def ts(integration_test_admin_setup: IntegrationTestSetup):
     )
 
 
-def test_agencies_get(flask_client_with_db, dev_db_client: DatabaseClient):
+def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
     """
     Test that GET call to /agencies endpoint properly retrieves a nonzero amount of data
     """
-    tus = create_test_user_setup_db_client(dev_db_client)
+    tdc = test_data_creator_flask
+    tus = tdc.standard_user()
 
     response_json = run_and_validate_request(
-        flask_client=flask_client_with_db,
+        flask_client=tdc.flask_client,
         http_method="get",
         endpoint=AGENCIES_BASE_ENDPOINT + "?page=2",
         headers=tus.api_authorization_header,

@@ -40,7 +40,7 @@ API_KEY_ROUTE = "/api-key"
         500: "Internal server error.",
     },
 )
-class ApiKey(PsycopgResource):
+class ApiKeyResource(PsycopgResource):
     """Represents a resource for generating an API key for authenticated users."""
 
     @handle_exceptions

@@ -23,7 +23,9 @@ from tests.helper_scripts.common_mocks_and_patches import (
     patch_abort,
 )
 from tests.conftest import live_database_client
+from tests.helper_scripts.common_test_data import TestDataCreatorFlask
 from tests.helper_scripts.helper_functions import create_test_user_setup_db_client
+from conftest import test_data_creator_flask, monkeysession
 
 
 PATCH_API_KEY_ROOT = "middleware.primary_resource_logic.api_key_logic"
@@ -36,15 +38,15 @@ def mock_abort(monkeypatch) -> MagicMock:
 PATCH_REQUESTS_ROOT = "middleware.access_logic"
 
 
-def test_check_api_key_happy_path(monkeypatch, live_database_client):
+def test_check_api_key_happy_path(monkeypatch, test_data_creator_flask: TestDataCreatorFlask):
     """
     In Happy path, the api key is valid, and check_api_key runs without error
     :param monkeypatch:
     :param live_database_client:
     :return:
     """
-
-    tus = create_test_user_setup_db_client(live_database_client)
+    tdc = test_data_creator_flask
+    tus = tdc.standard_user()
 
     patch_request_headers(
         monkeypatch,
@@ -97,23 +99,6 @@ def test_check_api_key_api_key_not_associated_with_user(monkeypatch, mock_abort)
 
     check_api_key()
     mock_abort.assert_called_once_with(HTTPStatus.UNAUTHORIZED, "Invalid API Key")
-
-
-def test_check_api_key_associated_with_user_happy_path(mock_abort):
-    mock = MagicMock()
-    mock.db_client.get_user_by_api_key.return_value = mock.user_id
-    check_api_key_associated_with_user(mock.db_client, mock.api_key)
-    mock.db_client.get_user_by_api_key.assert_called_once_with(mock.api_key)
-    mock_abort.assert_not_called()
-
-
-def test_check_api_key_associated_with_user_invalid_api_key(mock_abort):
-    mock = MagicMock()
-    mock.db_client.get_user_by_api_key.return_value = None
-    check_api_key_associated_with_user(mock.db_client, mock.api_key)
-    mock.db_client.get_user_by_api_key.assert_called_once_with(mock.api_key)
-    mock_abort.assert_called_once_with(HTTPStatus.UNAUTHORIZED, "Invalid API Key")
-
 
 class CheckApiKeyMocks(DynamicMagicMock):
     get_db_client: MagicMock
