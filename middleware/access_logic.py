@@ -6,6 +6,7 @@ from flask import request
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from flask_restx import abort
 
+from middleware.api_key import ApiKey
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from database_client.helper_functions import get_db_client
 from middleware.exceptions import (
@@ -76,12 +77,13 @@ def get_jwt_access_info_with_permissions(user_email):
 
 def get_user_email_from_api_key() -> Optional[str]:
     try:
-        api_key = get_api_key_from_request_header()
+        raw_key = get_api_key_from_request_header()
     except (InvalidAPIKeyException, InvalidAuthorizationHeaderException):
         return None
 
+    api_key = ApiKey(raw_key=raw_key)
     db_client = get_db_client()
-    user_identifiers = db_client.get_user_by_api_key(api_key)
+    user_identifiers = db_client.get_user_by_api_key(api_key.key_hash)
     return user_identifiers.email
 
 

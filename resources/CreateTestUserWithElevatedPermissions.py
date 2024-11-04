@@ -18,7 +18,7 @@ from flask import request
 from flask_restx import fields, abort
 
 from middleware.enums import PermissionsEnum
-from middleware.primary_resource_logic.login_queries import get_api_key_for_user
+from middleware.primary_resource_logic.api_key_logic import create_api_key_for_user
 from middleware.primary_resource_logic.user_queries import (
     user_post_results,
     UserRequestDTO,
@@ -101,7 +101,7 @@ class CreateTestUserWithElevatedPermissions(PsycopgResource):
                     user_email=auto_user_email,
                     permission=permission,
                 )
-            api_key = get_api_key_for_user(db_client=db_client, dto=dto).json["api_key"]
+            api_key = create_api_key_for_user(db_client=db_client, dto=dto).json["api_key"]
         return {
             "email": auto_user_email,
             "password": auto_user_password,

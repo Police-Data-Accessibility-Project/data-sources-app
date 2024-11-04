@@ -75,7 +75,6 @@ def test_add_new_user(live_database_client: DatabaseClient):
     password_digest = result.password_digest
     api_key = result.api_key
 
-    assert api_key is not None
     assert password_digest == "test_password"
 
     # Adding same user should produce a DuplicateUserError

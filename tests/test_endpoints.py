@@ -13,7 +13,7 @@ from flask.testing import FlaskClient
 from flask_restful import Resource
 
 from resources.Agencies import AgenciesByPage, AgenciesById
-from resources.ApiKey import ApiKey, API_KEY_ROUTE
+from resources.ApiKeyResource import ApiKeyResource, API_KEY_ROUTE
 from resources.Archives import Archives
 from resources.Callback import Callback
 from resources.DataRequests import (
@@ -87,7 +87,7 @@ test_parameters = [
     TestParameters(User, "/user", [POST, PUT]),
     TestParameters(Login, "/login", [POST]),
     TestParameters(RefreshSession, "/refresh-session", [POST]),
-    TestParameters(ApiKey, f"/auth{API_KEY_ROUTE}", [POST]),
+    TestParameters(ApiKeyResource, f"/auth{API_KEY_ROUTE}", [POST]),
     TestParameters(RequestResetPassword, "/request-reset-password", [POST]),
     TestParameters(ResetPassword, "/reset-password", [POST]),
     TestParameters(ResetTokenValidation, "/reset-token-validation", [POST]),

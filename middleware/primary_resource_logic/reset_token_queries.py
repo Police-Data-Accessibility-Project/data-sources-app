@@ -9,7 +9,7 @@ from werkzeug.security import generate_password_hash
 
 from database_client.database_client import DatabaseClient
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.primary_resource_logic.login_queries import generate_api_key
+from middleware.primary_resource_logic.api_key_logic import generate_api_key
 from middleware.primary_resource_logic.user_queries import user_check_email
 from middleware.webhook_logic import send_password_reset_link
 from utilities.enums import SourceMappingEnum
