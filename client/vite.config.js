@@ -8,6 +8,7 @@ export default defineConfig({
 	plugins: [
 		VueRouter({
 			routesFolder: 'src/pages',
+			exclude: ['**/_*/*.*'],
 			extendRoute(route) {
 				// Add meta from meta map (see below)
 				if (ROUTES_TO_META.has(route.name)) {
@@ -44,6 +45,8 @@ export default defineConfig({
 /**
  * To override or add meta to a route, add a tuple to this `Map` which contains the route as the zeroth index and the meta object as the first index
  * Defining in vite.config rather than util/router because of import issues.
+ *
+ * TODO: remove this nonsense and set up in <route> tags at the page level instead.
  */
 const ROUTES_TO_META = new Map([
 	[

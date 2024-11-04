@@ -1,5 +1,4 @@
 <template>
-	<!-- User is already logged in -->
 	<main v-if="auth.userId" class="pdap-flex-container">
 		<h1>Your account is now active</h1>
 		<p data-test="success-subheading">Enjoy the data sources app.</p>

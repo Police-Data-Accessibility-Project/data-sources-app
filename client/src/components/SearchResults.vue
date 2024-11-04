@@ -69,21 +69,10 @@
 
 								<!-- Formats and links to data source view and data source url -->
 								<div :class="getClassNameFromHeadingType(HEADING_TITLES[3])">
-									<!-- TODO: when API returns array correctly - uncomment this -->
-									<!-- <span
-										v-for="format of source.record_format"
-										:key="source.data_source_name + format"
-										:class="getClassNameFromHeadingType(HEADING_TITLES[3])"
-									>
-										{{ format }}
-									</span> -->
-									<!-- And remove this (and the associated utility function) -->
 									<span
-										v-for="format of formatFormatsBecauseAPIReturnsStringsRatherThanArrays(
-											source.record_format,
-										)"
+										v-for="format of source.record_formats"
 										:key="source.data_source_name + format"
-										class="format"
+										class="pill format"
 									>
 										{{ format }}
 									</span>
@@ -171,23 +160,9 @@ function getClassNameFromHeadingType(heading) {
 	if (heading === 'details') return 'links';
 	return heading.replaceAll(',', '').split(' ').join('-');
 }
-
-/**
- * TODO: remove this function when API returns arrays
- */
-function formatFormatsBecauseAPIReturnsStringsRatherThanArrays(str) {
-	if (!str) return [];
-	return str
-		.replaceAll('[', '')
-		.replaceAll(']', '')
-		.replaceAll('"', '')
-		.split(',')
-		.map((s) => s.trim());
-}
 </script>
 
 <style scoped>
-@import url('../main.css');
 @tailwind utilities;
 
 /* TODO: decouple heading styling from heading level in design-system (or at least provide classes that can perform these overrides more efficiently) */
@@ -299,6 +274,6 @@ div.formats {
 }
 
 .format {
-	@apply pill p-0 px-1 text-med inline-block w-min max-w-[8ch] h-min whitespace-nowrap text-ellipsis line-clamp-1;
+	@apply p-0 px-1 text-med inline-block w-min max-w-[8ch] h-min whitespace-nowrap text-ellipsis line-clamp-1;
 }
 </style>

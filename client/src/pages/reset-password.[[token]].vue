@@ -1,91 +1,91 @@
 <template>
-	<!-- TODO: split this out to multiple routes -->
-	<main v-if="success" class="pdap-flex-container">
-		<h1>Success</h1>
-		<p data-test="success-subheading">
-			{{
-				token
-					? 'Your password has been successfully updated'
-					: 'We sent you an email with a link to reset your password. Please follow the link in the email to proceed'
-			}}
-		</p>
-	</main>
-	<main
-		v-else-if="!success && token"
-		class="pdap-flex-container mx-auto max-w-2xl"
-	>
-		<h1>Change your password</h1>
-		<p v-if="!hasValidatedToken" class="flex flex-col items-start sm:gap-4">
-			Loading...
-		</p>
-		<p
-			v-else-if="hasValidatedToken && isExpiredToken"
-			data-test="token-expired"
-			class="flex flex-col items-start sm:gap-4"
-		>
-			Sorry, that token has expired.
-			<RouterLink
-				data-test="re-request-link"
-				to="/reset-password"
-				@click="
-					isExpiredToken = false;
-					error = undefined;
-					token = undefined;
-				"
+	<main class="pdap-flex-container" :class="{ 'mx-auto max-w-2xl': !success }">
+		<!-- TODO: split this out to multiple routes? -->
+		<template v-if="success">
+			<h1>Success</h1>
+			<p data-test="success-subheading">
+				{{
+					token
+						? 'Your password has been successfully updated'
+						: 'We sent you an email with a link to reset your password. Please follow the link in the email to proceed'
+				}}
+			</p>
+		</template>
+
+		<template v-else-if="!success && token">
+			<h1>Change your password</h1>
+			<p v-if="!hasValidatedToken" class="flex flex-col items-start sm:gap-4">
+				Loading...
+			</p>
+			<p
+				v-else-if="hasValidatedToken && isExpiredToken"
+				data-test="token-expired"
+				class="flex flex-col items-start sm:gap-4"
 			>
-				Click here to request another
-			</RouterLink>
-		</p>
+				Sorry, that token has expired.
+				<RouterLink
+					data-test="re-request-link"
+					to="/reset-password"
+					@click="
+						isExpiredToken = false;
+						error = undefined;
+						token = undefined;
+					"
+				>
+					Click here to request another
+				</RouterLink>
+			</p>
 
-		<FormV2
-			v-else
-			id="reset-password"
-			data-test="reset-password-form"
-			class="flex flex-col"
-			name="reset-password"
-			:error="error"
-			:schema="VALIDATION_SCHEMA_CHANGE_PASSWORD"
-			@change="onChange"
-			@submit="onSubmitChangePassword"
-			@input="onResetInput"
-		>
-			<InputPassword
-				v-for="input of FORM_INPUTS_CHANGE_PASSWORD"
-				v-bind="{ ...input }"
-				:key="input.name"
-			/>
+			<FormV2
+				v-else
+				id="reset-password"
+				data-test="reset-password-form"
+				class="flex flex-col"
+				name="reset-password"
+				:error="error"
+				:schema="VALIDATION_SCHEMA_CHANGE_PASSWORD"
+				@change="onChange"
+				@submit="onSubmitChangePassword"
+				@input="onResetInput"
+			>
+				<InputPassword
+					v-for="input of FORM_INPUTS_CHANGE_PASSWORD"
+					v-bind="{ ...input }"
+					:key="input.name"
+				/>
 
-			<PasswordValidationChecker ref="passwordRef" />
+				<PasswordValidationChecker ref="passwordRef" />
 
-			<Button class="max-w-full" type="submit">
-				{{ loading ? 'Loading...' : 'Change password' }}
-			</Button>
-		</FormV2>
-	</main>
+				<Button class="max-w-full" type="submit">
+					{{ loading ? 'Loading...' : 'Change password' }}
+				</Button>
+			</FormV2>
+		</template>
 
-	<main v-else class="pdap-flex-container mx-auto max-w-2xl">
-		<h1>Request a link to reset your password</h1>
-		<FormV2
-			id="reset-password"
-			data-test="reset-password-form"
-			class="flex flex-col"
-			name="reset-password"
-			:error="error"
-			:schema="VALIDATION_SCHEMA_REQUEST_PASSWORD"
-			@submit="onSubmitRequestReset"
-		>
-			<InputText
-				id="email"
-				autofill="email"
-				data-test="email"
-				name="email"
-				label="Email"
-				placeholder="Your email address"
-			/>
-			<Button class="max-w-full" type="submit">
-				{{ loading ? 'Loading...' : 'Request password reset' }}
-			</Button>
-		</FormV2>
+		<template v-else>
+			<h1>Request a link to reset your password</h1>
+			<FormV2
+				id="reset-password"
+				data-test="reset-password-form"
+				class="flex flex-col"
+				name="reset-password"
+				:error="error"
+				:schema="VALIDATION_SCHEMA_REQUEST_PASSWORD"
+				@submit="onSubmitRequestReset"
+			>
+				<InputText
+					id="email"
+					autocomplete="email"
+					data-test="email"
+					name="email"
+					label="Email"
+					placeholder="Your email address"
+				/>
+				<Button class="max-w-full" type="submit">
+					{{ loading ? 'Loading...' : 'Request password reset' }}
+				</Button>
+			</FormV2>
+		</template>
 	</main>
 </template>
 
@@ -99,7 +99,7 @@ import { RouterLink, useRoute } from 'vue-router';
 // Constants
 const FORM_INPUTS_CHANGE_PASSWORD = [
 	{
-		autofill: 'password',
+		autocomplete: 'password',
 		'data-test': 'password',
 		id: 'password',
 		name: 'password',
@@ -107,7 +107,7 @@ const FORM_INPUTS_CHANGE_PASSWORD = [
 		placeholder: 'Your updated password',
 	},
 	{
-		autofill: 'password',
+		autocomplete: 'password',
 		'data-test': 'confirm-password',
 		id: 'confirmPassword',
 		name: 'confirmPassword',

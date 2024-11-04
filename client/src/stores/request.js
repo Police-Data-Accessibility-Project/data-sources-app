@@ -9,7 +9,7 @@ const HEADERS_BASE = {
 };
 const REQUESTS_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/data-requests`;
 
-export const useRequestStore = defineStore('search', {
+export const useRequestStore = defineStore('request', {
 	state: () => ({}),
 	// persist: {
 	// 	storage: sessionStorage,

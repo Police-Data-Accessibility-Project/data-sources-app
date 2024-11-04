@@ -82,7 +82,5 @@ export function getAllIdsSearched(resultsByAgency) {
 		}
 	});
 
-	console.debug({ ids });
-
 	return ids;
 }

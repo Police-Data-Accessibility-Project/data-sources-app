@@ -14,8 +14,5 @@ import SearchForm from '@/components/SearchForm.vue';
 <route>
 	{
 		alias: '/search',
-		meta: {
-			breadcrumbText: 'Search'
-		}
 	}
 </route>
