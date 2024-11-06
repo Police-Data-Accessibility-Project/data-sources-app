@@ -3,8 +3,6 @@
 from http import HTTPStatus
 import uuid
 
-import psycopg
-
 from database_client.database_client import DatabaseClient
 from tests.conftest import flask_client_with_db
 from tests.helper_scripts.common_test_data import TestDataCreatorFlask
@@ -12,7 +10,6 @@ from tests.helper_scripts.constants import USERS_BASE_ENDPOINT
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     get_user_password_digest,
-    create_api_key,
     create_test_user_setup,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request

@@ -37,7 +37,6 @@ def get_jurisdiction_type_field(required: bool) -> fields.Enum:
 
 class AgencyInfoBaseSchema(Schema):
     homepage_url = fields.Str(
-        required=False,
         allow_none=True,
         metadata={
             "description": "The URL of the agency's homepage.",

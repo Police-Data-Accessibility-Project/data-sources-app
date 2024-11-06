@@ -177,7 +177,6 @@ class SearchResponseSchema(Schema):
             metadata=get_json_metadata("The list of results"),
     )
     count = fields.Int(
-        required=True,
         metadata=get_json_metadata("The number of results"),
     )
 

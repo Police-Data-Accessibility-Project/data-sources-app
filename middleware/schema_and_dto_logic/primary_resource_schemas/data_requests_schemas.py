@@ -161,10 +161,7 @@ class DataRequestsGetSchemaBase(DataRequestsSchema):
     )
 
 
-# DataRequestsPostSchema = create_post_schema(
-#     entry_data_schema=DataRequestsSchema(),
-#     description="Data request to be created",
-# )
+
 class DataRequestsPostSchema(Schema):
     request_info = fields.Nested(
         nested=DataRequestsSchema(
