@@ -5,6 +5,12 @@ from http import HTTPStatus
 from database_client.enums import SortOrder
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyBaseDTO
 
+#region Users
+
+USERS_BASE_ENDPOINT = "/api/user"
+
+#endregion
+
 DATA_SOURCES_BASE_ENDPOINT = "/api/data-sources"
 DATA_SOURCES_BY_ID_ENDPOINT = DATA_SOURCES_BASE_ENDPOINT + "/{data_source_id}"
 DATA_SOURCES_GET_RELATED_AGENCIES_ENDPOINT = (
