@@ -7,13 +7,16 @@ import psycopg
 
 from database_client.database_client import DatabaseClient
 from tests.conftest import flask_client_with_db
+from tests.helper_scripts.common_test_data import TestDataCreatorFlask
+from tests.helper_scripts.constants import USERS_BASE_ENDPOINT
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     get_user_password_digest,
     create_api_key,
     create_test_user_setup,
 )
-
+from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from conftest import test_data_creator_flask, monkeysession
 
 def test_user_post(flask_client_with_db):
     """
@@ -33,6 +36,22 @@ def test_user_post(flask_client_with_db):
     assert (
         user_info.password != password_digest
     ), "DB user password digest should not match password"
+
+def test_user_post_user_already_exists(test_data_creator_flask: TestDataCreatorFlask,):
+    """
+    Test that POST call to /user endpoint fails if the user already exists
+    """
+    tdc = test_data_creator_flask
+
+    tus = tdc.standard_user()
+    data = run_and_validate_request(
+        flask_client=tdc.flask_client,
+        http_method="post",
+        endpoint=USERS_BASE_ENDPOINT,
+        json={"email": tus.user_info.email, "password": "test"},
+        expected_response_status=HTTPStatus.CONFLICT,
+        expected_json_content={"message": f"User with email {tus.user_info.email} already exists."},
+    )
 
 
 def test_user_put(flask_client_with_db):
