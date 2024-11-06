@@ -21,23 +21,6 @@ def test_generate_api_key():
     assert all(c in "0123456789abcdef" for c in api_key)
 
 
-class RefreshSessionMocks(DynamicMagicMock):
-    make_response: MagicMock
-    create_session_token: MagicMock
-
-
-@pytest.fixture
-def setup_refresh_session_mocks():
-    mock = RefreshSessionMocks(
-        patch_root=PATCH_ROOT,
-    )
-    mock.db_client.get_session_token_info.return_value = mock.session_token_info
-    mock.create_session_token.return_value = mock.new_token
-    mock.session_token_info.resource_id = mock.mock_user_id
-    mock.session_token_info.email = mock.mock_email
-
-    return mock
-
 
 class TryLoggingInWithGithubIdMocks(DynamicMagicMock):
     unauthorized_response: MagicMock
@@ -65,25 +48,3 @@ def setup_try_logging_in_with_github_id_mocks():
 
     mock.github_user_info.user_id = mock.github_user_id
     return mock
-
-class RefreshSessionMocks(DynamicMagicMock):
-    get_jwt_identity: MagicMock
-    create_access_token: MagicMock
-    make_response: MagicMock
-
-
-def test_refresh_session():
-    mock = RefreshSessionMocks(
-        patch_root=PATCH_ROOT,
-    )
-    mock.get_jwt_identity.return_value = mock.identity
-    mock.create_access_token.return_value = mock.access_token
-
-    refresh_session()
-
-    mock.get_jwt_identity.assert_called_once()
-    mock.create_access_token.assert_called_once_with(identity=mock.identity)
-    mock.make_response.assert_called_once_with(
-        {"message": "Successfully refreshed session token", "data": mock.access_token},
-        HTTPStatus.OK,
-    )

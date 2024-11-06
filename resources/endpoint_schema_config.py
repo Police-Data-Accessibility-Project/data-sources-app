@@ -9,6 +9,8 @@ from middleware.primary_resource_logic.data_requests import (
     RelatedSourceByIDSchema,
     RelatedSourceByIDDTO, DataRequestsPostDTO, RelatedLocationsByIDDTO,
 )
+from middleware.schema_and_dto_logic.primary_resource_schemas.refresh_session_schemas import \
+    RefreshSessionRequestSchema, RefreshSessionRequestDTO
 from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import \
     TypeaheadAgenciesOuterResponseSchema, TypeaheadLocationsOuterResponseSchema, TypeaheadLocationsResponseSchema
 from middleware.primary_resource_logic.unique_url_checker import UniqueURLCheckerRequestSchema, \
@@ -277,7 +279,9 @@ class SchemaConfigs(Enum):
     #endregion
     #region Auth
     LOGIN_POST = EndpointSchemaConfig(
-        input_schema=UserRequestSchema(), primary_output_schema=LoginResponseSchema(), input_dto_class=UserRequestDTO
+        input_schema=UserRequestSchema(),
+        primary_output_schema=LoginResponseSchema(),
+        input_dto_class=UserRequestDTO
     )
     AUTH_GITHUB_LOGIN = EndpointSchemaConfig(
         primary_output_schema=LoginResponseSchema()
@@ -288,3 +292,8 @@ class SchemaConfigs(Enum):
         primary_output_schema=MessageSchema()
     )
     #endregion
+    REFRESH_SESSION = EndpointSchemaConfig(
+        input_schema=RefreshSessionRequestSchema(),
+        primary_output_schema=LoginResponseSchema(),
+        input_dto_class=RefreshSessionRequestDTO
+    )
