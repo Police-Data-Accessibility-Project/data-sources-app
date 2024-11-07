@@ -21,7 +21,9 @@ from middleware.primary_resource_logic.data_sources_logic import (
     add_new_data_source_wrapper,
     update_data_source_wrapper,
     DataSourcesGetManyRequestDTO,
-    delete_data_source_wrapper, create_data_source_related_agency, delete_data_source_related_agency,
+    delete_data_source_wrapper,
+    create_data_source_related_agency,
+    delete_data_source_related_agency,
     get_data_source_related_agencies,
 )
 
@@ -216,7 +218,7 @@ class DataSources(PsycopgResource):
 #         """
 #         return self.run_endpoint(get_data_sources_for_map_wrapper)
 
-#region Related Agencies
+# region Related Agencies
 
 
 @namespace_data_source.route("/<resource_id>/related-agencies")
@@ -240,6 +242,7 @@ class DataSourcesRelatedAgencies(PsycopgResource):
             schema_populate_parameters=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_GET.value.get_schema_populate_parameters(),
         )
 
+
 @namespace_data_source.route("/<resource_id>/related-agencies/<agency_id>")
 class DataSourcesRelatedAgenciesById(PsycopgResource):
 
@@ -261,7 +264,7 @@ class DataSourcesRelatedAgenciesById(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=create_data_source_related_agency,
             schema_populate_parameters=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_POST.value.get_schema_populate_parameters(),
-            access_info=access_info
+            access_info=access_info,
         )
 
     @endpoint_info_2(
@@ -282,8 +285,8 @@ class DataSourcesRelatedAgenciesById(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=delete_data_source_related_agency,
             schema_populate_parameters=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_DELETE.value.get_schema_populate_parameters(),
-            access_info=access_info
-    )
+            access_info=access_info,
+        )
 
 
-#endregion
+# endregion

@@ -20,7 +20,9 @@ def test_user_profile_data_requests(flask_client_with_db):
         endpoint=f"{USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL}?page=1",
         headers=tus.jwt_authorization_header,
         expected_json_content={"metadata": {"count": 0}, "data": [], "message": ""},
-        expected_schema=GetManyDataRequestsResponseSchema(exclude=["data.internal_notes"]),
+        expected_schema=GetManyDataRequestsResponseSchema(
+            exclude=["data.internal_notes"]
+        ),
     )
 
     # Add a data request
@@ -32,7 +34,9 @@ def test_user_profile_data_requests(flask_client_with_db):
         http_method="get",
         endpoint=f"{USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL}?page=1",
         headers=tus.jwt_authorization_header,
-        expected_schema=GetManyDataRequestsResponseSchema(exclude=["data.internal_notes"]),
+        expected_schema=GetManyDataRequestsResponseSchema(
+            exclude=["data.internal_notes"]
+        ),
     )
     assert len(json_response["data"]) == 1
     assert json_response["data"][0]["id"] == int(tdr.id)

@@ -9,7 +9,10 @@ from database_client.enums import ExternalAccountTypeEnum
 from middleware.common_response_formatting import message_response
 from middleware.exceptions import UserNotFoundError
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.primary_resource_logic.login_queries import unauthorized_response, login_response
+from middleware.primary_resource_logic.login_queries import (
+    unauthorized_response,
+    login_response,
+)
 from middleware.third_party_interaction_logic.callback_flask_sessions_logic import (
     get_callback_params,
     get_callback_function,
@@ -79,8 +82,9 @@ def create_random_password() -> str:
     return uuid.uuid4().hex
 
 
-
-def create_user_with_github(db_client: DatabaseClient, github_user_info: GithubUserInfo):
+def create_user_with_github(
+    db_client: DatabaseClient, github_user_info: GithubUserInfo
+):
     user_post_results(
         db_client=db_client,
         dto=UserRequestDTO(
@@ -151,12 +155,14 @@ def get_github_user_info(access_token: str) -> GithubUserInfo:
         user_email=get_github_user_email(access_token),
     )
 
+
 def user_exists(db_client: DatabaseClient, email: str) -> bool:
     try:
         db_client.get_user_info(email=email)
         return True
     except UserNotFoundError:
         return False
+
 
 def try_logging_in_with_github_id(
     db_client: DatabaseClient, github_user_info: GithubUserInfo
@@ -179,7 +185,7 @@ def try_logging_in_with_github_id(
             return message_response(
                 status_code=HTTPStatus.UNAUTHORIZED,
                 message=f"User with email {github_user_info.user_email} already exists exists but is not linked to"
-                        f" the Github Account with the same email. You must explicitly link their accounts in order to log in via Github."
+                f" the Github Account with the same email. You must explicitly link their accounts in order to log in via Github.",
             )
 
         create_user_with_github(db_client=db_client, github_user_info=github_user_info)
@@ -190,5 +196,5 @@ def try_logging_in_with_github_id(
 
     return login_response(
         user_info_gh,
-        message=f"User with email {user_info_gh.email} created and logged in."
+        message=f"User with email {user_info_gh.email} created and logged in.",
     )

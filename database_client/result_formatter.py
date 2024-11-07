@@ -113,9 +113,7 @@ class ResultFormatter:
         relation_reference = SQL_ALCHEMY_TABLE_REFERENCE[relation_name]
 
         # Iterate through all properties of the Table
-        for name, descriptor in inspect(
-            relation_reference
-        ).all_orm_descriptors.items():
+        for name, descriptor in inspect(relation_reference).all_orm_descriptors.items():
             # Retrieve and call the metadata method
             if type(descriptor) != hybrid_method or name not in METADATA_METHOD_NAMES:
                 continue

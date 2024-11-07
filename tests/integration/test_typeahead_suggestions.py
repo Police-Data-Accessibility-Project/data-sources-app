@@ -1,5 +1,7 @@
-from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import \
-    TypeaheadAgenciesOuterResponseSchema, TypeaheadLocationsOuterResponseSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import (
+    TypeaheadAgenciesOuterResponseSchema,
+    TypeaheadLocationsOuterResponseSchema,
+)
 from tests.helper_scripts.helper_functions import (
     setup_get_typeahead_suggestion_test_data,
 )

@@ -4,7 +4,8 @@ from flask import Response, make_response, jsonify
 from flask_jwt_extended import (
     create_access_token,
     get_jwt_identity,
-    create_refresh_token, decode_token,
+    create_refresh_token,
+    decode_token,
 )
 from sqlalchemy.orm.loading import get_from_identity
 from werkzeug.security import check_password_hash
@@ -12,7 +13,9 @@ from werkzeug.security import check_password_hash
 from database_client.database_client import DatabaseClient
 from middleware.access_logic import AccessInfo
 from middleware.primary_resource_logic.user_queries import UserRequestDTO
-from middleware.schema_and_dto_logic.primary_resource_schemas.refresh_session_schemas import RefreshSessionRequestDTO
+from middleware.schema_and_dto_logic.primary_resource_schemas.refresh_session_schemas import (
+    RefreshSessionRequestDTO,
+)
 
 
 def try_logging_in(db_client: DatabaseClient, dto: UserRequestDTO) -> Response:
@@ -40,8 +43,7 @@ def unauthorized_response(msg: str = "Unauthorized") -> Response:
 
 
 def login_response(
-        user_info: DatabaseClient.UserInfo,
-        message: str = "Successfully logged in"
+    user_info: DatabaseClient.UserInfo, message: str = "Successfully logged in"
 ) -> Response:
     """
     Creates a response object for a successful login.
@@ -60,6 +62,7 @@ def login_response(
         HTTPStatus.OK,
     )
 
+
 def access_and_refresh_token_response(
     email: str,
     message: str,
@@ -75,10 +78,9 @@ def access_and_refresh_token_response(
         HTTPStatus.OK,
     )
 
+
 def refresh_session(
-        db_client: DatabaseClient,
-        access_info: AccessInfo,
-        dto: RefreshSessionRequestDTO
+    db_client: DatabaseClient, access_info: AccessInfo, dto: RefreshSessionRequestDTO
 ) -> Response:
     """
     Requires an active flask context and a valid JWT passed in the Authorization header
@@ -87,72 +89,6 @@ def refresh_session(
     decoded_refresh_token = decode_token(dto.refresh_token)
     decoded_email = decoded_refresh_token["sub"]
     if access_info.user_email != decoded_email:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         return make_response(
             {"message": "Invalid refresh token"}, HTTPStatus.UNAUTHORIZED

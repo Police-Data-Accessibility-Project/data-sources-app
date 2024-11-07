@@ -2,7 +2,9 @@ import pytest
 
 from database_client.database_client import DatabaseClient
 from middleware.access_logic import AccessInfo
-from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import SearchRequests
+from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import (
+    SearchRequests,
+)
 from tests.conftest import client_with_mock_db, bypass_authentication_required
 from tests.helper_scripts.constants import TEST_RESPONSE
 from tests.helper_scripts.helper_functions import (

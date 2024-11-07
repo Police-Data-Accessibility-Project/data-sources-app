@@ -24,13 +24,17 @@ from tests.conftest import (
     flask_client_with_db,
     integration_test_admin_setup,
 )
-from tests.helper_scripts.common_test_data import get_sample_agency_post_parameters, TestDataCreatorFlask
+from tests.helper_scripts.common_test_data import (
+    get_sample_agency_post_parameters,
+    TestDataCreatorFlask,
+)
 from tests.helper_scripts.constants import AGENCIES_BASE_ENDPOINT
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup_db_client,
 )
 from tests.helper_scripts.common_test_functions import (
-    assert_expected_get_many_result, assert_contains_key_value_pairs,
+    assert_expected_get_many_result,
+    assert_contains_key_value_pairs,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from tests.helper_scripts.helper_classes.IntegrationTestSetup import (
@@ -153,7 +157,7 @@ def test_agencies_post(ts: AgenciesTestSetup):
             "state_iso": "CA",
             "county_name": "Santa Cruz",
             "locality_name": data_to_post["location_info"]["locality_name"],
-        }
+        },
     )
 
     # Test with a new locality
@@ -175,7 +179,7 @@ def test_agencies_post(ts: AgenciesTestSetup):
             "state_iso": "CA",
             "county_name": "Santa Cruz",
             "locality_name": data_to_post["location_info"]["locality_name"],
-        }
+        },
     )
 
 

@@ -12,10 +12,13 @@ class LoginResponseSchema(MessageSchema):
         metadata=get_json_metadata("The refresh token for the user's PDAP account"),
     )
 
+
 class LinkToGithubRequestSchema(Schema):
     user_email = fields.Str(
         metadata=get_json_metadata("The email address of the user"),
     )
     redirect_to = fields.Str(
-        metadata=get_json_metadata("The URL to redirect the user to after linking to Github"),
+        metadata=get_json_metadata(
+            "The URL to redirect the user to after linking to Github"
+        ),
     )

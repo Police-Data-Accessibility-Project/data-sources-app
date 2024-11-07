@@ -78,7 +78,6 @@ class Relations(Enum):
     LINK_RECENT_SEARCH_RECORD_CATEGORIES = "link_recent_search_record_categories"
 
 
-
 class JurisdictionType(Enum):
     """
     A list of valid agency jurisdiction types

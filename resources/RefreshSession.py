@@ -4,7 +4,11 @@ from flask import Response
 from flask_jwt_extended import jwt_required
 from flask_restx import fields
 
-from middleware.access_logic import WRITE_ONLY_AUTH_INFO, STANDARD_JWT_AUTH_INFO, AccessInfo
+from middleware.access_logic import (
+    WRITE_ONLY_AUTH_INFO,
+    STANDARD_JWT_AUTH_INFO,
+    AccessInfo,
+)
 from middleware.decorators import endpoint_info_2
 from middleware.primary_resource_logic.login_queries import (
     refresh_session,
@@ -64,5 +68,5 @@ class RefreshSession(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=refresh_session,
             schema_populate_parameters=SchemaConfigs.REFRESH_SESSION.value.get_schema_populate_parameters(),
-            access_info=access_info
+            access_info=access_info,
         )

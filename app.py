@@ -60,7 +60,7 @@ NAMESPACES = [
     namespace_url_checker,
     namespace_user,
     namespace_github,
-    namespace_notifications
+    namespace_notifications,
 ]
 
 MY_PREFIX = "/api"

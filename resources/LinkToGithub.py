@@ -6,12 +6,15 @@ from marshmallow import Schema
 from config import limiter
 from middleware.access_logic import NO_AUTH_INFO, AccessInfo
 from middleware.decorators import endpoint_info_2
-from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import \
-    populate_schema_with_request_content
+from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import (
+    populate_schema_with_request_content,
+)
 from middleware.third_party_interaction_logic.callback_flask_sessions_logic import (
     setup_callback_session,
 )
-from middleware.primary_resource_logic.callback_primary_logic import LinkToGithubRequestDTO
+from middleware.primary_resource_logic.callback_primary_logic import (
+    LinkToGithubRequestDTO,
+)
 from middleware.enums import CallbackFunctionsEnum
 from middleware.third_party_interaction_logic.callback_oauth_logic import (
     redirect_to_github_authorization,

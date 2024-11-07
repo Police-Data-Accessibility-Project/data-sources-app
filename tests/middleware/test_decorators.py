@@ -71,4 +71,3 @@ def test_permissions_required(dummy_permissions_required_route, monkeypatch):
 
     dummy_permissions_required_route()
     mock_check_permissions.assert_called_once_with(PermissionsEnum.READ_ALL_USER_INFO)
-

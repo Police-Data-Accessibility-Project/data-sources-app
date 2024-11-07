@@ -14,7 +14,10 @@ from utilities.namespace import create_namespace
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 from utilities.enums import SourceMappingEnum
-from middleware.schema_and_dto_logic.non_dto_dataclasses import DTOPopulateParameters, SchemaPopulateParameters
+from middleware.schema_and_dto_logic.non_dto_dataclasses import (
+    DTOPopulateParameters,
+    SchemaPopulateParameters,
+)
 
 namespace_login = create_namespace()
 user_model = create_user_model(namespace_login)

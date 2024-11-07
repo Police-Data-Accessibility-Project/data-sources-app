@@ -101,7 +101,9 @@ class CreateTestUserWithElevatedPermissions(PsycopgResource):
                     user_email=auto_user_email,
                     permission=permission,
                 )
-            api_key = create_api_key_for_user(db_client=db_client, dto=dto).json["api_key"]
+            api_key = create_api_key_for_user(db_client=db_client, dto=dto).json[
+                "api_key"
+            ]
         return {
             "email": auto_user_email,
             "password": auto_user_password,

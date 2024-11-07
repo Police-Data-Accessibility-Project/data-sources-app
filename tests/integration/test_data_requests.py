@@ -26,13 +26,15 @@ from tests.conftest import dev_db_client, flask_client_with_db
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
 from tests.helper_scripts.common_test_data import (
     create_test_data_request,
-    TestDataCreatorFlask, get_random_number_for_testing,
+    TestDataCreatorFlask,
+    get_random_number_for_testing,
 )
 from tests.helper_scripts.constants import (
     DATA_REQUESTS_BASE_ENDPOINT,
     DATA_REQUESTS_BY_ID_ENDPOINT,
     DATA_REQUESTS_GET_RELATED_SOURCE_ENDPOINT,
-    DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT, DATA_REQUESTS_RELATED_LOCATIONS,
+    DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT,
+    DATA_REQUESTS_RELATED_LOCATIONS,
     DATA_REQUESTS_POST_DELETE_RELATED_LOCATIONS_ENDPOINT,
 )
 from tests.helper_scripts.helper_classes.IntegrationTestSetup import (
@@ -40,7 +42,8 @@ from tests.helper_scripts.helper_classes.IntegrationTestSetup import (
 )
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_functions import (
-    create_test_user_setup, add_query_params,
+    create_test_user_setup,
+    add_query_params,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from tests.helper_scripts.helper_classes.IntegrationTestSetup import (
@@ -89,13 +92,10 @@ def test_data_requests_get(
     json_data = run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="put",
-        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
-            data_request_id=dr_info_2.id
-        ),
+        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(data_request_id=dr_info_2.id),
         headers=tdc.get_admin_tus().jwt_authorization_header,
         json={"entry_data": {"request_status": "Active"}},
     )
-
 
     expected_schema = SchemaConfigs.DATA_REQUESTS_GET_MANY.value.primary_output_schema
     # Modify exclude to account for old data which did not have archive_reason and creator_user_id
@@ -154,7 +154,6 @@ def test_data_requests_get(
     assert int(json_data[DATA_KEY][0]["id"]) == int(dr_info_2.id)
 
 
-
 def test_data_requests_post(
     test_data_creator_flask: TestDataCreatorFlask,
 ):
@@ -164,7 +163,7 @@ def test_data_requests_post(
     def post_data_request(
         json_request: dict,
         use_authorization_header=True,
-        expected_response_status: HTTPStatus = HTTPStatus.OK
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
     ) -> dict:
         if use_authorization_header:
             header = standard_tus.jwt_authorization_header
@@ -176,22 +175,19 @@ def test_data_requests_post(
             endpoint=DATA_REQUESTS_BASE_ENDPOINT,
             headers=header,
             json=json_request,
-            expected_response_status=expected_response_status
+            expected_response_status=expected_response_status,
         )
 
-    def get_data_request(
-        data_request_id: int
-    ):
+    def get_data_request(data_request_id: int):
         return run_and_validate_request(
-        flask_client=tdc.flask_client,
-        http_method="get",
-        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
-            data_request_id=data_request_id
-        ),
-        headers=standard_tus.jwt_authorization_header,
-        expected_schema=SchemaConfigs.DATA_REQUESTS_BY_ID_GET.value.primary_output_schema,
-    )
-
+            flask_client=tdc.flask_client,
+            http_method="get",
+            endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
+                data_request_id=data_request_id
+            ),
+            headers=standard_tus.jwt_authorization_header,
+            expected_schema=SchemaConfigs.DATA_REQUESTS_BY_ID_GET.value.primary_output_schema,
+        )
 
     submission_notes = uuid.uuid4().hex
 
@@ -199,28 +195,24 @@ def test_data_requests_post(
         "type": "Locality",
         "state": "California",
         "county": "Orange",
-        "locality": 'Laguna Hills',
+        "locality": "Laguna Hills",
     }
     location_info_2 = {
         "type": "Locality",
         "state": "California",
         "county": "Orange",
-        "locality": 'Seal Beach',
+        "locality": "Seal Beach",
     }
 
     json_request = {
-            "request_info": {
-                "submission_notes": submission_notes,
-                "title": uuid.uuid4().hex,
-                "request_urgency": RequestUrgency.URGENT.value,
-                "coverage_range": "2000-2005"
-            },
-            "location_infos": [
-                location_info_1,
-                location_info_2
-            ]
-
-        }
+        "request_info": {
+            "submission_notes": submission_notes,
+            "title": uuid.uuid4().hex,
+            "request_urgency": RequestUrgency.URGENT.value,
+            "coverage_range": "2000-2005",
+        },
+        "location_infos": [location_info_1, location_info_2],
+    }
 
     json_data = post_data_request(json_request)
 
@@ -238,7 +230,6 @@ def test_data_requests_post(
         if location["locality_name"] == location_info_2["locality"]:
             continue
         assert False
-
 
     assert data["submission_notes"] == submission_notes
     user_id = tdc.db_client.get_user_id(standard_tus.user_info.email)
@@ -260,12 +251,11 @@ def test_data_requests_post(
     locations = data["locations"]
     assert len(locations) == 0
 
-
     # Check that response is forbidden for standard user using API header
     post_data_request(
         json_request,
         use_authorization_header=False,
-        expected_response_status=HTTPStatus.UNAUTHORIZED
+        expected_response_status=HTTPStatus.UNAUTHORIZED,
     )
 
     # Check that response fails if using invalid columns
@@ -275,7 +265,7 @@ def test_data_requests_post(
                 "submission_notes": submission_notes,
                 "title": uuid.uuid4().hex,
                 "request_urgency": RequestUrgency.URGENT.value,
-                "invalid_column": uuid.uuid4().hex
+                "invalid_column": uuid.uuid4().hex,
             }
         },
         expected_response_status=HTTPStatus.BAD_REQUEST,
@@ -300,9 +290,7 @@ def test_data_requests_by_id_get(
     api_json_data = run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="get",
-        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
-            data_request_id=tdr.id
-        ),
+        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(data_request_id=tdr.id),
         headers=admin_tus.api_authorization_header,
         expected_schema=expected_schema,
     )
@@ -313,9 +301,7 @@ def test_data_requests_by_id_get(
     jwt_json_data = run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="get",
-        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
-            data_request_id=tdr.id
-        ),
+        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(data_request_id=tdr.id),
         headers=admin_tus.jwt_authorization_header,
         expected_schema=expected_schema,
     )
@@ -337,18 +323,18 @@ def test_data_requests_by_id_put(
 
     new_submission_notes = str(uuid.uuid4())
 
-    endpoint = DATA_REQUESTS_BY_ID_ENDPOINT.format(
-        data_request_id=data_request_id
-    )
+    endpoint = DATA_REQUESTS_BY_ID_ENDPOINT.format(data_request_id=data_request_id)
 
-    def put(header: dict, json: dict, expected_response_status: HTTPStatus = HTTPStatus.OK):
+    def put(
+        header: dict, json: dict, expected_response_status: HTTPStatus = HTTPStatus.OK
+    ):
         return run_and_validate_request(
             flask_client=tdc.flask_client,
             http_method="put",
             endpoint=endpoint,
             headers=header,
             json=json,
-            expected_response_status=expected_response_status
+            expected_response_status=expected_response_status,
         )
 
     json_data = put(
@@ -374,8 +360,8 @@ def test_data_requests_by_id_put(
     # Check that request is denied on admin-only column
     put(
         header=standard_tus.jwt_authorization_header,
-        json = {"entry_data": {"request_status": "Ready to start"}},
-        expected_response_status = HTTPStatus.FORBIDDEN,
+        json={"entry_data": {"request_status": "Ready to start"}},
+        expected_response_status=HTTPStatus.FORBIDDEN,
     )
 
     # Successfully edit all possible columns an admin can edit
@@ -394,12 +380,10 @@ def test_data_requests_by_id_put(
                 "github_issue_url": uuid.uuid4().hex,
                 "github_issue_number": get_random_number_for_testing(),
                 "pdap_response": uuid.uuid4().hex,
-                "record_types_required": get_enum_values(RecordType)
-
+                "record_types_required": get_enum_values(RecordType),
             }
         },
     )
-
 
 
 def test_data_requests_by_id_delete(test_data_creator_flask):
@@ -419,9 +403,7 @@ def test_data_requests_by_id_delete(test_data_creator_flask):
     json_data = run_and_validate_request(
         flask_client=flask_client,
         http_method="delete",
-        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
-            data_request_id=data_request_id
-        ),
+        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(data_request_id=data_request_id),
         headers=tus_owner.jwt_authorization_header,
     )
 
@@ -566,7 +548,11 @@ def test_data_request_by_id_related_sources(
         )
 
     # USER_OWNER and USER_NON_OWNER gets related sources of data request, and should see none
-    NO_RESULTS_RESPONSE = {"metadata": {"count": 0}, "data": [], "message": "Related sources found."}
+    NO_RESULTS_RESPONSE = {
+        "metadata": {"count": 0},
+        "data": [],
+        "message": "Related sources found.",
+    }
 
     get_data_request_related_sources_with_given_data_request_id(
         api_authorization_header=tus_owner.api_authorization_header,
@@ -667,8 +653,9 @@ def test_data_request_by_id_related_sources(
         expected_json_content=NO_RESULTS_RESPONSE,
     )
 
+
 def test_link_unlink_data_requests_with_locations(
-    test_data_creator_flask: TestDataCreatorFlask
+    test_data_creator_flask: TestDataCreatorFlask,
 ):
     tdc = test_data_creator_flask
     cdr = tdc.data_request()
@@ -678,11 +665,10 @@ def test_link_unlink_data_requests_with_locations(
         data_request_id=cdr.id
     )
 
-
     def get_locations(
-            tus: TestUserSetup = admin_tus,
-            expected_response_status: HTTPStatus = HTTPStatus.OK,
-            expected_schema = SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_GET.value.primary_output_schema
+        tus: TestUserSetup = admin_tus,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_schema=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_GET.value.primary_output_schema,
     ):
         return run_and_validate_request(
             flask_client=tdc.flask_client,
@@ -690,8 +676,7 @@ def test_link_unlink_data_requests_with_locations(
             endpoint=location_get_endpoint,
             headers=tus.jwt_authorization_header,
             expected_response_status=expected_response_status,
-            expected_schema=expected_schema
-
+            expected_schema=expected_schema,
         )["data"]
 
     data = get_locations()
@@ -706,16 +691,17 @@ def test_link_unlink_data_requests_with_locations(
         }
     )
 
-    location_post_delete_endpoint = DATA_REQUESTS_POST_DELETE_RELATED_LOCATIONS_ENDPOINT.format(
-        data_request_id=cdr.id,
-        location_id=location_id
+    location_post_delete_endpoint = (
+        DATA_REQUESTS_POST_DELETE_RELATED_LOCATIONS_ENDPOINT.format(
+            data_request_id=cdr.id, location_id=location_id
+        )
     )
 
     def post_location_association(
         tus: TestUserSetup = admin_tus,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
         expected_schema=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_DELETE.value.primary_output_schema,
-        expected_json_content: Optional[dict] = None
+        expected_json_content: Optional[dict] = None,
     ):
 
         run_and_validate_request(
@@ -725,11 +711,13 @@ def test_link_unlink_data_requests_with_locations(
             headers=tus.jwt_authorization_header,
             expected_response_status=expected_response_status,
             expected_schema=expected_schema,
-            expected_json_content=expected_json_content
+            expected_json_content=expected_json_content,
         )
 
     post_location_association(
-        expected_json_content={"message": "Location successfully associated with request."}
+        expected_json_content={
+            "message": "Location successfully associated with request."
+        }
     )
 
     data = get_locations()
@@ -741,7 +729,7 @@ def test_link_unlink_data_requests_with_locations(
             "county_name": "Allegheny",
             "county_fips": "42003",
             "locality_name": "Pittsburgh",
-            "type": LocationType.LOCALITY.value
+            "type": LocationType.LOCALITY.value,
         }
     ]
 
@@ -749,7 +737,7 @@ def test_link_unlink_data_requests_with_locations(
         tus: TestUserSetup = admin_tus,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
         expected_schema=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_DELETE.value.primary_output_schema,
-        expected_json_content: Optional[dict] = None
+        expected_json_content: Optional[dict] = None,
     ):
         run_and_validate_request(
             flask_client=tdc.flask_client,
@@ -758,9 +746,8 @@ def test_link_unlink_data_requests_with_locations(
             headers=tus.jwt_authorization_header,
             expected_response_status=expected_response_status,
             expected_schema=expected_schema,
-            expected_json_content=expected_json_content
+            expected_json_content=expected_json_content,
         )
-
 
     # Test that a standard user add or remove a location association
     standard_tus = tdc.standard_user()
@@ -768,13 +755,13 @@ def test_link_unlink_data_requests_with_locations(
     post_location_association(
         tus=standard_tus,
         expected_response_status=HTTPStatus.FORBIDDEN,
-        expected_schema=None
+        expected_schema=None,
     )
 
     delete_location_association(
         tus=standard_tus,
         expected_response_status=HTTPStatus.FORBIDDEN,
-        expected_schema=None
+        expected_schema=None,
     )
 
     # Finally delete the location association
@@ -784,5 +771,3 @@ def test_link_unlink_data_requests_with_locations(
 
     data = get_locations()
     assert data == []
-
-

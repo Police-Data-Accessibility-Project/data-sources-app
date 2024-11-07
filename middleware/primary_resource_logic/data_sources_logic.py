@@ -14,8 +14,10 @@ from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.delete_logic import delete_entry
 from middleware.dynamic_request_logic.get_by_id_logic import get_by_id
 from middleware.dynamic_request_logic.get_many_logic import get_many
-from middleware.dynamic_request_logic.get_related_resource_logic import GetRelatedResourcesParameters, \
-    get_related_resource
+from middleware.dynamic_request_logic.get_related_resource_logic import (
+    GetRelatedResourcesParameters,
+    get_related_resource,
+)
 from middleware.dynamic_request_logic.post_logic import post_entry, PostLogic
 from middleware.dynamic_request_logic.put_logic import put_entry
 from middleware.dynamic_request_logic.supporting_classes import (
@@ -174,11 +176,12 @@ def add_new_data_source_wrapper(
         entry=dataclass_to_filtered_dict(dto.entry_data),
     )
 
-#region Related Resources
+
+# region Related Resources
+
 
 def get_data_source_related_agencies(
-    db_client: DatabaseClient,
-    dto: GetByIDBaseDTO
+    db_client: DatabaseClient, dto: GetByIDBaseDTO
 ) -> Response:
     return get_related_resource(
         get_related_resources_parameters=GetRelatedResourcesParameters(
@@ -189,7 +192,7 @@ def get_data_source_related_agencies(
             related_relation=Relations.AGENCIES_EXPANDED,
             linking_column="agencies",
             metadata_count_name="agencies_count",
-            resource_name="agencies"
+            resource_name="agencies",
         )
     )
 
@@ -198,6 +201,7 @@ class CreateDataSourceRelatedAgenciesLogic(PostLogic):
 
     def make_response(self) -> Response:
         return message_response("Agency successfully associated with data source.")
+
 
 def create_data_source_related_agency(
     db_client: DatabaseClient,
@@ -213,9 +217,10 @@ def create_data_source_related_agency(
             db_client_method=DatabaseClient.create_data_source_agency_relation,
         ),
         entry=dto.get_where_mapping(),
-        check_for_permission=False
+        check_for_permission=False,
     )
     return post_logic.execute()
+
 
 def delete_data_source_related_agency(
     db_client: DatabaseClient,
@@ -235,4 +240,5 @@ def delete_data_source_related_agency(
         ),
     )
 
-#endregion
+
+# endregion

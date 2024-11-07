@@ -20,9 +20,11 @@ class NotificationEmailContent:
     html_text: str
     base_text: str
 
+
 DATA_REQUEST_SUBDIRECTORY = "request"
 DATA_SOURCE_SUBDIRECTORY = "data-source"
 PROFILE_SUBDIRECTORY = "profile"
+
 
 @dataclass
 class SectionBuilder:
@@ -46,22 +48,24 @@ class SectionBuilder:
                 li(a(event.entity_name, href=f"{self.url_base}/{event.entity_id}"))
         br()
 
-    def build_text_list(
-        self
-    ) -> str:
+    def build_text_list(self) -> str:
         bullet_entries = []
         for event in self.events:
-            bullet_entries.append(f'\t- "{event.entity_name}" at {self.url_base}/{event.entity_id}')
+            bullet_entries.append(
+                f'\t- "{event.entity_name}" at {self.url_base}/{event.entity_id}'
+            )
         bullet_string = "\n".join(bullet_entries)
         return f"""
 {self.title}
 {self.introductory_paragraph}
 {bullet_string}"""
 
+
 class URLBuilder:
     """
     Builds URLs from a domain
     """
+
     def __init__(self, domain: str):
         self.domain = domain
 
@@ -85,22 +89,24 @@ class SingularPluralWordGetter:
         return "was"
 
 
-
-
 class NotificationEmailBuilder:
 
     def __init__(self, event_batch: EventBatch):
         if len(event_batch.events) == 0:
             raise ValueError(f"No events in batch for user {event_batch.user_id}")
 
-        self.url_builder = URLBuilder(
-            domain=os.environ["VITE_VUE_APP_BASE_URL"]
-        )
+        self.url_builder = URLBuilder(domain=os.environ["VITE_VUE_APP_BASE_URL"])
         self.email = event_batch.user_email
         self.user_id = event_batch.user_id
-        self.data_request_started_events = event_batch.get_events_of_type(EventType.REQUEST_READY_TO_START)
-        self.data_request_completed_events = event_batch.get_events_of_type(EventType.REQUEST_COMPLETE)
-        self.data_source_approved_events = event_batch.get_events_of_type(EventType.DATA_SOURCE_APPROVED)
+        self.data_request_started_events = event_batch.get_events_of_type(
+            EventType.REQUEST_READY_TO_START
+        )
+        self.data_request_completed_events = event_batch.get_events_of_type(
+            EventType.REQUEST_COMPLETE
+        )
+        self.data_source_approved_events = event_batch.get_events_of_type(
+            EventType.DATA_SOURCE_APPROVED
+        )
 
     def get_section_builders(self) -> list[SectionBuilder]:
         section_builders = []
@@ -108,14 +114,17 @@ class NotificationEmailBuilder:
         if len(self.data_source_approved_events) > 0:
             sp = SingularPluralWordGetter(self.data_source_approved_events)
             data_source_name = sp.get_word(
-                singular="Data Source", plural="Data Sources")
+                singular="Data Source", plural="Data Sources"
+            )
             ptb = sp.get_past_tense_to_be()
-            section_builders.append(SectionBuilder(
-                title=f"{data_source_name} Approved",
-                introductory_paragraph=f"The following {data_source_name.lower()} {ptb} approved:",
-                url_base=self.url_builder.build_url(DATA_SOURCE_SUBDIRECTORY),
-                events=self.data_source_approved_events
-            ))
+            section_builders.append(
+                SectionBuilder(
+                    title=f"{data_source_name} Approved",
+                    introductory_paragraph=f"The following {data_source_name.lower()} {ptb} approved:",
+                    url_base=self.url_builder.build_url(DATA_SOURCE_SUBDIRECTORY),
+                    events=self.data_source_approved_events,
+                )
+            )
 
         if len(self.data_request_completed_events) > 0:
             sp = SingularPluralWordGetter(self.data_request_completed_events)
@@ -123,12 +132,14 @@ class NotificationEmailBuilder:
                 singular="Data Request", plural="Data Requests"
             )
             ptb = sp.get_past_tense_to_be()
-            section_builders.append(SectionBuilder(
-                title=f"{data_request_name} Completed",
-                introductory_paragraph=f"The following {data_request_name.lower()} {ptb} completed:",
-                url_base=self.url_builder.build_url(DATA_REQUEST_SUBDIRECTORY),
-                events=self.data_request_completed_events
-            ))
+            section_builders.append(
+                SectionBuilder(
+                    title=f"{data_request_name} Completed",
+                    introductory_paragraph=f"The following {data_request_name.lower()} {ptb} completed:",
+                    url_base=self.url_builder.build_url(DATA_REQUEST_SUBDIRECTORY),
+                    events=self.data_request_completed_events,
+                )
+            )
 
         if len(self.data_request_started_events) > 0:
             sp = SingularPluralWordGetter(self.data_request_started_events)
@@ -136,19 +147,20 @@ class NotificationEmailBuilder:
                 singular="Data Request", plural="Data Requests"
             )
             ptb = sp.get_past_tense_to_be()
-            section_builders.append(SectionBuilder(
-                title=f"{data_request_name} Started",
-                introductory_paragraph=f"The following {data_request_name.lower()} {ptb} started:",
-                url_base=self.url_builder.build_url(DATA_REQUEST_SUBDIRECTORY),
-                events=self.data_request_started_events
-            ))
+            section_builders.append(
+                SectionBuilder(
+                    title=f"{data_request_name} Started",
+                    introductory_paragraph=f"The following {data_request_name.lower()} {ptb} started:",
+                    url_base=self.url_builder.build_url(DATA_REQUEST_SUBDIRECTORY),
+                    events=self.data_request_started_events,
+                )
+            )
 
         return section_builders
 
     def build_email_content(self) -> NotificationEmailContent:
         return NotificationEmailContent(
-            html_text=self.build_html_text(),
-            base_text=self.build_base_text()
+            html_text=self.build_html_text(), base_text=self.build_base_text()
         )
 
     def build_base_text(self):
@@ -174,7 +186,7 @@ Click the following link to view and update your user profile: {self.url_builder
                 section_builder.build_html_list()
             p(
                 "Click ",
-                a('here', href=self.url_builder.build_url(PROFILE_SUBDIRECTORY)),
+                a("here", href=self.url_builder.build_url(PROFILE_SUBDIRECTORY)),
                 " to view and update your user profile.",
             )
         html_text = doc.render()
@@ -190,7 +202,7 @@ def format_and_send_notifications(
         to_email=event_batch.user_email,
         subject="Updates to your followed searches this month",
         text=email_content.base_text,
-        html=email_content.html_text
+        html=email_content.html_text,
     )
 
 
@@ -214,10 +226,8 @@ def send_notifications(db_client: DatabaseClient, access_info: AccessInfo) -> Re
         except Exception as e:
             FlaskResponseManager.abort(
                 message=f"Error sending notification for event batch for user {next_event_batch.user_id}: {e}. Sent {count} batches prior to this error.",
-                code=HTTPStatus.INTERNAL_SERVER_ERROR, )
+                code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
     return FlaskResponseManager.make_response(
-        data={
-            "message": "Notifications sent successfully.",
-            "count": count
-        }
+        data={"message": "Notifications sent successfully.", "count": count}
     )

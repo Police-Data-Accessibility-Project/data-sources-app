@@ -11,7 +11,8 @@ from database_client.enums import (
     RetentionSchedule,
     URLStatus,
     ApprovalStatus,
-    AgencyAggregation, UpdateMethod,
+    AgencyAggregation,
+    UpdateMethod,
 )
 from middleware.enums import RecordType
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
@@ -371,7 +372,8 @@ class DataSourcesGetManySchema(GetManyResponseSchemaBase):
 class DataSourcesPostSchema(Schema):
     entry_data = fields.Nested(
         nested=DataSourceExpandedSchema(
-            exclude=["id", "name", "updated_at", "created_at", "record_type_id"], partial=True
+            exclude=["id", "name", "updated_at", "created_at", "record_type_id"],
+            partial=True,
         ),
         required=True,
         metadata=get_json_metadata(
@@ -391,7 +393,7 @@ class DataSourcesPutSchema(Schema):
                 "created_at",
                 "rejection_note",
                 "record_type_id",
-                "data_source_request"
+                "data_source_request",
             ]
         ),
         required=True,

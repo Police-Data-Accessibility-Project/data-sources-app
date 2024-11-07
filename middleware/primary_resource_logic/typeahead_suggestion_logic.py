@@ -11,6 +11,7 @@ RESPONSE_METADATA = {
     "source": SourceMappingEnum.JSON,
 }
 
+
 def get_typeahead_results(
     db_client: DatabaseClient,
     dto: TypeaheadDTO,

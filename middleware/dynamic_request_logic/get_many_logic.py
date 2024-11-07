@@ -11,7 +11,9 @@ from middleware.column_permission_logic import (
     get_invalid_columns,
 )
 from middleware.common_response_formatting import multiple_results_response
-from middleware.dynamic_request_logic.common_functions import optionally_get_permitted_columns_to_subquery_parameters_
+from middleware.dynamic_request_logic.common_functions import (
+    optionally_get_permitted_columns_to_subquery_parameters_,
+)
 from middleware.dynamic_request_logic.supporting_classes import MiddlewareParameters
 from middleware.flask_response_manager import FlaskResponseManager
 
@@ -45,9 +47,7 @@ def get_many(
         permitted_columns, requested_columns
     )
 
-    process_subquery_parameters(
-        requested_columns, relation_role, mp
-    )
+    process_subquery_parameters(requested_columns, relation_role, mp)
 
     results = mp.db_client_method(
         mp.db_client,
@@ -81,6 +81,7 @@ def process_subquery_parameters(
         )
     else:
         mp.subquery_parameters = []
+
 
 def check_requested_columns(requested_columns: list[str], permitted_columns: list[str]):
     """

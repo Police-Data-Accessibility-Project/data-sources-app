@@ -29,7 +29,9 @@ from database_client.enums import (
     ExternalAccountTypeEnum,
     RelationRoleEnum,
     ColumnPermissionEnum,
-    RequestStatus, EntityType, EventType,
+    RequestStatus,
+    EntityType,
+    EventType,
 )
 from middleware.custom_dataclasses import EventInfo, EventBatch
 from middleware.exceptions import (
@@ -41,7 +43,11 @@ from database_client.models import (
     ExternalAccount,
     SQL_ALCHEMY_TABLE_REFERENCE,
     User,
-    DataRequestExpanded, UserNotificationQueue, RecentSearch, LinkRecentSearchRecordCategories, RecordCategory,
+    DataRequestExpanded,
+    UserNotificationQueue,
+    RecentSearch,
+    LinkRecentSearchRecordCategories,
+    RecordCategory,
 )
 from middleware.enums import PermissionsEnum, Relations
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
@@ -459,8 +465,7 @@ class DatabaseClient:
 
         if results is None:
             raise UserNotFoundError(
-                identifier=external_account_id,
-                identifier_name="Github Account ID"
+                identifier=external_account_id, identifier_name="Github Account ID"
             )
 
         return self.UserInfo(
@@ -664,7 +669,6 @@ class DatabaseClient:
         query_values = query_where.values(**column_edit_mappings)
         self.session.execute(query_values)
 
-
     update_data_source = partialmethod(
         _update_entry_in_table, table_name="data_sources", id_column_name="id"
     )
@@ -787,12 +791,14 @@ class DatabaseClient:
         order_by: Optional[OrderByParameters] = None,
         subquery_parameters: Optional[list[SubqueryParameters]] = [],
         build_metadata: Optional[bool] = False,
-        alias_mappings: Optional[dict[str, str]] = None
+        alias_mappings: Optional[dict[str, str]] = None,
     ) -> list[dict]:
         """
         Selects a single relation from the database
         """
-        where_mappings = self._create_where_mappings_instance_if_dictionary(where_mappings)
+        where_mappings = self._create_where_mappings_instance_if_dictionary(
+            where_mappings
+        )
         offset = self.get_offset(page)
         column_references = convert_to_column_reference(
             columns=columns, relation=relation_name
@@ -805,23 +811,23 @@ class DatabaseClient:
             offset,
             order_by,
             subquery_parameters,
-            alias_mappings
+            alias_mappings,
         )
         raw_results = self.session.execute(query()).mappings().unique().all()
-        results = self._process_results(build_metadata, raw_results, relation_name, subquery_parameters)
+        results = self._process_results(
+            build_metadata, raw_results, relation_name, subquery_parameters
+        )
 
         return results
 
     def _process_results(
-            self,
-            build_metadata: bool,
-            raw_results,
-            relation_name,
-            subquery_parameters
+        self, build_metadata: bool, raw_results, relation_name, subquery_parameters
     ):
         table_key = self._build_table_key_if_results(raw_results)
         results = self._dictify_results(raw_results, subquery_parameters, table_key)
-        results = self._optionally_build_metadata(build_metadata, relation_name, results, subquery_parameters)
+        results = self._optionally_build_metadata(
+            build_metadata, relation_name, results, subquery_parameters
+        )
         return results
 
     def _create_where_mappings_instance_if_dictionary(self, where_mappings):
@@ -829,7 +835,9 @@ class DatabaseClient:
             where_mappings = WhereMapping.from_dict(where_mappings)
         return where_mappings
 
-    def _optionally_build_metadata(self, build_metadata: bool, relation_name, results, subquery_parameters):
+    def _optionally_build_metadata(
+        self, build_metadata: bool, relation_name, results, subquery_parameters
+    ):
         if build_metadata is True:
             results = ResultFormatter.format_with_metadata(
                 results,
@@ -839,14 +847,16 @@ class DatabaseClient:
         return results
 
     def _dictify_results(
-            self,
-            raw_results,
-            subquery_parameters: Optional[list[SubqueryParameters]],
-            table_key
+        self,
+        raw_results,
+        subquery_parameters: Optional[list[SubqueryParameters]],
+        table_key,
     ):
         if subquery_parameters and table_key:
             # Calls models.Base.to_dict() method
-            results = [result[table_key].to_dict(subquery_parameters) for result in raw_results]
+            results = [
+                result[table_key].to_dict(subquery_parameters) for result in raw_results
+            ]
         else:
             results = [dict(result) for result in raw_results]
         return results
@@ -883,7 +893,7 @@ class DatabaseClient:
             "entity_id",
             "entity_type",
             "entity_name",
-        ]
+        ],
     )
 
     def _select_single_entry_from_relation(
@@ -905,7 +915,9 @@ class DatabaseClient:
             raise RuntimeError(f"Expected 1 result but found {len(results)}")
         return results[0]
 
-    def get_location_id(self, where_mappings: Union[list[WhereMapping], dict]) -> Optional[int]:
+    def get_location_id(
+        self, where_mappings: Union[list[WhereMapping], dict]
+    ) -> Optional[int]:
         result = self._select_single_entry_from_relation(
             relation_name=Relations.LOCATIONS_EXPANDED.value,
             columns=["id"],
@@ -914,7 +926,6 @@ class DatabaseClient:
         if result is None:
             return None
         return result["id"]
-
 
     def get_related_data_sources(self, data_request_id: int) -> List[dict]:
         """
@@ -969,9 +980,7 @@ class DatabaseClient:
         """
         table = SQL_ALCHEMY_TABLE_REFERENCE[table_name]
         column = getattr(table, id_column_name)
-        query = delete(table).where(
-            column == id_column_value
-        )
+        query = delete(table).where(column == id_column_value)
         self.session.execute(query)
 
     delete_data_request = partialmethod(_delete_from_table, table_name="data_requests")
@@ -995,8 +1004,6 @@ class DatabaseClient:
     delete_data_source_agency_relation = partialmethod(
         _delete_from_table, table_name=Relations.LINK_AGENCIES_DATA_SOURCES.value
     )
-
-
 
     @cursor_manager()
     def execute_composed_sql(self, query: sql.Composed, return_results: bool = False):
@@ -1115,11 +1122,11 @@ class DatabaseClient:
         LinkedRelation = SQL_ALCHEMY_TABLE_REFERENCE[linked_relation.value]
 
         # TODO: Some of this logic may better fit in DynamicQueryConstructor
-        column_references = self._build_column_references(LinkedRelation, alias_mappings, columns_to_retrieve)
-
-        query_with_select = self.session.query(
-            *column_references
+        column_references = self._build_column_references(
+            LinkedRelation, alias_mappings, columns_to_retrieve
         )
+
+        query_with_select = self.session.query(*column_references)
         query_with_join = query_with_select.join(
             LinkTable,
             getattr(LinkTable, right_link_column)
@@ -1131,13 +1138,14 @@ class DatabaseClient:
 
         dict_results = [dict(result._mapping) for result in query_with_filter.all()]
 
-
         return ResultFormatter.format_with_metadata(
             data=dict_results,
             relation_name=linked_relation.value,
         )
 
-    def _build_column_references(self, LinkedRelation, alias_mappings, columns_to_retrieve):
+    def _build_column_references(
+        self, LinkedRelation, alias_mappings, columns_to_retrieve
+    ):
         column_references = []
         for column in columns_to_retrieve:
             column_reference = getattr(LinkedRelation, column)
@@ -1154,7 +1162,11 @@ class DatabaseClient:
         linked_relation=Relations.LOCATIONS_EXPANDED,
         linked_relation_linking_column="id",
         columns_to_retrieve=["state_name", "county_name", "locality_name"],
-        alias_mappings={"state_name": "state", "county_name": "county", "locality_name": "locality"},
+        alias_mappings={
+            "state_name": "state",
+            "county_name": "county",
+            "locality_name": "locality",
+        },
     )
 
     DataRequestIssueInfo = namedtuple(
@@ -1208,18 +1220,17 @@ class DatabaseClient:
             now = datetime.now()
 
             # First day, hour, and minute of the current month
-            first_day_current_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            first_day_current_month = now.replace(
+                day=1, hour=0, minute=0, second=0, microsecond=0
+            )
 
             # First day, hour, and minute of the prior month
             first_day_prior_month = first_day_current_month - relativedelta(months=1)
 
-            query = (
-                select(queue)
-                .where(
-                    and_(
-                        queue.event_timestamp >= first_day_prior_month,
-                        queue.event_timestamp < first_day_current_month,
-                    )
+            query = select(queue).where(
+                and_(
+                    queue.event_timestamp >= first_day_prior_month,
+                    queue.event_timestamp < first_day_current_month,
                 )
             )
 
@@ -1232,14 +1243,14 @@ class DatabaseClient:
             # Delete all rows from the queue
             self.session.query(queue).delete()
 
-
             # Insert all new rows from UserPendingNotification table
-            user_pending_notification = SQL_ALCHEMY_TABLE_REFERENCE[Relations.USER_PENDING_NOTIFICATIONS.value]
+            user_pending_notification = SQL_ALCHEMY_TABLE_REFERENCE[
+                Relations.USER_PENDING_NOTIFICATIONS.value
+            ]
 
-
-            results = [result for result in self.session.query(
-                user_pending_notification
-            )]
+            results = [
+                result for result in self.session.query(user_pending_notification)
+            ]
 
             for result in results:
                 self.session.add(
@@ -1259,19 +1270,24 @@ class DatabaseClient:
 
         queue = UserNotificationQueue
 
-        with ((((self.session.begin())))):
-            next_user_info = self.session \
-                .query(queue) \
-                .filter(queue.sent_at.is_(None)) \
-                .order_by(queue.event_timestamp.asc()) \
+        with self.session.begin():
+            next_user_info = (
+                self.session.query(queue)
+                .filter(queue.sent_at.is_(None))
+                .order_by(queue.event_timestamp.asc())
                 .first()
+            )
 
             if next_user_info is None:
                 return None
             user_email = next_user_info.email
             next_user_id = next_user_info.user_id
 
-            user_events = self.session.query(queue).filter(queue.user_id == next_user_id).filter(queue.sent_at.is_(None))
+            user_events = (
+                self.session.query(queue)
+                .filter(queue.user_id == next_user_id)
+                .filter(queue.sent_at.is_(None))
+            )
 
         events = []
         for user_event in user_events:
@@ -1285,66 +1301,66 @@ class DatabaseClient:
 
             events.append(event_info)
 
-        return EventBatch(
-            user_id=next_user_id,
-            user_email=user_email,
-            events=events
-        )
+        return EventBatch(user_id=next_user_id, user_email=user_email, events=events)
 
     @session_manager
     def mark_user_events_as_sent(self, user_id: int):
         queue = UserNotificationQueue
 
         with self.session.begin():
-            self.session.query(queue).filter(queue.user_id == user_id).update({queue.sent_at: datetime.now()}, synchronize_session=False)
+            self.session.query(queue).filter(queue.user_id == user_id).update(
+                {queue.sent_at: datetime.now()}, synchronize_session=False
+            )
 
     @session_manager
     def create_search_record(
         self,
         user_id: int,
         location_id: int,
-        record_categories: Union[list[RecordCategories], RecordCategories]
+        record_categories: Union[list[RecordCategories], RecordCategories],
     ):
         if isinstance(record_categories, RecordCategories):
             record_categories = [record_categories]
 
         with self.session.begin():
             # Insert into recent_search table and get recent_search_id
-            query = insert(RecentSearch).values({
-                "user_id": user_id,
-                "location_id": location_id
-            }).returning(RecentSearch.id)
+            query = (
+                insert(RecentSearch)
+                .values({"user_id": user_id, "location_id": location_id})
+                .returning(RecentSearch.id)
+            )
             result = self.session.execute(query)
             recent_search_id = result.fetchone()[0]
 
             # For all record types, insert into link table
             for record_type in record_categories:
-                query = select(RecordCategory).filter(RecordCategory.name == record_type.value)
+                query = select(RecordCategory).filter(
+                    RecordCategory.name == record_type.value
+                )
                 rc_id = self.session.execute(query).fetchone()[0].id
 
-                query = insert(LinkRecentSearchRecordCategories).values({
-                    "recent_search_id": recent_search_id,
-                    "record_category_id": rc_id
-                })
+                query = insert(LinkRecentSearchRecordCategories).values(
+                    {"recent_search_id": recent_search_id, "record_category_id": rc_id}
+                )
                 self.session.execute(query)
 
     def get_user_recent_searches(self, user_id: int):
         return self._select_from_relation(
             relation_name=Relations.RECENT_SEARCHES_EXPANDED.value,
-            columns=["state_iso", "county_name", "locality_name", "location_type", "record_categories"],
+            columns=[
+                "state_iso",
+                "county_name",
+                "locality_name",
+                "location_type",
+                "record_categories",
+            ],
             where_mappings={"user_id": user_id},
-            build_metadata=True
+            build_metadata=True,
         )
 
     def get_record_type_id_by_name(self, record_type_name: str):
         return self._select_single_entry_from_relation(
             relation_name=Relations.RECORD_TYPES.value,
             columns=["id"],
-            where_mappings={
-                "name": record_type_name
-            }
+            where_mappings={"name": record_type_name},
         )["id"]
-
-
-
-

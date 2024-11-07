@@ -4,31 +4,60 @@ from typing import Optional, Type
 
 from marshmallow import Schema
 
-from middleware.primary_resource_logic.callback_primary_logic import LinkToGithubRequestDTO
+from middleware.primary_resource_logic.callback_primary_logic import (
+    LinkToGithubRequestDTO,
+)
 from middleware.primary_resource_logic.data_requests import (
     RelatedSourceByIDSchema,
-    RelatedSourceByIDDTO, DataRequestsPostDTO, RelatedLocationsByIDDTO,
+    RelatedSourceByIDDTO,
+    DataRequestsPostDTO,
+    RelatedLocationsByIDDTO,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.refresh_session_schemas import \
-    RefreshSessionRequestSchema, RefreshSessionRequestDTO
-from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import \
-    TypeaheadAgenciesOuterResponseSchema, TypeaheadLocationsOuterResponseSchema, TypeaheadLocationsResponseSchema
-from middleware.primary_resource_logic.unique_url_checker import UniqueURLCheckerRequestSchema, \
-    UniqueURLCheckerResponseOuterSchema, UniqueURLCheckerRequestDTO
-from middleware.primary_resource_logic.user_queries import UserRequestSchema, UserRequestDTO
-from middleware.schema_and_dto_logic.primary_resource_schemas.auth_schemas import LoginResponseSchema, \
-    LinkToGithubRequestSchema
-from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import GetManyDataRequestsRequestsDTO, \
-    DataRequestsPutOuterDTO
-from middleware.schema_and_dto_logic.primary_resource_schemas.notifications_schemas import NotificationsResponseSchema
-from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import SearchRequestSchema, \
-    GetUserFollowedSearchesSchema, SearchRequests, SearchResponseSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.refresh_session_schemas import (
+    RefreshSessionRequestSchema,
+    RefreshSessionRequestDTO,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import (
+    TypeaheadAgenciesOuterResponseSchema,
+    TypeaheadLocationsOuterResponseSchema,
+    TypeaheadLocationsResponseSchema,
+)
+from middleware.primary_resource_logic.unique_url_checker import (
+    UniqueURLCheckerRequestSchema,
+    UniqueURLCheckerResponseOuterSchema,
+    UniqueURLCheckerRequestDTO,
+)
+from middleware.primary_resource_logic.user_queries import (
+    UserRequestSchema,
+    UserRequestDTO,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.auth_schemas import (
+    LoginResponseSchema,
+    LinkToGithubRequestSchema,
+)
+from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import (
+    GetManyDataRequestsRequestsDTO,
+    DataRequestsPutOuterDTO,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.notifications_schemas import (
+    NotificationsResponseSchema,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import (
+    SearchRequestSchema,
+    GetUserFollowedSearchesSchema,
+    SearchRequests,
+    SearchResponseSchema,
+)
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyRequestsBaseSchema,
     GetManyBaseDTO,
     GetByIDBaseSchema,
     GetByIDBaseDTO,
-    EntryDataRequestSchema, TypeaheadDTO, TypeaheadQuerySchema, LocationInfoExpandedSchema, EntryCreateUpdateRequestDTO,
+    EntryDataRequestSchema,
+    TypeaheadDTO,
+    TypeaheadQuerySchema,
+    LocationInfoExpandedSchema,
+    EntryCreateUpdateRequestDTO,
 )
 from middleware.schema_and_dto_logic.custom_types import DTOTypes
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
@@ -37,20 +66,27 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas i
     AgenciesPutSchema,
     AgenciesPostSchema,
     AgenciesPostDTO,
-    AgenciesGetManyResponseSchema, RelatedAgencyByIDSchema, RelatedAgencyByIDDTO,
+    AgenciesGetManyResponseSchema,
+    RelatedAgencyByIDSchema,
+    RelatedAgencyByIDDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
     GetManyDataRequestsResponseSchema,
     DataRequestsSchema,
     DataRequestsPostSchema,
-    GetByIDDataRequestsResponseSchema, GetManyDataRequestsRequestsSchema, DataRequestsRelatedLocationAddRemoveSchema,
-    GetManyDataRequestsRelatedLocationsSchema, DataRequestsPutSchema, )
+    GetByIDDataRequestsResponseSchema,
+    GetManyDataRequestsRequestsSchema,
+    DataRequestsRelatedLocationAddRemoveSchema,
+    GetManyDataRequestsRelatedLocationsSchema,
+    DataRequestsPutSchema,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
     DataSourcesGetManySchema,
     DataSourcesGetByIDSchema,
     DataSourcesPostSchema,
     DataSourcesPutSchema,
-    DataSourcesPostDTO, DataSourcesGetManyRequestSchema,
+    DataSourcesPostDTO,
+    DataSourcesGetManyRequestSchema,
 )
 from middleware.schema_and_dto_logic.common_response_schemas import (
     IDAndMessageSchema,
@@ -61,8 +97,10 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.github_issue_app_s
     GithubDataRequestsIssuesPostResponseSchema,
     GithubDataRequestsIssuesPostDTO,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.user_profile_schemas import \
-    GetUserRecentSearchesOuterSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.user_profile_schemas import (
+    GetUserRecentSearchesOuterSchema,
+)
+
 
 class OutputSchemaManager:
     def __init__(self, output_schemas: dict[HTTPStatus, Schema]):
@@ -81,7 +119,7 @@ class EndpointSchemaConfig:
         input_schema: Optional[Schema] = None,
         primary_output_schema: Optional[Schema] = None,
         input_dto_class: Optional[Type[DTOTypes]] = None,
-        additional_output_schemas: Optional[dict[HTTPStatus, Schema]] = None
+        additional_output_schemas: Optional[dict[HTTPStatus, Schema]] = None,
     ):
         """
 
@@ -129,7 +167,9 @@ class SchemaConfigs(Enum):
     )
     DATA_REQUESTS_RELATED_SOURCES_GET = EndpointSchemaConfig(
         input_schema=GetByIDBaseSchema(),
-        primary_output_schema=DataSourcesGetManySchema(exclude=["data.agencies"], partial=True),
+        primary_output_schema=DataSourcesGetManySchema(
+            exclude=["data.agencies"], partial=True
+        ),
         input_dto_class=GetByIDBaseDTO,
     )
     DATA_REQUESTS_RELATED_SOURCES_POST = EndpointSchemaConfig(
@@ -196,15 +236,13 @@ class SchemaConfigs(Enum):
     DATA_SOURCES_RELATED_AGENCIES_GET = EndpointSchemaConfig(
         input_schema=GetByIDBaseSchema(),
         primary_output_schema=AgenciesGetManyResponseSchema(),
-        input_dto_class=GetByIDBaseDTO
+        input_dto_class=GetByIDBaseDTO,
     )
     DATA_SOURCES_RELATED_AGENCIES_POST = EndpointSchemaConfig(
-        input_schema=RelatedAgencyByIDSchema(),
-        input_dto_class=RelatedAgencyByIDDTO
+        input_schema=RelatedAgencyByIDSchema(), input_dto_class=RelatedAgencyByIDDTO
     )
     DATA_SOURCES_RELATED_AGENCIES_DELETE = EndpointSchemaConfig(
-        input_schema=RelatedAgencyByIDSchema(),
-        input_dto_class=RelatedAgencyByIDDTO
+        input_schema=RelatedAgencyByIDSchema(), input_dto_class=RelatedAgencyByIDDTO
     )
     # endregion
 
@@ -218,11 +256,11 @@ class SchemaConfigs(Enum):
         input_schema=None, primary_output_schema=MessageSchema(), input_dto_class=None
     )
     # endregion
-    #region Search
+    # region Search
     SEARCH_LOCATION_AND_RECORD_TYPE_GET = EndpointSchemaConfig(
         input_schema=SearchRequestSchema(),
         primary_output_schema=SearchResponseSchema(),
-        input_dto_class=SearchRequests
+        input_dto_class=SearchRequests,
     )
     SEARCH_FOLLOW_GET = EndpointSchemaConfig(
         primary_output_schema=GetUserFollowedSearchesSchema(),
@@ -242,40 +280,40 @@ class SchemaConfigs(Enum):
         primary_output_schema=MessageSchema(),
     )
 
-    #endregion
-    #region Typeahead
+    # endregion
+    # region Typeahead
     TYPEAHEAD_LOCATIONS = EndpointSchemaConfig(
         input_schema=TypeaheadQuerySchema(),
         primary_output_schema=TypeaheadLocationsOuterResponseSchema(),
-        input_dto_class=TypeaheadDTO
+        input_dto_class=TypeaheadDTO,
     )
     TYPEAHEAD_AGENCIES = EndpointSchemaConfig(
         input_schema=TypeaheadQuerySchema(),
         primary_output_schema=TypeaheadAgenciesOuterResponseSchema(),
-        input_dto_class=TypeaheadDTO
+        input_dto_class=TypeaheadDTO,
     )
-    #endregion
-    #region Checker
+    # endregion
+    # region Checker
     CHECKER_GET = EndpointSchemaConfig(
         input_schema=UniqueURLCheckerRequestSchema(),
         primary_output_schema=UniqueURLCheckerResponseOuterSchema(),
-        input_dto_class=UniqueURLCheckerRequestDTO
+        input_dto_class=UniqueURLCheckerRequestDTO,
     )
-    #endregion
-    #region Notifications
+    # endregion
+    # region Notifications
     NOTIFICATIONS_POST = EndpointSchemaConfig(
         primary_output_schema=NotificationsResponseSchema(),
     )
-    #region User Profile
+    # region User Profile
     USER_PROFILE_RECENT_SEARCHES = EndpointSchemaConfig(
-        primary_output_schema=GetUserRecentSearchesOuterSchema(exclude=['message']),
+        primary_output_schema=GetUserRecentSearchesOuterSchema(exclude=["message"]),
     )
-    #endregion
-    #region Auth
+    # endregion
+    # region Auth
     LOGIN_POST = EndpointSchemaConfig(
         input_schema=UserRequestSchema(),
         primary_output_schema=LoginResponseSchema(),
-        input_dto_class=UserRequestDTO
+        input_dto_class=UserRequestDTO,
     )
     AUTH_GITHUB_LOGIN = EndpointSchemaConfig(
         primary_output_schema=LoginResponseSchema()
@@ -283,11 +321,11 @@ class SchemaConfigs(Enum):
     AUTH_GITHUB_LINK = EndpointSchemaConfig(
         input_schema=LinkToGithubRequestSchema(),
         input_dto_class=LinkToGithubRequestDTO,
-        primary_output_schema=MessageSchema()
+        primary_output_schema=MessageSchema(),
     )
-    #endregion
+    # endregion
     REFRESH_SESSION = EndpointSchemaConfig(
         input_schema=RefreshSessionRequestSchema(),
         primary_output_schema=LoginResponseSchema(),
-        input_dto_class=RefreshSessionRequestDTO
+        input_dto_class=RefreshSessionRequestDTO,
     )

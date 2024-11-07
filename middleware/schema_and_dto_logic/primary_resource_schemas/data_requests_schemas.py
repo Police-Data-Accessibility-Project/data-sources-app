@@ -3,12 +3,19 @@ from marshmallow import fields, Schema, post_load
 from database_client.enums import RequestStatus, RequestUrgency
 from middleware.enums import RecordType
 from middleware.primary_resource_logic.data_requests import RequestInfoPostDTO
-from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import \
-    TypeaheadLocationsResponseSchema
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import LocationInfoSchema, GetManyRequestsBaseSchema, \
-    GetByIDBaseSchema, LocationInfoExpandedSchema
-from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import DataRequestLocationInfoPostDTO, \
-    DataRequestsPutDTO
+from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import (
+    TypeaheadLocationsResponseSchema,
+)
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+    LocationInfoSchema,
+    GetManyRequestsBaseSchema,
+    GetByIDBaseSchema,
+    LocationInfoExpandedSchema,
+)
+from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import (
+    DataRequestLocationInfoPostDTO,
+    DataRequestsPutDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
     DataSourceExpandedSchema,
 )
@@ -16,7 +23,11 @@ from middleware.schema_and_dto_logic.schema_helpers import (
     create_get_many_schema,
     create_get_by_id_schema,
 )
-from middleware.schema_and_dto_logic.util import get_json_metadata, get_query_metadata, get_path_metadata
+from middleware.schema_and_dto_logic.util import (
+    get_json_metadata,
+    get_query_metadata,
+    get_path_metadata,
+)
 
 
 class DataRequestsSchema(Schema):
@@ -122,9 +133,7 @@ class DataRequestsSchema(Schema):
 class DataRequestsGetSchemaBase(DataRequestsSchema):
     data_sources = fields.List(
         fields.Nested(
-            nested=DataSourceExpandedSchema(
-                only=['id', 'submitted_name']
-            ),
+            nested=DataSourceExpandedSchema(only=["id", "submitted_name"]),
             metadata=get_json_metadata(
                 "The data sources associated with the data request"
             ),
@@ -139,7 +148,9 @@ class DataRequestsGetSchemaBase(DataRequestsSchema):
                 "The data source ids associated with the data request."
             ),
         ),
-        metadata=get_json_metadata("The data source ids associated with the data request."),
+        metadata=get_json_metadata(
+            "The data source ids associated with the data request."
+        ),
     )
     locations = fields.List(
         fields.Nested(
@@ -158,8 +169,11 @@ class DataRequestsGetSchemaBase(DataRequestsSchema):
                 "The location ids associated with the data request."
             ),
         ),
-        metadata=get_json_metadata("The location ids associated with the data request."),
+        metadata=get_json_metadata(
+            "The location ids associated with the data request."
+        ),
     )
+
 
 class DataRequestsPutSchema(Schema):
     entry_data = fields.Nested(
@@ -174,10 +188,11 @@ class DataRequestsPutSchema(Schema):
         ),
         metadata=get_json_metadata(
             "The information about the data request to be updated",
-            nested_dto_class=DataRequestsPutDTO
+            nested_dto_class=DataRequestsPutDTO,
         ),
         required=True,
     )
+
 
 class DataRequestsPostSchema(Schema):
     request_info = fields.Nested(
@@ -192,21 +207,18 @@ class DataRequestsPostSchema(Schema):
         ),
         metadata=get_json_metadata(
             "The information about the data request to be created",
-            nested_dto_class=RequestInfoPostDTO
+            nested_dto_class=RequestInfoPostDTO,
         ),
         required=True,
     )
     location_infos = fields.List(
         fields.Nested(
             nested=TypeaheadLocationsResponseSchema(
-                exclude=[
-                    "display_name",
-                    "location_id"
-                ]
+                exclude=["display_name", "location_id"]
             ),
             metadata=get_json_metadata(
                 "The locations associated with the data request",
-                nested_dto_class=DataRequestLocationInfoPostDTO
+                nested_dto_class=DataRequestLocationInfoPostDTO,
             ),
         ),
         required=False,
@@ -220,6 +232,7 @@ class DataRequestsPostSchema(Schema):
         if location_infos == []:
             in_data["location_infos"] = None
         return in_data
+
 
 class GetManyDataRequestsRequestsSchema(GetManyRequestsBaseSchema):
     request_status = fields.Enum(
@@ -245,10 +258,11 @@ GetManyDataRequestsRelatedLocationsSchema = create_get_many_schema(
     description="The list of locations associated with the data request",
 )
 
+
 class DataRequestsRelatedLocationAddRemoveSchema(GetByIDBaseSchema):
     location_id = fields.Integer(
         required=True,
         metadata=get_path_metadata(
             "The ID of the location to add or remove from the data request."
-        )
+        ),
     )

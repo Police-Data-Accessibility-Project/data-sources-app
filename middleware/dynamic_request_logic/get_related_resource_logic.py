@@ -14,6 +14,7 @@ from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetByIDBaseDTO
 from dataclasses import dataclass
 
+
 @dataclass
 class GetRelatedResourcesParameters:
     db_client: DatabaseClient
@@ -24,6 +25,7 @@ class GetRelatedResourcesParameters:
     linking_column: str
     metadata_count_name: str
     resource_name: str = "resource"
+
 
 def get_related_resource(
     get_related_resources_parameters: GetRelatedResourcesParameters,

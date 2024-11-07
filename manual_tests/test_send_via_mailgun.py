@@ -46,10 +46,11 @@ html_text = """
 </html>
 """
 
+
 def test_send_via_mailgun():
     send_via_mailgun(
         to_email=get_env_variable("TEST_EMAIL_ADDRESS"),
         subject="This is a subject test",
         text=html_text,
-        html=html_text
+        html=html_text,
     )

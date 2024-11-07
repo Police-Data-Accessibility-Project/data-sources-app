@@ -10,7 +10,9 @@ from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.common_test_data import TestDataCreatorFlask
 from tests.helper_scripts.constants import NOTIFICATIONS_BASE_ENDPOINT
 from tests.helper_scripts.helper_classes.AnyOrder import AnyOrder
-from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import TestDataCreatorDBClient
+from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
+    TestDataCreatorDBClient,
+)
 from conftest import test_data_creator_flask, monkeysession
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
@@ -24,41 +26,35 @@ def mock_format_and_send_notifications(monkeypatch):
     mock_format_and_send_notifications = MagicMock()
     monkeypatch.setattr(
         f"{PATCH_ROOT}.format_and_send_notifications",
-        mock_format_and_send_notifications
+        mock_format_and_send_notifications,
     )
     return mock_format_and_send_notifications
 
 
 def test_notifications_followed_searches(
-        test_data_creator_flask: TestDataCreatorFlask,
-        mock_format_and_send_notifications
+    test_data_creator_flask: TestDataCreatorFlask, mock_format_and_send_notifications
 ):
     tdc = test_data_creator_flask
-
 
     tdc_db = TestDataCreatorDBClient()
     tdc_db.clear_test_data()
     user_info = tdc_db.user()
     user_id = user_info.id
     request_ready_to_start_id = tdc_db.create_valid_notification_event(
-        event_type=EventType.REQUEST_READY_TO_START,
-        user_id=user_id
+        event_type=EventType.REQUEST_READY_TO_START, user_id=user_id
     )
     request_complete_id = tdc_db.create_valid_notification_event(
-        event_type=EventType.REQUEST_COMPLETE,
-        user_id=user_id
+        event_type=EventType.REQUEST_COMPLETE, user_id=user_id
     )
     source_approved_id = tdc_db.create_valid_notification_event(
-        event_type=EventType.DATA_SOURCE_APPROVED,
-        user_id=user_id
+        event_type=EventType.DATA_SOURCE_APPROVED, user_id=user_id
     )
 
     # Add an additional user who will provide an additional batch
     additional_user_info = tdc_db.user()
     additional_user_id = additional_user_info.id
     additional_request_ready_to_start_id = tdc_db.create_valid_notification_event(
-        event_type=EventType.REQUEST_READY_TO_START,
-        user_id=additional_user_id
+        event_type=EventType.REQUEST_READY_TO_START, user_id=additional_user_id
     )
 
     tus = tdc.notifications_user()
@@ -72,9 +68,9 @@ def test_notifications_followed_searches(
         headers=tus.jwt_authorization_header,
         expected_json_content={
             "message": "Notifications sent successfully.",
-            "count": 2
+            "count": 2,
         },
-        expected_schema=SchemaConfigs.NOTIFICATIONS_POST.value.primary_output_schema
+        expected_schema=SchemaConfigs.NOTIFICATIONS_POST.value.primary_output_schema,
     )
     mock_format_and_send_notifications.assert_has_calls(
         any_order=True,
@@ -83,29 +79,31 @@ def test_notifications_followed_searches(
                 event_batch=EventBatch(
                     user_id=user_id,
                     user_email=user_info.email,
-                    events=AnyOrder([
-                        EventInfo(
-                            event_id=ANY,
-                            event_type=EventType.REQUEST_READY_TO_START,
-                            entity_id=request_ready_to_start_id,
-                            entity_type=EntityType.DATA_REQUEST,
-                            entity_name=ANY
-                        ),
-                        EventInfo(
-                            event_id=ANY,
-                            event_type=EventType.REQUEST_COMPLETE,
-                            entity_id=request_complete_id,
-                            entity_type=EntityType.DATA_REQUEST,
-                            entity_name=ANY
-                        ),
-                        EventInfo(
-                            event_id=ANY,
-                            event_type=EventType.DATA_SOURCE_APPROVED,
-                            entity_id=source_approved_id,
-                            entity_type=EntityType.DATA_SOURCE,
-                            entity_name=ANY
-                        ),
-                    ])
+                    events=AnyOrder(
+                        [
+                            EventInfo(
+                                event_id=ANY,
+                                event_type=EventType.REQUEST_READY_TO_START,
+                                entity_id=request_ready_to_start_id,
+                                entity_type=EntityType.DATA_REQUEST,
+                                entity_name=ANY,
+                            ),
+                            EventInfo(
+                                event_id=ANY,
+                                event_type=EventType.REQUEST_COMPLETE,
+                                entity_id=request_complete_id,
+                                entity_type=EntityType.DATA_REQUEST,
+                                entity_name=ANY,
+                            ),
+                            EventInfo(
+                                event_id=ANY,
+                                event_type=EventType.DATA_SOURCE_APPROVED,
+                                entity_id=source_approved_id,
+                                entity_type=EntityType.DATA_SOURCE,
+                                entity_name=ANY,
+                            ),
+                        ]
+                    ),
                 )
             ),
             call(
@@ -118,23 +116,19 @@ def test_notifications_followed_searches(
                             event_type=EventType.REQUEST_READY_TO_START,
                             entity_id=additional_request_ready_to_start_id,
                             entity_type=EntityType.DATA_REQUEST,
-                            entity_name=ANY
+                            entity_name=ANY,
                         )
-                    ]
+                    ],
                 )
-            )
-        ]
+            ),
+        ],
     )
 
     # Test that it calls the `format_and_send_notification` function with the requisite results 3 times
 
     # In the database, check that each notification has a non-null `sent_at`
     results = tdc_db.db_client._select_from_relation(
-        relation_name=Relations.USER_NOTIFICATION_QUEUE.value,
-        columns=[
-            "id",
-            "sent_at"
-        ]
+        relation_name=Relations.USER_NOTIFICATION_QUEUE.value, columns=["id", "sent_at"]
     )
     assert len(results) == 4
     for result in results:
@@ -142,9 +136,9 @@ def test_notifications_followed_searches(
 
     # TODO: Create separate middleware test for `format_and_send_notification`
 
+
 def test_notifications_permission_denied(
-    test_data_creator_flask: TestDataCreatorFlask,
-    mock_format_and_send_notifications
+    test_data_creator_flask: TestDataCreatorFlask, mock_format_and_send_notifications
 ):
     """
     Test that for basic admins and standard users, they are not able to call the endpoint

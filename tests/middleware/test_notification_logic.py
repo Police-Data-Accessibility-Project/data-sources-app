@@ -5,13 +5,17 @@ import pytest
 
 from database_client.enums import EventType, EntityType
 from middleware.custom_dataclasses import EventBatch, EventInfo
-from middleware.primary_resource_logic.notifications_logic import format_and_send_notifications
+from middleware.primary_resource_logic.notifications_logic import (
+    format_and_send_notifications,
+)
 from tests.helper_scripts.common_mocks_and_patches import patch_and_return_mock
 
 PATCH_ROOT = "middleware.primary_resource_logic.notifications_logic"
 
+
 def remove_all_whitespaces(s: str):
     return "".join(s.split())
+
 
 class SpaceAgnosticStringComparator:
     """
@@ -30,6 +34,7 @@ class SpaceAgnosticStringComparator:
     def __repr__(self):
         return self.s
 
+
 @pytest.fixture
 def mock_vite_vue_app_base_url(monkeypatch):
     """
@@ -39,13 +44,12 @@ def mock_vite_vue_app_base_url(monkeypatch):
     :return:
     """
     with mock.patch.dict(os.environ, clear=True):
-        envvars = {
-            "VITE_VUE_APP_BASE_URL": "https://test.com"
-        }
+        envvars = {"VITE_VUE_APP_BASE_URL": "https://test.com"}
         for key, value in envvars.items():
             monkeypatch.setenv(key, value)
 
         yield
+
 
 @pytest.fixture
 def mock_send_via_mailgun(monkeypatch):
@@ -54,15 +58,12 @@ def mock_send_via_mailgun(monkeypatch):
     :param monkeypatch:
     :return:
     """
-    return patch_and_return_mock(
-        f"{PATCH_ROOT}.send_via_mailgun", monkeypatch
-    )
+    return patch_and_return_mock(f"{PATCH_ROOT}.send_via_mailgun", monkeypatch)
+
 
 def test_format_and_send_notification_all_categories(
-    mock_send_via_mailgun,
-    mock_vite_vue_app_base_url
+    mock_send_via_mailgun, mock_vite_vue_app_base_url
 ):
-
 
     test_event_batch = EventBatch(
         user_id=20,
@@ -73,35 +74,33 @@ def test_format_and_send_notification_all_categories(
                 event_type=EventType.REQUEST_READY_TO_START,
                 entity_id=39,
                 entity_type=EntityType.DATA_REQUEST,
-                entity_name="Test Data Request 1"
+                entity_name="Test Data Request 1",
             ),
             EventInfo(
                 event_id=2,
                 event_type=EventType.REQUEST_COMPLETE,
                 entity_id=45,
                 entity_type=EntityType.DATA_REQUEST,
-                entity_name="Test Data Request 2"
+                entity_name="Test Data Request 2",
             ),
             EventInfo(
                 event_id=3,
                 event_type=EventType.DATA_SOURCE_APPROVED,
                 entity_id=52,
                 entity_type=EntityType.DATA_SOURCE,
-                entity_name="Test Data Source 1"
+                entity_name="Test Data Source 1",
             ),
             EventInfo(
                 event_id=4,
                 event_type=EventType.DATA_SOURCE_APPROVED,
                 entity_id=79,
                 entity_type=EntityType.DATA_SOURCE,
-                entity_name="Test Data Source 2"
-            )
-        ]
+                entity_name="Test Data Source 2",
+            ),
+        ],
     )
 
-    format_and_send_notifications(
-        event_batch=test_event_batch
-    )
+    format_and_send_notifications(event_batch=test_event_batch)
 
     html_text = """<!DOCTYPE html>
 <html>
@@ -170,16 +169,13 @@ Click the following link to view and update your user profile: https://test.com/
         to_email=test_event_batch.user_email,
         subject="Updates to your followed searches this month",
         text=SpaceAgnosticStringComparator(base_text),
-        html=html_text
+        html=html_text,
     )
 
 
-
 def test_format_and_send_notification_single_category(
-    mock_send_via_mailgun,
-    mock_vite_vue_app_base_url
+    mock_send_via_mailgun, mock_vite_vue_app_base_url
 ):
-
     """
     Test that when a category is not included, the header doesn't appear
     :param monkeypatch:
@@ -194,21 +190,19 @@ def test_format_and_send_notification_single_category(
                 event_type=EventType.REQUEST_COMPLETE,
                 entity_id=22,
                 entity_type=EntityType.DATA_REQUEST,
-                entity_name="Test Data Request Alpha"
+                entity_name="Test Data Request Alpha",
             ),
             EventInfo(
                 event_id=2,
                 event_type=EventType.REQUEST_COMPLETE,
                 entity_id=91,
                 entity_type=EntityType.DATA_REQUEST,
-                entity_name="Test Data Request Omega"
+                entity_name="Test Data Request Omega",
             ),
-        ]
+        ],
     )
 
-    format_and_send_notifications(
-        event_batch=test_event_batch
-    )
+    format_and_send_notifications(event_batch=test_event_batch)
 
     html_text = """<!DOCTYPE html>
 <html>
@@ -251,14 +245,12 @@ Click the following link to view and update your user profile: https://test.com/
         to_email=test_event_batch.user_email,
         subject="Updates to your followed searches this month",
         text=SpaceAgnosticStringComparator(base_text),
-        html=SpaceAgnosticStringComparator(html_text)
+        html=SpaceAgnosticStringComparator(html_text),
     )
 
 
-
 def test_format_and_send_notifications_error_no_events(
-    mock_send_via_mailgun,
-    mock_vite_vue_app_base_url
+    mock_send_via_mailgun, mock_vite_vue_app_base_url
 ):
     """
     Test that an error is thrown when there are no events included in the batch
@@ -266,14 +258,10 @@ def test_format_and_send_notifications_error_no_events(
     :return:
     """
     test_event_batch = EventBatch(
-        user_id=20,
-        user_email="fancyfrank@frankfurters.com",
-        events=[]
+        user_id=20, user_email="fancyfrank@frankfurters.com", events=[]
     )
 
     with pytest.raises(ValueError) as e:
-        format_and_send_notifications(
-            event_batch=test_event_batch
-        )
+        format_and_send_notifications(event_batch=test_event_batch)
 
     mock_send_via_mailgun.assert_not_called()

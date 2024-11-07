@@ -9,12 +9,17 @@ from database_client.database_client import DatabaseClient
 from database_client.helper_functions import get_db_client
 from middleware.access_logic import get_api_key_from_request_header
 from middleware.api_key import ApiKey
-from middleware.exceptions import InvalidAPIKeyException, InvalidAuthorizationHeaderException
+from middleware.exceptions import (
+    InvalidAPIKeyException,
+    InvalidAuthorizationHeaderException,
+)
 from middleware.primary_resource_logic.user_queries import UserRequestDTO
 import hashlib
 
+
 def generate_api_key() -> str:
     return uuid.uuid4().hex
+
 
 def hash_api_key(api_key: str) -> str:
     return hashlib.sha256(api_key.encode()).hexdigest()
@@ -40,6 +45,7 @@ def create_api_key_for_user(db_client: DatabaseClient, dto: UserRequestDTO) -> R
     return make_response(
         {"message": "Invalid email or password"}, HTTPStatus.UNAUTHORIZED
     )
+
 
 def check_api_key_associated_with_user(db_client: DatabaseClient, raw_key: str) -> None:
     api_key = ApiKey(raw_key)

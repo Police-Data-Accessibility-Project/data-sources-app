@@ -85,8 +85,10 @@ class PutPostBase(ABC):
 
     def execute(self) -> Response:
         if self.check_for_permission:
-            relation_role = self.relation_role_parameters.get_relation_role_from_parameters(
-                access_info=self.mp.access_info
+            relation_role = (
+                self.relation_role_parameters.get_relation_role_from_parameters(
+                    access_info=self.mp.access_info
+                )
             )
             self.check_can_edit_columns(relation_role)
         self.pre_database_client_method_logic()

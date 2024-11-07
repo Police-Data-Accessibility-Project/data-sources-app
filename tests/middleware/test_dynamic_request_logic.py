@@ -140,7 +140,6 @@ def test_get_by_id(monkeypatch):
     assert result == mock.results_dependent_response.return_value
 
 
-
 @pytest.fixture
 def mock_check_requested_columns(monkeypatch) -> MagicMock:
     mock = MagicMock()
@@ -214,9 +213,7 @@ def test_put_entry(monkeypatch):
     )
 
     mock.mp.db_client_method.assert_called_once_with(
-        mock.mp.db_client,
-        column_edit_mappings=mock.entry,
-        entry_id=int(mock.entry_id)
+        mock.mp.db_client, column_edit_mappings=mock.entry, entry_id=int(mock.entry_id)
     )
 
     mock.message_response.assert_called_once_with(

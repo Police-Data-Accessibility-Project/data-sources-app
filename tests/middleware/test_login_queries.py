@@ -21,7 +21,6 @@ def test_generate_api_key():
     assert all(c in "0123456789abcdef" for c in api_key)
 
 
-
 class TryLoggingInWithGithubIdMocks(DynamicMagicMock):
     unauthorized_response: MagicMock
     login_response: MagicMock

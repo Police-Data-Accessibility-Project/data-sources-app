@@ -21,7 +21,9 @@ from tests.helper_scripts.run_and_validate_request import run_and_validate_reque
 from tests.helper_scripts.simple_result_validators import check_response_status
 
 
-def test_login_with_github_get_pre_callback(flask_client_with_db, dev_db_client, monkeypatch):
+def test_login_with_github_get_pre_callback(
+    flask_client_with_db, dev_db_client, monkeypatch
+):
 
     # Setup Callback Session Mock for the LoginWithGithub module
     mock_setup_callback_session = patch_setup_callback_session(
@@ -38,7 +40,9 @@ def test_login_with_github_get_pre_callback(flask_client_with_db, dev_db_client,
     )
 
 
-def test_login_with_github_get_post_callback_happy_path(flask_client_with_db, dev_db_client, monkeypatch):
+def test_login_with_github_get_post_callback_happy_path(
+    flask_client_with_db, dev_db_client, monkeypatch
+):
     test_user_info = create_test_user_api(flask_client_with_db)
     github_user_info = create_fake_github_user_info(test_user_info.email)
     user_info = dev_db_client.get_user_info(test_user_info.email)
@@ -75,7 +79,10 @@ def test_login_with_github_get_post_callback_happy_path(flask_client_with_db, de
         jwt_token=access_token,
     )
 
-def test_login_with_github_get_post_callback_no_pdap_user(flask_client_with_db, dev_db_client, monkeypatch):
+
+def test_login_with_github_get_post_callback_no_pdap_user(
+    flask_client_with_db, dev_db_client, monkeypatch
+):
     """
     If a Github user account exists but no PDAP user is found,
     create that PDAP user and link them to the Github user account
@@ -106,7 +113,7 @@ def test_login_with_github_get_post_callback_no_pdap_user(flask_client_with_db, 
         expected_schema=SchemaConfigs.AUTH_GITHUB_LOGIN.value.primary_output_schema,
     )
 
-    message = response_json['message']
+    message = response_json["message"]
     message == f"User with email {github_user_info.user_email} created and logged in."
 
     # Check in the database that the user exists
@@ -116,12 +123,14 @@ def test_login_with_github_get_post_callback_no_pdap_user(flask_client_with_db, 
     # Check in the database that the Github account is linked to the new user
     user_info_gh = dev_db_client.get_user_info_by_external_account_id(
         external_account_id=str(github_user_info.user_id),
-        external_account_type=ExternalAccountTypeEnum.GITHUB
+        external_account_type=ExternalAccountTypeEnum.GITHUB,
     )
     assert user_info_gh == user_info
 
 
-def test_login_with_github_get_post_callback_accounts_exist_but_unlinked(flask_client_with_db, dev_db_client, monkeypatch):
+def test_login_with_github_get_post_callback_accounts_exist_but_unlinked(
+    flask_client_with_db, dev_db_client, monkeypatch
+):
     """
     If a PDAP user exists and a Github account exists with that email
     But is not linked to that PDAP account,
@@ -147,9 +156,11 @@ def test_login_with_github_get_post_callback_accounts_exist_but_unlinked(flask_c
         http_method="get",
         endpoint="auth/callback",
         expected_schema=MessageSchema,
-        expected_response_status=HTTPStatus.UNAUTHORIZED
+        expected_response_status=HTTPStatus.UNAUTHORIZED,
     )
 
-    message = response_json['message']
-    message == (f"User with email {github_user_info.user_email} exists but is not linked to the Github Account with the same email. "
-                f"You must explicitly link their accounts in order to log in via Github.")
+    message = response_json["message"]
+    message == (
+        f"User with email {github_user_info.user_email} exists but is not linked to the Github Account with the same email. "
+        f"You must explicitly link their accounts in order to log in via Github."
+    )

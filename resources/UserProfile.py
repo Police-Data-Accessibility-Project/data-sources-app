@@ -1,10 +1,15 @@
 from flask import Response
 
-from middleware.access_logic import AuthenticationInfo, AccessInfo, STANDARD_JWT_AUTH_INFO
+from middleware.access_logic import (
+    AuthenticationInfo,
+    AccessInfo,
+    STANDARD_JWT_AUTH_INFO,
+)
 from middleware.decorators import endpoint_info, endpoint_info_2
 from middleware.enums import AccessTypeEnum
 from middleware.primary_resource_logic.user_profile import (
-    get_owner_data_requests_wrapper, get_user_recent_searches,
+    get_owner_data_requests_wrapper,
+    get_user_recent_searches,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyRequestsBaseSchema,

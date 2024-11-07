@@ -38,4 +38,3 @@ def test_post_to_webhook(mock_env_variable, mock_requests_post):
         headers={"Content-Type": "application/json"},
         timeout=5,
     )
-

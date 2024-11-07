@@ -218,16 +218,15 @@ class LocationInfoSchema(Schema):
             if data.get("county_fips") is None:
                 raise ValidationError("county_fips is required for location type CITY.")
 
+
 class LocationInfoExpandedSchema(LocationInfoSchema):
     state_name = fields.Str(
-        required=True,
-        metadata=get_json_metadata(description="The name of the state.")
+        required=True, metadata=get_json_metadata(description="The name of the state.")
     )
     county_name = fields.Str(
         required=True,
         allow_none=True,
-        metadata=get_json_metadata(description="The name of the county.")
-
+        metadata=get_json_metadata(description="The name of the county."),
     )
 
 

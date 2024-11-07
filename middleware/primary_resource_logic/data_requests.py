@@ -21,13 +21,16 @@ from middleware.dynamic_request_logic.common_functions import check_for_id
 from middleware.dynamic_request_logic.delete_logic import delete_entry
 from middleware.dynamic_request_logic.get_by_id_logic import get_by_id
 from middleware.dynamic_request_logic.get_many_logic import get_many
-from middleware.dynamic_request_logic.get_related_resource_logic import get_related_resource, \
-    GetRelatedResourcesParameters
+from middleware.dynamic_request_logic.get_related_resource_logic import (
+    get_related_resource,
+    GetRelatedResourcesParameters,
+)
 from middleware.dynamic_request_logic.post_logic import post_entry, PostLogic
 from middleware.dynamic_request_logic.put_logic import put_entry
 from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
-    IDInfo, PutPostBase,
+    IDInfo,
+    PutPostBase,
 )
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.location_logic import get_location_id, InvalidLocationError
@@ -35,22 +38,27 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     EntryCreateUpdateRequestDTO,
     GetByIDBaseDTO,
     GetByIDBaseSchema,
-    GetManyBaseDTO, LocationInfoDTO,
+    GetManyBaseDTO,
+    LocationInfoDTO,
 )
 from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
 
 from middleware.common_response_formatting import (
     multiple_results_response,
-    message_response, created_id_response,
+    message_response,
+    created_id_response,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import DataRequestLocationInfoPostDTO, \
-    GetManyDataRequestsRequestsDTO, DataRequestsPutDTO, DataRequestsPutOuterDTO
+from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import (
+    DataRequestLocationInfoPostDTO,
+    GetManyDataRequestsRequestsDTO,
+    DataRequestsPutDTO,
+    DataRequestsPutOuterDTO,
+)
 from middleware.util import dataclass_to_filtered_dict
 from utilities.enums import SourceMappingEnum
 
 RELATION = Relations.DATA_REQUESTS.value
 RELATED_SOURCES_RELATION = Relations.RELATED_SOURCES.value
-
 
 
 def get_data_requests_subquery_params() -> list[SubqueryParameters]:
@@ -75,14 +83,22 @@ class RelatedSourceByIDDTO(GetByIDBaseDTO):
     data_source_id: int
 
     def get_where_mapping(self):
-        return {"data_source_id": int(self.data_source_id), "request_id": int(self.resource_id)}
+        return {
+            "data_source_id": int(self.data_source_id),
+            "request_id": int(self.resource_id),
+        }
+
 
 @dataclass
 class RelatedLocationsByIDDTO(GetByIDBaseDTO):
     location_id: int
 
     def get_where_mapping(self):
-        return {"location_id": int(self.location_id), "data_request_id": int(self.resource_id)}
+        return {
+            "location_id": int(self.location_id),
+            "data_request_id": int(self.resource_id),
+        }
+
 
 @dataclass
 class RequestInfoPostDTO:
@@ -92,10 +108,12 @@ class RequestInfoPostDTO:
     coverage_range: Optional[str] = None
     data_requirements: Optional[str] = None
 
+
 @dataclass
 class DataRequestsPostDTO:
     request_info: RequestInfoPostDTO
     location_infos: Optional[list[DataRequestLocationInfoPostDTO]] = None
+
 
 def get_location_id_for_data_requests(
     db_client: DatabaseClient, location_info: dict
@@ -120,6 +138,7 @@ def get_location_id_for_data_requests(
     if location_id is None:
         raise InvalidLocationError()
     return location_id
+
 
 def get_data_requests_relation_role(
     db_client: DatabaseClient, data_request_id: Optional[int], access_info: AccessInfo
@@ -173,23 +192,17 @@ def create_data_request_wrapper(
 
     # Insert the data request, get data request id
     dr_id = db_client.create_data_request(
-        column_value_mappings=column_value_mappings_raw,
-        column_to_return="id"
+        column_value_mappings=column_value_mappings_raw, column_to_return="id"
     )
 
     # Insert location ids into linking table
     for location_id in location_ids:
         db_client.create_request_location_relation(
-            column_value_mappings={
-                "data_request_id": dr_id,
-                "location_id": location_id
-            }
+            column_value_mappings={"data_request_id": dr_id, "location_id": location_id}
         )
 
     # Return data request id
-    return created_id_response(
-        new_id=str(dr_id), message=f"Data request created."
-    )
+    return created_id_response(new_id=str(dr_id), message=f"Data request created.")
 
 
 def _get_location_ids(db_client, dto: DataRequestsPostDTO):
@@ -199,13 +212,12 @@ def _get_location_ids(db_client, dto: DataRequestsPostDTO):
     for location_info in dto.location_infos:
         try:
             location_id = get_location_id_for_data_requests(
-                db_client=db_client,
-                location_info=location_info
+                db_client=db_client, location_info=location_info
             )
         except InvalidLocationError:
             FlaskResponseManager.abort(
                 code=HTTPStatus.BAD_REQUEST,
-                message=f"Invalid location: {location_info}"
+                message=f"Invalid location: {location_info}",
             )
 
         location_ids.append(location_id)
@@ -213,7 +225,9 @@ def _get_location_ids(db_client, dto: DataRequestsPostDTO):
 
 
 def get_data_requests_wrapper(
-    db_client: DatabaseClient, dto: GetManyDataRequestsRequestsDTO, access_info: AccessInfo
+    db_client: DatabaseClient,
+    dto: GetManyDataRequestsRequestsDTO,
+    access_info: AccessInfo,
 ) -> Response:
     """
     Get data requests
@@ -224,7 +238,9 @@ def get_data_requests_wrapper(
     """
     db_client_additional_args = {"build_metadata": True}
     if dto.request_status is not None:
-        db_client_additional_args["where_mappings"] = {"request_status": dto.request_status.value}
+        db_client_additional_args["where_mappings"] = {
+            "request_status": dto.request_status.value
+        }
     return get_many(
         middleware_parameters=MiddlewareParameters(
             db_client=db_client,
@@ -299,10 +315,9 @@ def delete_data_request_wrapper(
         ),
     )
 
+
 def optionally_update_github_issue_info(
-    db_client: DatabaseClient,
-    entry_data: DataRequestsPutDTO,
-    data_request_id: int
+    db_client: DatabaseClient, entry_data: DataRequestsPutDTO, data_request_id: int
 ):
     d = {}
     if entry_data.github_issue_url is not None:
@@ -314,8 +329,9 @@ def optionally_update_github_issue_info(
             table_name=Relations.DATA_REQUESTS_GITHUB_ISSUE_INFO.value,
             entry_id=data_request_id,
             id_column_name="data_request_id",
-            column_edit_mappings=d
+            column_edit_mappings=d,
         )
+
 
 def update_data_request_wrapper(
     db_client: DatabaseClient,
@@ -351,8 +367,8 @@ def update_data_request_wrapper(
             function=optionally_update_github_issue_info,
             db_client=db_client,
             entry_data=dto.entry_data,
-            data_request_id=data_request_id
-        )
+            data_request_id=data_request_id,
+        ),
     )
 
 
@@ -406,9 +422,10 @@ def get_data_request_related_sources(db_client: DatabaseClient, dto: GetByIDBase
             related_relation=Relations.DATA_SOURCES_EXPANDED,
             linking_column="data_sources",
             metadata_count_name="data_sources_count",
-            resource_name="sources"
+            resource_name="sources",
         )
     )
+
 
 def get_data_request_related_locations(
     db_client: DatabaseClient, dto: GetByIDBaseDTO
@@ -422,7 +439,7 @@ def get_data_request_related_locations(
             related_relation=Relations.LOCATIONS_EXPANDED,
             linking_column="locations",
             metadata_count_name="locations_count",
-            resource_name="locations"
+            resource_name="locations",
         ),
         permitted_columns=[
             "id",
@@ -431,9 +448,10 @@ def get_data_request_related_locations(
             "county_name",
             "county_fips",
             "locality_name",
-            "type"
-        ]
+            "type",
+        ],
     )
+
 
 def check_has_admin_or_owner_role(relation_role: RelationRoleEnum):
     if relation_role not in [RelationRoleEnum.OWNER, RelationRoleEnum.ADMIN]:
@@ -451,6 +469,7 @@ class CreateDataRequestRelatedSourceLogic(PostLogic):
     def make_response(self) -> Response:
         return message_response("Data source successfully associated with request.")
 
+
 class CreateDataRequestRelatedLocationLogic(PostLogic):
 
     def check_can_edit_columns(self, relation_role: RelationRoleEnum):
@@ -458,6 +477,7 @@ class CreateDataRequestRelatedLocationLogic(PostLogic):
 
     def make_response(self) -> Response:
         return message_response("Location successfully associated with request.")
+
 
 def create_data_request_related_source(
     db_client: DatabaseClient, access_info: AccessInfo, dto: RelatedSourceByIDDTO
@@ -504,6 +524,7 @@ def delete_data_request_related_source(
         ),
     )
 
+
 def create_data_request_related_location(
     db_client: DatabaseClient, access_info: AccessInfo, dto: RelatedLocationsByIDDTO
 ):
@@ -526,6 +547,7 @@ def create_data_request_related_location(
     )
     return post_logic.execute()
 
+
 def delete_data_request_related_location(
     db_client: DatabaseClient, access_info: AccessInfo, dto: RelatedLocationsByIDDTO
 ):
@@ -546,4 +568,4 @@ def delete_data_request_related_location(
             data_request_id=dto.resource_id,
             db_client=db_client,
         ),
-)
+    )

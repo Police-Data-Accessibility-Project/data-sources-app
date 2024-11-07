@@ -119,9 +119,6 @@ class CreateUserWithGithubMocks(DynamicMagicMock):
     make_response: MagicMock
 
 
-
-
-
 class CallbackInnerWrapperMocks(DynamicMagicMock):
     try_logging_in_with_github_id: MagicMock
     create_user_with_github: MagicMock

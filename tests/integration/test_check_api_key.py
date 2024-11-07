@@ -14,9 +14,16 @@ from unittest.mock import MagicMock
 import pytest
 
 from database_client.database_client import DatabaseClient
-from middleware.exceptions import InvalidAuthorizationHeaderException, InvalidAPIKeyException
-from middleware.primary_resource_logic.api_key_logic import INVALID_API_KEY_MESSAGE, check_api_key, \
-    check_api_key_associated_with_user, create_api_key_for_user
+from middleware.exceptions import (
+    InvalidAuthorizationHeaderException,
+    InvalidAPIKeyException,
+)
+from middleware.primary_resource_logic.api_key_logic import (
+    INVALID_API_KEY_MESSAGE,
+    check_api_key,
+    check_api_key_associated_with_user,
+    create_api_key_for_user,
+)
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_mocks_and_patches import (
     patch_request_headers,
@@ -30,6 +37,7 @@ from conftest import test_data_creator_flask, monkeysession
 
 PATCH_API_KEY_ROOT = "middleware.primary_resource_logic.api_key_logic"
 
+
 @pytest.fixture
 def mock_abort(monkeypatch) -> MagicMock:
     return patch_abort(monkeypatch, path=PATCH_API_KEY_ROOT)
@@ -38,7 +46,9 @@ def mock_abort(monkeypatch) -> MagicMock:
 PATCH_REQUESTS_ROOT = "middleware.access_logic"
 
 
-def test_check_api_key_happy_path(monkeypatch, test_data_creator_flask: TestDataCreatorFlask):
+def test_check_api_key_happy_path(
+    monkeypatch, test_data_creator_flask: TestDataCreatorFlask
+):
     """
     In Happy path, the api key is valid, and check_api_key runs without error
     :param monkeypatch:
@@ -88,6 +98,7 @@ def test_check_api_key_valid_authorization_header(
         code=HTTPStatus.UNAUTHORIZED, message=INVALID_API_KEY_MESSAGE
     )
 
+
 #
 def test_check_api_key_api_key_not_associated_with_user(monkeypatch, mock_abort):
 
@@ -99,6 +110,7 @@ def test_check_api_key_api_key_not_associated_with_user(monkeypatch, mock_abort)
 
     check_api_key()
     mock_abort.assert_called_once_with(HTTPStatus.UNAUTHORIZED, "Invalid API Key")
+
 
 class CheckApiKeyMocks(DynamicMagicMock):
     get_db_client: MagicMock
@@ -127,4 +139,3 @@ def test_check_api_key_invalid_api_key(exception, mock_abort):
     mock_abort.assert_called_once_with(
         code=HTTPStatus.UNAUTHORIZED, message=INVALID_API_KEY_MESSAGE
     )
-

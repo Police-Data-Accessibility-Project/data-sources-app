@@ -154,9 +154,11 @@ class RequestUrgency(Enum):
     LONG_TERM = "long_term"  # A year or more
     INDEFINITE = "indefinite_unknown"  # Indefinite or unknown length of time
 
+
 class EntityType(Enum):
     DATA_SOURCE = "Data Source"
     DATA_REQUEST = "Data Request"
+
 
 class EventType(Enum):
     REQUEST_READY_TO_START = "Request Ready to Start"

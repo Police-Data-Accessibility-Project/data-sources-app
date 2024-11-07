@@ -119,7 +119,7 @@ def endpoint_info(
         @authentication_required(
             allowed_access_methods=auth_info.allowed_access_methods,
             restrict_to_permissions=auth_info.restrict_to_permissions,
-            no_auth=auth_info.no_auth
+            no_auth=auth_info.no_auth,
         )
         @namespace.doc(**doc_kwargs)
         def wrapper(*args, **kwargs):
@@ -169,7 +169,7 @@ def endpoint_info_2(
         @authentication_required(
             allowed_access_methods=auth_info.allowed_access_methods,
             restrict_to_permissions=auth_info.restrict_to_permissions,
-            no_auth=auth_info.no_auth
+            no_auth=auth_info.no_auth,
         )
         @namespace.doc(**doc_kwargs)
         def wrapper(*args, **kwargs):
@@ -185,13 +185,13 @@ def _update_doc_kwargs(
     input_doc_info: Optional[FlaskRestxDocInfo],
     namespace: Namespace,
     response_info: ResponseInfo,
-    output_schema_manager: OutputSchemaManager
+    output_schema_manager: OutputSchemaManager,
 ):
     _update_responses(
         doc_kwargs=doc_kwargs,
         namespace=namespace,
         response_info=response_info,
-        output_schema_manager=output_schema_manager
+        output_schema_manager=output_schema_manager,
     )
 
     if input_doc_info is None:
@@ -203,27 +203,27 @@ def _update_responses(
     doc_kwargs: dict,
     namespace: Namespace,
     response_info: ResponseInfo,
-    output_schema_manager: OutputSchemaManager
+    output_schema_manager: OutputSchemaManager,
 ):
-
 
     if response_info.response_dictionary is None:
         primary_output_model = _get_output_model(
             namespace=namespace,
-            output_schema=output_schema_manager.get_output_schema(HTTPStatus.OK)
+            output_schema=output_schema_manager.get_output_schema(HTTPStatus.OK),
         )
         response_dictionary = create_response_dictionary(
-            success_message=response_info.success_message, success_model=primary_output_model
+            success_message=response_info.success_message,
+            success_model=primary_output_model,
         )
     else:
         for status_code, schema in output_schema_manager.get_output_schemas().items():
-            model = _get_output_model(
-                namespace=namespace,
-                output_schema=schema
-            )
+            model = _get_output_model(namespace=namespace, output_schema=schema)
 
             if model is not None:
-                response_info.response_dictionary[status_code] = response_info.response_dictionary[status_code], model
+                response_info.response_dictionary[status_code] = (
+                    response_info.response_dictionary[status_code],
+                    model,
+                )
 
         response_dictionary = response_info.response_dictionary
 

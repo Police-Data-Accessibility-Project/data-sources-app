@@ -8,8 +8,15 @@ from middleware.schema_and_dto_logic.common_response_schemas import (
     MessageSchema,
     GetManyResponseSchemaBase,
 )
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetByIDBaseSchema, GetByIDBaseDTO, STATE_ISO_FIELD, \
-    COUNTY_FIPS_FIELD, LOCALITY_NAME_FIELD, LocationInfoSchema, LocationInfoDTO
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+    GetByIDBaseSchema,
+    GetByIDBaseDTO,
+    STATE_ISO_FIELD,
+    COUNTY_FIPS_FIELD,
+    LOCALITY_NAME_FIELD,
+    LocationInfoSchema,
+    LocationInfoDTO,
+)
 from utilities.enums import SourceMappingEnum
 
 
@@ -361,6 +368,7 @@ class AgenciesGetManyResponseSchema(GetManyResponseSchemaBase):
         },
     )
 
+
 class RelatedAgencyByIDSchema(GetByIDBaseSchema):
     agency_id = fields.Integer(
         required=True,
@@ -369,6 +377,7 @@ class RelatedAgencyByIDSchema(GetByIDBaseSchema):
             "source": SourceMappingEnum.PATH,
         },
     )
+
 
 @dataclass
 class RelatedAgencyByIDDTO(GetByIDBaseDTO):

@@ -75,7 +75,7 @@ RecordTypeLiteral = Literal[
     "Field Contacts",
     "Wanted Persons",
     "List of Data Sources",
-    "Car GPS"
+    "Car GPS",
 ]
 RequestStatusLiteral = Literal[
     "Intake",
@@ -118,23 +118,12 @@ RequestUrgencyLiteral = Literal[
     "long_term",
     "indefinite_unknown",
 ]
-LocationTypeLiteral = Literal[
-    "State",
-    "County",
-    "Locality"
-]
+LocationTypeLiteral = Literal["State", "County", "Locality"]
 EventTypeLiteral = Literal[
-    'Request Ready to Start',
-    'Request Complete',
-    'Data Source Approved'
+    "Request Ready to Start", "Request Complete", "Data Source Approved"
 ]
 EntityTypeLiteral = Literal["Data Request", "Data Source"]
-AgencyAggregationLiteral = Literal[
-    "county",
-    "local",
-    "state",
-    "federal"
-]
+AgencyAggregationLiteral = Literal["county", "local", "state", "federal"]
 
 
 text = Annotated[Text, None]
@@ -346,6 +335,7 @@ class LocationExpanded(Base, CountMetadata):
     def __iter__(self):
         yield from iter_with_special_cases(self)
 
+
 class ExternalAccount(Base):
     __tablename__ = Relations.EXTERNAL_ACCOUNTS.value
     row_id: Mapped[int] = mapped_column(primary_key=True)
@@ -354,12 +344,14 @@ class ExternalAccount(Base):
     account_identifier: Mapped[str_255]
     linked_at: Mapped[Optional[timestamp]] = mapped_column(server_default=func.now())
 
+
 class USState(Base):
     __tablename__ = Relations.US_STATES.value
 
     id: Mapped[int] = mapped_column(primary_key=True)
     state_iso: Mapped[str] = mapped_column(String(255), nullable=False)
     state_name: Mapped[str] = mapped_column(String(255))
+
 
 class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
     __tablename__ = Relations.DATA_REQUESTS.value
@@ -376,8 +368,9 @@ class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
                     )
                 ),
                 (
-                    "location_ids", instance.location_ids if instance.location_ids else None
-                )
+                    "location_ids",
+                    instance.location_ids if instance.location_ids else None,
+                ),
             ],
             "data_sources": lambda instance: [
                 (
@@ -565,9 +558,7 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
 
 
 class DataSourceExpanded(DataSource):
-    id = mapped_column(
-        None, ForeignKey("public.data_sources.id"), primary_key=True
-    )
+    id = mapped_column(None, ForeignKey("public.data_sources.id"), primary_key=True)
 
     __tablename__ = Relations.DATA_SOURCES_EXPANDED.value
     __table_args__ = {
@@ -593,10 +584,9 @@ class LinkDataSourceDataRequest(Base):
     __tablename__ = Relations.LINK_DATA_SOURCES_DATA_REQUESTS.value
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    data_source_id: Mapped[text] = mapped_column(
-        ForeignKey("public.data_sources.id")
-    )
+    data_source_id: Mapped[text] = mapped_column(ForeignKey("public.data_sources.id"))
     request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
+
 
 class DataRequestsGithubIssueInfo(Base):
     __tablename__ = Relations.DATA_REQUESTS_GITHUB_ISSUE_INFO.value
@@ -605,6 +595,7 @@ class DataRequestsGithubIssueInfo(Base):
     data_request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
     github_issue_url: Mapped[str]
     github_issue_number: Mapped[int]
+
 
 class LinkUserFollowedLocation(Base, CountMetadata):
     __tablename__ = Relations.LINK_USER_FOLLOWED_LOCATION.value
@@ -664,6 +655,7 @@ class User(Base):
     )
     role: Mapped[Optional[text]]
 
+
 class LinkLocationDataRequest(Base):
     __tablename__ = Relations.LINK_LOCATIONS_DATA_REQUESTS.value
 
@@ -671,20 +663,20 @@ class LinkLocationDataRequest(Base):
     location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
     data_request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
 
+
 class DependentLocation(Base):
     __tablename__ = Relations.DEPENDENT_LOCATIONS.value
-    __mapper_args__ = {
-        "primary_key": ["parent_location_id", "dependent_location_id"]
-    }
+    __mapper_args__ = {"primary_key": ["parent_location_id", "dependent_location_id"]}
 
     parent_location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
-    dependent_location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
+    dependent_location_id: Mapped[int] = mapped_column(
+        ForeignKey("public.locations.id")
+    )
+
 
 class QualifyingNotification(Base):
     __tablename__ = Relations.QUALIFYING_NOTIFICATIONS.value
-    __mapper_args__ = {
-        "primary_key": ["entity_id", "entity_type"]
-    }
+    __mapper_args__ = {"primary_key": ["entity_id", "entity_type"]}
 
     event_type: Mapped[str]
     entity_id: Mapped[int]
@@ -696,9 +688,7 @@ class QualifyingNotification(Base):
 
 class UserPendingNotification(Base):
     __tablename__ = Relations.USER_PENDING_NOTIFICATIONS.value
-    __mapper_args__ = {
-        "primary_key": ["user_id", "entity_id"]
-    }
+    __mapper_args__ = {"primary_key": ["user_id", "entity_id"]}
     event_type: Mapped[EventTypeLiteral] = mapped_column(
         Enum(*get_args(EventTypeLiteral), name="event_type")
     )
@@ -711,6 +701,7 @@ class UserPendingNotification(Base):
     entity_name: Mapped[str]
     location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
     event_timestamp: Mapped[timestamp]
+
 
 class UserNotificationQueue(Base):
     __tablename__ = Relations.USER_NOTIFICATION_QUEUE.value
@@ -729,6 +720,7 @@ class UserNotificationQueue(Base):
     event_timestamp: Mapped[timestamp]
     sent_at: Mapped[Optional[timestamp]]
 
+
 class RecentSearch(Base):
     __tablename__ = Relations.RECENT_SEARCHES.value
 
@@ -739,17 +731,22 @@ class RecentSearch(Base):
         server_default=func.current_timestamp()
     )
 
+
 class LinkRecentSearchRecordCategories(Base):
     __tablename__ = Relations.LINK_RECENT_SEARCH_RECORD_CATEGORIES.value
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    recent_search_id: Mapped[int] = mapped_column(ForeignKey("public.recent_searches.id"))
+    recent_search_id: Mapped[int] = mapped_column(
+        ForeignKey("public.recent_searches.id")
+    )
     record_category_id: Mapped[int] = mapped_column(
         ForeignKey("public.record_categories.id")
     )
 
+
 # TODO: Change user_id references in models to be from singular factory function or constant, to avoid duplication
 # Do the same for other common foreign keys, or for things such as primary keys
+
 
 class RecentSearchExpanded(Base, CountMetadata):
     __tablename__ = Relations.RECENT_SEARCHES_EXPANDED.value
@@ -762,7 +759,6 @@ class RecentSearchExpanded(Base, CountMetadata):
     locality_name: Mapped[str]
     location_type: Mapped[LocationTypeLiteral]
     record_categories = mapped_column(ARRAY(String, as_tuple=True))
-
 
 
 SQL_ALCHEMY_TABLE_REFERENCE = {
@@ -795,7 +791,7 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     Relations.LINK_RECENT_SEARCH_RECORD_CATEGORIES.value: LinkRecentSearchRecordCategories,
     Relations.RECORD_CATEGORIES.value: RecordCategory,
     Relations.RECENT_SEARCHES_EXPANDED.value: RecentSearchExpanded,
-    Relations.RECORD_TYPES.value: RecordType
+    Relations.RECORD_TYPES.value: RecordType,
 }
 
 
@@ -822,4 +818,3 @@ def convert_to_column_reference(columns: list[str], relation: str) -> list[Colum
             )
 
     return [get_attribute(column) for column in columns]
-

@@ -12,6 +12,7 @@ class SearchWrapperMocks(DynamicMagicMock):
     make_response: MagicMock
     format_search_results: MagicMock
 
+
 def test_format_search_results():
     search_results = [
         {

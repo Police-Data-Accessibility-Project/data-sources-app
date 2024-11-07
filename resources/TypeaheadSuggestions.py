@@ -24,6 +24,7 @@ namespace_typeahead_suggestions = create_namespace(
     namespace_attributes=AppNamespaces.TYPEAHEAD
 )
 
+
 def get_typeahead_kwargs(db_client_method: Callable) -> dict:
     return {
         "wrapper_function": get_typeahead_results,

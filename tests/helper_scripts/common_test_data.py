@@ -15,11 +15,15 @@ from tests.helper_scripts.common_endpoint_calls import (
 from tests.helper_scripts.constants import (
     DATA_REQUESTS_BASE_ENDPOINT,
     AGENCIES_BASE_ENDPOINT,
-    DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT, DATA_SOURCES_POST_DELETE_RELATED_AGENCY_ENDPOINT,
-    DATA_REQUESTS_BY_ID_ENDPOINT, AGENCIES_BY_ID_ENDPOINT,
+    DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT,
+    DATA_SOURCES_POST_DELETE_RELATED_AGENCY_ENDPOINT,
+    DATA_REQUESTS_BY_ID_ENDPOINT,
+    AGENCIES_BY_ID_ENDPOINT,
 )
 from tests.helper_scripts.helper_classes.EndpointCaller import EndpointCaller
-from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import TestDataCreatorDBClient
+from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
+    TestDataCreatorDBClient,
+)
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup,
@@ -118,7 +122,9 @@ def create_data_source_entry_for_url_duplicate_checking(
 
 
 def create_test_data_request(
-    flask_client: FlaskClient, jwt_authorization_header: dict, location_info: Optional[dict] = None
+    flask_client: FlaskClient,
+    jwt_authorization_header: dict,
+    location_info: Optional[dict] = None,
 ) -> TestDataRequestInfo:
     submission_notes = uuid.uuid4().hex
     json_to_post = {
@@ -206,7 +212,9 @@ class TestDataCreatorFlask:
         tdc_db = TestDataCreatorDBClient()
         tdc_db.clear_test_data()
 
-    def data_request(self, user_tus: Optional[TestUserSetup] = None) -> TestDataRequestInfo:
+    def data_request(
+        self, user_tus: Optional[TestUserSetup] = None
+    ) -> TestDataRequestInfo:
         if user_tus is None:
             user_tus = self.get_admin_tus()
         return create_test_data_request(
@@ -218,7 +226,9 @@ class TestDataCreatorFlask:
         run_and_validate_request(
             flask_client=self.flask_client,
             http_method="put",
-            endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(data_request_id=data_request_id),
+            endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
+                data_request_id=data_request_id
+            ),
             headers=self.get_admin_tus().jwt_authorization_header,
             json={"request_status": status.value},
         )
@@ -249,7 +259,7 @@ class TestDataCreatorFlask:
             http_method="put",
             endpoint=AGENCIES_BY_ID_ENDPOINT.format(agency_id=agency_id),
             headers=self.get_admin_tus().jwt_authorization_header,
-            json=data_to_update
+            json=data_to_update,
         )
 
     def link_data_source_to_agency(self, data_source_id, agency_id):
@@ -287,7 +297,9 @@ class TestDataCreatorFlask:
         Creates a user with notifications permissions.
         :return:
         """
-        return create_test_user_setup(self.flask_client, permissions=[PermissionsEnum.NOTIFICATIONS])
+        return create_test_user_setup(
+            self.flask_client, permissions=[PermissionsEnum.NOTIFICATIONS]
+        )
 
     def select_only_complex_linked_resources(self):
         """
@@ -317,7 +329,7 @@ def get_sample_agency_post_parameters(
     submitted_name,
     locality_name,
     jurisdiction_type: JurisdictionType,
-    location_info: Optional[dict] = None
+    location_info: Optional[dict] = None,
 ) -> dict:
     """
     Obtains information to be passed to an `/agencies` POST request

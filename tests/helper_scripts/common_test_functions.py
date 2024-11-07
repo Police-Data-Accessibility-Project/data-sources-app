@@ -48,6 +48,7 @@ def assert_expected_get_many_result(
         assert column in data[0]
         assert data[0][column] is not None
 
+
 def assert_contains_key_value_pairs(
     dict_to_check: dict,
     key_value_pairs: dict,

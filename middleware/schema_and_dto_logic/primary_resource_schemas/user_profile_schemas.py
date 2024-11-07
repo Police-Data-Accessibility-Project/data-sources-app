@@ -21,16 +21,13 @@ class GetUserRecentSearchesInnerSchema(Schema):
         metadata=get_json_metadata("The locality of the search, if any."),
     )
     location_type = fields.Str(
-        required=True,
-        metadata=get_json_metadata("The type of location of the search")
+        required=True, metadata=get_json_metadata("The type of location of the search")
     )
     record_categories = fields.List(
         fields.Enum(
             enum=RecordCategories,
             by_value=fields.Str,
-            metadata=get_json_metadata(
-                "The record categories of the search."
-            ),
+            metadata=get_json_metadata("The record categories of the search."),
         ),
         required=True,
         metadata=get_json_metadata("The record categories of the search."),

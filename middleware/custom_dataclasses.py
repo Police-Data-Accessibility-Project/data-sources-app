@@ -46,27 +46,28 @@ class DeferredFunction:
         return self.function(**self.base_parameters, **additional_parameters)
 
 
-
 @dataclass
 class EventInfo:
     """
     Information about an event
     """
+
     event_id: int
     event_type: EventType
     entity_id: int
     entity_type: EntityType
     entity_name: str
 
+
 @dataclass
 class EventBatch:
     """
     A batch of events
     """
+
     user_id: int
     user_email: str
     events: list[EventInfo]
 
     def get_events_of_type(self, event_type: EventType):
         return [event for event in self.events if event.event_type == event_type]
-

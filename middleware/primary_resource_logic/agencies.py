@@ -21,7 +21,8 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas i
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyBaseDTO,
-    GetByIDBaseDTO, LocationInfoDTO,
+    GetByIDBaseDTO,
+    LocationInfoDTO,
 )
 from middleware.enums import Relations, JurisdictionType
 

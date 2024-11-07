@@ -12,7 +12,9 @@ class InvalidLocationError(Exception):
     pass
 
 
-def get_location_id(db_client: DatabaseClient, location_info: Union[LocationInfoDTO, dict]):
+def get_location_id(
+    db_client: DatabaseClient, location_info: Union[LocationInfoDTO, dict]
+):
     if isinstance(location_info, dict):
         location_info_dict = location_info
         location_info = LocationInfoDTO(**location_info)

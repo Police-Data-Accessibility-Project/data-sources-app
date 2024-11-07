@@ -29,7 +29,7 @@ class LoginWithGithub(PsycopgResource):
             response_dictionary={
                 HTTPStatus.OK: "Callback response. User logged in.",
                 HTTPStatus.FOUND: "Returns redirect link to OAuth.",
-                HTTPStatus.INTERNAL_SERVER_ERROR: "Internal Server Error."
+                HTTPStatus.INTERNAL_SERVER_ERROR: "Internal Server Error.",
             },
         ),
         description="""

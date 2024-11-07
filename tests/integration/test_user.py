@@ -15,6 +15,7 @@ from tests.helper_scripts.helper_functions import (
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from conftest import test_data_creator_flask, monkeysession
 
+
 def test_user_post(flask_client_with_db):
     """
     Test that POST call to /user endpoint successfully creates a new user and verifies the user's email and password digest in the database
@@ -34,7 +35,10 @@ def test_user_post(flask_client_with_db):
         user_info.password != password_digest
     ), "DB user password digest should not match password"
 
-def test_user_post_user_already_exists(test_data_creator_flask: TestDataCreatorFlask,):
+
+def test_user_post_user_already_exists(
+    test_data_creator_flask: TestDataCreatorFlask,
+):
     """
     Test that POST call to /user endpoint fails if the user already exists
     """
@@ -47,7 +51,9 @@ def test_user_post_user_already_exists(test_data_creator_flask: TestDataCreatorF
         endpoint=USERS_BASE_ENDPOINT,
         json={"email": tus.user_info.email, "password": "test"},
         expected_response_status=HTTPStatus.CONFLICT,
-        expected_json_content={"message": f"User with email {tus.user_info.email} already exists."},
+        expected_json_content={
+            "message": f"User with email {tus.user_info.email} already exists."
+        },
     )
 
 

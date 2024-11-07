@@ -18,7 +18,9 @@ from database_client.models import RecentSearch
 from middleware.enums import Relations
 from tests.conftest import live_database_client
 from conftest import test_data_creator_db_client
-from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import TestDataCreatorDBClient
+from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
+    TestDataCreatorDBClient,
+)
 from tests.helper_scripts.helper_functions import get_notification_valid_date
 from utilities.enums import RecordCategories
 
@@ -327,8 +329,8 @@ def assert_link_user_followed_location_deleted(live_database_client, test_info):
 
 
 def test_data_sources_created_at_updated_at(
-        test_data_creator_db_client: TestDataCreatorDBClient,
-        live_database_client):
+    test_data_creator_db_client: TestDataCreatorDBClient, live_database_client
+):
     tdc = test_data_creator_db_client
     # Create bare-minimum fake data source
     data_source_id = tdc.data_source().id
@@ -360,6 +362,7 @@ def test_data_sources_created_at_updated_at(
 
     # Confirm `updated_at` is now greater than `created_at`
     assert result[0]["updated_at"] > created_at
+
 
 def test_approval_status_updated_at(
     test_data_creator_db_client: TestDataCreatorDBClient,
@@ -398,69 +401,71 @@ def test_approval_status_updated_at(
     assert approval_status_updated_at == new_approval_status_updated_at
 
 
-def test_qualifying_notifications_view(test_data_creator_db_client: TestDataCreatorDBClient):
+def test_qualifying_notifications_view(
+    test_data_creator_db_client: TestDataCreatorDBClient,
+):
     tdc = test_data_creator_db_client
     tdc.clear_test_data()
     old_date = datetime.now() - timedelta(days=60)
     notification_valid_date = get_notification_valid_date()
 
     # Set all non-test data sources and data requests to the old date
-    tdc.db_client.execute_raw_sql(sql.SQL("""
+    tdc.db_client.execute_raw_sql(
+        sql.SQL(
+            """
     UPDATE data_sources
     SET approval_status_updated_at = {old_date}
     WHERE NAME NOT ILIKE 'Test%'
-    """).format(old_date=old_date))
+    """
+        ).format(old_date=old_date)
+    )
 
-    tdc.db_client.execute_raw_sql(sql.SQL("""
+    tdc.db_client.execute_raw_sql(
+        sql.SQL(
+            """
     UPDATE data_requests
     SET date_status_last_changed = {old_date}
     WHERE SUBMISSION_NOTES NOT ILIKE 'Test%'
-    """).format(old_date=old_date))
+    """
+        ).format(old_date=old_date)
+    )
 
     # Create two locations
     location_1_id = tdc.locality()
     location_2_id = tdc.locality()
 
-
     # Create agency and tie to location
-    agency_id = tdc.agency(
-        location_id=location_1_id
-    )
+    agency_id = tdc.agency(location_id=location_1_id)
 
     def create_data_source(updated_at_datetime: datetime):
-        ds_info = tdc.data_source(
-            approval_status=ApprovalStatus.APPROVED
-        )
+        ds_info = tdc.data_source(approval_status=ApprovalStatus.APPROVED)
         tdc.link_data_source_to_agency(
             data_source_id=ds_info.id,
             agency_id=agency_id.id,
         )
         tdc.db_client.update_data_source(
             entry_id=ds_info.id,
-            column_edit_mappings={"approval_status_updated_at": updated_at_datetime}
+            column_edit_mappings={"approval_status_updated_at": updated_at_datetime},
         )
         return ds_info
 
     def create_data_request(
-        request_status: RequestStatus,
-        updated_at_datetime: datetime
+        request_status: RequestStatus, updated_at_datetime: datetime
     ):
         dr_info = tdc.data_request()
         tdc.db_client.update_data_request(
-            column_edit_mappings={
-                "request_status": request_status.value
-            },
-            entry_id=dr_info.id
+            column_edit_mappings={"request_status": request_status.value},
+            entry_id=dr_info.id,
         )
         tdc.db_client.create_request_location_relation(
             column_value_mappings={
                 "data_request_id": dr_info.id,
-                "location_id": location_2_id
+                "location_id": location_2_id,
             }
         )
         tdc.db_client.update_data_request(
             entry_id=dr_info.id,
-            column_edit_mappings={"date_status_last_changed": updated_at_datetime}
+            column_edit_mappings={"date_status_last_changed": updated_at_datetime},
         )
         return dr_info
 
@@ -471,12 +476,16 @@ def test_qualifying_notifications_view(test_data_creator_db_client: TestDataCrea
 
     # Create two data requests tied to location_2; set both to 'Ready to Start'
     # and have one's `status_updated_at` be changed to two months ago.
-    dr_open_info_1 = create_data_request(RequestStatus.READY_TO_START, notification_valid_date)
+    dr_open_info_1 = create_data_request(
+        RequestStatus.READY_TO_START, notification_valid_date
+    )
     dr_open_info_2 = create_data_request(RequestStatus.READY_TO_START, old_date)
 
     # Create two data requests tied to location_2; set both to 'Complete'
     # and have one's `status_updated_at` be changed to two months ago.
-    dr_active_info_1 = create_data_request(RequestStatus.COMPLETE, notification_valid_date)
+    dr_active_info_1 = create_data_request(
+        RequestStatus.COMPLETE, notification_valid_date
+    )
     dr_active_info_2 = create_data_request(RequestStatus.COMPLETE, old_date)
 
     # Select from `qualifying_notifications_view`
@@ -484,10 +493,7 @@ def test_qualifying_notifications_view(test_data_creator_db_client: TestDataCrea
     # and that their location ids are correct
     results = tdc.db_client._select_from_relation(
         relation_name=Relations.QUALIFYING_NOTIFICATIONS.value,
-        columns=[
-            "entity_id",
-            "location_id"
-        ]
+        columns=["entity_id", "location_id"],
     )
 
     assert len(results) == 3
@@ -502,93 +508,93 @@ def test_qualifying_notifications_view(test_data_creator_db_client: TestDataCrea
 def test_dependent_locations_view(test_data_creator_db_client: TestDataCreatorDBClient):
     tdc = test_data_creator_db_client
     tdc.clear_test_data()
-    def get_location_id(d: dict):
-        return tdc.db_client.get_location_id(
-            where_mappings=WhereMapping.from_dict(d)
-        )
 
-    def is_dependent_location(
-        dependent_location_id: int,
-        parent_location_id: int
-    ):
+    def get_location_id(d: dict):
+        return tdc.db_client.get_location_id(where_mappings=WhereMapping.from_dict(d))
+
+    def is_dependent_location(dependent_location_id: int, parent_location_id: int):
         results = tdc.db_client._select_from_relation(
             relation_name=Relations.DEPENDENT_LOCATIONS.value,
             columns=["dependent_location_id"],
             where_mappings={
                 "parent_location_id": parent_location_id,
-                "dependent_location_id": dependent_location_id
-            }
+                "dependent_location_id": dependent_location_id,
+            },
         )
         return len(results) == 1
 
     # Get location IDs for Pittsburgh, Allegheny County, and Pennsylvania
-    pittsburgh_id = get_location_id({
-        "state_iso": "PA",
-        "county_name": "Allegheny",
-        "locality_name": "Pittsburgh",
-    })
+    pittsburgh_id = get_location_id(
+        {
+            "state_iso": "PA",
+            "county_name": "Allegheny",
+            "locality_name": "Pittsburgh",
+        }
+    )
 
-    allegheny_county_id = get_location_id({
-        "state_iso": "PA",
-        "county_name": "Allegheny",
-        "type": LocationType.COUNTY,
-    })
+    allegheny_county_id = get_location_id(
+        {
+            "state_iso": "PA",
+            "county_name": "Allegheny",
+            "type": LocationType.COUNTY,
+        }
+    )
 
-    pennsylvania_id = get_location_id({
-        "state_iso": "PA",
-        "type": LocationType.STATE,
-    })
+    pennsylvania_id = get_location_id(
+        {
+            "state_iso": "PA",
+            "type": LocationType.STATE,
+        }
+    )
 
     # Confirm that in the dependent locations view, Pittsburgh is a
     # dependent location of both Allegheny County and Pennsylvania
     assert is_dependent_location(
-        dependent_location_id=pittsburgh_id,
-        parent_location_id=allegheny_county_id
+        dependent_location_id=pittsburgh_id, parent_location_id=allegheny_county_id
     )
 
     assert is_dependent_location(
-        dependent_location_id=pittsburgh_id,
-        parent_location_id=pennsylvania_id
+        dependent_location_id=pittsburgh_id, parent_location_id=pennsylvania_id
     )
 
     # Confirm that in the dependent locations view, Allegheny County is
     # a dependent location of Pennsylvania
     assert is_dependent_location(
-        dependent_location_id=allegheny_county_id,
-        parent_location_id=pennsylvania_id
+        dependent_location_id=allegheny_county_id, parent_location_id=pennsylvania_id
     )
 
     # Get location ID for California
-    california_id = get_location_id({
-        "state_iso": "CA",
-        "type": LocationType.STATE,
-    })
+    california_id = get_location_id(
+        {
+            "state_iso": "CA",
+            "type": LocationType.STATE,
+        }
+    )
 
     # Confirm that in the dependent locations view, Allegheny County is NOT
     # a dependent location of California
     assert not is_dependent_location(
-        dependent_location_id=allegheny_county_id,
-        parent_location_id=california_id
+        dependent_location_id=allegheny_county_id, parent_location_id=california_id
     )
 
     # And that Pittsburgh is NOT a dependent location of California
     assert not is_dependent_location(
-        dependent_location_id=pittsburgh_id,
-        parent_location_id=california_id
+        dependent_location_id=pittsburgh_id, parent_location_id=california_id
     )
 
     # Get location for Orange County, California
-    orange_county_id = get_location_id({
-        "state_iso": "CA",
-        "county_name": "Orange",
-        "type": LocationType.COUNTY,
-    })
+    orange_county_id = get_location_id(
+        {
+            "state_iso": "CA",
+            "county_name": "Orange",
+            "type": LocationType.COUNTY,
+        }
+    )
 
     # Confirm that in the dependent locations view, Pittsburgh is NOT
     # a dependent location of Orange County
     assert not is_dependent_location(
-        dependent_location_id=pittsburgh_id,
-        parent_location_id=orange_county_id
+        dependent_location_id=pittsburgh_id, parent_location_id=orange_county_id
     )
 
 
@@ -602,95 +608,62 @@ def test_user_pending_notifications_view(
 
     location_both_following = tdc.locality()
     location_state_for_2 = tdc.db_client.get_location_id(
-        where_mappings={
-            "state_iso": "CA",
-            "type": LocationType.STATE.value
-        }
+        where_mappings={"state_iso": "CA", "type": LocationType.STATE.value}
     )
     location_county_for_1 = tdc.db_client.get_location_id(
         where_mappings={
             "state_iso": "OH",
             "county_name": "Cuyahoga",
-            "type": LocationType.COUNTY.value
+            "type": LocationType.COUNTY.value,
         }
     )
 
     # These are both designed to be fake
-    locality_1_following = tdc.locality(
-        state_iso='OH',
-        county_name='Cuyahoga'
-    )
-    locality_2_following = tdc.locality(
-        state_iso='CA',
-        county_name='Orange'
-    )
+    locality_1_following = tdc.locality(state_iso="OH", county_name="Cuyahoga")
+    locality_2_following = tdc.locality(state_iso="CA", county_name="Orange")
 
     # Create two users
     tus_1 = tdc.user()
     tus_2 = tdc.user()
     # Have them both follow the same location
-    tdc.user_follow_location(
-        user_id=tus_1.id,
-        location_id=location_both_following
-    )
-    tdc.user_follow_location(
-        user_id=tus_2.id,
-        location_id=location_both_following
-    )
+    tdc.user_follow_location(user_id=tus_1.id, location_id=location_both_following)
+    tdc.user_follow_location(user_id=tus_2.id, location_id=location_both_following)
     # Have them both follow a location the other is not following
     # User 1 will follow a county, rather than a locality, but should still pick up the locality
-    tdc.user_follow_location(
-        user_id=tus_1.id,
-        location_id=location_county_for_1
-    )
+    tdc.user_follow_location(user_id=tus_1.id, location_id=location_county_for_1)
     # User 2 will follow a state, rather than a locality, but should still pick up the locality
-    tdc.user_follow_location(
-        user_id=tus_2.id,
-        location_id=location_state_for_2
-    )
+    tdc.user_follow_location(user_id=tus_2.id, location_id=location_state_for_2)
 
     # For these locations, create qualifying events, each of a different type
 
     # Data Source Approved (Both)
     agency_info = tdc.agency(location_both_following)
-    ds_info = tdc.data_source(
-        approval_status=ApprovalStatus.APPROVED
-    )
-    tdc.link_data_source_to_agency(
-        data_source_id=ds_info.id,
-        agency_id=agency_info.id
-    )
+    ds_info = tdc.data_source(approval_status=ApprovalStatus.APPROVED)
+    tdc.link_data_source_to_agency(data_source_id=ds_info.id, agency_id=agency_info.id)
     tdc.db_client.update_data_source(
         entry_id=ds_info.id,
-        column_edit_mappings={"approval_status_updated_at": notification_valid_date}
+        column_edit_mappings={"approval_status_updated_at": notification_valid_date},
     )
 
     # Data Request Opened (1)
-    dr_info_1 = tdc.data_request(
-        request_status=RequestStatus.READY_TO_START
-    )
+    dr_info_1 = tdc.data_request(request_status=RequestStatus.READY_TO_START)
     tdc.link_data_request_to_location(
-        data_request_id=dr_info_1.id,
-        location_id=locality_1_following
+        data_request_id=dr_info_1.id, location_id=locality_1_following
     )
     tdc.db_client.update_data_request(
         entry_id=dr_info_1.id,
-        column_edit_mappings={"date_status_last_changed": notification_valid_date}
+        column_edit_mappings={"date_status_last_changed": notification_valid_date},
     )
 
     # Data Request Completed (2)
-    dr_info_2 = tdc.data_request(
-        request_status=RequestStatus.COMPLETE
-    )
+    dr_info_2 = tdc.data_request(request_status=RequestStatus.COMPLETE)
     tdc.link_data_request_to_location(
-        data_request_id=dr_info_2.id,
-        location_id=locality_2_following
+        data_request_id=dr_info_2.id, location_id=locality_2_following
     )
     tdc.db_client.update_data_request(
         entry_id=dr_info_2.id,
-        column_edit_mappings={"date_status_last_changed": notification_valid_date}
+        column_edit_mappings={"date_status_last_changed": notification_valid_date},
     )
-
 
     # Confirm that four rows exist when pulled; two for user_1, two for user_2
     # And that the names, ids, and types are as expected
@@ -703,8 +676,8 @@ def test_user_pending_notifications_view(
             "entity_id",
             "entity_type",
             "entity_name",
-            "event_timestamp"
-        ]
+            "event_timestamp",
+        ],
     )
 
     assert len(results) == 4
@@ -725,30 +698,27 @@ def test_user_pending_notifications_view(
     assert user_1_count == 2
     assert user_2_count == 2
 
+
 def test_link_recent_search_record_types_rows_deleted_on_recent_searches_delete(
-    test_data_creator_db_client: TestDataCreatorDBClient
+    test_data_creator_db_client: TestDataCreatorDBClient,
 ):
     tdc = test_data_creator_db_client
 
     user_info = tdc.user()
     location_id = tdc.locality()
 
-
     # Insert into recent searches and link_recent_search_record_types
     tdc.db_client.create_search_record(
         user_id=user_info.id,
         location_id=location_id,
-        record_categories=[RecordCategories.AGENCIES, RecordCategories.JAIL]
+        record_categories=[RecordCategories.AGENCIES, RecordCategories.JAIL],
     )
 
     # Delete recent searches
     recent_search = tdc.db_client._select_from_relation(
         relation_name=Relations.RECENT_SEARCHES.value,
         columns=["id"],
-        where_mappings={
-            "user_id": user_info.id,
-            "location_id": location_id
-        },
+        where_mappings={"user_id": user_info.id, "location_id": location_id},
     )
 
     recent_search_id = recent_search[0]["id"]
@@ -757,9 +727,7 @@ def test_link_recent_search_record_types_rows_deleted_on_recent_searches_delete(
         return tdc.db_client._select_from_relation(
             relation_name=Relations.LINK_RECENT_SEARCH_RECORD_CATEGORIES.value,
             columns=["id"],
-            where_mappings={
-                "recent_search_id": recent_search_id
-            },
+            where_mappings={"recent_search_id": recent_search_id},
         )
 
     # Confirm that two rows exist in the link table
@@ -768,7 +736,7 @@ def test_link_recent_search_record_types_rows_deleted_on_recent_searches_delete(
 
     tdc.db_client._delete_from_table(
         table_name=Relations.RECENT_SEARCHES.value,
-        id_column_value=recent_search[0]["id"]
+        id_column_value=recent_search[0]["id"],
     )
 
     # Confirm that no row exists in the link table
@@ -777,7 +745,7 @@ def test_link_recent_search_record_types_rows_deleted_on_recent_searches_delete(
 
 
 def test_recent_searches_row_limit_maintained(
-        test_data_creator_db_client: TestDataCreatorDBClient
+    test_data_creator_db_client: TestDataCreatorDBClient,
 ):
     tdc = test_data_creator_db_client
 
@@ -790,7 +758,7 @@ def test_recent_searches_row_limit_maintained(
         tdc.db_client.create_search_record(
             user_id=user_id,
             location_id=location_id,
-            record_categories=[RecordCategories.ALL]
+            record_categories=[RecordCategories.ALL],
         )
 
     create_search_record(user_1.id)
@@ -801,10 +769,7 @@ def test_recent_searches_row_limit_maintained(
         results = tdc.db_client._select_from_relation(
             relation_name=Relations.RECENT_SEARCHES.value,
             columns=["id"],
-            where_mappings={
-                "user_id": user_id,
-                "location_id": location_id
-            },
+            where_mappings={"user_id": user_id, "location_id": location_id},
         )
         return results[0]["id"]
 
@@ -816,12 +781,7 @@ def test_recent_searches_row_limit_maintained(
         session = tdc.db_client.session_maker()
         objects = []
         for i in range(49):
-            objects.append(
-                RecentSearch(
-                    user_id=user_id,
-                    location_id=location_id
-                )
-            )
+            objects.append(RecentSearch(user_id=user_id, location_id=location_id))
         session.bulk_save_objects(objects)
         session.commit()
 
@@ -836,10 +796,7 @@ def test_recent_searches_row_limit_maintained(
         results = tdc.db_client._select_from_relation(
             relation_name=Relations.RECENT_SEARCHES.value,
             columns=["id"],
-            where_mappings={
-                "user_id": user_id,
-                "location_id": location_id
-            },
+            where_mappings={"user_id": user_id, "location_id": location_id},
         )
         return [result["id"] for result in results]
 

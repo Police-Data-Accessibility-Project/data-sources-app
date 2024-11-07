@@ -15,7 +15,7 @@ class DataRequestLocationInfoPostDTO:
     locality: Optional[str] = None
 
     def get_where_mappings(self) -> list[WhereMapping]:
-        d =  {
+        d = {
             "type": self.type,
             "state": self.state,
         }
@@ -24,6 +24,7 @@ class DataRequestLocationInfoPostDTO:
         if self.locality is not None:
             d["locality"] = self.locality
         return WhereMapping.from_dict(d)
+
 
 @dataclass
 class GetManyDataRequestsRequestsDTO(GetManyBaseDTO):
