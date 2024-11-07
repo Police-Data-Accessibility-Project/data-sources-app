@@ -8,7 +8,6 @@ class CallbackFunctionsEnum(Enum):
     """
 
     LOGIN_WITH_GITHUB = "login_user_with_github"
-    CREATE_USER_WITH_GITHUB = "register_user"
     LINK_TO_GITHUB = "link_to_github"
 
 
@@ -19,6 +18,7 @@ class PermissionsEnum(Enum):
 
     DB_WRITE = "db_write"
     READ_ALL_USER_INFO = "read_all_user_info"
+    NOTIFICATIONS = "notifications"
 
     @classmethod
     def values(cls):
@@ -37,6 +37,7 @@ class PermissionsActionEnum(Enum):
 class AccessTypeEnum(Enum):
     JWT = auto()
     API_KEY = auto()
+    NO_AUTH = auto()
 
 
 class Relations(Enum):
@@ -44,13 +45,17 @@ class Relations(Enum):
     A list of valid relations for the database
     """
 
+    DATA_REQUESTS_EXPANDED = "data_requests_expanded"
     DATA_REQUESTS = "data_requests"
+    DATA_REQUESTS_GITHUB_ISSUE_INFO = "data_requests_github_issue_info"
     AGENCIES = "agencies"
+    LINK_AGENCIES_DATA_SOURCES = "link_agencies_data_sources"
     DATA_SOURCES = "data_sources"
     DATA_SOURCES_EXPANDED = "data_sources_expanded"
     DATA_SOURCES_ARCHIVE_INFO = "data_sources_archive_info"
     LINK_DATA_SOURCES_DATA_REQUESTS = "link_data_sources_data_requests"
     LINK_USER_FOLLOWED_LOCATION = "link_user_followed_location"
+    LINK_LOCATIONS_DATA_REQUESTS = "link_locations_data_requests"
     RECORD_CATEGORIES = "record_categories"
     RECORD_TYPES = "record_types"
     RELATED_SOURCES = "link_data_sources_data_requests"
@@ -64,6 +69,13 @@ class Relations(Enum):
     LOCATIONS = "locations"
     LOCATIONS_EXPANDED = "locations_expanded"
     USERS = "users"
+    DEPENDENT_LOCATIONS = "dependent_locations"
+    QUALIFYING_NOTIFICATIONS = "qualifying_notifications"
+    USER_PENDING_NOTIFICATIONS = "user_pending_notifications"
+    USER_NOTIFICATION_QUEUE = "user_notification_queue"
+    RECENT_SEARCHES = "recent_searches"
+    RECENT_SEARCHES_EXPANDED = "recent_searches_expanded"
+    LINK_RECENT_SEARCH_RECORD_CATEGORIES = "link_recent_search_record_categories"
 
 
 class JurisdictionType(Enum):

@@ -38,12 +38,3 @@ def test_post_to_webhook(mock_env_variable, mock_requests_post):
         headers={"Content-Type": "application/json"},
         timeout=5,
     )
-
-
-def test_send_password_reset_link(mock_env_variable, mock_requests_post):
-    email = "test_email@test.com"
-    token = "test_token"
-    send_password_reset_link(email, token)
-
-    assert_mock_env_calls(mock_env_variable, "MAILGUN_KEY")
-    mock_requests_post.assert_called_once()

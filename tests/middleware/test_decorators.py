@@ -71,15 +71,3 @@ def test_permissions_required(dummy_permissions_required_route, monkeypatch):
 
     dummy_permissions_required_route()
     mock_check_permissions.assert_called_once_with(PermissionsEnum.READ_ALL_USER_INFO)
-
-
-def test_authentication_required(dummy_authentication_required_route, monkeypatch):
-    mock_get_authentication = MagicMock()
-    monkeypatch.setattr(
-        "middleware.decorators.get_authentication", mock_get_authentication
-    )
-
-    dummy_authentication_required_route()
-    mock_get_authentication.assert_called_once_with(
-        [AccessTypeEnum.API_KEY], [PermissionsEnum.READ_ALL_USER_INFO]
-    )

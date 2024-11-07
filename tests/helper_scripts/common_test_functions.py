@@ -9,7 +9,9 @@ from flask_jwt_extended import decode_token
 
 from database_client.constants import PAGE_SIZE
 from database_client.database_client import DatabaseClient
-from middleware.schema_and_dto_logic.response_schemas import EntryDataResponseSchema
+from middleware.schema_and_dto_logic.common_response_schemas import (
+    EntryDataResponseSchema,
+)
 from tests.helper_scripts.helper_classes.IntegrationTestSetup import (
     IntegrationTestSetup,
 )
@@ -45,6 +47,15 @@ def assert_expected_get_many_result(
     for column in expected_non_null_columns:
         assert column in data[0]
         assert data[0][column] is not None
+
+
+def assert_contains_key_value_pairs(
+    dict_to_check: dict,
+    key_value_pairs: dict,
+):
+    for key, value in key_value_pairs.items():
+        assert key in dict_to_check
+        assert dict_to_check[key] == value
 
 
 def test_delete_endpoint(

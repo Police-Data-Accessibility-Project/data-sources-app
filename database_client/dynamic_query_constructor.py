@@ -9,18 +9,18 @@ from sqlalchemy.orm import load_only
 from sqlalchemy.schema import Column
 
 from database_client.constants import (
-    AGENCY_APPROVED_COLUMNS,
     DATA_SOURCES_APPROVED_COLUMNS,
     ARCHIVE_INFO_APPROVED_COLUMNS,
-    RESTRICTED_DATA_SOURCE_COLUMNS,
-    RESTRICTED_COLUMNS,
 )
 from database_client.db_client_dataclasses import (
     OrderByParameters,
-    SubqueryParameters,
     WhereMapping,
 )
-from database_client.models import SQL_ALCHEMY_TABLE_REFERENCE
+from database_client.subquery_logic import SubqueryParameters
+from database_client.models import (
+    SQL_ALCHEMY_TABLE_REFERENCE,
+    convert_to_column_reference,
+)
 from utilities.enums import RecordCategories
 
 TableColumn = namedtuple("TableColumn", ["table", "column"])
@@ -90,7 +90,7 @@ class DynamicQueryConstructor:
             SELECT
                 {fields}
             FROM
-                agency_source_link
+                link_agencies_data_sources as agency_source_link
             INNER JOIN
                 data_sources ON agency_source_link.data_source_uid = data_sources.airtable_uid
             INNER JOIN
@@ -128,7 +128,8 @@ class DynamicQueryConstructor:
                 type,
                 state_name as state,
                 county_name as county,
-                locality_name as locality
+                locality_name as locality,
+                location_id
             FROM typeahead_locations
             WHERE display_name ILIKE {search_term_prefix}
             UNION ALL
@@ -138,12 +139,13 @@ class DynamicQueryConstructor:
                 type,
                 state_name as state,
                 county_name as county,
-                locality_name as locality
+                locality_name as locality,
+                location_id
             FROM typeahead_locations
             WHERE display_name ILIKE {search_term_anywhere}
             AND display_name NOT ILIKE {search_term_prefix}
         )
-        SELECT display_name, type, state, county, locality
+        SELECT display_name, type, state, county, locality, location_id
         FROM (
             SELECT DISTINCT 
                 sort_order,
@@ -151,7 +153,8 @@ class DynamicQueryConstructor:
                 type,
                 state,
                 county,
-                locality
+                locality,
+                location_id
             FROM combined
             ORDER BY sort_order, display_name
             LIMIT 10
@@ -225,7 +228,7 @@ class DynamicQueryConstructor:
         base_query = sql.SQL(
             """
             SELECT
-                data_sources.airtable_uid,
+                data_sources.id,
                 data_sources.name AS data_source_name,
                 data_sources.description,
                 record_types.name AS record_type,
@@ -239,11 +242,11 @@ class DynamicQueryConstructor:
                 locations_expanded.state_iso,
                 agencies.jurisdiction_type
             FROM
-                agency_source_link
+                LINK_AGENCIES_DATA_SOURCES AS agency_source_link
             INNER JOIN
-                data_sources ON agency_source_link.data_source_uid = data_sources.airtable_uid
+                data_sources ON agency_source_link.data_source_id = data_sources.id
             INNER JOIN
-                agencies ON agency_source_link.agency_uid = agencies.airtable_uid
+                agencies ON agency_source_link.agency_id = agencies.id
             INNER JOIN
 				locations_expanded on agencies.location_id = locations_expanded.id
             INNER JOIN 
@@ -400,6 +403,7 @@ class DynamicQueryConstructor:
         offset: Optional[int] = None,
         order_by: Optional[OrderByParameters] = None,
         subquery_parameters: Optional[list[SubqueryParameters]] = [],
+        alias_mappings: Optional[dict[str, str]] = None,
     ) -> Callable:
         """
         Creates a SELECT query for a relation (table or view)
@@ -427,16 +431,21 @@ class DynamicQueryConstructor:
             ]
         if order_by is not None:
             order_by = order_by.build_order_by_clause(relation)
+        load_options = []
         if subquery_parameters:
-            subquery_parameters = [
-                parameter.build_subquery(relation) for parameter in subquery_parameters
-            ]
-            subquery_parameters.append(load_only(*columns))
-            columns = [SQL_ALCHEMY_TABLE_REFERENCE[relation]]
+            for parameter in subquery_parameters:
+                load_options.append(parameter.build_subquery_load_option(relation))
+            load_options.append(load_only(*columns))
+            primary_relation_columns = [SQL_ALCHEMY_TABLE_REFERENCE[relation]]
+        else:
+            primary_relation_columns = columns
+
+        if alias_mappings is not None:
+            DynamicQueryConstructor.apply_alias_mappings(columns, alias_mappings)
 
         base_query = (
-            lambda: select(*columns)
-            .options(*subquery_parameters)
+            lambda: select(*primary_relation_columns)
+            .options(*load_options)
             .where(*where_mappings)
             .order_by(order_by)
             .limit(limit)
@@ -555,3 +564,7 @@ class DynamicQueryConstructor:
             """
         ).format(url=sql.Literal(url))
         return query
+
+    @staticmethod
+    def apply_alias_mappings(columns, alias_mappings):
+        pass

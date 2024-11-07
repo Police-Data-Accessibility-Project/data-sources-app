@@ -60,6 +60,7 @@ def update_archives_data(
     :param broken_as_of:
     :return: A dictionary containing a message about the update operation
     """
+    data_id = int(data_id)
     if broken_as_of:
         db_client.update_url_status_to_broken(data_id, broken_as_of)
 

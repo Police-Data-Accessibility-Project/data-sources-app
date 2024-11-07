@@ -1,8 +1,11 @@
 import pytest
 
 from database_client.database_client import DatabaseClient
-from middleware.primary_resource_logic.search_logic import SearchRequests
-from tests.conftest import client_with_mock_db, bypass_api_key_required
+from middleware.access_logic import AccessInfo
+from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import (
+    SearchRequests,
+)
+from tests.conftest import client_with_mock_db, bypass_authentication_required
 from tests.helper_scripts.constants import TEST_RESPONSE
 from tests.helper_scripts.helper_functions import (
     check_is_test_response,
@@ -12,6 +15,7 @@ from utilities.enums import RecordCategories
 
 def mock_search_wrapper_all_parameters(
     db_client: DatabaseClient,
+    access_info: AccessInfo,
     dto: SearchRequests,
 ):
     assert dto.state == "Pennsylvania"
@@ -24,6 +28,7 @@ def mock_search_wrapper_all_parameters(
 
 def mock_search_wrapper_multiple_parameters(
     db_client: DatabaseClient,
+    access_info: AccessInfo,
     dto: SearchRequests,
 ):
     assert dto.state == "Pennsylvania"
@@ -36,10 +41,11 @@ def mock_search_wrapper_multiple_parameters(
 
 def mock_search_wrapper_minimal_parameters(
     db_client: DatabaseClient,
+    access_info: AccessInfo,
     dto: SearchRequests,
 ):
     assert dto.state == "Pennsylvania"
-    assert dto.record_categories is None
+    assert dto.record_categories == [RecordCategories.ALL]
     assert dto.county is None
     assert dto.locality is None
 
@@ -68,7 +74,7 @@ def test_search_get_parameters(
     mock_search_wrapper_function,
     client_with_mock_db,
     monkeypatch,
-    bypass_api_key_required,
+    bypass_authentication_required,
 ):
 
     monkeypatch.setattr("resources.Search.search_wrapper", mock_search_wrapper_function)

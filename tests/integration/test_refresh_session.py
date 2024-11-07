@@ -1,56 +1,78 @@
 """Integration tests for /refresh-session endpoint."""
 
-import urllib.parse
 from http import HTTPStatus
 
-from middleware.enums import PermissionsEnum
-from tests.conftest import (
-    dev_db_connection,
-    dev_db_client,
-    flask_client_with_db,
-    test_user_admin,
-)
+from tests.conftest import flask_client_with_db, test_user_admin
+from tests.helper_scripts.common_test_data import TestDataCreatorFlask
 from tests.helper_scripts.helper_functions import (
     login_and_return_jwt_tokens,
-    create_test_user_setup_db_client,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from conftest import monkeysession, test_data_creator_flask
 
 
-def test_refresh_session_post(test_user_admin, flask_client_with_db):
+def test_refresh_session_post(test_data_creator_flask: TestDataCreatorFlask):
     """
     Test that POST call to /refresh-session endpoint successfully generates a new session token, ensures the new token is different from the old one, and verifies the old token is removed while the new token exists in the session tokens table
     """
+    tdc = test_data_creator_flask
+    admin_tus = tdc.get_admin_tus()
 
-    jwt_tokens = login_and_return_jwt_tokens(
-        flask_client_with_db, test_user_admin.user_info
-    )
+    jwt_tokens = login_and_return_jwt_tokens(tdc.flask_client, admin_tus.user_info)
 
     # Test that the access token works properly for a secure endpoint
     run_and_validate_request(
-        flask_client=flask_client_with_db,
+        flask_client=tdc.flask_client,
         http_method="get",
-        endpoint="/auth/permissions?user_email=" + test_user_admin.user_info.email,
+        endpoint="/auth/permissions?user_email=" + admin_tus.user_info.email,
         headers={"Authorization": f"Bearer {jwt_tokens.access_token}"},
     )
 
+    # Test that the refresh token works properly
     response_json = run_and_validate_request(
-        flask_client=flask_client_with_db,
+        flask_client=tdc.flask_client,
         http_method="post",
         endpoint="/api/refresh-session",
-        headers={"Authorization": f"Bearer {jwt_tokens.refresh_token}"},
+        headers=admin_tus.jwt_authorization_header,
+        json={"refresh_token": jwt_tokens.refresh_token},
     )
 
-    new_session_token = response_json.get("data")
+    new_access_token = response_json.get("access_token")
+    new_refresh_token = response_json.get("refresh_token")
 
     assert (
-        jwt_tokens.access_token != new_session_token
-    ), "New and old tokens should be different"
+        jwt_tokens.access_token != new_access_token
+    ), "New and old access tokens should be different"
 
-    # Test that the old session tokens work on a secure endpoint, but not the new one
+    assert (
+        jwt_tokens.refresh_token != new_refresh_token
+    ), "New and old refresh tokens should be different"
+
+    # Test that the new session tokens work on a secure endpoint
     run_and_validate_request(
-        flask_client=flask_client_with_db,
+        flask_client=tdc.flask_client,
         http_method="get",
-        endpoint="/auth/permissions?user_email=" + test_user_admin.user_info.email,
-        headers={"Authorization": f"Bearer {new_session_token}"},
+        endpoint="/auth/permissions?user_email=" + admin_tus.user_info.email,
+        headers={"Authorization": f"Bearer {new_access_token}"},
+    )
+
+
+def test_refresh_session_post_invalid_refresh_token(
+    test_data_creator_flask: TestDataCreatorFlask,
+):
+    tdc = test_data_creator_flask
+    admin_tus = tdc.get_admin_tus()
+
+    standard_tus = tdc.standard_user()
+
+    jwt_tokens = login_and_return_jwt_tokens(tdc.flask_client, standard_tus.user_info)
+
+    # Test that refresh session fails when the refresh token is invalid
+    response_json = run_and_validate_request(
+        flask_client=tdc.flask_client,
+        http_method="post",
+        endpoint="/api/refresh-session",
+        headers=admin_tus.jwt_authorization_header,
+        json={"refresh_token": f"{jwt_tokens.refresh_token}"},
+        expected_response_status=HTTPStatus.UNAUTHORIZED,
     )

@@ -1,46 +1,3 @@
-from database_client.models import (
-    Agency,
-    DataRequest,
-    DataSource,
-    DataSourceArchiveInfo,
-    LinkDataSourceDataRequest,
-    ResetToken,
-    TestTable,
-    User,
-    AgencyExpanded,
-    USState,
-    County,
-    Locality,
-    Location,
-    LocationExpanded,
-    LinkUserFollowedLocation,
-)
-
-AGENCY_APPROVED_COLUMNS = [
-    "homepage_url",
-    "count_data_sources",
-    "agency_type",
-    "multi_agency",
-    "submitted_name",
-    "jurisdiction_type",
-    "state_iso",
-    "municipality",
-    "zip_code",
-    "county_fips",
-    "county_name",
-    "lat",
-    "lng",
-    "data_sources",
-    "no_web_presence",
-    "airtable_agency_last_modified",
-    "data_sources_last_updated",
-    "approved",
-    "rejection_reason",
-    "last_approval_editor",
-    "agency_created",
-    "county_airtable_uid",
-    "defunct_year",
-]
 DATA_SOURCES_APPROVED_COLUMNS = [
     "name",
     "submitted_name",
@@ -82,16 +39,7 @@ ARCHIVE_INFO_APPROVED_COLUMNS = [
     "update_frequency",
     "last_cached",
 ]
-DATA_SOURCES_OUTPUT_COLUMNS = (
-    DATA_SOURCES_APPROVED_COLUMNS + ARCHIVE_INFO_APPROVED_COLUMNS + ["agency_name"]
-)
-RESTRICTED_DATA_SOURCE_COLUMNS = [
-    "rejection_note",
-    "data_source_request",
-    "approval_status",
-    "airtable_uid",
-    "airtable_source_last_modified",
-]
+
 DATA_SOURCES_MAP_COLUMN = [
     "data_source_id",
     "name",
@@ -104,12 +52,9 @@ DATA_SOURCES_MAP_COLUMN = [
     "lat",
     "lng",
 ]
-RESTRICTED_COLUMNS = [
-    "rejection_note",
-    "data_source_request",
-    "approval_status",
-    "airtable_uid",
-    "airtable_source_last_modified",
+METADATA_METHOD_NAMES = [
+    "count",
+    "count_subquery",
 ]
 
 PAGE_SIZE = 100

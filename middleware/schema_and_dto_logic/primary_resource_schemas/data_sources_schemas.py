@@ -1,3 +1,7 @@
+from dataclasses import dataclass
+from datetime import date
+from typing import Optional, List
+
 from marshmallow import Schema, fields
 
 from database_client.enums import (
@@ -8,16 +12,64 @@ from database_client.enums import (
     URLStatus,
     ApprovalStatus,
     AgencyAggregation,
+    UpdateMethod,
 )
 from middleware.enums import RecordType
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+    GetManyRequestsBaseSchema,
+    EntryCreateUpdateRequestDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import (
     AgenciesGetSchema,
 )
-from middleware.schema_and_dto_logic.response_schemas import (
+from middleware.schema_and_dto_logic.common_response_schemas import (
     GetManyResponseSchemaBase,
     MessageSchema,
 )
 from middleware.schema_and_dto_logic.util import get_json_metadata
+from utilities.enums import SourceMappingEnum
+
+
+@dataclass
+class DataSourceEntryDataPostDTO:
+    submitted_name: str
+    description: Optional[str] = None
+    approval_status: Optional[ApprovalStatus] = None
+    source_url: Optional[str] = None
+    agency_supplied: Optional[bool] = None
+    supplying_entity: Optional[str] = None
+    agency_originated: Optional[bool] = None
+    agency_aggregation: Optional[AgencyAggregation] = None
+    coverage_start: Optional[date] = None
+    coverage_end: Optional[date] = None
+    detail_level: Optional[DetailLevel] = None
+    access_types: Optional[List[AccessType]] = None
+    record_download_option_provided: Optional[bool] = None
+    data_portal_type: Optional[str] = None
+    record_formats: Optional[List[str]] = None
+    update_method: Optional[str] = None
+    tags: Optional[List[str]] = None
+    readme_url: Optional[str] = None
+    originating_entity: Optional[str] = None
+    retention_schedule: Optional[RetentionSchedule] = None
+    scraper_url: Optional[str] = None
+    submission_notes: Optional[str] = None
+    rejection_note: Optional[str] = None
+    last_approval_editor: Optional[str] = None
+    submitter_contact_info: Optional[str] = None
+    agency_described_submitted: Optional[str] = None
+    agency_described_not_in_database: Optional[str] = None
+    data_portal_type_other: Optional[str] = None
+    data_source_request: Optional[str] = None
+    broken_source_url_as_of: Optional[date] = None
+    access_notes: Optional[str] = None
+    url_status: Optional[URLStatus] = None
+    record_type_name: Optional[RecordType] = None
+
+
+@dataclass
+class DataSourcesPostDTO:
+    entry_data: DataSourceEntryDataPostDTO
 
 
 class DataSourceBaseSchema(Schema):
@@ -26,18 +78,19 @@ class DataSourceBaseSchema(Schema):
     """
 
     name = fields.String(
-        required=True,
         metadata=get_json_metadata(
             "The name of the data source concatenated with the state iso."
         ),
     )
     submitted_name = fields.String(
+        required=True,
         allow_none=True,
         metadata=get_json_metadata(
             "The name of the data source as originally submitted."
         ),
     )
     description = fields.String(
+        required=True,
         allow_none=True,
         metadata=get_json_metadata(
             description="Information to give clarity and confidence about what this source is, how it was "
@@ -47,7 +100,8 @@ class DataSourceBaseSchema(Schema):
     )
 
     source_url = fields.String(
-        required=False,
+        required=True,
+        allow_none=True,
         metadata=get_json_metadata(
             "A URL where these records can be found or are referenced."
         ),
@@ -140,8 +194,9 @@ class DataSourceBaseSchema(Schema):
         allow_none=True,
         metadata=get_json_metadata("What formats the data source can be obtained in."),
     )
-    # TODO: Update to include UpdateMethodEnum
-    update_method = fields.String(
+    update_method = fields.Enum(
+        enum=UpdateMethod,
+        by_value=fields.Str,
         allow_none=True,
         metadata=get_json_metadata("How is the data source updated?"),
     )
@@ -175,16 +230,15 @@ class DataSourceBaseSchema(Schema):
         ),
         allow_none=True,
     )
-    airtable_uid = fields.String(
+    id = fields.Integer(
         required=True,
-        metadata=get_json_metadata("The airtable uid associated with the data source"),
+        metadata=get_json_metadata("The id associated with the data source"),
     )
     scraper_url = fields.String(
         allow_none=True,
         metadata=get_json_metadata("URL for the webscraper that produces this source"),
     )
     created_at = fields.DateTime(
-        required=False,
         metadata=get_json_metadata("The date and time the data source was created."),
     )
     submission_notes = fields.String(
@@ -231,18 +285,17 @@ class DataSourceBaseSchema(Schema):
         ),
     )
     broken_source_url_as_of = fields.Date(
-        required=False,
         allow_none=True,
         format="iso",
         metadata=get_json_metadata("When the url was marked as broken."),
     )
     access_notes = fields.String(
-        metadata=get_json_metadata("How the source can be accessed,"), allow_none=True
+        metadata=get_json_metadata("How the source can be accessed,"),
+        allow_none=True,
     )
     url_status = fields.Enum(
         URLStatus,
         by_value=fields.String,
-        allow_none=True,
         metadata=get_json_metadata("The status of the url. Editable only by admins."),
     )
     approval_status = fields.Enum(
@@ -251,7 +304,6 @@ class DataSourceBaseSchema(Schema):
         metadata=get_json_metadata(
             "The approval status of the data source. Editable only by admins."
         ),
-        required=False,
     )
     record_type_id = fields.Integer(
         metadata=get_json_metadata(
@@ -259,31 +311,28 @@ class DataSourceBaseSchema(Schema):
         ),
         allow_none=True,
     )
+    approval_status_updated_at = fields.DateTime(
+        metadata=get_json_metadata(
+            "The date and time the approval status was last updated"
+        )
+    )
 
 
-class DataSourceGetSchema(DataSourceBaseSchema):
-    """
-    The schema for getting a single data source.
-    Include the base schema as well as data from connected tables, including agencies and record types.
-    """
-
+class DataSourceExpandedSchema(DataSourceBaseSchema):
     record_type_name = fields.Enum(
         enum=RecordType,
         by_value=fields.Str,
         allow_none=True,
         metadata=get_json_metadata("The type of data source. Editable only by admins."),
     )
-    agency_ids = fields.List(
-        fields.String(
-            metadata=get_json_metadata(
-                "The IDs of the agencies associated with the data source."
-            ),
-        ),
-        allow_none=True,
-        metadata=get_json_metadata(
-            "The IDs of the agencies associated with the data source."
-        ),
-    )
+
+
+class DataSourceGetSchema(DataSourceExpandedSchema):
+    """
+    The schema for getting a single data source.
+    Include the base schema as well as data from connected tables, including agencies and record types.
+    """
+
     agencies = fields.List(
         fields.Nested(
             AgenciesGetSchema,
@@ -291,6 +340,15 @@ class DataSourceGetSchema(DataSourceBaseSchema):
         ),
         allow_none=True,
         metadata=get_json_metadata("The agencies associated with the data source."),
+    )
+    agency_ids = fields.List(
+        fields.Integer(
+            allow_none=True,
+            metadata=get_json_metadata(
+                "The agency ids associated with the data source."
+            ),
+        ),
+        metadata=get_json_metadata("The agency ids associated with the data source."),
     )
 
 
@@ -308,4 +366,49 @@ class DataSourcesGetManySchema(GetManyResponseSchemaBase):
             metadata=get_json_metadata("The list of results"),
         ),
         metadata=get_json_metadata("The list of results"),
+    )
+
+
+class DataSourcesPostSchema(Schema):
+    entry_data = fields.Nested(
+        nested=DataSourceExpandedSchema(
+            exclude=["id", "name", "updated_at", "created_at", "record_type_id"],
+            partial=True,
+        ),
+        required=True,
+        metadata=get_json_metadata(
+            description="The data source to be created",
+            nested_dto_class=DataSourceEntryDataPostDTO,
+        ),
+    )
+
+
+class DataSourcesPutSchema(Schema):
+    entry_data = fields.Nested(
+        nested=DataSourceExpandedSchema(
+            exclude=[
+                "name",
+                "id",
+                "updated_at",
+                "created_at",
+                "rejection_note",
+                "record_type_id",
+                "data_source_request",
+            ]
+        ),
+        required=True,
+        metadata=get_json_metadata("The data source to be updated"),
+    )
+
+
+class DataSourcesGetManyRequestSchema(GetManyRequestsBaseSchema):
+    approval_status = fields.Enum(
+        enum=ApprovalStatus,
+        by_value=fields.String,
+        required=False,
+        metadata={
+            "source": SourceMappingEnum.QUERY_ARGS,
+            "description": "The approval status of the data sources.",
+            "default": "approved",
+        },
     )

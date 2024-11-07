@@ -71,7 +71,7 @@ const validation = reactive({
 
 function updatePasswordValidation(password) {
 	// Length
-	if (password.length >= 8) {
+	if (password?.length >= 8) {
 		validation.fullLength = true;
 	} else {
 		validation.fullLength = false;

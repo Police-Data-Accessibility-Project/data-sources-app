@@ -1,5 +1,4 @@
 <template>
-	<!-- User is already logged in -->
 	<main v-if="auth.userId" class="pdap-flex-container">
 		<h1>Your account is now active</h1>
 		<p data-test="success-subheading">Enjoy the data sources app.</p>
@@ -12,23 +11,40 @@
 	<!-- Otherwise, the form (form handles error UI on its own) -->
 	<main v-else class="pdap-flex-container mx-auto max-w-2xl">
 		<h1>Sign Up</h1>
-		<Form
+		<FormV2
 			id="login"
 			class="flex flex-col"
 			data-test="login-form"
 			name="login"
 			:error="error"
 			:reset-on="success"
-			:schema="FORM_SCHEMA"
+			:schema="VALIDATION_SCHEMA"
 			@change="onChange"
 			@submit="onSubmit"
+			@input="onInput"
 		>
+			<InputText
+				id="email"
+				autofill="email"
+				data-test="email"
+				name="email"
+				label="Email"
+				type="text"
+				placeholder="Your email address"
+			/>
+
+			<InputPassword
+				v-for="input of PASSWORD_INPUTS"
+				v-bind="{ ...input }"
+				:key="input.name"
+			/>
+
 			<PasswordValidationChecker ref="passwordRef" />
 
 			<Button class="max-w-full" type="submit" data-test="submit-button">
 				Create account
 			</Button>
-		</Form>
+		</FormV2>
 		<div
 			class="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4 sm:flex-wrap w-full"
 		>
@@ -54,7 +70,7 @@
 
 <script setup>
 // Imports
-import { Button, Form } from 'pdap-design-system';
+import { Button, FormV2, InputText, InputPassword } from 'pdap-design-system';
 import PasswordValidationChecker from '@/components/PasswordValidationChecker.vue';
 import { ref, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
@@ -64,38 +80,14 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 // Constants
-const FORM_SCHEMA = [
-	{
-		autofill: 'email',
-		'data-test': 'email',
-		id: 'email',
-		name: 'email',
-		label: 'Email',
-		type: 'text',
-		placeholder: 'Your email address',
-		value: '',
-		validators: {
-			email: {
-				message: 'Please provide your email address',
-				value: true,
-			},
-		},
-	},
+const PASSWORD_INPUTS = [
 	{
 		autofill: 'new-password',
 		'data-test': 'password',
 		id: 'password',
 		name: 'password',
 		label: 'Password',
-		type: 'password',
 		placeholder: 'Your password',
-		value: '',
-		validators: {
-			password: {
-				message: 'Please provide your password',
-				value: true,
-			},
-		},
 	},
 	{
 		autofill: 'new-password',
@@ -103,10 +95,40 @@ const FORM_SCHEMA = [
 		id: 'confirmPassword',
 		name: 'confirmPassword',
 		label: 'Confirm Password',
-		type: 'password',
 		placeholder: 'Confirm your password',
-		value: '',
+	},
+];
+const VALIDATION_SCHEMA = [
+	{
+		name: 'email',
 		validators: {
+			required: {
+				value: true,
+			},
+			email: {
+				message: 'Please provide your email address',
+				value: true,
+			},
+		},
+	},
+	{
+		name: 'password',
+		validators: {
+			required: {
+				value: true,
+			},
+			password: {
+				message: 'Please provide your password',
+				value: true,
+			},
+		},
+	},
+	{
+		name: 'confirmPassword',
+		validators: {
+			required: {
+				value: true,
+			},
 			password: {
 				message: 'Please confirm your password',
 				value: true,
@@ -140,6 +162,12 @@ function onChange(formValues) {
 
 	if (error.value) {
 		handleValidatePasswordMatch(formValues);
+	}
+}
+
+function onInput(e) {
+	if (e.target.name === 'password') {
+		passwordRef.value.updatePasswordValidation(e.target.value);
 	}
 }
 

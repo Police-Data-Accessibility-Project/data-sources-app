@@ -5,17 +5,19 @@ from flask import Response
 from middleware.primary_resource_logic.reset_token_queries import set_user_password
 from middleware.primary_resource_logic.user_queries import (
     user_post_results,
-    UserRequest,
+    UserRequestDTO,
     UserRequestSchema,
 )
 from typing import Dict, Any
 
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 from resources.resource_helpers import add_api_key_header_arg
-from middleware.schema_and_dto_logic.model_helpers_with_schemas import create_user_model
+from middleware.schema_and_dto_logic.dynamic_logic.model_helpers_with_schemas import (
+    create_user_model,
+)
 from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
-from middleware.schema_and_dto_logic.dynamic_schema_request_content_population import (
+from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import (
     populate_schema_with_request_content,
 )
 
@@ -52,7 +54,7 @@ class User(PsycopgResource):
             wrapper_function=user_post_results,
             schema_populate_parameters=SchemaPopulateParameters(
                 schema=UserRequestSchema(),
-                dto_class=UserRequest,
+                dto_class=UserRequestDTO,
             ),
         )
 
@@ -76,7 +78,7 @@ class User(PsycopgResource):
         """
         dto = populate_schema_with_request_content(
             schema=UserRequestSchema(),
-            dto_class=UserRequest,
+            dto_class=UserRequestDTO,
         )
         with self.setup_database_client() as db_client:
             set_user_password(db_client, dto.email, dto.password)

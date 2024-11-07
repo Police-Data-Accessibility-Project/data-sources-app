@@ -6,11 +6,10 @@ import pytest
 from flask import Response
 
 from database_client.enums import ExternalAccountTypeEnum
-from middleware.callback_primary_logic import (
+from middleware.primary_resource_logic.callback_primary_logic import (
     get_flask_session_callback_info,
     get_oauth_callback_info,
     callback_outer_wrapper,
-    create_user_with_github,
     callback_inner_wrapper,
     link_github_account_request,
     link_github_account,
@@ -22,10 +21,10 @@ from middleware.custom_dataclasses import (
     GithubUserInfo,
 )
 from middleware.enums import CallbackFunctionsEnum
-from middleware.primary_resource_logic.user_queries import UserRequest
+from middleware.primary_resource_logic.user_queries import UserRequestDTO
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
-PATCH_PREFIX = "middleware.callback_primary_logic"
+PATCH_PREFIX = "middleware.primary_resource_logic.callback_primary_logic"
 
 
 class GetFlaskSessionCallbackInfoMocks(DynamicMagicMock):
@@ -120,42 +119,6 @@ class CreateUserWithGithubMocks(DynamicMagicMock):
     make_response: MagicMock
 
 
-def test_create_user_with_github():
-
-    mock = CreateUserWithGithubMocks(
-        patch_root=PATCH_PREFIX,
-        return_values={
-            "create_random_password": MagicMock(),
-            "make_response": MagicMock(spec=Response),
-        },
-    )
-
-    result = create_user_with_github(
-        db_client=mock.db_client, github_user_info=mock.github_user_info
-    )
-    assert isinstance(result, Response)
-
-    mock.user_post_results.assert_called_once_with(
-        db_client=mock.db_client,
-        dto=UserRequest(
-            email=mock.github_user_info.user_email,
-            # Create a random password. Will need to be reset if not logging in via Github
-            password=mock.create_random_password.return_value,
-        ),
-    )
-
-    mock.link_github_account.assert_called_once_with(
-        db_client=mock.db_client,
-        github_user_info=mock.github_user_info,
-        pdap_account_email=mock.github_user_info.user_email,
-    )
-
-    mock.make_response.assert_called_once_with(
-        {"message": "Successfully created user account with linked Github account"},
-        HTTPStatus.OK,
-    )
-
-
 class CallbackInnerWrapperMocks(DynamicMagicMock):
     try_logging_in_with_github_id: MagicMock
     create_user_with_github: MagicMock
@@ -216,25 +179,6 @@ def test_callback_inner_wrapper_login_with_github(setup_callback_inner_wrapper_m
     assert_callback_inner_wrapper_function_calls(
         mock=mock,
         called_function="try_logging_in_with_github_id",
-        db_client=mock.db_client,
-        github_user_info=mock.github_user_info,
-    )
-
-
-def test_callback_inner_wrapper_create_user_with_github(
-    setup_callback_inner_wrapper_mocks,
-):
-
-    mock = setup_callback_inner_wrapper_mocks
-
-    run_and_validate_callback_inner_wrapper_with_mocks(
-        mock=mock,
-        callback_function_enum=CallbackFunctionsEnum.CREATE_USER_WITH_GITHUB,
-    )
-
-    assert_callback_inner_wrapper_function_calls(
-        mock=mock,
-        called_function="create_user_with_github",
         db_client=mock.db_client,
         github_user_info=mock.github_user_info,
     )

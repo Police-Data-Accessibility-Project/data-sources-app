@@ -1,6 +1,5 @@
 from middleware.enums import PermissionsEnum
 from tests.conftest import (
-    dev_db_connection,
     dev_db_client,
     connection_with_test_data,
     db_client_with_test_data,

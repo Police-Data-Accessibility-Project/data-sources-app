@@ -1,14 +1,63 @@
 from collections import namedtuple
-from typing import Any
+from typing import Any, Optional
+
+from sqlalchemy import RowMapping
+from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy.inspection import inspect
 
 from database_client.constants import (
-    DATA_SOURCES_APPROVED_COLUMNS,
-    ARCHIVE_INFO_APPROVED_COLUMNS,
     DATA_SOURCES_MAP_COLUMN,
-    DATA_SOURCES_OUTPUT_COLUMNS,
-    AGENCY_APPROVED_COLUMNS,
+    METADATA_METHOD_NAMES,
 )
-from utilities.common import convert_dates_to_strings, format_arrays
+from database_client.db_client_dataclasses import WhereMapping
+from database_client.models import SQL_ALCHEMY_TABLE_REFERENCE
+from database_client.subquery_logic import SubqueryParameters
+from utilities.common import format_arrays
+
+
+class SubqueryResultFormatter:
+    def __init__(
+        self,
+        row_mappings: list[RowMapping],
+        primary_columns: list[str],
+        subquery_parameters: list[SubqueryParameters],
+    ):
+        self.row_mappings = row_mappings
+        self.primary_columns = primary_columns
+        self.subquery_parameters = subquery_parameters
+
+    def format_results(self) -> list[dict]:
+        formatted_results = []
+        for row_mapping in self.row_mappings:
+            formatted_result = self._format_row(row_mapping)
+            formatted_results.append(formatted_result)
+        return formatted_results
+
+    def _format_row(self, row_mapping: RowMapping) -> dict:
+        formatted_result = {}
+        key = list(row_mapping.keys())[0]
+        row_object = row_mapping[key]
+        self._add_primary_columns(formatted_result, row_object)
+        self._add_subquery_parameters(formatted_result, row_object)
+        return formatted_result
+
+    def _add_primary_columns(self, formatted_result: dict, row_object: Any) -> None:
+        for column in self.primary_columns:
+            formatted_result[column] = getattr(row_object, column)
+
+    def _add_subquery_parameters(self, formatted_result: dict, row_object: Any) -> None:
+        for subquery_parameter in self.subquery_parameters:
+            relationship_entities = getattr(
+                row_object, subquery_parameter.linking_column
+            )
+            subquery_results = [
+                {
+                    column: getattr(relationship_entity, column)
+                    for column in subquery_parameter.columns
+                }
+                for relationship_entity in relationship_entities
+            ]
+            formatted_result[subquery_parameter.linking_column] = subquery_results
 
 
 class ResultFormatter:
@@ -18,53 +67,67 @@ class ResultFormatter:
     """
 
     @staticmethod
-    def convert_data_source_matches(
-        data_source_output_columns: list[str], results: list[tuple]
+    def tuples_to_column_value_dict(
+        columns: list[str], tuples: list[tuple]
     ) -> list[dict]:
         """
         Combine a list of output columns with a list of results,
         and produce a list of dictionaries where the keys correspond
         to the output columns and the values correspond to the results
-        :param data_source_output_columns:
-        :param results:
+        :param columns:
+        :param tuples:
         :return:
         """
-        # TODO: Rename to a more general title
-        data_source_matches = [
-            dict(zip(data_source_output_columns, result)) for result in results
-        ]
-        data_source_matches_converted = []
-        for data_source_match in data_source_matches:
-            data_source_match = convert_dates_to_strings(data_source_match)
-            data_source_matches_converted.append(format_arrays(data_source_match))
-        return data_source_matches_converted
+        zipped_results = [dict(zip(columns, result)) for result in tuples]
+        formatted_results = []
+        for zipped_result in zipped_results:
+            formatted_results.append(format_arrays(zipped_result))
+        return formatted_results
 
     @staticmethod
     def zip_get_datas_sources_for_map_results(results: list[tuple]) -> list[dict]:
-        return ResultFormatter.convert_data_source_matches(
+        return ResultFormatter.tuples_to_column_value_dict(
             DATA_SOURCES_MAP_COLUMN, results
         )
 
     @staticmethod
-    def zip_get_approved_data_sources_results(results: list[tuple]) -> list[dict]:
-        return ResultFormatter.convert_data_source_matches(
-            DATA_SOURCES_OUTPUT_COLUMNS, results
+    def format_result_with_subquery_parameters(
+        row_mappings: list[RowMapping],
+        primary_columns: list[str],
+        subquery_parameters: list[SubqueryParameters],
+    ) -> list[dict]:
+        srf = SubqueryResultFormatter(
+            row_mappings=row_mappings,
+            primary_columns=primary_columns,
+            subquery_parameters=subquery_parameters,
         )
+        return srf.format_results()
 
     @staticmethod
-    def zip_get_data_source_by_id_results(results: tuple[Any, ...]) -> dict[str, Any]:
-        data_source_and_agency_columns = (
-            DATA_SOURCES_APPROVED_COLUMNS
-            + AGENCY_APPROVED_COLUMNS
-            + ARCHIVE_INFO_APPROVED_COLUMNS
-        )
-        data_source_and_agency_columns.extend(
-            ["data_source_id", "agency_id", "agency_name"]
-        )
-        # Convert to a list and only return the first (and only)
-        return ResultFormatter.convert_data_source_matches(
-            data_source_and_agency_columns, [results]
-        )[0]
+    def format_with_metadata(
+        data: list[dict],
+        relation_name: str,
+        subquery_parameters: Optional[list[SubqueryParameters]] = [],
+    ) -> dict[str, Any]:
+        metadata_dict = {}
+        relation_reference = SQL_ALCHEMY_TABLE_REFERENCE[relation_name]
+
+        # Iterate through all properties of the Table
+        for name, descriptor in inspect(relation_reference).all_orm_descriptors.items():
+            # Retrieve and call the metadata method
+            if type(descriptor) != hybrid_method or name not in METADATA_METHOD_NAMES:
+                continue
+            metadata_result = getattr(relation_reference, name)(
+                data=data,
+                subquery_parameters=subquery_parameters,
+            )
+            if metadata_result is not None:
+                metadata_dict.update(metadata_result)
+
+        return {
+            "metadata": metadata_dict,
+            "data": data,
+        }
 
 
 def dictify_namedtuple(result: list[namedtuple]) -> list[dict[str, Any]]:

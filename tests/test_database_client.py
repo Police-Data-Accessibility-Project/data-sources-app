@@ -3,24 +3,28 @@ Module for testing database client functionality against a live database
 """
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from unittest.mock import MagicMock
 
 import psycopg.errors
 import pytest
+import sqlalchemy
+from marshmallow import Schema
 from sqlalchemy import insert, select, update
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import (
     OrderByParameters,
-    SubqueryParameters,
     WhereMapping,
 )
+from database_client.subquery_logic import SubqueryParameters, SubqueryParameterManager
 from database_client.enums import (
     ExternalAccountTypeEnum,
     RelationRoleEnum,
     ColumnPermissionEnum,
     SortOrder,
+    RequestStatus,
+    ApprovalStatus,
 )
 from middleware.exceptions import (
     UserNotFoundError,
@@ -28,25 +32,36 @@ from middleware.exceptions import (
 )
 from database_client.models import (
     Agency,
-    AgencySourceLink,
+    LinkAgencyDataSource,
     DataSource,
     ExternalAccount,
     TestTable,
     User,
+    SQL_ALCHEMY_TABLE_REFERENCE,
 )
 from middleware.enums import PermissionsEnum, Relations
-from tests.conftest import live_database_client, test_table_data
+from tests.conftest import live_database_client, test_table_data, clear_data_requests
 from tests.helper_scripts.common_test_data import (
     insert_test_column_permission_data,
     create_agency_entry_for_search_cache,
     create_data_source_entry_for_url_duplicate_checking,
+    TestDataCreatorFlask,
+    get_random_number_for_testing,
 )
+from tests.helper_scripts.helper_classes.AnyOrder import AnyOrder
+from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
+    TestDataCreatorDBClient,
+)
+from tests.helper_scripts.helper_schemas import TestGetPendingNotificationsOutputSchema
+from tests.helper_scripts.test_dataclasses import TestDataRequestInfo
 from tests.helper_scripts.helper_functions import (
     insert_test_agencies_and_sources_if_not_exist,
     setup_get_typeahead_suggestion_test_data,
     create_test_user_db_client,
+    get_notification_valid_date,
 )
 from utilities.enums import RecordCategories
+from conftest import test_data_creator_db_client
 
 
 def test_add_new_user(live_database_client: DatabaseClient):
@@ -65,7 +80,6 @@ def test_add_new_user(live_database_client: DatabaseClient):
     password_digest = result.password_digest
     api_key = result.api_key
 
-    assert api_key is not None
     assert password_digest == "test_password"
 
     # Adding same user should produce a DuplicateUserError
@@ -295,55 +309,44 @@ def test_select_from_relation_all_parameters(
     ]
 
 
-def test_select_from_relation_subquery(live_database_client: DatabaseClient):
-    agency_id = uuid.uuid4().hex
-    data_source_id = uuid.uuid4().hex
-    agency_name = uuid.uuid4().hex
-    data_source_name = uuid.uuid4().hex
+def test_select_from_relation_subquery(
+    test_data_creator_db_client: TestDataCreatorDBClient,
+):
+    tdc = test_data_creator_db_client
+    agency_info = tdc.agency()
+    data_source_info = tdc.data_source()
 
-    live_database_client.execute_sqlalchemy(
-        lambda: insert(Agency).values(
-            airtable_uid=agency_id,
-            submitted_name=agency_name,
-            jurisdiction_type="federal",
-        )
-    )
-    live_database_client.execute_sqlalchemy(
-        lambda: insert(DataSource).values(
-            airtable_uid=data_source_id, name=data_source_name
-        )
-    )
-    live_database_client.execute_sqlalchemy(
-        lambda: insert(AgencySourceLink).values(
-            data_source_uid=data_source_id, agency_uid=agency_id
+    tdc.db_client.execute_sqlalchemy(
+        lambda: insert(LinkAgencyDataSource).values(
+            data_source_id=data_source_info.id, agency_id=agency_info.id
         )
     )
 
-    where_mappings = [WhereMapping(column="airtable_uid", value=data_source_id)]
+    where_mappings = [WhereMapping(column="id", value=data_source_info.id)]
     subquery_parameters = [
         SubqueryParameters(
             relation_name=Relations.AGENCIES_EXPANDED.value,
-            columns=["airtable_uid", "name"],
+            columns=["id", "submitted_name"],
             linking_column="agencies",
         )
     ]
 
-    results = live_database_client._select_from_relation(
+    results = tdc.db_client._select_from_relation(
         relation_name="data_sources",
-        columns=["airtable_uid", "name"],
+        columns=["id", "name"],
         where_mappings=where_mappings,
         subquery_parameters=subquery_parameters,
     )
 
     assert results == [
         {
-            "name": data_source_name,
-            "airtable_uid": data_source_id,
-            "agency_ids": [agency_id],
+            "name": data_source_info.name,
+            "id": data_source_info.id,
+            "agency_ids": [agency_info.id],
             "agencies": [
                 {
-                    "name": agency_name,
-                    "airtable_uid": agency_id,
+                    "submitted_name": agency_info.submitted_name,
+                    "id": agency_info.id,
                 }
             ],
         }
@@ -476,20 +479,22 @@ def test_get_data_sources_to_archive(live_database_client: DatabaseClient):
     assert len(results) > 0
 
 
-def test_update_last_cached(live_database_client: DatabaseClient):
+def test_update_last_cached(
+    test_data_creator_db_client: TestDataCreatorDBClient,
+    live_database_client: DatabaseClient,
+):
+    tdc = test_data_creator_db_client
     # Add a new data source to the database
-    insert_test_agencies_and_sources_if_not_exist(
-        live_database_client.connection.cursor()
-    )
+    ds_info = tdc.data_source()
     # Update the data source's last_cached value with the DatabaseClient method
     new_last_cached = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    live_database_client.update_last_cached("SOURCE_UID_1", new_last_cached)
+    live_database_client.update_last_cached(id=ds_info.id, last_cached=new_last_cached)
 
     # Fetch the data source from the database to confirm the change
     result = live_database_client._select_from_relation(
-        relation_name="data_sources_archive_info",
+        relation_name=Relations.DATA_SOURCES_ARCHIVE_INFO.value,
         columns=["last_cached"],
-        where_mappings=[WhereMapping(column="airtable_uid", value="SOURCE_UID_1")],
+        where_mappings=[WhereMapping(column="data_source_id", value=ds_info.id)],
     )[0]
 
     assert result["last_cached"].strftime("%Y-%m-%d %H:%M:%S") == new_last_cached
@@ -646,14 +651,18 @@ def test_search_with_location_and_record_types_real_data_multiple_records(
     live_database_client,
 ):
     state_parameter = "Pennsylvania"
-    record_types = []
+    record_categories = []
     last_count = 0
+    # Exclude the ALL pseudo-category
+    applicable_record_categories = [
+        e for e in RecordCategories if e != RecordCategories.ALL
+    ]
 
     # Check that when more record types are added, the number of results increases
-    for record_type in [e for e in RecordCategories]:
-        record_types.append(record_type)
+    for record_category in applicable_record_categories:
+        record_categories.append(record_category)
         results = live_database_client.search_with_location_and_record_type(
-            state=state_parameter, record_categories=record_types
+            state=state_parameter, record_categories=record_categories
         )
         assert len(results) > last_count
         last_count = len(results)
@@ -740,6 +749,7 @@ def test_get_data_requests_for_creator(live_database_client: DatabaseClient):
         live_database_client.create_data_request(
             column_value_mappings={
                 "submission_notes": submission_notes,
+                "title": uuid.uuid4().hex,
                 "creator_user_id": test_user.user_id,
             }
         )
@@ -761,6 +771,7 @@ def test_user_is_creator_of_data_request(live_database_client):
     data_request_id = live_database_client.create_data_request(
         column_value_mappings={
             "submission_notes": submission_notes,
+            "title": uuid.uuid4().hex,
             "creator_user_id": test_user.user_id,
         }
     )
@@ -772,7 +783,10 @@ def test_user_is_creator_of_data_request(live_database_client):
 
     # Test with entry where user is not listed as creator
     data_request_id = live_database_client.create_data_request(
-        column_value_mappings={"submission_notes": submission_notes}
+        column_value_mappings={
+            "submission_notes": submission_notes,
+            "title": uuid.uuid4().hex,
+        }
     )
 
     results = live_database_client.user_is_creator_of_data_request(
@@ -855,32 +869,36 @@ def test_get_column_permissions_as_permission_table(
 #     assert new_result["airtable_uid"] != airtable_uid
 
 
-def test_get_related_data_sources(live_database_client):
+def test_get_related_data_sources(
+    test_data_creator_db_client: TestDataCreatorDBClient, live_database_client
+):
+    tdc = test_data_creator_db_client
 
     # Create two data sources
     source_column_value_mappings = []
     source_ids = []
     for i in range(2):
+        data_source_info = tdc.data_source()
         source_column_value_mapping = {
-            "airtable_uid": uuid.uuid4().hex,
-            "name": uuid.uuid4().hex,
+            "id": data_source_info.id,
+            "name": data_source_info.name,
         }
-        source_id = live_database_client.add_new_data_source(
-            column_value_mappings=source_column_value_mapping
-        )
+        source_id = data_source_info.id
         source_column_value_mappings.append(source_column_value_mapping)
         source_ids.append(source_id)
 
     # Create a request
-    submission_notes = uuid.uuid4().hex
-    request_id = live_database_client.create_data_request(
-        column_value_mappings={"submission_notes": submission_notes}
-    )
+    data_request_info = tdc.data_request()
+    request_id = data_request_info.id
+    submission_notes = data_request_info.submission_notes
 
     # Associate them in the link table
     for source_id in source_ids:
         live_database_client.create_request_source_relation(
-            column_value_mappings={"request_id": request_id, "source_id": source_id}
+            column_value_mappings={
+                "request_id": request_id,
+                "data_source_id": source_id,
+            }
         )
 
     results = live_database_client.get_related_data_sources(data_request_id=request_id)
@@ -893,28 +911,26 @@ def test_get_related_data_sources(live_database_client):
         ]
 
 
-def test_create_request_source_relation(live_database_client):
+def test_create_request_source_relation(
+    test_data_creator_db_client: TestDataCreatorDBClient, live_database_client
+):
+    tdc = test_data_creator_db_client
     # Create data source and request
-
-    source_id = live_database_client.add_new_data_source(
-        column_value_mappings={
-            "airtable_uid": uuid.uuid4().hex,
-            "name": uuid.uuid4().hex,
-        }
-    )
-
-    # Create a request
-    request_id = live_database_client.create_data_request(
-        column_value_mappings={"submission_notes": uuid.uuid4().hex}
-    )
+    source_info = tdc.data_source()
+    source_id = source_info.id
+    request_info = tdc.data_request()
+    request_id = request_info.id
 
     # Try to add twice and get a unique violation
     live_database_client.create_request_source_relation(
-        column_value_mappings={"request_id": request_id, "source_id": source_id}
+        column_value_mappings={"request_id": request_id, "data_source_id": source_id}
     )
-    with pytest.raises(psycopg.errors.UniqueViolation):
+    with pytest.raises(sqlalchemy.exc.IntegrityError):
         live_database_client.create_request_source_relation(
-            column_value_mappings={"request_id": request_id, "source_id": source_id}
+            column_value_mappings={
+                "request_id": request_id,
+                "data_source_id": source_id,
+            }
         )
 
 
@@ -955,6 +971,361 @@ def test_create_or_get(live_database_client):
     )
 
     assert results == new_results
+
+
+def test_get_data_requests(test_data_creator_db_client: TestDataCreatorDBClient):
+    tdc = test_data_creator_db_client
+
+    # Create a data request to ensure there's at least one data request in the database
+    tdc.data_request()
+
+    results = tdc.db_client.get_data_requests(
+        columns=["id"], subquery_parameters=[SubqueryParameterManager.data_sources()]
+    )
+    assert results
+
+
+def test_get_data_sources(live_database_client):
+    results = live_database_client.get_data_sources(
+        columns=["id"],
+        subquery_parameters=[
+            SubqueryParameterManager.agencies(
+                columns=["id"],
+            )
+        ],
+    )
+    assert results
+
+
+def test_get_linked_rows(
+    test_data_creator_db_client: TestDataCreatorDBClient,
+):
+    tdc = test_data_creator_db_client
+
+    # Create a data request to ensure there's at least one data request in the database
+    dr_id = tdc.data_request().id
+    ds_info = tdc.data_source()
+    tdc.link_data_request_to_data_source(
+        data_request_id=dr_id,
+        data_source_id=ds_info.id,
+    )
+    #
+    results = tdc.db_client.get_linked_rows(
+        link_table=Relations.LINK_DATA_SOURCES_DATA_REQUESTS,
+        left_id=dr_id,
+        left_link_column="request_id",
+        right_link_column="data_source_id",
+        linked_relation=Relations.DATA_SOURCES,
+        linked_relation_linking_column="id",
+        columns_to_retrieve=[
+            "id",
+            "name",
+        ],
+    )
+
+    assert results["metadata"]["count"] == len(results["data"]) > 0
+    assert results["data"][0]["name"] == ds_info.name
+    assert results["data"][0]["id"] == ds_info.id
+
+
+def test_get_unarchived_data_requests_with_issues(
+    test_data_creator_db_client: TestDataCreatorDBClient, clear_data_requests
+):
+    # Add data requests with issues
+    tdc = test_data_creator_db_client
+
+    def create_data_request_with_issue_and_request_status(
+        request_status: RequestStatus,
+    ) -> TestDataRequestInfo:
+        dr_info = tdc.data_request(request_status=request_status.value)
+        issue_number = get_random_number_for_testing()
+        tdc.db_client.create_data_request_github_info(
+            column_value_mappings={
+                "data_request_id": dr_info.id,
+                "github_issue_url": f"https://github.com/test-org/test-repo/issues/{issue_number}",
+                "github_issue_number": issue_number,
+            }
+        )
+
+        return dr_info
+
+    dr_info_active = create_data_request_with_issue_and_request_status(
+        RequestStatus.ACTIVE
+    )
+    dr_info_archived = create_data_request_with_issue_and_request_status(
+        RequestStatus.ARCHIVED
+    )
+
+    results = tdc.db_client.get_unarchived_data_requests_with_issues()
+
+    assert len(results) == 1
+    result = results[0]
+
+    assert result.data_request_id == dr_info_active.id
+    # Check result contains all requisite columns
+    assert result.github_issue_url
+    assert result.github_issue_number
+    assert result.request_status == RequestStatus.ACTIVE
+
+
+def test_user_followed_searches_logic(
+    test_data_creator_db_client: TestDataCreatorDBClient,
+):
+    tdc = test_data_creator_db_client
+
+    # Create a standard user
+    user_info = tdc.user()
+
+    # Have that user follow two searches
+    link_id = tdc.db_client.create_followed_search(
+        column_value_mappings={
+            "user_id": user_info.id,
+            "location_id": 1,
+        },
+        column_to_return="id",
+    )
+
+    tdc.db_client.create_followed_search(
+        column_value_mappings={
+            "user_id": user_info.id,
+            "location_id": 2,
+        }
+    )
+
+    # Get the user's followed searches
+    results = tdc.db_client.get_user_followed_searches(left_id=user_info.id)
+    assert len(results["data"]) == 2
+
+    # Unfollow one of the searches
+    tdc.db_client.delete_followed_search(id_column_value=link_id)
+
+    # Get the user's followed searches, and ensure the un-followed search is gone
+    results = tdc.db_client.get_user_followed_searches(left_id=user_info.id)
+    assert len(results["data"]) == 1
+
+
+def test_get_notifications_no_results(live_database_client):
+    """
+    Tests that `get_notifications` returns an empty list when there are no notifications
+    :param live_database_client:
+    :return:
+    """
+
+
+def test_get_pending_notifications(test_data_creator_db_client):
+    tdc = test_data_creator_db_client
+    tdc.clear_test_data()
+
+    location_id = tdc.locality()
+
+    # Create agency and tie to location
+    agency_id = tdc.agency(location_id=location_id)
+
+    # Create data source with approval status of "approved" and associate with agency
+    ds_info = tdc.data_source(approval_status=ApprovalStatus.APPROVED)
+    tdc.link_data_source_to_agency(
+        data_source_id=ds_info.id,
+        agency_id=agency_id.id,
+    )
+
+    # Create standard user and have them follow location
+    user_info = tdc.user()
+    tdc.db_client.create_followed_search(
+        column_value_mappings={"user_id": user_info.id, "location_id": location_id}
+    )
+
+    # Call `get_notifications`
+    results = tdc.db_client.get_pending_notifications()
+    schema = TestGetPendingNotificationsOutputSchema(many=True)
+    schema.load(results)
+
+
+def get_user_notification_queue(db_client: DatabaseClient):
+    return db_client._select_from_relation(
+        relation_name=Relations.USER_NOTIFICATION_QUEUE.value,
+        columns=[
+            "id",
+            "entity_id",
+            "sent_at",
+        ],
+    )
+
+
+def test_optionally_update_user_notification_queue(test_data_creator_db_client):
+    tdc = test_data_creator_db_client
+    tdc.clear_test_data()
+
+    # Confirm that the queue is empty
+    queue = get_user_notification_queue(tdc.db_client)
+    assert len(queue) == 0
+
+    entity_id = tdc.create_valid_notification_event()
+
+    # Call method
+    tdc.db_client.optionally_update_user_notification_queue()
+
+    # Confirm queue is populated with one entry
+    queue = get_user_notification_queue(tdc.db_client)
+    assert len(queue) == 1
+    assert queue[0]["entity_id"] == entity_id
+
+    # Modify `sent_at` column for the entry
+    expected_sent_at = datetime.now(timezone.utc)
+    tdc.db_client._update_entry_in_table(
+        table_name=Relations.USER_NOTIFICATION_QUEUE.value,
+        entry_id=queue[0]["id"],
+        column_edit_mappings={"sent_at": expected_sent_at},
+    )
+
+    # Try calling method again
+    tdc.db_client.optionally_update_user_notification_queue()
+
+    # Confirm queue remains populated with the same entry, with the `sent_at` column remaining unchanged
+    queue = get_user_notification_queue(tdc.db_client)
+    assert len(queue) == 1
+    assert queue[0]["entity_id"] == entity_id
+    assert queue[0]["sent_at"] == expected_sent_at
+
+    # Change `event_timestamp` of entry to two months ago
+    two_months_ago_event_timestamp = datetime.now(timezone.utc) - timedelta(days=60)
+    tdc.db_client._update_entry_in_table(
+        table_name=Relations.USER_NOTIFICATION_QUEUE.value,
+        entry_id=queue[0]["id"],
+        column_edit_mappings={"event_timestamp": two_months_ago_event_timestamp},
+    )
+    # Change also original entry to two months ago, to ensure it is not pulled again
+    tdc.db_client._update_entry_in_table(
+        table_name=Relations.DATA_SOURCES.value,
+        entry_id=queue[0]["entity_id"],
+        column_edit_mappings={
+            "approval_status_updated_at": two_months_ago_event_timestamp
+        },
+    )
+
+    # Create new valid notification event
+    new_entity_id = tdc.create_valid_notification_event()
+
+    # Call method again
+    tdc.db_client.optionally_update_user_notification_queue()
+
+    # Confirm former entry is no longer in the queue, and new entry is present
+    queue = get_user_notification_queue(tdc.db_client)
+    assert len(queue) == 1
+    assert queue[0]["entity_id"] == new_entity_id
+
+
+def test_get_next_user_events_and_mark_user_events_as_sent(test_data_creator_db_client):
+    tdc = test_data_creator_db_client
+    tdc.clear_test_data()
+
+    # Create a notification event for an (implicitly created) user
+    entity_id = tdc.create_valid_notification_event()
+
+    # Create another user with two notification events
+    user_id = tdc.user().id
+    entity_id_2 = tdc.create_valid_notification_event(user_id=user_id)
+    entity_id_3 = tdc.create_valid_notification_event(user_id=user_id)
+
+    tdc.db_client.optionally_update_user_notification_queue()
+
+    # Retrieve the single-event user and mark as sent,
+    event_batch = tdc.db_client.get_next_user_event_batch()
+    assert len(event_batch.events) == 1
+    assert event_batch.events[0].entity_id == entity_id
+    tdc.db_client.mark_user_events_as_sent(event_batch.user_id)
+
+    # Run for the two-event user
+    event_batch = tdc.db_client.get_next_user_event_batch()
+    assert len(event_batch.events) == 2
+    assert AnyOrder([event.entity_id for event in event_batch.events]) == [
+        entity_id_2,
+        entity_id_3,
+    ] or AnyOrder([event.entity_id for event in event_batch.events]) == [
+        entity_id_2,
+        entity_id_3,
+    ]
+
+    tdc.db_client.mark_user_events_as_sent(event_batch.user_id)
+
+    event_batch = tdc.db_client.get_next_user_event_batch()
+    assert event_batch is None
+
+
+def test_insert_search_record(test_data_creator_db_client: TestDataCreatorDBClient):
+    tdc = test_data_creator_db_client
+    user_info = tdc.user()
+    location_id = tdc.locality()
+
+    def assert_are_expected_record_categories(
+        rc_ids: list[int], record_categories: list[RecordCategories]
+    ):
+        table = SQL_ALCHEMY_TABLE_REFERENCE[Relations.RECORD_CATEGORIES.value]
+        name_column = getattr(table, "name")
+        id_column = getattr(table, "id")
+        query = select(name_column).where(id_column.in_(rc_ids))
+        result = tdc.db_client.execute_sqlalchemy(lambda: query)
+        result = [row[0] for row in result]
+        result.sort()
+        rc_values = [rc.value for rc in record_categories]
+        rc_values.sort()
+        assert result == rc_values
+
+    def get_recent_searches():
+        return tdc.db_client._select_from_relation(
+            relation_name=Relations.RECENT_SEARCHES.value,
+            columns=["id"],
+            where_mappings={"user_id": user_info.id, "location_id": location_id},
+            order_by=OrderByParameters(
+                sort_by="created_at", sort_order=SortOrder.ASCENDING
+            ),
+        )
+
+    def get_link_recent_search_record_types(recent_search_id: int):
+        return tdc.db_client._select_from_relation(
+            relation_name=Relations.LINK_RECENT_SEARCH_RECORD_CATEGORIES.value,
+            columns=["record_category_id"],
+            where_mappings={"recent_search_id": recent_search_id},
+        )
+
+    tdc.db_client.create_search_record(
+        user_id=user_info.id,
+        location_id=location_id,
+        record_categories=RecordCategories.ALL,
+    )
+
+    # Confirm record exists in both `recent_searches` and `link_recent_search_record_types` tables
+    recent_search_results = get_recent_searches()
+    assert len(recent_search_results) == 1
+
+    link_results = get_link_recent_search_record_types(recent_search_results[0]["id"])
+
+    assert len(link_results) == 1
+
+    # Confirm record category is all
+    assert_are_expected_record_categories(
+        rc_ids=[link_results[0]["record_category_id"]],
+        record_categories=[RecordCategories.ALL],
+    )
+
+    tdc.db_client.create_search_record(
+        user_id=user_info.id,
+        location_id=location_id,
+        record_categories=[RecordCategories.AGENCIES, RecordCategories.JAIL],
+    )
+
+    # Confirm two records now exists in `recent_searches` table associated with this information
+    recent_search_results = get_recent_searches()
+    assert len(recent_search_results) == 2
+
+    # And that the second links to an `AGENCIES` and `JAIL` entry in `link_recent_search_record_types` table
+    search_id = recent_search_results[1]["id"]
+    link_results = get_link_recent_search_record_types(search_id)
+    rc_ids = [link_result["record_category_id"] for link_result in link_results]
+
+    assert_are_expected_record_categories(
+        rc_ids=rc_ids,
+        record_categories=[RecordCategories.AGENCIES, RecordCategories.JAIL],
+    )
 
 
 # TODO: This code currently doesn't work properly because it will repeatedly insert the same test data, throwing off counts

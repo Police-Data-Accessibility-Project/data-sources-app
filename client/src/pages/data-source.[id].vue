@@ -1,183 +1,183 @@
 <template>
-	<main :class="{ content: !isLoading && !error, loading: isLoading }">
-		<Spinner
-			v-if="isLoading"
-			:show="isLoading"
-			:size="64"
-			text="Fetching data source results..."
+	<main ref="mainRef" class="min-h-[75%] relative">
+		<!-- NAV to prev/next data source -- TODO: only show if user navigates from search results -->
+		<PrevNextNav
+			:search-ids="mostRecentSearchIds"
+			:previous-index="previousIdIndex"
+			:next-index="nextIdIndex"
 		/>
 
-		<template v-else-if="!isLoading && error">
-			<h1>An error occurred loading the data source</h1>
-			<p>Please refresh the page and try again.</p>
-		</template>
+		<transition mode="out-in" :name="dataSource.navIs">
+			<div
+				v-if="isLoading"
+				class="flex items-center justify-center h-[80vh] w-full flex-col relative"
+			>
+				<Spinner
+					:show="isLoading"
+					:size="64"
+					text="Fetching data source results..."
+				/>
+			</div>
 
-		<!-- TODO: not found UI - do we want to send the user to search or something? -->
-		<template v-else-if="!dataSource">
-			<h1>Data source not found</h1>
-			<p>We don't have a record of that source.</p>
-		</template>
+			<div
+				v-else
+				class="flex flex-col sm:flex-row sm:flex-wrap items-center sm:items-stretch sm:justify-between gap-4 h-full w-full relative"
+			>
+				<template v-if="!isLoading && error">
+					<h1>An error occurred loading the data source</h1>
+					<p>Please refresh the page and try again.</p>
+				</template>
 
-		<!-- For each section, render details -->
-		<template v-else>
-			<!-- NAV to prev/next data source -- TODO: only show if user navigates from search results -->
-			<nav v-if="mostRecentSearchIds.length" class="self-start">
-				<!-- TODO - prev/next logic -->
-				<RouterLink
-					:to="`/data-source/${mostRecentSearchIds[previousIdIndex]}`"
-					:class="{ disabled: typeof previousIdIndex !== 'number' }"
-				>
-					PREV
-				</RouterLink>
-				/
-				<RouterLink
-					:to="`/data-source/${mostRecentSearchIds[nextIdIndex]}`"
-					:class="{ disabled: typeof nextIdIndex !== 'number' }"
-				>
-					NEXT
-				</RouterLink>
-			</nav>
+				<!-- TODO: not found UI - do we want to send the user to search or something? -->
+				<template v-else-if="!error && !dataSource">
+					<h1>Data source not found</h1>
+					<p>We don't have a record of that source.</p>
+				</template>
+				<!-- For each section, render details -->
+				<template v-else>
+					<!-- Heading and related material -->
+					<hgroup>
+						<h1>{{ dataSource.name }}</h1>
+						<div class="flex gap-2 items-center">
+							<p v-if="dataSource.record_type_name" class="pill w-max">
+								<RecordTypeIcon :record-type="dataSource.record_type_name" />
+								{{ dataSource.record_type_name }}
+							</p>
+							<template v-if="Array.isArray(dataSource.tags)">
+								<p v-for="tag in dataSource.tags" :key="tag" class="pill w-max">
+									{{ tag }}
+								</p>
+							</template>
+						</div>
+					</hgroup>
 
-			<!-- Heading and related material -->
-			<hgroup>
-				<h1>{{ dataSource.name }}</h1>
-				<div class="flex gap-2 items-center">
-					<p v-if="dataSource.record_type_name" class="pill w-max">
-						<RecordTypeIcon :record-type="dataSource.record_type_name" />
-						{{ dataSource.record_type_name }}
-					</p>
-					<template v-if="Array.isArray(dataSource.tags)">
-						<p v-for="tag in dataSource.tags" :key="tag" class="pill w-max">
-							{{ tag }}
+					<!-- Agency data -->
+					<div class="flex-[0_0_100%] flex flex-col gap-2 w-full">
+						<!-- For each agency, TODO: does UI need to be updated? -->
+						<div class="agency-row-container">
+							<div class="agency-row">
+								<div>
+									<h4 class="m-0">Agency</h4>
+									<p
+										v-for="agency in dataSource.agencies"
+										:key="agency.submitted_name"
+									>
+										{{ agency.submitted_name }}
+									</p>
+								</div>
+								<div>
+									<h4 class="m-0">County, State</h4>
+									<p
+										v-for="agency in dataSource.agencies"
+										:key="agency.county_name?.[0]"
+									>
+										{{
+											typeof agency.county_name === 'string'
+												? agency.county_name
+												: agency.county_name?.join(', ')
+										}}, {{ agency.state_iso }}
+									</p>
+								</div>
+								<div>
+									<h4 class="m-0">Agency Type</h4>
+									<p
+										v-for="agency in dataSource.agencies"
+										:key="agency.agency_type"
+										class="capitalize"
+									>
+										{{ agency.agency_type }}
+									</p>
+								</div>
+								<div>
+									<h4 class="m-0">Jurisdiction Type</h4>
+									<p
+										v-for="agency in dataSource.agencies"
+										:key="agency.jurisdiction_type"
+										class="capitalize"
+									>
+										{{ agency.jurisdiction_type }}
+									</p>
+								</div>
+							</div>
+						</div>
+						<a
+							:href="dataSource.source_url"
+							class="pdap-button-primary py-3 px-4 h-max mr-4"
+							target="_blank"
+							rel="noreferrer"
+						>
+							Visit Data Source
+							<FontAwesomeIcon :icon="faLink" />
+						</a>
+					</div>
+
+					<div v-if="dataSource.description" class="description-container">
+						<p
+							ref="descriptionRef"
+							class="description"
+							:class="{
+								'truncate-2': !isDescriptionExpanded,
+							}"
+						>
+							{{ dataSource.description }}
 						</p>
-					</template>
-				</div>
-			</hgroup>
+						<Button
+							v-if="showExpandDescriptionButton"
+							intent="tertiary"
+							@click="isDescriptionExpanded = !isDescriptionExpanded"
+						>
+							{{ isDescriptionExpanded ? 'See less' : 'See more' }}
+						</Button>
+					</div>
 
-			<!-- Agency data -->
-			<div class="flex-[0_0_100%] flex flex-col gap-2 w-full">
-				<!-- For each agency, TODO: does UI need to be updated? -->
-				<div class="agency-row-container">
-					<div class="agency-row">
-						<div>
-							<h4 class="m-0">Agency</h4>
-							<p
-								v-for="agency in dataSource.agencies"
-								:key="agency.submitted_name"
-							>
-								{{ agency.submitted_name }}
-							</p>
-						</div>
-						<div>
-							<h4 class="m-0">County, State</h4>
-							<p
-								v-for="agency in dataSource.agencies"
-								:key="agency.county_name"
-							>
-								{{
-									// TODO: remove this once API is returning arrays
-									formatStringIntoArraysBecauseAPIReturnsStringsRatherThanArrays(
-										agency.county_name,
-									)[0]
-								}}, {{ agency.state_iso }}
-							</p>
-						</div>
-						<div>
-							<h4 class="m-0">Agency Type</h4>
-							<p
-								v-for="agency in dataSource.agencies"
-								:key="agency.agency_type"
-								class="capitalize"
-							>
-								{{ agency.agency_type }}
-							</p>
-						</div>
-						<div>
-							<h4 class="m-0">Jurisdiction Type</h4>
-							<p
-								v-for="agency in dataSource.agencies"
-								:key="agency.jurisdiction_type"
-								class="capitalize"
-							>
-								{{ agency.jurisdiction_type }}
-							</p>
+					<!-- Sections -->
+					<div
+						v-for="section in DATA_SOURCE_UI_SHAPE"
+						:key="section.header"
+						class="section"
+					>
+						<h2>{{ section.header }}</h2>
+						<div
+							v-for="record in section.records"
+							:key="record.title"
+							class="flex flex-col"
+						>
+							<!-- Only render if the key exists in the data source record -->
+							<template v-if="dataSource[record.key]">
+								<h4>{{ record.title }}</h4>
+
+								<!-- If an array, render and nest inside of div -->
+								<div v-if="Array.isArray(dataSource[record.key])">
+									<component
+										:is="record.component ?? 'p'"
+										v-for="item in dataSource[record.key]"
+										:key="item"
+									>
+										{{ formatResult(record, item) }}
+									</component>
+								</div>
+
+								<!-- Otherwise, 1 component -->
+								<component
+									:is="record.component ?? 'p'"
+									v-else
+									:href="
+										record.component === 'a'
+											? dataSource[record.key]
+											: undefined
+									"
+									:class="record.classNames"
+									target="record.attributes.target"
+									rel="record.attributes.rel"
+								>
+									{{ formatResult(record, dataSource[record.key]) }}
+								</component>
+							</template>
 						</div>
 					</div>
-				</div>
-				<a
-					:href="dataSource.source_url"
-					class="pdap-button-primary py-3 px-4 h-max mr-4"
-					target="_blank"
-					rel="noreferrer"
-				>
-					Visit Data Source
-					<FontAwesomeIcon :icon="faLink" />
-				</a>
+				</template>
 			</div>
-
-			<div v-if="dataSource.description" class="description-container">
-				<p
-					ref="descriptionRef"
-					class="description"
-					:class="{
-						'truncate-2': !isDescriptionExpanded,
-					}"
-				>
-					{{ dataSource.description }}
-				</p>
-				<Button
-					v-if="showExpandDescriptionButton"
-					intent="tertiary"
-					@click="isDescriptionExpanded = !isDescriptionExpanded"
-				>
-					{{ isDescriptionExpanded ? 'See less' : 'See more' }}
-				</Button>
-			</div>
-
-			<!-- Sections -->
-			<div
-				v-for="section in DATA_SOURCE_UI_SHAPE"
-				:key="section.header"
-				class="section"
-			>
-				<h2>{{ section.header }}</h2>
-				<div
-					v-for="record in section.records"
-					:key="record.title"
-					class="flex flex-col"
-				>
-					<!-- Only render if the key exists in the data source record -->
-					<template v-if="dataSource[record.key]">
-						<h4>{{ record.title }}</h4>
-
-						<!-- If an array, render and nest inside of div -->
-						<div v-if="Array.isArray(dataSource[record.key])">
-							<component
-								:is="record.component ?? 'p'"
-								v-for="item in dataSource[record.key]"
-								:key="item"
-							>
-								{{ formatResult(record, item) }}
-							</component>
-						</div>
-
-						<!-- Otherwise, 1 component -->
-						<component
-							:is="record.component ?? 'p'"
-							v-else
-							:href="
-								record.component === 'a' ? dataSource[record.key] : undefined
-							"
-							:class="record.classNames"
-							target="record.attributes.target"
-							rel="record.attributes.rel"
-						>
-							{{ formatResult(record, dataSource[record.key]) }}
-						</component>
-					</template>
-				</div>
-			</div>
-		</template>
+		</transition>
 	</main>
 </template>
 
@@ -185,35 +185,61 @@
 // Data loader
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic';
 import { useSearchStore } from '@/stores/search';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import _cloneDeep from 'lodash/cloneDeep';
+import { useSwipe } from '@vueuse/core';
 
-const { getDataSource } = useSearchStore();
+const {
+	getDataSource,
+	previousDataSourceRoute,
+	setPreviousDataSourceRoute,
+	mostRecentSearchIds: searchIds,
+} = useSearchStore();
 
 export const useDataSourceData = defineBasicLoader(
 	'/data-source/:id',
 	async (route) => {
-		const results = await getDataSource(route.params.id);
-		return results?.data?.data;
+		const dataSourceId = route.params.id;
+		// create deep clone of previous route.
+		const previous = _cloneDeep(previousDataSourceRoute);
+		// Use previous route to determine if nav is increment or decrement (this is for dynamic transition)
+		const navIs =
+			searchIds.indexOf(Number(previous?.params?.id)) >
+			searchIds.indexOf(Number(dataSourceId))
+				? 'decrement'
+				: 'increment';
+
+		const results = await getDataSource(dataSourceId);
+
+		// Then set current route to prev before returning data
+		setPreviousDataSourceRoute(route);
+
+		return {
+			...results.data.data,
+			navIs,
+		};
 	},
 );
 </script>
 
 <script setup>
-import { Button, RecordTypeIcon } from 'pdap-design-system';
-import { Spinner } from 'pdap-design-system';
+import { Button, RecordTypeIcon, Spinner } from 'pdap-design-system';
+import PrevNextNav from '@/components/DataSourceNav.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faLink } from '@fortawesome/free-solid-svg-icons';
 
 import { DATA_SOURCE_UI_SHAPE } from '@/util/constants';
 import formatDateForSearchResults from '@/util/formatDate';
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 const route = useRoute();
+const router = useRouter();
 const { mostRecentSearchIds } = useSearchStore();
 const { data: dataSource, isLoading, error } = useDataSourceData();
 
 const currentIdIndex = computed(() =>
-	mostRecentSearchIds.indexOf(route.params.id),
+	// Route params are strings, but the ids are stored as numbers, so cast first
+	mostRecentSearchIds.indexOf(Number(route.params.id)),
 );
 const nextIdIndex = computed(() =>
 	currentIdIndex.value < mostRecentSearchIds.length - 1
@@ -223,9 +249,35 @@ const nextIdIndex = computed(() =>
 const previousIdIndex = computed(() =>
 	currentIdIndex.value > 0 ? currentIdIndex.value - 1 : null,
 );
+
 const isDescriptionExpanded = ref(false);
 const showExpandDescriptionButton = ref(false);
 const descriptionRef = ref();
+const mainRef = ref();
+
+// Handle swipe
+const { isSwiping, direction } = useSwipe(mainRef);
+watch(
+	() => isSwiping.value,
+	(isNowSwiping) => {
+		if (isNowSwiping) {
+			switch (direction.value) {
+				case 'left':
+					router.replace(
+						`/data-source/${mostRecentSearchIds[nextIdIndex.value]}`,
+					);
+					break;
+				case 'right':
+					router.replace(
+						`/data-source/${mostRecentSearchIds[previousIdIndex.value]}`,
+					);
+					break;
+				default:
+					return;
+			}
+		}
+	},
+);
 
 onMounted(() => {
 	handleShowMoreButton();
@@ -248,36 +300,16 @@ function formatResult(record, item) {
 	if (record.isDate) return formatDateForSearchResults(item);
 	return item;
 }
-
-/**
- * TODO: remove this function when API returns arrays rather than strings
- */
-function formatStringIntoArraysBecauseAPIReturnsStringsRatherThanArrays(str) {
-	if (!str) return [];
-	return str
-		.replaceAll('[', '')
-		.replaceAll(']', '')
-		.replaceAll('"', '')
-		.split(',')
-		.map((s) => s.trim());
-}
 </script>
 
 <style scoped>
-.loading {
-	@apply flex items-center justify-center h-full w-full;
-}
-
-.content {
-	@apply flex flex-col sm:flex-row sm:flex-wrap items-center sm:items-stretch sm:justify-between gap-4;
-}
-
 .section {
 	@apply w-full flex flex-col gap-2 max-w-full md:max-w-[50%] border-solid border-2 border-neutral-300 p-4;
 	flex: 1 1 40%;
 }
 
-.content hgroup {
+hgroup {
+	@apply mt-4;
 	flex: 0 0 100%;
 }
 
@@ -306,7 +338,32 @@ function formatStringIntoArraysBecauseAPIReturnsStringsRatherThanArrays(str) {
 	@apply w-full overflow-x-scroll self-start justify-self-start my-4;
 }
 
-.disabled {
-	@apply pointer-events-none opacity-50;
+.increment-enter-active,
+.increment-leave-active,
+.decrement-enter-active,
+.decrement-leave-active {
+	transition:
+		opacity 150ms ease-in,
+		transform 150ms ease-in;
+}
+
+.increment-enter-from,
+.increment-leave-to,
+.decrement-enter-from,
+.decrement-leave-to {
+	opacity: 0;
+}
+
+.increment-enter-from {
+	transform: translateX(15%);
+}
+
+.decrement-enter-from {
+	transform: translateX(-15%);
+}
+
+.increment-leave-to,
+.decrement-leave-to {
+	transform: translateX(0);
 }
 </style>

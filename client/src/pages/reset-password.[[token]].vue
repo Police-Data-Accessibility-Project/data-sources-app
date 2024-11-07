@@ -1,97 +1,128 @@
 <template>
-	<main v-if="success" class="pdap-flex-container">
-		<h1>Success</h1>
-		<p data-test="success-subheading">
-			{{
-				token
-					? 'Your password has been successfully updated'
-					: 'We sent you an email with a link to reset your password. Please follow the link in the email to proceed'
-			}}
-		</p>
-	</main>
-	<main
-		v-else-if="!success && token"
-		class="pdap-flex-container mx-auto max-w-2xl"
-	>
-		<h1>Change your password</h1>
-		<p v-if="!hasValidatedToken" class="flex flex-col items-start sm:gap-4">
-			Loading...
-		</p>
-		<p
-			v-else-if="hasValidatedToken && isExpiredToken"
-			data-test="token-expired"
-			class="flex flex-col items-start sm:gap-4"
-		>
-			Sorry, that token has expired.
-			<RouterLink
-				data-test="re-request-link"
-				to="/reset-password"
-				@click="
-					isExpiredToken = false;
-					error = undefined;
-					token = undefined;
-				"
+	<main class="pdap-flex-container" :class="{ 'mx-auto max-w-2xl': !success }">
+		<!-- TODO: split this out to multiple routes? -->
+		<template v-if="success">
+			<h1>Success</h1>
+			<p data-test="success-subheading">
+				{{
+					token
+						? 'Your password has been successfully updated'
+						: 'We sent you an email with a link to reset your password. Please follow the link in the email to proceed'
+				}}
+			</p>
+		</template>
+
+		<template v-else-if="!success && token">
+			<h1>Change your password</h1>
+			<p v-if="!hasValidatedToken" class="flex flex-col items-start sm:gap-4">
+				Loading...
+			</p>
+			<p
+				v-else-if="hasValidatedToken && isExpiredToken"
+				data-test="token-expired"
+				class="flex flex-col items-start sm:gap-4"
 			>
-				Click here to request another
-			</RouterLink>
-		</p>
+				Sorry, that token has expired.
+				<RouterLink
+					data-test="re-request-link"
+					to="/reset-password"
+					@click="
+						isExpiredToken = false;
+						error = undefined;
+						token = undefined;
+					"
+				>
+					Click here to request another
+				</RouterLink>
+			</p>
 
-		<Form
-			v-else
-			id="reset-password"
-			data-test="reset-password-form"
-			class="flex flex-col"
-			name="reset-password"
-			:error="error"
-			:schema="FORM_SCHEMA_CHANGE_PASSWORD"
-			@change="onChange"
-			@submit="onSubmitChangePassword"
-		>
-			<PasswordValidationChecker ref="passwordRef" />
+			<FormV2
+				v-else
+				id="reset-password"
+				data-test="reset-password-form"
+				class="flex flex-col"
+				name="reset-password"
+				:error="error"
+				:schema="VALIDATION_SCHEMA_CHANGE_PASSWORD"
+				@change="onChange"
+				@submit="onSubmitChangePassword"
+				@input="onResetInput"
+			>
+				<InputPassword
+					v-for="input of FORM_INPUTS_CHANGE_PASSWORD"
+					v-bind="{ ...input }"
+					:key="input.name"
+				/>
 
-			<Button class="max-w-full" type="submit">
-				{{ loading ? 'Loading...' : 'Change password' }}
-			</Button>
-		</Form>
-	</main>
+				<PasswordValidationChecker ref="passwordRef" />
 
-	<main v-else class="pdap-flex-container mx-auto max-w-2xl">
-		<h1>Request a link to reset your password</h1>
-		<Form
-			id="reset-password"
-			data-test="reset-password-form"
-			class="flex flex-col"
-			name="reset-password"
-			:error="error"
-			:schema="FORM_SCHEMA_REQUEST_PASSWORD"
-			@submit="onSubmitRequestReset"
-		>
-			<Button class="max-w-full" type="submit">
-				{{ loading ? 'Loading...' : 'Request password reset' }}
-			</Button>
-		</Form>
+				<Button class="max-w-full" type="submit">
+					{{ loading ? 'Loading...' : 'Change password' }}
+				</Button>
+			</FormV2>
+		</template>
+
+		<template v-else>
+			<h1>Request a link to reset your password</h1>
+			<FormV2
+				id="reset-password"
+				data-test="reset-password-form"
+				class="flex flex-col"
+				name="reset-password"
+				:error="error"
+				:schema="VALIDATION_SCHEMA_REQUEST_PASSWORD"
+				@submit="onSubmitRequestReset"
+			>
+				<InputText
+					id="email"
+					autocomplete="email"
+					data-test="email"
+					name="email"
+					label="Email"
+					placeholder="Your email address"
+				/>
+				<Button class="max-w-full" type="submit">
+					{{ loading ? 'Loading...' : 'Request password reset' }}
+				</Button>
+			</FormV2>
+		</template>
 	</main>
 </template>
 
 <script setup>
-import { Button, Form } from 'pdap-design-system';
+import { Button, FormV2, InputPassword, InputText } from 'pdap-design-system';
 import PasswordValidationChecker from '@/components/PasswordValidationChecker.vue';
 import { useUserStore } from '@/stores/user';
 import { onMounted, ref, watchEffect } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 
 // Constants
-const FORM_SCHEMA_CHANGE_PASSWORD = [
+const FORM_INPUTS_CHANGE_PASSWORD = [
 	{
-		autofill: 'password',
+		autocomplete: 'password',
 		'data-test': 'password',
 		id: 'password',
 		name: 'password',
 		label: 'Password',
-		type: 'password',
 		placeholder: 'Your updated password',
-		value: '',
+	},
+	{
+		autocomplete: 'password',
+		'data-test': 'confirm-password',
+		id: 'confirmPassword',
+		name: 'confirmPassword',
+		label: 'Confirm Password',
+		placeholder: 'Confirm your updated password',
+	},
+];
+const VALIDATION_SCHEMA_CHANGE_PASSWORD = [
+	{
+		name: 'password',
+		label: 'Password',
 		validators: {
+			required: {
+				value: true,
+			},
 			password: {
 				message: 'Please provide your password',
 				value: true,
@@ -99,15 +130,11 @@ const FORM_SCHEMA_CHANGE_PASSWORD = [
 		},
 	},
 	{
-		autofill: 'password',
-		'data-test': 'confirm-password',
-		id: 'confirmPassword',
 		name: 'confirmPassword',
-		label: 'Confirm Password',
-		type: 'password',
-		placeholder: 'Confirm your updated password',
-		value: '',
 		validators: {
+			required: {
+				value: true,
+			},
 			password: {
 				message: 'Please confirm your password',
 				value: true,
@@ -116,17 +143,13 @@ const FORM_SCHEMA_CHANGE_PASSWORD = [
 	},
 ];
 
-const FORM_SCHEMA_REQUEST_PASSWORD = [
+const VALIDATION_SCHEMA_REQUEST_PASSWORD = [
 	{
-		autofill: 'email',
-		'data-test': 'email',
-		id: 'email',
 		name: 'email',
-		label: 'Email',
-		type: 'text',
-		placeholder: 'Your email address',
-		value: '',
 		validators: {
+			required: {
+				value: true,
+			},
 			email: {
 				message: 'Please provide your email address',
 				value: true,
@@ -185,6 +208,12 @@ function onChange(formValues) {
 
 	if (error.value) {
 		handleValidatePasswordMatch(formValues);
+	}
+}
+
+function onResetInput(e) {
+	if (e.target.name === 'password') {
+		passwordRef.value.updatePasswordValidation(e.target.value);
 	}
 }
 

@@ -2,12 +2,14 @@
 
 import uuid
 from collections import namedtuple
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 from http import HTTPStatus
 from unittest.mock import MagicMock
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 import psycopg
+import sqlalchemy
 from flask.testing import FlaskClient
 
 from database_client.database_client import DatabaseClient
@@ -23,7 +25,7 @@ from middleware.enums import (
     Relations,
     JurisdictionType,
 )
-from resources.ApiKey import API_KEY_ROUTE
+from resources.ApiKeyResource import API_KEY_ROUTE
 from tests.helper_scripts.constants import TEST_RESPONSE
 from tests.helper_scripts.simple_result_validators import check_response_status
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
@@ -81,7 +83,6 @@ def insert_test_agencies_and_sources(cursor: psycopg.Cursor) -> None:
         """
         INSERT INTO
         PUBLIC.DATA_SOURCES (
-            airtable_uid,
             NAME,
             SUBMITTED_NAME,
             DESCRIPTION,
@@ -90,11 +91,11 @@ def insert_test_agencies_and_sources(cursor: psycopg.Cursor) -> None:
             URL_STATUS
         )
         VALUES
-        ('SOURCE_UID_1','Source 1', 'Source 1','Description of src1',
+        ('Source 1', 'Source 1','Description of src1',
             'http://src1.com','approved','available'),
-        ('SOURCE_UID_2','Source 2', 'Source 2','Description of src2',
+        ('Source 2', 'Source 2','Description of src2',
             'http://src2.com','needs identification','available'),
-        ('SOURCE_UID_3','Source 3', 'Source 3','Description of src3',
+        ('Source 3', 'Source 3','Description of src3',
             'http://src3.com', 'pending', 'available');
         """
     )
@@ -112,7 +113,7 @@ def insert_test_agencies_and_sources(cursor: psycopg.Cursor) -> None:
 
     db_client.execute_raw_sql(
         """
-        INSERT INTO public.agency_source_link
+        INSERT INTO public.link_agencies_data_sources
         (data_source_uid, agency_uid)
         VALUES
             ('SOURCE_UID_1', 'Agency_UID_1'),
@@ -279,20 +280,18 @@ def login_and_return_jwt_tokens(
     )
 
 
-def get_user_password_digest(cursor: psycopg.Cursor, user_info):
+def get_user_password_digest(user_info):
     """
     Get the associated password digest of a user (given their email) from the database
-    :param cursor:
     :param user_info:
     :return:
     """
-    cursor.execute(
+    return DatabaseClient().execute_raw_sql(
         """
         SELECT password_digest from users where email = %s
     """,
         (user_info.email,),
-    )
-    return cursor.fetchone()[0]
+    )[0]
 
 
 def request_reset_password_api(client_with_db, mocker, user_info):
@@ -387,9 +386,6 @@ def give_user_admin_role(connection: psycopg.Connection, user_info: UserInfo):
 def setup_get_typeahead_suggestion_test_data(cursor: Optional[psycopg.Cursor] = None):
     db_client = DatabaseClient()
     try:
-        db_client.execute_raw_sql(
-            query="SAVEPOINT typeahead_suggestion_test_savepoint",
-        )
 
         state_id = db_client.create_or_get(
             table_name=Relations.US_STATES.value,
@@ -426,28 +422,21 @@ def setup_get_typeahead_suggestion_test_data(cursor: Optional[psycopg.Cursor] = 
             ),
         )[0]["id"]
 
-        db_client.create_or_get(
+        agency_id = db_client.create_or_get(
             table_name=Relations.AGENCIES.value,
             column_value_mappings={
                 "submitted_name": "Xylodammerung Police Agency",
-                "airtable_uid": "XY_SOURCE_UID",
                 "jurisdiction_type": JurisdictionType.STATE,
                 "location_id": location_id,
             },
-            column_to_return="airtable_uid",
-        )
-
-        db_client.execute_raw_sql(
-            query="SAVEPOINT typeahead_suggestion_test_savepoint;",
+            column_to_return="id",
         )
 
         db_client.execute_raw_sql("CALL refresh_typeahead_agencies();")
         db_client.execute_raw_sql("CALL refresh_typeahead_locations();")
 
-    except psycopg.errors.UniqueViolation:
-        db_client.execute_raw_sql(
-            "ROLLBACK TO SAVEPOINT typeahead_suggestion_test_savepoint"
-        )
+    except sqlalchemy.exc.IntegrityError:
+        pass
 
 
 def patch_post_callback_functions(
@@ -465,12 +454,13 @@ def patch_post_callback_functions(
             callback_params=callback_params,
         )
     )
+    PATCH_ROOT = "middleware.primary_resource_logic.callback_primary_logic"
     monkeypatch.setattr(
-        "middleware.callback_primary_logic.get_oauth_callback_info",
+        f"{PATCH_ROOT}.get_oauth_callback_info",
         mock_get_oauth_callback_info,
     )
     monkeypatch.setattr(
-        "middleware.callback_primary_logic.get_flask_session_callback_info",
+        f"{PATCH_ROOT}.get_flask_session_callback_info",
         mock_get_flask_session_callback_info,
     )
 
@@ -513,6 +503,15 @@ def create_test_user_setup(
         api_authorization_header={"Authorization": f"Basic {api_key}"},
         jwt_authorization_header={"Authorization": f"Bearer {jwt_tokens.access_token}"},
     )
+
+
+def create_admin_test_user_setup(flask_client: FlaskClient) -> TestUserSetup:
+    db_client = DatabaseClient()
+    tus_admin = create_test_user_setup(
+        flask_client,
+        permissions=[PermissionsEnum.READ_ALL_USER_INFO, PermissionsEnum.DB_WRITE],
+    )
+    return tus_admin
 
 
 def create_test_user_setup_db_client(
@@ -562,3 +561,7 @@ def add_query_params(url, params: dict):
 
     # Rebuild the URL with the updated query parameters
     return urlunparse(url_parts)
+
+
+def get_notification_valid_date():
+    return datetime.now(timezone.utc) - timedelta(days=30)

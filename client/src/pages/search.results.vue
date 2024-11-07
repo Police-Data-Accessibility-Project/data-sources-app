@@ -11,14 +11,14 @@
 		<section class="w-full h-full">
 			<div class="flex flex-col sm:flex-row sm:justify-between mb-4">
 				<div>
-					<h1>
+					<h1 class="like-h4 mb-4">
 						Results {{ searchData && 'for ' + getLocationText(searchData) }}
 					</h1>
 					<nav
 						class="flex gap-2 mb-4 [&>*]:text-[.72rem] [&>*]:xs:text-med [&>*]:sm:text-lg sm:gap-4"
 					>
 						<span class="text-neutral-500">Jump to:</span>
-						<a
+						<RouterLink
 							v-for="locale in ALL_LOCATION_TYPES"
 							:key="`${locale} anchor`"
 							class="capitalize"
@@ -26,7 +26,8 @@
 								'text-neutral-500 pointer-events-none cursor-auto':
 									!searchData.results[locale].count,
 							}"
-							:href="`#${locale}`"
+							:to="{ ...route, hash: `#${locale}` }"
+							replace
 							@click="
 								() =>
 									// If route hash already includes locale, handle scroll manually
@@ -38,12 +39,12 @@
 							<span v-if="searchData.results[locale].count">
 								({{ searchData.results[locale].count }})
 							</span>
-						</a>
+						</RouterLink>
 					</nav>
 				</div>
 				<Button
 					class="hidden sm:block max-h-12"
-					intent="secondary"
+					intent="primary"
 					@click="() => console.log('Follow button pressed')"
 				>
 					Follow
@@ -63,7 +64,7 @@
 		>
 			<Button
 				class="mb-2 w-full xl:hidden"
-				intent="secondary"
+				intent="primary"
 				@click="isSearchShown = !isSearchShown"
 			>
 				{{ isSearchShown ? 'Hide search' : 'Show search' }}
@@ -91,7 +92,6 @@ import { useSearchStore } from '@/stores/search';
 import { NavigationResult } from 'unplugin-vue-router/runtime';
 import { onBeforeUpdate, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import _isEqual from 'lodash/_baseIsEqual';
 import { ALL_LOCATION_TYPES } from '@/util/constants';
 import {
 	getMostNarrowSearchLocationWithResults,
@@ -101,43 +101,38 @@ import {
 	getAnchorLinkText,
 	getAllIdsSearched,
 } from '@/util/searchResults';
+import _isEqual from 'lodash/isEqual';
 
 const { search, setMostRecentSearchIds } = useSearchStore();
-const results = ref(null);
-const params = ref(null);
+
+const query = ref();
+const data = ref();
 
 export const useSearchData = defineBasicLoader(
 	'/search/results',
 	async (route) => {
-		const searched = getMostNarrowSearchLocationWithResults(route.query);
-		// If query matches cached query, return cached results
-		if (_isEqual(params.value, route.query) && results.value) {
-			const r = groupResultsByAgency(results.value);
+		const params = route.query;
+		const searched = getMostNarrowSearchLocationWithResults(params);
 
-			return {
-				results: r,
-				searched,
-				params: route.query,
-			};
-		}
-
-		// Otherwise, fetch, cache, and return
-		const res = await search(route.query);
-		results.value = res;
-		params.value = route.query;
+		const response =
+			// Local caching to skip even the pinia method in case of only the hash changing while on the route.
+			_isEqual(params, query.value) && data.value
+				? data.value
+				: await search(route.query);
 
 		// On initial fetch - get hash
-		const hash = normalizeLocaleForHash(searched, res);
-		if (!route.hash) {
+		const hash = normalizeLocaleForHash(searched, response.data);
+		if (!route.hash && hash) {
 			return new NavigationResult({ ...route, hash: `#${hash}` });
 		}
 
-		const r = groupResultsByAgency(res);
+		data.value = response;
+		query.value = params;
 
 		return {
-			results: r,
+			results: groupResultsByAgency(response.data),
 			searched,
-			params: route.query,
+			params,
 		};
 	},
 );
@@ -176,11 +171,6 @@ function onWindowWidthSetIsSearchShown() {
 </script>
 
 <style scoped>
-h1 {
-	/* TODO: decouple heading styling from heading level in design-system (or at least provide classes that can perform these overrides more efficiently) */
-	@apply text-brand-wine dark:text-neutral-500 font-semibold text-lg tracking-[.07em] uppercase;
-}
-
 .v-enter-active,
 .v-leave-active {
 	transition: opacity 0.5s ease;

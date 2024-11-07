@@ -5,33 +5,40 @@
 	</main>
 	<main v-else class="pdap-flex-container mx-auto max-w-2xl">
 		<h1>Change your password</h1>
-		<Form
+		<FormV2
 			id="change-password"
 			class="flex flex-col"
 			data-test="change-password-form"
 			name="change-password"
 			:error="error"
-			:schema="FORM_SCHEMA"
+			:schema="VALIDATION_SCHEMA"
 			@change="onChange"
 			@submit="onSubmit"
+			@input="onInput"
 		>
+			<InputPassword
+				v-for="input of INPUTS"
+				v-bind="{ ...input }"
+				:key="input.name"
+			/>
+
 			<PasswordValidationChecker ref="passwordRef" />
 
 			<Button class="max-w-full" type="submit">
 				{{ loading ? 'Loading...' : 'Change password' }}
 			</Button>
-		</Form>
+		</FormV2>
 	</main>
 </template>
 
 <script setup>
-import { Button, Form } from 'pdap-design-system';
+import { Button, FormV2, InputPassword } from 'pdap-design-system';
 import { useUserStore } from '@/stores/user';
 import PasswordValidationChecker from '@/components/PasswordValidationChecker.vue';
 import { ref } from 'vue';
 
 // Constants
-const FORM_SCHEMA = [
+const INPUTS = [
 	{
 		autofill: 'new-password',
 		'data-test': 'password',
@@ -40,13 +47,6 @@ const FORM_SCHEMA = [
 		label: 'Password',
 		type: 'password',
 		placeholder: 'Your updated password',
-		value: '',
-		validators: {
-			password: {
-				message: 'Please provide your password',
-				value: true,
-			},
-		},
 	},
 	{
 		autofill: 'new-password',
@@ -56,8 +56,27 @@ const FORM_SCHEMA = [
 		label: 'Confirm Password',
 		type: 'password',
 		placeholder: 'Confirm your updated password',
-		value: '',
+	},
+];
+const VALIDATION_SCHEMA = [
+	{
+		name: 'password',
 		validators: {
+			required: {
+				value: true,
+			},
+			password: {
+				message: 'Please provide your password',
+				value: true,
+			},
+		},
+	},
+	{
+		name: 'confirmPassword',
+		validators: {
+			required: {
+				value: true,
+			},
 			password: {
 				message: 'Please confirm your password',
 				value: true,
@@ -85,6 +104,12 @@ function onChange(formValues) {
 
 	if (error.value) {
 		handleValidatePasswordMatch(formValues);
+	}
+}
+
+function onInput(e) {
+	if (e.target.name === 'password') {
+		passwordRef.value.updatePasswordValidation(e.target.value);
 	}
 }
 

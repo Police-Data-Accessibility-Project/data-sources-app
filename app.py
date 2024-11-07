@@ -5,12 +5,14 @@ from flask import Flask
 from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 
+from middleware.util import get_env_variable
 from resources.Callback import namespace_auth
-from resources.CreateUserWithGithub import namespace_create_user_with_github
 from resources.DataRequests import namespace_data_requests
+from resources.GithubDataRequests import namespace_github
 from resources.HomepageSearchCache import namespace_homepage_search_cache
 from resources.LinkToGithub import namespace_link_to_github
 from resources.LoginWithGithub import namespace_login_with_github
+from resources.Notifications import namespace_notifications
 from resources.Permissions import namespace_permissions
 from resources.Search import namespace_search
 from resources.TypeaheadSuggestions import (
@@ -21,7 +23,7 @@ from flask_restx import Api
 from config import config, oauth, limiter, jwt
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from resources.Agencies import namespace_agencies
-from resources.ApiKey import namespace_api_key
+from resources.ApiKeyResource import namespace_api_key
 from resources.Archives import namespace_archives
 from resources.DataSources import namespace_data_source
 from resources.Login import namespace_login
@@ -50,7 +52,6 @@ NAMESPACES = [
     namespace_auth,
     namespace_link_to_github,
     namespace_login_with_github,
-    namespace_create_user_with_github,
     namespace_permissions,
     namespace_create_test_user,
     namespace_data_requests,
@@ -58,6 +59,8 @@ NAMESPACES = [
     # namespace_homepage_search_cache,
     namespace_url_checker,
     namespace_user,
+    namespace_github,
+    namespace_notifications,
 ]
 
 MY_PREFIX = "/api"
@@ -89,7 +92,7 @@ class ReverseProxied(object):
 
 
 def get_flask_app_cookie_encryption_key() -> str:
-    return os.getenv("FLASK_APP_COOKIE_ENCRYPTION_KEY")
+    return get_env_variable("FLASK_APP_COOKIE_ENCRYPTION_KEY")
 
 
 class UpdatedJSONProvider(DefaultJSONProvider):

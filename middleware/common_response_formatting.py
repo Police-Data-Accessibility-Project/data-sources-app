@@ -6,7 +6,7 @@ from marshmallow import Schema
 
 from middleware.constants import DATA_KEY
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.response_schemas import (
+from middleware.schema_and_dto_logic.common_response_schemas import (
     IDAndMessageSchema,
     GetManyResponseSchema,
 )
@@ -20,7 +20,8 @@ def format_list_response(data: list, message: str = "") -> dict:
     Returns:
         dict: A dictionary with the count and data keys.
     """
-    return {"message": message, "count": len(data), DATA_KEY: data}
+    data.update({"message": message})
+    return data
 
 
 def multiple_results_response(data: list, message: str = "") -> Response:
@@ -34,7 +35,6 @@ def multiple_results_response(data: list, message: str = "") -> Response:
     return FlaskResponseManager.make_response(
         format_list_response(data=data, message=message),
         HTTPStatus.OK,
-        validation_schema=GetManyResponseSchema,
     )
 
 

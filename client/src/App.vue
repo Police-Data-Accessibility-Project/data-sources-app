@@ -3,11 +3,9 @@
 		<Header :logo-image-src="lockup" />
 		<ErrorBoundary component="main">
 			<router-view v-slot="{ Component }">
-				<!-- TODO: Fix route transition. It works everywhere except navigating ANYWHERE from /sign-up, where it breaks the app 🤯 
-				---- I suspect this may be a bug in unplugin-vue-router. Opening an issue in their repo if I can create a small reproducible example. -->
-				<!-- <transition name="route-fade" mode="out-in"> -->
-				<component :is="Component" />
-				<!-- </transition> -->
+				<transition name="route-fade" mode="out-in">
+					<component :is="Component" />
+				</transition>
 			</router-view>
 		</ErrorBoundary>
 		<Footer :logo-image-src="acronym" />
@@ -54,7 +52,7 @@ main {
 
 .route-fade-enter-active,
 .route-fade-leave-active {
-	transition: opacity 300ms ease-in;
+	transition: opacity 200ms ease-in;
 }
 
 .route-fade-enter-from,

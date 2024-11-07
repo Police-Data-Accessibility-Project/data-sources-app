@@ -13,10 +13,9 @@ from flask.testing import FlaskClient
 from flask_restful import Resource
 
 from resources.Agencies import AgenciesByPage, AgenciesById
-from resources.ApiKey import ApiKey, API_KEY_ROUTE
+from resources.ApiKeyResource import ApiKeyResource, API_KEY_ROUTE
 from resources.Archives import Archives
 from resources.Callback import Callback
-from resources.CreateUserWithGithub import CreateUserWithGithub
 from resources.DataRequests import (
     DataRequests,
     DataRequestsById,
@@ -88,7 +87,7 @@ test_parameters = [
     TestParameters(User, "/user", [POST, PUT]),
     TestParameters(Login, "/login", [POST]),
     TestParameters(RefreshSession, "/refresh-session", [POST]),
-    TestParameters(ApiKey, f"/auth{API_KEY_ROUTE}", [POST]),
+    TestParameters(ApiKeyResource, f"/auth{API_KEY_ROUTE}", [POST]),
     TestParameters(RequestResetPassword, "/request-reset-password", [POST]),
     TestParameters(ResetPassword, "/reset-password", [POST]),
     TestParameters(ResetTokenValidation, "/reset-token-validation", [POST]),
@@ -117,8 +116,7 @@ test_parameters = [
     TestParameters(TypeaheadLocations, "/typeahead/locations", [GET]),
     TestParameters(Callback, "auth/callback", [GET]),
     TestParameters(LinkToGithub, "auth/link-to-github", [POST]),
-    TestParameters(LoginWithGithub, "auth/login-with-github", [POST]),
-    TestParameters(CreateUserWithGithub, "auth/create-user-with-github", [POST]),
+    TestParameters(LoginWithGithub, "auth/login-with-github", [GET]),
     TestParameters(Permissions, "auth/permissions", [GET, PUT]),
     TestParameters(DataRequests, "/data-requests", [GET, POST]),
     TestParameters(

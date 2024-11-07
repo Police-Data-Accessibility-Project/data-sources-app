@@ -8,14 +8,12 @@
 import { Spinner } from 'pdap-design-system';
 import { onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
-import { useRouter, useRoute } from 'vue-router';
+import { useRoute } from 'vue-router';
 
 const auth = useAuthStore();
-const router = useRouter();
 const route = useRoute();
 
 onMounted(async () => {
-	await auth.logout();
-	router.replace({ path: route.redirectedFrom ?? '/' });
+	await auth.logout(route?.redirectedFrom);
 });
 </script>

@@ -37,7 +37,8 @@ function handleAuthRefresh() {
 		return auth.refreshAccessToken();
 		// User's token is expired, log out.
 	} else if (difference <= 0 && auth.userId) {
-		return auth.logout(route.meta.auth);
+		auth.redirectTo = route;
+		return auth.logout(route);
 	}
 }
 </script>

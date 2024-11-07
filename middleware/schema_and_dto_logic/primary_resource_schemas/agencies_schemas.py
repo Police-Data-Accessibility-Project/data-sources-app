@@ -1,13 +1,21 @@
 from dataclasses import dataclass
 from typing import Optional, Union
 
-from marshmallow import fields, Schema, validate, validates_schema, ValidationError
+from marshmallow import fields, Schema, validates_schema, ValidationError
 
-from database_client.enums import LocationType
 from middleware.enums import JurisdictionType, AgencyType
-from middleware.schema_and_dto_logic.response_schemas import (
+from middleware.schema_and_dto_logic.common_response_schemas import (
     MessageSchema,
     GetManyResponseSchemaBase,
+)
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+    GetByIDBaseSchema,
+    GetByIDBaseDTO,
+    STATE_ISO_FIELD,
+    COUNTY_FIPS_FIELD,
+    LOCALITY_NAME_FIELD,
+    LocationInfoSchema,
+    LocationInfoDTO,
 )
 from utilities.enums import SourceMappingEnum
 
@@ -36,7 +44,6 @@ def get_jurisdiction_type_field(required: bool) -> fields.Enum:
 
 class AgencyInfoBaseSchema(Schema):
     homepage_url = fields.Str(
-        required=False,
         allow_none=True,
         metadata={
             "description": "The URL of the agency's homepage.",
@@ -140,100 +147,12 @@ class AgencyInfoBaseSchema(Schema):
 
 class AgencyInfoPostSchema(AgencyInfoBaseSchema):
     submitted_name = get_submitted_name_field(required=True)
-    airtable_uid = fields.Str(
-        required=True,
-        metadata={
-            "description": "The Airtable UID of the agency.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
     jurisdiction_type = get_jurisdiction_type_field(required=True)
 
 
 class AgencyInfoPutSchema(AgencyInfoBaseSchema):
     submitted_name = get_submitted_name_field(required=False)
     jurisdiction_type = get_jurisdiction_type_field(required=False)
-
-
-STATE_ISO_FIELD = fields.Str(
-    required=False,
-    allow_none=True,
-    metadata={
-        "description": "The 2 letter ISO code of the state in which the agency is located. Does not apply to federal agencies",
-        "source": SourceMappingEnum.JSON,
-    },
-    validate=validate.Length(2),
-)
-COUNTY_FIPS_FIELD = fields.Str(
-    required=False,
-    allow_none=True,
-    metadata={
-        "description": "The unique 5-digit FIPS code of the county in which the agency is located."
-        "Does not apply to state or federal agencies.",
-        "source": SourceMappingEnum.JSON,
-    },
-    validate=validate.Length(5),
-)
-LOCALITY_NAME_FIELD = fields.Str(
-    required=False,
-    allow_none=True,
-    metadata={
-        "description": "The name of the locality in which the agency is located.",
-        "source": SourceMappingEnum.JSON,
-    },
-)
-
-
-class LocationInfoSchema(Schema):
-    type = fields.Enum(
-        required=True,
-        enum=LocationType,
-        by_value=fields.Str,
-        metadata={
-            "description": "The type of location. ",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    state_iso = STATE_ISO_FIELD
-    county_fips = COUNTY_FIPS_FIELD
-    locality_name = LOCALITY_NAME_FIELD
-
-    @validates_schema
-    def validate_location_fields(self, data, **kwargs):
-        location_type = data.get("type")
-
-        if location_type == LocationType.STATE:
-            if data.get("state_iso") is None:
-                raise ValidationError("state_iso is required for location type STATE.")
-            if (
-                data.get("county_fips") is not None
-                or data.get("locality_name") is not None
-            ):
-                raise ValidationError(
-                    "county_fips and locality_name must be None for location type STATE."
-                )
-
-        elif location_type == LocationType.COUNTY:
-            if data.get("county_fips") is None:
-                raise ValidationError(
-                    "county_fips is required for location type COUNTY."
-                )
-            if data.get("state_iso") is None:
-                raise ValidationError("state_iso is required for location type COUNTY.")
-            if data.get("locality_name"):
-                raise ValidationError(
-                    "locality_name must be None for location type COUNTY."
-                )
-
-        elif location_type == LocationType.LOCALITY:
-            if data.get("locality_name") is None:
-                raise ValidationError(
-                    "locality_name is required for location type CITY."
-                )
-            if data.get("state_iso") is None:
-                raise ValidationError("state_iso is required for location type CITY.")
-            if data.get("county_fips") is None:
-                raise ValidationError("county_fips is required for location type CITY.")
 
 
 @dataclass
@@ -258,7 +177,6 @@ class AgencyInfoPutDTO:
 class AgencyInfoPostDTO:
     submitted_name: str
     jurisdiction_type: JurisdictionType
-    airtable_uid: str
     agency_type: AgencyType
     multi_agency: bool = False
     no_web_presence: bool = False
@@ -273,17 +191,9 @@ class AgencyInfoPostDTO:
     submitter_contact: Optional[str] = None
 
 
-@dataclass
-class LocationInfoDTO:
-    type: LocationType
-    state_iso: str
-    county_fips: Optional[str] = None
-    locality_name: Optional[str] = None
-
-
 def get_agency_info_field(
     schema: type[AgencyInfoBaseSchema],
-    dto_class: type[Union[AgencyInfoPutDTO, AgencyInfoPostDTO]],
+    nested_dto_class: type[Union[AgencyInfoPutDTO, AgencyInfoPostDTO]],
 ) -> fields.Nested:
     return fields.Nested(
         schema,
@@ -291,7 +201,7 @@ def get_agency_info_field(
         metadata={
             "description": "Information about the agency",
             "source": SourceMappingEnum.JSON,
-            "nested_dto_class": dto_class,
+            "nested_dto_class": nested_dto_class,
         },
     )
 
@@ -327,9 +237,10 @@ class AgenciesPostPutBaseSchema(Schema):
 
 
 class AgenciesPostSchema(AgenciesPostPutBaseSchema):
+    #
     agency_info = get_agency_info_field(
         schema=AgencyInfoPostSchema,
-        dto_class=AgencyInfoPostDTO,
+        nested_dto_class=AgencyInfoPostDTO,
     )
 
     @validates_schema
@@ -339,9 +250,10 @@ class AgenciesPostSchema(AgenciesPostPutBaseSchema):
 
 
 class AgenciesPutSchema(AgenciesPostPutBaseSchema):
+    #
     agency_info = get_agency_info_field(
         schema=AgencyInfoPutSchema,
-        dto_class=AgencyInfoPutDTO,
+        nested_dto_class=AgencyInfoPutDTO,
     )
 
     @validates_schema
@@ -373,10 +285,10 @@ class AgenciesPutDTO:
 
 
 class AgenciesGetSchema(AgencyInfoBaseSchema):
-    airtable_uid = fields.Str(
+    id = fields.Integer(
         required=True,
         metadata={
-            "description": "The Airtable UID of the agency.",
+            "description": "The id of the agency.",
             "source": SourceMappingEnum.JSON,
         },
     )
@@ -455,3 +367,24 @@ class AgenciesGetManyResponseSchema(GetManyResponseSchemaBase):
             "source": SourceMappingEnum.JSON,
         },
     )
+
+
+class RelatedAgencyByIDSchema(GetByIDBaseSchema):
+    agency_id = fields.Integer(
+        required=True,
+        metadata={
+            "description": "The id of the related agency.",
+            "source": SourceMappingEnum.PATH,
+        },
+    )
+
+
+@dataclass
+class RelatedAgencyByIDDTO(GetByIDBaseDTO):
+    agency_id: int
+
+    def get_where_mapping(self):
+        return {
+            "data_source_id": int(self.resource_id),
+            "agency_id": int(self.agency_id),
+        }

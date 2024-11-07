@@ -2,8 +2,10 @@ from http import HTTPStatus
 
 import psycopg
 
+from database_client.database_client import DatabaseClient
 from middleware.enums import CallbackFunctionsEnum
-from tests.conftest import dev_db_connection, flask_client_with_db
+from resources.endpoint_schema_config import SchemaConfigs
+from tests.conftest import flask_client_with_db
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,
     create_api_key,
@@ -19,9 +21,7 @@ from tests.helper_scripts.run_and_validate_request import run_and_validate_reque
 from tests.helper_scripts.simple_result_validators import check_response_status
 
 
-def test_link_to_github(
-    flask_client_with_db, dev_db_connection: psycopg.Connection, monkeypatch
-):
+def test_link_to_github(flask_client_with_db, monkeypatch):
     tus = create_test_user_setup(flask_client_with_db)
     mock_setup_callback_session = patch_setup_callback_session(
         monkeypatch, "LinkToGithub"
@@ -50,16 +50,21 @@ def test_link_to_github(
         callback_functions_enum=CallbackFunctionsEnum.LINK_TO_GITHUB,
         callback_params=mock_params,
     )
-    run_and_validate_request(
+    response_json = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
         endpoint="auth/callback",
+        expected_schema=SchemaConfigs.AUTH_GITHUB_LINK.value.primary_output_schema,
     )
+    message = response_json["message"]
+    assert message == "Successfully linked Github account"
 
-    cursor = dev_db_connection.cursor()
-    cursor.execute(
-        "SELECT account_type, account_identifier FROM user_external_accounts WHERE email = %s",
-        (tus.user_info.email,),
-    )
-    result = cursor.fetchone()
-    assert result == ("github", github_user_info.user_id)
+    db_client = DatabaseClient()
+    result = db_client.execute_raw_sql(
+        query="SELECT account_type, account_identifier FROM user_external_accounts WHERE email = %s",
+        vars=(tus.user_info.email,),
+    )[0]
+    assert result == {
+        "account_identifier": github_user_info.user_id,
+        "account_type": "github",
+    }

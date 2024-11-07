@@ -1,3 +1,7 @@
+"""
+Enums utilized within the Database Client
+"""
+
 from enum import Enum
 
 
@@ -137,3 +141,26 @@ class AgencyAggregation(Enum):
     LOCAL = "local"
     STATE = "state"
     FEDERAL = "federal"
+
+
+class RequestUrgency(Enum):
+    """
+    Correlates to the request_urgency enum in the database
+    """
+
+    URGENT = "urgent"  # Less than a week
+    SOMEWHAT_URGENT = "somewhat_urgent"  # Less than a month
+    NOT_URGENT = "not_urgent"  # A few months
+    LONG_TERM = "long_term"  # A year or more
+    INDEFINITE = "indefinite_unknown"  # Indefinite or unknown length of time
+
+
+class EntityType(Enum):
+    DATA_SOURCE = "Data Source"
+    DATA_REQUEST = "Data Request"
+
+
+class EventType(Enum):
+    REQUEST_READY_TO_START = "Request Ready to Start"
+    REQUEST_COMPLETE = "Request Complete"
+    DATA_SOURCE_APPROVED = "Data Source Approved"

@@ -77,7 +77,7 @@ export function getAllIdsSearched(resultsByAgency) {
 			Object.values(resultsByAgency[locale].sourcesByAgency)
 				.flatMap((arr) => arr)
 				.forEach((source) => {
-					ids.push(source.airtable_uid);
+					ids.push(source.id);
 				});
 		}
 	});

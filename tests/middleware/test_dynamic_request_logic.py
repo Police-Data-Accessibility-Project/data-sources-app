@@ -4,7 +4,8 @@ from unittest.mock import MagicMock
 import pytest
 
 from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import SubqueryParameters, WhereMapping
+from database_client.db_client_dataclasses import WhereMapping
+from database_client.subquery_logic import SubqueryParameters
 from database_client.enums import ColumnPermissionEnum
 from middleware.dynamic_request_logic.common_functions import check_for_id
 from middleware.dynamic_request_logic.delete_logic import (
@@ -25,7 +26,9 @@ from middleware.dynamic_request_logic.put_logic import put_entry
 from middleware.dynamic_request_logic.supporting_classes import IDInfo
 from middleware.primary_resource_logic.data_requests import RelatedSourceByIDDTO
 
-from middleware.schema_and_dto_logic.response_schemas import EntryDataResponseSchema
+from middleware.schema_and_dto_logic.common_response_schemas import (
+    EntryDataResponseSchema,
+)
 from middleware.util_dynamic import call_if_not_none, execute_if_not_none
 from tests.conftest import FakeAbort, mock_flask_response_manager
 from tests.helper_scripts.common_mocks_and_patches import (
@@ -127,7 +130,7 @@ def test_get_by_id(monkeypatch):
         relation_name=mock.mp.relation,
         columns=mock.get_permitted_columns.return_value,
         where_mappings=[WhereMapping(column=mock.id_column_name, value=int(mock.id))],
-        subquery_parameters=mock.mp.subquery_params,
+        subquery_parameters=mock.mp.subquery_parameters,
     )
 
     mock.results_dependent_response.assert_called_once_with(
@@ -135,57 +138,6 @@ def test_get_by_id(monkeypatch):
     )
 
     assert result == mock.results_dependent_response.return_value
-
-
-def test_get_many(monkeypatch):
-    mock = MagicMock()
-    multi_monkeypatch(
-        monkeypatch,
-        patch_root=f"{PATCH_ROOT}.get_many_logic",
-        mock=mock,
-        functions_to_patch=[
-            "get_permitted_columns",
-            "optionally_limit_to_requested_columns",
-            "multiple_results_response",
-            "process_subquery_parameters",
-        ],
-    )
-    result = get_many(
-        middleware_parameters=mock.mp,
-        page=mock.page,
-        relation_role_parameters=mock.relation_role_parameters,
-        requested_columns=mock.requested_columns,
-    )
-
-    mock.relation_role_parameters.get_relation_role_from_parameters.assert_called_once_with(
-        access_info=mock.mp.access_info
-    )
-
-    mock.get_permitted_columns.assert_called_once_with(
-        db_client=mock.mp.db_client,
-        relation=mock.mp.relation,
-        role=mock.relation_role_parameters.get_relation_role_from_parameters.return_value,
-        column_permission=ColumnPermissionEnum.READ,
-    )
-
-    mock.optionally_limit_to_requested_columns.assert_called_once_with(
-        mock.get_permitted_columns.return_value, mock.requested_columns
-    )
-
-    mock.mp.db_client_method.assert_called_once_with(
-        mock.mp.db_client,
-        relation_name=mock.mp.relation,
-        columns=mock.optionally_limit_to_requested_columns.return_value,
-        page=mock.page,
-        subquery_parameters=mock.process_subquery_parameters.return_value,
-    )
-
-    mock.multiple_results_response.assert_called_once_with(
-        message=f"{mock.mp.entry_name} found",
-        data=mock.mp.db_client_method.return_value,
-    )
-
-    assert result == mock.multiple_results_response.return_value
 
 
 @pytest.fixture
@@ -261,7 +213,7 @@ def test_put_entry(monkeypatch):
     )
 
     mock.mp.db_client_method.assert_called_once_with(
-        mock.mp.db_client, column_edit_mappings=mock.entry, entry_id=mock.entry_id
+        mock.mp.db_client, column_edit_mappings=mock.entry, entry_id=int(mock.entry_id)
     )
 
     mock.message_response.assert_called_once_with(

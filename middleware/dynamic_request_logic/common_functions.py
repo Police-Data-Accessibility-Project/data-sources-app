@@ -5,7 +5,12 @@ Contains functions common across multiple dynamic request functions
 from http import HTTPStatus
 
 from database_client.database_client import DatabaseClient
-from middleware.dynamic_request_logic.supporting_classes import IDInfo
+from database_client.enums import RelationRoleEnum, ColumnPermissionEnum
+from middleware.column_permission_logic import get_permitted_columns
+from middleware.dynamic_request_logic.supporting_classes import (
+    IDInfo,
+    MiddlewareParameters,
+)
 from middleware.flask_response_manager import FlaskResponseManager
 
 
@@ -29,3 +34,18 @@ def check_for_id(
             message=f"Entry for {id_info.where_mappings} not found.",
         )
     return result[0][id_info.id_column_name]
+
+
+def optionally_get_permitted_columns_to_subquery_parameters_(
+    mp: MiddlewareParameters, relation_role: RelationRoleEnum
+):
+    for parameter in mp.subquery_parameters:
+        if parameter.columns is None:
+            parameter.set_columns(
+                get_permitted_columns(
+                    db_client=mp.db_client,
+                    relation=parameter.relation_name,
+                    role=relation_role,
+                    column_permission=ColumnPermissionEnum.READ,
+                )
+            )

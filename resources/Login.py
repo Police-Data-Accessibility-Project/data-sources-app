@@ -1,15 +1,23 @@
 from flask import Response
 
 from config import limiter
+from middleware.access_logic import NO_AUTH_INFO, AccessInfo
+from middleware.decorators import endpoint_info_2
 from middleware.primary_resource_logic.login_queries import try_logging_in
-from middleware.primary_resource_logic.user_queries import UserRequest
-from resources.resource_helpers import create_jwt_tokens_model
-from middleware.schema_and_dto_logic.model_helpers_with_schemas import create_user_model
+from middleware.primary_resource_logic.user_queries import UserRequestDTO
+from resources.endpoint_schema_config import SchemaConfigs
+from resources.resource_helpers import create_jwt_tokens_model, ResponseInfo
+from middleware.schema_and_dto_logic.dynamic_logic.model_helpers_with_schemas import (
+    create_user_model,
+)
 from utilities.namespace import create_namespace
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 from utilities.enums import SourceMappingEnum
-from middleware.schema_and_dto_logic.non_dto_dataclasses import DTOPopulateParameters
+from middleware.schema_and_dto_logic.non_dto_dataclasses import (
+    DTOPopulateParameters,
+    SchemaPopulateParameters,
+)
 
 namespace_login = create_namespace()
 user_model = create_user_model(namespace_login)
@@ -22,17 +30,15 @@ class Login(PsycopgResource):
     A resource for authenticating users. Allows users to log in using their email and password.
     """
 
-    @handle_exceptions
-    @namespace_login.expect(user_model)
-    @namespace_login.response(200, "Success: User logged in", jwt_tokens_model)
-    @namespace_login.response(500, "Error: Internal server error")
-    @namespace_login.response(400, "Error: Bad Request Missing or bad API key")
-    @namespace_login.response(403, "Error: Forbidden")
-    @namespace_login.doc(
+    @endpoint_info_2(
+        namespace=namespace_login,
+        auth_info=NO_AUTH_INFO,
         description="Allows a user to log in. If successful, returns a session token.",
+        response_info=ResponseInfo(success_message="User logged in."),
+        schema_config=SchemaConfigs.LOGIN_POST,
     )
     @limiter.limit("5 per minute")
-    def post(self) -> Response:
+    def post(self, access_info: AccessInfo) -> Response:
         """
         Processes the login request. Validates user credentials against the stored hashed password and,
         if successful, generates a session token for the user.
@@ -42,8 +48,5 @@ class Login(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=try_logging_in,
-            dto_populate_parameters=DTOPopulateParameters(
-                dto_class=UserRequest,
-                source=SourceMappingEnum.JSON,
-            ),
+            schema_populate_parameters=SchemaConfigs.LOGIN_POST.value.get_schema_populate_parameters(),
         )

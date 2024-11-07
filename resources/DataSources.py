@@ -6,36 +6,34 @@ from middleware.access_logic import (
     GET_AUTH_INFO,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    EntryDataRequestDTO,
+    EntryCreateUpdateRequestDTO,
     EntryDataRequestSchema,
     GetByIDBaseSchema,
     GetByIDBaseDTO,
 )
 from middleware.decorators import (
     endpoint_info,
+    endpoint_info_2,
 )
-from middleware.primary_resource_logic.data_source_queries import (
+from middleware.primary_resource_logic.data_sources_logic import (
     get_data_sources_wrapper,
     data_source_by_id_wrapper,
-    get_data_sources_for_map_wrapper,
     add_new_data_source_wrapper,
     update_data_source_wrapper,
-    DataSourcesGetRequestSchemaMany,
-    DataSourcesGetRequestDTOMany,
+    DataSourcesGetManyRequestDTO,
     delete_data_source_wrapper,
+    create_data_source_related_agency,
+    delete_data_source_related_agency,
+    get_data_source_related_agencies,
 )
-from middleware.schema_and_dto_logic.dynamic_schema_documentation_construction import (
-    get_restx_param_documentation,
-)
-from middleware.schema_and_dto_logic.model_helpers_with_schemas import (
-    CRUDModels,
-)
+
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
-    DataSourcesGetByIDSchema,
-    DataSourcesGetManySchema,
+    DataSourcesGetManyRequestSchema,
 )
+from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import (
     create_response_dictionary,
+    ResponseInfo,
 )
 from utilities.namespace import create_namespace, AppNamespaces
 from resources.PsycopgResource import PsycopgResource
@@ -43,19 +41,6 @@ from resources.PsycopgResource import PsycopgResource
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 
 namespace_data_source = create_namespace(AppNamespaces.DATA_SOURCES)
-models = CRUDModels(namespace_data_source)
-
-get_by_id_model = get_restx_param_documentation(
-    namespace=namespace_data_source,
-    schema=DataSourcesGetByIDSchema,
-    model_name="DataSourcesGetByIDSchema",
-).model
-
-get_many_model = get_restx_param_documentation(
-    namespace=namespace_data_source,
-    schema=DataSourcesGetManySchema,
-    model_name="DataSourcesGetManySchema",
-).model
 
 
 @namespace_data_source.route("/<resource_id>")
@@ -65,13 +50,14 @@ class DataSourceById(PsycopgResource):
     Provides methods for retrieving and updating data source details.
     """
 
-    @endpoint_info(
+    @endpoint_info_2(
         namespace=namespace_data_source,
         auth_info=GET_AUTH_INFO,
-        responses=create_response_dictionary(
+        schema_config=SchemaConfigs.DATA_SOURCES_GET_BY_ID,
+        response_info=ResponseInfo(
             success_message="Returns information on the specific data source.",
-            success_model=get_by_id_model,
         ),
+        description="Get details of a specific data source by its ID.",
     )
     def get(self, access_info: AccessInfo, resource_id: str) -> Response:
         """
@@ -91,14 +77,14 @@ class DataSourceById(PsycopgResource):
             ),
         )
 
-    @endpoint_info(
+    @endpoint_info_2(
         namespace=namespace_data_source,
         auth_info=WRITE_ONLY_AUTH_INFO,
-        input_model=models.entry_data_request_model,
-        description="Update details of a specific data source by its ID.",
-        responses=create_response_dictionary(
+        schema_config=SchemaConfigs.DATA_SOURCES_PUT,
+        response_info=ResponseInfo(
             success_message="Data source successfully updated.",
         ),
+        description="Update details of a specific data source by its ID.",
     )
     def put(self, access_info: AccessInfo, resource_id: str) -> Response:
         """
@@ -113,7 +99,7 @@ class DataSourceById(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=update_data_source_wrapper,
             schema_populate_parameters=SchemaPopulateParameters(
-                dto_class=EntryDataRequestDTO,
+                dto_class=EntryCreateUpdateRequestDTO,
                 schema=EntryDataRequestSchema(),
             ),
             data_source_id=resource_id,
@@ -151,15 +137,14 @@ class DataSources(PsycopgResource):
     Provides methods for retrieving all data sources and adding new ones.
     """
 
-    @endpoint_info(
+    @endpoint_info_2(
         namespace=namespace_data_source,
         auth_info=GET_AUTH_INFO,
-        input_schema=DataSourcesGetRequestSchemaMany(),
-        description="Retrieves all data sources.",
-        responses=create_response_dictionary(
+        schema_config=SchemaConfigs.DATA_SOURCES_GET_MANY,
+        response_info=ResponseInfo(
             success_message="Returns all requested data sources.",
-            success_model=get_many_model,
         ),
+        description="Retrieves all data sources.",
     )
     def get(self, access_info: AccessInfo) -> Response:
         """
@@ -172,18 +157,18 @@ class DataSources(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=get_data_sources_wrapper,
             schema_populate_parameters=SchemaPopulateParameters(
-                schema=DataSourcesGetRequestSchemaMany(),
-                dto_class=DataSourcesGetRequestDTOMany,
+                schema=DataSourcesGetManyRequestSchema(),
+                dto_class=DataSourcesGetManyRequestDTO,
             ),
             access_info=access_info,
         )
 
-    @endpoint_info(
+    @endpoint_info_2(
         namespace=namespace_data_source,
         auth_info=WRITE_ONLY_AUTH_INFO,
-        responses=create_response_dictionary(
+        schema_config=SchemaConfigs.DATA_SOURCES_POST,
+        response_info=ResponseInfo(
             success_message="Data source successfully added.",
-            success_model=models.id_and_message_model,
         ),
         description="Adds a new data source.",
     )
@@ -196,7 +181,7 @@ class DataSources(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=add_new_data_source_wrapper,
-            dto_populate_parameters=EntryDataRequestDTO.get_dto_populate_parameters(),
+            schema_populate_parameters=SchemaConfigs.DATA_SOURCES_POST.value.get_schema_populate_parameters(),
             access_info=access_info,
         )
 
@@ -232,3 +217,76 @@ class DataSources(PsycopgResource):
 #         - A dictionary containing the count of data sources and their details.
 #         """
 #         return self.run_endpoint(get_data_sources_for_map_wrapper)
+
+# region Related Agencies
+
+
+@namespace_data_source.route("/<resource_id>/related-agencies")
+class DataSourcesRelatedAgencies(PsycopgResource):
+
+    @endpoint_info_2(
+        namespace=namespace_data_source,
+        auth_info=GET_AUTH_INFO,
+        schema_config=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_GET,
+        response_info=ResponseInfo(
+            success_message="Related agencies successfully retrieved.",
+        ),
+        description="Get related agencies to a data source",
+    )
+    def get(self, resource_id: str, access_info: AccessInfo) -> Response:
+        """
+        Get related agencies to a data source.
+        """
+        return self.run_endpoint(
+            wrapper_function=get_data_source_related_agencies,
+            schema_populate_parameters=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_GET.value.get_schema_populate_parameters(),
+        )
+
+
+@namespace_data_source.route("/<resource_id>/related-agencies/<agency_id>")
+class DataSourcesRelatedAgenciesById(PsycopgResource):
+
+    @endpoint_info_2(
+        namespace=namespace_data_source,
+        auth_info=WRITE_ONLY_AUTH_INFO,
+        schema_config=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_POST,
+        response_info=ResponseInfo(
+            success_message="Data source successfully associated with data request.",
+        ),
+        description="Mark a data source as related to a data request",
+    )
+    def post(
+        self, resource_id: str, agency_id: str, access_info: AccessInfo
+    ) -> Response:
+        """
+        Mark a data source as related to a data request
+        """
+        return self.run_endpoint(
+            wrapper_function=create_data_source_related_agency,
+            schema_populate_parameters=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_POST.value.get_schema_populate_parameters(),
+            access_info=access_info,
+        )
+
+    @endpoint_info_2(
+        namespace=namespace_data_source,
+        auth_info=WRITE_ONLY_AUTH_INFO,
+        schema_config=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_DELETE,
+        response_info=ResponseInfo(
+            success_message="Data source successfully removed from data request.",
+        ),
+        description="Remove an association of a data source with a data request",
+    )
+    def delete(
+        self, resource_id: str, agency_id: str, access_info: AccessInfo
+    ) -> Response:
+        """
+        Remove an association of a data source with a data request
+        """
+        return self.run_endpoint(
+            wrapper_function=delete_data_source_related_agency,
+            schema_populate_parameters=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_DELETE.value.get_schema_populate_parameters(),
+            access_info=access_info,
+        )
+
+
+# endregion

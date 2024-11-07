@@ -3,7 +3,6 @@ import { defineStore } from 'pinia';
 import parseJwt from '../util/parseJwt';
 import router from '../router';
 import { useUserStore } from './user';
-import { useRoute } from 'vue-router';
 
 const HEADERS = {
 	'Content-Type': 'application/json',
@@ -28,6 +27,7 @@ export const useAuthStore = defineStore('auth', {
 	}),
 	persist: {
 		storage: sessionStorage,
+		pick: ['userId', 'tokens'],
 	},
 	actions: {
 		async login(email, password) {
@@ -48,24 +48,32 @@ export const useAuthStore = defineStore('auth', {
 			// Update user store with email
 			user.$patch({ email });
 
-			this.parseTokenAndSetData(response);
+			this.parseTokensAndSetData(response);
 		},
 
-		async logout() {
+		async logout(route) {
 			const user = useUserStore();
-			const route = useRoute();
 
 			this.$patch({
 				userId: null,
-				accessToken: { value: null, expires: Date.now() },
-				redirectTo: null,
+				tokens: {
+					accessToken: {
+						value: null,
+						expires: Date.now(),
+					},
+					refreshToken: {
+						value: null,
+						expires: Date.now(),
+					},
+				},
+				redirectTo: route,
 			});
 
 			user.$patch({
 				email: '',
 			});
 
-			if (route.redirectedFrom?.meta.auth) router.push({ path: '/sign-in' });
+			router.push(route?.meta.auth ? '/sign-in' : '/');
 		},
 
 		async refreshAccessToken() {
@@ -73,21 +81,21 @@ export const useAuthStore = defineStore('auth', {
 			try {
 				const response = await axios.post(
 					REFRESH_SESSION_URL,
-					{ session_token: this.$state.accessToken.value },
+					{ session_token: this.$state.tokens.accessToken.value },
 					{
 						headers: {
 							...HEADERS,
-							authorization: `Basic ${this.refreshToken.value}`,
+							authorization: `Bearer ${this.$state.tokens.refreshToken.value}`,
 						},
 					},
 				);
-				return this.parseTokenAndSetData(response);
+				return this.parseTokensAndSetData(response);
 			} catch (error) {
 				throw new Error(error.response?.data?.message);
 			}
 		},
 
-		parseTokenAndSetData(response) {
+		parseTokensAndSetData(response) {
 			const accessToken = response.data.access_token;
 			const refreshToken = response.data.refresh_token;
 			const accessTokenParsed = parseJwt(accessToken);
