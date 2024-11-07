@@ -7,7 +7,8 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggesti
     TypeaheadLocationsResponseSchema
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import LocationInfoSchema, GetManyRequestsBaseSchema, \
     GetByIDBaseSchema, LocationInfoExpandedSchema
-from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import DataRequestLocationInfoPostDTO
+from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import DataRequestLocationInfoPostDTO, \
+    DataRequestsPutDTO
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
     DataSourceExpandedSchema,
 )
@@ -160,7 +161,23 @@ class DataRequestsGetSchemaBase(DataRequestsSchema):
         metadata=get_json_metadata("The location ids associated with the data request."),
     )
 
-
+class DataRequestsPutSchema(Schema):
+    entry_data = fields.Nested(
+        nested=DataRequestsSchema(
+            exclude=[
+                "id",
+                "date_created",
+                "date_status_last_changed",
+                "creator_user_id",
+            ],
+            partial=True,
+        ),
+        metadata=get_json_metadata(
+            "The information about the data request to be updated",
+            nested_dto_class=DataRequestsPutDTO
+        ),
+        required=True,
+    )
 
 class DataRequestsPostSchema(Schema):
     request_info = fields.Nested(

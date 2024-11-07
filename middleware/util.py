@@ -23,7 +23,7 @@ def get_env_variable(name: str) -> str:
     return value
 
 
-def get_enum_values(en: type[Enum]):
+def get_enum_values(en: type[Enum]) -> list[str]:
     return [e.value for e in en]
 
 
@@ -37,4 +37,14 @@ def dataclass_to_filtered_dict(instance: Any) -> Dict[str, Any]:
         raise TypeError(
             f"Expected a dataclass instance, but got {type(instance).__name__}"
         )
-    return {key: value for key, value in asdict(instance).items() if value is not None}
+    results = {}
+    for key, value in asdict(instance).items():
+        # Special case for Enum
+        if isinstance(value, Enum):
+            results[key] = value.value
+        # Special case for List of Enum
+        elif isinstance(value, list) and len(value) > 0 and isinstance(value[0], Enum):
+            results[key] = [e.value for e in value]
+        elif value is not None:
+            results[key] = value
+    return results

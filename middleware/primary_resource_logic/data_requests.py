@@ -27,7 +27,7 @@ from middleware.dynamic_request_logic.post_logic import post_entry, PostLogic
 from middleware.dynamic_request_logic.put_logic import put_entry
 from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
-    IDInfo,
+    IDInfo, PutPostBase,
 )
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.location_logic import get_location_id, InvalidLocationError
@@ -44,7 +44,8 @@ from middleware.common_response_formatting import (
     message_response, created_id_response,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import DataRequestLocationInfoPostDTO, \
-    GetManyDataRequestsRequestsDTO
+    GetManyDataRequestsRequestsDTO, DataRequestsPutDTO, DataRequestsPutOuterDTO
+from middleware.util import dataclass_to_filtered_dict
 from utilities.enums import SourceMappingEnum
 
 RELATION = Relations.DATA_REQUESTS.value
@@ -298,11 +299,27 @@ def delete_data_request_wrapper(
         ),
     )
 
-
+def optionally_update_github_issue_info(
+    db_client: DatabaseClient,
+    entry_data: DataRequestsPutDTO,
+    data_request_id: int
+):
+    d = {}
+    if entry_data.github_issue_url is not None:
+        d["github_issue_url"] = entry_data.github_issue_url
+    if entry_data.github_issue_number is not None:
+        d["github_issue_number"] = entry_data.github_issue_number
+    if len(d) > 0:
+        db_client._update_entry_in_table(
+            table_name=Relations.DATA_REQUESTS_GITHUB_ISSUE_INFO.value,
+            entry_id=data_request_id,
+            id_column_name="data_request_id",
+            column_edit_mappings=d
+        )
 
 def update_data_request_wrapper(
     db_client: DatabaseClient,
-    dto: EntryCreateUpdateRequestDTO,
+    dto: DataRequestsPutOuterDTO,
     data_request_id: int,
     access_info: AccessInfo,
 ):
@@ -312,6 +329,7 @@ def update_data_request_wrapper(
     :param access_info:
     :return:
     """
+    entry_dict = created_filtered_entry_dict(dto)
     return put_entry(
         middleware_parameters=MiddlewareParameters(
             db_client=db_client,
@@ -320,7 +338,7 @@ def update_data_request_wrapper(
             relation=RELATION,
             db_client_method=DatabaseClient.update_data_request,
         ),
-        entry=dto.entry_data,
+        entry=entry_dict,
         entry_id=data_request_id,
         relation_role_parameters=RelationRoleParameters(
             relation_role_function_with_params=DeferredFunction(
@@ -329,7 +347,22 @@ def update_data_request_wrapper(
                 db_client=db_client,
             )
         ),
+        pre_update_method_with_parameters=DeferredFunction(
+            function=optionally_update_github_issue_info,
+            db_client=db_client,
+            entry_data=dto.entry_data,
+            data_request_id=data_request_id
+        )
     )
+
+
+def created_filtered_entry_dict(dto: DataRequestsPutOuterDTO) -> dict:
+    entry_dict = dataclass_to_filtered_dict(dto.entry_data)
+    if "github_issue_url" in entry_dict:
+        del entry_dict["github_issue_url"]
+    if "github_issue_number" in entry_dict:
+        del entry_dict["github_issue_number"]
+    return entry_dict
 
 
 def get_data_request_by_id_wrapper(
