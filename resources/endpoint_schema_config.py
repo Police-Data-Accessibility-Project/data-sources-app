@@ -18,7 +18,8 @@ from middleware.primary_resource_logic.unique_url_checker import UniqueURLChecke
 from middleware.primary_resource_logic.user_queries import UserRequestSchema, UserRequestDTO
 from middleware.schema_and_dto_logic.primary_resource_schemas.auth_schemas import LoginResponseSchema, \
     LinkToGithubRequestSchema
-from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import GetManyDataRequestsRequestsDTO
+from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import GetManyDataRequestsRequestsDTO, \
+    DataRequestsPutOuterDTO
 from middleware.schema_and_dto_logic.primary_resource_schemas.notifications_schemas import NotificationsResponseSchema
 from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import SearchRequestSchema, \
     GetUserFollowedSearchesSchema, SearchRequests, SearchResponseSchema
@@ -27,7 +28,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyBaseDTO,
     GetByIDBaseSchema,
     GetByIDBaseDTO,
-    EntryDataRequestSchema, TypeaheadDTO, TypeaheadQuerySchema, LocationInfoExpandedSchema,
+    EntryDataRequestSchema, TypeaheadDTO, TypeaheadQuerySchema, LocationInfoExpandedSchema, EntryCreateUpdateRequestDTO,
 )
 from middleware.schema_and_dto_logic.custom_types import DTOTypes
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
@@ -43,8 +44,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_sche
     DataRequestsSchema,
     DataRequestsPostSchema,
     GetByIDDataRequestsResponseSchema, GetManyDataRequestsRequestsSchema, DataRequestsRelatedLocationAddRemoveSchema,
-    GetManyDataRequestsRelatedLocationsSchema,
-)
+    GetManyDataRequestsRelatedLocationsSchema, DataRequestsPutSchema, )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
     DataSourcesGetManySchema,
     DataSourcesGetByIDSchema,
@@ -118,15 +118,9 @@ class SchemaConfigs(Enum):
         input_schema=None, primary_output_schema=GetByIDDataRequestsResponseSchema()
     )
     DATA_REQUESTS_BY_ID_PUT = EndpointSchemaConfig(
-        input_schema=DataRequestsSchema(
-            exclude=[
-                "id",
-                "date_created",
-                "date_status_last_changed",
-                "creator_user_id",
-            ]
-        ),
-        primary_output_schema=None,
+        input_schema=DataRequestsPutSchema(),
+        input_dto_class=DataRequestsPutOuterDTO,
+        primary_output_schema=MessageSchema(),
     )
     DATA_REQUESTS_POST = EndpointSchemaConfig(
         input_schema=DataRequestsPostSchema(),

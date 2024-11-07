@@ -65,23 +65,15 @@ class DataRequestsById(PsycopgResource):
             ),
         )
 
-    # TODO: Modify to endpoint_info_2
-    @endpoint_info(
+
+    @endpoint_info_2(
         namespace=namespace_data_requests,
         auth_info=STANDARD_JWT_AUTH_INFO,
-        input_schema=DataRequestsSchema(
-            exclude=[
-                "id",
-                "date_created",
-                "date_status_last_changed",
-                "creator_user_id",
-            ]
-        ),
-        input_model_name="DataRequestPutSchema",
-        description="Update data request",
-        responses=create_response_dictionary(
+        description="Update data request.",
+        response_info=ResponseInfo(
             success_message="Data request successfully updated.",
         ),
+        schema_config=SchemaConfigs.DATA_REQUESTS_BY_ID_PUT,
     )
     def put(self, resource_id: str, access_info: AccessInfo) -> Response:
         """
@@ -89,7 +81,7 @@ class DataRequestsById(PsycopgResource):
         """
         return self.run_endpoint(
             update_data_request_wrapper,
-            dto_populate_parameters=EntryCreateUpdateRequestDTO.get_dto_populate_parameters(),
+            schema_populate_parameters=SchemaConfigs.DATA_REQUESTS_BY_ID_PUT.value.get_schema_populate_parameters(),
             data_request_id=int(resource_id),
             access_info=access_info,
         )

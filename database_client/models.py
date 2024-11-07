@@ -75,6 +75,7 @@ RecordTypeLiteral = Literal[
     "Field Contacts",
     "Wanted Persons",
     "List of Data Sources",
+    "Car GPS"
 ]
 RequestStatusLiteral = Literal[
     "Intake",

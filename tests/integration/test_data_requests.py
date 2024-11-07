@@ -9,9 +9,9 @@ from flask.testing import FlaskClient
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import RequestUrgency, LocationType
+from database_client.enums import RequestUrgency, LocationType, RequestStatus
 from middleware.constants import DATA_KEY
-from middleware.enums import PermissionsEnum
+from middleware.enums import PermissionsEnum, RecordType
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
     GetByIDDataRequestsResponseSchema,
     GetManyDataRequestsResponseSchema,
@@ -20,12 +20,13 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schem
     DataSourceExpandedSchema,
     DataSourcesGetManySchema,
 )
+from middleware.util import get_enum_values
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.conftest import dev_db_client, flask_client_with_db
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
 from tests.helper_scripts.common_test_data import (
     create_test_data_request,
-    TestDataCreatorFlask,
+    TestDataCreatorFlask, get_random_number_for_testing,
 )
 from tests.helper_scripts.constants import (
     DATA_REQUESTS_BASE_ENDPOINT,
@@ -336,14 +337,31 @@ def test_data_requests_by_id_put(
 
     new_submission_notes = str(uuid.uuid4())
 
-    json_data = run_and_validate_request(
-        flask_client=tdc.flask_client,
-        http_method="put",
-        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
-            data_request_id=data_request_id
-        ),
-        headers=standard_tus.jwt_authorization_header,
-        json={"entry_data": {"submission_notes": new_submission_notes}},
+    endpoint = DATA_REQUESTS_BY_ID_ENDPOINT.format(
+        data_request_id=data_request_id
+    )
+
+    def put(header: dict, json: dict, expected_response_status: HTTPStatus = HTTPStatus.OK):
+        return run_and_validate_request(
+            flask_client=tdc.flask_client,
+            http_method="put",
+            endpoint=endpoint,
+            headers=header,
+            json=json,
+            expected_response_status=expected_response_status
+        )
+
+    json_data = put(
+        header=standard_tus.jwt_authorization_header,
+        json={
+            "entry_data": {
+                "submission_notes": new_submission_notes,
+                "title": uuid.uuid4().hex,
+                "request_urgency": RequestUrgency.URGENT.value,
+                "data_requirements": uuid.uuid4().hex,
+                "coverage_range": uuid.uuid4().hex,
+            }
+        },
     )
 
     result = tdc.db_client.get_data_requests(
@@ -354,16 +372,34 @@ def test_data_requests_by_id_put(
     assert result[0]["submission_notes"] == new_submission_notes
 
     # Check that request is denied on admin-only column
-    run_and_validate_request(
-        flask_client=tdc.flask_client,
-        http_method="put",
-        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
-            data_request_id=data_request_id
-        ),
-        headers=standard_tus.jwt_authorization_header,
-        json={"entry_data": {"request_status": "approved"}},
-        expected_response_status=HTTPStatus.FORBIDDEN,
+    put(
+        header=standard_tus.jwt_authorization_header,
+        json = {"entry_data": {"request_status": "Ready to start"}},
+        expected_response_status = HTTPStatus.FORBIDDEN,
     )
+
+    # Successfully edit all possible columns an admin can edit
+    put(
+        header=tdc.get_admin_tus().jwt_authorization_header,
+        json={
+            "entry_data": {
+                "submission_notes": new_submission_notes,
+                "title": uuid.uuid4().hex,
+                "request_urgency": RequestUrgency.URGENT.value,
+                "data_requirements": uuid.uuid4().hex,
+                "coverage_range": uuid.uuid4().hex,
+                "request_status": RequestStatus.READY_TO_START.value,
+                "internal_notes": uuid.uuid4().hex,
+                "archive_reason": uuid.uuid4().hex,
+                "github_issue_url": uuid.uuid4().hex,
+                "github_issue_number": get_random_number_for_testing(),
+                "pdap_response": uuid.uuid4().hex,
+                "record_types_required": get_enum_values(RecordType)
+
+            }
+        },
+    )
+
 
 
 def test_data_requests_by_id_delete(test_data_creator_flask):
