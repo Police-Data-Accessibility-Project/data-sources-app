@@ -65,7 +65,7 @@ function refreshMetaTags(to, nearestRouteWithMeta) {
 			let content;
 			switch (true) {
 				case prop === 'og:url':
-					content = `${import.meta.env.VITE_VUE_APP_BASE_URL}${to.fullPath}`;
+					content = `${import.meta.env.VITE_VUE_APP_BASE_URL}/${to.fullPath}`;
 					break;
 				case Boolean(tagInRouteMetaData):
 					content = tagInRouteMetaData.content;
