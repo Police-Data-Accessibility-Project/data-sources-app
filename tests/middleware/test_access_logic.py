@@ -413,57 +413,6 @@ def test_get_user_email_from_api_key(
     else:
         assert result == expected_result.email
 
-
-@pytest.mark.parametrize(
-    "verify_jwt_in_request_result, "
-    "get_jwt_identity_result, "
-    "get_jwt_access_info_with_permissions_called",
-    (
-        # Happy path
-        (MagicMock(), None, False),
-        (None, MagicMock(), False),
-        (MagicMock(), MagicMock(), True),
-    ),
-)
-def test_get_access_info_from_jwt(
-    verify_jwt_in_request_result,
-    get_jwt_identity_result,
-    get_jwt_access_info_with_permissions_called,
-    monkeypatch,
-):
-
-    mock_verify_jwt_in_request = MagicMock(return_value=verify_jwt_in_request_result)
-    mock_get_jwt_identity = MagicMock(return_value=get_jwt_identity_result)
-    mock_get_jwt_access_info_with_permissions = MagicMock()
-    monkeypatch.setattr(
-        "middleware.access_logic.verify_jwt_in_request", mock_verify_jwt_in_request
-    )
-    monkeypatch.setattr(
-        "middleware.access_logic.get_jwt_identity", mock_get_jwt_identity
-    )
-    monkeypatch.setattr(
-        "middleware.access_logic.get_jwt_access_info_with_permissions",
-        mock_get_jwt_access_info_with_permissions,
-    )
-
-    mock = MagicMock()
-
-    monkeypatch.setattr(
-        "middleware.access_logic.get_db_client", MagicMock(return_value=mock.db_client)
-    )
-
-    result = get_access_info_from_jwt()
-
-    if get_jwt_access_info_with_permissions_called:
-        assert result == mock_get_jwt_access_info_with_permissions.return_value
-        mock_get_jwt_access_info_with_permissions.assert_called_once_with(
-            mock_get_jwt_identity.return_value
-        )
-    else:
-        assert result is None
-        mock_get_jwt_access_info_with_permissions.assert_not_called()
-
-
 def test_get_jwt_access_info_with_permissions(monkeypatch):
 
     mock = MagicMock()

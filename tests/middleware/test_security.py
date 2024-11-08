@@ -51,7 +51,7 @@ def check_permissions_mocks():
     mock = CheckPermissionsMocks(
         patch_root=PATCH_ROOT,
     )
-    mock.get_jwt_identity.return_value = mock.user_email
+    mock.get_jwt_identity.return_value = {"user_email": mock.user_email, "id": mock.id}
     mock.get_db_client.return_value = mock.db_client
     mock.PermissionsManager.return_value = mock.permissions_manager_instance
     return mock

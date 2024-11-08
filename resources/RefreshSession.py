@@ -21,22 +21,6 @@ from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
 namespace_refresh_session = create_namespace()
 
-parser = namespace_refresh_session.parser()
-
-add_jwt_header_arg(parser)
-
-session_token_model = namespace_refresh_session.model(
-    "SessionToken",
-    {
-        "data": fields.String(
-            required=True,
-            description="The session token",
-            example="2bd77a1d7ef24a1dad3365b8a5c6994e",
-        ),
-    },
-)
-
-
 @namespace_refresh_session.route("/refresh-session")
 class RefreshSession(PsycopgResource):
     """

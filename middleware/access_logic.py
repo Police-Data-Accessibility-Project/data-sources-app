@@ -62,10 +62,10 @@ def get_access_info_from_jwt() -> Optional[AccessInfo]:
     jwt_in_request = verify_jwt_in_request()
     if jwt_in_request is None:
         return None
-    user_email = get_jwt_identity()
-    if user_email is None:
+    identity = get_jwt_identity()
+    if identity is None:
         return None
-    return get_jwt_access_info_with_permissions(user_email)
+    return get_jwt_access_info_with_permissions(identity["user_email"])
 
 
 def get_jwt_access_info_with_permissions(user_email):

@@ -18,6 +18,18 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.refresh_session_sc
 )
 
 
+class JWTTokens:
+
+    def __init__(self, email: str):
+        identity = {
+            "user_email": email,
+            "id": DatabaseClient().get_user_id(email),
+        }
+        self.access_token = create_access_token(identity=identity)
+        self.refresh_token = create_refresh_token(identity=identity)
+
+
+
 def try_logging_in(db_client: DatabaseClient, dto: UserRequestDTO) -> Response:
     """
     Tries to log in a user.
@@ -51,15 +63,9 @@ def login_response(
     :param user_info: The user's information.
     :return: A response object with a message and status code.
     """
-    access_token = create_access_token(identity=user_info.email)
-    refresh_token = create_refresh_token(identity=user_info.email)
-    return make_response(
-        jsonify(
-            message=message,
-            access_token=access_token,
-            refresh_token=refresh_token,
-        ),
-        HTTPStatus.OK,
+    return access_and_refresh_token_response(
+        email=user_info.email,
+        message=message,
     )
 
 
@@ -67,13 +73,12 @@ def access_and_refresh_token_response(
     email: str,
     message: str,
 ) -> Response:
-    access_token = create_access_token(identity=email)
-    refresh_token = create_refresh_token(identity=email)
+    jwt_tokens = JWTTokens(email)
     return make_response(
         jsonify(
             message=message,
-            access_token=access_token,
-            refresh_token=refresh_token,
+            access_token=jwt_tokens.access_token,
+            refresh_token=jwt_tokens.refresh_token,
         ),
         HTTPStatus.OK,
     )
@@ -87,7 +92,7 @@ def refresh_session(
     :return:
     """
     decoded_refresh_token = decode_token(dto.refresh_token)
-    decoded_email = decoded_refresh_token["sub"]
+    decoded_email = decoded_refresh_token["sub"]["user_email"]
     if access_info.user_email != decoded_email:
 
         return make_response(

@@ -35,7 +35,7 @@ def assert_api_key_exists_for_email(db_client: DatabaseClient, email: str, api_k
 
 def assert_jwt_token_matches_user_email(email: str, jwt_token: str):
     decoded_token = decode_token(jwt_token)
-    assert email == decoded_token["sub"]
+    assert email == decoded_token["sub"]["user_email"]
 
 
 def assert_expected_get_many_result(
