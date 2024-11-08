@@ -16,9 +16,10 @@ def check_permissions(permission: PermissionsEnum) -> None:
     :return: True if the user has the permission, False otherwise.
     """
     verify_jwt_in_request()
-    user_email = get_jwt_identity()
+    identity = get_jwt_identity()
+    email = identity["user_email"]
     db_client = get_db_client()
-    pm = PermissionsManager(db_client=db_client, user_email=user_email)
+    pm = PermissionsManager(db_client=db_client, user_email=email)
     if not pm.has_permission(permission):
         abort(
             code=HTTPStatus.FORBIDDEN,
