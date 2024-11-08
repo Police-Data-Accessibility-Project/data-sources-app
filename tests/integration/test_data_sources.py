@@ -18,17 +18,9 @@ from database_client.enums import (
     UpdateMethod,
 )
 from middleware.enums import AccessTypeEnum, RecordType
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
-    DataSourcesGetByIDSchema,
-    DataSourcesGetManySchema,
-)
-from middleware.schema_and_dto_logic.common_response_schemas import (
-    GetManyResponseSchema,
-)
+
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.conftest import (
-    connection_with_test_data,
-    db_client_with_test_data,
     flask_client_with_db,
     test_user_admin,
 )

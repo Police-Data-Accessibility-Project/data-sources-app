@@ -188,31 +188,29 @@ import { useSearchStore } from '@/stores/search';
 import { useRoute, useRouter } from 'vue-router';
 import _cloneDeep from 'lodash/cloneDeep';
 import { useSwipe } from '@vueuse/core';
+import { ref } from 'vue';
 
-const {
-	getDataSource,
-	previousDataSourceRoute,
-	setPreviousDataSourceRoute,
-	mostRecentSearchIds: searchIds,
-} = useSearchStore();
+const search = useSearchStore();
+
+const previous = ref(search.getPreviousDataSourceRoute);
 
 export const useDataSourceData = defineBasicLoader(
 	'/data-source/:id',
 	async (route) => {
 		const dataSourceId = route.params.id;
 		// create deep clone of previous route.
-		const previous = _cloneDeep(previousDataSourceRoute);
+		previous.value = _cloneDeep(search.getPreviousDataSourceRoute);
 		// Use previous route to determine if nav is increment or decrement (this is for dynamic transition)
 		const navIs =
-			searchIds.indexOf(Number(previous?.params?.id)) >
-			searchIds.indexOf(Number(dataSourceId))
+			search.mostRecentSearchIds.indexOf(Number(previous.value?.params?.id)) >
+			search.mostRecentSearchIds.indexOf(Number(dataSourceId))
 				? 'decrement'
 				: 'increment';
 
-		const results = await getDataSource(dataSourceId);
+		const results = await search.getDataSource(dataSourceId);
 
 		// Then set current route to prev before returning data
-		setPreviousDataSourceRoute(route);
+		search.setPreviousDataSourceRoute(route);
 
 		return {
 			...results.data.data,
@@ -230,7 +228,7 @@ import { faLink } from '@fortawesome/free-solid-svg-icons';
 
 import { DATA_SOURCE_UI_SHAPE } from '@/util/constants';
 import formatDateForSearchResults from '@/util/formatDate';
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, watch } from 'vue';
 
 const route = useRoute();
 const router = useRouter();

@@ -4,7 +4,7 @@ from typing import Optional, Type
 
 from marshmallow import Schema
 
-from middleware.primary_resource_logic.callback_primary_logic import (
+from middleware.primary_resource_logic.github_oauth_logic import (
     LinkToGithubRequestDTO,
 )
 from middleware.primary_resource_logic.data_requests import (
@@ -42,6 +42,18 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos im
 from middleware.schema_and_dto_logic.primary_resource_schemas.notifications_schemas import (
     NotificationsResponseSchema,
 )
+from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import \
+    TypeaheadAgenciesOuterResponseSchema, TypeaheadLocationsOuterResponseSchema, TypeaheadLocationsResponseSchema
+from middleware.primary_resource_logic.unique_url_checker import UniqueURLCheckerRequestSchema, \
+    UniqueURLCheckerResponseOuterSchema, UniqueURLCheckerRequestDTO
+from middleware.primary_resource_logic.user_queries import UserRequestSchema, UserRequestDTO
+from middleware.schema_and_dto_logic.primary_resource_schemas.auth_schemas import LoginResponseSchema, \
+    LinkToGithubRequestSchema, GithubOAuthRequestSchema, GithubOAuthRequestDTO, LoginWithGithubRequestDTO, \
+    GithubRequestSchema
+from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import GetManyDataRequestsRequestsDTO
+from middleware.schema_and_dto_logic.primary_resource_schemas.notifications_schemas import NotificationsResponseSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import SearchRequestSchema, \
+    GetUserFollowedSearchesSchema, SearchRequests, SearchResponseSchema
 from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import (
     SearchRequestSchema,
     GetUserFollowedSearchesSchema,
@@ -316,12 +328,18 @@ class SchemaConfigs(Enum):
         input_dto_class=UserRequestDTO,
     )
     AUTH_GITHUB_LOGIN = EndpointSchemaConfig(
+        input_schema=GithubRequestSchema(),
+        input_dto_class=LoginWithGithubRequestDTO,
         primary_output_schema=LoginResponseSchema()
     )
     AUTH_GITHUB_LINK = EndpointSchemaConfig(
         input_schema=LinkToGithubRequestSchema(),
         input_dto_class=LinkToGithubRequestDTO,
         primary_output_schema=MessageSchema(),
+    )
+    AUTH_GITHUB_OAUTH = EndpointSchemaConfig(
+        input_schema=GithubOAuthRequestSchema(),
+        input_dto_class=GithubOAuthRequestDTO,
     )
     # endregion
     REFRESH_SESSION = EndpointSchemaConfig(

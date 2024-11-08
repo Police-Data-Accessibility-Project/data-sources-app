@@ -1,38 +1,64 @@
 <template>
-	<main v-if="success" class="pdap-flex-container">
-		<h1>Success</h1>
-		<p>Your password has been successfully updated</p>
-	</main>
-	<main v-else class="pdap-flex-container mx-auto max-w-2xl">
-		<h1>Change your password</h1>
-		<FormV2
-			id="change-password"
-			class="flex flex-col"
-			data-test="change-password-form"
-			name="change-password"
-			:error="error"
-			:schema="VALIDATION_SCHEMA"
-			@change="onChange"
-			@submit="onSubmit"
-			@input="onInput"
-		>
-			<InputPassword
-				v-for="input of INPUTS"
-				v-bind="{ ...input }"
-				:key="input.name"
-			/>
+	<main class="pdap-flex-container" :class="{ 'mx-auto max-w-2xl': !success }">
+		<template v-if="success">
+			<h1>Success</h1>
+			<p>Your password has been successfully updated</p>
+		</template>
 
-			<PasswordValidationChecker ref="passwordRef" />
+		<template v-else>
+			<h1>Change your password</h1>
+			<!-- TODO: make this copy conditional based on whether or not user signed up via GH -->
+			<p>
+				You signed up with a Github account linked to the email address you
+				provided.
+			</p>
+			<p>
+				Sign in with Github, or create a password to sign in with this email
+				address.
+			</p>
+			<!-- END TODO -->
 
-			<Button class="max-w-full" type="submit">
-				{{ loading ? 'Loading...' : 'Change password' }}
+			<Button
+				class="border-2 border-neutral-950 border-solid [&>svg]:ml-0"
+				intent="tertiary"
+				@click="() => beginOAuthLogin('/profile')"
+			>
+				<FontAwesomeIcon :icon="faGithub" />
+				Sign in with Github
 			</Button>
-		</FormV2>
+
+			<FormV2
+				id="change-password"
+				class="flex flex-col"
+				data-test="change-password-form"
+				name="change-password"
+				:error="error"
+				:schema="VALIDATION_SCHEMA"
+				@change="onChange"
+				@submit="onSubmit"
+				@input="onInput"
+			>
+				<InputPassword
+					v-for="input of INPUTS"
+					v-bind="{ ...input }"
+					:key="input.name"
+				/>
+
+				<PasswordValidationChecker ref="passwordRef" />
+
+				<Button class="max-w-full" type="submit">
+					{{ loading ? 'Loading...' : 'Change password' }}
+				</Button>
+			</FormV2>
+		</template>
 	</main>
 </template>
 
 <script setup>
 import { Button, FormV2, InputPassword } from 'pdap-design-system';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { faGithub } from '@fortawesome/free-brands-svg-icons';
+import { useAuthStore } from '@/stores/auth';
 import { useUserStore } from '@/stores/user';
 import PasswordValidationChecker from '@/components/PasswordValidationChecker.vue';
 import { ref } from 'vue';
@@ -40,7 +66,7 @@ import { ref } from 'vue';
 // Constants
 const INPUTS = [
 	{
-		autofill: 'new-password',
+		autocomplete: 'new-password',
 		'data-test': 'password',
 		id: 'password',
 		name: 'password',
@@ -49,7 +75,7 @@ const INPUTS = [
 		placeholder: 'Your updated password',
 	},
 	{
-		autofill: 'new-password',
+		autocomplete: 'new-password',
 		'data-test': 'confirm-password',
 		id: 'confirmPassword',
 		name: 'confirmPassword',
@@ -87,6 +113,7 @@ const VALIDATION_SCHEMA = [
 
 // Stores
 const user = useUserStore();
+const { beginOAuthLogin } = useAuthStore();
 
 // Reactive vars
 const passwordRef = ref();

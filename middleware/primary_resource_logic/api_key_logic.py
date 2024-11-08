@@ -47,10 +47,14 @@ def create_api_key_for_user(db_client: DatabaseClient, dto: UserRequestDTO) -> R
     )
 
 
-def check_api_key_associated_with_user(db_client: DatabaseClient, raw_key: str) -> None:
+def api_key_is_associated_with_user(db_client: DatabaseClient, raw_key: str) -> bool:
     api_key = ApiKey(raw_key)
     user_identifiers = db_client.get_user_by_api_key(api_key.key_hash)
-    if user_identifiers is None:
+    return user_identifiers is not None
+
+def check_api_key_associated_with_user(db_client: DatabaseClient, raw_key: str) -> None:
+    is_associated_with_user = api_key_is_associated_with_user(db_client, raw_key)
+    if not is_associated_with_user:
         abort(HTTPStatus.UNAUTHORIZED, "Invalid API Key")
 
 

@@ -4,7 +4,14 @@
 		<ErrorBoundary component="main">
 			<router-view v-slot="{ Component }">
 				<transition name="route-fade" mode="out-in">
-					<component :is="Component" />
+					<component :is="Component ?? 'main'">
+						<Spinner
+							class="absolute m-auto top-0 right-0 bottom-0 left-0"
+							:show="!Component"
+							:size="64"
+							text="Loading..."
+						/>
+					</component>
 				</transition>
 			</router-view>
 		</ErrorBoundary>
@@ -13,7 +20,7 @@
 </template>
 
 <script>
-import { ErrorBoundary, Footer, Header } from 'pdap-design-system';
+import { ErrorBoundary, Footer, Header, Spinner } from 'pdap-design-system';
 import AuthWrapper from './components/AuthWrapper.vue';
 import acronym from 'pdap-design-system/images/acronym.svg';
 import lockup from 'pdap-design-system/images/lockup.svg';
@@ -27,6 +34,7 @@ export default {
 		ErrorBoundary,
 		Header,
 		Footer,
+		Spinner,
 	},
 	provide: {
 		navLinks: [...links],
@@ -42,11 +50,20 @@ export default {
 </script>
 
 <style>
+@tailwind components;
+
 #app {
 	margin: 0;
 }
 
+@layer components {
+	.pdap-footer {
+		@apply fixed bottom-0;
+	}
+}
+
 main {
+	@apply relative;
 	min-height: calc(100vh - 80px - 400px);
 }
 

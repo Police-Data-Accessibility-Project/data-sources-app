@@ -16,9 +16,6 @@ class Config:
 
 config = Config()
 
-secret_key = get_env_variable("FLASK_APP_COOKIE_ENCRYPTION_KEY")
-cache_secret_key = f"_state_github_{secret_key}"
-
 oauth = OAuth()
 oauth.register(
     name="github",
@@ -27,9 +24,6 @@ oauth.register(
     access_token_url="https://github.com/login/oauth/access_token",
     access_token_params=None,
     authorize_url="https://github.com/login/oauth/authorize",
-    # authorize_params={
-    #     "state": uuid4().hex,
-    # },
     authorize_params=None,
     api_base_url="https://api.github.com/",
     client_kwargs={"scope": "user:email"},

@@ -4,6 +4,7 @@ import AuthWrapper from '../AuthWrapper.vue';
 import { createTestingPinia } from '@pinia/testing';
 import { useAuthStore } from '../../stores/auth';
 import { nextTick } from 'vue';
+import { useUserStore } from '@/stores/user';
 
 vi.mock('vue-router/auto-routes');
 vi.mock('vue-router', async () => {
@@ -46,14 +47,15 @@ describe('AuthWrapper', () => {
 
 	it('refreshes access token when less than 1 minute remaining before access token expiry on event', async () => {
 		const auth = useAuthStore();
+		const user = useUserStore();
 		auth.$patch({
-			userId: 42,
 			tokens: {
 				accessToken: {
 					expires: NOW_PLUS_THIRTY,
 				},
 			},
 		});
+		user.$patch({ id: 42 });
 
 		await wrapper.trigger('click');
 		await nextTick();
@@ -62,14 +64,15 @@ describe('AuthWrapper', () => {
 
 	it('logs user out when access token is expired on all expected events', async () => {
 		const auth = useAuthStore();
+		const user = useUserStore();
 		auth.$patch({
-			userId: 42,
 			tokens: {
 				accessToken: {
 					expires: NOW_MINUS_THIRTY,
 				},
 			},
 		});
+		user.$patch({ id: 42 });
 
 		await wrapper.trigger('click');
 		await nextTick();

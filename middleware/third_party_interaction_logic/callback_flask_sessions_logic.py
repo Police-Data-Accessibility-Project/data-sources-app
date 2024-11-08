@@ -4,6 +4,7 @@ Any logic which utilizes the `flask.session` import should be placed here.
 `session` is a global variable within a given request context.
 Consequently, care must be taken in both usage and testing of this logic.
 """
+from typing import Optional
 
 from flask import session
 
@@ -34,12 +35,12 @@ def get_callback_params() -> dict:
     return callback_params
 
 
-def get_callback_function() -> CallbackFunctionsEnum:
+def get_callback_function() -> Optional[CallbackFunctionsEnum]:
     """
     Returns the callback function set prior to the callback function
     """
-    callback_function = CallbackFunctionsEnum(session.pop("callback_function"))
-    return callback_function
+    callback_function_str = session.get("callback_function", None)
+    return CallbackFunctionsEnum(callback_function_str)
 
 
 # endregion Post-Callback

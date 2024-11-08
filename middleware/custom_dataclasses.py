@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 from database_client.enums import EntityType, EventType
 from middleware.enums import CallbackFunctionsEnum
@@ -20,7 +21,7 @@ class FlaskSessionCallbackInfo:
     Contains information contained in the Flask session in the callback logic
     """
 
-    callback_functions_enum: CallbackFunctionsEnum
+    callback_functions_enum: Optional[CallbackFunctionsEnum]
     callback_params: dict
 
 

@@ -16,11 +16,11 @@ export const useRequestStore = defineStore('request', {
 	// },
 	actions: {
 		async createRequest(data) {
-			const { tokens } = useAuthStore();
+			const auth = useAuthStore();
 			const response = await axios.post(REQUESTS_URL, data, {
 				headers: {
 					...HEADERS_BASE,
-					authorization: `Bearer ${tokens.accessToken.value}`,
+					authorization: `Bearer ${auth.$state.tokens.accessToken.value}`,
 				},
 			});
 

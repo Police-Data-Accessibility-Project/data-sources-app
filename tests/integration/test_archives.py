@@ -1,24 +1,10 @@
 """Integration tests for /archives endpoint"""
 
 import datetime
-from http import HTTPStatus
 import json
-
-import psycopg
-
-from database_client.database_client import DatabaseClient
-from middleware.enums import PermissionsEnum
-from tests.conftest import dev_db_client, flask_client_with_db, test_user_admin
 from tests.helper_scripts.common_test_data import TestDataCreatorFlask
-from tests.helper_scripts.helper_functions import (
-    create_test_user_api,
-    create_api_key,
-    insert_test_data_source,
-    create_test_user_setup,
-    create_test_user_setup_db_client,
-)
+
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-from tests.helper_scripts.simple_result_validators import check_response_status
 from conftest import test_data_creator_flask, monkeysession
 
 ENDPOINT = "/api/archives"

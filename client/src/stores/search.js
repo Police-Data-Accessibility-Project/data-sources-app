@@ -26,6 +26,11 @@ export const useSearchStore = defineStore('search', {
 		storage: sessionStorage,
 		pick: ['mostRecentSearchIds'],
 	},
+	getters: {
+		getPreviousDataSourceRoute(state) {
+			return state.previousDataSourceRoute;
+		},
+	},
 	actions: {
 		async search(params) {
 			const paramsStringified = JSON.stringify(params);

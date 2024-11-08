@@ -13,6 +13,7 @@ from resources.HomepageSearchCache import namespace_homepage_search_cache
 from resources.LinkToGithub import namespace_link_to_github
 from resources.LoginWithGithub import namespace_login_with_github
 from resources.Notifications import namespace_notifications
+from resources.OAuth import namespace_oauth
 from resources.Permissions import namespace_permissions
 from resources.Search import namespace_search
 from resources.TypeaheadSuggestions import (
@@ -40,6 +41,7 @@ NAMESPACES = [
     namespace_api_key,
     namespace_request_reset_password,
     namespace_user_old,
+    namespace_oauth,
     namespace_reset_token_validation,
     namespace_archives,
     namespace_agencies,

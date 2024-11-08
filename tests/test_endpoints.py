@@ -115,8 +115,6 @@ test_parameters = [
     TestParameters(Search, "/search/search-location-and-record-type", [GET]),
     TestParameters(TypeaheadLocations, "/typeahead/locations", [GET]),
     TestParameters(Callback, "auth/callback", [GET]),
-    TestParameters(LinkToGithub, "auth/link-to-github", [POST]),
-    TestParameters(LoginWithGithub, "auth/login-with-github", [GET]),
     TestParameters(Permissions, "auth/permissions", [GET, PUT]),
     TestParameters(DataRequests, "/data-requests", [GET, POST]),
     TestParameters(

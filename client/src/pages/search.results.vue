@@ -103,7 +103,7 @@ import {
 } from '@/util/searchResults';
 import _isEqual from 'lodash/isEqual';
 
-const { search, setMostRecentSearchIds } = useSearchStore();
+const search = useSearchStore();
 
 const query = ref();
 const data = ref();
@@ -118,7 +118,7 @@ export const useSearchData = defineBasicLoader(
 			// Local caching to skip even the pinia method in case of only the hash changing while on the route.
 			_isEqual(params, query.value) && data.value
 				? data.value
-				: await search(route.query);
+				: await search.search(route.query);
 
 		// On initial fetch - get hash
 		const hash = normalizeLocaleForHash(searched, response.data);
@@ -151,12 +151,12 @@ const isSearchShown = ref(false);
 // lifecycle methods
 onMounted(() => {
 	onWindowWidthSetIsSearchShown();
-	setMostRecentSearchIds(getAllIdsSearched(searchData.value.results));
+	search.setMostRecentSearchIds(getAllIdsSearched(searchData.value.results));
 	window.addEventListener('resize', onWindowWidthSetIsSearchShown);
 });
 
 onBeforeUpdate(() => {
-	setMostRecentSearchIds(getAllIdsSearched(searchData.value.results));
+	search.setMostRecentSearchIds(getAllIdsSearched(searchData.value.results));
 });
 
 onUnmounted(() => {

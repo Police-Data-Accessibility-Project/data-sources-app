@@ -10,7 +10,8 @@ import { useAuthStore } from '@/stores/auth';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
-const auth = useAuthStore();
+const { refreshAccessToken, setRedirectTo, logout, tokens, isAuthenticated } =
+	useAuthStore();
 
 // Debounce func for performance
 const refreshAuth = debounce(handleAuthRefresh, 350, { leading: true });
@@ -30,15 +31,18 @@ const handlers = {
 
 function handleAuthRefresh() {
 	const now = Date.now();
-	const difference = auth.tokens.accessToken.expires - now;
+	const differenceFromAccess = tokens.accessToken.expires - now;
+	const isExpiredAccess = differenceFromAccess <= 0;
+	const shouldRefresh = differenceFromAccess <= 60 * 1000;
+	const shouldLogout = isExpiredAccess;
 
-	// User's token is about to expire, update it.
-	if (difference <= 60 * 1000 && difference > 0) {
-		return auth.refreshAccessToken();
-		// User's token is expired, log out.
-	} else if (difference <= 0 && auth.userId) {
-		auth.redirectTo = route;
-		return auth.logout(route);
-	}
+	// User's token is about to expire, so we refresh it.g
+	if (shouldRefresh && isAuthenticated) {
+		return refreshAccessToken();
+		// User's tokens are all expired, log out.
+	} else if (shouldLogout && isAuthenticated) {
+		setRedirectTo(route);
+		return logout();
+	} else return;
 }
 </script>

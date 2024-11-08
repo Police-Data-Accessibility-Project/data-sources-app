@@ -8,12 +8,10 @@
 import { Spinner } from 'pdap-design-system';
 import { onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
-import { useRoute } from 'vue-router';
 
-const auth = useAuthStore();
-const route = useRoute();
+const { logout } = useAuthStore();
 
 onMounted(async () => {
-	await auth.logout(route?.redirectedFrom);
+	await logout();
 });
 </script>

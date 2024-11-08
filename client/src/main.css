@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    height: 100%;
+    width: 100%;
+  }
+}
+
 @layer utilities {
   /* Creating utility class in order to apply these dynamically */
   /* TODO: move to design-system, so it can be used elsewhere */
