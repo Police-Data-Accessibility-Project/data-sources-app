@@ -44,7 +44,6 @@ class DataSourceEntryDataPostDTO:
     coverage_end: Optional[date] = None
     detail_level: Optional[DetailLevel] = None
     access_types: Optional[List[AccessType]] = None
-    record_download_option_provided: Optional[bool] = None
     data_portal_type: Optional[str] = None
     record_formats: Optional[List[str]] = None
     update_method: Optional[str] = None
@@ -173,12 +172,6 @@ class DataSourceBaseSchema(Schema):
         allow_none=True,
         metadata=get_json_metadata(
             "The ways the data source can be accessed. Editable only by admins."
-        ),
-    )
-    record_download_option_provided = fields.Boolean(
-        allow_none=True,
-        metadata=get_json_metadata(
-            "Is there a way to download the data source's records?"
         ),
     )
     data_portal_type = fields.String(

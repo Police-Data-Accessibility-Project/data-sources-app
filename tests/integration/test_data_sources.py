@@ -168,7 +168,6 @@ def test_data_sources_by_id_put(test_data_creator_flask: TestDataCreatorFlask):
             AccessType.WEB_PAGE.value,
             AccessType.DOWNLOAD.value,
         ],
-        "record_download_option_provided": True,
         "data_portal_type": uuid.uuid4().hex,
         "record_formats": [uuid.uuid4().hex, uuid.uuid4().hex],
         "update_method": UpdateMethod.INSERT.value,

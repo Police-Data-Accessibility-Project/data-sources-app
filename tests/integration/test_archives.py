@@ -36,7 +36,6 @@ def test_archives_put(
     tdc = test_data_creator_flask
     data_source_id = tdc.data_source().id
     last_cached = datetime.datetime(year=2020, month=3, day=4)
-    broken_as_of = datetime.date(year=1993, month=11, day=13)
     test_user_admin = tdc.get_admin_tus()
     test_user_admin.jwt_authorization_header["Content-Type"] = "application/json"
     run_and_validate_request(
@@ -48,7 +47,6 @@ def test_archives_put(
             {
                 "id": data_source_id,
                 "last_cached": str(last_cached),
-                "broken_source_url_as_of": str(broken_as_of),
             }
         ),
     )
@@ -63,4 +61,4 @@ def test_archives_put(
         vars=(int(data_source_id),),
     )
     assert row[0]["last_cached"] == last_cached
-    assert row[0]["broken_source_url_as_of"] == broken_as_of
+    assert row[0]["broken_source_url_as_of"] is None

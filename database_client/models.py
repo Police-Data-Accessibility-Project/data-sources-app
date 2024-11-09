@@ -515,7 +515,6 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
     access_types = Column(
         ARRAY(pgEnum(*[e.value for e in AccessType], name="access_type"))
     )
-    record_download_option_provided: Mapped[Optional[bool]]
     data_portal_type: Mapped[Optional[str]]
     record_formats = Column(ARRAY(String))
     update_method: Mapped[Optional[UpdateMethodLiteral]]
