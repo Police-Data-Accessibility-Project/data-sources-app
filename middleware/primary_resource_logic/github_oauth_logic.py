@@ -3,8 +3,12 @@ from dataclasses import dataclass
 from http import HTTPStatus
 
 from flask import Response, make_response
+from flask_restx import abort
+from jwt import ExpiredSignatureError
+
 from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
+from middleware.SimpleJWT import SimpleJWT
 from middleware.common_response_formatting import message_response
 from middleware.custom_dataclasses import GithubUserInfo
 from middleware.exceptions import UserNotFoundError
@@ -95,9 +99,14 @@ def get_github_user_info(access_token: str) -> GithubUserInfo:
     :param access_token: The access token from the Github API
     :return: The user information
     """
+    try:
+        simple_jwt = SimpleJWT.decode(access_token)
+    except ExpiredSignatureError:
+        abort(HTTPStatus.UNAUTHORIZED, "Access token has expired.")
+    gh_access_token = simple_jwt.sub
     return GithubUserInfo(
-        user_id=get_github_user_id(access_token),
-        user_email=get_github_user_email(access_token),
+        user_id=get_github_user_id(gh_access_token),
+        user_email=get_github_user_email(gh_access_token),
     )
 
 

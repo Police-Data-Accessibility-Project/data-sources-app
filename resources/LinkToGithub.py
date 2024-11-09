@@ -36,10 +36,10 @@ class LinkToGithub(PsycopgResource):
         schema_config=SchemaConfigs.AUTH_GITHUB_LINK,
         response_info=ResponseInfo(
             response_dictionary={
-                HTTPStatus.OK: "Callback response. Accounts linked.",
-                HTTPStatus.BAD_REQUEST: "Bad request. Provided email doesn't have associated PDAP account or GitHub acccount doesn't match associated PDAP account.",
-                HTTPStatus.FOUND: "Returns redirect link to OAuth.",
-                HTTPStatus.INTERNAL_SERVER_ERROR: "Internal Server Error.",
+                HTTPStatus.OK.value: "Accounts linked.",
+                HTTPStatus.BAD_REQUEST.value: "Bad request. Provided email doesn't have associated PDAP account or GitHub acccount doesn't match associated PDAP account.",
+                HTTPStatus.UNAUTHORIZED.value: "Unauthorized. Forbidden or invalid authentication.",
+                HTTPStatus.INTERNAL_SERVER_ERROR.value: "Internal Server Error.",
             },
         ),
         description="""

@@ -1,11 +1,14 @@
 import uuid
+from datetime import datetime, timezone, timedelta
 from http import HTTPStatus
 
 import pytest
 from flask.testing import FlaskClient
 
 from conftest import test_data_creator_flask, monkeysession
+from middleware.SimpleJWT import SimpleJWT
 from middleware.primary_resource_logic.api_key_logic import api_key_is_associated_with_user
+from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.common_test_data import TestDataCreatorFlask, get_random_number_for_testing
 from tests.helper_scripts.common_test_functions import assert_jwt_token_matches_user_email
@@ -26,6 +29,7 @@ def login_with_github(client: FlaskClient, access_token: str) -> str:
 
 def setup_github_mocks(user_email: str, monkeypatch):
     mock_access_token = uuid.uuid4().hex
+    simple_jwt = SimpleJWT(sub=mock_access_token, exp=datetime.now(tz=timezone.utc).timestamp() + timedelta(minutes=5).total_seconds())
     mock_external_user_id = get_random_number_for_testing()
 
     # Mock the part that ingests the Github Access Token and returns relevant info
@@ -46,7 +50,7 @@ def setup_github_mocks(user_email: str, monkeypatch):
         f"{GITHUB_OATH_LOGIC_PATCH_ROOT}.get_github_user_email", mock_get_github_user_email
     )
 
-    return mock_access_token
+    return simple_jwt.encode()
 
 
 
@@ -149,6 +153,39 @@ def test_login_with_github_user_not_exists(
         jwt_token=access_token,
     )
 
+def test_github_oauth_token_expired(test_data_creator_flask: TestDataCreatorFlask, monkeypatch):
+    tdc = test_data_creator_flask
+    # Create user
+    tus = tdc.standard_user()
+    mock_access_token = uuid.uuid4().hex
+    simple_jwt = SimpleJWT(
+        sub=mock_access_token,
+        exp=datetime.now(tz=timezone.utc).timestamp() - timedelta(minutes=5).total_seconds()
+    )
+    encoded_jwt = simple_jwt.encode()
+
+    data = run_and_validate_request(
+        flask_client=tdc.flask_client,
+        http_method="post",
+        endpoint=GITHUB_OAUTH_LINK_ENDPOINT,
+        expected_schema=MessageSchema(),
+        expected_response_status=HTTPStatus.UNAUTHORIZED,
+        expected_json_content={"message": "Access token has expired."},
+        json={
+            "user_email": tus.user_info.email,
+            "gh_access_token": encoded_jwt  # This logic should not be called until we validate the user is present
+        },
+    )
+
+    data = run_and_validate_request(
+        flask_client=tdc.flask_client,
+        http_method="post",
+        endpoint=GITHUB_OAUTH_LOGIN_ENDPOINT,
+        expected_schema=MessageSchema(),
+        expected_response_status=HTTPStatus.UNAUTHORIZED,
+        expected_json_content={"message": "Access token has expired."},
+        json={"gh_access_token": encoded_jwt},
+    )
 
 
 
