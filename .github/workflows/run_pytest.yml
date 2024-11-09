@@ -11,6 +11,7 @@ jobs:
       DO_DATABASE_URL: ${{secrets.DEV_DB_CONN_STRING}}  # TODO: Ideally, won't need both for testing, but this is for safety for now
       GH_CLIENT_ID: ${{secrets.GH_CLIENT_ID}}
       GH_CLIENT_SECRET: ${{secrets.GH_CLIENT_SECRET}}
+      JWT_SECRET_KEY: "TestSecretKey"
     name: Run Pytest
     runs-on: ubuntu-latest
     steps:

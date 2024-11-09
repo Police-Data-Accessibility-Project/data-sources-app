@@ -22,8 +22,9 @@ class LoginWithGithub(PsycopgResource):
         schema_config=SchemaConfigs.AUTH_GITHUB_LOGIN,
         response_info=ResponseInfo(
             response_dictionary={
-                HTTPStatus.OK: "Callback response. User logged in.",
-                HTTPStatus.FOUND: "Returns redirect link to OAuth.",
+                HTTPStatus.OK.value: "User logged in.",
+                HTTPStatus.BAD_REQUEST.value: "Bad request.",
+                HTTPStatus.UNAUTHORIZED.value: "Unauthorized. Forbidden or invalid authentication.",
                 HTTPStatus.INTERNAL_SERVER_ERROR: "Internal Server Error.",
             },
         ),

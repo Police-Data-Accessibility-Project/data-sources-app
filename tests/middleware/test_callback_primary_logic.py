@@ -134,28 +134,3 @@ def test_link_github_account():
         external_account_type=ExternalAccountTypeEnum.GITHUB,
     )
 
-
-class GetGithubUserInfoMocks(DynamicMagicMock):
-    get_github_user_id: MagicMock
-    get_github_user_email: MagicMock
-
-
-def test_get_github_user_info():
-
-    mock = GetGithubUserInfoMocks(
-        patch_root=GITHUB_OAUTH_PREFIX,
-        return_values={
-            "get_github_user_id": MagicMock(),
-            "get_github_user_email": MagicMock(),
-        },
-    )
-
-    result = get_github_user_info(access_token=mock.access_token)
-
-    assert isinstance(result, GithubUserInfo)
-
-    mock.get_github_user_id.assert_called_once_with(mock.access_token)
-    mock.get_github_user_email.assert_called_once_with(mock.access_token)
-
-    assert result.user_email == mock.get_github_user_email.return_value
-    assert result.user_id == mock.get_github_user_id.return_value

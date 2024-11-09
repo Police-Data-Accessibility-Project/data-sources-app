@@ -55,7 +55,7 @@ def get_github_user_id(token: str) -> int:
 
 
 
-def get_github_oauth_access_token() -> str:
+def get_github_oauth_access_token() -> dict:
     """
     Gets the access token from the Github API via OAuth2
     :return: The access token
