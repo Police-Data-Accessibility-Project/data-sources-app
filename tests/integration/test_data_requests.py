@@ -208,6 +208,7 @@ def test_data_requests_post(
         "request_info": {
             "submission_notes": submission_notes,
             "title": uuid.uuid4().hex,
+            "data_requirements": uuid.uuid4().hex,
             "request_urgency": RequestUrgency.URGENT.value,
             "coverage_range": "2000-2005",
         },

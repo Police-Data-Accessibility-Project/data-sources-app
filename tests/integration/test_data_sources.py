@@ -18,6 +18,7 @@ from database_client.enums import (
     UpdateMethod,
 )
 from middleware.enums import AccessTypeEnum, RecordType
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourceExpandedSchema
 
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.conftest import (
@@ -26,7 +27,8 @@ from tests.conftest import (
 )
 from conftest import test_data_creator_flask, monkeysession
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
-from tests.helper_scripts.common_test_data import TestDataCreatorFlask
+from tests.helper_scripts.common_test_data import TestDataCreatorFlask, generate_test_data_from_schema
+from tests.helper_scripts.common_test_functions import assert_contains_key_value_pairs
 from tests.helper_scripts.helper_functions import (
     get_boolean_dictionary,
     create_test_user_setup,
@@ -116,15 +118,45 @@ def test_data_sources_post(
     Test that POST call to /data-sources endpoint successfully creates a new data source with a unique name and verifies its existence in the database
     """
     tdc = test_data_creator_flask
-    cds = tdc.data_source()
 
-    rows = tdc.db_client.execute_raw_sql(
-        query="""
-        SELECT * from data_sources WHERE name=%s
-        """,
-        vars=(cds.name,),
+    entry_data = generate_test_data_from_schema(
+        schema=DataSourceExpandedSchema(
+            exclude=[
+                "id",
+                "name",
+                "updated_at",
+                "created_at",
+                "record_type_id",
+                "broken_source_url_as_of",
+                "approval_status_updated_at",
+            ],
+        ),
+
     )
-    len(rows) == 1
+
+    response_json = run_and_validate_request(
+        flask_client=tdc.flask_client,
+        http_method="post",
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}",
+        headers=tdc.get_admin_tus().jwt_authorization_header,
+        json={
+            "entry_data": entry_data,
+        },
+        expected_schema=SchemaConfigs.DATA_SOURCES_POST.value.primary_output_schema,
+    )
+
+    response_json = run_and_validate_request(
+        flask_client=tdc.flask_client,
+        http_method="get",
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}/{response_json['id']}",
+        headers=tdc.get_admin_tus().jwt_authorization_header,
+        expected_schema=SchemaConfigs.DATA_SOURCES_GET_BY_ID.value.primary_output_schema,
+    )
+
+    assert_contains_key_value_pairs(
+        dict_to_check=response_json["data"],
+        key_value_pairs=entry_data,
+    )
 
 
 def test_data_sources_by_id_get(test_data_creator_flask: TestDataCreatorFlask):

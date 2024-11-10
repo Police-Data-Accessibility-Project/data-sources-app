@@ -165,6 +165,8 @@ def optionally_swap_record_type_name_with_id(db_client, entry_data):
 def add_new_data_source_wrapper(
     db_client: DatabaseClient, dto: DataSourceEntryDataPostDTO, access_info: AccessInfo
 ) -> Response:
+    entry_data = dataclass_to_filtered_dict(dto.entry_data)
+    optionally_swap_record_type_name_with_id(db_client, entry_data)
     return post_entry(
         middleware_parameters=MiddlewareParameters(
             db_client=db_client,
@@ -173,7 +175,7 @@ def add_new_data_source_wrapper(
             relation=RELATION,
             db_client_method=DatabaseClient.add_new_data_source,
         ),
-        entry=dataclass_to_filtered_dict(dto.entry_data),
+        entry=entry_data,
     )
 
 
