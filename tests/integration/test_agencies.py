@@ -11,7 +11,7 @@ from database_client.db_client_dataclasses import WhereMapping
 from middleware.enums import JurisdictionType
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import (
     AgenciesGetByIDResponseSchema,
-    AgenciesGetManyResponseSchema,
+    AgenciesGetManyResponseSchema, AgencyInfoPutSchema,
 )
 from middleware.schema_and_dto_logic.common_response_schemas import (
     MessageSchema,
@@ -26,7 +26,7 @@ from tests.conftest import (
 )
 from tests.helper_scripts.common_test_data import (
     get_sample_agency_post_parameters,
-    TestDataCreatorFlask,
+    TestDataCreatorFlask, generate_test_data_from_schema,
 )
 from tests.helper_scripts.constants import AGENCIES_BASE_ENDPOINT
 from tests.helper_scripts.helper_functions import (
@@ -153,10 +153,10 @@ def test_agencies_post(ts: AgenciesTestSetup):
     assert_contains_key_value_pairs(
         dict_to_check=json_data["data"],
         key_value_pairs={
-            "submitted_name": ts.submitted_name,
             "state_iso": "CA",
             "county_name": "Santa Cruz",
             "locality_name": data_to_post["location_info"]["locality_name"],
+            **data_to_post["agency_info"],
         },
     )
 
@@ -200,19 +200,26 @@ def test_agencies_put(ts: AgenciesTestSetup):
 
     agency_id = json_data["id"]
 
-    new_submitted_name = str(uuid.uuid4())
-
     # Add sleep to allow update time to be distinct from creation time
     time.sleep(1)
 
     BY_ID_ENDPOINT = f"{AGENCIES_BASE_ENDPOINT}/{agency_id}"
+
+    agency_info = generate_test_data_from_schema(
+        schema=AgencyInfoPutSchema(),
+        override={
+            "jurisdiction_type": JurisdictionType.FEDERAL.value,
+        }
+    )
 
     json_data = run_and_validate_request(
         flask_client=ts.flask_client,
         http_method="put",
         endpoint=BY_ID_ENDPOINT,
         headers=ts.tus.jwt_authorization_header,
-        json={"agency_info": {"submitted_name": new_submitted_name}},
+        json={
+            "agency_info": agency_info
+        },
         expected_schema=SchemaConfigs.AGENCIES_BY_ID_PUT.value.primary_output_schema,
     )
 
@@ -223,13 +230,16 @@ def test_agencies_put(ts: AgenciesTestSetup):
         headers=ts.tus.api_authorization_header,
     )
 
+    assert_contains_key_value_pairs(
+        dict_to_check=json_data["data"],
+        key_value_pairs=agency_info,
+    )
+
     agency_created = json_data["data"]["agency_created"]
     last_modified = json_data["data"]["airtable_agency_last_modified"]
     assert datetime.fromisoformat(agency_created) < datetime.fromisoformat(
         last_modified
     )
-
-    assert json_data["data"]["submitted_name"] == new_submitted_name
 
 
 def test_agencies_delete(ts: AgenciesTestSetup):

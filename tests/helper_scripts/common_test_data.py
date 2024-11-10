@@ -1,13 +1,19 @@
 import random
 import uuid
+from datetime import datetime
+from enum import Enum
 from typing import Optional
 
 import psycopg
 from flask.testing import FlaskClient
+from marshmallow import Schema, fields
+from marshmallow.fields import Field
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import RequestUrgency, RequestStatus
 from middleware.enums import JurisdictionType, PermissionsEnum
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import AgencyInfoPutSchema, \
+    AgencyInfoPostSchema
 from tests.helper_scripts.common_endpoint_calls import (
     create_data_source_with_endpoint,
     CreatedDataSource,
@@ -343,12 +349,71 @@ def get_sample_agency_post_parameters(
             "locality_name": locality_name,
         }
     return {
-        "agency_info": {
-            "submitted_name": submitted_name,
-            "jurisdiction_type": jurisdiction_type.value,
-        },
+        "agency_info": generate_test_data_from_schema(
+            schema=AgencyInfoPostSchema(),
+            override={
+                "jurisdiction_type": JurisdictionType.LOCAL.value,
+            }
+    ),
         "location_info": location_info,
     }
+
+
+def get_random_boolean() -> bool:
+    return random.choice([True, False])
+
+def get_random_possible_enum_value(enum: Enum) -> str:
+    return random.choice(list(enum)).value
+
+class SchemaTestDataGenerator:
+
+    def __init__(self, schema: Schema):
+        self.schema = schema
+        self.fields = schema.fields
+        self.output: dict = {}
+
+    def generate(self):
+        for key, field in self.fields.items():
+            try:
+                self.output[key] = self.generate_test_data(field)
+            except NotImplementedError as e:
+                raise NotImplementedError(f"Field {key} is not supported: {e}")
+        return self.output
+
+    def generate_test_data(self, field: Field):
+        if isinstance(field, fields.String):
+            return uuid.uuid4().hex
+        elif isinstance(field, fields.Number):
+            return get_random_number_for_testing()
+        elif isinstance(field, fields.Boolean):
+            return get_random_boolean()
+        elif isinstance(field, fields.Enum):
+            return get_random_possible_enum_value(field.enum)
+        elif isinstance(field, fields.Date):
+            return datetime.now().strftime("%Y-%m-%d")
+        elif isinstance(field, fields.List):
+            inner_field = field.inner
+            return [self.generate_test_data(inner_field) for _ in range(5)]
+        else:
+            raise NotImplementedError(f"Field type {type(field)} is not supported")
+
+
+
+def generate_test_data_from_schema(
+    schema: Schema,
+    override: Optional[dict] = None
+) -> dict:
+    """
+    Generates a dictionary of test data based on
+    the provided schema
+    :param schema:
+    :return:
+    """
+    result = SchemaTestDataGenerator(schema).generate()
+    if override is not None:
+        result.update(override)
+    return result
+
 
 
 def get_random_number_for_testing():
