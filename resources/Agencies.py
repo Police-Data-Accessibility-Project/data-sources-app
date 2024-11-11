@@ -93,7 +93,7 @@ class AgenciesById(PsycopgResource):
             column_permissions_str_table=agencies_column_permissions,
         ),
     )
-    @limiter.limit("50 per minute")
+    @limiter.limit("50/minute;250/hour")
     def get(self, resource_id: str, access_info: AccessInfo) -> Response:
         return self.run_endpoint(
             wrapper_function=get_agency_by_id,

@@ -60,7 +60,7 @@ class DataSourceById(PsycopgResource):
         ),
         description="Get details of a specific data source by its ID.",
     )
-    @limiter.limit("50 per minute")
+    @limiter.limit("50/minute;250/hour")
     def get(self, access_info: AccessInfo, resource_id: str) -> Response:
         """
         Retrieves details of a specific data source by its ID.
