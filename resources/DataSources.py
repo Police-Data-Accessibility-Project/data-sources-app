@@ -25,7 +25,7 @@ from middleware.primary_resource_logic.data_sources_logic import (
     delete_data_source_wrapper,
     create_data_source_related_agency,
     delete_data_source_related_agency,
-    get_data_source_related_agencies,
+    get_data_source_related_agencies, get_data_sources_for_map_wrapper,
 )
 
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
@@ -42,6 +42,38 @@ from resources.PsycopgResource import PsycopgResource
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 
 namespace_data_source = create_namespace(AppNamespaces.DATA_SOURCES)
+
+    # This endpoint no longer works because of the other data source endpoint
+    # It is interpreted as another data source id
+    # But we have not yet decided whether to modify or remove it entirely
+
+
+@namespace_data_source.route("/data-sources-map")
+class DataSourcesMap(PsycopgResource):
+    """
+    A resource for managing collections of data sources for mapping.
+    Provides a method for retrieving all data sources.
+    """
+
+    @endpoint_info_2(
+        namespace=namespace_data_source,
+        auth_info=GET_AUTH_INFO,
+        schema_config=SchemaConfigs.DATA_SOURCES_MAP,
+        response_info=ResponseInfo(
+            success_message="Returns all requested data sources.",
+        ),
+        description="Retrieves location-relevant columns for data sources.",
+
+    )
+    def get(self, access_info: AccessInfo) -> Response:
+        """
+        Retrieves location relevant columns for data sources.
+
+        Returns:
+        - A dictionary containing the count of data sources and their details.
+        """
+        return self.run_endpoint(get_data_sources_for_map_wrapper)
+
 
 
 @namespace_data_source.route("/<resource_id>")
@@ -187,38 +219,6 @@ class DataSources(PsycopgResource):
             access_info=access_info,
         )
 
-    # This endpoint no longer works because of the other data source endpoint
-    # It is interpreted as another data source id
-    # But we have not yet decided whether to modify or remove it entirely
-
-
-# @namespace_data_source.route("/data-sources-map")
-# class DataSourcesMap(PsycopgResource):
-#     """
-#     A resource for managing collections of data sources for mapping.
-#     Provides a method for retrieving all data sources.
-#     """
-#
-#     @handle_exceptions
-#     @authentication_required(
-#         allowed_access_methods=[AccessTypeEnum.API_KEY],
-#     )
-#     @namespace_data_source.response(200, "Success", models.get_many_response_model)
-#     @namespace_data_source.response(500, "Internal server error")
-#     @namespace_data_source.response(400, "Bad request; missing or bad API key")
-#     @namespace_data_source.response(403, "Forbidden; invalid API key")
-#     @namespace_data_source.doc(
-#         description="Retrieves location-relevant columns for data sources.",
-#     )
-#     @namespace_data_source.expect(authorization_api_parser)
-#     def get(self) -> Response:
-#         """
-#         Retrieves location relevant columns for data sources.
-#
-#         Returns:
-#         - A dictionary containing the count of data sources and their details.
-#         """
-#         return self.run_endpoint(get_data_sources_for_map_wrapper)
 
 # region Related Agencies
 
