@@ -34,5 +34,6 @@ jobs:
         pytest tests/test_database_client.py
         pytest tests/test_database.py
         pytest tests/test_schema_aligned_with_db_table.py
+        pytest tests/test_schema_validation.py
         
       
