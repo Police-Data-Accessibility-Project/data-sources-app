@@ -41,7 +41,7 @@ murmurhash==1.0.9
 numpy==1.25.2
 packaging==23.1
 pathy==0.10.2
-pluggy==1.2.0
+pluggy==1.5.0
 postgrest==0.10.8
 preshed==3.0.8
 psycopg~=3.2
