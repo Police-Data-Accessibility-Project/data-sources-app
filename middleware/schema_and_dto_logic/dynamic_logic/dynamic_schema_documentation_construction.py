@@ -330,7 +330,7 @@ def get_restx_param_documentation(
     namespace: Namespace,
     schema: SchemaTypes,
     model_name: Optional[str] = None,
-):
+) -> FlaskRestxDocInfo:
     """
     Takes a Marshmallow schema class with custom arguments and
     returns a Flask-RESTX model and Request Parser for Restx documentation, correlating to the schema

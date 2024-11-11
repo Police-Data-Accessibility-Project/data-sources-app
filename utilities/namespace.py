@@ -24,6 +24,7 @@ class AppNamespaces(Enum):
     NOTIFICATIONS = NamespaceAttributes(
         path="notifications", description="Notifications Namespace"
     )
+    MAP = NamespaceAttributes(path="map", description="Map Namespace")
 
 
 def create_namespace(
