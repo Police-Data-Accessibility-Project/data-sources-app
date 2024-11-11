@@ -41,7 +41,7 @@ murmurhash==1.0.9
 numpy==1.25.2
 packaging==23.1
 pathy==0.10.2
-pluggy==1.2.0
+pluggy==1.5.0
 postgrest==0.10.8
 preshed==3.0.8
 psycopg~=3.2
@@ -49,7 +49,7 @@ py==1.11.0
 pycparser==2.21
 pydantic==2.2.1
 pydantic_core==2.6.1
-pytest==6.2.5
+pytest==8.3.3
 python-dateutil==2.8.2
 python-dotenv==1.0.0
 pytz==2023.3
