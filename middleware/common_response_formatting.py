@@ -12,7 +12,7 @@ from middleware.schema_and_dto_logic.common_response_schemas import (
 )
 
 
-def format_list_response(data: list, message: str = "") -> dict:
+def format_list_response(data: dict, message: str = "") -> dict:
     """
     Format a list of dictionaries into a dictionary with the count and data keys.
     Args:
