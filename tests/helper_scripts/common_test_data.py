@@ -27,6 +27,7 @@ from tests.helper_scripts.constants import (
     AGENCIES_BY_ID_ENDPOINT,
 )
 from tests.helper_scripts.helper_classes.EndpointCaller import EndpointCaller
+from tests.helper_scripts.helper_classes.RequestValidator import RequestValidator
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
 )
@@ -182,6 +183,7 @@ class TestDataCreatorFlask:
 
     def __init__(self, flask_client: FlaskClient):
         self.flask_client = flask_client
+        self.request_validator = RequestValidator(flask_client)
         self.endpoint_caller = EndpointCaller(flask_client)
         self.db_client = DatabaseClient()
         self.admin_tus: Optional[TestUserSetup] = None

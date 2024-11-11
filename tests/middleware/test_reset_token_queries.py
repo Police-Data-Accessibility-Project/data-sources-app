@@ -16,34 +16,6 @@ from middleware.primary_resource_logic.reset_token_queries import (
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.conftest import mock_flask_response_manager
 
-
-class RequestResetPasswordMocks(DynamicMagicMock):
-    user_check_email: MagicMock
-    generate_api_key: MagicMock
-    send_password_reset_link: MagicMock
-    make_response: MagicMock
-
-
-def test_request_reset_password(monkeypatch):
-    mock = RequestResetPasswordMocks(
-        patch_root="middleware.primary_resource_logic.reset_token_queries",
-    )
-    mock.generate_api_key.return_value = mock.token
-    request_reset_password(mock.db_client, mock.email)
-
-    mock.user_check_email.assert_called_once_with(mock.db_client, mock.email)
-    mock.generate_api_key.assert_called_once()
-    mock.db_client.add_reset_token.assert_called_once_with(mock.email, mock.token)
-    mock.send_password_reset_link.assert_called_once_with(mock.email, mock.token)
-    mock.make_response.assert_called_once_with(
-        {
-            "message": "An email has been sent to your email address with a link to reset your password. It will be valid for 15 minutes.",
-            "token": mock.token,
-        },
-        HTTPStatus.OK,
-    )
-
-
 class ResetPasswordMocks(DynamicMagicMock):
     make_response: MagicMock
     set_user_password: MagicMock

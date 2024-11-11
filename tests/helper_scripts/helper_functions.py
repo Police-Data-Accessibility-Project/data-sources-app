@@ -303,14 +303,13 @@ def request_reset_password_api(client_with_db, mocker, user_info):
     :param user_info:
     :return:
     """
-    mocker.patch(
+    mock = mocker.patch(
         "middleware.primary_resource_logic.reset_token_queries.send_password_reset_link"
     )
     response = client_with_db.post(
         "/api/request-reset-password", json={"email": user_info.email}
     )
-    token = response.json.get("token")
-    return token
+    return mock.call_args[1]["token"]
 
 
 def create_api_key(client_with_db, user_info) -> str:

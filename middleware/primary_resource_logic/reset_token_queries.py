@@ -11,6 +11,8 @@ from database_client.database_client import DatabaseClient
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.primary_resource_logic.api_key_logic import generate_api_key
 from middleware.primary_resource_logic.user_queries import user_check_email
+from middleware.schema_and_dto_logic.primary_resource_dtos.request_reset_password_dtos import \
+    RequestResetPasswordRequestDTO
 from middleware.webhook_logic import send_password_reset_link
 from utilities.enums import SourceMappingEnum
 
@@ -25,7 +27,7 @@ class RequestResetPasswordRequest:
     token: str
 
 
-class RequestResetPasswordRequestSchema(Schema):
+class ResetPasswordRequestSchema(Schema):
     email = fields.Str(
         required=True,
         metadata={
@@ -73,21 +75,21 @@ class ResetPasswordDTO:
     token: str
 
 
-def request_reset_password(db_client: DatabaseClient, email) -> Response:
+def request_reset_password(db_client: DatabaseClient, dto: RequestResetPasswordRequestDTO) -> Response:
     """
     Generates a reset token and sends an email to the user with instructions on how to reset their password.
     :param cursor:
     :param email:
     :return:
     """
+    email = dto.email
     user_check_email(db_client, email)
     token = generate_api_key()
-    db_client.add_reset_token(email, token)
-    send_password_reset_link(email, token)
+    db_client.add_reset_token(email=email, token=token)
+    send_password_reset_link(email=email, token=token)
     return make_response(
         {
             "message": "An email has been sent to your email address with a link to reset your password. It will be valid for 15 minutes.",
-            "token": token,
         },
         HTTPStatus.OK,
     )

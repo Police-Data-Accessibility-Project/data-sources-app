@@ -1,35 +1,28 @@
 """Integration tests for /request-reset-password endpoint."""
 
-from http import HTTPStatus
-import psycopg
-
 from database_client.database_client import DatabaseClient
-from tests.conftest import flask_client_with_db
-from tests.helper_scripts.helper_functions import (
-    create_test_user_api,
-)
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-from tests.helper_scripts.simple_result_validators import check_response_status
+from resources.endpoint_schema_config import SchemaConfigs
+from tests.helper_scripts.common_test_data import TestDataCreatorFlask
+from conftest import test_data_creator_flask, monkeysession
 
-
-def test_request_reset_password_post(flask_client_with_db, mocker):
+def test_request_reset_password_post(test_data_creator_flask: TestDataCreatorFlask, mocker):
     """
     Test that POST call to /request-reset-password endpoint successfully initiates a password reset request, sends a single email via Mailgun, and verifies the reset token is correctly associated with the user's email in the database
     """
+    tdc = test_data_creator_flask
 
-    user_info = create_test_user_api(flask_client_with_db)
+    user_info = tdc.standard_user().user_info
 
     mock_send_password_reset_link = mocker.patch(
         "middleware.primary_resource_logic.reset_token_queries.send_password_reset_link"
     )
-    response_json = run_and_validate_request(
-        flask_client=flask_client_with_db,
-        http_method="post",
+    tdc.request_validator.post(
         endpoint="/api/request-reset-password",
         json={"email": user_info.email},
+        expected_schema=SchemaConfigs.REQUEST_RESET_PASSWORD.value.primary_output_schema,
     )
 
-    reset_token = response_json.get("token")
+    reset_token = mock_send_password_reset_link.call_args[1]['token']
     assert mock_send_password_reset_link.called_once_with(user_info.email, reset_token)
 
     db_client = DatabaseClient()
