@@ -365,7 +365,15 @@ class DataSourcesGetManySchema(GetManyResponseSchemaBase):
 class DataSourcesPostSchema(Schema):
     entry_data = fields.Nested(
         nested=DataSourceExpandedSchema(
-            exclude=["id", "name", "updated_at", "created_at", "record_type_id"],
+            exclude=[
+                "id",
+                "name",
+                "updated_at",
+                "created_at",
+                "record_type_id",
+                "approval_status_updated_at",
+                "broken_source_url_as_of"
+            ],
             partial=True,
         ),
         required=True,
@@ -387,6 +395,8 @@ class DataSourcesPutSchema(Schema):
                 "rejection_note",
                 "record_type_id",
                 "data_source_request",
+                "approval_status_updated_at",
+                "broken_source_url_as_of"
             ]
         ),
         required=True,
