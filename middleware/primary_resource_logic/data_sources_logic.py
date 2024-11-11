@@ -107,7 +107,9 @@ def get_data_sources_for_map_wrapper(db_client: DatabaseClient) -> Response:
     raw_results = db_client.get_data_sources_for_map()
     zipped_results = ResultFormatter.zip_get_datas_sources_for_map_results(raw_results)
     return make_response(
-        format_list_response(zipped_results),
+        format_list_response(
+            data={"data": zipped_results},
+        ),
         HTTPStatus.OK.value,
     )
 

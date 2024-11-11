@@ -317,6 +317,8 @@ class DatabaseClient:
                 INNER JOIN RECORD_TYPES RT ON RT.ID = DATA_SOURCES.RECORD_TYPE_ID
             WHERE
                 DATA_SOURCES.APPROVAL_STATUS = 'approved'
+                AND LAT is not null
+				AND LNG is not null
         """
         self.cursor.execute(sql_query)
         results = self.cursor.fetchall()

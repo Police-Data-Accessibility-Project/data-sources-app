@@ -103,7 +103,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schem
     DataSourcesPostSchema,
     DataSourcesPutSchema,
     DataSourcesPostDTO,
-    DataSourcesGetManyRequestSchema,
+    DataSourcesGetManyRequestSchema, DataSourcesMapResponseSchema,
 )
 from middleware.schema_and_dto_logic.common_response_schemas import (
     IDAndMessageSchema,
@@ -247,6 +247,9 @@ class SchemaConfigs(Enum):
         input_dto_class=DataSourcesPostDTO,
         primary_output_schema=IDAndMessageSchema(),
     )
+    DATA_SOURCES_MAP = EndpointSchemaConfig(
+        primary_output_schema=DataSourcesMapResponseSchema(),
+    )
     DATA_SOURCES_PUT = EndpointSchemaConfig(
         input_schema=DataSourcesPutSchema(), input_dto_class=EntryDataRequestSchema
     )
@@ -346,7 +349,7 @@ class SchemaConfigs(Enum):
         input_schema=GithubOAuthRequestSchema(),
         input_dto_class=GithubOAuthRequestDTO,
     )
-    # endregion
+    #endregion
     REFRESH_SESSION = EndpointSchemaConfig(
         input_schema=RefreshSessionRequestSchema(),
         primary_output_schema=LoginResponseSchema(),
@@ -358,3 +361,4 @@ class SchemaConfigs(Enum):
         primary_output_schema=MessageSchema(),
         input_dto_class=RequestResetPasswordRequestDTO
     )
+    #endregion
