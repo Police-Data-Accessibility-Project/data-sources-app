@@ -1,5 +1,6 @@
 from flask import Response
 
+from config import limiter
 from middleware.access_logic import AccessInfo, GET_AUTH_INFO, WRITE_ONLY_AUTH_INFO
 from middleware.column_permission_logic import create_column_permissions_string_table
 from middleware.decorators import (
@@ -92,6 +93,7 @@ class AgenciesById(PsycopgResource):
             column_permissions_str_table=agencies_column_permissions,
         ),
     )
+    @limiter.limit("50/minute;250/hour")
     def get(self, resource_id: str, access_info: AccessInfo) -> Response:
         return self.run_endpoint(
             wrapper_function=get_agency_by_id,
