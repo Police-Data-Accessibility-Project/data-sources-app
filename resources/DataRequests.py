@@ -1,5 +1,6 @@
 from flask import Response
 
+from config import limiter
 from middleware.access_logic import (
     AccessInfo,
     GET_AUTH_INFO,
@@ -55,6 +56,7 @@ class DataRequestsById(PsycopgResource):
         ),
         description="Get data request by id",
     )
+    @limiter.limit("50 per minute")
     def get(self, access_info: AccessInfo, resource_id: str) -> Response:
         """
         Get data request by id
