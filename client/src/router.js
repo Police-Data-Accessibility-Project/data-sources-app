@@ -1,7 +1,7 @@
 import { createWebHistory, createRouter } from 'vue-router';
 import { useAuthStore } from './stores/auth';
 import { routes, handleHotUpdate } from 'vue-router/auto-routes';
-import { refreshMetaTagsByRoute } from '@/util/routes.js';
+import { refreshMetaTagsByRoute } from '@/util/routeHelpers.js';
 
 const router = createRouter({
 	history: createWebHistory(),
@@ -23,7 +23,7 @@ router.beforeEach(async (to, _from, next) => {
 	// redirect to login page if not logged in and trying to access a restricted page
 	const auth = useAuthStore();
 
-	if (to.meta.auth && !auth.isAuthenticated) {
+	if (to.meta.auth && !auth.isAuthenticated()) {
 		if (to.path !== '/sign-in') {
 			auth.setRedirectTo(to);
 		}

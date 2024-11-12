@@ -10,8 +10,8 @@
 		"import/core-modules": ["vue-router/auto-routes"]
 	},
 	"rules": {
-		"vue/multi-word-component-names": ["error", {
-			"ignores": ["login", "index", "search", "search.results", "request", "profile"]
+		"vue/multi-word-component-names": ["warn", {
+			"ignores": ["login", "index", "search", "search.results", "request", "profile", "[id]", "results"]
 		}]	
 	}
 }

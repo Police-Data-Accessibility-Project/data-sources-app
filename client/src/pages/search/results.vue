@@ -100,7 +100,7 @@ import {
 	getLocationText,
 	getAnchorLinkText,
 	getAllIdsSearched,
-} from '@/util/searchResults';
+} from './_util';
 import _isEqual from 'lodash/isEqual';
 
 const search = useSearchStore();
@@ -140,7 +140,7 @@ export const useSearchData = defineBasicLoader(
 
 <script setup>
 import { Button } from 'pdap-design-system';
-import SearchResults from '@/components/SearchResults.vue';
+import SearchResults from './_components/SearchResults.vue';
 import SearchForm from '@/components/SearchForm.vue';
 
 const { data: searchData, isLoading, error } = useSearchData();

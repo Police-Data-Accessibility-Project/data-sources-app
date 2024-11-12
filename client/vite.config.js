@@ -8,7 +8,7 @@ export default defineConfig({
 	plugins: [
 		VueRouter({
 			routesFolder: 'src/pages',
-			exclude: ['**/_*/*.*'],
+			exclude: ['**/_*/{*,_*}.*'],
 			extendRoute(route) {
 				// Add meta from meta map (see below)
 				if (ROUTES_TO_META.has(route.name)) {

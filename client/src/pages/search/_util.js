@@ -1,7 +1,6 @@
 // This file contains utils related to the search results page
 
-import { ALL_LOCATION_TYPES } from '@/util/constants';
-import statesToAbbreviations from '@/util/statesToAbbreviations';
+import { ALL_LOCATION_TYPES, STATES_TO_ABBREVIATIONS } from '@/util/constants';
 
 /**
  * Manipulates data to be renderable by search results component (grouped by agency)
@@ -55,9 +54,9 @@ export function normalizeLocaleForHash(locale, results) {
 export function getLocationText({ searched, params }) {
 	switch (searched) {
 		case 'locality':
-			return `${params.locality}, ${statesToAbbreviations.get(params.state)}`;
+			return `${params.locality}, ${STATES_TO_ABBREVIATIONS.get(params.state)}`;
 		case 'county':
-			return `${params.county} ${statesToAbbreviations.get(params.state) === 'LA' ? 'Parish' : 'County'}, ${params.state}`;
+			return `${params.county} ${STATES_TO_ABBREVIATIONS.get(params.state) === 'LA' ? 'Parish' : 'County'}, ${params.state}`;
 		case 'state':
 			return params.state;
 		default:

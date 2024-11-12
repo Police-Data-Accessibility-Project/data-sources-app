@@ -25,7 +25,7 @@ import AuthWrapper from './components/AuthWrapper.vue';
 import acronym from 'pdap-design-system/images/acronym.svg';
 import lockup from 'pdap-design-system/images/lockup.svg';
 
-import { links } from './util/links';
+import { NAV_LINKS as links } from '@/util/constants';
 
 export default {
 	name: 'App',

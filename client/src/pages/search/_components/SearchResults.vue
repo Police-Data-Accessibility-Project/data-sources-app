@@ -199,6 +199,12 @@ h4.formats {
 	@apply grid gap-4 mb-4 p-2 h-auto lg:h-[91px] border-solid border-neutral-300 border-2 rounded-sm [&>*]:text-sm [&>*]:md:text-med [&>*]:lg:text-lg text-neutral-950 hover:bg-neutral-100;
 }
 
+.agency-row:focus,
+.agency-row:focus-visible,
+.agency-row:focus-within {
+	@apply hover:brightness-85;
+}
+
 .agency-row * {
 	@apply [&>*]:text-sm [&>*]:md:text-med [&>*]:lg:text-lg;
 }

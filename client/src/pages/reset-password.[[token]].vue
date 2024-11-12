@@ -56,8 +56,8 @@
 
 				<PasswordValidationChecker ref="passwordRef" />
 
-				<Button class="max-w-full" type="submit">
-					{{ loading ? 'Loading...' : 'Change password' }}
+				<Button class="max-w-full" :is-loading="loading" type="submit">
+					Change password
 				</Button>
 			</FormV2>
 		</template>
@@ -81,8 +81,8 @@
 					label="Email"
 					placeholder="Your email address"
 				/>
-				<Button class="max-w-full" type="submit">
-					{{ loading ? 'Loading...' : 'Request password reset' }}
+				<Button class="max-w-full" :is-loading="loading" type="submit">
+					Request password reset
 				</Button>
 			</FormV2>
 		</template>

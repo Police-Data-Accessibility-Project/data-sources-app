@@ -72,7 +72,7 @@ import {
 import TypeaheadInput from '@/components/TypeaheadInput.vue';
 import axios from 'axios';
 import { ref } from 'vue';
-import statesToAbbreviations from '@/util/statesToAbbreviations';
+import { STATES_TO_ABBREVIATIONS } from '@/util/constants';
 import _debounce from 'lodash/debounce';
 import { useRouter, RouterLink } from 'vue-router';
 import { useSearchStore } from '@/stores/search';
@@ -144,9 +144,9 @@ function submit(values) {
 function formatText(item) {
 	switch (item.type) {
 		case 'Locality':
-			return `${item.display_name} ${item.county} ${statesToAbbreviations.get(item.state)}`;
+			return `${item.display_name} ${item.county} ${STATES_TO_ABBREVIATIONS.get(item.state)}`;
 		case 'County':
-			return `${item.display_name} ${statesToAbbreviations.get(item.state)}`;
+			return `${item.display_name} ${STATES_TO_ABBREVIATIONS.get(item.state)}`;
 		case 'State':
 		default:
 			return item.display_name;
@@ -194,7 +194,7 @@ function onChange(values, event) {
 			Object.entries(values).forEach(([key, val]) => {
 				if (key !== 'all-data-types' && val) {
 					update[key] = false;
-					const checkbox = document.querySelector(`input[name=${key}]`);
+					const checkbox = document.querySelector(`input[name="${key}"]`);
 					checkbox.checked = false;
 				}
 			});

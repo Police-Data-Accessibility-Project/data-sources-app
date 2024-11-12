@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { defineStore } from 'pinia';
-import parseJwt from '../util/parseJwt';
-import router from '../router';
+import parseJwt from '@/util/parseJwt';
+import router from '@/router';
 import { useUserStore } from './user';
 
 const HEADERS = {
@@ -28,17 +28,17 @@ export const useAuthStore = defineStore('auth', {
 		redirectTo: null,
 	}),
 	persist: {
-		storage: sessionStorage,
+		storage: localStorage,
 		pick: ['tokens'],
 	},
 	getters: {
 		isAuthenticated: (state) => {
 			const user = useUserStore();
-			return (
-				!!state.tokens.accessToken.value &&
-				state.tokens.accessToken.expires > new Date().getTime() &&
-				!!user.$state.id
-			);
+
+			return (time = new Date().getTime()) =>
+				!!state.$state.tokens.accessToken.value &&
+				state.$state.tokens.accessToken.expires > time &&
+				!!user.$state.id;
 		},
 	},
 	actions: {
@@ -140,6 +140,8 @@ export const useAuthStore = defineStore('auth', {
 			const refreshToken = response.data.refresh_token;
 			const accessTokenParsed = parseJwt(accessToken);
 			const refreshTokenParsed = parseJwt(refreshToken);
+
+			console.debug('parse and set', { accessToken, refreshToken });
 
 			this.$patch({
 				tokens: {

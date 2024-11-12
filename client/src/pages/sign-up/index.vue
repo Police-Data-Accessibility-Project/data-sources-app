@@ -1,111 +1,106 @@
 <template>
-	<main v-if="userId" class="pdap-flex-container">
-		<h1>Your account is now active</h1>
-		<p data-test="success-subheading">Enjoy the data sources app.</p>
+	<main class="pdap-flex-container mx-auto max-w-2xl">
+		<template v-if="!userId">
+			<h1>Sign Up</h1>
 
-		<RouterLink class="pdap-button-secondary mt-6" to="/">
-			Search data sources
-		</RouterLink>
-	</main>
+			<!-- TODO: when GH auth is complete, encapsulate duplicate UI from this and `/sign-up` -->
+			<div
+				v-if="githubLoading"
+				class="flex items-center justify-center h-full w-full"
+			>
+				<Spinner :show="githubLoading" text="Logging in" />
+			</div>
 
-	<main v-else class="pdap-flex-container mx-auto max-w-2xl">
-		<h1>Sign Up</h1>
-
-		<!-- TODO: when GH auth is complete, encapsulate duplicate UI from this and `/sign-up` -->
-		<div
-			v-if="githubLoading"
-			class="flex items-center justify-center h-full w-full"
-		>
-			<Spinner :show="githubLoading" text="Logging in" />
-		</div>
-
-		<template v-else>
-			<template v-if="githubAuthError">
-				<p class="error">
-					There was an error logging you in with Github. Please try again
-				</p>
-			</template>
 			<template v-else>
-				<template v-if="githubAuthData?.userExists">
+				<template v-if="githubAuthError">
 					<p class="error">
-						You already have an account with this email address. Please
-						<RouterLink to="/profile">sign in</RouterLink>
-						and link your existing account to Github from your profile.
+						There was an error logging you in with Github. Please try again
 					</p>
 				</template>
+				<template v-else>
+					<template v-if="githubAuthData?.userExists">
+						<p class="error">
+							You already have an account with this email address. Please
+							<RouterLink to="/profile">sign in</RouterLink>
+							and link your existing account to Github from your profile.
+						</p>
+					</template>
 
-				<Button
-					class="border-2 border-neutral-950 border-solid [&>svg]:ml-0"
-					intent="tertiary"
-					:disabled="githubAuthData?.userExists"
-					@click="async () => await auth.beginOAuthLogin('/sign-up')"
+					<Button
+						class="border-2 border-neutral-950 border-solid [&>svg]:ml-0"
+						intent="tertiary"
+						:disabled="githubAuthData?.userExists"
+						@click="async () => await auth.beginOAuthLogin('/sign-up')"
+					>
+						<FontAwesomeIcon :icon="faGithub" />
+						Sign up with Github
+					</Button>
+				</template>
+
+				<h2>Or sign up with email</h2>
+				<FormV2
+					id="login"
+					class="flex flex-col"
+					data-test="login-form"
+					name="login"
+					:error="error"
+					:schema="VALIDATION_SCHEMA"
+					@change="onChange"
+					@submit="onSubmit"
+					@input="onInput"
 				>
-					<FontAwesomeIcon :icon="faGithub" />
-					Sign up with Github
-				</Button>
+					<InputText
+						id="email"
+						autocomplete="email"
+						data-test="email"
+						name="email"
+						label="Email"
+						type="text"
+						placeholder="Your email address"
+					/>
+
+					<InputPassword
+						v-for="input of PASSWORD_INPUTS"
+						v-bind="{ ...input }"
+						:key="input.name"
+					/>
+
+					<PasswordValidationChecker ref="passwordRef" />
+
+					<Button
+						class="max-w-full"
+						:disabled="loading"
+						:is-loading="loading"
+						type="submit"
+						data-test="submit-button"
+					>
+						Create Account
+					</Button>
+				</FormV2>
+				<div
+					class="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4 sm:flex-wrap w-full"
+				>
+					<p class="w-full max-w-[unset]">Already have an account?</p>
+
+					<RouterLink
+						class="pdap-button-secondary flex-1 max-w-full"
+						data-test="toggle-button"
+						to="/sign-in"
+					>
+						Log in
+					</RouterLink>
+					<RouterLink
+						class="pdap-button-secondary flex-1 max-w-full"
+						data-test="reset-link"
+						to="/reset-password"
+					>
+						Reset Password
+					</RouterLink>
+				</div>
 			</template>
-
-			<h2>Or sign up with email</h2>
-			<FormV2
-				id="login"
-				class="flex flex-col"
-				data-test="login-form"
-				name="login"
-				:error="error"
-				:schema="VALIDATION_SCHEMA"
-				@change="onChange"
-				@submit="onSubmit"
-				@input="onInput"
-			>
-				<InputText
-					id="email"
-					autocomplete="email"
-					data-test="email"
-					name="email"
-					label="Email"
-					type="text"
-					placeholder="Your email address"
-				/>
-
-				<InputPassword
-					v-for="input of PASSWORD_INPUTS"
-					v-bind="{ ...input }"
-					:key="input.name"
-				/>
-
-				<PasswordValidationChecker ref="passwordRef" />
-
-				<Button
-					class="max-w-full"
-					:disabled="loading"
-					type="submit"
-					data-test="submit-button"
-				>
-					<Spinner :show="loading" />
-					<template v-if="!loading" #default>Create Account</template>
-				</Button>
-			</FormV2>
-			<div
-				class="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4 sm:flex-wrap w-full"
-			>
-				<p class="w-full max-w-[unset]">Already have an account?</p>
-
-				<RouterLink
-					class="pdap-button-secondary flex-1 max-w-full"
-					data-test="toggle-button"
-					to="/sign-in"
-				>
-					Log in
-				</RouterLink>
-				<RouterLink
-					class="pdap-button-secondary flex-1 max-w-full"
-					data-test="reset-link"
-					to="/reset-password"
-				>
-					Reset Password
-				</RouterLink>
-			</div>
 		</template>
+
+		<RouterView v-else />
 	</main>
 </template>
 
@@ -119,7 +114,7 @@ import { useAuthStore } from '@/stores/auth';
 const auth = useAuthStore();
 
 export const useGithubAuth = defineBasicLoader('/sign-up', async (route) => {
-	if (auth.isAuthenticated)
+	if (auth.isAuthenticated())
 		return new NavigationResult(auth.redirectTo ?? { path: '/profile' });
 
 	try {
@@ -156,7 +151,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { ref } from 'vue';
 import { useUserStore } from '@/stores/user';
-import { useRouter } from 'vue-router';
+import { RouterView, useRouter } from 'vue-router';
 
 // Constants
 const PASSWORD_INPUTS = [

@@ -1,6 +1,6 @@
 <template>
 	<main ref="mainRef" class="min-h-[75%] relative">
-		<!-- NAV to prev/next data source -- TODO: only show if user navigates from search results -->
+		<!-- NAV to prev/next data source -->
 		<PrevNextNav
 			:search-ids="mostRecentSearchIds"
 			:previous-index="previousIdIndex"
@@ -222,12 +222,11 @@ export const useDataSourceData = defineBasicLoader(
 
 <script setup>
 import { Button, RecordTypeIcon, Spinner } from 'pdap-design-system';
-import PrevNextNav from '@/components/DataSourceNav.vue';
+import PrevNextNav from './_components/Nav.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faLink } from '@fortawesome/free-solid-svg-icons';
 
-import { DATA_SOURCE_UI_SHAPE } from '@/util/constants';
-import formatDateForSearchResults from '@/util/formatDate';
+import { DATA_SOURCE_UI_SHAPE, formatDateForSearchResults } from './_util';
 import { computed, onMounted, onUnmounted, watch } from 'vue';
 
 const route = useRoute();

@@ -25,7 +25,7 @@ const routeMock = {
 
 let wrapper;
 
-const NOW = Date.now();
+const NOW = new Date().getTime();
 const NOW_MINUS_THIRTY = NOW - 30 * 1000;
 const NOW_PLUS_THIRTY = NOW + 30 * 1000;
 
@@ -51,6 +51,7 @@ describe('AuthWrapper', () => {
 		auth.$patch({
 			tokens: {
 				accessToken: {
+					value: 'foo',
 					expires: NOW_PLUS_THIRTY,
 				},
 			},
@@ -65,9 +66,11 @@ describe('AuthWrapper', () => {
 	it('logs user out when access token is expired on all expected events', async () => {
 		const auth = useAuthStore();
 		const user = useUserStore();
+
 		auth.$patch({
 			tokens: {
 				accessToken: {
+					value: 'foo',
 					expires: NOW_MINUS_THIRTY,
 				},
 			},
