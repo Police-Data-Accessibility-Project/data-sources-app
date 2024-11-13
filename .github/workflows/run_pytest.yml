@@ -12,6 +12,7 @@ jobs:
       GH_CLIENT_ID: ${{secrets.GH_CLIENT_ID}}
       GH_CLIENT_SECRET: ${{secrets.GH_CLIENT_SECRET}}
       JWT_SECRET_KEY: "TestSecretKey"
+      RESET_PASSWORD_SECRET_KEY: "resetTokenSecretKey"
     name: Run Pytest
     runs-on: ubuntu-latest
     steps:
