@@ -1,13 +1,18 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from http import HTTPStatus
+from uu import decode
 
+import jwt
 from flask import Response, make_response
 
 from marshmallow import Schema, fields
 from werkzeug.security import generate_password_hash
 
 from database_client.database_client import DatabaseClient
+from middleware.SimpleJWT import SimpleJWT, JWTPurpose
+from middleware.access_logic import PasswordResetTokenAccessInfo
+from middleware.common_response_formatting import message_response
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.primary_resource_logic.api_key_logic import generate_api_key
 from middleware.primary_resource_logic.user_queries import user_check_email
@@ -45,13 +50,6 @@ class ResetPasswordRequestSchema(Schema):
 
 
 class ResetPasswordSchema(Schema):
-    email = fields.Str(
-        required=True,
-        metadata={
-            "description": "The email of the user",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
     password = fields.Str(
         required=True,
         metadata={
@@ -59,20 +57,11 @@ class ResetPasswordSchema(Schema):
             "source": SourceMappingEnum.JSON,
         },
     )
-    token = fields.Str(
-        required=True,
-        metadata={
-            "description": "The token of the user",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
 
 
 @dataclass
 class ResetPasswordDTO:
-    email: str
     password: str
-    token: str
 
 
 def request_reset_password(db_client: DatabaseClient, dto: RequestResetPasswordRequestDTO) -> Response:
@@ -86,7 +75,15 @@ def request_reset_password(db_client: DatabaseClient, dto: RequestResetPasswordR
     user_check_email(db_client, email)
     token = generate_api_key()
     db_client.add_reset_token(email=email, token=token)
-    send_password_reset_link(email=email, token=token)
+    jwt_token = SimpleJWT(
+        sub={
+            "email": email,
+            "token": token,
+        },
+        exp=(datetime.now(tz=timezone.utc) + timedelta(minutes=15)).timestamp(),
+        purpose=JWTPurpose.PASSWORD_RESET,
+    )
+    send_password_reset_link(email=email, token=jwt_token.encode())
     return make_response(
         {
             "message": "An email has been sent to your email address with a link to reset your password. It will be valid for 15 minutes.",
@@ -95,7 +92,11 @@ def request_reset_password(db_client: DatabaseClient, dto: RequestResetPasswordR
     )
 
 
-def reset_password(db_client: DatabaseClient, dto: ResetPasswordDTO) -> Response:
+def reset_password(
+    db_client: DatabaseClient,
+    dto: ResetPasswordDTO,
+    access_info: PasswordResetTokenAccessInfo
+) -> Response:
     """
     Resets a user's password if the provided token is valid and not expired.
     :param db_client:
@@ -103,13 +104,10 @@ def reset_password(db_client: DatabaseClient, dto: ResetPasswordDTO) -> Response
     :param password:
     :return:
     """
-    try:
-        token_email = validate_token(db_client, dto.token)
-    except InvalidTokenError:
-        return invalid_token_response()
-    validate_emails_match(dto.email, token_email)
+    token_db_email = validate_token(db_client, access_info.reset_token)
+    validate_emails_match(access_info.user_email, token_db_email)
 
-    set_user_password(db_client=db_client, email=token_email, password=dto.password)
+    set_user_password(db_client=db_client, email=token_db_email, password=dto.password)
     return FlaskResponseManager.make_response(
         {"message": "Successfully updated password"}, HTTPStatus.OK
     )
@@ -129,7 +127,7 @@ def set_user_password(db_client: DatabaseClient, email, password):
 
 def invalid_token_response():
     return make_response(
-        {"message": "The submitted token is invalid"}, HTTPStatus.BAD_REQUEST
+        {"message": "Token is invalid"}, HTTPStatus.BAD_REQUEST
     )
 
 
@@ -139,19 +137,22 @@ def token_is_expired(token_create_date):
 
 
 def reset_token_validation(db_client: DatabaseClient, token):
-    try:
-        validate_token(db_client, token)
-        return make_response({"message": "Token is valid"}, HTTPStatus.OK)
-    except InvalidTokenError:
-        return invalid_token_response()
+    validate_token(db_client, token)
+    return make_response({"message": "Token is valid"}, HTTPStatus.OK)
 
 
 def validate_token(db_client: DatabaseClient, token) -> str:
     token_data = db_client.get_reset_token_info(token)
     if token_data is None:
-        raise InvalidTokenError
+        FlaskResponseManager.abort(
+            message="Token not found.",
+            code=HTTPStatus.BAD_REQUEST
+        )
     email = token_data.email
     if token_is_expired(token_create_date=token_data.create_date):
         db_client.delete_reset_token(email, token)
-        raise InvalidTokenError
+        FlaskResponseManager.abort(
+            message="Token is expired.",
+            code=HTTPStatus.BAD_REQUEST
+        )
     return email

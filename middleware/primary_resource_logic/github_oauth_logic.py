@@ -8,7 +8,7 @@ from jwt import ExpiredSignatureError
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
-from middleware.SimpleJWT import SimpleJWT
+from middleware.SimpleJWT import SimpleJWT, JWTPurpose
 from middleware.common_response_formatting import message_response
 from middleware.custom_dataclasses import GithubUserInfo
 from middleware.exceptions import UserNotFoundError
@@ -100,7 +100,7 @@ def get_github_user_info(access_token: str) -> GithubUserInfo:
     :return: The user information
     """
     try:
-        simple_jwt = SimpleJWT.decode(access_token)
+        simple_jwt = SimpleJWT.decode(access_token, purpose=JWTPurpose.GITHUB_ACCESS_TOKEN)
     except ExpiredSignatureError:
         abort(HTTPStatus.UNAUTHORIZED, "Access token has expired.")
     gh_access_token = simple_jwt.sub

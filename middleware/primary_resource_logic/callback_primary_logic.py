@@ -5,7 +5,7 @@ from flask import Response, redirect
 import jwt
 from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
-from middleware.SimpleJWT import SimpleJWT
+from middleware.SimpleJWT import SimpleJWT, JWTPurpose
 from middleware.common_response_formatting import message_response
 from middleware.exceptions import UserNotFoundError
 from middleware.flask_response_manager import FlaskResponseManager
@@ -47,7 +47,11 @@ def callback_outer_wrapper(db_client: DatabaseClient) -> Response:
     """
     gh_access_token = get_github_oauth_access_token()
     exp = (datetime.now(tz=timezone.utc) + timedelta(minutes=5)).timestamp()
-    simple_jwt = SimpleJWT(sub=gh_access_token['access_token'], exp=exp)
+    simple_jwt = SimpleJWT(
+        sub=gh_access_token['access_token'],
+        exp=exp,
+        purpose=JWTPurpose.GITHUB_ACCESS_TOKEN
+    )
 
     flask_session_callback_info = get_flask_session_callback_info()
     redirect_base_url = flask_session_callback_info.callback_params["redirect_url"]

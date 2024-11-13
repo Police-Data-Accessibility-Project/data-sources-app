@@ -6,7 +6,7 @@ import pytest
 from flask.testing import FlaskClient
 
 from conftest import test_data_creator_flask, monkeysession
-from middleware.SimpleJWT import SimpleJWT
+from middleware.SimpleJWT import SimpleJWT, JWTPurpose
 from middleware.primary_resource_logic.api_key_logic import api_key_is_associated_with_user
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from resources.endpoint_schema_config import SchemaConfigs
@@ -29,7 +29,11 @@ def login_with_github(client: FlaskClient, access_token: str) -> str:
 
 def setup_github_mocks(user_email: str, monkeypatch):
     mock_access_token = uuid.uuid4().hex
-    simple_jwt = SimpleJWT(sub=mock_access_token, exp=datetime.now(tz=timezone.utc).timestamp() + timedelta(minutes=5).total_seconds())
+    simple_jwt = SimpleJWT(
+        sub=mock_access_token,
+        exp=datetime.now(tz=timezone.utc).timestamp() + timedelta(minutes=5).total_seconds(),
+        purpose=JWTPurpose.GITHUB_ACCESS_TOKEN
+    )
     mock_external_user_id = get_random_number_for_testing()
 
     # Mock the part that ingests the Github Access Token and returns relevant info
@@ -160,7 +164,8 @@ def test_github_oauth_token_expired(test_data_creator_flask: TestDataCreatorFlas
     mock_access_token = uuid.uuid4().hex
     simple_jwt = SimpleJWT(
         sub=mock_access_token,
-        exp=datetime.now(tz=timezone.utc).timestamp() - timedelta(minutes=5).total_seconds()
+        exp=datetime.now(tz=timezone.utc).timestamp() - timedelta(minutes=5).total_seconds(),
+        purpose=JWTPurpose.GITHUB_ACCESS_TOKEN
     )
     encoded_jwt = simple_jwt.encode()
 

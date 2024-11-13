@@ -1,3 +1,4 @@
+from email.policy import default
 from functools import wraps
 from http import HTTPStatus
 from typing import Callable, Optional
@@ -6,7 +7,7 @@ from flask_restx import Namespace, Model
 from flask_restx.reqparse import RequestParser
 from marshmallow import Schema
 
-from middleware.access_logic import get_authentication, AuthenticationInfo
+from middleware.access_logic import get_authentication, AuthenticationInfo, ParserDeterminator
 from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_construction import (
@@ -21,7 +22,7 @@ from resources.resource_helpers import (
     add_jwt_header_arg,
     add_api_key_header_arg,
     ResponseInfo,
-    create_response_dictionary,
+    create_response_dictionary, add_password_reset_token_header_arg,
 )
 from resources.endpoint_schema_config import SchemaConfigs, OutputSchemaManager
 
@@ -244,16 +245,20 @@ def _get_output_model(namespace: Namespace, output_schema: Schema) -> Optional[M
 def _add_auth_info_to_parser(auth_info: AuthenticationInfo, parser: RequestParser):
     if auth_info.no_auth:
         return
-    # Depending on auth info, add authentication information to input parser
-    jwt_allowed = AccessTypeEnum.JWT in auth_info.allowed_access_methods
-    api_allowed = AccessTypeEnum.API_KEY in auth_info.allowed_access_methods
 
-    if jwt_allowed and api_allowed:
+    pd = ParserDeterminator(
+        auth_info.allowed_access_methods
+    )
+
+    if pd.jwt_and_api_key_allowed:
         add_jwt_or_api_key_header_arg(parser)
-    elif jwt_allowed:
+        return
+    elif pd.jwt_allowed:
         add_jwt_header_arg(parser)
-    elif api_allowed:
+    elif pd.api_key_allowed:
         add_api_key_header_arg(parser)
+    elif pd.reset_token_allowed():
+        add_password_reset_token_header_arg(parser)
     else:
         raise Exception("Must have at least one access method")
 

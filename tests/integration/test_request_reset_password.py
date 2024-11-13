@@ -1,6 +1,7 @@
 """Integration tests for /request-reset-password endpoint."""
 
 from database_client.database_client import DatabaseClient
+from middleware.SimpleJWT import SimpleJWT, JWTPurpose
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.common_test_data import TestDataCreatorFlask
 from conftest import test_data_creator_flask, monkeysession
@@ -24,13 +25,17 @@ def test_request_reset_password_post(test_data_creator_flask: TestDataCreatorFla
 
     reset_token = mock_send_password_reset_link.call_args[1]['token']
     assert mock_send_password_reset_link.called_once_with(user_info.email, reset_token)
+    decoded_token = SimpleJWT.decode(
+        token=reset_token,
+        purpose=JWTPurpose.PASSWORD_RESET
+    )
 
     db_client = DatabaseClient()
     rows = db_client.execute_raw_sql(
         """
     SELECT email FROM reset_tokens where token = %s
     """,
-        (reset_token,),
+        (decoded_token.sub["token"],),
     )
     assert (
         len(rows) == 1
