@@ -13,7 +13,8 @@ from middleware.primary_resource_logic.data_requests import (
     DataRequestsPostDTO,
     RelatedLocationsByIDDTO,
 )
-from middleware.primary_resource_logic.reset_token_queries import ResetPasswordRequestSchema
+from middleware.primary_resource_logic.reset_token_queries import ResetPasswordRequestSchema, ResetPasswordSchema, \
+    ResetPasswordDTO
 from middleware.schema_and_dto_logic.primary_resource_dtos.request_reset_password_dtos import \
     RequestResetPasswordRequestDTO
 from middleware.schema_and_dto_logic.primary_resource_schemas.refresh_session_schemas import (
@@ -360,5 +361,13 @@ class SchemaConfigs(Enum):
         input_schema=RequestResetPasswordRequestSchema(),
         primary_output_schema=MessageSchema(),
         input_dto_class=RequestResetPasswordRequestDTO
+    )
+    RESET_PASSWORD = EndpointSchemaConfig(
+        input_schema=ResetPasswordSchema(),
+        input_dto_class=ResetPasswordDTO,
+        primary_output_schema=MessageSchema()
+    )
+    RESET_TOKEN_VALIDATION = EndpointSchemaConfig(
+        primary_output_schema=MessageSchema()
     )
     #endregion

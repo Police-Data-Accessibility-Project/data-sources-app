@@ -482,6 +482,11 @@ def create_fake_github_user_info(email: Optional[str] = None) -> GithubUserInfo:
         user_email=uuid.uuid4().hex if email is None else email,
     )
 
+def get_authorization_header(
+    scheme: str,
+    token: str,
+) -> dict:
+    return {"Authorization": f"{scheme} {token}"}
 
 def create_test_user_setup(
     client: FlaskClient, permissions: Optional[list[PermissionsEnum]] = None
@@ -499,8 +504,8 @@ def create_test_user_setup(
     return TestUserSetup(
         user_info,
         api_key,
-        api_authorization_header={"Authorization": f"Basic {api_key}"},
-        jwt_authorization_header={"Authorization": f"Bearer {jwt_tokens.access_token}"},
+        api_authorization_header=get_authorization_header(scheme="Basic", token=api_key),
+        jwt_authorization_header=get_authorization_header(scheme="Bearer", token=jwt_tokens.access_token),
     )
 
 

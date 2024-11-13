@@ -18,7 +18,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.refresh_session_sc
 )
 
 
-class JWTTokens:
+class JWTAccessRefreshTokens:
 
     def __init__(self, email: str):
         identity = {
@@ -73,7 +73,7 @@ def access_and_refresh_token_response(
     email: str,
     message: str,
 ) -> Response:
-    jwt_tokens = JWTTokens(email)
+    jwt_tokens = JWTAccessRefreshTokens(email)
     return make_response(
         jsonify(
             message=message,

@@ -6,7 +6,7 @@ import pytest
 
 from middleware.access_logic import (
     get_authorization_header_from_request,
-    get_api_key_from_authorization_header,
+    get_key_from_authorization_header,
     get_api_key_from_request_header,
     JWT_OR_API_KEY_NEEDED_ERROR_MESSAGE,
     AccessInfo,
@@ -61,7 +61,7 @@ def test_get_authorization_header_from_request_invalid_authorization_header(
 
 
 def test_get_api_key_from_authorization_header_happy_path(monkeypatch):
-    assert "api_key" == get_api_key_from_authorization_header("Basic api_key")
+    assert "api_key" == get_key_from_authorization_header("Basic api_key")
 
 
 @pytest.mark.parametrize(
@@ -76,27 +76,12 @@ def test_get_api_key_from_authorization_header_invalid_authorization_header(
     monkeypatch, authorization_header
 ):
     with pytest.raises(InvalidAPIKeyException):
-        get_api_key_from_authorization_header(authorization_header)
+        get_key_from_authorization_header(authorization_header)
 
 
 class GetAPIKeyFromRequestHeaderMock(DynamicMagicMock):
     get_authorization_header_from_request: MagicMock
     get_api_key_from_authorization_header: MagicMock
-
-
-def test_get_api_key_from_request_header():
-    mock = GetAPIKeyFromRequestHeaderMock(
-        patch_root="middleware.access_logic",
-    )
-
-    result = get_api_key_from_request_header()
-
-    mock.get_authorization_header_from_request.assert_called_once()
-    mock.get_api_key_from_authorization_header.assert_called_once_with(
-        mock.get_authorization_header_from_request.return_value
-    )
-    assert result == mock.get_api_key_from_authorization_header.return_value
-
 
 class GetAccessInfoFromJWTOrAPIKeyMocks(DynamicMagicMock):
     get_user_email_from_api_key: MagicMock
