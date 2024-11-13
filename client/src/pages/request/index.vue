@@ -165,7 +165,7 @@ import {
 	InputTextArea,
 } from 'pdap-design-system';
 import Typeahead from '@/components/TypeaheadInput.vue';
-import LocationSelected from '@/components/TypeaheadLocationSelected.vue';
+import LocationSelected from '@/components/TypeaheadSelected.vue';
 import { useRequestStore } from '@/stores/request';
 import { formatText } from './_util';
 import { useSearchStore } from '@/stores/search';

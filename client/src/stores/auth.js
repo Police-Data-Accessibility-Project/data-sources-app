@@ -141,8 +141,6 @@ export const useAuthStore = defineStore('auth', {
 			const accessTokenParsed = parseJwt(accessToken);
 			const refreshTokenParsed = parseJwt(refreshToken);
 
-			console.debug('parse and set', { accessToken, refreshToken });
-
 			this.$patch({
 				tokens: {
 					accessToken: {

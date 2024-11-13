@@ -48,7 +48,7 @@
 			</template>
 		</InputCheckbox>
 
-		<Button :disabled="!selectedRecord" intent="primary" type="submit">
+		<Button :disabled="isButtonDisabled" intent="primary" type="submit">
 			{{ buttonCopy ?? 'Search' }}
 		</Button>
 	</FormV2>
@@ -71,10 +71,11 @@ import {
 } from 'pdap-design-system';
 import TypeaheadInput from '@/components/TypeaheadInput.vue';
 import axios from 'axios';
-import { ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { STATES_TO_ABBREVIATIONS } from '@/util/constants';
 import _debounce from 'lodash/debounce';
-import { useRouter, RouterLink } from 'vue-router';
+import _isEqual from 'lodash/isEqual';
+import { useRouter, RouterLink, useRoute } from 'vue-router';
 import { useSearchStore } from '@/stores/search';
 
 const router = useRouter();
@@ -87,45 +88,61 @@ const { buttonCopy } = defineProps({
 });
 
 const emit = defineEmits(['searched']);
+const { query: params } = useRoute();
 
 /* constants */
 const TYPEAHEAD_ID = 'pdap-search-typeahead';
 const CHECKBOXES = [
 	{
 		id: 'all-data-types',
-		defaultChecked: true,
+		get defaultChecked() {
+			return (
+				params.record_categories?.includes(this.label) ||
+				!params.record_categories?.length
+			);
+		},
 		name: 'all-data-types',
 		label: 'All data types',
 	},
 	{
 		id: 'interactions',
-		defaultChecked: false,
+		get defaultChecked() {
+			return params.record_categories?.includes(this.label);
+		},
 		name: 'police-and-public-interactions',
 		label: 'Police & public interactions',
 	},
 	{
 		id: 'info-officers',
-		defaultChecked: false,
+		get defaultChecked() {
+			return params.record_categories?.includes(this.label);
+		},
 		name: 'info-about-officers',
 		label: 'Info about officers',
 	},
 	{
 		id: 'info-agencies',
-		defaultChecked: false,
+		get defaultChecked() {
+			return params.record_categories?.includes(this.label);
+		},
 		name: 'info-about-agencies',
 		label: 'Info about agencies',
 	},
 	{
 		id: 'agency-published-resources',
-		defaultChecked: false,
+		get defaultChecked() {
+			return params.record_categories?.includes(this.label);
+		},
 		name: 'agency-published-resources',
 		label: 'Agency-published resources',
 	},
 	{
 		id: 'jails-and-courts',
-		defaultChecked: false,
+		get defaultChecked() {
+			return params.record_categories?.includes(this.label);
+		},
 		name: 'jails-and-courts',
-		label: 'Jails and courts specific',
+		label: 'Jails & courts',
 	},
 ];
 
@@ -133,6 +150,51 @@ const items = ref([]);
 const selectedRecord = ref();
 const formRef = ref();
 const typeaheadRef = ref();
+const initiallySearchedRecord = ref();
+const hasUpdatedCategories = ref(false);
+
+const isButtonDisabled = computed(() => {
+	const selectedRecordEqualsInitiallySearched = _isEqual(
+		selectedRecord.value,
+		initiallySearchedRecord.value,
+	);
+
+	// If there is a selected record, the button should be enabled
+	if (selectedRecord.value && !selectedRecordEqualsInitiallySearched)
+		return false;
+
+	if (
+		selectedRecordEqualsInitiallySearched &&
+		initiallySearchedRecord.value &&
+		!hasUpdatedCategories.value
+	)
+		return true;
+
+	return false;
+});
+
+onMounted(() => {
+	// Set up selected state based on params
+	if (params.state) {
+		const record = (({ state, county, locality }) => ({
+			state,
+			county,
+			locality,
+		}))(params);
+
+		selectedRecord.value = record;
+		initiallySearchedRecord.value = record;
+	}
+
+	// Sync values state with default checked state.
+	const defaultChecked = {};
+	CHECKBOXES.forEach(({ name, label }) => {
+		if (params.record_categories?.includes(label)) {
+			defaultChecked[name] = true;
+		}
+	});
+	formRef.value.setValues(defaultChecked);
+});
 
 function submit(values) {
 	const params = new URLSearchParams(buildParams(values));
@@ -191,10 +253,10 @@ function onChange(values, event) {
 	if (event.target.name === 'all-data-types') {
 		if (event.target.checked) {
 			const update = {};
-			Object.entries(values).forEach(([key, val]) => {
-				if (key !== 'all-data-types' && val) {
+			CHECKBOXES.map(({ name }) => name).forEach((key) => {
+				if (key !== 'all-data-types') {
 					update[key] = false;
-					const checkbox = document.querySelector(`input[name="${key}"]`);
+					const checkbox = document.querySelector(`input[name=${key}]`);
 					checkbox.checked = false;
 				}
 			});
@@ -209,6 +271,8 @@ function onChange(values, event) {
 			allTypesCheckbox.checked = false;
 		}
 	}
+
+	if (event.target.type === 'checkbox') hasUpdatedCategories.value = true;
 }
 
 function onSelectRecord(item) {

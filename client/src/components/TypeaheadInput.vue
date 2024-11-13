@@ -232,9 +232,13 @@ defineExpose({
 	@apply max-w-[max-content] text-lg py-1 font-medium;
 }
 
+.pdap-typeahead-input {
+	@apply rounded-md;
+}
+
 .pdap-typeahead-input,
 .pdap-typeahead-list {
-	@apply bg-neutral-50 dark:bg-neutral-950 border border-neutral-500 border-solid p-2 text-neutral-950 dark:text-neutral-50;
+	@apply bg-neutral-50 dark:bg-neutral-950 border-2 border-neutral-500 border-solid p-2 text-neutral-950 dark:text-neutral-50;
 }
 
 .pdap-typeahead-input::placeholder {
@@ -244,7 +248,7 @@ defineExpose({
 .pdap-typeahead-input:focus,
 .pdap-typeahead-input:focus-within,
 .pdap-typeahead-input:focus-visible {
-	@apply border-2 border-blue-light border-solid outline-none;
+	@apply border-2 border-brand-gold border-solid outline-none;
 }
 
 .pdap-typeahead-list {

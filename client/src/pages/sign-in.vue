@@ -87,7 +87,7 @@
 				<RouterLink
 					class="pdap-button-secondary flex-1 max-w-full"
 					data-test="reset-link"
-					to="/reset-password"
+					to="/request-reset-password"
 				>
 					Reset Password
 				</RouterLink>
@@ -200,8 +200,8 @@ async function onSubmit(formValues) {
 	} catch (err) {
 		console.error(err);
 		error.value =
-			err.response.status > 400 && err.response.status < 500
-				? err.response.data.message
+			err.response?.status > 400 && err.response?.status < 500
+				? err.response?.data.message
 				: 'Something went wrong, please try again.';
 	} finally {
 		loading.value = false;

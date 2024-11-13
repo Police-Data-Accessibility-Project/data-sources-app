@@ -2,9 +2,7 @@ import axios from 'axios';
 import { defineStore } from 'pinia';
 import { useAuthStore } from './auth';
 
-const HEADERS = {
-	headers: { 'Content-Type': 'application/json' },
-};
+const HEADERS = { 'Content-Type': 'application/json' };
 const SIGNUP_WITH_EMAIL_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/user`;
 const CHANGE_PASSWORD_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/user`;
 const REQUEST_PASSWORD_RESET_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/request-reset-password`;
@@ -23,7 +21,11 @@ export const useUserStore = defineStore('user', {
 		async signupWithEmail(email, password) {
 			const auth = useAuthStore();
 
-			await axios.post(SIGNUP_WITH_EMAIL_URL, { email, password }, HEADERS);
+			await axios.post(
+				SIGNUP_WITH_EMAIL_URL,
+				{ email, password },
+				{ headers: HEADERS },
+			);
 			// Update store with email
 			this.$patch({ email });
 			// Log users in after signup and return that response
@@ -36,7 +38,7 @@ export const useUserStore = defineStore('user', {
 				{ email, password },
 				{
 					headers: {
-						...HEADERS.headers,
+						...HEADERS,
 						Authorization: `Bearer ${auth.$state.tokens.accessToken.value}`,
 					},
 				},
@@ -45,19 +47,32 @@ export const useUserStore = defineStore('user', {
 		},
 
 		async requestPasswordReset(email) {
-			return await axios.post(REQUEST_PASSWORD_RESET_URL, { email }, HEADERS);
+			return await axios.post(
+				REQUEST_PASSWORD_RESET_URL,
+				{ email },
+				{ headers: HEADERS },
+			);
 		},
 
 		async resetPassword(password, token) {
-			return await axios.post(PASSWORD_RESET_URL, { password, token }, HEADERS);
+			return await axios.post(
+				PASSWORD_RESET_URL,
+				{ password },
+				{ headers: { ...HEADERS, Authorization: 'Bearer ' + token } },
+			);
 		},
 
 		async validateResetPasswordToken(token) {
-			return await axios.post(
-				VALIDATE_PASSWORD_RESET_TOKEN_URL,
-				{ token },
-				HEADERS,
-			);
+			return await axios.post(VALIDATE_PASSWORD_RESET_TOKEN_URL, {
+				headers: {
+					...HEADERS,
+					Authorization: `Bearer ${token}`,
+				},
+			});
+		},
+
+		setEmail(email) {
+			this.$patch({ email });
 		},
 	},
 });

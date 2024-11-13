@@ -92,7 +92,7 @@
 					<RouterLink
 						class="pdap-button-secondary flex-1 max-w-full"
 						data-test="reset-link"
-						to="/reset-password"
+						to="/request-reset-password"
 					>
 						Reset Password
 					</RouterLink>

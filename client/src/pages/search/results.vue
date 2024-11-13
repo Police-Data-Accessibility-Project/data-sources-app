@@ -77,7 +77,7 @@
 							searchData ? getLocationText(searchData) : 'Enter a place'
 						"
 						button-copy="Update search"
-						@searched="onWindowWidthSetIsSearchShown"
+						@searched="onSearchSetIsSearchShown"
 					/>
 				</div>
 			</transition>
@@ -90,7 +90,7 @@
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic';
 import { useSearchStore } from '@/stores/search';
 import { NavigationResult } from 'unplugin-vue-router/runtime';
-import { onBeforeUpdate, onMounted, onUnmounted, ref } from 'vue';
+import { onBeforeUpdate, onMounted, onUnmounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { ALL_LOCATION_TYPES } from '@/util/constants';
 import {
@@ -147,6 +147,7 @@ const { data: searchData, isLoading, error } = useSearchData();
 const route = useRoute();
 const searchResultsRef = ref();
 const isSearchShown = ref(false);
+const dims = reactive({ width: window.innerWidth, height: window.innerHeight });
 
 // lifecycle methods
 onMounted(() => {
@@ -165,8 +166,18 @@ onUnmounted(() => {
 
 // Utilities and handlers
 function onWindowWidthSetIsSearchShown() {
+	if (window.innerWidth === dims.width) {
+		return;
+	}
+
 	if (window.innerWidth > 1280) isSearchShown.value = true;
 	else isSearchShown.value = false;
+
+	dims.value = { width: window.innerWidth, height: window.innerHeight };
+}
+
+function onSearchSetIsSearchShown() {
+	if (window.innerWidth < 1280) isSearchShown.value = false;
 }
 </script>
 
@@ -181,11 +192,3 @@ function onWindowWidthSetIsSearchShown() {
 	opacity: 0;
 }
 </style>
-
-<route>
-	{
-		meta: {
-			breadcrumbText: 'Results'
-		}
-	}
-</route>

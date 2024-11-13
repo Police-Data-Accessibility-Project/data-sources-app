@@ -38,14 +38,6 @@ function handleAuthRefresh() {
 	const shouldRefresh = differenceFromAccess <= 60 * 1000 && isAuthenticated();
 	const shouldLogout = isExpiredAccess && !!user.id;
 
-	console.debug({
-		differenceFromAccess,
-		isExpiredAccess,
-		shouldRefresh,
-		isAuthenticated: isAuthenticated(),
-		shouldLogout,
-	});
-
 	// User's token is about to expire, so we refresh it.g
 	if (shouldRefresh) {
 		return refreshAccessToken();
