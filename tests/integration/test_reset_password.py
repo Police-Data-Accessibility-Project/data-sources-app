@@ -113,7 +113,7 @@ def test_reset_token_validation_invalid_token_expired(
         table_name=Relations.RESET_TOKENS.value,
         entry_id=decoded_token.sub["token"],
         column_edit_mappings={
-            "create_date": datetime.now() - timedelta(minutes=11)
+            "create_date": datetime.now() - timedelta(minutes=15)
         },
         id_column_name="token",
     )
