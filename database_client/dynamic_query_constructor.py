@@ -173,6 +173,7 @@ class DynamicQueryConstructor:
         WITH combined AS (
             SELECT
                 1 AS sort_order,
+                id,
                 name,
                 jurisdiction_type,
                 state_iso,
@@ -183,6 +184,7 @@ class DynamicQueryConstructor:
             UNION ALL
             SELECT
                 2 AS sort_order,
+                id,
                 name,
                 jurisdiction_type,
                 state_iso,
@@ -193,6 +195,7 @@ class DynamicQueryConstructor:
             AND name NOT ILIKE {search_term}
         )
         SELECT
+            id,
             name as display_name,
             jurisdiction_type,
             state_iso as state,
@@ -201,6 +204,7 @@ class DynamicQueryConstructor:
         FROM (
             SELECT DISTINCT
                 sort_order,
+                id,
                 name,
                 jurisdiction_type,
                 state_iso,

@@ -54,7 +54,7 @@ def test_typeahead_agencies(flask_client_with_db):
     """
     Test that GET call to /typeahead/agencies endpoint successfully retrieves data
     """
-    setup_get_typeahead_suggestion_test_data()
+    agency_id = setup_get_typeahead_suggestion_test_data()
     json_content = run_and_validate_request(
         flask_client=flask_client_with_db,
         http_method="get",
@@ -62,6 +62,7 @@ def test_typeahead_agencies(flask_client_with_db):
         expected_json_content={
             "suggestions": [
                 {
+                    "id": agency_id,
                     "display_name": "Xylodammerung Police Agency",
                     "locality": "Xylodammerung",
                     "county": "Arxylodon",
