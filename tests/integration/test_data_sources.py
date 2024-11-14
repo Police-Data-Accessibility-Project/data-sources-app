@@ -1,5 +1,5 @@
 """Integration tests for /data-sources endpoint"""
-
+import copy
 import urllib.parse
 import uuid
 
@@ -119,6 +119,8 @@ def test_data_sources_post(
     """
     tdc = test_data_creator_flask
 
+    agency_id = tdc.agency().id
+
     entry_data = generate_test_data_from_schema(
         schema=DataSourceExpandedSchema(
             exclude=[
@@ -131,8 +133,8 @@ def test_data_sources_post(
                 "approval_status_updated_at",
             ],
         ),
-
     )
+
 
     response_json = run_and_validate_request(
         flask_client=tdc.flask_client,
@@ -141,6 +143,7 @@ def test_data_sources_post(
         headers=tdc.get_admin_tus().jwt_authorization_header,
         json={
             "entry_data": entry_data,
+            "linked_agency_ids": [agency_id],
         },
         expected_schema=SchemaConfigs.DATA_SOURCES_POST.value.primary_output_schema,
     )
@@ -157,6 +160,10 @@ def test_data_sources_post(
         dict_to_check=response_json["data"],
         key_value_pairs=entry_data,
     )
+
+    agencies = response_json["data"]["agencies"]
+    assert len(agencies) == 1
+    assert agencies[0]["id"] == int(agency_id)
 
 
 def test_data_sources_by_id_get(test_data_creator_flask: TestDataCreatorFlask):
