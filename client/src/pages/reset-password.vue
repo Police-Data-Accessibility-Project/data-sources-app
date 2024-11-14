@@ -56,7 +56,8 @@ import PasswordValidationChecker from '@/components/PasswordValidationChecker.vu
 import { useUserStore } from '@/stores/user';
 import parseJwt from '@/util/parseJwt';
 import { onMounted, ref, watchEffect } from 'vue';
-import { RouterLink, useRoute } from 'vue-router';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 
 // Constants
 const FORM_INPUTS_CHANGE_PASSWORD = [
@@ -106,11 +107,13 @@ const VALIDATION_SCHEMA_CHANGE_PASSWORD = [
 ];
 
 const route = useRoute();
+const router = useRouter();
 // const token = search.token;
 const token = route.query.token;
 
 // Stores
 const user = useUserStore();
+const auth = useAuthStore();
 
 // Reactive vars
 const passwordRef = ref();
@@ -187,8 +190,9 @@ async function onSubmitChangePassword(formValues) {
 		loading.value = true;
 		const { password } = formValues;
 		await user.resetPassword(password, token);
+		await auth.loginWithEmail(parseJwt(token).sub.email, password);
 
-		success.value = true;
+		router.push({ path: 'profile' });
 	} catch (err) {
 		if (err.message === 'The submitted token is invalid') {
 			isExpiredToken.value = true;
