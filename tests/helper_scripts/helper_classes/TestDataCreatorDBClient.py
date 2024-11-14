@@ -76,8 +76,8 @@ class TestDataCreatorDBClient:
         self.db_client: DatabaseClient = DatabaseClient()
         self.helper = TDCSQLAlchemyHelper()
 
-    def test_name(self):
-        return f"TEST_{uuid.uuid4().hex}"
+    def test_name(self, midfix: str = ""):
+        return f"TEST_{midfix}_{uuid.uuid4().hex}"
 
     def clear_test_data(self):
         # Remove test data from data request
@@ -113,6 +113,7 @@ class TestDataCreatorDBClient:
 
     def locality(
         self,
+        locality_name: str = "",
         state_iso: str = "PA",
         county_name: str = "Allegheny",
     ) -> int:
@@ -121,7 +122,7 @@ class TestDataCreatorDBClient:
         county_id = self.helper.get_county_id(
             county_name=county_name, state_iso=state_iso
         )
-        locality_name = self.test_name()
+        locality_name = self.test_name(locality_name)
         locality_id = self.db_client.create_locality(
             column_value_mappings={"name": locality_name, "county_id": county_id}
         )

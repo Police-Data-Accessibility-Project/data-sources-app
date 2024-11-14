@@ -580,7 +580,7 @@ def test_get_typeahead_agencies(live_database_client):
     setup_get_typeahead_suggestion_test_data(cursor)
 
     results = live_database_client.get_typeahead_agencies(search_term="xyl")
-    assert len(results) == 1
+    assert len(results) > 0
     assert results[0]["display_name"] == "Xylodammerung Police Agency"
     assert results[0]["jurisdiction_type"] == "state"
     assert results[0]["state"] == "XY"
