@@ -151,7 +151,7 @@ const dims = reactive({ width: window.innerWidth, height: window.innerHeight });
 
 // lifecycle methods
 onMounted(() => {
-	onWindowWidthSetIsSearchShown();
+	if (window.innerWidth > 1280) isSearchShown.value = true;
 	search.setMostRecentSearchIds(getAllIdsSearched(searchData.value.results));
 	window.addEventListener('resize', onWindowWidthSetIsSearchShown);
 });
