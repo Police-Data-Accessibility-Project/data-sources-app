@@ -277,7 +277,7 @@ class DataSourceBaseSchema(Schema):
             "Airtable UID of the associated data source request"
         ),
     )
-    broken_source_url_as_of = fields.Date(
+    broken_source_url_as_of = fields.DateTime(
         allow_none=True,
         format="iso",
         metadata=get_json_metadata("When the url was marked as broken."),

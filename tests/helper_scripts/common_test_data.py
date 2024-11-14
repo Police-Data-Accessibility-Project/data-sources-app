@@ -183,6 +183,7 @@ class TestDataCreatorFlask:
 
     def __init__(self, flask_client: FlaskClient):
         self.flask_client = flask_client
+        self.tdcdb = TestDataCreatorDBClient()
         self.request_validator = RequestValidator(flask_client)
         self.endpoint_caller = EndpointCaller(flask_client)
         self.db_client = DatabaseClient()
@@ -241,9 +242,9 @@ class TestDataCreatorFlask:
             json={"request_status": status.value},
         )
 
-    def agency(self, location_info: Optional[dict] = None) -> TestAgencyInfo:
-        submitted_name = uuid.uuid4().hex
-        locality_name = uuid.uuid4().hex
+    def agency(self, location_info: Optional[dict] = None, agency_name: str = "") -> TestAgencyInfo:
+        submitted_name = self.tdcdb.test_name(agency_name)
+        locality_name = self.tdcdb.test_name()
         sample_agency_post_parameters = get_sample_agency_post_parameters(
             submitted_name=submitted_name,
             locality_name=locality_name,
@@ -260,6 +261,9 @@ class TestDataCreatorFlask:
         )
 
         return TestAgencyInfo(id=json["id"], submitted_name=submitted_name)
+
+    def refresh_typeahead_agencies(self):
+        self.db_client.execute_raw_sql("CALL refresh_typeahead_agencies();")
 
     def update_agency(self, agency_id: int, data_to_update: dict):
         run_and_validate_request(
@@ -309,6 +313,13 @@ class TestDataCreatorFlask:
             self.flask_client, permissions=[PermissionsEnum.NOTIFICATIONS]
         )
 
+    def locality(self, locality_name: str = "", state_iso: str = "PA", county_name: str = "Allegheny"):
+        return self.tdcdb.locality(
+            locality_name=locality_name,
+            state_iso=state_iso,
+            county_name=county_name
+        )
+
     def select_only_complex_linked_resources(self):
         """
         Create the following:
@@ -354,6 +365,7 @@ def get_sample_agency_post_parameters(
         "agency_info": generate_test_data_from_schema(
             schema=AgencyInfoPostSchema(),
             override={
+                "submitted_name": submitted_name,
                 "jurisdiction_type": JurisdictionType.LOCAL.value,
             }
     ),

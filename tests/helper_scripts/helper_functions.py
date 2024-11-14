@@ -434,6 +434,8 @@ def setup_get_typeahead_suggestion_test_data(cursor: Optional[psycopg.Cursor] = 
         db_client.execute_raw_sql("CALL refresh_typeahead_agencies();")
         db_client.execute_raw_sql("CALL refresh_typeahead_locations();")
 
+        return agency_id
+
     except sqlalchemy.exc.IntegrityError:
         pass
 

@@ -73,6 +73,14 @@ class TypeaheadLocationsResponseSchema(TypeaheadBaseResponseSchema):
 
 
 class TypeaheadAgenciesResponseSchema(TypeaheadBaseResponseSchema):
+    id = fields.Integer(
+        required=True,
+        metadata={
+            "source": SourceMappingEnum.JSON,
+            "description": "The id of the suggestion",
+            "example": 1,
+        },
+    )
     display_name = fields.String(
         required=True,
         metadata={
