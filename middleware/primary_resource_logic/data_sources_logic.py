@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from http import HTTPStatus
+from typing import List, Optional
 
 from flask import make_response, Response
 
@@ -34,14 +35,13 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
 )
 from middleware.common_response_formatting import format_list_response, message_response
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
-    DataSourceEntryDataPostDTO,
+    DataSourceEntryDataPostDTO, DataSourcesPostDTO,
 )
 from middleware.util import dataclass_to_filtered_dict
 
 RELATION = Relations.DATA_SOURCES.value
 SUBQUERY_PARAMS = [
     SubqueryParameterManager.agencies()
-    # SubqueryParameters(relation_name=Relations.AGENCIES_EXPANDED.value, linking_column="agencies")
 ]
 
 
@@ -164,12 +164,38 @@ def optionally_swap_record_type_name_with_id(db_client, entry_data):
         del entry_data["record_type_name"]
 
 
+class DataSourcesPostLogic(PostLogic):
+    def __init__(
+        self,
+        middleware_parameters: MiddlewareParameters,
+        entry: dict,
+        agency_ids: Optional[List[int]] = None,
+    ):
+        super().__init__(
+            middleware_parameters=middleware_parameters,
+            entry=entry
+        )
+        self.agency_ids = agency_ids
+
+    def post_database_client_method_logic(self):
+        if self.agency_ids is None:
+            return
+        for agency_id in self.agency_ids:
+            self.mp.db_client.create_data_source_agency_relation(
+                column_value_mappings = {
+                    "data_source_id": self.id_val,
+                    "agency_id": agency_id
+                }
+            )
+
+
+
 def add_new_data_source_wrapper(
-    db_client: DatabaseClient, dto: DataSourceEntryDataPostDTO, access_info: AccessInfo
+    db_client: DatabaseClient, dto: DataSourcesPostDTO, access_info: AccessInfo
 ) -> Response:
     entry_data = dataclass_to_filtered_dict(dto.entry_data)
     optionally_swap_record_type_name_with_id(db_client, entry_data)
-    return post_entry(
+    post_logic = DataSourcesPostLogic(
         middleware_parameters=MiddlewareParameters(
             db_client=db_client,
             access_info=access_info,
@@ -178,9 +204,9 @@ def add_new_data_source_wrapper(
             db_client_method=DatabaseClient.add_new_data_source,
         ),
         entry=entry_data,
+        agency_ids=dto.linked_agency_ids,
     )
-
-
+    return post_logic.execute()
 # region Related Resources
 
 

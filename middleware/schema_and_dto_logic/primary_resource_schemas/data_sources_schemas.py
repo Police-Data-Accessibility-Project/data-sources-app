@@ -69,6 +69,7 @@ class DataSourceEntryDataPostDTO:
 @dataclass
 class DataSourcesPostDTO:
     entry_data: DataSourceEntryDataPostDTO
+    linked_agency_ids: Optional[List[int]] = None
 
 
 class DataSourceBaseSchema(Schema):
@@ -381,6 +382,15 @@ class DataSourcesPostSchema(Schema):
             description="The data source to be created",
             nested_dto_class=DataSourceEntryDataPostDTO,
         ),
+    )
+    linked_agency_ids = fields.List(
+        fields.Integer(
+            allow_none=True,
+            metadata=get_json_metadata(
+                "The agency ids associated with the data source."
+            ),
+        ),
+        metadata=get_json_metadata("The agency ids associated with the data source."),
     )
 
 

@@ -303,7 +303,7 @@ class DatabaseClient:
                 DATA_SOURCES.NAME,
                 AGENCIES.ID AS AGENCY_ID,
                 AGENCIES.SUBMITTED_NAME AS AGENCY_NAME,
-                AGENCIES.STATE_ISO,
+                LE.STATE_ISO,
                 LE.LOCALITY_NAME AS MUNICIPALITY,
                 LE.COUNTY_NAME,
                 RT.NAME RECORD_TYPE,
@@ -722,10 +722,6 @@ class DatabaseClient:
             statement = statement.returning(column)
         result = self.session.execute(statement)
 
-        # query = DynamicQueryConstructor.create_insert_query(
-        #     table_name, column_value_mappings, column_to_return
-        # )
-        # self.cursor.execute(query)
         if column_to_return is not None:
             return result.fetchone()[0]
         return None

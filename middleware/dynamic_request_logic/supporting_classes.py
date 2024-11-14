@@ -93,4 +93,8 @@ class PutPostBase(ABC):
             self.check_can_edit_columns(relation_role)
         self.pre_database_client_method_logic()
         self.call_database_client_method()
+        self.post_database_client_method_logic()
         return self.make_response()
+
+    def post_database_client_method_logic(self):
+        return
