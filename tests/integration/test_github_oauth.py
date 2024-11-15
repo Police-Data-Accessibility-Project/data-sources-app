@@ -2,15 +2,14 @@ import uuid
 from datetime import datetime, timezone, timedelta
 from http import HTTPStatus
 
-import pytest
 from flask.testing import FlaskClient
 
 from conftest import test_data_creator_flask, monkeysession
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
-from middleware.primary_resource_logic.api_key_logic import api_key_is_associated_with_user
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from resources.endpoint_schema_config import SchemaConfigs
-from tests.helper_scripts.common_test_data import TestDataCreatorFlask, get_random_number_for_testing
+from tests.helper_scripts.common_test_data import get_random_number_for_testing, get_test_name
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
 from tests.helper_scripts.common_test_functions import assert_jwt_token_matches_user_email
 from tests.helper_scripts.constants import GITHUB_OAUTH_LOGIN_ENDPOINT, GITHUB_OAUTH_LINK_ENDPOINT
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
@@ -97,7 +96,7 @@ def test_link_to_github_oauth_user_email_not_in_db(test_data_creator_flask: Test
         expected_schema=SchemaConfigs.AUTH_GITHUB_LINK.value.primary_output_schema,
         expected_response_status=HTTPStatus.BAD_REQUEST,
         json={
-            "user_email": uuid.uuid4().hex, # Create email guaranteed to not exist in database
+            "user_email": get_test_name(), # Create email guaranteed to not exist in database
             "gh_access_token": uuid.uuid4().hex  # This logic should not be called until we validate the user is present
         },
     )
@@ -139,7 +138,7 @@ def test_login_with_github_user_not_exists(
 ):
     # Call the login with GitHub endpoint for a user that does not exist
     # The user should be created
-    email = uuid.uuid4().hex
+    email = get_test_name()
 
     gh_access_token = setup_github_mocks(
         user_email=email,

@@ -3,7 +3,7 @@
 
 
 from resources.endpoint_schema_config import SchemaConfigs
-from tests.helper_scripts.common_test_data import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
 
 from conftest import test_data_creator_flask, monkeysession
 

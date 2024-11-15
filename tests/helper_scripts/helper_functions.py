@@ -26,6 +26,7 @@ from middleware.enums import (
     JurisdictionType,
 )
 from resources.ApiKeyResource import API_KEY_ROUTE
+from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.constants import TEST_RESPONSE
 from tests.helper_scripts.simple_result_validators import check_response_status
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
@@ -190,7 +191,7 @@ def create_test_user(
     :return: user id
     """
     if email == "":
-        email = uuid.uuid4().hex + "@test.com"
+        email = get_test_name()
     cursor.execute(
         """
         INSERT INTO users (email, password_digest, api_key, role)
@@ -245,7 +246,7 @@ def create_test_user_api(client: FlaskClient) -> UserInfo:
     :param client:
     :return:
     """
-    email = str(uuid.uuid4())
+    email = get_test_name()
     password = str(uuid.uuid4())
     response = client.post(
         "user",
@@ -481,7 +482,7 @@ def patch_setup_callback_session(
 def create_fake_github_user_info(email: Optional[str] = None) -> GithubUserInfo:
     return GithubUserInfo(
         user_id=uuid.uuid4().hex,
-        user_email=uuid.uuid4().hex if email is None else email,
+        user_email=get_test_name() if email is None else email,
     )
 
 def get_authorization_header(
@@ -527,7 +528,7 @@ def create_test_user_setup_db_client(
         permissions = []
     elif not isinstance(permissions, list):
         permissions = [permissions]
-    email = uuid.uuid4().hex
+    email = get_test_name()
     password_digest = uuid.uuid4().hex
     user_id = db_client.create_new_user(email, password_digest)
     api_key = db_client.get_user_info(email).api_key
@@ -541,8 +542,8 @@ def create_test_user_setup_db_client(
 
 
 def create_test_user_db_client(db_client: DatabaseClient) -> UserInfo:
-    email = uuid.uuid4().hex
-    password_digest = uuid.uuid4().hex
+    email = get_test_name()
+    password_digest = get_test_name()
     user_id = db_client.create_new_user(email, password_digest)
     return UserInfo(email, password_digest, user_id)
 

@@ -7,9 +7,8 @@ from tests.conftest import (
     live_database_client,
     integration_test_admin_setup,
 )
-from tests.helper_scripts.common_test_data import (
-    create_data_source_entry_for_url_duplicate_checking,
-)
+from tests.helper_scripts.complex_test_data_creation_functions import \
+    create_data_source_entry_for_url_duplicate_checking
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
 

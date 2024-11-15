@@ -590,7 +590,7 @@ class DatabaseClient:
         self.cursor.execute(query)
 
     @cursor_manager()
-    def get_user_permissions(self, user_id: str) -> List[PermissionsEnum]:
+    def get_user_permissions(self, user_id: int) -> List[PermissionsEnum]:
         query = sql.SQL(
             """
             SELECT p.permission_name
@@ -1362,3 +1362,20 @@ class DatabaseClient:
             columns=["id"],
             where_mappings={"name": record_type_name},
         )["id"]
+
+    def get_user_external_accounts(self, user_id: int):
+        raw_results = self._select_from_relation(
+            relation_name=Relations.EXTERNAL_ACCOUNTS.value,
+            columns=["account_type", "account_identifier"],
+            where_mappings={"user_id": user_id},
+        )
+        return {
+            row["account_type"]: row["account_identifier"] for row in raw_results
+        }
+
+    def get_user_email(self, user_id: int) -> str:
+        return self._select_single_entry_from_relation(
+            relation_name=Relations.USERS.value,
+            columns=["email"],
+            where_mappings={"id": user_id},
+        )["email"]

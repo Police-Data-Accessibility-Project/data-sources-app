@@ -24,10 +24,10 @@ from tests.conftest import (
     flask_client_with_db,
     integration_test_admin_setup,
 )
-from tests.helper_scripts.common_test_data import (
-    get_sample_agency_post_parameters,
-    TestDataCreatorFlask, generate_test_data_from_schema,
-)
+from tests.helper_scripts.common_test_data import get_test_name
+from tests.helper_scripts.complex_test_data_creation_functions import get_sample_agency_post_parameters
+from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import generate_test_data_from_schema
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
 from tests.helper_scripts.constants import AGENCIES_BASE_ENDPOINT
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup_db_client,
@@ -45,7 +45,7 @@ from conftest import test_data_creator_flask, monkeysession
 
 @dataclass
 class AgenciesTestSetup(IntegrationTestSetup):
-    submitted_name: str = str(uuid.uuid4())
+    submitted_name: str = str(get_test_name())
 
 
 @pytest.fixture
@@ -132,7 +132,7 @@ def test_agencies_post(ts: AgenciesTestSetup):
     data_to_post = get_sample_agency_post_parameters(
         submitted_name=ts.submitted_name,
         jurisdiction_type=JurisdictionType.LOCAL,
-        locality_name=uuid.uuid4().hex,
+        locality_name=get_test_name(),
     )
     json_data = run_post(data_to_post)
     id_ = json_data["id"]
@@ -162,7 +162,7 @@ def test_agencies_post(ts: AgenciesTestSetup):
 
     # Test with a new locality
     data_to_post = get_sample_agency_post_parameters(
-        submitted_name=uuid.uuid4().hex,
+        submitted_name=get_test_name(),
         jurisdiction_type=JurisdictionType.LOCAL,
         locality_name="Capitola",
     )
@@ -187,7 +187,7 @@ def test_agencies_put(ts: AgenciesTestSetup):
     data_to_post = get_sample_agency_post_parameters(
         submitted_name=ts.submitted_name,
         jurisdiction_type=JurisdictionType.LOCAL,
-        locality_name=uuid.uuid4().hex,
+        locality_name=get_test_name(),
     )
 
     json_data = run_and_validate_request(

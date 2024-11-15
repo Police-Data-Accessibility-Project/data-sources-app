@@ -42,12 +42,11 @@ from database_client.models import (
 from middleware.enums import PermissionsEnum, Relations
 from tests.conftest import live_database_client, test_table_data, clear_data_requests
 from tests.helper_scripts.common_test_data import (
-    insert_test_column_permission_data,
-    create_agency_entry_for_search_cache,
-    create_data_source_entry_for_url_duplicate_checking,
-    TestDataCreatorFlask,
-    get_random_number_for_testing,
+    get_random_number_for_testing, get_test_name,
 )
+from tests.helper_scripts.complex_test_data_creation_functions import insert_test_column_permission_data, \
+    create_agency_entry_for_search_cache, create_data_source_entry_for_url_duplicate_checking
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
 from tests.helper_scripts.helper_classes.AnyOrder import AnyOrder
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
@@ -65,7 +64,7 @@ from conftest import test_data_creator_db_client
 
 
 def test_add_new_user(live_database_client: DatabaseClient):
-    fake_email = uuid.uuid4().hex
+    fake_email = get_test_name()
     live_database_client.create_new_user(fake_email, "test_password")
     result = (
         live_database_client.execute_sqlalchemy(
@@ -89,7 +88,7 @@ def test_add_new_user(live_database_client: DatabaseClient):
 
 def test_get_user_id(live_database_client: DatabaseClient):
     # Add a new user to the database
-    fake_email = uuid.uuid4().hex
+    fake_email = get_test_name()
     live_database_client.create_new_user(fake_email, "test_password")
 
     # Directly fetch the user ID from the database for comparison
@@ -105,7 +104,7 @@ def test_get_user_id(live_database_client: DatabaseClient):
 
 
 def test_link_external_account(live_database_client: DatabaseClient):
-    fake_email = uuid.uuid4().hex
+    fake_email = get_test_name()
     fake_external_account_id = uuid.uuid4().hex
     live_database_client.create_new_user(fake_email, "test_password")
     user_id = live_database_client.get_user_id(fake_email)
@@ -129,7 +128,7 @@ def test_link_external_account(live_database_client: DatabaseClient):
 
 
 def test_get_user_info_by_external_account_id(live_database_client: DatabaseClient):
-    fake_email = uuid.uuid4().hex
+    fake_email = get_test_name()
     fake_external_account_id = uuid.uuid4().hex
     live_database_client.create_new_user(fake_email, "test_password")
     user_id = live_database_client.get_user_id(fake_email)
@@ -145,7 +144,7 @@ def test_get_user_info_by_external_account_id(live_database_client: DatabaseClie
 
 
 def test_set_user_password_digest(live_database_client: DatabaseClient):
-    fake_email = uuid.uuid4().hex
+    fake_email = get_test_name()
     live_database_client.create_new_user(fake_email, "test_password")
     live_database_client.set_user_password_digest(fake_email, "test_password")
     password_digest = live_database_client.execute_sqlalchemy(
@@ -156,7 +155,7 @@ def test_set_user_password_digest(live_database_client: DatabaseClient):
 
 
 def test_reset_token_logic(live_database_client: DatabaseClient):
-    fake_email = uuid.uuid4().hex
+    fake_email = get_test_name()
     fake_token = uuid.uuid4().hex
     live_database_client.create_new_user(fake_email, "test_password")
     live_database_client.add_reset_token(fake_email, fake_token)
@@ -171,7 +170,7 @@ def test_reset_token_logic(live_database_client: DatabaseClient):
 
 def test_update_user_api_key(live_database_client: DatabaseClient):
     # Add a new user to the database
-    email = uuid.uuid4().hex
+    email = get_test_name()
     password_digest = uuid.uuid4().hex
 
     live_database_client.create_new_user(
@@ -502,7 +501,7 @@ def test_update_last_cached(
 
 def test_get_user_info(live_database_client):
     # Add a new user to the database
-    email = uuid.uuid4().hex
+    email = get_test_name()
     password_digest = uuid.uuid4().hex
 
     live_database_client.create_new_user(
@@ -522,7 +521,7 @@ def test_get_user_info(live_database_client):
 
 def test_get_user_by_api_key(live_database_client: DatabaseClient):
     # Add a new user to the database
-    test_email = uuid.uuid4().hex
+    test_email = get_test_name()
     test_api_key = uuid.uuid4().hex
 
     user_id = live_database_client.create_new_user(
@@ -749,7 +748,7 @@ def test_get_data_requests_for_creator(live_database_client: DatabaseClient):
         live_database_client.create_data_request(
             column_value_mappings={
                 "submission_notes": submission_notes,
-                "title": uuid.uuid4().hex,
+                "title": get_test_name(),
                 "creator_user_id": test_user.user_id,
             }
         )
@@ -771,7 +770,7 @@ def test_user_is_creator_of_data_request(live_database_client):
     data_request_id = live_database_client.create_data_request(
         column_value_mappings={
             "submission_notes": submission_notes,
-            "title": uuid.uuid4().hex,
+            "title": get_test_name(),
             "creator_user_id": test_user.user_id,
         }
     )
@@ -785,7 +784,7 @@ def test_user_is_creator_of_data_request(live_database_client):
     data_request_id = live_database_client.create_data_request(
         column_value_mappings={
             "submission_notes": submission_notes,
-            "title": uuid.uuid4().hex,
+            "title": get_test_name(),
         }
     )
 

@@ -4,10 +4,11 @@ from typing import Optional
 from sqlalchemy import delete, select, and_
 
 from database_client.database_client import DatabaseClient
-from database_client.enums import ApprovalStatus, RequestStatus, EventType
+from database_client.enums import ApprovalStatus, RequestStatus, EventType, ExternalAccountTypeEnum
 from database_client.models import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import JurisdictionType, Relations
 from tests.helper_scripts.common_endpoint_calls import CreatedDataSource
+from tests.helper_scripts.common_test_data import get_random_number_for_testing, get_test_name
 from tests.helper_scripts.helper_functions import get_notification_valid_date
 from tests.helper_scripts.test_dataclasses import (
     TestUserDBInfo,
@@ -83,8 +84,23 @@ class TestDataCreatorDBClient:
         # Remove test data from data request
         self.helper.delete_test_like(
             table_name=Relations.DATA_REQUESTS.value,
+            like_column_name="title",
+        )
+        self.helper.delete_test_like(
+            table_name=Relations.DATA_REQUESTS.value,
             like_column_name="submission_notes",
         )
+        # Remove test data from agency
+        self.helper.delete_test_like(
+            table_name=Relations.AGENCIES.value,
+            like_column_name="submitted_name",
+        )
+        # Remove test data from locality
+        self.helper.delete_test_like(
+            table_name=Relations.LOCALITIES.value,
+            like_column_name="name",
+        )
+
         # Remove test data from user
         self.helper.delete_test_like(
             table_name=Relations.USERS.value,
@@ -97,17 +113,9 @@ class TestDataCreatorDBClient:
             like_column_name="name",
         )
 
-        # Remove test data from agency
-        self.helper.delete_test_like(
-            table_name=Relations.AGENCIES.value,
-            like_column_name="submitted_name",
-        )
 
-        # Remove test data from locality
-        self.helper.delete_test_like(
-            table_name=Relations.LOCALITIES.value,
-            like_column_name="name",
-        )
+
+
 
         self.helper.clear_user_notification_queue()
 
@@ -228,7 +236,7 @@ class TestDataCreatorDBClient:
         data_request_id = self.db_client.create_data_request(
             column_value_mappings={
                 "submission_notes": submission_notes,
-                "title": uuid.uuid4().hex,
+                "title": get_test_name(),
                 "creator_user_id": user_id,
                 **column_value_kwargs,
             }
@@ -251,6 +259,16 @@ class TestDataCreatorDBClient:
                 "request_id": data_request_id,
             }
         )
+
+    def link_fake_github_to_user(self, user_id: int) -> int:
+        fake_id = get_random_number_for_testing()
+        self.db_client.link_external_account(
+            user_id=str(user_id),
+            external_account_id=fake_id,
+            external_account_type=ExternalAccountTypeEnum.GITHUB
+        )
+        return fake_id
+
 
 
 class ValidNotificationEventCreator:

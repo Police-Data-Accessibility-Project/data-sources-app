@@ -6,7 +6,7 @@ from tests.conftest import (
     flask_client_with_db,
     test_user_admin,
 )
-from tests.helper_scripts.common_test_data import create_agency_entry_for_search_cache
+from tests.helper_scripts.complex_test_data_creation_functions import create_agency_entry_for_search_cache
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup,
 )

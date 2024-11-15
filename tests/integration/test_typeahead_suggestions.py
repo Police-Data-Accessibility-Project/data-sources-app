@@ -2,7 +2,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggesti
     TypeaheadAgenciesOuterResponseSchema,
     TypeaheadLocationsOuterResponseSchema,
 )
-from tests.helper_scripts.common_test_data import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
 from tests.helper_scripts.helper_functions import (
     setup_get_typeahead_suggestion_test_data,
 )
