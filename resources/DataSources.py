@@ -4,7 +4,7 @@ from config import limiter
 from middleware.access_logic import (
     AccessInfo,
     WRITE_ONLY_AUTH_INFO,
-    GET_AUTH_INFO,
+    GET_AUTH_INFO, STANDARD_JWT_AUTH_INFO,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     EntryCreateUpdateRequestDTO,
@@ -199,7 +199,7 @@ class DataSources(PsycopgResource):
 
     @endpoint_info_2(
         namespace=namespace_data_source,
-        auth_info=WRITE_ONLY_AUTH_INFO,
+        auth_info=STANDARD_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_SOURCES_POST,
         response_info=ResponseInfo(
             success_message="Data source successfully added.",
