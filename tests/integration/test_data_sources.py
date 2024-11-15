@@ -27,7 +27,8 @@ from tests.conftest import (
 )
 from conftest import test_data_creator_flask, monkeysession
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
-from tests.helper_scripts.common_test_data import TestDataCreatorFlask, generate_test_data_from_schema
+from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import generate_test_data_from_schema
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
 from tests.helper_scripts.common_test_functions import assert_contains_key_value_pairs
 from tests.helper_scripts.helper_functions import (
     get_boolean_dictionary,

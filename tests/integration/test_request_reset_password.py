@@ -3,7 +3,7 @@
 from database_client.database_client import DatabaseClient
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
 from resources.endpoint_schema_config import SchemaConfigs
-from tests.helper_scripts.common_test_data import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
 from conftest import test_data_creator_flask, monkeysession
 
 def test_request_reset_password_post(test_data_creator_flask: TestDataCreatorFlask, mocker):

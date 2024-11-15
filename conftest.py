@@ -12,9 +12,7 @@ from app import create_app
 from config import limiter
 from database_client.database_client import DatabaseClient
 from middleware.util import get_env_variable
-from tests.helper_scripts.common_test_data import (
-    TestDataCreatorFlask,
-)
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
 )

@@ -2,15 +2,14 @@ import uuid
 from datetime import datetime, timezone, timedelta
 from http import HTTPStatus
 
-import pytest
 from flask.testing import FlaskClient
 
 from conftest import test_data_creator_flask, monkeysession
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
-from middleware.primary_resource_logic.api_key_logic import api_key_is_associated_with_user
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from resources.endpoint_schema_config import SchemaConfigs
-from tests.helper_scripts.common_test_data import TestDataCreatorFlask, get_random_number_for_testing
+from tests.helper_scripts.common_test_data import get_random_number_for_testing
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
 from tests.helper_scripts.common_test_functions import assert_jwt_token_matches_user_email
 from tests.helper_scripts.constants import GITHUB_OAUTH_LOGIN_ENDPOINT, GITHUB_OAUTH_LINK_ENDPOINT
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request

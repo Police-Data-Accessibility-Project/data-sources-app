@@ -7,7 +7,7 @@ from database_client.enums import EventType, EntityType
 from middleware.custom_dataclasses import EventInfo, EventBatch
 from middleware.enums import Relations
 from resources.endpoint_schema_config import SchemaConfigs
-from tests.helper_scripts.common_test_data import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
 from tests.helper_scripts.constants import NOTIFICATIONS_BASE_ENDPOINT
 from tests.helper_scripts.helper_classes.AnyOrder import AnyOrder
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (

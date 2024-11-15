@@ -30,7 +30,7 @@ from tests.helper_scripts.common_mocks_and_patches import (
     patch_abort,
 )
 from tests.conftest import live_database_client
-from tests.helper_scripts.common_test_data import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
 from tests.helper_scripts.helper_functions import create_test_user_setup_db_client
 from conftest import test_data_creator_flask, monkeysession
 

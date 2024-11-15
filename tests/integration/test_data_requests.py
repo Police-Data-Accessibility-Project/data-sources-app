@@ -12,23 +12,15 @@ from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import RequestUrgency, LocationType, RequestStatus
 from middleware.constants import DATA_KEY
 from middleware.enums import PermissionsEnum, RecordType
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
-    GetByIDDataRequestsResponseSchema,
-    GetManyDataRequestsResponseSchema,
-)
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
-    DataSourceExpandedSchema,
-    DataSourcesGetManySchema,
-)
 from middleware.util import get_enum_values
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.conftest import dev_db_client, flask_client_with_db
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
 from tests.helper_scripts.common_test_data import (
-    create_test_data_request,
-    TestDataCreatorFlask,
     get_random_number_for_testing,
 )
+from tests.helper_scripts.complex_test_data_creation_functions import create_test_data_request
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
 from tests.helper_scripts.constants import (
     DATA_REQUESTS_BASE_ENDPOINT,
     DATA_REQUESTS_BY_ID_ENDPOINT,

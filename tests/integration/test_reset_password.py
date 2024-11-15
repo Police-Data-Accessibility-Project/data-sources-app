@@ -6,7 +6,7 @@ import uuid
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
 from middleware.enums import Relations
 from tests.conftest import dev_db_client
-from tests.helper_scripts.common_test_data import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
 from tests.helper_scripts.constants import DATA_SOURCES_BASE_ENDPOINT
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_functions import (

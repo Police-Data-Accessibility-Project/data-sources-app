@@ -2,7 +2,7 @@
 
 import datetime
 import json
-from tests.helper_scripts.common_test_data import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
 
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from conftest import test_data_creator_flask, monkeysession

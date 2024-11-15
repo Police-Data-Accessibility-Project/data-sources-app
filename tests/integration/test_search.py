@@ -3,23 +3,20 @@ from typing import Optional
 
 from marshmallow import Schema
 
-from middleware.enums import Relations
 from resources.endpoint_schema_config import SchemaConfigs
-from tests.helper_scripts.common_test_data import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
 from tests.helper_scripts.constants import (
     SEARCH_FOLLOW_BASE_ENDPOINT,
     USER_PROFILE_RECENT_SEARCHES_ENDPOINT,
 )
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_functions import (
-    create_test_user_setup,
     add_query_params,
 )
 from tests.helper_scripts.run_and_validate_request import (
     run_and_validate_request,
     http_methods,
 )
-from tests.helper_scripts.simple_result_validators import check_response_status
 from tests.conftest import flask_client_with_db, bypass_api_key_required
 from conftest import test_data_creator_flask, monkeysession
 from utilities.enums import RecordCategories
@@ -33,12 +30,12 @@ def test_search_get(
     tdc = test_data_creator_flask
     tus = tdc.standard_user()
 
-    data = run_and_validate_request(
-        flask_client=tdc.flask_client,
-        http_method="get",
-        endpoint="/search/search-location-and-record-type?state=Pennsylvania&county=Allegheny&locality=Pittsburgh&record_categories=Police%20%26%20Public%20Interactions",
+    data = tdc.request_validator.search(
         headers=tus.api_authorization_header,
-        expected_schema=SchemaConfigs.SEARCH_LOCATION_AND_RECORD_TYPE_GET.value.primary_output_schema,
+        state="Pennsylvania",
+        county="Allegheny",
+        locality="Pittsburgh",
+        record_categories=[RecordCategories.POLICE],
     )
 
     jurisdictions = ["federal", "state", "county", "locality"]
@@ -83,22 +80,12 @@ def test_search_get_record_categories_all(
     tus = tdc.standard_user()
 
     def run_search(record_categories: list[RecordCategories]) -> dict:
-        record_string = [rc.value for rc in record_categories]
-        params = {
-            "state": "Pennsylvania",
-            "county": "Allegheny",
-            "locality": "Pittsburgh",
-        }
-        if len(record_string) > 0:
-            params["record_categories"] = ",".join(record_string)
-        url = add_query_params(ENDPOINT_SEARCH_LOCATION_AND_RECORD_TYPE, params=params)
-
-        return run_and_validate_request(
-            flask_client=tdc.flask_client,
-            http_method="get",
-            endpoint=url,
+        return tdc.request_validator.search(
             headers=tus.api_authorization_header,
-            expected_schema=SchemaConfigs.SEARCH_LOCATION_AND_RECORD_TYPE_GET.value.primary_output_schema,
+            state="Pennsylvania",
+            county="Allegheny",
+            locality="Pittsburgh",
+            record_categories=record_categories if len(record_categories) > 0 else None,
         )
 
     data_all_explicit = run_search(record_categories=[RecordCategories.ALL])
@@ -150,21 +137,6 @@ def test_search_follow(test_data_creator_flask):
             expected_schema=expected_schema,
         )
 
-    def call_follow_post(
-        tus: TestUserSetup,
-        endpoint: str = url_for_following,
-        expected_json_content: Optional[dict] = None,
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-    ):
-        return call_search_endpoint(
-            tus=tus,
-            http_method="post",
-            endpoint=endpoint,
-            expected_json_content=expected_json_content,
-            expected_response_status=expected_response_status,
-            expected_schema=SchemaConfigs.SEARCH_FOLLOW_POST.value.primary_output_schema,
-        )
-
     def call_follow_delete(
         tus: TestUserSetup,
         endpoint: str = url_for_following,
@@ -203,35 +175,28 @@ def test_search_follow(test_data_creator_flask):
     )
 
     # User should try to follow a nonexistent location and be denied
-    nonexistent_location = {
-        "state": "Pennsylvania",
-        "county": "Allegheny",
-        "locality": "Purtsburgh",
-    }
-    url_for_failed_follow = add_query_params(
-        SEARCH_FOLLOW_BASE_ENDPOINT, nonexistent_location
-    )
-    call_follow_post(
-        tus=tus_1,
-        endpoint=url_for_failed_follow,
+    tdc.request_validator.follow_search(
+        headers=tus_1.jwt_authorization_header,
+        state="Pennsylvania",
+        county="Allegheny",
+        locality="Purtsburgh",
         expected_response_status=HTTPStatus.BAD_REQUEST,
         expected_json_content={"message": "Location not found."},
     )
 
     # User should try to follow an extant location and be granted
-    call_follow_post(
-        tus=tus_1,
-        endpoint=url_for_following,
-        expected_json_content={"message": "Location followed."},
-    )
+    def follow_extant_location(
+        message: str = "Location followed.",
+    ):
+        tdc.request_validator.follow_search(
+            headers=tus_1.jwt_authorization_header,
+            expected_json_content={"message": message},
+            **location_to_follow
+        )
+    follow_extant_location()
 
     # If the user tries to follow the same location again, it should fail
-
-    call_follow_post(
-        tus=tus_1,
-        endpoint=url_for_following,
-        expected_json_content={"message": "Location already followed."},
-    )
+    follow_extant_location(message="Location already followed.")
 
     # User should check current follows and find only the one they just followed
     call_follow_get(

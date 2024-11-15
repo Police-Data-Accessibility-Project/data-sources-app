@@ -24,10 +24,9 @@ from tests.conftest import (
     flask_client_with_db,
     integration_test_admin_setup,
 )
-from tests.helper_scripts.common_test_data import (
-    get_sample_agency_post_parameters,
-    TestDataCreatorFlask, generate_test_data_from_schema,
-)
+from tests.helper_scripts.complex_test_data_creation_functions import get_sample_agency_post_parameters
+from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import generate_test_data_from_schema
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
 from tests.helper_scripts.constants import AGENCIES_BASE_ENDPOINT
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup_db_client,

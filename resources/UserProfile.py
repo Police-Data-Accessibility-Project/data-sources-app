@@ -9,7 +9,7 @@ from middleware.decorators import endpoint_info, endpoint_info_2
 from middleware.enums import AccessTypeEnum
 from middleware.primary_resource_logic.user_profile import (
     get_owner_data_requests_wrapper,
-    get_user_recent_searches,
+    get_user_recent_searches, get_user_by_id_wrapper,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyRequestsBaseSchema,
@@ -36,6 +36,24 @@ user_data_requests_model = get_restx_param_documentation(
     schema=GetManyDataRequestsResponseSchema(exclude=["data.internal_notes"]),
     model_name="GetManyBaseSchema",
 ).model
+
+@namespace_user.route("/<user_id>")
+class UserByID(PsycopgResource):
+    @endpoint_info_2(
+        namespace=namespace_user,
+        auth_info=STANDARD_JWT_AUTH_INFO,
+        schema_config=SchemaConfigs.USER_PROFILE_GET,
+        response_info=ResponseInfo(
+            success_message="Returns the user profile.",
+        ),
+        description="Get user profile",
+    )
+    def get(self, user_id: int, access_info: AccessInfo) -> Response:
+        return self.run_endpoint(
+            wrapper_function=get_user_by_id_wrapper,
+            user_id=int(user_id),
+            access_info=access_info,
+        )
 
 
 @namespace_user.route(f"/{DATA_REQUESTS_PARTIAL_ENDPOINT}")

@@ -74,6 +74,7 @@ class SearchResultsInnerSchema(Schema):
     )
     municipality = fields.Str(
         required=True,
+        allow_none=True,
         metadata=get_json_metadata("The name of the municipality."),
     )
     state_iso = fields.Str(
@@ -176,12 +177,14 @@ class FollowSearchResponseSchema(Schema):
     )
     county = fields.Str(
         required=False,
+        allow_none=True,
         metadata=get_json_metadata(
             "The county of the search. If empty, all counties for the given state will be searched."
         ),
     )
     locality = fields.Str(
         required=False,
+        allow_none=True,
         metadata=get_json_metadata(
             "The locality of the search. If empty, all localities for the given county will be searched."
         ),

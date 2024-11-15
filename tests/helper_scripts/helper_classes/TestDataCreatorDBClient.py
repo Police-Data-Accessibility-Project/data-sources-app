@@ -4,10 +4,11 @@ from typing import Optional
 from sqlalchemy import delete, select, and_
 
 from database_client.database_client import DatabaseClient
-from database_client.enums import ApprovalStatus, RequestStatus, EventType
+from database_client.enums import ApprovalStatus, RequestStatus, EventType, ExternalAccountTypeEnum
 from database_client.models import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import JurisdictionType, Relations
 from tests.helper_scripts.common_endpoint_calls import CreatedDataSource
+from tests.helper_scripts.common_test_data import get_random_number_for_testing
 from tests.helper_scripts.helper_functions import get_notification_valid_date
 from tests.helper_scripts.test_dataclasses import (
     TestUserDBInfo,
@@ -251,6 +252,16 @@ class TestDataCreatorDBClient:
                 "request_id": data_request_id,
             }
         )
+
+    def link_fake_github_to_user(self, user_id: int) -> int:
+        fake_id = get_random_number_for_testing()
+        self.db_client.link_external_account(
+            user_id=str(user_id),
+            external_account_id=fake_id,
+            external_account_type=ExternalAccountTypeEnum.GITHUB
+        )
+        return fake_id
+
 
 
 class ValidNotificationEventCreator:

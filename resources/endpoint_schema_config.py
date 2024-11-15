@@ -116,7 +116,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.github_issue_app_s
     GithubDataRequestsIssuesPostDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.user_profile_schemas import (
-    GetUserRecentSearchesOuterSchema,
+    GetUserRecentSearchesOuterSchema, UserProfileResponseSchema,
 )
 
 
@@ -329,6 +329,10 @@ class SchemaConfigs(Enum):
     USER_PROFILE_RECENT_SEARCHES = EndpointSchemaConfig(
         primary_output_schema=GetUserRecentSearchesOuterSchema(exclude=["message"]),
     )
+    USER_PROFILE_GET = EndpointSchemaConfig(
+        primary_output_schema=UserProfileResponseSchema(),
+    )
+
     # endregion
     # region Auth
     LOGIN_POST = EndpointSchemaConfig(
@@ -371,3 +375,4 @@ class SchemaConfigs(Enum):
         primary_output_schema=MessageSchema()
     )
     #endregion
+
