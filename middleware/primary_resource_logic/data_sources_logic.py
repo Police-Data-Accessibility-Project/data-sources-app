@@ -173,7 +173,8 @@ class DataSourcesPostLogic(PostLogic):
     ):
         super().__init__(
             middleware_parameters=middleware_parameters,
-            entry=entry
+            entry=entry,
+            check_for_permission=False,
         )
         self.agency_ids = agency_ids
 
