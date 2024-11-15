@@ -17,7 +17,7 @@ from resources.endpoint_schema_config import SchemaConfigs
 from tests.conftest import dev_db_client, flask_client_with_db
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
 from tests.helper_scripts.common_test_data import (
-    get_random_number_for_testing,
+    get_random_number_for_testing, get_test_name,
 )
 from tests.helper_scripts.complex_test_data_creation_functions import create_test_data_request
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
@@ -63,9 +63,9 @@ def test_data_requests_get(
 ):
 
     tdc = test_data_creator_flask
+    tdc.db_client.execute_raw_sql("""DELETE FROM data_requests""")
     tdc.clear_test_data()
     # Delete all data from the data requests table
-    tdc.db_client.execute_raw_sql("""DELETE FROM data_requests""")
 
     tus_creator = tdc.standard_user()
 
@@ -199,7 +199,7 @@ def test_data_requests_post(
     json_request = {
         "request_info": {
             "submission_notes": submission_notes,
-            "title": uuid.uuid4().hex,
+            "title": get_test_name(),
             "data_requirements": uuid.uuid4().hex,
             "request_urgency": RequestUrgency.URGENT.value,
             "coverage_range": "2000-2005",
@@ -233,7 +233,7 @@ def test_data_requests_post(
     json_request = {
         "request_info": {
             "submission_notes": submission_notes,
-            "title": uuid.uuid4().hex,
+            "title": get_test_name(),
             "request_urgency": RequestUrgency.URGENT.value,
         },
     }
@@ -256,7 +256,7 @@ def test_data_requests_post(
         json_request={
             "request_info": {
                 "submission_notes": submission_notes,
-                "title": uuid.uuid4().hex,
+                "title": get_test_name(),
                 "request_urgency": RequestUrgency.URGENT.value,
                 "invalid_column": uuid.uuid4().hex,
             }
@@ -335,7 +335,7 @@ def test_data_requests_by_id_put(
         json={
             "entry_data": {
                 "submission_notes": new_submission_notes,
-                "title": uuid.uuid4().hex,
+                "title": get_test_name(),
                 "request_urgency": RequestUrgency.URGENT.value,
                 "data_requirements": uuid.uuid4().hex,
                 "coverage_range": uuid.uuid4().hex,
@@ -363,7 +363,7 @@ def test_data_requests_by_id_put(
         json={
             "entry_data": {
                 "submission_notes": new_submission_notes,
-                "title": uuid.uuid4().hex,
+                "title": get_test_name(),
                 "request_urgency": RequestUrgency.URGENT.value,
                 "data_requirements": uuid.uuid4().hex,
                 "coverage_range": uuid.uuid4().hex,

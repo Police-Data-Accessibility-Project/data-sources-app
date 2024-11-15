@@ -6,7 +6,7 @@ from marshmallow import Schema, fields
 from marshmallow.fields import Field
 
 from tests.helper_scripts.common_test_data import get_random_number_for_testing, get_random_boolean, \
-    get_random_possible_enum_value
+    get_random_possible_enum_value, get_test_name
 
 
 class SchemaTestDataGenerator:
@@ -26,7 +26,7 @@ class SchemaTestDataGenerator:
 
     def generate_test_data(self, field: Field):
         if isinstance(field, fields.String):
-            return uuid.uuid4().hex
+            return get_test_name()
         elif isinstance(field, fields.Number):
             return get_random_number_for_testing()
         elif isinstance(field, fields.Boolean):

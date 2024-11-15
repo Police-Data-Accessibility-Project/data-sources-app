@@ -9,6 +9,7 @@ from collections import namedtuple
 from flask.testing import FlaskClient
 
 from resources.endpoint_schema_config import SchemaConfigs
+from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.constants import DATA_SOURCES_BASE_ENDPOINT
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
@@ -25,7 +26,7 @@ def create_data_source_with_endpoint(
     :param jwt_authorization_header:
     :return:
     """
-    name = uuid.uuid4().hex
+    name = get_test_name()
     json = run_and_validate_request(
         flask_client=flask_client,
         http_method="post",

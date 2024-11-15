@@ -8,6 +8,7 @@ from database_client.database_client import DatabaseClient
 from database_client.enums import RequestUrgency
 from middleware.enums import JurisdictionType
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import AgencyInfoPostSchema
+from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.constants import DATA_REQUESTS_BASE_ENDPOINT, AGENCIES_BASE_ENDPOINT
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import generate_test_data_from_schema
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
@@ -111,7 +112,7 @@ def create_test_data_request(
     json_to_post = {
         "request_info": {
             "submission_notes": submission_notes,
-            "title": uuid.uuid4().hex,
+            "title": get_test_name(),
             "request_urgency": RequestUrgency.INDEFINITE.value,
         }
     }
@@ -131,8 +132,8 @@ def create_test_data_request(
 
 
 def create_test_agency(flask_client: FlaskClient, jwt_authorization_header: dict):
-    submitted_name = uuid.uuid4().hex
-    locality_name = uuid.uuid4().hex
+    submitted_name = get_test_name()
+    locality_name = get_test_name()
     sample_agency_post_parameters = get_sample_agency_post_parameters(
         submitted_name=submitted_name,
         locality_name=locality_name,

@@ -19,6 +19,7 @@ from database_client.models import RecentSearch
 from middleware.enums import Relations
 from tests.conftest import live_database_client
 from conftest import test_data_creator_db_client
+from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
 )
@@ -230,7 +231,7 @@ def link_user_followed_test_info(
         table_name=Relations.LOCALITIES.value,
         column_value_mappings={
             "county_id": county_id,
-            "name": uuid.uuid4().hex,
+            "name": get_test_name()
         },
     )
 
@@ -246,7 +247,7 @@ def link_user_followed_test_info(
     )
 
     user_id = live_database_client.create_new_user(
-        email=uuid.uuid4().hex, password_digest=uuid.uuid4().hex
+        email=get_test_name(), password_digest=uuid.uuid4().hex
     )
 
     live_database_client.create_followed_search(
@@ -351,7 +352,7 @@ def test_data_sources_created_at_updated_at(
     # Update data source
     live_database_client.update_data_source(
         entry_id=data_source_id,
-        column_edit_mappings={"name": uuid.uuid4().hex},
+        column_edit_mappings={"name": get_test_name()},
     )
 
     # Get `updated_at` for data source
@@ -396,7 +397,7 @@ def test_approval_status_updated_at(
     assert approval_status_updated_at > initial_approval_status_updated_at
 
     # Make an edit to a different column and confirm that `approval_status_updated_at` is not updated
-    update_data_source({"submitted_name": uuid.uuid4().hex})
+    update_data_source({"submitted_name": get_test_name()})
 
     new_approval_status_updated_at = get_approval_status_updated_at()
     assert approval_status_updated_at == new_approval_status_updated_at
