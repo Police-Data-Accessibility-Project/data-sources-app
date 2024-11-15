@@ -120,6 +120,7 @@ def test_data_sources_post(
     Test that POST call to /data-sources endpoint successfully creates a new data source with a unique name and verifies its existence in the database
     """
     tdc = test_data_creator_flask
+    tus = tdc.standard_user()
 
     agency_id = tdc.agency().id
 
@@ -142,7 +143,7 @@ def test_data_sources_post(
         flask_client=tdc.flask_client,
         http_method="post",
         endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}",
-        headers=tdc.get_admin_tus().jwt_authorization_header,
+        headers=tus.jwt_authorization_header,
         json={
             "entry_data": entry_data,
             "linked_agency_ids": [agency_id],
