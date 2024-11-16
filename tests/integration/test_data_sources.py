@@ -134,7 +134,8 @@ def test_data_sources_post(
                 "record_type_id",
                 "broken_source_url_as_of",
                 "approval_status_updated_at",
-                "last_approval_editor"
+                "last_approval_editor",
+                "last_approval_editor_old"
             ],
         ),
     )
