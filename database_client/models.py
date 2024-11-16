@@ -542,6 +542,7 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
         ForeignKey("public.record_types.id")
     )
     approval_status_updated_at: Mapped[Optional[timestamp_tz]]
+    last_approval_editor_old: Mapped[Optional[str]]
 
     agencies: Mapped[list[AgencyExpanded]] = relationship(
         argument="AgencyExpanded",
