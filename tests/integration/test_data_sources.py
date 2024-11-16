@@ -15,7 +15,7 @@ from database_client.enums import (
     RetentionSchedule,
     URLStatus,
     ApprovalStatus,
-    UpdateMethod,
+    UpdateMethod, RequestStatus,
 )
 from middleware.enums import AccessTypeEnum, RecordType
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourceExpandedSchema
@@ -134,6 +134,7 @@ def test_data_sources_post(
                 "record_type_id",
                 "broken_source_url_as_of",
                 "approval_status_updated_at",
+                "last_approval_editor"
             ],
         ),
     )
@@ -225,7 +226,6 @@ def test_data_sources_by_id_put(test_data_creator_flask: TestDataCreatorFlask):
         "data_portal_type_other": uuid.uuid4().hex,
         "access_notes": uuid.uuid4().hex,
         "url_status": URLStatus.OK.value,
-        "approval_status": ApprovalStatus.APPROVED.value,
         "record_type_name": RecordType.ARREST_RECORDS.value,
     }
 
@@ -246,8 +246,49 @@ def test_data_sources_by_id_put(test_data_creator_flask: TestDataCreatorFlask):
     )
 
     data = response_json["data"]
-    for key, value in entry_data.items():
-        assert data[key] == value
+    assert_contains_key_value_pairs(
+        dict_to_check=data,
+        key_value_pairs=entry_data,
+    )
+
+    # Test that last_approval_editor is None
+    assert data["last_approval_editor"] is None
+
+def test_data_sources_by_id_put_approval_status(test_data_creator_flask: TestDataCreatorFlask):
+    """
+    Test that PUT call to /data-sources-by-id/<data_source_id> endpoint successfully updates the last_approval_editor of the data source and verifies the change in the database
+    """
+    tdc = test_data_creator_flask
+    cdr = tdc.data_source()
+
+    entry_data = {
+        "approval_status": ApprovalStatus.APPROVED.value
+    }
+
+    run_and_validate_request(
+        flask_client=tdc.flask_client,
+        http_method="put",
+        endpoint=f"/api/data-sources/{cdr.id}",
+        headers=tdc.get_admin_tus().jwt_authorization_header,
+        json={"entry_data": entry_data},
+    )
+
+    response_json = run_and_validate_request(
+        flask_client=tdc.flask_client,
+        http_method="get",
+        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}/{cdr.id}",
+        headers=tdc.get_admin_tus().jwt_authorization_header,
+        expected_schema=SchemaConfigs.DATA_SOURCES_GET_BY_ID.value.primary_output_schema,
+    )
+
+    data = response_json["data"]
+    assert_contains_key_value_pairs(
+        dict_to_check=data,
+        key_value_pairs=entry_data,
+    )
+
+    # Test that last_approval_editor is the user
+    assert data["last_approval_editor"] == tdc.get_admin_tus().user_info.user_id
 
 
 def test_data_sources_by_id_delete(

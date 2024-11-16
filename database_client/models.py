@@ -528,7 +528,7 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
     )
     submission_notes: Mapped[Optional[str]]
     rejection_note: Mapped[Optional[str]]
-    last_approval_editor: Mapped[Optional[str]]
+    last_approval_editor: Mapped[Optional[int]]
     submitter_contact_info: Mapped[Optional[str]]
     agency_described_submitted: Mapped[Optional[str]]
     agency_described_not_in_database: Mapped[Optional[str]]

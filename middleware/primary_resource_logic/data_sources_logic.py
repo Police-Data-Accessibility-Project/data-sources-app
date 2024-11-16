@@ -10,8 +10,6 @@ from database_client.subquery_logic import SubqueryParameters, SubqueryParameter
 from database_client.enums import ApprovalStatus
 from database_client.result_formatter import ResultFormatter
 from middleware.access_logic import AccessInfo
-from middleware.column_permission_logic import RelationRoleParameters
-from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.delete_logic import delete_entry
 from middleware.dynamic_request_logic.get_by_id_logic import get_by_id
 from middleware.dynamic_request_logic.get_many_logic import get_many
@@ -134,6 +132,14 @@ def delete_data_source_wrapper(
     )
 
 
+def optionally_add_last_approval_editor(
+        entry_data: dict,
+        access_info: AccessInfo
+):
+    if "approval_status" in entry_data:
+        entry_data["last_approval_editor"] = access_info.get_user_id()
+
+
 def update_data_source_wrapper(
     db_client: DatabaseClient,
     dto: EntryCreateUpdateRequestDTO,
@@ -142,6 +148,7 @@ def update_data_source_wrapper(
 ) -> Response:
     entry_data = dto.entry_data
     optionally_swap_record_type_name_with_id(db_client, entry_data)
+    optionally_add_last_approval_editor(entry_data, access_info)
     return put_entry(
         middleware_parameters=MiddlewareParameters(
             db_client=db_client,
