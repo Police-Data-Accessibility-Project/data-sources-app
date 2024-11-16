@@ -183,7 +183,7 @@ class DatabaseClient:
         )
         if len(results) == 0:
             return None
-        return results[0]["id"]
+        return int(results[0]["id"])
 
     def set_user_password_digest(self, email: str, password_digest: str):
         """

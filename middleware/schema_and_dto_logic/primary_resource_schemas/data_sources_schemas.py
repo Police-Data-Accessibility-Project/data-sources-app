@@ -244,9 +244,9 @@ class DataSourceBaseSchema(Schema):
     rejection_note = fields.String(
         allow_none=True, metadata=get_json_metadata("Why the note was rejected.")
     )
-    last_approval_editor = fields.String(
+    last_approval_editor = fields.Integer(
         allow_none=True,
-        metadata=get_json_metadata("Who provided approval for the data source."),
+        metadata=get_json_metadata("User id of the user who provided approval for the data source."),
     )
     submitter_contact_info = fields.String(
         allow_none=True,
@@ -309,6 +309,13 @@ class DataSourceBaseSchema(Schema):
         metadata=get_json_metadata(
             "The date and time the approval status was last updated"
         )
+    )
+    last_approval_editor_old = fields.String(
+        allow_none=True,
+        metadata=get_json_metadata(
+            "Former identifier of who provided approval for the data source."
+        ),
+
     )
 
 
@@ -373,7 +380,8 @@ class DataSourcesPostSchema(Schema):
                 "created_at",
                 "record_type_id",
                 "approval_status_updated_at",
-                "broken_source_url_as_of"
+                "broken_source_url_as_of",
+                "last_approval_editor"
             ],
             partial=True,
         ),
@@ -406,7 +414,8 @@ class DataSourcesPutSchema(Schema):
                 "record_type_id",
                 "data_source_request",
                 "approval_status_updated_at",
-                "broken_source_url_as_of"
+                "broken_source_url_as_of",
+                "last_approval_editor"
             ]
         ),
         required=True,
