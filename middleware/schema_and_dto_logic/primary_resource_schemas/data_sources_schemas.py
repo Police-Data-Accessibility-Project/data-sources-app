@@ -310,6 +310,13 @@ class DataSourceBaseSchema(Schema):
             "The date and time the approval status was last updated"
         )
     )
+    last_approval_editor_old = fields.String(
+        allow_none=True,
+        metadata=get_json_metadata(
+            "Former identifier of who provided approval for the data source."
+        ),
+
+    )
 
 
 class DataSourceExpandedSchema(DataSourceBaseSchema):
