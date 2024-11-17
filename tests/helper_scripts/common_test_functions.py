@@ -55,7 +55,8 @@ def assert_contains_key_value_pairs(
 ):
     for key, value in key_value_pairs.items():
         assert key in dict_to_check
-        assert dict_to_check[key] == value
+        dict_value = dict_to_check[key]
+        assert dict_value == value, f"Expected {key} to be {value}, was {dict_value}"
 
 
 def test_delete_endpoint(

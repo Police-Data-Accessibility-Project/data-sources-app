@@ -18,7 +18,7 @@ from database_client.enums import (
     UpdateMethod, RequestStatus,
 )
 from middleware.enums import AccessTypeEnum, RecordType
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import DataSourceExpandedSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_schemas import DataSourceExpandedSchema
 
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.conftest import (
@@ -342,7 +342,7 @@ def test_data_source_by_id_related_agencies(
                 data_source_id=ds_info.id
             ),
             headers=tdc.get_admin_tus().jwt_authorization_header,
-            expected_schema=SchemaConfigs.AGENCIES_GET_MANY.value.primary_output_schema,
+            expected_schema=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_GET.value.primary_output_schema,
         )
 
     json_data = get_related_agencies()

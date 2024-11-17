@@ -3,6 +3,7 @@ from dataclasses import asdict
 from flask import Response, request
 
 from database_client.database_client import DatabaseClient
+from database_client.subquery_logic import SubqueryParameterManager
 from middleware.access_logic import AccessInfo
 from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.delete_logic import delete_entry
@@ -15,16 +16,20 @@ from middleware.dynamic_request_logic.supporting_classes import (
     IDInfo,
 )
 from middleware.location_logic import get_location_id
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import (
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgenciesPutSchema,
-    AgenciesPostDTO,
 )
+from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import AgenciesPostDTO
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyBaseDTO,
     GetByIDBaseDTO,
     LocationInfoDTO,
 )
 from middleware.enums import Relations, JurisdictionType
+
+SUBQUERY_PARAMS = [
+    SubqueryParameterManager.data_sources()
+]
 
 
 def get_agencies(
@@ -45,6 +50,7 @@ def get_agencies(
             relation=Relations.AGENCIES_EXPANDED.value,
             db_client_method=DatabaseClient.get_agencies,
             db_client_additional_args={"build_metadata": True},
+            subquery_parameters=SUBQUERY_PARAMS,
         ),
         page=dto.page,
     )
@@ -60,6 +66,7 @@ def get_agency_by_id(
             entry_name="agency",
             relation=Relations.AGENCIES_EXPANDED.value,
             db_client_method=DatabaseClient.get_agencies,
+            subquery_parameters=SUBQUERY_PARAMS,
         ),
         id=dto.resource_id,
     )

@@ -138,9 +138,6 @@ class TestDataCreatorFlask:
             headers=self.get_admin_tus().jwt_authorization_header,
         )
 
-    def link_data_source_to_agency(self, data_source_id, agency_id):
-        raise NotImplementedError()
-
     def standard_user(self) -> TestUserSetup:
         """
         Creates a user with no special permissions.

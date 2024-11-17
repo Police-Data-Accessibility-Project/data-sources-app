@@ -28,7 +28,7 @@ from middleware.primary_resource_logic.data_sources_logic import (
     get_data_source_related_agencies, get_data_sources_for_map_wrapper,
 )
 
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advanced_schemas import (
     DataSourcesGetManyRequestSchema,
 )
 from resources.endpoint_schema_config import SchemaConfigs

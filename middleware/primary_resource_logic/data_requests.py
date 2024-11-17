@@ -25,26 +25,23 @@ from middleware.dynamic_request_logic.get_related_resource_logic import (
     get_related_resource,
     GetRelatedResourcesParameters,
 )
-from middleware.dynamic_request_logic.post_logic import post_entry, PostLogic
+from middleware.dynamic_request_logic.post_logic import PostLogic
 from middleware.dynamic_request_logic.put_logic import put_entry
 from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,
-    PutPostBase,
 )
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.location_logic import get_location_id, InvalidLocationError
+from middleware.location_logic import InvalidLocationError
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     EntryCreateUpdateRequestDTO,
     GetByIDBaseDTO,
     GetByIDBaseSchema,
     GetManyBaseDTO,
-    LocationInfoDTO,
 )
 from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
 
 from middleware.common_response_formatting import (
-    multiple_results_response,
     message_response,
     created_id_response,
 )

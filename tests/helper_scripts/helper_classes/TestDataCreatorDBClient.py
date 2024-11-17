@@ -114,11 +114,6 @@ class TestDataCreatorDBClient:
             like_column_name="email",
         )
 
-
-
-
-
-
         self.helper.clear_user_notification_queue()
 
     def locality(

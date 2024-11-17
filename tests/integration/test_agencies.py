@@ -9,7 +9,7 @@ import pytest
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
 from middleware.enums import JurisdictionType
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import (
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgenciesGetByIDResponseSchema,
     AgenciesGetManyResponseSchema, AgencyInfoPutSchema,
 )
@@ -79,26 +79,31 @@ def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
     )
 
 
-def test_agencies_get_by_id(ts: AgenciesTestSetup):
+def test_agencies_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
+    """
+    Test that GET call to /agencies/<id> endpoint properly retrieves the correct data
+    """
+    tdc = test_data_creator_flask
+
     # Add data via db client
-    agency_id = ts.db_client._create_entry_in_table(
-        table_name="agencies",
-        column_value_mappings={
-            "submitted_name": ts.submitted_name,
-            "jurisdiction_type": JurisdictionType.FEDERAL.value,
-        },
-        column_to_return="id",
-    )
+    agency_id = tdc.agency().id
+
+    # link agency id to data source
+    cds = tdc.data_source()
+    tdc.link_data_source_to_agency(data_source_id=cds.id, agency_id=agency_id)
 
     response_json = run_and_validate_request(
-        flask_client=ts.flask_client,
+        flask_client=tdc.flask_client,
         http_method="get",
         endpoint=AGENCIES_BASE_ENDPOINT + f"/{agency_id}",
-        headers=ts.tus.jwt_authorization_header,
+        headers=tdc.get_admin_tus().jwt_authorization_header,
         expected_schema=SchemaConfigs.AGENCIES_BY_ID_GET.value.primary_output_schema,
     )
 
-    assert response_json["data"]["id"] == agency_id
+    data = response_json["data"]
+    assert data["id"] == int(agency_id)
+    assert data["data_sources"][0]["id"] == int(cds.id)
+
 
 
 def test_agencies_post(ts: AgenciesTestSetup):
