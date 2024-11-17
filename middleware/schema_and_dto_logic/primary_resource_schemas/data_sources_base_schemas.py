@@ -1,75 +1,9 @@
-from dataclasses import dataclass
-from datetime import date
-from typing import Optional, List
-
 from marshmallow import Schema, fields
 
-from database_client.enums import (
-    LocationType,
-    DetailLevel,
-    AccessType,
-    RetentionSchedule,
-    URLStatus,
-    ApprovalStatus,
-    AgencyAggregation,
-    UpdateMethod,
-)
+from database_client.enums import AgencyAggregation, DetailLevel, AccessType, UpdateMethod, RetentionSchedule, \
+    URLStatus, ApprovalStatus
 from middleware.enums import RecordType
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    GetManyRequestsBaseSchema,
-    EntryCreateUpdateRequestDTO,
-)
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import (
-    AgenciesGetSchema,
-)
-from middleware.schema_and_dto_logic.common_response_schemas import (
-    GetManyResponseSchemaBase,
-    MessageSchema,
-)
 from middleware.schema_and_dto_logic.util import get_json_metadata
-from utilities.enums import SourceMappingEnum
-
-
-@dataclass
-class DataSourceEntryDataPostDTO:
-    submitted_name: str
-    description: Optional[str] = None
-    approval_status: Optional[ApprovalStatus] = None
-    source_url: Optional[str] = None
-    agency_supplied: Optional[bool] = None
-    supplying_entity: Optional[str] = None
-    agency_originated: Optional[bool] = None
-    agency_aggregation: Optional[AgencyAggregation] = None
-    coverage_start: Optional[date] = None
-    coverage_end: Optional[date] = None
-    detail_level: Optional[DetailLevel] = None
-    access_types: Optional[List[AccessType]] = None
-    data_portal_type: Optional[str] = None
-    record_formats: Optional[List[str]] = None
-    update_method: Optional[str] = None
-    tags: Optional[List[str]] = None
-    readme_url: Optional[str] = None
-    originating_entity: Optional[str] = None
-    retention_schedule: Optional[RetentionSchedule] = None
-    scraper_url: Optional[str] = None
-    submission_notes: Optional[str] = None
-    rejection_note: Optional[str] = None
-    last_approval_editor: Optional[str] = None
-    submitter_contact_info: Optional[str] = None
-    agency_described_submitted: Optional[str] = None
-    agency_described_not_in_database: Optional[str] = None
-    data_portal_type_other: Optional[str] = None
-    data_source_request: Optional[str] = None
-    broken_source_url_as_of: Optional[date] = None
-    access_notes: Optional[str] = None
-    url_status: Optional[URLStatus] = None
-    record_type_name: Optional[RecordType] = None
-
-
-@dataclass
-class DataSourcesPostDTO:
-    entry_data: DataSourceEntryDataPostDTO
-    linked_agency_ids: Optional[List[int]] = None
 
 
 class DataSourceBaseSchema(Schema):
@@ -328,113 +262,6 @@ class DataSourceExpandedSchema(DataSourceBaseSchema):
     )
 
 
-class DataSourceGetSchema(DataSourceExpandedSchema):
-    """
-    The schema for getting a single data source.
-    Include the base schema as well as data from connected tables, including agencies and record types.
-    """
-
-    agencies = fields.List(
-        fields.Nested(
-            AgenciesGetSchema,
-            metadata=get_json_metadata("The agencies associated with the data source."),
-        ),
-        allow_none=True,
-        metadata=get_json_metadata("The agencies associated with the data source."),
-    )
-    agency_ids = fields.List(
-        fields.Integer(
-            allow_none=True,
-            metadata=get_json_metadata(
-                "The agency ids associated with the data source."
-            ),
-        ),
-        metadata=get_json_metadata("The agency ids associated with the data source."),
-    )
-
-
-class DataSourcesGetByIDSchema(MessageSchema):
-    data = fields.Nested(
-        DataSourceGetSchema,
-        metadata=get_json_metadata("The result"),
-    )
-
-
-class DataSourcesGetManySchema(GetManyResponseSchemaBase):
-    data = fields.List(
-        cls_or_instance=fields.Nested(
-            nested=DataSourceGetSchema,
-            metadata=get_json_metadata("The list of results"),
-        ),
-        metadata=get_json_metadata("The list of results"),
-    )
-
-
-class DataSourcesPostSchema(Schema):
-    entry_data = fields.Nested(
-        nested=DataSourceExpandedSchema(
-            exclude=[
-                "id",
-                "name",
-                "updated_at",
-                "created_at",
-                "record_type_id",
-                "approval_status_updated_at",
-                "broken_source_url_as_of",
-                "last_approval_editor"
-            ],
-            partial=True,
-        ),
-        required=True,
-        metadata=get_json_metadata(
-            description="The data source to be created",
-            nested_dto_class=DataSourceEntryDataPostDTO,
-        ),
-    )
-    linked_agency_ids = fields.List(
-        fields.Integer(
-            allow_none=True,
-            metadata=get_json_metadata(
-                "The agency ids associated with the data source."
-            ),
-        ),
-        metadata=get_json_metadata("The agency ids associated with the data source."),
-    )
-
-
-class DataSourcesPutSchema(Schema):
-    entry_data = fields.Nested(
-        nested=DataSourceExpandedSchema(
-            exclude=[
-                "name",
-                "id",
-                "updated_at",
-                "created_at",
-                "rejection_note",
-                "record_type_id",
-                "data_source_request",
-                "approval_status_updated_at",
-                "broken_source_url_as_of",
-                "last_approval_editor"
-            ]
-        ),
-        required=True,
-        metadata=get_json_metadata("The data source to be updated"),
-    )
-
-
-class DataSourcesGetManyRequestSchema(GetManyRequestsBaseSchema):
-    approval_status = fields.Enum(
-        enum=ApprovalStatus,
-        by_value=fields.String,
-        required=False,
-        metadata={
-            "source": SourceMappingEnum.QUERY_ARGS,
-            "description": "The approval status of the data sources.",
-            "default": "approved",
-        },
-    )
-
 class DataSourcesMapResponseInnerSchema(Schema):
     data_source_id = fields.Integer(
         metadata=get_json_metadata("The id of the data source")
@@ -467,13 +294,4 @@ class DataSourcesMapResponseInnerSchema(Schema):
     )
     lng = fields.Float(
         metadata=get_json_metadata("The longitude of the data source")
-    )
-
-class DataSourcesMapResponseSchema(MessageSchema):
-    data = fields.List(
-        fields.Nested(
-            DataSourcesMapResponseInnerSchema(),
-            metadata=get_json_metadata("The list of results"),
-        ),
-        metadata=get_json_metadata("The list of results"),
     )

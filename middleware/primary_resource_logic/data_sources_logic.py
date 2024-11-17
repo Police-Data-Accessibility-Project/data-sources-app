@@ -32,9 +32,8 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetByIDBaseDTO,
 )
 from middleware.common_response_formatting import format_list_response, message_response
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
-    DataSourceEntryDataPostDTO, DataSourcesPostDTO,
-)
+from middleware.schema_and_dto_logic.primary_resource_dtos.data_sources_dtos import DataSourceEntryDataPostDTO, \
+    DataSourcesPostDTO
 from middleware.util import dataclass_to_filtered_dict
 
 RELATION = Relations.DATA_SOURCES.value
@@ -226,7 +225,7 @@ def get_data_source_related_agencies(
             db_client=db_client,
             dto=dto,
             db_client_method=DatabaseClient.get_data_sources,
-            primary_relation=Relations.DATA_SOURCES,
+            primary_relation=Relations.DATA_SOURCES_EXPANDED,
             related_relation=Relations.AGENCIES_EXPANDED,
             linking_column="agencies",
             metadata_count_name="agencies_count",

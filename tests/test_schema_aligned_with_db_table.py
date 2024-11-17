@@ -6,10 +6,8 @@ from marshmallow import Schema
 
 from database_client.database_client import DatabaseClient
 from middleware.enums import Relations
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import (
-    AgencyInfoBaseSchema,
-    AgenciesGetSchema,
-)
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_base_schemas import AgencyInfoBaseSchema, \
+    AgenciesExpandedSchema
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
     DataRequestsSchema,
 )
@@ -45,7 +43,7 @@ def test_agencies_get_schema_aligned_with_agencies_expanded(live_database_client
     :return:
     """
     assert_relation_columns_and_schema_fields_aligned(
-        live_database_client, Relations.AGENCIES_EXPANDED, AgenciesGetSchema()
+        live_database_client, Relations.AGENCIES_EXPANDED, AgenciesExpandedSchema()
     )
 
 

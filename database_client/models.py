@@ -206,8 +206,25 @@ class LinkAgencyDataSource(Base):
 class Agency(Base, CountMetadata):
     __tablename__ = Relations.AGENCIES.value
 
+
     def __iter__(self):
-        yield from iter_with_special_cases(self)
+
+        special_cases = {
+            "data_sources": lambda instance: [
+                (
+                    (
+                        "data_sources",
+                        (
+                            [source.to_dict() for source in instance.data_sources]
+                            if instance.data_sources
+                            else None
+                        ),
+                    )
+                )
+            ],
+        }
+
+        yield from iter_with_special_cases(self, special_cases=special_cases)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
@@ -240,39 +257,36 @@ class Agency(Base, CountMetadata):
     location_id: Mapped[Optional[int]]
 
 
-class AgencyExpanded(Base):
-    # TODO: Update so that this can be inherited from Agency, and duplicate code can be eliminated
+
+
+class AgencyExpanded(Agency):
+
     __tablename__ = Relations.AGENCIES_EXPANDED.value
+    __table_args__ = {
+        "polymorphic_identity": "agency_expanded",
+        "inherit_conditions": (Agency.id == id),
+    }
+    id = mapped_column(None, ForeignKey("public.agencies.id"), primary_key=True)
 
-    def __iter__(self):
-        yield from iter_with_special_cases(self)
+    state_name = Column(String) #
+    locality_name = Column(String) #
 
-    # Define columns as per the view with refined data types
-    name = Column(String, nullable=False)
-    submitted_name = Column(String, nullable=False)
-    homepage_url = Column(String)
-    jurisdiction_type: Mapped[JurisdictionTypeLiteral] = mapped_column(
-        Enum(*get_args(JurisdictionTypeLiteral), name="jurisdiction_type")
-    )
+    # Some attributes need to be overwritten by the attributes provided by locations_expanded
     state_iso = Column(String)
-    state_name = Column(String)
-    county_fips = Column(String)  # Matches the VARCHAR type in the agencies table
     county_name = Column(String)
-    lat = Column(Float)
-    lng = Column(Float)
-    defunct_year = Column(String)
-    id = Column(Integer, primary_key=True)  # Primary key
-    agency_type = Column(String)
-    multi_agency = Column(Boolean)
-    zip_code = Column(String)
-    no_web_presence = Column(Boolean)
-    airtable_agency_last_modified = Column(DateTime(timezone=True))
-    approved = Column(Boolean)
-    rejection_reason = Column(String)
-    last_approval_editor = Column(String, nullable=True)
-    submitter_contact = Column(String)
-    agency_created = Column(DateTime(timezone=True))
-    locality_name = Column(String)
+
+    data_sources: Mapped[list['DataSourceExpanded']] = relationship(
+        argument="DataSourceExpanded",
+        secondary="public.link_agencies_data_sources",
+        primaryjoin="LinkAgencyDataSource.agency_id == AgencyExpanded.id",
+        secondaryjoin="LinkAgencyDataSource.data_source_id == DataSourceExpanded.id",
+        lazy="joined",
+        back_populates="agencies",
+    )
+
+    # @hybrid_property
+    # def data_source_ids(self) -> list[str]:
+    #     return [source.id for source in self.data_sources]
 
 
 class County(Base):
@@ -481,10 +495,6 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
     def __iter__(self):
 
         special_cases = {
-            "id": lambda instance: [
-                ("id", instance.id),
-                ("agency_ids", instance.agency_ids if instance.agency_ids else None),
-            ],
             "agencies": lambda instance: [
                 (
                     "agencies",
@@ -544,19 +554,6 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
     approval_status_updated_at: Mapped[Optional[timestamp_tz]]
     last_approval_editor_old: Mapped[Optional[str]]
 
-    agencies: Mapped[list[AgencyExpanded]] = relationship(
-        argument="AgencyExpanded",
-        secondary="public.link_agencies_data_sources",
-        primaryjoin="LinkAgencyDataSource.data_source_id == DataSource.id",
-        secondaryjoin="LinkAgencyDataSource.agency_id == AgencyExpanded.id",
-        lazy="joined",
-    )
-
-    @hybrid_property
-    def agency_ids(self) -> list[str]:
-        return [agency.id for agency in self.agencies]
-
-
 class DataSourceExpanded(DataSource):
     id = mapped_column(None, ForeignKey("public.data_sources.id"), primary_key=True)
 
@@ -568,6 +565,14 @@ class DataSourceExpanded(DataSource):
 
     record_type_name: Mapped[Optional[str]]
 
+    agencies: Mapped[list[AgencyExpanded]] = relationship(
+        argument="AgencyExpanded",
+        secondary="public.link_agencies_data_sources",
+        primaryjoin="LinkAgencyDataSource.data_source_id == DataSourceExpanded.id",
+        secondaryjoin="LinkAgencyDataSource.agency_id == AgencyExpanded.id",
+        lazy="joined",
+        back_populates="data_sources",
+    )
 
 class DataSourceArchiveInfo(Base):
     __tablename__ = Relations.DATA_SOURCES_ARCHIVE_INFO.value

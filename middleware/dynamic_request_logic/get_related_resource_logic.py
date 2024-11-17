@@ -31,7 +31,8 @@ def get_related_resource(
     get_related_resources_parameters: GetRelatedResourcesParameters,
     permitted_columns: Optional[list] = None,
 ) -> Response:
-    # Technically, it'd make more sense as "grrp", but "gerp" rolls off the tongue better
+    # Technically, it'd make more sense as "grrp",
+    # but "gerp" rolls off the tongue better
     gerp = get_related_resources_parameters
     check_for_id(
         table_name=gerp.primary_relation.value,

@@ -79,15 +79,14 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
 )
 from middleware.schema_and_dto_logic.custom_types import DTOTypes
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_schemas import (
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgenciesGetByIDResponseSchema,
     AgenciesPutSchema,
     AgenciesPostSchema,
-    AgenciesPostDTO,
     AgenciesGetManyResponseSchema,
     RelatedAgencyByIDSchema,
-    RelatedAgencyByIDDTO,
 )
+from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import AgenciesPostDTO, RelatedAgencyByIDDTO
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
     GetManyDataRequestsResponseSchema,
     DataRequestsSchema,
@@ -98,14 +97,14 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_sche
     GetManyDataRequestsRelatedLocationsSchema,
     DataRequestsPutSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_schemas import (
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advanced_schemas import (
     DataSourcesGetManySchema,
     DataSourcesGetByIDSchema,
     DataSourcesPostSchema,
     DataSourcesPutSchema,
-    DataSourcesPostDTO,
     DataSourcesGetManyRequestSchema, DataSourcesMapResponseSchema,
 )
+from middleware.schema_and_dto_logic.primary_resource_dtos.data_sources_dtos import DataSourcesPostDTO
 from middleware.schema_and_dto_logic.common_response_schemas import (
     IDAndMessageSchema,
     MessageSchema,
@@ -256,7 +255,9 @@ class SchemaConfigs(Enum):
     )
     DATA_SOURCES_RELATED_AGENCIES_GET = EndpointSchemaConfig(
         input_schema=GetByIDBaseSchema(),
-        primary_output_schema=AgenciesGetManyResponseSchema(),
+        primary_output_schema=AgenciesGetManyResponseSchema(
+            exclude=["data.data_sources"]
+        ),
         input_dto_class=GetByIDBaseDTO,
     )
     DATA_SOURCES_RELATED_AGENCIES_POST = EndpointSchemaConfig(

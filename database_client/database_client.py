@@ -813,13 +813,20 @@ class DatabaseClient:
         )
         raw_results = self.session.execute(query()).mappings().unique().all()
         results = self._process_results(
-            build_metadata, raw_results, relation_name, subquery_parameters
+            build_metadata=build_metadata,
+            raw_results=raw_results,
+            relation_name=relation_name,
+            subquery_parameters=subquery_parameters
         )
 
         return results
 
     def _process_results(
-        self, build_metadata: bool, raw_results, relation_name, subquery_parameters
+            self,
+            build_metadata: bool,
+            raw_results: list,
+            relation_name: str,
+            subquery_parameters: Optional[list[SubqueryParameters]]
     ):
         table_key = self._build_table_key_if_results(raw_results)
         results = self._dictify_results(raw_results, subquery_parameters, table_key)
@@ -846,9 +853,9 @@ class DatabaseClient:
 
     def _dictify_results(
         self,
-        raw_results,
+        raw_results: list,
         subquery_parameters: Optional[list[SubqueryParameters]],
-        table_key,
+        table_key: str,
     ):
         if subquery_parameters and table_key:
             # Calls models.Base.to_dict() method
@@ -859,7 +866,7 @@ class DatabaseClient:
             results = [dict(result) for result in raw_results]
         return results
 
-    def _build_table_key_if_results(self, raw_results):
+    def _build_table_key_if_results(self, raw_results: list) -> str:
         table_key = ""
         if len(raw_results) > 0:
             table_key = [key for key in raw_results[0].keys()][0]
@@ -874,7 +881,7 @@ class DatabaseClient:
     )
 
     get_data_sources = partialmethod(
-        _select_from_relation, relation_name=Relations.DATA_SOURCES.value
+        _select_from_relation, relation_name=Relations.DATA_SOURCES_EXPANDED.value
     )
 
     get_request_source_relations = partialmethod(
