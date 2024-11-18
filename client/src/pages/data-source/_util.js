@@ -71,10 +71,10 @@ export const DATA_SOURCE_UI_SHAPE = [
 			{ title: 'Access Type', key: 'access_type' },
 			{
 				title: 'Record Formats',
-				key: 'record_format',
+				key: 'record_formats',
 				component: 'span',
 				classNames:
-					'mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit small',
+					'mt-1 py-[.125rem] px-3 rounded-full bg-slate-200 dark:bg-slate-600 w-fit small text-neutral-800 border-solid border-[1px] border-neutral-500 rounded-xl px-2 bg-neutral-200 text-xs sm:text-sm [&>*]:md:text-med [&>*]:lg:text-lg p-1 overflow-hidden',
 			},
 			{ title: 'Detail Level', key: 'detail_level' },
 			{ title: 'Size', key: 'size' },
@@ -103,7 +103,7 @@ export const DATA_SOURCE_UI_SHAPE = [
 			{ title: 'Coverage End Date', key: 'coverage_end', isDate: true },
 			{
 				title: 'Source Last Updated',
-				key: 'source_last_updated',
+				key: 'updated_at',
 				isDate: true,
 			},
 			{ title: 'Update Frequency', key: 'update_frequency' },
@@ -125,9 +125,9 @@ export const DATA_SOURCE_UI_SHAPE = [
 				attributes: { target: '_blank', rel: 'noreferrer' },
 				classNames: 'w-full inline-block truncate-text',
 			},
-			{ title: 'Created', key: 'data_source_created', isDate: true },
-			{ title: 'Agency ID', key: 'agency_id' },
-			{ title: 'Data Source ID', key: 'data_source_id' },
+			{ title: 'Created', key: 'created_at', isDate: true },
+			{ title: 'Agency ID', key: 'agency_ids' },
+			{ title: 'Data Source ID', key: 'id' },
 		],
 	},
 ];
@@ -158,4 +158,8 @@ export function formatDateForSearchResults(date) {
 		// Otherwise, return date formatted MM/DD/YYYY
 		return date.toLocaleDateString('es-pa');
 	}
+}
+
+export function formatText(item) {
+	return item.display_name;
 }

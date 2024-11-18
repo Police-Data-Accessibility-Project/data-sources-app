@@ -166,9 +166,9 @@ import {
 } from 'pdap-design-system';
 import Typeahead from '@/components/TypeaheadInput.vue';
 import LocationSelected from '@/components/TypeaheadSelected.vue';
+import { toast } from 'vue3-toastify';
 import { useRequestStore } from '@/stores/request';
 import { formatText } from './_util';
-import { useSearchStore } from '@/stores/search';
 import _debounce from 'lodash/debounce';
 import _cloneDeep from 'lodash/cloneDeep';
 import { nextTick, ref, watch } from 'vue';
@@ -176,8 +176,6 @@ import axios from 'axios';
 import _isEqual from 'lodash/isEqual';
 
 const { createRequest } = useRequestStore();
-const { sessionLocationTypeaheadCache, upsertSessionLocationTypeaheadCache } =
-	useSearchStore();
 
 const INPUT_NAMES = {
 	// contact: 'contact',
@@ -275,30 +273,22 @@ const fetchTypeaheadResults = _debounce(
 	async (e) => {
 		try {
 			if (e.target.value.length > 1) {
-				const suggestions =
-					// Cache has search results return that
-					sessionLocationTypeaheadCache?.[e.target.value.toLowerCase()] ??
-					// Otherwise fetch
-					(
-						await axios.get(
-							`${import.meta.env.VITE_VUE_API_BASE_URL}/typeahead/locations`,
-							{
-								headers: {
-									Authorization: import.meta.env.VITE_ADMIN_API_KEY,
-								},
-								params: {
-									query: e.target.value,
-								},
-							},
-						)
-					).data.suggestions;
+				const response = await axios.get(
+					`${import.meta.env.VITE_VUE_API_BASE_URL}/typeahead/locations`,
+					{
+						headers: {
+							Authorization: import.meta.env.VITE_ADMIN_API_KEY,
+						},
+						params: {
+							query: e.target.value,
+						},
+					},
+				);
+
+				const suggestions = response.data.suggestions;
 
 				const filteredBySelected = suggestions.filter((sugg) => {
 					return !selectedLocations.value.find((loc) => _isEqual(sugg, loc));
-				});
-
-				upsertSessionLocationTypeaheadCache?.({
-					[e.target.value.toLowerCase()]: suggestions,
 				});
 
 				items.value = filteredBySelected.length
@@ -367,6 +357,8 @@ async function submit(values) {
 
 	try {
 		await createRequest(requestBody);
+		const message = `Your request for ${values[INPUT_NAMES.title]} has been submitted successfully!`;
+		toast.success(message, { autoClose: false });
 	} catch (error) {
 		if (error) {
 			console.error(error);

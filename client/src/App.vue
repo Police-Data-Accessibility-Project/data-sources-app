@@ -26,6 +26,7 @@ import acronym from 'pdap-design-system/images/acronym.svg';
 import lockup from 'pdap-design-system/images/lockup.svg';
 
 import { NAV_LINKS as links } from '@/util/constants';
+import useThemePreference from '@/composables/useThemePreference';
 
 export default {
 	name: 'App',
@@ -39,6 +40,9 @@ export default {
 	provide: {
 		navLinks: [...links],
 		footerLinks: [...links],
+	},
+	setup() {
+		useThemePreference();
 	},
 	data() {
 		return {
@@ -75,5 +79,43 @@ main {
 .route-fade-enter-from,
 .route-fade-leave-to {
 	opacity: 0;
+}
+
+.pdap-toast-container {
+	top: 120px;
+}
+
+:root {
+	--toastify-color-light: rgb(255 253 253);
+	--toastify-color-dark: rgb(26 26 26);
+	--toastify-color-info: #44799d;
+	--toastify-color-success: #49934b;
+	--toastify-color-warning: rgb(184 138 42);
+	--toastify-color-error: #f15d4c;
+	--toastify-color-transparent: rgba(255, 255, 255, 0.7);
+
+	--toastify-icon-color-info: var(--toastify-color-info);
+	--toastify-icon-color-success: var(--toastify-color-success);
+	--toastify-icon-color-warning: var(--toastify-color-warning);
+	--toastify-icon-color-error: var(--toastify-color-error);
+
+	--toastify-toast-width: auto;
+	--toastify-toast-background: #fff;
+	--toastify-toast-min-height: 64px;
+	--toastify-toast-max-height: 800px;
+	--toastify-font-family: inherit;
+	--toastify-z-index: 9999;
+
+	--toastify-text-color-light: rgb(26 26 26);
+	--toastify-text-color-dark: rgb(255 253 253);
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--toastify-color-info: #67baf2;
+		--toastify-color-success: #51eb56;
+		--toastify-color-warning: rgb(184 138 42);
+		--toastify-color-error: #b53b2d;
+	}
 }
 </style>

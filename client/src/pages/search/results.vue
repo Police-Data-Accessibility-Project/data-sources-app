@@ -71,14 +71,16 @@
 			</Button>
 
 			<transition>
-				<div v-if="isSearchShown" class="@container">
-					<SearchForm
-						:placeholder="
-							searchData ? getLocationText(searchData) : 'Enter a place'
-						"
-						button-copy="Update search"
-						@searched="onSearchSetIsSearchShown"
-					/>
+				<div v-if="isSearchShown" class="max-h-[900px] overflow-hidden mb-8">
+					<div class="@container">
+						<SearchForm
+							:placeholder="
+								searchData ? getLocationText(searchData) : 'Enter a place'
+							"
+							button-copy="Update search"
+							@searched="onSearchSetIsSearchShown"
+						/>
+					</div>
 				</div>
 			</transition>
 		</aside>
@@ -184,11 +186,14 @@ function onSearchSetIsSearchShown() {
 <style scoped>
 .v-enter-active,
 .v-leave-active {
-	transition: opacity 0.5s ease;
+	transition:
+		opacity 0.5s ease,
+		max-height 0.5s ease-in-out;
 }
 
 .v-enter-from,
 .v-leave-to {
 	opacity: 0;
+	max-height: 0;
 }
 </style>
