@@ -81,59 +81,56 @@ def test_data_requests_get(
     # Add another data_request, and set its approval status to `Active`
     dr_info_2 = tdc.data_request(tus_creator)
 
-    json_data = tdc.request_validator.update_data_request(
+    tdc.request_validator.update_data_request(
         data_request_id=dr_info_2.id,
         headers=tdc.get_admin_tus().jwt_authorization_header,
         entry_data={"request_status": "Active"},
     )
 
-    json_data = tdc.request_validator.get_data_requests(
+    data = tdc.request_validator.get_data_requests(
         headers=tus_creator.jwt_authorization_header,
-    )
+    )[DATA_KEY]
 
-    assert len(json_data[DATA_KEY]) == 2
+    assert len(data) == 2
 
     # Give user admin permission
     tdc.db_client.add_user_permission(
         user_email=tus_creator.user_info.email, permission=PermissionsEnum.DB_WRITE
     )
 
-    admin_json_data = tdc.request_validator.get_data_requests(
+    admin_data = tdc.request_validator.get_data_requests(
         headers=tus_creator.jwt_authorization_header,
-    )
+    )[DATA_KEY]
 
     # Assert admin columns are greater than user columns
-    assert len(admin_json_data[DATA_KEY][0]) > len(json_data[DATA_KEY][0])
+    assert len(admin_data[0]) > len(data[0])
 
     # Run get again, this time filtering the request status to be active
-    json_data = tdc.request_validator.get_data_requests(
+    data = tdc.request_validator.get_data_requests(
         headers=tus_creator.jwt_authorization_header,
         request_status=RequestStatus.ACTIVE
-    )
+    )[DATA_KEY]
 
     # The more recent data request should be returned, but the old one should be filtered out
-    assert len(json_data[DATA_KEY]) == 1
-    assert int(json_data[DATA_KEY][0]["id"]) == int(dr_info_2.id)
+    assert len(data) == 1
+    assert int(data[0]["id"]) == int(dr_info_2.id)
 
     # Create additional intake data request to populate
     tdc.data_request(tus_creator)
 
     # Test sorting
-    json_data_asc = tdc.request_validator.get_data_requests(
-        headers=tus_creator.jwt_authorization_header,
-        request_status=RequestStatus.INTAKE,
-        sort_by="id",
-        sort_order=SortOrder.ASCENDING,
-    )
+    def get_sorted_data_requests(sort_order: SortOrder):
+        return tdc.request_validator.get_data_requests(
+            headers=tus_creator.jwt_authorization_header,
+            request_status=RequestStatus.INTAKE,
+            sort_by="id",
+            sort_order=sort_order,
+        )
 
-    json_data_desc = tdc.request_validator.get_data_requests(
-        headers=tus_creator.jwt_authorization_header,
-        sort_by="id",
-        request_status=RequestStatus.INTAKE,
-        sort_order=SortOrder.DESCENDING,
-    )
+    data_asc = get_sorted_data_requests(SortOrder.ASCENDING)[DATA_KEY]
+    data_desc = get_sorted_data_requests(SortOrder.DESCENDING)[DATA_KEY]
 
-    assert int(json_data_asc[DATA_KEY][0]["id"]) < int(json_data_desc[DATA_KEY][0]["id"])
+    assert int(data_asc[0]["id"]) < int(data_desc[0]["id"])
 
 
 def test_data_requests_post(
