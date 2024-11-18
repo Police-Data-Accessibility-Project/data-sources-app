@@ -273,6 +273,10 @@ def test_data_requests_by_id_get(
 
     tdr = tdc.data_request(admin_tus)
 
+    # Create data source and link to data request
+    data_source_id = tdc.data_source().id
+    tdc.link_data_request_to_data_source(data_source_id=data_source_id, data_request_id=tdr.id)
+
     expected_schema = SchemaConfigs.DATA_REQUESTS_BY_ID_GET.value.primary_output_schema
     # Modify exclude to account for old data which did not have archive_reason and creator_user_id
     expected_schema.exclude.update(
@@ -289,6 +293,7 @@ def test_data_requests_by_id_get(
     )
 
     assert api_json_data[DATA_KEY]["submission_notes"] == tdr.submission_notes
+    assert api_json_data[DATA_KEY]["data_sources"][0]["id"] == int(data_source_id)
 
     # Run with JWT header
     jwt_json_data = run_and_validate_request(

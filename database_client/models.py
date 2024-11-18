@@ -210,18 +210,7 @@ class Agency(Base, CountMetadata):
     def __iter__(self):
 
         special_cases = {
-            "data_sources": lambda instance: [
-                (
-                    (
-                        "data_sources",
-                        (
-                            [source.to_dict() for source in instance.data_sources]
-                            if instance.data_sources
-                            else None
-                        ),
-                    )
-                )
-            ],
+            "data_sources": lambda instance: get_iter_model_list_of_dict(instance, attr_name="data_sources"),
         }
 
         yield from iter_with_special_cases(self, special_cases=special_cases)
@@ -280,13 +269,8 @@ class AgencyExpanded(Agency):
         secondary="public.link_agencies_data_sources",
         primaryjoin="LinkAgencyDataSource.agency_id == AgencyExpanded.id",
         secondaryjoin="LinkAgencyDataSource.data_source_id == DataSourceExpanded.id",
-        lazy="joined",
         back_populates="agencies",
     )
-
-    # @hybrid_property
-    # def data_source_ids(self) -> list[str]:
-    #     return [source.id for source in self.data_sources]
 
 
 class County(Base):
@@ -373,41 +357,8 @@ class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
     def __iter__(self):
 
         special_cases = {
-            "id": lambda instance: [
-                ("id", instance.id),
-                (
-                    (
-                        "data_source_ids",
-                        instance.data_source_ids if instance.data_source_ids else None,
-                    )
-                ),
-                (
-                    "location_ids",
-                    instance.location_ids if instance.location_ids else None,
-                ),
-            ],
-            "data_sources": lambda instance: [
-                (
-                    (
-                        "data_sources",
-                        (
-                            [source.to_dict() for source in instance.data_sources]
-                            if instance.data_sources
-                            else None
-                        ),
-                    )
-                )
-            ],
-            "locations": lambda instance: [
-                (
-                    "locations",
-                    (
-                        [location.to_dict() for location in instance.locations]
-                        if instance.locations
-                        else None
-                    ),
-                )
-            ],
+            "data_sources": lambda instance: get_iter_model_list_of_dict(instance, attr_name="data_sources"),
+            "locations": lambda instance: get_iter_model_list_of_dict(instance, attr_name="locations"),
         }
 
         yield from iter_with_special_cases(self, special_cases=special_cases)
@@ -434,28 +385,13 @@ class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
     title: Mapped[text]
 
     # TODO: Is there a way to generalize the below logic?
-    data_sources: Mapped[list["DataSourceExpanded"]] = relationship(
-        argument="DataSourceExpanded",
-        secondary="public.link_data_sources_data_requests",
-        primaryjoin="DataRequest.id == LinkDataSourceDataRequest.request_id",
-        secondaryjoin="DataSourceExpanded.id == LinkDataSourceDataRequest.data_source_id",
-        lazy="joined",
-    )
     locations: Mapped[list["LocationExpanded"]] = relationship(
         argument="LocationExpanded",
         secondary="public.link_locations_data_requests",
         primaryjoin="DataRequest.id == LinkLocationDataRequest.data_request_id",
         secondaryjoin="LocationExpanded.id == LinkLocationDataRequest.location_id",
-        lazy="joined",
     )
 
-    @hybrid_property
-    def data_source_ids(self) -> list[int]:
-        return [source.id for source in self.data_sources]
-
-    @hybrid_property
-    def location_ids(self) -> list[int]:
-        return [location.id for location in self.locations]
 
 
 class DataRequestExpanded(DataRequest):
@@ -464,6 +400,14 @@ class DataRequestExpanded(DataRequest):
     __tablename__ = Relations.DATA_REQUESTS_EXPANDED.value
     github_issue_url: Mapped[Optional[text]]
     github_issue_number: Mapped[Optional[int]]
+
+    data_sources: Mapped[list["DataSourceExpanded"]] = relationship(
+        argument="DataSourceExpanded",
+        secondary="public.link_data_sources_data_requests",
+        primaryjoin="DataRequestExpanded.id == LinkDataSourceDataRequest.request_id",
+        secondaryjoin="DataSourceExpanded.id == LinkDataSourceDataRequest.data_source_id",
+        back_populates="data_requests",
+    )
 
 
 def iter_with_special_cases(instance, special_cases=None):
@@ -489,22 +433,26 @@ def iter_with_special_cases(instance, special_cases=None):
             yield key, value
 
 
+def get_iter_model_list_of_dict(instance, attr_name: str):
+    return [
+        (
+            attr_name,
+            (
+                [item.to_dict() for item in getattr(instance, attr_name)]
+                if getattr(instance, attr_name) is not None
+                else None
+            )
+        )
+    ]
+
 class DataSource(Base, CountMetadata, CountSubqueryMetadata):
     __tablename__ = Relations.DATA_SOURCES.value
 
     def __iter__(self):
 
         special_cases = {
-            "agencies": lambda instance: [
-                (
-                    "agencies",
-                    (
-                        [agency.to_dict() for agency in instance.agencies]
-                        if instance.agencies
-                        else None
-                    ),
-                )
-            ],
+            "agencies": lambda instance: get_iter_model_list_of_dict(instance, attr_name="agencies"),
+            "data_requests": lambda instance: get_iter_model_list_of_dict(instance, attr_name="data_requests"),
         }
         yield from iter_with_special_cases(self, special_cases)
 
@@ -570,7 +518,14 @@ class DataSourceExpanded(DataSource):
         secondary="public.link_agencies_data_sources",
         primaryjoin="LinkAgencyDataSource.data_source_id == DataSourceExpanded.id",
         secondaryjoin="LinkAgencyDataSource.agency_id == AgencyExpanded.id",
-        lazy="joined",
+        back_populates="data_sources",
+    )
+
+    data_requests: Mapped[list[DataRequestExpanded]] = relationship(
+        argument="DataRequestExpanded",
+        secondary="public.link_data_sources_data_requests",
+        primaryjoin="LinkDataSourceDataRequest.data_source_id == DataSourceExpanded.id",
+        secondaryjoin="LinkDataSourceDataRequest.request_id == DataRequestExpanded.id",
         back_populates="data_sources",
     )
 

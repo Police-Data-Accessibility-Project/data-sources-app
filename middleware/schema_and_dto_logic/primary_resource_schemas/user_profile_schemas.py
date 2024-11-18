@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields
 
 from middleware.enums import PermissionsEnum
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import \
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_advanced_schemas import \
     GetManyDataRequestsResponseSchema
 from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import GetUserFollowedSearchesSchema
 from middleware.schema_and_dto_logic.schema_helpers import create_get_many_schema

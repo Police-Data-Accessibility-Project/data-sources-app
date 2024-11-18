@@ -12,6 +12,7 @@ from middleware.schema_and_dto_logic.common_response_schemas import (
     GetManyResponseSchemaBase,
     MessageSchema,
 )
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_base_schema import DataRequestsSchema
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_schemas import DataSourceExpandedSchema, \
     DataSourcesMapResponseInnerSchema
 from middleware.schema_and_dto_logic.util import get_json_metadata
@@ -26,7 +27,9 @@ class DataSourceGetSchema(DataSourceExpandedSchema):
 
     agencies = fields.List(
         fields.Nested(
-            AgenciesExpandedSchema(),
+            AgenciesExpandedSchema(
+                only=["id", "name"],
+            ),
             metadata=get_json_metadata("The agencies associated with the data source."),
         ),
         allow_none=True,
@@ -40,6 +43,14 @@ class DataSourceGetSchema(DataSourceExpandedSchema):
             ),
         ),
         metadata=get_json_metadata("The agency ids associated with the data source."),
+    )
+    data_requests = fields.List(
+        fields.Nested(
+            nested=DataRequestsSchema(),
+            metadata=get_json_metadata("The data requests associated with the data source."),
+        ),
+        allow_none=True,
+        metadata=get_json_metadata("The data requests associated with the data source."),
     )
 
 
