@@ -54,7 +54,18 @@ class SubqueryParameterManager:
         get_subquery_params,
         relation=Relations.AGENCIES_EXPANDED,
         linking_column="agencies",
-        columns=["id", "name"],
+        columns=[
+            "id",
+            "name",
+            "submitted_name",
+            "state_name",
+            "locality_name",
+            "state_iso",
+            "county_name",
+            "agency_type",
+            "jurisdiction_type",
+            "homepage_url"
+        ],
     )
 
     data_requests = partialmethod(

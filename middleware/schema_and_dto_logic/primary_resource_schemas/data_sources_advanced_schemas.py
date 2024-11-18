@@ -28,7 +28,18 @@ class DataSourceGetSchema(DataSourceExpandedSchema):
     agencies = fields.List(
         fields.Nested(
             AgenciesExpandedSchema(
-                only=["id", "name"],
+                only=[
+                    "id",
+                    "name",
+                    "submitted_name",
+                    "state_name",
+                    "locality_name",
+                    "state_iso",
+                    "county_name",
+                    "agency_type",
+                    "jurisdiction_type",
+                    "homepage_url"
+                ],
             ),
             metadata=get_json_metadata("The agencies associated with the data source."),
         ),
