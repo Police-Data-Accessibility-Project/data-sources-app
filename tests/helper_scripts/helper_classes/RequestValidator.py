@@ -7,8 +7,10 @@ from typing import Optional, Type, Union
 from flask.testing import FlaskClient
 from marshmallow import Schema
 
+from database_client.enums import SortOrder, RequestStatus
 from middleware.util import update_if_not_none
 from resources.endpoint_schema_config import SchemaConfigs
+from tests.helper_scripts.constants import DATA_REQUESTS_BY_ID_ENDPOINT
 from tests.helper_scripts.helper_functions import get_authorization_header, add_query_params
 from tests.helper_scripts.run_and_validate_request import http_methods, run_and_validate_request
 from utilities.enums import RecordCategories
@@ -258,4 +260,40 @@ class RequestValidator:
             headers=headers,
             expected_schema=expected_schema,
             expected_response_status=expected_response_status
+        )
+
+    def update_data_request(
+            self,
+            data_request_id: int,
+            headers: dict,
+            entry_data: dict
+    ):
+        return self.put(
+            endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
+                data_request_id=data_request_id),
+            headers=headers,
+            json={"entry_data": entry_data}
+        )
+
+    def get_data_requests(
+            self,
+            headers: dict,
+            request_status: Optional[RequestStatus] = None,
+            sort_by: Optional[str] = None,
+            sort_order: Optional[SortOrder] = None
+    ):
+        query_params = {}
+        update_if_not_none(
+            dict_to_update=query_params,
+            secondary_dict={
+                "sort_by": sort_by,
+                "sort_order": sort_order.value if sort_order is not None else None,
+                "request_status": request_status.value if request_status is not None else None
+            },
+        )
+        return self.get(
+            endpoint="/api/data-requests",
+            headers=headers,
+            query_parameters=query_params,
+            expected_schema=SchemaConfigs.DATA_REQUESTS_GET_MANY.value.primary_output_schema
         )

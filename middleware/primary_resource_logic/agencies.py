@@ -3,6 +3,7 @@ from dataclasses import asdict
 from flask import Response, request
 
 from database_client.database_client import DatabaseClient
+from database_client.db_client_dataclasses import OrderByParameters
 from database_client.subquery_logic import SubqueryParameterManager
 from middleware.access_logic import AccessInfo
 from middleware.custom_dataclasses import DeferredFunction
@@ -49,7 +50,13 @@ def get_agencies(
             entry_name="agencies",
             relation=Relations.AGENCIES_EXPANDED.value,
             db_client_method=DatabaseClient.get_agencies,
-            db_client_additional_args={"build_metadata": True},
+            db_client_additional_args={
+                "build_metadata": True,
+                "order_by": OrderByParameters.construct_from_args(
+                    sort_by=dto.sort_by,
+                    sort_order=dto.sort_order
+                ),
+            },
             subquery_parameters=SUBQUERY_PARAMS,
         ),
         page=dto.page,
