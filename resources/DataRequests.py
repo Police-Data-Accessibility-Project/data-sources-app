@@ -29,9 +29,7 @@ from middleware.decorators import (
     endpoint_info_2,
 )
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
-    DataRequestsSchema,
-)
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_base_schema import DataRequestsSchema
 from resources.PsycopgResource import PsycopgResource
 from resources.resource_helpers import (
     create_response_dictionary,

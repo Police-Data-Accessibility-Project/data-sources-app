@@ -87,9 +87,8 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_
     RelatedAgencyByIDSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import AgenciesPostDTO, RelatedAgencyByIDDTO
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_schemas import (
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_advanced_schemas import (
     GetManyDataRequestsResponseSchema,
-    DataRequestsSchema,
     DataRequestsPostSchema,
     GetByIDDataRequestsResponseSchema,
     GetManyDataRequestsRequestsSchema,
@@ -97,6 +96,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_sche
     GetManyDataRequestsRelatedLocationsSchema,
     DataRequestsPutSchema,
 )
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_base_schema import DataRequestsSchema
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advanced_schemas import (
     DataSourcesGetManySchema,
     DataSourcesGetByIDSchema,

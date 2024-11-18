@@ -38,7 +38,8 @@ from middleware.util import dataclass_to_filtered_dict
 
 RELATION = Relations.DATA_SOURCES.value
 SUBQUERY_PARAMS = [
-    SubqueryParameterManager.agencies()
+    SubqueryParameterManager.agencies(),
+    SubqueryParameterManager.data_requests()
 ]
 
 

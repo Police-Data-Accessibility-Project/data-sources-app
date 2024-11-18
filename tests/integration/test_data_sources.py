@@ -140,7 +140,6 @@ def test_data_sources_post(
         ),
     )
 
-
     response_json = run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="post",
@@ -175,18 +174,33 @@ def test_data_sources_by_id_get(test_data_creator_flask: TestDataCreatorFlask):
     """
     Test that GET call to /data-sources-by-id/<data_source_id> endpoint retrieves the data source with the correct homepage URL
     """
+    tdc = test_data_creator_flask
 
-    tus = create_test_user_setup(test_data_creator_flask.flask_client)
-    cds = test_data_creator_flask.data_source()
+    tus = create_test_user_setup(tdc.flask_client)
+    cds = tdc.data_source()
+
+    # Create agency and link to data source
+    agency_id = tdc.agency().id
+    tdc.link_data_source_to_agency(data_source_id=cds.id, agency_id=agency_id)
+
+    # Create data request and link to data source
+    request_id = tdc.data_request(tus).id
+    tdc.link_data_request_to_data_source(data_source_id=cds.id, data_request_id=request_id)
+
     response_json = run_and_validate_request(
-        flask_client=test_data_creator_flask.flask_client,
+        flask_client=tdc.flask_client,
         http_method="get",
         endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}/{cds.id}",
         headers=tus.api_authorization_header,
         expected_schema=SchemaConfigs.DATA_SOURCES_GET_BY_ID.value.primary_output_schema,
     )
 
-    assert response_json["data"]["name"] == cds.name
+    data = response_json["data"]
+    assert data["name"] == cds.name
+    assert data["data_requests"][0]["id"] == int(request_id)
+    assert data["agencies"][0]["id"] == int(agency_id)
+
+
 
 
 def test_data_sources_by_id_put(test_data_creator_flask: TestDataCreatorFlask):

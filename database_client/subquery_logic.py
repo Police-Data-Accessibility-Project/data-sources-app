@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from functools import partialmethod
 
-from sqlalchemy.orm import defaultload
+from sqlalchemy.orm import defaultload, joinedload
 from sqlalchemy.sql.base import ExecutableOption
 
 from database_client.models import convert_to_column_reference
@@ -34,7 +34,7 @@ class SubqueryParameters:
             columns=[self.linking_column], relation=primary_relation
         )
 
-        return defaultload(*linking_column_reference).load_only(*column_references)
+        return joinedload(*linking_column_reference).load_only(*column_references)
 
 
 class SubqueryParameterManager:
@@ -54,6 +54,13 @@ class SubqueryParameterManager:
         get_subquery_params,
         relation=Relations.AGENCIES_EXPANDED,
         linking_column="agencies",
+        columns=["id", "name"],
+    )
+
+    data_requests = partialmethod(
+        get_subquery_params,
+        relation=Relations.DATA_REQUESTS_EXPANDED,
+        linking_column="data_requests",
     )
 
     @staticmethod
