@@ -9,7 +9,7 @@ from flask.testing import FlaskClient
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import RequestUrgency, LocationType, RequestStatus
+from database_client.enums import RequestUrgency, LocationType, RequestStatus, SortOrder
 from middleware.constants import DATA_KEY
 from middleware.enums import PermissionsEnum, RecordType
 from middleware.util import get_enum_values
@@ -63,9 +63,9 @@ def test_data_requests_get(
 ):
 
     tdc = test_data_creator_flask
+    # Delete all data from the data requests table
     tdc.db_client.execute_raw_sql("""DELETE FROM data_requests""")
     tdc.clear_test_data()
-    # Delete all data from the data requests table
 
     tus_creator = tdc.standard_user()
 
@@ -78,72 +78,59 @@ def test_data_requests_get(
         data_source_id=ds_info.id,
     )
 
-    # Add another data source, and set its approval status to `Active`
+    # Add another data_request, and set its approval status to `Active`
     dr_info_2 = tdc.data_request(tus_creator)
 
-    json_data = run_and_validate_request(
-        flask_client=tdc.flask_client,
-        http_method="put",
-        endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(data_request_id=dr_info_2.id),
+    tdc.request_validator.update_data_request(
+        data_request_id=dr_info_2.id,
         headers=tdc.get_admin_tus().jwt_authorization_header,
-        json={"entry_data": {"request_status": "Active"}},
+        entry_data={"request_status": "Active"},
     )
 
-    expected_schema = SchemaConfigs.DATA_REQUESTS_GET_MANY.value.primary_output_schema
-    # Modify exclude to account for old data which did not have archive_reason and creator_user_id
-    expected_schema.exclude.update(
-        ["data.archive_reason", "data.creator_user_id", "data.internal_notes"]
-    )
-    json_data = run_and_validate_request(
-        flask_client=tdc.flask_client,
-        http_method="get",
-        endpoint=DATA_REQUESTS_BASE_ENDPOINT,
+    data = tdc.request_validator.get_data_requests(
         headers=tus_creator.jwt_authorization_header,
-        expected_schema=expected_schema,
-    )
-    assert len(json_data[DATA_KEY]) == 2
+    )[DATA_KEY]
 
-    # Validate that at least one entry returned has data_sources
-    # TODO: This passes in test but not stage, which uses actual data requests which are not yet linked to data sources.
-    # an_entry_has_data_sources = False
-    # for entry in json_data[DATA_KEY]:
-    #     data_sources = entry["data_sources"]
-    #     if len(data_sources) > 0:
-    #         DataSourceExpandedSchema().load(data_sources[0])
-    #         an_entry_has_data_sources = True
-    #         break
-    # assert an_entry_has_data_sources
+    assert len(data) == 2
 
     # Give user admin permission
     tdc.db_client.add_user_permission(
         user_email=tus_creator.user_info.email, permission=PermissionsEnum.DB_WRITE
     )
 
-    admin_json_data = run_and_validate_request(
-        flask_client=tdc.flask_client,
-        http_method="get",
-        endpoint=DATA_REQUESTS_BASE_ENDPOINT,
+    admin_data = tdc.request_validator.get_data_requests(
         headers=tus_creator.jwt_authorization_header,
-    )
+    )[DATA_KEY]
 
     # Assert admin columns are greater than user columns
-    assert len(admin_json_data[DATA_KEY][0]) > len(json_data[DATA_KEY][0])
+    assert len(admin_data[0]) > len(data[0])
 
     # Run get again, this time filtering the request status to be active
-    json_data = run_and_validate_request(
-        flask_client=tdc.flask_client,
-        http_method="get",
-        endpoint=add_query_params(
-            url=DATA_REQUESTS_BASE_ENDPOINT,
-            params={"request_status": "Active"},
-        ),
+    data = tdc.request_validator.get_data_requests(
         headers=tus_creator.jwt_authorization_header,
-        expected_schema=expected_schema,
-    )
+        request_status=RequestStatus.ACTIVE
+    )[DATA_KEY]
 
     # The more recent data request should be returned, but the old one should be filtered out
-    assert len(json_data[DATA_KEY]) == 1
-    assert int(json_data[DATA_KEY][0]["id"]) == int(dr_info_2.id)
+    assert len(data) == 1
+    assert int(data[0]["id"]) == int(dr_info_2.id)
+
+    # Create additional intake data request to populate
+    tdc.data_request(tus_creator)
+
+    # Test sorting
+    def get_sorted_data_requests(sort_order: SortOrder):
+        return tdc.request_validator.get_data_requests(
+            headers=tus_creator.jwt_authorization_header,
+            request_status=RequestStatus.INTAKE,
+            sort_by="id",
+            sort_order=sort_order,
+        )
+
+    data_asc = get_sorted_data_requests(SortOrder.ASCENDING)[DATA_KEY]
+    data_desc = get_sorted_data_requests(SortOrder.DESCENDING)[DATA_KEY]
+
+    assert int(data_asc[0]["id"]) < int(data_desc[0]["id"])
 
 
 def test_data_requests_post(

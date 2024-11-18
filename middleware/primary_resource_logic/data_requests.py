@@ -233,7 +233,13 @@ def get_data_requests_wrapper(
     :param access_info:
     :return:
     """
-    db_client_additional_args = {"build_metadata": True}
+    db_client_additional_args = {
+        "build_metadata": True,
+        "order_by": OrderByParameters.construct_from_args(
+            sort_by=dto.sort_by,
+            sort_order=dto.sort_order
+        )
+    }
     if dto.request_status is not None:
         db_client_additional_args["where_mappings"] = {
             "request_status": dto.request_status.value

@@ -68,7 +68,7 @@ def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
     response_json = run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="get",
-        endpoint=AGENCIES_BASE_ENDPOINT + "?page=2",
+        endpoint=AGENCIES_BASE_ENDPOINT + "?page=1&sort_by=name&sort_order=ASC",
         headers=tus.api_authorization_header,
         expected_schema=SchemaConfigs.AGENCIES_GET_MANY.value.primary_output_schema,
     )
@@ -77,6 +77,24 @@ def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
         response_json=response_json,
         expected_non_null_columns=["id"],
     )
+    data_asc = response_json["data"]
+
+    response_json = run_and_validate_request(
+        flask_client=tdc.flask_client,
+        http_method="get",
+        endpoint=AGENCIES_BASE_ENDPOINT + "?page=1&sort_by=name&sort_order=DESC",
+        headers=tus.api_authorization_header,
+        expected_schema=SchemaConfigs.AGENCIES_GET_MANY.value.primary_output_schema,
+    )
+
+    assert_expected_get_many_result(
+        response_json=response_json,
+        expected_non_null_columns=["id"],
+    )
+    data_desc = response_json["data"]
+
+    assert data_asc != data_desc
+    assert data_asc[0]["name"] < data_desc[0]["name"]
 
 
 def test_agencies_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
