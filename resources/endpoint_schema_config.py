@@ -177,6 +177,10 @@ class SchemaConfigs(Enum):
         input_dto_class=DataRequestsPutOuterDTO,
         primary_output_schema=MessageSchema(),
     )
+    DATA_REQUESTS_BY_ID_WITHDRAW = EndpointSchemaConfig(
+        input_schema=GetByIDBaseSchema(),
+        primary_output_schema=MessageSchema(),
+    )
     DATA_REQUESTS_POST = EndpointSchemaConfig(
         input_schema=DataRequestsPostSchema(),
         input_dto_class=DataRequestsPostDTO,

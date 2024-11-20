@@ -7,7 +7,7 @@ from marshmallow import fields
 
 from database_client.db_client_dataclasses import WhereMapping, OrderByParameters
 from database_client.database_client import DatabaseClient
-from database_client.enums import ColumnPermissionEnum, RelationRoleEnum, RequestUrgency
+from database_client.enums import ColumnPermissionEnum, RelationRoleEnum, RequestUrgency, RequestStatus
 from database_client.subquery_logic import SubqueryParameterManager, SubqueryParameters
 from middleware.access_logic import AccessInfo
 from middleware.column_permission_logic import (
@@ -282,7 +282,7 @@ def get_data_requests_with_permitted_columns(
     return data_requests
 
 
-def allowed_to_delete_request(access_info, data_request_id, db_client):
+def is_creator_or_admin(access_info, data_request_id, db_client):
     user_id = db_client.get_user_id(email=access_info.user_email)
     return (
         db_client.user_is_creator_of_data_request(
@@ -311,7 +311,7 @@ def delete_data_request_wrapper(
         ),
         id_info=IDInfo(id_column_value=data_request_id),
         permission_checking_function=DeferredFunction(
-            allowed_to_delete_request,
+            is_creator_or_admin,
             access_info=access_info,
             data_request_id=data_request_id,
             db_client=db_client,
@@ -520,7 +520,7 @@ def delete_data_request_related_source(
             additional_where_mappings=dto.get_where_mapping(),
         ),
         permission_checking_function=DeferredFunction(
-            allowed_to_delete_request,
+            is_creator_or_admin,
             access_info=access_info,
             data_request_id=dto.resource_id,
             db_client=db_client,
@@ -566,9 +566,23 @@ def delete_data_request_related_location(
             additional_where_mappings=dto.get_where_mapping(),
         ),
         permission_checking_function=DeferredFunction(
-            allowed_to_delete_request,
+            is_creator_or_admin,
             access_info=access_info,
             data_request_id=dto.resource_id,
             db_client=db_client,
         ),
     )
+
+def withdraw_data_request_wrapper(
+    db_client: DatabaseClient, data_request_id: int, access_info: AccessInfo
+) -> Response:
+    if not is_creator_or_admin(access_info=access_info, data_request_id=data_request_id, db_client=db_client):
+        FlaskResponseManager.abort(
+            code=HTTPStatus.FORBIDDEN,
+            message="User does not have permission to perform this action.",
+        )
+    db_client.update_data_request(
+        entry_id=data_request_id,
+        column_edit_mappings={"request_status": RequestStatus.REQUEST_WITHDRAWN.value},
+    )
+    return message_response("Data request successfully withdrawn.")
