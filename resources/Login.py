@@ -4,7 +4,6 @@ from config import limiter
 from middleware.access_logic import NO_AUTH_INFO, AccessInfo
 from middleware.decorators import endpoint_info_2
 from middleware.primary_resource_logic.login_queries import try_logging_in
-from middleware.primary_resource_logic.user_queries import UserRequestDTO
 from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import create_jwt_tokens_model, ResponseInfo
 from middleware.schema_and_dto_logic.dynamic_logic.model_helpers_with_schemas import (
@@ -13,11 +12,6 @@ from middleware.schema_and_dto_logic.dynamic_logic.model_helpers_with_schemas im
 from utilities.namespace import create_namespace
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
-from utilities.enums import SourceMappingEnum
-from middleware.schema_and_dto_logic.non_dto_dataclasses import (
-    DTOPopulateParameters,
-    SchemaPopulateParameters,
-)
 
 namespace_login = create_namespace()
 user_model = create_user_model(namespace_login)

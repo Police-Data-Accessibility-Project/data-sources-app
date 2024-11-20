@@ -12,6 +12,7 @@ from werkzeug.security import check_password_hash
 
 from database_client.database_client import DatabaseClient
 from middleware.access_logic import AccessInfo
+from middleware.exceptions import UserNotFoundError
 from middleware.primary_resource_logic.user_queries import UserRequestDTO
 from middleware.schema_and_dto_logic.primary_resource_schemas.refresh_session_schemas import (
     RefreshSessionRequestDTO,
@@ -28,7 +29,7 @@ class JWTAccessRefreshTokens:
         self.access_token = create_access_token(identity=identity)
         self.refresh_token = create_refresh_token(identity=identity)
 
-
+INVALID_MESSAGE = "Invalid email or password"
 
 def try_logging_in(db_client: DatabaseClient, dto: UserRequestDTO) -> Response:
     """
@@ -39,9 +40,13 @@ def try_logging_in(db_client: DatabaseClient, dto: UserRequestDTO) -> Response:
     :param password: User's password.
     :return: A response object with a message and status code.
     """
-    user_info = db_client.get_user_info(dto.email)
-    if not check_password_hash(user_info.password_digest, dto.password):
-        return unauthorized_response("Invalid email or password")
+    try:
+        user_info = db_client.get_user_info(dto.email)
+    except UserNotFoundError:
+        return unauthorized_response(INVALID_MESSAGE)
+    valid_password_hash = check_password_hash(user_info.password_digest, dto.password)
+    if not valid_password_hash:
+        return unauthorized_response(INVALID_MESSAGE)
     return login_response(user_info)
 
 
