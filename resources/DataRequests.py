@@ -17,7 +17,7 @@ from middleware.primary_resource_logic.data_requests import (
     create_data_request_related_source,
     get_data_request_related_locations,
     create_data_request_related_location,
-    delete_data_request_related_location,
+    delete_data_request_related_location, withdraw_data_request_wrapper,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     EntryCreateUpdateRequestDTO,
@@ -29,7 +29,6 @@ from middleware.decorators import (
     endpoint_info_2,
 )
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_base_schema import DataRequestsSchema
 from resources.PsycopgResource import PsycopgResource
 from resources.resource_helpers import (
     create_response_dictionary,
@@ -213,6 +212,28 @@ class DataRequestsRelatedSourcesById(PsycopgResource):
             schema_populate_parameters=SchemaConfigs.DATA_REQUESTS_RELATED_SOURCES_POST.value.get_schema_populate_parameters(),
             access_info=access_info,
         )
+
+@namespace_data_requests.route("/<resource_id>/withdraw")
+class DataRequestsWithdraw(PsycopgResource):
+
+    @endpoint_info_2(
+        namespace=namespace_data_requests,
+        auth_info=STANDARD_JWT_AUTH_INFO,
+        schema_config=SchemaConfigs.DATA_REQUESTS_BY_ID_WITHDRAW,
+        response_info=ResponseInfo(
+            success_message="Data request successfully withdrawn.",
+        )
+    )
+    def post(self, resource_id: str, access_info: AccessInfo) -> Response:
+        """
+        Withdraw a data request
+        """
+        return self.run_endpoint(
+            wrapper_function=withdraw_data_request_wrapper,
+            data_request_id=int(resource_id),
+            access_info=access_info,
+        )
+
 
 
 @namespace_data_requests.route("/<resource_id>/related-locations")

@@ -298,3 +298,31 @@ class RequestValidator:
             expected_schema=SchemaConfigs.DATA_REQUESTS_GET_MANY.value.primary_output_schema
         )
 
+    def withdraw_request(
+            self,
+            data_request_id: int,
+            headers: dict,
+            expected_response_status: HTTPStatus = HTTPStatus.OK
+    ):
+        return self.post(
+            endpoint="/api/data-requests/{data_request_id}/withdraw".format(
+                data_request_id=data_request_id),
+            headers=headers,
+            expected_response_status=expected_response_status,
+            expected_schema=SchemaConfigs.DATA_REQUESTS_BY_ID_WITHDRAW.value.primary_output_schema
+        )
+
+    def get_data_request_by_id(
+            self,
+            data_request_id: int,
+            headers: dict,
+            expected_response_status: HTTPStatus = HTTPStatus.OK,
+            expected_schema=SchemaConfigs.DATA_REQUESTS_BY_ID_GET.value.primary_output_schema
+    ):
+        return self.get(
+            endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
+                data_request_id=data_request_id),
+            headers=headers,
+            expected_response_status=expected_response_status,
+            expected_schema=expected_schema
+        )

@@ -756,3 +756,50 @@ def test_link_unlink_data_requests_with_locations(
 
     data = get_locations()
     assert data == []
+
+def test_data_request_withdraw(
+    test_data_creator_flask: TestDataCreatorFlask
+):
+    tdc = test_data_creator_flask
+    tus_owner = tdc.standard_user()
+    data_request = tdc.data_request(user_tus=tus_owner)
+
+    tdc.request_validator.withdraw_request(
+        data_request_id=data_request.id,
+        headers=tus_owner.jwt_authorization_header
+    )
+
+    request_status = tdc.request_validator.get_data_request_by_id(
+        data_request_id=data_request.id,
+        headers=tus_owner.jwt_authorization_header
+    )["data"]["request_status"]
+
+    assert request_status == RequestStatus.REQUEST_WITHDRAWN.value
+
+    # Test that this works for an admin user as well
+    tus_admin = tdc.get_admin_tus()
+    data_request = tdc.data_request(user_tus=tus_owner)
+
+    tdc.request_validator.withdraw_request(
+        data_request_id=data_request.id,
+        headers=tus_admin.jwt_authorization_header
+    )
+
+    request_status = tdc.request_validator.get_data_request_by_id(
+        data_request_id=data_request.id,
+        headers=tus_admin.jwt_authorization_header
+    )["data"]["request_status"]
+
+    assert request_status == RequestStatus.REQUEST_WITHDRAWN.value
+
+    # Test that this doesn't work for a standard user who is not the owner
+    tus_non_owner = tdc.standard_user()
+    data_request = tdc.data_request(user_tus=tus_owner)
+
+    tdc.request_validator.withdraw_request(
+        data_request_id=data_request.id,
+        headers=tus_non_owner.jwt_authorization_header,
+        expected_response_status=HTTPStatus.FORBIDDEN
+    )
+
+
