@@ -48,34 +48,6 @@ namespace_data_source = create_namespace(AppNamespaces.DATA_SOURCES)
     # But we have not yet decided whether to modify or remove it entirely
 
 
-@namespace_data_source.route("/data-sources-map")
-class DataSourcesMap(PsycopgResource):
-    """
-    A resource for managing collections of data sources for mapping.
-    Provides a method for retrieving all data sources.
-    """
-
-    @endpoint_info_2(
-        namespace=namespace_data_source,
-        auth_info=GET_AUTH_INFO,
-        schema_config=SchemaConfigs.DATA_SOURCES_MAP,
-        response_info=ResponseInfo(
-            success_message="Returns all requested data sources.",
-        ),
-        description="Retrieves location-relevant columns for data sources.",
-
-    )
-    def get(self, access_info: AccessInfo) -> Response:
-        """
-        Retrieves location relevant columns for data sources.
-
-        Returns:
-        - A dictionary containing the count of data sources and their details.
-        """
-        return self.run_endpoint(get_data_sources_for_map_wrapper)
-
-
-
 @namespace_data_source.route("/<resource_id>")
 class DataSourceById(PsycopgResource):
     """

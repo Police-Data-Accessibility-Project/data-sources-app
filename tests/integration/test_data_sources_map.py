@@ -19,7 +19,7 @@ def test_data_sources_map_get(
     tdc = test_data_creator_flask
     tus = tdc.standard_user()
     response_json = tdc.request_validator.get(
-        endpoint="/api/data-sources/data-sources-map",
+        endpoint="/api/map/data-sources",
         headers=tus.api_authorization_header,
         expected_schema=SchemaConfigs.DATA_SOURCES_MAP.value.primary_output_schema,
     )
