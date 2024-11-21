@@ -252,11 +252,13 @@ watch(
 		if (isNowSwiping) {
 			switch (direction.value) {
 				case 'left':
+					navIs.value = 'increment';
 					router.replace(
 						`/data-source/${mostRecentSearchIds[nextIdIndex.value]}`,
 					);
 					break;
 				case 'right':
+					navIs.value = 'decrement';
 					router.replace(
 						`/data-source/${mostRecentSearchIds[previousIdIndex.value]}`,
 					);
