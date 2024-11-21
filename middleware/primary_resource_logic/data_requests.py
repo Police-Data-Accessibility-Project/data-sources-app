@@ -7,7 +7,12 @@ from marshmallow import fields
 
 from database_client.db_client_dataclasses import WhereMapping, OrderByParameters
 from database_client.database_client import DatabaseClient
-from database_client.enums import ColumnPermissionEnum, RelationRoleEnum, RequestUrgency, RequestStatus
+from database_client.enums import (
+    ColumnPermissionEnum,
+    RelationRoleEnum,
+    RequestUrgency,
+    RequestStatus,
+)
 from database_client.subquery_logic import SubqueryParameterManager, SubqueryParameters
 from middleware.access_logic import AccessInfo
 from middleware.column_permission_logic import (
@@ -236,9 +241,8 @@ def get_data_requests_wrapper(
     db_client_additional_args = {
         "build_metadata": True,
         "order_by": OrderByParameters.construct_from_args(
-            sort_by=dto.sort_by,
-            sort_order=dto.sort_order
-        )
+            sort_by=dto.sort_by, sort_order=dto.sort_order
+        ),
     }
     if dto.request_status is not None:
         db_client_additional_args["where_mappings"] = {
@@ -573,10 +577,13 @@ def delete_data_request_related_location(
         ),
     )
 
+
 def withdraw_data_request_wrapper(
     db_client: DatabaseClient, data_request_id: int, access_info: AccessInfo
 ) -> Response:
-    if not is_creator_or_admin(access_info=access_info, data_request_id=data_request_id, db_client=db_client):
+    if not is_creator_or_admin(
+        access_info=access_info, data_request_id=data_request_id, db_client=db_client
+    ):
         FlaskResponseManager.abort(
             code=HTTPStatus.FORBIDDEN,
             message="User does not have permission to perform this action.",

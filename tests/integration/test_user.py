@@ -5,7 +5,9 @@ import uuid
 
 from database_client.database_client import DatabaseClient
 from tests.conftest import flask_client_with_db
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+    TestDataCreatorFlask,
+)
 from tests.helper_scripts.constants import USERS_BASE_ENDPOINT
 from tests.helper_scripts.helper_functions import (
     create_test_user_api,

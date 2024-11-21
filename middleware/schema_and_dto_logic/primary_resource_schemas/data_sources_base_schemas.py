@@ -1,7 +1,14 @@
 from marshmallow import Schema, fields
 
-from database_client.enums import AgencyAggregation, DetailLevel, AccessType, UpdateMethod, RetentionSchedule, \
-    URLStatus, ApprovalStatus
+from database_client.enums import (
+    AgencyAggregation,
+    DetailLevel,
+    AccessType,
+    UpdateMethod,
+    RetentionSchedule,
+    URLStatus,
+    ApprovalStatus,
+)
 from middleware.enums import RecordType
 from middleware.schema_and_dto_logic.util import get_json_metadata
 
@@ -180,7 +187,9 @@ class DataSourceBaseSchema(Schema):
     )
     last_approval_editor = fields.Integer(
         allow_none=True,
-        metadata=get_json_metadata("User id of the user who provided approval for the data source."),
+        metadata=get_json_metadata(
+            "User id of the user who provided approval for the data source."
+        ),
     )
     submitter_contact_info = fields.String(
         allow_none=True,
@@ -249,7 +258,6 @@ class DataSourceBaseSchema(Schema):
         metadata=get_json_metadata(
             "Former identifier of who provided approval for the data source."
         ),
-
     )
 
 
@@ -266,9 +274,7 @@ class DataSourcesMapResponseInnerSchema(Schema):
     data_source_id = fields.Integer(
         metadata=get_json_metadata("The id of the data source")
     )
-    name = fields.String(
-        metadata=get_json_metadata("The name of the data source")
-    )
+    name = fields.String(metadata=get_json_metadata("The name of the data source"))
     agency_id = fields.Integer(
         metadata=get_json_metadata("The id of the associated agency")
     )
@@ -279,19 +285,11 @@ class DataSourcesMapResponseInnerSchema(Schema):
         metadata=get_json_metadata("The ISO code of the state"),
     )
     municipality = fields.String(
-        metadata=get_json_metadata("The name of the municipality"),
-        allow_none=True
+        metadata=get_json_metadata("The name of the municipality"), allow_none=True
     )
     county_name = fields.String(
-        metadata=get_json_metadata("The name of the county"),
-        allow_none=True
+        metadata=get_json_metadata("The name of the county"), allow_none=True
     )
-    record_type = fields.String(
-        metadata=get_json_metadata("The type of the record")
-    )
-    lat = fields.Float(
-        metadata=get_json_metadata("The latitude of the data source")
-    )
-    lng = fields.Float(
-        metadata=get_json_metadata("The longitude of the data source")
-    )
+    record_type = fields.String(metadata=get_json_metadata("The type of the record"))
+    lat = fields.Float(metadata=get_json_metadata("The latitude of the data source"))
+    lng = fields.Float(metadata=get_json_metadata("The longitude of the data source"))

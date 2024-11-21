@@ -6,9 +6,13 @@ from marshmallow import Schema
 
 from database_client.database_client import DatabaseClient
 from middleware.enums import Relations
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_base_schemas import AgencyInfoBaseSchema, \
-    AgenciesExpandedSchema
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_base_schema import DataRequestsSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_base_schemas import (
+    AgencyInfoBaseSchema,
+    AgenciesExpandedSchema,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_base_schema import (
+    DataRequestsSchema,
+)
 from tests.conftest import live_database_client
 
 

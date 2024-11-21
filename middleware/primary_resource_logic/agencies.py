@@ -20,7 +20,9 @@ from middleware.location_logic import get_location_id
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgenciesPutSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import AgenciesPostDTO
+from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
+    AgenciesPostDTO,
+)
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyBaseDTO,
     GetByIDBaseDTO,
@@ -28,9 +30,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
 )
 from middleware.enums import Relations, JurisdictionType
 
-SUBQUERY_PARAMS = [
-    SubqueryParameterManager.data_sources()
-]
+SUBQUERY_PARAMS = [SubqueryParameterManager.data_sources()]
 
 
 def get_agencies(
@@ -53,8 +53,7 @@ def get_agencies(
             db_client_additional_args={
                 "build_metadata": True,
                 "order_by": OrderByParameters.construct_from_args(
-                    sort_by=dto.sort_by,
-                    sort_order=dto.sort_order
+                    sort_by=dto.sort_by, sort_order=dto.sort_order
                 ),
             },
             subquery_parameters=SUBQUERY_PARAMS,

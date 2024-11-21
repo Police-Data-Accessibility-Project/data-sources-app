@@ -4,7 +4,9 @@ from typing import Optional
 from marshmallow import Schema
 
 from resources.endpoint_schema_config import SchemaConfigs
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+    TestDataCreatorFlask,
+)
 from tests.helper_scripts.constants import (
     SEARCH_FOLLOW_BASE_ENDPOINT,
     USER_PROFILE_RECENT_SEARCHES_ENDPOINT,
@@ -193,6 +195,7 @@ def test_search_follow(test_data_creator_flask):
             expected_json_content={"message": message},
             **location_to_follow
         )
+
     follow_extant_location()
 
     # If the user tries to follow the same location again, it should fail

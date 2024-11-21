@@ -4,11 +4,14 @@ from config import limiter
 from database_client.database_client import DatabaseClient
 from middleware.access_logic import NO_AUTH_INFO, AccessInfo
 from middleware.decorators import endpoint_info_2
-from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import \
-    populate_schema_with_request_content
+from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import (
+    populate_schema_with_request_content,
+)
 
-from middleware.primary_resource_logic.github_oauth_logic import LinkToGithubRequestDTO, \
-    link_github_account_request_wrapper
+from middleware.primary_resource_logic.github_oauth_logic import (
+    LinkToGithubRequestDTO,
+    link_github_account_request_wrapper,
+)
 
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import (
     populate_schema_with_request_content,
@@ -26,6 +29,7 @@ from resources.resource_helpers import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_link_to_github = create_namespace(AppNamespaces.AUTH)
+
 
 @namespace_link_to_github.route("/link-to-github")
 class LinkToGithub(PsycopgResource):

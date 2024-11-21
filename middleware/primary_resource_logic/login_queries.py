@@ -29,7 +29,9 @@ class JWTAccessRefreshTokens:
         self.access_token = create_access_token(identity=identity)
         self.refresh_token = create_refresh_token(identity=identity)
 
+
 INVALID_MESSAGE = "Invalid email or password"
+
 
 def try_logging_in(db_client: DatabaseClient, dto: UserRequestDTO) -> Response:
     """

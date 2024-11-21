@@ -206,11 +206,12 @@ class LinkAgencyDataSource(Base):
 class Agency(Base, CountMetadata):
     __tablename__ = Relations.AGENCIES.value
 
-
     def __iter__(self):
 
         special_cases = {
-            "data_sources": lambda instance: get_iter_model_list_of_dict(instance, attr_name="data_sources"),
+            "data_sources": lambda instance: get_iter_model_list_of_dict(
+                instance, attr_name="data_sources"
+            ),
         }
 
         yield from iter_with_special_cases(self, special_cases=special_cases)
@@ -246,8 +247,6 @@ class Agency(Base, CountMetadata):
     location_id: Mapped[Optional[int]]
 
 
-
-
 class AgencyExpanded(Agency):
 
     __tablename__ = Relations.AGENCIES_EXPANDED.value
@@ -257,14 +256,14 @@ class AgencyExpanded(Agency):
     }
     id = mapped_column(None, ForeignKey("public.agencies.id"), primary_key=True)
 
-    state_name = Column(String) #
-    locality_name = Column(String) #
+    state_name = Column(String)  #
+    locality_name = Column(String)  #
 
     # Some attributes need to be overwritten by the attributes provided by locations_expanded
     state_iso = Column(String)
     county_name = Column(String)
 
-    data_sources: Mapped[list['DataSourceExpanded']] = relationship(
+    data_sources: Mapped[list["DataSourceExpanded"]] = relationship(
         argument="DataSourceExpanded",
         secondary="public.link_agencies_data_sources",
         primaryjoin="LinkAgencyDataSource.agency_id == AgencyExpanded.id",
@@ -357,8 +356,12 @@ class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
     def __iter__(self):
 
         special_cases = {
-            "data_sources": lambda instance: get_iter_model_list_of_dict(instance, attr_name="data_sources"),
-            "locations": lambda instance: get_iter_model_list_of_dict(instance, attr_name="locations"),
+            "data_sources": lambda instance: get_iter_model_list_of_dict(
+                instance, attr_name="data_sources"
+            ),
+            "locations": lambda instance: get_iter_model_list_of_dict(
+                instance, attr_name="locations"
+            ),
         }
 
         yield from iter_with_special_cases(self, special_cases=special_cases)
@@ -391,7 +394,6 @@ class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
         primaryjoin="DataRequest.id == LinkLocationDataRequest.data_request_id",
         secondaryjoin="LocationExpanded.id == LinkLocationDataRequest.location_id",
     )
-
 
 
 class DataRequestExpanded(DataRequest):
@@ -441,9 +443,10 @@ def get_iter_model_list_of_dict(instance, attr_name: str):
                 [item.to_dict() for item in getattr(instance, attr_name)]
                 if getattr(instance, attr_name) is not None
                 else None
-            )
+            ),
         )
     ]
+
 
 class DataSource(Base, CountMetadata, CountSubqueryMetadata):
     __tablename__ = Relations.DATA_SOURCES.value
@@ -451,8 +454,12 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
     def __iter__(self):
 
         special_cases = {
-            "agencies": lambda instance: get_iter_model_list_of_dict(instance, attr_name="agencies"),
-            "data_requests": lambda instance: get_iter_model_list_of_dict(instance, attr_name="data_requests"),
+            "agencies": lambda instance: get_iter_model_list_of_dict(
+                instance, attr_name="agencies"
+            ),
+            "data_requests": lambda instance: get_iter_model_list_of_dict(
+                instance, attr_name="data_requests"
+            ),
         }
         yield from iter_with_special_cases(self, special_cases)
 
@@ -502,6 +509,7 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
     approval_status_updated_at: Mapped[Optional[timestamp_tz]]
     last_approval_editor_old: Mapped[Optional[str]]
 
+
 class DataSourceExpanded(DataSource):
     id = mapped_column(None, ForeignKey("public.data_sources.id"), primary_key=True)
 
@@ -528,6 +536,7 @@ class DataSourceExpanded(DataSource):
         secondaryjoin="LinkDataSourceDataRequest.request_id == DataRequestExpanded.id",
         back_populates="data_sources",
     )
+
 
 class DataSourceArchiveInfo(Base):
     __tablename__ = Relations.DATA_SOURCES_ARCHIVE_INFO.value

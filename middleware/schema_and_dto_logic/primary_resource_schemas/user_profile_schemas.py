@@ -1,9 +1,12 @@
 from marshmallow import Schema, fields
 
 from middleware.enums import PermissionsEnum
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_advanced_schemas import \
-    GetManyDataRequestsResponseSchema
-from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import GetUserFollowedSearchesSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_advanced_schemas import (
+    GetManyDataRequestsResponseSchema,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import (
+    GetUserFollowedSearchesSchema,
+)
 from middleware.schema_and_dto_logic.schema_helpers import create_get_many_schema
 from middleware.schema_and_dto_logic.util import get_json_metadata
 from utilities.enums import RecordCategories
@@ -43,11 +46,13 @@ GetUserRecentSearchesOuterSchema = create_get_many_schema(
     description="The list of recent searches for the user",
 )
 
+
 class ExternalAccountsSchema(Schema):
     github = fields.Str(
         required=True,
         metadata=get_json_metadata("The GitHub user id of the user"),
     )
+
 
 class UserProfileResponseSchemaInner(Schema):
     email = fields.Str(
@@ -83,6 +88,7 @@ class UserProfileResponseSchemaInner(Schema):
         required=True,
         metadata=get_json_metadata("The permissions of the user"),
     )
+
 
 class UserProfileResponseSchema(Schema):
     data = fields.Nested(

@@ -2,8 +2,14 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Optional, List
 
-from database_client.enums import ApprovalStatus, AgencyAggregation, DetailLevel, AccessType, RetentionSchedule, \
-    URLStatus
+from database_client.enums import (
+    ApprovalStatus,
+    AgencyAggregation,
+    DetailLevel,
+    AccessType,
+    RetentionSchedule,
+    URLStatus,
+)
 from middleware.enums import RecordType
 
 

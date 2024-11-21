@@ -21,6 +21,7 @@ from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
 namespace_refresh_session = create_namespace()
 
+
 @namespace_refresh_session.route("/refresh-session")
 class RefreshSession(PsycopgResource):
     """

@@ -229,10 +229,7 @@ def link_user_followed_test_info(
 
     locality_id = live_database_client.create_locality(
         table_name=Relations.LOCALITIES.value,
-        column_value_mappings={
-            "county_id": county_id,
-            "name": get_test_name()
-        },
+        column_value_mappings={"county_id": county_id, "name": get_test_name()},
     )
 
     # Get newly created location id
@@ -814,6 +811,7 @@ def test_recent_searches_row_limit_maintained(
 
     # Confirm that the original recent search id remains in the list for user 2
     assert user_2_search_record_id in user_2_recent_searches
+
 
 def test_update_broken_source_url_as_of(
     test_data_creator_db_client: TestDataCreatorDBClient,

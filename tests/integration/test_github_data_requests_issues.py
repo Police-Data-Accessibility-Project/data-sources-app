@@ -14,7 +14,9 @@ from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,
 )
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+    TestDataCreatorFlask,
+)
 from tests.helper_scripts.constants import (
     GITHUB_DATA_REQUESTS_ISSUES_ENDPOINT,
     DATA_REQUESTS_BY_ID_ENDPOINT,

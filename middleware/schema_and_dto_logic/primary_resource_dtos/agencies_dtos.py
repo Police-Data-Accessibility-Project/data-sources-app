@@ -2,7 +2,10 @@ from dataclasses import dataclass
 from typing import Optional
 
 from middleware.enums import JurisdictionType, AgencyType
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import LocationInfoDTO, GetByIDBaseDTO
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+    LocationInfoDTO,
+    GetByIDBaseDTO,
+)
 
 
 @dataclass

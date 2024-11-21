@@ -12,6 +12,7 @@ from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
 namespace_request_reset_password = create_namespace()
 
+
 @namespace_request_reset_password.route("/request-reset-password")
 class RequestResetPassword(PsycopgResource):
     """
@@ -29,7 +30,7 @@ class RequestResetPassword(PsycopgResource):
                 500: "Internal server error",
             }
         ),
-        description = "Allows a user to request a password reset. Generates sends an email with instructions on how to reset their password."
+        description="Allows a user to request a password reset. Generates sends an email with instructions on how to reset their password.",
     )
     def post(self, access_info: AccessInfo) -> Response:
         """
@@ -41,5 +42,5 @@ class RequestResetPassword(PsycopgResource):
         """
         return self.run_endpoint(
             request_reset_password,
-            schema_populate_parameters=SchemaConfigs.REQUEST_RESET_PASSWORD.value.get_schema_populate_parameters()
+            schema_populate_parameters=SchemaConfigs.REQUEST_RESET_PASSWORD.value.get_schema_populate_parameters(),
         )

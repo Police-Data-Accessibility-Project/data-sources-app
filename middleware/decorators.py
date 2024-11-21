@@ -7,7 +7,11 @@ from flask_restx import Namespace, Model
 from flask_restx.reqparse import RequestParser
 from marshmallow import Schema
 
-from middleware.access_logic import get_authentication, AuthenticationInfo, ParserDeterminator
+from middleware.access_logic import (
+    get_authentication,
+    AuthenticationInfo,
+    ParserDeterminator,
+)
 from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_construction import (
@@ -22,7 +26,8 @@ from resources.resource_helpers import (
     add_jwt_header_arg,
     add_api_key_header_arg,
     ResponseInfo,
-    create_response_dictionary, add_password_reset_token_header_arg,
+    create_response_dictionary,
+    add_password_reset_token_header_arg,
 )
 from resources.endpoint_schema_config import SchemaConfigs, OutputSchemaManager
 
@@ -246,9 +251,7 @@ def _add_auth_info_to_parser(auth_info: AuthenticationInfo, parser: RequestParse
     if auth_info.no_auth:
         return
 
-    pd = ParserDeterminator(
-        auth_info.allowed_access_methods
-    )
+    pd = ParserDeterminator(auth_info.allowed_access_methods)
 
     if pd.jwt_and_api_key_allowed:
         add_jwt_or_api_key_header_arg(parser)

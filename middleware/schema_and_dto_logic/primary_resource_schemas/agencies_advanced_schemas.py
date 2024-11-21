@@ -12,15 +12,25 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     LocationInfoSchema,
     LocationInfoDTO,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import AgencyInfoPutDTO, AgencyInfoPostDTO
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_base_schemas import get_submitted_name_field, \
-    get_jurisdiction_type_field, AgencyInfoBaseSchema, AgenciesExpandedSchema
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_schemas import DataSourceExpandedSchema
+from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
+    AgencyInfoPutDTO,
+    AgencyInfoPostDTO,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_base_schemas import (
+    get_submitted_name_field,
+    get_jurisdiction_type_field,
+    AgencyInfoBaseSchema,
+    AgenciesExpandedSchema,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_schemas import (
+    DataSourceExpandedSchema,
+)
 from middleware.schema_and_dto_logic.util import get_json_metadata
 from utilities.enums import SourceMappingEnum
 
 
 # Base Schema
+
 
 class AgencyInfoPostSchema(AgencyInfoBaseSchema):
     submitted_name = get_submitted_name_field(required=True)
@@ -116,15 +126,18 @@ class AgenciesPutSchema(AgenciesPostPutBaseSchema):
 class AgenciesGetSchema(AgenciesExpandedSchema):
     data_sources = fields.List(
         cls_or_instance=fields.Nested(
-            nested=DataSourceExpandedSchema(
-                only=["id", "submitted_name"]
-            ),
+            nested=DataSourceExpandedSchema(only=["id", "submitted_name"]),
             required=True,
-            metadata=get_json_metadata(description="The data sources associated with the agency",),
+            metadata=get_json_metadata(
+                description="The data sources associated with the agency",
+            ),
         ),
         required=True,
-        metadata=get_json_metadata(description="The data sources associated with the agency",),
+        metadata=get_json_metadata(
+            description="The data sources associated with the agency",
+        ),
     )
+
 
 class AgenciesGetByIDResponseSchema(MessageSchema):
     data = fields.Nested(
@@ -163,5 +176,3 @@ class RelatedAgencyByIDSchema(GetByIDBaseSchema):
             "source": SourceMappingEnum.PATH,
         },
     )
-
-

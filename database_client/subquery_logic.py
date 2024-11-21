@@ -64,7 +64,7 @@ class SubqueryParameterManager:
             "county_name",
             "agency_type",
             "jurisdiction_type",
-            "homepage_url"
+            "homepage_url",
         ],
     )
 

@@ -1,4 +1,5 @@
 """Integration tests for /data-sources endpoint"""
+
 import copy
 import urllib.parse
 import uuid
@@ -15,10 +16,13 @@ from database_client.enums import (
     RetentionSchedule,
     URLStatus,
     ApprovalStatus,
-    UpdateMethod, RequestStatus,
+    UpdateMethod,
+    RequestStatus,
 )
 from middleware.enums import AccessTypeEnum, RecordType
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_schemas import DataSourceExpandedSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_schemas import (
+    DataSourceExpandedSchema,
+)
 
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.conftest import (
@@ -28,8 +32,12 @@ from tests.conftest import (
 from conftest import test_data_creator_flask, monkeysession
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
 from tests.helper_scripts.common_test_data import get_test_name
-from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import generate_test_data_from_schema
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
+    generate_test_data_from_schema,
+)
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+    TestDataCreatorFlask,
+)
 from tests.helper_scripts.common_test_functions import assert_contains_key_value_pairs
 from tests.helper_scripts.helper_functions import (
     get_boolean_dictionary,
@@ -135,7 +143,7 @@ def test_data_sources_post(
                 "broken_source_url_as_of",
                 "approval_status_updated_at",
                 "last_approval_editor",
-                "last_approval_editor_old"
+                "last_approval_editor_old",
             ],
         ),
     )
@@ -185,7 +193,9 @@ def test_data_sources_by_id_get(test_data_creator_flask: TestDataCreatorFlask):
 
     # Create data request and link to data source
     request_id = tdc.data_request(tus).id
-    tdc.link_data_request_to_data_source(data_source_id=cds.id, data_request_id=request_id)
+    tdc.link_data_request_to_data_source(
+        data_source_id=cds.id, data_request_id=request_id
+    )
 
     response_json = run_and_validate_request(
         flask_client=tdc.flask_client,
@@ -199,8 +209,6 @@ def test_data_sources_by_id_get(test_data_creator_flask: TestDataCreatorFlask):
     assert data["name"] == cds.name
     assert data["data_requests"][0]["id"] == int(request_id)
     assert data["agencies"][0]["id"] == int(agency_id)
-
-
 
 
 def test_data_sources_by_id_put(test_data_creator_flask: TestDataCreatorFlask):
@@ -269,16 +277,17 @@ def test_data_sources_by_id_put(test_data_creator_flask: TestDataCreatorFlask):
     # Test that last_approval_editor is None
     assert data["last_approval_editor"] is None
 
-def test_data_sources_by_id_put_approval_status(test_data_creator_flask: TestDataCreatorFlask):
+
+def test_data_sources_by_id_put_approval_status(
+    test_data_creator_flask: TestDataCreatorFlask,
+):
     """
     Test that PUT call to /data-sources-by-id/<data_source_id> endpoint successfully updates the last_approval_editor of the data source and verifies the change in the database
     """
     tdc = test_data_creator_flask
     cdr = tdc.data_source()
 
-    entry_data = {
-        "approval_status": ApprovalStatus.APPROVED.value
-    }
+    entry_data = {"approval_status": ApprovalStatus.APPROVED.value}
 
     run_and_validate_request(
         flask_client=tdc.flask_client,

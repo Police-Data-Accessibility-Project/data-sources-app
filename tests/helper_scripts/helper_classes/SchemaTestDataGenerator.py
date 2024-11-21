@@ -5,8 +5,12 @@ from typing import Optional
 from marshmallow import Schema, fields
 from marshmallow.fields import Field
 
-from tests.helper_scripts.common_test_data import get_random_number_for_testing, get_random_boolean, \
-    get_random_possible_enum_value, get_test_name
+from tests.helper_scripts.common_test_data import (
+    get_random_number_for_testing,
+    get_random_boolean,
+    get_random_possible_enum_value,
+    get_test_name,
+)
 
 
 class SchemaTestDataGenerator:
@@ -43,8 +47,7 @@ class SchemaTestDataGenerator:
 
 
 def generate_test_data_from_schema(
-    schema: Schema,
-    override: Optional[dict] = None
+    schema: Schema, override: Optional[dict] = None
 ) -> dict:
     """
     Generates a dictionary of test data based on

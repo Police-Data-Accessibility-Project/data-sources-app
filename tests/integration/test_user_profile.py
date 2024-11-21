@@ -1,7 +1,4 @@
 from http import HTTPStatus
-
-import pytest
-
 from middleware.enums import PermissionsEnum
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_advanced_schemas import (
@@ -9,45 +6,42 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_adva
 )
 from resources.UserProfile import USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL
 from tests.conftest import flask_client_with_db
-from tests.helper_scripts.complex_test_data_creation_functions import create_test_data_request
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
+from tests.helper_scripts.complex_test_data_creation_functions import (
+    create_test_data_request,
+)
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+    TestDataCreatorFlask,
+)
 from tests.helper_scripts.helper_functions import create_test_user_setup
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from conftest import test_data_creator_flask, monkeysession
 
-def test_user_profile_data_requests(flask_client_with_db):
+
+def test_user_profile_data_requests(test_data_creator_flask: TestDataCreatorFlask):
+
+    tdc = test_data_creator_flask
 
     # Create test user
-    tus = create_test_user_setup(flask_client_with_db)
+    tus = tdc.standard_user()
 
     # Call user profile data requests endpoint and confirm it returns no results
-    run_and_validate_request(
-        flask_client=flask_client_with_db,
-        http_method="get",
-        endpoint=f"{USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL}?page=1",
+    tdc.request_validator.get_user_profile_data_requests(
         headers=tus.jwt_authorization_header,
         expected_json_content={"metadata": {"count": 0}, "data": [], "message": ""},
-        expected_schema=GetManyDataRequestsResponseSchema(
-            exclude=["data.internal_notes"]
-        ),
     )
 
     # Add a data request
-    tdr = create_test_data_request(flask_client_with_db, tus.jwt_authorization_header)
+    tdr = create_test_data_request(tdc.flask_client, tus.jwt_authorization_header)
 
     # Call user profile data requests endpoint and confirm it returns results
-    json_response = run_and_validate_request(
-        flask_client=flask_client_with_db,
-        http_method="get",
-        endpoint=f"{USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL}?page=1",
+    json_response = tdc.request_validator.get_user_profile_data_requests(
         headers=tus.jwt_authorization_header,
-        expected_schema=GetManyDataRequestsResponseSchema(
-            exclude=["data.internal_notes"]
-        ),
     )
+
     assert len(json_response["data"]) == 1
     assert json_response["data"][0]["id"] == int(tdr.id)
     assert json_response["data"][0]["submission_notes"] == tdr.submission_notes
+
 
 def test_user_profile_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
@@ -77,9 +71,7 @@ def test_user_profile_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     )
 
     # Link the user to a fictional github account
-    github_user_id = tdc.tdcdb.link_fake_github_to_user(
-        user_id=tus.user_info.user_id
-    )
+    github_user_id = tdc.tdcdb.link_fake_github_to_user(user_id=tus.user_info.user_id)
 
     # Call user profile endpoint and confirm it returns results
     json_response = tdc.request_validator.get_user_by_id(
@@ -109,5 +101,5 @@ def test_user_profile_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
         headers=tus_2.jwt_authorization_header,
         user_id=tus.user_info.user_id,
         expected_response_status=HTTPStatus.FORBIDDEN,
-        expected_schema=MessageSchema()
+        expected_schema=MessageSchema(),
     )

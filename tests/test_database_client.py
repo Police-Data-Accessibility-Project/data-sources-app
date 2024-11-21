@@ -42,11 +42,17 @@ from database_client.models import (
 from middleware.enums import PermissionsEnum, Relations
 from tests.conftest import live_database_client, test_table_data, clear_data_requests
 from tests.helper_scripts.common_test_data import (
-    get_random_number_for_testing, get_test_name,
+    get_random_number_for_testing,
+    get_test_name,
 )
-from tests.helper_scripts.complex_test_data_creation_functions import insert_test_column_permission_data, \
-    create_agency_entry_for_search_cache, create_data_source_entry_for_url_duplicate_checking
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
+from tests.helper_scripts.complex_test_data_creation_functions import (
+    insert_test_column_permission_data,
+    create_agency_entry_for_search_cache,
+    create_data_source_entry_for_url_duplicate_checking,
+)
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+    TestDataCreatorFlask,
+)
 from tests.helper_scripts.helper_classes.AnyOrder import AnyOrder
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
@@ -321,7 +327,9 @@ def test_select_from_relation_subquery(
         )
     )
 
-    where_mappings_for_data_sources = [WhereMapping(column="id", value=data_source_info.id)]
+    where_mappings_for_data_sources = [
+        WhereMapping(column="id", value=data_source_info.id)
+    ]
     subquery_parameters_for_data_sources = [
         SubqueryParameters(
             relation_name=Relations.AGENCIES_EXPANDED.value,
@@ -329,7 +337,6 @@ def test_select_from_relation_subquery(
             linking_column="agencies",
         )
     ]
-
 
     # Test can get agency from data sources, where the `agencies` property is defined
     results = tdc.db_client._select_from_relation(

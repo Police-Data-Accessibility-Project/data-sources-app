@@ -13,9 +13,17 @@ from middleware.common_response_formatting import message_response
 from middleware.custom_dataclasses import GithubUserInfo
 from middleware.exceptions import UserNotFoundError
 from middleware.primary_resource_logic.login_queries import login_response
-from middleware.primary_resource_logic.user_queries import user_post_results, UserRequestDTO
-from middleware.schema_and_dto_logic.primary_resource_schemas.auth_schemas import LoginWithGithubRequestDTO
-from middleware.third_party_interaction_logic.callback_oauth_logic import get_github_user_id, get_github_user_email
+from middleware.primary_resource_logic.user_queries import (
+    user_post_results,
+    UserRequestDTO,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.auth_schemas import (
+    LoginWithGithubRequestDTO,
+)
+from middleware.third_party_interaction_logic.callback_oauth_logic import (
+    get_github_user_id,
+    get_github_user_email,
+)
 
 
 @dataclass
@@ -28,7 +36,9 @@ def create_random_password() -> str:
     return uuid.uuid4().hex
 
 
-def create_user_with_github(db_client: DatabaseClient, github_user_info: GithubUserInfo):
+def create_user_with_github(
+    db_client: DatabaseClient, github_user_info: GithubUserInfo
+):
     user_post_results(
         db_client=db_client,
         dto=UserRequestDTO(
@@ -45,27 +55,24 @@ def create_user_with_github(db_client: DatabaseClient, github_user_info: GithubU
 
 
 def link_github_account_request_wrapper(
-    db_client: DatabaseClient,
-    dto: LinkToGithubRequestDTO
+    db_client: DatabaseClient, dto: LinkToGithubRequestDTO
 ) -> Response:
     user_email = dto.user_email
     if not user_exists(db_client=db_client, email=user_email):
         return message_response(
             status_code=HTTPStatus.BAD_REQUEST,
-            message="Email provided not associated with any user."
+            message="Email provided not associated with any user.",
         )
-    github_user_info = get_github_user_info(
-        access_token=dto.gh_access_token
-    )
+    github_user_info = get_github_user_info(access_token=dto.gh_access_token)
     if user_email != github_user_info.user_email:
         return message_response(
             status_code=HTTPStatus.BAD_REQUEST,
-            message="Email provided does not match primary email in GitHub account."
+            message="Email provided does not match primary email in GitHub account.",
         )
     return link_github_account_request(
         db_client=db_client,
         github_user_info=github_user_info,
-        pdap_account_email=dto.user_email
+        pdap_account_email=dto.user_email,
     )
 
 
@@ -100,7 +107,9 @@ def get_github_user_info(access_token: str) -> GithubUserInfo:
     :return: The user information
     """
     try:
-        simple_jwt = SimpleJWT.decode(access_token, purpose=JWTPurpose.GITHUB_ACCESS_TOKEN)
+        simple_jwt = SimpleJWT.decode(
+            access_token, purpose=JWTPurpose.GITHUB_ACCESS_TOKEN
+        )
     except ExpiredSignatureError:
         abort(HTTPStatus.UNAUTHORIZED, "Access token has expired.")
     gh_access_token = simple_jwt.sub
@@ -119,16 +128,12 @@ def user_exists(db_client: DatabaseClient, email: str) -> bool:
 
 
 def login_with_github_wrapper(
-    db_client: DatabaseClient,
-    dto: LoginWithGithubRequestDTO
+    db_client: DatabaseClient, dto: LoginWithGithubRequestDTO
 ):
 
-    github_user_info = get_github_user_info(
-        access_token=dto.gh_access_token
-    )
+    github_user_info = get_github_user_info(access_token=dto.gh_access_token)
     return try_logging_in_with_github_id(
-        db_client=db_client,
-        github_user_info=github_user_info
+        db_client=db_client, github_user_info=github_user_info
     )
 
 
@@ -153,7 +158,7 @@ def try_logging_in_with_github_id(
             return message_response(
                 status_code=HTTPStatus.UNAUTHORIZED,
                 message=f"User with email {github_user_info.user_email} already exists exists but is not linked to"
-                        f" the Github Account with the same email. You must explicitly link their accounts in order to log in via Github."
+                f" the Github Account with the same email. You must explicitly link their accounts in order to log in via Github.",
             )
 
         create_user_with_github(db_client=db_client, github_user_info=github_user_info)
@@ -164,5 +169,5 @@ def try_logging_in_with_github_id(
 
     return login_response(
         user_info_gh,
-        message=f"User with email {user_info_gh.email} created and logged in."
+        message=f"User with email {user_info_gh.email} created and logged in.",
     )

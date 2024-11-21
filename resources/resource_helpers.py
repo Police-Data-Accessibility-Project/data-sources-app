@@ -25,7 +25,7 @@ def add_api_key_header_arg(parser: RequestParser):
 def add_jwt_header_arg(
     parser: RequestParser,
     description: str = "Access token required to access this endpoint",
-    default_name: str = "YOUR_ACCESS_TOKEN"
+    default_name: str = "YOUR_ACCESS_TOKEN",
 ):
     parser.add_argument(
         "Authorization",
@@ -35,6 +35,7 @@ def add_jwt_header_arg(
         help=description,
         default=f"Bearer {default_name}",
     )
+
 
 def add_password_reset_token_header_arg(
     parser: RequestParser,
