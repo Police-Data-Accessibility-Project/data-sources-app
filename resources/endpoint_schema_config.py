@@ -374,6 +374,11 @@ class SchemaConfigs(Enum):
     USER_PROFILE_GET = EndpointSchemaConfig(
         primary_output_schema=UserProfileResponseSchema(),
     )
+    USER_PROFILE_DATA_REQUESTS_GET = EndpointSchemaConfig(
+        primary_output_schema=GetManyDataRequestsResponseSchema(
+            exclude=["data.internal_notes"]
+        )
+    )
 
     # endregion
     # region Auth

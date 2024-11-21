@@ -340,3 +340,13 @@ class RequestValidator:
             expected_response_status=expected_response_status,
             expected_schema=expected_schema,
         )
+
+    def get_user_profile_data_requests(
+        self, headers: dict, expected_json_content: Optional[dict] = None
+    ):
+        return self.get(
+            endpoint="/api/user/data-requests?page=1",
+            headers=headers,
+            expected_json_content=expected_json_content,
+            expected_schema=SchemaConfigs.USER_PROFILE_DATA_REQUESTS_GET.value.primary_output_schema,
+        )
