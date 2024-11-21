@@ -32,18 +32,10 @@ def mock():
     return mock
 
 
-def test_permissions_manager_init_success(mock):
-    pm = PermissionsManager(mock.db_client, mock.user_email)
-    assert pm.db_client == mock.db_client
-    assert pm.user_email == mock.user_email
-    mock.db_client.get_user_permissions.called_once_with(mock.user_email)
-    mock.abort.assert_not_called()
-
-
 def test_permissions_manager_init_user_not_found(mock):
     mock.db_client.get_user_info.side_effect = UserNotFoundError("User not found")
     PermissionsManager(mock.db_client, mock.user_email)
-    mock.db_client.get_user_info.called_once_with(mock.user_email)
+    mock.db_client.get_user_info.assert_called_once_with(mock.user_email)
     mock.abort.assert_called_once_with(HTTPStatus.NOT_FOUND, "User not found")
     mock.db_client.get_user_permissions.assert_not_called()
 

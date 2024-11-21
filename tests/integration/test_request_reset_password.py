@@ -29,7 +29,7 @@ def test_request_reset_password_post(
     )
 
     reset_token = mock_send_password_reset_link.call_args[1]["token"]
-    assert mock_send_password_reset_link.called_once_with(user_info.email, reset_token)
+    assert mock_send_password_reset_link.call_args[1]["email"] == user_info.email
     decoded_token = SimpleJWT.decode(
         token=reset_token, purpose=JWTPurpose.PASSWORD_RESET
     )

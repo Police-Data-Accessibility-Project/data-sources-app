@@ -50,6 +50,7 @@ source venv/bin/activate
 ```
 
 pip install -r requirements.txt
+pip install "psycopg[binary,pool]"
 
 pre-commit install
 
