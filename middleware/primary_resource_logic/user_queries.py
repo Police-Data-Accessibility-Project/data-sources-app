@@ -36,7 +36,7 @@ class UserRequestDTO:
     password: str
 
 
-def user_check_email(db_client: DatabaseClient, email: str) -> None:
+def user_check_email(db_client: DatabaseClient, email: str) -> int:
     """
     Checks if a user with the given email exists in the database, raising an error if not.
 
@@ -47,6 +47,7 @@ def user_check_email(db_client: DatabaseClient, email: str) -> None:
     user_id = db_client.get_user_id(email)
     if user_id is None:
         raise UserNotFoundError(email)
+    return user_id
 
 
 def user_post_results(db_client: DatabaseClient, dto: UserRequestDTO) -> Response:

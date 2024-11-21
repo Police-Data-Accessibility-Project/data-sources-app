@@ -587,7 +587,7 @@ class ResetToken(Base):
     __tablename__ = Relations.RESET_TOKENS.value
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    email: Mapped[Optional[text]]
+    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
     token: Mapped[Optional[text]]
     create_date: Mapped[timestamp] = mapped_column(
         server_default=func.current_timestamp()

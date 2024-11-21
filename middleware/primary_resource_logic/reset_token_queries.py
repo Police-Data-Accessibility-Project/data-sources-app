@@ -72,12 +72,12 @@ def request_reset_password(db_client: DatabaseClient, dto: RequestResetPasswordR
     :return:
     """
     email = dto.email
-    user_check_email(db_client, email)
+    user_id = user_check_email(db_client, email)
     token = generate_api_key()
-    db_client.add_reset_token(email=email, token=token)
+    db_client.add_reset_token(user_id=user_id, token=token)
     jwt_token = SimpleJWT(
         sub={
-            "email": email,
+            "user_id": user_id,
             "token": token,
         },
         exp=(datetime.now(tz=timezone.utc) + timedelta(minutes=15)).timestamp(),
@@ -104,17 +104,19 @@ def reset_password(
     :param password:
     :return:
     """
-    token_db_email = validate_token(db_client, access_info.reset_token)
-    validate_emails_match(access_info.user_email, token_db_email)
+    user_id = validate_token(db_client, access_info.reset_token)
+    validate_user_ids_match(access_info.user_id, user_id)
 
-    set_user_password(db_client=db_client, email=token_db_email, password=dto.password)
+    email = db_client.get_user_email(user_id)
+
+    set_user_password(db_client=db_client, email=email, password=dto.password)
     return FlaskResponseManager.make_response(
         {"message": "Successfully updated password"}, HTTPStatus.OK
     )
 
 
-def validate_emails_match(request_email: str, token_email: str):
-    if token_email != request_email:
+def validate_user_ids_match(user_id: int, token_user_id: int):
+    if user_id != token_user_id:
         FlaskResponseManager.abort(
             code=HTTPStatus.BAD_REQUEST, message="Invalid token."
         )
@@ -141,18 +143,18 @@ def reset_token_validation(db_client: DatabaseClient, token):
     return make_response({"message": "Token is valid"}, HTTPStatus.OK)
 
 
-def validate_token(db_client: DatabaseClient, token) -> str:
+def validate_token(db_client: DatabaseClient, token) -> int:
     token_data = db_client.get_reset_token_info(token)
     if token_data is None:
         FlaskResponseManager.abort(
             message="Token not found.",
             code=HTTPStatus.BAD_REQUEST
         )
-    email = token_data.email
+    user_id = token_data.user_id
     if token_is_expired(token_create_date=token_data.create_date):
-        db_client.delete_reset_token(email, token)
+        db_client.delete_reset_token(user_id, token)
         FlaskResponseManager.abort(
             message="Token is expired.",
             code=HTTPStatus.BAD_REQUEST
         )
-    return email
+    return user_id

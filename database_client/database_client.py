@@ -199,7 +199,7 @@ class DatabaseClient:
             id_column_name="email",
         )
 
-    ResetTokenInfo = namedtuple("ResetTokenInfo", ["id", "email", "create_date"])
+    ResetTokenInfo = namedtuple("ResetTokenInfo", ["id", "user_id", "create_date"])
 
     def get_reset_token_info(self, token: str) -> Optional[ResetTokenInfo]:
         """
@@ -210,17 +210,17 @@ class DatabaseClient:
         """
         results = self._select_from_relation(
             relation_name="reset_tokens",
-            columns=["id", "email", "create_date"],
+            columns=["id", "user_id", "create_date"],
             where_mappings=[WhereMapping(column="token", value=token)],
         )
         if len(results) == 0:
             return None
         row = results[0]
         return self.ResetTokenInfo(
-            id=row["id"], email=row["email"], create_date=row["create_date"]
+            id=row["id"], user_id=row["user_id"], create_date=row["create_date"]
         )
 
-    def add_reset_token(self, email: str, token: str):
+    def add_reset_token(self, user_id: int, token: str):
         """
         Inserts a new reset token into the database for a specified email.
 
@@ -229,11 +229,11 @@ class DatabaseClient:
         """
         self._create_entry_in_table(
             table_name="reset_tokens",
-            column_value_mappings={"email": email, "token": token},
+            column_value_mappings={"user_id": user_id, "token": token},
         )
 
     @cursor_manager()
-    def delete_reset_token(self, email: str, token: str):
+    def delete_reset_token(self, user_id: int, token: str):
         """
         Deletes a reset token from the database for a specified email.
 
@@ -241,8 +241,8 @@ class DatabaseClient:
         :param token: The reset token to delete.
         """
         query = sql.SQL(
-            "delete from reset_tokens where email = {} and token = {}"
-        ).format(sql.Literal(email), sql.Literal(token))
+            "delete from reset_tokens where user_id = {} and token = {}"
+        ).format(sql.Literal(user_id), sql.Literal(token))
         self.cursor.execute(query)
 
     UserIdentifiers = namedtuple("UserIdentifiers", ["id", "email"])

@@ -33,14 +33,14 @@ def test_request_reset_password_post(test_data_creator_flask: TestDataCreatorFla
     db_client = DatabaseClient()
     rows = db_client.execute_raw_sql(
         """
-    SELECT email FROM reset_tokens where token = %s
+    SELECT user_id FROM reset_tokens where token = %s
     """,
         (decoded_token.sub["token"],),
     )
     assert (
         len(rows) == 1
     ), "Only one row should have a reset token associated with this email"
-    email = rows[0]["email"]
+    user_id = rows[0]["user_id"]
     assert (
-        email == user_info.email
+        user_id == user_info.user_id
     ), "Email associated with reset token should match the user's email"

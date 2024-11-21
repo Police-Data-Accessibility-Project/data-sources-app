@@ -83,8 +83,10 @@ class AccessInfo:
         return db_client.get_user_id(self.user_email)
 
 @dataclass
-class PasswordResetTokenAccessInfo(AccessInfo):
-    reset_token: str = ""
+class PasswordResetTokenAccessInfo:
+    user_id: int
+    reset_token: str
+    access_type = AccessTypeEnum.RESET_PASSWORD
 
 
 def get_identity_from_jwt() -> Optional[dict]:
@@ -108,8 +110,7 @@ def get_password_reset_access_info_from_jwt() -> Optional[PasswordResetTokenAcce
         purpose=JWTPurpose.PASSWORD_RESET
     )
     return PasswordResetTokenAccessInfo(
-        user_email=decoded_jwt.sub["email"],
-        access_type=AccessTypeEnum.RESET_PASSWORD,
+        user_id=decoded_jwt.sub["user_id"],
         reset_token=decoded_jwt.sub["token"],
     )
 

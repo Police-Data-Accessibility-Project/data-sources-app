@@ -157,13 +157,13 @@ def test_set_user_password_digest(live_database_client: DatabaseClient):
 def test_reset_token_logic(live_database_client: DatabaseClient):
     fake_email = get_test_name()
     fake_token = uuid.uuid4().hex
-    live_database_client.create_new_user(fake_email, "test_password")
-    live_database_client.add_reset_token(fake_email, fake_token)
+    user_id = live_database_client.create_new_user(fake_email, "test_password")
+    live_database_client.add_reset_token(user_id, fake_token)
     reset_token_info = live_database_client.get_reset_token_info(fake_token)
     assert reset_token_info, "Token not found"
-    assert reset_token_info.email == fake_email, "Email does not match"
+    assert reset_token_info.user_id == user_id, "User id does not match"
 
-    live_database_client.delete_reset_token(fake_email, fake_token)
+    live_database_client.delete_reset_token(user_id, fake_token)
     reset_token_info = live_database_client.get_reset_token_info(fake_token)
     assert reset_token_info is None, "Token not deleted"
 
