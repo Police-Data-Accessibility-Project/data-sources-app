@@ -1,6 +1,6 @@
 <template>
 	<main class="pdap-flex-container mx-auto max-w-2xl">
-		<template v-if="!userId">
+		<template v-if="!auth.userId">
 			<h1>Sign Up</h1>
 
 			<!-- TODO: when GH auth is complete, encapsulate duplicate UI from this and `/sign-up` -->
@@ -40,7 +40,7 @@
 				<h2>Or sign up with email</h2>
 				<FormV2
 					id="login"
-					class="flex flex-col"
+					class="flex flex-col gap-2"
 					data-test="login-form"
 					name="login"
 					:error="error"
@@ -65,7 +65,7 @@
 						:key="input.name"
 					/>
 
-					<PasswordValidationChecker ref="passwordRef" />
+					<PasswordValidationChecker ref="passwordRef" class="mt-2" />
 
 					<Button
 						class="max-w-full"

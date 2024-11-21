@@ -238,7 +238,7 @@ defineExpose({
 
 .pdap-typeahead-input,
 .pdap-typeahead-list {
-	@apply bg-neutral-50 dark:bg-neutral-950 border-2 border-neutral-500 border-solid p-2 text-neutral-950 dark:text-neutral-50;
+	@apply bg-neutral-50 border-2 border-neutral-500 border-solid p-2 text-neutral-950;
 }
 
 .pdap-typeahead-input::placeholder {
@@ -263,6 +263,6 @@ defineExpose({
 .pdap-typeahead-list-item:focus-visible,
 .pdap-typeahead-list-item:focus-within,
 .pdap-typeahead-list-item:hover {
-	@apply outline-none text-neutral-950 dark:text-neutral-50 bg-neutral-300 dark:bg-neutral-700;
+	@apply outline-none text-neutral-950 bg-neutral-300;
 }
 </style>

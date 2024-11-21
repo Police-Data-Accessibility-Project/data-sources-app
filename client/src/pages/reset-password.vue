@@ -27,7 +27,7 @@
 			v-else
 			id="reset-password"
 			data-test="reset-password-form"
-			class="flex flex-col"
+			class="flex flex-col gap-2"
 			name="reset-password"
 			:error="error"
 			:schema="VALIDATION_SCHEMA_CHANGE_PASSWORD"

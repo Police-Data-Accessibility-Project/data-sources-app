@@ -14,7 +14,7 @@
 			id="new-data-source"
 			ref="formRef"
 			:error="formError"
-			class="flex flex-col"
+			class="flex flex-col gap-2"
 			name="new-request"
 			:schema="SCHEMA"
 			@error="error"
@@ -42,7 +42,7 @@
 				</template>
 			</InputText>
 
-			<label :for="INPUT_NAMES.agencies" class="py-1 md:col-span-2 mb-1">
+			<label :for="INPUT_NAMES.agencies" class="py-1 md:col-span-2">
 				<h4>What agency is covered by this source?</h4>
 			</label>
 
@@ -64,7 +64,7 @@
 			<Typeahead
 				:id="INPUT_NAMES.agencies"
 				ref="typeaheadRef"
-				class="md:col-span-2 mb-2"
+				class="md:col-span-2"
 				:error="typeaheadError"
 				:format-item-for-display="formatText"
 				:items="items"
@@ -309,6 +309,7 @@ async function submit(values) {
 		await createDataSource(requestBody);
 
 		const message = `${values[INPUT_NAMES.name]} has been submitted successfully!\nIt will be available in our data sources database after approval.`;
+		window.scrollTo(0, 0);
 		toast.success(message, { autoClose: false });
 	} catch (error) {
 		if (error) {

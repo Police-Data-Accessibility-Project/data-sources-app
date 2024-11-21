@@ -38,10 +38,14 @@ function click() {
 }
 
 .button {
-	@apply w-14 h-auto flex items-center justify-center [&>svg]:m-0 bg-neutral-50 dark:bg-neutral-950 text-neutral-950 dark:text-neutral-50 border border-neutral-500 border-solid;
+	@apply w-14 h-auto flex items-center justify-center [&>svg]:m-0 bg-neutral-50 text-neutral-950 border border-neutral-500 border-solid;
+}
+
+.button:focus {
+	@apply outline-none border-2 border-brand-gold-600 border-solid;
 }
 
 .text {
-	@apply bg-neutral-50 dark:bg-neutral-950 border border-neutral-500 border-solid p-2 text-neutral-950 dark:text-neutral-50 w-full max-w-full mb-0;
+	@apply bg-neutral-50 border border-neutral-500 border-solid p-2 text-neutral-950 w-full max-w-full mb-0;
 }
 </style>

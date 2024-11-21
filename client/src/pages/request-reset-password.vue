@@ -13,7 +13,7 @@
 				id="reset-password"
 				ref="formRefRequest"
 				data-test="reset-password-form"
-				class="flex flex-col"
+				class="flex flex-col gap-2"
 				name="reset-password"
 				:error="error"
 				:schema="VALIDATION_SCHEMA_REQUEST_PASSWORD"

@@ -5,9 +5,10 @@
 			:search-ids="mostRecentSearchIds"
 			:previous-index="previousIdIndex"
 			:next-index="nextIdIndex"
+			:set-nav-is="(val) => (navIs = val)"
 		/>
 
-		<transition mode="out-in" :name="dataSource.navIs">
+		<transition mode="out-in" :name="navIs">
 			<div
 				v-if="isLoading"
 				class="flex items-center justify-center h-[80vh] w-full flex-col relative"
@@ -189,38 +190,23 @@
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic';
 import { useSearchStore } from '@/stores/search';
 import { useRoute, useRouter } from 'vue-router';
-import _cloneDeep from 'lodash/cloneDeep';
 import { useSwipe } from '@vueuse/core';
 import { ref } from 'vue';
 import { useDataSourceStore } from '@/stores/data-source';
 
-const search = useSearchStore();
 const dataSourceStore = useDataSourceStore();
-
-const previous = ref(dataSourceStore.previousDataSourceRoute);
 
 export const useDataSourceData = defineBasicLoader(
 	'/data-source/:id',
 	async (route) => {
 		const dataSourceId = route.params.id;
-		// create deep clone of previous route.
-		previous.value = _cloneDeep(dataSourceStore.previousDataSourceRoute);
-		// Use previous route to determine if nav is increment or decrement (this is for dynamic transition)
-		const navIs =
-			search.mostRecentSearchIds.indexOf(Number(previous.value?.params?.id)) >
-			search.mostRecentSearchIds.indexOf(Number(dataSourceId))
-				? 'decrement'
-				: 'increment';
 
 		const results = await dataSourceStore.getDataSource(dataSourceId);
 
 		// Then set current route to prev before returning data
 		dataSourceStore.setPreviousDataSourceRoute(route);
 
-		return {
-			...results.data.data,
-			navIs,
-		};
+		return results.data.data;
 	},
 );
 </script>
@@ -256,6 +242,7 @@ const isDescriptionExpanded = ref(false);
 const showExpandDescriptionButton = ref(false);
 const descriptionRef = ref();
 const mainRef = ref();
+const navIs = ref('increment');
 
 // Handle swipe
 const { isSwiping, direction } = useSwipe(mainRef);

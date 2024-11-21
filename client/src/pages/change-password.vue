@@ -29,7 +29,7 @@
 
 			<FormV2
 				id="change-password"
-				class="flex flex-col"
+				class="flex flex-col gap-2"
 				data-test="change-password-form"
 				name="change-password"
 				:error="error"
@@ -44,7 +44,7 @@
 					:key="input.name"
 				/>
 
-				<PasswordValidationChecker ref="passwordRef" />
+				<PasswordValidationChecker ref="passwordRef" class="mt-2" />
 
 				<Button class="max-w-full" :is-loading="loading" type="submit">
 					Change password

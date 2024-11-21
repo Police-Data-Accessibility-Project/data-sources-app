@@ -38,7 +38,7 @@
 			<h2>Or sign in with email</h2>
 			<FormV2
 				id="login"
-				class="flex flex-col"
+				class="flex flex-col gap-2"
 				data-test="login-form"
 				name="login"
 				:error="error"
@@ -65,7 +65,7 @@
 				/>
 
 				<Button
-					class="max-w-full"
+					class="max-w-full mt-4"
 					:is-loading="loading"
 					type="submit"
 					data-test="submit-button"

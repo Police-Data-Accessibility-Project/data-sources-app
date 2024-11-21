@@ -4,6 +4,7 @@
 			:to="`/data-source/${searchIds[previousIndex]}`"
 			:class="{ disabled: typeof previousIndex !== 'number' }"
 			replace
+			@mouseenter="setNavIs('decrement')"
 		>
 			PREV
 		</RouterLink>
@@ -12,6 +13,7 @@
 			:to="`/data-source/${searchIds[nextIndex]}`"
 			:class="{ disabled: typeof nextIndex !== 'number' }"
 			replace
+			@mouseenter="setNavIs('increment')"
 		>
 			NEXT
 		</RouterLink>
@@ -23,6 +25,7 @@ defineProps({
 	searchIds: Array,
 	previousIndex: Number,
 	nextIndex: Number,
+	setNavIs: Function,
 });
 </script>
 

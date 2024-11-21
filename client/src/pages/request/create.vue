@@ -14,7 +14,7 @@
 			id="new-request"
 			ref="formRef"
 			:error="formError"
-			class="grid md:grid-cols-2 gap-x-4 [&>.pdap-form-error-message]:md:col-span-2"
+			class="grid md:grid-cols-2 gap-x-4 gap-y-2 [&>.pdap-form-error-message]:md:col-span-2"
 			name="new-request"
 			:schema="SCHEMA"
 			@error="error"
@@ -31,7 +31,7 @@
 				</template>
 			</InputText>
 
-			<label :for="INPUT_NAMES.area" class="py-1 md:col-span-2 mb-1">
+			<label :for="INPUT_NAMES.area" class="py-1 md:col-span-2">
 				<h4>What area is covered by your request?</h4>
 			</label>
 
@@ -54,7 +54,7 @@
 			<Typeahead
 				:id="INPUT_NAMES.area"
 				ref="typeaheadRef"
-				class="md:col-span-2 mb-2"
+				class="md:col-span-2"
 				:error="typeaheadError"
 				:format-item-for-display="formatText"
 				:items="items"
@@ -358,6 +358,7 @@ async function submit(values) {
 	try {
 		await createRequest(requestBody);
 		const message = `Your request for ${values[INPUT_NAMES.title]} has been submitted successfully!`;
+		window.scrollTo(0, 0);
 		toast.success(message, { autoClose: false });
 	} catch (error) {
 		if (error) {

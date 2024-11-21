@@ -188,7 +188,7 @@ function onSearchSetIsSearchShown() {
 .v-leave-active {
 	transition:
 		opacity 0.5s ease,
-		max-height 0.5s ease-in-out;
+		max-height 0.5s ease-in;
 }
 
 .v-enter-from,
