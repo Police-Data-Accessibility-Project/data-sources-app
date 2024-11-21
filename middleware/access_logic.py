@@ -82,6 +82,7 @@ class AccessInfo:
         db_client = get_db_client()
         return db_client.get_user_id(self.user_email)
 
+
 @dataclass
 class PasswordResetTokenAccessInfo:
     user_id: int
@@ -95,6 +96,7 @@ def get_identity_from_jwt() -> Optional[dict]:
         return None
     return get_jwt_identity()
 
+
 def get_access_info_from_jwt() -> Optional[AccessInfo]:
     identity = get_identity_from_jwt()
     if identity is None:
@@ -105,10 +107,7 @@ def get_access_info_from_jwt() -> Optional[AccessInfo]:
 def get_password_reset_access_info_from_jwt() -> Optional[PasswordResetTokenAccessInfo]:
     header = get_authorization_header_from_request()
     jwt_raw = get_key_from_authorization_header(header, scheme="Bearer")
-    decoded_jwt = SimpleJWT.decode(
-        token=jwt_raw,
-        purpose=JWTPurpose.PASSWORD_RESET
-    )
+    decoded_jwt = SimpleJWT.decode(token=jwt_raw, purpose=JWTPurpose.PASSWORD_RESET)
     return PasswordResetTokenAccessInfo(
         user_id=decoded_jwt.sub["user_id"],
         reset_token=decoded_jwt.sub["token"],
@@ -142,7 +141,9 @@ def get_authorization_header_from_request() -> str:
         raise InvalidAuthorizationHeaderException
 
 
-def get_key_from_authorization_header(authorization_header: str, scheme: str = "Basic") -> str:
+def get_key_from_authorization_header(
+    authorization_header: str, scheme: str = "Basic"
+) -> str:
     try:
         authorization_header_parts = authorization_header.split(" ")
         if authorization_header_parts[0] != scheme:
@@ -169,7 +170,7 @@ def permission_denied_abort() -> None:
 
 
 def check_permissions_with_access_info(
-        access_info: AccessInfo, permissions: list[PermissionsEnum]
+    access_info: AccessInfo, permissions: list[PermissionsEnum]
 ) -> None:
     if access_info is None:
         return permission_denied_abort()
@@ -179,7 +180,7 @@ def check_permissions_with_access_info(
 
 
 def get_authentication_error_message(
-        allowed_access_methods: list[AccessTypeEnum],
+    allowed_access_methods: list[AccessTypeEnum],
 ) -> str:
     f"""
     Please provide a valid form of one of the following: {[access_method.value for access_method in allowed_access_methods]} 
@@ -187,9 +188,9 @@ def get_authentication_error_message(
 
 
 def get_authentication(
-        allowed_access_methods: list[AccessTypeEnum],
-        restrict_to_permissions: Optional[list[PermissionsEnum]] = None,
-        no_auth: bool = False,
+    allowed_access_methods: list[AccessTypeEnum],
+    restrict_to_permissions: Optional[list[PermissionsEnum]] = None,
+    no_auth: bool = False,
 ) -> Optional[AccessInfo]:
     """
     Authenticate the user based on allowed access methods and optionally restrict permissions.
@@ -227,7 +228,7 @@ def get_authentication(
 
 
 def try_password_reset_token_authentication(
-        allowed_access_methods: list[AccessTypeEnum],
+    allowed_access_methods: list[AccessTypeEnum],
 ) -> Optional[AccessInfo]:
     """Helper function to attempt password reset token authentication."""
     if AccessTypeEnum.RESET_PASSWORD in allowed_access_methods:
@@ -236,7 +237,7 @@ def try_password_reset_token_authentication(
 
 
 def try_api_key_authentication(
-        allowed_access_methods: list[AccessTypeEnum],
+    allowed_access_methods: list[AccessTypeEnum],
 ) -> Optional[AccessInfo]:
     """Helper function to attempt API key authentication."""
     if AccessTypeEnum.API_KEY in allowed_access_methods:
@@ -247,8 +248,8 @@ def try_api_key_authentication(
 
 
 def try_jwt_authentication(
-        allowed_access_methods: list[AccessTypeEnum],
-        restrict_to_permissions: Optional[list[PermissionsEnum]] = None,
+    allowed_access_methods: list[AccessTypeEnum],
+    restrict_to_permissions: Optional[list[PermissionsEnum]] = None,
 ) -> Optional[AccessInfo]:
     """Helper function to attempt JWT authentication and check permissions."""
     if AccessTypeEnum.JWT not in allowed_access_methods:

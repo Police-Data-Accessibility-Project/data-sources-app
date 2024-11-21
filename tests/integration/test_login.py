@@ -1,7 +1,10 @@
 """Integration tests for /login endpoint"""
+
 from http import HTTPStatus
 
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+    TestDataCreatorFlask,
+)
 from tests.helper_scripts.common_test_functions import (
     assert_jwt_token_matches_user_email,
 )
@@ -26,6 +29,7 @@ def test_login_post(test_data_creator_flask: TestDataCreatorFlask):
         jwt_token=access_token,
     )
 
+
 def test_login_post_user_not_exists(test_data_creator_flask: TestDataCreatorFlask):
     """
     Test that POST call to /login endpoint successfully logs in a user, creates a session token, and verifies the session token exists only once in the database with the correct email
@@ -37,8 +41,9 @@ def test_login_post_user_not_exists(test_data_creator_flask: TestDataCreatorFlas
     tdc.request_validator.login(
         email="gibberish",
         password=user_info.password,
-        expected_response_status=HTTPStatus.UNAUTHORIZED
+        expected_response_status=HTTPStatus.UNAUTHORIZED,
     )
+
 
 def test_login_post_invalid_password(test_data_creator_flask: TestDataCreatorFlask):
     """
@@ -52,5 +57,5 @@ def test_login_post_invalid_password(test_data_creator_flask: TestDataCreatorFla
     tdc.request_validator.login(
         email=user_info.email,
         password="gibberish",
-        expected_response_status=HTTPStatus.UNAUTHORIZED
+        expected_response_status=HTTPStatus.UNAUTHORIZED,
     )

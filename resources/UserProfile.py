@@ -9,7 +9,8 @@ from middleware.decorators import endpoint_info, endpoint_info_2
 from middleware.enums import AccessTypeEnum
 from middleware.primary_resource_logic.user_profile import (
     get_owner_data_requests_wrapper,
-    get_user_recent_searches, get_user_by_id_wrapper,
+    get_user_recent_searches,
+    get_user_by_id_wrapper,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyRequestsBaseSchema,
@@ -36,6 +37,7 @@ user_data_requests_model = get_restx_param_documentation(
     schema=GetManyDataRequestsResponseSchema(exclude=["data.internal_notes"]),
     model_name="GetManyBaseSchema",
 ).model
+
 
 @namespace_user.route("/<user_id>")
 class UserByID(PsycopgResource):

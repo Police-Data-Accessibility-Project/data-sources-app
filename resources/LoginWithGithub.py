@@ -3,7 +3,9 @@ from http import HTTPStatus
 from config import limiter
 from middleware.access_logic import NO_AUTH_INFO, AccessInfo
 from middleware.decorators import endpoint_info_2
-from middleware.primary_resource_logic.github_oauth_logic import login_with_github_wrapper
+from middleware.primary_resource_logic.github_oauth_logic import (
+    login_with_github_wrapper,
+)
 
 from resources.PsycopgResource import PsycopgResource
 from resources.endpoint_schema_config import SchemaConfigs

@@ -3,10 +3,15 @@
 from database_client.database_client import DatabaseClient
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
 from resources.endpoint_schema_config import SchemaConfigs
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+    TestDataCreatorFlask,
+)
 from conftest import test_data_creator_flask, monkeysession
 
-def test_request_reset_password_post(test_data_creator_flask: TestDataCreatorFlask, mocker):
+
+def test_request_reset_password_post(
+    test_data_creator_flask: TestDataCreatorFlask, mocker
+):
     """
     Test that POST call to /request-reset-password endpoint successfully initiates a password reset request, sends a single email via Mailgun, and verifies the reset token is correctly associated with the user's email in the database
     """
@@ -23,11 +28,10 @@ def test_request_reset_password_post(test_data_creator_flask: TestDataCreatorFla
         expected_schema=SchemaConfigs.REQUEST_RESET_PASSWORD.value.primary_output_schema,
     )
 
-    reset_token = mock_send_password_reset_link.call_args[1]['token']
+    reset_token = mock_send_password_reset_link.call_args[1]["token"]
     assert mock_send_password_reset_link.called_once_with(user_info.email, reset_token)
     decoded_token = SimpleJWT.decode(
-        token=reset_token,
-        purpose=JWTPurpose.PASSWORD_RESET
+        token=reset_token, purpose=JWTPurpose.PASSWORD_RESET
     )
 
     db_client = DatabaseClient()

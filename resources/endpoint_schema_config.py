@@ -13,16 +13,21 @@ from middleware.primary_resource_logic.data_requests import (
     DataRequestsPostDTO,
     RelatedLocationsByIDDTO,
 )
-from middleware.primary_resource_logic.reset_token_queries import ResetPasswordRequestSchema, ResetPasswordSchema, \
-    ResetPasswordDTO
-from middleware.schema_and_dto_logic.primary_resource_dtos.request_reset_password_dtos import \
-    RequestResetPasswordRequestDTO
+from middleware.primary_resource_logic.reset_token_queries import (
+    ResetPasswordRequestSchema,
+    ResetPasswordSchema,
+    ResetPasswordDTO,
+)
+from middleware.schema_and_dto_logic.primary_resource_dtos.request_reset_password_dtos import (
+    RequestResetPasswordRequestDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.refresh_session_schemas import (
     RefreshSessionRequestSchema,
     RefreshSessionRequestDTO,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.request_reset_password_schemas import \
-    RequestResetPasswordRequestSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.request_reset_password_schemas import (
+    RequestResetPasswordRequestSchema,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import (
     TypeaheadAgenciesOuterResponseSchema,
     TypeaheadLocationsOuterResponseSchema,
@@ -48,18 +53,40 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos im
 from middleware.schema_and_dto_logic.primary_resource_schemas.notifications_schemas import (
     NotificationsResponseSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import \
-    TypeaheadAgenciesOuterResponseSchema, TypeaheadLocationsOuterResponseSchema, TypeaheadLocationsResponseSchema
-from middleware.primary_resource_logic.unique_url_checker import UniqueURLCheckerRequestSchema, \
-    UniqueURLCheckerResponseOuterSchema, UniqueURLCheckerRequestDTO
-from middleware.primary_resource_logic.user_queries import UserRequestSchema, UserRequestDTO
-from middleware.schema_and_dto_logic.primary_resource_schemas.auth_schemas import LoginResponseSchema, \
-    LinkToGithubRequestSchema, GithubOAuthRequestSchema, GithubOAuthRequestDTO, LoginWithGithubRequestDTO, \
-    GithubRequestSchema
-from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import GetManyDataRequestsRequestsDTO
-from middleware.schema_and_dto_logic.primary_resource_schemas.notifications_schemas import NotificationsResponseSchema
-from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import SearchRequestSchema, \
-    GetUserFollowedSearchesSchema, SearchRequests, SearchResponseSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import (
+    TypeaheadAgenciesOuterResponseSchema,
+    TypeaheadLocationsOuterResponseSchema,
+    TypeaheadLocationsResponseSchema,
+)
+from middleware.primary_resource_logic.unique_url_checker import (
+    UniqueURLCheckerRequestSchema,
+    UniqueURLCheckerResponseOuterSchema,
+    UniqueURLCheckerRequestDTO,
+)
+from middleware.primary_resource_logic.user_queries import (
+    UserRequestSchema,
+    UserRequestDTO,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.auth_schemas import (
+    LoginResponseSchema,
+    LinkToGithubRequestSchema,
+    GithubOAuthRequestSchema,
+    GithubOAuthRequestDTO,
+    LoginWithGithubRequestDTO,
+    GithubRequestSchema,
+)
+from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import (
+    GetManyDataRequestsRequestsDTO,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.notifications_schemas import (
+    NotificationsResponseSchema,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import (
+    SearchRequestSchema,
+    GetUserFollowedSearchesSchema,
+    SearchRequests,
+    SearchResponseSchema,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import (
     SearchRequestSchema,
     GetUserFollowedSearchesSchema,
@@ -86,7 +113,10 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_
     AgenciesGetManyResponseSchema,
     RelatedAgencyByIDSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import AgenciesPostDTO, RelatedAgencyByIDDTO
+from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
+    AgenciesPostDTO,
+    RelatedAgencyByIDDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_advanced_schemas import (
     GetManyDataRequestsResponseSchema,
     DataRequestsPostSchema,
@@ -96,15 +126,20 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_adva
     GetManyDataRequestsRelatedLocationsSchema,
     DataRequestsPutSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_base_schema import DataRequestsSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_base_schema import (
+    DataRequestsSchema,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advanced_schemas import (
     DataSourcesGetManySchema,
     DataSourcesGetByIDSchema,
     DataSourcesPostSchema,
     DataSourcesPutSchema,
-    DataSourcesGetManyRequestSchema, DataSourcesMapResponseSchema,
+    DataSourcesGetManyRequestSchema,
+    DataSourcesMapResponseSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.data_sources_dtos import DataSourcesPostDTO
+from middleware.schema_and_dto_logic.primary_resource_dtos.data_sources_dtos import (
+    DataSourcesPostDTO,
+)
 from middleware.schema_and_dto_logic.common_response_schemas import (
     IDAndMessageSchema,
     MessageSchema,
@@ -115,7 +150,8 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.github_issue_app_s
     GithubDataRequestsIssuesPostDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.user_profile_schemas import (
-    GetUserRecentSearchesOuterSchema, UserProfileResponseSchema,
+    GetUserRecentSearchesOuterSchema,
+    UserProfileResponseSchema,
 )
 
 
@@ -170,7 +206,8 @@ class SchemaConfigs(Enum):
         input_dto_class=GetManyDataRequestsRequestsDTO,
     )
     DATA_REQUESTS_BY_ID_GET = EndpointSchemaConfig(
-        input_schema=GetByIDBaseSchema(), primary_output_schema=GetByIDDataRequestsResponseSchema()
+        input_schema=GetByIDBaseSchema(),
+        primary_output_schema=GetByIDDataRequestsResponseSchema(),
     )
     DATA_REQUESTS_BY_ID_PUT = EndpointSchemaConfig(
         input_schema=DataRequestsPutSchema(),
@@ -348,7 +385,7 @@ class SchemaConfigs(Enum):
     AUTH_GITHUB_LOGIN = EndpointSchemaConfig(
         input_schema=GithubRequestSchema(),
         input_dto_class=LoginWithGithubRequestDTO,
-        primary_output_schema=LoginResponseSchema()
+        primary_output_schema=LoginResponseSchema(),
     )
     AUTH_GITHUB_LINK = EndpointSchemaConfig(
         input_schema=LinkToGithubRequestSchema(),
@@ -359,25 +396,22 @@ class SchemaConfigs(Enum):
         input_schema=GithubOAuthRequestSchema(),
         input_dto_class=GithubOAuthRequestDTO,
     )
-    #endregion
+    # endregion
     REFRESH_SESSION = EndpointSchemaConfig(
         input_schema=RefreshSessionRequestSchema(),
         primary_output_schema=LoginResponseSchema(),
         input_dto_class=RefreshSessionRequestDTO,
     )
-    #region Reset Password
+    # region Reset Password
     REQUEST_RESET_PASSWORD = EndpointSchemaConfig(
         input_schema=RequestResetPasswordRequestSchema(),
         primary_output_schema=MessageSchema(),
-        input_dto_class=RequestResetPasswordRequestDTO
+        input_dto_class=RequestResetPasswordRequestDTO,
     )
     RESET_PASSWORD = EndpointSchemaConfig(
         input_schema=ResetPasswordSchema(),
         input_dto_class=ResetPasswordDTO,
-        primary_output_schema=MessageSchema()
+        primary_output_schema=MessageSchema(),
     )
-    RESET_TOKEN_VALIDATION = EndpointSchemaConfig(
-        primary_output_schema=MessageSchema()
-    )
-    #endregion
-
+    RESET_TOKEN_VALIDATION = EndpointSchemaConfig(primary_output_schema=MessageSchema())
+    # endregion

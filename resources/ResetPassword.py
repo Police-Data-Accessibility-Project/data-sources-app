@@ -1,6 +1,9 @@
 from flask import Response
 
-from middleware.access_logic import RESET_PASSWORD_AUTH_INFO, PasswordResetTokenAccessInfo
+from middleware.access_logic import (
+    RESET_PASSWORD_AUTH_INFO,
+    PasswordResetTokenAccessInfo,
+)
 from middleware.decorators import endpoint_info_2
 from middleware.primary_resource_logic.reset_token_queries import (
     reset_password,
@@ -18,6 +21,7 @@ from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 
 namespace_reset_password = create_namespace()
+
 
 @namespace_reset_password.route("/reset-password")
 class ResetPassword(PsycopgResource):

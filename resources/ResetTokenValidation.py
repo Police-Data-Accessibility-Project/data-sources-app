@@ -1,7 +1,10 @@
 from flask import request, Response
 from flask_restx import fields
 
-from middleware.access_logic import RESET_PASSWORD_AUTH_INFO, PasswordResetTokenAccessInfo
+from middleware.access_logic import (
+    RESET_PASSWORD_AUTH_INFO,
+    PasswordResetTokenAccessInfo,
+)
 from middleware.decorators import endpoint_info_2
 from middleware.primary_resource_logic.reset_token_queries import (
     reset_token_validation,
@@ -28,13 +31,11 @@ class ResetTokenValidation(PsycopgResource):
                 500: "Internal server error",
                 400: "Bad request; token is invalid",
             }
-        )
+        ),
     )
     def post(self, access_info: PasswordResetTokenAccessInfo) -> Response:
         """
         If the token matches a row in the database, 'Token is valid' is returned.
         :return:
         """
-        return self.run_endpoint(
-            reset_token_validation, token=access_info.reset_token
-        )
+        return self.run_endpoint(reset_token_validation, token=access_info.reset_token)

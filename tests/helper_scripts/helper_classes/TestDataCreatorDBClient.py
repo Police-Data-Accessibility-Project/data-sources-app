@@ -4,11 +4,19 @@ from typing import Optional
 from sqlalchemy import delete, select, and_
 
 from database_client.database_client import DatabaseClient
-from database_client.enums import ApprovalStatus, RequestStatus, EventType, ExternalAccountTypeEnum
+from database_client.enums import (
+    ApprovalStatus,
+    RequestStatus,
+    EventType,
+    ExternalAccountTypeEnum,
+)
 from database_client.models import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import JurisdictionType, Relations
 from tests.helper_scripts.common_endpoint_calls import CreatedDataSource
-from tests.helper_scripts.common_test_data import get_random_number_for_testing, get_test_name
+from tests.helper_scripts.common_test_data import (
+    get_random_number_for_testing,
+    get_test_name,
+)
 from tests.helper_scripts.helper_functions import get_notification_valid_date
 from tests.helper_scripts.test_dataclasses import (
     TestUserDBInfo,
@@ -106,7 +114,6 @@ class TestDataCreatorDBClient:
             table_name=Relations.DATA_SOURCES.value,
             like_column_name="name",
         )
-
 
         # Remove test data from user
         self.helper.delete_test_like(
@@ -262,10 +269,9 @@ class TestDataCreatorDBClient:
         self.db_client.link_external_account(
             user_id=str(user_id),
             external_account_id=fake_id,
-            external_account_type=ExternalAccountTypeEnum.GITHUB
+            external_account_type=ExternalAccountTypeEnum.GITHUB,
         )
         return fake_id
-
 
 
 class ValidNotificationEventCreator:

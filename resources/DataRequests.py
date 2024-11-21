@@ -17,7 +17,8 @@ from middleware.primary_resource_logic.data_requests import (
     create_data_request_related_source,
     get_data_request_related_locations,
     create_data_request_related_location,
-    delete_data_request_related_location, withdraw_data_request_wrapper,
+    delete_data_request_related_location,
+    withdraw_data_request_wrapper,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     EntryCreateUpdateRequestDTO,
@@ -213,6 +214,7 @@ class DataRequestsRelatedSourcesById(PsycopgResource):
             access_info=access_info,
         )
 
+
 @namespace_data_requests.route("/<resource_id>/withdraw")
 class DataRequestsWithdraw(PsycopgResource):
 
@@ -222,7 +224,7 @@ class DataRequestsWithdraw(PsycopgResource):
         schema_config=SchemaConfigs.DATA_REQUESTS_BY_ID_WITHDRAW,
         response_info=ResponseInfo(
             success_message="Data request successfully withdrawn.",
-        )
+        ),
     )
     def post(self, resource_id: str, access_info: AccessInfo) -> Response:
         """
@@ -233,7 +235,6 @@ class DataRequestsWithdraw(PsycopgResource):
             data_request_id=int(resource_id),
             access_info=access_info,
         )
-
 
 
 @namespace_data_requests.route("/<resource_id>/related-locations")

@@ -17,10 +17,15 @@ from resources.endpoint_schema_config import SchemaConfigs
 from tests.conftest import dev_db_client, flask_client_with_db
 from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
 from tests.helper_scripts.common_test_data import (
-    get_random_number_for_testing, get_test_name,
+    get_random_number_for_testing,
+    get_test_name,
 )
-from tests.helper_scripts.complex_test_data_creation_functions import create_test_data_request
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
+from tests.helper_scripts.complex_test_data_creation_functions import (
+    create_test_data_request,
+)
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+    TestDataCreatorFlask,
+)
 from tests.helper_scripts.constants import (
     DATA_REQUESTS_BASE_ENDPOINT,
     DATA_REQUESTS_BY_ID_ENDPOINT,
@@ -108,7 +113,7 @@ def test_data_requests_get(
     # Run get again, this time filtering the request status to be active
     data = tdc.request_validator.get_data_requests(
         headers=tus_creator.jwt_authorization_header,
-        request_status=RequestStatus.ACTIVE
+        request_status=RequestStatus.ACTIVE,
     )[DATA_KEY]
 
     # The more recent data request should be returned, but the old one should be filtered out
@@ -262,7 +267,9 @@ def test_data_requests_by_id_get(
 
     # Create data source and link to data request
     data_source_id = tdc.data_source().id
-    tdc.link_data_request_to_data_source(data_source_id=data_source_id, data_request_id=tdr.id)
+    tdc.link_data_request_to_data_source(
+        data_source_id=data_source_id, data_request_id=tdr.id
+    )
 
     expected_schema = SchemaConfigs.DATA_REQUESTS_BY_ID_GET.value.primary_output_schema
     # Modify exclude to account for old data which did not have archive_reason and creator_user_id
@@ -757,21 +764,18 @@ def test_link_unlink_data_requests_with_locations(
     data = get_locations()
     assert data == []
 
-def test_data_request_withdraw(
-    test_data_creator_flask: TestDataCreatorFlask
-):
+
+def test_data_request_withdraw(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
     tus_owner = tdc.standard_user()
     data_request = tdc.data_request(user_tus=tus_owner)
 
     tdc.request_validator.withdraw_request(
-        data_request_id=data_request.id,
-        headers=tus_owner.jwt_authorization_header
+        data_request_id=data_request.id, headers=tus_owner.jwt_authorization_header
     )
 
     request_status = tdc.request_validator.get_data_request_by_id(
-        data_request_id=data_request.id,
-        headers=tus_owner.jwt_authorization_header
+        data_request_id=data_request.id, headers=tus_owner.jwt_authorization_header
     )["data"]["request_status"]
 
     assert request_status == RequestStatus.REQUEST_WITHDRAWN.value
@@ -781,13 +785,11 @@ def test_data_request_withdraw(
     data_request = tdc.data_request(user_tus=tus_owner)
 
     tdc.request_validator.withdraw_request(
-        data_request_id=data_request.id,
-        headers=tus_admin.jwt_authorization_header
+        data_request_id=data_request.id, headers=tus_admin.jwt_authorization_header
     )
 
     request_status = tdc.request_validator.get_data_request_by_id(
-        data_request_id=data_request.id,
-        headers=tus_admin.jwt_authorization_header
+        data_request_id=data_request.id, headers=tus_admin.jwt_authorization_header
     )["data"]["request_status"]
 
     assert request_status == RequestStatus.REQUEST_WITHDRAWN.value
@@ -799,7 +801,5 @@ def test_data_request_withdraw(
     tdc.request_validator.withdraw_request(
         data_request_id=data_request.id,
         headers=tus_non_owner.jwt_authorization_header,
-        expected_response_status=HTTPStatus.FORBIDDEN
+        expected_response_status=HTTPStatus.FORBIDDEN,
     )
-
-

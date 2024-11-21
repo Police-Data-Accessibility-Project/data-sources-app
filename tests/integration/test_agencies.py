@@ -11,7 +11,8 @@ from database_client.db_client_dataclasses import WhereMapping
 from middleware.enums import JurisdictionType
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgenciesGetByIDResponseSchema,
-    AgenciesGetManyResponseSchema, AgencyInfoPutSchema,
+    AgenciesGetManyResponseSchema,
+    AgencyInfoPutSchema,
 )
 from middleware.schema_and_dto_logic.common_response_schemas import (
     MessageSchema,
@@ -25,9 +26,15 @@ from tests.conftest import (
     integration_test_admin_setup,
 )
 from tests.helper_scripts.common_test_data import get_test_name
-from tests.helper_scripts.complex_test_data_creation_functions import get_sample_agency_post_parameters
-from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import generate_test_data_from_schema
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
+from tests.helper_scripts.complex_test_data_creation_functions import (
+    get_sample_agency_post_parameters,
+)
+from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
+    generate_test_data_from_schema,
+)
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+    TestDataCreatorFlask,
+)
 from tests.helper_scripts.constants import AGENCIES_BASE_ENDPOINT
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup_db_client,
@@ -121,7 +128,6 @@ def test_agencies_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     data = response_json["data"]
     assert data["id"] == int(agency_id)
     assert data["data_sources"][0]["id"] == int(cds.id)
-
 
 
 def test_agencies_post(ts: AgenciesTestSetup):
@@ -232,7 +238,7 @@ def test_agencies_put(ts: AgenciesTestSetup):
         schema=AgencyInfoPutSchema(),
         override={
             "jurisdiction_type": JurisdictionType.FEDERAL.value,
-        }
+        },
     )
 
     json_data = run_and_validate_request(
@@ -240,9 +246,7 @@ def test_agencies_put(ts: AgenciesTestSetup):
         http_method="put",
         endpoint=BY_ID_ENDPOINT,
         headers=ts.tus.jwt_authorization_header,
-        json={
-            "agency_info": agency_info
-        },
+        json={"agency_info": agency_info},
         expected_schema=SchemaConfigs.AGENCIES_BY_ID_PUT.value.primary_output_schema,
     )
 

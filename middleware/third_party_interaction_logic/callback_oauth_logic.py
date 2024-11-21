@@ -3,6 +3,7 @@ This file contains the logic for the OAuth flow.
 Any logic which utilizes the `oauth` import should be placed here.
 Because it involves interactions with a third party app, the ability to test its logic is limited.
 """
+
 from typing import Optional
 from github import Github, Auth
 
@@ -11,12 +12,11 @@ from config import oauth
 REDIRECT_ENDPOINT = "auth_callback"
 
 
-def redirect_to_github_authorization(
-        redirect_url: Optional[str] = None
-):
+def redirect_to_github_authorization(redirect_url: Optional[str] = None):
     return oauth.github.authorize_redirect(
         endpoint=redirect_url,
     )
+
 
 def get_github_user_email(token: str) -> str:
     """
@@ -52,7 +52,6 @@ def get_github_user_id(token: str) -> int:
     auth = Auth.Token(token)
     g = Github(auth=auth)
     return g.get_user().id
-
 
 
 def get_github_oauth_access_token() -> dict:

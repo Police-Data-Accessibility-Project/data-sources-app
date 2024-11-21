@@ -49,6 +49,7 @@ def dataclass_to_filtered_dict(instance: Any) -> Dict[str, Any]:
             results[key] = value
     return results
 
+
 def update_if_not_none(dict_to_update: Dict[str, Any], secondary_dict: Dict[str, Any]):
     for key, value in secondary_dict.items():
         if value is not None:

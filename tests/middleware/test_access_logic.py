@@ -83,6 +83,7 @@ class GetAPIKeyFromRequestHeaderMock(DynamicMagicMock):
     get_authorization_header_from_request: MagicMock
     get_api_key_from_authorization_header: MagicMock
 
+
 class GetAccessInfoFromJWTOrAPIKeyMocks(DynamicMagicMock):
     get_user_email_from_api_key: MagicMock
     get_jwt_identity: MagicMock
@@ -397,6 +398,7 @@ def test_get_user_email_from_api_key(
         assert result is None
     else:
         assert result == expected_result.email
+
 
 def test_get_jwt_access_info_with_permissions(monkeypatch):
 

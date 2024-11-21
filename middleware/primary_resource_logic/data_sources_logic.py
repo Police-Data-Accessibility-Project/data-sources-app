@@ -32,14 +32,16 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetByIDBaseDTO,
 )
 from middleware.common_response_formatting import format_list_response, message_response
-from middleware.schema_and_dto_logic.primary_resource_dtos.data_sources_dtos import DataSourceEntryDataPostDTO, \
-    DataSourcesPostDTO
+from middleware.schema_and_dto_logic.primary_resource_dtos.data_sources_dtos import (
+    DataSourceEntryDataPostDTO,
+    DataSourcesPostDTO,
+)
 from middleware.util import dataclass_to_filtered_dict
 
 RELATION = Relations.DATA_SOURCES.value
 SUBQUERY_PARAMS = [
     SubqueryParameterManager.agencies(),
-    SubqueryParameterManager.data_requests()
+    SubqueryParameterManager.data_requests(),
 ]
 
 
@@ -132,10 +134,7 @@ def delete_data_source_wrapper(
     )
 
 
-def optionally_add_last_approval_editor(
-        entry_data: dict,
-        access_info: AccessInfo
-):
+def optionally_add_last_approval_editor(entry_data: dict, access_info: AccessInfo):
     if "approval_status" in entry_data:
         entry_data["last_approval_editor"] = access_info.get_user_id()
 
@@ -190,12 +189,11 @@ class DataSourcesPostLogic(PostLogic):
             return
         for agency_id in self.agency_ids:
             self.mp.db_client.create_data_source_agency_relation(
-                column_value_mappings = {
+                column_value_mappings={
                     "data_source_id": self.id_val,
-                    "agency_id": agency_id
+                    "agency_id": agency_id,
                 }
             )
-
 
 
 def add_new_data_source_wrapper(
@@ -215,6 +213,8 @@ def add_new_data_source_wrapper(
         agency_ids=dto.linked_agency_ids,
     )
     return post_logic.execute()
+
+
 # region Related Resources
 
 

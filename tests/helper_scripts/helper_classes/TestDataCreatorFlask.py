@@ -5,17 +5,31 @@ from flask.testing import FlaskClient
 from database_client.database_client import DatabaseClient
 from database_client.enums import RequestStatus
 from middleware.enums import JurisdictionType, PermissionsEnum
-from tests.helper_scripts.common_endpoint_calls import CreatedDataSource, create_data_source_with_endpoint
-from tests.helper_scripts.complex_test_data_creation_functions import create_test_data_request, \
-    get_sample_agency_post_parameters
-from tests.helper_scripts.constants import DATA_REQUESTS_BY_ID_ENDPOINT, AGENCIES_BASE_ENDPOINT, \
-    AGENCIES_BY_ID_ENDPOINT, DATA_SOURCES_POST_DELETE_RELATED_AGENCY_ENDPOINT, \
-    DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT
+from tests.helper_scripts.common_endpoint_calls import (
+    CreatedDataSource,
+    create_data_source_with_endpoint,
+)
+from tests.helper_scripts.complex_test_data_creation_functions import (
+    create_test_data_request,
+    get_sample_agency_post_parameters,
+)
+from tests.helper_scripts.constants import (
+    DATA_REQUESTS_BY_ID_ENDPOINT,
+    AGENCIES_BASE_ENDPOINT,
+    AGENCIES_BY_ID_ENDPOINT,
+    DATA_SOURCES_POST_DELETE_RELATED_AGENCY_ENDPOINT,
+    DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT,
+)
 from tests.helper_scripts.helper_classes.EndpointCaller import EndpointCaller
 from tests.helper_scripts.helper_classes.RequestValidator import RequestValidator
-from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import TestDataCreatorDBClient
+from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
+    TestDataCreatorDBClient,
+)
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
-from tests.helper_scripts.helper_functions import create_admin_test_user_setup, create_test_user_setup
+from tests.helper_scripts.helper_functions import (
+    create_admin_test_user_setup,
+    create_test_user_setup,
+)
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from tests.helper_scripts.test_dataclasses import TestDataRequestInfo, TestAgencyInfo
 
@@ -86,7 +100,9 @@ class TestDataCreatorFlask:
             json={"request_status": status.value},
         )
 
-    def agency(self, location_info: Optional[dict] = None, agency_name: str = "") -> TestAgencyInfo:
+    def agency(
+        self, location_info: Optional[dict] = None, agency_name: str = ""
+    ) -> TestAgencyInfo:
         submitted_name = self.tdcdb.test_name(agency_name)
         locality_name = self.tdcdb.test_name()
         sample_agency_post_parameters = get_sample_agency_post_parameters(
@@ -154,11 +170,14 @@ class TestDataCreatorFlask:
             self.flask_client, permissions=[PermissionsEnum.NOTIFICATIONS]
         )
 
-    def locality(self, locality_name: str = "", state_iso: str = "PA", county_name: str = "Allegheny"):
+    def locality(
+        self,
+        locality_name: str = "",
+        state_iso: str = "PA",
+        county_name: str = "Allegheny",
+    ):
         return self.tdcdb.locality(
-            locality_name=locality_name,
-            state_iso=state_iso,
-            county_name=county_name
+            locality_name=locality_name, state_iso=state_iso, county_name=county_name
         )
 
     def select_only_complex_linked_resources(self):

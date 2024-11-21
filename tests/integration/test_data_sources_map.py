@@ -1,18 +1,17 @@
 """Integration tests for /data-sources-map endpoint"""
 
-
-
 from resources.endpoint_schema_config import SchemaConfigs
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+    TestDataCreatorFlask,
+)
 
 from conftest import test_data_creator_flask, monkeysession
+
 
 # This endpoint no longer works because of the other data source endpoint
 # It is interpreted as another data source id
 # But we have not yet decided whether to modify or remove it entirely
-def test_data_sources_map_get(
-    test_data_creator_flask: TestDataCreatorFlask
-):
+def test_data_sources_map_get(test_data_creator_flask: TestDataCreatorFlask):
     """
     Test that GET call to /data-sources-map endpoint retrieves data sources and verifies the location (latitude and longitude) of a specific source by name
     """
@@ -25,4 +24,3 @@ def test_data_sources_map_get(
     )
     data = response_json["data"]
     assert len(data) > 0
-

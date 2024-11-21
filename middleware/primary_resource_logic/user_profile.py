@@ -23,7 +23,9 @@ def get_owner_data_requests_wrapper(
     return FlaskResponseManager.make_response(formatted_list_response)
 
 
-def get_owner_data_requests(db_client: DatabaseClient, dto: GetManyBaseDTO, user_id: int):
+def get_owner_data_requests(
+    db_client: DatabaseClient, dto: GetManyBaseDTO, user_id: int
+):
     data_requests = get_data_requests_with_permitted_columns(
         db_client=db_client,
         relation_role=RelationRoleEnum.OWNER,
@@ -34,23 +36,22 @@ def get_owner_data_requests(db_client: DatabaseClient, dto: GetManyBaseDTO, user
     return data_requests
 
 
-def get_user_recent_searches(
-        db_client: DatabaseClient,
-        access_info: AccessInfo
-):
+def get_user_recent_searches(db_client: DatabaseClient, access_info: AccessInfo):
     recent_searches = db_client.get_user_recent_searches(
         user_id=access_info.get_user_id()
     )
 
     return FlaskResponseManager.make_response(recent_searches)
 
+
 def get_user_by_id_wrapper(
-    db_client: DatabaseClient,
-    user_id: int,
-    access_info: AccessInfo
+    db_client: DatabaseClient, user_id: int, access_info: AccessInfo
 ):
     # Check that user is either owner or admin
-    if user_id != access_info.get_user_id() and PermissionsEnum.DB_WRITE not in access_info.permissions:
+    if (
+        user_id != access_info.get_user_id()
+        and PermissionsEnum.DB_WRITE not in access_info.permissions
+    ):
         return FlaskResponseManager.make_response(
             data={"message": "Forbidden."}, status_code=HTTPStatus.FORBIDDEN
         )
@@ -61,9 +62,7 @@ def get_user_by_id_wrapper(
     recent_searches = db_client.get_user_recent_searches(user_id=user_id)
     followed_searches = db_client.get_user_followed_searches(left_id=user_id)
     data_requests = get_owner_data_requests(
-        db_client=db_client, dto=GetManyBaseDTO(
-            page=1
-        ), user_id=user_id
+        db_client=db_client, dto=GetManyBaseDTO(page=1), user_id=user_id
     )
     permissions = db_client.get_user_permissions(user_id)
     data = {
@@ -74,10 +73,6 @@ def get_user_by_id_wrapper(
         "data_requests": data_requests,
         "permissions": [permission.value for permission in permissions],
     }
-    json_body = {
-        "data": data
-    }
+    json_body = {"data": data}
 
     return FlaskResponseManager.make_response(data=json_body)
-
-

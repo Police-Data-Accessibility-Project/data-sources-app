@@ -1,4 +1,5 @@
 """Integration tests for /reset-password endpoint."""
+
 from datetime import datetime, timedelta
 from http import HTTPStatus
 import uuid
@@ -6,15 +7,21 @@ import uuid
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
 from middleware.enums import Relations
 from tests.conftest import dev_db_client
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+    TestDataCreatorFlask,
+)
 from tests.helper_scripts.constants import DATA_SOURCES_BASE_ENDPOINT
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_functions import (
-    request_reset_password_api, get_authorization_header,
+    request_reset_password_api,
+    get_authorization_header,
 )
 from conftest import test_data_creator_flask, monkeysession
 
-def test_reset_password_post(test_data_creator_flask: TestDataCreatorFlask, dev_db_client, mocker):
+
+def test_reset_password_post(
+    test_data_creator_flask: TestDataCreatorFlask, dev_db_client, mocker
+):
     """
     Test that POST call to /reset-password endpoint successfully resets the user's password, and verifies the new password digest is distinct from the old one in the database
     """
@@ -23,10 +30,7 @@ def test_reset_password_post(test_data_creator_flask: TestDataCreatorFlask, dev_
     tus = tdc.standard_user()
     user_info = tus.user_info
 
-    def login(
-        password: str,
-        expected_response_status: HTTPStatus = HTTPStatus.OK
-    ):
+    def login(password: str, expected_response_status: HTTPStatus = HTTPStatus.OK):
         tdc.request_validator.login(
             email=user_info.email,
             password=password,
@@ -51,7 +55,7 @@ def test_reset_password_post(test_data_creator_flask: TestDataCreatorFlask, dev_
     tdc.request_validator.get(
         endpoint=DATA_SOURCES_BASE_ENDPOINT,
         headers=get_authorization_header(scheme="Bearer", token=token),
-        expected_response_status=HTTPStatus.UNPROCESSABLE_ENTITY
+        expected_response_status=HTTPStatus.UNPROCESSABLE_ENTITY,
     )
 
     new_password = str(uuid.uuid4())
@@ -67,18 +71,14 @@ def test_reset_password_post(test_data_creator_flask: TestDataCreatorFlask, dev_
     ), "Old and new password digests should be distinct"
 
     # User should not be able to log in with the old password
-    login(
-        password=user_info.password,
-        expected_response_status=HTTPStatus.UNAUTHORIZED
-    )
+    login(password=user_info.password, expected_response_status=HTTPStatus.UNAUTHORIZED)
 
     # User should be able to login with the new password
-    login(
-        password=new_password
-    )
+    login(password=new_password)
+
 
 def test_reset_token_validation_invalid_token_unprocessable(
-        test_data_creator_flask: TestDataCreatorFlask
+    test_data_creator_flask: TestDataCreatorFlask,
 ):
     tdc = test_data_creator_flask
 
@@ -89,9 +89,9 @@ def test_reset_token_validation_invalid_token_unprocessable(
         expected_response_status=HTTPStatus.UNPROCESSABLE_ENTITY,
     )
 
+
 def test_reset_token_validation_invalid_token_expired(
-    test_data_creator_flask: TestDataCreatorFlask,
-    mocker
+    test_data_creator_flask: TestDataCreatorFlask, mocker
 ):
     tdc = test_data_creator_flask
 
@@ -112,9 +112,7 @@ def test_reset_token_validation_invalid_token_expired(
     tdc.db_client._update_entry_in_table(
         table_name=Relations.RESET_TOKENS.value,
         entry_id=decoded_token.sub["token"],
-        column_edit_mappings={
-            "create_date": datetime.now() - timedelta(minutes=15)
-        },
+        column_edit_mappings={"create_date": datetime.now() - timedelta(minutes=15)},
         id_column_name="token",
     )
 

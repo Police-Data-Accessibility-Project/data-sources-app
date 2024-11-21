@@ -816,17 +816,17 @@ class DatabaseClient:
             build_metadata=build_metadata,
             raw_results=raw_results,
             relation_name=relation_name,
-            subquery_parameters=subquery_parameters
+            subquery_parameters=subquery_parameters,
         )
 
         return results
 
     def _process_results(
-            self,
-            build_metadata: bool,
-            raw_results: list,
-            relation_name: str,
-            subquery_parameters: Optional[list[SubqueryParameters]]
+        self,
+        build_metadata: bool,
+        raw_results: list,
+        relation_name: str,
+        subquery_parameters: Optional[list[SubqueryParameters]],
     ):
         table_key = self._build_table_key_if_results(raw_results)
         results = self._dictify_results(raw_results, subquery_parameters, table_key)
@@ -1376,9 +1376,7 @@ class DatabaseClient:
             columns=["account_type", "account_identifier"],
             where_mappings={"user_id": user_id},
         )
-        return {
-            row["account_type"]: row["account_identifier"] for row in raw_results
-        }
+        return {row["account_type"]: row["account_identifier"] for row in raw_results}
 
     def get_user_email(self, user_id: int) -> str:
         return self._select_single_entry_from_relation(

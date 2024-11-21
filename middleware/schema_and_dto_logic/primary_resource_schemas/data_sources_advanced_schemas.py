@@ -6,15 +6,23 @@ from database_client.enums import (
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyRequestsBaseSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.data_sources_dtos import DataSourceEntryDataPostDTO
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_base_schemas import AgenciesExpandedSchema
+from middleware.schema_and_dto_logic.primary_resource_dtos.data_sources_dtos import (
+    DataSourceEntryDataPostDTO,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_base_schemas import (
+    AgenciesExpandedSchema,
+)
 from middleware.schema_and_dto_logic.common_response_schemas import (
     GetManyResponseSchemaBase,
     MessageSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_base_schema import DataRequestsSchema
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_schemas import DataSourceExpandedSchema, \
-    DataSourcesMapResponseInnerSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_base_schema import (
+    DataRequestsSchema,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_schemas import (
+    DataSourceExpandedSchema,
+    DataSourcesMapResponseInnerSchema,
+)
 from middleware.schema_and_dto_logic.util import get_json_metadata
 from utilities.enums import SourceMappingEnum
 
@@ -38,7 +46,7 @@ class DataSourceGetSchema(DataSourceExpandedSchema):
                     "county_name",
                     "agency_type",
                     "jurisdiction_type",
-                    "homepage_url"
+                    "homepage_url",
                 ],
             ),
             metadata=get_json_metadata("The agencies associated with the data source."),
@@ -58,10 +66,14 @@ class DataSourceGetSchema(DataSourceExpandedSchema):
     data_requests = fields.List(
         fields.Nested(
             nested=DataRequestsSchema(),
-            metadata=get_json_metadata("The data requests associated with the data source."),
+            metadata=get_json_metadata(
+                "The data requests associated with the data source."
+            ),
         ),
         allow_none=True,
-        metadata=get_json_metadata("The data requests associated with the data source."),
+        metadata=get_json_metadata(
+            "The data requests associated with the data source."
+        ),
     )
 
 
@@ -94,7 +106,7 @@ class DataSourcesPostSchema(Schema):
                 "approval_status_updated_at",
                 "broken_source_url_as_of",
                 "last_approval_editor",
-                "last_approval_editor_old"
+                "last_approval_editor_old",
             ],
             partial=True,
         ),
@@ -129,7 +141,7 @@ class DataSourcesPutSchema(Schema):
                 "approval_status_updated_at",
                 "broken_source_url_as_of",
                 "last_approval_editor",
-                "last_approval_editor_old"
+                "last_approval_editor_old",
             ]
         ),
         required=True,

@@ -3,7 +3,9 @@
 from http import HTTPStatus
 
 from tests.conftest import flask_client_with_db, test_user_admin
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+    TestDataCreatorFlask,
+)
 from tests.helper_scripts.helper_functions import (
     login_and_return_jwt_tokens,
 )

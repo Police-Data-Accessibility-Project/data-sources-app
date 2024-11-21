@@ -1,6 +1,8 @@
 from typing import Union, Dict, List, Optional
 
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+    TestDataCreatorFlask,
+)
 from tests.helper_scripts.helper_functions import (
     create_test_user_setup,
 )
@@ -14,8 +16,8 @@ from conftest import test_data_creator_flask, monkeysession
 
 
 def test_permissions(
-        test_data_creator_flask: TestDataCreatorFlask,
-        bypass_api_key_required,
+    test_data_creator_flask: TestDataCreatorFlask,
+    bypass_api_key_required,
 ):
     """
     Test the retrieval, addition, and removal of user permissions
@@ -35,14 +37,14 @@ def test_permissions(
             user_email=tus.user_info.email,
             permission=permission,
             action=action,
-            headers=test_user_admin.jwt_authorization_header
+            headers=test_user_admin.jwt_authorization_header,
         )
 
     def get_permissions(expected_json_content: Optional[Union[Dict, List]] = None):
         tdc.request_validator.get_permissions(
             user_email=tus.user_info.email,
             expected_json_content=expected_json_content,
-            headers=test_user_admin.jwt_authorization_header
+            headers=test_user_admin.jwt_authorization_header,
         )
 
     get_permissions(expected_json_content=[])

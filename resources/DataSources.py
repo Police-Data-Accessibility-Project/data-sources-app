@@ -4,7 +4,8 @@ from config import limiter
 from middleware.access_logic import (
     AccessInfo,
     WRITE_ONLY_AUTH_INFO,
-    GET_AUTH_INFO, STANDARD_JWT_AUTH_INFO,
+    GET_AUTH_INFO,
+    STANDARD_JWT_AUTH_INFO,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     EntryCreateUpdateRequestDTO,
@@ -25,7 +26,8 @@ from middleware.primary_resource_logic.data_sources_logic import (
     delete_data_source_wrapper,
     create_data_source_related_agency,
     delete_data_source_related_agency,
-    get_data_source_related_agencies, get_data_sources_for_map_wrapper,
+    get_data_source_related_agencies,
+    get_data_sources_for_map_wrapper,
 )
 
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advanced_schemas import (
@@ -43,9 +45,9 @@ from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulatePa
 
 namespace_data_source = create_namespace(AppNamespaces.DATA_SOURCES)
 
-    # This endpoint no longer works because of the other data source endpoint
-    # It is interpreted as another data source id
-    # But we have not yet decided whether to modify or remove it entirely
+# This endpoint no longer works because of the other data source endpoint
+# It is interpreted as another data source id
+# But we have not yet decided whether to modify or remove it entirely
 
 
 @namespace_data_source.route("/<resource_id>")

@@ -4,6 +4,7 @@ Any logic which utilizes the `flask.session` import should be placed here.
 `session` is a global variable within a given request context.
 Consequently, care must be taken in both usage and testing of this logic.
 """
+
 from typing import Optional
 
 from flask import session

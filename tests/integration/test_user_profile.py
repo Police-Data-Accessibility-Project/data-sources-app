@@ -9,11 +9,16 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_adva
 )
 from resources.UserProfile import USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL
 from tests.conftest import flask_client_with_db
-from tests.helper_scripts.complex_test_data_creation_functions import create_test_data_request
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
+from tests.helper_scripts.complex_test_data_creation_functions import (
+    create_test_data_request,
+)
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+    TestDataCreatorFlask,
+)
 from tests.helper_scripts.helper_functions import create_test_user_setup
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from conftest import test_data_creator_flask, monkeysession
+
 
 def test_user_profile_data_requests(flask_client_with_db):
 
@@ -49,6 +54,7 @@ def test_user_profile_data_requests(flask_client_with_db):
     assert json_response["data"][0]["id"] == int(tdr.id)
     assert json_response["data"][0]["submission_notes"] == tdr.submission_notes
 
+
 def test_user_profile_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
 
@@ -77,9 +83,7 @@ def test_user_profile_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     )
 
     # Link the user to a fictional github account
-    github_user_id = tdc.tdcdb.link_fake_github_to_user(
-        user_id=tus.user_info.user_id
-    )
+    github_user_id = tdc.tdcdb.link_fake_github_to_user(user_id=tus.user_info.user_id)
 
     # Call user profile endpoint and confirm it returns results
     json_response = tdc.request_validator.get_user_by_id(
@@ -109,5 +113,5 @@ def test_user_profile_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
         headers=tus_2.jwt_authorization_header,
         user_id=tus.user_info.user_id,
         expected_response_status=HTTPStatus.FORBIDDEN,
-        expected_schema=MessageSchema()
+        expected_schema=MessageSchema(),
     )

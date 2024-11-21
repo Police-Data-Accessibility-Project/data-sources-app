@@ -49,12 +49,12 @@ GITHUB_DATA_REQUESTS_ISSUES_ENDPOINT = (
 )
 GITHUB_DATA_REQUESTS_SYNCHRONIZE = "/api/github/data-requests/synchronize"
 
-#region Github OAuth
+# region Github OAuth
 GITHUB_OAUTH_LINK_ENDPOINT = "/api/auth/link-to-github"
 
 GITHUB_OAUTH_LOGIN_ENDPOINT = "/api/auth/login-with-github"
 
-#endregion
+# endregion
 
 SEARCH_FOLLOW_BASE_ENDPOINT = "/api/search/follow"
 

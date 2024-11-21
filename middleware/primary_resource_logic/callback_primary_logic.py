@@ -48,9 +48,9 @@ def callback_outer_wrapper(db_client: DatabaseClient) -> Response:
     gh_access_token = get_github_oauth_access_token()
     exp = (datetime.now(tz=timezone.utc) + timedelta(minutes=5)).timestamp()
     simple_jwt = SimpleJWT(
-        sub=gh_access_token['access_token'],
+        sub=gh_access_token["access_token"],
         exp=exp,
-        purpose=JWTPurpose.GITHUB_ACCESS_TOKEN
+        purpose=JWTPurpose.GITHUB_ACCESS_TOKEN,
     )
 
     flask_session_callback_info = get_flask_session_callback_info()
@@ -59,12 +59,7 @@ def callback_outer_wrapper(db_client: DatabaseClient) -> Response:
         url=redirect_base_url,
         params={"gh_access_token": simple_jwt.encode()},
     )
-    return redirect(
-        location=redirect_url
-    )
-
-
-
+    return redirect(location=redirect_url)
 
 
 def user_exists(db_client: DatabaseClient, email: str) -> bool:
@@ -73,4 +68,3 @@ def user_exists(db_client: DatabaseClient, email: str) -> bool:
         return True
     except UserNotFoundError:
         return False
-

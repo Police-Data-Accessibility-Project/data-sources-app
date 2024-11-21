@@ -2,7 +2,9 @@ from marshmallow import fields, Schema, post_load
 
 from database_client.enums import RequestStatus
 from middleware.primary_resource_logic.data_requests import RequestInfoPostDTO
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_base_schema import DataRequestsSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_base_schema import (
+    DataRequestsSchema,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import (
     TypeaheadLocationsResponseSchema,
 )
@@ -16,7 +18,9 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos im
     DataRequestLocationInfoPostDTO,
     DataRequestsPutDTO,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_schemas import DataSourceExpandedSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_schemas import (
+    DataSourceExpandedSchema,
+)
 from middleware.schema_and_dto_logic.schema_helpers import (
     create_get_many_schema,
     create_get_by_id_schema,

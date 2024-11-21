@@ -51,6 +51,11 @@ source venv/bin/activate
 
 pip install -r requirements.txt
 
+pre-commit install
+
+# To optionally run the pre-commit against all files (as pre-commit usually only runs on changed files)
+pre-commit run --all-files
+
 ```
 
 ### 5. Add environment secrets
