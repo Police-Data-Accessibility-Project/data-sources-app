@@ -1,4 +1,4 @@
-![Python Version](https://img.shields.io/badge/python-3.11-blue?style=for-the-badge&logo=python&logoColor=ffdd54)
+![Python Version](https://img.shields.io/badge/python-3.12-blue?style=for-the-badge&logo=python&logoColor=ffdd54)
 
 # data-sources-app-v2
 
@@ -50,6 +50,7 @@ source venv/bin/activate
 ```
 
 pip install -r requirements.txt
+pip install "psycopg[binary,pool]"
 
 pre-commit install
 
