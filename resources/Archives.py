@@ -1,4 +1,4 @@
-from flask import Response
+from flask import Response, request
 from flask_restx import fields
 
 from middleware.decorators import api_key_required, permissions_required
@@ -6,7 +6,6 @@ from middleware.primary_resource_logic.archives_queries import (
     archives_get_query,
     update_archives_data,
 )
-from flask_restful import request
 
 import json
 from typing import Any

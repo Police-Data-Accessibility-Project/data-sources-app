@@ -10,7 +10,7 @@ import pytest
 from unittest.mock import patch
 
 from flask.testing import FlaskClient
-from flask_restful import Resource
+from flask_restx import Resource
 
 from resources.Agencies import AgenciesByPage, AgenciesById
 from resources.ApiKeyResource import ApiKeyResource, API_KEY_ROUTE
