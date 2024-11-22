@@ -1,5 +1,4 @@
 from flask import request, Response
-from flask_restx import fields
 
 from middleware.access_logic import NO_AUTH_INFO, AccessInfo
 from middleware.decorators import endpoint_info_2
