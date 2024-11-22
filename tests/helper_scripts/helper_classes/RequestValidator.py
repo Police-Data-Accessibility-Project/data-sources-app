@@ -136,7 +136,11 @@ class RequestValidator:
         )
 
     def request_reset_password(
-        self, email: str, mocker, expected_response_status: HTTPStatus = HTTPStatus.OK
+        self,
+        email: str,
+        mocker,
+        expect_call: bool = True,
+        expected_response_status: HTTPStatus = HTTPStatus.OK
     ):
         mock = mocker.patch(
             "middleware.primary_resource_logic.reset_token_queries.send_password_reset_link"
@@ -145,7 +149,12 @@ class RequestValidator:
             endpoint="/api/request-reset-password",
             json={"email": email},
             expected_response_status=expected_response_status,
+            expected_schema=SchemaConfigs.REQUEST_RESET_PASSWORD.value.primary_output_schema,
         )
+        if not expect_call:
+            assert not mock.called
+            return
+        assert mock.call_args[1]["email"] == email
         return mock.call_args[1]["token"]
 
     def reset_token_validation(

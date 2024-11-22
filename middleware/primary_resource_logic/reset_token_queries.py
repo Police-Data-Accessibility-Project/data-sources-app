@@ -1,9 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from http import HTTPStatus
-from uu import decode
 
-import jwt
 from flask import Response, make_response
 
 from marshmallow import Schema, fields
@@ -13,6 +11,7 @@ from database_client.database_client import DatabaseClient
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
 from middleware.access_logic import PasswordResetTokenAccessInfo
 from middleware.common_response_formatting import message_response
+from middleware.exceptions import UserNotFoundError
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.primary_resource_logic.api_key_logic import generate_api_key
 from middleware.primary_resource_logic.user_queries import user_check_email
@@ -64,6 +63,10 @@ class ResetPasswordSchema(Schema):
 class ResetPasswordDTO:
     password: str
 
+def request_reset_password_response():
+    return message_response(
+        message="If the email is valid, an email has been sent to the user with instructions on how to reset their password.",
+    )
 
 def request_reset_password(
     db_client: DatabaseClient, dto: RequestResetPasswordRequestDTO
@@ -75,7 +78,11 @@ def request_reset_password(
     :return:
     """
     email = dto.email
-    user_id = user_check_email(db_client, email)
+    try:
+        user_id = user_check_email(db_client, email)
+    except UserNotFoundError:
+        return request_reset_password_response()
+
     token = generate_api_key()
     db_client.add_reset_token(user_id=user_id, token=token)
     jwt_token = SimpleJWT(
@@ -87,12 +94,7 @@ def request_reset_password(
         purpose=JWTPurpose.PASSWORD_RESET,
     )
     send_password_reset_link(email=email, token=jwt_token.encode())
-    return make_response(
-        {
-            "message": "An email has been sent to your email address with a link to reset your password. It will be valid for 15 minutes.",
-        },
-        HTTPStatus.OK,
-    )
+    return request_reset_password_response()
 
 
 def reset_password(
