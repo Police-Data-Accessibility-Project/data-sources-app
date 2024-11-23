@@ -8,6 +8,7 @@ import pytest
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
+from database_client.enums import SortOrder
 from middleware.enums import JurisdictionType
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgenciesGetByIDResponseSchema,
@@ -72,13 +73,12 @@ def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
     tus = tdc.standard_user()
 
-    response_json = run_and_validate_request(
-        flask_client=tdc.flask_client,
-        http_method="get",
-        endpoint=AGENCIES_BASE_ENDPOINT + "?page=1&sort_by=name&sort_order=ASC",
+    response_json = tdc.request_validator.get_agency(
         headers=tus.api_authorization_header,
-        expected_schema=SchemaConfigs.AGENCIES_GET_MANY.value.primary_output_schema,
+        sort_by="name",
+        sort_order=SortOrder.ASCENDING,
     )
+
 
     assert_expected_get_many_result(
         response_json=response_json,
@@ -86,12 +86,20 @@ def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
     )
     data_asc = response_json["data"]
 
-    response_json = run_and_validate_request(
-        flask_client=tdc.flask_client,
-        http_method="get",
-        endpoint=AGENCIES_BASE_ENDPOINT + "?page=1&sort_by=name&sort_order=DESC",
+    # Test pagination functionality
+    response_json_2 = tdc.request_validator.get_agency(
         headers=tus.api_authorization_header,
-        expected_schema=SchemaConfigs.AGENCIES_GET_MANY.value.primary_output_schema,
+        sort_by="name",
+        sort_order=SortOrder.ASCENDING,
+        page=2
+    )
+
+    assert response_json != response_json_2
+
+    response_json = tdc.request_validator.get_agency(
+        headers=tus.api_authorization_header,
+        sort_by="name",
+        sort_order=SortOrder.DESCENDING,
     )
 
     assert_expected_get_many_result(
@@ -102,6 +110,7 @@ def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
 
     assert data_asc != data_desc
     assert data_asc[0]["name"] < data_desc[0]["name"]
+
 
 
 def test_agencies_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
