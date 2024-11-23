@@ -11,7 +11,7 @@ from marshmallow import Schema
 from database_client.enums import SortOrder, RequestStatus
 from middleware.util import update_if_not_none
 from resources.endpoint_schema_config import SchemaConfigs
-from tests.helper_scripts.constants import DATA_REQUESTS_BY_ID_ENDPOINT
+from tests.helper_scripts.constants import DATA_REQUESTS_BY_ID_ENDPOINT, AGENCIES_BASE_ENDPOINT
 from tests.helper_scripts.helper_functions import (
     get_authorization_header,
     add_query_params,
@@ -358,4 +358,19 @@ class RequestValidator:
             headers=headers,
             expected_json_content=expected_json_content,
             expected_schema=SchemaConfigs.USER_PROFILE_DATA_REQUESTS_GET.value.primary_output_schema,
+        )
+
+    def get_agency(self, sort_by: str, sort_order: SortOrder, headers: dict, page: int = 1):
+        url = add_query_params(
+            url=AGENCIES_BASE_ENDPOINT,
+            params={
+                "sort_by": sort_by,
+                "sort_order": sort_order.value,
+                "page": page
+            }
+        )
+        return self.get(
+            endpoint=url,
+            headers=headers,
+            expected_schema=SchemaConfigs.AGENCIES_GET_MANY.value.primary_output_schema,
         )
