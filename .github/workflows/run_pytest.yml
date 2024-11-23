@@ -7,7 +7,6 @@ jobs:
   run_tests:
     env:
       FLASK_APP_COOKIE_ENCRYPTION_KEY: ${{ secrets.SECRET_KEY }}
-      DEV_DB_CONN_STRING: ${{secrets.DEV_DB_CONN_STRING}}
       DO_DATABASE_URL: ${{secrets.DEV_DB_CONN_STRING}}  # TODO: Ideally, won't need both for testing, but this is for safety for now
       GH_CLIENT_ID: ${{secrets.GH_CLIENT_ID}}
       GH_CLIENT_SECRET: ${{secrets.GH_CLIENT_SECRET}}
