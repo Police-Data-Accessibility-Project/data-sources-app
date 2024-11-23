@@ -54,7 +54,7 @@ Login information for users can be obtained through environment variables provid
 
 ### Running Tests Locally
 
-A connection string will need to be input into the `DEV_DB_CONN_STRING` and `DO_DATABASE_URL` environment variables for your local copy of [data\_sources\_app ](https://github.com/Police-Data-Accessibility-Project/data-sources-app). This connection string will take the following form:
+A connection string will need to be input into the `DO_DATABASE_URL` environment variables for your local copy of [data\_sources\_app ](https://github.com/Police-Data-Accessibility-Project/data-sources-app). This connection string will take the following form:
 
 `postgresql://user:password@server:port/dbname?sslmod=require`
 

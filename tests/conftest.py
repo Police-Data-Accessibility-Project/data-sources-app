@@ -32,11 +32,7 @@ def dev_db_client() -> DatabaseClient:
 def connection_with_test_data() -> psycopg.Connection:
     """
     Insert test agencies and sources into test data.
-
     Will roll back in case of error.
-
-    :param dev_db_connection:
-    :return:
     """
     db_client = DatabaseClient()
     try:
@@ -77,7 +73,6 @@ def client_with_mock_db(mocker, monkeypatch) -> ClientWithMockDB:
 def flask_client_with_db(monkeypatch):
     """
     Creates a client with database connection
-    :param dev_db_connection:
     :return:
     """
     mock_get_flask_app_secret_key = MagicMock(return_value="test")
