@@ -7,7 +7,7 @@ from flask_restx import fields
 from middleware.access_logic import (
     WRITE_ONLY_AUTH_INFO,
     STANDARD_JWT_AUTH_INFO,
-    AccessInfo,
+    AccessInfoPrimary,
 )
 from middleware.decorators import endpoint_info_2
 from middleware.primary_resource_logic.login_queries import (
@@ -41,7 +41,7 @@ class RefreshSession(PsycopgResource):
         ),
         schema_config=SchemaConfigs.REFRESH_SESSION,
     )
-    def post(self, access_info: AccessInfo) -> Response:
+    def post(self, access_info: AccessInfoPrimary) -> Response:
         """
         Processes the session token refresh request. If the provided session token is valid,
         it generates a new session token, invalidates the old one, and returns the new token.

@@ -2,7 +2,7 @@ from flask import Response
 
 from config import limiter
 from middleware.access_logic import (
-    AccessInfo,
+    AccessInfoPrimary,
     WRITE_ONLY_AUTH_INFO,
     GET_AUTH_INFO,
     STANDARD_JWT_AUTH_INFO,
@@ -67,7 +67,7 @@ class DataSourceById(PsycopgResource):
         description="Get details of a specific data source by its ID.",
     )
     @limiter.limit("50/minute;250/hour")
-    def get(self, access_info: AccessInfo, resource_id: str) -> Response:
+    def get(self, access_info: AccessInfoPrimary, resource_id: str) -> Response:
         """
         Retrieves details of a specific data source by its ID.
 
@@ -94,7 +94,7 @@ class DataSourceById(PsycopgResource):
         ),
         description="Update details of a specific data source by its ID.",
     )
-    def put(self, access_info: AccessInfo, resource_id: str) -> Response:
+    def put(self, access_info: AccessInfoPrimary, resource_id: str) -> Response:
         """
         Updates a data source by its ID based on the provided JSON payload.
 
@@ -121,7 +121,7 @@ class DataSourceById(PsycopgResource):
             success_message="Data source successfully deleted.",
         ),
     )
-    def delete(self, access_info: AccessInfo, resource_id: str) -> Response:
+    def delete(self, access_info: AccessInfoPrimary, resource_id: str) -> Response:
         """
         Deletes a data source by its ID.
 
@@ -154,7 +154,7 @@ class DataSources(PsycopgResource):
         ),
         description="Retrieves all data sources.",
     )
-    def get(self, access_info: AccessInfo) -> Response:
+    def get(self, access_info: AccessInfoPrimary) -> Response:
         """
         Retrieves all data sources. The data sources endpoint returns all approved rows in the corresponding Data
         Sources database table.
@@ -180,7 +180,7 @@ class DataSources(PsycopgResource):
         ),
         description="Adds a new data source.",
     )
-    def post(self, access_info: AccessInfo) -> Response:
+    def post(self, access_info: AccessInfoPrimary) -> Response:
         """
         Adds a new data source based on the provided JSON payload.
 
@@ -209,7 +209,7 @@ class DataSourcesRelatedAgencies(PsycopgResource):
         ),
         description="Get related agencies to a data source",
     )
-    def get(self, resource_id: str, access_info: AccessInfo) -> Response:
+    def get(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
         """
         Get related agencies to a data source.
         """
@@ -232,7 +232,7 @@ class DataSourcesRelatedAgenciesById(PsycopgResource):
         description="Mark a data source as related to a data request",
     )
     def post(
-        self, resource_id: str, agency_id: str, access_info: AccessInfo
+        self, resource_id: str, agency_id: str, access_info: AccessInfoPrimary
     ) -> Response:
         """
         Mark a data source as related to a data request
@@ -253,7 +253,7 @@ class DataSourcesRelatedAgenciesById(PsycopgResource):
         description="Remove an association of a data source with a data request",
     )
     def delete(
-        self, resource_id: str, agency_id: str, access_info: AccessInfo
+        self, resource_id: str, agency_id: str, access_info: AccessInfoPrimary
     ) -> Response:
         """
         Remove an association of a data source with a data request

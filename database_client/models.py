@@ -625,6 +625,16 @@ class User(Base):
     role: Mapped[Optional[text]]
 
 
+class PendingUser(Base):
+    __tablename__ = Relations.PENDING_USERS.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    created_at: Mapped[Optional[timestamp_tz]]
+    email: Mapped[text] = mapped_column(unique=True)
+    password_digest: Mapped[Optional[text]]
+    validation_token: Mapped[Optional[text]]
+
+
 class LinkLocationDataRequest(Base):
     __tablename__ = Relations.LINK_LOCATIONS_DATA_REQUESTS.value
 
@@ -761,6 +771,7 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     Relations.RECORD_CATEGORIES.value: RecordCategory,
     Relations.RECENT_SEARCHES_EXPANDED.value: RecentSearchExpanded,
     Relations.RECORD_TYPES.value: RecordType,
+    Relations.PENDING_USERS.value: PendingUser,
 }
 
 

@@ -4,7 +4,7 @@ from flask import Response
 
 from config import limiter
 from database_client.database_client import DatabaseClient
-from middleware.access_logic import NO_AUTH_INFO, AccessInfo
+from middleware.access_logic import NO_AUTH_INFO, AccessInfoPrimary
 from middleware.decorators import endpoint_info_2
 from middleware.primary_resource_logic.typeahead_suggestion_logic import (
     get_typeahead_results,
@@ -52,7 +52,7 @@ class TypeaheadLocations(PsycopgResource):
         ),
     )
     @limiter.limit("10/second")
-    def get(self, access_info: AccessInfo) -> Response:
+    def get(self, access_info: AccessInfoPrimary) -> Response:
         """
         Get suggestions for a typeahead query
         Queries the database for typeahead suggestions of locations
@@ -81,7 +81,7 @@ class TypeaheadAgencies(PsycopgResource):
             }
         ),
     )
-    def get(self, access_info: AccessInfo) -> Response:
+    def get(self, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             **get_typeahead_kwargs(DatabaseClient.get_typeahead_agencies)
         )

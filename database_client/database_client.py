@@ -1381,3 +1381,46 @@ class DatabaseClient:
             columns=["email"],
             where_mappings={"id": user_id},
         )["email"]
+
+    def pending_user_exists(self, email: str) -> bool:
+        results = self._select_from_relation(
+            relation_name=Relations.PENDING_USERS.value,
+            columns=["id"],
+            where_mappings={"email": email},
+        )
+        return len(results) > 0
+
+    def create_pending_user(
+        self, email: str, password_digest: str, validation_token: str
+    ) -> str:
+        return self._create_entry_in_table(
+            table_name=Relations.PENDING_USERS.value,
+            column_value_mappings={
+                "email": email,
+                "password_digest": password_digest,
+                "validation_token": validation_token,
+            },
+        )
+
+    def update_pending_user_validation_token(self, email: str, validation_token: str):
+        self._update_entry_in_table(
+            table_name=Relations.PENDING_USERS.value,
+            entry_id=email,
+            column_edit_mappings={"validation_token": validation_token},
+            id_column_name="email",
+        )
+
+    def get_pending_user_with_token(self, validation_token: str) -> Optional[dict]:
+        result = self._select_single_entry_from_relation(
+            relation_name=Relations.PENDING_USERS.value,
+            columns=["email", "password_digest"],
+            where_mappings={"validation_token": validation_token},
+        )
+        return result
+
+    def delete_pending_user(self, email: str):
+        self._delete_from_table(
+            table_name=Relations.PENDING_USERS.value,
+            id_column_value=email,
+            id_column_name="email",
+        )

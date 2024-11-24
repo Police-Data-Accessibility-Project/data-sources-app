@@ -2,7 +2,7 @@ from flask import Response
 
 from middleware.access_logic import (
     AuthenticationInfo,
-    AccessInfo,
+    AccessInfoPrimary,
     STANDARD_JWT_AUTH_INFO,
 )
 from middleware.decorators import endpoint_info, endpoint_info_2
@@ -50,7 +50,7 @@ class UserByID(PsycopgResource):
         ),
         description="Get user profile",
     )
-    def get(self, user_id: int, access_info: AccessInfo) -> Response:
+    def get(self, user_id: int, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             wrapper_function=get_user_by_id_wrapper,
             user_id=int(user_id),
@@ -76,7 +76,7 @@ class UserDataRequests(PsycopgResource):
             success_model=user_data_requests_model,
         ),
     )
-    def get(self, access_info: AccessInfo) -> Response:
+    def get(self, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             wrapper_function=get_owner_data_requests_wrapper,
             schema_populate_parameters=GET_MANY_SCHEMA_POPULATE_PARAMETERS,
@@ -95,7 +95,7 @@ class UserRecentSearches(PsycopgResource):
         ),
         description="Get user's recent searches",
     )
-    def get(self, access_info: AccessInfo) -> Response:
+    def get(self, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             wrapper_function=get_user_recent_searches,
             access_info=access_info,

@@ -1,7 +1,11 @@
 from flask import Response
 
 from config import limiter
-from middleware.access_logic import AccessInfo, GET_AUTH_INFO, WRITE_ONLY_AUTH_INFO
+from middleware.access_logic import (
+    AccessInfoPrimary,
+    GET_AUTH_INFO,
+    WRITE_ONLY_AUTH_INFO,
+)
 from middleware.column_permission_logic import create_column_permissions_string_table
 from middleware.decorators import (
     endpoint_info,
@@ -48,7 +52,7 @@ class AgenciesByPage(PsycopgResource):
         ),
         description="Get a paginated list of approved agencies",
     )
-    def get(self, access_info: AccessInfo) -> Response:
+    def get(self, access_info: AccessInfoPrimary) -> Response:
         """
         Retrieves a paginated list of approved agencies from the database.
 
@@ -69,7 +73,7 @@ class AgenciesByPage(PsycopgResource):
             success_message="Returns the id of the newly created agency."
         ),
     )
-    def post(self, access_info: AccessInfo):
+    def post(self, access_info: AccessInfoPrimary):
         return self.run_endpoint(
             wrapper_function=create_agency,
             schema_populate_parameters=SchemaConfigs.AGENCIES_POST.value.get_schema_populate_parameters(),
@@ -94,7 +98,7 @@ class AgenciesById(PsycopgResource):
         ),
     )
     @limiter.limit("50/minute;250/hour")
-    def get(self, resource_id: str, access_info: AccessInfo) -> Response:
+    def get(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             wrapper_function=get_agency_by_id,
             schema_populate_parameters=SchemaConfigs.AGENCIES_BY_ID_GET.value.get_schema_populate_parameters(),
@@ -110,7 +114,7 @@ class AgenciesById(PsycopgResource):
         ),
         description="Updates an agency",
     )
-    def put(self, resource_id: str, access_info: AccessInfo) -> Response:
+    def put(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             update_agency,
             access_info=access_info,
@@ -123,7 +127,7 @@ class AgenciesById(PsycopgResource):
         description="Deletes an agency",
         responses=create_response_dictionary("Agency successfully deleted."),
     )
-    def delete(self, resource_id: str, access_info: AccessInfo) -> Response:
+    def delete(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             delete_agency, agency_id=resource_id, access_info=access_info
         )

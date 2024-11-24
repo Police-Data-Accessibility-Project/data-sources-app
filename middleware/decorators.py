@@ -28,6 +28,7 @@ from resources.resource_helpers import (
     ResponseInfo,
     create_response_dictionary,
     add_password_reset_token_header_arg,
+    add_validate_email_header_arg,
 )
 from resources.endpoint_schema_config import SchemaConfigs, OutputSchemaManager
 
@@ -247,23 +248,30 @@ def _get_output_model(namespace: Namespace, output_schema: Schema) -> Optional[M
         return None
 
 
+ACCESS_TYPE_HEADER_ARG_FUNC_MAP = {
+    AccessTypeEnum.JWT: add_jwt_header_arg,
+    AccessTypeEnum.API_KEY: add_api_key_header_arg,
+    AccessTypeEnum.RESET_PASSWORD: add_password_reset_token_header_arg,
+    AccessTypeEnum.VALIDATE_EMAIL: add_validate_email_header_arg,
+}
+
+
 def _add_auth_info_to_parser(auth_info: AuthenticationInfo, parser: RequestParser):
     if auth_info.no_auth:
         return
 
     pd = ParserDeterminator(auth_info.allowed_access_methods)
 
-    if pd.jwt_and_api_key_allowed:
+    if pd.is_access_type_allowed(AccessTypeEnum.JWT) and pd.is_access_type_allowed(
+        AccessTypeEnum.API_KEY
+    ):
         add_jwt_or_api_key_header_arg(parser)
         return
-    elif pd.jwt_allowed:
-        add_jwt_header_arg(parser)
-    elif pd.api_key_allowed:
-        add_api_key_header_arg(parser)
-    elif pd.reset_token_allowed():
-        add_password_reset_token_header_arg(parser)
-    else:
-        raise Exception("Must have at least one access method")
+    for access_type in auth_info.allowed_access_methods:
+        header_arg_function = ACCESS_TYPE_HEADER_ARG_FUNC_MAP[access_type]
+        header_arg_function(parser)
+        return
+    raise Exception("Must have at least one access method")
 
 
 def _get_input_doc_info(

@@ -1,6 +1,6 @@
 from flask import request, Response
 
-from middleware.access_logic import NO_AUTH_INFO, AccessInfo
+from middleware.access_logic import NO_AUTH_INFO, AccessInfoPrimary
 from middleware.decorators import endpoint_info_2
 from middleware.primary_resource_logic.reset_token_queries import request_reset_password
 from resources.endpoint_schema_config import SchemaConfigs
@@ -31,7 +31,7 @@ class RequestResetPassword(PsycopgResource):
         ),
         description="Allows a user to request a password reset. Generates sends an email with instructions on how to reset their password.",
     )
-    def post(self, access_info: AccessInfo) -> Response:
+    def post(self, access_info: AccessInfoPrimary) -> Response:
         """
         Processes a password reset request. Checks if the user's email exists in the database,
         generates a reset token, and sends an email with the reset link.

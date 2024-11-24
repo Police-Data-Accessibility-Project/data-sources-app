@@ -4,7 +4,7 @@ import pytest
 from flask_restx._http import HTTPStatus
 from pytest_mock import mocker
 
-from middleware.access_logic import AccessInfo
+from middleware.access_logic import AccessInfoPrimary
 from middleware.decorators import (
     api_key_required,
     permissions_required,
@@ -57,7 +57,7 @@ def dummy_authentication_required_route():
         allowed_access_methods=[AccessTypeEnum.API_KEY],
         restrict_to_permissions=[PermissionsEnum.READ_ALL_USER_INFO],
     )
-    def _dummy_route(access_info: AccessInfo):
+    def _dummy_route(access_info: AccessInfoPrimary):
         return "This is a protected route", HTTPStatus.OK.value
 
     return _dummy_route

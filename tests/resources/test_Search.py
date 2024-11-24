@@ -1,7 +1,7 @@
 import pytest
 
 from database_client.database_client import DatabaseClient
-from middleware.access_logic import AccessInfo
+from middleware.access_logic import AccessInfoPrimary
 from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import (
     SearchRequests,
 )
@@ -15,7 +15,7 @@ from utilities.enums import RecordCategories
 
 def mock_search_wrapper_all_parameters(
     db_client: DatabaseClient,
-    access_info: AccessInfo,
+    access_info: AccessInfoPrimary,
     dto: SearchRequests,
 ):
     assert dto.state == "Pennsylvania"
@@ -28,7 +28,7 @@ def mock_search_wrapper_all_parameters(
 
 def mock_search_wrapper_multiple_parameters(
     db_client: DatabaseClient,
-    access_info: AccessInfo,
+    access_info: AccessInfoPrimary,
     dto: SearchRequests,
 ):
     assert dto.state == "Pennsylvania"
@@ -41,7 +41,7 @@ def mock_search_wrapper_multiple_parameters(
 
 def mock_search_wrapper_minimal_parameters(
     db_client: DatabaseClient,
-    access_info: AccessInfo,
+    access_info: AccessInfoPrimary,
     dto: SearchRequests,
 ):
     assert dto.state == "Pennsylvania"

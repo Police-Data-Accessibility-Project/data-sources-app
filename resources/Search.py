@@ -4,7 +4,7 @@ from middleware.access_logic import (
     GET_AUTH_INFO,
     WRITE_ONLY_AUTH_INFO,
     STANDARD_JWT_AUTH_INFO,
-    AccessInfo,
+    AccessInfoPrimary,
     NO_AUTH_INFO,
 )
 from middleware.primary_resource_logic.search_logic import (
@@ -48,7 +48,7 @@ class Search(PsycopgResource):
         response_info=ResponseInfo(success_message="Search successful."),
         description="Performs a search using the provided search terms and location.",
     )
-    def get(self, access_info: AccessInfo) -> Response:
+    def get(self, access_info: AccessInfoPrimary) -> Response:
         """
         Performs a search using the provided search terms and location.
 
@@ -83,7 +83,7 @@ class SearchFollow(PsycopgResource):
         ),
         description="Retrieves the searches that the user follows.",
     )
-    def get(self, access_info: AccessInfo):
+    def get(self, access_info: AccessInfoPrimary):
         """
         Retrieves the searches that the user follows.
         :return:
@@ -101,7 +101,7 @@ class SearchFollow(PsycopgResource):
         ),
         description="Follows a search.",
     )
-    def post(self, access_info: AccessInfo):
+    def post(self, access_info: AccessInfoPrimary):
         """
         Follows a search.
         :return:
@@ -121,7 +121,7 @@ class SearchFollow(PsycopgResource):
         ),
         description="Unfollows a search.",
     )
-    def delete(self, access_info: AccessInfo):
+    def delete(self, access_info: AccessInfoPrimary):
         """
         Unfollows a search.
         :return:

@@ -80,6 +80,7 @@ The environment variables are as follows:
 * DEVELOPMENT_PASSWORD: Used to create a test user with elevated permissions for the purposes of testing. Developers must provide this password when using the `/dev/create-test-user-with-elevated-permissions` endpoint. Can be customized for local development.
 * GH_API_ACCESS_TOKEN: Used to authenticate with GitHub when adding or getting information about Github Issues. Must correspond to the `access_token` provided by GitHub.
 * GH_ISSUE_REPO_NAME: Identifies the repository, in `<github-username>/<github-repo-name>` format, where the issue will be created, and where information about issues will be retrieved. Can be customized for local development.
+* VALIDATE_EMAIL_SECRET_KEY: Used to sign and verify JWT tokens for the validate email feature. Used to identify that any JWT tokens for the validate email feature produced are recognizable by this version of the app and no other.
 
 
 #### .env Example
@@ -98,6 +99,7 @@ RESET_PASSWORD_SECRET_KEY="myCustomResetPasswordSecretKey"
 DEVELOPMENT_PASSWORD="myCustomDevelopmentPassword"
 GH_API_ACCESS_TOKEN="GithubProvidedAccessToken"
 GH_ISSUE_REPO_NAME="github-username/github-repo-name"
+VALIDATE_EMAIL_SECRET_KEY="myCustomValidateEmailSecretKey"
 ```
 
 #### Shell Example

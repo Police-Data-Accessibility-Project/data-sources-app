@@ -14,7 +14,7 @@ from database_client.enums import (
     RequestStatus,
 )
 from database_client.subquery_logic import SubqueryParameterManager, SubqueryParameters
-from middleware.access_logic import AccessInfo
+from middleware.access_logic import AccessInfoPrimary
 from middleware.column_permission_logic import (
     get_permitted_columns,
     RelationRoleParameters,
@@ -143,7 +143,9 @@ def get_location_id_for_data_requests(
 
 
 def get_data_requests_relation_role(
-    db_client: DatabaseClient, data_request_id: Optional[int], access_info: AccessInfo
+    db_client: DatabaseClient,
+    data_request_id: Optional[int],
+    access_info: AccessInfoPrimary,
 ) -> RelationRoleEnum:
     """
     Determine the relation role for information on a data request
@@ -176,7 +178,7 @@ def add_creator_user_id(
 
 
 def create_data_request_wrapper(
-    db_client: DatabaseClient, dto: DataRequestsPostDTO, access_info: AccessInfo
+    db_client: DatabaseClient, dto: DataRequestsPostDTO, access_info: AccessInfoPrimary
 ) -> Response:
     """
     Create a data request
@@ -229,7 +231,7 @@ def _get_location_ids(db_client, dto: DataRequestsPostDTO):
 def get_data_requests_wrapper(
     db_client: DatabaseClient,
     dto: GetManyDataRequestsRequestsDTO,
-    access_info: AccessInfo,
+    access_info: AccessInfoPrimary,
 ) -> Response:
     """
     Get data requests
@@ -297,7 +299,7 @@ def is_creator_or_admin(access_info, data_request_id, db_client):
 
 
 def delete_data_request_wrapper(
-    db_client: DatabaseClient, data_request_id: int, access_info: AccessInfo
+    db_client: DatabaseClient, data_request_id: int, access_info: AccessInfoPrimary
 ) -> Response:
     """
     Delete data requests
@@ -344,7 +346,7 @@ def update_data_request_wrapper(
     db_client: DatabaseClient,
     dto: DataRequestsPutOuterDTO,
     data_request_id: int,
-    access_info: AccessInfo,
+    access_info: AccessInfoPrimary,
 ):
     """
     Update data requests
@@ -389,7 +391,7 @@ def created_filtered_entry_dict(dto: DataRequestsPutOuterDTO) -> dict:
 
 
 def get_data_request_by_id_wrapper(
-    db_client: DatabaseClient, access_info: AccessInfo, dto: GetByIDBaseDTO
+    db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: GetByIDBaseDTO
 ) -> Response:
     """
     Get data requests
@@ -487,7 +489,7 @@ class CreateDataRequestRelatedLocationLogic(PostLogic):
 
 
 def create_data_request_related_source(
-    db_client: DatabaseClient, access_info: AccessInfo, dto: RelatedSourceByIDDTO
+    db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: RelatedSourceByIDDTO
 ):
     post_logic = CreateDataRequestRelatedSourceLogic(
         middleware_parameters=MiddlewareParameters(
@@ -510,7 +512,7 @@ def create_data_request_related_source(
 
 
 def delete_data_request_related_source(
-    db_client: DatabaseClient, access_info: AccessInfo, dto: RelatedSourceByIDDTO
+    db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: RelatedSourceByIDDTO
 ):
     return delete_entry(
         middleware_parameters=MiddlewareParameters(
@@ -533,7 +535,9 @@ def delete_data_request_related_source(
 
 
 def create_data_request_related_location(
-    db_client: DatabaseClient, access_info: AccessInfo, dto: RelatedLocationsByIDDTO
+    db_client: DatabaseClient,
+    access_info: AccessInfoPrimary,
+    dto: RelatedLocationsByIDDTO,
 ):
     post_logic = CreateDataRequestRelatedLocationLogic(
         middleware_parameters=MiddlewareParameters(
@@ -556,7 +560,9 @@ def create_data_request_related_location(
 
 
 def delete_data_request_related_location(
-    db_client: DatabaseClient, access_info: AccessInfo, dto: RelatedLocationsByIDDTO
+    db_client: DatabaseClient,
+    access_info: AccessInfoPrimary,
+    dto: RelatedLocationsByIDDTO,
 ):
     return delete_entry(
         middleware_parameters=MiddlewareParameters(
@@ -579,7 +585,7 @@ def delete_data_request_related_location(
 
 
 def withdraw_data_request_wrapper(
-    db_client: DatabaseClient, data_request_id: int, access_info: AccessInfo
+    db_client: DatabaseClient, data_request_id: int, access_info: AccessInfoPrimary
 ) -> Response:
     if not is_creator_or_admin(
         access_info=access_info, data_request_id=data_request_id, db_client=db_client

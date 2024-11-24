@@ -9,7 +9,7 @@ from database_client.db_client_dataclasses import OrderByParameters, WhereMappin
 from database_client.subquery_logic import SubqueryParameters, SubqueryParameterManager
 from database_client.enums import ApprovalStatus
 from database_client.result_formatter import ResultFormatter
-from middleware.access_logic import AccessInfo
+from middleware.access_logic import AccessInfoPrimary
 from middleware.dynamic_request_logic.delete_logic import delete_entry
 from middleware.dynamic_request_logic.get_by_id_logic import get_by_id
 from middleware.dynamic_request_logic.get_many_logic import get_many
@@ -57,7 +57,7 @@ class DataSourcesGetManyRequestDTO(GetManyBaseDTO):
 
 def get_data_sources_wrapper(
     db_client: DatabaseClient,
-    access_info: AccessInfo,
+    access_info: AccessInfoPrimary,
     dto: DataSourcesGetManyRequestDTO,
 ) -> Response:
     return get_many(
@@ -87,7 +87,7 @@ def get_data_sources_wrapper(
 
 
 def data_source_by_id_wrapper(
-    db_client: DatabaseClient, access_info: AccessInfo, dto: GetByIDBaseDTO
+    db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: GetByIDBaseDTO
 ) -> Response:
     return get_by_id(
         middleware_parameters=MiddlewareParameters(
@@ -116,7 +116,7 @@ def get_data_sources_for_map_wrapper(db_client: DatabaseClient) -> Response:
 
 def delete_data_source_wrapper(
     db_client: DatabaseClient,
-    access_info: AccessInfo,
+    access_info: AccessInfoPrimary,
     data_source_id: str,
 ) -> Response:
     return delete_entry(
@@ -134,7 +134,9 @@ def delete_data_source_wrapper(
     )
 
 
-def optionally_add_last_approval_editor(entry_data: dict, access_info: AccessInfo):
+def optionally_add_last_approval_editor(
+    entry_data: dict, access_info: AccessInfoPrimary
+):
     if "approval_status" in entry_data:
         entry_data["last_approval_editor"] = access_info.get_user_id()
 
@@ -142,7 +144,7 @@ def optionally_add_last_approval_editor(entry_data: dict, access_info: AccessInf
 def update_data_source_wrapper(
     db_client: DatabaseClient,
     dto: EntryCreateUpdateRequestDTO,
-    access_info: AccessInfo,
+    access_info: AccessInfoPrimary,
     data_source_id: str,
 ) -> Response:
     entry_data = dto.entry_data
@@ -197,7 +199,7 @@ class DataSourcesPostLogic(PostLogic):
 
 
 def add_new_data_source_wrapper(
-    db_client: DatabaseClient, dto: DataSourcesPostDTO, access_info: AccessInfo
+    db_client: DatabaseClient, dto: DataSourcesPostDTO, access_info: AccessInfoPrimary
 ) -> Response:
     entry_data = dataclass_to_filtered_dict(dto.entry_data)
     optionally_swap_record_type_name_with_id(db_client, entry_data)
@@ -243,7 +245,7 @@ class CreateDataSourceRelatedAgenciesLogic(PostLogic):
 
 def create_data_source_related_agency(
     db_client: DatabaseClient,
-    access_info: AccessInfo,
+    access_info: AccessInfoPrimary,
     dto: RelatedSourceByIDDTO,
 ) -> Response:
     post_logic = CreateDataSourceRelatedAgenciesLogic(
@@ -262,7 +264,7 @@ def create_data_source_related_agency(
 
 def delete_data_source_related_agency(
     db_client: DatabaseClient,
-    access_info: AccessInfo,
+    access_info: AccessInfoPrimary,
     dto: RelatedSourceByIDDTO,
 ) -> Response:
     return delete_entry(

@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 from config import limiter
 from database_client.database_client import DatabaseClient
-from middleware.access_logic import NO_AUTH_INFO, AccessInfo
+from middleware.access_logic import NO_AUTH_INFO, AccessInfoPrimary
 from middleware.decorators import endpoint_info_2
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import (
     populate_schema_with_request_content,
@@ -59,7 +59,7 @@ class LinkToGithub(PsycopgResource):
         """,
     )
     @limiter.limit("5 per minute")
-    def post(self, access_info: AccessInfo):
+    def post(self, access_info: AccessInfoPrimary):
         """
         Link the user to their Github account
         :return:

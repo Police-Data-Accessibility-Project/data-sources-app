@@ -1,6 +1,6 @@
 from flask import Response
 
-from middleware.access_logic import AccessInfo, NO_AUTH_INFO
+from middleware.access_logic import AccessInfoPrimary, NO_AUTH_INFO
 from middleware.decorators import authentication_required, endpoint_info_2
 from middleware.enums import AccessTypeEnum
 from middleware.primary_resource_logic.unique_url_checker import (
@@ -36,7 +36,7 @@ class UniqueURLChecker(PsycopgResource):
             }
         ),
     )
-    def get(self, access_info: AccessInfo) -> Response:
+    def get(self, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             wrapper_function=unique_url_checker_wrapper,
             schema_populate_parameters=SchemaConfigs.CHECKER_GET.value.get_schema_populate_parameters(),

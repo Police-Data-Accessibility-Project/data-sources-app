@@ -3,7 +3,7 @@ from http import HTTPStatus
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import RelationRoleEnum
-from middleware.access_logic import AccessInfo
+from middleware.access_logic import AccessInfoPrimary
 from middleware.common_response_formatting import format_list_response
 from middleware.enums import PermissionsEnum
 from middleware.flask_response_manager import FlaskResponseManager
@@ -14,7 +14,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyBaseD
 
 
 def get_owner_data_requests_wrapper(
-    db_client: DatabaseClient, access_info: AccessInfo, dto: GetManyBaseDTO
+    db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: GetManyBaseDTO
 ):
     user_id = db_client.get_user_id(access_info.user_email)
     data_requests = get_owner_data_requests(db_client, dto, user_id)
@@ -36,7 +36,7 @@ def get_owner_data_requests(
     return data_requests
 
 
-def get_user_recent_searches(db_client: DatabaseClient, access_info: AccessInfo):
+def get_user_recent_searches(db_client: DatabaseClient, access_info: AccessInfoPrimary):
     recent_searches = db_client.get_user_recent_searches(
         user_id=access_info.get_user_id()
     )
@@ -45,7 +45,7 @@ def get_user_recent_searches(db_client: DatabaseClient, access_info: AccessInfo)
 
 
 def get_user_by_id_wrapper(
-    db_client: DatabaseClient, user_id: int, access_info: AccessInfo
+    db_client: DatabaseClient, user_id: int, access_info: AccessInfoPrimary
 ):
     # Check that user is either owner or admin
     if (

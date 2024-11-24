@@ -7,7 +7,7 @@ from flask import Response
 from database_client.database_client import DatabaseClient
 from database_client.enums import RelationRoleEnum
 from database_client.subquery_logic import SubqueryParameters
-from middleware.access_logic import AccessInfo
+from middleware.access_logic import AccessInfoPrimary
 from middleware.column_permission_logic import (
     RelationRoleParameters,
     check_has_permission_to_edit_columns,
@@ -22,7 +22,7 @@ class MiddlewareParameters:
     Contains parameters for the middleware functions
     """
 
-    access_info: AccessInfo
+    access_info: AccessInfoPrimary
     relation: str
     db_client_method: callable
     db_client: DatabaseClient = DatabaseClient()

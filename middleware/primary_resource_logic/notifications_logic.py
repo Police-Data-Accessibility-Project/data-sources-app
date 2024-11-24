@@ -6,7 +6,7 @@ from flask import Response
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import EventType
-from middleware.access_logic import AccessInfo
+from middleware.access_logic import AccessInfoPrimary
 from middleware.custom_dataclasses import EventInfo, EventBatch
 from middleware.flask_response_manager import FlaskResponseManager
 import dominate
@@ -206,7 +206,9 @@ def format_and_send_notifications(
     )
 
 
-def send_notifications(db_client: DatabaseClient, access_info: AccessInfo) -> Response:
+def send_notifications(
+    db_client: DatabaseClient, access_info: AccessInfoPrimary
+) -> Response:
     """
     Sends notifications to all users.
 

@@ -55,7 +55,7 @@ def test_reset_password_post(
     tdc.request_validator.get(
         endpoint=DATA_SOURCES_BASE_ENDPOINT,
         headers=get_authorization_header(scheme="Bearer", token=token),
-        expected_response_status=HTTPStatus.UNPROCESSABLE_ENTITY,
+        expected_response_status=HTTPStatus.UNAUTHORIZED,
     )
 
     new_password = str(uuid.uuid4())

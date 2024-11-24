@@ -103,6 +103,8 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     TypeaheadQuerySchema,
     LocationInfoExpandedSchema,
     EntryCreateUpdateRequestDTO,
+    EmailOnlyDTO,
+    EmailOnlySchema,
 )
 from middleware.schema_and_dto_logic.custom_types import DTOTypes
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
@@ -401,6 +403,20 @@ class SchemaConfigs(Enum):
         input_schema=GithubOAuthRequestSchema(),
         input_dto_class=GithubOAuthRequestDTO,
     )
+    AUTH_SIGNUP = EndpointSchemaConfig(
+        input_schema=UserRequestSchema(),
+        input_dto_class=UserRequestDTO,
+        primary_output_schema=MessageSchema(),
+    )
+    AUTH_VALIDATE_EMAIL = EndpointSchemaConfig(
+        primary_output_schema=LoginResponseSchema(),
+    )
+    AUTH_RESEND_VALIDATION_EMAIL = EndpointSchemaConfig(
+        input_schema=EmailOnlySchema(),
+        input_dto_class=EmailOnlyDTO,
+        primary_output_schema=MessageSchema(),
+    )
+
     # endregion
     REFRESH_SESSION = EndpointSchemaConfig(
         input_schema=RefreshSessionRequestSchema(),

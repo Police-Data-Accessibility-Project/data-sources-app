@@ -17,7 +17,7 @@ from middleware.primary_resource_logic.user_queries import UserRequestDTO
 import hashlib
 
 
-def generate_api_key() -> str:
+def generate_token() -> str:
     return uuid.uuid4().hex
 
 

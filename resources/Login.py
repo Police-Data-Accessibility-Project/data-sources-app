@@ -1,7 +1,7 @@
 from flask import Response
 
 from config import limiter
-from middleware.access_logic import NO_AUTH_INFO, AccessInfo
+from middleware.access_logic import NO_AUTH_INFO, AccessInfoPrimary
 from middleware.decorators import endpoint_info_2
 from middleware.primary_resource_logic.login_queries import try_logging_in
 from resources.endpoint_schema_config import SchemaConfigs
@@ -32,7 +32,7 @@ class Login(PsycopgResource):
         schema_config=SchemaConfigs.LOGIN_POST,
     )
     @limiter.limit("5 per minute")
-    def post(self, access_info: AccessInfo) -> Response:
+    def post(self, access_info: AccessInfoPrimary) -> Response:
         """
         Processes the login request. Validates user credentials against the stored hashed password and,
         if successful, generates a session token for the user.

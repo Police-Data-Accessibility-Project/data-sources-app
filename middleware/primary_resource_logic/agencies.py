@@ -5,7 +5,7 @@ from flask import Response, request
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import OrderByParameters
 from database_client.subquery_logic import SubqueryParameterManager
-from middleware.access_logic import AccessInfo
+from middleware.access_logic import AccessInfoPrimary
 from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.delete_logic import delete_entry
 from middleware.dynamic_request_logic.get_by_id_logic import get_by_id
@@ -34,7 +34,7 @@ SUBQUERY_PARAMS = [SubqueryParameterManager.data_sources()]
 
 
 def get_agencies(
-    db_client: DatabaseClient, access_info: AccessInfo, dto: GetManyBaseDTO
+    db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: GetManyBaseDTO
 ) -> Response:
     """
     Retrieves a paginated list of approved agencies from the database.
@@ -63,7 +63,7 @@ def get_agencies(
 
 
 def get_agency_by_id(
-    db_client: DatabaseClient, access_info: AccessInfo, dto: GetByIDBaseDTO
+    db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: GetByIDBaseDTO
 ) -> Response:
     return get_by_id(
         middleware_parameters=MiddlewareParameters(
@@ -94,7 +94,7 @@ def validate_and_add_location_info(
 
 
 def create_agency(
-    db_client: DatabaseClient, dto: AgenciesPostDTO, access_info: AccessInfo
+    db_client: DatabaseClient, dto: AgenciesPostDTO, access_info: AccessInfoPrimary
 ) -> Response:
     entry_data = asdict(dto.agency_info)
     deferred_function = optionally_get_location_info_deferred_function(
@@ -137,7 +137,7 @@ def optionally_get_location_info_deferred_function(
 
 def update_agency(
     db_client: DatabaseClient,
-    access_info: AccessInfo,
+    access_info: AccessInfoPrimary,
     agency_id: str,
 ) -> Response:
     AgenciesPutSchema().load(request.json)
@@ -169,7 +169,7 @@ def update_agency(
 
 
 def delete_agency(
-    db_client: DatabaseClient, access_info: AccessInfo, agency_id: str
+    db_client: DatabaseClient, access_info: AccessInfoPrimary, agency_id: str
 ) -> Response:
     return delete_entry(
         middleware_parameters=MiddlewareParameters(

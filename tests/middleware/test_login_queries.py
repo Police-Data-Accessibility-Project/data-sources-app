@@ -8,7 +8,7 @@ from database_client.enums import ExternalAccountTypeEnum
 from middleware.primary_resource_logic.login_queries import (
     refresh_session,
 )
-from middleware.primary_resource_logic.api_key_logic import generate_api_key
+from middleware.primary_resource_logic.api_key_logic import generate_token
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
@@ -16,7 +16,7 @@ PATCH_ROOT = "middleware.primary_resource_logic.login_queries"
 
 
 def test_generate_api_key():
-    api_key = generate_api_key()
+    api_key = generate_token()
     assert len(api_key) == 32
     assert all(c in "0123456789abcdef" for c in api_key)
 

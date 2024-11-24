@@ -1,4 +1,4 @@
-from middleware.access_logic import AccessInfo, AuthenticationInfo
+from middleware.access_logic import AccessInfoPrimary, AuthenticationInfo
 from middleware.decorators import endpoint_info_2
 from middleware.enums import AccessTypeEnum, PermissionsEnum
 from middleware.primary_resource_logic.notifications_logic import send_notifications
@@ -27,7 +27,7 @@ class Notifications(PsycopgResource):
         ),
         description="Sends notifications about events to users following their associated locations.",
     )
-    def post(self, access_info: AccessInfo):
+    def post(self, access_info: AccessInfoPrimary):
         """
         Sends notification to all users.
         This endpoint will pull qualifying events for locations which users have subscribed to
