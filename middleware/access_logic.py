@@ -7,6 +7,7 @@ from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from flask_restx import abort
 from jwt import ExpiredSignatureError
 
+from database_client.database_client import DatabaseClient
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
 from middleware.api_key import ApiKey
 from middleware.enums import PermissionsEnum, AccessTypeEnum
@@ -74,17 +75,20 @@ class AccessInfoPrimary(AccessInfoBase):
 
     user_email: str
     access_type: AccessTypeEnum
+    user_id: Optional[int] = None
     permissions: list[PermissionsEnum] = None
 
     def get_user_id(self) -> Optional[int]:
-        db_client = get_db_client()
-        return db_client.get_user_id(self.user_email)
+        if self.user_id is None:
+            self.user_id = DatabaseClient().get_user_id(email=self.user_email)
+        return self.user_id
 
 
 @dataclass
 class PasswordResetTokenAccessInfo(AccessInfoBase):
     access_type = AccessTypeEnum.RESET_PASSWORD
     user_id: int
+    user_email: str
     reset_token: str
 
 
@@ -107,7 +111,9 @@ class JWTService:
     def get_access_info():
         identity = JWTService.get_identity()
         if identity:
-            return get_jwt_access_info_with_permissions(identity["user_email"])
+            return get_jwt_access_info_with_permissions(
+                user_email=identity["user_email"], user_id=identity["id"]
+            )
         return None
 
 
@@ -127,25 +133,13 @@ def decode_jwt_with_purpose(purpose: JWTPurpose):
         )
 
 
-def get_password_reset_access_info_from_jwt() -> Optional[PasswordResetTokenAccessInfo]:
-    decoded_jwt = decode_jwt_with_purpose(purpose=JWTPurpose.PASSWORD_RESET)
-    return PasswordResetTokenAccessInfo(
-        user_id=decoded_jwt.sub["user_id"],
-        reset_token=decoded_jwt.sub["token"],
-    )
-
-
-def get_validate_email_token_access_info_from_jwt():
-    decoded_jwt = decode_jwt_with_purpose(purpose=JWTPurpose.VALIDATE_EMAIL)
-    return ValidateEmailTokenAccessInfo(
-        validate_email_token=decoded_jwt.sub["token"],
-    )
-
-
-def get_jwt_access_info_with_permissions(user_email):
+def get_jwt_access_info_with_permissions(user_email, user_id):
     permissions = get_user_permissions(user_email)
     return AccessInfoPrimary(
-        user_email=user_email, access_type=AccessTypeEnum.JWT, permissions=permissions
+        user_email=user_email,
+        user_id=user_id,
+        access_type=AccessTypeEnum.JWT,
+        permissions=permissions,
     )
 
 
@@ -247,7 +241,8 @@ def api_key_handler(**kwargs) -> Optional[AccessInfoPrimary]:
     user_email = get_user_email_from_api_key()
     if user_email:
         return AccessInfoPrimary(
-            user_email=user_email, access_type=AccessTypeEnum.API_KEY
+            user_email=user_email,
+            access_type=AccessTypeEnum.API_KEY,
         )
     return None
 
@@ -256,6 +251,7 @@ def password_reset_handler(**kwargs) -> Optional[PasswordResetTokenAccessInfo]:
     decoded_jwt = decode_jwt_with_purpose(purpose=JWTPurpose.PASSWORD_RESET)
     return PasswordResetTokenAccessInfo(
         user_id=decoded_jwt.sub["user_id"],
+        user_email=decoded_jwt.sub["user_email"],
         reset_token=decoded_jwt.sub["token"],
     )
 

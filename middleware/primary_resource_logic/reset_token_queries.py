@@ -89,6 +89,7 @@ def request_reset_password(
     db_client.add_reset_token(user_id=user_id, token=token)
     jwt_token = SimpleJWT(
         sub={
+            "user_email": email,
             "user_id": user_id,
             "token": token,
         },
@@ -114,9 +115,7 @@ def reset_password(
     user_id = validate_token(db_client, access_info.reset_token)
     validate_user_ids_match(access_info.user_id, user_id)
 
-    email = db_client.get_user_email(user_id)
-
-    set_user_password(db_client=db_client, email=email, password=dto.password)
+    set_user_password(db_client=db_client, user_id=user_id, password=dto.password)
     return FlaskResponseManager.make_response(
         {"message": "Successfully updated password"}, HTTPStatus.OK
     )
@@ -129,9 +128,9 @@ def validate_user_ids_match(user_id: int, token_user_id: int):
         )
 
 
-def set_user_password(db_client: DatabaseClient, email, password):
+def set_user_password(db_client: DatabaseClient, user_id: int, password: str):
     password_digest = generate_password_hash(password)
-    db_client.set_user_password_digest(email, password_digest)
+    db_client.set_user_password_digest(user_id=user_id, password_digest=password_digest)
 
 
 def invalid_token_response():

@@ -176,9 +176,12 @@ def integration_test_admin_setup(flask_client_with_db) -> IntegrationTestSetup:
     db_client = DatabaseClient()
     tus_admin = create_test_user_setup(flask_client_with_db)
     db_client.add_user_permission(
-        tus_admin.user_info.email, PermissionsEnum.READ_ALL_USER_INFO
+        user_id=tus_admin.user_info.user_id,
+        permission=PermissionsEnum.READ_ALL_USER_INFO,
     )
-    db_client.add_user_permission(tus_admin.user_info.email, PermissionsEnum.DB_WRITE)
+    db_client.add_user_permission(
+        user_id=tus_admin.user_info.user_id, permission=PermissionsEnum.DB_WRITE
+    )
     return IntegrationTestSetup(
         flask_client=flask_client_with_db, db_client=db_client, tus=tus_admin
     )

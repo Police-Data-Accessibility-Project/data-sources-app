@@ -503,7 +503,7 @@ def create_test_user_setup(
     elif not isinstance(permissions, list):
         permissions = [permissions]
     for permission in permissions:
-        db_client.add_user_permission(user_email=user_info.email, permission=permission)
+        db_client.add_user_permission(user_id=user_info.user_id, permission=permission)
     api_key = create_api_key(client, user_info)
     jwt_tokens = login_and_return_jwt_tokens(client, user_info)
     return TestUserSetup(

@@ -182,18 +182,18 @@ class DatabaseClient:
             return None
         return int(results[0]["id"])
 
-    def set_user_password_digest(self, email: str, password_digest: str):
+    def set_user_password_digest(self, user_id: int, password_digest: str):
         """
         Updates the password digest for a user in the database.
-        :param email:
+        :param user_id:
         :param password_digest:
         :return:
         """
         self._update_entry_in_table(
             table_name="users",
-            entry_id=email,
+            entry_id=user_id,
             column_edit_mappings={"password_digest": password_digest},
-            id_column_name="email",
+            id_column_name="id",
         )
 
     ResetTokenInfo = namedtuple("ResetTokenInfo", ["id", "user_id", "create_date"])
@@ -551,7 +551,7 @@ class DatabaseClient:
         )
 
     @cursor_manager()
-    def add_user_permission(self, user_email: str, permission: PermissionsEnum):
+    def add_user_permission(self, user_id: str, permission: PermissionsEnum):
         """
         Adds a permission to a user.
 
@@ -562,26 +562,26 @@ class DatabaseClient:
             """
             INSERT INTO user_permissions (user_id, permission_id) 
             VALUES (
-                (SELECT id FROM users WHERE email = {email}), 
+                {id}, 
                 (SELECT permission_id FROM permissions WHERE permission_name = {permission})
             );
         """
         ).format(
-            email=sql.Literal(user_email),
+            id=sql.Literal(user_id),
             permission=sql.Literal(permission.value),
         )
         self.cursor.execute(query)
 
     @cursor_manager()
-    def remove_user_permission(self, user_email: str, permission: PermissionsEnum):
+    def remove_user_permission(self, user_id: str, permission: PermissionsEnum):
         query = sql.SQL(
             """
             DELETE FROM user_permissions
-            WHERE user_id = (SELECT id FROM users WHERE email = {email})
+            WHERE user_id = {user_id}
             AND permission_id = (SELECT permission_id FROM permissions WHERE permission_name = {permission});
         """
         ).format(
-            email=sql.Literal(user_email),
+            user_id=sql.Literal(user_id),
             permission=sql.Literal(permission.value),
         )
         self.cursor.execute(query)

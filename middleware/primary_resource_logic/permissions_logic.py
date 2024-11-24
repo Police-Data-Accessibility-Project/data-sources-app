@@ -69,6 +69,7 @@ class PermissionsManager:
             return
         self.db_client = db_client
         self.user_email = user_email
+        self.user_id = user_info.id
 
         self.permissions = self.db_client.get_user_permissions(user_info.id)
 
@@ -86,7 +87,7 @@ class PermissionsManager:
                 HTTPStatus.CONFLICT,
             )
 
-        self.db_client.add_user_permission(self.user_email, permission)
+        self.db_client.add_user_permission(self.user_id, permission)
         return message_response("Permission added")
 
     def remove_user_permission(self, permission: PermissionsEnum) -> Response:
@@ -95,7 +96,7 @@ class PermissionsManager:
                 f"Permission {permission.value} does not exist for user. Cannot remove.",
                 HTTPStatus.CONFLICT,
             )
-        self.db_client.remove_user_permission(self.user_email, permission)
+        self.db_client.remove_user_permission(self.user_id, permission)
         return message_response("Permission removed")
 
 

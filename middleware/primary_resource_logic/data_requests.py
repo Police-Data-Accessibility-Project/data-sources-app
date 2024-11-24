@@ -162,19 +162,12 @@ def get_data_requests_relation_role(
         return RelationRoleEnum.STANDARD
 
     # Check ownership
-    user_id = db_client.get_user_id(access_info.user_email)
+    user_id = access_info.get_user_id()
     if db_client.user_is_creator_of_data_request(
         user_id=user_id, data_request_id=data_request_id
     ):
         return RelationRoleEnum.OWNER
     return RelationRoleEnum.STANDARD
-
-
-def add_creator_user_id(
-    db_client: DatabaseClient, user_email: str, dto: EntryCreateUpdateRequestDTO
-):
-    user_id = db_client.get_user_id(user_email)
-    dto.entry_data.update({"creator_user_id": user_id})
 
 
 def create_data_request_wrapper(
@@ -191,7 +184,7 @@ def create_data_request_wrapper(
     location_ids = _get_location_ids(db_client, dto)
 
     column_value_mappings_raw = asdict(dto.request_info)
-    user_id = db_client.get_user_id(access_info.user_email)
+    user_id = access_info.get_user_id()
     column_value_mappings_raw["creator_user_id"] = user_id
 
     # Insert the data request, get data request id
@@ -289,7 +282,7 @@ def get_data_requests_with_permitted_columns(
 
 
 def is_creator_or_admin(access_info, data_request_id, db_client):
-    user_id = db_client.get_user_id(email=access_info.user_email)
+    user_id = access_info.get_user_id()
     return (
         db_client.user_is_creator_of_data_request(
             user_id=user_id, data_request_id=data_request_id
