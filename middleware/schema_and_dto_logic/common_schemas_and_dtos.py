@@ -236,3 +236,15 @@ class LocationInfoDTO:
     state_iso: str
     county_fips: Optional[str] = None
     locality_name: Optional[str] = None
+
+
+class EmailOnlySchema(Schema):
+    email = fields.Email(
+        required=True,
+        metadata=get_json_metadata(description="The user's email address"),
+    )
+
+
+@dataclass
+class EmailOnlyDTO:
+    email: str

@@ -13,7 +13,7 @@ from middleware.access_logic import PasswordResetTokenAccessInfo
 from middleware.common_response_formatting import message_response
 from middleware.exceptions import UserNotFoundError
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.primary_resource_logic.api_key_logic import generate_api_key
+from middleware.primary_resource_logic.api_key_logic import generate_token
 from middleware.primary_resource_logic.user_queries import user_check_email
 from middleware.schema_and_dto_logic.primary_resource_dtos.request_reset_password_dtos import (
     RequestResetPasswordRequestDTO,
@@ -63,10 +63,12 @@ class ResetPasswordSchema(Schema):
 class ResetPasswordDTO:
     password: str
 
+
 def request_reset_password_response():
     return message_response(
         message="If the email is valid, an email has been sent to the user with instructions on how to reset their password.",
     )
+
 
 def request_reset_password(
     db_client: DatabaseClient, dto: RequestResetPasswordRequestDTO
@@ -83,7 +85,7 @@ def request_reset_password(
     except UserNotFoundError:
         return request_reset_password_response()
 
-    token = generate_api_key()
+    token = generate_token()
     db_client.add_reset_token(user_id=user_id, token=token)
     jwt_token = SimpleJWT(
         sub={

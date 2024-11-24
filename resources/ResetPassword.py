@@ -7,18 +7,12 @@ from middleware.access_logic import (
 from middleware.decorators import endpoint_info_2
 from middleware.primary_resource_logic.reset_token_queries import (
     reset_password,
-    ResetPasswordSchema,
-    ResetPasswordDTO,
 )
 from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import ResponseInfo
 from utilities.namespace import create_namespace
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
-from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_construction import (
-    get_restx_param_documentation,
-)
-from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 
 namespace_reset_password = create_namespace()
 

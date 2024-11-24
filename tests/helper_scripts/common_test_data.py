@@ -18,3 +18,7 @@ def get_random_number_for_testing():
 
 def get_test_name(midfix: str = ""):
     return f"TEST_{midfix}_{uuid.uuid4().hex}"
+
+
+def get_test_email(midfix: str = ""):
+    return f"TEST_{midfix}_{uuid.uuid4().hex}@test.com"

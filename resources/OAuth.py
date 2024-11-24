@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from middleware.access_logic import NO_AUTH_INFO, AccessInfo
+from middleware.access_logic import NO_AUTH_INFO, AccessInfoPrimary
 from middleware.decorators import endpoint_info_2
 from middleware.enums import CallbackFunctionsEnum
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import (
@@ -38,7 +38,7 @@ class GithubOAuth(PsycopgResource):
         ),
         description="Directs user to OAuth page for App.",
     )
-    def get(self, access_info: AccessInfo):
+    def get(self, access_info: AccessInfoPrimary):
         dto: GithubOAuthRequestDTO = populate_schema_with_request_content(
             schema=SchemaConfigs.AUTH_GITHUB_OAUTH.value.input_schema,
             dto_class=SchemaConfigs.AUTH_GITHUB_OAUTH.value.input_dto_class,

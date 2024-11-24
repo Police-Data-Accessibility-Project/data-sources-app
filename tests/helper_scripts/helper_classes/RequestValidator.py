@@ -11,7 +11,10 @@ from marshmallow import Schema
 from database_client.enums import SortOrder, RequestStatus
 from middleware.util import update_if_not_none
 from resources.endpoint_schema_config import SchemaConfigs
-from tests.helper_scripts.constants import DATA_REQUESTS_BY_ID_ENDPOINT, AGENCIES_BASE_ENDPOINT
+from tests.helper_scripts.constants import (
+    DATA_REQUESTS_BY_ID_ENDPOINT,
+    AGENCIES_BASE_ENDPOINT,
+)
 from tests.helper_scripts.helper_functions import (
     get_authorization_header,
     add_query_params,
@@ -115,11 +118,15 @@ class RequestValidator:
         email: str,
         password: str,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_json_content: Optional[dict] = None,
+        expected_schema: Schema = SchemaConfigs.LOGIN_POST.value.primary_output_schema,
     ):
         return self.post(
             endpoint="/api/login",
             json={"email": email, "password": password},
             expected_response_status=expected_response_status,
+            expected_json_content=expected_json_content,
+            expected_schema=expected_schema,
         )
 
     def reset_password(
@@ -140,7 +147,7 @@ class RequestValidator:
         email: str,
         mocker,
         expect_call: bool = True,
-        expected_response_status: HTTPStatus = HTTPStatus.OK
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
         mock = mocker.patch(
             "middleware.primary_resource_logic.reset_token_queries.send_password_reset_link"
@@ -154,6 +161,64 @@ class RequestValidator:
         if not expect_call:
             assert not mock.called
             return
+        assert mock.call_args[1]["email"] == email
+        return mock.call_args[1]["token"]
+
+    def signup(
+        self,
+        email: str,
+        password: str,
+        mocker,
+        expected_json_content: Optional[dict] = None,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+    ):
+        mock = mocker.patch(
+            "middleware.primary_resource_logic.signup_logic.send_signup_link"
+        )
+        self.post(
+            endpoint="/api/auth/signup",
+            json={"email": email, "password": password},
+            expected_schema=SchemaConfigs.AUTH_SIGNUP.value.primary_output_schema,
+            expected_response_status=expected_response_status,
+            expected_json_content=expected_json_content,
+        )
+        if expected_response_status != HTTPStatus.OK:
+            return None
+        assert mock.call_args[1]["email"] == email
+        return mock.call_args[1]["token"]
+
+    def validate_email(
+        self,
+        token: str,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_json_content: Optional[dict] = None,
+    ):
+        return self.post(
+            endpoint="/api/auth/validate-email",
+            headers=get_authorization_header(scheme="Bearer", token=token),
+            expected_schema=SchemaConfigs.AUTH_VALIDATE_EMAIL.value.primary_output_schema,
+            expected_response_status=expected_response_status,
+            expected_json_content=expected_json_content,
+        )
+
+    def resend_validation_email(
+        self,
+        email: str,
+        mocker,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_json_content: Optional[dict] = None,
+    ):
+        mock = mocker.patch(
+            "middleware.primary_resource_logic.signup_logic.send_signup_link"
+        )
+        self.post(
+            endpoint="/api/auth/resend-validation-email",
+            json={"email": email},
+            expected_response_status=expected_response_status,
+            expected_json_content=expected_json_content,
+        )
+        if not expected_response_status == HTTPStatus.OK:
+            return None
         assert mock.call_args[1]["email"] == email
         return mock.call_args[1]["token"]
 
@@ -360,14 +425,12 @@ class RequestValidator:
             expected_schema=SchemaConfigs.USER_PROFILE_DATA_REQUESTS_GET.value.primary_output_schema,
         )
 
-    def get_agency(self, sort_by: str, sort_order: SortOrder, headers: dict, page: int = 1):
+    def get_agency(
+        self, sort_by: str, sort_order: SortOrder, headers: dict, page: int = 1
+    ):
         url = add_query_params(
             url=AGENCIES_BASE_ENDPOINT,
-            params={
-                "sort_by": sort_by,
-                "sort_order": sort_order.value,
-                "page": page
-            }
+            params={"sort_by": sort_by, "sort_order": sort_order.value, "page": page},
         )
         return self.get(
             endpoint=url,

@@ -5,7 +5,7 @@ from flask import Response, make_response
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
-from middleware.access_logic import AccessInfo
+from middleware.access_logic import AccessInfoPrimary
 from middleware.dynamic_request_logic.delete_logic import delete_entry
 from middleware.dynamic_request_logic.post_logic import post_entry, PostLogic
 from middleware.dynamic_request_logic.supporting_classes import (
@@ -84,7 +84,7 @@ def format_search_results(search_results: list[dict]) -> dict:
 
 def search_wrapper(
     db_client: DatabaseClient,
-    access_info: AccessInfo,
+    access_info: AccessInfoPrimary,
     dto: SearchRequests,
 ) -> Response:
     location_id = try_getting_location_id_and_raise_error_if_not_found(
@@ -147,7 +147,7 @@ def try_getting_location_id_and_raise_error_if_not_found(
 
 def get_followed_searches(
     db_client: DatabaseClient,
-    access_info: AccessInfo,
+    access_info: AccessInfoPrimary,
 ) -> Response:
     results = db_client.get_user_followed_searches(
         left_id=access_info.get_user_id(),
@@ -158,7 +158,7 @@ def get_followed_searches(
 
 def get_user_followed_search_link(
     db_client: DatabaseClient,
-    access_info: AccessInfo,
+    access_info: AccessInfoPrimary,
     location_id: int,
 ) -> Optional[int]:
     result = db_client._select_single_entry_from_relation(
@@ -183,7 +183,7 @@ class FollowedSearchPostLogic(PostLogic):
 
 def create_followed_search(
     db_client: DatabaseClient,
-    access_info: AccessInfo,
+    access_info: AccessInfoPrimary,
     dto: SearchRequests,
 ) -> Response:
     # Get location id. If not found, not a valid location. Raise error
@@ -220,7 +220,7 @@ def create_followed_search(
 
 def delete_followed_search(
     db_client: DatabaseClient,
-    access_info: AccessInfo,
+    access_info: AccessInfoPrimary,
     dto: SearchRequests,
 ) -> Response:
     # Get location id. If not found, not a valid location. Raise error

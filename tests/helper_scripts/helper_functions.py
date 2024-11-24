@@ -26,7 +26,7 @@ from middleware.enums import (
     JurisdictionType,
 )
 from resources.ApiKeyResource import API_KEY_ROUTE
-from tests.helper_scripts.common_test_data import get_test_name
+from tests.helper_scripts.common_test_data import get_test_name, get_test_email
 from tests.helper_scripts.constants import TEST_RESPONSE
 from tests.helper_scripts.simple_result_validators import check_response_status
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
@@ -246,7 +246,7 @@ def create_test_user_api(client: FlaskClient) -> UserInfo:
     :param client:
     :return:
     """
-    email = get_test_name()
+    email = get_test_email()
     password = str(uuid.uuid4())
     response = client.post(
         "user",

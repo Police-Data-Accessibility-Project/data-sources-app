@@ -17,6 +17,7 @@ from resources.Notifications import namespace_notifications
 from resources.OAuth import namespace_oauth
 from resources.Permissions import namespace_permissions
 from resources.Search import namespace_search
+from resources.Signup import namespace_signup
 from resources.TypeaheadSuggestions import (
     namespace_typeahead_suggestions,
 )
@@ -65,6 +66,7 @@ NAMESPACES = [
     namespace_github,
     namespace_notifications,
     namespace_map,
+    namespace_signup,
 ]
 
 MY_PREFIX = "/api"

@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
@@ -7,16 +5,9 @@ import pytest
 from middleware.access_logic import (
     get_authorization_header_from_request,
     get_key_from_authorization_header,
-    get_api_key_from_request_header,
-    JWT_OR_API_KEY_NEEDED_ERROR_MESSAGE,
-    AccessInfo,
+    AccessInfoPrimary,
     check_permissions_with_access_info,
-    try_api_key_authentication,
-    try_jwt_authentication,
-    get_authentication,
-    get_authentication_error_message,
     get_user_email_from_api_key,
-    get_access_info_from_jwt,
     get_jwt_access_info_with_permissions,
 )
 from middleware.exceptions import (
@@ -24,7 +15,6 @@ from middleware.exceptions import (
     InvalidAuthorizationHeaderException,
 )
 from middleware.enums import PermissionsEnum, AccessTypeEnum
-from middleware.security import check_permissions
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_mocks_and_patches import (
     patch_request_headers,
@@ -103,7 +93,7 @@ def get_access_info_mocks():
     "access_info, permissions, permission_denied_abort_called",
     (
         (
-            AccessInfo(
+            AccessInfoPrimary(
                 user_email="test_email",
                 access_type=AccessTypeEnum.JWT,
                 permissions=[PermissionsEnum.READ_ALL_USER_INFO],
@@ -112,7 +102,7 @@ def get_access_info_mocks():
             False,
         ),
         (
-            AccessInfo(
+            AccessInfoPrimary(
                 user_email="test_email",
                 access_type=AccessTypeEnum.JWT,
                 permissions=[PermissionsEnum.READ_ALL_USER_INFO],
@@ -141,214 +131,6 @@ def test_check_permissions_with_access_info(
         mock_permission_denied_abort.assert_called_once()
     else:
         mock_permission_denied_abort.assert_not_called()
-
-
-@pytest.mark.parametrize(
-    "allowed_access_methods, get_user_email_result, expected_result",
-    (
-        # Happy path
-        (
-            [AccessTypeEnum.API_KEY, AccessTypeEnum.JWT],
-            "test_email",
-            AccessInfo(
-                user_email="test_email",
-                access_type=AccessTypeEnum.API_KEY,
-            ),
-        ),
-        (
-            [AccessTypeEnum.JWT],
-            "test_email",
-            None,
-        ),
-        (
-            [AccessTypeEnum.API_KEY],
-            None,
-            None,
-        ),
-    ),
-)
-def test_try_api_key_authentication(
-    allowed_access_methods, get_user_email_result, expected_result, monkeypatch
-):
-
-    mock_get_user_email = MagicMock(return_value=get_user_email_result)
-    monkeypatch.setattr(
-        "middleware.access_logic.get_user_email_from_api_key", mock_get_user_email
-    )
-
-    result = try_api_key_authentication(allowed_access_methods)
-
-    if AccessTypeEnum.API_KEY in allowed_access_methods:
-        mock_get_user_email.assert_called_once()
-    else:
-        mock_get_user_email.assert_not_called()
-    assert result == expected_result
-
-
-@pytest.mark.parametrize(
-    "allowed_access_methods, restrict_to_permissions, "
-    "get_access_info_result, expected_result, "
-    "check_permissions_called, get_access_info_called",
-    (
-        # Happy path
-        (
-            [AccessTypeEnum.JWT],
-            [PermissionsEnum.READ_ALL_USER_INFO],
-            AccessInfo(
-                user_email="test_email",
-                access_type=AccessTypeEnum.JWT,
-                permissions=[PermissionsEnum.READ_ALL_USER_INFO],
-            ),
-            AccessInfo(
-                user_email="test_email",
-                access_type=AccessTypeEnum.JWT,
-                permissions=[PermissionsEnum.READ_ALL_USER_INFO],
-            ),
-            True,
-            True,
-        ),
-        (
-            [AccessTypeEnum.JWT],
-            [PermissionsEnum.READ_ALL_USER_INFO],
-            None,
-            None,
-            False,
-            True,
-        ),
-        (
-            [AccessTypeEnum.JWT],
-            None,
-            AccessInfo(
-                user_email="test_email",
-                access_type=AccessTypeEnum.JWT,
-                permissions=[PermissionsEnum.READ_ALL_USER_INFO],
-            ),
-            AccessInfo(
-                user_email="test_email",
-                access_type=AccessTypeEnum.JWT,
-                permissions=[PermissionsEnum.READ_ALL_USER_INFO],
-            ),
-            False,
-            True,
-        ),
-        ([AccessTypeEnum.API_KEY], None, None, None, False, False),
-    ),
-)
-def test_try_jwt_authentication(
-    allowed_access_methods,
-    restrict_to_permissions,
-    get_access_info_result,
-    expected_result,
-    check_permissions_called,
-    get_access_info_called,
-    monkeypatch,
-):
-
-    mock_get_access_info = MagicMock(return_value=get_access_info_result)
-    monkeypatch.setattr(
-        "middleware.access_logic.get_access_info_from_jwt", mock_get_access_info
-    )
-    mock_check_permissions = MagicMock()
-    monkeypatch.setattr(
-        "middleware.access_logic.check_permissions_with_access_info",
-        mock_check_permissions,
-    )
-
-    result = try_jwt_authentication(allowed_access_methods, restrict_to_permissions)
-
-    assert result == expected_result
-
-    if check_permissions_called:
-        mock_check_permissions.assert_called_once_with(
-            mock_get_access_info.return_value, restrict_to_permissions
-        )
-    else:
-        mock_check_permissions.assert_not_called()
-    if get_access_info_called:
-        mock_get_access_info.assert_called_once()
-    else:
-        mock_get_access_info.assert_not_called()
-
-
-@pytest.mark.parametrize(
-    "try_api_key_authentication_result, try_jwt_authentication_result, expected_result, mock_abort_called",
-    (
-        # Happy path
-        (
-            AccessInfo(
-                user_email="test_email",
-                access_type=AccessTypeEnum.API_KEY,
-                permissions=[PermissionsEnum.READ_ALL_USER_INFO],
-            ),
-            None,
-            AccessInfo(
-                user_email="test_email",
-                access_type=AccessTypeEnum.API_KEY,
-                permissions=[PermissionsEnum.READ_ALL_USER_INFO],
-            ),
-            False,
-        ),
-        (
-            None,
-            AccessInfo(
-                user_email="test_email",
-                access_type=AccessTypeEnum.JWT,
-                permissions=[PermissionsEnum.READ_ALL_USER_INFO],
-            ),
-            AccessInfo(
-                user_email="test_email",
-                access_type=AccessTypeEnum.JWT,
-                permissions=[PermissionsEnum.READ_ALL_USER_INFO],
-            ),
-            False,
-        ),
-        (None, None, None, True),
-    ),
-)
-def test_get_authentication(
-    try_api_key_authentication_result,
-    try_jwt_authentication_result,
-    expected_result,
-    mock_abort_called,
-    monkeypatch,
-):
-
-    monkeypatch.setattr(
-        "middleware.access_logic.try_api_key_authentication",
-        MagicMock(return_value=try_api_key_authentication_result),
-    )
-
-    monkeypatch.setattr(
-        "middleware.access_logic.try_jwt_authentication",
-        MagicMock(return_value=try_jwt_authentication_result),
-    )
-
-    mock_abort = patch_abort(monkeypatch, path="middleware.access_logic")
-
-    mock_get_authentication_error_message = MagicMock(return_value="test_error_message")
-    monkeypatch.setattr(
-        "middleware.access_logic.get_authentication_error_message",
-        mock_get_authentication_error_message,
-    )
-
-    mock = MagicMock()
-
-    result = get_authentication(
-        mock.allowed_access_methods, mock.restrict_to_permissions
-    )
-
-    assert result == expected_result
-
-    if mock_abort_called:
-        mock_get_authentication_error_message.assert_called_once_with(
-            mock.allowed_access_methods
-        )
-        mock_abort.assert_called_once_with(
-            HTTPStatus.UNAUTHORIZED,
-            message=mock_get_authentication_error_message.return_value,
-        )
-    else:
-        mock_abort.assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -413,7 +195,7 @@ def test_get_jwt_access_info_with_permissions(monkeypatch):
 
     mock.get_user_permissions.assert_called_once_with(mock.user_email)
 
-    assert result == AccessInfo(
+    assert result == AccessInfoPrimary(
         user_email=mock.user_email,
         access_type=AccessTypeEnum.JWT,
         permissions=mock.permissions,

@@ -9,7 +9,7 @@ from requests import request
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
-from middleware.access_logic import AccessInfo
+from middleware.access_logic import AccessInfoPrimary
 from middleware.common_response_formatting import message_response
 from middleware.schema_and_dto_logic.primary_resource_schemas.github_issue_app_schemas import (
     GithubDataRequestsIssuesPostDTO,
@@ -34,7 +34,7 @@ def get_github_issue_body(submission_notes: str, data_requirements: str) -> str:
 
 def add_data_request_as_github_issue(
     db_client: DatabaseClient,
-    access_info: AccessInfo,
+    access_info: AccessInfoPrimary,
     dto: GithubDataRequestsIssuesPostDTO,
 ) -> Response:
     """
@@ -84,7 +84,7 @@ def add_data_request_as_github_issue(
 
 
 def synchronize_github_issues_with_data_requests(
-    db_client: DatabaseClient, access_info: AccessInfo
+    db_client: DatabaseClient, access_info: AccessInfoPrimary
 ) -> Response:
     """
     Synchronizes github issues with data requests

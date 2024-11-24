@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from database_client.enums import ColumnPermissionEnum, RelationRoleEnum
-from middleware.access_logic import AccessInfo
+from middleware.access_logic import AccessInfoPrimary
 from middleware.column_permission_logic import (
     get_permitted_columns,
     check_has_permission_to_edit_columns,
@@ -141,7 +141,7 @@ def test_get_relation_role(
 ):
     assert (
         get_relation_role(
-            AccessInfo(
+            AccessInfoPrimary(
                 access_type=access_type,
                 permissions=permissions,
                 user_email="test_user",
@@ -168,7 +168,7 @@ def test_get_relation_role_parameters_override(
 
     assert (
         rrp.get_relation_role_from_parameters(
-            access_info=AccessInfo(
+            access_info=AccessInfoPrimary(
                 access_type=AccessTypeEnum.API_KEY,
                 user_email="test_user",
             )

@@ -2,7 +2,7 @@ from flask import Response
 
 from config import limiter
 from middleware.access_logic import (
-    AccessInfo,
+    AccessInfoPrimary,
     GET_AUTH_INFO,
     STANDARD_JWT_AUTH_INFO,
 )
@@ -55,7 +55,7 @@ class DataRequestsById(PsycopgResource):
         description="Get data request by id",
     )
     @limiter.limit("50/minute;250/hour")
-    def get(self, access_info: AccessInfo, resource_id: str) -> Response:
+    def get(self, access_info: AccessInfoPrimary, resource_id: str) -> Response:
         """
         Get data request by id
         """
@@ -76,7 +76,7 @@ class DataRequestsById(PsycopgResource):
         ),
         schema_config=SchemaConfigs.DATA_REQUESTS_BY_ID_PUT,
     )
-    def put(self, resource_id: str, access_info: AccessInfo) -> Response:
+    def put(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
         """
         Update data request. Non-admins can only update their own data requests.
         """
@@ -95,7 +95,7 @@ class DataRequestsById(PsycopgResource):
             success_message="Data request successfully deleted."
         ),
     )
-    def delete(self, resource_id: str, access_info: AccessInfo) -> Response:
+    def delete(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
         """
         Delete data request
         """
@@ -118,7 +118,7 @@ class DataRequests(PsycopgResource):
         ),
         description="Get data requests with optional filters",
     )
-    def get(self, access_info: AccessInfo) -> Response:
+    def get(self, access_info: AccessInfoPrimary) -> Response:
         """
         Get data requests
         """
@@ -137,7 +137,7 @@ class DataRequests(PsycopgResource):
         ),
         description="Create new data request",
     )
-    def post(self, access_info: AccessInfo) -> Response:
+    def post(self, access_info: AccessInfoPrimary) -> Response:
         """
         Create a new data request.
         """
@@ -160,7 +160,7 @@ class DataRequestsRelatedSources(PsycopgResource):
         ),
         description="Get sources related to a data request",
     )
-    def get(self, resource_id: str, access_info: AccessInfo) -> Response:
+    def get(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
         """
         Get sources marked as related to a data request.
         """
@@ -183,7 +183,7 @@ class DataRequestsRelatedSourcesById(PsycopgResource):
         description="Mark a data source as related to a data request",
     )
     def post(
-        self, resource_id: str, data_source_id: str, access_info: AccessInfo
+        self, resource_id: str, data_source_id: str, access_info: AccessInfoPrimary
     ) -> Response:
         """
         Mark a data source as related to a data request
@@ -203,7 +203,7 @@ class DataRequestsRelatedSourcesById(PsycopgResource):
         ),
     )
     def delete(
-        self, resource_id: str, data_source_id: str, access_info: AccessInfo
+        self, resource_id: str, data_source_id: str, access_info: AccessInfoPrimary
     ) -> Response:
         """
         Remove an association of a data source with a data request
@@ -226,7 +226,7 @@ class DataRequestsWithdraw(PsycopgResource):
             success_message="Data request successfully withdrawn.",
         ),
     )
-    def post(self, resource_id: str, access_info: AccessInfo) -> Response:
+    def post(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
         """
         Withdraw a data request
         """
@@ -249,7 +249,7 @@ class DataRequestsRelatedLocations(PsycopgResource):
         ),
         description="Get locations related to a data request",
     )
-    def get(self, resource_id: str, access_info: AccessInfo) -> Response:
+    def get(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
         """
         Get locations marked as related to a data request.
         """
@@ -271,7 +271,7 @@ class DataRequestsRelatedLocationsById(PsycopgResource):
         ),
         description="Mark a location as related to a data request",
     )
-    def post(self, resource_id: str, location_id: str, access_info: AccessInfo):
+    def post(self, resource_id: str, location_id: str, access_info: AccessInfoPrimary):
         """
         Mark a location as related to a data request
         """
@@ -290,7 +290,9 @@ class DataRequestsRelatedLocationsById(PsycopgResource):
             success_message="Successfully removed location association from data request.",
         ),
     )
-    def delete(self, resource_id: str, location_id: str, access_info: AccessInfo):
+    def delete(
+        self, resource_id: str, location_id: str, access_info: AccessInfoPrimary
+    ):
         """
         Remove an association of a location with a data request
         """

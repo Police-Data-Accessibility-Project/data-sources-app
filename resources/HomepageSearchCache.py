@@ -1,6 +1,6 @@
 from flask_restx import fields
 
-from middleware.access_logic import AccessInfo
+from middleware.access_logic import AccessInfoPrimary
 from middleware.decorators import authentication_required
 from middleware.enums import AccessTypeEnum, PermissionsEnum
 from middleware.primary_resource_logic.homepage_search_cache import (
@@ -69,7 +69,7 @@ class HomepageSearchCache(PsycopgResource):
             400: "Bad request. Missing or bad API key",
         },
     )
-    def get(self, access_info: AccessInfo):
+    def get(self, access_info: AccessInfoPrimary):
         """
         Retrieve 100 agencies without homepage urls
         :return:
@@ -91,7 +91,7 @@ class HomepageSearchCache(PsycopgResource):
             400: "Bad request. Missing or bad API key",
         },
     )
-    def post(self, access_info: AccessInfo):
+    def post(self, access_info: AccessInfoPrimary):
         """
         Update search cache
         :return:
