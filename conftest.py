@@ -22,6 +22,7 @@ from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
 # Load environment variables
 dotenv.load_dotenv()
 
+
 @pytest.fixture(scope="session")
 def monkeysession(request):
     mpatch = MonkeyPatch()

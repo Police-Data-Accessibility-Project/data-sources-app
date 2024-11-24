@@ -24,9 +24,7 @@ def test_request_reset_password_post(
         mocker=mocker,
     )
 
-    decoded_token = SimpleJWT.decode(
-        token=token, purpose=JWTPurpose.PASSWORD_RESET
-    )
+    decoded_token = SimpleJWT.decode(token=token, purpose=JWTPurpose.PASSWORD_RESET)
 
     db_client = DatabaseClient()
     rows = db_client.execute_raw_sql(
@@ -44,12 +42,12 @@ def test_request_reset_password_post(
         user_id == user_info.user_id
     ), "Email associated with reset token should match the user's email"
 
-def test_request_password_reset_invalid_email(test_data_creator_flask: TestDataCreatorFlask, mocker):
+
+def test_request_password_reset_invalid_email(
+    test_data_creator_flask: TestDataCreatorFlask, mocker
+):
     tdc = test_data_creator_flask
 
     token = tdc.request_validator.request_reset_password(
-        email="email_does_not_exist",
-        mocker=mocker,
-        expect_call=False
+        email="email_does_not_exist", mocker=mocker, expect_call=False
     )
-

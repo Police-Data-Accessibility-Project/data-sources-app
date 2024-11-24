@@ -79,7 +79,6 @@ def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
         sort_order=SortOrder.ASCENDING,
     )
 
-
     assert_expected_get_many_result(
         response_json=response_json,
         expected_non_null_columns=["id"],
@@ -91,7 +90,7 @@ def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
         headers=tus.api_authorization_header,
         sort_by="name",
         sort_order=SortOrder.ASCENDING,
-        page=2
+        page=2,
     )
 
     assert response_json != response_json_2
@@ -110,7 +109,6 @@ def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
 
     assert data_asc != data_desc
     assert data_asc[0]["name"] < data_desc[0]["name"]
-
 
 
 def test_agencies_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
