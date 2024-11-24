@@ -99,6 +99,7 @@ RESET_PASSWORD_SECRET_KEY="myCustomResetPasswordSecretKey"
 DEVELOPMENT_PASSWORD="myCustomDevelopmentPassword"
 GH_API_ACCESS_TOKEN="GithubProvidedAccessToken"
 GH_ISSUE_REPO_NAME="github-username/github-repo-name"
+VALIDATE_EMAIL_SECRET_KEY="myCustomValidateEmailSecretKey"
 ```
 
 #### Shell Example
