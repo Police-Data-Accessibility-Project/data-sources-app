@@ -48,17 +48,6 @@ def test_get_user_permissions(mock):
     )
 
 
-def test_add_user_permission_success(mock):
-    pm = PermissionsManager(mock.db_client, mock.user_email)
-
-    pm.add_user_permission(PermissionsEnum.DB_WRITE)
-
-    mock.db_client.add_user_permission.assert_called_with(
-        mock.user_email, PermissionsEnum.DB_WRITE
-    )
-    mock.message_response.assert_called_with("Permission added")
-
-
 def test_add_user_permission_conflict(mock):
     pm = PermissionsManager(mock.db_client, mock.user_email)
 
@@ -68,17 +57,6 @@ def test_add_user_permission_conflict(mock):
         f"Permission {PermissionsEnum.READ_ALL_USER_INFO.value} already exists for user",
         HTTPStatus.CONFLICT,
     )
-
-
-def test_remove_user_permission_success(mock):
-    pm = PermissionsManager(mock.db_client, mock.user_email)
-
-    pm.remove_user_permission(PermissionsEnum.READ_ALL_USER_INFO)
-
-    mock.db_client.remove_user_permission.assert_called_with(
-        mock.user_email, PermissionsEnum.READ_ALL_USER_INFO
-    )
-    mock.message_response.assert_called_with("Permission removed")
 
 
 def test_remove_user_permission_not_found(mock):

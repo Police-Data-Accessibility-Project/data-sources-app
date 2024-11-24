@@ -100,7 +100,7 @@ def test_data_requests_get(
 
     # Give user admin permission
     tdc.db_client.add_user_permission(
-        user_email=tus_creator.user_info.email, permission=PermissionsEnum.DB_WRITE
+        user_id=tus_creator.user_info.user_id, permission=PermissionsEnum.DB_WRITE
     )
 
     admin_data = tdc.request_validator.get_data_requests(

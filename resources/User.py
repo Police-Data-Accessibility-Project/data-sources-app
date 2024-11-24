@@ -81,5 +81,9 @@ class User(PsycopgResource):
             dto_class=UserRequestDTO,
         )
         with self.setup_database_client() as db_client:
-            set_user_password(db_client, dto.email, dto.password)
+            set_user_password(
+                db_client=db_client,
+                user_id=db_client.get_user_info(dto.email).id,
+                password=dto.password,
+            )
         return {"message": "Successfully updated password"}, HTTPStatus.OK

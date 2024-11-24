@@ -16,7 +16,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyBaseD
 def get_owner_data_requests_wrapper(
     db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: GetManyBaseDTO
 ):
-    user_id = db_client.get_user_id(access_info.user_email)
+    user_id = access_info.get_user_id()
     data_requests = get_owner_data_requests(db_client, dto, user_id)
     formatted_list_response = format_list_response(data_requests)
 

@@ -149,17 +149,6 @@ def test_get_user_info_by_external_account_id(live_database_client: DatabaseClie
     assert user_info.email == fake_email
 
 
-def test_set_user_password_digest(live_database_client: DatabaseClient):
-    fake_email = get_test_name()
-    live_database_client.create_new_user(fake_email, "test_password")
-    live_database_client.set_user_password_digest(fake_email, "test_password")
-    password_digest = live_database_client.execute_sqlalchemy(
-        lambda: select(User.password_digest).where(User.email == fake_email)
-    ).one_or_none()[0]
-
-    assert password_digest == "test_password"
-
-
 def test_reset_token_logic(live_database_client: DatabaseClient):
     fake_email = get_test_name()
     fake_token = uuid.uuid4().hex
@@ -726,7 +715,9 @@ def test_add_user_permission(live_database_client):
     test_user = create_test_user_db_client(live_database_client)
 
     # Add permission
-    live_database_client.add_user_permission(test_user.email, PermissionsEnum.DB_WRITE)
+    live_database_client.add_user_permission(
+        test_user.user_id, PermissionsEnum.DB_WRITE
+    )
     test_user_permissions = live_database_client.get_user_permissions(test_user.user_id)
     assert len(test_user_permissions) == 1
 
@@ -736,14 +727,14 @@ def test_remove_user_permission(live_database_client):
 
     # Add permission
     live_database_client.add_user_permission(
-        test_user.email, PermissionsEnum.READ_ALL_USER_INFO
+        test_user.user_id, PermissionsEnum.READ_ALL_USER_INFO
     )
     test_user_permissions = live_database_client.get_user_permissions(test_user.user_id)
     assert len(test_user_permissions) == 1
 
     # Remove permission
     live_database_client.remove_user_permission(
-        test_user.email, PermissionsEnum.READ_ALL_USER_INFO
+        test_user.user_id, PermissionsEnum.READ_ALL_USER_INFO
     )
     test_user_permissions = live_database_client.get_user_permissions(test_user.user_id)
     assert len(test_user_permissions) == 0

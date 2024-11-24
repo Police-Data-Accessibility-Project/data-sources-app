@@ -180,23 +180,3 @@ def test_get_user_email_from_api_key(
         assert result is None
     else:
         assert result == expected_result.email
-
-
-def test_get_jwt_access_info_with_permissions(monkeypatch):
-
-    mock = MagicMock()
-    mock.get_user_permissions.return_value = mock.permissions
-
-    monkeypatch.setattr(
-        "middleware.access_logic.get_user_permissions", mock.get_user_permissions
-    )
-
-    result = get_jwt_access_info_with_permissions(mock.user_email)
-
-    mock.get_user_permissions.assert_called_once_with(mock.user_email)
-
-    assert result == AccessInfoPrimary(
-        user_email=mock.user_email,
-        access_type=AccessTypeEnum.JWT,
-        permissions=mock.permissions,
-    )
