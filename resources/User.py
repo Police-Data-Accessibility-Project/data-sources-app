@@ -60,30 +60,3 @@ class User(PsycopgResource):
                 dto_class=UserRequestDTO,
             ),
         )
-
-    @endpoint_info_2(
-        namespace=namespace_user_old,
-        auth_info=STANDARD_JWT_AUTH_INFO,
-        schema_config=SchemaConfigs.USER_PUT,
-        response_info=ResponseInfo(
-            response_dictionary={
-                200: "Success: User password successfully updated",
-                500: "Error: Internal server error",
-            }
-        ),
-    )
-    def put(self, access_info: AccessInfoPrimary) -> Response:
-        """
-        Allows an existing user to update their password.
-
-        The user's new password is hashed and updated in the database based on their email.
-        Upon successful password update, a message is returned to the user.
-
-        Returns:
-        - A dictionary containing a success message or an error message if the operation fails.
-        """
-        return self.run_endpoint(
-            wrapper_function=change_password_wrapper,
-            schema_populate_parameters=SchemaConfigs.USER_PUT.value.get_schema_populate_parameters(),
-            access_info=access_info,
-        )
