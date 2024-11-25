@@ -9,7 +9,7 @@ from werkzeug.security import generate_password_hash
 
 from database_client.database_client import DatabaseClient
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
-from middleware.access_logic import PasswordResetTokenAccessInfo
+from middleware.access_logic import PasswordResetTokenAccessInfo, AccessInfoPrimary
 from middleware.common_response_formatting import message_response
 from middleware.exceptions import UserNotFoundError
 from middleware.flask_response_manager import FlaskResponseManager
@@ -17,6 +17,9 @@ from middleware.primary_resource_logic.api_key_logic import generate_token
 from middleware.primary_resource_logic.user_queries import user_check_email
 from middleware.schema_and_dto_logic.primary_resource_dtos.request_reset_password_dtos import (
     RequestResetPasswordRequestDTO,
+)
+from middleware.schema_and_dto_logic.primary_resource_dtos.user_profile_dtos import (
+    UserPutDTO,
 )
 from middleware.webhook_logic import send_password_reset_link
 from utilities.enums import SourceMappingEnum
@@ -126,6 +129,29 @@ def validate_user_ids_match(user_id: int, token_user_id: int):
         FlaskResponseManager.abort(
             code=HTTPStatus.BAD_REQUEST, message="Invalid token."
         )
+
+
+def change_password_wrapper(
+    db_client: DatabaseClient,
+    dto: UserPutDTO,
+    access_info: AccessInfoPrimary,
+):
+
+    # Check if old password is valid
+    old_password_digest = generate_password_hash(dto.old_password)
+    matches = db_client.password_digest_matches(
+        user_id=access_info.user_id, password_digest=old_password_digest
+    )
+    if not matches:
+        FlaskResponseManager.abort(
+            code=HTTPStatus.BAD_REQUEST, message="Incorrect existing password."
+        )
+    set_user_password(
+        db_client=db_client, user_id=access_info.user_id, password=dto.new_password
+    )
+    return message_response(
+        message="Successfully updated password.",
+    )
 
 
 def set_user_password(db_client: DatabaseClient, user_id: int, password: str):

@@ -3,6 +3,8 @@
 from http import HTTPStatus
 import uuid
 
+import pytest
+
 from database_client.database_client import DatabaseClient
 from tests.conftest import flask_client_with_db
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
@@ -69,10 +71,14 @@ def test_user_put(flask_client_with_db):
 
     new_password = str(uuid.uuid4())
 
+    # Try to update password with incorrect old password and fail
+    pytest.fail("Not implemented")
+
+    # TODO: Convert to RequestValidate
     response = flask_client_with_db.put(
         "/api/user",
-        headers=tus.api_authorization_header,
-        json={"email": tus.user_info.email, "password": new_password},
+        headers=tus.jwt_authorization_header,
+        json={"old_password": tus.user_info.password, "new_password": new_password},
     )
     assert (
         response.status_code == HTTPStatus.OK.value

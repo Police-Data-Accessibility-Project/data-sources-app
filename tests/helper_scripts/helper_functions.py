@@ -249,7 +249,7 @@ def create_test_user_api(client: FlaskClient) -> UserInfo:
     email = get_test_email()
     password = str(uuid.uuid4())
     response = client.post(
-        "user",
+        "/api/user",
         json={"email": email, "password": password},
     )
     user_id = DatabaseClient().get_user_id(email)

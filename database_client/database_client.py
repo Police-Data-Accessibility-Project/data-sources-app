@@ -196,6 +196,16 @@ class DatabaseClient:
             id_column_name="id",
         )
 
+    def password_digest_matches(self, user_id: int, password_digest: str) -> bool:
+        db_password_digest = self._select_single_entry_from_relation(
+            relation_name=Relations.USERS.value,
+            columns=["password_digest"],
+            where_mappings={
+                "id": user_id,
+            },
+        )["password_digest"]
+        return password_digest == db_password_digest
+
     ResetTokenInfo = namedtuple("ResetTokenInfo", ["id", "user_id", "create_date"])
 
     def get_reset_token_info(self, token: str) -> Optional[ResetTokenInfo]:
