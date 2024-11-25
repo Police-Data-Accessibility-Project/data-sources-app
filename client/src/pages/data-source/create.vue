@@ -116,9 +116,9 @@
 				</template>
 			</Typeahead>
 
-			<div v-if="!selectedAgencies.length && agencyNotAvailable">
+			<div v-if="agencyNotAvailable">
 				<h4>Agency not found</h4>
-				<p>
+				<p class="text-sm max-w-full">
 					We will attempt to find this agency and add it to our database as a
 					part of this request
 				</p>
@@ -857,12 +857,14 @@ const fetchTypeaheadResults = _debounce(
 const checkDuplicates = _debounce(
 	async (e) => {
 		try {
-			const dupes = await findDuplicateURL(e.target.value);
-			if (dupes.data.duplicates.length && !alreadyExistsToastId.value) {
-				alreadyExistsToastId.value = toast.info(
-					`${dupes.data.duplicates.length} ${pluralize('data source', dupes.data.duplicates.length)} already ${unpluralize('exists', dupes.data.duplicates.length)} with the url ${e.target.value}.\n${dupes.data.duplicates.length === 1 ? 'Its status is' : 'Their statuses are'} ${dupes.data.duplicates.map(({ approval_status }) => approval_status).join(', ')}`,
-					{ autoClose: false },
-				);
+			const response = await findDuplicateURL(e.target.value);
+			const dupes = response.data.duplicates;
+			const length = dupes.length;
+			const infoString = `${length} ${pluralize('data source', length)} already ${unpluralize('exists', length)} with the url ${e.target.value}.\n${length === 1 ? 'Its status is' : 'Their statuses are'} ${dupes.map(({ approval_status }) => approval_status).join(', ')}`;
+			if (length && !alreadyExistsToastId.value) {
+				alreadyExistsToastId.value = toast.info(infoString, {
+					autoClose: false,
+				});
 			} else {
 				toast.remove(alreadyExistsToastId.value);
 				alreadyExistsToastId.value = undefined;
