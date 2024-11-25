@@ -13,6 +13,7 @@ const HEADERS_BASIC = {
 };
 const SEARCH_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/search/search-location-and-record-type`;
 const SEARCH_FOLLOW_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/search/follow`;
+const CHECK_UNIQUE_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/check/unique-url`;
 
 export const useSearchStore = defineStore('search', {
 	state: () => ({
@@ -107,6 +108,16 @@ export const useSearchStore = defineStore('search', {
 					Authorization: `Bearer ${auth.$state.tokens.accessToken.value}`,
 				},
 			});
+		},
+		async findDuplicateURL(url) {
+			const response = await axios.get(CHECK_UNIQUE_URL, {
+				params: {
+					url,
+				},
+				headers: HEADERS_BASIC,
+			});
+
+			return response;
 		},
 		setMostRecentSearchIds(ids) {
 			this.$patch({

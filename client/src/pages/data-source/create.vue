@@ -28,6 +28,7 @@
 				class="md:col-span-2"
 				:name="INPUT_NAMES.url"
 				placeholder="A link where these records can be found or are referenced."
+				@input="checkDuplicates"
 			>
 				<template #label>
 					<h4>Source URL<sup>*</sup></h4>
@@ -460,6 +461,8 @@ import Typeahead from '@/components/TypeaheadInput.vue';
 import AgencySelected from '@/components/TypeaheadSelected.vue';
 import { toast } from 'vue3-toastify';
 import { formatText } from './_util';
+import pluralize from '@/util/pluralize';
+import unpluralize from '@/util/unpluralize';
 import _debounce from 'lodash/debounce';
 import _cloneDeep from 'lodash/cloneDeep';
 import _isEqual from 'lodash/isEqual';
@@ -467,8 +470,10 @@ import _startCase from 'lodash/startCase';
 import { nextTick, ref } from 'vue';
 import axios from 'axios';
 import { useDataSourceStore } from '@/stores/data-source';
+import { useSearchStore } from '@/stores/search';
 
 const { createDataSource } = useDataSourceStore();
+const { findDuplicateURL } = useSearchStore();
 
 const INPUT_NAMES = {
 	// Base properties
@@ -754,6 +759,7 @@ const agencyOriginatedChecked = ref(true);
 const isOtherPortalTypeSelected = ref(false);
 const selectedAgencies = ref([]);
 const agencyNotAvailable = ref('');
+const alreadyExistsToastId = ref();
 const items = ref([]);
 const formRef = ref();
 const typeaheadRef = ref();
@@ -842,6 +848,24 @@ const fetchTypeaheadResults = _debounce(
 			}
 		} catch (err) {
 			console.error(err);
+		}
+	},
+	350,
+	{ leading: true, trailing: true },
+);
+
+const checkDuplicates = _debounce(
+	async (e) => {
+		try {
+			const dupes = await findDuplicateURL(e.target.value);
+			if (dupes.data.duplicates.length && !alreadyExistsToastId.value) {
+				alreadyExistsToastId.value = toast.info(
+					`${dupes.data.duplicates.length} ${pluralize('data source', dupes.data.duplicates.length)} already ${unpluralize('exists', dupes.data.duplicates.length)} with the url ${e.target.value}.\n${dupes.data.duplicates.length === 1 ? 'Its status is' : 'Their statuses are'} ${dupes.data.duplicates.map(({ approval_status }) => approval_status).join(', ')}`,
+					{ autoClose: false },
+				);
+			}
+		} catch (err) {
+			return;
 		}
 	},
 	350,
