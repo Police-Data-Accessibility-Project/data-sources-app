@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { defineStore } from 'pinia';
 import parseJwt from '@/util/parseJwt';
-import router from '@/router';
 import { useUserStore } from './user';
 
 const HEADERS = {
@@ -96,19 +95,11 @@ export const useAuthStore = defineStore('auth', {
 			);
 		},
 
-		async logout(redirectTo) {
+		async logout() {
 			const user = useUserStore();
 
 			this.$reset();
 			user.$reset();
-
-			if (redirectTo) {
-				this.$patch({
-					redirectTo,
-				});
-			}
-
-			router.replace(redirectTo?.meta?.auth ? '/sign-in' : '/');
 		},
 
 		async refreshAccessToken() {

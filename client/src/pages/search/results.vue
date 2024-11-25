@@ -9,7 +9,7 @@
 
 		<!-- Search results -->
 		<section class="w-full h-full">
-			<div class="flex flex-col sm:flex-row sm:justify-between mb-4">
+			<div class="flex flex-col md:flex-row md:justify-between mb-4">
 				<div>
 					<h1 class="like-h4 mb-4">
 						Results {{ searchData && 'for ' + getLocationText(searchData) }}
@@ -42,13 +42,46 @@
 						</RouterLink>
 					</nav>
 				</div>
-				<Button
-					class="hidden sm:block max-h-12"
-					intent="primary"
-					@click="() => console.log('Follow button pressed')"
-				>
-					Follow
-				</Button>
+				<div v-if="!searchData.isFollowed" class="flex flex-col md:items-end">
+					<Button
+						:disabled="!userId"
+						class="sm:block max-h-12"
+						intent="primary"
+						@click="
+							async () => {
+								await searchData.follow();
+								reload();
+							}
+						"
+					>
+						Follow
+					</Button>
+					<p v-if="!userId" class="text-med text-neutral-500">
+						<RouterLink to="/sign-in">Sign in</RouterLink>
+						to follow this search
+					</p>
+				</div>
+				<div v-else class="flex flex-col md:items-end max-w-60">
+					<p v-if="userId" class="text-med text-neutral-500">
+						You are following this search. Go to
+						<RouterLink to="/profile">your profile</RouterLink> to review saved
+						searches or un-follow below.
+					</p>
+
+					<Button
+						:disabled="!userId"
+						class="sm:block max-h-12"
+						intent="primary"
+						@click="
+							async () => {
+								await searchData.unFollow();
+								reload();
+							}
+						"
+					>
+						Un-follow
+					</Button>
+				</div>
 			</div>
 			<SearchResults
 				v-if="!error"
@@ -99,12 +132,13 @@ import {
 	getMostNarrowSearchLocationWithResults,
 	groupResultsByAgency,
 	normalizeLocaleForHash,
-	getLocationText,
 	getAnchorLinkText,
 	getAllIdsSearched,
 } from './_util';
+import getLocationText from '@/util/getLocationText';
 import _isEqual from 'lodash/isEqual';
 
+import { toast } from 'vue3-toastify';
 const search = useSearchStore();
 
 const query = ref();
@@ -131,10 +165,33 @@ export const useSearchData = defineBasicLoader(
 		data.value = response;
 		query.value = params;
 
+		const isFollowed = !!(await search.getFollowedSearch(params));
+
 		return {
 			results: groupResultsByAgency(response.data),
 			searched,
 			params,
+			async follow() {
+				try {
+					await search.followSearch(this.params);
+					toast.success(
+						`Search followed for ${getLocationText({ searched: this.searched, params: this.params })}!`,
+					);
+				} catch (error) {
+					toast.error(`Error saving search. Please try again!`);
+				}
+			},
+			async unFollow() {
+				try {
+					await search.deleteFollowedSearch(this.params);
+					toast.success(
+						`Search un-followed for ${getLocationText({ searched: this.searched, params: this.params })}!`,
+					);
+				} catch (error) {
+					toast.error(`Error un-following search. Please try again!`);
+				}
+			},
+			isFollowed,
 		};
 	},
 );
@@ -144,8 +201,10 @@ export const useSearchData = defineBasicLoader(
 import { Button } from 'pdap-design-system';
 import SearchResults from './_components/SearchResults.vue';
 import SearchForm from '@/components/SearchForm.vue';
+import { useUserStore } from '@/stores/user';
 
-const { data: searchData, isLoading, error } = useSearchData();
+const { id: userId } = useUserStore();
+const { data: searchData, isLoading, error, reload } = useSearchData();
 const route = useRoute();
 const searchResultsRef = ref();
 const isSearchShown = ref(false);

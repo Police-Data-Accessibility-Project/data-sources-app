@@ -58,9 +58,9 @@
 			data-test="typeahead-list-not-found"
 		>
 			<li class="max-w-[unset]">
-				<span>
-					<strong>No results found.</strong> Please check your spelling and
-					search for a place in the United States.
+				<slot v-if="$slots['not-found']" name="not-found" v-bind="notFound" />
+				<span v-else>
+					<strong>No results found.</strong> Please check your spelling.
 				</span>
 			</li>
 		</ul>

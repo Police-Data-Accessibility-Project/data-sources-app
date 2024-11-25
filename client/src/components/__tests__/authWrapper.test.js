@@ -6,11 +6,18 @@ import { useAuthStore } from '../../stores/auth';
 import { nextTick } from 'vue';
 import { useUserStore } from '@/stores/user';
 
+const replace = vi.fn();
+
 vi.mock('vue-router/auto-routes');
 vi.mock('vue-router', async () => {
 	const actual = await vi.importActual('vue-router');
 	return {
 		...actual,
+		useRouter: vi.fn(() => {
+			return {
+				replace,
+			};
+		}),
 		useRoute: vi.fn(() => {
 			return routeMock;
 		}),

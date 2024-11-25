@@ -205,7 +205,6 @@ export const useDataSourceData = defineBasicLoader(
 
 		// Then set current route to prev before returning data
 		dataSourceStore.setPreviousDataSourceRoute(route);
-
 		return results.data.data;
 	},
 );
@@ -242,7 +241,7 @@ const isDescriptionExpanded = ref(false);
 const showExpandDescriptionButton = ref(false);
 const descriptionRef = ref();
 const mainRef = ref();
-const navIs = ref('increment');
+const navIs = ref('');
 
 // Handle swipe
 const { isSwiping, direction } = useSwipe(mainRef);

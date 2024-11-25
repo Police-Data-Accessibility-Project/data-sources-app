@@ -25,6 +25,12 @@
 				</span>
 				<span class="select">Select</span>
 			</template>
+			<template #not-found>
+				<span>
+					<strong>No results found.</strong> Please check your spelling and
+					search for a place in the United States.
+				</span>
+			</template>
 		</TypeaheadInput>
 	</div>
 
@@ -139,7 +145,7 @@ const CHECKBOXES = [
 			return params.record_categories?.includes(this.label);
 		},
 		name: 'jails-and-courts',
-		label: 'Jails & courts',
+		label: 'Jails & Courts',
 	},
 ];
 
@@ -220,7 +226,8 @@ function buildParams(values) {
 		state,
 		county,
 		locality,
-	}))(selectedRecord.value);
+		// If no selected record, fall back to the initial search
+	}))(selectedRecord.value ?? initiallySearchedRecord.value);
 
 	Object.keys(recordFilteredByParamsKeys).forEach((key) => {
 		if (recordFilteredByParamsKeys[key])

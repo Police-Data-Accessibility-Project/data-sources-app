@@ -10,40 +10,52 @@
 	<main>
 		<h1>Placeholder page</h1>
 		<p>
-			Just created this for now in order to test linking GH account to existing
-			email account. Eventually this GH linking flow will be conditionally
-			rendered based on whether the user is linked via OAuth.
+			Just created this for now in order to test various profile-related
+			functionality.
 		</p>
 
-		<div
-			v-if="githubAuthLoading"
-			class="flex items-center justify-center h-full w-full"
-		>
-			<Spinner :show="githubLoading" text="Logging in" />
-		</div>
+		<template v-if="profileData.followedSearches">
+			<h2>Followed searches</h2>
+			<div
+				v-for="followed of profileData.followedSearches"
+				:key="JSON.stringify(followed)"
+				class="w-full flex justify-between max-w-2xl"
+			>
+				<RouterLink :to="{ path: '/search/results', query: followed }">
+					{{
+						getLocationText({
+							searched: followed
+								? getMostNarrowSearchLocationWithResults(followed)
+								: 'state',
+							params: followed,
+						})
+					}}
+				</RouterLink>
+				<Button
+					intent="secondary"
+					class="max-w-max"
+					@click="() => unFollow(followed)"
+				>
+					Un-follow
+				</Button>
+			</div>
+		</template>
 
-		<template v-else-if="githubAuthIsLinked">
+		<template v-if="profileData.gitHubIsLinked">
 			<p>
 				<FontAwesomeIcon :icon="faGithub" /> Your account is linked with Github
 			</p>
 		</template>
 
 		<template v-else>
-			<template v-if="githubAuthError">
-				<p class="error">
-					There was an error logging you in with Github. Please try again
-				</p>
-			</template>
-			<template v-else>
-				<Button
-					class="border-2 border-neutral-950 border-solid [&>svg]:ml-0"
-					intent="tertiary"
-					@click="async () => await auth.beginOAuthLogin('/profile')"
-				>
-					<FontAwesomeIcon :icon="faGithub" />
-					Link account with Github
-				</Button>
-			</template>
+			<Button
+				class="border-2 border-neutral-950 border-solid [&>svg]:ml-0"
+				intent="tertiary"
+				@click="async () => await auth.beginOAuthLogin('/profile')"
+			>
+				<FontAwesomeIcon :icon="faGithub" />
+				Link account with Github
+			</Button>
 		</template>
 
 		<div class="mt-4">
@@ -57,13 +69,19 @@ import { NavigationResult } from 'unplugin-vue-router/data-loaders';
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic';
 import { useAuthStore } from '@/stores/auth';
 import { useUserStore } from '@/stores/user';
+import { useSearchStore } from '@/stores/search';
+import getLocationText, {
+	getMostNarrowSearchLocationWithResults,
+} from '@/util/getLocationText';
 
 const auth = useAuthStore();
 const user = useUserStore();
+const search = useSearchStore();
 
-export const useGithubAuth = defineBasicLoader('/profile', async (route) => {
+export const useProfileData = defineBasicLoader('/profile', async (route) => {
+	let gitHubIsLinked = false;
 	// TODO: do logic here to determine whether user signed up with GH, so we don't have to use this `linked` param
-	if (route.query.linked) return true;
+	if (route.query.linked) gitHubIsLinked = true;
 
 	const githubAccessToken = route.query.gh_access_token;
 	if (githubAccessToken && user.id)
@@ -71,26 +89,53 @@ export const useGithubAuth = defineBasicLoader('/profile', async (route) => {
 
 	if (githubAccessToken) {
 		await auth.linkAccountWithGithub(githubAccessToken);
-		return true;
+		gitHubIsLinked = true;
 	}
+	const followedSearches = (await search.getFollowedSearches()).data.data;
+
+	return {
+		followedSearches,
+		gitHubIsLinked,
+	};
 });
 </script>
 
 <script setup>
-import { Button, Spinner } from 'pdap-design-system';
+import { Button } from 'pdap-design-system';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { toast } from 'vue3-toastify';
 
 const route = useRoute();
+const router = useRouter();
 
 const {
-	data: githubAuthIsLinked,
-	loading: githubAuthLoading,
-	error: githubAuthError,
-} = useGithubAuth();
+	data: profileData,
+	// loading: profileLoading,
+	// error: profileError,
+	reload,
+} = useProfileData();
 
 async function signOut() {
-	await auth.logout({ ...route });
+	auth.setRedirectTo(route);
+	await auth.logout();
+	router.replace('/sign-in');
+}
+
+async function unFollow(followed) {
+	const text = getLocationText({
+		searched: followed
+			? getMostNarrowSearchLocationWithResults(followed)
+			: 'state',
+		params: followed,
+	});
+	try {
+		await search.deleteFollowedSearch(followed);
+		toast.success(`Un-followed search for ${text}`);
+		reload();
+	} catch (error) {
+		toast.error(`Error un-following search for ${text}, please try again.`);
+	}
 }
 </script>

@@ -1,12 +1,18 @@
+import { useAuthStore } from '@/stores/auth';
 import axios from 'axios';
 import { defineStore } from 'pinia';
+import _isEqual from 'lodash/isEqual';
 
 // Constants
-const HEADERS_BASIC = {
-	authorization: `Basic ${import.meta.env.VITE_ADMIN_API_KEY}`,
+const HEADERS_BASE = {
 	'Content-Type': 'application/json',
 };
+const HEADERS_BASIC = {
+	...HEADERS_BASE,
+	authorization: `Basic ${import.meta.env.VITE_ADMIN_API_KEY}`,
+};
 const SEARCH_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/search/search-location-and-record-type`;
+const SEARCH_FOLLOW_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/search/follow`;
 
 export const useSearchStore = defineStore('search', {
 	state: () => ({
@@ -51,6 +57,56 @@ export const useSearchStore = defineStore('search', {
 			});
 
 			return response;
+		},
+		async followSearch(params) {
+			const auth = useAuthStore();
+
+			return await axios.post(SEARCH_FOLLOW_URL, null, {
+				params,
+				headers: {
+					...HEADERS_BASE,
+					Authorization: `Bearer ${auth.$state.tokens.accessToken.value}`,
+				},
+			});
+		},
+		async getFollowedSearches() {
+			const auth = useAuthStore();
+
+			return await axios.get(SEARCH_FOLLOW_URL, {
+				headers: {
+					...HEADERS_BASE,
+					Authorization: `Bearer ${auth.$state.tokens.accessToken.value}`,
+				},
+			});
+		},
+		async getFollowedSearch(params) {
+			const auth = useAuthStore();
+
+			try {
+				const response = await axios.get(SEARCH_FOLLOW_URL, {
+					headers: {
+						...HEADERS_BASE,
+						Authorization: `Bearer ${auth.$state.tokens.accessToken.value}`,
+					},
+				});
+
+				return response.data.data.find((search) => {
+					return _isEqual(search, params);
+				});
+			} catch (error) {
+				return null;
+			}
+		},
+		async deleteFollowedSearch(params) {
+			const auth = useAuthStore();
+
+			return await axios.delete(SEARCH_FOLLOW_URL, {
+				params,
+				headers: {
+					...HEADERS_BASE,
+					Authorization: `Bearer ${auth.$state.tokens.accessToken.value}`,
+				},
+			});
 		},
 		setMostRecentSearchIds(ids) {
 			this.$patch({
