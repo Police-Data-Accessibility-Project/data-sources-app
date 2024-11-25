@@ -23,6 +23,10 @@ def get_env_variable(name: str) -> str:
     return value
 
 
+def create_web_app_url(endpoint: str) -> str:
+    return f"{get_env_variable('VITE_VUE_APP_BASE_URL')}/{endpoint}"
+
+
 def get_enum_values(en: type[Enum]) -> list[str]:
     return [e.value for e in en]
 

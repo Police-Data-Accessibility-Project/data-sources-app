@@ -14,10 +14,14 @@ from middleware.primary_resource_logic.login_queries import (
 from middleware.primary_resource_logic.user_queries import UserRequestDTO
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import EmailOnlyDTO
 from middleware.third_party_interaction_logic.mailgun_logic import send_via_mailgun
+from middleware.util import create_web_app_url
+from tests.helper_scripts.helper_functions import add_query_params
 
 
 def get_signup_link(token: str):
-    return f"http://localhost:8000/signup/validate/{token}"
+    url = create_web_app_url("validate/email")
+    url = add_query_params(url=url, params={"token": token})
+    return url
 
 
 def send_signup_link(email: str, token: str):
