@@ -58,7 +58,11 @@
 			data-test="typeahead-list-not-found"
 		>
 			<li class="max-w-[unset]">
-				<slot v-if="$slots['not-found']" name="not-found" v-bind="notFound" />
+				<slot
+					v-if="$slots['not-found']"
+					name="not-found"
+					v-bind="notFound ?? {}"
+				/>
 				<span v-else>
 					<strong>No results found.</strong> Please check your spelling.
 				</span>
@@ -220,6 +224,9 @@ defineExpose({
 	boldMatchText,
 	clearInput,
 	focusInput,
+	get value() {
+		return input.value;
+	},
 });
 </script>
 

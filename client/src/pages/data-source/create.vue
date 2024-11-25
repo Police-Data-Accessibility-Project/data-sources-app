@@ -92,7 +92,43 @@
 					<span v-html="typeaheadRef?.boldMatchText(formatText(item))" />
 					<span class="select">Select</span>
 				</template>
+
+				<template #not-found>
+					<span>
+						<Button
+							class="text-left p-0"
+							intent="tertiary"
+							type="button"
+							@click="
+								() => {
+									agencyNotAvailable = typeaheadRef.value;
+									items = [];
+									typeaheadRef.clearInput();
+								}
+							"
+						>
+							<strong>No results found.</strong> Would you like to suggest
+							{{ typeaheadRef.value }}
+							be added to our agencies database?
+						</Button>
+					</span>
+				</template>
 			</Typeahead>
+
+			<div v-if="!selectedAgencies.length && agencyNotAvailable">
+				<h4>Agency not found</h4>
+				<p>
+					We will attempt to find this agency and add it to our database as a
+					part of this request
+				</p>
+				<TransitionGroup v-if="agencyNotAvailable" name="list">
+					<AgencySelected
+						class="md:col-span-2"
+						:content="agencyNotAvailable"
+						@click="agencyNotAvailable = ''"
+					/>
+				</TransitionGroup>
+			</div>
 
 			<InputText
 				:id="'input-' + INPUT_NAMES.name"
@@ -717,6 +753,7 @@ const agencySuppliedChecked = ref(true);
 const agencyOriginatedChecked = ref(true);
 const isOtherPortalTypeSelected = ref(false);
 const selectedAgencies = ref([]);
+const agencyNotAvailable = ref('');
 const items = ref([]);
 const formRef = ref();
 const typeaheadRef = ref();
@@ -736,6 +773,10 @@ function formatData(values) {
 	}
 	if (values[INPUT_NAMES.end]) {
 		values[INPUT_NAMES.end] = formatDate(new Date(values[INPUT_NAMES.end]));
+	}
+
+	if (agencyNotAvailable.value) {
+		values.agency_described_not_in_database = agencyNotAvailable.value;
 	}
 
 	Object.assign(values, {
