@@ -863,13 +863,16 @@ const checkDuplicates = _debounce(
 					`${dupes.data.duplicates.length} ${pluralize('data source', dupes.data.duplicates.length)} already ${unpluralize('exists', dupes.data.duplicates.length)} with the url ${e.target.value}.\n${dupes.data.duplicates.length === 1 ? 'Its status is' : 'Their statuses are'} ${dupes.data.duplicates.map(({ approval_status }) => approval_status).join(', ')}`,
 					{ autoClose: false },
 				);
+			} else {
+				toast.remove(alreadyExistsToastId.value);
+				alreadyExistsToastId.value = undefined;
 			}
 		} catch (err) {
 			return;
 		}
 	},
 	350,
-	{ leading: true, trailing: true },
+	{ trailing: true },
 );
 
 async function clear() {
