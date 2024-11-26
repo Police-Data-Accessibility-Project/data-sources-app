@@ -324,7 +324,7 @@
 						>
 							<template #label>
 								<h4>Coverage</h4>
-								<p class="text-sm max-w-full lg:w-3/4">
+								<p class="text-sm max-w-full">
 									If coverage is up to present-day, only select the beginning
 									date.
 								</p>
@@ -779,7 +779,6 @@ function formatData(values) {
 		if (start instanceof Date) {
 			values[INPUT_NAMES.start] = formatDate(start);
 		}
-
 		if (end instanceof Date) {
 			values[INPUT_NAMES.end] = formatDate(end);
 		}
@@ -791,12 +790,8 @@ function formatData(values) {
 		values.agency_described_not_in_database = agencyNotAvailable.value;
 	}
 
-	Object.assign(values, {
-		[INPUT_NAMES.format]: [],
-	});
-	Object.assign(values, {
-		[INPUT_NAMES.accessType]: [],
-	});
+	const formats = [];
+	const access = [];
 	Object.entries(values).forEach(([key, value]) => {
 		const isAccess =
 			key.includes(INPUT_NAMES.accessType) &&
@@ -808,18 +803,26 @@ function formatData(values) {
 			value;
 
 		if (isAccess) {
-			values[INPUT_NAMES.accessType].push(
+			access.push(
 				formatAccessTypeLabel(key.replace(`${INPUT_NAMES.accessType}-`, ''))
 					.split(' ')
 					.join(''),
 			);
 		} else if (isFormat) {
-			values[INPUT_NAMES.format].push(
+			formats.push(
 				formatFormatsLabel(key.replace(`${INPUT_NAMES.format}-`, '')),
 			);
 		}
 		if (isAccess || isFormat) delete values[key];
 	});
+
+	if (formats.length) {
+		values[INPUT_NAMES.format] = formats;
+	}
+
+	if (access.length) {
+		values[INPUT_NAMES.accessType] = access;
+	}
 	return values;
 }
 
