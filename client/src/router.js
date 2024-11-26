@@ -2,6 +2,7 @@ import { createWebHistory, createRouter } from 'vue-router';
 import { useAuthStore } from './stores/auth';
 import { routes, handleHotUpdate } from 'vue-router/auto-routes';
 import { refreshMetaTagsByRoute } from '@/util/routeHelpers.js';
+import { toast } from 'vue3-toastify';
 
 const router = createRouter({
 	history: createWebHistory(),
@@ -38,6 +39,13 @@ router.beforeEach(async (to, from, next) => {
 
 router.afterEach((to, from, failure) => {
 	if (failure) console.error('router failure', { failure, to, from });
+});
+
+router.onError((error) => {
+	console.error('router error', error);
+	toast.error('An error occurred. Please try again later.', {
+		autoClose: false,
+	});
 });
 
 export default router;
