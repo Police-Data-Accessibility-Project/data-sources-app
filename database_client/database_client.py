@@ -196,6 +196,15 @@ class DatabaseClient:
             id_column_name="id",
         )
 
+    def get_password_digest(self, user_id: int) -> str:
+        return self._select_single_entry_from_relation(
+            relation_name=Relations.USERS.value,
+            columns=["password_digest"],
+            where_mappings={
+                "id": user_id,
+            },
+        )["password_digest"]
+
     def password_digest_matches(self, user_id: int, password_digest: str) -> bool:
         db_password_digest = self._select_single_entry_from_relation(
             relation_name=Relations.USERS.value,

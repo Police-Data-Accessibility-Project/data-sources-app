@@ -5,7 +5,8 @@ from http import HTTPStatus
 from flask import Response, make_response
 
 from marshmallow import Schema, fields
-from werkzeug.security import generate_password_hash
+from rfc3986.validators import check_password
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from database_client.database_client import DatabaseClient
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
@@ -135,16 +136,21 @@ def change_password_wrapper(
     db_client: DatabaseClient,
     dto: UserPutDTO,
     access_info: AccessInfoPrimary,
+    user_id: int,
 ):
 
+    if int(user_id) != access_info.user_id:
+        FlaskResponseManager.abort(
+            code=HTTPStatus.UNAUTHORIZED, message="Invalid token for user."
+        )
+
     # Check if old password is valid
-    old_password_digest = generate_password_hash(dto.old_password)
-    matches = db_client.password_digest_matches(
-        user_id=access_info.user_id, password_digest=old_password_digest
-    )
+    # get old password digest
+    db_password_digest = db_client.get_password_digest(user_id=access_info.user_id)
+    matches = check_password_hash(pwhash=db_password_digest, password=dto.old_password)
     if not matches:
         FlaskResponseManager.abort(
-            code=HTTPStatus.BAD_REQUEST, message="Incorrect existing password."
+            code=HTTPStatus.UNAUTHORIZED, message="Incorrect existing password."
         )
     set_user_password(
         db_client=db_client, user_id=access_info.user_id, password=dto.new_password

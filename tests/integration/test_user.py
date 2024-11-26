@@ -74,22 +74,37 @@ def test_user_put(
 
     new_password = str(uuid.uuid4())
 
-    # Try to update password with incorrect old password and fail
-    tdc.request_validator.update_password(
-        headers=tus.jwt_authorization_header,
-        old_password="gibberish",
-        new_password=new_password,
+    def update_password(
+        old_password: str,
+        user_id: str = tus.user_info.user_id,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+    ):
+        return tdc.request_validator.update_password(
+            headers=tus.jwt_authorization_header,
+            user_id=user_id,
+            old_password=old_password,
+            new_password=new_password,
+            expected_response_status=expected_response_status,
+        )
+
+    # Try to update password with different user and fail
+    tus_other = tdc.standard_user()
+    update_password(
+        old_password=tus_other.user_info.password,
+        user_id=tus_other.user_info.user_id,
         expected_response_status=HTTPStatus.UNAUTHORIZED,
     )
 
-    response = tdc.request_validator.update_password(
-        headers=tus.jwt_authorization_header,
-        old_password=tus.user_info.password,
-        new_password=new_password,
+    # Try to update password with incorrect old password and fail
+    update_password(
+        old_password="gibberish",
+        expected_response_status=HTTPStatus.UNAUTHORIZED,
     )
-    assert (
-        response.status_code == HTTPStatus.OK.value
-    ), "User password update not successful"
+
+    # Try to update password with correct old password and succeed
+    response = update_password(
+        old_password=tus.user_info.password,
+    )
 
     new_password_hash = get_user_password_digest(tus.user_info)
 

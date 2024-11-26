@@ -42,7 +42,7 @@ user_data_requests_model = get_restx_param_documentation(
 ).model
 
 
-@namespace_user.route("/update-password")
+@namespace_user.route("/<user_id>/update-password")
 class UserUpdatePassword(PsycopgResource):
 
     @endpoint_info_2(
@@ -56,7 +56,7 @@ class UserUpdatePassword(PsycopgResource):
             }
         ),
     )
-    def post(self, access_info: AccessInfoPrimary) -> Response:
+    def post(self, access_info: AccessInfoPrimary, user_id: int) -> Response:
         """
         Allows an existing user to update their password.
 
@@ -70,6 +70,7 @@ class UserUpdatePassword(PsycopgResource):
             wrapper_function=change_password_wrapper,
             schema_populate_parameters=SchemaConfigs.USER_PUT.value.get_schema_populate_parameters(),
             access_info=access_info,
+            user_id=user_id,
         )
 
 
