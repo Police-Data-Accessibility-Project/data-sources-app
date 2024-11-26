@@ -122,7 +122,7 @@
 					We will attempt to find this agency and add it to our database as a
 					part of this request
 				</p>
-				<TransitionGroup v-if="agencyNotAvailable" name="list">
+				<TransitionGroup name="list">
 					<AgencySelected
 						class="md:col-span-2"
 						:content="agencyNotAvailable"
@@ -229,7 +229,7 @@
 							/>
 
 							<InputTextArea
-								v-if="!agencySuppliedChecked"
+								v-show="!agencySuppliedChecked"
 								:id="'input-' + INPUT_NAMES.supplyingEntity"
 								class="md:col-start-1 md:col-end-2"
 								:name="INPUT_NAMES.supplyingEntity"
@@ -242,13 +242,14 @@
 							</InputTextArea>
 						</div>
 
-						<div class="mt-2">
+						<div v-show="!agencySuppliedChecked" class="mt-2">
 							<h4>Agency originated</h4>
 							<p class="text-sm max-w-full lg:w-3/4">
 								Is the relevant agency also the original record keeper? This is
 								usually "yes", unless a third party collected data about a
 								police agency.
 							</p>
+
 							<InputCheckbox
 								:id="'input-' + INPUT_NAMES.agencyOriginated"
 								class="md:col-start-1 md:col-end-2"
@@ -259,7 +260,7 @@
 							/>
 
 							<InputTextArea
-								v-if="!agencyOriginatedChecked"
+								v-show="!agencyOriginatedChecked"
 								:id="'input-' + INPUT_NAMES.originatingEntity"
 								class="md:col-start-1 md:col-end-2"
 								:name="INPUT_NAMES.originatingEntity"
@@ -316,21 +317,17 @@
 						</RadioGroup>
 
 						<InputDatePicker
-							:id="INPUT_NAMES.start"
-							:name="INPUT_NAMES.start"
+							:id="INPUT_NAMES.start_end"
+							:name="INPUT_NAMES.start_end"
 							position="left"
+							range
 						>
 							<template #label>
-								<h4>Coverage start</h4>
-							</template>
-						</InputDatePicker>
-						<InputDatePicker
-							:id="INPUT_NAMES.end"
-							:name="INPUT_NAMES.end"
-							position="left"
-						>
-							<template #label>
-								<h4>Coverage end</h4>
+								<h4>Coverage</h4>
+								<p class="text-sm max-w-full lg:w-3/4">
+									If coverage is up to present-day, only select the beginning
+									date.
+								</p>
 							</template>
 						</InputDatePicker>
 
@@ -376,7 +373,7 @@
 							</template>
 						</InputSelect>
 						<InputText
-							v-if="isOtherPortalTypeSelected"
+							v-show="isOtherPortalTypeSelected"
 							:id="'input-' + INPUT_NAMES.portalTypeOther"
 							class="md:col-start-1 md:col-end-2"
 							:name="INPUT_NAMES.portalTypeOther"
@@ -495,6 +492,8 @@ const INPUT_NAMES = {
 	format: 'record_formats',
 	frequency: 'update_frequency',
 	method: 'update_method',
+	/** Not an actual DataSource property - used for range date picker - parsed into `INPUT_NAMES.start` and `INPUT_NAMES.end` */
+	start_end: 'coverage_range',
 	start: 'coverage_start',
 	end: 'coverage_end',
 	schedule: 'retention_schedule',
@@ -774,11 +773,18 @@ function formatDate(date) {
 }
 
 function formatData(values) {
-	if (values[INPUT_NAMES.start]) {
-		values[INPUT_NAMES.start] = formatDate(new Date(values[INPUT_NAMES.start]));
-	}
-	if (values[INPUT_NAMES.end]) {
-		values[INPUT_NAMES.end] = formatDate(new Date(values[INPUT_NAMES.end]));
+	if (values[INPUT_NAMES.start_end]) {
+		const [start, end] = values[INPUT_NAMES.start_end];
+
+		if (start instanceof Date) {
+			values[INPUT_NAMES.start] = formatDate(start);
+		}
+
+		if (end instanceof Date) {
+			values[INPUT_NAMES.end] = formatDate(end);
+		}
+
+		delete values[INPUT_NAMES.start_end];
 	}
 
 	if (agencyNotAvailable.value) {
