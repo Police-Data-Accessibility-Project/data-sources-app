@@ -84,7 +84,7 @@ def check_method_exists(class_type, client, endpoint, method):
 
 TestParameters = namedtuple("Resource", ["class_type", "endpoint", "allowed_methods"])
 test_parameters = [
-    TestParameters(User, "/user", [POST, PUT]),
+    TestParameters(User, "/user", [POST]),
     TestParameters(Login, "/login", [POST]),
     TestParameters(RefreshSession, "/refresh-session", [POST]),
     TestParameters(ApiKeyResource, f"/auth{API_KEY_ROUTE}", [POST]),

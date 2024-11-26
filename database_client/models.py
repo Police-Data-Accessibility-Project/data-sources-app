@@ -250,10 +250,6 @@ class Agency(Base, CountMetadata):
 class AgencyExpanded(Agency):
 
     __tablename__ = Relations.AGENCIES_EXPANDED.value
-    __table_args__ = {
-        "polymorphic_identity": "agency_expanded",
-        "inherit_conditions": (Agency.id == id),
-    }
     id = mapped_column(None, ForeignKey("public.agencies.id"), primary_key=True)
 
     state_name = Column(String)  #
@@ -514,10 +510,6 @@ class DataSourceExpanded(DataSource):
     id = mapped_column(None, ForeignKey("public.data_sources.id"), primary_key=True)
 
     __tablename__ = Relations.DATA_SOURCES_EXPANDED.value
-    __table_args__ = {
-        "polymorphic_identity": "data_source_expanded",
-        "inherit_conditions": (DataSource.id == id),
-    }
 
     record_type_name: Mapped[Optional[str]]
 
