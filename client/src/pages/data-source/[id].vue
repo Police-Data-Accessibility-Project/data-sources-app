@@ -193,6 +193,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useSwipe } from '@vueuse/core';
 import { ref } from 'vue';
 import { useDataSourceStore } from '@/stores/data-source';
+import { DataLoaderErrorPassThrough } from '@/util/errors';
 
 const dataSourceStore = useDataSourceStore();
 
@@ -201,11 +202,14 @@ export const useDataSourceData = defineBasicLoader(
 	async (route) => {
 		const dataSourceId = route.params.id;
 
-		const results = await dataSourceStore.getDataSource(dataSourceId);
-
-		// Then set current route to prev before returning data
-		dataSourceStore.setPreviousDataSourceRoute(route);
-		return results.data.data;
+		try {
+			const results = await dataSourceStore.getDataSource(dataSourceId);
+			// Then set current route to prev before returning data
+			dataSourceStore.setPreviousDataSourceRoute(route);
+			return results.data.data;
+		} catch (error) {
+			throw new DataLoaderErrorPassThrough(error);
+		}
 	},
 );
 </script>

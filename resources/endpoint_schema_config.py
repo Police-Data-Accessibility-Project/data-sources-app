@@ -21,6 +21,9 @@ from middleware.primary_resource_logic.reset_token_queries import (
 from middleware.schema_and_dto_logic.primary_resource_dtos.request_reset_password_dtos import (
     RequestResetPasswordRequestDTO,
 )
+from middleware.schema_and_dto_logic.primary_resource_dtos.user_profile_dtos import (
+    UserPutDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.refresh_session_schemas import (
     RefreshSessionRequestSchema,
     RefreshSessionRequestDTO,
@@ -154,6 +157,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.github_issue_app_s
 from middleware.schema_and_dto_logic.primary_resource_schemas.user_profile_schemas import (
     GetUserRecentSearchesOuterSchema,
     UserProfileResponseSchema,
+    UserPutSchema,
 )
 
 
@@ -370,6 +374,11 @@ class SchemaConfigs(Enum):
         primary_output_schema=NotificationsResponseSchema(),
     )
     # region User Profile
+    USER_PUT = EndpointSchemaConfig(
+        input_schema=UserPutSchema(),
+        input_dto_class=UserPutDTO,
+        primary_output_schema=MessageSchema(),
+    )
     USER_PROFILE_RECENT_SEARCHES = EndpointSchemaConfig(
         primary_output_schema=GetUserRecentSearchesOuterSchema(exclude=["message"]),
     )

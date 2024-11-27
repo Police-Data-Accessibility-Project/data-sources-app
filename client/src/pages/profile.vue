@@ -22,14 +22,7 @@
 				class="w-full flex justify-between max-w-2xl"
 			>
 				<RouterLink :to="{ path: '/search/results', query: followed }">
-					{{
-						getLocationText({
-							searched: followed
-								? getMostNarrowSearchLocationWithResults(followed)
-								: 'state',
-							params: followed,
-						})
-					}}
+					{{ getLocationText(followed) }}
 				</RouterLink>
 				<Button
 					intent="secondary"
@@ -70,9 +63,7 @@ import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic';
 import { useAuthStore } from '@/stores/auth';
 import { useUserStore } from '@/stores/user';
 import { useSearchStore } from '@/stores/search';
-import getLocationText, {
-	getMostNarrowSearchLocationWithResults,
-} from '@/util/getLocationText';
+import getLocationText from '@/util/getLocationText';
 
 const auth = useAuthStore();
 const user = useUserStore();
@@ -124,12 +115,7 @@ async function signOut() {
 }
 
 async function unFollow(followed) {
-	const text = getLocationText({
-		searched: followed
-			? getMostNarrowSearchLocationWithResults(followed)
-			: 'state',
-		params: followed,
-	});
+	const text = getLocationText(followed);
 	try {
 		await search.deleteFollowedSearch(followed);
 		toast.success(`Un-followed search for ${text}`);

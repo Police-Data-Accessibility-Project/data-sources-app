@@ -1,6 +1,6 @@
 // This file contains utils related to the search results page
 
-import { ALL_LOCATION_TYPES, STATES_TO_ABBREVIATIONS } from '@/util/constants';
+import { ALL_LOCATION_TYPES } from '@/util/constants';
 
 /**
  * Manipulates data to be renderable by search results component (grouped by agency)
@@ -34,13 +34,6 @@ export function groupResultsByAgency(results) {
 	return resultsGroupedByLocalityThenAgency;
 }
 
-export function getMostNarrowSearchLocationWithResults(params) {
-	if ('locality' in params) return 'locality';
-	if ('county' in params) return 'county';
-	if ('state' in params) return 'state';
-	if ('federal' in params) return 'federal';
-}
-
 export function normalizeLocaleForHash(locale, results) {
 	if (results.data[locale].count) return locale;
 
@@ -48,19 +41,6 @@ export function normalizeLocaleForHash(locale, results) {
 		const narrowerLocale = ALL_LOCATION_TYPES[i];
 
 		if (results.data[narrowerLocale].count) return narrowerLocale;
-	}
-}
-
-export function getLocationText({ searched, params }) {
-	switch (searched) {
-		case 'locality':
-			return `${params.locality}, ${STATES_TO_ABBREVIATIONS.get(params.state)}`;
-		case 'county':
-			return `${params.county} ${STATES_TO_ABBREVIATIONS.get(params.state) === 'LA' ? 'Parish' : 'County'}, ${params.state}`;
-		case 'state':
-			return params.state;
-		default:
-			return 'federal';
 	}
 }
 

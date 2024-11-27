@@ -8,6 +8,7 @@ import 'vue3-toastify/dist/index.css';
 import App from './App.vue';
 import router from './router';
 import 'pdap-design-system/styles';
+import { DataLoaderErrorPassThrough } from '@/util/errors';
 
 const pinia = createPinia();
 pinia.use(piniaPersistState);
@@ -18,7 +19,7 @@ pinia.use(piniaPersistState);
 
 const app = createApp(App);
 app.use(pinia);
-app.use(DataLoaderPlugin, { router });
+app.use(DataLoaderPlugin, { router, errors: [DataLoaderErrorPassThrough] });
 app.use(router);
 app.use(Vue3Toastify, {
 	autoClose: 5000,

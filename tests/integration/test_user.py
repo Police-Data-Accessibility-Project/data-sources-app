@@ -3,6 +3,8 @@
 from http import HTTPStatus
 import uuid
 
+import pytest
+
 from database_client.database_client import DatabaseClient
 from tests.conftest import flask_client_with_db
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
@@ -59,24 +61,50 @@ def test_user_post_user_already_exists(
     )
 
 
-def test_user_put(flask_client_with_db):
+def test_user_put(
+    test_data_creator_flask: TestDataCreatorFlask,
+):
     """
     Test that PUT call to /user endpoint successfully updates the user's password and verifies the new password hash is distinct from both the plain new password and the old password hash in the database
     """
+    tdc = test_data_creator_flask
 
-    tus = create_test_user_setup(flask_client_with_db)
+    tus = tdc.standard_user()
     old_password_hash = get_user_password_digest(tus.user_info)
 
     new_password = str(uuid.uuid4())
 
-    response = flask_client_with_db.put(
-        "/api/user",
-        headers=tus.api_authorization_header,
-        json={"email": tus.user_info.email, "password": new_password},
+    def update_password(
+        old_password: str,
+        user_id: str = tus.user_info.user_id,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+    ):
+        return tdc.request_validator.update_password(
+            headers=tus.jwt_authorization_header,
+            user_id=user_id,
+            old_password=old_password,
+            new_password=new_password,
+            expected_response_status=expected_response_status,
+        )
+
+    # Try to update password with different user and fail
+    tus_other = tdc.standard_user()
+    update_password(
+        old_password=tus_other.user_info.password,
+        user_id=tus_other.user_info.user_id,
+        expected_response_status=HTTPStatus.UNAUTHORIZED,
     )
-    assert (
-        response.status_code == HTTPStatus.OK.value
-    ), "User password update not successful"
+
+    # Try to update password with incorrect old password and fail
+    update_password(
+        old_password="gibberish",
+        expected_response_status=HTTPStatus.UNAUTHORIZED,
+    )
+
+    # Try to update password with correct old password and succeed
+    response = update_password(
+        old_password=tus.user_info.password,
+    )
 
     new_password_hash = get_user_password_digest(tus.user_info)
 

@@ -2,7 +2,12 @@ from http import HTTPStatus
 
 from flask import Response
 
-from middleware.primary_resource_logic.reset_token_queries import set_user_password
+from middleware.access_logic import STANDARD_JWT_AUTH_INFO, AccessInfoPrimary
+from middleware.decorators import endpoint_info_2
+from middleware.primary_resource_logic.reset_token_queries import (
+    set_user_password,
+    change_password_wrapper,
+)
 from middleware.primary_resource_logic.user_queries import (
     user_post_results,
     UserRequestDTO,
@@ -11,26 +16,24 @@ from middleware.primary_resource_logic.user_queries import (
 from typing import Dict, Any
 
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
-from resources.resource_helpers import add_api_key_header_arg
+from resources.endpoint_schema_config import SchemaConfigs
+from resources.resource_helpers import ResponseInfo
 from middleware.schema_and_dto_logic.dynamic_logic.model_helpers_with_schemas import (
     create_user_model,
 )
-from utilities.namespace import create_namespace
+from utilities.namespace import create_namespace, AppNamespaces
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import (
     populate_schema_with_request_content,
 )
 
-namespace_user_old = create_namespace()
+namespace_user_old = create_namespace(AppNamespaces.USER)
 
 # Define the user model for request parsing and validation
 user_model = create_user_model(namespace_user_old)
 
-authorization_parser = namespace_user_old.parser()
-add_api_key_header_arg(authorization_parser)
 
-
-@namespace_user_old.route("/user")
+@namespace_user_old.route("")
 class User(PsycopgResource):
     """
     A resource for user management, allowing new users to sign up and existing users to update their passwords.
@@ -57,33 +60,3 @@ class User(PsycopgResource):
                 dto_class=UserRequestDTO,
             ),
         )
-
-    # Endpoint for updating a user's password
-    @handle_exceptions
-    @namespace_user_old.expect(authorization_parser, user_model)
-    @namespace_user_old.response(201, "Success: User password successfully updated")
-    @namespace_user_old.response(500, "Error: Internal server error")
-    @namespace_user_old.doc(
-        description="Update user password.",
-    )
-    def put(self) -> Dict[str, Any]:
-        """
-        Allows an existing user to update their password.
-
-        The user's new password is hashed and updated in the database based on their email.
-        Upon successful password update, a message is returned to the user.
-
-        Returns:
-        - A dictionary containing a success message or an error message if the operation fails.
-        """
-        dto = populate_schema_with_request_content(
-            schema=UserRequestSchema(),
-            dto_class=UserRequestDTO,
-        )
-        with self.setup_database_client() as db_client:
-            set_user_password(
-                db_client=db_client,
-                user_id=db_client.get_user_info(dto.email).id,
-                password=dto.password,
-            )
-        return {"message": "Successfully updated password"}, HTTPStatus.OK

@@ -1,6 +1,7 @@
 import { STATES_TO_ABBREVIATIONS } from './constants';
 
-export default function getLocationText({ searched, params }) {
+export default function getLocationText(params) {
+	const searched = getMostNarrowSearchLocationWithResults(params);
 	switch (searched) {
 		case 'locality':
 			return `${params.locality}, ${STATES_TO_ABBREVIATIONS.get(params.state)}`;
@@ -14,6 +15,7 @@ export default function getLocationText({ searched, params }) {
 }
 
 export function getMostNarrowSearchLocationWithResults(params) {
+	if (!params) return null;
 	if ('locality' in params) return 'locality';
 	if ('county' in params) return 'county';
 	if ('state' in params) return 'state';

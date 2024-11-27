@@ -23,7 +23,7 @@
 					v-for="locale in ALL_LOCATION_TYPES"
 					:key="locale + 'results'"
 				>
-					<template v-if="'count' in results[locale]">
+					<template v-if="results[locale] && 'count' in results[locale]">
 						<div
 							:id="'scroll-to-' + locale"
 							aria-hidden="true"

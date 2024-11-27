@@ -84,16 +84,19 @@
 				</template>
 			</Typeahead>
 
-			<InputText
+			<InputDatePicker
 				:id="'input-' + INPUT_NAMES.range"
 				class="md:col-span-2"
 				:name="INPUT_NAMES.range"
 				placeholder="What dates or years should the data cover?"
+				year-picker
+				range
+				position="left"
 			>
 				<template #label>
 					<h4>Coverage range</h4>
 				</template>
-			</InputText>
+			</InputDatePicker>
 
 			<InputSelect
 				:id="'input-' + INPUT_NAMES.target"
@@ -163,6 +166,7 @@ import {
 	InputText,
 	InputSelect,
 	InputTextArea,
+	InputDatePicker,
 } from 'pdap-design-system';
 import Typeahead from '@/components/TypeaheadInput.vue';
 import LocationSelected from '@/components/TypeaheadSelected.vue';
@@ -338,8 +342,12 @@ async function submit(values) {
 	}
 	requestPending.value = true;
 
-	// Remove contact for now, as it's not present on the API endpoint yet TODO: remove this when API is updated
-	delete values[INPUT_NAMES.contact];
+	if (values[INPUT_NAMES.range]?.length) {
+		values[INPUT_NAMES.range] = values[INPUT_NAMES.range]
+			.map((d) => (typeof d === 'number' ? d : undefined))
+			.filter(Boolean)
+			.join('-');
+	}
 
 	// Create new array. In case of error, we need the original array to remain unmodified
 	const locations = _cloneDeep(selectedLocations.value);
