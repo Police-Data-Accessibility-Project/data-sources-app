@@ -73,12 +73,22 @@ export const useSearchStore = defineStore('search', {
 		async getFollowedSearches() {
 			const auth = useAuthStore();
 
-			return await axios.get(SEARCH_FOLLOW_URL, {
+			const response = await axios.get(SEARCH_FOLLOW_URL, {
 				headers: {
 					...HEADERS_BASE,
 					Authorization: `Bearer ${auth.$state.tokens.accessToken.value}`,
 				},
 			});
+
+			response.data.data.map((followed) => {
+				Object.entries(followed).forEach(([key, value]) => {
+					if (!value) {
+						delete followed[key];
+					}
+				});
+				return followed;
+			});
+			return response;
 		},
 		async getFollowedSearch(params) {
 			const auth = useAuthStore();
@@ -86,12 +96,7 @@ export const useSearchStore = defineStore('search', {
 			if (!auth.isAuthenticated()) return false;
 
 			try {
-				const response = await axios.get(SEARCH_FOLLOW_URL, {
-					headers: {
-						...HEADERS_BASE,
-						Authorization: `Bearer ${auth.$state.tokens.accessToken.value}`,
-					},
-				});
+				const response = await this.getFollowedSearches();
 
 				return response.data.data.find((search) => {
 					return _isEqual(search, params);

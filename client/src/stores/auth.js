@@ -17,6 +17,8 @@ const LINK_WITH_GITHUB_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/auth/link
 const REFRESH_SESSION_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/refresh-session`;
 const SIGNUP_WITH_EMAIL_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/auth/signup`;
 const START_OAUTH_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/auth/oauth`;
+const RESEND_VALIDATION_EMAIL_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/auth/resend-validation-email`;
+const VALIDATE_EMAIL_TOKEN_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/auth/validate-email`;
 
 export const useAuthStore = defineStore('auth', {
 	state: () => ({
@@ -55,8 +57,6 @@ export const useAuthStore = defineStore('auth', {
 			);
 			// Update store with email
 			this.$patch({ email });
-			// Log users in after signup and return that response
-			return await this.signInWithEmail(email, password);
 		},
 
 		async signInWithEmail(email, password) {
@@ -140,6 +140,31 @@ export const useAuthStore = defineStore('auth', {
 				console.error(error);
 				throw new Error(error.response?.data?.message);
 			}
+		},
+
+		async validateEmail(token) {
+			const response = await axios.post(VALIDATE_EMAIL_TOKEN_URL, null, {
+				headers: {
+					...HEADERS,
+					Authorization: `Bearer ${token}`,
+				},
+			});
+
+			this.parseTokensAndSetData(response);
+		},
+
+		async resendValidationEmail() {
+			const { email } = useUserStore();
+
+			return await axios.post(
+				RESEND_VALIDATION_EMAIL_URL,
+				{ email },
+				{
+					headers: {
+						...HEADERS,
+					},
+				},
+			);
 		},
 
 		parseTokensAndSetData(response) {

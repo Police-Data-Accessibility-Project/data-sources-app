@@ -272,7 +272,7 @@ async function onSubmit(formValues) {
 		const { email, password } = formValues;
 
 		await auth.signUpWithEmail(email, password);
-		await router.push(auth.redirectTo ?? { path: '/sign-up/success' });
+		await router.push({ path: '/sign-up/success' });
 	} catch (err) {
 		console.error(err);
 		error.value =
