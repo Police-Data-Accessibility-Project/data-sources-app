@@ -290,7 +290,7 @@ async function unFollow() {
 }
 
 function onSignInMouseEnter() {
-	setRedirectTo({ ...route.value });
+	setRedirectTo({ ...route });
 }
 
 function onWindowWidthSetIsSearchShown() {
