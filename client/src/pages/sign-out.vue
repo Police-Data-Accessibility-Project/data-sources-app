@@ -9,9 +9,9 @@ import { Spinner } from 'pdap-design-system';
 import { onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 
-const { logout } = useAuthStore();
+const { signOut } = useAuthStore();
 
 onMounted(async () => {
-	await logout();
+	await signOut();
 });
 </script>

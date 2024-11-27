@@ -86,6 +86,6 @@ describe('AuthWrapper', () => {
 
 		await wrapper.trigger('click');
 		await nextTick();
-		expect(auth.logout).toHaveBeenCalled();
+		expect(auth.signOut).toHaveBeenCalled();
 	});
 });

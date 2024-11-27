@@ -13,7 +13,7 @@ import { useUserStore } from '@/stores/user';
 const route = useRoute();
 const router = useRouter();
 
-const { refreshAccessToken, logout, tokens, isAuthenticated } = useAuthStore();
+const { refreshAccessToken, signOut, tokens, isAuthenticated } = useAuthStore();
 const user = useUserStore();
 
 // Debounce func for performance
@@ -44,7 +44,7 @@ function handleAuthRefresh() {
 		return refreshAccessToken();
 		// User's tokens are all expired, log out.
 	} else if (shouldLogout) {
-		logout();
+		signOut();
 		if (route?.meta?.auth) router.replace('/sign-in');
 	} else return;
 }

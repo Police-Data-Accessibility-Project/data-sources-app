@@ -110,7 +110,7 @@ const {
 
 async function signOut() {
 	auth.setRedirectTo(route);
-	await auth.logout();
+	await auth.signOut();
 	router.replace('/sign-in');
 }
 
