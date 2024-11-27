@@ -83,6 +83,8 @@ export const useSearchStore = defineStore('search', {
 		async getFollowedSearch(params) {
 			const auth = useAuthStore();
 
+			if (!auth.isAuthenticated()) return false;
+
 			try {
 				const response = await axios.get(SEARCH_FOLLOW_URL, {
 					headers: {

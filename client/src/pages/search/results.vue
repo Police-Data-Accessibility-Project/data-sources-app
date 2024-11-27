@@ -39,7 +39,7 @@
 						</RouterLink>
 					</nav>
 				</div>
-				<div v-if="!searchData?.isFollowed" class="flex flex-col md:items-end">
+				<div v-if="!isFollowed" class="flex flex-col md:items-end">
 					<Button
 						:disabled="!isAuthenticated()"
 						class="sm:block max-h-12"
@@ -47,7 +47,6 @@
 						@click="
 							async () => {
 								await follow();
-								reload();
 							}
 						"
 					>
@@ -72,7 +71,6 @@
 						@click="
 							async () => {
 								await unFollow();
-								reload();
 							}
 						"
 					>
@@ -83,7 +81,7 @@
 			<SearchResults
 				v-if="!error && searchData?.results"
 				ref="searchResultsRef"
-				:results="searchData"
+				:results="searchData.results"
 				:is-loading="isLoading"
 			/>
 		</section>
@@ -124,8 +122,7 @@
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic';
 import { useSearchStore } from '@/stores/search';
 import { NavigationResult } from 'unplugin-vue-router/runtime';
-import { onBeforeUpdate, onMounted, onUnmounted, reactive, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { onMounted, onUnmounted, onUpdated, reactive, ref } from 'vue';
 import { ALL_LOCATION_TYPES } from '@/util/constants';
 import {
 	groupResultsByAgency,
@@ -136,12 +133,13 @@ import {
 import { getMostNarrowSearchLocationWithResults } from '@/util/getLocationText';
 import getLocationText from '@/util/getLocationText';
 import _isEqual from 'lodash/isEqual';
-import { toast } from 'vue3-toastify';
-import { IgnoredError } from '@/util/errors';
+import { DataLoaderErrorPassThrough } from '@/util/errors';
 const search = useSearchStore();
 
 const query = ref();
 const data = ref();
+const previousRoute = ref();
+const isPreviousRouteFollowed = ref(false);
 
 export const useSearchData = defineBasicLoader(
 	'/search/results',
@@ -165,33 +163,67 @@ export const useSearchData = defineBasicLoader(
 			data.value = response;
 			query.value = params;
 
-			const isFollowed = !!(await search.getFollowedSearch(params));
-
-			return {
+			const ret = {
 				results: groupResultsByAgency(response.data),
 				searched,
 				params,
-				isFollowed,
 			};
+			return ret;
 		} catch (error) {
-			throw new IgnoredError(error);
+			throw new DataLoaderErrorPassThrough(error);
 		}
 	},
-	{
-		errors: true,
-		lazy: true,
+);
+
+export const useFollowedData = defineBasicLoader(
+	'/search/results',
+	async (route) => {
+		if (isOnlyHashChanged(route, previousRoute.value)) {
+			previousRoute.value = route;
+			return isPreviousRouteFollowed.value;
+		}
+
+		try {
+			const params = route.query;
+			const isFollowed = await search.getFollowedSearch(params);
+			previousRoute.value = route;
+			isPreviousRouteFollowed.value = isFollowed;
+			return isFollowed;
+		} catch (error) {
+			throw new DataLoaderErrorPassThrough(error);
+		}
 	},
 );
+
+function isOnlyHashChanged(currentRoute, previousRoute) {
+	// If we don't have a previous route to compare against, return false
+	if (!previousRoute) return false;
+
+	// Check if queries are equal
+	const areQueriesEqual = _isEqual(currentRoute.query, previousRoute.query);
+
+	// Check if paths are equal
+	const arePathsEqual = currentRoute.path === previousRoute.path;
+
+	// Check if only the hash is different
+	const hasHashChanged = currentRoute.hash !== previousRoute.hash;
+
+	// Return true if everything is the same except the hash
+	return areQueriesEqual && arePathsEqual && hasHashChanged;
+}
 </script>
 
 <script setup>
 import { Button } from 'pdap-design-system';
 import SearchResults from './_components/SearchResults.vue';
 import SearchForm from '@/components/SearchForm.vue';
+import { toast } from 'vue3-toastify';
 import { useAuthStore } from '@/stores/auth';
+import { useRoute } from 'vue-router';
 
 const { isAuthenticated } = useAuthStore();
-const { data: searchData, isLoading, error, reload } = useSearchData();
+const { data: searchData, isLoading, error } = useSearchData();
+const { data: isFollowed, reload: reloadFollowed } = useFollowedData();
 const route = useRoute();
 const searchResultsRef = ref();
 const isSearchShown = ref(false);
@@ -209,11 +241,8 @@ onMounted(() => {
 	window.addEventListener('resize', onWindowWidthSetIsSearchShown);
 });
 
-onBeforeUpdate(() => {
-	if (
-		error.value &&
-		!hasDisplayedErrorByRouteParams.value.get(JSON.stringify(route.query))
-	) {
+onUpdated(async () => {
+	if (error.value) {
 		toast.error(
 			`Error fetching search results for ${getLocationText(route.query)}. Please try again!`,
 			{
@@ -231,6 +260,7 @@ onBeforeUpdate(() => {
 });
 
 onUnmounted(() => {
+	hasDisplayedErrorByRouteParams.value.clear();
 	window.removeEventListener('resize', onWindowWidthSetIsSearchShown);
 });
 
@@ -238,17 +268,19 @@ onUnmounted(() => {
 async function follow() {
 	try {
 		await search.followSearch(route.query);
-		toast.success(`Search followed for ${getLocationText(route.query)}!`);
+		toast.success(`Search followed for ${getLocationText(route.query)}.`);
+		await reloadFollowed();
 	} catch (error) {
-		toast.error(`Error saving search. Please try again!`);
+		toast.error(`Error following search. Please try again.`);
 	}
 }
 async function unFollow() {
 	try {
 		await search.deleteFollowedSearch(route.query);
-		toast.success(`Search un-followed for ${getLocationText(route.query)}!`);
+		toast.success(`Search un-followed for ${getLocationText(route.query)}.`);
+		await reloadFollowed();
 	} catch (error) {
-		toast.error(`Error un-following search. Please try again!`);
+		toast.error(`Error un-following search. Please try again.`);
 	}
 }
 
