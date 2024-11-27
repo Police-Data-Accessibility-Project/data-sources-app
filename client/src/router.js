@@ -25,11 +25,12 @@ router.beforeEach(async (to, from, next) => {
 	const auth = useAuthStore();
 
 	if (to.path === '/sign-in' && from.meta.auth) {
-		auth.setRedirectTo(from);
+		auth.$patch({ redirectTo: from });
+		next();
 	}
 
 	if (to.meta.auth && !auth.isAuthenticated()) {
-		auth.setRedirectTo(to);
+		auth.$patch({ redirectTo: to });
 
 		next({ path: '/sign-in', replace: true });
 	} else {
