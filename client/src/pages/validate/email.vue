@@ -8,7 +8,11 @@
 			data-test="token-expired"
 			class="flex flex-col items-start sm:gap-4"
 		>
-			Sorry, that token has expired.
+			{{
+				isExpiredToken
+					? 'Sorry, that token has expired.'
+					: 'Sorry, that token is invalid.'
+			}}
 			<Button intent="primary" @click="requestResendValidationEmail">
 				Click here to request another
 			</Button>
@@ -70,14 +74,17 @@ onMounted(async () => {
 
 // Handlers
 async function validateToken() {
-	return new Promise((resolve) => {
-		if (!token) resolve();
+	return new Promise((resolve, reject) => {
+		if (!token) reject();
 
 		const decoded = parseJwt(token);
-		user.setEmail(decoded.sub.email);
 
+		if (!decoded.sub) reject();
+
+		user.setEmail(decoded.sub.email);
 		if (decoded.exp < Date.now() / 1000) {
 			isExpiredToken.value = true;
+			reject();
 		}
 		hasValidatedToken.value = true;
 
@@ -107,6 +114,9 @@ async function requestResendValidationEmail() {
 				),
 				' for assistance.',
 			]),
+			{
+				autoClose: false,
+			},
 		);
 	}
 }
