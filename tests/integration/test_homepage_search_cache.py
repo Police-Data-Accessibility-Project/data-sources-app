@@ -1,19 +1,3 @@
-from middleware.enums import PermissionsEnum
-from tests.conftest import (
-    dev_db_client,
-    connection_with_test_data,
-    db_client_with_test_data,
-    flask_client_with_db,
-    test_user_admin,
-)
-from tests.helper_scripts.complex_test_data_creation_functions import (
-    create_agency_entry_for_search_cache,
-)
-from tests.helper_scripts.helper_functions import (
-    create_test_user_setup,
-)
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-
 # Below should not be enabled until https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/458
 # def test_homepage_search_cache(flask_client_with_db, dev_db_client):
 #     submitted_name = create_agency_entry_for_search_cache(dev_db_client)

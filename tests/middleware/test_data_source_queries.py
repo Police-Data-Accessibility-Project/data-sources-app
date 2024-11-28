@@ -3,12 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from database_client.database_client import DatabaseClient
-from middleware.primary_resource_logic.login_queries import try_logging_in
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
-from tests.helper_scripts.helper_functions import (
-    get_boolean_dictionary,
-)
 
 
 class DataSourceByIDWrapperMocks(DynamicMagicMock):

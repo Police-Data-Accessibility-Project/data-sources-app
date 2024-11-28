@@ -29,7 +29,6 @@ from resources.DataSources import (
 from resources.HomepageSearchCache import HomepageSearchCache
 from resources.LinkToGithub import LinkToGithub
 from resources.Login import Login
-from resources.LoginWithGithub import LoginWithGithub
 from resources.Permissions import Permissions
 from resources.RefreshSession import RefreshSession
 from resources.RequestResetPassword import RequestResetPassword
@@ -38,7 +37,6 @@ from resources.ResetTokenValidation import ResetTokenValidation
 from resources.Search import Search
 from resources.TypeaheadSuggestions import TypeaheadLocations, TypeaheadAgencies
 from resources.UniqueURLChecker import UniqueURLChecker
-from resources.User import User
 from resources.UserProfile import (
     USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL,
     UserDataRequests,
@@ -84,7 +82,6 @@ def check_method_exists(class_type, client, endpoint, method):
 
 TestParameters = namedtuple("Resource", ["class_type", "endpoint", "allowed_methods"])
 test_parameters = [
-    TestParameters(User, "/user", [POST]),
     TestParameters(Login, "/login", [POST]),
     TestParameters(RefreshSession, "/refresh-session", [POST]),
     TestParameters(ApiKeyResource, f"/auth{API_KEY_ROUTE}", [POST]),

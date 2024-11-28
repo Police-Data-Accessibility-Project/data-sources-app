@@ -6,10 +6,8 @@ import uuid
 from datetime import datetime, timezone, timedelta
 from unittest.mock import MagicMock
 
-import psycopg.errors
 import pytest
 import sqlalchemy
-from marshmallow import Schema
 from sqlalchemy import insert, select, update
 
 from database_client.database_client import DatabaseClient
@@ -31,9 +29,7 @@ from middleware.exceptions import (
     DuplicateUserError,
 )
 from database_client.models import (
-    Agency,
     LinkAgencyDataSource,
-    DataSource,
     ExternalAccount,
     TestTable,
     User,
@@ -47,12 +43,9 @@ from tests.helper_scripts.common_test_data import (
 )
 from tests.helper_scripts.complex_test_data_creation_functions import (
     insert_test_column_permission_data,
-    create_agency_entry_for_search_cache,
     create_data_source_entry_for_url_duplicate_checking,
 )
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
-    TestDataCreatorFlask,
-)
+
 from tests.helper_scripts.helper_classes.AnyOrder import AnyOrder
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
@@ -60,10 +53,8 @@ from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
 from tests.helper_scripts.helper_schemas import TestGetPendingNotificationsOutputSchema
 from tests.helper_scripts.test_dataclasses import TestDataRequestInfo
 from tests.helper_scripts.helper_functions import (
-    insert_test_agencies_and_sources_if_not_exist,
     setup_get_typeahead_suggestion_test_data,
     create_test_user_db_client,
-    get_notification_valid_date,
 )
 from utilities.enums import RecordCategories
 from conftest import test_data_creator_db_client

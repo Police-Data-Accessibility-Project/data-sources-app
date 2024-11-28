@@ -4,18 +4,11 @@ Functions commonly used in testing and asserting results
 
 from http import HTTPStatus
 
-import pytest
 from flask_jwt_extended import decode_token
 
 from database_client.constants import PAGE_SIZE
 from database_client.database_client import DatabaseClient
-from middleware.schema_and_dto_logic.common_response_schemas import (
-    EntryDataResponseSchema,
-)
-from tests.helper_scripts.helper_classes.IntegrationTestSetup import (
-    IntegrationTestSetup,
-)
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+
 from tests.helper_scripts.simple_result_validators import (
     check_response_status,
     assert_is_oauth_redirect_link,
@@ -57,55 +50,3 @@ def assert_contains_key_value_pairs(
         assert key in dict_to_check
         dict_value = dict_to_check[key]
         assert dict_value == value, f"Expected {key} to be {value}, was {dict_value}"
-
-
-def test_delete_endpoint(
-    add_entry_db_client_method: callable,
-    id_column_name: str,
-    endpoint_name: str,
-    **add_entry_args,
-):
-    """
-    Tests that a given delete endpoint properly deletes data
-    :return:
-    """
-
-    # Create user with elevated permissions
-
-    # Add entry
-
-    # Delete entry with call to endpoint
-
-    # Check that entry no longer exists
-
-    pytest.fail()
-
-
-def test_get_by_id_endpoint(get_by_id_db_client_method: callable):
-    """
-    Tests that a given get_by_id endpoint properly retrieves data
-    :return:
-    """
-    pytest.fail()
-
-
-def call_and_validate_get_by_id_endpoint(
-    its: IntegrationTestSetup,
-    id_name: str,
-    base_endpoint: str,
-    expected_value_key: str,
-    expected_value: str,
-):
-
-    json_data = run_and_validate_request(
-        flask_client=its.flask_client,
-        http_method="get",
-        endpoint=f"{base_endpoint}/{id_name}",
-        headers=its.tus.jwt_authorization_header,
-        expected_schema=EntryDataResponseSchema,
-    )
-
-    assert expected_value_key in json_data["data"]
-    assert json_data["data"][expected_value_key] == expected_value
-
-    return json_data

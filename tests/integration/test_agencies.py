@@ -1,31 +1,19 @@
 """Integration tests for /agencies endpoint"""
 
 import time
-import uuid
-from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
-import pytest
 
-from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import SortOrder
 from middleware.enums import JurisdictionType
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
-    AgenciesGetByIDResponseSchema,
-    AgenciesGetManyResponseSchema,
     AgencyInfoPutSchema,
 )
 from middleware.schema_and_dto_logic.common_response_schemas import (
     MessageSchema,
-    IDAndMessageSchema,
 )
 from resources.endpoint_schema_config import SchemaConfigs
 
-from tests.conftest import (
-    dev_db_client,
-    flask_client_with_db,
-    integration_test_admin_setup,
-)
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.complex_test_data_creation_functions import (
     get_sample_agency_post_parameters,
@@ -37,33 +25,14 @@ from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
 from tests.helper_scripts.constants import AGENCIES_BASE_ENDPOINT
-from tests.helper_scripts.helper_functions import (
-    create_test_user_setup_db_client,
-)
+
 from tests.helper_scripts.common_test_functions import (
     assert_expected_get_many_result,
     assert_contains_key_value_pairs,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-from tests.helper_scripts.helper_classes.IntegrationTestSetup import (
-    IntegrationTestSetup,
-)
+
 from conftest import test_data_creator_flask, monkeysession
-
-
-@dataclass
-class AgenciesTestSetup(IntegrationTestSetup):
-    submitted_name: str = str(get_test_name())
-
-
-@pytest.fixture
-def ts(integration_test_admin_setup: IntegrationTestSetup):
-    tas = integration_test_admin_setup
-    return AgenciesTestSetup(
-        flask_client=tas.flask_client,
-        db_client=tas.db_client,
-        tus=tas.tus,
-    )
 
 
 def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
@@ -137,19 +106,22 @@ def test_agencies_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     assert data["data_sources"][0]["id"] == int(cds.id)
 
 
-def test_agencies_post(ts: AgenciesTestSetup):
+def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
+    tdc = test_data_creator_flask
 
     start_of_test_datetime = datetime.now(timezone.utc)
     # Test once with an existing locality, and once with a new locality
+
+    tus_admin = tdc.get_admin_tus()
 
     def run_post(
         json: dict,
     ):
         return run_and_validate_request(
-            flask_client=ts.flask_client,
+            flask_client=tdc.flask_client,
             http_method="post",
             endpoint=AGENCIES_BASE_ENDPOINT,
-            headers=ts.tus.jwt_authorization_header,
+            headers=tus_admin.jwt_authorization_header,
             json=json,
             expected_schema=SchemaConfigs.AGENCIES_POST.value.primary_output_schema,
         )
@@ -158,15 +130,15 @@ def test_agencies_post(ts: AgenciesTestSetup):
         id_: str,
     ):
         return run_and_validate_request(
-            flask_client=ts.flask_client,
+            flask_client=tdc.flask_client,
             http_method="get",
             endpoint=f"{AGENCIES_BASE_ENDPOINT}/{id_}",
-            headers=ts.tus.jwt_authorization_header,
+            headers=tus_admin.jwt_authorization_header,
         )
 
     # Test with a new locality
     data_to_post = get_sample_agency_post_parameters(
-        submitted_name=ts.submitted_name,
+        submitted_name=get_test_name(),
         jurisdiction_type=JurisdictionType.LOCAL,
         locality_name=get_test_name(),
     )
@@ -219,18 +191,22 @@ def test_agencies_post(ts: AgenciesTestSetup):
     )
 
 
-def test_agencies_put(ts: AgenciesTestSetup):
+def test_agencies_put(test_data_creator_flask: TestDataCreatorFlask):
+    tdc = test_data_creator_flask
+
     data_to_post = get_sample_agency_post_parameters(
-        submitted_name=ts.submitted_name,
+        submitted_name=get_test_name(),
         jurisdiction_type=JurisdictionType.LOCAL,
         locality_name=get_test_name(),
     )
 
+    admin_tus = tdc.get_admin_tus()
+
     json_data = run_and_validate_request(
-        flask_client=ts.flask_client,
+        flask_client=tdc.flask_client,
         http_method="post",
         endpoint=AGENCIES_BASE_ENDPOINT,
-        headers=ts.tus.jwt_authorization_header,
+        headers=admin_tus.jwt_authorization_header,
         json=data_to_post,
     )
 
@@ -249,19 +225,19 @@ def test_agencies_put(ts: AgenciesTestSetup):
     )
 
     json_data = run_and_validate_request(
-        flask_client=ts.flask_client,
+        flask_client=tdc.flask_client,
         http_method="put",
         endpoint=BY_ID_ENDPOINT,
-        headers=ts.tus.jwt_authorization_header,
+        headers=admin_tus.jwt_authorization_header,
         json={"agency_info": agency_info},
         expected_schema=SchemaConfigs.AGENCIES_BY_ID_PUT.value.primary_output_schema,
     )
 
     json_data = run_and_validate_request(
-        flask_client=ts.flask_client,
+        flask_client=tdc.flask_client,
         http_method="get",
         endpoint=BY_ID_ENDPOINT,
-        headers=ts.tus.api_authorization_header,
+        headers=admin_tus.api_authorization_header,
     )
 
     assert_contains_key_value_pairs(
@@ -276,16 +252,18 @@ def test_agencies_put(ts: AgenciesTestSetup):
     )
 
 
-def test_agencies_delete(ts: AgenciesTestSetup):
+def test_agencies_delete(test_data_creator_flask: TestDataCreatorFlask):
+    tdc = test_data_creator_flask
+    admin_tus = tdc.get_admin_tus()
 
     json_data = run_and_validate_request(
-        flask_client=ts.flask_client,
+        flask_client=tdc.flask_client,
         http_method="post",
         endpoint=AGENCIES_BASE_ENDPOINT,
-        headers=ts.tus.jwt_authorization_header,
+        headers=admin_tus.jwt_authorization_header,
         json={
             "agency_info": {
-                "submitted_name": ts.submitted_name,
+                "submitted_name": get_test_name(),
                 "jurisdiction_type": JurisdictionType.FEDERAL.value,
             }
         },
@@ -294,14 +272,14 @@ def test_agencies_delete(ts: AgenciesTestSetup):
     agency_id = json_data["id"]
 
     run_and_validate_request(
-        flask_client=ts.flask_client,
+        flask_client=tdc.flask_client,
         http_method="delete",
         endpoint=f"{AGENCIES_BASE_ENDPOINT}/{agency_id}",
-        headers=ts.tus.jwt_authorization_header,
+        headers=admin_tus.jwt_authorization_header,
         expected_schema=MessageSchema,
     )
 
-    results = ts.db_client._select_from_relation(
+    results = tdc.db_client._select_from_relation(
         relation_name="agencies",
         columns=["submitted_name"],
         where_mappings=[WhereMapping(column="id", value=int(agency_id))],
