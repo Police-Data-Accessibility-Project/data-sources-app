@@ -1,51 +1,14 @@
 from collections import namedtuple
-from importlib import reload
-from types import ModuleType
-from unittest import mock
 from unittest.mock import MagicMock
-
-import psycopg
 import pytest
 
 from app import create_app
 from database_client.database_client import DatabaseClient
-from middleware.enums import PermissionsEnum
-from middleware.util import get_env_variable
 from tests.helper_scripts.common_mocks_and_patches import patch_and_return_mock
-from tests.helper_scripts.helper_classes.IntegrationTestSetup import (
-    IntegrationTestSetup,
-)
-from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
-from tests.helper_scripts.helper_functions import (
-    insert_test_agencies_and_sources,
-    create_test_user_setup,
-)
 
 
 @pytest.fixture
 def dev_db_client() -> DatabaseClient:
-    db_client = DatabaseClient()
-    yield db_client
-
-
-@pytest.fixture
-def connection_with_test_data() -> psycopg.Connection:
-    """
-    Insert test agencies and sources into test data.
-    Will roll back in case of error.
-    """
-    db_client = DatabaseClient()
-    try:
-        insert_test_agencies_and_sources(db_client.connection.cursor())
-    except psycopg.errors.UniqueViolation:
-        db_client.connection.rollback()
-    return db_client.connection
-
-
-@pytest.fixture
-def db_client_with_test_data(
-    connection_with_test_data: psycopg.Connection,
-) -> DatabaseClient:
     db_client = DatabaseClient()
     yield db_client
 
@@ -97,16 +60,6 @@ def bypass_api_key_required(monkeypatch):
 
 
 @pytest.fixture
-def bypass_permissions_required(monkeypatch):
-    """
-    A fixture to bypass the permissions required decorator for testing
-    :param monkeypatch:
-    :return:
-    """
-    monkeypatch.setattr("middleware.decorators.check_permissions", lambda x: None)
-
-
-@pytest.fixture
 def bypass_jwt_required(monkeypatch):
     """
     A fixture to bypass the jwt required decorator for testing
@@ -151,40 +104,6 @@ def live_database_client() -> DatabaseClient:
     """
     db_client = DatabaseClient()
     yield db_client
-
-
-@pytest.fixture
-def test_user_admin(flask_client_with_db) -> TestUserSetup:
-    """
-    Creates a test user with admin permissions
-    :param flask_client_with_db:
-    :return:
-    """
-
-    db_client = DatabaseClient()
-
-    tus_admin = create_test_user_setup(flask_client_with_db)
-    db_client.add_user_permission(
-        tus_admin.user_info.email, PermissionsEnum.READ_ALL_USER_INFO
-    )
-    db_client.add_user_permission(tus_admin.user_info.email, PermissionsEnum.DB_WRITE)
-    return tus_admin
-
-
-@pytest.fixture
-def integration_test_admin_setup(flask_client_with_db) -> IntegrationTestSetup:
-    db_client = DatabaseClient()
-    tus_admin = create_test_user_setup(flask_client_with_db)
-    db_client.add_user_permission(
-        user_id=tus_admin.user_info.user_id,
-        permission=PermissionsEnum.READ_ALL_USER_INFO,
-    )
-    db_client.add_user_permission(
-        user_id=tus_admin.user_info.user_id, permission=PermissionsEnum.DB_WRITE
-    )
-    return IntegrationTestSetup(
-        flask_client=flask_client_with_db, db_client=db_client, tus=tus_admin
-    )
 
 
 @pytest.fixture

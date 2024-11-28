@@ -13,7 +13,6 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from database_client.database_client import DatabaseClient
 from middleware.exceptions import (
     InvalidAuthorizationHeaderException,
     InvalidAPIKeyException,
@@ -21,19 +20,15 @@ from middleware.exceptions import (
 from middleware.primary_resource_logic.api_key_logic import (
     INVALID_API_KEY_MESSAGE,
     check_api_key,
-    check_api_key_associated_with_user,
-    create_api_key_for_user,
 )
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_mocks_and_patches import (
     patch_request_headers,
     patch_abort,
 )
-from tests.conftest import live_database_client
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.helper_functions import create_test_user_setup_db_client
 from conftest import test_data_creator_flask, monkeysession
 
 

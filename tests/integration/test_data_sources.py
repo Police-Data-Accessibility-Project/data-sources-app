@@ -1,15 +1,11 @@
 """Integration tests for /data-sources endpoint"""
 
-import copy
 import urllib.parse
 import uuid
 
-import psycopg
 
-from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import (
-    LocationType,
     AgencyAggregation,
     DetailLevel,
     AccessType,
@@ -17,20 +13,15 @@ from database_client.enums import (
     URLStatus,
     ApprovalStatus,
     UpdateMethod,
-    RequestStatus,
 )
-from middleware.enums import AccessTypeEnum, RecordType
+from middleware.enums import RecordType
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_schemas import (
     DataSourceExpandedSchema,
 )
 
 from resources.endpoint_schema_config import SchemaConfigs
-from tests.conftest import (
-    flask_client_with_db,
-    test_user_admin,
-)
+
 from conftest import test_data_creator_flask, monkeysession
-from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,
@@ -39,11 +30,6 @@ from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
 from tests.helper_scripts.common_test_functions import assert_contains_key_value_pairs
-from tests.helper_scripts.helper_functions import (
-    get_boolean_dictionary,
-    create_test_user_setup,
-    search_with_boolean_dictionary,
-)
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from tests.helper_scripts.constants import (
     DATA_SOURCES_BASE_ENDPOINT,
@@ -52,13 +38,16 @@ from tests.helper_scripts.constants import (
 )
 
 
-def test_data_sources_get(flask_client_with_db):
+def test_data_sources_get(
+    test_data_creator_flask: TestDataCreatorFlask,
+):
     """
     Test that GET call to /data-sources endpoint retrieves data sources and correctly identifies specific sources by name
     """
-    tus = create_test_user_setup(flask_client_with_db)
+    tdc = test_data_creator_flask
+    tus = tdc.standard_user()
     response_json = run_and_validate_request(
-        flask_client=flask_client_with_db,
+        flask_client=tdc.flask_client,
         http_method="get",
         endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&approval_status=approved",  # ENDPOINT,
         headers=tus.api_authorization_header,
@@ -69,7 +58,7 @@ def test_data_sources_get(flask_client_with_db):
 
     # Test sort functionality
     response_json = run_and_validate_request(
-        flask_client=flask_client_with_db,
+        flask_client=tdc.flask_client,
         http_method="get",
         endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&sort_by=name&sort_order=ASC&approval_status=approved",
         headers=tus.api_authorization_header,
@@ -78,7 +67,7 @@ def test_data_sources_get(flask_client_with_db):
     data_asc = response_json["data"]
 
     response_json = run_and_validate_request(
-        flask_client=flask_client_with_db,
+        flask_client=tdc.flask_client,
         http_method="get",
         endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&sort_by=name&sort_order=DESC&approval_status=approved",
         headers=tus.api_authorization_header,
@@ -88,13 +77,16 @@ def test_data_sources_get(flask_client_with_db):
     assert data_asc[0]["name"] < data_desc[0]["name"]
 
 
-def test_data_sources_get_many_limit_columns(flask_client_with_db):
+def test_data_sources_get_many_limit_columns(
+    test_data_creator_flask: TestDataCreatorFlask,
+):
     """
     Test that GET call to /data-sources endpoint properly limits by columns
      when passed the `requested_columns` query parameter
     """
+    tdc = test_data_creator_flask
 
-    tus = create_test_user_setup(flask_client_with_db)
+    tus = tdc.standard_user()
     allowed_columns = ["name", "submitted_name", "id"]
     url_encoded_column_string = urllib.parse.quote_plus(str(allowed_columns))
     expected_schema = SchemaConfigs.DATA_SOURCES_GET_MANY.value.primary_output_schema
@@ -108,7 +100,7 @@ def test_data_sources_get_many_limit_columns(flask_client_with_db):
     expected_schema.partial = True
 
     response_json = run_and_validate_request(
-        flask_client=flask_client_with_db,
+        flask_client=tdc.flask_client,
         http_method="get",
         endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&requested_columns={url_encoded_column_string}",
         headers=tus.api_authorization_header,
@@ -184,7 +176,7 @@ def test_data_sources_by_id_get(test_data_creator_flask: TestDataCreatorFlask):
     """
     tdc = test_data_creator_flask
 
-    tus = create_test_user_setup(tdc.flask_client)
+    tus = tdc.standard_user()
     cds = tdc.data_source()
 
     # Create agency and link to data source

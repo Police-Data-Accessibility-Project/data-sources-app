@@ -1,19 +1,12 @@
 from http import HTTPStatus
 from middleware.enums import PermissionsEnum
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_advanced_schemas import (
-    GetManyDataRequestsResponseSchema,
-)
-from resources.UserProfile import USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL
-from tests.conftest import flask_client_with_db
 from tests.helper_scripts.complex_test_data_creation_functions import (
     create_test_data_request,
 )
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.helper_functions import create_test_user_setup
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from conftest import test_data_creator_flask, monkeysession
 
 

@@ -4,18 +4,14 @@ from dataclasses import dataclass
 from http import HTTPStatus
 from typing import Dict, Optional
 
-import pytest
 from flask.testing import FlaskClient
 
-from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import RequestUrgency, LocationType, RequestStatus, SortOrder
 from middleware.constants import DATA_KEY
 from middleware.enums import PermissionsEnum, RecordType
 from middleware.util import get_enum_values
 from resources.endpoint_schema_config import SchemaConfigs
-from tests.conftest import dev_db_client, flask_client_with_db
-from tests.helper_scripts.common_endpoint_calls import create_data_source_with_endpoint
 from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,
     get_test_name,
@@ -34,33 +30,12 @@ from tests.helper_scripts.constants import (
     DATA_REQUESTS_RELATED_LOCATIONS,
     DATA_REQUESTS_POST_DELETE_RELATED_LOCATIONS_ENDPOINT,
 )
-from tests.helper_scripts.helper_classes.IntegrationTestSetup import (
-    integration_test_setup,
-)
+
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
-from tests.helper_scripts.helper_functions import (
-    create_test_user_setup,
-    add_query_params,
-)
+
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-from tests.helper_scripts.helper_classes.IntegrationTestSetup import (
-    IntegrationTestSetup,
-)
+
 from conftest import test_data_creator_flask, monkeysession
-
-
-@dataclass
-class DataRequestsTestSetup(IntegrationTestSetup):
-    submission_notes: str = str(uuid.uuid4())
-
-
-@pytest.fixture
-def ts(flask_client_with_db, dev_db_client):
-    return DataRequestsTestSetup(
-        flask_client=flask_client_with_db,
-        db_client=dev_db_client,
-        tus=create_test_user_setup(flask_client_with_db),
-    )
 
 
 def test_data_requests_get(
@@ -453,63 +428,6 @@ def get_data_request_related_sources_with_endpoint(
         headers=api_authorization_header,
         expected_json_content=expected_json_content,
         expected_schema=SchemaConfigs.DATA_REQUESTS_RELATED_SOURCES_GET.value.primary_output_schema,
-    )
-
-
-class DataRequestByRelatedSourcesTestSetup(IntegrationTestSetup):
-
-    def __init__(
-        self,
-        flask_client: FlaskClient,
-        db_client: DatabaseClient,
-    ):
-        self.flask_client = flask_client
-        self.db_client = db_client
-        """
-        Create three users:
-        - USER_ADMIN: a user with DB_WRITE permissions
-        - USER_OWNER: a user who owns/creates a data request
-        - USER_NON_OWNER: a user who does not own/create a data request
-        """
-        # Represents an admin
-        self.tus_admin = create_test_user_setup(
-            self.flask_client, permissions=[PermissionsEnum.DB_WRITE]
-        )
-        # Represents a user who owns/create a data request
-        self.tus_owner = create_test_user_setup(self.flask_client)
-        # Represents a user who does not own/create a data request
-        self.tus_non_owner = create_test_user_setup(self.flask_client)
-
-        # USER_ADMIN creates a data source
-        self.created_data_source = create_data_source_with_endpoint(
-            flask_client=self.flask_client,
-            jwt_authorization_header=self.tus_admin.jwt_authorization_header,
-        )
-
-        # USER_OWNER creates a data request
-        self.created_data_request = create_test_data_request(
-            flask_client=self.flask_client,
-            jwt_authorization_header=self.tus_owner.jwt_authorization_header,
-        )
-
-    def get_data_request_related_sources_with_given_data_request_id(
-        self,
-        api_authorization_header: dict,
-        expected_json_content: Optional[dict] = None,
-    ):
-        get_data_request_related_sources_with_endpoint(
-            flask_client=self.flask_client,
-            api_authorization_header=api_authorization_header,
-            data_request_id=self.created_data_request.id,
-            expected_json_content=expected_json_content,
-        )
-
-
-@pytest.fixture
-def related_agencies_test_setup(integration_test_setup: IntegrationTestSetup):
-    return DataRequestByRelatedSourcesTestSetup(
-        flask_client=integration_test_setup.flask_client,
-        db_client=integration_test_setup.db_client,
     )
 
 
