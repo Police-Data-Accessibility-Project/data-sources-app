@@ -9,7 +9,11 @@ FROM_EMAIL = "mail@pdap.io"
 
 
 def send_via_mailgun(
-    to_email: str, subject: str, text: str, html: Optional[str] = None
+    to_email: str,
+    subject: str,
+    text: str,
+    html: Optional[str] = None,
+    bcc: Optional[str] = None,
 ):
     """
     Sends an email via Mailgun
@@ -22,6 +26,8 @@ def send_via_mailgun(
 
     if html is not None:
         data["html"] = html
+    if bcc is not None:
+        data["bcc"] = bcc
 
     r = requests.post(
         MAILGUN_URL, auth=("api", get_env_variable("MAILGUN_KEY")), data=data, timeout=5

@@ -37,6 +37,7 @@ def send_signup_link(email: str, token: str):
         subject="Please validate your account",
         text=text,
         html=text,
+        bcc="josh.chamberlain@pdap.io",
     )
 
 
