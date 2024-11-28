@@ -190,7 +190,7 @@ async function onSubmitChangePassword(formValues) {
 		loading.value = true;
 		const { password } = formValues;
 		await user.resetPassword(password, token);
-		await auth.loginWithEmail(parseJwt(token).sub.email, password);
+		await auth.signInWithEmail(parseJwt(token).sub.email, password);
 
 		router.push({ path: 'profile' });
 	} catch (err) {

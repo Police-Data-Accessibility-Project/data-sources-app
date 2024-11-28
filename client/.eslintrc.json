@@ -11,7 +11,7 @@
 	},
 	"rules": {
 		"vue/multi-word-component-names": ["warn", {
-			"ignores": ["login", "index", "search", "search.results", "request", "profile", "[id]", "results", "create"]
+			"ignores": ["login", "index", "search", "search.results", "request", "profile", "[id]", "results", "create", "validate.email"]
 		}]	
 	}
 }

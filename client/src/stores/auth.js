@@ -6,11 +6,19 @@ import { useUserStore } from './user';
 const HEADERS = {
 	'Content-Type': 'application/json',
 };
+// const HEADERS_BASIC = {
+// 	...HEADERS,
+// 	authorization: `Basic ${import.meta.env.VITE_ADMIN_API_KEY}`,
+// };
+
 const LOGIN_WITH_EMAIL_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/login`;
 const LOGIN_WITH_GITHUB_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/auth/login-with-github`;
 const LINK_WITH_GITHUB_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/auth/link-to-github`;
 const REFRESH_SESSION_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/refresh-session`;
+const SIGNUP_WITH_EMAIL_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/auth/signup`;
 const START_OAUTH_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/auth/oauth`;
+const RESEND_VALIDATION_EMAIL_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/auth/resend-validation-email`;
+const VALIDATE_EMAIL_TOKEN_URL = `${import.meta.env.VITE_VUE_API_BASE_URL}/auth/validate-email`;
 
 export const useAuthStore = defineStore('auth', {
 	state: () => ({
@@ -41,7 +49,17 @@ export const useAuthStore = defineStore('auth', {
 		},
 	},
 	actions: {
-		async loginWithEmail(email, password) {
+		async signUpWithEmail(email, password) {
+			await axios.post(
+				SIGNUP_WITH_EMAIL_URL,
+				{ email, password },
+				{ headers: HEADERS },
+			);
+			// Update store with email
+			this.$patch({ email });
+		},
+
+		async signInWithEmail(email, password) {
 			const response = await axios.post(
 				LOGIN_WITH_EMAIL_URL,
 				{ email, password },
@@ -65,7 +83,7 @@ export const useAuthStore = defineStore('auth', {
 			window.location.href = redirectTo;
 		},
 
-		async loginWithGithub(gh_access_token) {
+		async signInWithGithub(gh_access_token) {
 			const response = await axios.post(
 				LOGIN_WITH_GITHUB_URL,
 				{ gh_access_token },
@@ -95,7 +113,7 @@ export const useAuthStore = defineStore('auth', {
 			);
 		},
 
-		async logout() {
+		async signOut() {
 			const user = useUserStore();
 
 			this.$reset();
@@ -122,6 +140,31 @@ export const useAuthStore = defineStore('auth', {
 				console.error(error);
 				throw new Error(error.response?.data?.message);
 			}
+		},
+
+		async validateEmail(token) {
+			const response = await axios.post(VALIDATE_EMAIL_TOKEN_URL, null, {
+				headers: {
+					...HEADERS,
+					Authorization: `Bearer ${token}`,
+				},
+			});
+
+			this.parseTokensAndSetData(response);
+		},
+
+		async resendValidationEmail() {
+			const { email } = useUserStore();
+
+			return await axios.post(
+				RESEND_VALIDATION_EMAIL_URL,
+				{ email },
+				{
+					headers: {
+						...HEADERS,
+					},
+				},
+			);
 		},
 
 		parseTokensAndSetData(response) {

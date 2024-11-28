@@ -113,7 +113,7 @@ export const useGithubAuth = defineBasicLoader('/sign-in', async (route) => {
 		const githubAccessToken = route.query.gh_access_token;
 
 		if (githubAccessToken) {
-			const tokens = await auth.loginWithGithub(githubAccessToken);
+			const tokens = await auth.signInWithGithub(githubAccessToken);
 
 			if (tokens)
 				return new NavigationResult(
@@ -193,7 +193,7 @@ async function onSubmit(formValues) {
 		loading.value = true;
 		const { email, password } = formValues;
 
-		await auth.loginWithEmail(email, password);
+		await auth.signInWithEmail(email, password);
 
 		error.value = undefined;
 		router.push(auth.redirectTo ?? '/profile');

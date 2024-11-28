@@ -53,12 +53,17 @@
 						Follow
 					</Button>
 					<p v-if="!isAuthenticated()" class="text-med text-neutral-500">
-						<RouterLink to="/sign-in">Sign in</RouterLink>
+						<RouterLink to="/sign-in" @mouseenter="onSignInMouseEnter">
+							Sign in
+						</RouterLink>
 						to follow this search
 					</p>
 				</div>
-				<div v-else class="flex flex-col md:items-end max-w-60">
-					<p v-if="isAuthenticated()" class="text-med text-neutral-500">
+				<div v-else class="flex flex-col md:items-end md:max-w-60">
+					<p
+						v-if="isAuthenticated()"
+						class="text-med text-neutral-500 max-w-full"
+					>
 						You are following this search. Go to
 						<RouterLink to="/profile">your profile</RouterLink> to review saved
 						searches or un-follow below.
@@ -221,7 +226,7 @@ import { toast } from 'vue3-toastify';
 import { useAuthStore } from '@/stores/auth';
 import { useRoute } from 'vue-router';
 
-const { isAuthenticated } = useAuthStore();
+const { isAuthenticated, setRedirectTo } = useAuthStore();
 const { data: searchData, isLoading, error } = useSearchData();
 const { data: isFollowed, reload: reloadFollowed } = useFollowedData();
 const route = useRoute();
@@ -282,6 +287,10 @@ async function unFollow() {
 	} catch (error) {
 		toast.error(`Error un-following search. Please try again.`);
 	}
+}
+
+function onSignInMouseEnter() {
+	setRedirectTo({ ...route });
 }
 
 function onWindowWidthSetIsSearchShown() {

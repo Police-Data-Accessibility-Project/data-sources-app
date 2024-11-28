@@ -121,7 +121,7 @@ export const useGithubAuth = defineBasicLoader('/sign-up', async (route) => {
 		const githubAccessToken = route.query.gh_access_token;
 
 		if (githubAccessToken) {
-			const tokens = await auth.loginWithGithub(githubAccessToken);
+			const tokens = await auth.signInWithGithub(githubAccessToken);
 
 			if (tokens)
 				return new NavigationResult(
@@ -150,7 +150,6 @@ import PasswordValidationChecker from '@/components/PasswordValidationChecker.vu
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { ref } from 'vue';
-import { useUserStore } from '@/stores/user';
 import { RouterView, useRouter } from 'vue-router';
 
 // Constants
@@ -221,9 +220,6 @@ const {
 // Router
 const router = useRouter();
 
-// Store
-const user = useUserStore();
-
 // Reactive vars
 const passwordRef = ref();
 const error = ref(undefined);
@@ -275,8 +271,8 @@ async function onSubmit(formValues) {
 		loading.value = true;
 		const { email, password } = formValues;
 
-		await user.signupWithEmail(email, password);
-		await router.push(auth.redirectTo ?? { path: '/sign-up/success' });
+		await auth.signUpWithEmail(email, password);
+		await router.push({ path: '/sign-up/success' });
 	} catch (err) {
 		console.error(err);
 		error.value =
