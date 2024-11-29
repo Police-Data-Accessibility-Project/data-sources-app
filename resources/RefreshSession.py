@@ -9,7 +9,7 @@ from middleware.access_logic import (
     STANDARD_JWT_AUTH_INFO,
     AccessInfoPrimary,
 )
-from middleware.decorators import endpoint_info_2
+from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.login_queries import (
     refresh_session,
 )
@@ -29,7 +29,7 @@ class RefreshSession(PsycopgResource):
     If the provided session token is valid and not expired, it is replaced with a new one.
     """
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_refresh_session,
         auth_info=STANDARD_JWT_AUTH_INFO,
         description="Allows a user to refresh their session token.",

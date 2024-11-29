@@ -15,7 +15,6 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
 )
 from middleware.decorators import (
     endpoint_info,
-    endpoint_info_2,
 )
 from middleware.primary_resource_logic.data_sources_logic import (
     get_data_sources_wrapper,
@@ -27,7 +26,6 @@ from middleware.primary_resource_logic.data_sources_logic import (
     create_data_source_related_agency,
     delete_data_source_related_agency,
     get_data_source_related_agencies,
-    get_data_sources_for_map_wrapper,
 )
 
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advanced_schemas import (
@@ -35,7 +33,6 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advan
 )
 from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import (
-    create_response_dictionary,
     ResponseInfo,
 )
 from utilities.namespace import create_namespace, AppNamespaces
@@ -45,10 +42,6 @@ from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulatePa
 
 namespace_data_source = create_namespace(AppNamespaces.DATA_SOURCES)
 
-# This endpoint no longer works because of the other data source endpoint
-# It is interpreted as another data source id
-# But we have not yet decided whether to modify or remove it entirely
-
 
 @namespace_data_source.route("/<resource_id>")
 class DataSourceById(PsycopgResource):
@@ -57,7 +50,7 @@ class DataSourceById(PsycopgResource):
     Provides methods for retrieving and updating data source details.
     """
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_data_source,
         auth_info=GET_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_SOURCES_GET_BY_ID,
@@ -85,7 +78,7 @@ class DataSourceById(PsycopgResource):
             ),
         )
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_data_source,
         auth_info=WRITE_ONLY_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_SOURCES_PUT,
@@ -117,9 +110,11 @@ class DataSourceById(PsycopgResource):
     @endpoint_info(
         namespace=namespace_data_source,
         auth_info=WRITE_ONLY_AUTH_INFO,
-        responses=create_response_dictionary(
+        response_info=ResponseInfo(
             success_message="Data source successfully deleted.",
         ),
+        description="Delete a data source by its ID.",
+        schema_config=SchemaConfigs.DATA_SOURCES_BY_ID_DELETE,
     )
     def delete(self, access_info: AccessInfoPrimary, resource_id: str) -> Response:
         """
@@ -145,7 +140,7 @@ class DataSources(PsycopgResource):
     Provides methods for retrieving all data sources and adding new ones.
     """
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_data_source,
         auth_info=GET_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_SOURCES_GET_MANY,
@@ -171,7 +166,7 @@ class DataSources(PsycopgResource):
             access_info=access_info,
         )
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_data_source,
         auth_info=STANDARD_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_SOURCES_POST,
@@ -200,7 +195,7 @@ class DataSources(PsycopgResource):
 @namespace_data_source.route("/<resource_id>/related-agencies")
 class DataSourcesRelatedAgencies(PsycopgResource):
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_data_source,
         auth_info=GET_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_GET,
@@ -222,7 +217,7 @@ class DataSourcesRelatedAgencies(PsycopgResource):
 @namespace_data_source.route("/<resource_id>/related-agencies/<agency_id>")
 class DataSourcesRelatedAgenciesById(PsycopgResource):
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_data_source,
         auth_info=WRITE_ONLY_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_POST,
@@ -243,7 +238,7 @@ class DataSourcesRelatedAgenciesById(PsycopgResource):
             access_info=access_info,
         )
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_data_source,
         auth_info=WRITE_ONLY_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_DELETE,

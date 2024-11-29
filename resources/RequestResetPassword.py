@@ -1,7 +1,7 @@
 from flask import request, Response
 
 from middleware.access_logic import NO_AUTH_INFO, AccessInfoPrimary
-from middleware.decorators import endpoint_info_2
+from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.reset_token_queries import request_reset_password
 from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import ResponseInfo
@@ -19,7 +19,7 @@ class RequestResetPassword(PsycopgResource):
     and sends an email to the user with instructions on how to reset their password.
     """
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_request_reset_password,
         auth_info=NO_AUTH_INFO,
         schema_config=SchemaConfigs.REQUEST_RESET_PASSWORD,

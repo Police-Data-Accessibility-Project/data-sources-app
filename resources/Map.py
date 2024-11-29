@@ -1,7 +1,7 @@
 from flask import Response
 
 from middleware.access_logic import GET_AUTH_INFO, AccessInfoPrimary
-from middleware.decorators import endpoint_info_2
+from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.data_sources_logic import (
     get_data_sources_for_map_wrapper,
 )
@@ -20,7 +20,7 @@ class DataSourcesMap(PsycopgResource):
     Provides a method for retrieving all data sources.
     """
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_map,
         auth_info=GET_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_SOURCES_MAP,

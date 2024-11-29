@@ -2,6 +2,7 @@
 
 from middleware.api_key import ApiKey
 from resources.ApiKeyResource import API_KEY_ROUTE
+from resources.endpoint_schema_config import SchemaConfigs
 from tests.conftest import dev_db_client, flask_client_with_db
 from tests.helper_scripts.helper_functions import (
     create_test_user_db_client,
@@ -21,6 +22,7 @@ def test_api_key_post(flask_client_with_db, dev_db_client):
         http_method="post",
         endpoint=f"/auth{API_KEY_ROUTE}",
         json={"email": user_info.email, "password": user_info.password},
+        expected_schema=SchemaConfigs.API_KEY_POST.value.primary_output_schema,
     )
 
     # Check that API key aligned with user

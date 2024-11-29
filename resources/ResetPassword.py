@@ -4,7 +4,7 @@ from middleware.access_logic import (
     RESET_PASSWORD_AUTH_INFO,
     PasswordResetTokenAccessInfo,
 )
-from middleware.decorators import endpoint_info_2
+from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.reset_token_queries import (
     reset_password,
 )
@@ -24,7 +24,7 @@ class ResetPassword(PsycopgResource):
     If the token is valid and not expired, allows the user to set a new password.
     """
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_reset_password,
         auth_info=RESET_PASSWORD_AUTH_INFO,
         schema_config=SchemaConfigs.RESET_PASSWORD,

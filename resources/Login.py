@@ -2,7 +2,7 @@ from flask import Response
 
 from config import limiter
 from middleware.access_logic import NO_AUTH_INFO, AccessInfoPrimary
-from middleware.decorators import endpoint_info_2
+from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.login_queries import try_logging_in
 from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import create_jwt_tokens_model, ResponseInfo
@@ -24,7 +24,7 @@ class Login(PsycopgResource):
     A resource for authenticating users. Allows users to log in using their email and password.
     """
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_login,
         auth_info=NO_AUTH_INFO,
         description="Allows a user to log in. If successful, returns a session token.",

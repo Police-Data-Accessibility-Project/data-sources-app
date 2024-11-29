@@ -1,5 +1,5 @@
 from middleware.access_logic import AccessInfoPrimary, WRITE_ONLY_AUTH_INFO
-from middleware.decorators import endpoint_info_2
+from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.github_issue_app_logic import (
     add_data_request_as_github_issue,
     synchronize_github_issues_with_data_requests,
@@ -15,7 +15,7 @@ namespace_github = create_namespace(namespace_attributes=AppNamespaces.GITHUB)
 @namespace_github.route("/data-requests/issues/<data_request_id>")
 class GithubDataRequestsIssues(PsycopgResource):
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_github,
         auth_info=WRITE_ONLY_AUTH_INFO,
         schema_config=SchemaConfigs.GITHUB_DATA_REQUESTS_ISSUES_POST,
@@ -36,7 +36,7 @@ class GithubDataRequestsIssues(PsycopgResource):
 @namespace_github.route("/data-requests/synchronize")
 class GithubDataRequestsSynchronize(PsycopgResource):
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_github,
         auth_info=WRITE_ONLY_AUTH_INFO,
         schema_config=SchemaConfigs.GITHUB_DATA_REQUESTS_SYNCHRONIZE_POST,

@@ -2,15 +2,12 @@ from unittest.mock import MagicMock
 
 import pytest
 from flask_restx._http import HTTPStatus
-from pytest_mock import mocker
 
-from middleware.access_logic import AccessInfoPrimary
 from middleware.decorators import (
     api_key_required,
     permissions_required,
-    authentication_required,
 )
-from middleware.enums import PermissionsEnum, AccessTypeEnum
+from middleware.enums import PermissionsEnum
 
 
 @pytest.fixture
@@ -46,18 +43,6 @@ def test_api_key_required(dummy_api_key_required_route, monkeypatch):
 def dummy_permissions_required_route():
     @permissions_required(PermissionsEnum.READ_ALL_USER_INFO)
     def _dummy_route():
-        return "This is a protected route", HTTPStatus.OK.value
-
-    return _dummy_route
-
-
-@pytest.fixture
-def dummy_authentication_required_route():
-    @authentication_required(
-        allowed_access_methods=[AccessTypeEnum.API_KEY],
-        restrict_to_permissions=[PermissionsEnum.READ_ALL_USER_INFO],
-    )
-    def _dummy_route(access_info: AccessInfoPrimary):
         return "This is a protected route", HTTPStatus.OK.value
 
     return _dummy_route

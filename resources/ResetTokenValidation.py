@@ -5,7 +5,7 @@ from middleware.access_logic import (
     RESET_PASSWORD_AUTH_INFO,
     PasswordResetTokenAccessInfo,
 )
-from middleware.decorators import endpoint_info_2
+from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.reset_token_queries import (
     reset_token_validation,
 )
@@ -21,7 +21,7 @@ namespace_reset_token_validation = create_namespace()
 @namespace_reset_token_validation.route("/reset-token-validation")
 class ResetTokenValidation(PsycopgResource):
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_reset_token_validation,
         auth_info=RESET_PASSWORD_AUTH_INFO,
         schema_config=SchemaConfigs.RESET_TOKEN_VALIDATION,

@@ -1,4 +1,3 @@
-from email.policy import default
 from functools import wraps
 from http import HTTPStatus
 from typing import Callable, Optional
@@ -94,52 +93,6 @@ def authentication_required(
 def endpoint_info(
     namespace: Namespace,
     auth_info: AuthenticationInfo,
-    input_schema: Optional[Schema] = None,
-    input_model: Optional[Model] = None,
-    input_model_name: Optional[str] = None,
-    **doc_kwargs,
-):
-    """
-
-    :param namespace: The namespace to add the endpoint to
-    :param auth_info: info on how the endpoint is authenticated
-    :param input_schema: info on the schema for the input. Mutually exclusive with input_schema
-    :param input_model: info on the model for the input. Mutually exclusive with input_model
-    :param doc_kwargs: Additional arguments for the endpoint's documentation
-    :return:
-    """
-
-    # If input schema is defined, create parser and model using schema and namespace
-    input_doc_info = _get_input_doc_info(
-        namespace=namespace,
-        input_schema=input_schema,
-        input_model=input_model,
-        input_model_name=input_model_name,
-    )
-    _add_auth_info_to_parser(auth_info=auth_info, parser=input_doc_info.parser)
-
-    doc_kwargs["expect"] = [input_doc_info.model, input_doc_info.parser]
-
-    def decorator(func: Callable):
-        @wraps(func)
-        @handle_exceptions
-        @authentication_required(
-            allowed_access_methods=auth_info.allowed_access_methods,
-            restrict_to_permissions=auth_info.restrict_to_permissions,
-            no_auth=auth_info.no_auth,
-        )
-        @namespace.doc(**doc_kwargs)
-        def wrapper(*args, **kwargs):
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
-
-
-def endpoint_info_2(
-    namespace: Namespace,
-    auth_info: AuthenticationInfo,
     schema_config: SchemaConfigs,
     response_info: ResponseInfo,
     **doc_kwargs,
@@ -149,7 +102,6 @@ def endpoint_info_2(
     schema and response definition.
     Designed to eventually replace all instances of endpoint_info
     """
-    # TODO: Replace original endpoint info with this, and rename to `endpoint_info`
     if schema_config.value.input_schema is not None:
         input_doc_info = get_restx_param_documentation(
             namespace=namespace,
