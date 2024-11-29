@@ -102,7 +102,6 @@ def endpoint_info(
     schema and response definition.
     Designed to eventually replace all instances of endpoint_info
     """
-    # TODO: Replace original endpoint info with this, and rename to `endpoint_info`
     if schema_config.value.input_schema is not None:
         input_doc_info = get_restx_param_documentation(
             namespace=namespace,
