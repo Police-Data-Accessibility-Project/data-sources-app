@@ -177,12 +177,80 @@ class EndpointSchemaConfig:
         )
 
 
-DELETE_BY_ID = EndpointSchemaConfig(
-    input_schema=GetByIDBaseSchema(),
-    primary_output_schema=MessageSchema(),
-)
+def get_post_resource_endpoint_schema_config(
+    input_schema: Schema,
+    input_dto_class: Type[DTOTypes],
+) -> EndpointSchemaConfig:
+    return EndpointSchemaConfig(
+        input_schema=input_schema,
+        primary_output_schema=IDAndMessageSchema(),
+        input_dto_class=input_dto_class,
+    )
 
-# TODO: Look into refactoring some of these recurring patterns to make DRY
+
+def get_put_resource_endpoint_schema_config(
+    input_schema: Schema,
+    input_dto_class: Optional[Type[DTOTypes]] = None,
+) -> EndpointSchemaConfig:
+    return schema_config_with_message_output(
+        input_schema=input_schema,
+        input_dto_class=input_dto_class,
+    )
+
+
+def get_get_by_id_endpoint_schema_config(
+    primary_output_schema: Schema,
+) -> EndpointSchemaConfig:
+    return EndpointSchemaConfig(
+        input_schema=GetByIDBaseSchema(),
+        input_dto_class=GetByIDBaseDTO,
+        primary_output_schema=primary_output_schema,
+    )
+
+
+def get_typeahead_schema_config(
+    primary_output_schema: Schema,
+) -> EndpointSchemaConfig:
+    return EndpointSchemaConfig(
+        input_schema=TypeaheadQuerySchema(),
+        input_dto_class=TypeaheadDTO,
+        primary_output_schema=primary_output_schema,
+    )
+
+
+def get_user_request_endpoint_schema_config(
+    primary_output_schema: Schema,
+) -> EndpointSchemaConfig:
+    return EndpointSchemaConfig(
+        input_schema=UserRequestSchema(),
+        input_dto_class=UserRequestDTO,
+        primary_output_schema=primary_output_schema,
+    )
+
+
+def schema_config_with_message_output(
+    input_schema: Optional[Schema] = None,
+    input_dto_class: Optional[Type[DTOTypes]] = None,
+):
+    return EndpointSchemaConfig(
+        input_schema=input_schema,
+        primary_output_schema=MessageSchema(),
+        input_dto_class=input_dto_class,
+    )
+
+
+DELETE_BY_ID = schema_config_with_message_output(
+    input_schema=GetByIDBaseSchema(),
+)
+DATA_SOURCES_RELATED_AGENCY_BY_ID = EndpointSchemaConfig(
+    input_schema=RelatedAgencyByIDSchema(), input_dto_class=RelatedAgencyByIDDTO
+)
+SEARCH_FOLLOW_UPDATE = EndpointSchemaConfig(
+    input_schema=SearchRequestSchema(
+        exclude=["record_categories"],
+    ),
+    input_dto_class=SearchRequests,
+)
 
 
 class SchemaConfigs(Enum):
@@ -192,31 +260,23 @@ class SchemaConfigs(Enum):
         primary_output_schema=GetManyDataRequestsResponseSchema(),
         input_dto_class=GetManyDataRequestsRequestsDTO,
     )
-    DATA_REQUESTS_BY_ID_GET = EndpointSchemaConfig(
-        input_schema=GetByIDBaseSchema(),
+    DATA_REQUESTS_BY_ID_GET = get_get_by_id_endpoint_schema_config(
         primary_output_schema=GetByIDDataRequestsResponseSchema(),
     )
-    DATA_REQUESTS_BY_ID_PUT = EndpointSchemaConfig(
+    DATA_REQUESTS_BY_ID_PUT = get_put_resource_endpoint_schema_config(
         input_schema=DataRequestsPutSchema(),
         input_dto_class=DataRequestsPutOuterDTO,
-        primary_output_schema=MessageSchema(),
     )
-    DATA_REQUESTS_BY_ID_WITHDRAW = EndpointSchemaConfig(
-        input_schema=GetByIDBaseSchema(),
-        primary_output_schema=MessageSchema(),
-    )
+    DATA_REQUESTS_BY_ID_WITHDRAW = schema_config_with_message_output()
     DATA_REQUESTS_BY_ID_DELETE = DELETE_BY_ID
-    DATA_REQUESTS_POST = EndpointSchemaConfig(
+    DATA_REQUESTS_POST = get_post_resource_endpoint_schema_config(
         input_schema=DataRequestsPostSchema(),
         input_dto_class=DataRequestsPostDTO,
-        primary_output_schema=IDAndMessageSchema(),
     )
-    DATA_REQUESTS_RELATED_SOURCES_GET = EndpointSchemaConfig(
-        input_schema=GetByIDBaseSchema(),
+    DATA_REQUESTS_RELATED_SOURCES_GET = get_get_by_id_endpoint_schema_config(
         primary_output_schema=DataSourcesGetManySchema(
             exclude=["data.agencies"], partial=True
         ),
-        input_dto_class=GetByIDBaseDTO,
     )
     DATA_REQUESTS_RELATED_SOURCES_POST = EndpointSchemaConfig(
         input_schema=RelatedSourceByIDSchema(), input_dto_class=RelatedSourceByIDDTO
@@ -224,41 +284,34 @@ class SchemaConfigs(Enum):
     DATA_REQUESTS_RELATED_SOURCES_DELETE = EndpointSchemaConfig(
         input_schema=RelatedSourceByIDSchema(), input_dto_class=RelatedSourceByIDDTO
     )
-    DATA_REQUESTS_RELATED_LOCATIONS_GET = EndpointSchemaConfig(
-        input_schema=GetByIDBaseSchema(),
-        input_dto_class=GetByIDBaseDTO,
+    DATA_REQUESTS_RELATED_LOCATIONS_GET = get_get_by_id_endpoint_schema_config(
         primary_output_schema=GetManyDataRequestsRelatedLocationsSchema(),
     )
-    DATA_REQUESTS_RELATED_LOCATIONS_POST = EndpointSchemaConfig(
+    DATA_REQUESTS_RELATED_LOCATIONS_POST = schema_config_with_message_output(
         input_schema=DataRequestsRelatedLocationAddRemoveSchema(),
         input_dto_class=RelatedLocationsByIDDTO,
-        primary_output_schema=MessageSchema(),
     )
-    DATA_REQUESTS_RELATED_LOCATIONS_DELETE = EndpointSchemaConfig(
+    DATA_REQUESTS_RELATED_LOCATIONS_DELETE = schema_config_with_message_output(
         input_schema=DataRequestsRelatedLocationAddRemoveSchema(),
         input_dto_class=RelatedLocationsByIDDTO,
-        primary_output_schema=MessageSchema(),
     )
 
     # endregion
     # region Agencies
-    AGENCIES_BY_ID_GET = EndpointSchemaConfig(
-        input_schema=GetByIDBaseSchema(),
+    AGENCIES_BY_ID_GET = get_get_by_id_endpoint_schema_config(
         primary_output_schema=AgenciesGetByIDResponseSchema(),
-        input_dto_class=GetByIDBaseDTO,
     )
     AGENCIES_GET_MANY = EndpointSchemaConfig(
         input_schema=GetManyRequestsBaseSchema(),
         primary_output_schema=AgenciesGetManyResponseSchema(),
         input_dto_class=GetManyBaseDTO,
     )
-    AGENCIES_POST = EndpointSchemaConfig(
+    AGENCIES_POST = get_post_resource_endpoint_schema_config(
         input_schema=AgenciesPostSchema(),
         input_dto_class=AgenciesPostDTO,
-        primary_output_schema=IDAndMessageSchema(),
     )
-    AGENCIES_BY_ID_PUT = EndpointSchemaConfig(
-        input_schema=AgenciesPutSchema(), primary_output_schema=MessageSchema()
+    AGENCIES_BY_ID_PUT = get_put_resource_endpoint_schema_config(
+        input_schema=AgenciesPutSchema(),
     )
     AGENCIES_BY_ID_DELETE = DELETE_BY_ID
     # endregion
@@ -268,36 +321,27 @@ class SchemaConfigs(Enum):
         primary_output_schema=DataSourcesGetManySchema(),
         input_dto_class=GetManyBaseDTO,
     )
-    DATA_SOURCES_GET_BY_ID = EndpointSchemaConfig(
-        input_schema=GetByIDBaseSchema(),
+    DATA_SOURCES_GET_BY_ID = get_get_by_id_endpoint_schema_config(
         primary_output_schema=DataSourcesGetByIDSchema(),
-        input_dto_class=GetByIDBaseDTO,
     )
     DATA_SOURCES_BY_ID_DELETE = DELETE_BY_ID
-    DATA_SOURCES_POST = EndpointSchemaConfig(
+    DATA_SOURCES_POST = get_post_resource_endpoint_schema_config(
         input_schema=DataSourcesPostSchema(),
         input_dto_class=DataSourcesPostDTO,
-        primary_output_schema=IDAndMessageSchema(),
     )
     DATA_SOURCES_MAP = EndpointSchemaConfig(
         primary_output_schema=DataSourcesMapResponseSchema(),
     )
-    DATA_SOURCES_PUT = EndpointSchemaConfig(
+    DATA_SOURCES_PUT = get_put_resource_endpoint_schema_config(
         input_schema=DataSourcesPutSchema(), input_dto_class=EntryDataRequestSchema
     )
-    DATA_SOURCES_RELATED_AGENCIES_GET = EndpointSchemaConfig(
-        input_schema=GetByIDBaseSchema(),
+    DATA_SOURCES_RELATED_AGENCIES_GET = get_get_by_id_endpoint_schema_config(
         primary_output_schema=AgenciesGetManyResponseSchema(
             exclude=["data.data_sources"]
         ),
-        input_dto_class=GetByIDBaseDTO,
     )
-    DATA_SOURCES_RELATED_AGENCIES_POST = EndpointSchemaConfig(
-        input_schema=RelatedAgencyByIDSchema(), input_dto_class=RelatedAgencyByIDDTO
-    )
-    DATA_SOURCES_RELATED_AGENCIES_DELETE = EndpointSchemaConfig(
-        input_schema=RelatedAgencyByIDSchema(), input_dto_class=RelatedAgencyByIDDTO
-    )
+    DATA_SOURCES_RELATED_AGENCIES_POST = DATA_SOURCES_RELATED_AGENCY_BY_ID
+    DATA_SOURCES_RELATED_AGENCIES_DELETE = DATA_SOURCES_RELATED_AGENCY_BY_ID
     # endregion
 
     # region Github
@@ -306,9 +350,7 @@ class SchemaConfigs(Enum):
         primary_output_schema=GithubDataRequestsIssuesPostResponseSchema(),
         input_dto_class=GithubDataRequestsIssuesPostDTO,
     )
-    GITHUB_DATA_REQUESTS_SYNCHRONIZE_POST = EndpointSchemaConfig(
-        input_schema=None, primary_output_schema=MessageSchema(), input_dto_class=None
-    )
+    GITHUB_DATA_REQUESTS_SYNCHRONIZE_POST = schema_config_with_message_output()
     # endregion
     # region Search
     SEARCH_LOCATION_AND_RECORD_TYPE_GET = EndpointSchemaConfig(
@@ -319,32 +361,16 @@ class SchemaConfigs(Enum):
     SEARCH_FOLLOW_GET = EndpointSchemaConfig(
         primary_output_schema=GetUserFollowedSearchesSchema(),
     )
-    SEARCH_FOLLOW_POST = EndpointSchemaConfig(
-        input_schema=SearchRequestSchema(
-            exclude=["record_categories"],
-        ),
-        input_dto_class=SearchRequests,
-        primary_output_schema=MessageSchema(),
-    )
-    SEARCH_FOLLOW_DELETE = EndpointSchemaConfig(
-        input_schema=SearchRequestSchema(
-            exclude=["record_categories"],
-        ),
-        input_dto_class=SearchRequests,
-        primary_output_schema=MessageSchema(),
-    )
+    SEARCH_FOLLOW_POST = SEARCH_FOLLOW_UPDATE
+    SEARCH_FOLLOW_DELETE = SEARCH_FOLLOW_UPDATE
 
     # endregion
     # region Typeahead
-    TYPEAHEAD_LOCATIONS = EndpointSchemaConfig(
-        input_schema=TypeaheadQuerySchema(),
+    TYPEAHEAD_LOCATIONS = get_typeahead_schema_config(
         primary_output_schema=TypeaheadLocationsOuterResponseSchema(),
-        input_dto_class=TypeaheadDTO,
     )
-    TYPEAHEAD_AGENCIES = EndpointSchemaConfig(
-        input_schema=TypeaheadQuerySchema(),
+    TYPEAHEAD_AGENCIES = get_typeahead_schema_config(
         primary_output_schema=TypeaheadAgenciesOuterResponseSchema(),
-        input_dto_class=TypeaheadDTO,
     )
     # endregion
     # region Checker
@@ -359,10 +385,9 @@ class SchemaConfigs(Enum):
         primary_output_schema=NotificationsResponseSchema(),
     )
     # region User Profile
-    USER_PUT = EndpointSchemaConfig(
+    USER_PUT = get_put_resource_endpoint_schema_config(
         input_schema=UserPutSchema(),
         input_dto_class=UserPutDTO,
-        primary_output_schema=MessageSchema(),
     )
     USER_PROFILE_RECENT_SEARCHES = EndpointSchemaConfig(
         primary_output_schema=GetUserRecentSearchesOuterSchema(exclude=["message"]),
@@ -380,37 +405,31 @@ class SchemaConfigs(Enum):
 
     # endregion
     # region Auth
-    LOGIN_POST = EndpointSchemaConfig(
-        input_schema=UserRequestSchema(),
+    LOGIN_POST = get_user_request_endpoint_schema_config(
         primary_output_schema=LoginResponseSchema(),
-        input_dto_class=UserRequestDTO,
     )
     AUTH_GITHUB_LOGIN = EndpointSchemaConfig(
         input_schema=GithubRequestSchema(),
         input_dto_class=LoginWithGithubRequestDTO,
         primary_output_schema=LoginResponseSchema(),
     )
-    AUTH_GITHUB_LINK = EndpointSchemaConfig(
+    AUTH_GITHUB_LINK = schema_config_with_message_output(
         input_schema=LinkToGithubRequestSchema(),
         input_dto_class=LinkToGithubRequestDTO,
-        primary_output_schema=MessageSchema(),
     )
     AUTH_GITHUB_OAUTH = EndpointSchemaConfig(
         input_schema=GithubOAuthRequestSchema(),
         input_dto_class=GithubOAuthRequestDTO,
     )
-    AUTH_SIGNUP = EndpointSchemaConfig(
-        input_schema=UserRequestSchema(),
-        input_dto_class=UserRequestDTO,
+    AUTH_SIGNUP = get_user_request_endpoint_schema_config(
         primary_output_schema=MessageSchema(),
     )
     AUTH_VALIDATE_EMAIL = EndpointSchemaConfig(
         primary_output_schema=LoginResponseSchema(),
     )
-    AUTH_RESEND_VALIDATION_EMAIL = EndpointSchemaConfig(
+    AUTH_RESEND_VALIDATION_EMAIL = schema_config_with_message_output(
         input_schema=EmailOnlySchema(),
         input_dto_class=EmailOnlyDTO,
-        primary_output_schema=MessageSchema(),
     )
 
     # endregion
@@ -420,20 +439,16 @@ class SchemaConfigs(Enum):
         input_dto_class=RefreshSessionRequestDTO,
     )
     # region Reset Password
-    REQUEST_RESET_PASSWORD = EndpointSchemaConfig(
+    REQUEST_RESET_PASSWORD = schema_config_with_message_output(
         input_schema=RequestResetPasswordRequestSchema(),
-        primary_output_schema=MessageSchema(),
         input_dto_class=RequestResetPasswordRequestDTO,
     )
-    RESET_PASSWORD = EndpointSchemaConfig(
+    RESET_PASSWORD = schema_config_with_message_output(
         input_schema=ResetPasswordSchema(),
         input_dto_class=ResetPasswordDTO,
-        primary_output_schema=MessageSchema(),
     )
-    RESET_TOKEN_VALIDATION = EndpointSchemaConfig(primary_output_schema=MessageSchema())
-    API_KEY_POST = EndpointSchemaConfig(
-        input_schema=UserRequestSchema(),
-        input_dto_class=UserRequestDTO,
+    RESET_TOKEN_VALIDATION = schema_config_with_message_output()
+    API_KEY_POST = get_user_request_endpoint_schema_config(
         primary_output_schema=APIKeyResponseSchema(),
     )
     # endregion
