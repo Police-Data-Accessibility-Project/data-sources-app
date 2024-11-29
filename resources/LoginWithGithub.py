@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 from config import limiter
 from middleware.access_logic import NO_AUTH_INFO, AccessInfoPrimary
-from middleware.decorators import endpoint_info_2
+from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.github_oauth_logic import (
     login_with_github_wrapper,
 )
@@ -18,7 +18,7 @@ namespace_login_with_github = create_namespace(AppNamespaces.AUTH)
 @namespace_login_with_github.route("/login-with-github")
 class LoginWithGithub(PsycopgResource):
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_login_with_github,
         auth_info=NO_AUTH_INFO,
         schema_config=SchemaConfigs.AUTH_GITHUB_LOGIN,

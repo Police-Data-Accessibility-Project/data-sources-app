@@ -1,12 +1,10 @@
 from flask import Response
 
 from middleware.access_logic import (
-    AuthenticationInfo,
     AccessInfoPrimary,
     STANDARD_JWT_AUTH_INFO,
 )
-from middleware.decorators import endpoint_info, endpoint_info_2
-from middleware.enums import AccessTypeEnum
+from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.reset_token_queries import (
     change_password_wrapper,
 )
@@ -16,7 +14,6 @@ from middleware.primary_resource_logic.user_profile import (
     get_user_by_id_wrapper,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    GetManyRequestsBaseSchema,
     GET_MANY_SCHEMA_POPULATE_PARAMETERS,
 )
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_construction import (
@@ -27,7 +24,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_adva
 )
 from resources.PsycopgResource import PsycopgResource
 from resources.endpoint_schema_config import SchemaConfigs
-from resources.resource_helpers import create_response_dictionary, ResponseInfo
+from resources.resource_helpers import ResponseInfo
 from utilities.namespace import AppNamespaces, create_namespace
 
 namespace_user = create_namespace(AppNamespaces.USER)
@@ -45,7 +42,7 @@ user_data_requests_model = get_restx_param_documentation(
 @namespace_user.route("/<user_id>/update-password")
 class UserUpdatePassword(PsycopgResource):
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_user,
         auth_info=STANDARD_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.USER_PUT,
@@ -76,7 +73,7 @@ class UserUpdatePassword(PsycopgResource):
 
 @namespace_user.route("/<user_id>")
 class UserByID(PsycopgResource):
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_user,
         auth_info=STANDARD_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.USER_PROFILE_GET,
@@ -101,14 +98,10 @@ class UserDataRequests(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_user,
-        auth_info=AuthenticationInfo(
-            allowed_access_methods=[AccessTypeEnum.JWT],
-        ),
-        input_schema=GetManyRequestsBaseSchema(),
-        description="Get data requests created by user",
-        responses=create_response_dictionary(
+        auth_info=STANDARD_JWT_AUTH_INFO,
+        schema_config=SchemaConfigs.USER_PROFILE_DATA_REQUESTS_GET,
+        response_info=ResponseInfo(
             success_message="Returns a paginated list of data requests.",
-            success_model=user_data_requests_model,
         ),
     )
     def get(self, access_info: AccessInfoPrimary) -> Response:
@@ -121,7 +114,7 @@ class UserDataRequests(PsycopgResource):
 
 @namespace_user.route("/recent-searches")
 class UserRecentSearches(PsycopgResource):
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_user,
         auth_info=STANDARD_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.USER_PROFILE_RECENT_SEARCHES,

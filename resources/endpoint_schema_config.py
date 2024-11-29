@@ -13,16 +13,20 @@ from middleware.primary_resource_logic.data_requests import (
     DataRequestsPostDTO,
     RelatedLocationsByIDDTO,
 )
-from middleware.primary_resource_logic.reset_token_queries import (
-    ResetPasswordRequestSchema,
-    ResetPasswordSchema,
+from middleware.schema_and_dto_logic.primary_resource_dtos.reset_token_dtos import (
     ResetPasswordDTO,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.reset_token_schemas import (
+    ResetPasswordSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.request_reset_password_dtos import (
     RequestResetPasswordRequestDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.user_profile_dtos import (
     UserPutDTO,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.api_key_schemas import (
+    APIKeyResponseSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.refresh_session_schemas import (
     RefreshSessionRequestSchema,
@@ -31,35 +35,13 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.refresh_session_sc
 from middleware.schema_and_dto_logic.primary_resource_schemas.request_reset_password_schemas import (
     RequestResetPasswordRequestSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import (
-    TypeaheadAgenciesOuterResponseSchema,
-    TypeaheadLocationsOuterResponseSchema,
-    TypeaheadLocationsResponseSchema,
-)
-from middleware.primary_resource_logic.unique_url_checker import (
-    UniqueURLCheckerRequestSchema,
-    UniqueURLCheckerResponseOuterSchema,
-    UniqueURLCheckerRequestDTO,
-)
-from middleware.primary_resource_logic.user_queries import (
-    UserRequestSchema,
-    UserRequestDTO,
-)
-from middleware.schema_and_dto_logic.primary_resource_schemas.auth_schemas import (
-    LoginResponseSchema,
-    LinkToGithubRequestSchema,
-)
 from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import (
-    GetManyDataRequestsRequestsDTO,
     DataRequestsPutOuterDTO,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.notifications_schemas import (
-    NotificationsResponseSchema,
-)
+
 from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import (
     TypeaheadAgenciesOuterResponseSchema,
     TypeaheadLocationsOuterResponseSchema,
-    TypeaheadLocationsResponseSchema,
 )
 from middleware.primary_resource_logic.unique_url_checker import (
     UniqueURLCheckerRequestSchema,
@@ -84,12 +66,7 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos im
 from middleware.schema_and_dto_logic.primary_resource_schemas.notifications_schemas import (
     NotificationsResponseSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import (
-    SearchRequestSchema,
-    GetUserFollowedSearchesSchema,
-    SearchRequests,
-    SearchResponseSchema,
-)
+
 from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import (
     SearchRequestSchema,
     GetUserFollowedSearchesSchema,
@@ -104,8 +81,6 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     EntryDataRequestSchema,
     TypeaheadDTO,
     TypeaheadQuerySchema,
-    LocationInfoExpandedSchema,
-    EntryCreateUpdateRequestDTO,
     EmailOnlyDTO,
     EmailOnlySchema,
 )
@@ -131,9 +106,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_adva
     GetManyDataRequestsRelatedLocationsSchema,
     DataRequestsPutSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_base_schema import (
-    DataRequestsSchema,
-)
+
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advanced_schemas import (
     DataSourcesGetManySchema,
     DataSourcesGetByIDSchema,
@@ -204,6 +177,14 @@ class EndpointSchemaConfig:
         )
 
 
+DELETE_BY_ID = EndpointSchemaConfig(
+    input_schema=GetByIDBaseSchema(),
+    primary_output_schema=MessageSchema(),
+)
+
+# TODO: Look into refactoring some of these recurring patterns to make DRY
+
+
 class SchemaConfigs(Enum):
     # region Data Requests
     DATA_REQUESTS_GET_MANY = EndpointSchemaConfig(
@@ -224,6 +205,7 @@ class SchemaConfigs(Enum):
         input_schema=GetByIDBaseSchema(),
         primary_output_schema=MessageSchema(),
     )
+    DATA_REQUESTS_BY_ID_DELETE = DELETE_BY_ID
     DATA_REQUESTS_POST = EndpointSchemaConfig(
         input_schema=DataRequestsPostSchema(),
         input_dto_class=DataRequestsPostDTO,
@@ -257,6 +239,7 @@ class SchemaConfigs(Enum):
         input_dto_class=RelatedLocationsByIDDTO,
         primary_output_schema=MessageSchema(),
     )
+
     # endregion
     # region Agencies
     AGENCIES_BY_ID_GET = EndpointSchemaConfig(
@@ -277,6 +260,7 @@ class SchemaConfigs(Enum):
     AGENCIES_BY_ID_PUT = EndpointSchemaConfig(
         input_schema=AgenciesPutSchema(), primary_output_schema=MessageSchema()
     )
+    AGENCIES_BY_ID_DELETE = DELETE_BY_ID
     # endregion
     # region Data Sources
     DATA_SOURCES_GET_MANY = EndpointSchemaConfig(
@@ -289,6 +273,7 @@ class SchemaConfigs(Enum):
         primary_output_schema=DataSourcesGetByIDSchema(),
         input_dto_class=GetByIDBaseDTO,
     )
+    DATA_SOURCES_BY_ID_DELETE = DELETE_BY_ID
     DATA_SOURCES_POST = EndpointSchemaConfig(
         input_schema=DataSourcesPostSchema(),
         input_dto_class=DataSourcesPostDTO,
@@ -386,9 +371,11 @@ class SchemaConfigs(Enum):
         primary_output_schema=UserProfileResponseSchema(),
     )
     USER_PROFILE_DATA_REQUESTS_GET = EndpointSchemaConfig(
+        input_schema=GetManyRequestsBaseSchema(),
+        input_dto_class=GetManyBaseDTO,
         primary_output_schema=GetManyDataRequestsResponseSchema(
             exclude=["data.internal_notes"]
-        )
+        ),
     )
 
     # endregion
@@ -444,4 +431,9 @@ class SchemaConfigs(Enum):
         primary_output_schema=MessageSchema(),
     )
     RESET_TOKEN_VALIDATION = EndpointSchemaConfig(primary_output_schema=MessageSchema())
+    API_KEY_POST = EndpointSchemaConfig(
+        input_schema=UserRequestSchema(),
+        input_dto_class=UserRequestDTO,
+        primary_output_schema=APIKeyResponseSchema(),
+    )
     # endregion

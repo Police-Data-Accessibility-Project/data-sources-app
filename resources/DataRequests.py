@@ -21,18 +21,15 @@ from middleware.primary_resource_logic.data_requests import (
     withdraw_data_request_wrapper,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    EntryCreateUpdateRequestDTO,
     GetByIDBaseSchema,
     GetByIDBaseDTO,
 )
 from middleware.decorators import (
     endpoint_info,
-    endpoint_info_2,
 )
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 from resources.PsycopgResource import PsycopgResource
 from resources.resource_helpers import (
-    create_response_dictionary,
     ResponseInfo,
 )
 from resources.endpoint_schema_config import SchemaConfigs
@@ -45,7 +42,7 @@ namespace_data_requests = create_namespace(AppNamespaces.DATA_REQUESTS)
 class DataRequestsById(PsycopgResource):
 
     # TODO: More thoroughly update to endpoint_info_2
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=GET_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_REQUESTS_BY_ID_GET,
@@ -67,7 +64,7 @@ class DataRequestsById(PsycopgResource):
             ),
         )
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=STANDARD_JWT_AUTH_INFO,
         description="Update data request.",
@@ -91,9 +88,10 @@ class DataRequestsById(PsycopgResource):
         namespace=namespace_data_requests,
         auth_info=STANDARD_JWT_AUTH_INFO,
         description="Delete a data request by its ID",
-        responses=create_response_dictionary(
-            success_message="Data request successfully deleted."
+        response_info=ResponseInfo(
+            success_message="Data request successfully deleted.",
         ),
+        schema_config=SchemaConfigs.DATA_REQUESTS_BY_ID_DELETE,
     )
     def delete(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
         """
@@ -109,7 +107,7 @@ class DataRequestsById(PsycopgResource):
 @namespace_data_requests.route("")
 class DataRequests(PsycopgResource):
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=GET_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_REQUESTS_GET_MANY,
@@ -128,7 +126,7 @@ class DataRequests(PsycopgResource):
             access_info=access_info,
         )
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=STANDARD_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_REQUESTS_POST,
@@ -151,7 +149,7 @@ class DataRequests(PsycopgResource):
 @namespace_data_requests.route("/<resource_id>/related-sources")
 class DataRequestsRelatedSources(PsycopgResource):
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=GET_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_REQUESTS_RELATED_SOURCES_GET,
@@ -173,7 +171,7 @@ class DataRequestsRelatedSources(PsycopgResource):
 @namespace_data_requests.route("/<resource_id>/related-sources/<data_source_id>")
 class DataRequestsRelatedSourcesById(PsycopgResource):
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=STANDARD_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_REQUESTS_RELATED_SOURCES_POST,
@@ -197,8 +195,8 @@ class DataRequestsRelatedSourcesById(PsycopgResource):
     @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=STANDARD_JWT_AUTH_INFO,
-        description="""Delete an association of a data source with a data request""",
-        responses=create_response_dictionary(
+        schema_config=SchemaConfigs.DATA_REQUESTS_RELATED_SOURCES_POST,
+        response_info=ResponseInfo(
             success_message="Successfully removed data source association from data request.",
         ),
     )
@@ -218,7 +216,7 @@ class DataRequestsRelatedSourcesById(PsycopgResource):
 @namespace_data_requests.route("/<resource_id>/withdraw")
 class DataRequestsWithdraw(PsycopgResource):
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=STANDARD_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_REQUESTS_BY_ID_WITHDRAW,
@@ -240,7 +238,7 @@ class DataRequestsWithdraw(PsycopgResource):
 @namespace_data_requests.route("/<resource_id>/related-locations")
 class DataRequestsRelatedLocations(PsycopgResource):
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=GET_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_GET,
@@ -262,7 +260,7 @@ class DataRequestsRelatedLocations(PsycopgResource):
 @namespace_data_requests.route("/<resource_id>/related-locations/<location_id>")
 class DataRequestsRelatedLocationsById(PsycopgResource):
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=STANDARD_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_POST,
@@ -281,7 +279,7 @@ class DataRequestsRelatedLocationsById(PsycopgResource):
             schema_populate_parameters=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_POST.value.get_schema_populate_parameters(),
         )
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=STANDARD_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_POST,

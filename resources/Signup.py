@@ -7,7 +7,7 @@ from middleware.access_logic import (
     VALIDATE_EMAIL_AUTH_INFO,
     ValidateEmailTokenAccessInfo,
 )
-from middleware.decorators import endpoint_info_2
+from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.signup_logic import (
     resend_validation_email_wrapper,
     signup_wrapper,
@@ -24,7 +24,7 @@ namespace_signup = create_namespace(AppNamespaces.AUTH)
 @namespace_signup.route("/signup")
 class Signup(PsycopgResource):
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_signup,
         auth_info=NO_AUTH_INFO,
         description="Sign up for an account",
@@ -47,7 +47,7 @@ class Signup(PsycopgResource):
 @namespace_signup.route("/validate-email")
 class ValidateEmail(PsycopgResource):
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_signup,
         auth_info=VALIDATE_EMAIL_AUTH_INFO,
         description="Validate email address and log in user.",
@@ -71,7 +71,7 @@ class ValidateEmail(PsycopgResource):
 
 @namespace_signup.route("/resend-validation-email")
 class ResendValidationEmail(PsycopgResource):
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_signup,
         auth_info=NO_AUTH_INFO,
         description="Resend validation email",

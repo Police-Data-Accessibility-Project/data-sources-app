@@ -3,7 +3,7 @@ from http import HTTPStatus
 from config import limiter
 from database_client.database_client import DatabaseClient
 from middleware.access_logic import NO_AUTH_INFO, AccessInfoPrimary
-from middleware.decorators import endpoint_info_2
+from middleware.decorators import endpoint_info
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import (
     populate_schema_with_request_content,
 )
@@ -34,7 +34,7 @@ namespace_link_to_github = create_namespace(AppNamespaces.AUTH)
 @namespace_link_to_github.route("/link-to-github")
 class LinkToGithub(PsycopgResource):
 
-    @endpoint_info_2(
+    @endpoint_info(
         namespace=namespace_link_to_github,
         auth_info=NO_AUTH_INFO,
         schema_config=SchemaConfigs.AUTH_GITHUB_LINK,

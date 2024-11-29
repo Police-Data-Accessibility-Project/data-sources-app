@@ -1,11 +1,8 @@
-from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from http import HTTPStatus
 
 from flask import Response, make_response
 
-from marshmallow import Schema, fields
-from rfc3986.validators import check_password
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from database_client.database_client import DatabaseClient
@@ -16,56 +13,18 @@ from middleware.exceptions import UserNotFoundError
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.primary_resource_logic.api_key_logic import generate_token
 from middleware.primary_resource_logic.user_queries import user_check_email
-from middleware.schema_and_dto_logic.primary_resource_dtos.request_reset_password_dtos import (
+from middleware.schema_and_dto_logic.primary_resource_dtos.reset_token_dtos import (
     RequestResetPasswordRequestDTO,
+    ResetPasswordDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.user_profile_dtos import (
     UserPutDTO,
 )
 from middleware.webhook_logic import send_password_reset_link
-from utilities.enums import SourceMappingEnum
 
 
 class InvalidTokenError(Exception):
     pass
-
-
-@dataclass
-class RequestResetPasswordRequest:
-    email: str
-    token: str
-
-
-class ResetPasswordRequestSchema(Schema):
-    email = fields.Str(
-        required=True,
-        metadata={
-            "description": "The email of the user",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    token = fields.Str(
-        required=True,
-        metadata={
-            "description": "The token of the user",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-
-
-class ResetPasswordSchema(Schema):
-    password = fields.Str(
-        required=True,
-        metadata={
-            "description": "The new password of the user",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-
-
-@dataclass
-class ResetPasswordDTO:
-    password: str
 
 
 def request_reset_password_response():

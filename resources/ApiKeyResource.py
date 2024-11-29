@@ -1,51 +1,31 @@
 from flask import Response
-from flask_restx import fields
 
+from middleware.access_logic import NO_AUTH_INFO, AccessInfoPrimary
+from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.api_key_logic import create_api_key_for_user
-from middleware.primary_resource_logic.user_queries import UserRequestDTO
-from middleware.schema_and_dto_logic.dynamic_logic.model_helpers_with_schemas import (
-    create_user_model,
-)
+
+from resources.endpoint_schema_config import SchemaConfigs
+from resources.resource_helpers import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
-from utilities.enums import SourceMappingEnum
-from middleware.schema_and_dto_logic.non_dto_dataclasses import DTOPopulateParameters
 
 namespace_api_key = create_namespace(namespace_attributes=AppNamespaces.AUTH)
-
-api_key_model = namespace_api_key.model(
-    "ApiKey",
-    {
-        "api_key": fields.String(
-            required=True,
-            description="The generated API key",
-            example="2bd77a1d7ef24a1dad3365b8a5c6994e",
-        ),
-    },
-)
-
-user = create_user_model(namespace_api_key)
-
 API_KEY_ROUTE = "/api-key"
 
 
 @namespace_api_key.route(API_KEY_ROUTE)
-@namespace_api_key.expect(user)
-@namespace_api_key.doc(
-    description="Generates an API key for authenticated users.",
-    responses={
-        200: "Success",
-        401: "Invalid email or password",
-        500: "Internal server error.",
-    },
-)
 class ApiKeyResource(PsycopgResource):
     """Represents a resource for generating an API key for authenticated users."""
 
-    @handle_exceptions
-    @namespace_api_key.response(200, "Success", model=api_key_model)
-    def post(self) -> Response:
+    @endpoint_info(
+        namespace=namespace_api_key,
+        auth_info=NO_AUTH_INFO,
+        description="Generates an API key for authenticated users.",
+        response_info=ResponseInfo(success_message="API Key generated."),
+        schema_config=SchemaConfigs.API_KEY_POST,
+    )
+    def post(self, access_info: AccessInfoPrimary) -> Response:
         """
         Authenticates a user based on provided credentials and generates an API key.
 
@@ -59,8 +39,5 @@ class ApiKeyResource(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=create_api_key_for_user,
-            dto_populate_parameters=DTOPopulateParameters(
-                source=SourceMappingEnum.JSON,
-                dto_class=UserRequestDTO,
-            ),
+            schema_populate_parameters=SchemaConfigs.API_KEY_POST.value.get_schema_populate_parameters(),
         )
