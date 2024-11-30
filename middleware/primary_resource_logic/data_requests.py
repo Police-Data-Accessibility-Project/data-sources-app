@@ -1,16 +1,13 @@
-from dataclasses import dataclass, asdict
 from http import HTTPStatus
 from typing import Optional
 
-from flask import make_response, Response
-from marshmallow import fields
+from flask import Response
 
 from database_client.db_client_dataclasses import WhereMapping, OrderByParameters
 from database_client.database_client import DatabaseClient
 from database_client.enums import (
     ColumnPermissionEnum,
     RelationRoleEnum,
-    RequestUrgency,
     RequestStatus,
 )
 from database_client.subquery_logic import SubqueryParameterManager, SubqueryParameters
@@ -22,7 +19,6 @@ from middleware.column_permission_logic import (
 from middleware.custom_dataclasses import (
     DeferredFunction,
 )
-from middleware.dynamic_request_logic.common_functions import check_for_id
 from middleware.dynamic_request_logic.delete_logic import delete_entry
 from middleware.dynamic_request_logic.get_by_id_logic import get_by_id
 from middleware.dynamic_request_logic.get_many_logic import get_many
@@ -39,9 +35,7 @@ from middleware.dynamic_request_logic.supporting_classes import (
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.location_logic import InvalidLocationError
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    EntryCreateUpdateRequestDTO,
     GetByIDBaseDTO,
-    GetByIDBaseSchema,
     GetManyBaseDTO,
 )
 from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
@@ -51,13 +45,15 @@ from middleware.common_response_formatting import (
     created_id_response,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import (
-    DataRequestLocationInfoPostDTO,
     GetManyDataRequestsRequestsDTO,
     DataRequestsPutDTO,
     DataRequestsPutOuterDTO,
+    RelatedSourceByIDDTO,
+    RelatedLocationsByIDDTO,
+    DataRequestsPostDTO,
+    DataRequestLocationInfoPostDTO,
 )
 from middleware.util import dataclass_to_filtered_dict
-from utilities.enums import SourceMappingEnum
 
 RELATION = Relations.DATA_REQUESTS.value
 RELATED_SOURCES_RELATION = Relations.RELATED_SOURCES.value
@@ -70,55 +66,8 @@ def get_data_requests_subquery_params() -> list[SubqueryParameters]:
     ]
 
 
-class RelatedSourceByIDSchema(GetByIDBaseSchema):
-    data_source_id = fields.Str(
-        required=True,
-        metadata={
-            "description": "The ID of the data source",
-            "source": SourceMappingEnum.PATH,
-        },
-    )
-
-
-@dataclass
-class RelatedSourceByIDDTO(GetByIDBaseDTO):
-    data_source_id: int
-
-    def get_where_mapping(self):
-        return {
-            "data_source_id": int(self.data_source_id),
-            "request_id": int(self.resource_id),
-        }
-
-
-@dataclass
-class RelatedLocationsByIDDTO(GetByIDBaseDTO):
-    location_id: int
-
-    def get_where_mapping(self):
-        return {
-            "location_id": int(self.location_id),
-            "data_request_id": int(self.resource_id),
-        }
-
-
-@dataclass
-class RequestInfoPostDTO:
-    title: str
-    submission_notes: str
-    request_urgency: RequestUrgency
-    coverage_range: Optional[str] = None
-    data_requirements: Optional[str] = None
-
-
-@dataclass
-class DataRequestsPostDTO:
-    request_info: RequestInfoPostDTO
-    location_infos: Optional[list[DataRequestLocationInfoPostDTO]] = None
-
-
 def get_location_id_for_data_requests(
-    db_client: DatabaseClient, location_info: dict
+    db_client: DatabaseClient, location_info: DataRequestLocationInfoPostDTO
 ) -> int:
     """
     Get the location id for the data request
@@ -128,10 +77,10 @@ def get_location_id_for_data_requests(
     """
     # Rename keys to match where mappings
     revised_location_info = {
-        "type": location_info["type"],
-        "state_name": location_info["state"],
-        "county_name": location_info["county"],
-        "locality_name": location_info["locality"],
+        "type": location_info.type,
+        "state_name": location_info.state,
+        "county_name": location_info.county,
+        "locality_name": location_info.locality,
     }
 
     location_id = db_client.get_location_id(
@@ -183,7 +132,7 @@ def create_data_request_wrapper(
     # Check that location ids are valid, and get location ids for linking
     location_ids = _get_location_ids(db_client, dto)
 
-    column_value_mappings_raw = asdict(dto.request_info)
+    column_value_mappings_raw = dict(dto.request_info)
     user_id = access_info.get_user_id()
     column_value_mappings_raw["creator_user_id"] = user_id
 

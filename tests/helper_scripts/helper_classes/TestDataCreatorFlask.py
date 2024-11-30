@@ -20,7 +20,6 @@ from tests.helper_scripts.constants import (
     DATA_SOURCES_POST_DELETE_RELATED_AGENCY_ENDPOINT,
     DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT,
 )
-from tests.helper_scripts.helper_classes.EndpointCaller import EndpointCaller
 from tests.helper_scripts.helper_classes.RequestValidator import RequestValidator
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
@@ -43,7 +42,6 @@ class TestDataCreatorFlask:
         self.flask_client = flask_client
         self.tdcdb = TestDataCreatorDBClient()
         self.request_validator = RequestValidator(flask_client)
-        self.endpoint_caller = EndpointCaller(flask_client)
         self.db_client = DatabaseClient()
         self.admin_tus: Optional[TestUserSetup] = None
 

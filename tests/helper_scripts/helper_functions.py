@@ -47,7 +47,7 @@ def create_test_user_db_client(db_client: DatabaseClient) -> UserInfo:
     password = get_test_name()
     password_digest = generate_password_hash(password)
     user_id = db_client.create_new_user(email=email, password_digest=password_digest)
-    return UserInfo(email, password, user_id)
+    return UserInfo(email=email, password=password, user_id=user_id)
 
 
 JWTTokens = namedtuple("JWTTokens", ["access_token", "refresh_token"])

@@ -25,7 +25,9 @@ from middleware.dynamic_request_logic.supporting_classes import (
 )
 
 from middleware.enums import Relations
-from middleware.primary_resource_logic.data_requests import RelatedSourceByIDDTO
+from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import (
+    RelatedSourceByIDDTO,
+)
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyBaseDTO,
     EntryCreateUpdateRequestDTO,
@@ -49,7 +51,6 @@ class DataSourceNotFoundError(Exception):
     pass
 
 
-@dataclass
 class DataSourcesGetManyRequestDTO(GetManyBaseDTO):
     approval_status: ApprovalStatus = ApprovalStatus.APPROVED
     page_number: int = 1

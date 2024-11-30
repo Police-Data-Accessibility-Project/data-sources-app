@@ -1,7 +1,6 @@
 from marshmallow import fields, Schema, post_load
 
 from database_client.enums import RequestStatus
-from middleware.primary_resource_logic.data_requests import RequestInfoPostDTO
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_base_schema import (
     DataRequestsSchema,
 )
@@ -17,6 +16,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
 from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import (
     DataRequestLocationInfoPostDTO,
     DataRequestsPutDTO,
+    RequestInfoPostDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_schemas import (
     DataSourceExpandedSchema,
@@ -30,6 +30,7 @@ from middleware.schema_and_dto_logic.util import (
     get_query_metadata,
     get_path_metadata,
 )
+from utilities.enums import SourceMappingEnum
 
 
 class DataRequestsGetSchemaBase(DataRequestsSchema):
@@ -167,4 +168,14 @@ class DataRequestsRelatedLocationAddRemoveSchema(GetByIDBaseSchema):
         metadata=get_path_metadata(
             "The ID of the location to add or remove from the data request."
         ),
+    )
+
+
+class RelatedSourceByIDSchema(GetByIDBaseSchema):
+    data_source_id = fields.Str(
+        required=True,
+        metadata={
+            "description": "The ID of the data source",
+            "source": SourceMappingEnum.PATH,
+        },
     )

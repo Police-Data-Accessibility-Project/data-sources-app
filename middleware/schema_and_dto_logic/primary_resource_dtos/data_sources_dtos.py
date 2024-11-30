@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Optional, List
 
+from pydantic import BaseModel
+
 from database_client.enums import (
     ApprovalStatus,
     AgencyAggregation,
@@ -13,8 +15,7 @@ from database_client.enums import (
 from middleware.enums import RecordType
 
 
-@dataclass
-class DataSourceEntryDataPostDTO:
+class DataSourceEntryDataPostDTO(BaseModel):
     submitted_name: str
     description: Optional[str] = None
     approval_status: Optional[ApprovalStatus] = None

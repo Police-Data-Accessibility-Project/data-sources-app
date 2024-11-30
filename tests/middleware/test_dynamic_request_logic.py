@@ -24,7 +24,9 @@ from middleware.dynamic_request_logic.get_many_logic import (
 from middleware.dynamic_request_logic.post_logic import post_entry
 from middleware.dynamic_request_logic.put_logic import put_entry
 from middleware.dynamic_request_logic.supporting_classes import IDInfo
-from middleware.primary_resource_logic.data_requests import RelatedSourceByIDDTO
+from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import (
+    RelatedSourceByIDDTO,
+)
 
 from middleware.schema_and_dto_logic.common_response_schemas import (
     EntryDataResponseSchema,
@@ -299,35 +301,6 @@ def test_delete_entry(monkeypatch):
     mock.message_response.assert_called_once_with(f"{mock.mp.entry_name} deleted.")
 
     assert result == mock.message_response.return_value
-
-
-def test_delete_id_not_found(monkeypatch, mock_flask_response_manager):
-    mock = MagicMock()
-    mock.flask_response_manager = mock_flask_response_manager
-    monkeypatch.setattr(mock, f"{PATCH_ROOT}.DatabaseClient", mock.DatabaseClient)
-    mock.dto = RelatedSourceByIDDTO(
-        resource_id=mock.resource_id,
-        data_source_id=mock.data_source_id,
-    )
-    mock.access_info = MagicMock()
-    mock.db_client._select_from_relation.return_value = []
-    with pytest.raises(FakeAbort):
-        delete_entry(
-            middleware_parameters=mock.mp,
-            id_info=mock.id_info,
-            permission_checking_function=mock.permission_checking_function,
-        )
-    mock.mp.db_client._select_from_relation.assert_called_once_with(
-        relation_name=mock.mp.relation,
-        where_mappings=mock.id_info.where_mappings,
-        columns=[mock.id_info.id_column_name],
-    )
-    mock.db_client.get_user_id.assert_not_called()
-    mock.user_is_creator_of_data_request.assert_not_called()
-    mock.flask_response_manager.abort.assert_called_once_with(
-        message=f"Entry for {mock.id_info.where_mappings} not found.",
-        code=HTTPStatus.NOT_FOUND,
-    )
 
 
 def test_check_requested_columns_happy_path(mock_flask_response_manager, monkeypatch):

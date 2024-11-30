@@ -7,12 +7,6 @@ from marshmallow import Schema
 from middleware.primary_resource_logic.github_oauth_logic import (
     LinkToGithubRequestDTO,
 )
-from middleware.primary_resource_logic.data_requests import (
-    RelatedSourceByIDSchema,
-    RelatedSourceByIDDTO,
-    DataRequestsPostDTO,
-    RelatedLocationsByIDDTO,
-)
 from middleware.schema_and_dto_logic.primary_resource_dtos.reset_token_dtos import (
     ResetPasswordDTO,
 )
@@ -37,6 +31,9 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.request_reset_pass
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import (
     DataRequestsPutOuterDTO,
+    RelatedSourceByIDDTO,
+    RelatedLocationsByIDDTO,
+    DataRequestsPostDTO,
 )
 
 from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import (
@@ -105,6 +102,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_adva
     DataRequestsRelatedLocationAddRemoveSchema,
     GetManyDataRequestsRelatedLocationsSchema,
     DataRequestsPutSchema,
+    RelatedSourceByIDSchema,
 )
 
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advanced_schemas import (

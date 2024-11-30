@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
+from pydantic import BaseModel
 
 from tests.conftest import (
     ClientWithMockDB,

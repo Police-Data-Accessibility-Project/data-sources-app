@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Any, Dict
 
 from dotenv import dotenv_values, find_dotenv
+from pydantic import BaseModel
 
 
 def get_env_variable(name: str) -> str:
@@ -37,12 +38,16 @@ def dataclass_to_filtered_dict(instance: Any) -> Dict[str, Any]:
     :param instance:
     :return:
     """
-    if not is_dataclass(instance):
+    if is_dataclass(instance):
+        d = asdict(instance)
+    if isinstance(instance, BaseModel):
+        d = dict(instance)
+    else:
         raise TypeError(
-            f"Expected a dataclass instance, but got {type(instance).__name__}"
+            f"Expected a dataclass or basemodel instance, but got {type(instance).__name__}"
         )
     results = {}
-    for key, value in asdict(instance).items():
+    for key, value in d.items():
         # Special case for Enum
         if isinstance(value, Enum):
             results[key] = value.value

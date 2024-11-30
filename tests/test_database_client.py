@@ -1174,6 +1174,8 @@ def get_user_notification_queue(db_client: DatabaseClient):
 
 
 def test_optionally_update_user_notification_queue(test_data_creator_db_client):
+    # Note: Based on testing on 11/30/2024, this test may be wonky on the last day of the month
+
     tdc = test_data_creator_db_client
     tdc.clear_test_data()
 

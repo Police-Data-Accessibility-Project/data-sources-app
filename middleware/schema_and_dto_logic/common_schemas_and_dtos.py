@@ -4,10 +4,10 @@ to be inherited by other get many requests.
 """
 
 import ast
-from dataclasses import dataclass
 from typing import Optional
 
 from marshmallow import Schema, fields, validate, validates_schema, ValidationError
+from pydantic import BaseModel
 
 from database_client.enums import SortOrder, LocationType
 from middleware.schema_and_dto_logic.custom_fields import DataField
@@ -58,8 +58,7 @@ class GetManyRequestsBaseSchema(Schema):
     )
 
 
-@dataclass
-class GetManyBaseDTO:
+class GetManyBaseDTO(BaseModel):
     """
     A base data transfer object for GET requests returning a list of objects
     """
@@ -86,8 +85,7 @@ class GetByIDBaseSchema(Schema):
     )
 
 
-@dataclass
-class GetByIDBaseDTO:
+class GetByIDBaseDTO(BaseModel):
     resource_id: str
 
 
@@ -101,8 +99,7 @@ class EntryDataRequestSchema(Schema):
     )
 
 
-@dataclass
-class EntryCreateUpdateRequestDTO:
+class EntryCreateUpdateRequestDTO(BaseModel):
     """
     Contains data for creating or updating an entry
     """
@@ -128,8 +125,7 @@ class TypeaheadQuerySchema(Schema):
     )
 
 
-@dataclass
-class TypeaheadDTO:
+class TypeaheadDTO(BaseModel):
     query: str
 
 
@@ -230,8 +226,7 @@ class LocationInfoExpandedSchema(LocationInfoSchema):
     )
 
 
-@dataclass
-class LocationInfoDTO:
+class LocationInfoDTO(BaseModel):
     type: LocationType
     state_iso: str
     county_fips: Optional[str] = None
@@ -245,6 +240,5 @@ class EmailOnlySchema(Schema):
     )
 
 
-@dataclass
-class EmailOnlyDTO:
+class EmailOnlyDTO(BaseModel):
     email: str

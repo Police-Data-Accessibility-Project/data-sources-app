@@ -3,9 +3,9 @@ from unittest.mock import ANY
 import pytest
 
 from database_client.enums import RequestUrgency
-from middleware.primary_resource_logic.data_requests import (
-    DataRequestsPostDTO,
+from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import (
     RequestInfoPostDTO,
+    DataRequestsPostDTO,
 )
 from tests.conftest import client_with_mock_db, bypass_authentication_required
 from tests.helper_scripts.common_mocks_and_patches import (

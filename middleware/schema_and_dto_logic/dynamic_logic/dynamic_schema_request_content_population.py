@@ -1,9 +1,8 @@
-import ast
-from dataclasses import dataclass
 from http import HTTPStatus
-from typing import Type, Optional
+from typing import Type
 
 import marshmallow
+from pydantic import BaseModel
 
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.custom_types import SchemaTypes, DTOTypes
@@ -14,14 +13,12 @@ from middleware.schema_and_dto_logic.util import (
 from utilities.enums import SourceMappingEnum
 
 
-@dataclass
-class NestedDTOInfo:
+class NestedDTOInfo(BaseModel):
     key: str
     class_: Type
 
 
-@dataclass
-class SourceDataInfo:
+class SourceDataInfo(BaseModel):
     data: dict
     nested_dto_info_list: list[NestedDTOInfo]
 
