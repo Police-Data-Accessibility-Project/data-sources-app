@@ -3,6 +3,7 @@ import re
 
 from flask import Response
 from marshmallow import Schema, fields, validate
+from pydantic import BaseModel
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import ApprovalStatus
@@ -32,8 +33,7 @@ class UniqueURLCheckerRequestSchema(Schema):
     )
 
 
-@dataclass
-class UniqueURLCheckerRequestDTO:
+class UniqueURLCheckerRequestDTO(BaseModel):
     url: str
 
 

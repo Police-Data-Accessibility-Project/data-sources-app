@@ -50,7 +50,6 @@ class DataSourceEntryDataPostDTO(BaseModel):
     record_type_name: Optional[RecordType] = None
 
 
-@dataclass
-class DataSourcesPostDTO:
+class DataSourcesPostDTO(BaseModel):
     entry_data: DataSourceEntryDataPostDTO
     linked_agency_ids: Optional[List[int]] = None

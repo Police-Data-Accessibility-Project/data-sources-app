@@ -1,6 +1,7 @@
 from typing import Optional
 
 from flask import Response
+from pydantic import BaseModel
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping

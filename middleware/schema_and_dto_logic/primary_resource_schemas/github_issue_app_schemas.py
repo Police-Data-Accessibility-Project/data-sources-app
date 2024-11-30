@@ -1,4 +1,5 @@
 from marshmallow import Schema, fields
+from pydantic import BaseModel
 
 from utilities.enums import SourceMappingEnum
 from dataclasses import dataclass
@@ -31,6 +32,5 @@ class GithubDataRequestsIssuesPostResponseSchema(Schema):
     )
 
 
-@dataclass
-class GithubDataRequestsIssuesPostDTO:
+class GithubDataRequestsIssuesPostDTO(BaseModel):
     data_request_id: int

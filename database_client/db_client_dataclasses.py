@@ -2,6 +2,7 @@ import enum
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
+from pydantic import BaseModel
 from sqlalchemy.sql.expression import UnaryExpression
 from sqlalchemy.schema import Column
 from sqlalchemy.sql.expression import asc, desc, BinaryExpression
@@ -16,8 +17,7 @@ ORDER_BY_REFERENCE = {
 }
 
 
-@dataclass
-class OrderByParameters:
+class OrderByParameters(BaseModel):
     """
     Contains parameters for an order_by clause
     """

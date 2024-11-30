@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from marshmallow import Schema, fields
+from pydantic import BaseModel
 
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from middleware.schema_and_dto_logic.util import get_json_metadata, get_query_metadata
@@ -22,8 +23,7 @@ class GithubRequestSchema(Schema):
     )
 
 
-@dataclass
-class LoginWithGithubRequestDTO:
+class LoginWithGithubRequestDTO(BaseModel):
     gh_access_token: str
 
 
@@ -44,6 +44,5 @@ class GithubOAuthRequestSchema(Schema):
     )
 
 
-@dataclass
-class GithubOAuthRequestDTO:
+class GithubOAuthRequestDTO(BaseModel):
     redirect_url: Optional[str] = None

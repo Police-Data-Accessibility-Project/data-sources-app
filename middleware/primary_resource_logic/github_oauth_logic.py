@@ -5,6 +5,7 @@ from http import HTTPStatus
 from flask import Response, make_response
 from flask_restx import abort
 from jwt import ExpiredSignatureError
+from pydantic import BaseModel
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
@@ -26,8 +27,7 @@ from middleware.third_party_interaction_logic.callback_oauth_logic import (
 )
 
 
-@dataclass
-class LinkToGithubRequestDTO:
+class LinkToGithubRequestDTO(BaseModel):
     gh_access_token: str
     user_email: str
 

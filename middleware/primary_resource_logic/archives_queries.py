@@ -18,13 +18,6 @@ ARCHIVES_GET_COLUMNS = [
 ]
 
 
-@dataclass
-class ArchivesQueryData:
-    id: Optional[str] = None
-    broken_source_url_as_of: Optional[str] = None
-    last_cached: Optional[str] = None
-
-
 def archives_get_query(
     db_client: DatabaseClient,
 ) -> List[Dict[str, Any]]:

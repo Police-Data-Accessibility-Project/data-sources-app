@@ -7,6 +7,7 @@ from flask import Response, make_response
 from flask_jwt_extended import get_jwt_identity
 from flask_restx import abort
 from marshmallow import Schema, fields
+from pydantic import BaseModel
 
 from database_client.database_client import DatabaseClient
 from database_client.helper_functions import get_db_client
@@ -49,8 +50,7 @@ class PermissionsRequestSchema(Schema):
     )
 
 
-@dataclass
-class PermissionsRequest:
+class PermissionsRequest(BaseModel):
     user_email: str
     permission: str
     action: str

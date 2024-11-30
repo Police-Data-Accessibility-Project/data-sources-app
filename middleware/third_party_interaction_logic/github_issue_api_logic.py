@@ -3,14 +3,14 @@ import re
 from github import Github
 from github import Auth
 import requests
+from pydantic import BaseModel
 
 from database_client.enums import RequestStatus
 from middleware.util import get_env_variable
 from dataclasses import dataclass
 
 
-@dataclass
-class GithubIssueInfo:
+class GithubIssueInfo(BaseModel):
     url: str
     number: int
 

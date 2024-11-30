@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from http import HTTPStatus
 
 from flask import Response
+from pydantic import BaseModel
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import EventType
@@ -15,8 +16,7 @@ from dominate.tags import *
 from middleware.third_party_interaction_logic.mailgun_logic import send_via_mailgun
 
 
-@dataclass
-class NotificationEmailContent:
+class NotificationEmailContent(BaseModel):
     html_text: str
     base_text: str
 
