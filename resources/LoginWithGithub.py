@@ -25,7 +25,6 @@ class LoginWithGithub(PsycopgResource):
         response_info=ResponseInfo(
             response_dictionary={
                 HTTPStatus.OK.value: "User logged in.",
-                HTTPStatus.BAD_REQUEST.value: "Bad request.",
                 HTTPStatus.UNAUTHORIZED.value: "Unauthorized. Forbidden or invalid authentication.",
                 HTTPStatus.INTERNAL_SERVER_ERROR: "Internal Server Error.",
             },

@@ -215,7 +215,7 @@ def test_data_requests_post(
     post_data_request(
         json_request,
         use_authorization_header=False,
-        expected_response_status=HTTPStatus.UNAUTHORIZED,
+        expected_response_status=HTTPStatus.BAD_REQUEST,
     )
 
     # Check that response fails if using invalid columns

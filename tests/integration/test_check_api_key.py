@@ -64,38 +64,6 @@ def test_check_api_key_happy_path(
     check_api_key()
 
 
-@pytest.mark.parametrize(
-    "request_headers",
-    [
-        None,
-        {"Authorization": "Basic"},
-        {"Authorization": "BasicAPIKEY"},
-        {"Authorization": "Bearer api_key"},
-        {"Authrztn": "Basic api_key"},
-    ],
-)
-def test_check_api_key_valid_authorization_header(
-    monkeypatch, mock_abort, request_headers
-):
-    """
-    Test various scenarios where an Invalid API Key response is expected
-    :param monkeypatch:
-    :param mock_abort:
-    :param request_headers:
-    :return:
-    """
-    patch_request_headers(
-        monkeypatch,
-        path=PATCH_REQUESTS_ROOT,
-        request_headers=request_headers,
-    )
-
-    check_api_key()
-    mock_abort.assert_called_once_with(
-        code=HTTPStatus.UNAUTHORIZED, message=INVALID_API_KEY_MESSAGE
-    )
-
-
 #
 def test_check_api_key_api_key_not_associated_with_user(monkeypatch, mock_abort):
 

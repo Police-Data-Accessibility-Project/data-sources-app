@@ -9,7 +9,6 @@ from middleware.util import get_env_variable
 from resources.Callback import namespace_auth
 from resources.DataRequests import namespace_data_requests
 from resources.GithubDataRequests import namespace_github
-from resources.HomepageSearchCache import namespace_homepage_search_cache
 from resources.LinkToGithub import namespace_link_to_github
 from resources.LoginWithGithub import namespace_login_with_github
 from resources.Map import namespace_map
@@ -109,9 +108,7 @@ class UpdatedJSONProvider(DefaultJSONProvider):
 def create_app() -> Flask:
     psycopg2_connection = initialize_psycopg_connection()
     config.connection = psycopg2_connection
-    api = Api()
-    for namespace in NAMESPACES:
-        api.add_namespace(namespace)
+    api = get_api_with_namespaces()
     app = Flask(__name__)
     app.json = UpdatedJSONProvider(app)
 
@@ -130,6 +127,13 @@ def create_app() -> Flask:
     jwt.init_app(app)
 
     return app
+
+
+def get_api_with_namespaces():
+    api = Api()
+    for namespace in NAMESPACES:
+        api.add_namespace(namespace)
+    return api
 
 
 if __name__ == "__main__":

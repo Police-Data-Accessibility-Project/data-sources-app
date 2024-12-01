@@ -3,6 +3,7 @@ from typing import Optional
 
 from flask import request
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_restx import abort
 from jwt import ExpiredSignatureError
 from pydantic import BaseModel
@@ -16,6 +17,7 @@ from middleware.exceptions import (
     InvalidAPIKeyException,
     InvalidAuthorizationHeaderException,
 )
+from middleware.flask_response_manager import FlaskResponseManager
 from middleware.primary_resource_logic.permissions_logic import get_user_permissions
 
 
@@ -98,7 +100,11 @@ class JWTService:
         try:
             verify_jwt_in_request()
             return get_jwt_identity()
-        except Exception:
+        except NoAuthorizationError:
+            FlaskResponseManager.abort(
+                HTTPStatus.BAD_REQUEST, message="Token is missing"
+            )
+        except Exception as e:
             return None
 
     @staticmethod
@@ -154,7 +160,9 @@ def get_authorization_header_from_request() -> str:
     try:
         return headers["Authorization"]
     except (KeyError, TypeError):
-        raise InvalidAuthorizationHeaderException
+        FlaskResponseManager.abort(
+            code=HTTPStatus.BAD_REQUEST, message="Authorization header missing"
+        )
 
 
 def get_key_from_authorization_header(
@@ -162,6 +170,11 @@ def get_key_from_authorization_header(
 ) -> str:
     try:
         authorization_header_parts = authorization_header.split(" ")
+        if len(authorization_header_parts) != 2:
+            FlaskResponseManager.abort(
+                code=HTTPStatus.BAD_REQUEST,
+                message="Improperly formatted authorization header",
+            )
         if authorization_header_parts[0] != scheme:
             raise InvalidAPIKeyException
         return authorization_header_parts[1]

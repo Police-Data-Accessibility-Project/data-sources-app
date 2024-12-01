@@ -7,8 +7,17 @@ from marshmallow import Schema
 from middleware.primary_resource_logic.github_oauth_logic import (
     LinkToGithubRequestDTO,
 )
+from middleware.primary_resource_logic.permissions_logic import (
+    PermissionsPutRequestSchema,
+    PermissionsRequestDTO,
+    PermissionsGetRequestSchema,
+)
 from middleware.schema_and_dto_logic.primary_resource_dtos.reset_token_dtos import (
     ResetPasswordDTO,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.archives_schemas import (
+    ArchivesGetResponseSchema,
+    ArchivesPutRequestSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.reset_token_schemas import (
     ResetPasswordSchema,
@@ -448,5 +457,22 @@ class SchemaConfigs(Enum):
     RESET_TOKEN_VALIDATION = schema_config_with_message_output()
     API_KEY_POST = get_user_request_endpoint_schema_config(
         primary_output_schema=APIKeyResponseSchema(),
+    )
+    # endregion
+
+    # region Archives
+    ARCHIVES_GET = EndpointSchemaConfig(
+        primary_output_schema=ArchivesGetResponseSchema(),
+    )
+    ARCHIVES_PUT = EndpointSchemaConfig(
+        input_schema=ArchivesPutRequestSchema(),
+    )
+    # endregion
+
+    # region Permission
+    PERMISSIONS_GET = EndpointSchemaConfig(input_schema=PermissionsGetRequestSchema())
+    PERMISSIONS_PUT = EndpointSchemaConfig(
+        input_schema=PermissionsPutRequestSchema(),
+        input_dto_class=PermissionsRequestDTO,
     )
     # endregion
