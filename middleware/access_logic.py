@@ -1,3 +1,5 @@
+from collections import namedtuple
+from enum import Enum
 from http import HTTPStatus
 from typing import Optional
 
@@ -7,6 +9,7 @@ from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_restx import abort
 from jwt import ExpiredSignatureError
 from pydantic import BaseModel
+from typing_extensions import Callable
 
 from database_client.database_client import DatabaseClient
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
@@ -15,7 +18,6 @@ from middleware.enums import PermissionsEnum, AccessTypeEnum
 from database_client.helper_functions import get_db_client
 from middleware.exceptions import (
     InvalidAPIKeyException,
-    InvalidAuthorizationHeaderException,
 )
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.primary_resource_logic.permissions_logic import get_user_permissions
@@ -49,6 +51,29 @@ RESET_PASSWORD_AUTH_INFO = AuthenticationInfo(
 VALIDATE_EMAIL_AUTH_INFO = AuthenticationInfo(
     allowed_access_methods=[AccessTypeEnum.VALIDATE_EMAIL],
 )
+
+
+class AuthScheme(Enum):
+    BEARER = "Bearer"
+    BASIC = "Basic"
+
+
+class HeaderAuthInfo(BaseModel):
+    auth_scheme: AuthScheme
+    token: str
+
+
+def get_header_auth_info() -> HeaderAuthInfo:
+    authorization_header = get_authorization_header_from_request()
+    try:
+        authorization_header_parts = authorization_header.split(" ")
+        if len(authorization_header_parts) != 2:
+            bad_request_abort()
+        scheme_string = AuthScheme(authorization_header_parts[0])
+        token = authorization_header_parts[1]
+        return HeaderAuthInfo(auth_scheme=AuthScheme(scheme_string), token=token)
+    except (ValueError, IndexError, AttributeError):
+        bad_request_abort(message="Improperly formatted authorization header")
 
 
 class ParserDeterminator:
@@ -108,7 +133,8 @@ class JWTService:
             return None
 
     @staticmethod
-    def get_access_info():
+    def get_access_info(token: str):
+        simple_jwt = SimpleJWT.decode(token, purpose=JWTPurpose.STANDARD_ACCESS_TOKEN)
         identity = JWTService.get_identity()
         if identity:
             return get_jwt_access_info_with_permissions(
@@ -117,15 +143,28 @@ class JWTService:
         return None
 
 
-def extract_bearer_token_from_request():
-    header = get_authorization_header_from_request()
-    return get_key_from_authorization_header(header, scheme="Bearer")
+def get_token_from_request_header(scheme: AuthScheme):
+    authorization_header = get_authorization_header_from_request()
+    return get_key_from_authorization_header(authorization_header, scheme=scheme.value)
 
 
-def decode_jwt_with_purpose(purpose: JWTPurpose):
-    jwt_raw = extract_bearer_token_from_request()
+def get_key_from_authorization_header(
+    authorization_header: str, scheme: str = "Basic"
+) -> str:
     try:
-        return SimpleJWT.decode(token=jwt_raw, purpose=purpose)
+        authorization_header_parts = authorization_header.split(" ")
+        if len(authorization_header_parts) != 2:
+            bad_request_abort()
+        if authorization_header_parts[0] != scheme:
+            raise InvalidAPIKeyException
+        return authorization_header_parts[1]
+    except (ValueError, IndexError, AttributeError):
+        raise InvalidAPIKeyException
+
+
+def decode_jwt_with_purpose(token: str, purpose: JWTPurpose):
+    try:
+        return SimpleJWT.decode(token=token, purpose=purpose)
     except ExpiredSignatureError:
         abort(
             code=HTTPStatus.UNAUTHORIZED,
@@ -143,13 +182,8 @@ def get_jwt_access_info_with_permissions(user_email, user_id):
     )
 
 
-def get_user_email_from_api_key() -> Optional[str]:
-    try:
-        raw_key = get_api_key_from_request_header()
-    except (InvalidAPIKeyException, InvalidAuthorizationHeaderException):
-        return None
-
-    api_key = ApiKey(raw_key=raw_key)
+def get_user_email_from_api_key(token: str) -> Optional[str]:
+    api_key = ApiKey(raw_key=token)
     db_client = get_db_client()
     user_identifiers = db_client.get_user_by_api_key(api_key.key_hash)
     return user_identifiers.email
@@ -165,30 +199,10 @@ def get_authorization_header_from_request() -> str:
         )
 
 
-def get_key_from_authorization_header(
-    authorization_header: str, scheme: str = "Basic"
-) -> str:
-    try:
-        authorization_header_parts = authorization_header.split(" ")
-        if len(authorization_header_parts) != 2:
-            FlaskResponseManager.abort(
-                code=HTTPStatus.BAD_REQUEST,
-                message="Improperly formatted authorization header",
-            )
-        if authorization_header_parts[0] != scheme:
-            raise InvalidAPIKeyException
-        return authorization_header_parts[1]
-    except (ValueError, IndexError, AttributeError):
-        raise InvalidAPIKeyException
-
-
-def get_api_key_from_request_header() -> str:
-    """
-    Validates the API key and checks if the user has the required role to access a specific endpoint.
-    :return:
-    """
-    authorization_header = get_authorization_header_from_request()
-    return get_key_from_authorization_header(authorization_header)
+def bad_request_abort(
+    message: str = "Improperly formatted authorization header",
+):
+    return FlaskResponseManager.abort(code=HTTPStatus.BAD_REQUEST, message=message)
 
 
 def permission_denied_abort() -> None:
@@ -235,8 +249,10 @@ def try_authentication(
     return None
 
 
-def jwt_handler(restrict_to_permissions=None) -> Optional[AccessInfoPrimary]:
-    access_info = JWTService.get_access_info()
+def jwt_handler(
+    token: str, restrict_to_permissions=None
+) -> Optional[AccessInfoPrimary]:
+    access_info = JWTService.get_access_info(token=token)
     if not access_info:
         return None
     if restrict_to_permissions:
@@ -244,8 +260,8 @@ def jwt_handler(restrict_to_permissions=None) -> Optional[AccessInfoPrimary]:
     return access_info
 
 
-def api_key_handler(**kwargs) -> Optional[AccessInfoPrimary]:
-    user_email = get_user_email_from_api_key()
+def api_key_handler(token: str, **kwargs) -> Optional[AccessInfoPrimary]:
+    user_email = get_user_email_from_api_key(token)
     if user_email:
         return AccessInfoPrimary(
             user_email=user_email,
@@ -254,8 +270,12 @@ def api_key_handler(**kwargs) -> Optional[AccessInfoPrimary]:
     return None
 
 
-def password_reset_handler(**kwargs) -> Optional[PasswordResetTokenAccessInfo]:
-    decoded_jwt = decode_jwt_with_purpose(purpose=JWTPurpose.PASSWORD_RESET)
+def password_reset_handler(
+    token: str, **kwargs
+) -> Optional[PasswordResetTokenAccessInfo]:
+    decoded_jwt = decode_jwt_with_purpose(
+        token=token, purpose=JWTPurpose.PASSWORD_RESET
+    )
     return PasswordResetTokenAccessInfo(
         user_id=decoded_jwt.sub["user_id"],
         user_email=decoded_jwt.sub["user_email"],
@@ -263,18 +283,33 @@ def password_reset_handler(**kwargs) -> Optional[PasswordResetTokenAccessInfo]:
     )
 
 
-def validate_email_handler(**kwargs) -> Optional[ValidateEmailTokenAccessInfo]:
-    decoded_jwt = decode_jwt_with_purpose(purpose=JWTPurpose.VALIDATE_EMAIL)
+def validate_email_handler(
+    token: str, **kwargs
+) -> Optional[ValidateEmailTokenAccessInfo]:
+    decoded_jwt = decode_jwt_with_purpose(
+        token=token, purpose=JWTPurpose.VALIDATE_EMAIL
+    )
     return ValidateEmailTokenAccessInfo(
         validate_email_token=decoded_jwt.sub["token"],
     )
 
 
+class AuthMethodConfig(BaseModel):
+    handler: Callable
+    scheme: AuthScheme
+
+
 AUTH_METHODS_MAP = {
-    AccessTypeEnum.JWT: jwt_handler,
-    AccessTypeEnum.API_KEY: api_key_handler,
-    AccessTypeEnum.RESET_PASSWORD: password_reset_handler,
-    AccessTypeEnum.VALIDATE_EMAIL: validate_email_handler,
+    AccessTypeEnum.JWT: AuthMethodConfig(handler=jwt_handler, scheme=AuthScheme.BEARER),
+    AccessTypeEnum.API_KEY: AuthMethodConfig(
+        handler=api_key_handler, scheme=AuthScheme.BASIC
+    ),
+    AccessTypeEnum.RESET_PASSWORD: AuthMethodConfig(
+        handler=password_reset_handler, scheme=AuthScheme.BEARER
+    ),
+    AccessTypeEnum.VALIDATE_EMAIL: AuthMethodConfig(
+        handler=validate_email_handler, scheme=AuthScheme.BEARER
+    ),
 }
 
 
@@ -294,20 +329,30 @@ def get_authentication(
     if no_auth:
         return None
 
+    hai = get_header_auth_info()
+
+    invalid_auth_scheme = False
     for access_method in allowed_access_methods:
-        handler = AUTH_METHODS_MAP.get(access_method)
-        if handler is None:
+        amc: AuthMethodConfig = AUTH_METHODS_MAP.get(access_method)
+        if amc is None:
+            continue
+
+        if hai.auth_scheme != amc.scheme:
+            invalid_auth_scheme = True
             continue
 
         access_info = try_authentication(
             allowed_access_methods=allowed_access_methods,
             access_type=access_method,
-            handler=handler,
+            handler=amc.handler,
+            token=hai.token,
             restrict_to_permissions=restrict_to_permissions,
         )
         if access_info:
             return access_info
 
+    if invalid_auth_scheme:
+        bad_request_abort("Invalid Auth Scheme for endpoint")
     abort(
         code=HTTPStatus.UNAUTHORIZED,
         message=get_authentication_error_message(allowed_access_methods),

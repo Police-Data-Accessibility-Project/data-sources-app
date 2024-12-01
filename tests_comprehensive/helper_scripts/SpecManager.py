@@ -45,6 +45,19 @@ class MethodInfo(BaseModel):
                 return True
         return False
 
+    def has_authorization_header(self, header_name: str):
+        if "parameters" not in self.content:
+            return False
+        parameters = self.content["parameters"]
+        for parameter in parameters:
+            if parameter["in"] != "header":
+                continue
+            if parameter["name"] != "Authorization":
+                continue
+            if header_name in parameter["default"]:
+                return True
+        return False
+
     def pathname(self) -> str:
         return self.parent_path.route_name
 
@@ -95,8 +108,14 @@ class SpecManager:
                 if method_info.has_response(response_status):
                     yield method_info
 
-    def get_methods_with_header(self) -> list[MethodInfo]:
+    def get_methods_with_any_header(self) -> list[MethodInfo]:
         for path_info in self.get_paths():
             for method_info in path_info.get_allowed_method_info():
                 if method_info.has_any_authorization_header():
+                    yield method_info
+
+    def get_methods_with_specific_header(self, header_name: str) -> list[MethodInfo]:
+        for path_info in self.get_paths():
+            for method_info in path_info.get_allowed_method_info():
+                if method_info.has_authorization_header(header_name):
                     yield method_info

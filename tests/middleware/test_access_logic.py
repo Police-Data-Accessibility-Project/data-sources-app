@@ -7,18 +7,11 @@ from middleware.access_logic import (
     get_key_from_authorization_header,
     AccessInfoPrimary,
     check_permissions_with_access_info,
-    get_user_email_from_api_key,
-    get_jwt_access_info_with_permissions,
-)
-from middleware.exceptions import (
-    InvalidAPIKeyException,
-    InvalidAuthorizationHeaderException,
 )
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_mocks_and_patches import (
     patch_request_headers,
-    patch_abort,
 )
 
 
@@ -97,52 +90,3 @@ def test_check_permissions_with_access_info(
         mock_permission_denied_abort.assert_called_once()
     else:
         mock_permission_denied_abort.assert_not_called()
-
-
-@pytest.mark.parametrize(
-    "get_api_key_from_request_header_result, "
-    "get_api_key_from_request_header_side_effect, "
-    "raises_exception,"
-    "expected_result",
-    (
-        # Happy path
-        ("test_api_key", None, False, MagicMock()),
-        (None, InvalidAPIKeyException, True, None),
-        (None, InvalidAuthorizationHeaderException, True, None),
-    ),
-)
-def test_get_user_email_from_api_key(
-    get_api_key_from_request_header_result,
-    get_api_key_from_request_header_side_effect,
-    raises_exception,
-    expected_result,
-    monkeypatch,
-):
-
-    mock_get_api_key_from_request_header = MagicMock(
-        return_value=get_api_key_from_request_header_result
-    )
-    if raises_exception:
-        mock_get_api_key_from_request_header.side_effect = (
-            get_api_key_from_request_header_side_effect
-        )
-    monkeypatch.setattr(
-        "middleware.access_logic.get_api_key_from_request_header",
-        mock_get_api_key_from_request_header,
-    )
-
-    mock = MagicMock()
-
-    monkeypatch.setattr(
-        "middleware.access_logic.get_db_client", MagicMock(return_value=mock.db_client)
-    )
-
-    if not raises_exception:
-        mock.db_client.get_user_by_api_key.return_value = expected_result
-
-    result = get_user_email_from_api_key()
-
-    if raises_exception:
-        assert result is None
-    else:
-        assert result == expected_result.email

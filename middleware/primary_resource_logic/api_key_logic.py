@@ -7,7 +7,7 @@ from werkzeug.security import check_password_hash
 
 from database_client.database_client import DatabaseClient
 from database_client.helper_functions import get_db_client
-from middleware.access_logic import get_api_key_from_request_header
+from middleware.access_logic import get_token_from_request_header, AuthScheme
 from middleware.api_key import ApiKey
 from middleware.exceptions import (
     InvalidAPIKeyException,
@@ -64,7 +64,7 @@ INVALID_API_KEY_MESSAGE = "Please provide an API key in the request header in th
 
 def check_api_key() -> None:
     try:
-        api_key = get_api_key_from_request_header()
+        api_key = get_token_from_request_header(scheme=AuthScheme.BASIC)
         db_client = get_db_client()
         check_api_key_associated_with_user(db_client, api_key)
     except (InvalidAPIKeyException, InvalidAuthorizationHeaderException):

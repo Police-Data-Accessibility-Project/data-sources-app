@@ -35,10 +35,7 @@ class UserUpdatePassword(PsycopgResource):
         auth_info=STANDARD_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.USER_PUT,
         response_info=ResponseInfo(
-            response_dictionary={
-                200: "Success: User password successfully updated",
-                500: "Error: Internal server error",
-            }
+            success_message="Password successfully updated.",
         ),
     )
     def post(self, access_info: AccessInfoPrimary, user_id: int) -> Response:

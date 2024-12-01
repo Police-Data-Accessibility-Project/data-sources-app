@@ -14,7 +14,7 @@ from middleware.primary_resource_logic.login_queries import (
     refresh_session,
 )
 from resources.endpoint_schema_config import SchemaConfigs
-from resources.resource_helpers import add_jwt_header_arg, ResponseInfo
+from resources.resource_helpers import ResponseInfo
 
 from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
@@ -33,12 +33,7 @@ class RefreshSession(PsycopgResource):
         namespace=namespace_refresh_session,
         auth_info=STANDARD_JWT_AUTH_INFO,
         description="Allows a user to refresh their session token.",
-        response_info=ResponseInfo(
-            response_dictionary={
-                HTTPStatus.OK: "OK; Successful session refresh.",
-                HTTPStatus.FORBIDDEN: "Forbidden invalid old session token",
-            }
-        ),
+        response_info=ResponseInfo(success_message="Session token refreshed."),
         schema_config=SchemaConfigs.REFRESH_SESSION,
     )
     def post(self, access_info: AccessInfoPrimary) -> Response:
