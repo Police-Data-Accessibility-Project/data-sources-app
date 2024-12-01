@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 
+from pydantic import BaseModel
 
-@dataclass
-class RequestResetPasswordRequestDTO:
+
+class RequestResetPasswordRequestDTO(BaseModel):
     email: str
     token: str
 
 
-@dataclass
-class ResetPasswordDTO:
+class ResetPasswordDTO(BaseModel):
     password: str

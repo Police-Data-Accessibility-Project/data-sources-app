@@ -7,6 +7,7 @@ import pytest
 from flask_restx import Namespace, Model
 from flask_restx.reqparse import RequestParser
 from marshmallow import Schema, fields, validate, ValidationError
+from pydantic import BaseModel
 
 from tests.helper_scripts.common_mocks_and_patches import patch_request_args_get
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_construction import (
@@ -211,8 +212,7 @@ class ExampleSchemaWithEnum(Schema):
     )
 
 
-@dataclass
-class ExampleDTOWithEnum:
+class ExampleDTOWithEnum(BaseModel):
     example_enum: str
 
 
@@ -253,8 +253,7 @@ class ExampleNestedSchema(Schema):
     )
 
 
-@dataclass
-class ExampleNestedDTO:
+class ExampleNestedDTO(BaseModel):
     example_dto_with_enum: ExampleDTOWithEnum
     example_dto: ExampleDTO
 

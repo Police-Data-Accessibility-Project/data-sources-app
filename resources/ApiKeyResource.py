@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from flask import Response
 
 from middleware.access_logic import NO_AUTH_INFO, AccessInfoPrimary
@@ -22,7 +24,13 @@ class ApiKeyResource(PsycopgResource):
         namespace=namespace_api_key,
         auth_info=NO_AUTH_INFO,
         description="Generates an API key for authenticated users.",
-        response_info=ResponseInfo(success_message="API Key generated."),
+        response_info=ResponseInfo(
+            response_dictionary={
+                HTTPStatus.OK.value: "OK. API key generated.",
+                HTTPStatus.UNAUTHORIZED.value: "Unauthorized. Forbidden or invalid authentication.",
+                HTTPStatus.INTERNAL_SERVER_ERROR.value: "Internal server error.",
+            }
+        ),
         schema_config=SchemaConfigs.API_KEY_POST,
     )
     def post(self, access_info: AccessInfoPrimary) -> Response:

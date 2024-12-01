@@ -1,7 +1,12 @@
 from flask import Response, request
 from flask_restx import fields
 
-from middleware.decorators import api_key_required, permissions_required
+from middleware.access_logic import (
+    GET_AUTH_INFO,
+    AccessInfoPrimary,
+    WRITE_ONLY_AUTH_INFO,
+)
+from middleware.decorators import api_key_required, permissions_required, endpoint_info
 from middleware.primary_resource_logic.archives_queries import (
     archives_get_query,
     update_archives_data,
@@ -11,23 +16,16 @@ import json
 from typing import Any
 
 from middleware.enums import PermissionsEnum
-from resources.resource_helpers import add_api_key_header_arg, add_jwt_header_arg
+from resources.endpoint_schema_config import SchemaConfigs
+from resources.resource_helpers import (
+    add_api_key_header_arg,
+    add_jwt_header_arg,
+    ResponseInfo,
+)
 from utilities.namespace import create_namespace
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
 namespace_archives = create_namespace()
-
-archives_get_model = namespace_archives.model(
-    "ArchivesResponse",
-    {
-        "id": fields.String(description="The ID of the data source"),
-        "last_cached": fields.DateTime(description="The last date the data was cached"),
-        "source_url": fields.String(description="The URL of the data source"),
-        "update_frequency": fields.String(
-            description="The archive update frequency of the data source"
-        ),
-    },
-)
 
 archives_post_model = namespace_archives.model(
     "ArchivesPost",
@@ -53,20 +51,16 @@ class Archives(PsycopgResource):
     A resource for managing archive data, allowing retrieval and update of archived data sources.
     """
 
-    @handle_exceptions
-    @api_key_required
-    @namespace_archives.response(
-        200, "Success: Returns a list of archived data sources", archives_get_model
-    )
-    @namespace_archives.response(400, "Error: Bad request missing or bad API key")
-    @namespace_archives.response(
-        403, "Error: Unauthorized. Forbidden or an invalid API key"
-    )
-    @namespace_archives.doc(
+    @endpoint_info(
+        namespace=namespace_archives,
+        auth_info=GET_AUTH_INFO,
+        schema_config=SchemaConfigs.ARCHIVES_GET,
+        response_info=ResponseInfo(
+            success_message="Returns a list of archived data sources.",
+        ),
         description="Retrieves archived data sources from the database.",
     )
-    @namespace_archives.expect(archives_header_get_parser)
-    def get(self) -> Any:
+    def get(self, access_info: AccessInfoPrimary) -> Any:
         """
         Retrieves archived data sources from the database.
 
@@ -82,19 +76,21 @@ class Archives(PsycopgResource):
 
         return archives_combined_results_clean
 
-    @handle_exceptions
-    @permissions_required(PermissionsEnum.DB_WRITE)
-    @namespace_archives.doc(
-        description="Updates the archive data based on the provided JSON payload.",
-        responses={
-            200: "Success: Returns a status message indicating success or an error message if an exception occurs.",
-            400: "Error: Bad request missing or bad API key",
-            403: "Error: Unauthorized. Forbidden or an invalid API key",
-            500: "Error: Internal server error",
-        },
+    @endpoint_info(
+        namespace=namespace_archives,
+        auth_info=WRITE_ONLY_AUTH_INFO,
+        schema_config=SchemaConfigs.ARCHIVES_PUT,
+        response_info=ResponseInfo(
+            success_message="Successfully updated the archive data.",
+        ),
+        description="""
+        Updates the archive data based on the provided JSON payload.
+        Note that, for this endpoint only, the schema must be provided first as a json string,
+        rather than as a typical JSON object.
+        This will be changed in a later update to conform to the standard JSON schema.
+        """,
     )
-    @namespace_archives.expect(archives_header_post_parser, archives_post_model)
-    def put(self) -> Response:
+    def put(self, access_info: AccessInfoPrimary) -> Response:
         """
         Updates the archive data based on the provided JSON payload.
 

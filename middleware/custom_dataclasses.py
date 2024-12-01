@@ -1,17 +1,18 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from pydantic import BaseModel
+
 from database_client.enums import EntityType, EventType
 from middleware.enums import CallbackFunctionsEnum
 
 
-@dataclass
-class GithubUserInfo:
+class GithubUserInfo(BaseModel):
     """
     Information about a Github user
     """
 
-    user_id: str
+    user_id: int
     user_email: str
 
 
@@ -25,8 +26,7 @@ class FlaskSessionCallbackInfo:
     callback_params: dict
 
 
-@dataclass
-class OAuthCallbackInfo:
+class OAuthCallbackInfo(BaseModel):
     """
     Contains information returned by OAuth in the callback logic
     """

@@ -1,4 +1,3 @@
-from dataclasses import asdict
 from typing import Union
 
 from database_client.database_client import DatabaseClient
@@ -19,7 +18,7 @@ def get_location_id(
         location_info_dict = location_info
         location_info = LocationInfoDTO(**location_info)
     else:
-        location_info_dict = asdict(location_info)
+        location_info_dict = dict(location_info)
 
     location_info_where_mappings = WhereMapping.from_dict(location_info_dict)
     # Get location id

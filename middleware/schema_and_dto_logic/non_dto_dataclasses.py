@@ -1,9 +1,10 @@
-from dataclasses import dataclass
 from typing import Type, Optional, Callable
 
 from flask_restx import Model
 from flask_restx.reqparse import RequestParser
 from marshmallow import Schema
+from pydantic import BaseModel, ConfigDict
+from dataclasses import dataclass
 
 from middleware.schema_and_dto_logic.custom_types import SchemaTypes, DTOTypes
 from utilities.enums import SourceMappingEnum
@@ -11,18 +12,18 @@ from utilities.enums import SourceMappingEnum
 
 @dataclass
 class FlaskRestxDocInfo:
-    parser: RequestParser
-    model: Optional[Model] = None
+    parser: Optional[RequestParser]
+    model: Model = None
 
 
 @dataclass
 class SchemaPopulateParameters:
+
     schema: SchemaTypes
     dto_class: Type[DTOTypes]
 
 
-@dataclass
-class DTOPopulateParameters:
+class DTOPopulateParameters(BaseModel):
     """
     Parameters for the dynamic DTO population function
     """

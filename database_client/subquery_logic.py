@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from functools import partialmethod
+from typing import Optional
 
+from pydantic import BaseModel
 from sqlalchemy.orm import defaultload, joinedload
 from sqlalchemy.sql.base import ExecutableOption
 
@@ -8,15 +10,14 @@ from database_client.models import convert_to_column_reference
 from middleware.enums import Relations
 
 
-@dataclass
-class SubqueryParameters:
+class SubqueryParameters(BaseModel):
     """
     Contains parameters for executing a subquery
     """
 
     relation_name: str
     linking_column: str
-    columns: list[str] = None
+    columns: Optional[list[str]] = None
 
     def set_columns(self, columns: list[str]) -> None:
         self.columns = columns

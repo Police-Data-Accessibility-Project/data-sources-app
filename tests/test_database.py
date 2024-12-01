@@ -403,6 +403,8 @@ def test_approval_status_updated_at(
 def test_qualifying_notifications_view(
     test_data_creator_db_client: TestDataCreatorDBClient,
 ):
+    # Note: Based on testing on 11/30/2024, this test may be wonky on the last day of the month
+
     tdc = test_data_creator_db_client
     tdc.clear_test_data()
     old_date = datetime.now() - timedelta(days=60)
@@ -600,6 +602,8 @@ def test_dependent_locations_view(test_data_creator_db_client: TestDataCreatorDB
 def test_user_pending_notifications_view(
     test_data_creator_db_client: TestDataCreatorDBClient,
 ):
+    # Note: Based on testing on 11/30/2024, this test may be wonky on the last day of the month
+
     notification_valid_date = get_notification_valid_date()
 
     tdc = test_data_creator_db_client

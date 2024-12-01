@@ -452,3 +452,10 @@ class RequestValidator:
             json={"old_password": old_password, "new_password": new_password},
             expected_response_status=expected_response_status,
         )
+
+    def get_api_spec(
+        self,
+    ):
+        return self.get(
+            endpoint="/api/swagger.json",
+        )

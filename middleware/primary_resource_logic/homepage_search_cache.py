@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from http import HTTPStatus
 
 from flask import Response, make_response
+from pydantic import BaseModel
 
 from database_client.database_client import DatabaseClient
 from middleware.common_response_formatting import format_list_response, message_response
@@ -12,8 +13,7 @@ def get_agencies_without_homepage_urls(database_client: DatabaseClient) -> Respo
     return make_response(format_list_response(results), 200)
 
 
-@dataclass
-class SearchCacheEntry:
+class SearchCacheEntry(BaseModel):
     agency_airtable_uid: str
     search_results: list[str]
 

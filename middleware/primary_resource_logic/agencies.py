@@ -96,7 +96,7 @@ def validate_and_add_location_info(
 def create_agency(
     db_client: DatabaseClient, dto: AgenciesPostDTO, access_info: AccessInfoPrimary
 ) -> Response:
-    entry_data = asdict(dto.agency_info)
+    entry_data = dict(dto.agency_info)
     deferred_function = optionally_get_location_info_deferred_function(
         db_client=db_client,
         jurisdiction_type=dto.agency_info.jurisdiction_type,

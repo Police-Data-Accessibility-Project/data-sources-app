@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from marshmallow import Schema, fields, validates_schema, ValidationError
+from pydantic import BaseModel
 
 from middleware.schema_and_dto_logic.schema_helpers import create_get_many_schema
 from middleware.schema_and_dto_logic.util import get_json_metadata
@@ -197,8 +198,7 @@ GetUserFollowedSearchesSchema = create_get_many_schema(
 )
 
 
-@dataclass
-class SearchRequests:
+class SearchRequests(BaseModel):
     state: str
     record_categories: Optional[list[RecordCategories]] = None
     county: Optional[str] = None

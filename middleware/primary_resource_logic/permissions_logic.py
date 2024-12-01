@@ -7,12 +7,14 @@ from flask import Response, make_response
 from flask_jwt_extended import get_jwt_identity
 from flask_restx import abort
 from marshmallow import Schema, fields
+from pydantic import BaseModel
 
 from database_client.database_client import DatabaseClient
 from database_client.helper_functions import get_db_client
 from middleware.exceptions import UserNotFoundError
 from middleware.enums import PermissionsEnum, PermissionsActionEnum
 from middleware.common_response_formatting import message_response
+from middleware.schema_and_dto_logic.util import get_query_metadata
 from utilities.common import get_valid_enum_value
 from utilities.enums import SourceMappingEnum, ParserLocation
 
@@ -24,7 +26,16 @@ allowable_actions_str = "Allowable actions include: \n  * " + "\n  * ".join(
 )
 
 
-class PermissionsRequestSchema(Schema):
+class PermissionsGetRequestSchema(Schema):
+    user_email = fields.Str(
+        required=True,
+        metadata=get_query_metadata(
+            "The email of the user for which to retrieve permissions."
+        ),
+    )
+
+
+class PermissionsPutRequestSchema(Schema):
     user_email = fields.Str(
         required=True,
         metadata={
@@ -49,8 +60,7 @@ class PermissionsRequestSchema(Schema):
     )
 
 
-@dataclass
-class PermissionsRequest:
+class PermissionsRequestDTO(BaseModel):
     user_email: str
     permission: str
     action: str
@@ -116,7 +126,7 @@ def manage_user_permissions(
 
 def update_permissions_wrapper(
     db_client: DatabaseClient,
-    dto: PermissionsRequest,
+    dto: PermissionsRequestDTO,
 ) -> Response:
     action = get_valid_enum_value(PermissionsActionEnum, dto.action)
     permission = get_valid_enum_value(PermissionsEnum, dto.permission)

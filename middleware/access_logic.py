@@ -1,11 +1,12 @@
-from dataclasses import dataclass
 from http import HTTPStatus
 from typing import Optional
 
 from flask import request
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_restx import abort
 from jwt import ExpiredSignatureError
+from pydantic import BaseModel
 
 from database_client.database_client import DatabaseClient
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
@@ -16,11 +17,11 @@ from middleware.exceptions import (
     InvalidAPIKeyException,
     InvalidAuthorizationHeaderException,
 )
+from middleware.flask_response_manager import FlaskResponseManager
 from middleware.primary_resource_logic.permissions_logic import get_user_permissions
 
 
-@dataclass
-class AuthenticationInfo:
+class AuthenticationInfo(BaseModel):
     """
     A dataclass providing information on how the user was authenticated
     """
@@ -62,19 +63,16 @@ class ParserDeterminator:
         return access_type in self.allowed_access_methods
 
 
-@dataclass
-class AccessInfoBase:
-    pass
+class AccessInfoBase(BaseModel):
+    access_type: AccessTypeEnum
 
 
-@dataclass
 class AccessInfoPrimary(AccessInfoBase):
     """
     A dataclass providing information on how the endpoint was accessed
     """
 
     user_email: str
-    access_type: AccessTypeEnum
     user_id: Optional[int] = None
     permissions: list[PermissionsEnum] = None
 
@@ -84,17 +82,15 @@ class AccessInfoPrimary(AccessInfoBase):
         return self.user_id
 
 
-@dataclass
 class PasswordResetTokenAccessInfo(AccessInfoBase):
-    access_type = AccessTypeEnum.RESET_PASSWORD
+    access_type: AccessTypeEnum = AccessTypeEnum.RESET_PASSWORD
     user_id: int
     user_email: str
     reset_token: str
 
 
-@dataclass
 class ValidateEmailTokenAccessInfo(AccessInfoBase):
-    access_type = AccessTypeEnum.VALIDATE_EMAIL
+    access_type: AccessTypeEnum = AccessTypeEnum.VALIDATE_EMAIL
     validate_email_token: str
 
 
@@ -104,7 +100,11 @@ class JWTService:
         try:
             verify_jwt_in_request()
             return get_jwt_identity()
-        except Exception:
+        except NoAuthorizationError:
+            FlaskResponseManager.abort(
+                HTTPStatus.BAD_REQUEST, message="Token is missing"
+            )
+        except Exception as e:
             return None
 
     @staticmethod
@@ -160,7 +160,9 @@ def get_authorization_header_from_request() -> str:
     try:
         return headers["Authorization"]
     except (KeyError, TypeError):
-        raise InvalidAuthorizationHeaderException
+        FlaskResponseManager.abort(
+            code=HTTPStatus.BAD_REQUEST, message="Authorization header missing"
+        )
 
 
 def get_key_from_authorization_header(
@@ -168,6 +170,11 @@ def get_key_from_authorization_header(
 ) -> str:
     try:
         authorization_header_parts = authorization_header.split(" ")
+        if len(authorization_header_parts) != 2:
+            FlaskResponseManager.abort(
+                code=HTTPStatus.BAD_REQUEST,
+                message="Improperly formatted authorization header",
+            )
         if authorization_header_parts[0] != scheme:
             raise InvalidAPIKeyException
         return authorization_header_parts[1]

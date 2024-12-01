@@ -1,9 +1,7 @@
-from dataclasses import dataclass
-from enum import Enum
 from http import HTTPStatus
 from typing import Optional
 
-from flask_restx import abort
+from pydantic import BaseModel, ConfigDict
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import RelationRoleEnum, ColumnPermissionEnum
@@ -112,8 +110,9 @@ def get_relation_role(access_info: AccessInfoPrimary) -> RelationRoleEnum:
     return RelationRoleEnum.STANDARD
 
 
-@dataclass
-class RelationRoleParameters:
+class RelationRoleParameters(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     relation_role_function_with_params: DeferredFunction = DeferredFunction(
         function=get_relation_role,
     )

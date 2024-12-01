@@ -1,15 +1,13 @@
-from dataclasses import dataclass
 from http import HTTPStatus
 
 from flask import Response
 from marshmallow import Schema, fields
+from pydantic import BaseModel
 from werkzeug.security import generate_password_hash
-from typing import Dict
 
 from database_client.database_client import DatabaseClient
 from middleware.common_response_formatting import message_response
 from middleware.exceptions import UserNotFoundError, DuplicateUserError
-from middleware.flask_response_manager import FlaskResponseManager
 from utilities.enums import SourceMappingEnum
 
 
@@ -30,8 +28,7 @@ class UserRequestSchema(Schema):
     )
 
 
-@dataclass
-class UserRequestDTO:
+class UserRequestDTO(BaseModel):
     email: str
     password: str
 

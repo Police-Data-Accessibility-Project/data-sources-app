@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
+from pydantic import BaseModel
 
-@dataclass
-class UserPutDTO:
+
+class UserPutDTO(BaseModel):
     old_password: str
     new_password: str
