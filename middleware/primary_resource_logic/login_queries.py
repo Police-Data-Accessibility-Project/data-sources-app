@@ -3,14 +3,13 @@ from http import HTTPStatus
 from flask import Response, make_response, jsonify
 from flask_jwt_extended import (
     create_access_token,
-    get_jwt_identity,
     create_refresh_token,
     decode_token,
 )
-from sqlalchemy.orm.loading import get_from_identity
 from werkzeug.security import check_password_hash
 
 from database_client.database_client import DatabaseClient
+from middleware.SimpleJWT import JWTPurpose
 from middleware.access_logic import AccessInfoPrimary
 from middleware.exceptions import UserNotFoundError
 from middleware.primary_resource_logic.user_queries import UserRequestDTO
@@ -26,7 +25,10 @@ class JWTAccessRefreshTokens:
             "user_email": email,
             "id": DatabaseClient().get_user_id(email),
         }
-        self.access_token = create_access_token(identity=identity)
+        self.access_token = create_access_token(
+            identity=identity,
+            additional_claims={"purpose": JWTPurpose.STANDARD_ACCESS_TOKEN.value},
+        )
         self.refresh_token = create_refresh_token(identity=identity)
 
 

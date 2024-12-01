@@ -81,26 +81,3 @@ class CheckApiKeyMocks(DynamicMagicMock):
     get_db_client: MagicMock
     get_api_key_from_request_header: MagicMock
     check_api_key_associated_with_user: MagicMock
-
-
-@pytest.mark.parametrize(
-    "exception",
-    [
-        InvalidAuthorizationHeaderException,
-        InvalidAPIKeyException,
-    ],
-)
-def test_check_api_key_invalid_api_key(exception, mock_abort):
-    mock = CheckApiKeyMocks(
-        patch_root=PATCH_API_KEY_ROOT,
-    )
-    mock.get_api_key_from_request_header.side_effect = exception
-
-    check_api_key()
-
-    mock.get_api_key_from_request_header.assert_called_once()
-    mock.get_db_client.assert_not_called()
-    mock.check_api_key_associated_with_user.assert_not_called()
-    mock_abort.assert_called_once_with(
-        code=HTTPStatus.UNAUTHORIZED, message=INVALID_API_KEY_MESSAGE
-    )

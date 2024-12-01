@@ -18,31 +18,12 @@ from typing import Any
 from middleware.enums import PermissionsEnum
 from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import (
-    add_api_key_header_arg,
-    add_jwt_header_arg,
     ResponseInfo,
 )
 from utilities.namespace import create_namespace
-from resources.PsycopgResource import PsycopgResource, handle_exceptions
+from resources.PsycopgResource import PsycopgResource
 
 namespace_archives = create_namespace()
-
-archives_post_model = namespace_archives.model(
-    "ArchivesPost",
-    {
-        "id": fields.String(description="The ID of the data source", required=True),
-        "last_cached": fields.DateTime(description="The last date the data was cached"),
-        "broken_source_url_as_of": fields.Date(
-            description="The date the source was marked as broken"
-        ),
-    },
-)
-
-archives_header_get_parser = namespace_archives.parser()
-add_api_key_header_arg(archives_header_get_parser)
-
-archives_header_post_parser = namespace_archives.parser()
-add_jwt_header_arg(archives_header_post_parser)
 
 
 @namespace_archives.route("/archives")

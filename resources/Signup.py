@@ -52,11 +52,7 @@ class ValidateEmail(PsycopgResource):
         auth_info=VALIDATE_EMAIL_AUTH_INFO,
         description="Validate email address and log in user.",
         response_info=ResponseInfo(
-            response_dictionary={
-                HTTPStatus.OK.value: "OK. User created.",
-                HTTPStatus.UNAUTHORIZED.value: "Unauthorized. Forbidden or invalid authentication.",
-                HTTPStatus.INTERNAL_SERVER_ERROR.value: "Internal server error",
-            }
+            success_message="User validated and logged in.",
         ),
         schema_config=SchemaConfigs.AUTH_VALIDATE_EMAIL,
     )
