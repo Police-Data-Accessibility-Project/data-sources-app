@@ -1,6 +1,5 @@
 from flask import Response, request
 from flask_restx import fields
-from scripts.regsetup import description
 
 from middleware.access_logic import (
     GET_AUTH_INFO,
