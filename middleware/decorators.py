@@ -95,13 +95,21 @@ def endpoint_info(
     auth_info: AuthenticationInfo,
     schema_config: SchemaConfigs,
     response_info: ResponseInfo,
-    **doc_kwargs,
+    description: str = "",
+    **additional_doc_kwargs,
 ):
     """
     A more sophisticated form of `endpoint_info`, with more robust
     schema and response definition.
     Designed to eventually replace all instances of endpoint_info
     """
+
+    doc_kwargs = {"description": description, **additional_doc_kwargs}
+    if auth_info.requires_admin_permissions():
+        doc_kwargs["description"] = (
+            "**Requires admin permissions.**\n" + doc_kwargs["description"]
+        )
+
     if schema_config.value.input_schema is not None:
         input_doc_info = get_restx_param_documentation(
             namespace=namespace,
@@ -224,30 +232,3 @@ def _add_auth_info_to_parser(auth_info: AuthenticationInfo, parser: RequestParse
         header_arg_function(parser)
         return
     raise Exception("Must have at least one access method")
-
-
-def _get_input_doc_info(
-    namespace, input_schema, input_model=None, input_model_name: Optional[str] = None
-) -> FlaskRestxDocInfo:
-    check_for_mutually_exclusive_arguments(input_schema, input_model)
-    if input_model is not None:
-        return FlaskRestxDocInfo(
-            model=input_model,
-            parser=namespace.parser(),
-        )
-    if input_schema is None:
-        return FlaskRestxDocInfo(
-            model=None,
-            parser=namespace.parser(),
-        )
-
-    # Assume input schema is defined
-    return get_restx_param_documentation(
-        namespace=namespace,
-        schema=input_schema,
-        model_name=(
-            input_schema.__class__.__name__
-            if input_model_name is None
-            else input_model_name
-        ),
-    )
