@@ -85,14 +85,7 @@ def _get_data_from_sources(fields: dict, schema: SchemaTypes) -> SourceDataInfo:
         metadata = field_value.metadata
         source: SourceMappingEnum = _get_required_argument("source", metadata, schema)
         if isinstance(field_value, marshmallow.fields.Nested):
-            if source != SourceMappingEnum.JSON:
-                raise InvalidSourceMappingError(
-                    "Nested fields can only be populated from JSON sources"
-                )
-            if "nested_dto_class" not in metadata:
-                raise InvalidSourceMappingError(
-                    "Nested fields must have a 'nested_dto_class' metadata"
-                )
+            _check_for_errors(metadata, source)
             nested_dto_class = metadata["nested_dto_class"]
             nested_dto_info_list.append(
                 NestedDTOInfo(key=field_name, class_=nested_dto_class)
@@ -103,6 +96,17 @@ def _get_data_from_sources(fields: dict, schema: SchemaTypes) -> SourceDataInfo:
         if val is not None:
             data[field_name] = val
     return SourceDataInfo(data=data, nested_dto_info_list=nested_dto_info_list)
+
+
+def _check_for_errors(metadata: dict, source: SourceMappingEnum):
+    if source != SourceMappingEnum.JSON:
+        raise InvalidSourceMappingError(
+            "Nested fields can only be populated from JSON sources"
+        )
+    if "nested_dto_class" not in metadata:
+        raise InvalidSourceMappingError(
+            "Nested fields must have a 'nested_dto_class' metadata"
+        )
 
 
 def _apply_transformation_functions_to_dict(fields: dict, intermediate_data: dict):
