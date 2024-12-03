@@ -30,6 +30,7 @@ def _get_source_getting_function(source: SourceMappingEnum) -> Callable:
             request.json.get(key) if request.json else None
         ),
         SourceMappingEnum.PATH: request.view_args.get,
+        SourceMappingEnum.FILE: request.files.get,
     }
     return source_mapping[source]
 
