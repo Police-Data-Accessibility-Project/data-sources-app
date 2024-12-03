@@ -24,6 +24,7 @@ class SourceMappingEnum(Enum):
     FORM = "form"
     JSON = "json"
     PATH = "path"
+    FILE = "file"
 
 
 class ParserLocation(Enum):
