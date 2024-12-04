@@ -1,4 +1,4 @@
-from typing import Type, Any, Callable, Optional
+from typing import Any, Callable, Optional
 
 from flask import request
 

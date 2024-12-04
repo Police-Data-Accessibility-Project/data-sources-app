@@ -1,4 +1,3 @@
-from importlib.metadata import metadata
 from typing import Type
 
 from marshmallow import Schema, fields
@@ -8,17 +7,6 @@ from middleware.schema_and_dto_logic.common_response_schemas import (
     MessageSchema,
 )
 from middleware.schema_and_dto_logic.util import get_json_metadata
-
-
-def create_post_schema(entry_data_schema: Schema, description: str) -> Type[Schema]:
-    class PostSchema(Schema):
-        entry_data = fields.Nested(
-            entry_data_schema,
-            required=True,
-            metadata=get_json_metadata(description),
-        )
-
-    return PostSchema
 
 
 def create_get_many_schema(data_list_schema: Schema, description: str) -> Type[Schema]:

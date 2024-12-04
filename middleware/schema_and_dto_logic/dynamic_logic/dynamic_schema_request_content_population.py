@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from http import HTTPStatus
 from typing import Type
 
@@ -38,9 +39,7 @@ def populate_schema_with_request_content(
     # Get all declared fields from the schema
     fields = schema.fields
     source_data_info = _get_data_from_sources(fields, schema)
-
     intermediate_data = validate_data(source_data_info.data, schema)
-
     _apply_transformation_functions_to_dict(fields, intermediate_data)
 
     return setup_dto_class(

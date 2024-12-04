@@ -10,7 +10,7 @@ from database_client.enums import (
     DetailLevel,
     AccessType,
     RetentionSchedule,
-    URLStatus,
+    URLStatus, UpdateMethod,
 )
 from middleware.enums import RecordType
 
@@ -30,7 +30,7 @@ class DataSourceEntryDataPostDTO(BaseModel):
     access_types: Optional[List[AccessType]] = None
     data_portal_type: Optional[str] = None
     record_formats: Optional[List[str]] = None
-    update_method: Optional[str] = None
+    update_method: Optional[UpdateMethod] = None
     tags: Optional[List[str]] = None
     readme_url: Optional[str] = None
     originating_entity: Optional[str] = None
