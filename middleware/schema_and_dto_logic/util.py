@@ -23,6 +23,8 @@ def _get_required_argument(
 
 
 def _get_source_getting_function(source: SourceMappingEnum) -> Callable:
+    # TODO: Consider moving this to separate map variable,
+    #        rather than define within the function
     source_mapping: dict[SourceMappingEnum, Callable] = {
         SourceMappingEnum.QUERY_ARGS: request.args.get,
         SourceMappingEnum.FORM: request.form.get,
@@ -30,6 +32,7 @@ def _get_source_getting_function(source: SourceMappingEnum) -> Callable:
             request.json.get(key) if request.json else None
         ),
         SourceMappingEnum.PATH: request.view_args.get,
+        SourceMappingEnum.FILE: request.files.get,
     }
     return source_mapping[source]
 

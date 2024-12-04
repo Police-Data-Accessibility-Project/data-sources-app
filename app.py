@@ -117,6 +117,9 @@ def create_app() -> Flask:
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=15)
     app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 
+    # Other configuration settings
+    app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
+
     app.secret_key = get_flask_app_cookie_encryption_key()
     app.wsgi_app = ReverseProxied(app.wsgi_app)
     CORS(app)
