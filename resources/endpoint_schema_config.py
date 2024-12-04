@@ -463,7 +463,7 @@ class SchemaConfigs(Enum):
         input_dto_class=ResetPasswordDTO,
     )
     RESET_TOKEN_VALIDATION = schema_config_with_message_output()
-    API_KEY_POST = get_user_request_endpoint_schema_config(
+    API_KEY_POST = EndpointSchemaConfig(
         primary_output_schema=APIKeyResponseSchema(),
     )
     # endregion
