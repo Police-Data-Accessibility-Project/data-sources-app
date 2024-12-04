@@ -12,12 +12,20 @@ from middleware.primary_resource_logic.permissions_logic import (
     PermissionsRequestDTO,
     PermissionsGetRequestSchema,
 )
+from middleware.schema_and_dto_logic.primary_resource_dtos.batch_dtos import (
+    BatchRequestDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_dtos.reset_token_dtos import (
     ResetPasswordDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.archives_schemas import (
     ArchivesGetResponseSchema,
     ArchivesPutRequestSchema,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.batch_schemas import (
+    BatchRequestSchema,
+    BatchPostResponseSchema,
+    BatchPutResponseSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.reset_token_schemas import (
     ResetPasswordSchema,
@@ -475,4 +483,18 @@ class SchemaConfigs(Enum):
         input_schema=PermissionsPutRequestSchema(),
         input_dto_class=PermissionsRequestDTO,
     )
+    # endregion
+
+    # region Batch
+    BATCH_POST = EndpointSchemaConfig(
+        input_schema=BatchRequestSchema(),
+        input_dto_class=BatchRequestDTO,
+        primary_output_schema=BatchPostResponseSchema(),
+    )
+    BATCH_PUT = EndpointSchemaConfig(
+        input_schema=BatchRequestSchema(),
+        input_dto_class=BatchRequestDTO,
+        primary_output_schema=BatchPutResponseSchema(),
+    )
+
     # endregion
