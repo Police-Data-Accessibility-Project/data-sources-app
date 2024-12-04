@@ -2,7 +2,11 @@ from http import HTTPStatus
 
 from flask import Response
 
-from middleware.access_logic import NO_AUTH_INFO, AccessInfoPrimary
+from middleware.access_logic import (
+    NO_AUTH_INFO,
+    AccessInfoPrimary,
+    STANDARD_JWT_AUTH_INFO,
+)
 from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.api_key_logic import create_api_key_for_user
 
@@ -22,14 +26,10 @@ class ApiKeyResource(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_api_key,
-        auth_info=NO_AUTH_INFO,
+        auth_info=STANDARD_JWT_AUTH_INFO,
         description="Generates an API key for authenticated users.",
         response_info=ResponseInfo(
-            response_dictionary={
-                HTTPStatus.OK.value: "OK. API key generated.",
-                HTTPStatus.UNAUTHORIZED.value: "Unauthorized. Forbidden or invalid authentication.",
-                HTTPStatus.INTERNAL_SERVER_ERROR.value: "Internal server error.",
-            }
+            success_message="OK. API key generated.",
         ),
         schema_config=SchemaConfigs.API_KEY_POST,
     )
@@ -47,5 +47,5 @@ class ApiKeyResource(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=create_api_key_for_user,
-            schema_populate_parameters=SchemaConfigs.API_KEY_POST.value.get_schema_populate_parameters(),
+            access_info=access_info,
         )
