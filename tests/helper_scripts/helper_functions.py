@@ -92,16 +92,16 @@ def request_reset_password_api(client_with_db, mocker, user_info):
     return mock.call_args[1]["token"]
 
 
-def create_api_key(client_with_db, user_info) -> str:
+def create_api_key(client_with_db, jwt_authorization_header: dict) -> str:
     """
     Obtain an api key for the given user, via a Flask call to the /api-key endpoint
     :param client_with_db:
     :param user_info:
     :return: api_key
     """
+
     response = client_with_db.post(
-        f"/auth{API_KEY_ROUTE}",
-        json={"email": user_info.email, "password": user_info.password},
+        f"/auth{API_KEY_ROUTE}", headers=jwt_authorization_header
     )
     assert (
         response.status_code == HTTPStatus.OK.value
@@ -186,17 +186,18 @@ def create_test_user_setup(
         permissions = [permissions]
     for permission in permissions:
         db_client.add_user_permission(user_id=user_info.user_id, permission=permission)
-    api_key = create_api_key(client, user_info)
     jwt_tokens = login_and_return_jwt_tokens(client, user_info)
+    jwt_authorization_header = get_authorization_header(
+        scheme="Bearer", token=jwt_tokens.access_token
+    )
+    api_key = create_api_key(client, jwt_authorization_header=jwt_authorization_header)
     return TestUserSetup(
         user_info,
         api_key,
         api_authorization_header=get_authorization_header(
             scheme="Basic", token=api_key
         ),
-        jwt_authorization_header=get_authorization_header(
-            scheme="Bearer", token=jwt_tokens.access_token
-        ),
+        jwt_authorization_header=jwt_authorization_header,
     )
 
 

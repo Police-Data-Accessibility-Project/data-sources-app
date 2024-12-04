@@ -7,7 +7,11 @@ from werkzeug.security import check_password_hash
 
 from database_client.database_client import DatabaseClient
 from database_client.helper_functions import get_db_client
-from middleware.access_logic import get_token_from_request_header, AuthScheme
+from middleware.access_logic import (
+    get_token_from_request_header,
+    AuthScheme,
+    AccessInfoPrimary,
+)
 from middleware.api_key import ApiKey
 from middleware.exceptions import (
     InvalidAPIKeyException,
@@ -25,7 +29,9 @@ def hash_api_key(api_key: str) -> str:
     return hashlib.sha256(api_key.encode()).hexdigest()
 
 
-def create_api_key_for_user(db_client: DatabaseClient, dto: UserRequestDTO) -> Response:
+def create_api_key_for_user(
+    db_client: DatabaseClient, access_info: AccessInfoPrimary
+) -> Response:
     """
     Tries to log in a user. If successful, generates API key
 
@@ -34,17 +40,12 @@ def create_api_key_for_user(db_client: DatabaseClient, dto: UserRequestDTO) -> R
     :param password: User's password.
     :return: A response object with a message and status code.
     """
-    user_data = db_client.get_user_info(dto.email)
+    user_id = access_info.get_user_id()
 
-    if check_password_hash(user_data.password_digest, dto.password):
-        api_key = ApiKey()
-        db_client.update_user_api_key(user_id=user_data.id, api_key=api_key.key_hash)
-        payload = {"api_key": api_key.raw_key}
-        return make_response(payload, HTTPStatus.OK)
-
-    return make_response(
-        {"message": "Invalid email or password"}, HTTPStatus.UNAUTHORIZED
-    )
+    api_key = ApiKey()
+    db_client.update_user_api_key(user_id=user_id, api_key=api_key.key_hash)
+    payload = {"api_key": api_key.raw_key}
+    return make_response(payload, HTTPStatus.OK)
 
 
 def api_key_is_associated_with_user(db_client: DatabaseClient, raw_key: str) -> bool:
