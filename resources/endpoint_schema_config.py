@@ -26,6 +26,10 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.batch_schemas impo
     BatchRequestSchema,
     BatchPostResponseSchema,
     BatchPutResponseSchema,
+    AgenciesPutBatchRequestSchema,
+    AgenciesPostBatchRequestSchema,
+    DataSourcesPostBatchRequestSchema,
+    DataSourcesPutBatchRequestSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.reset_token_schemas import (
     ResetPasswordSchema,
@@ -187,8 +191,14 @@ class EndpointSchemaConfig:
         )
 
     def get_schema_populate_parameters(self) -> SchemaPopulateParameters:
+        if "file" in self.input_schema.fields:
+            load_file = True
+        else:
+            load_file = False
         return SchemaPopulateParameters(
-            schema=self.input_schema, dto_class=self.input_dto_class
+            schema=self.input_schema,
+            dto_class=self.input_dto_class,
+            load_file=load_file,
         )
 
 
@@ -486,13 +496,23 @@ class SchemaConfigs(Enum):
     # endregion
 
     # region Batch
-    BATCH_POST = EndpointSchemaConfig(
-        input_schema=BatchRequestSchema(),
+    BATCH_DATA_SOURCES_POST = EndpointSchemaConfig(
+        input_schema=DataSourcesPostBatchRequestSchema(),
         input_dto_class=BatchRequestDTO,
         primary_output_schema=BatchPostResponseSchema(),
     )
-    BATCH_PUT = EndpointSchemaConfig(
-        input_schema=BatchRequestSchema(),
+    BATCH_DATA_SOURCES_PUT = EndpointSchemaConfig(
+        input_schema=DataSourcesPutBatchRequestSchema(),
+        input_dto_class=BatchRequestDTO,
+        primary_output_schema=BatchPutResponseSchema(),
+    )
+    BATCH_AGENCIES_POST = EndpointSchemaConfig(
+        input_schema=AgenciesPutBatchRequestSchema(),
+        input_dto_class=BatchRequestDTO,
+        primary_output_schema=BatchPostResponseSchema(),
+    )
+    BATCH_AGENCIES_PUT = EndpointSchemaConfig(
+        input_schema=AgenciesPostBatchRequestSchema(),
         input_dto_class=BatchRequestDTO,
         primary_output_schema=BatchPutResponseSchema(),
     )

@@ -21,6 +21,7 @@ class SchemaPopulateParameters:
 
     schema: SchemaTypes
     dto_class: Type[DTOTypes]
+    load_file: bool = False
 
 
 class DTOPopulateParameters(BaseModel):

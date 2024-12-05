@@ -11,6 +11,7 @@ from pydantic import BaseModel
 
 from database_client.enums import SortOrder, LocationType
 from middleware.schema_and_dto_logic.custom_fields import DataField
+from middleware.schema_and_dto_logic.enums import CSVColumnCondition
 from middleware.schema_and_dto_logic.non_dto_dataclasses import (
     SchemaPopulateParameters,
     DTOPopulateParameters,
@@ -135,6 +136,7 @@ STATE_ISO_FIELD = fields.Str(
     metadata={
         "description": "The 2 letter ISO code of the state.",
         "source": SourceMappingEnum.JSON,
+        "csv_column_name": CSVColumnCondition.SAME_AS_FIELD,
     },
     validate=validate.Length(2),
 )
@@ -145,6 +147,7 @@ COUNTY_FIPS_FIELD = fields.Str(
         "description": "The unique 5-digit FIPS code of the county."
         "Does not apply to state or federal agencies.",
         "source": SourceMappingEnum.JSON,
+        "csv_column_name": CSVColumnCondition.SAME_AS_FIELD,
     },
     validate=validate.Length(5),
 )
@@ -154,6 +157,7 @@ LOCALITY_NAME_FIELD = fields.Str(
     metadata={
         "description": "The name of the locality.",
         "source": SourceMappingEnum.JSON,
+        "csv_column_name": CSVColumnCondition.SAME_AS_FIELD,
     },
 )
 
@@ -166,6 +170,7 @@ class LocationInfoSchema(Schema):
         metadata={
             "description": "The type of location. ",
             "source": SourceMappingEnum.JSON,
+            "csv_column_name": "location_type",
         },
     )
     state_iso = STATE_ISO_FIELD

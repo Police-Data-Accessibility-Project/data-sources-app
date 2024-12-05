@@ -3,7 +3,7 @@ import tempfile
 
 
 class MultipleTemporaryFiles:
-    def __init__(self, suffixes: list[str], mode="w+", encoding="utf-8", delete=True):
+    def __init__(self, suffixes: list[str], mode="w+", encoding="utf-8", delete=False):
         if not isinstance(suffixes, list) or len(suffixes) == 0:
             raise ValueError("Suffixes must be a non-empty list.")
 

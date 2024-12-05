@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import TextIO, Optional
+from typing import TextIO, Optional, Annotated
 
 import pytest
 
@@ -13,6 +13,12 @@ import tempfile
 
 from conftest import test_data_creator_flask, monkeysession
 from database_client.enums import LocationType
+from middleware.schema_and_dto_logic.primary_resource_schemas.batch_schemas import (
+    AgenciesPostRequestFlatBaseSchema,
+    DataSourcesPostRequestFlatBaseSchema,
+    AgenciesPutRequestFlatBaseSchema,
+    DataSourcesPutRequestFlatBaseSchema,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_base_schema import (
     DataRequestsSchema,
 )
@@ -21,13 +27,15 @@ from tests.helper_scripts.helper_classes.MultipleTemporaryFiles import (
     MultipleTemporaryFiles,
 )
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
-    SchemaTestDataGenerator,
     generate_test_data_from_schema,
 )
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+
+
+SUFFIX_ARRAY = [".csv", ".csv", ".inv", ".csv"]
 
 
 # Helper scripts
@@ -71,6 +79,48 @@ class TestCSVCreator:
         writer = DictWriter(file, fieldnames=self.fields.keys())
         for row in rows:
             writer.writerow(row)
+        file.close()
+
+
+@dataclass
+class BatchTestRunner:
+    tdc: TestDataCreatorFlask
+    csv_creator: TestCSVCreator
+    schema: Optional[Annotated[Schema, "The schema to use in the test"]] = None
+
+
+@pytest.fixture
+def runner(
+    test_data_creator_flask: TestDataCreatorFlask,
+):
+    return BatchTestRunner(
+        tdc=test_data_creator_flask,
+        csv_creator=TestCSVCreator(AgenciesPostRequestFlatBaseSchema()),
+    )
+
+
+@pytest.fixture
+def agencies_post_runner(runner: BatchTestRunner):
+    runner.schema = AgenciesPostRequestFlatBaseSchema()
+    return runner
+
+
+@pytest.fixture
+def sources_post_runner(runner: BatchTestRunner):
+    runner.schema = DataSourcesPostRequestFlatBaseSchema()
+    return runner
+
+
+@pytest.fixture
+def agencies_put_runner(runner: BatchTestRunner):
+    runner.schema = AgenciesPutRequestFlatBaseSchema()
+    return runner
+
+
+@pytest.fixture
+def sources_put_runner(runner: BatchTestRunner):
+    runner.schema = DataSourcesPutRequestFlatBaseSchema()
+    return runner
 
 
 def run_insert_test(runner: TestRunner):
@@ -121,8 +171,6 @@ def run_insert_test(runner: TestRunner):
 #     # File 4 should contain two rows which are duplicates with each other.
 #     # These rows should be rejected but all others accepted
 #     pytest.fail("Not implemented")
-#
-#
 
 
 def test_batch_requests_insert(
@@ -142,10 +190,9 @@ def test_batch_requests_insert(
                     "request_urgency",
                     "coverage_range",
                 ]
-            )
+            ),
+            override=override,
         )
-        if override is not None:
-            request_info.update(override)
         location_infos = [
             {
                 "state": "Pennsylvania",
@@ -156,9 +203,7 @@ def test_batch_requests_insert(
         ]
         return {"request_info": request_info, "location_infos": location_infos}
 
-    with MultipleTemporaryFiles(
-        suffixes=[".csv", ".csv", ".inv", ".csv"]
-    ) as temp_files:
+    with MultipleTemporaryFiles(suffixes=SUFFIX_ARRAY) as temp_files:
         test_files = TestFiles(
             file_no_errors=temp_files[0],
             file_with_errors=temp_files[1],
@@ -182,8 +227,6 @@ def test_batch_requests_insert(
             file=test_files.file_duplicates,
             rows=[dict_to_duplicate, generate_test_data(), dict_to_duplicate],
         )
-        for file in temp_files:
-            file.close()
 
         runner = TestRunner(
             resource_type=ResourceType.REQUEST,
@@ -196,8 +239,15 @@ def test_batch_requests_insert(
     # pytest.fail("Not implemented")
 
 
-def test_batch_requests_update(
-    test_data_creator_flask: TestDataCreatorFlask,
+#
+# def test_batch_requests_update(
+#     test_data_creator_flask: TestDataCreatorFlask,
+# ):
+#     pytest.fail("Not implemented")
+
+
+def test_batch_agencies_insert_happy_path(
+    agencies_post_runner: BatchTestRunner,
 ):
     pytest.fail("Not implemented")
 
@@ -205,6 +255,30 @@ def test_batch_requests_update(
 def test_batch_agencies_insert(
     test_data_creator_flask: TestDataCreatorFlask,
 ):
+    schema = AgenciesPostRequestFlatBaseSchema()
+    csv_creator = TestCSVCreator(schema=schema)
+
+    def generate_test_data(override: Optional[dict] = None):
+        return generate_test_data_from_schema(schema=schema)
+
+    data = generate_test_data()
+
+    with MultipleTemporaryFiles(suffixes=SUFFIX_ARRAY) as temp_files:
+        test_files = TestFiles(
+            file_no_errors=temp_files[0],
+            file_with_errors=temp_files[1],
+            file_incorrect_type=temp_files[2],
+            file_duplicates=temp_files[3],
+        )
+        csv_creator.create_csv(
+            file=test_files.file_no_errors,
+            rows=[
+                generate_test_data(),
+                generate_test_data(),
+                generate_test_data(),
+            ],
+        )
+
     pytest.fail("Not implemented")
 
 

@@ -54,7 +54,7 @@ PARSER_FIELDS = [
 PARSER_SOURCE_LOCATION_MAP = {
     SourceMappingEnum.QUERY_ARGS: "query",
     SourceMappingEnum.PATH: "path",
-    SourceMappingEnum.FILE: "files",
+    SourceMappingEnum.FILE: "file",
 }
 
 

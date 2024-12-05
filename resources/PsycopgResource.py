@@ -139,6 +139,7 @@ class PsycopgResource(Resource):
             dto = populate_schema_with_request_content(
                 schema=schema_populate_parameters.schema,
                 dto_class=schema_populate_parameters.dto_class,
+                load_file=schema_populate_parameters.load_file,
             )
         with self.setup_database_client() as db_client:
             response = wrapper_function(db_client, dto=dto, **wrapper_kwargs)

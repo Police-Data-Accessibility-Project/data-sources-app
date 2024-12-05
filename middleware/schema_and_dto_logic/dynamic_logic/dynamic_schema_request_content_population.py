@@ -3,10 +3,14 @@ from http import HTTPStatus
 from typing import Type
 
 import marshmallow
+from flask import request
 from pydantic import BaseModel
 
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.custom_types import SchemaTypes, DTOTypes
+from middleware.schema_and_dto_logic.primary_resource_dtos.batch_dtos import (
+    BatchRequestDTO,
+)
 from middleware.schema_and_dto_logic.util import (
     _get_required_argument,
     _get_source_getting_function,
@@ -25,7 +29,7 @@ class SourceDataInfo(BaseModel):
 
 
 def populate_schema_with_request_content(
-    schema: SchemaTypes, dto_class: Type[DTOTypes]
+    schema: SchemaTypes, dto_class: Type[DTOTypes], load_file: bool = False
 ) -> DTOTypes:
     """
     Populates a marshmallow schema with request content, given custom arguments in the schema fields
@@ -37,6 +41,9 @@ def populate_schema_with_request_content(
     :return:
     """
     # Get all declared fields from the schema
+    if load_file:
+
+        return BatchRequestDTO(file=request.files.get("file"), csv_schema=schema)
     fields = schema.fields
     source_data_info = _get_data_from_sources(fields, schema)
     intermediate_data = validate_data(source_data_info.data, schema)

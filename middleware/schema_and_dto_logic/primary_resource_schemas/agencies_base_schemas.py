@@ -6,6 +6,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     COUNTY_FIPS_FIELD,
     LOCALITY_NAME_FIELD,
 )
+from middleware.schema_and_dto_logic.enums import CSVColumnCondition
 from utilities.enums import SourceMappingEnum
 
 
@@ -15,6 +16,7 @@ def get_submitted_name_field(required: bool) -> fields.Str:
         metadata={
             "description": "The name of the agency.",
             "source": SourceMappingEnum.JSON,
+            "csv_column_name": CSVColumnCondition.SAME_AS_FIELD,
         },
     )
 
@@ -27,6 +29,7 @@ def get_jurisdiction_type_field(required: bool) -> fields.Enum:
         metadata={
             "description": "The highest level of jurisdiction of the agency.",
             "source": SourceMappingEnum.JSON,
+            "csv_column_name": CSVColumnCondition.SAME_AS_FIELD,
         },
     )
 
@@ -37,6 +40,7 @@ class AgencyInfoBaseSchema(Schema):
         metadata={
             "description": "The URL of the agency's homepage.",
             "source": SourceMappingEnum.JSON,
+            "csv_column_name": CSVColumnCondition.SAME_AS_FIELD,
         },
     )
     lat = fields.Float(
@@ -45,6 +49,7 @@ class AgencyInfoBaseSchema(Schema):
         metadata={
             "description": "The latitude of the agency's location.",
             "source": SourceMappingEnum.JSON,
+            "csv_column_name": CSVColumnCondition.SAME_AS_FIELD,
         },
     )
     lng = fields.Float(
@@ -53,6 +58,7 @@ class AgencyInfoBaseSchema(Schema):
         metadata={
             "description": "The longitude of the agency's location.",
             "source": SourceMappingEnum.JSON,
+            "csv_column_name": CSVColumnCondition.SAME_AS_FIELD,
         },
     )
     defunct_year = fields.Str(
@@ -61,6 +67,7 @@ class AgencyInfoBaseSchema(Schema):
         metadata={
             "description": "If present, denotes an agency which has defunct but may still have relevant records.",
             "source": SourceMappingEnum.JSON,
+            "csv_column_name": CSVColumnCondition.SAME_AS_FIELD,
         },
     )
     agency_type = fields.Enum(
@@ -72,6 +79,7 @@ class AgencyInfoBaseSchema(Schema):
         metadata={
             "description": "The type of agency.",
             "source": SourceMappingEnum.JSON,
+            "csv_column_name": CSVColumnCondition.SAME_AS_FIELD,
         },
     )
     multi_agency = fields.Bool(
@@ -80,6 +88,7 @@ class AgencyInfoBaseSchema(Schema):
         metadata={
             "description": "Whether the agency is a multi-agency.",
             "source": SourceMappingEnum.JSON,
+            "csv_column_name": CSVColumnCondition.SAME_AS_FIELD,
         },
     )
     zip_code = fields.Str(
@@ -88,6 +97,7 @@ class AgencyInfoBaseSchema(Schema):
         metadata={
             "description": "The zip code of the agency's location.",
             "source": SourceMappingEnum.JSON,
+            "csv_column_name": CSVColumnCondition.SAME_AS_FIELD,
         },
         # TODO: Re-enable when all zip codes are of expected length
         # validate=validate.Length(min=5),
@@ -98,6 +108,7 @@ class AgencyInfoBaseSchema(Schema):
         metadata={
             "description": "True when an agency does not have a dedicated website.",
             "source": SourceMappingEnum.JSON,
+            "csv_column_name": CSVColumnCondition.SAME_AS_FIELD,
         },
     )
     approved = fields.Bool(
@@ -130,6 +141,7 @@ class AgencyInfoBaseSchema(Schema):
         metadata={
             "description": "The contact information of the user who submitted the agency.",
             "source": SourceMappingEnum.JSON,
+            "csv_column_name": CSVColumnCondition.SAME_AS_FIELD,
         },
     )
 
