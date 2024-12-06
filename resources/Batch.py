@@ -1,5 +1,6 @@
-from middleware.access_logic import WRITE_ONLY_AUTH_INFO, STANDARD_JWT_AUTH_INFO
+from middleware.access_logic import WRITE_ONLY_AUTH_INFO, STANDARD_JWT_AUTH_INFO, AccessInfoPrimary
 from middleware.decorators import endpoint_info
+from middleware.primary_resource_logic.batch_logic import batch_post_agency
 from resources.PsycopgResource import PsycopgResource
 from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import ResponseInfo
@@ -30,8 +31,12 @@ class AgenciesBatch(PsycopgResource):
             success_message="At least some resources created successfully."
         ),
     )
-    def post(self):
-        pass
+    def post(self, access_info: AccessInfoPrimary):
+        self.run_endpoint(
+            wrapper_function=batch_post_agency,
+            access_info=access_info,
+            schema_populate_parameters=SchemaConfigs.BATCH_AGENCIES_POST.value.get_schema_populate_parameters(),
+        )
 
     @endpoint_info(
         namespace=namespace_batch,
@@ -44,7 +49,7 @@ class AgenciesBatch(PsycopgResource):
             success_message="At least some resources updated successfully."
         ),
     )
-    def put(self):
+    def put(self, access_info: AccessInfoPrimary):
         pass
 
 
@@ -62,7 +67,7 @@ class DataSourcesBatch(PsycopgResource):
             success_message="At least some resources created successfully."
         ),
     )
-    def post(self):
+    def post(self, access_info: AccessInfoPrimary):
         pass
 
     @endpoint_info(
@@ -76,5 +81,5 @@ class DataSourcesBatch(PsycopgResource):
             success_message="At least some resources updated successfully."
         ),
     )
-    def put(self):
+    def put(self, access_info: AccessInfoPrimary):
         pass

@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass
 from enum import Enum
 from typing import TextIO, Optional, Annotated
@@ -88,6 +89,12 @@ class BatchTestRunner:
     csv_creator: TestCSVCreator
     schema: Optional[Annotated[Schema, "The schema to use in the test"]] = None
 
+    def generate_test_data(self, override: Optional[dict] = None):
+        return generate_test_data_from_schema(
+            schema=self.schema,
+            override=override
+        )
+
 
 @pytest.fixture
 def runner(
@@ -172,6 +179,32 @@ def run_insert_test(runner: TestRunner):
 #     # These rows should be rejected but all others accepted
 #     pytest.fail("Not implemented")
 
+class SimpleTempFile:
+
+    def __init__(self, suffix: str = ".csv"):
+        self.suffix = suffix
+        self.temp_file = None
+
+    def __enter__(self):
+        self.temp_file = tempfile.NamedTemporaryFile(
+            mode="w+",
+            encoding="utf-8",
+            suffix=self.suffix,
+            delete=False
+        )
+        return self.temp_file
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        try:
+            self.temp_file.close()
+            os.unlink(self.temp_file.name)
+        except Exception as e:
+            print(f"Error cleaning up temporary file {self.temp_file.name}: {e}")
+
+
+
+
+
 
 def test_batch_requests_insert(
     test_data_creator_flask: TestDataCreatorFlask,
@@ -249,7 +282,26 @@ def test_batch_requests_insert(
 def test_batch_agencies_insert_happy_path(
     agencies_post_runner: BatchTestRunner,
 ):
-    pytest.fail("Not implemented")
+    runner = agencies_post_runner
+    rows = [runner.generate_test_data() for _ in range(3)]
+    with SimpleTempFile() as temp_file:
+        runner.csv_creator.create_csv(
+            file=temp_file,
+            rows=rows
+        )
+        data = runner.tdc.request_validator.insert_agencies_batch(
+            file=temp_file,
+            headers=runner.tdc.get_admin_tus().jwt_authorization_header
+        )
+
+    ids = data["ids"]
+
+    for row, id in zip(rows, ids):
+        data = runner.tdc.request_validator.get_agency_by_id(
+            id=id,
+            headers=runner.tdc.get_admin_tus()
+        )
+        assert row.items() <= data.items()
 
 
 def test_batch_agencies_insert(

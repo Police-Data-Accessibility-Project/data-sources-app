@@ -3,6 +3,7 @@ Class based means to run and validate requests
 """
 
 from http import HTTPStatus
+from io import BytesIO
 from typing import Optional, Type, Union
 
 from flask.testing import FlaskClient
@@ -459,3 +460,27 @@ class RequestValidator:
         return self.get(
             endpoint="/api/swagger.json",
         )
+
+    def insert_agencies_batch(
+            self,
+            file: BytesIO,
+            headers: dict
+    ):
+        return self.post(
+            endpoint="/api/batch/agencies",
+            headers=headers,
+            file=file
+        )
+
+    def get_agency_by_id(
+        self,
+        headers: dict,
+        id: int
+    ):
+        return self.get(
+            endpoint=f"/api/agencies/{id}",
+            headers=headers,
+            expected_schema=SchemaConfigs.AGENCIES_BY_ID_GET.value.primary_output_schema,
+        )
+
+
