@@ -61,6 +61,7 @@ def post_entry(
     relation_role_parameters: RelationRoleParameters = RelationRoleParameters(),
     post_logic_class: Optional[Type[PostLogic]] = PostLogic,
     check_for_permission: bool = True,
+    make_response: bool = True,
 ) -> Response:
 
     post_logic = post_logic_class(
@@ -70,7 +71,9 @@ def post_entry(
         relation_role_parameters=relation_role_parameters,
         check_for_permission=check_for_permission,
     )
-    return post_logic.execute()
+    return post_logic.execute(
+        make_response=make_response
+    )
 
 
 def try_to_add_entry(middleware_parameters: MiddlewareParameters, entry: dict) -> str:

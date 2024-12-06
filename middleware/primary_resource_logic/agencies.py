@@ -94,7 +94,11 @@ def validate_and_add_location_info(
 
 
 def create_agency(
-    db_client: DatabaseClient, dto: AgenciesPostDTO, access_info: AccessInfoPrimary
+    db_client: DatabaseClient,
+    dto: AgenciesPostDTO,
+    access_info: AccessInfoPrimary,
+    make_response: bool = True,
+    check_for_permissions: bool = True
 ) -> Response:
     entry_data = dict(dto.agency_info)
     deferred_function = optionally_get_location_info_deferred_function(
@@ -114,6 +118,8 @@ def create_agency(
         ),
         entry=entry_data,
         pre_insertion_function_with_parameters=deferred_function,
+        check_for_permission=check_for_permissions,
+        make_response=make_response,
     )
 
 

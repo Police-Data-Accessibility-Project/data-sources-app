@@ -5,10 +5,7 @@ from typing import TextIO, Optional, Annotated
 
 import pytest
 
-from pathlib import Path
-
 from marshmallow import Schema
-from pydantic import BaseModel
 from csv import DictWriter
 import tempfile
 
@@ -24,6 +21,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_base
     DataRequestsSchema,
 )
 from resources.endpoint_schema_config import EndpointSchemaConfig, SchemaConfigs
+from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.MultipleTemporaryFiles import (
     MultipleTemporaryFiles,
 )
@@ -77,7 +75,11 @@ class TestCSVCreator:
         self.fields = schema.fields
 
     def create_csv(self, file: TextIO, rows: list[dict]):
-        writer = DictWriter(file, fieldnames=self.fields.keys())
+        header = list(self.fields.keys())
+        writer = DictWriter(file, fieldnames=header)
+        # Write header row using header
+        writer.writerow({field: field for field in header})
+
         for row in rows:
             writer.writerow(row)
         file.close()
@@ -279,11 +281,23 @@ def test_batch_requests_insert(
 #     pytest.fail("Not implemented")
 
 
+def generate_agencies_locality_data():
+    locality_name = get_test_name()
+    return {
+        "location_type": LocationType.LOCALITY.value,
+        "locality_name": locality_name,
+        "county_fips": "42003",
+        "state_iso": "PA",
+    }
+
+
 def test_batch_agencies_insert_happy_path(
     agencies_post_runner: BatchTestRunner,
 ):
     runner = agencies_post_runner
-    rows = [runner.generate_test_data() for _ in range(3)]
+
+    locality_info = generate_agencies_locality_data()
+    rows = [runner.generate_test_data(override=locality_info) for _ in range(3)]
     with SimpleTempFile() as temp_file:
         runner.csv_creator.create_csv(
             file=temp_file,

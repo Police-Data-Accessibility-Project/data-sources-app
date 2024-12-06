@@ -83,7 +83,7 @@ class PutPostBase(ABC):
     def make_response(self) -> Response:
         raise NotImplementedError
 
-    def execute(self) -> Response:
+    def execute(self, make_response: bool = True) -> Response:
         if self.check_for_permission:
             relation_role = (
                 self.relation_role_parameters.get_relation_role_from_parameters(
@@ -94,7 +94,8 @@ class PutPostBase(ABC):
         self.pre_database_client_method_logic()
         self.call_database_client_method()
         self.post_database_client_method_logic()
-        return self.make_response()
+        if make_response:
+            return self.make_response()
 
     def post_database_client_method_logic(self):
         return
