@@ -14,8 +14,10 @@ class UserNotFoundError(Exception):
 class DuplicateUserError(Exception):
     pass
 
+
 class InvalidAPIKeyException(Exception):
     pass
+
 
 class InvalidAuthorizationHeaderException(Exception):
     pass

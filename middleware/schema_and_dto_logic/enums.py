@@ -12,4 +12,5 @@ class CSVColumnCondition(Enum):
     SAME_AS_FIELD: Indicates that the csv column
     should be the same as the field in the schema
     """
+
     SAME_AS_FIELD = "SAME_AS_FIELD"
