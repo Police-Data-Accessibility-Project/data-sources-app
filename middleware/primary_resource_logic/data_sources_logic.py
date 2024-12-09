@@ -102,7 +102,6 @@ def data_source_by_id_wrapper(
             access_info=access_info,
             relation=Relations.DATA_SOURCES_EXPANDED.value,
             db_client_method=DatabaseClient.get_data_sources,
-            db_client=db_client,
             entry_name="data source",
             subquery_parameters=SUBQUERY_PARAMS,
         ),
@@ -132,7 +131,6 @@ def delete_data_source_wrapper(
             access_info=access_info,
             relation=RELATION,
             db_client_method=DatabaseClient.delete_data_source,
-            db_client=db_client,
             entry_name="data source",
         ),
         id_info=IDInfo(
@@ -160,7 +158,6 @@ def update_data_source_wrapper(
     optionally_add_last_approval_editor(entry_data, access_info)
     return put_entry(
         middleware_parameters=MiddlewareParameters(
-            db_client=db_client,
             entry_name="Data source",
             relation=RELATION,
             db_client_method=DatabaseClient.update_data_source,
@@ -305,7 +302,6 @@ def create_data_source_related_agency(
 ) -> Response:
     post_logic = CreateDataSourceRelatedAgenciesLogic(
         middleware_parameters=MiddlewareParameters(
-            db_client=db_client,
             access_info=access_info,
             entry_name="Data source-agency association",
             relation=RELATION,
@@ -324,7 +320,6 @@ def delete_data_source_related_agency(
 ) -> Response:
     return delete_entry(
         middleware_parameters=MiddlewareParameters(
-            db_client=db_client,
             access_info=access_info,
             entry_name="Data source-agency association",
             relation=Relations.LINK_AGENCIES_DATA_SOURCES.value,
