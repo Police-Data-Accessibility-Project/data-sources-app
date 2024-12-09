@@ -139,13 +139,15 @@ class JWTService:
 
     @staticmethod
     def get_access_info(token: str):
-        simple_jwt = SimpleJWT.decode(token, purpose=JWTPurpose.STANDARD_ACCESS_TOKEN)
-        identity = JWTService.get_identity()
-        if identity:
-            return get_jwt_access_info_with_permissions(
-                user_email=identity["user_email"], user_id=identity["id"]
+        try:
+            simple_jwt = SimpleJWT.decode(
+                token, purpose=JWTPurpose.STANDARD_ACCESS_TOKEN
             )
-        return None
+        except Exception:
+            return None
+        return get_jwt_access_info_with_permissions(
+            user_email=simple_jwt.sub["user_email"], user_id=simple_jwt.sub["id"]
+        )
 
 
 def get_token_from_request_header(scheme: AuthScheme):

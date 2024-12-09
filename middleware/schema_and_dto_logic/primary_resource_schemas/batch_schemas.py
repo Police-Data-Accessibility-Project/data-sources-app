@@ -81,24 +81,14 @@ class BatchPostResponseSchema(MessageSchema):
         required=True,
         metadata=get_json_metadata("The ids of the resources created"),
     )
-    errors = fields.List(
-        fields.String(
-            metadata=get_json_metadata(
-                "The errors associated with resources not created"
-            )
-        ),
+    errors = fields.Dict(
         required=True,
         metadata=get_json_metadata("The errors associated with resources not created"),
     )
 
 
 class BatchPutResponseSchema(MessageSchema):
-    errors = fields.List(
-        fields.String(
-            metadata=get_json_metadata(
-                "The errors associated with resources not updated"
-            )
-        ),
+    errors = fields.Dict(
         required=True,
         metadata=get_json_metadata("The errors associated with resources not updated"),
     )

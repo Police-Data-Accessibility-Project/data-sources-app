@@ -1,7 +1,8 @@
 import os
 from dataclasses import dataclass
 from enum import Enum
-from typing import TextIO, Optional, Annotated
+from http import HTTPStatus
+from typing import TextIO, Optional, Annotated, Callable
 
 import pytest
 
@@ -11,28 +12,28 @@ import tempfile
 
 from conftest import test_data_creator_flask, monkeysession
 from database_client.enums import LocationType
+from middleware.primary_resource_logic.batch_logic import listify_strings
+from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
+from middleware.schema_and_dto_logic.dynamic_logic.dynamic_csv_to_schema_conversion_logic import (
+    SchemaUnflattener,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.batch_schemas import (
     AgenciesPostRequestFlatBaseSchema,
     DataSourcesPostRequestFlatBaseSchema,
     AgenciesPutRequestFlatBaseSchema,
     DataSourcesPutRequestFlatBaseSchema,
+    AgenciesPutBatchRequestSchema,
+    DataSourcesPutBatchRequestSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_base_schema import (
-    DataRequestsSchema,
-)
-from resources.endpoint_schema_config import EndpointSchemaConfig, SchemaConfigs
 from tests.helper_scripts.common_test_data import get_test_name
-from tests.helper_scripts.helper_classes.MultipleTemporaryFiles import (
-    MultipleTemporaryFiles,
-)
+from tests.helper_scripts.common_test_functions import assert_contains_key_value_pairs
+from tests.helper_scripts.helper_classes.RequestValidator import RequestValidator
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,
 )
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-
 
 SUFFIX_ARRAY = [".csv", ".csv", ".inv", ".csv"]
 
@@ -54,21 +55,6 @@ def get_endpoint_nomenclature(
     return resource_type.value.replace("_", "-")
 
 
-@dataclass
-class TestFiles:
-    file_no_errors: TextIO
-    file_with_errors: TextIO
-    file_incorrect_type: TextIO
-    file_duplicates: TextIO
-
-
-@dataclass
-class TestRunner:
-    resource_type: ResourceType
-    test_data_creator: TestDataCreatorFlask
-    test_files: TestFiles
-
-
 class TestCSVCreator:
 
     def __init__(self, schema: Schema):
@@ -85,6 +71,22 @@ class TestCSVCreator:
         file.close()
 
 
+def stringify_list_of_ints(l: list):
+    for i in range(len(l)):
+        l[i] = str(l[i])
+    return l
+
+
+def stringify_lists(d: dict):
+    for k, v in d.items():
+        if isinstance(v, dict):
+            stringify_lists(v)
+        if isinstance(v, list):
+            v = stringify_list_of_ints(v)
+            d[k] = ",".join(v)
+    return d
+
+
 @dataclass
 class BatchTestRunner:
     tdc: TestDataCreatorFlask
@@ -92,10 +94,11 @@ class BatchTestRunner:
     schema: Optional[Annotated[Schema, "The schema to use in the test"]] = None
 
     def generate_test_data(self, override: Optional[dict] = None):
-        return generate_test_data_from_schema(
-            schema=self.schema,
-            override=override
+        test_data = generate_test_data_from_schema(
+            schema=self.schema, override=override
         )
+        stringify_lists(d=test_data)
+        return test_data
 
 
 @pytest.fixture
@@ -109,77 +112,42 @@ def runner(
 
 
 @pytest.fixture
-def agencies_post_runner(runner: BatchTestRunner):
-    runner.schema = AgenciesPostRequestFlatBaseSchema()
-    return runner
+def agencies_post_runner(
+    test_data_creator_flask: TestDataCreatorFlask,
+):
+    return BatchTestRunner(
+        tdc=test_data_creator_flask,
+        csv_creator=TestCSVCreator(AgenciesPostRequestFlatBaseSchema()),
+        schema=AgenciesPostRequestFlatBaseSchema(),
+    )
 
 
 @pytest.fixture
-def sources_post_runner(runner: BatchTestRunner):
-    runner.schema = DataSourcesPostRequestFlatBaseSchema()
-    return runner
+def data_sources_post_runner(test_data_creator_flask: TestDataCreatorFlask):
+    return BatchTestRunner(
+        tdc=test_data_creator_flask,
+        csv_creator=TestCSVCreator(DataSourcesPostRequestFlatBaseSchema()),
+        schema=DataSourcesPostRequestFlatBaseSchema(),
+    )
 
 
 @pytest.fixture
-def agencies_put_runner(runner: BatchTestRunner):
-    runner.schema = AgenciesPutRequestFlatBaseSchema()
-    return runner
+def agencies_put_runner(test_data_creator_flask):
+    return BatchTestRunner(
+        tdc=test_data_creator_flask,
+        csv_creator=TestCSVCreator(AgenciesPutBatchRequestSchema(exclude=["file"])),
+        schema=AgenciesPutRequestFlatBaseSchema(),
+    )
 
 
 @pytest.fixture
-def sources_put_runner(runner: BatchTestRunner):
-    runner.schema = DataSourcesPutRequestFlatBaseSchema()
-    return runner
+def data_sources_put_runner(runner: BatchTestRunner):
+    return BatchTestRunner(
+        tdc=runner.tdc,
+        csv_creator=TestCSVCreator(DataSourcesPutBatchRequestSchema(exclude=["file"])),
+        schema=DataSourcesPutRequestFlatBaseSchema(),
+    )
 
-
-def run_insert_test(runner: TestRunner):
-    endpoint_nomenclature = get_endpoint_nomenclature(runner.resource_type)
-    batch_endpoint = f"/batch/{endpoint_nomenclature}"
-    tf = runner.test_files
-
-    def run_endpoint(file: TextIO):
-        return run_and_validate_request(
-            endpoint=batch_endpoint,
-            http_method="post",
-            flask_client=runner.test_data_creator.flask_client,
-            file=file,
-        ).json
-
-    # File 1 should occur without error
-    # For all ids returned, confirm their presence
-    data = run_endpoint(tf.file_no_errors)
-
-    # File 2 should contain two errors and one correct value
-    # For all ids returned without error, confirm their presence.
-    data = run_endpoint(tf.file_with_errors)
-
-    # File 3 should be of an incorrect file type
-    data = run_endpoint(tf.file_incorrect_type)
-
-    # File 4 should contain two rows which are duplicates with each other
-    # These rows should be rejected by all others accepted
-    data = run_endpoint(tf.file_duplicates)
-
-    pytest.fail("Not implemented")
-
-
-#
-# def run_update_test(
-#     runner: TestRunner
-# ):
-#
-#     # File 1 should occur without error
-#     # For all ids returned, confirm the attributes are correct
-#         # via GET-BY-ID request to relevant endpoint
-#
-#     # File 2 should contain two errors and one correct value
-#     # For all ids returned without error, confirm their attributes are correct.
-#
-#     # File 3 should be of an incorrect file type
-#
-#     # File 4 should contain two rows which are duplicates with each other.
-#     # These rows should be rejected but all others accepted
-#     pytest.fail("Not implemented")
 
 class SimpleTempFile:
 
@@ -189,10 +157,7 @@ class SimpleTempFile:
 
     def __enter__(self):
         self.temp_file = tempfile.NamedTemporaryFile(
-            mode="w+",
-            encoding="utf-8",
-            suffix=self.suffix,
-            delete=False
+            mode="w+", encoding="utf-8", suffix=self.suffix, delete=False
         )
         return self.temp_file
 
@@ -202,83 +167,6 @@ class SimpleTempFile:
             os.unlink(self.temp_file.name)
         except Exception as e:
             print(f"Error cleaning up temporary file {self.temp_file.name}: {e}")
-
-
-
-
-
-
-def test_batch_requests_insert(
-    test_data_creator_flask: TestDataCreatorFlask,
-):
-    tdc = test_data_creator_flask
-    schema = SchemaConfigs.DATA_REQUESTS_POST.value.input_schema
-    csv_creator = TestCSVCreator(schema=schema)
-
-    def generate_test_data(override: Optional[dict] = None):
-        request_info = generate_test_data_from_schema(
-            schema=DataRequestsSchema(
-                only=[
-                    "title",
-                    "submission_notes",
-                    "data_requirements",
-                    "request_urgency",
-                    "coverage_range",
-                ]
-            ),
-            override=override,
-        )
-        location_infos = [
-            {
-                "state": "Pennsylvania",
-                "county": "Allegheny",
-                "locality": "Pittsburgh",
-                "type": LocationType.LOCALITY.value,
-            }
-        ]
-        return {"request_info": request_info, "location_infos": location_infos}
-
-    with MultipleTemporaryFiles(suffixes=SUFFIX_ARRAY) as temp_files:
-        test_files = TestFiles(
-            file_no_errors=temp_files[0],
-            file_with_errors=temp_files[1],
-            file_incorrect_type=temp_files[2],
-            file_duplicates=temp_files[3],
-        )
-        csv_creator.create_csv(
-            file=test_files.file_no_errors,
-            rows=[generate_test_data(), generate_test_data(), generate_test_data()],
-        )
-        csv_creator.create_csv(
-            file=test_files.file_with_errors,
-            rows=[
-                generate_test_data(override={"title": None}),
-                generate_test_data(),
-                generate_test_data(override={"request_urgency": "gibberish"}),
-            ],
-        )
-        dict_to_duplicate = generate_test_data()
-        csv_creator.create_csv(
-            file=test_files.file_duplicates,
-            rows=[dict_to_duplicate, generate_test_data(), dict_to_duplicate],
-        )
-
-        runner = TestRunner(
-            resource_type=ResourceType.REQUEST,
-            test_data_creator=tdc,
-            test_files=test_files,
-        )
-
-        run_insert_test(runner=runner)
-
-    # pytest.fail("Not implemented")
-
-
-#
-# def test_batch_requests_update(
-#     test_data_creator_flask: TestDataCreatorFlask,
-# ):
-#     pytest.fail("Not implemented")
 
 
 def generate_agencies_locality_data():
@@ -291,6 +179,41 @@ def generate_agencies_locality_data():
     }
 
 
+def create_csv_and_run(
+    runner: BatchTestRunner,
+    rows: list[dict],
+    request_validator_method: Callable,
+    suffix: str = ".csv",
+    expected_response_status: HTTPStatus = HTTPStatus.OK,
+    expected_schema: Optional[Schema] = None,
+):
+    if expected_schema is not None:
+        kwargs = {
+            "expected_schema": expected_schema,
+        }
+    else:
+        kwargs = {}
+
+    with SimpleTempFile(suffix=suffix) as temp_file:
+        runner.csv_creator.create_csv(file=temp_file, rows=rows)
+        return request_validator_method(
+            bop=RequestValidator.BatchOperationParams(
+                file=temp_file,
+                headers=runner.tdc.get_admin_tus().jwt_authorization_header,
+                expected_response_status=expected_response_status,
+            ),
+            **kwargs,
+        )
+
+
+def check_for_errors(data: dict, check_ids: bool = True):
+    if check_ids:
+        ids = data["ids"]
+        assert len(ids) == 1
+    assert len(data["errors"]) == 2, f"Incorrect number of errors: {data['errors']}"
+    assert "0", "2" in data["errors"].keys()
+
+
 def test_batch_agencies_insert_happy_path(
     agencies_post_runner: BatchTestRunner,
 ):
@@ -298,69 +221,251 @@ def test_batch_agencies_insert_happy_path(
 
     locality_info = generate_agencies_locality_data()
     rows = [runner.generate_test_data(override=locality_info) for _ in range(3)]
-    with SimpleTempFile() as temp_file:
-        runner.csv_creator.create_csv(
-            file=temp_file,
-            rows=rows
-        )
-        data = runner.tdc.request_validator.insert_agencies_batch(
-            file=temp_file,
-            headers=runner.tdc.get_admin_tus().jwt_authorization_header
-        )
+    data = create_csv_and_run(
+        runner=runner,
+        rows=rows,
+        request_validator_method=runner.tdc.request_validator.insert_agencies_batch,
+    )
 
     ids = data["ids"]
 
+    unflattener = SchemaUnflattener(flat_schema_class=AgenciesPostRequestFlatBaseSchema)
+
     for row, id in zip(rows, ids):
+        unflattened_row = unflattener.unflatten(flat_data=row)
         data = runner.tdc.request_validator.get_agency_by_id(
-            id=id,
-            headers=runner.tdc.get_admin_tus()
+            id=id, headers=runner.tdc.get_admin_tus().jwt_authorization_header
         )
-        assert row.items() <= data.items()
-
-
-def test_batch_agencies_insert(
-    test_data_creator_flask: TestDataCreatorFlask,
-):
-    schema = AgenciesPostRequestFlatBaseSchema()
-    csv_creator = TestCSVCreator(schema=schema)
-
-    def generate_test_data(override: Optional[dict] = None):
-        return generate_test_data_from_schema(schema=schema)
-
-    data = generate_test_data()
-
-    with MultipleTemporaryFiles(suffixes=SUFFIX_ARRAY) as temp_files:
-        test_files = TestFiles(
-            file_no_errors=temp_files[0],
-            file_with_errors=temp_files[1],
-            file_incorrect_type=temp_files[2],
-            file_duplicates=temp_files[3],
+        assert_contains_key_value_pairs(
+            dict_to_check=data["data"], key_value_pairs=unflattened_row["agency_info"]
         )
-        csv_creator.create_csv(
-            file=test_files.file_no_errors,
-            rows=[
-                generate_test_data(),
-                generate_test_data(),
-                generate_test_data(),
-            ],
+        assert data["data"]["locality_name"] == row["locality_name"]
+
+
+def test_batch_agencies_insert_some_errors(
+    agencies_post_runner: BatchTestRunner,
+):
+    runner = agencies_post_runner
+
+    rows = [
+        runner.generate_test_data(override={"lat": "not a number"}),
+        runner.generate_test_data(override=generate_agencies_locality_data()),
+        runner.generate_test_data(override={"location_type": ""}),
+    ]
+    data = create_csv_and_run(
+        runner=runner,
+        rows=rows,
+        request_validator_method=runner.tdc.request_validator.insert_agencies_batch,
+    )
+
+    check_for_errors(data)
+
+
+def test_batch_agencies_insert_wrong_file_type(
+    agencies_post_runner: BatchTestRunner,
+):
+    runner = agencies_post_runner
+    create_csv_and_run(
+        runner=agencies_post_runner,
+        rows=[],
+        suffix=".json",
+        request_validator_method=runner.tdc.request_validator.insert_agencies_batch,
+        expected_response_status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
+        expected_schema=MessageSchema(),
+    )
+
+
+def test_batch_agencies_update_happy_path(
+    agencies_put_runner: BatchTestRunner,
+):
+    runner = agencies_put_runner
+    agencies = [runner.tdc.agency() for _ in range(3)]
+    locality_info = generate_agencies_locality_data()
+    rows = [
+        runner.generate_test_data(override={**locality_info, "id": agencies[i].id})
+        for i in range(3)
+    ]
+    data = create_csv_and_run(
+        runner=runner,
+        rows=rows,
+        request_validator_method=runner.tdc.request_validator.update_agencies_batch,
+    )
+
+    ids = [agencies[i].id for i in range(3)]
+
+    unflattener = SchemaUnflattener(flat_schema_class=AgenciesPutRequestFlatBaseSchema)
+
+    for row, id in zip(rows, ids):
+        unflattened_row = unflattener.unflatten(flat_data=row)
+        data = runner.tdc.request_validator.get_agency_by_id(
+            id=id, headers=runner.tdc.get_admin_tus().jwt_authorization_header
+        )
+        assert_contains_key_value_pairs(
+            dict_to_check=data["data"], key_value_pairs=unflattened_row["agency_info"]
+        )
+        assert data["data"]["locality_name"] == row["locality_name"]
+
+
+def test_batch_agencies_update_some_errors(
+    agencies_put_runner: BatchTestRunner,
+):
+    runner = agencies_put_runner
+    locality_info = generate_agencies_locality_data()
+    agencies = [runner.tdc.agency() for _ in range(3)]
+    rows = [
+        runner.generate_test_data(
+            override={"lat": "not a number", "id": agencies[0].id}
+        ),
+        runner.generate_test_data(override={**locality_info, "id": agencies[1].id}),
+        runner.generate_test_data(override={"location_type": "", "id": agencies[2].id}),
+    ]
+    data = create_csv_and_run(
+        runner=runner,
+        rows=rows,
+        request_validator_method=runner.tdc.request_validator.update_agencies_batch,
+    )
+    check_for_errors(data, check_ids=False)
+
+
+def test_batch_agencies_update_wrong_file_type(
+    agencies_put_runner: BatchTestRunner,
+):
+    runner = agencies_put_runner
+    create_csv_and_run(
+        runner=agencies_put_runner,
+        rows=[],
+        suffix=".json",
+        request_validator_method=runner.tdc.request_validator.update_agencies_batch,
+        expected_response_status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
+        expected_schema=MessageSchema(),
+    )
+
+
+def test_batch_data_sources_insert_happy_path(
+    data_sources_post_runner: BatchTestRunner,
+):
+    runner = data_sources_post_runner
+    rows = [
+        runner.generate_test_data(override={"linked_agency_ids": [1, 2, 3]})
+        for _ in range(3)
+    ]
+    data = create_csv_and_run(
+        runner=runner,
+        rows=rows,
+        request_validator_method=runner.tdc.request_validator.insert_data_sources_batch,
+    )
+    ids = data["ids"]
+    unflattener = SchemaUnflattener(
+        flat_schema_class=DataSourcesPostRequestFlatBaseSchema
+    )
+
+    for row, id in zip(rows, ids):
+        unflattened_row = unflattener.unflatten(flat_data=row)
+        data = runner.tdc.request_validator.get_data_source_by_id(
+            id=id, headers=runner.tdc.get_admin_tus().jwt_authorization_header
+        )
+        listify_strings([unflattened_row["entry_data"]])
+        assert_contains_key_value_pairs(
+            dict_to_check=data["data"],
+            key_value_pairs=unflattened_row["entry_data"],
         )
 
-    pytest.fail("Not implemented")
 
-
-def test_batch_agencies_update(
-    test_data_creator_flask: TestDataCreatorFlask,
+def test_batch_data_sources_insert_some_errors(
+    data_sources_post_runner: BatchTestRunner,
 ):
-    pytest.fail("Not implemented")
+    runner = data_sources_post_runner
+    rows = [
+        runner.generate_test_data(override={"linked_agency_ids": "not a list"}),
+        runner.generate_test_data(override={"linked_agency_ids": [1, 2, 3]}),
+        runner.generate_test_data(override={"coverage_start": "not a date"}),
+    ]
+    data = create_csv_and_run(
+        runner=runner,
+        rows=rows,
+        request_validator_method=runner.tdc.request_validator.insert_data_sources_batch,
+    )
+    check_for_errors(data)
 
 
-def test_batch_sources_insert(
-    test_data_creator_flask: TestDataCreatorFlask,
+def test_batch_data_sources_insert_wrong_file_type(
+    data_sources_post_runner: BatchTestRunner,
 ):
-    pytest.fail("Not implemented")
+    runner = data_sources_post_runner
+    create_csv_and_run(
+        runner=data_sources_post_runner,
+        rows=[],
+        suffix=".json",
+        request_validator_method=runner.tdc.request_validator.insert_data_sources_batch,
+        expected_response_status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
+        expected_schema=MessageSchema(),
+    )
 
 
-def test_batch_sources_update(
-    test_data_creator_flask: TestDataCreatorFlask,
+def test_batch_data_sources_update_happy_path(
+    data_sources_put_runner: BatchTestRunner,
 ):
-    pytest.fail("Not implemented")
+    runner = data_sources_put_runner
+    data_sources = [runner.tdc.data_source() for i in range(3)]
+    rows = [
+        runner.generate_test_data(override={"id": data_sources[i].id}) for i in range(3)
+    ]
+    data = create_csv_and_run(
+        runner=runner,
+        rows=rows,
+        request_validator_method=runner.tdc.request_validator.update_data_sources_batch,
+    )
+
+    ids = [data_source.id for data_source in data_sources]
+
+    unflattener = SchemaUnflattener(
+        flat_schema_class=DataSourcesPutRequestFlatBaseSchema
+    )
+    for row, id in zip(rows, ids):
+        unflattened_row = unflattener.unflatten(flat_data=row)
+        data = runner.tdc.request_validator.get_data_source_by_id(
+            id=id, headers=runner.tdc.get_admin_tus().jwt_authorization_header
+        )
+        listify_strings([unflattened_row["entry_data"]])
+        assert_contains_key_value_pairs(
+            dict_to_check=data["data"],
+            key_value_pairs=unflattened_row["entry_data"],
+        )
+
+
+def test_batch_data_sources_update_some_errors(
+    data_sources_put_runner: BatchTestRunner,
+):
+    runner = data_sources_put_runner
+
+    data_sources = [runner.tdc.data_source() for i in range(3)]
+    rows = [
+        runner.generate_test_data(
+            override={"id": data_sources[0].id, "access_types": "A String"}
+        ),
+        runner.generate_test_data(override={"id": data_sources[1].id}),
+        runner.generate_test_data(
+            override={"id": data_sources[2].id, "record_type_name": "Not a record type"}
+        ),
+    ]
+
+    data = create_csv_and_run(
+        runner=runner,
+        rows=rows,
+        request_validator_method=runner.tdc.request_validator.update_data_sources_batch,
+    )
+    check_for_errors(data, check_ids=False)
+
+
+def test_batch_data_sources_update_wrong_file_type(
+    data_sources_put_runner: BatchTestRunner,
+):
+    runner = data_sources_put_runner
+    create_csv_and_run(
+        runner=data_sources_put_runner,
+        rows=[],
+        suffix=".json",
+        request_validator_method=runner.tdc.request_validator.update_data_sources_batch,
+        expected_response_status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
+        expected_schema=MessageSchema(),
+    )

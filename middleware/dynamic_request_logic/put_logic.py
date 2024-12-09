@@ -11,7 +11,19 @@ from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     PutPostBase,
+    PostPutHandler,
+    PutPostRequestInfo,
 )
+
+
+class PutHandler(PostPutHandler):
+
+    def call_database_client_method(self, request: PutPostRequestInfo):
+        self.mp.db_client_method(
+            self.mp.db_client,
+            column_edit_mappings=request.entry,
+            entry_id=request.entry_id,
+        )
 
 
 class PutLogic(PutPostBase):

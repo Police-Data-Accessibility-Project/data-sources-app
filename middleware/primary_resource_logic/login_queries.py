@@ -1,3 +1,4 @@
+from datetime import timedelta, timezone, datetime
 from http import HTTPStatus
 
 from flask import Response, make_response, jsonify
@@ -9,7 +10,7 @@ from flask_jwt_extended import (
 from werkzeug.security import check_password_hash
 
 from database_client.database_client import DatabaseClient
-from middleware.SimpleJWT import JWTPurpose
+from middleware.SimpleJWT import JWTPurpose, SimpleJWT
 from middleware.access_logic import AccessInfoPrimary
 from middleware.exceptions import UserNotFoundError
 from middleware.primary_resource_logic.user_queries import UserRequestDTO
@@ -25,10 +26,16 @@ class JWTAccessRefreshTokens:
             "user_email": email,
             "id": DatabaseClient().get_user_id(email),
         }
-        self.access_token = create_access_token(
-            identity=identity,
-            additional_claims={"purpose": JWTPurpose.STANDARD_ACCESS_TOKEN.value},
+        simple_jwt = SimpleJWT(
+            sub=identity,
+            exp=(datetime.now(tz=timezone.utc) + timedelta(minutes=15)).timestamp(),
+            purpose=JWTPurpose.STANDARD_ACCESS_TOKEN,
         )
+        self.access_token = simple_jwt.encode()
+        # self.access_token = create_access_token(
+        #     identity=identity,
+        #     additional_claims={"purpose": JWTPurpose.STANDARD_ACCESS_TOKEN.value},
+        # )
         self.refresh_token = create_refresh_token(identity=identity)
 
 

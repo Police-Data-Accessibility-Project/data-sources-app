@@ -1,6 +1,17 @@
-from middleware.access_logic import WRITE_ONLY_AUTH_INFO, STANDARD_JWT_AUTH_INFO, AccessInfoPrimary
+from flask import Response
+
+from middleware.access_logic import (
+    WRITE_ONLY_AUTH_INFO,
+    STANDARD_JWT_AUTH_INFO,
+    AccessInfoPrimary,
+)
 from middleware.decorators import endpoint_info
-from middleware.primary_resource_logic.batch_logic import batch_post_agency
+from middleware.primary_resource_logic.batch_logic import (
+    batch_post_agencies,
+    batch_post_data_sources,
+    batch_put_agencies,
+    batch_put_data_sources,
+)
 from resources.PsycopgResource import PsycopgResource
 from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import ResponseInfo
@@ -31,10 +42,9 @@ class AgenciesBatch(PsycopgResource):
             success_message="At least some resources created successfully."
         ),
     )
-    def post(self, access_info: AccessInfoPrimary):
-        self.run_endpoint(
-            wrapper_function=batch_post_agency,
-            access_info=access_info,
+    def post(self, access_info: AccessInfoPrimary) -> Response:
+        return self.run_endpoint(
+            wrapper_function=batch_post_agencies,
             schema_populate_parameters=SchemaConfigs.BATCH_AGENCIES_POST.value.get_schema_populate_parameters(),
         )
 
@@ -50,7 +60,10 @@ class AgenciesBatch(PsycopgResource):
         ),
     )
     def put(self, access_info: AccessInfoPrimary):
-        pass
+        return self.run_endpoint(
+            wrapper_function=batch_put_agencies,
+            schema_populate_parameters=SchemaConfigs.BATCH_AGENCIES_PUT.value.get_schema_populate_parameters(),
+        )
 
 
 @namespace_batch.route("/data-sources")
@@ -68,7 +81,10 @@ class DataSourcesBatch(PsycopgResource):
         ),
     )
     def post(self, access_info: AccessInfoPrimary):
-        pass
+        return self.run_endpoint(
+            wrapper_function=batch_post_data_sources,
+            schema_populate_parameters=SchemaConfigs.BATCH_DATA_SOURCES_POST.value.get_schema_populate_parameters(),
+        )
 
     @endpoint_info(
         namespace=namespace_batch,
@@ -82,4 +98,8 @@ class DataSourcesBatch(PsycopgResource):
         ),
     )
     def put(self, access_info: AccessInfoPrimary):
-        pass
+
+        return self.run_endpoint(
+            wrapper_function=batch_put_data_sources,
+            schema_populate_parameters=SchemaConfigs.BATCH_DATA_SOURCES_PUT.value.get_schema_populate_parameters(),
+        )

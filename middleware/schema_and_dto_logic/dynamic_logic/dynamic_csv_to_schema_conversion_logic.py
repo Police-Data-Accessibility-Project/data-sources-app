@@ -4,8 +4,10 @@ from typing import Optional, Type, Dict, Any
 
 from marshmallow.fields import Field
 
-from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import \
-    get_nested_dto_info_list, SourceDataInfo
+from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import (
+    get_nested_dto_info_list,
+    SourceDataInfo,
+)
 from middleware.schema_and_dto_logic.enums import CSVColumnCondition
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advanced_schemas import (
     DataSourcesPostSchema,
@@ -19,6 +21,7 @@ class FlatSchema(Schema):
     """
     A custom schema class that enforces flatness.
     """
+
     origin_schema: Type[Schema]
 
     def __init__(self, *args, **kwargs):
@@ -94,7 +97,9 @@ def extract_field_path_value_mapping(
         # Check if the field is a nested schema
         if isinstance(field, fields.Nested) and isinstance(field.schema, Schema):
             # Recursively extract nested schema metadata
-            nested_metadata = extract_field_path_value_mapping(field.schema, key, current_path)
+            nested_metadata = extract_field_path_value_mapping(
+                field.schema, key, current_path
+            )
             metadata.extend(nested_metadata)
 
         # Check if the field is a list with a nested schema
@@ -113,7 +118,9 @@ def get_csv_columns_from_schema(schema: Schema) -> list[FieldPathValueMapping]:
     Go through all fields which have `csv_column_name` metadata
     and add their full path to the mapping
     """
-    fieldpath_value_mapping = extract_field_path_value_mapping(schema, "csv_column_name")
+    fieldpath_value_mapping = extract_field_path_value_mapping(
+        schema, "csv_column_name"
+    )
     return fieldpath_value_mapping
 
 
@@ -126,7 +133,7 @@ def generate_flat_csv_schema(
     fpvms = get_csv_columns_from_schema(schema)
     new_fields = {}
     schema_class = schema.__class__
-    new_fields['origin_schema'] = schema_class
+    new_fields["origin_schema"] = schema_class
     for fpvm in fpvms:
         new_fields[fpvm.name] = copy.copy(fpvm.field)
     if additional_fields is not None:
@@ -149,6 +156,7 @@ def create_csv_column_to_field_map(
 
     return csv_column_to_field_map
 
+
 def set_nested_value(d: dict, path: list[str], value: Any):
     """
     Sets a value in a nested dictionary based on a given path.
@@ -165,6 +173,7 @@ def set_nested_value(d: dict, path: list[str], value: Any):
         current = current[key]
     current[path[-1]] = value
 
+
 class SchemaUnflattener:
 
     def __init__(self, flat_schema_class: Type[FlatSchema]):
@@ -177,12 +186,15 @@ class SchemaUnflattener:
     def unflatten(self, flat_data: dict) -> dict:
         data = {}
         for fpvm in self.fpvms:
+            if fpvm.name not in flat_data:
+                continue
             set_nested_value(
                 d=data,
                 path=fpvm.field_path,
                 value=flat_data[fpvm.name],
             )
         return data
+
 
 if __name__ == "__main__":
     mapping = get_csv_columns_from_schema(schema=DataSourcesPostSchema())

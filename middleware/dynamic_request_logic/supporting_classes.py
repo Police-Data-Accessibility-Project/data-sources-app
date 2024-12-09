@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Optional, Union
+from enum import Enum, auto
+from typing import Optional, Union, Any
 
 from flask import Response
+from pydantic import BaseModel
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import RelationRoleEnum
@@ -22,9 +24,9 @@ class MiddlewareParameters:
     Contains parameters for the middleware functions
     """
 
-    access_info: AccessInfoPrimary
     relation: str
     db_client_method: callable
+    access_info: Optional[AccessInfoPrimary] = None
     db_client: DatabaseClient = DatabaseClient()
     # Additional arguments for the Database Client method beyond those provided in the given method
     db_client_additional_args: dict = field(default_factory=dict)
@@ -44,6 +46,58 @@ class IDInfo:
         self.where_mappings = additional_where_mappings or {}
         if id_column_value is not None:
             self.where_mappings[id_column_name] = id_column_value
+
+
+class PutPostRequestInfo(BaseModel):
+    """
+    A DTO for the post/put request
+
+    :param request_id: the id of the request
+    :param entry: the entry information for the request
+    :param entry_id: the id of the entry to be updated, OR the id of the entry created
+    :param error_message: the error message, if any
+    """
+
+    request_id: int = 1
+    entry: dict
+    dto: Optional[Any] = None
+    entry_id: Optional[int] = None
+    error_message: Optional[str] = None
+
+
+class PostPutHandler(ABC):
+
+    def __init__(
+        self,
+        middleware_parameters: MiddlewareParameters,
+    ):
+        self.mp = middleware_parameters
+
+    def pre_execute(self, request: PutPostRequestInfo):
+        return
+
+    @abstractmethod
+    def call_database_client_method(self, request: PutPostRequestInfo):
+        raise NotImplementedError
+
+    def execute(
+        self,
+        request: PutPostRequestInfo,
+    ):
+        self.pre_execute(request=request)
+        result = self.call_database_client_method(request=request)
+        self.post_execute(request=request)
+        return result
+
+    def post_execute(self, request: PutPostRequestInfo):
+        return
+
+    def mass_execute(self, requests: list[PutPostRequestInfo]):
+        for request in requests:
+            try:
+                self.execute(request=request)
+            except Exception as e:
+                request.error_message = str(e)
 
 
 class PutPostBase(ABC):

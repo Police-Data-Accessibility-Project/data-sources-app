@@ -32,6 +32,16 @@ def get_enum_values(en: type[Enum]) -> list[str]:
     return [e.value for e in en]
 
 
+def dict_enums_to_values(d: dict[str, Any]) -> dict[str, Any]:
+    """
+    Convert enums within a dictionary to their values.
+    """
+    for key, value in d.items():
+        if isinstance(value, Enum):
+            d[key] = value.value
+    return d
+
+
 def dataclass_to_filtered_dict(instance: Any) -> Dict[str, Any]:
     """
     Convert a dataclass instance to a dictionary, filtering out any None values.

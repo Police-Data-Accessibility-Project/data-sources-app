@@ -101,6 +101,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     TypeaheadQuerySchema,
     EmailOnlyDTO,
     EmailOnlySchema,
+    EntryCreateUpdateRequestDTO,
 )
 from middleware.schema_and_dto_logic.custom_types import DTOTypes
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
@@ -114,6 +115,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_
 from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
     AgenciesPostDTO,
     RelatedAgencyByIDDTO,
+    AgenciesPutDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_advanced_schemas import (
     GetManyDataRequestsResponseSchema,
@@ -136,6 +138,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advan
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.data_sources_dtos import (
     DataSourcesPostDTO,
+    DataSourcesPutDTO,
 )
 from middleware.schema_and_dto_logic.common_response_schemas import (
     IDAndMessageSchema,
@@ -498,22 +501,22 @@ class SchemaConfigs(Enum):
     # region Batch
     BATCH_DATA_SOURCES_POST = EndpointSchemaConfig(
         input_schema=DataSourcesPostBatchRequestSchema(),
-        input_dto_class=BatchRequestDTO,
+        input_dto_class=DataSourcesPostDTO,
         primary_output_schema=BatchPostResponseSchema(),
     )
     BATCH_DATA_SOURCES_PUT = EndpointSchemaConfig(
         input_schema=DataSourcesPutBatchRequestSchema(),
-        input_dto_class=BatchRequestDTO,
+        input_dto_class=DataSourcesPutDTO,
         primary_output_schema=BatchPutResponseSchema(),
     )
     BATCH_AGENCIES_POST = EndpointSchemaConfig(
-        input_schema=AgenciesPutBatchRequestSchema(),
-        input_dto_class=BatchRequestDTO,
+        input_schema=AgenciesPostBatchRequestSchema(),
+        input_dto_class=AgenciesPostDTO,
         primary_output_schema=BatchPostResponseSchema(),
     )
     BATCH_AGENCIES_PUT = EndpointSchemaConfig(
-        input_schema=AgenciesPostBatchRequestSchema(),
-        input_dto_class=BatchRequestDTO,
+        input_schema=AgenciesPutBatchRequestSchema(),
+        input_dto_class=AgenciesPutDTO,
         primary_output_schema=BatchPutResponseSchema(),
     )
 

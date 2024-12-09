@@ -29,7 +29,7 @@ class SourceDataInfo(BaseModel):
 
 
 def populate_schema_with_request_content(
-        schema: SchemaTypes, dto_class: Type[DTOTypes], load_file: bool = False
+    schema: SchemaTypes, dto_class: Type[DTOTypes], load_file: bool = False
 ) -> DTOTypes:
     """
     Populates a marshmallow schema with request content, given custom arguments in the schema fields
@@ -43,8 +43,7 @@ def populate_schema_with_request_content(
     # Get all declared fields from the schema
     if load_file:
         return BatchRequestDTO(
-            file=request.files.get("file"),
-            csv_schema=schema.__class__(exclude=["id", "file"])
+            file=request.files.get("file"), csv_schema=schema, inner_dto_class=dto_class
         )
     fields = schema.fields
     source_data_info = get_source_data_info_from_sources(schema)
@@ -52,12 +51,14 @@ def populate_schema_with_request_content(
     _apply_transformation_functions_to_dict(fields, intermediate_data)
 
     return setup_dto_class(
-        intermediate_data, dto_class, source_data_info.nested_dto_info_list
+        data=intermediate_data,
+        dto_class=dto_class,
+        nested_dto_info_list=source_data_info.nested_dto_info_list,
     )
 
 
 def setup_dto_class(
-        data: dict, dto_class: Type[DTOTypes], nested_dto_info_list: list[NestedDTOInfo]
+    data: dict, dto_class: Type[DTOTypes], nested_dto_info_list: list[NestedDTOInfo]
 ):
     for nested_dto_info in nested_dto_info_list:
         if nested_dto_info.key in data:
@@ -87,10 +88,7 @@ def get_nested_dto_info_list(schema: SchemaTypes) -> list[NestedDTOInfo]:
             continue
         metadata = field_value.metadata
         source: SourceMappingEnum = _get_required_argument("source", metadata, schema)
-        _check_for_errors(
-            metadata=metadata,
-            source=source
-        )
+        _check_for_errors(metadata=metadata, source=source)
         nested_dto_class = metadata["nested_dto_class"]
         nested_dto_info_list.append(
             NestedDTOInfo(key=field_name, class_=nested_dto_class)
@@ -98,14 +96,13 @@ def get_nested_dto_info_list(schema: SchemaTypes) -> list[NestedDTOInfo]:
 
     return nested_dto_info_list
 
+
 def _get_data_from_sources(schema: SchemaTypes) -> dict:
     data = {}
     for field_name, field_value in schema.fields.items():
         metadata = field_value.metadata
         source: SourceMappingEnum = _get_required_argument(
-            argument_name="source",
-            metadata=metadata,
-            schema_class=schema
+            argument_name="source", metadata=metadata, schema_class=schema
         )
         source_getting_function = _get_source_getting_function(source)
         val = source_getting_function(field_name)
@@ -113,6 +110,7 @@ def _get_data_from_sources(schema: SchemaTypes) -> dict:
             data[field_name] = val
 
     return data
+
 
 def get_source_data_info_from_sources(schema: SchemaTypes) -> SourceDataInfo:
     """

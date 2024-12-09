@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Optional, Callable, Type
+from typing import Optional, Callable, Type, Any
 
 import psycopg.errors
 import sqlalchemy
@@ -13,9 +13,23 @@ from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     PutPostBase,
+    PostPutHandler,
+    PutPostRequestInfo,
 )
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.util_dynamic import execute_if_not_none
+
+
+class PostHandler(PostPutHandler):
+
+    def call_database_client_method(self, request: PutPostRequestInfo):
+        """
+        Runs the database client method
+        and sets the request entry id in-place with the result
+        """
+        request.entry_id = self.mp.db_client_method(
+            self.mp.db_client, column_value_mappings=request.entry
+        )
 
 
 class PostLogic(PutPostBase):
@@ -54,6 +68,21 @@ class PostLogic(PutPostBase):
         )
 
 
+def post_entry_with_handler(
+    handler: PostHandler,
+    dto: Any,
+):
+    request = PutPostRequestInfo(entry=dict(dto), dto=dto)
+    handler.mass_execute([request])
+    if request.error_message is not None:
+        FlaskResponseManager.abort(
+            code=HTTPStatus.BAD_REQUEST, message=request.error_message
+        )
+    return created_id_response(
+        new_id=str(request.entry_id), message=f"{handler.mp.entry_name} created."
+    )
+
+
 def post_entry(
     middleware_parameters: MiddlewareParameters,
     entry: dict,
@@ -71,9 +100,7 @@ def post_entry(
         relation_role_parameters=relation_role_parameters,
         check_for_permission=check_for_permission,
     )
-    return post_logic.execute(
-        make_response=make_response
-    )
+    return post_logic.execute(make_response=make_response)
 
 
 def try_to_add_entry(middleware_parameters: MiddlewareParameters, entry: dict) -> str:
