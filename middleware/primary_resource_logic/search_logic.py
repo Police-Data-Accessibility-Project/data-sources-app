@@ -1,7 +1,10 @@
+from csv import DictWriter
 from http import HTTPStatus
+from io import BytesIO, StringIO
 from typing import Optional
 
-from flask import Response, make_response
+from flask import Response, make_response, send_file
+from pydantic import BaseModel
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
@@ -12,12 +15,13 @@ from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,
 )
-from middleware.enums import JurisdictionSimplified, Relations
+from middleware.enums import JurisdictionSimplified, Relations, OutputFormatEnum
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import (
     SearchRequests,
 )
 from middleware.common_response_formatting import message_response
+from middleware.util import get_datetime_now, write_to_csv, find_root_directory
 from utilities.enums import RecordCategories
 
 
@@ -68,18 +72,29 @@ def format_search_results(search_results: list[dict]) -> dict:
 
     response = {"count": 0, "data": {}}
 
+    data = response["data"]
     # Create sub-dictionary for each jurisdiction
     for jurisdiction in [j.value for j in JurisdictionSimplified]:
-        response["data"][jurisdiction] = {"count": 0, "results": []}
+        data[jurisdiction] = {"count": 0, "results": []}
 
     for result in search_results:
         jurisdiction_str = result.get("jurisdiction_type")
         jurisdiction = get_jurisdiction_type_enum(jurisdiction_str)
-        response["data"][jurisdiction.value]["count"] += 1
-        response["data"][jurisdiction.value]["results"].append(result)
+        data[jurisdiction.value]["count"] += 1
+        data[jurisdiction.value]["results"].append(result)
         response["count"] += 1
 
     return response
+
+
+def format_as_csv(ld: list[dict]) -> BytesIO:
+    string_output = StringIO()
+    writer = DictWriter(string_output, fieldnames=list(ld[0].keys()))
+    writer.writeheader()
+    writer.writerows(ld)
+    string_output.seek(0)
+    bytes_output = string_output.getvalue().encode("utf-8")
+    return BytesIO(bytes_output)
 
 
 def search_wrapper(
@@ -87,17 +102,8 @@ def search_wrapper(
     access_info: AccessInfoPrimary,
     dto: SearchRequests,
 ) -> Response:
-    location_id = try_getting_location_id_and_raise_error_if_not_found(
-        db_client=db_client,
-        dto=dto,
-    )
+    create_search_record(access_info, db_client, dto)
     explicit_record_categories = get_explicit_record_categories(dto.record_categories)
-    db_client.create_search_record(
-        user_id=access_info.get_user_id(),
-        location_id=location_id,
-        # Pass originally provided record categories
-        record_categories=dto.record_categories,
-    )
     search_results = db_client.search_with_location_and_record_type(
         state=dto.state,
         # Pass modified record categories, which breaks down ALL into individual categories
@@ -105,20 +111,60 @@ def search_wrapper(
         county=dto.county,
         locality=dto.locality,
     )
+    return send_search_results(
+        search_results=search_results,
+        output_format=dto.output_format,
+    )
+
+
+def create_search_record(access_info, db_client, dto):
+    location_id = try_getting_location_id_and_raise_error_if_not_found(
+        db_client=db_client,
+        dto=dto,
+    )
+    db_client.create_search_record(
+        user_id=access_info.get_user_id(),
+        location_id=location_id,
+        # Pass originally provided record categories
+        record_categories=dto.record_categories,
+    )
+
+
+def send_search_results(search_results: list[dict], output_format: OutputFormatEnum):
+    if output_format == OutputFormatEnum.JSON:
+        return send_as_json(search_results)
+    elif output_format == OutputFormatEnum.CSV:
+        return send_as_csv(search_results)
+    else:
+        FlaskResponseManager.abort(
+            message="Invalid output format.",
+            code=HTTPStatus.BAD_REQUEST,
+        )
+
+
+def send_as_json(search_results):
     formatted_search_results = format_search_results(search_results)
     return make_response(formatted_search_results, HTTPStatus.OK)
+
+
+def send_as_csv(search_results):
+    filename = f"search_results-{get_datetime_now()}.csv"
+    csv_stream = format_as_csv(ld=search_results)
+    return send_file(
+        csv_stream, download_name=filename, mimetype="text/csv", as_attachment=True
+    )
 
 
 def get_explicit_record_categories(
     record_categories=list[RecordCategories],
 ) -> list[RecordCategories]:
-    if record_categories == [RecordCategories.ALL]:
+    if RecordCategories.ALL in record_categories:
+        if len(record_categories) > 1:
+            FlaskResponseManager.abort(
+                message="ALL cannot be provided with other record categories.",
+                code=HTTPStatus.BAD_REQUEST,
+            )
         return [rc for rc in RecordCategories if rc != RecordCategories.ALL]
-    elif len(record_categories) > 1 and RecordCategories.ALL in record_categories:
-        FlaskResponseManager.abort(
-            message="ALL cannot be provided with other record categories.",
-            code=HTTPStatus.BAD_REQUEST,
-        )
     return record_categories
 
 
@@ -181,12 +227,25 @@ class FollowedSearchPostLogic(PostLogic):
         )
 
 
-def create_followed_search(
+def get_link_id_and_raise_error_if_not_found(
+    db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: SearchRequests
+):
+    location_id = try_getting_location_id_and_raise_error_if_not_found(
+        db_client=db_client,
+        dto=dto,
+    )
+    return get_user_followed_search_link(
+        db_client=db_client,
+        access_info=access_info,
+        location_id=location_id,
+    )
+
+
+def get_location_link_and_raise_error_if_not_found(
     db_client: DatabaseClient,
     access_info: AccessInfoPrimary,
     dto: SearchRequests,
-) -> Response:
-    # Get location id. If not found, not a valid location. Raise error
+):
     location_id = try_getting_location_id_and_raise_error_if_not_found(
         db_client=db_client,
         dto=dto,
@@ -196,14 +255,30 @@ def create_followed_search(
         access_info=access_info,
         location_id=location_id,
     )
-    if link_id is not None:
+    return LocationLink(link_id=link_id, location_id=location_id)
+
+
+class LocationLink(BaseModel):
+    link_id: Optional[int]
+    location_id: int
+
+
+def create_followed_search(
+    db_client: DatabaseClient,
+    access_info: AccessInfoPrimary,
+    dto: SearchRequests,
+) -> Response:
+    # Get location id. If not found, not a valid location. Raise error
+    location_link = get_location_link_and_raise_error_if_not_found(
+        db_client=db_client, access_info=access_info, dto=dto
+    )
+    if location_link.link_id is not None:
         return message_response(
             message="Location already followed.",
         )
 
     return post_entry(
         middleware_parameters=MiddlewareParameters(
-            db_client=db_client,
             entry_name="followed search",
             relation=Relations.LINK_USER_FOLLOWED_LOCATION.value,
             db_client_method=DatabaseClient.create_followed_search,
@@ -211,7 +286,7 @@ def create_followed_search(
         ),
         entry={
             "user_id": access_info.get_user_id(),
-            "location_id": location_id,
+            "location_id": location_link.location_id,
         },
         check_for_permission=False,
         post_logic_class=FollowedSearchPostLogic,
@@ -224,24 +299,17 @@ def delete_followed_search(
     dto: SearchRequests,
 ) -> Response:
     # Get location id. If not found, not a valid location. Raise error
-    location_id = try_getting_location_id_and_raise_error_if_not_found(
-        db_client=db_client,
-        dto=dto,
-    )
-    link_id = get_user_followed_search_link(
-        db_client=db_client,
-        access_info=access_info,
-        location_id=location_id,
+    location_link = get_location_link_and_raise_error_if_not_found(
+        db_client=db_client, access_info=access_info, dto=dto
     )
     # Check if search is followed. If not, end early .
-    if link_id is None:
+    if location_link.link_id is None:
         return message_response(
             message="Location not followed.",
         )
 
     return delete_entry(
         middleware_parameters=MiddlewareParameters(
-            db_client=db_client,
             entry_name="Followed search",
             relation=Relations.LINK_USER_FOLLOWED_LOCATION.value,
             db_client_method=DatabaseClient.delete_followed_search,
@@ -249,6 +317,6 @@ def delete_followed_search(
         ),
         id_info=IDInfo(
             id_column_name="id",
-            id_column_value=link_id,
+            id_column_value=location_link.link_id,
         ),
     )

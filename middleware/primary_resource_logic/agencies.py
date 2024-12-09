@@ -47,7 +47,6 @@ def get_agencies(
     """
     return get_many(
         middleware_parameters=MiddlewareParameters(
-            db_client=db_client,
             access_info=access_info,
             entry_name="agencies",
             relation=Relations.AGENCIES_EXPANDED.value,
@@ -69,7 +68,6 @@ def get_agency_by_id(
 ) -> Response:
     return get_by_id(
         middleware_parameters=MiddlewareParameters(
-            db_client=db_client,
             access_info=access_info,
             entry_name="agency",
             relation=Relations.AGENCIES_EXPANDED.value,
@@ -151,11 +149,7 @@ def create_agency(
     )
 
     return post_entry(
-        middleware_parameters=MiddlewareParameters(
-            entry_name="agency",
-            relation=Relations.AGENCIES.value,
-            db_client_method=DatabaseClient.create_agency,
-        ),
+        middleware_parameters=AGENCY_POST_MIDDLEWARE_PARAMETERS,
         entry=entry_data,
         pre_insertion_function_with_parameters=pre_insertion_function,
         check_for_permission=False,
@@ -209,7 +203,6 @@ def update_agency(
 
     return put_entry(
         middleware_parameters=MiddlewareParameters(
-            db_client=db_client,
             access_info=access_info,
             entry_name="agency",
             relation=Relations.AGENCIES.value,
@@ -226,7 +219,6 @@ def delete_agency(
 ) -> Response:
     return delete_entry(
         middleware_parameters=MiddlewareParameters(
-            db_client=db_client,
             access_info=access_info,
             entry_name="agency",
             relation=Relations.AGENCIES.value,

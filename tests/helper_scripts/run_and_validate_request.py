@@ -19,6 +19,7 @@ def run_and_validate_request(
     expected_schema: Optional[Union[Type[Schema], Schema]] = None,
     query_parameters: Optional[dict] = None,
     file: Optional[TextIO] = None,
+    return_json: bool = True,
     **request_kwargs,
 ):
     """
@@ -30,6 +31,8 @@ def run_and_validate_request(
     :param expected_json_content: The expected json content of the response
     :param expected_schema: An optional Marshmallow schema to validate the response against
     :param query_parameters: Query parameters, if any, to add to the endpoint
+    :param file: The file to send, if any
+    :param return_json: Whether to return the json content of the response, or the raw response data
     :param request_kwargs: Additional keyword arguments to add to the request
     :return: The json content of the response
     """
@@ -52,6 +55,9 @@ def run_and_validate_request(
     else:
         response = flask_client.open(endpoint, method=http_method, **request_kwargs)
     check_response_status(response, expected_response_status.value)
+
+    if not return_json:
+        return response.data
 
     # All of our requests should return some json message providing information.
     assert response.json is not None

@@ -1,10 +1,14 @@
+import csv
 import os
 from dataclasses import is_dataclass, asdict
+from datetime import datetime
 from enum import Enum
-from typing import Any, Dict
+from io import BytesIO, StringIO
+from typing import Any, Dict, TextIO, Generator
 
 from dotenv import dotenv_values, find_dotenv
 from pydantic import BaseModel
+from werkzeug.datastructures import FileStorage
 
 
 def get_env_variable(name: str) -> str:
@@ -24,12 +28,42 @@ def get_env_variable(name: str) -> str:
     return value
 
 
+def get_datetime_now() -> str:
+    return datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+
+
 def create_web_app_url(endpoint: str) -> str:
     return f"{get_env_variable('VITE_VUE_APP_BASE_URL')}/{endpoint}"
 
 
 def get_enum_values(en: type[Enum]) -> list[str]:
     return [e.value for e in en]
+
+
+def write_to_csv(file_path: str, data: list[dict[str, Any]], fieldnames: list[str]):
+    with open(file_path, "w+", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(data)
+        f.close()
+
+
+def bytes_to_text_iter(file: BytesIO | FileStorage) -> Generator[str, Any, None]:
+    """
+    Convert BytesIO file to text iterator
+    """
+    return (line.decode("utf-8") for line in file)
+
+
+def read_from_csv(file: str | FileStorage | bytes) -> list[dict[str, Any]]:
+    if isinstance(file, FileStorage):
+        file = bytes_to_text_iter(file)
+    elif isinstance(file, str):
+        file = open(file, "r", newline="", encoding="utf-8")
+    elif isinstance(file, bytes):
+        content = file.decode("utf-8")
+        file = StringIO(content)
+    return list(csv.DictReader(file))
 
 
 def dict_enums_to_values(d: dict[str, Any]) -> dict[str, Any]:
@@ -50,7 +84,7 @@ def dataclass_to_filtered_dict(instance: Any) -> Dict[str, Any]:
     """
     if is_dataclass(instance):
         d = asdict(instance)
-    if isinstance(instance, BaseModel):
+    elif isinstance(instance, BaseModel):
         d = dict(instance)
     else:
         raise TypeError(
@@ -73,3 +107,38 @@ def update_if_not_none(dict_to_update: Dict[str, Any], secondary_dict: Dict[str,
     for key, value in secondary_dict.items():
         if value is not None:
             dict_to_update[key] = value
+
+
+def find_root_directory(start_path=None, target_file="app.py"):
+    """
+    Travels upward from the given starting directory (or current working directory)
+    until it finds the directory containing the specified target file.
+
+    Parameters:
+    - start_path (str): The directory to start searching from. Defaults to the current working directory.
+    - target_file (str): The file that identifies the root directory. Defaults to 'app.py'.
+
+    Returns:
+    - str: The absolute path to the root directory containing the target file.
+
+    Raises:
+    - FileNotFoundError: If the target file is not found in any parent directory.
+    """
+    current_path = os.path.abspath(start_path or os.getcwd())
+
+    while True:
+        if os.path.isfile(os.path.join(current_path, target_file)):
+            return current_path
+
+        parent_path = os.path.dirname(current_path)
+        if current_path == parent_path:  # Reached the root of the filesystem
+            break
+        current_path = parent_path
+
+    raise FileNotFoundError(f"Could not find '{target_file}' in any parent directory.")
+
+
+def get_temp_directory() -> str:
+    # Go to root directory
+
+    return os.path.join(os.getcwd(), "temp")

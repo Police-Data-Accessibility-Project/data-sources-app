@@ -11,6 +11,7 @@ from flask.testing import FlaskClient
 from marshmallow import Schema
 
 from database_client.enums import SortOrder, RequestStatus
+from middleware.enums import OutputFormatEnum
 from middleware.util import update_if_not_none
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.constants import (
@@ -271,6 +272,7 @@ class RequestValidator:
         record_categories: Optional[list[RecordCategories]] = None,
         county: Optional[str] = None,
         locality: Optional[str] = None,
+        format: Optional[OutputFormatEnum] = OutputFormatEnum.JSON,
     ):
         endpoint_base = "/search/search-location-and-record-type"
         query_params = self._get_search_query_params(
@@ -279,14 +281,17 @@ class RequestValidator:
             record_categories=record_categories,
             state=state,
         )
+        query_params.update({} if format is None else {"output_format": format.value})
         endpoint = add_query_params(
             url=endpoint_base,
             params=query_params,
         )
+        kwargs = {"return_json": True if format == OutputFormatEnum.JSON else False}
         return self.get(
             endpoint=endpoint,
             headers=headers,
             expected_schema=SchemaConfigs.SEARCH_LOCATION_AND_RECORD_TYPE_GET.value.primary_output_schema,
+            **kwargs,
         )
 
     @staticmethod

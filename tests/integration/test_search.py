@@ -1,8 +1,12 @@
+import csv
 from http import HTTPStatus
 from typing import Optional
 
 from marshmallow import Schema
 
+from database_client.enums import LocationType
+from middleware.enums import OutputFormatEnum, JurisdictionSimplified
+from middleware.util import bytes_to_text_iter, read_from_csv, get_enum_values
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
@@ -19,36 +23,42 @@ from tests.helper_scripts.run_and_validate_request import (
     run_and_validate_request,
     http_methods,
 )
-from tests.conftest import flask_client_with_db, bypass_api_key_required
 from conftest import test_data_creator_flask, monkeysession
 from utilities.enums import RecordCategories
 
 ENDPOINT_SEARCH_LOCATION_AND_RECORD_TYPE = "/search/search-location-and-record-type"
 
 
-def test_search_get(
-    test_data_creator_flask: TestDataCreatorFlask, bypass_api_key_required
-):
+TEST_STATE = "Pennsylvania"
+TEST_COUNTY = "Allegheny"
+TEST_LOCALITY = "Pittsburgh"
+
+
+def test_search_get(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
     tus = tdc.standard_user()
 
-    data = tdc.request_validator.search(
-        headers=tus.api_authorization_header,
-        state="Pennsylvania",
-        county="Allegheny",
-        locality="Pittsburgh",
-        record_categories=[RecordCategories.POLICE],
-    )
+    def search(record_format: Optional[OutputFormatEnum] = OutputFormatEnum.JSON):
+        return tdc.request_validator.search(
+            headers=tus.api_authorization_header,
+            state=TEST_STATE,
+            county=TEST_COUNTY,
+            locality=TEST_LOCALITY,
+            record_categories=[RecordCategories.POLICE],
+            format=record_format,
+        )
 
-    jurisdictions = ["federal", "state", "county", "locality"]
+    json_data = search()
 
-    assert data["count"] > 0
+    jurisdictions = get_enum_values(JurisdictionSimplified)
+
+    assert json_data["count"] > 0
 
     jurisdiction_count = 0
     for jurisdiction in jurisdictions:
-        jurisdiction_count += data["data"][jurisdiction]["count"]
+        jurisdiction_count += json_data["data"][jurisdiction]["count"]
 
-    assert jurisdiction_count == data["count"]
+    assert jurisdiction_count == json_data["count"]
 
     # Check that search shows up in user's recent searches
     data = run_and_validate_request(
@@ -63,15 +73,38 @@ def test_search_get(
 
     assert data["data"][0] == {
         "state_iso": "PA",
-        "county_name": "Allegheny",
-        "locality_name": "Pittsburgh",
-        "location_type": "Locality",
-        "record_categories": ["Police & Public Interactions"],
+        "county_name": TEST_COUNTY,
+        "locality_name": TEST_LOCALITY,
+        "location_type": LocationType.LOCALITY.value,
+        "record_categories": [RecordCategories.POLICE.value],
     }
+
+    csv_data = search(record_format=OutputFormatEnum.CSV)
+
+    results = read_from_csv(csv_data)
+
+    assert len(results) == json_data["count"]
+
+    # Flatten json data for comparison
+    flat_json_data = []
+    for jurisdiction in jurisdictions:
+        if json_data["data"][jurisdiction]["count"] == 0:
+            continue
+        for result in json_data["data"][jurisdiction]["results"]:
+            flat_json_data.append(result)
+
+    # Sort both the flat json data and the csv results for comparison
+    # Due to differences in how CSV and JSON results are formatted, compare only ids
+    json_ids = sorted([result["id"] for result in flat_json_data])
+    csv_ids = sorted(
+        [int(result["id"]) for result in results]
+    )  # CSV ids are formatted as strings
+
+    assert json_ids == csv_ids
 
 
 def test_search_get_record_categories_all(
-    test_data_creator_flask: TestDataCreatorFlask, bypass_api_key_required
+    test_data_creator_flask: TestDataCreatorFlask,
 ):
     """
     All record categories can be provided in one of two ways:
@@ -84,9 +117,9 @@ def test_search_get_record_categories_all(
     def run_search(record_categories: list[RecordCategories]) -> dict:
         return tdc.request_validator.search(
             headers=tus.api_authorization_header,
-            state="Pennsylvania",
-            county="Allegheny",
-            locality="Pittsburgh",
+            state=TEST_STATE,
+            county=TEST_COUNTY,
+            locality=TEST_LOCALITY,
             record_categories=record_categories if len(record_categories) > 0 else None,
         )
 
@@ -113,9 +146,9 @@ def test_search_follow(test_data_creator_flask):
     tus_1 = tdc.standard_user()
 
     location_to_follow = {
-        "state": "Pennsylvania",
-        "county": "Allegheny",
-        "locality": "Pittsburgh",
+        "state": TEST_STATE,
+        "county": TEST_COUNTY,
+        "locality": TEST_LOCALITY,
     }
     url_for_following = add_query_params(
         SEARCH_FOLLOW_BASE_ENDPOINT, location_to_follow
@@ -179,8 +212,8 @@ def test_search_follow(test_data_creator_flask):
     # User should try to follow a nonexistent location and be denied
     tdc.request_validator.follow_search(
         headers=tus_1.jwt_authorization_header,
-        state="Pennsylvania",
-        county="Allegheny",
+        state=TEST_STATE,
+        county=TEST_COUNTY,
         locality="Purtsburgh",
         expected_response_status=HTTPStatus.BAD_REQUEST,
         expected_json_content={"message": "Location not found."},

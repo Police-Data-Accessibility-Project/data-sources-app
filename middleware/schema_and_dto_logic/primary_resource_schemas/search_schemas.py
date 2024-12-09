@@ -4,6 +4,7 @@ from typing import Optional
 from marshmallow import Schema, fields, validates_schema, ValidationError
 from pydantic import BaseModel
 
+from middleware.enums import OutputFormatEnum
 from middleware.schema_and_dto_logic.schema_helpers import create_get_many_schema
 from middleware.schema_and_dto_logic.util import get_json_metadata
 from utilities.common import get_enums_from_string
@@ -51,6 +52,17 @@ class SearchRequestSchema(Schema):
         required=False,
         metadata={
             "description": "The locality of the search. If empty, all localities for the given county will be searched.",
+            "source": SourceMappingEnum.QUERY_ARGS,
+            "location": ParserLocation.QUERY.value,
+        },
+    )
+    output_format = fields.Enum(
+        required=False,
+        enum=OutputFormatEnum,
+        by_value=fields.Str,
+        load_default=OutputFormatEnum.JSON.value,
+        metadata={
+            "description": "The output format of the search.",
             "source": SourceMappingEnum.QUERY_ARGS,
             "location": ParserLocation.QUERY.value,
         },
@@ -203,3 +215,4 @@ class SearchRequests(BaseModel):
     record_categories: Optional[list[RecordCategories]] = None
     county: Optional[str] = None
     locality: Optional[str] = None
+    output_format: Optional[OutputFormatEnum] = None

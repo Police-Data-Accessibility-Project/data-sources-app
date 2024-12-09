@@ -42,6 +42,11 @@ class AccessTypeEnum(Enum):
     NO_AUTH = auto()
 
 
+class OutputFormatEnum(Enum):
+    JSON = "json"
+    CSV = "csv"
+
+
 class Relations(Enum):
     """
     A list of valid relations for the database

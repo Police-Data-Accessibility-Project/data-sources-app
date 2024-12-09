@@ -3,6 +3,7 @@ from http import HTTPStatus
 from io import BytesIO
 
 from marshmallow import Schema, ValidationError
+from werkzeug.datastructures import FileStorage
 
 from database_client.database_client import DatabaseClient
 from middleware.dynamic_request_logic.supporting_classes import (
@@ -25,13 +26,13 @@ from middleware.schema_and_dto_logic.dynamic_logic.dynamic_csv_to_schema_convers
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import (
     setup_dto_class,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
-    AgenciesPostDTO,
-)
+
 from middleware.schema_and_dto_logic.primary_resource_dtos.batch_dtos import (
     BatchRequestDTO,
 )
 from csv import DictReader
+
+from middleware.util import bytes_to_text_iter, read_from_csv
 
 
 def replace_empty_strings_with_none(row: dict):
@@ -48,12 +49,9 @@ def _get_raw_rows_from_csv(
     return raw_rows
 
 
-def _get_raw_rows(file: BytesIO):
+def _get_raw_rows(file: FileStorage):
     try:
-        text_file = (line.decode("utf-8") for line in file)
-        reader = DictReader(text_file)
-        rows = list(reader)
-        return rows
+        return read_from_csv(file)
     except Exception as e:
         FlaskResponseManager.abort(
             code=HTTPStatus.BAD_REQUEST, message=f"Error reading csv file: {e}"
