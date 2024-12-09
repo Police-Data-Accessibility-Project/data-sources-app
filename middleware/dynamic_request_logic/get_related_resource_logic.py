@@ -18,13 +18,13 @@ from dataclasses import dataclass
 
 @dataclass
 class GetRelatedResourcesParameters:
-    db_client: DatabaseClient
     dto: GetByIDBaseDTO
     db_client_method: callable
     primary_relation: Relations
     related_relation: Relations
     linking_column: str
     metadata_count_name: str
+    db_client: DatabaseClient = DatabaseClient()
     resource_name: str = "resource"
 
 

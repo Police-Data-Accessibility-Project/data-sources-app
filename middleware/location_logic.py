@@ -29,8 +29,7 @@ def get_location_id(
 
     # In the case of a nonexistent locality, this can be added,
     # provided the rest of the location is valid
-    county_id = _get_county_id(db_client, location_info_dict)
-
+    county_id = _get_county_id(location_info_dict)
     # If this exists, locality does not yet exist in database and should be added. Add and return location id
     db_client.create_locality(
         column_value_mappings={
@@ -47,13 +46,13 @@ def _raise_if_not_locality(location_info, location_info_dict):
         raise InvalidLocationError(f"{location_info_dict} is not a valid location")
 
 
-def _get_county_id(db_client, location_info_dict) -> int:
+def _get_county_id(location_info_dict: dict) -> int:
     county_dict = {
         "county_fips": location_info_dict["county_fips"],
         "state_iso": location_info_dict["state_iso"],
         "type": LocationType.COUNTY,
     }
-    results = db_client._select_from_relation(
+    results = DatabaseClient()._select_from_relation(
         relation_name=Relations.LOCATIONS_EXPANDED.value,
         columns=["county_id"],
         where_mappings=WhereMapping.from_dict(county_dict),
