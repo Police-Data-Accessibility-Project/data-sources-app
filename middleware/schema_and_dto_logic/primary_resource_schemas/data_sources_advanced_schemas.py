@@ -6,8 +6,10 @@ from database_client.enums import (
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyRequestsBaseSchema,
 )
+from middleware.schema_and_dto_logic.enums import CSVColumnCondition
 from middleware.schema_and_dto_logic.primary_resource_dtos.data_sources_dtos import (
     DataSourceEntryDataPostDTO,
+    DataSourceEntryDataPutDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_base_schemas import (
     AgenciesExpandedSchema,
@@ -120,10 +122,14 @@ class DataSourcesPostSchema(Schema):
         fields.Integer(
             allow_none=True,
             metadata=get_json_metadata(
-                "The agency ids associated with the data source."
+                "The agency ids associated with the data source.",
+                csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
             ),
         ),
-        metadata=get_json_metadata("The agency ids associated with the data source."),
+        metadata=get_json_metadata(
+            "The agency ids associated with the data source.",
+            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
+        ),
     )
 
 
@@ -145,7 +151,10 @@ class DataSourcesPutSchema(Schema):
             ]
         ),
         required=True,
-        metadata=get_json_metadata("The data source to be updated"),
+        metadata=get_json_metadata(
+            "The data source to be updated",
+            nested_dto_class=DataSourceEntryDataPutDTO,
+        ),
     )
 
 

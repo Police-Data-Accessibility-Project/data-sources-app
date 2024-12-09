@@ -10,11 +10,12 @@ from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.delete_logic import delete_entry
 from middleware.dynamic_request_logic.get_by_id_logic import get_by_id
 from middleware.dynamic_request_logic.get_many_logic import get_many
-from middleware.dynamic_request_logic.post_logic import post_entry
-from middleware.dynamic_request_logic.put_logic import put_entry
+from middleware.dynamic_request_logic.post_logic import post_entry, PostHandler
+from middleware.dynamic_request_logic.put_logic import put_entry, PutHandler
 from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,
+    PutPostRequestInfo,
 )
 from middleware.location_logic import get_location_id
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
@@ -29,6 +30,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     LocationInfoDTO,
 )
 from middleware.enums import Relations, JurisdictionType
+from middleware.util import dict_enums_to_values
 
 SUBQUERY_PARAMS = [SubqueryParameterManager.data_sources()]
 
@@ -93,11 +95,55 @@ def validate_and_add_location_info(
     entry_data["location_id"] = location_id
 
 
+class AgencyPostRequestInfo(PutPostRequestInfo):
+    dto: AgenciesPostDTO
+
+
+class AgencyPostHandler(PostHandler):
+
+    def __init__(self):
+        super().__init__(middleware_parameters=AGENCY_POST_MIDDLEWARE_PARAMETERS)
+
+    def pre_execute(self, request: AgencyPostRequestInfo):
+        validate_and_add_location_info(
+            db_client=DatabaseClient(),
+            entry_data=request.entry,
+            location_info=request.dto.location_info,
+        )
+
+
+class AgencyPutHandler(PutHandler):
+
+    def __init__(self):
+        super().__init__(middleware_parameters=AGENCY_PUT_MIDDLEWARE_PARAMETERS)
+
+    def pre_execute(self, request: PutPostRequestInfo):
+        # The below values are probably incorrect, but serve as a placeholder
+        entry_data = dict(request.dto.agency_info)
+        request.entry = dict_enums_to_values(entry_data)
+        location_info = request.dto.location_info
+        if location_info is not None:
+            validate_and_add_location_info(
+                db_client=DatabaseClient(),
+                entry_data=entry_data,
+                location_info=location_info,
+            )
+
+
+AGENCY_POST_MIDDLEWARE_PARAMETERS = MiddlewareParameters(
+    entry_name="agency",
+    relation=Relations.AGENCIES.value,
+    db_client_method=DatabaseClient.create_agency,
+)
+
+
 def create_agency(
-    db_client: DatabaseClient, dto: AgenciesPostDTO, access_info: AccessInfoPrimary
+    db_client: DatabaseClient,
+    dto: AgenciesPostDTO,
+    make_response: bool = True,
 ) -> Response:
     entry_data = dict(dto.agency_info)
-    deferred_function = optionally_get_location_info_deferred_function(
+    pre_insertion_function = optionally_get_location_info_deferred_function(
         db_client=db_client,
         jurisdiction_type=dto.agency_info.jurisdiction_type,
         entry_data=entry_data,
@@ -106,14 +152,14 @@ def create_agency(
 
     return post_entry(
         middleware_parameters=MiddlewareParameters(
-            db_client=db_client,
-            access_info=access_info,
             entry_name="agency",
             relation=Relations.AGENCIES.value,
             db_client_method=DatabaseClient.create_agency,
         ),
         entry=entry_data,
-        pre_insertion_function_with_parameters=deferred_function,
+        pre_insertion_function_with_parameters=pre_insertion_function,
+        check_for_permission=False,
+        make_response=make_response,
     )
 
 
@@ -133,6 +179,13 @@ def optionally_get_location_info_deferred_function(
             location_info=location_info,
         )
     return deferred_function
+
+
+AGENCY_PUT_MIDDLEWARE_PARAMETERS = MiddlewareParameters(
+    entry_name="agency",
+    relation=Relations.AGENCIES.value,
+    db_client_method=DatabaseClient.update_agency,
+)
 
 
 def update_agency(

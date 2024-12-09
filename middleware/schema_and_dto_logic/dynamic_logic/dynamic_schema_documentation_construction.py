@@ -45,13 +45,22 @@ from middleware.schema_and_dto_logic.util import _get_required_argument
 from resources.resource_helpers import create_variable_columns_model
 from utilities.enums import SourceMappingEnum
 
+PARSER_FIELDS = [
+    SourceMappingEnum.QUERY_ARGS,
+    SourceMappingEnum.PATH,
+    SourceMappingEnum.FILE,
+]
+
+PARSER_SOURCE_LOCATION_MAP = {
+    SourceMappingEnum.QUERY_ARGS: "query",
+    SourceMappingEnum.PATH: "path",
+    SourceMappingEnum.FILE: "file",
+}
+
 
 # region Supporting Functions
 def get_location(source: SourceMappingEnum) -> str:
-    if source == SourceMappingEnum.PATH:
-        return "path"
-    if source == SourceMappingEnum.QUERY_ARGS:
-        return "query"
+    return PARSER_SOURCE_LOCATION_MAP[source]
 
 
 def add_description_info_from_validators(
@@ -290,7 +299,7 @@ class MarshmallowFieldSorter:
             self._sort_field(fi)
 
     def _sort_field(self, fi: FieldInfo):
-        if fi.source in (SourceMappingEnum.QUERY_ARGS, SourceMappingEnum.PATH):
+        if fi.source in PARSER_FIELDS:
             self.parser_fields.append(fi)
         elif fi.source == SourceMappingEnum.JSON:
             self.model_fields.append(fi)

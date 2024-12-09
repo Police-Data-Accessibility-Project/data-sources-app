@@ -1,6 +1,3 @@
-import json
-import os
-
 import requests
 
 from middleware.third_party_interaction_logic.mailgun_logic import send_via_mailgun

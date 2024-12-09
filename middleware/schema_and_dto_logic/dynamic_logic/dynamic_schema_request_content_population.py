@@ -1,11 +1,16 @@
+from dataclasses import dataclass
 from http import HTTPStatus
 from typing import Type
 
 import marshmallow
+from flask import request
 from pydantic import BaseModel
 
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.custom_types import SchemaTypes, DTOTypes
+from middleware.schema_and_dto_logic.primary_resource_dtos.batch_dtos import (
+    BatchRequestDTO,
+)
 from middleware.schema_and_dto_logic.util import (
     _get_required_argument,
     _get_source_getting_function,
@@ -24,7 +29,7 @@ class SourceDataInfo(BaseModel):
 
 
 def populate_schema_with_request_content(
-    schema: SchemaTypes, dto_class: Type[DTOTypes]
+    schema: SchemaTypes, dto_class: Type[DTOTypes], load_file: bool = False
 ) -> DTOTypes:
     """
     Populates a marshmallow schema with request content, given custom arguments in the schema fields
@@ -36,15 +41,19 @@ def populate_schema_with_request_content(
     :return:
     """
     # Get all declared fields from the schema
+    if load_file:
+        return BatchRequestDTO(
+            file=request.files.get("file"), csv_schema=schema, inner_dto_class=dto_class
+        )
     fields = schema.fields
-    source_data_info = _get_data_from_sources(fields, schema)
-
+    source_data_info = get_source_data_info_from_sources(schema)
     intermediate_data = validate_data(source_data_info.data, schema)
-
     _apply_transformation_functions_to_dict(fields, intermediate_data)
 
     return setup_dto_class(
-        intermediate_data, dto_class, source_data_info.nested_dto_info_list
+        data=intermediate_data,
+        dto_class=dto_class,
+        nested_dto_info_list=source_data_info.nested_dto_info_list,
     )
 
 
@@ -72,29 +81,46 @@ class InvalidSourceMappingError(Exception):
     pass
 
 
-def _get_data_from_sources(fields: dict, schema: SchemaTypes) -> SourceDataInfo:
+def get_nested_dto_info_list(schema: SchemaTypes) -> list[NestedDTOInfo]:
+    nested_dto_info_list = []
+    for field_name, field_value in schema.fields.items():
+        if not isinstance(field_value, marshmallow.fields.Nested):
+            continue
+        metadata = field_value.metadata
+        source: SourceMappingEnum = _get_required_argument("source", metadata, schema)
+        _check_for_errors(metadata=metadata, source=source)
+        nested_dto_class = metadata["nested_dto_class"]
+        nested_dto_info_list.append(
+            NestedDTOInfo(key=field_name, class_=nested_dto_class)
+        )
+
+    return nested_dto_info_list
+
+
+def _get_data_from_sources(schema: SchemaTypes) -> dict:
+    data = {}
+    for field_name, field_value in schema.fields.items():
+        metadata = field_value.metadata
+        source: SourceMappingEnum = _get_required_argument(
+            argument_name="source", metadata=metadata, schema_class=schema
+        )
+        source_getting_function = _get_source_getting_function(source)
+        val = source_getting_function(field_name)
+        if val is not None:
+            data[field_name] = val
+
+    return data
+
+
+def get_source_data_info_from_sources(schema: SchemaTypes) -> SourceDataInfo:
     """
     Get data from sources specified in the schema and field metadata
     :param fields:
     :param schema:
     :return:
     """
-    data = {}
-    nested_dto_info_list = []
-    for field_name, field_value in fields.items():
-        metadata = field_value.metadata
-        source: SourceMappingEnum = _get_required_argument("source", metadata, schema)
-        if isinstance(field_value, marshmallow.fields.Nested):
-            _check_for_errors(metadata, source)
-            nested_dto_class = metadata["nested_dto_class"]
-            nested_dto_info_list.append(
-                NestedDTOInfo(key=field_name, class_=nested_dto_class)
-            )
-
-        source_getting_function = _get_source_getting_function(source)
-        val = source_getting_function(field_name)
-        if val is not None:
-            data[field_name] = val
+    data = _get_data_from_sources(schema=schema)
+    nested_dto_info_list = get_nested_dto_info_list(schema=schema)
     return SourceDataInfo(data=data, nested_dto_info_list=nested_dto_info_list)
 
 

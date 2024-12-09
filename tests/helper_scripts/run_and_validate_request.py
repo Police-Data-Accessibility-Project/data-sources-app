@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Optional, Type, Union, Literal
+from typing import Optional, Type, Union, Literal, TextIO
 
 from flask.testing import FlaskClient
 from marshmallow import Schema
@@ -18,6 +18,7 @@ def run_and_validate_request(
     expected_json_content: Optional[dict] = None,
     expected_schema: Optional[Union[Type[Schema], Schema]] = None,
     query_parameters: Optional[dict] = None,
+    file: Optional[TextIO] = None,
     **request_kwargs,
 ):
     """
@@ -35,7 +36,21 @@ def run_and_validate_request(
     if query_parameters is not None:
         endpoint = add_query_params(endpoint, query_parameters)
 
-    response = flask_client.open(endpoint, method=http_method, **request_kwargs)
+    if file is not None:
+        # Check file is open
+        if file.closed is True:
+            # Open file
+            file = open(file.name, "rb")
+        assert file.closed is False, "File must be opened before sending request."
+        response = flask_client.open(
+            endpoint,
+            method=http_method,
+            data={"file": file},
+            content_type="multipart/form-data",
+            **request_kwargs,
+        )
+    else:
+        response = flask_client.open(endpoint, method=http_method, **request_kwargs)
     check_response_status(response, expected_response_status.value)
 
     # All of our requests should return some json message providing information.

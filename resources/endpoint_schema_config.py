@@ -12,12 +12,24 @@ from middleware.primary_resource_logic.permissions_logic import (
     PermissionsRequestDTO,
     PermissionsGetRequestSchema,
 )
+from middleware.schema_and_dto_logic.primary_resource_dtos.batch_dtos import (
+    BatchRequestDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_dtos.reset_token_dtos import (
     ResetPasswordDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.archives_schemas import (
     ArchivesGetResponseSchema,
     ArchivesPutRequestSchema,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.batch_schemas import (
+    BatchRequestSchema,
+    BatchPostResponseSchema,
+    BatchPutResponseSchema,
+    AgenciesPutBatchRequestSchema,
+    AgenciesPostBatchRequestSchema,
+    DataSourcesPostBatchRequestSchema,
+    DataSourcesPutBatchRequestSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.reset_token_schemas import (
     ResetPasswordSchema,
@@ -89,6 +101,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     TypeaheadQuerySchema,
     EmailOnlyDTO,
     EmailOnlySchema,
+    EntryCreateUpdateRequestDTO,
 )
 from middleware.schema_and_dto_logic.custom_types import DTOTypes
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
@@ -102,6 +115,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_
 from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
     AgenciesPostDTO,
     RelatedAgencyByIDDTO,
+    AgenciesPutDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_advanced_schemas import (
     GetManyDataRequestsResponseSchema,
@@ -124,6 +138,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advan
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.data_sources_dtos import (
     DataSourcesPostDTO,
+    DataSourcesPutDTO,
 )
 from middleware.schema_and_dto_logic.common_response_schemas import (
     IDAndMessageSchema,
@@ -179,8 +194,14 @@ class EndpointSchemaConfig:
         )
 
     def get_schema_populate_parameters(self) -> SchemaPopulateParameters:
+        if "file" in self.input_schema.fields:
+            load_file = True
+        else:
+            load_file = False
         return SchemaPopulateParameters(
-            schema=self.input_schema, dto_class=self.input_dto_class
+            schema=self.input_schema,
+            dto_class=self.input_dto_class,
+            load_file=load_file,
         )
 
 
@@ -475,4 +496,28 @@ class SchemaConfigs(Enum):
         input_schema=PermissionsPutRequestSchema(),
         input_dto_class=PermissionsRequestDTO,
     )
+    # endregion
+
+    # region Batch
+    BATCH_DATA_SOURCES_POST = EndpointSchemaConfig(
+        input_schema=DataSourcesPostBatchRequestSchema(),
+        input_dto_class=DataSourcesPostDTO,
+        primary_output_schema=BatchPostResponseSchema(),
+    )
+    BATCH_DATA_SOURCES_PUT = EndpointSchemaConfig(
+        input_schema=DataSourcesPutBatchRequestSchema(),
+        input_dto_class=DataSourcesPutDTO,
+        primary_output_schema=BatchPutResponseSchema(),
+    )
+    BATCH_AGENCIES_POST = EndpointSchemaConfig(
+        input_schema=AgenciesPostBatchRequestSchema(),
+        input_dto_class=AgenciesPostDTO,
+        primary_output_schema=BatchPostResponseSchema(),
+    )
+    BATCH_AGENCIES_PUT = EndpointSchemaConfig(
+        input_schema=AgenciesPutBatchRequestSchema(),
+        input_dto_class=AgenciesPutDTO,
+        primary_output_schema=BatchPutResponseSchema(),
+    )
+
     # endregion

@@ -2,7 +2,9 @@
 Class based means to run and validate requests
 """
 
+from dataclasses import dataclass
 from http import HTTPStatus
+from io import BytesIO
 from typing import Optional, Type, Union
 
 from flask.testing import FlaskClient
@@ -458,4 +460,76 @@ class RequestValidator:
     ):
         return self.get(
             endpoint="/api/swagger.json",
+        )
+
+    @dataclass
+    class BatchOperationParams:
+        file: BytesIO
+        headers: dict
+        expected_response_status: HTTPStatus = HTTPStatus.OK
+
+    def insert_agencies_batch(
+        self,
+        bop: BatchOperationParams,
+        expected_schema=SchemaConfigs.BATCH_AGENCIES_POST.value.primary_output_schema,
+    ):
+        return self.post(
+            endpoint="/api/batch/agencies",
+            headers=bop.headers,
+            file=bop.file,
+            expected_schema=expected_schema,
+            expected_response_status=bop.expected_response_status,
+        )
+
+    def update_agencies_batch(
+        self,
+        bop: BatchOperationParams,
+        expected_schema=SchemaConfigs.BATCH_AGENCIES_PUT.value.primary_output_schema,
+    ):
+        return self.put(
+            endpoint="/api/batch/agencies",
+            headers=bop.headers,
+            file=bop.file,
+            expected_schema=expected_schema,
+            expected_response_status=bop.expected_response_status,
+        )
+
+    def insert_data_sources_batch(
+        self,
+        bop: BatchOperationParams,
+        expected_schema=SchemaConfigs.BATCH_DATA_SOURCES_POST.value.primary_output_schema,
+    ):
+        return self.post(
+            endpoint="/api/batch/data-sources",
+            headers=bop.headers,
+            file=bop.file,
+            expected_schema=expected_schema,
+            expected_response_status=bop.expected_response_status,
+        )
+
+    def update_data_sources_batch(
+        self,
+        bop: BatchOperationParams,
+        expected_schema=SchemaConfigs.BATCH_DATA_SOURCES_PUT.value.primary_output_schema,
+    ):
+        return self.put(
+            endpoint="/api/batch/data-sources",
+            headers=bop.headers,
+            file=bop.file,
+            expected_schema=expected_schema,
+            expected_response_status=bop.expected_response_status,
+        )
+
+    def get_agency_by_id(self, headers: dict, id: int):
+        return self.get(
+            endpoint=f"/api/agencies/{id}",
+            headers=headers,
+            expected_schema=SchemaConfigs.AGENCIES_BY_ID_GET.value.primary_output_schema,
+        )
+
+    def get_data_source_by_id(self, headers: dict, id: int):
+        return self.get(
+            endpoint=f"/api/data-sources/{id}",
+            headers=headers,
+            expected_schema=SchemaConfigs.DATA_SOURCES_GET_BY_ID.value.primary_output_schema,
         )

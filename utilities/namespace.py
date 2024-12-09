@@ -25,6 +25,7 @@ class AppNamespaces(Enum):
         path="notifications", description="Notifications Namespace"
     )
     MAP = NamespaceAttributes(path="map", description="Map Namespace")
+    BATCH = NamespaceAttributes(path="batch", description="Batch Namespace")
 
 
 def create_namespace(
