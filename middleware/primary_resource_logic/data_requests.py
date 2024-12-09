@@ -194,7 +194,6 @@ def get_data_requests_wrapper(
         }
     return get_many(
         middleware_parameters=MiddlewareParameters(
-            db_client=db_client,
             access_info=access_info,
             entry_name="data requests",
             relation=Relations.DATA_REQUESTS_EXPANDED.value,
@@ -251,7 +250,6 @@ def delete_data_request_wrapper(
     """
     return delete_entry(
         middleware_parameters=MiddlewareParameters(
-            db_client=db_client,
             access_info=access_info,
             entry_name="Data request",
             relation=RELATION,
@@ -299,7 +297,6 @@ def update_data_request_wrapper(
     entry_dict = created_filtered_entry_dict(dto)
     return put_entry(
         middleware_parameters=MiddlewareParameters(
-            db_client=db_client,
             access_info=access_info,
             entry_name="Data request",
             relation=RELATION,
@@ -366,7 +363,6 @@ def get_data_request_related_sources(db_client: DatabaseClient, dto: GetByIDBase
 
     return get_related_resource(
         get_related_resources_parameters=GetRelatedResourcesParameters(
-            db_client=db_client,
             dto=dto,
             db_client_method=DatabaseClient.get_data_requests,
             primary_relation=Relations.DATA_REQUESTS,
@@ -383,7 +379,6 @@ def get_data_request_related_locations(
 ) -> Response:
     return get_related_resource(
         get_related_resources_parameters=GetRelatedResourcesParameters(
-            db_client=db_client,
             dto=dto,
             db_client_method=DatabaseClient.get_data_requests,
             primary_relation=Relations.DATA_REQUESTS,
@@ -435,7 +430,6 @@ def create_data_request_related_source(
 ):
     post_logic = CreateDataRequestRelatedSourceLogic(
         middleware_parameters=MiddlewareParameters(
-            db_client=db_client,
             access_info=access_info,
             entry_name="Request-Source association",
             relation=RELATED_SOURCES_RELATION,
@@ -458,7 +452,6 @@ def delete_data_request_related_source(
 ):
     return delete_entry(
         middleware_parameters=MiddlewareParameters(
-            db_client=db_client,
             access_info=access_info,
             entry_name="Request-Source association",
             relation=RELATED_SOURCES_RELATION,
@@ -483,7 +476,6 @@ def create_data_request_related_location(
 ):
     post_logic = CreateDataRequestRelatedLocationLogic(
         middleware_parameters=MiddlewareParameters(
-            db_client=db_client,
             access_info=access_info,
             entry_name="Request-Location association",
             relation=Relations.LINK_LOCATIONS_DATA_REQUESTS.value,
@@ -508,7 +500,6 @@ def delete_data_request_related_location(
 ):
     return delete_entry(
         middleware_parameters=MiddlewareParameters(
-            db_client=db_client,
             access_info=access_info,
             entry_name="Request-Location association",
             relation=Relations.LINK_LOCATIONS_DATA_REQUESTS.value,
