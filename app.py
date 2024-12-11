@@ -13,6 +13,7 @@ from resources.GithubDataRequests import namespace_github
 from resources.LinkToGithub import namespace_link_to_github
 from resources.LoginWithGithub import namespace_login_with_github
 from resources.Map import namespace_map
+from resources.Match import namespace_match
 from resources.Notifications import namespace_notifications
 from resources.OAuth import namespace_oauth
 from resources.Permissions import namespace_permissions
@@ -66,6 +67,7 @@ NAMESPACES = [
     namespace_map,
     namespace_signup,
     namespace_batch,
+    namespace_match,
 ]
 
 MY_PREFIX = "/api"

@@ -55,28 +55,6 @@ def insert_test_column_permission_data(db_client: DatabaseClient):
         pass  # Already added
 
 
-def create_agency_entry_for_search_cache(db_client: DatabaseClient) -> str:
-    """
-    Create an entry in `Agencies` guaranteed to appear in the search cache functionality
-    :param db_client:
-    :return:
-    """
-    submitted_name = "TEST SEARCH CACHE NAME"
-    db_client._create_entry_in_table(
-        table_name="agencies",
-        column_value_mappings={
-            "submitted_name": submitted_name,
-            "name": submitted_name,
-            "airtable_uid": uuid.uuid4().hex[:15],
-            "count_data_sources": 2000,  # AKA, an absurdly high number to guarantee it's the first result
-            "approved": True,
-            "homepage_url": None,
-            "jurisdiction_type": JurisdictionType.FEDERAL.value,
-        },
-    )
-    return submitted_name
-
-
 def create_data_source_entry_for_url_duplicate_checking(
     db_client: DatabaseClient,
 ) -> str:
@@ -138,24 +116,15 @@ def create_test_data_request(
     return TestDataRequestInfo(id=json["id"], submission_notes=submission_notes)
 
 
-def create_test_agency(flask_client: FlaskClient, jwt_authorization_header: dict):
-    submitted_name = get_test_name()
-    locality_name = get_test_name()
-    sample_agency_post_parameters = get_sample_agency_post_parameters(
-        submitted_name=submitted_name,
-        locality_name=locality_name,
-        jurisdiction_type=JurisdictionType.LOCAL,
-    )
-
-    json = run_and_validate_request(
-        flask_client=flask_client,
-        http_method="post",
-        endpoint=AGENCIES_BASE_ENDPOINT,
-        headers=jwt_authorization_header,
-        json=sample_agency_post_parameters,
-    )
-
-    return TestAgencyInfo(id=json["id"], submitted_name=submitted_name)
+def get_sample_location_info(locality_name: Optional[str] = None) -> dict:
+    if locality_name is None:
+        locality_name = get_test_name()
+    return {
+        "type": "Locality",
+        "state_iso": "PA",
+        "county_fips": "42003",
+        "locality_name": locality_name,
+    }
 
 
 def get_sample_agency_post_parameters(

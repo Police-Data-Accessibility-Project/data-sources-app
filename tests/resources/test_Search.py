@@ -7,9 +7,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas imp
 )
 from tests.conftest import client_with_mock_db, bypass_authentication_required
 from tests.helper_scripts.constants import TEST_RESPONSE
-from tests.helper_scripts.helper_functions import (
-    check_is_test_response,
-)
+from tests.helper_scripts.common_asserts import assert_is_test_response
 from utilities.enums import RecordCategories
 
 
@@ -80,4 +78,4 @@ def test_search_get_parameters(
     monkeypatch.setattr("resources.Search.search_wrapper", mock_search_wrapper_function)
 
     response = client_with_mock_db.client.get(url)
-    check_is_test_response(response)
+    assert_is_test_response(response)

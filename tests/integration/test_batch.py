@@ -1,14 +1,10 @@
-import os
 from dataclasses import dataclass
-from enum import Enum
 from http import HTTPStatus
-from typing import TextIO, Optional, Annotated, Callable
+from typing import Optional, Annotated, Callable
 
 import pytest
 
 from marshmallow import Schema
-from csv import DictWriter
-import tempfile
 
 from conftest import test_data_creator_flask, monkeysession
 from database_client.enums import LocationType
@@ -26,52 +22,19 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.batch_schemas impo
     DataSourcesPutBatchRequestSchema,
 )
 from tests.helper_scripts.common_test_data import get_test_name
-from tests.helper_scripts.common_test_functions import assert_contains_key_value_pairs
+from tests.helper_scripts.common_asserts import assert_contains_key_value_pairs
 from tests.helper_scripts.helper_classes.RequestValidator import RequestValidator
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,
 )
+from tests.helper_scripts.helper_classes.SimpleTempFile import SimpleTempFile
+from tests.helper_scripts.helper_classes.TestCSVCreator import TestCSVCreator
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
 
-SUFFIX_ARRAY = [".csv", ".csv", ".inv", ".csv"]
 
-
-# Helper scripts
-#
-class ResourceType(Enum):
-    AGENCY = "agencies"
-    SOURCE = "data_sources"
-    REQUEST = "data_requests"
-
-
-def get_endpoint_nomenclature(
-    resource_type: ResourceType,
-) -> str:
-    """
-    Get a string version of the resource, appropriate for endpoints.
-    """
-    return resource_type.value.replace("_", "-")
-
-
-class TestCSVCreator:
-
-    def __init__(self, schema: Schema):
-        self.fields = schema.fields
-
-    def create_csv(self, file: TextIO, rows: list[dict]):
-        header = list(self.fields.keys())
-        writer = DictWriter(file, fieldnames=header)
-        # Write header row using header
-        writer.writerow({field: field for field in header})
-
-        for row in rows:
-            writer.writerow(row)
-        file.close()
-
-
-def stringify_list_of_ints(l: list):
+def stringify_list_of_ints(l: list[int]):
     for i in range(len(l)):
         l[i] = str(l[i])
     return l
@@ -147,26 +110,6 @@ def data_sources_put_runner(runner: BatchTestRunner):
         csv_creator=TestCSVCreator(DataSourcesPutBatchRequestSchema(exclude=["file"])),
         schema=DataSourcesPutRequestFlatBaseSchema(),
     )
-
-
-class SimpleTempFile:
-
-    def __init__(self, suffix: str = ".csv"):
-        self.suffix = suffix
-        self.temp_file = None
-
-    def __enter__(self):
-        self.temp_file = tempfile.NamedTemporaryFile(
-            mode="w+", encoding="utf-8", suffix=self.suffix, delete=False
-        )
-        return self.temp_file
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        try:
-            self.temp_file.close()
-            os.unlink(self.temp_file.name)
-        except Exception as e:
-            print(f"Error cleaning up temporary file {self.temp_file.name}: {e}")
 
 
 def generate_agencies_locality_data():

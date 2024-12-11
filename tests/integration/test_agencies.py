@@ -26,7 +26,7 @@ from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
 )
 from tests.helper_scripts.constants import AGENCIES_BASE_ENDPOINT
 
-from tests.helper_scripts.common_test_functions import (
+from tests.helper_scripts.common_asserts import (
     assert_expected_get_many_result,
     assert_contains_key_value_pairs,
 )

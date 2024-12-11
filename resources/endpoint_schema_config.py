@@ -15,6 +15,7 @@ from middleware.primary_resource_logic.permissions_logic import (
 from middleware.schema_and_dto_logic.primary_resource_dtos.batch_dtos import (
     BatchRequestDTO,
 )
+from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import AgencyMatchDTO
 from middleware.schema_and_dto_logic.primary_resource_dtos.reset_token_dtos import (
     ResetPasswordDTO,
 )
@@ -31,6 +32,8 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.batch_schemas impo
     DataSourcesPostBatchRequestSchema,
     DataSourcesPutBatchRequestSchema,
 )
+from middleware.schema_and_dto_logic.primary_resource_schemas.match_schemas import AgencyMatchSchema, \
+    MatchAgencyResponseSchema
 from middleware.schema_and_dto_logic.primary_resource_schemas.reset_token_schemas import (
     ResetPasswordSchema,
 )
@@ -518,6 +521,13 @@ class SchemaConfigs(Enum):
         input_schema=AgenciesPutBatchRequestSchema(),
         input_dto_class=AgenciesPutDTO,
         primary_output_schema=BatchPutResponseSchema(),
+    )
+    # endregion
+    # region Match
+    MATCH_AGENCY = EndpointSchemaConfig(
+        input_schema=AgencyMatchSchema(),
+        input_dto_class=AgencyMatchDTO,
+        primary_output_schema=MatchAgencyResponseSchema(),
     )
 
     # endregion

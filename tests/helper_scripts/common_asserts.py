@@ -4,21 +4,12 @@ Functions commonly used in testing and asserting results
 
 from http import HTTPStatus
 
+from flask import Response
 from flask_jwt_extended import decode_token
 
 from database_client.constants import PAGE_SIZE
 from database_client.database_client import DatabaseClient
-
-from tests.helper_scripts.simple_result_validators import (
-    check_response_status,
-    assert_is_oauth_redirect_link,
-)
-
-
-def assert_expected_pre_callback_response(response):
-    check_response_status(response, HTTPStatus.FOUND)
-    response_text = response.text
-    assert_is_oauth_redirect_link(response_text)
+from tests.helper_scripts.constants import TEST_RESPONSE
 
 
 def assert_api_key_exists_for_email(db_client: DatabaseClient, email: str, api_key):
@@ -50,3 +41,14 @@ def assert_contains_key_value_pairs(
         assert key in dict_to_check, f"Expected {key} to be in {dict_to_check}"
         dict_value = dict_to_check[key]
         assert dict_value == value, f"Expected {key} to be {value}, was {dict_value}"
+
+
+def assert_is_test_response(response):
+    assert_response_status(response, TEST_RESPONSE.status_code)
+    assert response.json == TEST_RESPONSE.response
+
+
+def assert_response_status(response: Response, status_code):
+    assert (
+        response.status_code == status_code
+    ), f"{response.request.base_url}: Expected status code {status_code}, got {response.status_code}: {response.text}"

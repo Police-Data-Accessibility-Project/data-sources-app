@@ -5,7 +5,7 @@ from flask.testing import FlaskClient
 from marshmallow import Schema
 
 from tests.helper_scripts.helper_functions import add_query_params
-from tests.helper_scripts.simple_result_validators import check_response_status
+from tests.helper_scripts.common_asserts import assert_response_status
 
 http_methods = Literal["get", "post", "put", "patch", "delete"]
 
@@ -54,7 +54,7 @@ def run_and_validate_request(
         )
     else:
         response = flask_client.open(endpoint, method=http_method, **request_kwargs)
-    check_response_status(response, expected_response_status.value)
+    assert_response_status(response, expected_response_status.value)
 
     if not return_json:
         return response.data
