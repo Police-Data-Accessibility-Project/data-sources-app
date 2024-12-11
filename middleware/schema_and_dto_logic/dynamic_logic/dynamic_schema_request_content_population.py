@@ -8,8 +8,8 @@ from pydantic import BaseModel
 
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.custom_types import SchemaTypes, DTOTypes
-from middleware.schema_and_dto_logic.primary_resource_dtos.batch_dtos import (
-    BatchRequestDTO,
+from middleware.schema_and_dto_logic.primary_resource_dtos.bulk_dtos import (
+    BulkRequestDTO,
 )
 from middleware.schema_and_dto_logic.util import (
     _get_required_argument,
@@ -42,7 +42,7 @@ def populate_schema_with_request_content(
     """
     # Get all declared fields from the schema
     if load_file:
-        return BatchRequestDTO(
+        return BulkRequestDTO(
             file=request.files.get("file"), csv_schema=schema, inner_dto_class=dto_class
         )
     fields = schema.fields

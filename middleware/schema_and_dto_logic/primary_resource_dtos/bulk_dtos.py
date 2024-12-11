@@ -7,7 +7,7 @@ from werkzeug.datastructures import FileStorage
 
 
 @dataclass
-class BatchRequestDTO:
+class BulkRequestDTO:
     file: FileStorage
     csv_schema: Schema
     inner_dto_class: Any

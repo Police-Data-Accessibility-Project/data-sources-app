@@ -12,8 +12,8 @@ from middleware.primary_resource_logic.permissions_logic import (
     PermissionsRequestDTO,
     PermissionsGetRequestSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.batch_dtos import (
-    BatchRequestDTO,
+from middleware.schema_and_dto_logic.primary_resource_dtos.bulk_dtos import (
+    BulkRequestDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import AgencyMatchDTO
 from middleware.schema_and_dto_logic.primary_resource_dtos.reset_token_dtos import (
@@ -23,7 +23,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.archives_schemas i
     ArchivesGetResponseSchema,
     ArchivesPutRequestSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.batch_schemas import (
+from middleware.schema_and_dto_logic.primary_resource_schemas.bulk_schemas import (
     BatchRequestSchema,
     BatchPostResponseSchema,
     BatchPutResponseSchema,
@@ -502,22 +502,22 @@ class SchemaConfigs(Enum):
     # endregion
 
     # region Batch
-    BATCH_DATA_SOURCES_POST = EndpointSchemaConfig(
+    BULK_DATA_SOURCES_POST = EndpointSchemaConfig(
         input_schema=DataSourcesPostBatchRequestSchema(),
         input_dto_class=DataSourcesPostDTO,
         primary_output_schema=BatchPostResponseSchema(),
     )
-    BATCH_DATA_SOURCES_PUT = EndpointSchemaConfig(
+    BULK_DATA_SOURCES_PUT = EndpointSchemaConfig(
         input_schema=DataSourcesPutBatchRequestSchema(),
         input_dto_class=DataSourcesPutDTO,
         primary_output_schema=BatchPutResponseSchema(),
     )
-    BATCH_AGENCIES_POST = EndpointSchemaConfig(
+    BULK_AGENCIES_POST = EndpointSchemaConfig(
         input_schema=AgenciesPostBatchRequestSchema(),
         input_dto_class=AgenciesPostDTO,
         primary_output_schema=BatchPostResponseSchema(),
     )
-    BATCH_AGENCIES_PUT = EndpointSchemaConfig(
+    BULK_AGENCIES_PUT = EndpointSchemaConfig(
         input_schema=AgenciesPutBatchRequestSchema(),
         input_dto_class=AgenciesPutDTO,
         primary_output_schema=BatchPutResponseSchema(),
