@@ -19,6 +19,19 @@ from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
 )
 
 
+class TestMatchLocationInfo:
+    def __init__(self, tdc: TestDataCreatorFlask):
+        self.tdc = tdc
+        self.locality_name = get_test_name()
+        self.locality_id = self.tdc.locality(locality_name=self.locality_name)
+        self.location_info = get_sample_location_info(locality_name=self.locality_name)
+        self.location_kwargs = {
+            "state": "Pennsylvania",
+            "county": "Allegheny",
+            "locality": self.locality_name,
+        }
+
+
 @dataclass
 class TestMatchAgencySetup:
     tdc: TestDataCreatorFlask
@@ -37,17 +50,11 @@ def match_agency_setup(
 ) -> TestMatchAgencySetup:
     tdc = test_data_creator_flask
     tdc.clear_test_data()
-    locality_name = get_test_name()
-    locality_id = tdc.locality(locality_name=locality_name)
-    location_info = get_sample_location_info(locality_name=locality_name)
-    agency = tdc.agency(location_info=location_info)
+    loc_info: TestMatchLocationInfo = TestMatchLocationInfo(tdc)
+    agency = tdc.agency(location_info=loc_info.location_info)
     return TestMatchAgencySetup(
         tdc=tdc,
-        location_kwargs={
-            "state": "Pennsylvania",
-            "county": "Allegheny",
-            "locality": locality_name,
-        },
+        location_kwargs=loc_info.location_kwargs,
         agency_name=agency.submitted_name,
     )
 
@@ -97,3 +104,22 @@ def test_agency_match_no_match(match_agency_setup: TestMatchAgencySetup):
     )
     amr = try_matching_agency(db_client=mas.tdc.db_client, dto=dto)
     assert amr.status == AgencyMatchStatus.NO_MATCH
+
+
+# region Test Full Integration
+
+
+def test_agency_match_full_integration(test_data_creator_flask: TestDataCreatorFlask):
+
+    location_1_info = get_sample_location_info()
+
+    # Create a csv of possible agencies
+    # One an exact match
+    # One a partial match
+    # One a location match
+    # One a no match
+
+    # Submit and confirm json received for each.
+
+
+# endregion

@@ -519,5 +519,8 @@ class SchemaConfigs(Enum):
         input_dto_class=AgenciesPutDTO,
         primary_output_schema=BatchPutResponseSchema(),
     )
+    # endregion
+    # region Match
+    MATCH_AGENCIES = EndpointSchemaConfig()
 
     # endregion

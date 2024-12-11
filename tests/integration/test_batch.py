@@ -22,7 +22,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.batch_schemas impo
     DataSourcesPutBatchRequestSchema,
 )
 from tests.helper_scripts.common_test_data import get_test_name
-from tests.helper_scripts.common_test_functions import assert_contains_key_value_pairs
+from tests.helper_scripts.common_asserts import assert_contains_key_value_pairs
 from tests.helper_scripts.helper_classes.RequestValidator import RequestValidator
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,

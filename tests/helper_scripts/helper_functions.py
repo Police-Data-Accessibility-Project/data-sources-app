@@ -1,11 +1,9 @@
 """This module contains helper functions used by middleware pytests."""
 
-import uuid
 from collections import namedtuple
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 from http import HTTPStatus
-from unittest.mock import MagicMock
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 import psycopg
@@ -15,31 +13,18 @@ from werkzeug.security import generate_password_hash
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
-from middleware.custom_dataclasses import (
-    GithubUserInfo,
-    OAuthCallbackInfo,
-    FlaskSessionCallbackInfo,
-)
 from middleware.enums import (
-    CallbackFunctionsEnum,
     PermissionsEnum,
     Relations,
     JurisdictionType,
 )
 from resources.ApiKeyResource import API_KEY_ROUTE
 from tests.helper_scripts.common_test_data import get_test_name, get_test_email
-from tests.helper_scripts.constants import TEST_RESPONSE
-from tests.helper_scripts.simple_result_validators import check_response_status
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_classes.UserInfo import UserInfo
 
 TestTokenInsert = namedtuple("TestTokenInsert", ["id", "email", "token"])
 TestUser = namedtuple("TestUser", ["id", "email", "password_hash"])
-
-
-def check_is_test_response(response):
-    check_response_status(response, TEST_RESPONSE.status_code)
-    assert response.json == TEST_RESPONSE.response
 
 
 def create_test_user_db_client(db_client: DatabaseClient) -> UserInfo:

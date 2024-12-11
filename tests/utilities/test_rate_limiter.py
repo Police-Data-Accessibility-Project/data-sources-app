@@ -6,7 +6,7 @@ import pytest
 from config import limiter
 from tests.conftest import client_with_mock_db, bypass_jwt_required
 from tests.helper_scripts.constants import TEST_RESPONSE
-from tests.helper_scripts.simple_result_validators import check_response_status
+from tests.helper_scripts.common_asserts import assert_response_status
 
 
 def post_login_request(client_with_mock_db, ip_address="127.0.0.1"):
@@ -55,14 +55,14 @@ def test_rate_limiter_explicit_limit(
 
     for i in range(5):
         response = post_login_request(client_with_mock_db)
-        check_response_status(response, TEST_RESPONSE.status_code)
+        assert_response_status(response, TEST_RESPONSE.status_code)
 
     response = post_login_request(client_with_mock_db)
     assert "5 per 1 minute" in response.json["message"]
 
     # Test that a different IP address still works
     response = post_login_request(client_with_mock_db, ip_address="237.84.2.178")
-    check_response_status(response, TEST_RESPONSE.status_code)
+    assert_response_status(response, TEST_RESPONSE.status_code)
 
 
 def test_rate_limiter_default_limit(

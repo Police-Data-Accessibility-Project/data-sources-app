@@ -15,7 +15,7 @@ from tests.helper_scripts.common_test_data import (
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.common_test_functions import (
+from tests.helper_scripts.common_asserts import (
     assert_jwt_token_matches_user_email,
 )
 from tests.helper_scripts.constants import (
