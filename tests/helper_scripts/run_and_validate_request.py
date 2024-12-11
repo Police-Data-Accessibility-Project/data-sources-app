@@ -4,7 +4,7 @@ from typing import Optional, Type, Union, Literal, TextIO
 from flask.testing import FlaskClient
 from marshmallow import Schema
 
-from tests.helper_scripts.helper_functions import add_query_params
+from tests.helper_scripts.helper_functions_simple import add_query_params
 from tests.helper_scripts.common_asserts import assert_response_status
 
 http_methods = Literal["get", "post", "put", "patch", "delete"]

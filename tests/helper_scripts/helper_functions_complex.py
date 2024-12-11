@@ -1,10 +1,8 @@
 """This module contains helper functions used by middleware pytests."""
 
 from collections import namedtuple
-from datetime import datetime, timezone, timedelta
 from typing import Optional
 from http import HTTPStatus
-from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 import psycopg
 import sqlalchemy
@@ -20,8 +18,10 @@ from middleware.enums import (
 )
 from resources.ApiKeyResource import API_KEY_ROUTE
 from tests.helper_scripts.common_test_data import get_test_name, get_test_email
+from tests.helper_scripts.helper_classes.RequestValidator import RequestValidator
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_classes.UserInfo import UserInfo
+from tests.helper_scripts.helper_functions_simple import get_authorization_header
 
 TestTokenInsert = namedtuple("TestTokenInsert", ["id", "email", "token"])
 TestUser = namedtuple("TestUser", ["id", "email", "password_hash"])
@@ -38,46 +38,39 @@ def create_test_user_db_client(db_client: DatabaseClient) -> UserInfo:
 JWTTokens = namedtuple("JWTTokens", ["access_token", "refresh_token"])
 
 
-def login_and_return_jwt_tokens(
-    client_with_db: FlaskClient, user_info: UserInfo
-) -> JWTTokens:
+def login_and_return_jwt_tokens(client: FlaskClient, user_info: UserInfo) -> JWTTokens:
     """
     Login as a given user and return the associated session token,
     using the /login endpoint of the Flask API
-    :param client_with_db:
+    :param client:
     :param user_info:
     :return:
     """
-    response = client_with_db.post(
-        "/api/login",
-        json={"email": user_info.email, "password": user_info.password},
+    rv = RequestValidator(flask_client=client)
+    data = rv.login(
+        email=user_info.email,
+        password=user_info.password,
     )
-    assert response.status_code == HTTPStatus.OK.value, "User login unsuccessful"
     return JWTTokens(
-        access_token=response.json.get("access_token"),
-        refresh_token=response.json.get("refresh_token"),
+        access_token=data.get("access_token"),
+        refresh_token=data.get("refresh_token"),
     )
 
 
-def request_reset_password_api(client_with_db, mocker, user_info):
+def request_reset_password_api(client: FlaskClient, mocker, user_info):
     """
     Send a request to reset password via a Flask call to the /request-reset-password endpoint
     and return the reset token
-    :param client_with_db:
+    :param client:
     :param mocker:
     :param user_info:
     :return:
     """
-    mock = mocker.patch(
-        "middleware.primary_resource_logic.reset_token_queries.send_password_reset_link"
-    )
-    response = client_with_db.post(
-        "/api/request-reset-password", json={"email": user_info.email}
-    )
-    return mock.call_args[1]["token"]
+    rv = RequestValidator(flask_client=client)
+    return rv.request_reset_password(email=user_info.email, mocker=mocker)
 
 
-def create_api_key(client_with_db, jwt_authorization_header: dict) -> str:
+def create_api_key(client_with_db: FlaskClient, jwt_authorization_header: dict) -> str:
     """
     Obtain an api key for the given user, via a Flask call to the /api-key endpoint
     :param client_with_db:
@@ -153,13 +146,6 @@ def setup_get_typeahead_suggestion_test_data(cursor: Optional[psycopg.Cursor] = 
         pass
 
 
-def get_authorization_header(
-    scheme: str,
-    token: str,
-) -> dict:
-    return {"Authorization": f"{scheme} {token}"}
-
-
 def create_test_user_setup(
     client: FlaskClient, permissions: Optional[list[PermissionsEnum]] = None
 ) -> TestUserSetup:
@@ -192,29 +178,3 @@ def create_admin_test_user_setup(flask_client: FlaskClient) -> TestUserSetup:
         permissions=[PermissionsEnum.READ_ALL_USER_INFO, PermissionsEnum.DB_WRITE],
     )
     return tus_admin
-
-
-def add_query_params(url, params: dict):
-    """
-    Add query parameters to a URL.
-    :param url:
-    :param params:
-    :return:
-    """
-
-    # Parse the original URL into components
-    url_parts = list(urlparse(url))
-
-    # Extract existing query parameters (if any) and update with the new ones
-    query = dict(parse_qs(url_parts[4]))
-    query.update(params)
-
-    # Encode the updated query parameters
-    url_parts[4] = urlencode(query, doseq=True)
-
-    # Rebuild the URL with the updated query parameters
-    return urlunparse(url_parts)
-
-
-def get_notification_valid_date():
-    return datetime.now(timezone.utc) - timedelta(days=30)

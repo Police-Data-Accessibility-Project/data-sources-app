@@ -5,11 +5,11 @@ from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.reset_token_queries import request_reset_password
 from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import ResponseInfo
-from utilities.namespace import create_namespace
+from utilities.namespace import create_namespace, AppNamespaces
 
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
-namespace_request_reset_password = create_namespace()
+namespace_request_reset_password = create_namespace(AppNamespaces.AUTH)
 
 
 @namespace_request_reset_password.route("/request-reset-password")

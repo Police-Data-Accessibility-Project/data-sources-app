@@ -25,7 +25,7 @@ from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
 )
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
-from tests.helper_scripts.helper_functions import (
+from tests.helper_scripts.helper_functions_complex import (
     create_admin_test_user_setup,
     create_test_user_setup,
 )

@@ -12,10 +12,10 @@ from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
 )
 from tests.helper_scripts.constants import DATA_SOURCES_BASE_ENDPOINT
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
-from tests.helper_scripts.helper_functions import (
+from tests.helper_scripts.helper_functions_complex import (
     request_reset_password_api,
-    get_authorization_header,
 )
+from tests.helper_scripts.helper_functions_simple import get_authorization_header
 from conftest import test_data_creator_flask, monkeysession
 
 

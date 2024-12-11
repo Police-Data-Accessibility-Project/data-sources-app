@@ -2,7 +2,7 @@ import requests
 
 from middleware.third_party_interaction_logic.mailgun_logic import send_via_mailgun
 from middleware.util import get_env_variable, create_web_app_url
-from tests.helper_scripts.helper_functions import add_query_params
+from tests.helper_scripts.helper_functions_simple import add_query_params
 
 
 def post_to_webhook(msg: str):

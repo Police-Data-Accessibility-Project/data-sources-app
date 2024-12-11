@@ -12,7 +12,7 @@ from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 
-namespace_login_with_github = create_namespace(AppNamespaces.AUTH)
+namespace_login_with_github = create_namespace(AppNamespaces.OAUTH)
 
 
 @namespace_login_with_github.route("/login-with-github")
