@@ -1,21 +1,23 @@
 from enum import Enum
 from typing import Optional, List
 
-from pydantic import BaseModel
+from flask import Response
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
+from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
     AgencyMatchOuterDTO,
-    AgencyMatchInnerDTO,
+    AgencyMatchDTO,
 )
 from rapidfuzz import fuzz
+
+from middleware.util import update_if_not_none
 
 
 class AgencyMatchStatus(Enum):
     EXACT = "Exact Match"
     PARTIAL = "Partial Matches"
-    LOCATION = "Location Only"
     NO_MATCH = "No Match"
 
 
@@ -28,8 +30,6 @@ def get_agency_match_message(status: AgencyMatchStatus):
             return "Exact match found."
         case AgencyMatchStatus.PARTIAL:
             return "Partial matches found."
-        case AgencyMatchStatus.LOCATION:
-            return "Matches found only on location."
         case AgencyMatchStatus.NO_MATCH:
             return "No matches found."
 
@@ -49,13 +49,13 @@ def match_agencies(db_client: DatabaseClient, dto: AgencyMatchOuterDTO):
         amrs.append(amr)
 
 
-def try_getting_exact_match_agency(dto: AgencyMatchInnerDTO, agencies: list[dict]):
+def try_getting_exact_match_agency(dto: AgencyMatchDTO, agencies: list[dict]):
     for agency in agencies:
         if agency["submitted_name"] == dto.name:
             return agency
 
 
-def try_getting_partial_match_agencies(dto: AgencyMatchInnerDTO, agencies: list[dict]):
+def try_getting_partial_match_agencies(dto: AgencyMatchDTO, agencies: list[dict]):
     partial_matches = []
     for agency in agencies:
         if fuzz.ratio(dto.name, agency["submitted_name"]) >= SIMILARITY_THRESHOLD:
@@ -63,9 +63,23 @@ def try_getting_partial_match_agencies(dto: AgencyMatchInnerDTO, agencies: list[
 
     return partial_matches
 
+def format_response(amr: AgencyMatchResponse) -> Response:
+    data = {
+        "status": amr.status.value,
+        "message": amr.message,
+    }
+    update_if_not_none(dict_to_update=data, secondary_dict={"agencies": amr.agencies})
+    return FlaskResponseManager.make_response(
+        data=data,
+    )
+
+def match_agency_wrapper(db_client: DatabaseClient, dto: AgencyMatchOuterDTO):
+    result = try_matching_agency(db_client=db_client, dto=dto)
+    return format_response(result)
+
 
 def try_matching_agency(
-    db_client: DatabaseClient, dto: AgencyMatchInnerDTO
+    db_client: DatabaseClient, dto: AgencyMatchDTO
 ) -> AgencyMatchResponse:
 
     location_id = _get_location_id(db_client, dto)
@@ -86,11 +100,7 @@ def try_matching_agency(
     if len(partial_match_agencies) > 0:
         return _partial_match_response(partial_match_agencies)
 
-    return _location_match_response(agencies)
-
-
-def _location_match_response(agencies):
-    return AgencyMatchResponse(status=AgencyMatchStatus.LOCATION, agencies=agencies)
+    return _no_match_response()
 
 
 def _partial_match_response(partial_match_agencies):

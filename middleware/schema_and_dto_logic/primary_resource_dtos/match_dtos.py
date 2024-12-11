@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class AgencyMatchInnerDTO(BaseModel):
+class AgencyMatchDTO(BaseModel):
     name: str
     state: str
     county: Optional[str]
@@ -11,4 +11,4 @@ class AgencyMatchInnerDTO(BaseModel):
 
 
 class AgencyMatchOuterDTO(BaseModel):
-    entries: list[AgencyMatchInnerDTO]
+    entries: list[AgencyMatchDTO]

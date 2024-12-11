@@ -75,7 +75,7 @@ class PermissionsManager:
         try:
             user_info = db_client.get_user_info(user_email)
         except UserNotFoundError:
-            abort(HTTPStatus.NOT_FOUND, "User not found")
+            abort(HTTPStatus.BAD_REQUEST, "User not found")
             return
         self.db_client = db_client
         self.user_email = user_email

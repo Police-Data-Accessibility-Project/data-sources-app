@@ -538,3 +538,27 @@ class RequestValidator:
             headers=headers,
             expected_schema=SchemaConfigs.DATA_SOURCES_GET_BY_ID.value.primary_output_schema,
         )
+
+    def match_agency(
+            self,
+            headers: dict,
+            name: str,
+            state: str,
+            county: str,
+            locality: str):
+        data = {
+            "name": name,
+            "state": state,
+        }
+        update_if_not_none(
+            dict_to_update=data,
+            secondary_dict={
+                "county": county,
+                "locality": locality,
+            })
+        return self.post(
+            endpoint="/api/match/agency",
+            headers=headers,
+            json=data,
+            expected_schema=SchemaConfigs.MATCH_AGENCY.value.primary_output_schema,
+        )

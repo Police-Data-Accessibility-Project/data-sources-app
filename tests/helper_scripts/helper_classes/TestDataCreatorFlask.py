@@ -76,6 +76,8 @@ class TestDataCreatorFlask:
     def clear_test_data(self):
         tdc_db = TestDataCreatorDBClient()
         tdc_db.clear_test_data()
+        # Recreate admin user
+        self.admin_tus = create_admin_test_user_setup(self.flask_client)
 
     def data_request(
         self, user_tus: Optional[TestUserSetup] = None
