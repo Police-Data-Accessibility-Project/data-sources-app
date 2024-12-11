@@ -23,7 +23,7 @@ from middleware.custom_dataclasses import (
 from middleware.third_party_interaction_logic.callback_oauth_logic import (
     get_github_oauth_access_token,
 )
-from tests.helper_scripts.helper_functions import add_query_params
+from tests.helper_scripts.helper_functions_simple import add_query_params
 
 
 def get_flask_session_callback_info() -> FlaskSessionCallbackInfo:

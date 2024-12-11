@@ -6,11 +6,11 @@ from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.login_queries import try_logging_in
 from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import ResponseInfo
-from utilities.namespace import create_namespace
+from utilities.namespace import create_namespace, AppNamespaces
 
 from resources.PsycopgResource import PsycopgResource
 
-namespace_login = create_namespace()
+namespace_login = create_namespace(AppNamespaces.AUTH)
 
 
 @namespace_login.route("/login")

@@ -5,7 +5,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggesti
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.helper_functions import (
+from tests.helper_scripts.helper_functions_complex import (
     setup_get_typeahead_suggestion_test_data,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request

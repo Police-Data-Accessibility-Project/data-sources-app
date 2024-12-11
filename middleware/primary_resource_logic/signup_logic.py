@@ -15,7 +15,7 @@ from middleware.primary_resource_logic.user_queries import UserRequestDTO
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import EmailOnlyDTO
 from middleware.third_party_interaction_logic.mailgun_logic import send_via_mailgun
 from middleware.util import create_web_app_url
-from tests.helper_scripts.helper_functions import add_query_params
+from tests.helper_scripts.helper_functions_simple import add_query_params
 
 
 def get_signup_link(token: str):

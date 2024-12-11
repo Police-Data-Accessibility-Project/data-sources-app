@@ -12,10 +12,10 @@ from middleware.primary_resource_logic.reset_token_queries import (
 from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import ResponseInfo
 
-from utilities.namespace import create_namespace
+from utilities.namespace import create_namespace, AppNamespaces
 from resources.PsycopgResource import PsycopgResource, handle_exceptions
 
-namespace_reset_token_validation = create_namespace()
+namespace_reset_token_validation = create_namespace(AppNamespaces.AUTH)
 
 
 @namespace_reset_token_validation.route("/reset-token-validation")

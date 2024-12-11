@@ -16,9 +16,7 @@ from tests.helper_scripts.constants import (
     USER_PROFILE_RECENT_SEARCHES_ENDPOINT,
 )
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
-from tests.helper_scripts.helper_functions import (
-    add_query_params,
-)
+from tests.helper_scripts.helper_functions_simple import add_query_params
 from tests.helper_scripts.run_and_validate_request import (
     run_and_validate_request,
     http_methods,
