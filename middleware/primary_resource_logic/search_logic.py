@@ -105,9 +105,9 @@ def search_wrapper(
     create_search_record(access_info, db_client, dto)
     explicit_record_categories = get_explicit_record_categories(dto.record_categories)
     search_results = db_client.search_with_location_and_record_type(
+        record_categories=explicit_record_categories,
         state=dto.state,
         # Pass modified record categories, which breaks down ALL into individual categories
-        record_categories=explicit_record_categories,
         county=dto.county,
         locality=dto.locality,
     )

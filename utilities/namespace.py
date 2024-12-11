@@ -26,6 +26,7 @@ class AppNamespaces(Enum):
     )
     MAP = NamespaceAttributes(path="map", description="Map Namespace")
     BATCH = NamespaceAttributes(path="batch", description="Batch Namespace")
+    MATCH = NamespaceAttributes(path="match", description="Match Namespace")
 
 
 def create_namespace(

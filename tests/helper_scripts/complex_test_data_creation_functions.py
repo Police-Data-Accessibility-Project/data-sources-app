@@ -158,6 +158,17 @@ def create_test_agency(flask_client: FlaskClient, jwt_authorization_header: dict
     return TestAgencyInfo(id=json["id"], submitted_name=submitted_name)
 
 
+def get_sample_location_info(locality_name: Optional[str] = None) -> dict:
+    if locality_name is None:
+        locality_name = get_test_name()
+    return {
+        "type": "Locality",
+        "state_iso": "PA",
+        "county_fips": "42003",
+        "locality_name": locality_name,
+    }
+
+
 def get_sample_agency_post_parameters(
     submitted_name,
     locality_name,
