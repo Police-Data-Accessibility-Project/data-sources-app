@@ -468,57 +468,57 @@ class RequestValidator:
         )
 
     @dataclass
-    class BatchOperationParams:
+    class BulkOperationParams:
         file: BytesIO
         headers: dict
         expected_response_status: HTTPStatus = HTTPStatus.OK
 
-    def insert_agencies_batch(
+    def insert_agencies_bulk(
         self,
-        bop: BatchOperationParams,
-        expected_schema=SchemaConfigs.BATCH_AGENCIES_POST.value.primary_output_schema,
+        bop: BulkOperationParams,
+        expected_schema=SchemaConfigs.BULK_AGENCIES_POST.value.primary_output_schema,
     ):
         return self.post(
-            endpoint="/api/batch/agencies",
+            endpoint="/api/bulk/agencies",
             headers=bop.headers,
             file=bop.file,
             expected_schema=expected_schema,
             expected_response_status=bop.expected_response_status,
         )
 
-    def update_agencies_batch(
+    def update_agencies_bulk(
         self,
-        bop: BatchOperationParams,
-        expected_schema=SchemaConfigs.BATCH_AGENCIES_PUT.value.primary_output_schema,
+        bop: BulkOperationParams,
+        expected_schema=SchemaConfigs.BULK_AGENCIES_PUT.value.primary_output_schema,
     ):
         return self.put(
-            endpoint="/api/batch/agencies",
+            endpoint="/api/bulk/agencies",
             headers=bop.headers,
             file=bop.file,
             expected_schema=expected_schema,
             expected_response_status=bop.expected_response_status,
         )
 
-    def insert_data_sources_batch(
+    def insert_data_sources_bulk(
         self,
-        bop: BatchOperationParams,
-        expected_schema=SchemaConfigs.BATCH_DATA_SOURCES_POST.value.primary_output_schema,
+        bop: BulkOperationParams,
+        expected_schema=SchemaConfigs.BULK_DATA_SOURCES_POST.value.primary_output_schema,
     ):
         return self.post(
-            endpoint="/api/batch/data-sources",
+            endpoint="/api/bulk/data-sources",
             headers=bop.headers,
             file=bop.file,
             expected_schema=expected_schema,
             expected_response_status=bop.expected_response_status,
         )
 
-    def update_data_sources_batch(
+    def update_data_sources_bulk(
         self,
-        bop: BatchOperationParams,
-        expected_schema=SchemaConfigs.BATCH_DATA_SOURCES_PUT.value.primary_output_schema,
+        bop: BulkOperationParams,
+        expected_schema=SchemaConfigs.BULK_DATA_SOURCES_PUT.value.primary_output_schema,
     ):
         return self.put(
-            endpoint="/api/batch/data-sources",
+            endpoint="/api/bulk/data-sources",
             headers=bop.headers,
             file=bop.file,
             expected_schema=expected_schema,

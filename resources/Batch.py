@@ -6,18 +6,18 @@ from middleware.access_logic import (
     AccessInfoPrimary,
 )
 from middleware.decorators import endpoint_info
-from middleware.primary_resource_logic.batch_logic import (
-    batch_post_agencies,
-    batch_post_data_sources,
-    batch_put_agencies,
-    batch_put_data_sources,
+from middleware.primary_resource_logic.bulk_logic import (
+    bulk_post_agencies,
+    bulk_post_data_sources,
+    bulk_put_agencies,
+    bulk_put_data_sources,
 )
 from resources.PsycopgResource import PsycopgResource
 from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 
-namespace_batch = create_namespace(AppNamespaces.BATCH)
+namespace_bulk = create_namespace(AppNamespaces.BULK)
 
 
 def add_csv_description(initial_description: str) -> str:
@@ -28,13 +28,13 @@ def add_csv_description(initial_description: str) -> str:
     )
 
 
-@namespace_batch.route("/agencies")
-class AgenciesBatch(PsycopgResource):
+@namespace_bulk.route("/agencies")
+class AgenciesBulk(PsycopgResource):
 
     @endpoint_info(
-        namespace=namespace_batch,
+        namespace=namespace_bulk,
         auth_info=STANDARD_JWT_AUTH_INFO,
-        schema_config=SchemaConfigs.BATCH_AGENCIES_POST,
+        schema_config=SchemaConfigs.BULK_AGENCIES_POST,
         description=add_csv_description(
             initial_description="Adds multiple agencies from a CSV file."
         ),
@@ -44,14 +44,14 @@ class AgenciesBatch(PsycopgResource):
     )
     def post(self, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
-            wrapper_function=batch_post_agencies,
-            schema_populate_parameters=SchemaConfigs.BATCH_AGENCIES_POST.value.get_schema_populate_parameters(),
+            wrapper_function=bulk_post_agencies,
+            schema_populate_parameters=SchemaConfigs.BULK_AGENCIES_POST.value.get_schema_populate_parameters(),
         )
 
     @endpoint_info(
-        namespace=namespace_batch,
+        namespace=namespace_bulk,
         auth_info=WRITE_ONLY_AUTH_INFO,
-        schema_config=SchemaConfigs.BATCH_AGENCIES_PUT,
+        schema_config=SchemaConfigs.BULK_AGENCIES_PUT,
         description=add_csv_description(
             initial_description="Updates multiple agencies from a CSV file."
         ),
@@ -61,18 +61,18 @@ class AgenciesBatch(PsycopgResource):
     )
     def put(self, access_info: AccessInfoPrimary):
         return self.run_endpoint(
-            wrapper_function=batch_put_agencies,
-            schema_populate_parameters=SchemaConfigs.BATCH_AGENCIES_PUT.value.get_schema_populate_parameters(),
+            wrapper_function=bulk_put_agencies,
+            schema_populate_parameters=SchemaConfigs.BULK_AGENCIES_PUT.value.get_schema_populate_parameters(),
         )
 
 
-@namespace_batch.route("/data-sources")
-class DataSourcesBatch(PsycopgResource):
+@namespace_bulk.route("/data-sources")
+class DataSourcesBulk(PsycopgResource):
 
     @endpoint_info(
-        namespace=namespace_batch,
+        namespace=namespace_bulk,
         auth_info=STANDARD_JWT_AUTH_INFO,
-        schema_config=SchemaConfigs.BATCH_DATA_SOURCES_POST,
+        schema_config=SchemaConfigs.BULK_DATA_SOURCES_POST,
         description=add_csv_description(
             initial_description="Adds multiple data sources from a CSV file."
         ),
@@ -82,14 +82,14 @@ class DataSourcesBatch(PsycopgResource):
     )
     def post(self, access_info: AccessInfoPrimary):
         return self.run_endpoint(
-            wrapper_function=batch_post_data_sources,
-            schema_populate_parameters=SchemaConfigs.BATCH_DATA_SOURCES_POST.value.get_schema_populate_parameters(),
+            wrapper_function=bulk_post_data_sources,
+            schema_populate_parameters=SchemaConfigs.BULK_DATA_SOURCES_POST.value.get_schema_populate_parameters(),
         )
 
     @endpoint_info(
-        namespace=namespace_batch,
+        namespace=namespace_bulk,
         auth_info=WRITE_ONLY_AUTH_INFO,
-        schema_config=SchemaConfigs.BATCH_DATA_SOURCES_PUT,
+        schema_config=SchemaConfigs.BULK_DATA_SOURCES_PUT,
         description=add_csv_description(
             initial_description="Updates multiple data sources from a CSV file."
         ),
@@ -100,6 +100,6 @@ class DataSourcesBatch(PsycopgResource):
     def put(self, access_info: AccessInfoPrimary):
 
         return self.run_endpoint(
-            wrapper_function=batch_put_data_sources,
-            schema_populate_parameters=SchemaConfigs.BATCH_DATA_SOURCES_PUT.value.get_schema_populate_parameters(),
+            wrapper_function=bulk_put_data_sources,
+            schema_populate_parameters=SchemaConfigs.BULK_DATA_SOURCES_PUT.value.get_schema_populate_parameters(),
         )

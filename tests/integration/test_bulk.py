@@ -8,12 +8,12 @@ from marshmallow import Schema
 
 from conftest import test_data_creator_flask, monkeysession
 from database_client.enums import LocationType
-from middleware.primary_resource_logic.batch_logic import listify_strings
+from middleware.primary_resource_logic.bulk_logic import listify_strings
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_csv_to_schema_conversion_logic import (
     SchemaUnflattener,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.batch_schemas import (
+from middleware.schema_and_dto_logic.primary_resource_schemas.bulk_schemas import (
     AgenciesPostRequestFlatBaseSchema,
     DataSourcesPostRequestFlatBaseSchema,
     AgenciesPutRequestFlatBaseSchema,
@@ -140,7 +140,7 @@ def create_csv_and_run(
     with SimpleTempFile(suffix=suffix) as temp_file:
         runner.csv_creator.create_csv(file=temp_file, rows=rows)
         return request_validator_method(
-            bop=RequestValidator.BatchOperationParams(
+            bop=RequestValidator.BulkOperationParams(
                 file=temp_file,
                 headers=runner.tdc.get_admin_tus().jwt_authorization_header,
                 expected_response_status=expected_response_status,
@@ -167,7 +167,7 @@ def test_batch_agencies_insert_happy_path(
     data = create_csv_and_run(
         runner=runner,
         rows=rows,
-        request_validator_method=runner.tdc.request_validator.insert_agencies_batch,
+        request_validator_method=runner.tdc.request_validator.insert_agencies_bulk,
     )
 
     ids = data["ids"]
@@ -198,7 +198,7 @@ def test_batch_agencies_insert_some_errors(
     data = create_csv_and_run(
         runner=runner,
         rows=rows,
-        request_validator_method=runner.tdc.request_validator.insert_agencies_batch,
+        request_validator_method=runner.tdc.request_validator.insert_agencies_bulk,
     )
 
     check_for_errors(data)
@@ -212,7 +212,7 @@ def test_batch_agencies_insert_wrong_file_type(
         runner=agencies_post_runner,
         rows=[],
         suffix=".json",
-        request_validator_method=runner.tdc.request_validator.insert_agencies_batch,
+        request_validator_method=runner.tdc.request_validator.insert_agencies_bulk,
         expected_response_status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
         expected_schema=MessageSchema(),
     )
@@ -231,7 +231,7 @@ def test_batch_agencies_update_happy_path(
     data = create_csv_and_run(
         runner=runner,
         rows=rows,
-        request_validator_method=runner.tdc.request_validator.update_agencies_batch,
+        request_validator_method=runner.tdc.request_validator.update_agencies_bulk,
     )
 
     ids = [agencies[i].id for i in range(3)]
@@ -265,7 +265,7 @@ def test_batch_agencies_update_some_errors(
     data = create_csv_and_run(
         runner=runner,
         rows=rows,
-        request_validator_method=runner.tdc.request_validator.update_agencies_batch,
+        request_validator_method=runner.tdc.request_validator.update_agencies_bulk,
     )
     check_for_errors(data, check_ids=False)
 
@@ -278,7 +278,7 @@ def test_batch_agencies_update_wrong_file_type(
         runner=agencies_put_runner,
         rows=[],
         suffix=".json",
-        request_validator_method=runner.tdc.request_validator.update_agencies_batch,
+        request_validator_method=runner.tdc.request_validator.update_agencies_bulk,
         expected_response_status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
         expected_schema=MessageSchema(),
     )
@@ -295,7 +295,7 @@ def test_batch_data_sources_insert_happy_path(
     data = create_csv_and_run(
         runner=runner,
         rows=rows,
-        request_validator_method=runner.tdc.request_validator.insert_data_sources_batch,
+        request_validator_method=runner.tdc.request_validator.insert_data_sources_bulk,
     )
     ids = data["ids"]
     unflattener = SchemaUnflattener(
@@ -326,7 +326,7 @@ def test_batch_data_sources_insert_some_errors(
     data = create_csv_and_run(
         runner=runner,
         rows=rows,
-        request_validator_method=runner.tdc.request_validator.insert_data_sources_batch,
+        request_validator_method=runner.tdc.request_validator.insert_data_sources_bulk,
     )
     check_for_errors(data)
 
@@ -339,7 +339,7 @@ def test_batch_data_sources_insert_wrong_file_type(
         runner=data_sources_post_runner,
         rows=[],
         suffix=".json",
-        request_validator_method=runner.tdc.request_validator.insert_data_sources_batch,
+        request_validator_method=runner.tdc.request_validator.insert_data_sources_bulk,
         expected_response_status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
         expected_schema=MessageSchema(),
     )
@@ -356,7 +356,7 @@ def test_batch_data_sources_update_happy_path(
     data = create_csv_and_run(
         runner=runner,
         rows=rows,
-        request_validator_method=runner.tdc.request_validator.update_data_sources_batch,
+        request_validator_method=runner.tdc.request_validator.update_data_sources_bulk,
     )
 
     ids = [data_source.id for data_source in data_sources]
@@ -395,7 +395,7 @@ def test_batch_data_sources_update_some_errors(
     data = create_csv_and_run(
         runner=runner,
         rows=rows,
-        request_validator_method=runner.tdc.request_validator.update_data_sources_batch,
+        request_validator_method=runner.tdc.request_validator.update_data_sources_bulk,
     )
     check_for_errors(data, check_ids=False)
 
@@ -408,7 +408,7 @@ def test_batch_data_sources_update_wrong_file_type(
         runner=data_sources_put_runner,
         rows=[],
         suffix=".json",
-        request_validator_method=runner.tdc.request_validator.update_data_sources_batch,
+        request_validator_method=runner.tdc.request_validator.update_data_sources_bulk,
         expected_response_status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
         expected_schema=MessageSchema(),
     )

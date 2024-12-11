@@ -27,8 +27,8 @@ from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_conten
     setup_dto_class,
 )
 
-from middleware.schema_and_dto_logic.primary_resource_dtos.batch_dtos import (
-    BatchRequestDTO,
+from middleware.schema_and_dto_logic.primary_resource_dtos.bulk_dtos import (
+    BulkRequestDTO,
 )
 from csv import DictReader
 
@@ -65,7 +65,7 @@ def _abort_if_csv(file):
         )
 
 
-class BatchRequestManager:
+class BulkRequestManager:
 
     def __init__(self):
         self.requests = []
@@ -92,7 +92,7 @@ class BatchRequestManager:
         return len(self.get_requests_without_error()) == 0
 
 
-class BatchRowProcessor:
+class BulkRowProcessor:
 
     def __init__(self, raw_row: dict, request_id: int):
         self.raw_row = raw_row
@@ -139,7 +139,7 @@ class BatchRowProcessor:
         )
 
 
-class AgenciesPostBRP(BatchRowProcessor):
+class AgenciesPostBRP(BulkRowProcessor):
 
     def create_completed_request(self, inner_dto):
         return AgencyPostRequestInfo(
@@ -148,10 +148,10 @@ class AgenciesPostBRP(BatchRowProcessor):
 
 
 @dataclass
-class BatchConfig:
-    dto: BatchRequestDTO
+class BulkConfig:
+    dto: BulkRequestDTO
     handler: PostPutHandler
-    brp_class: type[BatchRowProcessor]
+    brp_class: type[BulkRowProcessor]
     schema: Schema
 
 
@@ -162,32 +162,32 @@ def listify_strings(raw_rows: list[dict]):
                 raw_row[k] = v.split(",")
 
 
-def run_batch(
-    batch_config: BatchConfig,
+def run_bulk(
+    bulk_config: BulkConfig,
 ):
     unflattener = SchemaUnflattener(
-        flat_schema_class=batch_config.dto.csv_schema.__class__
+        flat_schema_class=bulk_config.dto.csv_schema.__class__
     )
-    raw_rows = _get_raw_rows_from_csv(file=batch_config.dto.file)
+    raw_rows = _get_raw_rows_from_csv(file=bulk_config.dto.file)
     listify_strings(raw_rows)
-    schema = batch_config.schema
-    brm = BatchRequestManager()
+    schema = bulk_config.schema
+    brm = BulkRequestManager()
     for idx, raw_row in enumerate(raw_rows):
-        brp = batch_config.brp_class(raw_row=raw_row, request_id=idx)
+        brp = bulk_config.brp_class(raw_row=raw_row, request_id=idx)
         brp.process(
             unflattener=unflattener,
-            inner_dto_class=batch_config.dto.inner_dto_class,
+            inner_dto_class=bulk_config.dto.inner_dto_class,
             schema=schema,
         )
         brm.add_request(request=brp.request)
 
-    handler = batch_config.handler
+    handler = bulk_config.handler
     handler.mass_execute(requests=brm.get_requests_without_error())
     return brm
 
 
 def manage_response(
-    brm: BatchRequestManager, resource_name: str, verb: str, include_ids: bool = True
+    brm: BulkRequestManager, resource_name: str, verb: str, include_ids: bool = True
 ):
     errors = brm.get_error_dict()
     if brm.all_requests_errored_out():
@@ -216,9 +216,9 @@ def manage_response(
     )
 
 
-def batch_post_agencies(db_client: DatabaseClient, dto: BatchRequestDTO):
-    brm = run_batch(
-        batch_config=BatchConfig(
+def bulk_post_agencies(db_client: DatabaseClient, dto: BulkRequestDTO):
+    brm = run_bulk(
+        bulk_config=BulkConfig(
             dto=dto,
             handler=AgencyPostHandler(),
             brp_class=AgenciesPostBRP,
@@ -228,12 +228,12 @@ def batch_post_agencies(db_client: DatabaseClient, dto: BatchRequestDTO):
     return manage_response(brm=brm, resource_name="agencies", verb="created")
 
 
-def batch_put_agencies(db_client: DatabaseClient, dto: BatchRequestDTO):
-    brm = run_batch(
-        batch_config=BatchConfig(
+def bulk_put_agencies(db_client: DatabaseClient, dto: BulkRequestDTO):
+    brm = run_bulk(
+        bulk_config=BulkConfig(
             dto=dto,
             handler=AgencyPutHandler(),
-            brp_class=BatchRowProcessor,
+            brp_class=BulkRowProcessor,
             schema=dto.csv_schema.__class__(exclude=["file"]),
         )
     )
@@ -242,24 +242,24 @@ def batch_put_agencies(db_client: DatabaseClient, dto: BatchRequestDTO):
     )
 
 
-def batch_post_data_sources(db_client: DatabaseClient, dto: BatchRequestDTO):
-    brm = run_batch(
-        batch_config=BatchConfig(
+def bulk_post_data_sources(db_client: DatabaseClient, dto: BulkRequestDTO):
+    brm = run_bulk(
+        bulk_config=BulkConfig(
             dto=dto,
             handler=DataSourcesPostHandler(),
-            brp_class=BatchRowProcessor,
+            brp_class=BulkRowProcessor,
             schema=dto.csv_schema.__class__(exclude=["file"]),
         )
     )
     return manage_response(brm=brm, resource_name="data sources", verb="created")
 
 
-def batch_put_data_sources(db_client: DatabaseClient, dto: BatchRequestDTO):
-    brm = run_batch(
-        batch_config=BatchConfig(
+def bulk_put_data_sources(db_client: DatabaseClient, dto: BulkRequestDTO):
+    brm = run_bulk(
+        bulk_config=BulkConfig(
             dto=dto,
             handler=DataSourcesPutHandler(),
-            brp_class=BatchRowProcessor,
+            brp_class=BulkRowProcessor,
             schema=dto.csv_schema.__class__(exclude=["file"]),
         )
     )

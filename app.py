@@ -6,7 +6,7 @@ from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 
 from middleware.util import get_env_variable
-from resources.Batch import namespace_batch
+from resources.Batch import namespace_bulk
 from resources.Callback import namespace_auth
 from resources.DataRequests import namespace_data_requests
 from resources.GithubDataRequests import namespace_github
@@ -66,7 +66,7 @@ NAMESPACES = [
     namespace_notifications,
     namespace_map,
     namespace_signup,
-    namespace_batch,
+    namespace_bulk,
     namespace_match,
 ]
 
