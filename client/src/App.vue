@@ -4,7 +4,12 @@
 		<ErrorBoundary component="main">
 			<router-view v-slot="{ Component }">
 				<transition name="route-fade" mode="out-in">
-					<component :is="Component ?? 'main'">
+					<component
+						:is="Component ?? 'main'"
+						:style="{
+							minHeight: `${minHeight}px`,
+						}"
+					>
 						<Spinner
 							class="absolute m-auto top-0 right-0 bottom-0 left-0"
 							:show="!Component"
@@ -15,42 +20,39 @@
 				</transition>
 			</router-view>
 		</ErrorBoundary>
-		<Footer :logo-image-src="acronym" />
+		<Footer
+			:logo-image-src="acronym"
+			:fundraising-data="{ ...currentCampaign }"
+		/>
 	</AuthWrapper>
 </template>
 
-<script>
+<script setup>
 import { ErrorBoundary, Footer, Header, Spinner } from 'pdap-design-system';
 import AuthWrapper from './components/AuthWrapper.vue';
 import acronym from 'pdap-design-system/images/acronym.svg';
 import lockup from 'pdap-design-system/images/lockup.svg';
 
-import { NAV_LINKS as links } from '@/util/constants';
-import useThemePreference from '@/composables/useThemePreference';
+import { NAV_LINKS, FOOTER_LINKS } from '@/util/constants';
+import getDonorBoxData from '@/util/getDonorBoxData';
+import { onMounted, provide, ref } from 'vue';
 
-export default {
-	name: 'App',
-	components: {
-		AuthWrapper,
-		ErrorBoundary,
-		Header,
-		Footer,
-		Spinner,
-	},
-	provide: {
-		navLinks: [...links],
-		footerLinks: [...links],
-	},
-	setup() {
-		useThemePreference();
-	},
-	data() {
-		return {
-			acronym,
-			lockup,
-		};
-	},
-};
+provide('navLinks', NAV_LINKS);
+provide('footerLinks', FOOTER_LINKS);
+
+const currentCampaign = ref({
+	raised: 0,
+	goal: 0,
+});
+
+onMounted(async () => {
+	const data = await getDonorBoxData();
+
+	currentCampaign.value = {
+		raised: Number(data?.raised ?? 0),
+		goal: Number(data?.goal ?? 0),
+	};
+});
 </script>
 
 <style>
@@ -60,15 +62,9 @@ export default {
 	margin: 0;
 }
 
-@layer components {
-	.pdap-footer {
-		@apply fixed bottom-0;
-	}
-}
-
 main {
 	@apply relative;
-	min-height: calc(100vh - 80px - 400px);
+	min-height: calc(100vh - 200px);
 }
 
 .route-fade-enter-active,

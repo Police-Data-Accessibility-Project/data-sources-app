@@ -157,6 +157,8 @@ const initiallySearchedRecord = ref();
 const hasUpdatedCategories = ref(false);
 
 const isButtonDisabled = computed(() => {
+	if (!selectedRecord.value && !initiallySearchedRecord.value) return true;
+
 	const selectedRecordEqualsInitiallySearched = _isEqual(
 		selectedRecord.value,
 		initiallySearchedRecord.value,

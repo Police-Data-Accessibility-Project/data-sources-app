@@ -1,3 +1,5 @@
+import { FOOTER_LINK_ICONS } from 'pdap-design-system';
+
 export const ALL_LOCATION_TYPES = ['locality', 'county', 'state', 'federal'];
 
 export const NAV_LINKS = [
@@ -30,6 +32,39 @@ export const NAV_LINKS = [
 		href: 'https://docs.pdap.io/',
 		text: 'Docs',
 		method: 'href',
+	},
+];
+
+export const FOOTER_LINKS = [
+	{
+		href: 'https://github.com/orgs/Police-Data-Accessibility-Project',
+		text: 'Github',
+		icon: FOOTER_LINK_ICONS.GITHUB,
+	},
+	{
+		href: 'https://discord.gg/wMqex8nKZJ',
+		text: 'Discord',
+		icon: FOOTER_LINK_ICONS.DISCORD,
+	},
+	{
+		href: 'https://www.linkedin.com/company/pdap',
+		text: 'LinkedIn',
+		icon: FOOTER_LINK_ICONS.LINKEDIN,
+	},
+	{
+		href: 'https://pdap.io/jobs',
+		text: 'Jobs',
+		icon: FOOTER_LINK_ICONS.JOBS,
+	},
+	{
+		href: 'https://newsletter.pdap.io/',
+		text: 'Newsletter',
+		icon: FOOTER_LINK_ICONS.NEWSLETTER,
+	},
+	{
+		href: 'https://docs.pdap.io/',
+		text: 'Docs',
+		icon: FOOTER_LINK_ICONS.DOCS,
 	},
 ];
 
