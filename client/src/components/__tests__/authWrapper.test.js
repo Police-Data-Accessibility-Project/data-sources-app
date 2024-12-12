@@ -6,7 +6,18 @@ import { useAuthStore } from '../../stores/auth';
 import { nextTick } from 'vue';
 import { useUserStore } from '@/stores/user';
 
-const replace = vi.fn();
+const { mockRefreshAccessToken, mockSignOut, replace } = vi.hoisted(() => ({
+	mockRefreshAccessToken: vi.fn(),
+	mockSignOut: vi.fn(),
+	replace: vi.fn(),
+}));
+
+vi.mock('../../api/auth', async () => {
+	return {
+		refreshTokens: mockRefreshAccessToken,
+		signOut: mockSignOut,
+	};
+});
 
 vi.mock('vue-router/auto-routes');
 vi.mock('vue-router', async () => {
@@ -67,7 +78,7 @@ describe('AuthWrapper', () => {
 
 		await wrapper.trigger('click');
 		await nextTick();
-		expect(auth.refreshAccessToken).toHaveBeenCalled();
+		expect(mockRefreshAccessToken).toHaveBeenCalled();
 	});
 
 	it('logs user out when access token is expired on all expected events', async () => {
@@ -86,6 +97,6 @@ describe('AuthWrapper', () => {
 
 		await wrapper.trigger('click');
 		await nextTick();
-		expect(auth.signOut).toHaveBeenCalled();
+		expect(mockSignOut).toHaveBeenCalled();
 	});
 });

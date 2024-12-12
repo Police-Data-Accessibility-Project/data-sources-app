@@ -44,7 +44,7 @@
 			<Button
 				class="border-2 border-neutral-950 border-solid [&>svg]:ml-0"
 				intent="tertiary"
-				@click="async () => await auth.beginOAuthLogin('/profile')"
+				@click="async () => await beginOAuthLogin('/profile')"
 			>
 				<FontAwesomeIcon :icon="faGithub" />
 				Link account with Github
@@ -52,7 +52,7 @@
 		</template>
 
 		<div class="mt-4">
-			<Button @click="signOut">Sign out</Button>
+			<Button @click="signOutWithRedirect">Sign out</Button>
 		</div>
 	</main>
 </template>
@@ -62,12 +62,12 @@ import { NavigationResult } from 'unplugin-vue-router/data-loaders';
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic';
 import { useAuthStore } from '@/stores/auth';
 import { useUserStore } from '@/stores/user';
-import { useSearchStore } from '@/stores/search';
 import getLocationText from '@/util/getLocationText';
+import { getFollowedSearches, deleteFollowedSearch } from '@/api/search';
+import { linkAccountWithGithub, signOut, beginOAuthLogin } from '@/api/auth';
 
 const auth = useAuthStore();
 const user = useUserStore();
-const search = useSearchStore();
 
 export const useProfileData = defineBasicLoader('/profile', async (route) => {
 	let gitHubIsLinked = false;
@@ -79,10 +79,10 @@ export const useProfileData = defineBasicLoader('/profile', async (route) => {
 		return new NavigationResult({ path: '/profile', query: { linked: true } });
 
 	if (githubAccessToken) {
-		await auth.linkAccountWithGithub(githubAccessToken);
+		await linkAccountWithGithub(githubAccessToken);
 		gitHubIsLinked = true;
 	}
-	const followedSearches = (await search.getFollowedSearches()).data.data;
+	const followedSearches = (await getFollowedSearches()).data.data;
 
 	return {
 		followedSearches,
@@ -108,16 +108,16 @@ const {
 	reload,
 } = useProfileData();
 
-async function signOut() {
+async function signOutWithRedirect() {
 	auth.setRedirectTo(route);
-	await auth.signOut();
+	await signOut();
 	router.replace('/sign-in');
 }
 
 async function unFollow(followed) {
 	const text = getLocationText(followed);
 	try {
-		await search.deleteFollowedSearch(followed);
+		await deleteFollowedSearch(followed);
 		toast.success(`Un-followed search for ${text}`);
 		reload();
 	} catch (error) {

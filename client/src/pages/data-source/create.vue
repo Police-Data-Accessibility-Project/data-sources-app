@@ -467,10 +467,9 @@ import _startCase from 'lodash/startCase';
 import { nextTick, ref } from 'vue';
 import axios from 'axios';
 import { useDataSourceStore } from '@/stores/data-source';
-import { useSearchStore } from '@/stores/search';
+import { findDuplicateURL } from '@/api/check';
 
 const { createDataSource } = useDataSourceStore();
-const { findDuplicateURL } = useSearchStore();
 
 const INPUT_NAMES = {
 	// Base properties

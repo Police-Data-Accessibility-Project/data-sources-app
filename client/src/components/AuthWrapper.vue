@@ -9,11 +9,12 @@ import debounce from 'lodash/debounce';
 import { useAuthStore } from '@/stores/auth';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
+import { refreshTokens, signOut } from '@/api/auth';
 
 const route = useRoute();
 const router = useRouter();
 
-const { refreshAccessToken, signOut, tokens, isAuthenticated } = useAuthStore();
+const auth = useAuthStore();
 const user = useUserStore();
 
 // Debounce func for performance
@@ -34,14 +35,15 @@ const handlers = {
 
 function handleAuthRefresh() {
 	const now = new Date().getTime();
-	const differenceFromAccess = tokens.accessToken.expires - now;
+	const differenceFromAccess = auth.tokens.accessToken.expires - now;
 	const isExpiredAccess = differenceFromAccess <= 0;
-	const shouldRefresh = differenceFromAccess <= 60 * 1000 && isAuthenticated();
+	const shouldRefresh =
+		differenceFromAccess <= 60 * 1000 && auth.isAuthenticated();
 	const shouldLogout = isExpiredAccess && !!user.id;
 
 	// User's token is about to expire, so we refresh it.
 	if (shouldRefresh) {
-		return refreshAccessToken();
+		return refreshTokens();
 		// User's tokens are all expired, log out.
 	} else if (shouldLogout) {
 		signOut();

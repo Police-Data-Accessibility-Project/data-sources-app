@@ -77,9 +77,6 @@
 				<template #item="item">
 					<!-- eslint-disable-next-line vue/no-v-html This data is coming from our API, so we can trust it-->
 					<span v-html="typeaheadRef?.boldMatchText(formatText(item))" />
-					<span class="locale-type">
-						{{ item.type }}
-					</span>
 					<span class="select">Select</span>
 				</template>
 			</Typeahead>
@@ -171,15 +168,12 @@ import {
 import Typeahead from '@/components/TypeaheadInput.vue';
 import LocationSelected from '@/components/TypeaheadSelected.vue';
 import { toast } from 'vue3-toastify';
-import { useRequestStore } from '@/stores/request';
+import { createRequest } from '@/api/request';
 import { formatText } from './_util';
 import _debounce from 'lodash/debounce';
 import _cloneDeep from 'lodash/cloneDeep';
 import { nextTick, ref, watch } from 'vue';
-import axios from 'axios';
-import _isEqual from 'lodash/isEqual';
-
-const { createRequest } = useRequestStore();
+import { getTypeaheadAgencies } from '@/api/typeahead';
 
 const INPUT_NAMES = {
 	// contact: 'contact',
@@ -272,32 +266,13 @@ const typeaheadError = ref();
 const formError = ref();
 const requestPending = ref(false);
 
-// TODO: This functionality is duplicated everywhere we're using typeahead.
 const fetchTypeaheadResults = _debounce(
 	async (e) => {
 		try {
 			if (e.target.value.length > 1) {
-				const response = await axios.get(
-					`${import.meta.env.VITE_VUE_API_BASE_URL}/typeahead/locations`,
-					{
-						headers: {
-							Authorization: import.meta.env.VITE_ADMIN_API_KEY,
-						},
-						params: {
-							query: e.target.value,
-						},
-					},
-				);
+				const suggestions = await getTypeaheadAgencies(e);
 
-				const suggestions = response.data.suggestions;
-
-				const filteredBySelected = suggestions.filter((sugg) => {
-					return !selectedLocations.value.find((loc) => _isEqual(sugg, loc));
-				});
-
-				items.value = filteredBySelected.length
-					? filteredBySelected
-					: undefined;
+				items.value = suggestions.length ? suggestions : undefined;
 			} else {
 				items.value = [];
 			}

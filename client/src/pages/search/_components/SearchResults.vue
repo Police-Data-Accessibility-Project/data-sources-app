@@ -10,7 +10,7 @@
 			</h4>
 		</div>
 
-		<div ref="containerRef" class="w-full h-[60vh] relative overflow-y-scroll">
+		<div ref="containerRef" class="w-full h-[50vh] relative overflow-y-scroll">
 			<Spinner
 				v-if="isLoading"
 				:show="isLoading"

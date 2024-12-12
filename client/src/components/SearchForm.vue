@@ -54,7 +54,12 @@
 			</template>
 		</InputCheckbox>
 
-		<Button :disabled="isButtonDisabled" intent="primary" type="submit">
+		<Button
+			:disabled="isButtonDisabled"
+			intent="primary"
+			type="submit"
+			class="mt-4"
+		>
 			{{ buttonCopy ?? 'Search' }}
 		</Button>
 	</FormV2>
@@ -76,12 +81,12 @@ import {
 	RecordTypeIcon,
 } from 'pdap-design-system';
 import TypeaheadInput from '@/components/TypeaheadInput.vue';
-import axios from 'axios';
 import { computed, onMounted, ref } from 'vue';
 import { STATES_TO_ABBREVIATIONS } from '@/util/constants';
 import _debounce from 'lodash/debounce';
 import _isEqual from 'lodash/isEqual';
 import { useRouter, RouterLink, useRoute } from 'vue-router';
+import { getTypeaheadLocations } from '@/api/typeahead';
 
 const router = useRouter();
 
@@ -286,25 +291,11 @@ function onSelectRecord(item) {
 	items.value = [];
 }
 
-// TODO: This functionality is duplicated everywhere we're using typeahead.
-// Tried to move this to a store, but it slow and glitchy when not used directly in the component.
 const fetchTypeaheadResults = _debounce(
 	async (e) => {
 		try {
 			if (e.target.value.length > 1) {
-				const response = await axios.get(
-					`${import.meta.env.VITE_VUE_API_BASE_URL}/typeahead/locations`,
-					{
-						headers: {
-							Authorization: import.meta.env.VITE_ADMIN_API_KEY,
-						},
-						params: {
-							query: e.target.value,
-						},
-					},
-				);
-
-				const suggestions = response.data.suggestions;
+				const suggestions = await getTypeaheadLocations(e);
 
 				items.value = suggestions.length ? suggestions : undefined;
 			} else {

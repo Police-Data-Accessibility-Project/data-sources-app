@@ -57,7 +57,7 @@ import { useUserStore } from '@/stores/user';
 import parseJwt from '@/util/parseJwt';
 import { onMounted, ref, watchEffect } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth';
+import { resetPassword, signInWithEmail } from '@/api/auth';
 
 // Constants
 const FORM_INPUTS_CHANGE_PASSWORD = [
@@ -113,7 +113,6 @@ const token = route.query.token;
 
 // Stores
 const user = useUserStore();
-const auth = useAuthStore();
 
 // Reactive vars
 const passwordRef = ref();
@@ -189,8 +188,8 @@ async function onSubmitChangePassword(formValues) {
 	try {
 		loading.value = true;
 		const { password } = formValues;
-		await user.resetPassword(password, token);
-		await auth.signInWithEmail(parseJwt(token).sub.email, password);
+		await resetPassword(password, token);
+		await signInWithEmail(parseJwt(token).sub.email, password);
 
 		router.push({ path: 'profile' });
 	} catch (err) {

@@ -28,7 +28,7 @@
 					class="border-2 border-neutral-950 border-solid [&>svg]:ml-0"
 					intent="tertiary"
 					:disabled="githubAuthData?.userExists"
-					@click="async () => await auth.beginOAuthLogin()"
+					@click="async () => await beginOAuthLogin()"
 				>
 					<FontAwesomeIcon :icon="faGithub" />
 					Sign in with Github
@@ -102,6 +102,7 @@
 import { NavigationResult } from 'unplugin-vue-router/data-loaders';
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic';
 import { useAuthStore } from '@/stores/auth';
+import { beginOAuthLogin, signInWithGithub } from '@/api/auth';
 
 const auth = useAuthStore();
 
@@ -113,7 +114,7 @@ export const useGithubAuth = defineBasicLoader('/sign-in', async (route) => {
 		const githubAccessToken = route.query.gh_access_token;
 
 		if (githubAccessToken) {
-			const tokens = await auth.signInWithGithub(githubAccessToken);
+			const tokens = await signInWithGithub(githubAccessToken);
 
 			if (tokens)
 				return new NavigationResult(
@@ -131,6 +132,7 @@ export const useGithubAuth = defineBasicLoader('/sign-in', async (route) => {
 
 <script setup>
 // Imports
+import { signInWithEmail } from '@/api/auth';
 import {
 	Button,
 	FormV2,
@@ -165,10 +167,10 @@ const VALIDATION_SCHEMA = [
 			required: {
 				value: true,
 			},
-			password: {
-				message: 'Please provide your password',
-				value: true,
-			},
+			// password: {
+			// 	message: 'Please provide your password',
+			// 	value: true,
+			// },
 		},
 	},
 ];
@@ -193,7 +195,7 @@ async function onSubmit(formValues) {
 		loading.value = true;
 		const { email, password } = formValues;
 
-		await auth.signInWithEmail(email, password);
+		await signInWithEmail(email, password);
 
 		error.value = undefined;
 		router.push(auth.redirectTo ?? '/profile');

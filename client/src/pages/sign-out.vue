@@ -7,9 +7,7 @@
 <script setup>
 import { Spinner } from 'pdap-design-system';
 import { onMounted } from 'vue';
-import { useAuthStore } from '@/stores/auth';
-
-const { signOut } = useAuthStore();
+import { signOut } from '@/api/auth';
 
 onMounted(async () => {
 	await signOut();

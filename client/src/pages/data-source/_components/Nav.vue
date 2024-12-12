@@ -1,5 +1,11 @@
 <template>
-	<nav v-if="searchIds.length" class="self-start justify-self-start w-full">
+	<nav
+		v-if="
+			searchIds?.length &&
+			[nextIndex, previousIndex].some((id) => typeof id === 'number' && id > -1)
+		"
+		class="self-start justify-self-start w-full"
+	>
 		<RouterLink
 			:to="`/data-source/${searchIds[previousIndex]}`"
 			:class="{ disabled: typeof previousIndex !== 'number' }"

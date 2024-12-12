@@ -39,6 +39,7 @@
 import { Button, FormV2, InputText } from 'pdap-design-system';
 import { useUserStore } from '@/stores/user';
 import { ref, onMounted } from 'vue';
+import { requestPasswordReset } from '@/api/auth';
 
 // Constants
 const VALIDATION_SCHEMA_REQUEST_PASSWORD = [
@@ -69,12 +70,13 @@ const success = ref(false);
 onMounted(() => {
 	formRefRequest.value?.setValues({ email: user.email });
 });
+
 // Functions
 async function onSubmitRequestReset(formValues) {
 	try {
 		loading.value = true;
 		const { email } = formValues;
-		await user.requestPasswordReset(email);
+		await requestPasswordReset(email);
 		success.value = true;
 	} catch (err) {
 		error.value = err.message;

@@ -2,7 +2,7 @@
 	<main ref="mainRef" class="min-h-[75%] relative">
 		<!-- NAV to prev/next data source -->
 		<PrevNextNav
-			:search-ids="mostRecentSearchIds"
+			:search-ids="searchStore.mostRecentSearchIds"
 			:previous-index="previousIdIndex"
 			:next-index="nextIdIndex"
 			:set-nav-is="(val) => (navIs = val)"
@@ -188,13 +188,12 @@
 <script>
 // Data loader
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic';
-import { useSearchStore } from '@/stores/search';
 import { useRoute, useRouter } from 'vue-router';
 import { useSwipe } from '@vueuse/core';
 import { ref } from 'vue';
 import { useDataSourceStore } from '@/stores/data-source';
 import { DataLoaderErrorPassThrough } from '@/util/errors';
-
+import { getDataSource } from '@/api/data-source';
 const dataSourceStore = useDataSourceStore();
 
 export const useDataSourceData = defineBasicLoader(
@@ -203,7 +202,7 @@ export const useDataSourceData = defineBasicLoader(
 		const dataSourceId = route.params.id;
 
 		try {
-			const results = await dataSourceStore.getDataSource(dataSourceId);
+			const results = await getDataSource(dataSourceId);
 			// Then set current route to prev before returning data
 			dataSourceStore.setPreviousDataSourceRoute(route);
 			return results.data.data;
@@ -219,21 +218,21 @@ import { Button, RecordTypeIcon, Spinner } from 'pdap-design-system';
 import PrevNextNav from './_components/Nav.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faLink } from '@fortawesome/free-solid-svg-icons';
-
+import { useSearchStore } from '@/stores/search';
 import { DATA_SOURCE_UI_SHAPE, formatDateForSearchResults } from './_util';
 import { computed, onMounted, onUnmounted, watch } from 'vue';
 
 const route = useRoute();
 const router = useRouter();
-const { mostRecentSearchIds } = useSearchStore();
+const searchStore = useSearchStore();
 const { data: dataSource, isLoading, error } = useDataSourceData();
 
 const currentIdIndex = computed(() =>
 	// Route params are strings, but the ids are stored as numbers, so cast first
-	mostRecentSearchIds.indexOf(Number(route.params.id)),
+	searchStore.mostRecentSearchIds.indexOf(Number(route.params.id)),
 );
 const nextIdIndex = computed(() =>
-	currentIdIndex.value < mostRecentSearchIds.length - 1
+	currentIdIndex.value < searchStore.mostRecentSearchIds.length - 1
 		? currentIdIndex.value + 1
 		: null,
 );
@@ -257,13 +256,13 @@ watch(
 				case 'left':
 					navIs.value = 'increment';
 					router.replace(
-						`/data-source/${mostRecentSearchIds[nextIdIndex.value]}`,
+						`/data-source/${searchStore.mostRecentSearchIds[nextIdIndex.value]}`,
 					);
 					break;
 				case 'right':
 					navIs.value = 'decrement';
 					router.replace(
-						`/data-source/${mostRecentSearchIds[previousIdIndex.value]}`,
+						`/data-source/${searchStore.mostRecentSearchIds[previousIdIndex.value]}`,
 					);
 					break;
 				default:

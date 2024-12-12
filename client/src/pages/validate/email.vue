@@ -35,8 +35,8 @@ import { useUserStore } from '@/stores/user';
 import parseJwt from '@/util/parseJwt';
 import { h, onMounted, ref, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth';
 import { toast } from 'vue3-toastify';
+import { resendValidationEmail, validateEmail } from '@/api/auth';
 
 // Composables
 const route = useRoute();
@@ -46,7 +46,6 @@ const token = route.query.token;
 
 // Stores
 const user = useUserStore();
-const auth = useAuthStore();
 
 // Reactive vars
 const error = ref(undefined);
@@ -65,7 +64,7 @@ watchEffect(() => {
 onMounted(async () => {
 	try {
 		await validateToken();
-		await auth.validateEmail(token);
+		await validateEmail(token);
 		router.replace({ path: '/profile' });
 	} catch (err) {
 		error.value = err.message;
@@ -98,7 +97,7 @@ async function requestResendValidationEmail() {
 	error.value = undefined;
 
 	try {
-		await auth.resendValidationEmail();
+		await resendValidationEmail();
 		toast.success('A new email has been sent to ' + user.email);
 	} catch (err) {
 		error.value = err.message;

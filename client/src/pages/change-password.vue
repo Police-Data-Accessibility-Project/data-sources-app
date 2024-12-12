@@ -58,10 +58,11 @@
 import { Button, FormV2, InputPassword } from 'pdap-design-system';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
-import { useAuthStore } from '@/stores/auth';
 import { useUserStore } from '@/stores/user';
 import PasswordValidationChecker from '@/components/PasswordValidationChecker.vue';
 import { ref } from 'vue';
+import { changePassword } from '@/api/user';
+import { beginOAuthLogin } from '@/api/auth';
 
 // Constants
 const INPUTS = [
@@ -113,7 +114,6 @@ const VALIDATION_SCHEMA = [
 
 // Stores
 const user = useUserStore();
-const { beginOAuthLogin } = useAuthStore();
 
 // Reactive vars
 const passwordRef = ref();
@@ -166,7 +166,8 @@ async function onSubmit(formValues) {
 	try {
 		loading.value = true;
 		const { password } = formValues;
-		await user.changePassword(user.email, password);
+		// TODO: UPDATE THIS, OPEN QUESTION WITH MAX ON IMPL
+		await changePassword(user.email, password);
 
 		success.value = true;
 	} catch (err) {

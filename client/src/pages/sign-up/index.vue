@@ -30,7 +30,7 @@
 						class="border-2 border-neutral-950 border-solid [&>svg]:ml-0"
 						intent="tertiary"
 						:disabled="githubAuthData?.userExists"
-						@click="async () => await auth.beginOAuthLogin('/sign-up')"
+						@click="async () => await beginOAuthLogin('/sign-up')"
 					>
 						<FontAwesomeIcon :icon="faGithub" />
 						Sign up with Github
@@ -110,6 +110,7 @@
 import { NavigationResult } from 'unplugin-vue-router/data-loaders';
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic';
 import { useAuthStore } from '@/stores/auth';
+import { signInWithGithub, signUpWithEmail, beginOAuthLogin } from '@/api/auth';
 
 const auth = useAuthStore();
 
@@ -121,7 +122,7 @@ export const useGithubAuth = defineBasicLoader('/sign-up', async (route) => {
 		const githubAccessToken = route.query.gh_access_token;
 
 		if (githubAccessToken) {
-			const tokens = await auth.signInWithGithub(githubAccessToken);
+			const tokens = await signInWithGithub(githubAccessToken);
 
 			if (tokens)
 				return new NavigationResult(
@@ -271,7 +272,7 @@ async function onSubmit(formValues) {
 		loading.value = true;
 		const { email, password } = formValues;
 
-		await auth.signUpWithEmail(email, password);
+		await signUpWithEmail(email, password);
 		await router.push({ path: '/sign-up/success' });
 	} catch (err) {
 		console.error(err);
