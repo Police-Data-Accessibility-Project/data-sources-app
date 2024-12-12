@@ -77,6 +77,9 @@
 				<template #item="item">
 					<!-- eslint-disable-next-line vue/no-v-html This data is coming from our API, so we can trust it-->
 					<span v-html="typeaheadRef?.boldMatchText(formatText(item))" />
+					<span class="locale-type">
+						{{ item.type }}
+					</span>
 					<span class="select">Select</span>
 				</template>
 			</Typeahead>
@@ -173,7 +176,7 @@ import { formatText } from './_util';
 import _debounce from 'lodash/debounce';
 import _cloneDeep from 'lodash/cloneDeep';
 import { nextTick, ref, watch } from 'vue';
-import { getTypeaheadAgencies } from '@/api/typeahead';
+import { getTypeaheadLocations } from '@/api/typeahead';
 
 const INPUT_NAMES = {
 	// contact: 'contact',
@@ -270,7 +273,7 @@ const fetchTypeaheadResults = _debounce(
 	async (e) => {
 		try {
 			if (e.target.value.length > 1) {
-				const suggestions = await getTypeaheadAgencies(e);
+				const suggestions = await getTypeaheadLocations(e);
 
 				items.value = suggestions.length ? suggestions : undefined;
 			} else {

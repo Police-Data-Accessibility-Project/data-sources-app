@@ -462,14 +462,11 @@ import pluralize from '@/util/pluralize';
 import unpluralize from '@/util/unpluralize';
 import _debounce from 'lodash/debounce';
 import _cloneDeep from 'lodash/cloneDeep';
-import _isEqual from 'lodash/isEqual';
 import _startCase from 'lodash/startCase';
 import { nextTick, ref } from 'vue';
-import axios from 'axios';
-import { useDataSourceStore } from '@/stores/data-source';
+import { createDataSource } from '@/api/data-source';
 import { findDuplicateURL } from '@/api/check';
-
-const { createDataSource } = useDataSourceStore();
+import { getTypeaheadAgencies } from '@/api/typeahead';
 
 const INPUT_NAMES = {
 	// Base properties
@@ -830,27 +827,9 @@ const fetchTypeaheadResults = _debounce(
 	async (e) => {
 		try {
 			if (e.target.value.length > 1) {
-				const response = await axios.get(
-					`${import.meta.env.VITE_VUE_API_BASE_URL}/typeahead/agencies`,
-					{
-						headers: {
-							Authorization: import.meta.env.VITE_ADMIN_API_KEY,
-						},
-						params: {
-							query: e.target.value,
-						},
-					},
-				);
-				const suggestions = response?.data?.suggestions;
-				const filteredBySelected = suggestions.filter((sugg) => {
-					return !selectedAgencies.value.find((agency) =>
-						_isEqual(sugg, agency),
-					);
-				});
+				const suggestions = await getTypeaheadAgencies(e);
 
-				items.value = filteredBySelected.length
-					? filteredBySelected
-					: undefined;
+				items.value = suggestions.length ? suggestions : undefined;
 			} else {
 				items.value = [];
 			}
