@@ -27,7 +27,7 @@ DATA_REQUESTS_PARTIAL_ENDPOINT = "data-requests"
 USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL = f"/api/user/{DATA_REQUESTS_PARTIAL_ENDPOINT}"
 
 
-@namespace_user.route("/<user_id>/update-password")
+@namespace_user.route("/update-password")
 class UserUpdatePassword(PsycopgResource):
 
     @endpoint_info(
@@ -38,7 +38,7 @@ class UserUpdatePassword(PsycopgResource):
             success_message="Password successfully updated.",
         ),
     )
-    def post(self, access_info: AccessInfoPrimary, user_id: int) -> Response:
+    def post(self, access_info: AccessInfoPrimary) -> Response:
         """
         Allows an existing user to update their password.
 
@@ -52,7 +52,6 @@ class UserUpdatePassword(PsycopgResource):
             wrapper_function=change_password_wrapper,
             schema_populate_parameters=SchemaConfigs.USER_PUT.value.get_schema_populate_parameters(),
             access_info=access_info,
-            user_id=user_id,
         )
 
 

@@ -95,25 +95,18 @@ def change_password_wrapper(
     db_client: DatabaseClient,
     dto: UserPutDTO,
     access_info: AccessInfoPrimary,
-    user_id: int,
 ):
-
-    if int(user_id) != access_info.user_id:
-        FlaskResponseManager.abort(
-            code=HTTPStatus.UNAUTHORIZED, message="Invalid token for user."
-        )
+    user_id = access_info.user_id
 
     # Check if old password is valid
     # get old password digest
-    db_password_digest = db_client.get_password_digest(user_id=access_info.user_id)
+    db_password_digest = db_client.get_password_digest(user_id=user_id)
     matches = check_password_hash(pwhash=db_password_digest, password=dto.old_password)
     if not matches:
         FlaskResponseManager.abort(
             code=HTTPStatus.UNAUTHORIZED, message="Incorrect existing password."
         )
-    set_user_password(
-        db_client=db_client, user_id=access_info.user_id, password=dto.new_password
-    )
+    set_user_password(db_client=db_client, user_id=user_id, password=dto.new_password)
     return message_response(
         message="Successfully updated password.",
     )
