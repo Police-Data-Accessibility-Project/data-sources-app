@@ -10,11 +10,11 @@ from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
 from conftest import test_data_creator_flask, monkeysession
 
 
-def test_user_put(
+def test_update_password(
     test_data_creator_flask: TestDataCreatorFlask,
 ):
     """
-    Test that PUT call to /user endpoint successfully updates the user's password and verifies the new password hash is distinct from both the plain new password and the old password hash in the database
+    Test that PUT call to endpoint successfully updates the user's password and verifies the new password hash is distinct from both the plain new password and the old password hash in the database
     """
     tdc = test_data_creator_flask
 
@@ -24,12 +24,10 @@ def test_user_put(
 
     def update_password(
         old_password: str,
-        user_id: str = tus.user_info.user_id,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
         return tdc.request_validator.update_password(
             headers=tus.jwt_authorization_header,
-            user_id=user_id,
             old_password=old_password,
             new_password=new_password,
             expected_response_status=expected_response_status,
@@ -39,7 +37,6 @@ def test_user_put(
     tus_other = tdc.standard_user()
     update_password(
         old_password=tus_other.user_info.password,
-        user_id=tus_other.user_info.user_id,
         expected_response_status=HTTPStatus.UNAUTHORIZED,
     )
 

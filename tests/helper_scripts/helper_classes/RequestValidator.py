@@ -448,13 +448,12 @@ class RequestValidator:
     def update_password(
         self,
         headers: dict,
-        user_id: int,
         old_password: str,
         new_password: str,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
         return self.post(
-            endpoint=f"/api/user/{user_id}/update-password",
+            endpoint=f"/api/user/update-password",
             headers=headers,
             json={"old_password": old_password, "new_password": new_password},
             expected_response_status=expected_response_status,
