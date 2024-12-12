@@ -18,7 +18,7 @@ from tests.helper_scripts.constants import (
     DATA_REQUESTS_BY_ID_ENDPOINT,
     AGENCIES_BASE_ENDPOINT,
 )
-from tests.helper_scripts.helper_functions import (
+from tests.helper_scripts.helper_functions_simple import (
     get_authorization_header,
     add_query_params,
 )
@@ -125,7 +125,7 @@ class RequestValidator:
         expected_schema: Schema = SchemaConfigs.LOGIN_POST.value.primary_output_schema,
     ):
         return self.post(
-            endpoint="/api/login",
+            endpoint="/api/auth/login",
             json={"email": email, "password": password},
             expected_response_status=expected_response_status,
             expected_json_content=expected_json_content,
@@ -139,7 +139,7 @@ class RequestValidator:
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
         return self.post(
-            endpoint="/api/reset-password",
+            endpoint="/api/auth/reset-password",
             headers=get_authorization_header(scheme="Bearer", token=token),
             json={"password": password},
             expected_response_status=expected_response_status,
@@ -156,7 +156,7 @@ class RequestValidator:
             "middleware.primary_resource_logic.reset_token_queries.send_password_reset_link"
         )
         response = self.post(
-            endpoint="/api/request-reset-password",
+            endpoint="/api/auth/request-reset-password",
             json={"email": email},
             expected_response_status=expected_response_status,
             expected_schema=SchemaConfigs.REQUEST_RESET_PASSWORD.value.primary_output_schema,
@@ -232,7 +232,7 @@ class RequestValidator:
         expected_json_content: Optional[dict] = None,
     ):
         return self.post(
-            endpoint="/api/reset-token-validation",
+            endpoint="/api/auth/reset-token-validation",
             headers=get_authorization_header(scheme="Bearer", token=token),
             expected_response_status=expected_response_status,
             expected_json_content=expected_json_content,
@@ -244,7 +244,7 @@ class RequestValidator:
         headers: dict,
         expected_json_content: Optional[dict] = None,
     ):
-        endpoint = f"/auth/permissions?user_email={user_email}"
+        endpoint = f"/permissions?user_email={user_email}"
         return self.get(
             endpoint=endpoint,
             headers=headers,
@@ -258,7 +258,7 @@ class RequestValidator:
         action: str,
         permission: str,
     ):
-        endpoint = f"/auth/permissions?user_email={user_email}"
+        endpoint = f"/permissions?user_email={user_email}"
         return self.put(
             endpoint=endpoint,
             headers=headers,
@@ -540,12 +540,8 @@ class RequestValidator:
         )
 
     def match_agency(
-            self,
-            headers: dict,
-            name: str,
-            state: str,
-            county: str,
-            locality: str):
+        self, headers: dict, name: str, state: str, county: str, locality: str
+    ):
         data = {
             "name": name,
             "state": state,
@@ -555,7 +551,8 @@ class RequestValidator:
             secondary_dict={
                 "county": county,
                 "locality": locality,
-            })
+            },
+        )
         return self.post(
             endpoint="/api/match/agency",
             headers=headers,

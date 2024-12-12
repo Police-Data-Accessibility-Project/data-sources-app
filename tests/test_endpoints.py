@@ -82,12 +82,12 @@ def check_method_exists(class_type, client, endpoint, method):
 
 TestParameters = namedtuple("Resource", ["class_type", "endpoint", "allowed_methods"])
 test_parameters = [
-    TestParameters(Login, "/login", [POST]),
-    TestParameters(RefreshSession, "/refresh-session", [POST]),
+    TestParameters(Login, "/auth/login", [POST]),
+    TestParameters(RefreshSession, "/auth/refresh-session", [POST]),
     TestParameters(ApiKeyResource, f"/auth{API_KEY_ROUTE}", [POST]),
-    TestParameters(RequestResetPassword, "/request-reset-password", [POST]),
-    TestParameters(ResetPassword, "/reset-password", [POST]),
-    TestParameters(ResetTokenValidation, "/reset-token-validation", [POST]),
+    TestParameters(RequestResetPassword, "auth/request-reset-password", [POST]),
+    TestParameters(ResetPassword, "/auth/reset-password", [POST]),
+    TestParameters(ResetTokenValidation, "/auth/reset-token-validation", [POST]),
     TestParameters(Archives, "/archives", [GET, PUT]),
     TestParameters(DataSources, "/data-sources", [GET, POST]),
     # This endpoint no longer works because of the other data source endpoint
@@ -112,7 +112,7 @@ test_parameters = [
     TestParameters(Search, "/search/search-location-and-record-type", [GET]),
     TestParameters(TypeaheadLocations, "/typeahead/locations", [GET]),
     TestParameters(Callback, "auth/callback", [GET]),
-    TestParameters(Permissions, "auth/permissions", [GET, PUT]),
+    TestParameters(Permissions, "/permissions", [GET, PUT]),
     TestParameters(DataRequests, "/data-requests", [GET, POST]),
     TestParameters(
         DataRequestsById, "/data-requests/<data_request_id>", [GET, PUT, DELETE]

@@ -11,17 +11,9 @@ from tests.helper_scripts.common_asserts import assert_response_status
 
 def post_login_request(client_with_mock_db, ip_address="127.0.0.1"):
     return client_with_mock_db.client.post(
-        "/login",
+        "/auth/login",
         environ_base={"REMOTE_ADDR": ip_address},
         json={"email": "test_email", "password": "test_password"},
-    )
-
-
-def post_refresh_session_request(client_with_mock_db, ip_address="127.0.0.1"):
-    return client_with_mock_db.client.post(
-        "/refresh-session",
-        environ_base={"REMOTE_ADDR": ip_address},
-        json={"refresh_token": "test_refresh_token"},
     )
 
 

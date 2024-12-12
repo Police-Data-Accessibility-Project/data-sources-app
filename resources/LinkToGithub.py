@@ -17,7 +17,7 @@ from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 
-namespace_link_to_github = create_namespace(AppNamespaces.AUTH)
+namespace_link_to_github = create_namespace(AppNamespaces.OAUTH)
 
 
 @namespace_link_to_github.route("/link-to-github")

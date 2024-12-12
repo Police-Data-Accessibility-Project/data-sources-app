@@ -5,7 +5,7 @@ from http import HTTPStatus
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.helper_functions import (
+from tests.helper_scripts.helper_functions_complex import (
     login_and_return_jwt_tokens,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
@@ -25,7 +25,7 @@ def test_refresh_session_post(test_data_creator_flask: TestDataCreatorFlask):
     run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="get",
-        endpoint="/auth/permissions?user_email=" + admin_tus.user_info.email,
+        endpoint="/permissions?user_email=" + admin_tus.user_info.email,
         headers={"Authorization": f"Bearer {jwt_tokens.access_token}"},
     )
 
@@ -33,7 +33,7 @@ def test_refresh_session_post(test_data_creator_flask: TestDataCreatorFlask):
     response_json = run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="post",
-        endpoint="/api/refresh-session",
+        endpoint="/api/auth/refresh-session",
         headers=admin_tus.jwt_authorization_header,
         json={"refresh_token": jwt_tokens.refresh_token},
     )
@@ -53,7 +53,7 @@ def test_refresh_session_post(test_data_creator_flask: TestDataCreatorFlask):
     run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="get",
-        endpoint="/auth/permissions?user_email=" + admin_tus.user_info.email,
+        endpoint="/permissions?user_email=" + admin_tus.user_info.email,
         headers={"Authorization": f"Bearer {new_access_token}"},
     )
 
@@ -72,7 +72,7 @@ def test_refresh_session_post_invalid_refresh_token(
     response_json = run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="post",
-        endpoint="/api/refresh-session",
+        endpoint="/api/auth/refresh-session",
         headers=admin_tus.jwt_authorization_header,
         json={"refresh_token": f"{jwt_tokens.refresh_token}"},
         expected_response_status=HTTPStatus.UNAUTHORIZED,

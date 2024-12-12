@@ -52,7 +52,7 @@ from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
 )
 from tests.helper_scripts.helper_schemas import TestGetPendingNotificationsOutputSchema
 from tests.helper_scripts.test_dataclasses import TestDataRequestInfo
-from tests.helper_scripts.helper_functions import (
+from tests.helper_scripts.helper_functions_complex import (
     setup_get_typeahead_suggestion_test_data,
     create_test_user_db_client,
 )

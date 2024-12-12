@@ -24,7 +24,7 @@ from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_
 )
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 
-namespace_permissions = create_namespace(namespace_attributes=AppNamespaces.AUTH)
+namespace_permissions = create_namespace(namespace_attributes=AppNamespaces.PERMISSIONS)
 
 doc_info = get_restx_param_documentation(
     namespace=namespace_permissions,
@@ -37,7 +37,7 @@ all_routes_parser = doc_info.parser
 add_jwt_header_arg(all_routes_parser)
 
 
-@namespace_permissions.route("/permissions")
+@namespace_permissions.route("")
 class Permissions(PsycopgResource):
     """
     Provides a resource for retrieving permissions for a user.

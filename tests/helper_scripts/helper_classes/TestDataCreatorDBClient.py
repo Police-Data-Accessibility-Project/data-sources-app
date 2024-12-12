@@ -17,7 +17,7 @@ from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,
     get_test_name,
 )
-from tests.helper_scripts.helper_functions import get_notification_valid_date
+from tests.helper_scripts.helper_functions_simple import get_notification_valid_date
 from tests.helper_scripts.test_dataclasses import (
     TestUserDBInfo,
     TestAgencyInfo,

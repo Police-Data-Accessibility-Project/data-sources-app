@@ -20,10 +20,10 @@ from resources.endpoint_schema_config import SchemaConfigs
 from resources.resource_helpers import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 
-namespace_oauth = create_namespace(AppNamespaces.AUTH)
+namespace_oauth = create_namespace(AppNamespaces.OAUTH)
 
 
-@namespace_oauth.route("/oauth")
+@namespace_oauth.route("/github")
 class GithubOAuth(PsycopgResource):
 
     @endpoint_info(

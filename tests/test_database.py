@@ -23,7 +23,7 @@ from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
 )
-from tests.helper_scripts.helper_functions import get_notification_valid_date
+from tests.helper_scripts.helper_functions_simple import get_notification_valid_date
 from utilities.enums import RecordCategories
 
 ID_COLUMN = "state_iso"
