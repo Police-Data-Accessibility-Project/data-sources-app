@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { ENDPOINTS } from './constants';
 import { useAuthStore } from '@/stores/auth';
-import _isEqual from 'lodash/isEqual';
 import { useSearchStore } from '@/stores/search';
 import { isCachedResponseValid } from '@/api/util';
 
@@ -14,9 +13,9 @@ const HEADERS_BASIC = {
 	authorization: `Basic ${import.meta.env.VITE_ADMIN_API_KEY}`,
 };
 
-export async function search(params) {
+export async function search(location_id) {
 	const searchStore = useSearchStore();
-	const cached = searchStore.getSearchFromCache(JSON.stringify(params));
+	const cached = searchStore.getSearchFromCache(location_id);
 
 	if (
 		cached &&
@@ -32,21 +31,25 @@ export async function search(params) {
 	const response = await axios.get(
 		`${SEARCH_BASE}/${ENDPOINTS.SEARCH.RESULTS}`,
 		{
-			params,
+			params: {
+				location_id,
+			},
 			headers: HEADERS_BASIC,
 		},
 	);
 
-	searchStore.setSearchToCache(JSON.stringify(params), response);
+	searchStore.setSearchToCache(location_id, response);
 
 	return response;
 }
 
-export async function followSearch(params) {
+export async function followSearch(location_id) {
 	const auth = useAuthStore();
 
 	return await axios.post(`${SEARCH_BASE}/${ENDPOINTS.SEARCH.FOLLOW}`, null, {
-		params,
+		params: {
+			location_id,
+		},
 		headers: {
 			...HEADERS,
 			Authorization: `Bearer ${auth.$state.tokens.accessToken.value}`,
@@ -77,7 +80,7 @@ export async function getFollowedSearches() {
 
 	return response;
 }
-export async function getFollowedSearch(params) {
+export async function getFollowedSearch(location_id) {
 	const auth = useAuthStore();
 
 	if (!auth.isAuthenticated()) return false;
@@ -85,18 +88,20 @@ export async function getFollowedSearch(params) {
 	try {
 		const response = await getFollowedSearches();
 
-		return response.data.data.find((search) => {
-			return _isEqual(search, params);
-		});
+		return response.data.data.find(
+			({ location_id: followed_id }) => followed_id === Number(location_id),
+		);
 	} catch (error) {
 		return null;
 	}
 }
-export async function deleteFollowedSearch(params) {
+export async function deleteFollowedSearch(location_id) {
 	const auth = useAuthStore();
 
 	return await axios.delete(`${SEARCH_BASE}/${ENDPOINTS.SEARCH.FOLLOW}`, {
-		params,
+		params: {
+			location_id,
+		},
 		headers: {
 			...HEADERS,
 			Authorization: `Bearer ${auth.$state.tokens.accessToken.value}`,

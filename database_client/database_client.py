@@ -1179,11 +1179,12 @@ class DatabaseClient:
         right_link_column="location_id",
         linked_relation=Relations.LOCATIONS_EXPANDED,
         linked_relation_linking_column="id",
-        columns_to_retrieve=["state_name", "county_name", "locality_name"],
+        columns_to_retrieve=["state_name", "county_name", "locality_name", "id"],
         alias_mappings={
             "state_name": "state",
             "county_name": "county",
             "locality_name": "locality",
+            "id": "location_id",
         },
     )
 
