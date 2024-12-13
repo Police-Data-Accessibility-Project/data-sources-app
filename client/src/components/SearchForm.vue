@@ -229,10 +229,16 @@ function buildParams(values) {
 	const obj = {};
 
 	/* Handle record from typeahead input */
-	const recordFilteredByParamsKeys = (({ state, county, locality }) => ({
+	const recordFilteredByParamsKeys = (({
 		state,
 		county,
 		locality,
+		location_id,
+	}) => ({
+		state,
+		county,
+		locality,
+		location_id,
 		// If no selected record, fall back to the initial search
 	}))(selectedRecord.value ?? initiallySearchedRecord.value);
 

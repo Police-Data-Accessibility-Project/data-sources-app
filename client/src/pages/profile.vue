@@ -117,7 +117,7 @@ async function signOutWithRedirect() {
 async function unFollow(followed) {
 	const text = getLocationText(followed);
 	try {
-		await deleteFollowedSearch(followed);
+		await deleteFollowedSearch(followed.location_id);
 		toast.success(`Un-followed search for ${text}`);
 		reload();
 	} catch (error) {

@@ -36,19 +36,7 @@
 						to follow this search
 					</p>
 				</div>
-				<div v-else class="flex flex-col md:items-end md:max-w-60">
-					<Button
-						:disabled="!isAuthenticated()"
-						class="sm:block max-h-12"
-						intent="primary"
-						@click="
-							async () => {
-								await unFollow();
-							}
-						"
-					>
-						Un-follow
-					</Button>
+				<div v-else class="flex flex-col md:items-end md:max-w-80">
 					<p
 						v-if="isAuthenticated()"
 						class="text-med text-neutral-500 max-w-full md:text-right"
@@ -145,6 +133,7 @@ import getLocationText from '@/util/getLocationText';
 import _isEqual from 'lodash/isEqual';
 import { DataLoaderErrorPassThrough } from '@/util/errors';
 const searchStore = useSearchStore();
+import { search, getFollowedSearch, followSearch } from '@/api/search';
 import {
 	search,
 	getFollowedSearch,
@@ -157,6 +146,7 @@ const data = ref();
 const previousRoute = ref();
 const isPreviousRouteFollowed = ref(false);
 
+// TODO: split loaders out into separate files
 export const useSearchData = defineBasicLoader(
 	'/search/results',
 	async (route) => {
@@ -168,7 +158,7 @@ export const useSearchData = defineBasicLoader(
 				// Local caching to skip even the pinia method in case of only the hash changing while on the route.
 				_isEqual(params, query.value) && data.value
 					? data.value
-					: await search(route.query);
+					: await search(route.query.location_id);
 
 			// On initial fetch - get hash
 			const hash = normalizeLocaleForHash(searched, response.data);
@@ -194,14 +184,9 @@ export const useSearchData = defineBasicLoader(
 export const useFollowedData = defineBasicLoader(
 	'/search/results',
 	async (route) => {
-		if (isOnlyHashChanged(route, previousRoute.value)) {
-			previousRoute.value = route;
-			return isPreviousRouteFollowed.value;
-		}
-
 		try {
 			const params = route.query;
-			const isFollowed = await getFollowedSearch(params);
+			const isFollowed = await getFollowedSearch(params.location_id);
 			previousRoute.value = route;
 			isPreviousRouteFollowed.value = isFollowed;
 			return isFollowed;
@@ -215,18 +200,22 @@ function isOnlyHashChanged(currentRoute, previousRoute) {
 	// If we don't have a previous route to compare against, return false
 	if (!previousRoute) return false;
 
-	// Check if queries are equal
-	const areQueriesEqual = _isEqual(currentRoute.query, previousRoute.query);
+// function isOnlyHashChanged(currentRoute, previousRoute) {
+// 	// If we don't have a previous route to compare against, return false
+// 	if (!previousRoute) return false;
 
-	// Check if paths are equal
-	const arePathsEqual = currentRoute.path === previousRoute.path;
+// 	// Check if queries are equal
+// 	const areQueriesEqual = _isEqual(currentRoute.query, previousRoute.query);
 
-	// Check if only the hash is different
-	const hasHashChanged = currentRoute.hash !== previousRoute.hash;
+// 	// Check if paths are equal
+// 	const arePathsEqual = currentRoute.path === previousRoute.path;
 
-	// Return true if everything is the same except the hash
-	return areQueriesEqual && arePathsEqual && hasHashChanged;
-}
+// 	// Check if only the hash is different
+// 	const hasHashChanged = currentRoute.hash !== previousRoute.hash;
+
+// 	// Return true if everything is the same except the hash
+// 	return areQueriesEqual && arePathsEqual && hasHashChanged;
+// }
 </script>
 
 <script setup>
@@ -287,20 +276,11 @@ onUnmounted(() => {
 // Utilities and handlers
 async function follow() {
 	try {
-		await followSearch(route.query);
+		await followSearch(route.query.location_id);
 		toast.success(`Search followed for ${getLocationText(route.query)}.`);
 		await reloadFollowed();
 	} catch (error) {
 		toast.error(`Error following search. Please try again.`);
-	}
-}
-async function unFollow() {
-	try {
-		await deleteFollowedSearch(route.query);
-		toast.success(`Search un-followed for ${getLocationText(route.query)}.`);
-		await reloadFollowed();
-	} catch (error) {
-		toast.error(`Error un-following search. Please try again.`);
 	}
 }
 

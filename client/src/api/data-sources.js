@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { isCachedResponseValid } from '@/api/util';
 import { useAuthStore } from '@/stores/auth';
 import { useDataSourceStore } from '@/stores/data-source';
-import { isCachedResponseValid } from '@/api/util';
+import { useSearchStore } from '@/stores/search';
 
 const DATA_SOURCES_BASE = `${import.meta.env.VITE_VUE_API_BASE_URL}/data-sources`;
 const HEADERS_BASE = {
@@ -14,13 +15,19 @@ const HEADERS_BASIC = {
 
 export async function createDataSource(data) {
 	const auth = useAuthStore();
+	const dataSourceStore = useDataSourceStore();
+	const searchStore = useSearchStore();
 
-	return await axios.post(DATA_SOURCES_BASE, data, {
+	const response = await axios.post(DATA_SOURCES_BASE, data, {
 		headers: {
 			...HEADERS_BASE,
 			authorization: `Bearer ${auth.$state.tokens.accessToken.value}`,
 		},
 	});
+
+	dataSourceStore.clearCache();
+	searchStore.clearCache();
+	return response;
 }
 
 export async function getDataSource(id) {
