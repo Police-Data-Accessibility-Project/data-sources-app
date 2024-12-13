@@ -176,6 +176,10 @@ class FollowSearchResponseSchema(Schema):
             "The locality of the search. If empty, all localities for the given county will be searched."
         ),
     )
+    location_id = fields.Int(
+        required=True,
+        metadata=get_json_metadata("The location ID of the search."),
+    )
 
 
 GetUserFollowedSearchesSchema = create_get_many_schema(
