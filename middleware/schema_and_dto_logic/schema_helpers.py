@@ -31,7 +31,7 @@ class SchemaMetadata(BaseModel):
 
 
 def create_get_many_schema(
-    data_list_schema: type(Schema), description: str
+    data_list_schema: type[Schema], description: str
 ) -> Type[Schema]:
     class GetManySchema(GetManyResponseSchemaBase):
         data = fields.List(
