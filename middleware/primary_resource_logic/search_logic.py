@@ -18,7 +18,7 @@ from middleware.dynamic_request_logic.supporting_classes import (
 from middleware.enums import JurisdictionSimplified, Relations, OutputFormatEnum
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import (
-    SearchRequests,
+    SearchRequestsDTO,
 )
 from middleware.common_response_formatting import message_response
 from middleware.util import get_datetime_now, write_to_csv, find_root_directory
@@ -100,16 +100,14 @@ def format_as_csv(ld: list[dict]) -> BytesIO:
 def search_wrapper(
     db_client: DatabaseClient,
     access_info: AccessInfoPrimary,
-    dto: SearchRequests,
+    dto: SearchRequestsDTO,
 ) -> Response:
     create_search_record(access_info, db_client, dto)
     explicit_record_categories = get_explicit_record_categories(dto.record_categories)
     search_results = db_client.search_with_location_and_record_type(
+        location_id=dto.location_id,
         record_categories=explicit_record_categories,
-        state=dto.state,
         # Pass modified record categories, which breaks down ALL into individual categories
-        county=dto.county,
-        locality=dto.locality,
     )
     return send_search_results(
         search_results=search_results,
@@ -118,13 +116,9 @@ def search_wrapper(
 
 
 def create_search_record(access_info, db_client, dto):
-    location_id = try_getting_location_id_and_raise_error_if_not_found(
-        db_client=db_client,
-        dto=dto,
-    )
     db_client.create_search_record(
         user_id=access_info.get_user_id(),
-        location_id=location_id,
+        location_id=dto.location_id,
         # Pass originally provided record categories
         record_categories=dto.record_categories,
     )
@@ -170,7 +164,7 @@ def get_explicit_record_categories(
 
 def try_getting_location_id_and_raise_error_if_not_found(
     db_client: DatabaseClient,
-    dto: SearchRequests,
+    dto: SearchRequestsDTO,
 ) -> int:
     where_mappings = WhereMapping.from_dict(
         {
@@ -228,7 +222,7 @@ class FollowedSearchPostLogic(PostLogic):
 
 
 def get_link_id_and_raise_error_if_not_found(
-    db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: SearchRequests
+    db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: SearchRequestsDTO
 ):
     location_id = try_getting_location_id_and_raise_error_if_not_found(
         db_client=db_client,
@@ -244,18 +238,14 @@ def get_link_id_and_raise_error_if_not_found(
 def get_location_link_and_raise_error_if_not_found(
     db_client: DatabaseClient,
     access_info: AccessInfoPrimary,
-    dto: SearchRequests,
+    dto: SearchRequestsDTO,
 ):
-    location_id = try_getting_location_id_and_raise_error_if_not_found(
-        db_client=db_client,
-        dto=dto,
-    )
     link_id = get_user_followed_search_link(
         db_client=db_client,
         access_info=access_info,
-        location_id=location_id,
+        location_id=dto.location_id,
     )
-    return LocationLink(link_id=link_id, location_id=location_id)
+    return LocationLink(link_id=link_id, location_id=dto.location_id)
 
 
 class LocationLink(BaseModel):
@@ -266,7 +256,7 @@ class LocationLink(BaseModel):
 def create_followed_search(
     db_client: DatabaseClient,
     access_info: AccessInfoPrimary,
-    dto: SearchRequests,
+    dto: SearchRequestsDTO,
 ) -> Response:
     # Get location id. If not found, not a valid location. Raise error
     location_link = get_location_link_and_raise_error_if_not_found(
@@ -279,7 +269,7 @@ def create_followed_search(
 
     return post_entry(
         middleware_parameters=MiddlewareParameters(
-            entry_name="followed search",
+            entry_name="Location for followed search",
             relation=Relations.LINK_USER_FOLLOWED_LOCATION.value,
             db_client_method=DatabaseClient.create_followed_search,
             access_info=access_info,
@@ -296,7 +286,7 @@ def create_followed_search(
 def delete_followed_search(
     db_client: DatabaseClient,
     access_info: AccessInfoPrimary,
-    dto: SearchRequests,
+    dto: SearchRequestsDTO,
 ) -> Response:
     # Get location id. If not found, not a valid location. Raise error
     location_link = get_location_link_and_raise_error_if_not_found(
@@ -310,7 +300,7 @@ def delete_followed_search(
 
     return delete_entry(
         middleware_parameters=MiddlewareParameters(
-            entry_name="Followed search",
+            entry_name="Location for followed search",
             relation=Relations.LINK_USER_FOLLOWED_LOCATION.value,
             db_client_method=DatabaseClient.delete_followed_search,
             access_info=access_info,

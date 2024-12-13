@@ -1,7 +1,9 @@
 import csv
+from dataclasses import dataclass
 from http import HTTPStatus
 from typing import Optional
 
+import pytest
 from marshmallow import Schema
 
 from database_client.enums import LocationType
@@ -31,17 +33,35 @@ TEST_STATE = "Pennsylvania"
 TEST_COUNTY = "Allegheny"
 TEST_LOCALITY = "Pittsburgh"
 
+@dataclass
+class SearchTestSetup:
+    tdc: TestDataCreatorFlask
+    location_id: int
+    tus: TestUserSetup
 
-def test_search_get(test_data_creator_flask: TestDataCreatorFlask):
+@pytest.fixture
+def search_test_setup(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
-    tus = tdc.standard_user()
+    return SearchTestSetup(
+        tdc=tdc,
+        location_id=tdc.db_client.get_location_id(
+            where_mappings={
+                "state_name": TEST_STATE,
+                "county_name": TEST_COUNTY,
+                "locality_name": TEST_LOCALITY,
+        }),
+        tus=tdc.standard_user(),
+    )
+
+def test_search_get(search_test_setup: SearchTestSetup):
+    sts = search_test_setup
+    tdc = sts.tdc
+    tus = sts.tus
 
     def search(record_format: Optional[OutputFormatEnum] = OutputFormatEnum.JSON):
         return tdc.request_validator.search(
             headers=tus.api_authorization_header,
-            state=TEST_STATE,
-            county=TEST_COUNTY,
-            locality=TEST_LOCALITY,
+            location_id=sts.location_id,
             record_categories=[RecordCategories.POLICE],
             format=record_format,
         )
@@ -102,22 +122,21 @@ def test_search_get(test_data_creator_flask: TestDataCreatorFlask):
 
 
 def test_search_get_record_categories_all(
-    test_data_creator_flask: TestDataCreatorFlask,
+    search_test_setup: SearchTestSetup,
 ):
     """
     All record categories can be provided in one of two ways:
     By explicitly passing an "ALL" value in the `record_categories` parameter
     Or by providing every non-ALL value in the `record_categories` parameter
     """
-    tdc = test_data_creator_flask
-    tus = tdc.standard_user()
+    sts = search_test_setup
+    tdc = sts.tdc
+    tus = sts.tus
 
     def run_search(record_categories: list[RecordCategories]) -> dict:
         return tdc.request_validator.search(
             headers=tus.api_authorization_header,
-            state=TEST_STATE,
-            county=TEST_COUNTY,
-            locality=TEST_LOCALITY,
+            location_id=sts.location_id,
             record_categories=record_categories if len(record_categories) > 0 else None,
         )
 
@@ -137,16 +156,14 @@ def test_search_get_record_categories_all(
     assert data_empty["count"] == data_all_explicit["count"]
 
 
-def test_search_follow(test_data_creator_flask):
-    tdc = test_data_creator_flask
-
+def test_search_follow(search_test_setup: SearchTestSetup):
+    sts = search_test_setup
+    tdc = sts.tdc
     # Create standard user
-    tus_1 = tdc.standard_user()
+    tus_1 = sts.tus
 
     location_to_follow = {
-        "state": TEST_STATE,
-        "county": TEST_COUNTY,
-        "locality": TEST_LOCALITY,
+        "location_id": sts.location_id,
     }
     url_for_following = add_query_params(
         SEARCH_FOLLOW_BASE_ENDPOINT, location_to_follow
@@ -210,11 +227,9 @@ def test_search_follow(test_data_creator_flask):
     # User should try to follow a nonexistent location and be denied
     tdc.request_validator.follow_search(
         headers=tus_1.jwt_authorization_header,
-        state=TEST_STATE,
-        county=TEST_COUNTY,
-        locality="Purtsburgh",
+        location_id=-1,
         expected_response_status=HTTPStatus.BAD_REQUEST,
-        expected_json_content={"message": "Location not found."},
+        expected_json_content={"message": "Location for followed search not found."},
     )
 
     # User should try to follow an extant location and be granted
@@ -237,7 +252,11 @@ def test_search_follow(test_data_creator_flask):
         tus=tus_1,
         expected_json_content={
             "metadata": {"count": 1},
-            "data": [location_to_follow],
+            "data": [{
+                "state": TEST_STATE,
+                "county": TEST_COUNTY,
+                "locality": TEST_LOCALITY,
+            }],
             "message": "Followed searches found.",
         },
     )
@@ -254,7 +273,7 @@ def test_search_follow(test_data_creator_flask):
     call_follow_delete(
         tus=tus_1,
         endpoint=url_for_following,
-        expected_json_content={"message": "Followed search deleted."},
+        expected_json_content={"message": "Location for followed search deleted."},
     )
 
     # The original user, on checking their current follows, should now find no locations

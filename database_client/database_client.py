@@ -524,10 +524,8 @@ class DatabaseClient:
     @cursor_manager()
     def search_with_location_and_record_type(
         self,
-        state: str,
+        location_id: int,
         record_categories: Optional[list[RecordCategories]] = None,
-        county: Optional[str] = None,
-        locality: Optional[str] = None,
     ) -> List[dict]:
         """
         Searches for data sources in the database.
@@ -540,10 +538,8 @@ class DatabaseClient:
         """
         optional_kwargs = {}
         query = DynamicQueryConstructor.create_search_query(
-            state=state,
+            location_id=location_id,
             record_categories=record_categories,
-            county=county,
-            locality=locality,
         )
         self.cursor.execute(query)
         return self.cursor.fetchall()

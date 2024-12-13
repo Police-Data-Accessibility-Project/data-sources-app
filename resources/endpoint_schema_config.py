@@ -91,7 +91,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.notifications_sche
 from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import (
     SearchRequestSchema,
     GetUserFollowedSearchesSchema,
-    SearchRequests,
+    SearchRequestsDTO,
     SearchResponseSchema,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
@@ -278,9 +278,9 @@ DATA_SOURCES_RELATED_AGENCY_BY_ID = EndpointSchemaConfig(
 )
 SEARCH_FOLLOW_UPDATE = EndpointSchemaConfig(
     input_schema=SearchRequestSchema(
-        exclude=["record_categories"],
+        exclude=["record_categories", "output_format"],
     ),
-    input_dto_class=SearchRequests,
+    input_dto_class=SearchRequestsDTO,
 )
 
 
@@ -387,7 +387,7 @@ class SchemaConfigs(Enum):
     SEARCH_LOCATION_AND_RECORD_TYPE_GET = EndpointSchemaConfig(
         input_schema=SearchRequestSchema(),
         primary_output_schema=SearchResponseSchema(),
-        input_dto_class=SearchRequests,
+        input_dto_class=SearchRequestsDTO,
     )
     SEARCH_FOLLOW_GET = EndpointSchemaConfig(
         primary_output_schema=GetUserFollowedSearchesSchema(),

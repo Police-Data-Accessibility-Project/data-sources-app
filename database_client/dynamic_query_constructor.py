@@ -223,15 +223,13 @@ class DynamicQueryConstructor:
 
     @staticmethod
     def create_search_query(
-        state: str,
+        location_id: int,
         record_categories: Optional[list[RecordCategories]] = None,
-        county: Optional[str] = None,
-        locality: Optional[str] = None,
     ) -> sql.Composed:
 
         base_query = sql.SQL(
             """
-            SELECT
+            SELECT DISTINCT
                 data_sources.id,
                 data_sources.name AS data_source_name,
                 data_sources.description,
@@ -255,14 +253,16 @@ class DynamicQueryConstructor:
 				locations_expanded on agencies.location_id = locations_expanded.id
             INNER JOIN 
                 record_types on record_types.id = data_sources.record_type_id
+            LEFT JOIN
+                DEPENDENT_LOCATIONS DL ON DL.DEPENDENT_LOCATION_ID = LOCATIONS_EXPANDED.ID
         """
         )
 
         join_conditions = []
         where_subclauses = [
             sql.SQL(
-                "LOWER(locations_expanded.state_name) = LOWER({state_name})"
-            ).format(state_name=sql.Literal(state)),
+                "(locations_expanded.id = {location_id} OR DL.PARENT_LOCATION_ID = {location_id}) "
+            ).format(location_id=sql.Literal(location_id)),
             sql.SQL("data_sources.approval_status = 'approved'"),
             sql.SQL("data_sources.url_status NOT IN ('broken', 'none found')"),
         ]
@@ -284,20 +284,6 @@ class DynamicQueryConstructor:
                 sql.SQL("record_categories.name = ANY({record_types})").format(
                     record_types=sql.Literal(record_type_str_list)
                 )
-            )
-
-        if county is not None:
-            where_subclauses.append(
-                sql.SQL(
-                    "LOWER(locations_expanded.county_name) = LOWER({county_name})"
-                ).format(county_name=sql.Literal(county))
-            )
-
-        if locality is not None:
-            where_subclauses.append(
-                sql.SQL(
-                    "LOWER(locations_expanded.locality_name) = LOWER({locality})"
-                ).format(locality=sql.Literal(locality))
             )
 
         query = sql.Composed(
