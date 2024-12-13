@@ -30,7 +30,7 @@ class DataRequestLocationInfoPostDTO(BaseModel):
 
 
 class GetManyDataRequestsRequestsDTO(GetManyBaseDTO):
-    request_status: Optional[RequestStatus] = None
+    request_statuses: Optional[list[RequestStatus]] = None
 
 
 class DataRequestsPutDTO(BaseModel):

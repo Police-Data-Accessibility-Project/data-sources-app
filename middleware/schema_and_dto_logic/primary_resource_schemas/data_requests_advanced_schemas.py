@@ -138,10 +138,13 @@ class DataRequestsPostSchema(Schema):
 
 
 class GetManyDataRequestsRequestsSchema(GetManyRequestsBaseSchema):
-    request_status = fields.Enum(
-        enum=RequestStatus,
-        by_value=fields.Str,
-        allow_none=True,
+    request_statuses = fields.List(
+            fields.Enum(
+                enum=RequestStatus,
+                by_value=fields.Str,
+                allow_none=True,
+                metadata=get_query_metadata("The status of the requests to return."),
+            ),
         metadata=get_query_metadata("The status of the requests to return."),
     )
 

@@ -357,6 +357,7 @@ class RequestValidator:
         request_status: Optional[RequestStatus] = None,
         sort_by: Optional[str] = None,
         sort_order: Optional[SortOrder] = None,
+        request_statuses: Optional[list[RequestStatus]] = None,
     ):
         query_params = {}
         update_if_not_none(
@@ -364,8 +365,8 @@ class RequestValidator:
             secondary_dict={
                 "sort_by": sort_by,
                 "sort_order": sort_order.value if sort_order is not None else None,
-                "request_status": (
-                    request_status.value if request_status is not None else None
+                "request_statuses": (
+                    [rs.value for rs in request_statuses] if request_statuses is not None else None
                 ),
             },
         )
