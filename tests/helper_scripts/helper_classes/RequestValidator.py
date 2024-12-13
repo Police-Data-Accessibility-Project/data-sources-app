@@ -268,18 +268,14 @@ class RequestValidator:
     def search(
         self,
         headers: dict,
-        state: str,
+        location_id: int,
         record_categories: Optional[list[RecordCategories]] = None,
-        county: Optional[str] = None,
-        locality: Optional[str] = None,
         format: Optional[OutputFormatEnum] = OutputFormatEnum.JSON,
     ):
         endpoint_base = "/search/search-location-and-record-type"
         query_params = self._get_search_query_params(
-            county=county,
-            locality=locality,
+            location_id=location_id,
             record_categories=record_categories,
-            state=state,
         )
         query_params.update({} if format is None else {"output_format": format.value})
         endpoint = add_query_params(
@@ -295,39 +291,28 @@ class RequestValidator:
         )
 
     @staticmethod
-    def _get_search_query_params(county, locality, record_categories, state):
+    def _get_search_query_params(record_categories, location_id: int):
         query_params = {
-            "state": state,
+            "location_id": location_id,
         }
         if record_categories is not None:
             query_params["record_categories"] = ",".join(
                 [rc.value for rc in record_categories]
             )
-        update_if_not_none(
-            dict_to_update=query_params,
-            secondary_dict={
-                "county": county,
-                "locality": locality,
-            },
-        )
         return query_params
 
     def follow_search(
         self,
         headers: dict,
-        state: str,
+        location_id: int,
         record_categories: Optional[list[RecordCategories]] = None,
-        county: Optional[str] = None,
-        locality: Optional[str] = None,
         expected_json_content: Optional[dict] = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
         endpoint_base = "/api/search/follow"
         query_params = self._get_search_query_params(
-            county=county,
-            locality=locality,
+            location_id=location_id,
             record_categories=record_categories,
-            state=state,
         )
         endpoint = add_query_params(
             url=endpoint_base,

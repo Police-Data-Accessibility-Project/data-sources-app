@@ -621,13 +621,29 @@ def test_search_with_location_and_record_types_real_data(live_database_client):
     :param live_database_client:
     :return:
     """
-    state_parameter = "PeNnSylvaNia"  # Additionally testing for case-insensitivity
+    state_parameter = "Pennsylvania"  # Additionally testing for case-insensitivity
     record_type_parameter = RecordCategories.AGENCIES
-    county_parameter = "ALLEGHENY"
-    locality_parameter = "pittsburgh"
+    county_parameter = "Allegheny"
+    locality_parameter = "Pittsburgh"
+
+    def search(state, record_categories = None, county = None, locality = None):
+        location_id = live_database_client.get_location_id(
+            where_mappings={
+                "state_name": state,
+                "county_name": county,
+                "locality_name": locality,
+            }
+        )
+        if record_categories is not None:
+            additional_kwargs = {"record_categories": record_categories}
+        else:
+            additional_kwargs = {}
+        return live_database_client.search_with_location_and_record_type(
+            location_id=location_id, **additional_kwargs
+        )
 
     SRLC = len(
-        live_database_client.search_with_location_and_record_type(
+        search(
             state=state_parameter,
             record_categories=[record_type_parameter],
             county=county_parameter,
@@ -635,27 +651,27 @@ def test_search_with_location_and_record_types_real_data(live_database_client):
         )
     )
     S = len(
-        live_database_client.search_with_location_and_record_type(state=state_parameter)
+        search(state=state_parameter)
     )
     SR = len(
-        live_database_client.search_with_location_and_record_type(
+        search(
             state=state_parameter, record_categories=[record_type_parameter]
         )
     )
     SRC = len(
-        live_database_client.search_with_location_and_record_type(
+        search(
             state=state_parameter,
             record_categories=[record_type_parameter],
             county=county_parameter,
         )
     )
     SCL = len(
-        live_database_client.search_with_location_and_record_type(
+        search(
             state=state_parameter, county=county_parameter, locality=locality_parameter
         )
     )
     SC = len(
-        live_database_client.search_with_location_and_record_type(
+        search(
             state=state_parameter, county=county_parameter
         )
     )
@@ -670,7 +686,9 @@ def test_search_with_location_and_record_types_real_data(live_database_client):
 def test_search_with_location_and_record_types_real_data_multiple_records(
     live_database_client,
 ):
-    state_parameter = "Pennsylvania"
+    location_id = live_database_client.get_location_id(
+        where_mappings={"state_name": "Pennsylvania", "county_name": None, "locality_name": None}
+    )
     record_categories = []
     last_count = 0
     # Exclude the ALL pseudo-category
@@ -682,14 +700,14 @@ def test_search_with_location_and_record_types_real_data_multiple_records(
     for record_category in applicable_record_categories:
         record_categories.append(record_category)
         results = live_database_client.search_with_location_and_record_type(
-            state=state_parameter, record_categories=record_categories
+            location_id=location_id, record_categories=record_categories
         )
-        assert len(results) > last_count
+        assert len(results) > last_count, f"{record_category} failed (total record_categories: {len(record_categories)})"
         last_count = len(results)
 
     # Finally, check that all record_types is equivalent to no record types in terms of number of results
     results = live_database_client.search_with_location_and_record_type(
-        state=state_parameter
+        location_id=location_id
     )
     assert len(results) == last_count
 

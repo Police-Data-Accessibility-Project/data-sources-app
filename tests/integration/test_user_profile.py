@@ -45,13 +45,13 @@ def test_user_profile_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     # Create a recent search
     tdc.request_validator.search(
         headers=tus.api_authorization_header,
-        state="Pennsylvania",
+        location_id=tdc.db_client.get_location_id(where_mappings={"state_name": "Pennsylvania", "county_name": None, "locality_name": None}),
     )
 
     # Have the user follow a search
     tdc.request_validator.follow_search(
         headers=tus.jwt_authorization_header,
-        state="California",
+        location_id=tdc.db_client.get_location_id(where_mappings={"state_name": "California", "county_name": None, "locality_name": None}),
     )
 
     # Have the user create a data request

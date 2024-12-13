@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from middleware.enums import OutputFormatEnum
 from middleware.schema_and_dto_logic.schema_helpers import create_get_many_schema
-from middleware.schema_and_dto_logic.util import get_json_metadata
+from middleware.schema_and_dto_logic.util import get_json_metadata, get_query_metadata
 from utilities.common import get_enums_from_string
 from utilities.enums import RecordCategories, SourceMappingEnum, ParserLocation
 
@@ -18,13 +18,9 @@ def transform_record_categories(value: str) -> Optional[list[RecordCategories]]:
 
 
 class SearchRequestSchema(Schema):
-    state = fields.Str(
-        required=True,
-        metadata={
-            "description": "The state of the search.",
-            "source": SourceMappingEnum.QUERY_ARGS,
-            "location": ParserLocation.QUERY.value,
-        },
+    location_id = fields.Int(
+        required=False,
+        metadata=get_query_metadata("The location ID of the search."),
     )
     record_categories = fields.Str(
         required=False,
@@ -36,22 +32,6 @@ class SearchRequestSchema(Schema):
             "Interactions,Agency-published Resources'."
             "Allowable record categories include: \n  * "
             + "\n  * ".join([e.value for e in RecordCategories]),
-            "source": SourceMappingEnum.QUERY_ARGS,
-            "location": ParserLocation.QUERY.value,
-        },
-    )
-    county = fields.Str(
-        required=False,
-        metadata={
-            "description": "The county of the search. If empty, all counties for the given state will be searched.",
-            "source": SourceMappingEnum.QUERY_ARGS,
-            "location": ParserLocation.QUERY.value,
-        },
-    )
-    locality = fields.Str(
-        required=False,
-        metadata={
-            "description": "The locality of the search. If empty, all localities for the given county will be searched.",
             "source": SourceMappingEnum.QUERY_ARGS,
             "location": ParserLocation.QUERY.value,
         },
@@ -68,12 +48,6 @@ class SearchRequestSchema(Schema):
         },
     )
 
-    @validates_schema
-    def validate_location_info(self, data, **kwargs):
-        if data.get("locality") and not data.get("county"):
-            raise ValidationError(
-                "If locality is provided, county must also be provided."
-            )
 
 
 class SearchResultsInnerSchema(Schema):
@@ -210,9 +184,7 @@ GetUserFollowedSearchesSchema = create_get_many_schema(
 )
 
 
-class SearchRequests(BaseModel):
-    state: str
+class SearchRequestsDTO(BaseModel):
+    location_id: int
     record_categories: Optional[list[RecordCategories]] = None
-    county: Optional[str] = None
-    locality: Optional[str] = None
     output_format: Optional[OutputFormatEnum] = None

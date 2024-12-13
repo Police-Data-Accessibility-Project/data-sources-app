@@ -56,11 +56,22 @@ class PostLogic(PutPostBase):
             self.id_val = self.mp.db_client_method(
                 self.mp.db_client, column_value_mappings=self.entry
             )
-        except sqlalchemy.exc.IntegrityError:
-            FlaskResponseManager.abort(
-                code=HTTPStatus.CONFLICT,
-                message=f"{self.mp.entry_name} already exists.",
-            )
+        except sqlalchemy.exc.IntegrityError as e:
+            if e.orig.sqlstate == "23505":
+                FlaskResponseManager.abort(
+                    code=HTTPStatus.CONFLICT,
+                    message=f"{self.mp.entry_name} already exists.",
+                )
+            elif e.orig.sqlstate == "23503":
+                FlaskResponseManager.abort(
+                    code=HTTPStatus.BAD_REQUEST,
+                    message=f"{self.mp.entry_name} not found.",
+                )
+            else:
+                FlaskResponseManager.abort(
+                    code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                    message=f"Error creating {self.mp.entry_name}.",
+                )
 
     def make_response(self) -> Response:
         return created_id_response(
