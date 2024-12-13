@@ -4,8 +4,8 @@
 	"private": true,
 	"scripts": {
 		"dev": "vite",
-		"build": "vite build",
-		"preview": "vite preview --port 8888",
+		"build": "NODE_ENV=production vite build",
+		"serve": "vite preview --port 8888",
 		"lint": "eslint src --ext .js .",
 		"lint:fix": "npm run lint -- --fix",
 		"test": "vitest --dom --run",
@@ -22,6 +22,7 @@
 		"@tailwindcss/container-queries": "^0.1.1",
 		"@vueuse/core": "^11.2.0",
 		"axios": "^1.6.0",
+		"dotenv": "^16.4.7",
 		"jwt-decode": "^4.0.0",
 		"lodash": "^4.17.21",
 		"pdap-design-system": "^3.1.0-beta.37",
@@ -55,5 +56,8 @@
 		"last 2 versions",
 		"not dead",
 		"not ie 11"
-	]
+	],
+	"optionalDependencies": {
+		"win-node-env": "^0.6.1"
+	}
 }

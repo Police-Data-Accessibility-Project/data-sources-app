@@ -193,7 +193,7 @@ import { useSwipe } from '@vueuse/core';
 import { ref } from 'vue';
 import { useDataSourceStore } from '@/stores/data-source';
 import { DataLoaderErrorPassThrough } from '@/util/errors';
-import { getDataSource } from '@/api/data-source';
+import { getDataSource } from '@/api/data-sources';
 const dataSourceStore = useDataSourceStore();
 
 export const useDataSourceData = defineBasicLoader(

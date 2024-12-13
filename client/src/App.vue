@@ -17,7 +17,7 @@
 		</ErrorBoundary>
 		<Footer
 			:logo-image-src="acronym"
-			:fundraising-data="{ ...currentCampaign }"
+			:fundraising-data="{ raised: 0, goal: 0 }"
 		/>
 	</AuthWrapper>
 </template>
@@ -29,25 +29,10 @@ import acronym from 'pdap-design-system/images/acronym.svg';
 import lockup from 'pdap-design-system/images/lockup.svg';
 
 import { NAV_LINKS, FOOTER_LINKS } from '@/util/constants';
-import getDonorBoxData from '@/util/getDonorBoxData';
-import { onMounted, provide, ref } from 'vue';
+import { provide } from 'vue';
 
 provide('navLinks', NAV_LINKS);
 provide('footerLinks', FOOTER_LINKS);
-
-const currentCampaign = ref({
-	raised: 0,
-	goal: 0,
-});
-
-onMounted(async () => {
-	const data = await getDonorBoxData();
-
-	currentCampaign.value = {
-		raised: Number(data?.raised ?? 0),
-		goal: Number(data?.goal ?? 0),
-	};
-});
 </script>
 
 <style>

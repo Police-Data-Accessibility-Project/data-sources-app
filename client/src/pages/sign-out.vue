@@ -8,8 +8,12 @@
 import { Spinner } from 'pdap-design-system';
 import { onMounted } from 'vue';
 import { signOut } from '@/api/auth';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 onMounted(async () => {
 	await signOut();
+	router.replace({ path: '/' });
 });
 </script>

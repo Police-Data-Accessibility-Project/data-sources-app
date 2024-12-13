@@ -72,9 +72,6 @@ The environment variables are as follows:
 * VITE_VUE_API_BASE_URL: The base URL for the API
 * VITE_VUE_APP_BASE_URL: The base URL for the UI
 * VITE_ADMIN_API_KEY: Used as the `Basic` auth token for the  web client. Must be in `/client` directory `.env` file.
-* VITE_DONORBOX_API_KEY: necessary for getting donorbox data for the footer
-* VITE_DONORBOX_EMAIL: necessary for getting donorbox data for the footer
-* VITE_DONORBOX_CAMPAIGN_ID: necessary for getting donorbox data for the footer
 * GH_CLIENT_ID: Used to authenticate with GitHub via OAuth. Must correspond to the `client_id` provided by GitHub.
 * GH_CLIENT_SECRET: Used to authenticate with GitHub via OAuth. Must correspond to the `client_secret` provided by GitHub.
 * JWT_SECRET_KEY: Used to sign and verify JWT tokens. Used to identify that any JWT tokens produced are recognizable by this version of the app and no other. Can be customized for local development.

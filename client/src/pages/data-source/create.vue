@@ -464,7 +464,7 @@ import _debounce from 'lodash/debounce';
 import _cloneDeep from 'lodash/cloneDeep';
 import _startCase from 'lodash/startCase';
 import { nextTick, ref } from 'vue';
-import { createDataSource } from '@/api/data-source';
+import { createDataSource } from '@/api/data-sources';
 import { findDuplicateURL } from '@/api/check';
 import { getTypeaheadAgencies } from '@/api/typeahead';
 

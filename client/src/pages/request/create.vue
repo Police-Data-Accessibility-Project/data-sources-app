@@ -171,7 +171,7 @@ import {
 import Typeahead from '@/components/TypeaheadInput.vue';
 import LocationSelected from '@/components/TypeaheadSelected.vue';
 import { toast } from 'vue3-toastify';
-import { createRequest } from '@/api/request';
+import { createRequest } from '@/api/data-requests';
 import { formatText } from './_util';
 import _debounce from 'lodash/debounce';
 import _cloneDeep from 'lodash/cloneDeep';

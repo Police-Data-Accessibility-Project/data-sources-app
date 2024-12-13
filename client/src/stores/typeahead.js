@@ -16,7 +16,6 @@ export const useTypeaheadStore = defineStore('typeahead', {
 
 	actions: {
 		setTypeaheadResultsToCache(type, key, data) {
-			console.debug('setting results to cache');
 			this.$patch((state) => {
 				// Use object notation for setting cache data
 				state.cache[type][key] = {

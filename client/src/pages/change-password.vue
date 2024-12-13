@@ -1,3 +1,11 @@
+<route>
+	{
+		meta: {
+			auth: true
+		}
+	}
+</route>
+
 <template>
 	<main class="pdap-flex-container" :class="{ 'mx-auto max-w-2xl': !success }">
 		<template v-if="success">
@@ -62,10 +70,19 @@ import { useUserStore } from '@/stores/user';
 import PasswordValidationChecker from '@/components/PasswordValidationChecker.vue';
 import { ref } from 'vue';
 import { changePassword } from '@/api/user';
-import { beginOAuthLogin } from '@/api/auth';
+import { beginOAuthLogin, signInWithEmail } from '@/api/auth';
 
 // Constants
 const INPUTS = [
+	{
+		autocomplete: 'password',
+		'data-test': 'password',
+		id: 'current-password',
+		name: 'current-password',
+		label: 'Current password',
+		type: 'password',
+		placeholder: 'Your existing password',
+	},
 	{
 		autocomplete: 'new-password',
 		'data-test': 'password',
@@ -86,6 +103,14 @@ const INPUTS = [
 	},
 ];
 const VALIDATION_SCHEMA = [
+	{
+		name: 'currentPassword',
+		validators: {
+			required: {
+				value: true,
+			},
+		},
+	},
 	{
 		name: 'password',
 		validators: {
@@ -165,9 +190,9 @@ async function onSubmit(formValues) {
 
 	try {
 		loading.value = true;
-		const { password } = formValues;
-		// TODO: UPDATE THIS, OPEN QUESTION WITH MAX ON IMPL
-		await changePassword(user.email, password);
+		const { password, currentPassword } = formValues;
+		await signInWithEmail(user.email, currentPassword);
+		await changePassword(currentPassword, password);
 
 		success.value = true;
 	} catch (err) {
@@ -177,11 +202,3 @@ async function onSubmit(formValues) {
 	}
 }
 </script>
-
-<route>
-	{
-		meta: {
-			auth: true
-		}
-	}
-</route>
