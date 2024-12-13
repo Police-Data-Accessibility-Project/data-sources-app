@@ -53,7 +53,7 @@ class GetUserRecentSearchesInnerSchema(Schema):
 
 
 GetUserRecentSearchesOuterSchema = create_get_many_schema(
-    data_list_schema=GetUserRecentSearchesInnerSchema(),
+    data_list_schema=GetUserRecentSearchesInnerSchema,
     description="The list of recent searches for the user",
 )
 

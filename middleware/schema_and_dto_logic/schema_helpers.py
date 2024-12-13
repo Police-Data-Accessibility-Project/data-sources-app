@@ -30,7 +30,9 @@ class SchemaMetadata(BaseModel):
     ] = None
 
 
-def create_get_many_schema(data_list_schema: Schema, description: str) -> Type[Schema]:
+def create_get_many_schema(
+    data_list_schema: type(Schema), description: str
+) -> Type[Schema]:
     class GetManySchema(GetManyResponseSchemaBase):
         data = fields.List(
             fields.Nested(
@@ -40,7 +42,7 @@ def create_get_many_schema(data_list_schema: Schema, description: str) -> Type[S
             metadata=get_json_metadata(description),
         )
 
-    GetManySchema.__name__ = f"GetMany{data_list_schema.__class__.__name__}"
+    GetManySchema.__name__ = f"GetMany{data_list_schema.__name__}"
 
     return GetManySchema
 

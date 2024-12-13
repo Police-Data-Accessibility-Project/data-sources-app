@@ -205,7 +205,7 @@ class FollowSearchResponseSchema(Schema):
 
 
 GetUserFollowedSearchesSchema = create_get_many_schema(
-    data_list_schema=FollowSearchResponseSchema(),
+    data_list_schema=FollowSearchResponseSchema,
     description="The searches that the user follows.",
 )
 
