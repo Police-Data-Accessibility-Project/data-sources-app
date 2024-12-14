@@ -134,12 +134,6 @@ import _isEqual from 'lodash/isEqual';
 import { DataLoaderErrorPassThrough } from '@/util/errors';
 const searchStore = useSearchStore();
 import { search, getFollowedSearch, followSearch } from '@/api/search';
-import {
-	search,
-	getFollowedSearch,
-	followSearch,
-	deleteFollowedSearch,
-} from '@/api/search';
 
 const query = ref();
 const data = ref();
@@ -196,9 +190,9 @@ export const useFollowedData = defineBasicLoader(
 	},
 );
 
-function isOnlyHashChanged(currentRoute, previousRoute) {
-	// If we don't have a previous route to compare against, return false
-	if (!previousRoute) return false;
+// function isOnlyHashChanged(currentRoute, previousRoute) {
+// 	// If we don't have a previous route to compare against, return false
+// 	if (!previousRoute) return false;
 
 // function isOnlyHashChanged(currentRoute, previousRoute) {
 // 	// If we don't have a previous route to compare against, return false
