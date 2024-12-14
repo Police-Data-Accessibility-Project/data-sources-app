@@ -1,6 +1,8 @@
 from datetime import datetime, timezone, timedelta
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
+from middleware.util import stringify_lists
+
 """
 `Simple` in this case refers to helper functions 
 which rely on no external dependencies
@@ -21,6 +23,8 @@ def add_query_params(url, params: dict):
     :param params:
     :return:
     """
+
+    stringify_lists(d=params)
 
     # Parse the original URL into components
     url_parts = list(urlparse(url))

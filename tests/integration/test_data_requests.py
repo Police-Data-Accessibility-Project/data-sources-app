@@ -73,6 +73,23 @@ def test_data_requests_get(
 
     assert len(data) == 2
 
+    # Add another data request, set its approval status to `Archived`
+    # THen perform a search for both Active and Archived
+    dr_info_3 = tdc.data_request(tus_creator)
+
+    tdc.request_validator.update_data_request(
+        data_request_id=dr_info_3.id,
+        headers=tdc.get_admin_tus().jwt_authorization_header,
+        entry_data={"request_status": "Archived"},
+    )
+
+    data = tdc.request_validator.get_data_requests(
+        headers=tus_creator.jwt_authorization_header,
+        request_statuses=[RequestStatus.ACTIVE, RequestStatus.ARCHIVED],
+    )[DATA_KEY]
+
+    assert len(data) == 2
+
     # Give user admin permission
     tdc.db_client.add_user_permission(
         user_id=tus_creator.user_info.user_id, permission=PermissionsEnum.DB_WRITE
@@ -88,7 +105,7 @@ def test_data_requests_get(
     # Run get again, this time filtering the request status to be active
     data = tdc.request_validator.get_data_requests(
         headers=tus_creator.jwt_authorization_header,
-        request_status=RequestStatus.ACTIVE,
+        request_statuses=[RequestStatus.ACTIVE],
     )[DATA_KEY]
 
     # The more recent data request should be returned, but the old one should be filtered out
@@ -102,7 +119,7 @@ def test_data_requests_get(
     def get_sorted_data_requests(sort_order: SortOrder):
         return tdc.request_validator.get_data_requests(
             headers=tus_creator.jwt_authorization_header,
-            request_status=RequestStatus.INTAKE,
+            request_statuses=[RequestStatus.INTAKE],
             sort_by="id",
             sort_order=sort_order,
         )
