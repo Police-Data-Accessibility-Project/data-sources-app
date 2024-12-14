@@ -31,6 +31,7 @@ class AppNamespaces(Enum):
     MAP = NamespaceAttributes(path="map", description="Map Namespace")
     BULK = NamespaceAttributes(path="bulk", description="Bulk Namespace")
     MATCH = NamespaceAttributes(path="match", description="Match Namespace")
+    LOCATIONS = NamespaceAttributes(path="locations", description="Locations Namespace")
 
 
 def create_namespace(

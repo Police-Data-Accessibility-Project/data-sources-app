@@ -1441,3 +1441,18 @@ class DatabaseClient:
             id_column_value=email,
             id_column_name="email",
         )
+
+    def get_location_by_id(self, location_id: int):
+        return self._select_single_entry_from_relation(
+            relation_name=Relations.LOCATIONS_EXPANDED.value,
+            columns=[
+                "state_name",
+                "state_iso",
+                "county_name",
+                "county_fips",
+                "locality_name",
+                "type",
+                "id",
+            ],
+            where_mappings={"id": location_id},
+        )

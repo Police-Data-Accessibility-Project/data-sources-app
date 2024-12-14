@@ -8,9 +8,11 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggesti
     TypeaheadLocationsResponseSchema,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    LocationInfoSchema,
     GetManyRequestsBaseSchema,
     GetByIDBaseSchema,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.locations_schemas import (
+    LocationInfoSchema,
     LocationInfoExpandedSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import (
