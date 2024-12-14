@@ -21,6 +21,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.bulk_schemas impor
     AgenciesPutBatchRequestSchema,
     DataSourcesPutBatchRequestSchema,
 )
+from middleware.util import stringify_lists
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.common_asserts import assert_contains_key_value_pairs
 from tests.helper_scripts.helper_classes.RequestValidator import RequestValidator
@@ -32,22 +33,6 @@ from tests.helper_scripts.helper_classes.TestCSVCreator import TestCSVCreator
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-
-
-def stringify_list_of_ints(l: list[int]):
-    for i in range(len(l)):
-        l[i] = str(l[i])
-    return l
-
-
-def stringify_lists(d: dict):
-    for k, v in d.items():
-        if isinstance(v, dict):
-            stringify_lists(v)
-        if isinstance(v, list):
-            v = stringify_list_of_ints(v)
-            d[k] = ",".join(v)
-    return d
 
 
 @dataclass
