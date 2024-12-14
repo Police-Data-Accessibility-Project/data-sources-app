@@ -1,7 +1,7 @@
 from marshmallow import fields, Schema
 
 from middleware.enums import JurisdictionType, AgencyType
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+from middleware.schema_and_dto_logic.primary_resource_schemas.locations_schemas import (
     STATE_ISO_FIELD,
     COUNTY_FIPS_FIELD,
     LOCALITY_NAME_FIELD,

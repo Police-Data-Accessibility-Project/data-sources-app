@@ -80,14 +80,25 @@ class TestDataCreatorFlask:
         self.admin_tus = create_admin_test_user_setup(self.flask_client)
 
     def data_request(
-        self, user_tus: Optional[TestUserSetup] = None
+        self,
+        user_tus: Optional[TestUserSetup] = None,
+        location_ids: Optional[list[int]] = None,
     ) -> TestDataRequestInfo:
         if user_tus is None:
             user_tus = self.get_admin_tus()
-        return create_test_data_request(
+        tdr = create_test_data_request(
             flask_client=self.flask_client,
             jwt_authorization_header=user_tus.jwt_authorization_header,
         )
+        if location_ids is not None:
+            for location_id in location_ids:
+                self.request_validator.link_data_request_with_location(
+                    data_request_id=tdr.id,
+                    location_id=location_id,
+                    headers=self.get_admin_tus().jwt_authorization_header,
+                )
+
+        return tdr
 
     def update_data_request_status(self, data_request_id: int, status: RequestStatus):
         run_and_validate_request(

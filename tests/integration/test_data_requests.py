@@ -618,23 +618,15 @@ def test_link_unlink_data_requests_with_locations(
         }
     )
 
-    location_post_delete_endpoint = (
-        DATA_REQUESTS_POST_DELETE_RELATED_LOCATIONS_ENDPOINT.format(
-            data_request_id=cdr.id, location_id=location_id
-        )
-    )
-
     def post_location_association(
         tus: TestUserSetup = admin_tus,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
         expected_schema=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_DELETE.value.primary_output_schema,
         expected_json_content: Optional[dict] = None,
     ):
-
-        run_and_validate_request(
-            flask_client=tdc.flask_client,
-            http_method="post",
-            endpoint=location_post_delete_endpoint,
+        return tdc.request_validator.link_data_request_with_location(
+            data_request_id=cdr.id,
+            location_id=location_id,
             headers=tus.jwt_authorization_header,
             expected_response_status=expected_response_status,
             expected_schema=expected_schema,
@@ -666,10 +658,9 @@ def test_link_unlink_data_requests_with_locations(
         expected_schema=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_DELETE.value.primary_output_schema,
         expected_json_content: Optional[dict] = None,
     ):
-        run_and_validate_request(
-            flask_client=tdc.flask_client,
-            http_method="delete",
-            endpoint=location_post_delete_endpoint,
+        tdc.request_validator.unlink_data_request_with_location(
+            data_request_id=cdr.id,
+            location_id=location_id,
             headers=tus.jwt_authorization_header,
             expected_response_status=expected_response_status,
             expected_schema=expected_schema,

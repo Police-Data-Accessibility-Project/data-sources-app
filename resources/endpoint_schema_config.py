@@ -15,7 +15,9 @@ from middleware.primary_resource_logic.permissions_logic import (
 from middleware.schema_and_dto_logic.primary_resource_dtos.bulk_dtos import (
     BulkRequestDTO,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import AgencyMatchDTO
+from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
+    AgencyMatchDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_dtos.reset_token_dtos import (
     ResetPasswordDTO,
 )
@@ -32,8 +34,13 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.bulk_schemas impor
     DataSourcesPostBatchRequestSchema,
     DataSourcesPutBatchRequestSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.match_schemas import AgencyMatchSchema, \
-    MatchAgencyResponseSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.locations_schemas import (
+    LocationInfoExpandedSchema,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.match_schemas import (
+    AgencyMatchSchema,
+    MatchAgencyResponseSchema,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.reset_token_schemas import (
     ResetPasswordSchema,
 )
@@ -529,5 +536,17 @@ class SchemaConfigs(Enum):
         input_dto_class=AgencyMatchDTO,
         primary_output_schema=MatchAgencyResponseSchema(),
     )
+    # endregion
 
+    # region Location
+    LOCATIONS_BY_ID_GET = get_get_by_id_endpoint_schema_config(
+        primary_output_schema=LocationInfoExpandedSchema(),
+    )
+    LOCATIONS_RELATED_DATA_REQUESTS_GET = EndpointSchemaConfig(
+        input_schema=GetByIDBaseSchema(),
+        input_dto_class=GetByIDBaseDTO,
+        primary_output_schema=GetManyDataRequestsResponseSchema(
+            exclude=["data.data_sources", "data.locations"]
+        ),
+    )
     # endregion

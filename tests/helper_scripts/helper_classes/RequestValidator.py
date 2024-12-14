@@ -17,6 +17,7 @@ from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.constants import (
     DATA_REQUESTS_BY_ID_ENDPOINT,
     AGENCIES_BASE_ENDPOINT,
+    DATA_REQUESTS_POST_DELETE_RELATED_LOCATIONS_ENDPOINT,
 )
 from tests.helper_scripts.helper_functions_simple import (
     get_authorization_header,
@@ -409,6 +410,44 @@ class RequestValidator:
             expected_schema=expected_schema,
         )
 
+    def link_data_request_with_location(
+        self,
+        data_request_id: int,
+        location_id: int,
+        headers: dict,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_schema=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_DELETE.value.primary_output_schema,
+        expected_json_content: Optional[dict] = None,
+    ):
+        return self.post(
+            endpoint=DATA_REQUESTS_POST_DELETE_RELATED_LOCATIONS_ENDPOINT.format(
+                data_request_id=data_request_id, location_id=location_id
+            ),
+            headers=headers,
+            expected_response_status=expected_response_status,
+            expected_schema=expected_schema,
+            expected_json_content=expected_json_content,
+        )
+
+    def unlink_data_request_with_location(
+        self,
+        data_request_id: int,
+        location_id: int,
+        headers: dict,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_schema=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_DELETE.value.primary_output_schema,
+        expected_json_content: Optional[dict] = None,
+    ):
+        return self.delete(
+            endpoint=DATA_REQUESTS_POST_DELETE_RELATED_LOCATIONS_ENDPOINT.format(
+                data_request_id=data_request_id, location_id=location_id
+            ),
+            headers=headers,
+            expected_response_status=expected_response_status,
+            expected_schema=expected_schema,
+            expected_json_content=expected_json_content,
+        )
+
     def get_user_profile_data_requests(
         self, headers: dict, expected_json_content: Optional[dict] = None
     ):
@@ -545,3 +584,30 @@ class RequestValidator:
             json=data,
             expected_schema=SchemaConfigs.MATCH_AGENCY.value.primary_output_schema,
         )
+
+    # region Locations
+
+    def get_location_by_id(
+        self,
+        headers: dict,
+        location_id: int,
+        expected_json_content: Optional[dict] = None,
+    ):
+        return self.get(
+            endpoint=f"/api/locations/{location_id}",
+            headers=headers,
+            expected_schema=SchemaConfigs.LOCATIONS_BY_ID_GET.value.primary_output_schema,
+        )
+
+    def get_location_related_data_requests(
+        self,
+        headers: dict,
+        location_id: int,
+    ):
+        return self.get(
+            endpoint=f"/api/locations/{location_id}/data-requests",
+            headers=headers,
+            expected_schema=SchemaConfigs.LOCATIONS_RELATED_DATA_REQUESTS_GET.value.primary_output_schema,
+        )
+
+    # endregion
