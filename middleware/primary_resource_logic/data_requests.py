@@ -190,7 +190,7 @@ def get_data_requests_wrapper(
     }
     if dto.request_statuses is not None:
         db_client_additional_args["where_mappings"] = {
-            "request_statuses": [rs.value for rs in dto.request_statuses]
+            "request_status": [rs.value for rs in dto.request_statuses]
         }
     return get_many(
         middleware_parameters=MiddlewareParameters(

@@ -90,6 +90,46 @@ def add_description_info_from_enum(
     return description
 
 
+class DescriptionBuilder:
+    """
+    Appends information to description based on data
+    in field
+    """
+
+    def __init__(self, field: marshmallow_fields, description: str):
+        self.field = field
+        self.description = description
+        self.metadata = field.metadata
+
+    def __str__(self):
+        return self.description
+
+    def build_description(self):
+        self.enum_case()
+        self.validator_case()
+        self.list_query_case()
+
+    def enum_case(self):
+        if isinstance(self.field, marshmallow_fields.Enum):
+            self.description = add_description_info_from_enum(
+                field_value=self.field, description=self.description
+            )
+
+    def validator_case(self):
+        for validator in self.field.validators:
+            if isinstance(validator, OneOf):
+                self.description = add_description_info_from_validators(
+                    field=self.field, description=self.description
+                )
+
+    def list_query_case(self):
+        if not isinstance(self.field, marshmallow_fields.List):
+            return
+        if not self.metadata.get("source") == SourceMappingEnum.QUERY_ARGS:
+            return
+        self.description += " \n(Comma-delimited list)"
+
+
 class FieldInfo:
 
     def __init__(
@@ -125,9 +165,9 @@ class FieldInfo:
         description = _get_required_argument(
             "description", metadata, schema_class, field_name
         )
-        if isinstance(field_value, marshmallow_fields.Enum):
-            description = add_description_info_from_enum(field_value, description)
-        return add_description_info_from_validators(field_value, description)
+        desc_builder = DescriptionBuilder(field=field_value, description=description)
+        desc_builder.build_description()
+        return str(desc_builder)
 
     def _map_field_type(self, field_type: type[MarshmallowFields]) -> Type[RestxFields]:
         try:

@@ -354,7 +354,6 @@ class RequestValidator:
     def get_data_requests(
         self,
         headers: dict,
-        request_status: Optional[RequestStatus] = None,
         sort_by: Optional[str] = None,
         sort_order: Optional[SortOrder] = None,
         request_statuses: Optional[list[RequestStatus]] = None,
@@ -366,7 +365,9 @@ class RequestValidator:
                 "sort_by": sort_by,
                 "sort_order": sort_order.value if sort_order is not None else None,
                 "request_statuses": (
-                    [rs.value for rs in request_statuses] if request_statuses is not None else None
+                    [rs.value for rs in request_statuses]
+                    if request_statuses is not None
+                    else None
                 ),
             },
         )

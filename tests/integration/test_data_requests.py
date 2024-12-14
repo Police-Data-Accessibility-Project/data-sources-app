@@ -99,15 +99,13 @@ def test_data_requests_get(
         headers=tus_creator.jwt_authorization_header,
     )[DATA_KEY]
 
-
-
     # Assert admin columns are greater than user columns
     assert len(admin_data[0]) > len(data[0])
 
     # Run get again, this time filtering the request status to be active
     data = tdc.request_validator.get_data_requests(
         headers=tus_creator.jwt_authorization_header,
-        request_status=RequestStatus.ACTIVE,
+        request_statuses=[RequestStatus.ACTIVE],
     )[DATA_KEY]
 
     # The more recent data request should be returned, but the old one should be filtered out
@@ -121,7 +119,7 @@ def test_data_requests_get(
     def get_sorted_data_requests(sort_order: SortOrder):
         return tdc.request_validator.get_data_requests(
             headers=tus_creator.jwt_authorization_header,
-            request_status=RequestStatus.INTAKE,
+            request_statuses=[RequestStatus.INTAKE],
             sort_by="id",
             sort_order=sort_order,
         )

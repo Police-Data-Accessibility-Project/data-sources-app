@@ -142,3 +142,19 @@ def get_temp_directory() -> str:
     # Go to root directory
 
     return os.path.join(os.getcwd(), "temp")
+
+
+def stringify_list_of_ints(l: list[int]):
+    for i in range(len(l)):
+        l[i] = str(l[i])
+    return l
+
+
+def stringify_lists(d: dict):
+    for k, v in d.items():
+        if isinstance(v, dict):
+            stringify_lists(v)
+        if isinstance(v, list):
+            v = stringify_list_of_ints(v)
+            d[k] = ",".join(v)
+    return d

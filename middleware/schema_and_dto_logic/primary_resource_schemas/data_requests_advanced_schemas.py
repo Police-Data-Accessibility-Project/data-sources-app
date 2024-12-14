@@ -1,4 +1,4 @@
-from marshmallow import fields, Schema, post_load
+from marshmallow import fields, Schema, post_load, pre_load
 
 from database_client.enums import RequestStatus
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_base_schema import (
@@ -139,14 +139,23 @@ class DataRequestsPostSchema(Schema):
 
 class GetManyDataRequestsRequestsSchema(GetManyRequestsBaseSchema):
     request_statuses = fields.List(
-            fields.Enum(
-                enum=RequestStatus,
-                by_value=fields.Str,
-                allow_none=True,
-                metadata=get_query_metadata("The status of the requests to return."),
-            ),
+        fields.Enum(
+            enum=RequestStatus,
+            by_value=fields.Str,
+            allow_none=True,
+            metadata=get_query_metadata("The status of the requests to return."),
+        ),
         metadata=get_query_metadata("The status of the requests to return."),
     )
+
+    @pre_load
+    def listify_request_statuses(self, in_data, **kwargs):
+        request_statuses = in_data.get("request_statuses", None)
+        if request_statuses is None:
+            return in_data
+        in_data["request_statuses"] = request_statuses.split(",")
+
+        return in_data
 
 
 GetManyDataRequestsResponseSchema = create_get_many_schema(
