@@ -21,12 +21,13 @@ and the native format is a list, which the request-friendly format is converted 
 """
 
 from abc import ABC, abstractmethod
+from enum import Enum
 from typing import Optional, Type
 
 from flask_restx.reqparse import RequestParser
 
 from flask_restx import fields as restx_fields, Namespace, Model
-from marshmallow import fields as marshmallow_fields
+from marshmallow import fields as marshmallow_fields, missing
 from marshmallow.validate import OneOf
 
 from middleware.schema_and_dto_logic.mappings import (
@@ -108,6 +109,7 @@ class DescriptionBuilder:
         self.enum_case()
         self.validator_case()
         self.list_query_case()
+        self.default_case()
 
     def enum_case(self):
         if isinstance(self.field, marshmallow_fields.Enum):
@@ -128,6 +130,14 @@ class DescriptionBuilder:
         if not self.metadata.get("source") == SourceMappingEnum.QUERY_ARGS:
             return
         self.description += " \n(Comma-delimited list)"
+
+    def default_case(self):
+        default = self.field.load_default
+        if default != missing:
+            # If Enum, get value
+            if isinstance(default, Enum):
+                default = default.value
+            self.description += f" \nDefault: {default}"
 
 
 class FieldInfo:
