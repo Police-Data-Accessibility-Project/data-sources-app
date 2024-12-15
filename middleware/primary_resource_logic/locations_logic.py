@@ -10,17 +10,9 @@ from middleware.common_response_formatting import (
     message_response,
     multiple_results_response,
 )
-from middleware.dynamic_request_logic.get_many_logic import get_many
-from middleware.dynamic_request_logic.get_related_resource_logic import (
-    get_related_resource,
-    GetRelatedResourcesParameters,
-)
-from middleware.dynamic_request_logic.supporting_classes import MiddlewareParameters
 from middleware.enums import Relations
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.primary_resource_logic.data_requests import (
-    get_data_requests_subquery_params,
-)
+
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetByIDBaseDTO
 
 
