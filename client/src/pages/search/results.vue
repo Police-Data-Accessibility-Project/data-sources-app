@@ -81,7 +81,9 @@
 				:is-loading="isLoading"
 			/>
 
-			<h2>Requests related to {{ getLocationText(searchData.params) }}</h2>
+			<h2 class="like-h4">
+				Data requests for {{ getLocationText(searchData.params) }}
+			</h2>
 			<Requests :requests="requestData" :error="!!requestsError" />
 		</section>
 

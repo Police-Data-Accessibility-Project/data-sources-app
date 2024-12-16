@@ -174,7 +174,7 @@ import Typeahead from '@/components/TypeaheadInput.vue';
 import LocationSelected from '@/components/TypeaheadSelected.vue';
 import { toast } from 'vue3-toastify';
 import { createRequest } from '@/api/data-requests';
-import formatLocationText from '@/util/formatLocationTextForDisplay';
+import { formatLocationText } from './_util';
 import _debounce from 'lodash/debounce';
 import _cloneDeep from 'lodash/cloneDeep';
 import { nextTick, ref, watch } from 'vue';
