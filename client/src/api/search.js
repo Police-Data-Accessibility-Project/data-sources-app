@@ -13,9 +13,9 @@ const HEADERS_BASIC = {
 	authorization: `Basic ${import.meta.env.VITE_ADMIN_API_KEY}`,
 };
 
-export async function search(location_id) {
+export async function search(params) {
 	const searchStore = useSearchStore();
-	const cached = searchStore.getSearchFromCache(location_id);
+	const cached = searchStore.getSearchFromCache(JSON.stringify(params));
 
 	if (
 		cached &&
@@ -31,14 +31,12 @@ export async function search(location_id) {
 	const response = await axios.get(
 		`${SEARCH_BASE}/${ENDPOINTS.SEARCH.RESULTS}`,
 		{
-			params: {
-				location_id,
-			},
+			params,
 			headers: HEADERS_BASIC,
 		},
 	);
 
-	searchStore.setSearchToCache(location_id, response);
+	searchStore.setSearchToCache(JSON.stringify(params), response);
 
 	return response;
 }

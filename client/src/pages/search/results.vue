@@ -152,7 +152,7 @@ export const useSearchData = defineBasicLoader(
 				// Local caching to skip even the pinia method in case of only the hash changing while on the route.
 				_isEqual(params, query.value) && data.value
 					? data.value
-					: await search(route.query.location_id);
+					: await search(route.query);
 
 			// On initial fetch - get hash
 			const hash = normalizeLocaleForHash(searched, response.data);

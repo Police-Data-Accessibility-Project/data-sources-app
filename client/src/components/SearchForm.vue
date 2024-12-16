@@ -186,10 +186,11 @@ const isButtonDisabled = computed(() => {
 onMounted(() => {
 	// Set up selected state based on params
 	if (params.state) {
-		const record = (({ state, county, locality }) => ({
+		const record = (({ state, county, locality, location_id }) => ({
 			state,
 			county,
 			locality,
+			location_id,
 		}))(params);
 
 		selectedRecord.value = record;
