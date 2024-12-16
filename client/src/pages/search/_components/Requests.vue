@@ -30,7 +30,7 @@
 
 			<div class="text-left">
 				<p v-for="(location, index) in request.locations" :key="location.id">
-					{{ location.locality_name }}, {{ location.state_iso }}
+					{{ formatText(location) }}
 					<span v-if="index !== request.locations.length - 1">&bull;</span>
 				</p>
 			</div>
@@ -56,6 +56,7 @@
 import { RouterLink } from 'vue-router';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faLink } from '@fortawesome/free-solid-svg-icons';
+import { formatText } from './util';
 
 const { requests } = defineProps({
 	requests: Array,
