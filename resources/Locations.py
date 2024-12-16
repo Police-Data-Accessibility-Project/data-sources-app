@@ -1,6 +1,10 @@
 from flask import Response
 
-from middleware.access_logic import AccessInfoPrimary, STANDARD_JWT_AUTH_INFO
+from middleware.access_logic import (
+    AccessInfoPrimary,
+    STANDARD_JWT_AUTH_INFO,
+    GET_AUTH_INFO,
+)
 from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.locations_logic import (
     get_location_by_id_wrapper,
@@ -39,7 +43,7 @@ class LocationsRelatedDataRequestsById(PsycopgResource):
     @endpoint_info(
         namespace=namespace_locations,
         description="Get data requests associated with a location by ID",
-        auth_info=STANDARD_JWT_AUTH_INFO,
+        auth_info=GET_AUTH_INFO,
         schema_config=SchemaConfigs.LOCATIONS_RELATED_DATA_REQUESTS_GET,
         response_info=ResponseInfo(
             success_message="Returns a paginated list of data requests associated with a location by ID.",

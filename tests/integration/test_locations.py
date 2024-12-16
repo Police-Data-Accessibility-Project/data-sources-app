@@ -54,10 +54,17 @@ def test_locations_related_data_requests(locations_test_setup: LocationsTestSetu
     dr_2 = tdc.data_request(location_ids=[lts.location_info["id"]]).id
 
     # Get data requests
+    tus = tdc.standard_user()
     data = tdc.request_validator.get_location_related_data_requests(
         location_id=lts.location_info["id"],
-        headers=tdc.get_admin_tus().jwt_authorization_header,
+        headers=tus.api_authorization_header,
     )
 
     # Confirm information matches
     assert len(data["data"]) == 2
+
+    # Confirm also works with jwt
+    data = tdc.request_validator.get_location_related_data_requests(
+        location_id=lts.location_info["id"],
+        headers=tus.jwt_authorization_header,
+    )
