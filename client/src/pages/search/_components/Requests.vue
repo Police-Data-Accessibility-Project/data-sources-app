@@ -1,39 +1,16 @@
-<!-- <template>
-	<div> -->
-<!-- Here we will render requests -->
-<!-- This div should be a grid container with three columns -->
-<!-- First we will render a row of headings: (Request title | Location | Details) 
-      Request title justified left, location center, details right -->
-<!-- We will take an array of objects and loop through them 
-     Each object will have the following properties: 
-     id: number
-     title: string
-     location: array of objects with the following properties:
-     {
-        "type": "string",
-        "state_iso": "string",
-        "county_fips": "string",
-        "locality_name": "string",
-        "id": 0
-      }
-      github_issue_url: string
-
-      Each rendered row should be wrapped in a router link to `/data-request/{id}`
-
-      Each row should use sub-grid to align columns with parent and each other
-
-      In the first column, we render the title.
-
-      In the second column, we loop through the location array and render each location.
-
-      In the third column, we render a nested anchor tag that leads to github_issue_url. It should contain a font awesome link icon as well as the text "Github"
-     -->
-<!-- </div>
-</template> -->
-
 <template>
 	<div class="grid grid-cols-3 gap-4 relative overflow-y-scroll max-h-[40vh]">
+		<p v-if="error" class="col-span-3 text-neutral-500 text-left">
+			Error loading requests, please try again later
+		</p>
+		<p
+			v-else-if="!error && !requests?.length"
+			class="col-span-3 text-neutral-500 text-left"
+		>
+			No requests found
+		</p>
 		<div
+			v-else
 			class="col-span-3 grid grid-cols-subgrid justify-center sticky top-0 bg-neutral-50 p-2"
 		>
 			<h4 class="text-left m-0">Request Title</h4>
@@ -82,5 +59,6 @@ import { faLink } from '@fortawesome/free-solid-svg-icons';
 
 const { requests } = defineProps({
 	requests: Array,
+	error: Boolean,
 });
 </script>

@@ -30,9 +30,7 @@
 						Follow
 					</Button>
 					<p v-if="!isAuthenticated()" class="text-med text-neutral-500">
-						<RouterLink to="/sign-in" @mouseenter="onSignInMouseEnter">
-							Sign in
-						</RouterLink>
+						<RouterLink to="/sign-in"> Sign in </RouterLink>
 						to follow this search
 					</p>
 				</div>
@@ -83,7 +81,8 @@
 				:is-loading="isLoading"
 			/>
 
-			<Requests :requests="requestData" />
+			<h2>Requests related to {{ getLocationText(searchData.params) }}</h2>
+			<Requests :requests="requestData" :error="!!requestsError" />
 		</section>
 
 		<!-- Aside for handling filtering and saved searches -->
@@ -236,11 +235,10 @@ import Requests from './_components/Requests.vue';
 import { toast } from 'vue3-toastify';
 import { useAuthStore } from '@/stores/auth';
 import { useRoute } from 'vue-router';
-
-const { isAuthenticated, setRedirectTo } = useAuthStore();
+const { isAuthenticated } = useAuthStore();
 const { data: searchData, isLoading, error } = useSearchData();
 const { data: isFollowed, reload: reloadFollowed } = useFollowedData();
-const { data: requestData } = useRequestsData();
+const { data: requestData, error: requestsError } = useRequestsData();
 const route = useRoute();
 const searchResultsRef = ref();
 const isSearchShown = ref(false);
@@ -302,10 +300,6 @@ async function follow() {
 	} catch (error) {
 		toast.error(`Error following search. Please try again.`);
 	}
-}
-
-function onSignInMouseEnter() {
-	setRedirectTo({ ...route });
 }
 
 function onWindowWidthSetIsSearchShown() {
