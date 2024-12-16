@@ -32,7 +32,7 @@ export async function getAllRequests(params = {}) {
 		return cached.data;
 	}
 
-	if (totalRequests.length % 100 === 0) {
+	while (totalRequests.length % 100 === 0) {
 		page += 1;
 		const response = await axios.get(REQUESTS_BASE, {
 			headers: HEADERS_BASIC,
