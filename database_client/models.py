@@ -324,6 +324,7 @@ class LocationExpanded(Base, CountMetadata):
     state_id = Column(Integer)
     county_id = Column(Integer)
     locality_id = Column(Integer)
+    display_name = Column(String)
 
     def __iter__(self):
         yield from iter_with_special_cases(self)

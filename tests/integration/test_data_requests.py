@@ -202,9 +202,9 @@ def test_data_requests_post(
     locations = data["locations"]
     assert len(locations) == 2
     for location in locations:
-        if location["locality_name"] == location_info_1["locality"]:
+        if location["locality"] == location_info_1["locality"]:
             continue
-        if location["locality_name"] == location_info_2["locality"]:
+        if location["locality"] == location_info_2["locality"]:
             continue
         assert False
 

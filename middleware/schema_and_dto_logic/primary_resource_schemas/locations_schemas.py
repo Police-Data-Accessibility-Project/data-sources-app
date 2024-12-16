@@ -36,27 +36,49 @@ LOCALITY_NAME_FIELD = fields.Str(
         "csv_column_name": CSVColumnCondition.SAME_AS_FIELD,
     },
 )
+LOCATION_ID_FIELD = fields.Integer(
+    metadata=get_json_metadata(
+        description="The unique identifier of the location.",
+    )
+)
+LOCATION_TYPE_FIELD = fields.Enum(
+    required=True,
+    enum=LocationType,
+    by_value=fields.Str,
+    metadata={
+        "description": "The type of location. ",
+        "source": SourceMappingEnum.JSON,
+        "csv_column_name": "location_type",
+    },
+)
+STATE_NAME_FIELD = fields.Str(
+    required=True, metadata=get_json_metadata(description="The name of the state.")
+)
+COUNTY_NAME_FIELD = fields.Str(
+    required=True,
+    allow_none=True,
+    metadata=get_json_metadata(description="The name of the county."),
+)
+
+
+class LocationInfoResponseSchema(Schema):
+    type = LOCATION_TYPE_FIELD
+    state = STATE_NAME_FIELD
+    county = COUNTY_NAME_FIELD
+    locality = LOCALITY_NAME_FIELD
+    display_name = fields.Str(
+        required=True,
+        metadata=get_json_metadata(description="The display name for the location"),
+    )
+    id = LOCATION_ID_FIELD
 
 
 class LocationInfoSchema(Schema):
-    type = fields.Enum(
-        required=True,
-        enum=LocationType,
-        by_value=fields.Str,
-        metadata={
-            "description": "The type of location. ",
-            "source": SourceMappingEnum.JSON,
-            "csv_column_name": "location_type",
-        },
-    )
+    type = LOCATION_TYPE_FIELD
     state_iso = STATE_ISO_FIELD
     county_fips = COUNTY_FIPS_FIELD
     locality_name = LOCALITY_NAME_FIELD
-    id = fields.Integer(
-        metadata=get_json_metadata(
-            description="The unique identifier of the location.",
-        )
-    )
+    id = LOCATION_ID_FIELD
 
     @validates_schema
     def validate_location_fields(self, data, **kwargs):
@@ -97,11 +119,5 @@ class LocationInfoSchema(Schema):
 
 
 class LocationInfoExpandedSchema(LocationInfoSchema):
-    state_name = fields.Str(
-        required=True, metadata=get_json_metadata(description="The name of the state.")
-    )
-    county_name = fields.Str(
-        required=True,
-        allow_none=True,
-        metadata=get_json_metadata(description="The name of the county."),
-    )
+    state_name = STATE_NAME_FIELD
+    county_name = COUNTY_NAME_FIELD

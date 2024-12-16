@@ -14,6 +14,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
 from middleware.schema_and_dto_logic.primary_resource_schemas.locations_schemas import (
     LocationInfoSchema,
     LocationInfoExpandedSchema,
+    LocationInfoResponseSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import (
     DataRequestLocationInfoPostDTO,
@@ -59,7 +60,7 @@ class DataRequestsGetSchemaBase(DataRequestsSchema):
     )
     locations = fields.List(
         fields.Nested(
-            nested=LocationInfoSchema(),
+            nested=LocationInfoResponseSchema(),
             metadata=get_json_metadata(
                 "The locations associated with the data request"
             ),
