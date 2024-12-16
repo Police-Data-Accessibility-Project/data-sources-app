@@ -65,10 +65,35 @@ Full pytest documentation can be found [here](https://docs.pytest.org/en/stable/
 
 ## Client App
 
-A few things to know:
+The client app is a Vue 3 SPA, styled with Tailwind. Feel free to use either the options or composition API.
 
-- We use Vue3. This allows for using either the options or composition APIs. Feel free to use whichever you are most fluent in.
-- We use `pinia` for state management. This works much better with the composition API than with options, so it is recommended to use the composition API if you need data from one of the `pinia` stores.
+### State management
+We use `pinia` for global state management. Check out [the docs](https://pinia.vuejs.org/).
+
+Some implementation details specific to the PDAP application
+- Pinia is for storing state. Async fetching is defined separately. While you _can_ define async actions in pinia stores, we have made the decision to decouple the fetching logic from the state management.
+- Many of the stores are set up for caching certain responses. Eventually, we'd like to move the caching logic to its own store, and make it more robust. But for now, if caching is needed, follow the pattern in [search](./client/src/stores/search.js).
+  
+### Code organization 
+- [async fetching logic](./client/src/api) in the `src/api` directory.
+- [data stores](./client/src/stores) in the `src/stores` directory.
+- [UI components](./client/src/components) in the `src/components` directory.
+- [routes](./client/src/pages) in the `src/pages` directory.
+- [utilities](./client/src/util) in the `src/util` directory.
+
+### Routing
+
+Routing is handled by `unplugin-vue-router`. Everything in the `.../pages` directory becomes a route (i.e. `pages/data-source/create.vue` becomes `/data-source/create`, and`pages/search/results.vue` becomes `/search/results`), with the exception of a couple of special rules for files named index, dynamic route parameters, catchall routes, and such things as you can [read more about in the docs](https://uvr.esm.is/introduction).
+
+There are two exceptions  to the routing rules that are both defined by our configuration, rather than features of `unplugin-vue-router` itself.
+- if a directory or route is prefixed with an "_", we ignore its name (and all of the names of its contents) in the route tree at build time. See `...src/pages/data-source/_components` for an example.
+- Anything in the `.../pages/test/` directory is also ignored in the route tree in production builds of the application.
+
+### Testing
+TODO: After implementing e2e tests.
+
+### Scripts
+TODO: make nice in a little table...
 
 ### Compiles and minifies for production
 ```
@@ -77,7 +102,7 @@ npm run build
 
 ### Serves production build locally
 ```
-npm run preview
+npm run serve
 ```
 
 ### Lints files

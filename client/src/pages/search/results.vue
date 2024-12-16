@@ -5,7 +5,7 @@
 		<!-- Search results -->
 		<section class="w-full h-full">
 			<div
-				class="grid grid-cols-1 md:grid-cols-[1fr,auto] md:grid-rows-[repeat(4,30px)] pb-4"
+				class="grid grid-cols-1 md:grid-cols-[1fr,auto] md:grid-rows-[repeat(3,35px)]"
 			>
 				<h1 class="like-h4 mb-4">
 					Results
@@ -82,6 +82,8 @@
 				:results="searchData.results"
 				:is-loading="isLoading"
 			/>
+
+			<Requests :requests="requestData" />
 		</section>
 
 		<!-- Aside for handling filtering and saved searches -->
@@ -134,6 +136,7 @@ import _isEqual from 'lodash/isEqual';
 import { DataLoaderErrorPassThrough } from '@/util/errors';
 const searchStore = useSearchStore();
 import { search, getFollowedSearch, followSearch } from '@/api/search';
+import { getAllRequests } from '@/api/data-requests';
 
 const query = ref();
 const data = ref();
@@ -190,9 +193,22 @@ export const useFollowedData = defineBasicLoader(
 	},
 );
 
-// function isOnlyHashChanged(currentRoute, previousRoute) {
-// 	// If we don't have a previous route to compare against, return false
-// 	if (!previousRoute) return false;
+export const useRequestsData = defineBasicLoader(
+	'/search/results',
+	async (route) => {
+		try {
+			const requests = await getAllRequests(route.query.location_id);
+
+			return requests.filter((req) =>
+				req.locations.some(
+					(loc) => Number(loc.id) === Number(route.query.location_id),
+				),
+			);
+		} catch (error) {
+			throw new DataLoaderErrorPassThrough(error);
+		}
+	},
+);
 
 // function isOnlyHashChanged(currentRoute, previousRoute) {
 // 	// If we don't have a previous route to compare against, return false
@@ -214,8 +230,9 @@ export const useFollowedData = defineBasicLoader(
 
 <script setup>
 import { Button } from 'pdap-design-system';
-import SearchResults from './_components/SearchResults.vue';
 import SearchForm from '@/components/SearchForm.vue';
+import SearchResults from './_components/SearchResults.vue';
+import Requests from './_components/Requests.vue';
 import { toast } from 'vue3-toastify';
 import { useAuthStore } from '@/stores/auth';
 import { useRoute } from 'vue-router';
@@ -223,6 +240,7 @@ import { useRoute } from 'vue-router';
 const { isAuthenticated, setRedirectTo } = useAuthStore();
 const { data: searchData, isLoading, error } = useSearchData();
 const { data: isFollowed, reload: reloadFollowed } = useFollowedData();
+const { data: requestData } = useRequestsData();
 const route = useRoute();
 const searchResultsRef = ref();
 const isSearchShown = ref(false);
@@ -237,6 +255,10 @@ onMounted(() => {
 		searchStore.setMostRecentSearchIds(
 			getAllIdsSearched(searchData.value.results),
 		);
+	}
+
+	if (requestData.value) {
+		searchStore.setMostRecentRequestIds(requestData.value.map((req) => req.id));
 	}
 
 	window.addEventListener('resize', onWindowWidthSetIsSearchShown);
@@ -260,6 +282,10 @@ onUpdated(async () => {
 		searchStore.setMostRecentSearchIds(
 			getAllIdsSearched(searchData.value.results),
 		);
+
+	if (requestData.value) {
+		searchStore.setMostRecentRequestIds(requestData.value.map((req) => req.id));
+	}
 });
 
 onUnmounted(() => {

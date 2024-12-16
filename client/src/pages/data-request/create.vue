@@ -321,10 +321,11 @@ async function submit(values) {
 	requestPending.value = true;
 
 	if (values[INPUT_NAMES.range]?.length) {
-		values[INPUT_NAMES.range] = values[INPUT_NAMES.range]
-			.map((d) => (typeof d === 'number' ? d : undefined))
-			.filter(Boolean)
-			.join('-');
+		const range = values[INPUT_NAMES.range]
+			.map((d) => (typeof d === 'number' ? String(d) : ''))
+			.join(' - ');
+
+		values[INPUT_NAMES.range] = range;
 	}
 
 	// Create new array. In case of error, we need the original array to remain unmodified

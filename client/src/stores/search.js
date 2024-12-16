@@ -6,6 +6,8 @@ export const useSearchStore = defineStore('search', {
 		cache: {},
 		/** Needed for `NEXT` / `BACK` functionality in data source id view */
 		mostRecentSearchIds: [],
+		/** Needed for `NEXT` / `BACK` functionality in data requests id view */
+		mostRecentRequestIds: [],
 	}),
 	persist: {
 		storage: sessionStorage,
@@ -21,9 +23,21 @@ export const useSearchStore = defineStore('search', {
 	},
 
 	actions: {
+		clearCache() {
+			this.$patch((state) => {
+				state.cache = {};
+			});
+		},
+
 		setMostRecentSearchIds(ids) {
 			this.$patch({
 				mostRecentSearchIds: ids,
+			});
+		},
+
+		setMostRecentRequestIds(ids) {
+			this.$patch({
+				mostRecentRequestIds: ids,
 			});
 		},
 

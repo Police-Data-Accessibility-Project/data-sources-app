@@ -1,13 +1,13 @@
 <template>
 	<nav
 		v-if="
-			searchIds?.length &&
-			[nextIndex, previousIndex].some((id) => typeof id === 'number' && id > -1)
+			requestIds?.length &&
+			[nextIndex, previousIndex].some((id) => Number(id) > -1)
 		"
 		class="self-start justify-self-start w-full"
 	>
 		<RouterLink
-			:to="`/data-source/${searchIds[previousIndex]}`"
+			:to="`/data-request/${requestIds[previousIndex]}`"
 			:class="{ disabled: typeof previousIndex !== 'number' }"
 			replace
 			@mouseenter="setNavIs('decrement')"
@@ -16,7 +16,7 @@
 		</RouterLink>
 		/
 		<RouterLink
-			:to="`/data-source/${searchIds[nextIndex]}`"
+			:to="`/data-request/${requestIds[nextIndex]}`"
 			:class="{ disabled: typeof nextIndex !== 'number' }"
 			replace
 			@mouseenter="setNavIs('increment')"
@@ -27,9 +27,8 @@
 </template>
 
 <script setup>
-// TODO: this component is duplicated here and in `/request...`. Consolidate.
 defineProps({
-	searchIds: Array,
+	requestIds: Array,
 	previousIndex: Number,
 	nextIndex: Number,
 	setNavIs: Function,

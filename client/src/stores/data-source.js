@@ -19,6 +19,12 @@ export const useDataSourceStore = defineStore('data-source', {
 		},
 	},
 	actions: {
+		clearCache() {
+			this.$patch((state) => {
+				state.cache = {};
+			});
+		},
+
 		setPreviousDataSourceRoute(route) {
 			this.$patch({
 				previousDataSourceRoute: route,
