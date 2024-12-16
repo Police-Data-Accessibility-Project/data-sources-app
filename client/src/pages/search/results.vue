@@ -197,7 +197,7 @@ export const useRequestsData = defineBasicLoader(
 	'/search/results',
 	async (route) => {
 		try {
-			const requests = await getAllRequests(route.query.location_id);
+			const requests = await getAllRequests();
 
 			return requests.filter((req) =>
 				req.locations.some(
