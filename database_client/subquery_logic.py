@@ -18,6 +18,7 @@ class SubqueryParameters(BaseModel):
     relation_name: str
     linking_column: str
     columns: Optional[list[str]] = None
+    alias_mappings: Optional[dict[str, str]] = None
 
     def set_columns(self, columns: list[str]) -> None:
         self.columns = columns
@@ -88,5 +89,11 @@ class SubqueryParameterManager:
         return SubqueryParameterManager.get_subquery_params(
             relation=Relations.LOCATIONS_EXPANDED,
             linking_column="locations",
-            columns=["type", "state_iso", "county_fips", "locality_name"],
+            columns=[
+                "type",
+                "state_name",
+                "county_name",
+                "locality_name",
+                "display_name",
+            ],
         )

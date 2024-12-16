@@ -15,51 +15,6 @@ from database_client.subquery_logic import SubqueryParameters
 from utilities.common import format_arrays
 
 
-class SubqueryResultFormatter:
-    def __init__(
-        self,
-        row_mappings: list[RowMapping],
-        primary_columns: list[str],
-        subquery_parameters: list[SubqueryParameters],
-    ):
-        self.row_mappings = row_mappings
-        self.primary_columns = primary_columns
-        self.subquery_parameters = subquery_parameters
-
-    def format_results(self) -> list[dict]:
-        formatted_results = []
-        for row_mapping in self.row_mappings:
-            formatted_result = self._format_row(row_mapping)
-            formatted_results.append(formatted_result)
-        return formatted_results
-
-    def _format_row(self, row_mapping: RowMapping) -> dict:
-        formatted_result = {}
-        key = list(row_mapping.keys())[0]
-        row_object = row_mapping[key]
-        self._add_primary_columns(formatted_result, row_object)
-        self._add_subquery_parameters(formatted_result, row_object)
-        return formatted_result
-
-    def _add_primary_columns(self, formatted_result: dict, row_object: Any) -> None:
-        for column in self.primary_columns:
-            formatted_result[column] = getattr(row_object, column)
-
-    def _add_subquery_parameters(self, formatted_result: dict, row_object: Any) -> None:
-        for subquery_parameter in self.subquery_parameters:
-            relationship_entities = getattr(
-                row_object, subquery_parameter.linking_column
-            )
-            subquery_results = [
-                {
-                    column: getattr(relationship_entity, column)
-                    for column in subquery_parameter.columns
-                }
-                for relationship_entity in relationship_entities
-            ]
-            formatted_result[subquery_parameter.linking_column] = subquery_results
-
-
 class ResultFormatter:
     """
     Formats results for specific database queries
@@ -89,19 +44,6 @@ class ResultFormatter:
         return ResultFormatter.tuples_to_column_value_dict(
             DATA_SOURCES_MAP_COLUMN, results
         )
-
-    @staticmethod
-    def format_result_with_subquery_parameters(
-        row_mappings: list[RowMapping],
-        primary_columns: list[str],
-        subquery_parameters: list[SubqueryParameters],
-    ) -> list[dict]:
-        srf = SubqueryResultFormatter(
-            row_mappings=row_mappings,
-            primary_columns=primary_columns,
-            subquery_parameters=subquery_parameters,
-        )
-        return srf.format_results()
 
     @staticmethod
     def format_with_metadata(

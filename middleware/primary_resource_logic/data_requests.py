@@ -346,7 +346,25 @@ def get_data_request_by_id_wrapper(
             access_info=access_info,
             db_client_method=DatabaseClient.get_data_requests,
             entry_name="Data request",
-            subquery_parameters=get_data_requests_subquery_params(),
+            subquery_parameters=[
+                SubqueryParameterManager.data_sources(),
+                SubqueryParameters(
+                    relation_name=Relations.LOCATIONS_EXPANDED.value,
+                    linking_column="locations",
+                    columns=[
+                        "type",
+                        "state_name",
+                        "county_name",
+                        "locality_name",
+                        "display_name",
+                    ],
+                    alias_mappings={
+                        "state_name": "state",
+                        "county_name": "county",
+                        "locality_name": "locality",
+                    },
+                ),
+            ],
         ),
         relation_role_parameters=RelationRoleParameters(
             relation_role_function_with_params=DeferredFunction(

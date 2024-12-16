@@ -872,12 +872,26 @@ class DatabaseClient:
     ):
         if subquery_parameters and table_key:
             # Calls models.Base.to_dict() method
-            results = [
-                result[table_key].to_dict(subquery_parameters) for result in raw_results
-            ]
+            results = []
+            for result in raw_results:
+                val: dict = result[table_key].to_dict(subquery_parameters)
+                self._alias_subqueries(subquery_parameters, val)
+                results.append(val)
         else:
             results = [dict(result) for result in raw_results]
         return results
+
+    def _alias_subqueries(self, subquery_parameters, val: dict):
+        for sp in subquery_parameters:
+            if sp.alias_mappings is None:
+                continue
+            for entry in val[sp.linking_column]:
+                keys = list(entry.keys())
+                for key in keys:
+                    if key in sp.alias_mappings:
+                        alias = sp.alias_mappings[key]
+                        entry[alias] = entry[key]
+                        del entry[key]
 
     def _build_table_key_if_results(self, raw_results: list) -> str:
         table_key = ""
