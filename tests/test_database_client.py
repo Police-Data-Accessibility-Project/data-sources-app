@@ -577,21 +577,21 @@ def test_get_typeahead_locations(live_database_client: DatabaseClient):
 
     assert results[0]["display_name"] == "Xylodammerung"
     assert results[0]["type"] == "Locality"
-    assert results[0]["state"] == "Xylonsylvania"
-    assert results[0]["county"] == "Arxylodon"
-    assert results[0]["locality"] == "Xylodammerung"
+    assert results[0]["state_name"] == "Xylonsylvania"
+    assert results[0]["county_name"] == "Arxylodon"
+    assert results[0]["locality_name"] == "Xylodammerung"
 
     assert results[1]["display_name"] == "Xylonsylvania"
     assert results[1]["type"] == "State"
-    assert results[1]["state"] == "Xylonsylvania"
-    assert results[1]["county"] is None
-    assert results[1]["locality"] is None
+    assert results[1]["state_name"] == "Xylonsylvania"
+    assert results[1]["county_name"] is None
+    assert results[1]["locality_name"] is None
 
     assert results[2]["display_name"] == "Arxylodon"
     assert results[2]["type"] == "County"
-    assert results[2]["state"] == "Xylonsylvania"
-    assert results[2]["county"] == "Arxylodon"
-    assert results[2]["locality"] is None
+    assert results[2]["state_name"] == "Xylonsylvania"
+    assert results[2]["county_name"] == "Arxylodon"
+    assert results[2]["locality_name"] is None
 
 
 def test_get_typeahead_agencies(live_database_client):
@@ -603,9 +603,9 @@ def test_get_typeahead_agencies(live_database_client):
     assert len(results) > 0
     assert results[0]["display_name"] == "Xylodammerung Police Agency"
     assert results[0]["jurisdiction_type"] == "state"
-    assert results[0]["state"] == "XY"
-    assert results[0]["county"] == "Arxylodon"
-    assert results[0]["locality"] == "Xylodammerung"
+    assert results[0]["state_iso"] == "XY"
+    assert results[0]["county_name"] == "Arxylodon"
+    assert results[0]["locality_name"] == "Xylodammerung"
 
 
 def test_search_with_location_and_record_types_real_data(live_database_client):
@@ -626,7 +626,7 @@ def test_search_with_location_and_record_types_real_data(live_database_client):
     county_parameter = "Allegheny"
     locality_parameter = "Pittsburgh"
 
-    def search(state, record_categories = None, county = None, locality = None):
+    def search(state, record_categories=None, county=None, locality=None):
         location_id = live_database_client.get_location_id(
             where_mappings={
                 "state_name": state,
@@ -650,14 +650,8 @@ def test_search_with_location_and_record_types_real_data(live_database_client):
             locality=locality_parameter,
         )
     )
-    S = len(
-        search(state=state_parameter)
-    )
-    SR = len(
-        search(
-            state=state_parameter, record_categories=[record_type_parameter]
-        )
-    )
+    S = len(search(state=state_parameter))
+    SR = len(search(state=state_parameter, record_categories=[record_type_parameter]))
     SRC = len(
         search(
             state=state_parameter,
@@ -670,11 +664,7 @@ def test_search_with_location_and_record_types_real_data(live_database_client):
             state=state_parameter, county=county_parameter, locality=locality_parameter
         )
     )
-    SC = len(
-        search(
-            state=state_parameter, county=county_parameter
-        )
-    )
+    SC = len(search(state=state_parameter, county=county_parameter))
 
     assert SRLC > 0
     assert SRLC < SRC
@@ -687,7 +677,11 @@ def test_search_with_location_and_record_types_real_data_multiple_records(
     live_database_client,
 ):
     location_id = live_database_client.get_location_id(
-        where_mappings={"state_name": "Pennsylvania", "county_name": None, "locality_name": None}
+        where_mappings={
+            "state_name": "Pennsylvania",
+            "county_name": None,
+            "locality_name": None,
+        }
     )
     record_categories = []
     last_count = 0
@@ -702,7 +696,9 @@ def test_search_with_location_and_record_types_real_data_multiple_records(
         results = live_database_client.search_with_location_and_record_type(
             location_id=location_id, record_categories=record_categories
         )
-        assert len(results) > last_count, f"{record_category} failed (total record_categories: {len(record_categories)})"
+        assert (
+            len(results) > last_count
+        ), f"{record_category} failed (total record_categories: {len(record_categories)})"
         last_count = len(results)
 
     # Finally, check that all record_types is equivalent to no record types in terms of number of results
@@ -1061,6 +1057,7 @@ def test_get_linked_rows(
             "id",
             "name",
         ],
+        build_metadata=True,
     )
 
     assert results["metadata"]["count"] == len(results["data"]) > 0

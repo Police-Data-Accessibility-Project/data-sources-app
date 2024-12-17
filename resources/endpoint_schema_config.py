@@ -545,8 +545,6 @@ class SchemaConfigs(Enum):
     LOCATIONS_RELATED_DATA_REQUESTS_GET = EndpointSchemaConfig(
         input_schema=GetByIDBaseSchema(),
         input_dto_class=GetByIDBaseDTO,
-        primary_output_schema=GetManyDataRequestsResponseSchema(
-            exclude=["data.data_sources", "data.locations"]
-        ),
+        primary_output_schema=GetManyDataRequestsResponseSchema(),
     )
     # endregion

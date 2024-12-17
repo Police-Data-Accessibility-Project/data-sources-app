@@ -92,6 +92,8 @@ class SubqueryParameterManager:
             columns=[
                 "type",
                 "state_name",
+                "state_iso",
+                "county_fips",
                 "county_name",
                 "locality_name",
                 "display_name",

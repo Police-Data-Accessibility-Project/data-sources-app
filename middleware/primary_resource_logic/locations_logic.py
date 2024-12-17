@@ -12,6 +12,9 @@ from middleware.common_response_formatting import (
 )
 from middleware.enums import Relations
 from middleware.flask_response_manager import FlaskResponseManager
+from middleware.primary_resource_logic.data_requests import (
+    get_data_requests_subquery_params,
+)
 
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetByIDBaseDTO
 
@@ -41,6 +44,8 @@ def get_locations_related_data_requests_wrapper(
             role=get_relation_role(access_info=access_info),
             column_permission=ColumnPermissionEnum.READ,
         ),
+        build_metadata=True,
+        subquery_parameters=get_data_requests_subquery_params(),
     )
     if results is None:
         return message_response(

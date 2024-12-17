@@ -49,7 +49,6 @@ class SearchRequestSchema(Schema):
     )
 
 
-
 class SearchResultsInnerSchema(Schema):
     id = fields.Int(
         required=True,
@@ -158,25 +157,25 @@ class SearchResponseSchema(Schema):
 
 
 class FollowSearchResponseSchema(Schema):
-    state = fields.Str(
+    state_name = fields.Str(
         required=True,
         metadata=get_json_metadata("The state of the search."),
     )
-    county = fields.Str(
+    county_name = fields.Str(
         required=False,
         allow_none=True,
         metadata=get_json_metadata(
             "The county of the search. If empty, all counties for the given state will be searched."
         ),
     )
-    locality = fields.Str(
+    locality_name = fields.Str(
         required=False,
         allow_none=True,
         metadata=get_json_metadata(
             "The locality of the search. If empty, all localities for the given county will be searched."
         ),
     )
-    location_id = fields.Int(
+    id = fields.Int(
         required=True,
         metadata=get_json_metadata("The location ID of the search."),
     )

@@ -13,19 +13,19 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
 
 class DataRequestLocationInfoPostDTO(BaseModel):
     type: LocationType
-    state: str
-    county: Optional[str] = None
-    locality: Optional[str] = None
+    state_name: str
+    county_name: Optional[str] = None
+    locality_name: Optional[str] = None
 
     def get_where_mappings(self) -> list[WhereMapping]:
         d = {
             "type": self.type,
-            "state": self.state,
+            "state": self.state_name,
         }
-        if self.county is not None:
-            d["county"] = self.county
-        if self.locality is not None:
-            d["locality"] = self.locality
+        if self.county_name is not None:
+            d["county"] = self.county_name
+        if self.locality_name is not None:
+            d["locality"] = self.locality_name
         return WhereMapping.from_dict(d)
 
 

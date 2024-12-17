@@ -78,9 +78,9 @@ def get_location_id_for_data_requests(
     # Rename keys to match where mappings
     revised_location_info = {
         "type": location_info.type,
-        "state_name": location_info.state,
-        "county_name": location_info.county,
-        "locality_name": location_info.locality,
+        "state_name": location_info.state_name,
+        "county_name": location_info.county_name,
+        "locality_name": location_info.locality_name,
     }
 
     location_id = db_client.get_location_id(
@@ -346,25 +346,7 @@ def get_data_request_by_id_wrapper(
             access_info=access_info,
             db_client_method=DatabaseClient.get_data_requests,
             entry_name="Data request",
-            subquery_parameters=[
-                SubqueryParameterManager.data_sources(),
-                SubqueryParameters(
-                    relation_name=Relations.LOCATIONS_EXPANDED.value,
-                    linking_column="locations",
-                    columns=[
-                        "type",
-                        "state_name",
-                        "county_name",
-                        "locality_name",
-                        "display_name",
-                    ],
-                    alias_mappings={
-                        "state_name": "state",
-                        "county_name": "county",
-                        "locality_name": "locality",
-                    },
-                ),
-            ],
+            subquery_parameters=get_data_requests_subquery_params(),
         ),
         relation_role_parameters=RelationRoleParameters(
             relation_role_function_with_params=DeferredFunction(

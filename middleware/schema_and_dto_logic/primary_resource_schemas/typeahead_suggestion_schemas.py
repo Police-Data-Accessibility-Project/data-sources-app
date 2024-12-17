@@ -16,7 +16,7 @@ JURISDICTION_TYPES = [
 
 
 class TypeaheadBaseResponseSchema(Schema):
-    state = fields.String(
+    state_name = fields.String(
         required=True,
         metadata={
             "source": SourceMappingEnum.JSON,
@@ -24,7 +24,15 @@ class TypeaheadBaseResponseSchema(Schema):
             "example": "Pennsylvania",
         },
     )
-    county = fields.String(
+    state_iso = fields.String(
+        required=True,
+        metadata={
+            "source": SourceMappingEnum.JSON,
+            "description": "The state ISO of the suggestion",
+            "example": "PA",
+        },
+    )
+    county_name = fields.String(
         required=True,
         metadata={
             "source": SourceMappingEnum.JSON,
@@ -33,7 +41,7 @@ class TypeaheadBaseResponseSchema(Schema):
         },
         allow_none=True,
     )
-    locality = fields.String(
+    locality_name = fields.String(
         required=True,
         metadata={
             "source": SourceMappingEnum.JSON,
@@ -104,7 +112,7 @@ class TypeaheadAgenciesOuterResponseSchema(Schema):
     # pass
     suggestions = fields.List(
         cls_or_instance=fields.Nested(
-            nested=TypeaheadAgenciesResponseSchema,
+            nested=TypeaheadAgenciesResponseSchema(exclude=["state_name"]),
             required=True,
             metadata={
                 "source": SourceMappingEnum.JSON,
@@ -122,7 +130,7 @@ class TypeaheadLocationsOuterResponseSchema(Schema):
 
     suggestions = fields.List(
         cls_or_instance=fields.Nested(
-            nested=TypeaheadLocationsResponseSchema,
+            nested=TypeaheadLocationsResponseSchema(exclude=["state_iso"]),
             required=True,
             metadata={
                 "source": SourceMappingEnum.JSON,
