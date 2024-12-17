@@ -63,6 +63,7 @@ def try_getting_partial_match_agencies(dto: AgencyMatchDTO, agencies: list[dict]
 
     return partial_matches
 
+
 def format_response(amr: AgencyMatchResponse) -> Response:
     data = {
         "status": amr.status.value,
@@ -72,6 +73,7 @@ def format_response(amr: AgencyMatchResponse) -> Response:
     return FlaskResponseManager.make_response(
         data=data,
     )
+
 
 def match_agency_wrapper(db_client: DatabaseClient, dto: AgencyMatchOuterDTO):
     result = try_matching_agency(db_client=db_client, dto=dto)
@@ -128,7 +130,7 @@ def _get_agencies(db_client, location_id):
     )
 
 
-def _get_location_id(db_client, dto):
+def _get_location_id(db_client, dto: AgencyMatchDTO):
     return db_client.get_location_id(
         where_mappings=WhereMapping.from_dict(
             {

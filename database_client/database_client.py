@@ -1138,7 +1138,6 @@ class DatabaseClient:
                 where_mappings=WhereMapping.from_dict(column_value_mappings),
             )[0][column_to_return]
 
-    @session_manager
     def get_linked_rows(
         self,
         link_table: Relations,
@@ -1149,31 +1148,51 @@ class DatabaseClient:
         linked_relation_linking_column: str,
         columns_to_retrieve: list[str],
         alias_mappings: Optional[dict[str, str]] = None,
+        build_metadata=False,
+        subquery_parameters: Optional[list[SubqueryParameters]] = [],
     ):
         LinkTable = SQL_ALCHEMY_TABLE_REFERENCE[link_table.value]
         LinkedRelation = SQL_ALCHEMY_TABLE_REFERENCE[linked_relation.value]
 
-        # TODO: Some of this logic may better fit in DynamicQueryConstructor
-        column_references = self._build_column_references(
-            LinkedRelation, alias_mappings, columns_to_retrieve
+        # Get ids via linked table
+        link_results = self._select_from_relation(
+            relation_name=link_table.value,
+            columns=[right_link_column],
+            where_mappings={left_link_column: left_id},
         )
-
-        query_with_select = self.session.query(*column_references)
-        query_with_join = query_with_select.join(
-            LinkTable,
-            getattr(LinkTable, right_link_column)
-            == getattr(LinkedRelation, linked_relation_linking_column),
-        )
-        query_with_filter = query_with_join.filter(
-            getattr(LinkTable, left_link_column) == left_id
-        )
-
-        dict_results = [dict(result._mapping) for result in query_with_filter.all()]
-
-        return ResultFormatter.format_with_metadata(
-            data=dict_results,
+        link_ids = [result[right_link_column] for result in link_results]
+        linked_results = self._select_from_relation(
             relation_name=linked_relation.value,
+            columns=columns_to_retrieve,
+            alias_mappings=alias_mappings,
+            where_mappings={linked_relation_linking_column: link_ids},
+            build_metadata=build_metadata,
+            subquery_parameters=subquery_parameters,
         )
+        return linked_results
+
+        #
+        # # TODO: Some of this logic may better fit in DynamicQueryConstructor
+        # column_references = self._build_column_references(
+        #     LinkedRelation, alias_mappings, columns_to_retrieve
+        # )
+        #
+        # query_with_select = self.session.query(*column_references)
+        # query_with_join = query_with_select.join(
+        #     LinkTable,
+        #     getattr(LinkTable, right_link_column)
+        #     == getattr(LinkedRelation, linked_relation_linking_column),
+        # )
+        # query_with_filter = query_with_join.filter(
+        #     getattr(LinkTable, left_link_column) == left_id
+        # )
+        #
+        # dict_results = [dict(result._mapping) for result in query_with_filter.all()]
+        #
+        # return ResultFormatter.format_with_metadata(
+        #     data=dict_results,
+        #     relation_name=linked_relation.value,
+        # )
 
     def _build_column_references(
         self, LinkedRelation, alias_mappings, columns_to_retrieve

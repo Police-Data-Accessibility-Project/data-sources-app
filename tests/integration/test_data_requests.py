@@ -169,15 +169,15 @@ def test_data_requests_post(
 
     location_info_1 = {
         "type": "Locality",
-        "state": "California",
-        "county": "Orange",
-        "locality": "Laguna Hills",
+        "state_name": "California",
+        "county_name": "Orange",
+        "locality_name": "Laguna Hills",
     }
     location_info_2 = {
         "type": "Locality",
-        "state": "California",
-        "county": "Orange",
-        "locality": "Seal Beach",
+        "state_name": "California",
+        "county_name": "Orange",
+        "locality_name": "Seal Beach",
     }
 
     json_request = {
@@ -202,9 +202,9 @@ def test_data_requests_post(
     locations = data["locations"]
     assert len(locations) == 2
     for location in locations:
-        if location["locality"] == location_info_1["locality"]:
+        if location["locality_name"] == location_info_1["locality_name"]:
             continue
-        if location["locality"] == location_info_2["locality"]:
+        if location["locality_name"] == location_info_2["locality_name"]:
             continue
         assert False
 

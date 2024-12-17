@@ -21,23 +21,23 @@ def test_typeahead_locations(flask_client_with_db):
     expected_suggestions = [
         {
             "display_name": "Xylodammerung",
-            "locality": "Xylodammerung",
-            "county": "Arxylodon",
-            "state": "Xylonsylvania",
+            "locality_name": "Xylodammerung",
+            "county_name": "Arxylodon",
+            "state_name": "Xylonsylvania",
             "type": "Locality",
         },
         {
             "display_name": "Xylonsylvania",
-            "locality": None,
-            "county": None,
-            "state": "Xylonsylvania",
+            "locality_name": None,
+            "county_name": None,
+            "state_name": "Xylonsylvania",
             "type": "State",
         },
         {
             "display_name": "Arxylodon",
-            "locality": None,
-            "county": "Arxylodon",
-            "state": "Xylonsylvania",
+            "locality_name": None,
+            "county_name": "Arxylodon",
+            "state_name": "Xylonsylvania",
             "type": "County",
         },
     ]

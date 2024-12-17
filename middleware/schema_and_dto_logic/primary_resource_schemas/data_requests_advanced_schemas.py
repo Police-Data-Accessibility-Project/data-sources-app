@@ -120,7 +120,7 @@ class DataRequestsPostSchema(Schema):
     location_infos = fields.List(
         fields.Nested(
             nested=TypeaheadLocationsResponseSchema(
-                exclude=["display_name", "location_id"]
+                only=["type", "state_name", "county_name", "locality_name"]
             ),
             metadata=get_json_metadata(
                 "The locations associated with the data request",

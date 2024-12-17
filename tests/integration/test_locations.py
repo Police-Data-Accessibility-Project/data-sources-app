@@ -67,4 +67,6 @@ def test_locations_related_data_requests(locations_test_setup: LocationsTestSetu
     data = tdc.request_validator.get_location_related_data_requests(
         location_id=lts.location_info["id"],
         headers=tus.jwt_authorization_header,
-    )
+    )["data"]
+    assert data[0]["locations"] == data[1]["locations"]
+    assert data[0]["locations"][0]["id"] == lts.location_info["id"]

@@ -63,9 +63,11 @@ COUNTY_NAME_FIELD = fields.Str(
 
 class LocationInfoResponseSchema(Schema):
     type = LOCATION_TYPE_FIELD
-    state = STATE_NAME_FIELD
-    county = COUNTY_NAME_FIELD
-    locality = LOCALITY_NAME_FIELD
+    state_name = STATE_NAME_FIELD
+    state_iso = STATE_ISO_FIELD
+    county_name = COUNTY_FIPS_FIELD
+    county_fips = COUNTY_NAME_FIELD
+    locality_name = LOCALITY_NAME_FIELD
     display_name = fields.Str(
         required=True,
         metadata=get_json_metadata(description="The display name for the location"),
