@@ -13,6 +13,9 @@ const HEADERS_BASIC = {
 	authorization: `Basic ${import.meta.env.VITE_ADMIN_API_KEY}`,
 };
 
+/**
+ * Do not use this unless we need to get literally all of the requests in the database.
+ */
 export async function getAllRequests(params = {}) {
 	const requestsStore = useDataRequestsStore();
 

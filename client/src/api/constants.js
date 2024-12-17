@@ -29,6 +29,11 @@ export const ENDPOINTS = {
 			RELATED_AGENCIES: 'related-agencies',
 		},
 	},
+	LOCATIONS: {
+		ID: {
+			DATA_REQUESTS: 'data-requests',
+		},
+	},
 	OAUTH: {
 		GITHUB: 'github',
 		LINK_TO_GITHUB: 'link-to-github',

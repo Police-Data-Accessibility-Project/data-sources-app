@@ -9,7 +9,7 @@
 			>
 				<h1 class="like-h4 mb-4">
 					Results
-					{{ searchData && 'for ' + getLocationText(searchData.params) }}
+					{{ searchData && 'for ' + getFullLocationText(searchData.params) }}
 				</h1>
 
 				<!-- Follow -->
@@ -82,7 +82,7 @@
 			/>
 
 			<h2 class="like-h4">
-				Data requests for {{ getLocationText(searchData.params) }}
+				Data requests for {{ getFullLocationText(searchData.params) }}
 			</h2>
 			<Requests :requests="requestData" :error="!!requestsError" />
 		</section>
@@ -105,7 +105,7 @@
 						<SearchForm
 							:placeholder="
 								searchData
-									? getLocationText(searchData.params)
+									? getFullLocationText(searchData.params)
 									: 'Enter a place'
 							"
 							button-copy="Update search"
@@ -131,13 +131,15 @@ import {
 	getAnchorLinkText,
 	getAllIdsSearched,
 } from './_util';
-import { getMostNarrowSearchLocationWithResults } from '@/util/getLocationText';
-import getLocationText from '@/util/getLocationText';
+import {
+	getFullLocationText,
+	getMostNarrowSearchLocationWithResults,
+} from '@/util/locationFormatters';
 import _isEqual from 'lodash/isEqual';
 import { DataLoaderErrorPassThrough } from '@/util/errors';
 const searchStore = useSearchStore();
 import { search, getFollowedSearch, followSearch } from '@/api/search';
-import { getAllRequests } from '@/api/data-requests';
+import { getLocationDataRequests } from '@/api/locations';
 
 const query = ref();
 const data = ref();
@@ -198,13 +200,9 @@ export const useRequestsData = defineBasicLoader(
 	'/search/results',
 	async (route) => {
 		try {
-			const requests = await getAllRequests();
+			const requests = await getLocationDataRequests(route.query.location_id);
 
-			return requests.filter((req) =>
-				req.locations.some(
-					(loc) => Number(loc.id) === Number(route.query.location_id),
-				),
-			);
+			return requests.data.data;
 		} catch (error) {
 			throw new DataLoaderErrorPassThrough(error);
 		}
@@ -247,6 +245,8 @@ const isSearchShown = ref(false);
 const dims = reactive({ width: window.innerWidth, height: window.innerHeight });
 const hasDisplayedErrorByRouteParams = ref(new Map());
 
+console.debug({ requestData });
+
 // lifecycle methods
 onMounted(() => {
 	if (window.innerWidth > 1280) isSearchShown.value = true;
@@ -267,7 +267,7 @@ onMounted(() => {
 onUpdated(async () => {
 	if (error.value) {
 		toast.error(
-			`Error fetching search results for ${getLocationText(route.query)}. Please try again!`,
+			`Error fetching search results for ${getFullLocationText(route.query)}. Please try again!`,
 			{
 				autoClose: false,
 				onClose() {
@@ -297,7 +297,7 @@ onUnmounted(() => {
 async function follow() {
 	try {
 		await followSearch(route.query.location_id);
-		toast.success(`Search followed for ${getLocationText(route.query)}.`);
+		toast.success(`Search followed for ${getFullLocationText(route.query)}.`);
 		await reloadFollowed();
 	} catch (error) {
 		toast.error(`Error following search. Please try again.`);

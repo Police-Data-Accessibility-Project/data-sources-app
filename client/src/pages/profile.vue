@@ -22,7 +22,7 @@
 				class="w-full flex justify-between max-w-2xl"
 			>
 				<RouterLink :to="{ path: '/search/results', query: followed }">
-					{{ getLocationText(followed) }}
+					{{ getFullLocationText(followed) }}
 				</RouterLink>
 				<Button
 					intent="secondary"
@@ -62,7 +62,7 @@ import { NavigationResult } from 'unplugin-vue-router/data-loaders';
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic';
 import { useAuthStore } from '@/stores/auth';
 import { useUserStore } from '@/stores/user';
-import getLocationText from '@/util/getLocationText';
+import { getFullLocationText } from '@/util/locationFormatters';
 import { getFollowedSearches, deleteFollowedSearch } from '@/api/search';
 import { linkAccountWithGithub, signOut, beginOAuthLogin } from '@/api/auth';
 
@@ -115,7 +115,7 @@ async function signOutWithRedirect() {
 }
 
 async function unFollow(followed) {
-	const text = getLocationText(followed);
+	const text = getFullLocationText(followed);
 	try {
 		await deleteFollowedSearch(followed.location_id);
 		toast.success(`Un-followed search for ${text}`);

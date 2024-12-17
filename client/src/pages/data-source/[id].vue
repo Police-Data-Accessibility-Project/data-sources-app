@@ -54,7 +54,7 @@
 
 					<!-- Agency data -->
 					<div class="flex-[0_0_100%] flex flex-col gap-2 w-full">
-						<div class="agency-row-container">
+						<div ref="agenciesRef" class="agency-row-container">
 							<div class="agency-row">
 								<div>
 									<h4 class="m-0">Agency</h4>
@@ -219,8 +219,10 @@ import PrevNextNav from './_components/Nav.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faLink } from '@fortawesome/free-solid-svg-icons';
 import { useSearchStore } from '@/stores/search';
-import { DATA_SOURCE_UI_SHAPE, formatDateForSearchResults } from './_util';
-import { computed, onMounted, onUnmounted, watch } from 'vue';
+import { DATA_SOURCE_UI_SHAPE } from './_util';
+import { formatDateForSearchResults } from '@/util/dateFormatters';
+import { isDescendantOf } from '@/util/DOM';
+import { computed, onMounted, onUnmounted } from 'vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -240,37 +242,48 @@ const previousIdIndex = computed(() =>
 	currentIdIndex.value > 0 ? currentIdIndex.value - 1 : null,
 );
 
+const agenciesRef = ref();
 const isDescriptionExpanded = ref(false);
 const showExpandDescriptionButton = ref(false);
 const descriptionRef = ref();
 const mainRef = ref();
 const navIs = ref('');
 
+console.debug({ nextIdIndex, previousIdIndex });
+
 // Handle swipe
-const { isSwiping, direction } = useSwipe(mainRef);
-watch(
-	() => isSwiping.value,
-	(isNowSwiping) => {
-		if (isNowSwiping) {
-			switch (direction.value) {
-				case 'left':
-					navIs.value = 'increment';
+const { direction } = useSwipe(mainRef, {
+	onSwipe: (e) => {
+		console.debug({ e });
+		if (isDescendantOf(e.target, agenciesRef.value)) {
+			e.preventDefault();
+			e.stopImmediatePropagation();
+			return false;
+		}
+
+		switch (direction.value) {
+			case 'left':
+				navIs.value = 'increment';
+				if (typeof nextIdIndex.value === 'number' && nextIdIndex.value > -1)
 					router.replace(
 						`/data-source/${searchStore.mostRecentSearchIds[nextIdIndex.value]}`,
 					);
-					break;
-				case 'right':
-					navIs.value = 'decrement';
+				break;
+			case 'right':
+				navIs.value = 'decrement';
+				if (
+					typeof previousIdIndex.value === 'number' &&
+					previousIdIndex.value > -1
+				)
 					router.replace(
 						`/data-source/${searchStore.mostRecentSearchIds[previousIdIndex.value]}`,
 					);
-					break;
-				default:
-					return;
-			}
+				break;
+			default:
+				return;
 		}
 	},
-);
+});
 
 onMounted(() => {
 	handleShowMoreButton();

@@ -56,7 +56,7 @@
 					<!-- Location data -->
 					<h4>Locations covered by request</h4>
 					<p v-for="location of dataRequest.locations" :key="location">
-						{{ formatLocationText(location) }}
+						{{ getMinimalLocationText(location) }}
 					</p>
 
 					<h4>Coverage Range</h4>
@@ -122,9 +122,9 @@ import PrevNextNav from './_components/Nav.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faLink } from '@fortawesome/free-solid-svg-icons';
 import { useSearchStore } from '@/stores/search';
-import { formatLocationText } from './_util';
+import { getMinimalLocationText } from '@/util/locationFormatters';
 import { REQUEST_URGENCY } from './_constants';
-import { computed, onMounted, onUnmounted, watch } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -150,30 +150,31 @@ const mainRef = ref();
 const navIs = ref('');
 
 // Handle swipe
-const { isSwiping, direction } = useSwipe(mainRef);
-watch(
-	() => isSwiping.value,
-	(isNowSwiping) => {
-		if (isNowSwiping) {
-			switch (direction.value) {
-				case 'left':
-					navIs.value = 'increment';
+const { direction } = useSwipe(mainRef, {
+	onSwipe: () => {
+		switch (direction.value) {
+			case 'left':
+				navIs.value = 'increment';
+				if (typeof nextIdIndex.value === 'number' && nextIdIndex.value > -1)
 					router.replace(
-						`/data-source/${searchStore.mostRecentRequestIds[nextIdIndex.value]}`,
+						`/data-request/${searchStore.mostRecentRequestIds[nextIdIndex.value]}`,
 					);
-					break;
-				case 'right':
-					navIs.value = 'decrement';
+				break;
+			case 'right':
+				navIs.value = 'decrement';
+				if (
+					typeof previousIdIndex.value === 'number' &&
+					previousIdIndex.value > -1
+				)
 					router.replace(
-						`/data-source/${searchStore.mostRecentRequestIds[previousIdIndex.value]}`,
+						`/data-request/${searchStore.mostRecentRequestIds[previousIdIndex.value]}`,
 					);
-					break;
-				default:
-					return;
-			}
+				break;
+			default:
+				return;
 		}
 	},
-);
+});
 
 onMounted(() => {
 	handleShowMoreButton();
@@ -191,11 +192,6 @@ function handleShowMoreButton() {
 		showExpandDescriptionButton.value = false;
 	}
 }
-
-// function formatResult(record, item) {
-// 	if (record.isDate) return formatDateForSearchResults(item);
-// 	return item;
-// }
 </script>
 
 <style scoped>

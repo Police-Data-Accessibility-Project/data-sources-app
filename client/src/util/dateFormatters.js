@@ -4,7 +4,7 @@
  * @param {string | Date} date Date to be formatted
  * @returns {string} Date formatted MM/DD/YYYY | YYYY (if first or last day of year)
  */
-export default function formatDateForSearchResults(date) {
+export function formatDateForSearchResults(date) {
 	if (typeof date !== 'string' && !(date instanceof Date)) {
 		return undefined;
 	}
