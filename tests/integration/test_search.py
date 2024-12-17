@@ -33,11 +33,13 @@ TEST_STATE = "Pennsylvania"
 TEST_COUNTY = "Allegheny"
 TEST_LOCALITY = "Pittsburgh"
 
+
 @dataclass
 class SearchTestSetup:
     tdc: TestDataCreatorFlask
     location_id: int
     tus: TestUserSetup
+
 
 @pytest.fixture
 def search_test_setup(test_data_creator_flask: TestDataCreatorFlask):
@@ -49,9 +51,11 @@ def search_test_setup(test_data_creator_flask: TestDataCreatorFlask):
                 "state_name": TEST_STATE,
                 "county_name": TEST_COUNTY,
                 "locality_name": TEST_LOCALITY,
-        }),
+            }
+        ),
         tus=tdc.standard_user(),
     )
+
 
 def test_search_get(search_test_setup: SearchTestSetup):
     sts = search_test_setup
@@ -252,12 +256,14 @@ def test_search_follow(search_test_setup: SearchTestSetup):
         tus=tus_1,
         expected_json_content={
             "metadata": {"count": 1},
-            "data": [{
-                "state": TEST_STATE,
-                "county": TEST_COUNTY,
-                "locality": TEST_LOCALITY,
-                "location_id": sts.location_id
-            }],
+            "data": [
+                {
+                    "state_name": TEST_STATE,
+                    "county_name": TEST_COUNTY,
+                    "locality_name": TEST_LOCALITY,
+                    "id": sts.location_id,
+                }
+            ],
             "message": "Followed searches found.",
         },
     )

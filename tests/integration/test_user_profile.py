@@ -45,13 +45,25 @@ def test_user_profile_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     # Create a recent search
     tdc.request_validator.search(
         headers=tus.api_authorization_header,
-        location_id=tdc.db_client.get_location_id(where_mappings={"state_name": "Pennsylvania", "county_name": None, "locality_name": None}),
+        location_id=tdc.db_client.get_location_id(
+            where_mappings={
+                "state_name": "Pennsylvania",
+                "county_name": None,
+                "locality_name": None,
+            }
+        ),
     )
 
     # Have the user follow a search
     tdc.request_validator.follow_search(
         headers=tus.jwt_authorization_header,
-        location_id=tdc.db_client.get_location_id(where_mappings={"state_name": "California", "county_name": None, "locality_name": None}),
+        location_id=tdc.db_client.get_location_id(
+            where_mappings={
+                "state_name": "California",
+                "county_name": None,
+                "locality_name": None,
+            }
+        ),
     )
 
     # Have the user create a data request
@@ -77,7 +89,7 @@ def test_user_profile_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     assert data["email"] == tus.user_info.email
     assert data["external_accounts"]["github"] == str(github_user_id)
     assert data["recent_searches"]["data"][0]["state_iso"] == "PA"
-    assert data["followed_searches"]["data"][0]["state"] == "California"
+    assert data["followed_searches"]["data"][0]["state_name"] == "California"
     assert data["data_requests"]["data"][0]["id"] == int(data_request_id)
     assert data["permissions"] == [PermissionsEnum.READ_ALL_USER_INFO.value]
 
