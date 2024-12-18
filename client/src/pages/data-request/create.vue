@@ -40,7 +40,7 @@
 					v-for="location in selectedLocations"
 					:key="JSON.stringify(location)"
 					class="md:col-span-2"
-					:content="formatLocationText(location)"
+					:content="getFullLocationText(location)"
 					:on-click="
 						() => {
 							const indexToRemove = selectedLocations.indexOf(location);
@@ -56,7 +56,7 @@
 				ref="typeaheadRef"
 				class="md:col-span-2"
 				:error="typeaheadError"
-				:format-item-for-display="formatLocationText"
+				:format-item-for-display="getFullLocationText"
 				:items="items"
 				:placeholder="
 					selectedLocations.length ? 'Enter another place' : 'Enter a place'
@@ -77,7 +77,7 @@
 				<template #item="item">
 					<!-- eslint-disable-next-line vue/no-v-html This data is coming from our API, so we can trust it-->
 					<span
-						v-html="typeaheadRef?.boldMatchText(formatLocationText(item))"
+						v-html="typeaheadRef?.boldMatchText(getFullLocationText(item))"
 					/>
 					<span class="locale-type">
 						{{ item.type }}
@@ -174,7 +174,7 @@ import Typeahead from '@/components/TypeaheadInput.vue';
 import LocationSelected from '@/components/TypeaheadSelected.vue';
 import { toast } from 'vue3-toastify';
 import { createRequest } from '@/api/data-requests';
-import { formatLocationText } from './_util';
+import { getFullLocationText } from '@/util/locationFormatters';
 import _debounce from 'lodash/debounce';
 import _cloneDeep from 'lodash/cloneDeep';
 import { nextTick, ref, watch } from 'vue';

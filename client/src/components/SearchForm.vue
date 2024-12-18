@@ -5,7 +5,7 @@
 		<TypeaheadInput
 			:id="TYPEAHEAD_ID"
 			ref="typeaheadRef"
-			:format-item-for-display="formatText"
+			:format-item-for-display="getFullLocationText"
 			:items="items"
 			:placeholder="placeholder ?? 'Enter a place'"
 			@select-item="onSelectRecord"
@@ -19,7 +19,7 @@
 			<!-- Item to render passed as scoped slot -->
 			<template #item="item">
 				<!-- eslint-disable-next-line vue/no-v-html This data is coming from our API, so we can trust it-->
-				<span v-html="typeaheadRef?.boldMatchText(formatText(item))" />
+				<span v-html="typeaheadRef?.boldMatchText(getFullLocationText(item))" />
 				<span class="locale-type">
 					{{ item.type }}
 				</span>
@@ -82,7 +82,7 @@ import {
 } from 'pdap-design-system';
 import TypeaheadInput from '@/components/TypeaheadInput.vue';
 import { computed, onMounted, ref } from 'vue';
-import { STATES_TO_ABBREVIATIONS } from '@/util/constants';
+import { getFullLocationText } from '@/util/locationFormatters';
 import _debounce from 'lodash/debounce';
 import _isEqual from 'lodash/isEqual';
 import { useRouter, RouterLink, useRoute } from 'vue-router';
@@ -186,10 +186,15 @@ const isButtonDisabled = computed(() => {
 onMounted(() => {
 	// Set up selected state based on params
 	if (params.state) {
-		const record = (({ state, county, locality, location_id }) => ({
-			state,
-			county,
-			locality,
+		const record = (({
+			state_name,
+			county_name,
+			locality_name,
+			location_id,
+		}) => ({
+			state: state_name,
+			county: county_name,
+			locality: locality_name,
 			location_id,
 		}))(params);
 
@@ -214,31 +219,19 @@ function submit(values) {
 	emit('searched');
 }
 
-function formatText(item) {
-	switch (item.type) {
-		case 'Locality':
-			return `${item.display_name} ${item.county} ${STATES_TO_ABBREVIATIONS.get(item.state)}`;
-		case 'County':
-			return `${item.display_name} ${STATES_TO_ABBREVIATIONS.get(item.state)}`;
-		case 'State':
-		default:
-			return item.display_name;
-	}
-}
-
 function buildParams(values) {
 	const obj = {};
 
 	/* Handle record from typeahead input */
 	const recordFilteredByParamsKeys = (({
-		state,
-		county,
-		locality,
+		state_name,
+		county_name,
+		locality_name,
 		location_id,
 	}) => ({
-		state,
-		county,
-		locality,
+		state: state_name,
+		county: county_name,
+		locality: locality_name,
 		location_id,
 		// If no selected record, fall back to the initial search
 	}))(selectedRecord.value ?? initiallySearchedRecord.value);

@@ -151,12 +151,18 @@ export const useSearchData = defineBasicLoader(
 	'/search/results',
 	async (route) => {
 		try {
-			const params = route.query;
-			const searched = getMostNarrowSearchLocationWithResults(params);
+			const searchLocation = (({ state, county, locality, location_id }) => ({
+				state_name: state,
+				county_name: county,
+				locality_name: locality,
+				location_id,
+			}))(route.query);
+
+			const searched = getMostNarrowSearchLocationWithResults(searchLocation);
 
 			const response =
 				// Local caching to skip even the pinia method in case of only the hash changing while on the route.
-				_isEqual(params, query.value) && data.value
+				_isEqual(searchLocation, query.value) && data.value
 					? data.value
 					: await search(route.query);
 
@@ -167,12 +173,12 @@ export const useSearchData = defineBasicLoader(
 			}
 
 			data.value = response;
-			query.value = params;
+			query.value = searchLocation;
 
 			const ret = {
 				results: groupResultsByAgency(response.data),
 				searched,
-				params,
+				params: searchLocation,
 			};
 			return ret;
 		} catch (error) {
