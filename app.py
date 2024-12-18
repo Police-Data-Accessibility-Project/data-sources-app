@@ -143,7 +143,7 @@ def get_api_with_namespaces():
         version="2.0",
         title="PDAP Data Sources API",
         description="The following is the API documentation for the PDAP Data Sources API."
-        "\n\nFor information on how to get started, consult [our getting started guide.](https://app.gitbook.com/o/-MXypK5ySzExtEzQU6se/s/-MXyolqTg_voOhFyAcr-/api/introduction)",
+        "\n\nFor information on how to get started, consult [our getting started guide.](https://docs.pdap.io/api/introduction)",
     )
     for namespace in NAMESPACES:
         api.add_namespace(namespace)
