@@ -27,9 +27,9 @@ def get_signup_link(token: str):
 def send_signup_link(email: str, token: str):
 
     text = f"""
-    Please click the link below to validate your account
-    
-    {get_signup_link(token)}
+    Welcome to PDAP! If you meant to create an account, please verify your email by clicking this link: {get_signup_link(token)}
+
+    We're happy to have you in our community. If you'd like, you can reply to this email with a bit more about what you hope to accomplish, or if there's any way we can support your project. You are also invited to join us in Discord, where you can chat with our team and other folks interested in police data: https://discord.gg/wMqex8nKZJ
     """
 
     send_via_mailgun(
