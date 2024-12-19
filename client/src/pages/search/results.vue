@@ -134,6 +134,7 @@ import {
 import {
 	getFullLocationText,
 	getMostNarrowSearchLocationWithResults,
+	getMinimalLocationText,
 } from '@/util/locationFormatters';
 import _isEqual from 'lodash/isEqual';
 import { DataLoaderErrorPassThrough } from '@/util/errors';
@@ -251,7 +252,7 @@ const isSearchShown = ref(false);
 const dims = reactive({ width: window.innerWidth, height: window.innerHeight });
 const hasDisplayedErrorByRouteParams = ref(new Map());
 
-console.debug({ requestData });
+console.debug({ requestData, searchData });
 
 // lifecycle methods
 onMounted(() => {
@@ -273,7 +274,7 @@ onMounted(() => {
 onUpdated(async () => {
 	if (error.value) {
 		toast.error(
-			`Error fetching search results for ${getFullLocationText(route.query)}. Please try again!`,
+			`Error fetching search results for ${getMinimalLocationText(searchData.value.params)}. Please try again!`,
 			{
 				autoClose: false,
 				onClose() {
@@ -281,7 +282,10 @@ onUpdated(async () => {
 				},
 			},
 		);
-		hasDisplayedErrorByRouteParams.value.set(JSON.stringify(route.query), true);
+		hasDisplayedErrorByRouteParams.value.set(
+			JSON.stringify(searchData.value.params),
+			true,
+		);
 	}
 
 	if (searchData.value)
@@ -303,10 +307,14 @@ onUnmounted(() => {
 async function follow() {
 	try {
 		await followSearch(route.query.location_id);
-		toast.success(`Search followed for ${getFullLocationText(route.query)}.`);
+		toast.success(
+			`Search followed for ${getMinimalLocationText(searchData.value.params)}.`,
+		);
 		await reloadFollowed();
 	} catch (error) {
-		toast.error(`Error following search. Please try again.`);
+		toast.error(
+			`Error following search for ${getMinimalLocationText(searchData.value.params)}. Please try again.`,
+		);
 	}
 }
 
