@@ -11,9 +11,11 @@ class AgencyMatchSchema(Schema):
     county = fields.String(metadata=get_json_metadata("The county of the agency"))
     locality = fields.String(metadata=get_json_metadata("The locality of the agency"))
 
+
 class MatchAgenciesResultSchema(Schema):
     submitted_name = fields.String(metadata=get_json_metadata("The name of the agency"))
     id = fields.Integer(metadata=get_json_metadata("The id of the agency"))
+
 
 class MatchAgencyResponseSchema(MessageSchema):
 
@@ -21,13 +23,13 @@ class MatchAgencyResponseSchema(MessageSchema):
         enum=AgencyMatchStatus,
         by_value=fields.Str,
         required=True,
-        metadata=get_json_metadata("The status of the match")
+        metadata=get_json_metadata("The status of the match"),
     )
     agencies = fields.List(
         fields.Nested(
             MatchAgenciesResultSchema(),
-            metadata=get_json_metadata("The list of results, if any")
-    ),
+            metadata=get_json_metadata("The list of results, if any"),
+        ),
         required=False,
-        metadata=get_json_metadata("The list of results, if any")
+        metadata=get_json_metadata("The list of results, if any"),
     )
