@@ -252,8 +252,6 @@ const isSearchShown = ref(false);
 const dims = reactive({ width: window.innerWidth, height: window.innerHeight });
 const hasDisplayedErrorByRouteParams = ref(new Map());
 
-console.debug({ requestData, searchData });
-
 // lifecycle methods
 onMounted(() => {
 	if (window.innerWidth > 1280) isSearchShown.value = true;
