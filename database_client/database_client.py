@@ -1395,7 +1395,8 @@ class DatabaseClient:
         return self._select_from_relation(
             relation_name=Relations.RECENT_SEARCHES_EXPANDED.value,
             columns=[
-                "state_iso",
+                "location_id",
+                "state_name",
                 "county_name",
                 "locality_name",
                 "location_type",

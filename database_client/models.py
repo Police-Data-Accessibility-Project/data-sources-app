@@ -726,7 +726,7 @@ class RecentSearchExpanded(Base, CountMetadata):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
     location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
-    state_iso: Mapped[str]
+    state_name: Mapped[str]
     county_name: Mapped[str]
     locality_name: Mapped[str]
     location_type: Mapped[LocationTypeLiteral]
