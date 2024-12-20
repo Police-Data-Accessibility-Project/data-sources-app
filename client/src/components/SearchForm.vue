@@ -82,7 +82,11 @@ import {
 } from 'pdap-design-system';
 import TypeaheadInput from '@/components/TypeaheadInput.vue';
 import { computed, onMounted, ref } from 'vue';
-import { getFullLocationText } from '@/util/locationFormatters';
+import {
+	getFullLocationText,
+	mapLocationToSearchParams,
+	mapSearchParamsToLocation,
+} from '@/util/locationFormatters';
 import _debounce from 'lodash/debounce';
 import _isEqual from 'lodash/isEqual';
 import { useRouter, RouterLink, useRoute } from 'vue-router';
@@ -186,17 +190,7 @@ const isButtonDisabled = computed(() => {
 onMounted(() => {
 	// Set up selected state based on params
 	if (params.state) {
-		const record = (({
-			state_name,
-			county_name,
-			locality_name,
-			location_id,
-		}) => ({
-			state: state_name,
-			county: county_name,
-			locality: locality_name,
-			location_id,
-		}))(params);
+		const record = mapSearchParamsToLocation(params);
 
 		selectedRecord.value = record;
 		initiallySearchedRecord.value = record;
@@ -223,18 +217,9 @@ function buildParams(values) {
 	const obj = {};
 
 	/* Handle record from typeahead input */
-	const recordFilteredByParamsKeys = (({
-		state_name,
-		county_name,
-		locality_name,
-		location_id,
-	}) => ({
-		state: state_name,
-		county: county_name,
-		locality: locality_name,
-		location_id,
-		// If no selected record, fall back to the initial search
-	}))(selectedRecord.value ?? initiallySearchedRecord.value);
+	const recordFilteredByParamsKeys = mapLocationToSearchParams(
+		selectedRecord.value ?? initiallySearchedRecord.value,
+	);
 
 	Object.keys(recordFilteredByParamsKeys).forEach((key) => {
 		if (recordFilteredByParamsKeys[key])

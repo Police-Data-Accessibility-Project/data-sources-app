@@ -14,6 +14,7 @@ const HEADERS_BASIC = {
 };
 
 export async function search(params) {
+	const authStore = useAuthStore();
 	const searchStore = useSearchStore();
 	const cached = searchStore.getSearchFromCache(JSON.stringify(params));
 
@@ -32,7 +33,14 @@ export async function search(params) {
 		`${SEARCH_BASE}/${ENDPOINTS.SEARCH.RESULTS}`,
 		{
 			params,
-			headers: HEADERS_BASIC,
+			headers: {
+				...HEADERS_BASIC,
+				...(authStore.isAuthenticated()
+					? {
+							Authorization: `Bearer ${authStore.$state.tokens.accessToken.value}`,
+						}
+					: {}),
+			},
 		},
 	);
 

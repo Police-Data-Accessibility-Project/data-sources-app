@@ -10,6 +10,35 @@ import { useAuthStore } from '@/stores/auth';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
 import { refreshTokens, signOut } from '@/api/auth';
+import { updateGlobalOptions, globalOptions } from 'vue3-toastify';
+import { watch, ref, onMounted } from 'vue';
+
+const isHeaderVisible = ref(true);
+
+watch(isHeaderVisible, (visible) => {
+	updateGlobalOptions({
+		...globalOptions.value,
+		style: {
+			...globalOptions.style,
+			top: visible ? '120px' : '20px',
+		},
+		theme: 'auto',
+	});
+});
+
+onMounted(() => {
+	const observer = new IntersectionObserver(
+		([entry]) => {
+			isHeaderVisible.value = entry.isIntersecting;
+		},
+		{ threshold: 0 },
+	);
+
+	const navbar = document.querySelector('.pdap-header');
+	if (navbar) {
+		observer.observe(navbar);
+	}
+});
 
 const route = useRoute();
 const router = useRouter();
