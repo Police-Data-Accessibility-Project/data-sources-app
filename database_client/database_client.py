@@ -934,12 +934,14 @@ class DatabaseClient:
         columns: list[str],
         where_mappings: Optional[Union[list[WhereMapping], dict]] = [True],
         subquery_parameters: Optional[list[SubqueryParameters]] = [],
+        **kwargs,
     ) -> Any:
         results = self._select_from_relation(
             relation_name=relation_name,
             columns=columns,
             where_mappings=where_mappings,
             subquery_parameters=subquery_parameters,
+            **kwargs,
         )
         if len(results) == 0:
             return None
@@ -1151,9 +1153,6 @@ class DatabaseClient:
         build_metadata=False,
         subquery_parameters: Optional[list[SubqueryParameters]] = [],
     ):
-        LinkTable = SQL_ALCHEMY_TABLE_REFERENCE[link_table.value]
-        LinkedRelation = SQL_ALCHEMY_TABLE_REFERENCE[linked_relation.value]
-
         # Get ids via linked table
         link_results = self._select_from_relation(
             relation_name=link_table.value,
@@ -1214,6 +1213,7 @@ class DatabaseClient:
         linked_relation_linking_column="id",
         columns_to_retrieve=["state_name", "county_name", "locality_name", "id"],
         build_metadata=True,
+        alias_mappings={"id": "location_id"},
     )
 
     DataRequestIssueInfo = namedtuple(
@@ -1484,4 +1484,5 @@ class DatabaseClient:
                 "id",
             ],
             where_mappings={"id": location_id},
+            alias_mappings={"id": "location_id"},
         )

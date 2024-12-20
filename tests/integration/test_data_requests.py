@@ -642,7 +642,7 @@ def test_link_unlink_data_requests_with_locations(
     data = get_locations()
     assert data == [
         {
-            "id": location_id,
+            "location_id": location_id,
             "state_name": "Pennsylvania",
             "state_iso": "PA",
             "county_name": "Allegheny",

@@ -396,6 +396,7 @@ def get_data_request_related_locations(
             "locality_name",
             "type",
         ],
+        alias_mappings={"id": "location_id"},
     )
 
 

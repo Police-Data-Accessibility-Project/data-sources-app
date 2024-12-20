@@ -262,7 +262,7 @@ def test_search_follow(search_test_setup: SearchTestSetup):
                     "state_name": TEST_STATE,
                     "county_name": TEST_COUNTY,
                     "locality_name": TEST_LOCALITY,
-                    "id": sts.location_id,
+                    "location_id": sts.location_id,
                 }
             ],
             "message": "Followed searches found.",
