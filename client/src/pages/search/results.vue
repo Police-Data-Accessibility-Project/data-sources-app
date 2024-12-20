@@ -9,7 +9,11 @@
 			>
 				<h1 class="like-h4 mb-4">
 					Results
-					{{ searchData && 'for ' + getMinimalLocationText(searchData.params) }}
+					{{
+						searchData &&
+						!isLoading &&
+						'for ' + getMinimalLocationText(searchData.params)
+					}}
 				</h1>
 
 				<!-- Follow -->
@@ -160,26 +164,20 @@ export const useSearchData = defineBasicLoader(
 		try {
 			const searchLocation = mapSearchParamsToLocation(route.query);
 			const searched = getMostNarrowSearchLocationWithResults(searchLocation);
-
 			const response = await search(route.query);
 
-			// On initial fetch - get hash
-			const hash = normalizeLocaleForHash(searched, response.data);
-			if (!route.hash && hash) {
-				return new NavigationResult({ ...route, hash: `#${hash}` });
-			}
-
-			const ret = {
+			return {
 				results: groupResultsByAgency(response.data),
+				response: response.data,
 				searched,
 				params: searchLocation,
+				hash: normalizeLocaleForHash(searched, response.data),
 			};
-			return ret;
 		} catch (error) {
 			throw new DataLoaderErrorPassThrough(error);
 		}
 	},
-	// { lazy: true },
+	{ lazy: true },
 );
 
 export const useFollowedData = defineBasicLoader(
@@ -195,9 +193,9 @@ export const useFollowedData = defineBasicLoader(
 			throw new DataLoaderErrorPassThrough(error);
 		}
 	},
-	// {
-	// 	lazy: true,
-	// },
+	{
+		lazy: true,
+	},
 );
 
 export const useRequestsData = defineBasicLoader(
@@ -211,9 +209,9 @@ export const useRequestsData = defineBasicLoader(
 			throw new DataLoaderErrorPassThrough(error);
 		}
 	},
-	// {
-	// 	lazy: true,
-	// },
+	{
+		lazy: true,
+	},
 );
 
 // function isOnlyHashChanged(currentRoute, previousRoute) {
@@ -243,7 +241,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faUserPlus, faUserCheck } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'vue3-toastify';
 import { useAuthStore } from '@/stores/auth';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const { isAuthenticated } = useAuthStore();
 const {
@@ -255,22 +253,30 @@ const {
 const { data: isFollowed, reload: reloadFollowed } = useFollowedData();
 const { data: requestData, error: requestsError } = useRequestsData();
 const route = useRoute();
+const router = useRouter();
 const searchResultsRef = ref();
 const isSearchShown = ref(false);
 const dims = reactive({ width: window.innerWidth, height: window.innerHeight });
 const hasDisplayedErrorByRouteParams = ref(new Map());
 
+// watch(() => route.query, reloadSearch);
+
 watch(
-	() => route.query,
-	async () => {
-		try {
-			await reloadSearch();
-		} catch (error) {
-			console.error('Failed to reload search:', error);
+	() => route,
+	(newRoute) => {
+		if (newRoute.hash && !route.hash) {
+			const hash = `#${normalizeLocaleForHash(searchData.searched, searchData.response)}`;
+			router.replace({ ...route, hash });
 		}
 	},
-	{ deep: true },
+	{ immediate: true, deep: true },
 );
+
+// On initial fetch - get hash
+// const hash = normalizeLocaleForHash(searched, response.data);
+// if (!route.hash && hash) {
+// 	return new NavigationResult({ ...route, hash: `#${hash}` });
+// }
 
 // lifecycle methods
 onMounted(() => {
@@ -325,10 +331,10 @@ onUnmounted(() => {
 async function follow() {
 	try {
 		await followSearch(route.query.location_id);
+		await reloadFollowed();
 		toast.success(
 			`Search followed for ${getMinimalLocationText(searchData?.value?.params)}.`,
 		);
-		await reloadFollowed();
 	} catch (error) {
 		toast.error(
 			`Error following search for ${getMinimalLocationText(searchData?.value?.params)}. Please try again.`,

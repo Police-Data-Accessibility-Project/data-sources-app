@@ -24,12 +24,12 @@ router.beforeEach(async (to, from, next) => {
 	// redirect to login page if not logged in and trying to access a restricted page
 	const auth = useAuthStore();
 
-	if (to.path === '/sign-in' && from.meta.auth) {
+	if (to.path === '/sign-in' && from.meta?.auth) {
 		auth.$patch({ redirectTo: from });
 		next();
 	}
 
-	if (to.meta.auth && !auth.isAuthenticated()) {
+	if (to.meta?.auth && !auth.isAuthenticated()) {
 		auth.$patch({ redirectTo: to });
 
 		next({ path: '/sign-in', replace: true });

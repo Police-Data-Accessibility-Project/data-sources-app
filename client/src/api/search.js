@@ -94,9 +94,11 @@ export async function getFollowedSearch(location_id) {
 	try {
 		const response = await getFollowedSearches();
 
-		return response.data.data.find(
-			({ id: followed_id }) => Number(followed_id) === Number(location_id),
+		const found = response.data.data.find(
+			({ location_id: followed_id }) =>
+				Number(followed_id) === Number(location_id),
 		);
+		return found;
 	} catch (error) {
 		return null;
 	}

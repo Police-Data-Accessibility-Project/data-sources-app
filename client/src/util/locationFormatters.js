@@ -15,20 +15,20 @@ export function getFullLocationText(location) {
 }
 
 export function getLocationCityState(location) {
-	const locality = location.locality_name ?? '';
-	const stateAbbr =
-		STATES_TO_ABBREVIATIONS.get(location.state_name) ??
-		// TODO: remove this once we have all the location data standardized
-		location.state_iso ??
-		'';
+	const searched = getMostNarrowSearchLocationWithResults(location);
+
+	const locality = location.locality_name;
+	const stateAbbr = STATES_TO_ABBREVIATIONS.get(location.state_name);
 	const state = location.state_name;
 	const displayName = location.display_name;
 
-	if (locality && !state && !stateAbbr) return locality;
-	else if (locality && stateAbbr) return `${locality}, ${stateAbbr}`;
-	else if (locality && state) return `${locality}, ${state}`;
-	else if (state) return state;
-	else return displayName;
+	if (searched === 'locality') {
+		if (locality && !state && !stateAbbr) return locality;
+		else if (locality && stateAbbr) return `${locality}, ${stateAbbr}`;
+		else if (locality && state) return `${locality}, ${state}`;
+	} else if (searched === 'county' || searched === 'state') {
+		return state;
+	} else return displayName;
 }
 
 export function getMinimalLocationText(location) {
@@ -37,34 +37,51 @@ export function getMinimalLocationText(location) {
 
 export function getMostNarrowSearchLocationWithResults(location) {
 	if (!location) return null;
-	// Checking for string 'null' because of all the data processing that happens before we get here.
-	if (location?.locality_name !== 'null') return 'locality';
-	if (location?.county_name !== 'null') return 'county';
-	if (location?.state_name !== 'null') return 'state';
+	if (location?.locality_name) return 'locality';
+	if (location?.county_name) return 'county';
+	if (location?.state_name) return 'state';
 	return location?.type?.toLowerCase();
 }
 
 // TODO: cache getLocationById function and fetch to get locations by id rather than all of this parsing.
-export const mapSearchParamsToLocation = (obj) =>
-	(({ state, county, locality, location_id, id }) => ({
-		state_name: state,
-		state_iso: state,
-		county_name: county,
-		locality_name: locality,
-		id: location_id ?? id,
-	}))(obj);
+export const mapSearchParamsToLocation = (obj) => {
+	const { state, county, locality, location_id, id } = obj;
+	const mapped = {};
 
-export const mapLocationToSearchParams = (obj) =>
-	(({
-		state_name,
-		state_iso,
-		county_name,
-		locality_name,
-		id,
-		location_id,
-	}) => ({
-		state: state_name ?? state_iso,
-		county: county_name,
-		locality: locality_name,
-		location_id: id ?? location_id,
-	}))(obj);
+	if (state) {
+		mapped.state_name = state;
+		mapped.state_iso = state;
+	}
+	if (county) {
+		mapped.county_name = county;
+	}
+	if (locality) {
+		mapped.locality_name = locality;
+	}
+	if (location_id || id) {
+		mapped.id = location_id ?? id;
+	}
+
+	return mapped;
+};
+
+export const mapLocationToSearchParams = (obj) => {
+	const { state_name, state_iso, county_name, locality_name, id, location_id } =
+		obj;
+	const mapped = {};
+
+	if (state_name || state_iso) {
+		mapped.state = state_name ?? state_iso;
+	}
+	if (county_name) {
+		mapped.county = county_name;
+	}
+	if (locality_name) {
+		mapped.locality = locality_name;
+	}
+	if (id || location_id) {
+		mapped.location_id = id ?? location_id;
+	}
+
+	return mapped;
+};
