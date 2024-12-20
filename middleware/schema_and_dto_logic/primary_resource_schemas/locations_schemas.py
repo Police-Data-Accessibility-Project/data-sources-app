@@ -72,7 +72,7 @@ class LocationInfoResponseSchema(Schema):
         required=True,
         metadata=get_json_metadata(description="The display name for the location"),
     )
-    id = LOCATION_ID_FIELD
+    location_id = LOCATION_ID_FIELD
 
 
 class LocationInfoSchema(Schema):
@@ -80,7 +80,7 @@ class LocationInfoSchema(Schema):
     state_iso = STATE_ISO_FIELD
     county_fips = COUNTY_FIPS_FIELD
     locality_name = LOCALITY_NAME_FIELD
-    id = LOCATION_ID_FIELD
+    location_id = LOCATION_ID_FIELD
 
     @validates_schema
     def validate_location_fields(self, data, **kwargs):

@@ -28,7 +28,7 @@ def locations_test_setup(test_data_creator_flask: TestDataCreatorFlask):
         "county_name": "Allegheny",
         "county_fips": "42003",
         "locality_name": locality_name,
-        "id": location_id,
+        "location_id": location_id,
     }
     return LocationsTestSetup(tdc=tdc, location_info=loc_info)
 
@@ -39,7 +39,7 @@ def test_locations_get_by_id(locations_test_setup: LocationsTestSetup):
 
     # Get location, confirm information matches
     data = tdc.request_validator.get_location_by_id(
-        location_id=lts.location_info["id"],
+        location_id=lts.location_info["location_id"],
         headers=tdc.get_admin_tus().jwt_authorization_header,
         expected_json_content=lts.location_info,
     )
@@ -48,15 +48,16 @@ def test_locations_get_by_id(locations_test_setup: LocationsTestSetup):
 def test_locations_related_data_requests(locations_test_setup: LocationsTestSetup):
     lts = locations_test_setup
     tdc = lts.tdc
+    location_id = lts.location_info["location_id"]
 
     # Add two data requests to location
-    dr_1 = tdc.data_request(location_ids=[lts.location_info["id"]]).id
-    dr_2 = tdc.data_request(location_ids=[lts.location_info["id"]]).id
+    dr_1 = tdc.data_request(location_ids=[location_id]).id
+    dr_2 = tdc.data_request(location_ids=[location_id]).id
 
     # Get data requests
     tus = tdc.standard_user()
     data = tdc.request_validator.get_location_related_data_requests(
-        location_id=lts.location_info["id"],
+        location_id=location_id,
         headers=tus.api_authorization_header,
     )
 
@@ -65,8 +66,8 @@ def test_locations_related_data_requests(locations_test_setup: LocationsTestSetu
 
     # Confirm also works with jwt
     data = tdc.request_validator.get_location_related_data_requests(
-        location_id=lts.location_info["id"],
+        location_id=location_id,
         headers=tus.jwt_authorization_header,
     )["data"]
     assert data[0]["locations"] == data[1]["locations"]
-    assert data[0]["locations"][0]["id"] == lts.location_info["id"]
+    assert data[0]["locations"][0]["location_id"] == location_id

@@ -46,10 +46,16 @@ class SubqueryParameterManager:
 
     @staticmethod
     def get_subquery_params(
-        relation: Relations, linking_column: str, columns: list[str] = None
+        relation: Relations,
+        linking_column: str,
+        columns: list[str] = None,
+        alias_mappings: Optional[dict[str, str]] = None,
     ) -> SubqueryParameters:
         return SubqueryParameters(
-            relation_name=relation.value, linking_column=linking_column, columns=columns
+            relation_name=relation.value,
+            linking_column=linking_column,
+            columns=columns,
+            alias_mappings=alias_mappings,
         )
 
     agencies = partialmethod(
@@ -98,4 +104,5 @@ class SubqueryParameterManager:
                 "locality_name",
                 "display_name",
             ],
+            alias_mappings={"id": "location_id"},
         )

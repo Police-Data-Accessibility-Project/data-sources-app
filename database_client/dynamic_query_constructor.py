@@ -5,7 +5,7 @@ from typing import Callable, Optional
 
 from psycopg import sql
 from sqlalchemy import select
-from sqlalchemy.orm import load_only
+from sqlalchemy.orm import load_only, InstrumentedAttribute, aliased
 from sqlalchemy.schema import Column
 
 from database_client.constants import (
@@ -431,7 +431,9 @@ class DynamicQueryConstructor:
             primary_relation_columns = columns
 
         if alias_mappings is not None:
-            DynamicQueryConstructor.apply_alias_mappings(columns, alias_mappings)
+            primary_relation_columns = DynamicQueryConstructor.apply_alias_mappings(
+                columns, alias_mappings
+            )
 
         base_query = (
             lambda: select(*primary_relation_columns)
@@ -556,5 +558,17 @@ class DynamicQueryConstructor:
         return query
 
     @staticmethod
-    def apply_alias_mappings(columns, alias_mappings):
-        pass
+    def apply_alias_mappings(
+        columns: list[InstrumentedAttribute], alias_mappings: dict[str, str]
+    ):
+        aliased_columns = []
+
+        for column in columns:
+            # Alias column if it exists in the alias mappings
+            key = column.key
+            if key in alias_mappings:
+                aliased_columns.append(column.label(alias_mappings[key]))
+            else:
+                aliased_columns.append(column)
+
+        return aliased_columns

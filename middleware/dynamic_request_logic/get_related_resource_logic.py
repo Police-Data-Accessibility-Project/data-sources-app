@@ -31,6 +31,7 @@ class GetRelatedResourcesParameters:
 def get_related_resource(
     get_related_resources_parameters: GetRelatedResourcesParameters,
     permitted_columns: Optional[list] = None,
+    alias_mappings: Optional[dict] = None,
 ) -> Response:
     # Technically, it'd make more sense as "grrp",
     # but "gerp" rolls off the tongue better
@@ -54,6 +55,7 @@ def get_related_resource(
             relation=gerp.related_relation,
             linking_column=gerp.linking_column,
             columns=permitted_columns,
+            alias_mappings=alias_mappings,
         )
     ]
     where_mappings = [
