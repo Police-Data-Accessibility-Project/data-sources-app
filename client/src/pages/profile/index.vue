@@ -14,7 +14,9 @@
 		<div class="flex flex-col gap-6">
 			<section>
 				<h3 class="like-h4">Email</h3>
-				<div :class="{ 'profile-loading h-12': profileLoading }">
+				<div
+					:class="{ 'profile-loading h-12': !profileData && profileLoading }"
+				>
 					<p>
 						{{ profileData?.email }}
 					</p>
@@ -24,7 +26,9 @@
 			<!-- Github info -->
 			<section>
 				<h3 class="like-h4">Github account</h3>
-				<div :class="{ 'profile-loading h-12': profileLoading }">
+				<div
+					:class="{ 'profile-loading h-12': !profileData && profileLoading }"
+				>
 					<template
 						v-if="didLinkGithub || profileData?.external_accounts.github"
 					>
@@ -51,7 +55,9 @@
 			<section>
 				<h3 class="like-h4">API Key</h3>
 
-				<div :class="{ 'profile-loading h-12': profileLoading }">
+				<div
+					:class="{ 'profile-loading h-12': !profileData && profileLoading }"
+				>
 					<Button
 						:class="{ 'mb-5': apiKey }"
 						intent="secondary"
@@ -95,7 +101,7 @@
 
 		<!-- Requests -->
 		<h3 class="like-h4">My requests</h3>
-		<div v-if="profileLoading" class="profile-loading h-20" />
+		<div v-if="!profileData && profileLoading" class="profile-loading h-20" />
 		<ProfileTable v-else :items="requests">
 			<template #left="{ item }">
 				<p>
@@ -130,7 +136,7 @@
 
 		<!-- Followed searches -->
 		<h3 class="like-h4">Followed searches</h3>
-		<div v-if="profileLoading" class="profile-loading h-20" />
+		<div v-if="!profileData && profileLoading" class="profile-loading h-20" />
 		<ProfileTable v-else :items="followedSearches">
 			<template #left="{ item }">
 				<p class="flex items-center justify-start">
@@ -154,7 +160,7 @@
 
 		<!-- Recent searches -->
 		<h3 class="like-h4">Recent searches</h3>
-		<div v-if="profileLoading" class="profile-loading h-20" />
+		<div v-if="!profileData && profileLoading" class="profile-loading h-20" />
 		<ProfileTable v-else :items="recentSearches">
 			<template #left="{ item }">
 				<div class="max-1/3">
