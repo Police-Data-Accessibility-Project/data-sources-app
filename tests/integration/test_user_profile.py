@@ -88,7 +88,7 @@ def test_user_profile_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
 
     assert data["email"] == tus.user_info.email
     assert data["external_accounts"]["github"] == str(github_user_id)
-    assert data["recent_searches"]["data"][0]["state_iso"] == "PA"
+    assert data["recent_searches"]["data"][0]["state_name"] == "Pennsylvania"
     assert data["followed_searches"]["data"][0]["state_name"] == "California"
     assert data["data_requests"]["data"][0]["id"] == int(data_request_id)
     assert data["permissions"] == [PermissionsEnum.READ_ALL_USER_INFO.value]

@@ -24,7 +24,7 @@ class UserPutSchema(Schema):
 
 
 class GetUserRecentSearchesInnerSchema(Schema):
-    state_iso = fields.Str(
+    state_name = fields.Str(
         required=True,
         metadata=get_json_metadata("The state of the search."),
     )
@@ -40,6 +40,10 @@ class GetUserRecentSearchesInnerSchema(Schema):
     )
     location_type = fields.Str(
         required=True, metadata=get_json_metadata("The type of location of the search")
+    )
+    location_id = fields.Int(
+        required=True,
+        metadata=get_json_metadata("The id of the location of the search"),
     )
     record_categories = fields.List(
         fields.Enum(

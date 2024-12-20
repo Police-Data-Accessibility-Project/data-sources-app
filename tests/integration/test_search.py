@@ -94,7 +94,8 @@ def test_search_get(search_test_setup: SearchTestSetup):
     assert data["metadata"]["count"] == 1
 
     assert data["data"][0] == {
-        "state_iso": "PA",
+        "location_id": sts.location_id,
+        "state_name": TEST_STATE,
         "county_name": TEST_COUNTY,
         "locality_name": TEST_LOCALITY,
         "location_type": LocationType.LOCALITY.value,
