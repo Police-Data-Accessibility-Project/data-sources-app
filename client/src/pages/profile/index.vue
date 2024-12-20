@@ -365,14 +365,27 @@ async function unFollow(followed) {
 	transform: translateX(-100%);
 	background-image: linear-gradient(
 		90deg,
-		rgba(var(--color-gold-neutral-200)) 0,
-		rgba(var(--color-gold-neutral-300), 0.2) 20%,
-		rgba(var(--color-gold-neutral-400), 0.5) 60%,
-		rgba(var(--color-gold-neutral-400), 0)
+		rgba(var(--color-gold-neutral-400)) 0,
+		rgba(var(--color-gold-neutral-500), 0.2) 20%,
+		rgba(var(--color-gold-neutral-700), 0.5) 60%,
+		rgba(var(--color-gold-neutral-800), 0)
 	);
 	animation: shimmer 2s infinite;
 	content: '';
 	z-index: 999;
+}
+
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+	.profile-loading::after {
+		background-image: linear-gradient(
+			90deg,
+			rgba(var(--color-wine-neutral-100)) 0,
+			rgba(var(--color-wine-neutral-100), 0.2) 20%,
+			rgba(var(--color-wine-neutral-100), 0.5) 30%,
+			rgba(var(--color-wine-neutral-100), 0)
+		);
+	}
 }
 
 @keyframes shimmer {

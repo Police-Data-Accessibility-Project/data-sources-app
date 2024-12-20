@@ -179,7 +179,7 @@ export const useSearchData = defineBasicLoader(
 			throw new DataLoaderErrorPassThrough(error);
 		}
 	},
-	{ lazy: true },
+	// { lazy: true },
 );
 
 export const useFollowedData = defineBasicLoader(
@@ -195,9 +195,9 @@ export const useFollowedData = defineBasicLoader(
 			throw new DataLoaderErrorPassThrough(error);
 		}
 	},
-	{
-		lazy: true,
-	},
+	// {
+	// 	lazy: true,
+	// },
 );
 
 export const useRequestsData = defineBasicLoader(
@@ -211,9 +211,9 @@ export const useRequestsData = defineBasicLoader(
 			throw new DataLoaderErrorPassThrough(error);
 		}
 	},
-	{
-		lazy: true,
-	},
+	// {
+	// 	lazy: true,
+	// },
 );
 
 // function isOnlyHashChanged(currentRoute, previousRoute) {
