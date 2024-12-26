@@ -32,7 +32,7 @@ router.beforeEach(async (to, from, next) => {
 	if (to.meta?.auth && !auth.isAuthenticated()) {
 		auth.$patch({ redirectTo: to });
 
-		next({ path: '/sign-in', replace: true });
+		next({ path: '/sign-in' });
 	} else {
 		next();
 	}

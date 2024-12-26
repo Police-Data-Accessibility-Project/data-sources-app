@@ -221,7 +221,7 @@ export const useProfileData = defineBasicLoader(
 		const response = await getUser();
 		return response.data.data;
 	},
-	{ lazy: true },
+	// { lazy: true },
 );
 </script>
 

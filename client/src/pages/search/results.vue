@@ -18,7 +18,7 @@
 
 				<!-- Follow -->
 				<div
-					v-if="!isFollowed"
+					v-if="!isFollowed && getIsV2FeatureEnabled('ENHANCED_SEARCH')"
 					class="flex flex-col md:items-end md:row-start-1 md:row-span-2 md:col-start-2 md:col-span-1"
 				>
 					<Button
@@ -134,7 +134,7 @@
 // Data loader
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic';
 import { useSearchStore } from '@/stores/search';
-import { NavigationResult } from 'unplugin-vue-router/runtime';
+// import { NavigationResult } from 'unplugin-vue-router/runtime';
 import { onMounted, onUnmounted, onUpdated, reactive, ref, watch } from 'vue';
 import { ALL_LOCATION_TYPES } from '@/util/constants';
 import {
@@ -242,14 +242,10 @@ import { faUserPlus, faUserCheck } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'vue3-toastify';
 import { useAuthStore } from '@/stores/auth';
 import { useRoute, useRouter } from 'vue-router';
+import { getIsV2FeatureEnabled } from '@/util/featureFlagV2';
 
 const { isAuthenticated } = useAuthStore();
-const {
-	data: searchData,
-	isLoading,
-	error,
-	reload: reloadSearch,
-} = useSearchData();
+const { data: searchData, isLoading, error } = useSearchData();
 const { data: isFollowed, reload: reloadFollowed } = useFollowedData();
 const { data: requestData, error: requestsError } = useRequestsData();
 const route = useRoute();
@@ -258,8 +254,6 @@ const searchResultsRef = ref();
 const isSearchShown = ref(false);
 const dims = reactive({ width: window.innerWidth, height: window.innerHeight });
 const hasDisplayedErrorByRouteParams = ref(new Map());
-
-// watch(() => route.query, reloadSearch);
 
 watch(
 	() => route,
@@ -271,12 +265,6 @@ watch(
 	},
 	{ immediate: true, deep: true },
 );
-
-// On initial fetch - get hash
-// const hash = normalizeLocaleForHash(searched, response.data);
-// if (!route.hash && hash) {
-// 	return new NavigationResult({ ...route, hash: `#${hash}` });
-// }
 
 // lifecycle methods
 onMounted(() => {

@@ -81,6 +81,11 @@ The environment variables are as follows:
 * GH_API_ACCESS_TOKEN: Used to authenticate with GitHub when adding or getting information about Github Issues. Must correspond to the `access_token` provided by GitHub.
 * GH_ISSUE_REPO_NAME: Identifies the repository, in `<github-username>/<github-repo-name>` format, where the issue will be created, and where information about issues will be retrieved. Can be customized for local development.
 * VALIDATE_EMAIL_SECRET_KEY: Used to sign and verify JWT tokens for the validate email feature. Used to identify that any JWT tokens for the validate email feature produced are recognizable by this version of the app and no other.
+V2 Feature gating
+* VITE_V2_FEATURE_ENHANCED_SEARCH: 'enabled' shows enhanced search features (like follow) in the client app, 'disabled' hides them
+* VITE_V2_FEATURE_AUTHENTICATE: 'enabled' allows sign in and sign out of the web app, 'disabled' disallows.
+* VITE_V2_FEATURE_CREATE_RECORDS: 'enabled' allows user to create data sources and requests from within the app, 'disabled' changes the links to lead to the current Airtable forms
+
 
 
 #### .env Example
