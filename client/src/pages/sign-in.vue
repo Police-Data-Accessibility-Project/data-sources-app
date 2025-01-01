@@ -117,9 +117,7 @@ export const useGithubAuth = defineBasicLoader('/sign-in', async (route) => {
 			const tokens = await signInWithGithub(githubAccessToken);
 
 			if (tokens)
-				return new NavigationResult(
-					auth.redirectTo ?? { path: '/profile', query: { linked: true } },
-				);
+				return new NavigationResult(auth.redirectTo ?? { path: '/profile' });
 		}
 	} catch (error) {
 		if (error.response.data.message.includes('already exists')) {

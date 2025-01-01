@@ -90,9 +90,6 @@
 <script>
 // Data loader
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic';
-import { useRoute, useRouter } from 'vue-router';
-import { useSwipe } from '@vueuse/core';
-import { ref } from 'vue';
 import { useDataRequestsStore } from '@/stores/data-requests';
 import { DataLoaderErrorPassThrough } from '@/util/errors';
 import { getDataRequest } from '@/api/data-requests';
@@ -124,7 +121,9 @@ import { faLink } from '@fortawesome/free-solid-svg-icons';
 import { useSearchStore } from '@/stores/search';
 import { getMinimalLocationText } from '@/util/locationFormatters';
 import { REQUEST_URGENCY } from './_constants';
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useSwipe } from '@vueuse/core';
 
 const route = useRoute();
 const router = useRouter();

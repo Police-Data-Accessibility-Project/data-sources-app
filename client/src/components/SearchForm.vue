@@ -67,9 +67,22 @@
 		<p class="text-lg mt-8 mb-4">
 			If you have a question to answer, we can help
 		</p>
-		<RouterLink class="pdap-button-primary" to="/data-request/create">
+		<RouterLink
+			v-if="getIsV2FeatureEnabled('CREATE_RECORDS')"
+			class="pdap-button-primary"
+			:to="'/data-request/create'"
+		>
 			Make a Request
 		</RouterLink>
+		<a
+			v-else
+			class="pdap-button-primary"
+			href="https://airtable.com/app473MWXVJVaD7Es/shrbFfWk6fjzGnNsk"
+			target="_blank"
+			rel="noreferrer"
+		>
+			Make a request
+		</a>
 	</div>
 </template>
 
@@ -82,11 +95,16 @@ import {
 } from 'pdap-design-system';
 import TypeaheadInput from '@/components/TypeaheadInput.vue';
 import { computed, onMounted, ref } from 'vue';
-import { getFullLocationText } from '@/util/locationFormatters';
+import {
+	getFullLocationText,
+	mapLocationToSearchParams,
+	mapSearchParamsToLocation,
+} from '@/util/locationFormatters';
 import _debounce from 'lodash/debounce';
 import _isEqual from 'lodash/isEqual';
 import { useRouter, RouterLink, useRoute } from 'vue-router';
 import { getTypeaheadLocations } from '@/api/typeahead';
+import { getIsV2FeatureEnabled } from '@/util/featureFlagV2';
 
 const router = useRouter();
 
@@ -186,17 +204,7 @@ const isButtonDisabled = computed(() => {
 onMounted(() => {
 	// Set up selected state based on params
 	if (params.state) {
-		const record = (({
-			state_name,
-			county_name,
-			locality_name,
-			location_id,
-		}) => ({
-			state: state_name,
-			county: county_name,
-			locality: locality_name,
-			location_id,
-		}))(params);
+		const record = mapSearchParamsToLocation(params);
 
 		selectedRecord.value = record;
 		initiallySearchedRecord.value = record;
@@ -223,18 +231,9 @@ function buildParams(values) {
 	const obj = {};
 
 	/* Handle record from typeahead input */
-	const recordFilteredByParamsKeys = (({
-		state_name,
-		county_name,
-		locality_name,
-		location_id,
-	}) => ({
-		state: state_name,
-		county: county_name,
-		locality: locality_name,
-		location_id,
-		// If no selected record, fall back to the initial search
-	}))(selectedRecord.value ?? initiallySearchedRecord.value);
+	const recordFilteredByParamsKeys = mapLocationToSearchParams(
+		selectedRecord.value ?? initiallySearchedRecord.value,
+	);
 
 	Object.keys(recordFilteredByParamsKeys).forEach((key) => {
 		if (recordFilteredByParamsKeys[key])

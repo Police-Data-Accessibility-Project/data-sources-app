@@ -249,12 +249,9 @@ const descriptionRef = ref();
 const mainRef = ref();
 const navIs = ref('');
 
-console.debug({ nextIdIndex, previousIdIndex });
-
 // Handle swipe
-const { direction } = useSwipe(mainRef, {
-	onSwipe: (e) => {
-		console.debug({ e });
+const { direction, isSwiping } = useSwipe(mainRef, {
+	onSwipeEnd: (e) => {
 		if (isDescendantOf(e.target, agenciesRef.value)) {
 			e.preventDefault();
 			e.stopImmediatePropagation();
@@ -265,9 +262,7 @@ const { direction } = useSwipe(mainRef, {
 			case 'left':
 				navIs.value = 'increment';
 				if (typeof nextIdIndex.value === 'number' && nextIdIndex.value > -1)
-					router.replace(
-						`/data-source/${searchStore.mostRecentSearchIds[nextIdIndex.value]}`,
-					);
+					router.replace(`/data-source/${getNext()}`);
 				break;
 			case 'right':
 				navIs.value = 'decrement';
@@ -275,15 +270,19 @@ const { direction } = useSwipe(mainRef, {
 					typeof previousIdIndex.value === 'number' &&
 					previousIdIndex.value > -1
 				)
-					router.replace(
-						`/data-source/${searchStore.mostRecentSearchIds[previousIdIndex.value]}`,
-					);
+					router.replace(`/data-source/${getPrev()}`);
 				break;
 			default:
 				return;
 		}
 	},
 });
+function getNext() {
+	return searchStore.mostRecentSearchIds[nextIdIndex.value];
+}
+function getPrev() {
+	return searchStore.mostRecentSearchIds[previousIdIndex.value];
+}
 
 onMounted(() => {
 	handleShowMoreButton();

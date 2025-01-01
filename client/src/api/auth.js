@@ -155,6 +155,17 @@ export async function resetPassword(password, token) {
 	);
 }
 
+export async function generateAPIKey() {
+	const auth = useAuthStore();
+
+	return await axios.post(`${AUTH_BASE}/${ENDPOINTS.AUTH.API_KEY}`, null, {
+		headers: {
+			...HEADERS,
+			Authorization: `Bearer ${auth.$state.tokens.accessToken.value}`,
+		},
+	});
+}
+
 /**
  * @deprecated validation now done by parsing JWT directly
  */

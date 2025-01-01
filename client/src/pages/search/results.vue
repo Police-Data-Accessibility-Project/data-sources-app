@@ -9,12 +9,16 @@
 			>
 				<h1 class="like-h4 mb-4">
 					Results
-					{{ searchData && 'for ' + getFullLocationText(searchData.params) }}
+					{{
+						searchData &&
+						!isLoading &&
+						'for ' + getMinimalLocationText(searchData.params)
+					}}
 				</h1>
 
 				<!-- Follow -->
 				<div
-					v-if="!isFollowed"
+					v-if="!isFollowed && getIsV2FeatureEnabled('ENHANCED_SEARCH')"
 					class="flex flex-col md:items-end md:row-start-1 md:row-span-2 md:col-start-2 md:col-span-1"
 				>
 					<Button
@@ -27,11 +31,11 @@
 							}
 						"
 					>
-						Follow
+						<FontAwesomeIcon class="[&>svg]:m-0" :icon="faUserPlus" /> Follow
 					</Button>
 					<p v-if="!isAuthenticated()" class="text-med text-neutral-500">
 						<RouterLink to="/sign-in"> Sign in </RouterLink>
-						to follow this search
+						to follow this location
 					</p>
 				</div>
 				<div v-else class="flex flex-col md:items-end md:max-w-80">
@@ -39,9 +43,9 @@
 						v-if="isAuthenticated()"
 						class="text-med text-neutral-500 max-w-full md:text-right"
 					>
-						You are following this search.<br />
-						Review saved searches in
-						<RouterLink to="/profile">your profile</RouterLink>
+						<FontAwesomeIcon class="[&>svg]:m-0" :icon="faUserCheck" />
+						Following this location <br />
+						See <RouterLink to="/profile">your profile</RouterLink> for more.
 					</p>
 				</div>
 
@@ -69,19 +73,27 @@
 					>
 						{{ getAnchorLinkText(locale) }}
 						<span v-if="searchData?.results?.[locale]?.count">
-							({{ searchData.results[locale].count }})
+							({{ searchData?.results[locale].count }})
 						</span>
 					</RouterLink>
 				</nav>
 			</div>
-			<SearchResults
-				v-if="!error && searchData?.results"
-				ref="searchResultsRef"
-				:results="searchData.results"
-				:is-loading="isLoading"
-			/>
 
-			<h2 class="like-h4">
+			<Suspense>
+				<template #default>
+					<SearchResults
+						v-if="!error && searchData?.results"
+						ref="searchResultsRef"
+						:results="searchData?.results"
+						:is-loading="isLoading"
+					/>
+				</template>
+				<template #fallback>
+					<LoadingSpinner />
+				</template>
+			</Suspense>
+
+			<h2 v-if="searchData" class="like-h4">
 				Data requests for {{ getFullLocationText(searchData.params) }}
 			</h2>
 			<Requests :requests="requestData" :error="!!requestsError" />
@@ -122,8 +134,8 @@
 // Data loader
 import { defineBasicLoader } from 'unplugin-vue-router/data-loaders/basic';
 import { useSearchStore } from '@/stores/search';
-import { NavigationResult } from 'unplugin-vue-router/runtime';
-import { onMounted, onUnmounted, onUpdated, reactive, ref } from 'vue';
+// import { NavigationResult } from 'unplugin-vue-router/runtime';
+import { onMounted, onUnmounted, onUpdated, reactive, ref, watch } from 'vue';
 import { ALL_LOCATION_TYPES } from '@/util/constants';
 import {
 	groupResultsByAgency,
@@ -136,14 +148,12 @@ import {
 	getMostNarrowSearchLocationWithResults,
 	getMinimalLocationText,
 } from '@/util/locationFormatters';
-import _isEqual from 'lodash/isEqual';
 import { DataLoaderErrorPassThrough } from '@/util/errors';
 const searchStore = useSearchStore();
 import { search, getFollowedSearch, followSearch } from '@/api/search';
 import { getLocationDataRequests } from '@/api/locations';
+import { mapSearchParamsToLocation } from '@/util/locationFormatters';
 
-const query = ref();
-const data = ref();
 const previousRoute = ref();
 const isPreviousRouteFollowed = ref(false);
 
@@ -152,40 +162,22 @@ export const useSearchData = defineBasicLoader(
 	'/search/results',
 	async (route) => {
 		try {
-			const searchLocation = (({ state, county, locality, location_id }) => ({
-				state_name: state,
-				county_name: county,
-				locality_name: locality,
-				location_id,
-			}))(route.query);
-
+			const searchLocation = mapSearchParamsToLocation(route.query);
 			const searched = getMostNarrowSearchLocationWithResults(searchLocation);
+			const response = await search(route.query);
 
-			const response =
-				// Local caching to skip even the pinia method in case of only the hash changing while on the route.
-				_isEqual(searchLocation, query.value) && data.value
-					? data.value
-					: await search(route.query);
-
-			// On initial fetch - get hash
-			const hash = normalizeLocaleForHash(searched, response.data);
-			if (!route.hash && hash) {
-				return new NavigationResult({ ...route, hash: `#${hash}` });
-			}
-
-			data.value = response;
-			query.value = searchLocation;
-
-			const ret = {
+			return {
 				results: groupResultsByAgency(response.data),
+				response: response.data,
 				searched,
 				params: searchLocation,
+				hash: normalizeLocaleForHash(searched, response.data),
 			};
-			return ret;
 		} catch (error) {
 			throw new DataLoaderErrorPassThrough(error);
 		}
 	},
+	{ lazy: true },
 );
 
 export const useFollowedData = defineBasicLoader(
@@ -201,6 +193,9 @@ export const useFollowedData = defineBasicLoader(
 			throw new DataLoaderErrorPassThrough(error);
 		}
 	},
+	{
+		lazy: true,
+	},
 );
 
 export const useRequestsData = defineBasicLoader(
@@ -213,6 +208,9 @@ export const useRequestsData = defineBasicLoader(
 		} catch (error) {
 			throw new DataLoaderErrorPassThrough(error);
 		}
+	},
+	{
+		lazy: true,
 	},
 );
 
@@ -239,30 +237,46 @@ import { Button } from 'pdap-design-system';
 import SearchForm from '@/components/SearchForm.vue';
 import SearchResults from './_components/SearchResults.vue';
 import Requests from './_components/Requests.vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { faUserPlus, faUserCheck } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'vue3-toastify';
 import { useAuthStore } from '@/stores/auth';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { getIsV2FeatureEnabled } from '@/util/featureFlagV2';
+
 const { isAuthenticated } = useAuthStore();
 const { data: searchData, isLoading, error } = useSearchData();
 const { data: isFollowed, reload: reloadFollowed } = useFollowedData();
 const { data: requestData, error: requestsError } = useRequestsData();
 const route = useRoute();
+const router = useRouter();
 const searchResultsRef = ref();
 const isSearchShown = ref(false);
 const dims = reactive({ width: window.innerWidth, height: window.innerHeight });
 const hasDisplayedErrorByRouteParams = ref(new Map());
 
+watch(
+	() => route,
+	(newRoute) => {
+		if (newRoute.hash && !route.hash) {
+			const hash = `#${normalizeLocaleForHash(searchData.searched, searchData.response)}`;
+			router.replace({ ...route, hash });
+		}
+	},
+	{ immediate: true, deep: true },
+);
+
 // lifecycle methods
 onMounted(() => {
 	if (window.innerWidth > 1280) isSearchShown.value = true;
 
-	if (searchData.value) {
+	if (searchData?.value) {
 		searchStore.setMostRecentSearchIds(
-			getAllIdsSearched(searchData.value.results),
+			getAllIdsSearched(searchData?.value?.results),
 		);
 	}
 
-	if (requestData.value) {
+	if (requestData?.value) {
 		searchStore.setMostRecentRequestIds(requestData.value.map((req) => req.id));
 	}
 
@@ -272,7 +286,7 @@ onMounted(() => {
 onUpdated(async () => {
 	if (error.value) {
 		toast.error(
-			`Error fetching search results for ${getMinimalLocationText(searchData.value.params)}. Please try again!`,
+			`Error fetching search results for ${getMinimalLocationText(searchData?.value?.params)}. Please try again!`,
 			{
 				autoClose: false,
 				onClose() {
@@ -281,17 +295,17 @@ onUpdated(async () => {
 			},
 		);
 		hasDisplayedErrorByRouteParams.value.set(
-			JSON.stringify(searchData.value.params),
+			JSON.stringify(searchData?.value?.params),
 			true,
 		);
 	}
 
-	if (searchData.value)
+	if (searchData?.value)
 		searchStore.setMostRecentSearchIds(
-			getAllIdsSearched(searchData.value.results),
+			getAllIdsSearched(searchData?.value?.results),
 		);
 
-	if (requestData.value) {
+	if (requestData?.value) {
 		searchStore.setMostRecentRequestIds(requestData.value.map((req) => req.id));
 	}
 });
@@ -305,13 +319,13 @@ onUnmounted(() => {
 async function follow() {
 	try {
 		await followSearch(route.query.location_id);
-		toast.success(
-			`Search followed for ${getMinimalLocationText(searchData.value.params)}.`,
-		);
 		await reloadFollowed();
+		toast.success(
+			`Search followed for ${getMinimalLocationText(searchData?.value?.params)}.`,
+		);
 	} catch (error) {
 		toast.error(
-			`Error following search for ${getMinimalLocationText(searchData.value.params)}. Please try again.`,
+			`Error following search for ${getMinimalLocationText(searchData?.value?.params)}. Please try again.`,
 		);
 	}
 }

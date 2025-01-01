@@ -14,6 +14,7 @@ const HEADERS_BASIC = {
 };
 
 export async function search(params) {
+	const authStore = useAuthStore();
 	const searchStore = useSearchStore();
 	const cached = searchStore.getSearchFromCache(JSON.stringify(params));
 
@@ -32,7 +33,14 @@ export async function search(params) {
 		`${SEARCH_BASE}/${ENDPOINTS.SEARCH.RESULTS}`,
 		{
 			params,
-			headers: HEADERS_BASIC,
+			headers: {
+				...HEADERS_BASIC,
+				...(authStore.isAuthenticated()
+					? {
+							Authorization: `Bearer ${authStore.$state.tokens.accessToken.value}`,
+						}
+					: {}),
+			},
 		},
 	);
 
@@ -86,9 +94,11 @@ export async function getFollowedSearch(location_id) {
 	try {
 		const response = await getFollowedSearches();
 
-		return response.data.data.find(
-			({ id: followed_id }) => Number(followed_id) === Number(location_id),
+		const found = response.data.data.find(
+			({ location_id: followed_id }) =>
+				Number(followed_id) === Number(location_id),
 		);
+		return found;
 	} catch (error) {
 		return null;
 	}

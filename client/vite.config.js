@@ -5,7 +5,9 @@ import VueRouter from 'unplugin-vue-router/vite';
 import path from 'path';
 
 export default defineConfig(({ mode }) => {
-	loadEnv(mode, process.cwd(), '');
+	const env = loadEnv(mode, process.cwd(), '');
+
+	console.debug({ auth: env.VITE_V2_FEATURE_AUTHENTICATE });
 
 	return {
 		plugins: [
@@ -16,6 +18,21 @@ export default defineConfig(({ mode }) => {
 					// Add meta from meta map (see below)
 					if (ROUTES_TO_META.has(route.name)) {
 						route.meta = { ...route.meta, ...ROUTES_TO_META.get(route.name) };
+					}
+
+					// Hide authentication routes if flag set to disabled
+					if (
+						env.VITE_V2_FEATURE_AUTHENTICATE === 'disabled' &&
+						[
+							'change-password',
+							'reset-password',
+							'sign-in',
+							'sign-out',
+							'sign-up',
+							'profile',
+						].some((pathFrag) => route.fullPath.includes(pathFrag))
+					) {
+						route.delete();
 					}
 
 					if (route.fullPath.startsWith('/test/') && mode === 'production') {

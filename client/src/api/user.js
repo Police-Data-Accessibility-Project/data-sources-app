@@ -25,3 +25,15 @@ export async function changePassword(oldPassword, newPassword) {
 
 	return await auth.signInWithEmail(user.email, newPassword);
 }
+
+export async function getUser() {
+	const auth = useAuthStore();
+	const user = useUserStore();
+
+	return await axios.get(`${USER_BASE}/${user.id}`, {
+		headers: {
+			...HEADERS,
+			Authorization: `Bearer ${auth.$state.tokens.accessToken.value}`,
+		},
+	});
+}
