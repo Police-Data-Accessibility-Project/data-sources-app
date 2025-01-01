@@ -97,6 +97,8 @@ class CreateTestUserWithElevatedPermissions(PsycopgResource):
             for permission in [
                 PermissionsEnum.READ_ALL_USER_INFO,
                 PermissionsEnum.DB_WRITE,
+                PermissionsEnum.NOTIFICATIONS,
+                PermissionsEnum.SOURCE_COLLECTOR,
             ]:
                 db_client.add_user_permission(
                     user_id=db_client.get_user_id(email=auto_user_email),

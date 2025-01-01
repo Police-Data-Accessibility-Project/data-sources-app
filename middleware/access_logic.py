@@ -146,7 +146,9 @@ class JWTService:
         except Exception:
             return None
         return get_jwt_access_info_with_permissions(
-            user_email=simple_jwt.sub["user_email"], user_id=simple_jwt.sub["id"]
+            user_email=simple_jwt.sub["user_email"],
+            user_id=simple_jwt.sub["id"],
+            permissions_raw_str=simple_jwt.sub["permissions"],
         )
 
 
@@ -179,8 +181,13 @@ def decode_jwt_with_purpose(token: str, purpose: JWTPurpose):
         )
 
 
-def get_jwt_access_info_with_permissions(user_email, user_id):
-    permissions = get_user_permissions(user_email)
+def get_jwt_access_info_with_permissions(
+    user_email, user_id, permissions_raw_str: list[str]
+):
+    permissions = []
+    for permission_raw_str in permissions_raw_str:
+        permission = PermissionsEnum(permission_raw_str)
+        permissions.append(permission)
     return AccessInfoPrimary(
         user_email=user_email,
         user_id=user_id,
