@@ -25,18 +25,21 @@ class JWTAccessRefreshTokens:
         db_client = DatabaseClient()
         user_id = db_client.get_user_id(email)
         permissions = db_client.get_user_permissions(user_id)
-        identity = {
-            "id": db_client.get_user_id(email),
+        other_claims = {
             "user_email": email,
             "permissions": [permission.value for permission in permissions],
         }
+        identity = str(db_client.get_user_id(email))
         simple_jwt = SimpleJWT(
             sub=identity,
             exp=(datetime.now(tz=timezone.utc) + timedelta(minutes=15)).timestamp(),
             purpose=JWTPurpose.STANDARD_ACCESS_TOKEN,
+            **other_claims
         )
         self.access_token = simple_jwt.encode()
-        self.refresh_token = create_refresh_token(identity=identity)
+        self.refresh_token = create_refresh_token(
+            identity=identity, additional_claims={"email": email}
+        )
 
 
 INVALID_MESSAGE = "Invalid email or password"
@@ -114,7 +117,7 @@ def refresh_session(
     :return:
     """
     decoded_refresh_token = decode_token(dto.refresh_token)
-    decoded_email = decoded_refresh_token["sub"]["user_email"]
+    decoded_email = decoded_refresh_token["email"]
     if access_info.user_email != decoded_email:
 
         return make_response(

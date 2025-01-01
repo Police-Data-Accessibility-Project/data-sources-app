@@ -34,14 +34,18 @@ def get_secret_key(purpose: JWTPurpose):
 
 class SimpleJWT:
 
-    def __init__(self, sub: Union[str, dict], exp: float, purpose: JWTPurpose):
+    def __init__(
+        self, sub: Union[str, dict], exp: float, purpose: JWTPurpose, **other_claims
+    ):
         self.sub = sub
         self.exp = exp
         self.purpose = purpose
         self.key = get_secret_key(purpose)
+        self.other_claims = other_claims
 
     def encode(self):
         payload = {"sub": self.sub, "exp": self.exp, "purpose": self.purpose.value}
+        payload.update(self.other_claims)
         return jwt.encode(payload=payload, key=self.key, algorithm=ALGORITHM)
 
     @staticmethod
@@ -52,11 +56,18 @@ class SimpleJWT:
             )
         except InvalidSignatureError as e:
             FlaskResponseManager.abort(code=HTTPStatus.UNAUTHORIZED, message=str(e))
+        purpose = JWTPurpose(payload["purpose"])
+        del payload["purpose"]
+        sub = payload["sub"]
+        del payload["sub"]
+        exp = payload["exp"]
+        del payload["exp"]
 
         simple_jwt = SimpleJWT(
-            sub=payload["sub"],
-            exp=payload["exp"],
-            purpose=JWTPurpose(payload["purpose"]),
+            sub=sub,
+            exp=exp,
+            purpose=purpose,
+            **payload,
         )
         if simple_jwt.purpose != purpose:
             raise Exception(f"Invalid JWT Purpose: {simple_jwt.purpose} != {purpose}")
