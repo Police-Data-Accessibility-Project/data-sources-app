@@ -90,13 +90,10 @@ def test_data_requests_get(
 
     assert len(data) == 2
 
-    # Give user admin permission
-    tdc.db_client.add_user_permission(
-        user_id=tus_creator.user_info.user_id, permission=PermissionsEnum.DB_WRITE
-    )
+    # Check that admin can pull more columns
 
     admin_data = tdc.request_validator.get_data_requests(
-        headers=tus_creator.jwt_authorization_header,
+        headers=tdc.get_admin_tus().jwt_authorization_header,
     )[DATA_KEY]
 
     # Assert admin columns are greater than user columns

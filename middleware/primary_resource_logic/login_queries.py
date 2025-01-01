@@ -22,9 +22,13 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.refresh_session_sc
 class JWTAccessRefreshTokens:
 
     def __init__(self, email: str):
+        db_client = DatabaseClient()
+        user_id = db_client.get_user_id(email)
+        permissions = db_client.get_user_permissions(user_id)
         identity = {
+            "id": db_client.get_user_id(email),
             "user_email": email,
-            "id": DatabaseClient().get_user_id(email),
+            "permissions": [permission.value for permission in permissions],
         }
         simple_jwt = SimpleJWT(
             sub=identity,
@@ -32,10 +36,6 @@ class JWTAccessRefreshTokens:
             purpose=JWTPurpose.STANDARD_ACCESS_TOKEN,
         )
         self.access_token = simple_jwt.encode()
-        # self.access_token = create_access_token(
-        #     identity=identity,
-        #     additional_claims={"purpose": JWTPurpose.STANDARD_ACCESS_TOKEN.value},
-        # )
         self.refresh_token = create_refresh_token(identity=identity)
 
 
