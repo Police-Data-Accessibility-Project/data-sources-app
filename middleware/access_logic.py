@@ -146,9 +146,9 @@ class JWTService:
         except Exception:
             return None
         return get_jwt_access_info_with_permissions(
-            user_email=simple_jwt.sub["user_email"],
-            user_id=simple_jwt.sub["id"],
-            permissions_raw_str=simple_jwt.sub["permissions"],
+            user_email=simple_jwt.other_claims["user_email"],
+            user_id=int(simple_jwt.sub),
+            permissions_raw_str=simple_jwt.other_claims["permissions"],
         )
 
 
