@@ -4,7 +4,7 @@ from http import HTTPStatus
 from typing import Union
 
 import jwt
-from jwt import ExpiredSignatureError, InvalidSignatureError
+from jwt import InvalidSignatureError
 
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.util import get_env_variable

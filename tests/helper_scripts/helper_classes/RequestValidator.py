@@ -610,4 +610,14 @@ class RequestValidator:
             expected_schema=SchemaConfigs.LOCATIONS_RELATED_DATA_REQUESTS_GET.value.primary_output_schema,
         )
 
+    def get_metrics(
+        self,
+        headers: dict,
+    ):
+        return self.get(
+            endpoint=f"/api/metrics",
+            headers=headers,
+            expected_schema=SchemaConfigs.METRICS_GET.value.primary_output_schema,
+        )
+
     # endregion
