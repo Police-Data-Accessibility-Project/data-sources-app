@@ -41,6 +41,9 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.match_schemas impo
     AgencyMatchSchema,
     MatchAgencyResponseSchema,
 )
+from middleware.schema_and_dto_logic.primary_resource_schemas.metrics_schemas import (
+    MetricsGetResponseSchema,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.reset_token_schemas import (
     ResetPasswordSchema,
 )
@@ -547,4 +550,11 @@ class SchemaConfigs(Enum):
         input_dto_class=GetByIDBaseDTO,
         primary_output_schema=GetManyDataRequestsResponseSchema(),
     )
+    # endregion
+
+    # region Metrics
+    METRICS_GET = EndpointSchemaConfig(
+        primary_output_schema=MetricsGetResponseSchema(),
+    )
+
     # endregion
