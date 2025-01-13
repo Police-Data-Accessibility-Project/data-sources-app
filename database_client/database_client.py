@@ -83,6 +83,9 @@ class DatabaseClient:
             @wraps(method)
             def wrapper(self, *args, **kwargs):
                 # Open a new cursor
+                # If connection is closed, reopen
+                if self.connection.closed != 0:
+                    self.connection = initialize_psycopg_connection()
                 self.cursor = self.connection.cursor(row_factory=row_factory)
                 try:
                     # Execute the method
