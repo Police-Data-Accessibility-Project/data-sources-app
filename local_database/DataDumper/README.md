@@ -1,4 +1,4 @@
-The DataDumper directory contains scripts for backing up and restoring the Source Collector Database.
+The DataDumper directory contains scripts for backing up and restoring the Data Sources App Database.
 
 ## Files and Directories
 - A `Dockerfile` which contains the instructions for building the docker image with Postgres functionality enabled
