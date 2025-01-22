@@ -164,16 +164,19 @@ def test_data_requests_post(
 
     submission_notes = uuid.uuid4().hex
 
+    tdc.locality(locality_name="Laguna Hills")
+    tdc.locality(locality_name="Seal Beach")
+
     location_info_1 = {
         "type": "Locality",
-        "state_name": "California",
-        "county_name": "Orange",
+        "state_name": "Pennsylvania",
+        "county_name": "Allegheny",
         "locality_name": "Laguna Hills",
     }
     location_info_2 = {
         "type": "Locality",
-        "state_name": "California",
-        "county_name": "Orange",
+        "state_name": "Pennsylvania",
+        "county_name": "Allegheny",
         "locality_name": "Seal Beach",
     }
 
@@ -607,13 +610,7 @@ def test_link_unlink_data_requests_with_locations(
     assert data == []
 
     # Add location
-    location_id = tdc.db_client.get_location_id(
-        where_mappings={
-            "state_name": "Pennsylvania",
-            "county_name": "Allegheny",
-            "locality_name": "Pittsburgh",
-        }
-    )
+    location_id = tdc.locality("Pittsburgh")
 
     def post_location_association(
         tus: TestUserSetup = admin_tus,

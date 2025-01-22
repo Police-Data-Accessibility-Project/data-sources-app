@@ -40,6 +40,8 @@ def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
     Test that GET call to /agencies endpoint properly retrieves a nonzero amount of data
     """
     tdc = test_data_creator_flask
+    tdc.agency()
+    tdc.agency()
     tus = tdc.standard_user()
 
     response_json = tdc.request_validator.get_agency(
@@ -161,8 +163,8 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
     assert_contains_key_value_pairs(
         dict_to_check=json_data["data"],
         key_value_pairs={
-            "state_iso": "CA",
-            "county_name": "Santa Cruz",
+            "state_iso": "PA",
+            "county_name": "Allegheny",
             "locality_name": data_to_post["location_info"]["locality_name"],
             **data_to_post["agency_info"],
         },
@@ -184,8 +186,8 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
         dict_to_check=json_data["data"],
         key_value_pairs={
             "submitted_name": data_to_post["agency_info"]["submitted_name"],
-            "state_iso": "CA",
-            "county_name": "Santa Cruz",
+            "state_iso": "PA",
+            "county_name": "Allegheny",
             "locality_name": data_to_post["location_info"]["locality_name"],
         },
     )

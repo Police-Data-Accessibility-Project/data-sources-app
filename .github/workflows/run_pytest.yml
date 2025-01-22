@@ -5,9 +5,21 @@ on:
 
 jobs:
   run_tests:
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     env:
       FLASK_APP_COOKIE_ENCRYPTION_KEY: ${{ secrets.SECRET_KEY }}
-      DO_DATABASE_URL: ${{secrets.DEV_DB_CONN_STRING}}  # TODO: Ideally, won't need both for testing, but this is for safety for now
+      DO_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/postgres
       GH_CLIENT_ID: ${{secrets.GH_CLIENT_ID}}
       GH_CLIENT_SECRET: ${{secrets.GH_CLIENT_SECRET}}
       JWT_SECRET_KEY: "TestSecretKey"
@@ -15,11 +27,10 @@ jobs:
       VALIDATE_EMAIL_SECRET_KEY: "validateEmailSecretKey"
     name: Run Pytest
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container: python:3.12.8
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.12'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -27,13 +38,6 @@ jobs:
         pip install pytest pytest-cov
     - name: Run tests
       run: |
-        pytest tests/integration
-        pytest tests/middleware
-        pytest tests/resources
-        pytest tests/test_endpoints.py
-        pytest tests/test_database_client.py
-        pytest tests/test_database.py
-        pytest tests/test_schema_aligned_with_db_table.py
-        pytest tests/test_schema_validation.py
+        pytest tests
         
       

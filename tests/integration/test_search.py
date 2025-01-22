@@ -6,7 +6,7 @@ from typing import Optional
 import pytest
 from marshmallow import Schema
 
-from database_client.enums import LocationType
+from database_client.enums import LocationType, ApprovalStatus
 from middleware.enums import OutputFormatEnum, JurisdictionSimplified
 from middleware.util import bytes_to_text_iter, read_from_csv, get_enum_values
 from resources.endpoint_schema_config import SchemaConfigs
@@ -44,6 +44,10 @@ class SearchTestSetup:
 @pytest.fixture
 def search_test_setup(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
+    try:
+        tdc.locality(TEST_LOCALITY)
+    except Exception:
+        pass
     return SearchTestSetup(
         tdc=tdc,
         location_id=tdc.db_client.get_location_id(
@@ -61,6 +65,17 @@ def test_search_get(search_test_setup: SearchTestSetup):
     sts = search_test_setup
     tdc = sts.tdc
     tus = sts.tus
+    tdcdb = tdc.tdcdb
+
+    tdcdb.link_data_source_to_agency(
+        data_source_id=tdcdb.data_source(
+            approval_status=ApprovalStatus.APPROVED,
+            record_type_id=1,
+            source_url="http://example.com",
+            agency_supplied=True,
+        ).id,
+        agency_id=tdcdb.agency(location_id=sts.location_id).id,
+    )
 
     def search(record_format: Optional[OutputFormatEnum] = OutputFormatEnum.JSON):
         return tdc.request_validator.search(
@@ -137,6 +152,18 @@ def test_search_get_record_categories_all(
     sts = search_test_setup
     tdc = sts.tdc
     tus = sts.tus
+
+    tdcdb = tdc.tdcdb
+
+    tdcdb.link_data_source_to_agency(
+        data_source_id=tdcdb.data_source(
+            approval_status=ApprovalStatus.APPROVED,
+            record_type_id=1,
+            source_url="http://example.com",
+            agency_supplied=True,
+        ).id,
+        agency_id=tdcdb.agency(location_id=sts.location_id).id,
+    )
 
     def run_search(record_categories: list[RecordCategories]) -> dict:
         return tdc.request_validator.search(

@@ -26,6 +26,9 @@ from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,
 )
+from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
+    TestDataCreatorDBClient,
+)
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
@@ -40,12 +43,15 @@ from tests.helper_scripts.constants import (
 
 def test_data_sources_get(
     test_data_creator_flask: TestDataCreatorFlask,
+    test_data_creator_db_client: TestDataCreatorDBClient,
 ):
     """
     Test that GET call to /data-sources endpoint retrieves data sources and correctly identifies specific sources by name
     """
     tdc = test_data_creator_flask
     tus = tdc.standard_user()
+    for i in range(100):
+        test_data_creator_db_client.data_source(approval_status=ApprovalStatus.APPROVED)
     response_json = run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="get",
@@ -140,9 +146,7 @@ def test_data_sources_post(
         ),
     )
 
-    response_json = run_and_validate_request(
-        flask_client=tdc.flask_client,
-        http_method="post",
+    response_json = tdc.request_validator.post(
         endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}",
         headers=tus.jwt_authorization_header,
         json={

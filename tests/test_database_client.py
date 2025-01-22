@@ -9,6 +9,7 @@ from unittest.mock import MagicMock
 import pytest
 import sqlalchemy
 from sqlalchemy import insert, select, update
+from sqlalchemy.exc import IntegrityError
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import (
@@ -35,7 +36,7 @@ from database_client.models import (
     User,
     SQL_ALCHEMY_TABLE_REFERENCE,
 )
-from middleware.enums import PermissionsEnum, Relations
+from middleware.enums import PermissionsEnum, Relations, RecordType
 from tests.conftest import live_database_client, test_table_data, clear_data_requests
 from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,
@@ -178,7 +179,7 @@ def test_update_user_api_key(live_database_client: DatabaseClient):
 
 
 def test_select_from_relation_columns_only(
-    test_table_data, live_database_client: DatabaseClient
+    live_database_client: DatabaseClient, test_table_data
 ):
     results = live_database_client._select_from_relation(
         relation_name="test_table",
@@ -482,7 +483,24 @@ def test_update_entry_in_table(live_database_client: DatabaseClient, test_table_
     ]
 
 
-def test_get_data_sources_for_map(live_database_client):
+def test_get_data_sources_for_map(
+    live_database_client,
+    test_data_creator_db_client: TestDataCreatorDBClient,
+):
+    tdc = test_data_creator_db_client
+    location_id = tdc.locality()
+    ds_id = tdc.data_source(
+        approval_status=ApprovalStatus.APPROVED, record_type_id=1
+    ).id
+    a_id = tdc.agency(
+        location_id=location_id,
+        lat=0.0,
+        lng=0.0,
+    ).id
+    tdc.link_data_source_to_agency(
+        data_source_id=ds_id,
+        agency_id=a_id,
+    )
     results = live_database_client.get_data_sources_for_map()
     assert len(results) > 0
     assert isinstance(results[0], live_database_client.MapInfo)
@@ -494,7 +512,21 @@ def test_get_offset():
     assert DatabaseClient.get_offset(page=3) == 200
 
 
-def test_get_data_sources_to_archive(live_database_client: DatabaseClient):
+def test_get_data_sources_to_archive(
+    test_data_creator_db_client: TestDataCreatorDBClient,
+    live_database_client: DatabaseClient,
+):
+    data_source_id = test_data_creator_db_client.data_source(
+        approval_status=ApprovalStatus.APPROVED, source_url="http://example.com"
+    ).id
+    live_database_client._update_entry_in_table(
+        table_name=Relations.DATA_SOURCES_ARCHIVE_INFO.value,
+        entry_id=data_source_id,
+        id_column_name="data_source_id",
+        column_edit_mappings={
+            "update_frequency": "Monthly",
+        },
+    )
     results = live_database_client.get_data_sources_to_archive()
     assert len(results) > 0
 
@@ -608,7 +640,9 @@ def test_get_typeahead_agencies(live_database_client):
     assert results[0]["locality_name"] == "Xylodammerung"
 
 
-def test_search_with_location_and_record_types_real_data(live_database_client):
+def test_search_with_location_and_record_types_real_data(
+    test_data_creator_db_client: TestDataCreatorDBClient, live_database_client
+):
     """
     Due to the large number of combinations, I will refer to tests using certain parameters by their first letter
     e.g. S=State, R=Record type, L=Locality, C=County
@@ -625,6 +659,50 @@ def test_search_with_location_and_record_types_real_data(live_database_client):
     record_type_parameter = RecordCategories.AGENCIES
     county_parameter = "Allegheny"
     locality_parameter = "Pittsburgh"
+
+    tdc = test_data_creator_db_client
+    pennsylvania_location_id = live_database_client.get_location_id(
+        where_mappings={"state_name": "Pennsylvania", "county_name": None}
+    )
+    allegheny_location_id = live_database_client.get_location_id(
+        where_mappings={
+            "state_name": "Pennsylvania",
+            "county_name": "Allegheny",
+            "locality_name": None,
+        }
+    )
+    try:
+        pittsburgh_location_id = tdc.locality(locality_name="Pittsburgh")
+    except IntegrityError:
+        pittsburgh_location_id = tdc.db_client.get_location_id(
+            where_mappings={
+                "state_name": "Pennsylvania",
+                "county_name": "Allegheny",
+                "locality_name": "Pittsburgh",
+            }
+        )
+
+    def agency_and_data_source(
+        location_id, record_type: RecordType = RecordType.LIST_OF_DATA_SOURCES
+    ):
+        record_type_id = live_database_client.get_record_type_id_by_name(
+            record_type.value
+        )
+        ds_id = tdc.data_source(
+            approval_status=ApprovalStatus.APPROVED, record_type_id=record_type_id
+        ).id
+        a_id = tdc.agency(location_id=location_id).id
+        tdc.link_data_source_to_agency(data_source_id=ds_id, agency_id=a_id)
+
+    agency_and_data_source(pennsylvania_location_id)
+    agency_and_data_source(
+        pennsylvania_location_id, record_type=RecordType.RECORDS_REQUEST_INFO
+    )
+    agency_and_data_source(allegheny_location_id)
+    agency_and_data_source(pittsburgh_location_id)
+    agency_and_data_source(
+        pittsburgh_location_id, record_type=RecordType.RECORDS_REQUEST_INFO
+    )
 
     def search(state, record_categories=None, county=None, locality=None):
         location_id = live_database_client.get_location_id(
@@ -674,15 +752,34 @@ def test_search_with_location_and_record_types_real_data(live_database_client):
 
 
 def test_search_with_location_and_record_types_real_data_multiple_records(
+    test_data_creator_db_client,
     live_database_client,
 ):
-    location_id = live_database_client.get_location_id(
+    pa_location_id = live_database_client.get_location_id(
         where_mappings={
             "state_name": "Pennsylvania",
             "county_name": None,
             "locality_name": None,
         }
     )
+    tdc = test_data_creator_db_client
+
+    def agency_and_data_source(
+        location_id, record_type: RecordType = RecordType.LIST_OF_DATA_SOURCES
+    ):
+        record_type_id = live_database_client.get_record_type_id_by_name(
+            record_type.value
+        )
+        ds_id = tdc.data_source(
+            approval_status=ApprovalStatus.APPROVED, record_type_id=record_type_id
+        ).id
+        a_id = tdc.agency(location_id=location_id).id
+        tdc.link_data_source_to_agency(data_source_id=ds_id, agency_id=a_id)
+
+    record_types = [record_type for record_type in RecordType]
+    for record_type in record_types:
+        agency_and_data_source(pa_location_id, record_type=record_type)
+
     record_categories = []
     last_count = 0
     # Exclude the ALL pseudo-category
@@ -694,7 +791,7 @@ def test_search_with_location_and_record_types_real_data_multiple_records(
     for record_category in applicable_record_categories:
         record_categories.append(record_category)
         results = live_database_client.search_with_location_and_record_type(
-            location_id=location_id, record_categories=record_categories
+            location_id=pa_location_id, record_categories=record_categories
         )
         assert (
             len(results) > last_count
@@ -703,7 +800,7 @@ def test_search_with_location_and_record_types_real_data_multiple_records(
 
     # Finally, check that all record_types is equivalent to no record types in terms of number of results
     results = live_database_client.search_with_location_and_record_type(
-        location_id=location_id
+        location_id=pa_location_id
     )
     assert len(results) == last_count
 

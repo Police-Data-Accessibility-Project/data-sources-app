@@ -33,9 +33,6 @@ from utilities.namespace import create_namespace, AppNamespaces
 namespace_agencies = create_namespace(
     AppNamespaces.AGENCIES,
 )
-agencies_column_permissions = create_column_permissions_string_table(
-    relation=Relations.AGENCIES.value
-)
 
 
 @namespace_agencies.route("")
@@ -92,7 +89,9 @@ class AgenciesById(PsycopgResource):
         description=column_permissions_description(
             head_description="Get an agency by id",
             sub_description="Columns returned are determined by the user's access level.",
-            column_permissions_str_table=agencies_column_permissions,
+            column_permissions_str_table=create_column_permissions_string_table(
+                relation=Relations.AGENCIES.value
+            ),
         ),
     )
     @limiter.limit("50/minute;250/hour")
