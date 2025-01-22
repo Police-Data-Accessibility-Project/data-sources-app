@@ -1,4 +1,4 @@
 #!/bin/sh
 
 python apply_migrations.py
-python -m flask run --host=0.0.0.0
+gunicorn --worker-tmp-dir /dev/shm --bind 0.0.0.0:8000 'app:create_app()'
