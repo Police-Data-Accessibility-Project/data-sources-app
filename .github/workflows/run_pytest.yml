@@ -38,13 +38,6 @@ jobs:
         pip install pytest pytest-cov
     - name: Run tests
       run: |
-        pytest tests/integration
-        pytest tests/middleware
-        pytest tests/resources
-        pytest tests/test_endpoints.py
-        pytest tests/test_database_client.py
-        pytest tests/test_database.py
-        pytest tests/test_schema_aligned_with_db_table.py
-        pytest tests/test_schema_validation.py
+        pytest tests
         
       
