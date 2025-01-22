@@ -6,4 +6,10 @@ COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 RUN pip3 install "psycopg[binary,pool]"
 
+EXPOSE 8000
+
 COPY . .
+
+RUN chmod +x execute.sh
+
+CMD ["./execute.sh"]

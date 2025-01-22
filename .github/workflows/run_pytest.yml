@@ -25,6 +25,7 @@ jobs:
       JWT_SECRET_KEY: "TestSecretKey"
       RESET_PASSWORD_SECRET_KEY: "resetTokenSecretKey"
       VALIDATE_EMAIL_SECRET_KEY: "validateEmailSecretKey"
+
     name: Run Pytest
     runs-on: ubuntu-latest
     timeout-minutes: 20
