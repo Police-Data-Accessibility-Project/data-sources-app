@@ -1,19 +1,17 @@
 from datetime import datetime, date
 from typing import Optional, Literal, get_args, Callable
+
+from sqlalchemy.dialects import postgresql
 from typing_extensions import Annotated
 
 
 from sqlalchemy import (
     Column,
-    BigInteger,
     text as text_func,
     Text,
     String,
     ForeignKey,
     Enum,
-    Float,
-    Boolean,
-    DateTime,
     Integer,
     UniqueConstraint,
 )
@@ -23,9 +21,8 @@ from sqlalchemy.dialects.postgresql import (
     DATERANGE,
     TIMESTAMP,
     ENUM as pgEnum,
-    JSON,
 )
-from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -34,9 +31,8 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.sql.expression import false, func
 
-from database_client.enums import LocationType, AccessType, URLStatus, ApprovalStatus
+from database_client.enums import LocationType, AccessType
 from middleware.enums import Relations
-from middleware.util import get_enum_values
 
 ExternalAccountTypeLiteral = Literal["github"]
 RecordTypeLiteral = Literal[
@@ -119,6 +115,14 @@ RequestUrgencyLiteral = Literal[
     "indefinite_unknown",
 ]
 LocationTypeLiteral = Literal["State", "County", "Locality"]
+
+LocationTypePGEnum = postgresql.ENUM(
+    LocationType.STATE.value,
+    LocationType.COUNTY.value,
+    LocationType.LOCALITY.value,
+    name="location_type",
+)
+
 EventTypeLiteral = Literal[
     "Request Ready to Start", "Request Complete", "Data Source Approved"
 ]
@@ -270,6 +274,7 @@ class AgencyExpanded(Agency):
 
 class County(Base):
     __tablename__ = Relations.COUNTIES.value
+    __table_args__ = (UniqueConstraint("fips", name="unique_fips"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     fips: Mapped[str]
@@ -297,7 +302,7 @@ class Location(Base):
     __tablename__ = Relations.LOCATIONS.value
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    type: Mapped[Enum] = mapped_column(Enum(LocationType), nullable=False)
+    type = Column(LocationTypePGEnum, nullable=False)
     state_id: Mapped[int] = mapped_column(
         ForeignKey("public.us_states.id"), nullable=False
     )
@@ -313,9 +318,7 @@ class LocationExpanded(Base, CountMetadata):
     __table_args__ = {"extend_existing": True}
 
     id = Column(Integer, primary_key=True)
-    type: Mapped[LocationTypeLiteral] = mapped_column(
-        Enum(*get_args(LocationTypeLiteral)), name="type"
-    )
+    type = Column(LocationTypePGEnum, nullable=False)
     state_name = Column(String)
     state_iso = Column(String)
     county_name = Column(String)

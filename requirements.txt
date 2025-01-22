@@ -72,3 +72,4 @@ PyGithub~=2.4.0
 dominate~=2.9.1
 pre-commit~=4.0.1
 RapidFuzz~=3.10.1
+alembic~=1.14.1

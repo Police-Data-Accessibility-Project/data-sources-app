@@ -5,9 +5,20 @@ on:
 
 jobs:
   run_tests:
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     env:
       FLASK_APP_COOKIE_ENCRYPTION_KEY: ${{ secrets.SECRET_KEY }}
-      DO_DATABASE_URL: ${{secrets.DEV_DB_CONN_STRING}}  # TODO: Ideally, won't need both for testing, but this is for safety for now
+      DO_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/postgres
       GH_CLIENT_ID: ${{secrets.GH_CLIENT_ID}}
       GH_CLIENT_SECRET: ${{secrets.GH_CLIENT_SECRET}}
       JWT_SECRET_KEY: "TestSecretKey"

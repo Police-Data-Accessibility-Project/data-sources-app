@@ -539,7 +539,6 @@ class DatabaseClient:
         :param locality: The locality to search for data sources in. If None, all data sources will be searched for.
         :return: A list of dictionaries.
         """
-        optional_kwargs = {}
         query = DynamicQueryConstructor.create_search_query(
             location_id=location_id,
             record_categories=record_categories,

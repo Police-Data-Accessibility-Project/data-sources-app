@@ -2,6 +2,12 @@
 
 import datetime
 import json
+
+from database_client.enums import ApprovalStatus
+from middleware.enums import Relations
+from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
+    TestDataCreatorDBClient,
+)
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
@@ -12,12 +18,26 @@ from conftest import test_data_creator_flask, monkeysession
 ENDPOINT = "/api/archives"
 
 
-def test_archives_get(test_data_creator_flask: TestDataCreatorFlask):
+def test_archives_get(
+    test_data_creator_db_client: TestDataCreatorDBClient,
+    test_data_creator_flask: TestDataCreatorFlask,
+):
     """
     Test that GET call to /archives endpoint successfully retrieves a non-zero amount of data
     """
     tdc = test_data_creator_flask
     tus = tdc.standard_user()
+    data_source_id = test_data_creator_db_client.data_source(
+        approval_status=ApprovalStatus.APPROVED, source_url="http://example.com"
+    ).id
+    tdc.db_client._update_entry_in_table(
+        table_name=Relations.DATA_SOURCES_ARCHIVE_INFO.value,
+        entry_id=data_source_id,
+        id_column_name="data_source_id",
+        column_edit_mappings={
+            "update_frequency": "Monthly",
+        },
+    )
     response_json = run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="get",

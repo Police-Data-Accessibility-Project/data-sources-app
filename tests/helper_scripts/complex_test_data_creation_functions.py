@@ -140,8 +140,8 @@ def get_sample_agency_post_parameters(
     if location_info is None:
         location_info = {
             "type": "Locality",
-            "state_iso": "CA",
-            "county_fips": "06087",
+            "state_iso": "PA",
+            "county_fips": "42003",
             "locality_name": locality_name,
         }
     return {

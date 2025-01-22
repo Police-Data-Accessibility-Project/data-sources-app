@@ -134,7 +134,8 @@ class TestDataCreatorDBClient:
         county_id = self.helper.get_county_id(
             county_name=county_name, state_iso=state_iso
         )
-        locality_name = self.test_name(locality_name)
+        if locality_name == "":
+            locality_name = self.test_name(locality_name)
         locality_id = self.db_client.create_locality(
             column_value_mappings={"name": locality_name, "county_id": county_id}
         )
@@ -175,12 +176,15 @@ class TestDataCreatorDBClient:
         return TestUserDBInfo(id=user_id, email=email, password_digest=pw_digest)
 
     def data_source(
-        self, approval_status: Optional[ApprovalStatus] = None
+        self,
+        approval_status: Optional[ApprovalStatus] = None,
+        **additional_column_values,
     ) -> CreatedDataSource:
         cds = CreatedDataSource(id=uuid.uuid4().hex, name=self.test_name())
         source_column_value_mapping = {
             "name": cds.name,
         }
+        source_column_value_mapping.update(additional_column_values)
         if approval_status is not None:
             source_column_value_mapping["approval_status"] = approval_status.value
 
@@ -210,12 +214,15 @@ class TestDataCreatorDBClient:
             entry_id=data_source_id, column_edit_mappings=column_value_mappings
         )
 
-    def agency(self, location_id: Optional[int] = None) -> TestAgencyInfo:
+    def agency(
+        self, location_id: Optional[int] = None, **additional_column_value_mappings
+    ) -> TestAgencyInfo:
         agency_name = self.test_name()
         column_value_mappings = {
             "submitted_name": agency_name,
             "jurisdiction_type": JurisdictionType.FEDERAL.value,
         }
+        column_value_mappings.update(additional_column_value_mappings)
 
         if location_id is not None:
             column_value_mappings["location_id"] = location_id
