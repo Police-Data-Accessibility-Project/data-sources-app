@@ -35,6 +35,6 @@ psql -d $MAINT_CONNECTION_STRING -c "CREATE DATABASE $NEW_DB_NAME;" || {
 
 # Restore the dump into the new database
 echo "Restoring dump from $DUMP_FILE into database $NEW_DB_NAME..."
-pg_restore -d $CONNECTION_STRING --schema-only --no-owner --no-acl $DUMP_FILE
+pg_restore -d $CONNECTION_STRING --no-owner --no-acl -F c $DUMP_FILE
 
 echo "Database restoration completed."

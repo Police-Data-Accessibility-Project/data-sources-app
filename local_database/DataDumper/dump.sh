@@ -14,6 +14,6 @@ export PGPASSWORD=$DB_PASSWORD
 
 # Dump the database
 echo "Dumping database $DB_NAME from $DB_HOST:$DB_PORT..."
-pg_dump -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME --schema-only --no-owner --no-acl -f $DUMP_FILE
+pg_dump -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME --no-owner --no-acl -F c -f $DUMP_FILE
 
 echo "Dump completed. File saved to $DUMP_FILE."
