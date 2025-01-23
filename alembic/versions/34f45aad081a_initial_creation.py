@@ -9,11 +9,8 @@ Create Date: 2025-01-20 12:44:42.378015
 from typing import Sequence, Union
 
 from alembic import op
-import sqlalchemy as sa
-from sqlalchemy import Table, MetaData
+from sqlalchemy import Table
 from sqlalchemy.dialects.postgresql import ENUM
-from sqlalchemy.schema import Sequence as SASequence
-from sqlalchemy.sql.ddl import CreateSequence, DropSequence
 
 from database_client.models import Base
 from relation_access_permissions.upload_relation_configurations_to_db import (

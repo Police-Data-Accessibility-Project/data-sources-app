@@ -1,0 +1,17 @@
+pipeline {
+        agent {
+        dockerfile {
+            filename 'Dockerfile'
+            args '-e DO_DATABASE_URL=DO_DATABASE_URL'
+        }
+    }
+
+    stages {
+        stage('Migrate using Alembic') {
+            steps {
+                echo 'Building..'
+                sh 'alembic upgrade head'
+            }
+        }
+    }
+}

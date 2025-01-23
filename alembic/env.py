@@ -6,6 +6,7 @@ from sqlalchemy import pool
 from alembic import context
 
 from database_client.models import Base
+from middleware.util import get_env_variable
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -28,6 +29,12 @@ target_metadata = Base.metadata
 # ... etc.
 
 
+def get_alembic_conn_string() -> str:
+    conn_string = get_env_variable("DO_DATABASE_URL")
+    conn_string = conn_string.replace("postgresql", "postgresql+psycopg")
+    return conn_string
+
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -42,7 +49,7 @@ def run_migrations_offline() -> None:
     """
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
-        url=url,
+        url=get_alembic_conn_string(),
         target_metadata=target_metadata,
         version_table_schema=target_metadata.schema,
         include_schemas=True,
@@ -61,6 +68,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    config.set_main_option("sqlalchemy.url", get_alembic_conn_string())
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
