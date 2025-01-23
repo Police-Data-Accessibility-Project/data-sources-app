@@ -44,3 +44,5 @@ def test_get_env_variable(
             get_env_variable(variable_name)
     else:
         assert get_env_variable(variable_name) == expected_result
+
+    mock.stop_patches()
