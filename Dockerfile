@@ -11,5 +11,3 @@ EXPOSE 8080
 COPY . .
 
 RUN chmod +x execute.sh
-
-CMD ["./execute.sh"]
