@@ -36,7 +36,7 @@ def setup_database():
     alembic_cfg = Config("alembic.ini")
     alembic_cfg.attributes["connection"] = engine.connect()
     alembic_cfg.set_main_option("sqlalchemy.url", conn_string)
-    command.upgrade(alembic_cfg, "34f45aad081a")
+    command.upgrade(alembic_cfg, "head")
     yield
     try:
         command.downgrade(alembic_cfg, "base")
