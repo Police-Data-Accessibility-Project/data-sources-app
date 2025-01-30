@@ -8,6 +8,7 @@ import uuid
 import zoneinfo
 from collections import namedtuple
 from datetime import datetime, timedelta, timezone
+from time import sleep
 
 import pytest
 from psycopg import sql
@@ -368,7 +369,7 @@ def test_approval_status_updated_at(
 ):
     tdc = test_data_creator_db_client
     # Create bare-minimum fake data source
-    data_source_id = tdc.data_source().id
+    data_source_id = tdc.data_source(approval_status=ApprovalStatus.PENDING).id
 
     def get_approval_status_updated_at():
         return tdc.db_client._select_single_entry_from_relation(
@@ -407,7 +408,7 @@ def test_qualifying_notifications_view(
 
     tdc = test_data_creator_db_client
     tdc.clear_test_data()
-    old_date = datetime.now() - timedelta(days=60)
+    old_date = datetime.now() - timedelta(days=61)
     notification_valid_date = get_notification_valid_date()
 
     # Set all non-test data sources and data requests to the old date
@@ -494,16 +495,16 @@ def test_qualifying_notifications_view(
     # and that their location ids are correct
     results = tdc.db_client._select_from_relation(
         relation_name=Relations.QUALIFYING_NOTIFICATIONS.value,
-        columns=["entity_id", "location_id"],
+        columns=["entity_id", "location_id", "event_type"],
     )
 
     assert len(results) == 3
     d = {}
     for result in results:
-        d[result["entity_id"]] = result["location_id"]
-    assert d[ds_info_1.id] == location_1_id
-    assert d[dr_open_info_1.id] == location_2_id
-    assert d[dr_active_info_1.id] == location_2_id
+        d[result["event_type"]] = result["entity_id"], result["location_id"]
+    assert d["Request Ready to Start"] == (dr_open_info_1.id, location_2_id)
+    assert d["Request Complete"] == (dr_active_info_1.id, location_2_id)
+    assert d["Data Source Approved"] == (ds_info_1.id, location_1_id)
 
 
 def test_dependent_locations_view(test_data_creator_db_client: TestDataCreatorDBClient):
