@@ -17,6 +17,102 @@ def transform_record_categories(value: str) -> Optional[list[RecordCategories]]:
     return None
 
 
+RECORD_CATEGORY_METADATA = {
+    "transformation_function": transform_record_categories,
+    "description": "The record categories of the search. If empty, all categories will be searched."
+    "Multiple record categories can be provided as a comma-separated list, eg. 'Police & Public "
+    "Interactions,Agency-published Resources'."
+    "Allowable record categories include: \n  * "
+    + "\n  * ".join([e.value for e in RecordCategories]),
+    "source": SourceMappingEnum.QUERY_ARGS,
+    "location": ParserLocation.QUERY.value,
+}
+
+
+class FederalSearchRequestSchema(Schema):
+    record_categories = fields.Str(
+        required=False,
+        load_default="All",
+        metadata=RECORD_CATEGORY_METADATA,
+    )
+    page = fields.Int(
+        required=False,
+        load_default=1,
+        metadata=get_query_metadata(
+            "The page number of the results to retrieve. Begins at 1."
+        ),
+    )
+
+
+class FederalSearchResponseInnerSchema(Schema):
+    id = fields.Int(
+        required=True,
+        metadata=get_json_metadata("The ID of the search."),
+    )
+    agency_name = fields.Str(
+        required=True,
+        metadata=get_json_metadata("The name of the agency."),
+    )
+    data_source_name = fields.Str(
+        required=True,
+        metadata=get_json_metadata("The name of the data source."),
+    )
+    description = fields.Str(
+        required=True,
+        allow_none=True,
+        metadata=get_json_metadata("The description of the search."),
+    )
+    record_type = fields.Str(
+        required=True,
+        metadata=get_json_metadata("The type of the record."),
+    )
+    source_url = fields.Str(
+        required=True,
+        metadata=get_json_metadata("The URL of the data source."),
+    )
+    record_formats = fields.List(
+        fields.Str(
+            required=True,
+            metadata=get_json_metadata("The record formats of the search."),
+        ),
+        allow_none=True,
+        metadata=get_json_metadata("The record formats of the search."),
+    )
+    coverage_start = fields.Str(
+        required=True,
+        allow_none=True,
+        metadata=get_json_metadata("The start date of the search."),
+    )
+    coverage_end = fields.Str(
+        required=True,
+        metadata=get_json_metadata("The end date of the search."),
+        allow_none=True,
+    )
+    agency_supplied = fields.Bool(
+        required=True,
+        metadata=get_json_metadata("Whether the agency supplied the data."),
+    )
+    jurisdiction_type = fields.Str(
+        required=True,
+        metadata=get_json_metadata("The type of the jurisdiction."),
+    )
+
+
+class FederalSearchResponseSchema(Schema):
+    results = fields.List(
+        fields.Nested(
+            FederalSearchResponseInnerSchema(),
+            metadata=get_json_metadata("The list of results"),
+        ),
+        required=True,
+        metadata=get_json_metadata("The list of results"),
+    )
+    count = fields.Int(
+        required=True,
+        metadata=get_json_metadata("The number of results"),
+    )
+
+
 class SearchRequestSchema(Schema):
     location_id = fields.Int(
         required=False,
@@ -25,16 +121,7 @@ class SearchRequestSchema(Schema):
     record_categories = fields.Str(
         required=False,
         load_default="All",
-        metadata={
-            "transformation_function": transform_record_categories,
-            "description": "The record categories of the search. If empty, all categories will be searched."
-            "Multiple record categories can be provided as a comma-separated list, eg. 'Police & Public "
-            "Interactions,Agency-published Resources'."
-            "Allowable record categories include: \n  * "
-            + "\n  * ".join([e.value for e in RecordCategories]),
-            "source": SourceMappingEnum.QUERY_ARGS,
-            "location": ParserLocation.QUERY.value,
-        },
+        metadata=RECORD_CATEGORY_METADATA,
     )
     output_format = fields.Enum(
         required=False,
@@ -185,6 +272,11 @@ GetUserFollowedSearchesSchema = create_get_many_schema(
     data_list_schema=FollowSearchResponseSchema,
     description="The searches that the user follows.",
 )
+
+
+class FederalSearchRequestDTO(BaseModel):
+    record_categories: Optional[list[RecordCategories]] = None
+    page: Optional[int] = None
 
 
 class SearchRequestsDTO(BaseModel):

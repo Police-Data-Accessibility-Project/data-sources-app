@@ -7,9 +7,15 @@ import pytest
 from marshmallow import Schema
 
 from database_client.enums import LocationType, ApprovalStatus
-from middleware.enums import OutputFormatEnum, JurisdictionSimplified
+from middleware.enums import OutputFormatEnum, JurisdictionSimplified, JurisdictionType
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
+    AgencyInfoPostSchema,
+)
 from middleware.util import bytes_to_text_iter, read_from_csv, get_enum_values
 from resources.endpoint_schema_config import SchemaConfigs
+from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
+    generate_test_data_from_schema,
+)
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
@@ -68,12 +74,7 @@ def test_search_get(search_test_setup: SearchTestSetup):
     tdcdb = tdc.tdcdb
 
     tdcdb.link_data_source_to_agency(
-        data_source_id=tdcdb.data_source(
-            approval_status=ApprovalStatus.APPROVED,
-            record_type_id=1,
-            source_url="http://example.com",
-            agency_supplied=True,
-        ).id,
+        data_source_id=tdcdb.data_source().id,
         agency_id=tdcdb.agency(location_id=sts.location_id).id,
     )
 
@@ -86,21 +87,17 @@ def test_search_get(search_test_setup: SearchTestSetup):
         )
 
     json_data = search()
-
-    jurisdictions = get_enum_values(JurisdictionSimplified)
-
     assert json_data["count"] > 0
 
     jurisdiction_count = 0
+    jurisdictions = get_enum_values(JurisdictionSimplified)
     for jurisdiction in jurisdictions:
         jurisdiction_count += json_data["data"][jurisdiction]["count"]
 
     assert jurisdiction_count == json_data["count"]
 
     # Check that search shows up in user's recent searches
-    data = run_and_validate_request(
-        flask_client=tdc.flask_client,
-        http_method="get",
+    data = tdc.request_validator.get(
         endpoint=USER_PROFILE_RECENT_SEARCHES_ENDPOINT,
         headers=tus.jwt_authorization_header,
         expected_schema=SchemaConfigs.USER_PROFILE_RECENT_SEARCHES.value.primary_output_schema,
@@ -155,15 +152,11 @@ def test_search_get_record_categories_all(
 
     tdcdb = tdc.tdcdb
 
-    tdcdb.link_data_source_to_agency(
-        data_source_id=tdcdb.data_source(
-            approval_status=ApprovalStatus.APPROVED,
-            record_type_id=1,
-            source_url="http://example.com",
-            agency_supplied=True,
-        ).id,
-        agency_id=tdcdb.agency(location_id=sts.location_id).id,
-    )
+    for i in range(2):
+        tdcdb.link_data_source_to_agency(
+            data_source_id=tdcdb.data_source(record_type_id=i + 1).id,
+            agency_id=tdcdb.agency(location_id=sts.location_id).id,
+        )
 
     def run_search(record_categories: list[RecordCategories]) -> dict:
         return tdc.request_validator.search(
@@ -323,3 +316,58 @@ def test_search_follow(search_test_setup: SearchTestSetup):
         endpoint=url_for_following,
         expected_json_content={"message": "Location not followed."},
     )
+
+
+def test_search_federal(test_data_creator_flask: TestDataCreatorFlask):
+    tdc = test_data_creator_flask
+    tdc.clear_test_data()
+    # Create two approved federal agencies
+    agency_ids = []
+    for i in range(2):
+        a_id = tdc.request_validator.create_agency(
+            headers=tdc.get_admin_tus().jwt_authorization_header,
+            agency_post_parameters={
+                "location_info": None,
+                "agency_info": generate_test_data_from_schema(
+                    schema=AgencyInfoPostSchema(),
+                    override={
+                        "jurisdiction_type": JurisdictionType.FEDERAL.value,
+                        "approved": True,
+                    },
+                ),
+            },
+        )
+        agency_ids.append(a_id)
+
+    # Link 2 approved data sources to each federal agency
+    for i in range(2):
+        for j in range(2):
+            d_id = tdc.tdcdb.data_source(
+                approval_status=ApprovalStatus.APPROVED, record_type_id=j + 1
+            ).id
+            tdc.link_data_source_to_agency(
+                data_source_id=d_id,
+                agency_id=agency_ids[i],
+            )
+
+    # Run search and confirm 4 results
+    results = tdc.request_validator.federal_search(
+        headers=tdc.get_admin_tus().jwt_authorization_header,
+    )
+
+    assert len(results["results"]) == 4
+
+    # Check results are the same as if we did a search on all record categories
+    results_implicit = tdc.request_validator.federal_search(
+        headers=tdc.get_admin_tus().jwt_authorization_header,
+        record_categories=[rc for rc in RecordCategories if rc != RecordCategories.ALL],
+    )
+
+    assert len(results_implicit["results"]) == 4
+
+    # Search on page 2 and confirm no results
+    results = tdc.request_validator.federal_search(
+        headers=tdc.get_admin_tus().jwt_authorization_header, page=2
+    )
+
+    assert len(results["results"]) == 0

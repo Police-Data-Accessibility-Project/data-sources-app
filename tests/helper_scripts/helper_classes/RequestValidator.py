@@ -291,6 +291,28 @@ class RequestValidator:
             **kwargs,
         )
 
+    def federal_search(
+        self,
+        headers: dict,
+        page: int = 1,
+        record_categories: Optional[list[RecordCategories]] = None,
+    ):
+        endpoint_base = "/search/federal"
+        query_params = {"page": page}
+        if record_categories is not None:
+            query_params["record_categories"] = ",".join(
+                [rc.value for rc in record_categories]
+            )
+        url = add_query_params(
+            url=endpoint_base,
+            params=query_params,
+        )
+        return self.get(
+            endpoint=url,
+            headers=headers,
+            expected_schema=SchemaConfigs.SEARCH_FEDERAL_GET.value.primary_output_schema,
+        )
+
     @staticmethod
     def _get_search_query_params(record_categories, location_id: int):
         query_params = {
@@ -301,6 +323,17 @@ class RequestValidator:
                 [rc.value for rc in record_categories]
             )
         return query_params
+
+    def create_agency(
+        self,
+        headers: dict,
+        agency_post_parameters: dict,
+    ):
+        return self.post(
+            endpoint="/agencies",
+            headers=headers,
+            json=agency_post_parameters,
+        )["id"]
 
     def follow_search(
         self,

@@ -88,6 +88,9 @@ class TestDataCreatorDBClient:
     def test_name(self, midfix: str = ""):
         return f"TEST_{midfix}_{uuid.uuid4().hex}"
 
+    def test_url(self, midfix: str = ""):
+        return f"TEST_{midfix}_{uuid.uuid4().hex}.com"
+
     def clear_test_data(self):
         # Remove test data from data request
         self.helper.delete_test_like(
@@ -177,12 +180,16 @@ class TestDataCreatorDBClient:
 
     def data_source(
         self,
-        approval_status: Optional[ApprovalStatus] = None,
+        approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
+        record_type_id: int = 1,
         **additional_column_values,
     ) -> CreatedDataSource:
         cds = CreatedDataSource(id=uuid.uuid4().hex, name=self.test_name())
         source_column_value_mapping = {
             "name": cds.name,
+            "source_url": self.test_url(),
+            "agency_supplied": True,
+            "record_type_id": record_type_id,
         }
         source_column_value_mapping.update(additional_column_values)
         if approval_status is not None:

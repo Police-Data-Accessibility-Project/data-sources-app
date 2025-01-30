@@ -1323,7 +1323,7 @@ def test_optionally_update_user_notification_queue(test_data_creator_db_client):
     assert queue[0]["sent_at"] == expected_sent_at
 
     # Change `event_timestamp` of entry to two months ago
-    two_months_ago_event_timestamp = datetime.now(timezone.utc) - timedelta(days=60)
+    two_months_ago_event_timestamp = datetime.now(timezone.utc) - timedelta(days=61)
     tdc.db_client._update_entry_in_table(
         table_name=Relations.USER_NOTIFICATION_QUEUE.value,
         entry_id=queue[0]["id"],

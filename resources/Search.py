@@ -10,6 +10,7 @@ from middleware.primary_resource_logic.search_logic import (
     get_followed_searches,
     delete_followed_search,
     create_followed_search,
+    federal_search_wrapper,
 )
 
 from middleware.decorators import endpoint_info
@@ -55,6 +56,27 @@ class Search(PsycopgResource):
             wrapper_function=search_wrapper,
             access_info=access_info,
             schema_populate_parameters=SchemaConfigs.SEARCH_LOCATION_AND_RECORD_TYPE_GET.value.get_schema_populate_parameters(),
+        )
+
+
+@namespace_search.route("/federal")
+class SearchFederal(PsycopgResource):
+    """
+    A resource for performing searches in the database for Federal-level data sources
+    """
+
+    @endpoint_info(
+        namespace=namespace_search,
+        auth_info=GET_AUTH_INFO,
+        schema_config=SchemaConfigs.SEARCH_FEDERAL_GET,
+        response_info=ResponseInfo(success_message="Search successful."),
+        description="Performs a search using the provided search terms and location.",
+    )
+    def get(self, access_info: AccessInfoPrimary) -> Response:
+        return self.run_endpoint(
+            wrapper_function=federal_search_wrapper,
+            schema_populate_parameters=SchemaConfigs.SEARCH_FEDERAL_GET.value.get_schema_populate_parameters(),
+            access_info=access_info,
         )
 
 
