@@ -103,6 +103,9 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas imp
     GetUserFollowedSearchesSchema,
     SearchRequestsDTO,
     SearchResponseSchema,
+    FederalSearchRequestSchema,
+    FederalSearchResponseSchema,
+    FederalSearchRequestDTO,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyRequestsBaseSchema,
@@ -398,6 +401,11 @@ class SchemaConfigs(Enum):
         input_schema=SearchRequestSchema(),
         primary_output_schema=SearchResponseSchema(),
         input_dto_class=SearchRequestsDTO,
+    )
+    SEARCH_FEDERAL_GET = EndpointSchemaConfig(
+        input_schema=FederalSearchRequestSchema(),
+        primary_output_schema=FederalSearchResponseSchema(),
+        input_dto_class=FederalSearchRequestDTO,
     )
     SEARCH_FOLLOW_GET = EndpointSchemaConfig(
         primary_output_schema=GetUserFollowedSearchesSchema(),

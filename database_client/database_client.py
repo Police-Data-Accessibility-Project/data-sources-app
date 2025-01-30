@@ -5,7 +5,7 @@ from enum import Enum
 from functools import wraps, partialmethod
 from operator import and_
 from typing import Optional, Any, List, Callable, Union
-
+from psycopg import connection as PgConnection
 import psycopg
 import sqlalchemy.exc
 from dateutil.relativedelta import relativedelta
@@ -68,7 +68,7 @@ DATA_SOURCES_MAP_COLUMN = [
 class DatabaseClient:
 
     def __init__(self):
-        self.connection = initialize_psycopg_connection()
+        self.connection: PgConnection = initialize_psycopg_connection()
         self.session_maker = initialize_sqlalchemy_session()
         self.cursor: Optional[Cursor] = None
 
@@ -541,6 +541,17 @@ class DatabaseClient:
         """
         query = DynamicQueryConstructor.create_search_query(
             location_id=location_id,
+            record_categories=record_categories,
+        )
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
+
+    @cursor_manager()
+    def search_federal_records(
+        self, record_categories: Optional[list[RecordCategories]] = None, page: int = 1
+    ) -> List[dict]:
+        query = DynamicQueryConstructor.create_federal_search_query(
+            page=page,
             record_categories=record_categories,
         )
         self.cursor.execute(query)

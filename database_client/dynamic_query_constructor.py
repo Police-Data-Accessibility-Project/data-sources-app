@@ -7,6 +7,7 @@ from psycopg import sql
 from sqlalchemy import select
 from sqlalchemy.orm import load_only, InstrumentedAttribute, aliased
 from sqlalchemy.schema import Column
+from sqlalchemy.sql.util import join_condition
 
 from database_client.constants import (
     DATA_SOURCES_APPROVED_COLUMNS,
@@ -219,6 +220,74 @@ class DynamicQueryConstructor:
             search_term=sql.Literal(f"{search_term}%"),
             search_term_anywhere=sql.Literal(f"%{search_term}%"),
         )
+        return query
+
+    @staticmethod
+    def create_federal_search_query(
+        record_categories: Optional[list[RecordCategories]] = None,
+        page: int = 1,
+    ) -> sql.Composed:
+        base_query = sql.SQL(
+            """
+            SELECT DISTINCT
+                data_sources.id,
+                data_sources.name AS data_source_name,
+                data_sources.description,
+                record_types.name AS record_type,
+                data_sources.source_url,
+                data_sources.record_formats,
+                data_sources.coverage_start,
+                data_sources.coverage_end,
+                data_sources.agency_supplied,
+                agencies.name AS agency_name,
+                agencies.jurisdiction_type
+            FROM
+                LINK_AGENCIES_DATA_SOURCES AS agency_source_link
+            INNER JOIN
+                data_sources ON agency_source_link.data_source_id = data_sources.id
+            INNER JOIN
+                agencies ON agency_source_link.agency_id = agencies.id
+            INNER JOIN 
+                record_types on record_types.id = data_sources.record_type_id
+            """
+        )
+        where_subclauses = [
+            sql.SQL("agencies.jurisdiction_type = 'federal'"),
+            sql.SQL("data_sources.approval_status = 'approved'"),
+            sql.SQL("data_sources.url_status NOT IN ('broken', 'none found')"),
+        ]
+
+        if record_categories is not None:
+            join_conditions = [
+                sql.SQL(
+                    """
+                    INNER JOIN
+                        record_categories ON record_types.category_id = record_categories.id
+                    """
+                )
+            ]
+            where_subclauses.append(
+                sql.SQL("record_categories.name in ({record_categories})").format(
+                    record_categories=sql.SQL(",").join(
+                        sql.Literal(record_category.value)
+                        for record_category in record_categories
+                    )
+                )
+            )
+        else:
+            join_conditions = []
+
+        query = sql.Composed(
+            [
+                base_query,
+                sql.SQL(" ").join(join_conditions),
+                DynamicQueryConstructor.build_full_where_clause(where_subclauses),
+                sql.SQL("LIMIT 100 OFFSET {page}").format(
+                    page=sql.Literal((page - 1) * 100)
+                ),
+            ]
+        )
+
         return query
 
     @staticmethod

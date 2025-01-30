@@ -19,6 +19,7 @@ from middleware.enums import JurisdictionSimplified, Relations, OutputFormatEnum
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import (
     SearchRequestsDTO,
+    FederalSearchRequestDTO,
 )
 from middleware.common_response_formatting import message_response
 from middleware.util import get_datetime_now, write_to_csv, find_root_directory
@@ -112,6 +113,24 @@ def search_wrapper(
     return send_search_results(
         search_results=search_results,
         output_format=dto.output_format,
+    )
+
+
+def federal_search_wrapper(
+    db_client: DatabaseClient,
+    access_info: AccessInfoPrimary,
+    dto: FederalSearchRequestDTO,
+) -> Response:
+    explicit_record_categories = get_explicit_record_categories(dto.record_categories)
+    search_results = db_client.search_federal_records(
+        record_categories=explicit_record_categories,
+        page=dto.page,
+    )
+    return make_response(
+        {
+            "results": search_results,
+            "count": len(search_results),
+        }
     )
 
 
