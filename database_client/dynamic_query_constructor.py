@@ -323,14 +323,16 @@ class DynamicQueryConstructor:
             INNER JOIN 
                 record_types on record_types.id = data_sources.record_type_id
             LEFT JOIN
-                DEPENDENT_LOCATIONS DL ON DL.DEPENDENT_LOCATION_ID = LOCATIONS_EXPANDED.ID
+                DEPENDENT_LOCATIONS DL1 ON DL1.DEPENDENT_LOCATION_ID = LOCATIONS_EXPANDED.ID
+            LEFT JOIN 
+                DEPENDENT_LOCATIONS DL2 ON DL2.PARENT_LOCATION_ID = LOCATIONS_EXPANDED.ID
         """
         )
 
         join_conditions = []
         where_subclauses = [
             sql.SQL(
-                "(locations_expanded.id = {location_id} OR DL.PARENT_LOCATION_ID = {location_id}) "
+                "(locations_expanded.id = {location_id} OR DL1.PARENT_LOCATION_ID = {location_id} OR DL2.DEPENDENT_LOCATION_ID = {location_id})"
             ).format(location_id=sql.Literal(location_id)),
             sql.SQL("data_sources.approval_status = 'approved'"),
             sql.SQL("data_sources.url_status NOT IN ('broken', 'none found')"),
