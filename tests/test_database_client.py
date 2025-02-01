@@ -671,6 +671,13 @@ def test_search_with_location_and_record_types_real_data(
             "locality_name": None,
         }
     )
+    philadelphia_county_location_id = live_database_client.get_location_id(
+        where_mappings={
+            "state_name": "Pennsylvania",
+            "county_name": "Philadelphia",
+            "locality_name": None,
+        }
+    )
     try:
         pittsburgh_location_id = tdc.locality(locality_name="Pittsburgh")
     except IntegrityError:
@@ -681,6 +688,7 @@ def test_search_with_location_and_record_types_real_data(
                 "locality_name": "Pittsburgh",
             }
         )
+    secondary_location_id = tdc.locality()
 
     def agency_and_data_source(
         location_id, record_type: RecordType = RecordType.LIST_OF_DATA_SOURCES
@@ -694,12 +702,17 @@ def test_search_with_location_and_record_types_real_data(
         a_id = tdc.agency(location_id=location_id).id
         tdc.link_data_source_to_agency(data_source_id=ds_id, agency_id=a_id)
 
+    # State
     agency_and_data_source(pennsylvania_location_id)
     agency_and_data_source(
         pennsylvania_location_id, record_type=RecordType.RECORDS_REQUEST_INFO
     )
+    # Counties
     agency_and_data_source(allegheny_location_id)
+    agency_and_data_source(philadelphia_county_location_id)
+    # Localities
     agency_and_data_source(pittsburgh_location_id)
+    agency_and_data_source(secondary_location_id)
     agency_and_data_source(
         pittsburgh_location_id, record_type=RecordType.RECORDS_REQUEST_INFO
     )

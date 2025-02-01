@@ -296,7 +296,7 @@ class ValidNotificationEventCreator:
     def data_source_approved(self, user_id: int) -> int:
         locality_location_id = self.tdc.locality()
         agency_info = self.tdc.agency(locality_location_id)
-        ds_info = self.tdc.data_source(approval_status=ApprovalStatus.APPROVED)
+        ds_info = self.tdc.data_source()
         self.tdc.link_data_source_to_agency(
             data_source_id=ds_info.id, agency_id=agency_info.id
         )
