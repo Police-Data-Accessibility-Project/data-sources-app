@@ -10,14 +10,16 @@ from typing import Optional, Type, Union
 from flask.testing import FlaskClient
 from marshmallow import Schema
 
-from database_client.enums import SortOrder, RequestStatus
+from database_client.enums import SortOrder, RequestStatus, ApprovalStatus
 from middleware.enums import OutputFormatEnum
 from middleware.util import update_if_not_none
 from resources.endpoint_schema_config import SchemaConfigs
+from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.constants import (
     DATA_REQUESTS_BY_ID_ENDPOINT,
     AGENCIES_BASE_ENDPOINT,
     DATA_REQUESTS_POST_DELETE_RELATED_LOCATIONS_ENDPOINT,
+    DATA_SOURCES_BASE_ENDPOINT,
 )
 from tests.helper_scripts.helper_functions_simple import (
     get_authorization_header,
@@ -334,6 +336,27 @@ class RequestValidator:
             headers=headers,
             json=agency_post_parameters,
         )["id"]
+
+    def create_data_source(
+        self,
+        headers: dict,
+        source_url: str = "http://src1.com",
+        submitted_name: str = get_test_name(),
+        approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
+        **kwargs,
+    ):
+        return self.post(
+            endpoint=DATA_SOURCES_BASE_ENDPOINT,
+            headers=headers,
+            json={
+                "entry_data": {
+                    "source_url": source_url,
+                    "submitted_name": submitted_name,
+                    "approval_status": approval_status.value,
+                    **kwargs,
+                }
+            },
+        )
 
     def follow_search(
         self,

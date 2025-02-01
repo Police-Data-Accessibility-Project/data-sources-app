@@ -5,10 +5,8 @@ from flask.testing import FlaskClient
 from database_client.database_client import DatabaseClient
 from database_client.enums import RequestStatus
 from middleware.enums import JurisdictionType, PermissionsEnum
-from tests.helper_scripts.common_endpoint_calls import (
-    CreatedDataSource,
-    create_data_source_with_endpoint,
-)
+from tests.helper_scripts.common_endpoint_calls import CreatedDataSource
+from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.complex_test_data_creation_functions import (
     create_test_data_request,
     get_sample_agency_post_parameters,
@@ -54,24 +52,17 @@ class TestDataCreatorFlask:
             self.admin_tus = create_admin_test_user_setup(self.flask_client)
         return self.admin_tus
 
-    def data_source(self, location_info: Optional[dict] = None) -> CreatedDataSource:
-        ds_info = create_data_source_with_endpoint(
-            flask_client=self.flask_client,
-            jwt_authorization_header=self.get_admin_tus().jwt_authorization_header,
+    def data_source(self) -> CreatedDataSource:
+        submitted_name = get_test_name()
+        json = self.request_validator.create_data_source(
+            headers=self.get_admin_tus().jwt_authorization_header,
+            submitted_name=submitted_name,
         )
 
-        if location_info is not None:
-            run_and_validate_request(
-                flask_client=self.flask_client,
-                http_method="post",
-                endpoint=DATA_SOURCES_POST_UPDATE_LOCATION_ENDPOINT.format(
-                    data_source_id=ds_info.id
-                ),
-                headers=self.get_admin_tus().jwt_authorization_header,
-                json=location_info,
-            )
-
-        return ds_info
+        return CreatedDataSource(
+            id=json["id"],
+            name=submitted_name,
+        )
 
     def clear_test_data(self):
         tdc_db = TestDataCreatorDBClient()
@@ -189,27 +180,6 @@ class TestDataCreatorFlask:
     ):
         return self.tdcdb.locality(
             locality_name=locality_name, state_iso=state_iso, county_name=county_name
-        )
-
-    def select_only_complex_linked_resources(self):
-        """
-        Create the following:
-        * An agency
-        * A data source linked to that agency
-        * A standard user
-        * A data request linked to that data source, created by that user
-        This data source is meant to persist and not be edited, to reduce setup time.
-        :return:
-        """
-        agency_info = self.agency()
-        # TODO: Link agency with data source
-        raise NotImplementedError()
-        data_source_info = self.data_source()
-        standard_user_tus = self.standard_user()
-        data_request_info = self.data_request(standard_user_tus)
-
-        self.link_data_request_to_data_source(
-            data_source_id=data_source_info.id, data_request_id=data_request_info.id
         )
 
     def add_permission(self, user_email: str, permission: PermissionsEnum):
