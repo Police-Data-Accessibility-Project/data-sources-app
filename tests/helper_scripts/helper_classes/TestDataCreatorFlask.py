@@ -103,9 +103,15 @@ class TestDataCreatorFlask:
         )
 
     def agency(
-        self, location_info: Optional[dict] = None, agency_name: str = ""
+        self,
+        location_info: Optional[dict] = None,
+        agency_name: str = "",
+        add_test_name: bool = True,
     ) -> TestAgencyInfo:
-        submitted_name = self.tdcdb.test_name(agency_name)
+        if add_test_name and agency_name == "":
+            submitted_name = self.tdcdb.test_name(agency_name)
+        else:
+            submitted_name = agency_name
         locality_name = self.tdcdb.test_name()
         sample_agency_post_parameters = get_sample_agency_post_parameters(
             submitted_name=submitted_name,
