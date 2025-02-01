@@ -8,7 +8,7 @@ from middleware.primary_resource_logic.match_logic import (
     AgencyMatchStatus,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
-    AgencyMatchDTO,
+    AgencyMatchRequestDTO,
 )
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.complex_test_data_creation_functions import (
@@ -39,9 +39,13 @@ class TestMatchAgencySetup:
     agency_name: str
     jwt_authorization_header: dict
 
-    def additional_agency(self, locality_name: Optional[str] = None):
+    def additional_agency(
+        self, locality_name: Optional[str] = None, agency_name: str = ""
+    ):
         return self.tdc.agency(
-            location_info=get_sample_location_info(locality_name=locality_name)
+            location_info=get_sample_location_info(locality_name=locality_name),
+            agency_name=agency_name,
+            add_test_name=False,
         )
 
 
@@ -73,6 +77,7 @@ def test_agency_match_exact_match(
     )
 
     assert data["status"] == AgencyMatchStatus.EXACT.value
+    agency = data["agencies"][0]["submitted_name"]
     assert mas.agency_name in data["agencies"][0]["submitted_name"]
 
 
@@ -82,6 +87,13 @@ def test_agency_match_partial_match(match_agency_setup: TestMatchAgencySetup):
     # Add an additional agency with the same location information but different name
     # This should not be picked up.
     mas.additional_agency()
+    # Create another agency with a slightly different name and the same location
+    # This should be picked up
+    mas.additional_agency(
+        agency_name=mas.agency_name + "2",
+        locality_name=mas.location_kwargs["locality"],
+    )
+
     modified_agency_name = mas.agency_name + "1"
     data = mas.tdc.request_validator.match_agency(
         headers=mas.jwt_authorization_header,
@@ -90,7 +102,7 @@ def test_agency_match_partial_match(match_agency_setup: TestMatchAgencySetup):
     )
 
     assert data["status"] == AgencyMatchStatus.PARTIAL.value
-    assert len(data["agencies"]) == 1
+    assert len(data["agencies"]) == 2
     assert mas.agency_name in data["agencies"][0]["submitted_name"]
 
 
@@ -115,6 +127,7 @@ def test_agency_match_no_match(match_agency_setup: TestMatchAgencySetup):
         county="New York",
         locality=get_test_name(),
     )
+    assert data["status"] == AgencyMatchStatus.NO_MATCH.value
 
 
 # region Test Full Integration
