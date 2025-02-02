@@ -2,13 +2,34 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+from database_client.enums import LocationType
+from middleware.enums import AgencyType
 
-class AgencyMatchDTO(BaseModel):
+
+class AgencyMatchRequestDTO(BaseModel):
     name: str
-    state: str
+    state: Optional[str] = None
+    county: Optional[str] = None
+    locality: Optional[str] = None
+
+    def has_location_data(self) -> bool:
+        return (
+            self.state is not None
+            or self.county is not None
+            or self.locality is not None
+        )
+
+
+class AgencyMatchResponseInnerDTO(BaseModel):
+    id: int
+    name: str
+    agency_type: AgencyType
+    state: Optional[str]
     county: Optional[str]
     locality: Optional[str]
+    location_type: Optional[LocationType]
+    similarity: float
 
 
-class AgencyMatchOuterDTO(BaseModel):
-    entries: list[AgencyMatchDTO]
+class AgencyMatchResponseOuterDTO(BaseModel):
+    entries: list[AgencyMatchResponseInnerDTO]

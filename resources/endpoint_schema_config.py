@@ -16,7 +16,7 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.bulk_dtos import (
     BulkRequestDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
-    AgencyMatchDTO,
+    AgencyMatchRequestDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.reset_token_dtos import (
     ResetPasswordDTO,
@@ -544,7 +544,7 @@ class SchemaConfigs(Enum):
     # region Match
     MATCH_AGENCY = EndpointSchemaConfig(
         input_schema=AgencyMatchSchema(),
-        input_dto_class=AgencyMatchDTO,
+        input_dto_class=AgencyMatchRequestDTO,
         primary_output_schema=MatchAgencyResponseSchema(),
     )
     # endregion

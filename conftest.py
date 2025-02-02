@@ -7,14 +7,7 @@ from _pytest.monkeypatch import MonkeyPatch
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker, scoped_session
-
-# from middleware.models import db
-
 from config import limiter
-from database_client.database_client import DatabaseClient
-from database_client.models import Base
-from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from middleware.util import get_env_variable
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
@@ -27,17 +20,7 @@ from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
 dotenv.load_dotenv()
 
 
-@pytest.fixture(scope="session", autouse=True)
-def setup_database():
-    conn_string = get_env_variable("DO_DATABASE_URL")
-    conn_string = conn_string.replace("postgresql", "postgresql+psycopg")
-    engine = create_engine(conn_string)
-    # Base.metadata.drop_all(engine)
-    alembic_cfg = Config("alembic.ini")
-    alembic_cfg.attributes["connection"] = engine.connect()
-    alembic_cfg.set_main_option("sqlalchemy.url", conn_string)
-    command.upgrade(alembic_cfg, "head")
-    yield
+def downgrade_to_base(alembic_cfg: Config, engine):
     try:
         command.downgrade(alembic_cfg, "base")
     except Exception as e:
@@ -48,6 +31,25 @@ def setup_database():
 
         command.stamp(alembic_cfg, "base")
         raise e
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_database():
+    conn_string = get_env_variable("DO_DATABASE_URL")
+    conn_string = conn_string.replace("postgresql", "postgresql+psycopg")
+    engine = create_engine(conn_string)
+    # Base.metadata.drop_all(engine)
+    alembic_cfg = Config("alembic.ini")
+    alembic_cfg.attributes["connection"] = engine.connect()
+    alembic_cfg.set_main_option("sqlalchemy.url", conn_string)
+    try:
+        command.upgrade(alembic_cfg, "head")
+    except Exception as e:
+        # Downgrade to base and try again
+        downgrade_to_base(alembic_cfg, engine)
+        command.upgrade(alembic_cfg, "head")
+    yield
+    downgrade_to_base(alembic_cfg, engine)
     # Base.metadata.create_all(engine)
 
 

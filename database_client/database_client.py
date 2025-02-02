@@ -11,7 +11,7 @@ import sqlalchemy.exc
 from dateutil.relativedelta import relativedelta
 from psycopg import sql, Cursor
 from psycopg.rows import dict_row, tuple_row
-from sqlalchemy import select, MetaData, delete, update, insert
+from sqlalchemy import select, MetaData, delete, update, insert, Select, func
 from sqlalchemy.orm import aliased, defaultload, load_only
 
 from database_client.constants import METADATA_METHOD_NAMES, PAGE_SIZE
@@ -29,6 +29,7 @@ from database_client.enums import (
     RequestStatus,
     EntityType,
     EventType,
+    LocationType,
 )
 from middleware.custom_dataclasses import EventInfo, EventBatch
 from middleware.exceptions import (
@@ -45,10 +46,16 @@ from database_client.models import (
     RecentSearch,
     LinkRecentSearchRecordCategories,
     RecordCategory,
+    Agency,
+    Location,
+    LocationExpanded,
 )
-from middleware.enums import PermissionsEnum, Relations
+from middleware.enums import PermissionsEnum, Relations, AgencyType
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from middleware.initialize_sqlalchemy_session import initialize_sqlalchemy_session
+from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
+    AgencyMatchResponseInnerDTO,
+)
 from utilities.enums import RecordCategories
 
 DATA_SOURCES_MAP_COLUMN = [
@@ -1499,6 +1506,64 @@ class DatabaseClient:
             where_mappings={"id": location_id},
             alias_mappings={"id": "location_id"},
         )
+
+    @session_manager
+    def get_similar_agencies(
+        self,
+        name: str,
+        location_id: Optional[int] = None,
+    ) -> List[AgencyMatchResponseInnerDTO]:
+        """
+        Retrieve agencies similar to the query
+        Optionally filtering based on the location id
+        """
+        query = Select(
+            Agency.id,
+            Agency.submitted_name,
+            Agency.agency_type,
+            LocationExpanded.state_name,
+            LocationExpanded.county_name,
+            LocationExpanded.locality_name,
+            LocationExpanded.type,
+            func.similarity(Agency.submitted_name, name),
+        )
+        if location_id is not None:
+            query = query.where(Agency.location_id == location_id)
+        query = query.outerjoin(
+            LocationExpanded, Agency.location_id == LocationExpanded.id
+        )
+        query = query.order_by(
+            func.similarity(Agency.submitted_name, name).desc()
+        ).limit(10)
+        execute_results = self.session.execute(query).all()
+        if len(execute_results) == 0:
+            return []
+        first_similarity_value = execute_results[0][6]
+
+        def result_to_dto(result):
+            return AgencyMatchResponseInnerDTO(
+                id=result[0],
+                name=result[1],
+                agency_type=AgencyType(result[2]),
+                state=result[3],
+                county=result[4],
+                locality=result[5],
+                location_type=(
+                    LocationType(result[6]) if result[6] is not None else None
+                ),
+                similarity=result[7],
+            )
+
+        if first_similarity_value == 1:
+            return [
+                result_to_dto(execute_results[0]),
+            ]
+        dto_results = []
+        for result in execute_results:
+            dto = result_to_dto(result)
+            dto_results.append(dto)
+
+        return dto_results
 
     def get_metrics(self):
         result = self.execute_raw_sql(
