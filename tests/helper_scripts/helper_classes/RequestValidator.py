@@ -621,15 +621,20 @@ class RequestValidator:
         )
 
     def match_agency(
-        self, headers: dict, name: str, state: str, county: str, locality: str
+        self,
+        headers: dict,
+        name: str,
+        state: Optional[str] = None,
+        county: Optional[str] = None,
+        locality: Optional[str] = None,
     ):
         data = {
             "name": name,
-            "state": state,
         }
         update_if_not_none(
             dict_to_update=data,
             secondary_dict={
+                "state": state,
                 "county": county,
                 "locality": locality,
             },

@@ -77,8 +77,7 @@ def test_agency_match_exact_match(
     )
 
     assert data["status"] == AgencyMatchStatus.EXACT.value
-    agency = data["agencies"][0]["submitted_name"]
-    assert mas.agency_name in data["agencies"][0]["submitted_name"]
+    assert mas.agency_name in data["agencies"][0]["name"]
 
 
 def test_agency_match_partial_match(match_agency_setup: TestMatchAgencySetup):
@@ -103,19 +102,22 @@ def test_agency_match_partial_match(match_agency_setup: TestMatchAgencySetup):
 
     assert data["status"] == AgencyMatchStatus.PARTIAL.value
     assert len(data["agencies"]) == 2
-    assert mas.agency_name in data["agencies"][0]["submitted_name"]
+    assert mas.agency_name in data["agencies"][0]["name"]
 
 
-def test_agency_match_location_match(match_agency_setup: TestMatchAgencySetup):
+def test_agency_match_partial_match_no_location_data(
+    match_agency_setup: TestMatchAgencySetup,
+):
     mas = match_agency_setup
-    mas.additional_agency(locality_name=mas.location_kwargs["locality"])
+    for i in range(11):
+        mas.additional_agency()
 
     data = mas.tdc.request_validator.match_agency(
-        headers=mas.jwt_authorization_header,
-        name=get_test_name(),
-        **mas.location_kwargs
+        headers=mas.jwt_authorization_header, name="TEST"
     )
-    assert data["status"] == AgencyMatchStatus.NO_MATCH.value
+
+    assert data["status"] == AgencyMatchStatus.PARTIAL.value
+    assert len(data["agencies"]) == 10
 
 
 def test_agency_match_no_match(match_agency_setup: TestMatchAgencySetup):

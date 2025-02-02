@@ -15,7 +15,10 @@ class AgencyMatchSchema(Schema):
 class MatchAgenciesResultSchema(Schema):
     id = fields.Integer(metadata=get_json_metadata("The id of the agency"))
     name = fields.String(metadata=get_json_metadata("The name of the agency"))
-    agency_type = fields.String(metadata=get_json_metadata("The type of the agency"))
+    agency_type = fields.String(
+        metadata=get_json_metadata("The type of the agency"),
+        allow_none=True,
+    )
     state = fields.String(metadata=get_json_metadata("The state of the agency"))
     county = fields.String(metadata=get_json_metadata("The county of the agency"))
     locality = fields.String(metadata=get_json_metadata("The locality of the agency"))

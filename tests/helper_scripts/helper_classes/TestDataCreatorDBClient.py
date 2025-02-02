@@ -41,6 +41,14 @@ class TDCSQLAlchemyHelper:
         query = delete(table).where(column.like(like_text))
         self.db_client.execute_sqlalchemy(lambda: query)
 
+    def delete_from_table(
+        self,
+        table_name: str,
+    ):
+        table = SQL_ALCHEMY_TABLE_REFERENCE[table_name]
+        query = delete(table)
+        self.db_client.execute_sqlalchemy(lambda: query)
+
     def delete_test_like(
         self,
         table_name: str,
@@ -102,6 +110,9 @@ class TestDataCreatorDBClient:
             like_column_name="submission_notes",
         )
         # Remove test data from agency
+        self.helper.delete_from_table(
+            table_name=Relations.AGENCIES.value,
+        )
         self.helper.delete_test_like(
             table_name=Relations.AGENCIES.value,
             like_column_name="submitted_name",

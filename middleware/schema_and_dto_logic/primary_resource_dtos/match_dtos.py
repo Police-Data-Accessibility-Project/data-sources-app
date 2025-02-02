@@ -8,9 +8,9 @@ from middleware.enums import AgencyType
 
 class AgencyMatchRequestDTO(BaseModel):
     name: str
-    state: Optional[str]
-    county: Optional[str]
-    locality: Optional[str]
+    state: Optional[str] = None
+    county: Optional[str] = None
+    locality: Optional[str] = None
 
     def has_location_data(self) -> bool:
         return (

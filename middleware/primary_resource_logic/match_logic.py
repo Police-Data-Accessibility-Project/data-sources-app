@@ -12,8 +12,6 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
     AgencyMatchResponseInnerDTO,
 )
 
-from middleware.util import update_if_not_none
-
 
 class AgencyMatchStatus(Enum):
     EXACT = "Exact Match"
@@ -46,10 +44,14 @@ class AgencyMatchResponse:
         self.message = get_agency_match_message(status)
 
     def to_json(self):
+        if self.agencies is None:
+            agencies = []
+        else:
+            agencies = [agency.model_dump(mode="json") for agency in self.agencies]
         return {
             "status": self.status.value,
             "message": self.message,
-            "agencies": [agency.model_dump(mode="json") for agency in self.agencies],
+            "agencies": agencies,
         }
 
 
@@ -69,6 +71,8 @@ def try_matching_agency(
 ) -> AgencyMatchResponse:
 
     location_id: Optional[int] = _get_location_id(db_client, dto)
+    if location_id is None and dto.has_location_data():
+        return _no_match_response()
 
     entries: list[AgencyMatchResponseInnerDTO] = db_client.get_similar_agencies(
         name=dto.name, location_id=location_id
