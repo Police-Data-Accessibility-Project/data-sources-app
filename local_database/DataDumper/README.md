@@ -8,6 +8,8 @@ The DataDumper directory contains scripts for backing up and restoring the Data 
 - A `.env` file which contains environment variables for the docker container
 - A `dump` directory which stores the dump.
 
+To connect to the database, your IP address will need to be added to the "allow" list in DigitalOcean database settings. Reach out to someone with admin access to get your IP address added.
+
 ## Environment Variables
 
 | Name            | Description                                                                                                                                                                                                                                                       | Example                        |
@@ -17,7 +19,7 @@ The DataDumper directory contains scripts for backing up and restoring the Data 
 | `DUMP_PASSWORD` | The password of the user to connect to the database. | `HanviliciousHamiltonHilltops` |
 | `DUMP_DB_NAME`  | The name of the database to dump. | `source_collector_test_db`     |
 | `DUMP_PORT`     | The port of the database to dump.  | `5432`                         |
-| `RESTORE_HOST`  | The host of the database to restore into. | `127.0.0.1`                           |
+| `RESTORE_HOST`  | The host of the database to restore into. | `127.0.0.1` or 'host.docker.internal'                |
 | `RESTORE_USER`  | The username of the user to connect to the database. | `test_source_collector_user`   |
 | `RESTORE_PORT`  | The port of the database to restore into.  | `5432`                         |
 | `RESTORE_DB_NAME` | The name of the database to restore into. | `source_collector_test_db`     |
