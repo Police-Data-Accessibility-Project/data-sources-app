@@ -32,7 +32,7 @@ def spin_up_local_database():
             "docker",
             "compose",
             "-f",
-            "docker_compose.yml",
+            "docker-compose.yml",
             "up",
             "-d",
         ],
@@ -70,7 +70,10 @@ def main():
 
     restore_only = args.restore_only
 
-    print(restore_only)
+    if restore_only:
+        print("Restoring DB")
+    else:
+        print("Dumping and restoring DB")
 
     spin_up_local_database()
     if not restore_only:

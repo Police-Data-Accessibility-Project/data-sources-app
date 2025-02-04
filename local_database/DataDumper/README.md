@@ -24,3 +24,19 @@ To connect to the database, your IP address will need to be added to the "allow"
 | `RESTORE_PORT`  | The port of the database to restore into.  | `5432`                         |
 | `RESTORE_DB_NAME` | The name of the database to restore into. | `source_collector_test_db`     |
 | `RESTORE_PASSWORD` | The password of the user to connect to the database. | `HanviliciousHamiltonHilltops` |
+
+
+```
+# .env
+
+DUMP_HOST="127.0.0.1"
+DUMP_USER="test_source_collector_user"
+DUMP_PASSWORD="HanviliciousHamiltonHilltops"
+DUMP_DB_NAME="source_collector_test_db"
+DUMP_PORT=5432
+RESTORE_HOST="127.0.0.1"
+RESTORE_USER="test_source_collector_user"
+RESTORE_PORT=5432
+RESTORE_DB_NAME="source_collector_test_db"
+RESTORE_PASSWORD="HanviliciousHamiltonHilltops"
+```
