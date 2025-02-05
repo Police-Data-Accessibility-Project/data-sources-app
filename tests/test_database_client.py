@@ -504,6 +504,7 @@ def test_get_data_sources_for_map(
     results = live_database_client.get_data_sources_for_map()
     assert len(results) > 0
     assert isinstance(results[0], live_database_client.MapInfo)
+    assert results[0].location_id == location_id
 
 
 def test_get_offset():
