@@ -304,6 +304,7 @@ class DatabaseClient:
         "MapInfo",
         [
             "data_source_id",
+            "location_id",
             "data_source_name",
             "agency_id",
             "agency_name",
@@ -326,6 +327,7 @@ class DatabaseClient:
         sql_query = """
             SELECT
                 DATA_SOURCES.id AS DATA_SOURCE_ID,
+                LE.ID as LOCATION_ID,
                 DATA_SOURCES.NAME,
                 AGENCIES.ID AS AGENCY_ID,
                 AGENCIES.SUBMITTED_NAME AS AGENCY_NAME,

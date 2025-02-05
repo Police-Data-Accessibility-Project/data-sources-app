@@ -319,6 +319,9 @@ class DataSourcesMapResponseInnerSchema(Schema):
         metadata=get_json_metadata("The id of the data source")
     )
     name = fields.String(metadata=get_json_metadata("The name of the data source"))
+    location_id = fields.Integer(
+        metadata=get_json_metadata("The id of the associated location")
+    )
     agency_id = fields.Integer(
         metadata=get_json_metadata("The id of the associated agency")
     )
