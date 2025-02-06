@@ -14,6 +14,7 @@ from sqlalchemy import (
     Enum,
     Integer,
     UniqueConstraint,
+    inspect,
 )
 from sqlalchemy.dialects.postgresql import (
     ARRAY,
@@ -22,12 +23,14 @@ from sqlalchemy.dialects.postgresql import (
     TIMESTAMP,
     ENUM as pgEnum,
 )
-from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
     mapped_column,
     relationship,
+    column_property,
+    MappedColumn,
 )
 from sqlalchemy.sql.expression import false, func
 
@@ -222,14 +225,20 @@ class Agency(Base, CountMetadata):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
-    submitted_name: Mapped[Optional[str]]
+
+    # @hybrid_property
+    # def submitted_name(self):
+    #     return self.name
+    #
+    # @submitted_name.expression
+    # def submitted_name(cls):
+    #     return cls.name
+
     homepage_url: Mapped[Optional[str]]
     jurisdiction_type: Mapped[JurisdictionTypeLiteral]
     state_iso: Mapped[Optional[str]]
     municipality: Mapped[Optional[str]]
-    county_fips: Mapped[Optional[str]] = mapped_column(
-        ForeignKey("public.counties.fips")
-    )
+    county_fips: Mapped[Optional[str]]
     county_name: Mapped[Optional[str]]
     lat: Mapped[Optional[float]]
     lng: Mapped[Optional[float]]
@@ -255,6 +264,8 @@ class AgencyExpanded(Agency):
 
     __tablename__ = Relations.AGENCIES_EXPANDED.value
     id = mapped_column(None, ForeignKey("public.agencies.id"), primary_key=True)
+
+    submitted_name = Column(String)
 
     state_name = Column(String)  #
     locality_name = Column(String)  #

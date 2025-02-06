@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 
 class AgencyInfoPutDTO(BaseModel):
-    submitted_name: str = None
+    name: str = None
     jurisdiction_type: JurisdictionType = None
     agency_type: AgencyType = AgencyType.NONE
     multi_agency: bool = False
@@ -26,7 +26,7 @@ class AgencyInfoPutDTO(BaseModel):
 
 
 class AgencyInfoPostDTO(BaseModel):
-    submitted_name: str
+    name: str
     jurisdiction_type: JurisdictionType
     agency_type: AgencyType
     multi_agency: bool = False

@@ -128,7 +128,7 @@ def get_sample_location_info(locality_name: Optional[str] = None) -> dict:
 
 
 def get_sample_agency_post_parameters(
-    submitted_name,
+    name,
     locality_name,
     jurisdiction_type: JurisdictionType,
     location_info: Optional[dict] = None,
@@ -148,7 +148,7 @@ def get_sample_agency_post_parameters(
         "agency_info": generate_test_data_from_schema(
             schema=AgencyInfoPostSchema(),
             override={
-                "submitted_name": submitted_name,
+                "name": name,
                 "jurisdiction_type": JurisdictionType.LOCAL.value,
             },
         ),

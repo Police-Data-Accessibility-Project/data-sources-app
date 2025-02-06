@@ -205,6 +205,7 @@ def test_data_sources_by_id_get(test_data_creator_flask: TestDataCreatorFlask):
     assert data["name"] == cds.name
     assert data["data_requests"][0]["id"] == int(request_id)
     assert data["agencies"][0]["id"] == int(agency_id)
+    assert data["agencies"][0]["name"] == data["agencies"][0]["submitted_name"]
 
 
 def test_data_sources_by_id_put(test_data_creator_flask: TestDataCreatorFlask):

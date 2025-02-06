@@ -10,7 +10,7 @@ from middleware.schema_and_dto_logic.enums import CSVColumnCondition
 from utilities.enums import SourceMappingEnum
 
 
-def get_submitted_name_field(required: bool) -> fields.Str:
+def get_name_field(required: bool) -> fields.Str:
     return fields.Str(
         required=required,
         metadata={
@@ -154,14 +154,12 @@ class AgenciesExpandedSchema(AgencyInfoBaseSchema):
             "source": SourceMappingEnum.JSON,
         },
     )
-    submitted_name = get_submitted_name_field(required=True)
+    submitted_name = get_name_field(required=True)
     jurisdiction_type = get_jurisdiction_type_field(required=True)
     name = fields.Str(
         required=False,
         metadata={
-            "description": "The name of the agency. If a state is provided, "
-            "concatenates `submitted_name` + ` - ` + `state_iso` "
-            "to help differentiate agencies with similar names.",
+            "description": "The name of the agency.",
             "source": SourceMappingEnum.JSON,
         },
     )

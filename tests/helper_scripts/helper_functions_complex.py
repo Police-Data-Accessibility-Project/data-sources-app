@@ -130,7 +130,7 @@ def setup_get_typeahead_suggestion_test_data(cursor: Optional[psycopg.Cursor] = 
         agency_id = db_client.create_or_get(
             table_name=Relations.AGENCIES.value,
             column_value_mappings={
-                "submitted_name": "Xylodammerung Police Agency",
+                "name": "Xylodammerung Police Agency",
                 "jurisdiction_type": JurisdictionType.STATE,
                 "location_id": location_id,
             },

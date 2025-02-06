@@ -115,7 +115,7 @@ class TestDataCreatorDBClient:
         )
         self.helper.delete_test_like(
             table_name=Relations.AGENCIES.value,
-            like_column_name="submitted_name",
+            like_column_name="name",
         )
         # Remove test data from locality
         self.helper.delete_test_like(
@@ -237,7 +237,7 @@ class TestDataCreatorDBClient:
     ) -> TestAgencyInfo:
         agency_name = self.test_name()
         column_value_mappings = {
-            "submitted_name": agency_name,
+            "name": agency_name,
             "jurisdiction_type": JurisdictionType.FEDERAL.value,
         }
         column_value_mappings.update(additional_column_value_mappings)

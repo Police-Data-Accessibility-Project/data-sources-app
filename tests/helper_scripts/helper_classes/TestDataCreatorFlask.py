@@ -114,7 +114,7 @@ class TestDataCreatorFlask:
             submitted_name = agency_name
         locality_name = self.tdcdb.test_name()
         sample_agency_post_parameters = get_sample_agency_post_parameters(
-            submitted_name=submitted_name,
+            name=submitted_name,
             locality_name=locality_name,
             jurisdiction_type=JurisdictionType.LOCAL,
             location_info=location_info,
