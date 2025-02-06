@@ -19,7 +19,7 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import 
     AgencyInfoPostDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_base_schemas import (
-    get_submitted_name_field,
+    get_name_field,
     get_jurisdiction_type_field,
     AgencyInfoBaseSchema,
     AgenciesExpandedSchema,
@@ -35,12 +35,12 @@ from utilities.enums import SourceMappingEnum
 
 
 class AgencyInfoPostSchema(AgencyInfoBaseSchema):
-    submitted_name = get_submitted_name_field(required=True)
+    name = get_name_field(required=True)
     jurisdiction_type = get_jurisdiction_type_field(required=True)
 
 
 class AgencyInfoPutSchema(AgencyInfoBaseSchema):
-    submitted_name = get_submitted_name_field(required=False)
+    name = get_name_field(required=False)
     jurisdiction_type = get_jurisdiction_type_field(required=False)
 
 

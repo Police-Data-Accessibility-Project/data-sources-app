@@ -78,7 +78,7 @@ def test_agencies_post_schema():
     ):
         data = {
             "agency_info": {
-                "submitted_name": "test",
+                "name": "test",
                 "jurisdiction_type": jurisdiction_type.value,
             }
         }

@@ -330,7 +330,7 @@ class DatabaseClient:
                 LE.ID as LOCATION_ID,
                 DATA_SOURCES.NAME,
                 AGENCIES.ID AS AGENCY_ID,
-                AGENCIES.SUBMITTED_NAME AS AGENCY_NAME,
+                AGENCIES.NAME AS AGENCY_NAME,
                 LE.STATE_ISO,
                 LE.LOCALITY_NAME AS MUNICIPALITY,
                 LE.COUNTY_NAME,
@@ -750,7 +750,7 @@ class DatabaseClient:
             column_value_mappings
         )
         table = SQL_ALCHEMY_TABLE_REFERENCE[table_name]
-        statement = insert(table).values(**column_value_mappings)
+        statement = insert(table.__table__).values(**column_value_mappings)
 
         if column_to_return is not None:
             column = getattr(table, column_to_return)
@@ -1521,22 +1521,20 @@ class DatabaseClient:
         """
         query = Select(
             Agency.id,
-            Agency.submitted_name,
+            Agency.name,
             Agency.agency_type,
             LocationExpanded.state_name,
             LocationExpanded.county_name,
             LocationExpanded.locality_name,
             LocationExpanded.type,
-            func.similarity(Agency.submitted_name, name),
+            func.similarity(Agency.name, name),
         )
         if location_id is not None:
             query = query.where(Agency.location_id == location_id)
         query = query.outerjoin(
             LocationExpanded, Agency.location_id == LocationExpanded.id
         )
-        query = query.order_by(
-            func.similarity(Agency.submitted_name, name).desc()
-        ).limit(10)
+        query = query.order_by(func.similarity(Agency.name, name).desc()).limit(10)
         execute_results = self.session.execute(query).all()
         if len(execute_results) == 0:
             return []

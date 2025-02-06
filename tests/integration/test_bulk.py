@@ -218,6 +218,7 @@ def test_batch_agencies_update_happy_path(
         rows=rows,
         request_validator_method=runner.tdc.request_validator.update_agencies_bulk,
     )
+    assert len(data["errors"]) == 0, f"Incorrect number of errors: {data['errors']}"
 
     ids = [agencies[i].id for i in range(3)]
 
@@ -273,6 +274,8 @@ def test_batch_data_sources_insert_happy_path(
     data_sources_post_runner: BatchTestRunner,
 ):
     runner = data_sources_post_runner
+    for _ in range(3):
+        runner.tdc.agency()
     rows = [
         runner.generate_test_data(override={"linked_agency_ids": [1, 2, 3]})
         for _ in range(3)
