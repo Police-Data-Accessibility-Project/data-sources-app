@@ -76,22 +76,11 @@ python3 app.py
 ```
 
 
-### 8. In a new terminal window, install the Vue app.
+### 8. (If necessary) run the client locally against the API
 
-```
+If you need to run the client web application, refer to the [pdap.io documentation](https://github.com/Police-Data-Accessibility-Project/pdap.io). 
 
-cd client
-npm install
-
-```
-
-### 9. Run the development server.
-
-```
-
-npm run dev
-
-```
+Generally, local development on the client is done based on the stable deployed `dev` API, and API development can usually be verified using `curl`. But if you are working on a full stack project for which you need to run the client locally against the API locally, reach out to @maxachis and @joshuagraber in Discord for help.
 
 ## Contributing
 If you're here to submit a Pull Request, please review the important information available in CONTRIBUTING.md.
