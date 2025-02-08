@@ -51,7 +51,7 @@ class GetManyRequestsBaseSchema(Schema):
         metadata={
             "source": SourceMappingEnum.QUERY_ARGS,
             "transformation_function": lambda value: (
-                ast.literal_eval(value) if value else None
+                (value.split(",")) if value else None
             ),
             "description": "A comma-delimited list of the columns to return in the results. Defaults to all permitted if not provided.",
         },
