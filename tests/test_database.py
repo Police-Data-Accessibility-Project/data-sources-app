@@ -12,12 +12,13 @@ from time import sleep
 
 import pytest
 from psycopg import sql
+from sqlalchemy.exc import IntegrityError
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import ApprovalStatus, LocationType, RequestStatus, URLStatus
 from database_client.models import RecentSearch
-from middleware.enums import Relations
+from middleware.enums import Relations, JurisdictionType
 from tests.conftest import live_database_client
 from conftest import test_data_creator_db_client
 from tests.helper_scripts.common_test_data import get_test_name
@@ -850,3 +851,82 @@ def test_update_broken_source_url_as_of(
     now_pre = now - timedelta(hours=1)
     now_post = now + timedelta(hours=1)
     assert now_pre < get_broken_source_url_as_of() < now_post
+
+
+def test_agencies_unique_constraint(
+    test_data_creator_db_client: TestDataCreatorDBClient,
+):
+    tdc = test_data_creator_db_client
+
+    # Create two agencies with the same name
+    location_id = tdc.locality()
+    db_client = tdc.db_client
+    db_client.create_agency(
+        column_value_mappings={
+            "name": "Test Agency",
+            "location_id": location_id,
+            "jurisdiction_type": JurisdictionType.LOCAL.value,
+        }
+    )
+    with pytest.raises(IntegrityError):
+        db_client.create_agency(
+            column_value_mappings={
+                "name": "Test Agency",
+                "location_id": location_id,
+                "jurisdiction_type": JurisdictionType.LOCAL.value,
+            }
+        )
+    # Other combinations should not raise integrity error
+    db_client.create_agency(
+        column_value_mappings={
+            "name": "Test Agency",
+            "location_id": location_id,
+            "jurisdiction_type": JurisdictionType.STATE.value,
+        }
+    )
+    db_client.create_agency(
+        column_value_mappings={
+            "name": "Test Agency",
+            "location_id": tdc.locality(),
+            "jurisdiction_type": JurisdictionType.LOCAL.value,
+        }
+    )
+
+
+def test_data_sources_unique_constraint(
+    test_data_creator_db_client: TestDataCreatorDBClient,
+):
+    tdc = test_data_creator_db_client
+
+    # Create two data sources with the same name
+    db_client = tdc.db_client
+    db_client.add_new_data_source(
+        column_value_mappings={
+            "name": "Test Data Source",
+            "source_url": "http://test.com",
+            "record_type_id": 1,
+        }
+    )
+    with pytest.raises(IntegrityError):
+        db_client.add_new_data_source(
+            column_value_mappings={
+                "name": "Test Data Source",
+                "source_url": "http://test.com",
+                "record_type_id": 1,
+            }
+        )
+    # Other combinations should not raise integrity error
+    db_client.add_new_data_source(
+        column_value_mappings={
+            "name": "Test Data Source",
+            "source_url": "http://test.com",
+            "record_type_id": 2,
+        }
+    )
+    db_client.add_new_data_source(
+        column_value_mappings={
+            "name": "Test Data Source",
+            "source_url": "http://other-test.com",
+            "record_type_id": 1,
+        }
+    )
