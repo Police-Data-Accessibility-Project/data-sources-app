@@ -58,3 +58,6 @@ def test_submitted_name(alembic_runner: AlembicRunner):
     """
     )
     assert results[0][0] == "Test Name"
+
+
+
