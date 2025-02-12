@@ -43,6 +43,7 @@ def get_users_admin(
         access_info: AccessInfoPrimary
 ) -> list[dict]:
     # Return database client method
+    pass
 
 
 def get_user_by_id_admin(
