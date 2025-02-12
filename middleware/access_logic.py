@@ -208,6 +208,8 @@ def get_user_email_from_api_key(token: str) -> Optional[str]:
     api_key = ApiKey(raw_key=token)
     db_client = get_db_client()
     user_identifiers = db_client.get_user_by_api_key(api_key.key_hash)
+    if user_identifiers is None:
+        return None
     return user_identifiers.email
 
 
@@ -335,6 +337,17 @@ AUTH_METHODS_MAP = {
 }
 
 
+def check_if_valid_auth_scheme(
+    auth_scheme: AuthScheme, allowed_access_methods: list[AccessTypeEnum]
+):
+    for access_method in allowed_access_methods:
+        amc: AuthMethodConfig = AUTH_METHODS_MAP.get(access_method)
+        if auth_scheme == amc.scheme:
+            return
+
+    bad_request_abort("Invalid Auth Scheme for endpoint")
+
+
 def get_authentication(
     allowed_access_methods: list[AccessTypeEnum],
     restrict_to_permissions: Optional[list[PermissionsEnum]] = None,
@@ -353,14 +366,11 @@ def get_authentication(
 
     hai = get_header_auth_info()
 
-    invalid_auth_scheme = False
+    check_if_valid_auth_scheme(hai.auth_scheme, allowed_access_methods)
+
     for access_method in allowed_access_methods:
         amc: AuthMethodConfig = AUTH_METHODS_MAP.get(access_method)
         if amc is None:
-            continue
-
-        if hai.auth_scheme != amc.scheme:
-            invalid_auth_scheme = True
             continue
 
         access_info = try_authentication(
@@ -373,8 +383,6 @@ def get_authentication(
         if access_info:
             return access_info
 
-    if invalid_auth_scheme:
-        bad_request_abort("Invalid Auth Scheme for endpoint")
     abort(
         code=HTTPStatus.UNAUTHORIZED,
         message=get_authentication_error_message(allowed_access_methods),
