@@ -12,8 +12,9 @@ from dateutil.relativedelta import relativedelta
 from psycopg import sql, Cursor
 from psycopg.rows import dict_row, tuple_row
 from sqlalchemy import select, MetaData, delete, update, insert, Select, func
-from sqlalchemy.orm import aliased, defaultload, load_only
+from sqlalchemy.orm import aliased, defaultload, load_only, selectinload
 
+from database_client.DTOs import UserInfoNonSensitive, UsersWithPermissions
 from database_client.constants import METADATA_METHOD_NAMES, PAGE_SIZE
 from database_client.db_client_dataclasses import (
     OrderByParameters,
@@ -1442,6 +1443,49 @@ class DatabaseClient:
             where_mappings={"user_id": user_id},
         )
         return {row["account_type"]: row["account_identifier"] for row in raw_results}
+
+    def get_user_info_by_id(self, user_id: int) -> UserInfoNonSensitive:
+        result = self._select_single_entry_from_relation(
+            relation_name=Relations.USERS.value,
+            columns=[
+                "email",
+                "created_at",
+                "updated_at",
+            ],
+            where_mappings={"id": user_id},
+        )
+        return UserInfoNonSensitive(
+            id=user_id,
+            email=result["email"],
+            created_at=result["created_at"],
+            updated_at=result["updated_at"],
+        )
+
+    @session_manager
+    def get_users(self, page: int) -> List[UsersWithPermissions]:
+        raw_results = self.session.execute(
+            select(
+                User.id,
+                User.email,
+                User.created_at,
+                User.updated_at
+            ).options(
+                selectinload(User.permissions)
+            ).order_by(User.created_at.desc())
+            .limit(100)
+            .offset((page - 1) * 100)
+        ).all()
+
+        return [
+            UsersWithPermissions(
+                id=user_id,
+                email=email,
+                created_at=created_at,
+                updated_at=updated_at,
+                permissions=permissions,
+            )
+            for user_id, email, created_at, updated_at, permissions in raw_results
+        ]
 
     def get_user_email(self, user_id: int) -> str:
         return self._select_single_entry_from_relation(

@@ -20,6 +20,7 @@ class PermissionsEnum(Enum):
     READ_ALL_USER_INFO = "read_all_user_info"
     NOTIFICATIONS = "notifications"
     SOURCE_COLLECTOR = "source_collector"
+    USER_CREATE_UPDATE = "user_create_update"
 
     @classmethod
     def values(cls):
