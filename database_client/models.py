@@ -636,14 +636,14 @@ class User(Base):
         argument="Permission",
         secondary="public.user_permissions",
         primaryjoin="User.id == UserPermission.user_id",
-        secondaryjoin="UserPermission.permission_id == Permission.permission_id",
+        secondaryjoin="UserPermission.permission_id == Permission.id",
     )
 
 
 class Permission(Base):
     __tablename__ = Relations.PERMISSIONS.value
 
-    permission_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     permission_name: Mapped[str_255]
     description: Mapped[Optional[text]]
 
@@ -653,9 +653,7 @@ class UserPermission(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
-    permission_id: Mapped[int] = mapped_column(
-        ForeignKey("public.permissions.permission_id")
-    )
+    permission_id: Mapped[int] = mapped_column(ForeignKey("public.permissions.id"))
 
 
 class PendingUser(Base):

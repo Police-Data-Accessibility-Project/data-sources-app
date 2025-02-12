@@ -602,7 +602,7 @@ class DatabaseClient:
             INSERT INTO user_permissions (user_id, permission_id) 
             VALUES (
                 {id}, 
-                (SELECT permission_id FROM permissions WHERE permission_name = {permission})
+                (SELECT id FROM permissions WHERE permission_name = {permission})
             );
         """
         ).format(
@@ -617,7 +617,7 @@ class DatabaseClient:
             """
             DELETE FROM user_permissions
             WHERE user_id = {user_id}
-            AND permission_id = (SELECT permission_id FROM permissions WHERE permission_name = {permission});
+            AND permission_id = (SELECT id FROM permissions WHERE permission_name = {permission});
         """
         ).format(
             user_id=sql.Literal(user_id),
@@ -632,7 +632,7 @@ class DatabaseClient:
             SELECT p.permission_name
             FROM 
             user_permissions up
-            INNER JOIN permissions p on up.permission_id = p.permission_id
+            INNER JOIN permissions p on up.permission_id = p.id
             where up.user_id = {user_id}
         """
         ).format(

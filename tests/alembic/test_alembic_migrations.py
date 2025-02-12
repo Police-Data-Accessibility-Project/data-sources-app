@@ -10,11 +10,13 @@ def test_submitted_name(alembic_runner: AlembicRunner):
         INSERT INTO AGENCIES (
         submitted_name,
         state_iso,
-        jurisdiction_type
+        jurisdiction_type,
+        agency_type
         ) VALUES (
         'Test Name',
         'TX',
-        'state'
+        'state',
+        'police'
         );    
     """
     )
