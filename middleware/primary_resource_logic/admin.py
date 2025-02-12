@@ -91,6 +91,7 @@ def create_admin_user(
 
 def update_admin_user(db_client: DatabaseClient, access_info: AccessInfoPrimary, admin_user_id: str, dto: AdminUserPutDTO) -> dict:
     # Hash password
+    pass
 
     # Apply database client method
 
