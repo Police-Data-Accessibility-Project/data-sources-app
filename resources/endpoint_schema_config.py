@@ -12,7 +12,10 @@ from middleware.primary_resource_logic.permissions_logic import (
     PermissionsRequestDTO,
     PermissionsGetRequestSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.admin_dtos import AdminUserPutDTO, AdminUserPostDTO
+from middleware.schema_and_dto_logic.primary_resource_dtos.admin_dtos import (
+    AdminUserPutDTO,
+    AdminUserPostDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_dtos.bulk_dtos import (
     BulkRequestDTO,
 )
@@ -22,8 +25,12 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
 from middleware.schema_and_dto_logic.primary_resource_dtos.reset_token_dtos import (
     ResetPasswordDTO,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.admin_schemas import AdminUsersGetByIDResponseSchema, \
-    AdminUsersPutSchema, AdminUsersPostSchema, AdminUsersGetManyResponseSchema
+from middleware.schema_and_dto_logic.primary_resource_schemas.admin_schemas import (
+    AdminUsersGetByIDResponseSchema,
+    AdminUsersPutSchema,
+    AdminUsersPostSchema,
+    AdminUsersGetManyResponseSchema,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.archives_schemas import (
     ArchivesGetResponseSchema,
     ArchivesPutRequestSchema,
@@ -591,5 +598,4 @@ class SchemaConfigs(Enum):
     ADMIN_USERS_POST = get_post_resource_endpoint_schema_config(
         input_schema=AdminUsersPostSchema(),
         input_dto_class=AdminUserPostDTO,
-
     )

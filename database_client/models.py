@@ -639,12 +639,14 @@ class User(Base):
         secondaryjoin="UserPermission.permission_id == Permission.id",
     )
 
+
 class Permission(Base):
     __tablename__ = Relations.PERMISSIONS.value
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     permission_name: Mapped[str_255]
     description: Mapped[Optional[text]]
+
 
 class UserPermission(Base):
     __tablename__ = Relations.USER_PERMISSIONS.value

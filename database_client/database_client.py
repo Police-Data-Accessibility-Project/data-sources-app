@@ -1464,14 +1464,9 @@ class DatabaseClient:
     @session_manager
     def get_users(self, page: int) -> List[UsersWithPermissions]:
         raw_results = self.session.execute(
-            select(
-                User.id,
-                User.email,
-                User.created_at,
-                User.updated_at
-            ).options(
-                selectinload(User.permissions)
-            ).order_by(User.created_at.desc())
+            select(User.id, User.email, User.created_at, User.updated_at)
+            .options(selectinload(User.permissions))
+            .order_by(User.created_at.desc())
             .limit(100)
             .offset((page - 1) * 100)
         ).all()

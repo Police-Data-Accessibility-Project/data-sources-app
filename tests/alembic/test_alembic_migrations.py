@@ -59,6 +59,7 @@ def test_submitted_name(alembic_runner: AlembicRunner):
     )
     assert results[0][0] == "Test Name"
 
+
 def test_add_user_create_update_permissions(alembic_runner: AlembicRunner):
     alembic_runner.upgrade("83090d813802")
     # Check that create update permission does not exist

@@ -1,20 +1,26 @@
-
 from marshmallow import Schema, fields, validates_schema
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyRequestsBaseSchema,
 )
 from middleware.enums import PermissionsEnum
 
+
 class AdminUserBaseSchema(GetManyRequestsBaseSchema):
-    user_id = fields.Integer(required=True, metadata={"description": "The ID of the admin user"})
-    email = fields.Email(required=True, metadata={"description": "The email of the admin user"})
+    user_id = fields.Integer(
+        required=True, metadata={"description": "The ID of the admin user"}
+    )
+    email = fields.Email(
+        required=True, metadata={"description": "The email of the admin user"}
+    )
     permissions = fields.List(
         fields.Enum(PermissionsEnum, by_value=True),
         required=True,
         metadata={"description": "The permissions of the admin user"},
     )
-    created_at = fields.DateTime(required=True, metadata={"description": "The date and time the admin user was created"})
-
+    created_at = fields.DateTime(
+        required=True,
+        metadata={"description": "The date and time the admin user was created"},
+    )
 
 
 from marshmallow import Schema, fields
@@ -38,13 +44,18 @@ class AdminUsersGetManyResponseSchema(GetManyResponseSchemaBase):
 
 
 class AdminUsersPostSchema(AdminUserBaseSchema):
-    email = fields.Email(required=True, metadata={"description": "The email of the admin user"})
-    password = fields.String(required=True, metadata={"description": "The password of the admin user"})
+    email = fields.Email(
+        required=True, metadata={"description": "The email of the admin user"}
+    )
+    password = fields.String(
+        required=True, metadata={"description": "The password of the admin user"}
+    )
     permissions = fields.List(
         fields.Enum(PermissionsEnum, by_value=True),
         required=True,
         metadata={"description": "The permissions of the admin user"},
     )
+
 
 class AdminUsersPutSchema(AdminUserBaseSchema):
     password = fields.String(
@@ -57,7 +68,7 @@ class AdminUsersGetByIDResponseSchema(GetByIDBaseSchema):
     data = fields.Nested(
         AdminUserBaseSchema(),
         required=True,
-        metadata=get_json_metadata(description="The admin user")
+        metadata=get_json_metadata(description="The admin user"),
     )
 
 

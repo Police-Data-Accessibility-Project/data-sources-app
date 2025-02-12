@@ -3,7 +3,8 @@ from flask import Response
 from config import limiter
 from middleware.access_logic import (
     AccessInfoPrimary,
-    WRITE_USER_AUTH_INFO, READ_USER_AUTH_INFO,
+    WRITE_USER_AUTH_INFO,
+    READ_USER_AUTH_INFO,
 )
 from middleware.decorators import (
     endpoint_info,
@@ -38,7 +39,7 @@ class AdminUsersByPage(PsycopgResource):
         schema_config=SchemaConfigs.ADMIN_USERS_GET_MANY,
         response_info=ResponseInfo(
             success_message="Returns a paginated list of admin users."
-        )
+        ),
     )
     def get(self, access_info: AccessInfoPrimary) -> Response:
         """
@@ -77,7 +78,7 @@ class AdminUsersByID(PsycopgResource):
         response_info=ResponseInfo(
             success_message="Returns information on the specific admin user."
         ),
-        description="Get an admin user by id"
+        description="Get an admin user by id",
     )
     def get(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
@@ -90,9 +91,7 @@ class AdminUsersByID(PsycopgResource):
         namespace=namespace_admin,
         auth_info=WRITE_USER_AUTH_INFO,
         schema_config=SchemaConfigs.ADMIN_USERS_BY_ID_PUT,
-        response_info=ResponseInfo(
-            success_message="Admin user updated."
-        ),
+        response_info=ResponseInfo(success_message="Admin user updated."),
         description="Updates an admin user",
     )
     def put(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:

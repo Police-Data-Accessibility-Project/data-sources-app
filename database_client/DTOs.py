@@ -11,5 +11,6 @@ class UserInfoNonSensitive(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+
 class UsersWithPermissions(UserInfoNonSensitive):
     permissions: list[PermissionsEnum]
