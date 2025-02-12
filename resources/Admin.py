@@ -61,6 +61,9 @@ class AdminUsersByPage(PsycopgResource):
         ),
     )
     def post(self, access_info: AccessInfoPrimary):
+        """
+        Creates a new user.
+        """
         return self.run_endpoint(
             wrapper_function=create_admin_user,
             schema_populate_parameters=SchemaConfigs.ADMIN_USERS_POST.value.get_schema_populate_parameters(),
@@ -78,6 +81,9 @@ class AdminUsersByID(PsycopgResource):
         description="Updates an admin user",
     )
     def put(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
+        """
+        Updates a user's password
+        """
         return self.run_endpoint(
             update_user_password,
             schema_populate_parameters=SchemaConfigs.ADMIN_USERS_BY_ID_PUT.value.get_schema_populate_parameters(),
