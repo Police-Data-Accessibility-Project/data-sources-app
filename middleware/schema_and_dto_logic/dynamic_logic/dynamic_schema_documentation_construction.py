@@ -314,8 +314,11 @@ class RestxModelBuilder(RestxBuilder):
 
     def _raise_if_nonzero_parser_fields(self, fi, sorter):
         if len(sorter.parser_fields) != 0:
+            parser_field_names = [x.field_name for x in sorter.parser_fields]
             raise ValueError(
-                f"Nested Model `{fi.field_name}` in model `{self.model_name}` has fields that are identified as parser fields."
+                f"Nested Model `{fi.field_name}` in model `{self.model_name}` "
+                f"has fields that are identified as parser fields."
+                f"({parser_field_names})"
             )
 
     def _raise_if_no_model_fields(self, fi, fields):

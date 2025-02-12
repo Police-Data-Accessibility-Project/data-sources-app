@@ -7,7 +7,12 @@ import pytest
 from marshmallow import Schema
 
 from database_client.enums import LocationType, ApprovalStatus
-from middleware.enums import OutputFormatEnum, JurisdictionSimplified, JurisdictionType
+from middleware.enums import (
+    OutputFormatEnum,
+    JurisdictionSimplified,
+    JurisdictionType,
+    AgencyType,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgencyInfoPostSchema,
 )
@@ -333,6 +338,7 @@ def test_search_federal(test_data_creator_flask: TestDataCreatorFlask):
                     override={
                         "jurisdiction_type": JurisdictionType.FEDERAL.value,
                         "approved": True,
+                        "agency_type": AgencyType.POLICE.value,
                     },
                 ),
             },

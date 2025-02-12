@@ -35,7 +35,7 @@ from sqlalchemy.orm import (
 from sqlalchemy.sql.expression import false, func
 
 from database_client.enums import LocationType, AccessType
-from middleware.enums import Relations
+from middleware.enums import Relations, PermissionsEnum
 
 ExternalAccountTypeLiteral = Literal["github"]
 RecordTypeLiteral = Literal[
@@ -630,6 +630,32 @@ class User(Base):
         server_default=text_func("generate_api_key()")
     )
     role: Mapped[Optional[text]]
+
+    # Relationships
+    permissions = relationship(
+        argument="Permission",
+        secondary="public.user_permissions",
+        primaryjoin="User.id == UserPermission.user_id",
+        secondaryjoin="UserPermission.permission_id == Permission.permission_id",
+    )
+
+
+class Permission(Base):
+    __tablename__ = Relations.PERMISSIONS.value
+
+    permission_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    permission_name: Mapped[str_255]
+    description: Mapped[Optional[text]]
+
+
+class UserPermission(Base):
+    __tablename__ = Relations.USER_PERMISSIONS.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
+    permission_id: Mapped[int] = mapped_column(
+        ForeignKey("public.permissions.permission_id")
+    )
 
 
 class PendingUser(Base):

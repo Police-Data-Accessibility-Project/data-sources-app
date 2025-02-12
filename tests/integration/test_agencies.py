@@ -5,7 +5,7 @@ from datetime import datetime, timezone, timedelta
 
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import SortOrder
-from middleware.enums import JurisdictionType
+from middleware.enums import JurisdictionType, AgencyType
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgencyInfoPutSchema,
 )
@@ -270,6 +270,7 @@ def test_agencies_delete(test_data_creator_flask: TestDataCreatorFlask):
             "agency_info": {
                 "name": get_test_name(),
                 "jurisdiction_type": JurisdictionType.FEDERAL.value,
+                "agency_type": AgencyType.COURT.value,
             }
         },
     )

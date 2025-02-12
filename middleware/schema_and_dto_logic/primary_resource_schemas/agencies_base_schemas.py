@@ -71,11 +71,10 @@ class AgencyInfoBaseSchema(Schema):
         },
     )
     agency_type = fields.Enum(
-        required=False,
+        required=True,
         enum=AgencyType,
         by_value=fields.Str,
         allow_none=True,
-        load_default=AgencyType.NONE,
         metadata={
             "description": "The type of agency.",
             "source": SourceMappingEnum.JSON,

@@ -56,6 +56,14 @@ RESET_PASSWORD_AUTH_INFO = AuthenticationInfo(
 VALIDATE_EMAIL_AUTH_INFO = AuthenticationInfo(
     allowed_access_methods=[AccessTypeEnum.VALIDATE_EMAIL],
 )
+READ_USER_AUTH_INFO = AuthenticationInfo(
+    allowed_access_methods=[AccessTypeEnum.JWT],
+    restrict_to_permissions=[PermissionsEnum.READ_ALL_USER_INFO],
+)
+WRITE_USER_AUTH_INFO = AuthenticationInfo(
+    allowed_access_methods=[AccessTypeEnum.JWT],
+    restrict_to_permissions=[PermissionsEnum.USER_CREATE_UPDATE],
+)
 
 
 class AuthScheme(Enum):

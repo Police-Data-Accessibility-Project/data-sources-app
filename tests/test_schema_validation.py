@@ -3,7 +3,7 @@ import itertools
 import pytest
 from marshmallow import ValidationError
 
-from middleware.enums import JurisdictionType
+from middleware.enums import JurisdictionType, AgencyType
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgenciesPostSchema,
 )
@@ -80,6 +80,7 @@ def test_agencies_post_schema():
             "agency_info": {
                 "name": "test",
                 "jurisdiction_type": jurisdiction_type.value,
+                "agency_type": AgencyType.POLICE.value,
             }
         }
         if include_location_info:

@@ -114,7 +114,9 @@ def change_password_wrapper(
 
 def set_user_password(db_client: DatabaseClient, user_id: int, password: str):
     password_digest = generate_password_hash(password)
-    db_client.set_user_password_digest(user_id=user_id, password_digest=password_digest)
+    db_client.update_user_password_digest(
+        user_id=user_id, password_digest=password_digest
+    )
 
 
 def invalid_token_response():
