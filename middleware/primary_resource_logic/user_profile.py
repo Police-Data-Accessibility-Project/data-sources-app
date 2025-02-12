@@ -50,7 +50,7 @@ def get_user_by_id_wrapper(
     # Check that user is either owner or admin
     if (
         user_id != access_info.get_user_id()
-        and PermissionsEnum.DB_WRITE not in access_info.permissions
+        and PermissionsEnum.READ_ALL_USER_INFO not in access_info.permissions
     ):
         return FlaskResponseManager.make_response(
             data={"message": "Forbidden."}, status_code=HTTPStatus.FORBIDDEN

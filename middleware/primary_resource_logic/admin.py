@@ -2,81 +2,42 @@
 from flask import Response
 from werkzeug.security import generate_password_hash
 
-from database_client.DTOs import UserInfoNonSensitive
+from database_client.DTOs import UserInfoNonSensitive, UsersWithPermissions
+from database_client.database_client import DatabaseClient
 from middleware.access_logic import AccessInfoPrimary
-from middleware.db_client import DatabaseClient
 
 from middleware.common_response_formatting import created_id_response
-from middleware.dynamic_request_logic.supporting_classes import MiddlewareParameters
-from middleware.enums import Relations
-from middleware.primary_resource_logic.util import (
-    create_entry,
-    delete_entry,
-    get_entries,
-    get_entry_by_id,
-    update_entry,
-)
 
 from middleware.flask_response_manager import FlaskResponseManager
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+    GetByIDBaseDTO,
+    GetManyBaseDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_dtos.admin_dtos import (
     AdminUserPostDTO,
     AdminUserPutDTO,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.admin_schemas import AdminUserBaseSchema
-
-ADMIN_POST_MIDDLEWARE_PARAMETERS = MiddlewareParameters(
-    entry_name="admin_user",
-    relation=Relations.USERS.value,
-    db_client_method=DatabaseClient.create_admin_user,
-)
 
 
-ADMIN_PUT_MIDDLEWARE_PARAMETERS = MiddlewareParameters(
-    entry_name="admin_user",
-    relation=Relations.USERS.value,
-    db_client_method=DatabaseClient.update_admin_user,
-)
-
-
-def get_users_admin(
-        db_client: DatabaseClient,
-        access_info: AccessInfoPrimary
-) -> list[dict]:
+def get_users_admin(db_client: DatabaseClient, dto: GetManyBaseDTO) -> Response:
     # Return database client method
-    pass
+    results: list[UsersWithPermissions] = db_client.get_users(page=dto.page)
+    return FlaskResponseManager.make_response(
+        {
+            "message": "Returning users",
+            "data": [user.model_dump(mode="json") for user in results],
+            "metadata": {"count": len(results)},
+        }
+    )
 
 
-def get_user_by_id_admin(
-        db_client: DatabaseClient,
-        access_info: AccessInfoPrimary,
-        user_id: str
-) -> Response:
-    # Return database client method
-    user_info: UserInfoNonSensitive = db_client.get_user_info_by_id(user_id)
-
-    user_permissions = db_client.get_user_permissions(user_id)
-
-    return FlaskResponseManager.make_response({
-        "id": user_info.id,
-        "created_at": user_info.created_at,
-        "updated_at": user_info.updated_at,
-        "email": user_info.email,
-        "permissions": [permission.value for permission in user_permissions]
-    })
-
-
-def create_admin_user(
-        db_client: DatabaseClient,
-        access_info: AccessInfoPrimary,
-        dto: AdminUserPostDTO
-) -> Response:
+def create_admin_user(db_client: DatabaseClient, dto: AdminUserPostDTO) -> Response:
     # Hash password
     password_digest = generate_password_hash(dto.password)
 
     # Apply database client method for user and get id
     user_id = db_client.create_new_user(
-        email=dto.email,
-        password_digest=password_digest
+        email=dto.email, password_digest=password_digest
     )
 
     # Apply database client method for permissions
@@ -84,15 +45,19 @@ def create_admin_user(
         db_client.add_user_permission(user_id, permission)
 
     # Return response with id
-    return created_id_response(
-        new_id=str(user_id), message="User created."
-    )
+    return created_id_response(new_id=str(user_id), message="User created.")
 
 
-def update_admin_user(db_client: DatabaseClient, access_info: AccessInfoPrimary, admin_user_id: str, dto: AdminUserPutDTO) -> dict:
+def update_user_password(
+    db_client: DatabaseClient, user_id: int, dto: AdminUserPutDTO
+) -> Response:
     # Hash password
-    pass
+    password_digest = generate_password_hash(dto.password)
 
     # Apply database client method
+    db_client.update_user_password_digest(
+        user_id=user_id, password_digest=password_digest
+    )
 
     # Return response
+    return FlaskResponseManager.make_response({"message": "User updated."})

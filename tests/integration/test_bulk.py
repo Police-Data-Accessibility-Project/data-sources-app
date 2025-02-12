@@ -8,6 +8,7 @@ from marshmallow import Schema
 
 from conftest import test_data_creator_flask, monkeysession
 from database_client.enums import LocationType
+from middleware.enums import AgencyType
 from middleware.primary_resource_logic.bulk_logic import listify_strings
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_csv_to_schema_conversion_logic import (
@@ -210,7 +211,13 @@ def test_batch_agencies_update_happy_path(
     agencies = [runner.tdc.agency() for _ in range(3)]
     locality_info = generate_agencies_locality_data()
     rows = [
-        runner.generate_test_data(override={**locality_info, "id": agencies[i].id})
+        runner.generate_test_data(
+            override={
+                **locality_info,
+                "id": agencies[i].id,
+                "agency_type": AgencyType.POLICE.value,
+            }
+        )
         for i in range(3)
     ]
     data = create_csv_and_run(

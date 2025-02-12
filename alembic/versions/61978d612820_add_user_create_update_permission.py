@@ -18,8 +18,25 @@ down_revision: Union[str, None] = "83090d813802"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
+foreign_key_name = "user_permissions_permission_id_fkey"
+
 
 def upgrade() -> None:
+    op.drop_constraint(
+        constraint_name=foreign_key_name,
+        table_name="user_permissions",
+        type_="foreignkey",
+    )
+
+    op.create_foreign_key(
+        constraint_name=foreign_key_name,
+        source_table="user_permissions",
+        referent_table="permissions",
+        local_cols=["permission_id"],
+        remote_cols=["permission_id"],
+        ondelete="CASCADE",
+    )
+
     op.execute(
         """
         INSERT INTO PERMISSIONS(
@@ -33,9 +50,25 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+
     op.execute(
         """
-        DELETE FROM PERMISSIONS 
+        DELETE FROM PERMISSIONS
         WHERE permission_name = 'user_create_update';
         """
+    )
+
+    op.drop_constraint(
+        constraint_name=foreign_key_name,
+        table_name="user_permissions",
+        type_="foreignkey",
+    )
+
+    op.create_foreign_key(
+        constraint_name=foreign_key_name,
+        source_table="user_permissions",
+        referent_table="permissions",
+        local_cols=["permission_id"],
+        remote_cols=["permission_id"],
+        ondelete="NO ACTION",
     )

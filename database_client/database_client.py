@@ -12,7 +12,7 @@ from dateutil.relativedelta import relativedelta
 from psycopg import sql, Cursor
 from psycopg.rows import dict_row, tuple_row
 from sqlalchemy import select, MetaData, delete, update, insert, Select, func
-from sqlalchemy.orm import aliased, defaultload, load_only, selectinload
+from sqlalchemy.orm import aliased, defaultload, load_only, selectinload, joinedload
 
 from database_client.DTOs import UserInfoNonSensitive, UsersWithPermissions
 from database_client.constants import METADATA_METHOD_NAMES, PAGE_SIZE
@@ -193,7 +193,7 @@ class DatabaseClient:
             return None
         return int(results[0]["id"])
 
-    def set_user_password_digest(self, user_id: int, password_digest: str):
+    def update_user_password_digest(self, user_id: int, password_digest: str):
         """
         Updates the password digest for a user in the database.
         :param user_id:
@@ -590,7 +590,7 @@ class DatabaseClient:
         )
 
     @cursor_manager()
-    def add_user_permission(self, user_id: str, permission: PermissionsEnum):
+    def add_user_permission(self, user_id: str or int, permission: PermissionsEnum):
         """
         Adds a permission to a user.
 
@@ -1455,7 +1455,7 @@ class DatabaseClient:
             where_mappings={"id": user_id},
         )
         return UserInfoNonSensitive(
-            id=user_id,
+            user_id=user_id,
             email=result["email"],
             created_at=result["created_at"],
             updated_at=result["updated_at"],
@@ -1464,23 +1464,34 @@ class DatabaseClient:
     @session_manager
     def get_users(self, page: int) -> List[UsersWithPermissions]:
         raw_results = self.session.execute(
-            select(User.id, User.email, User.created_at, User.updated_at)
+            select(User)
             .options(selectinload(User.permissions))
             .order_by(User.created_at.desc())
             .limit(100)
             .offset((page - 1) * 100)
         ).all()
 
-        return [
-            UsersWithPermissions(
-                id=user_id,
-                email=email,
-                created_at=created_at,
-                updated_at=updated_at,
-                permissions=permissions,
+        final_results = []
+
+        for raw_result in raw_results:
+            user = raw_result[0]
+            permissions_db = user.permissions
+            permissions_str = [
+                permission.permission_name for permission in permissions_db
+            ]
+            permissions_enum = [
+                PermissionsEnum(permission) for permission in permissions_str
+            ]
+            uwp = UsersWithPermissions(
+                user_id=user.id,
+                email=user.email,
+                created_at=user.created_at,
+                updated_at=user.updated_at,
+                permissions=permissions_enum,
             )
-            for user_id, email, created_at, updated_at, permissions in raw_results
-        ]
+            final_results.append(uwp)
+
+        return final_results
 
     def get_user_email(self, user_id: int) -> str:
         return self._select_single_entry_from_relation(

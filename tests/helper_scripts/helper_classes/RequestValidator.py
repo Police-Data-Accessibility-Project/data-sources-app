@@ -5,13 +5,13 @@ Class based means to run and validate requests
 from dataclasses import dataclass
 from http import HTTPStatus
 from io import BytesIO
-from typing import Optional, Type, Union
+from typing import Optional, Type, Union, List
 
 from flask.testing import FlaskClient
 from marshmallow import Schema
 
 from database_client.enums import SortOrder, RequestStatus, ApprovalStatus
-from middleware.enums import OutputFormatEnum
+from middleware.enums import OutputFormatEnum, PermissionsEnum
 from middleware.util import update_if_not_none
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.common_test_data import get_test_name
@@ -679,6 +679,46 @@ class RequestValidator:
             endpoint=f"/api/metrics",
             headers=headers,
             expected_schema=SchemaConfigs.METRICS_GET.value.primary_output_schema,
+        )
+
+    def get_user_by_id_admin(self, headers: dict, user_id: str):
+        return self.get(
+            endpoint=f"/api/admin/users/{user_id}",
+            headers=headers,
+            expected_schema=SchemaConfigs.ADMIN_USERS_BY_ID_GET.value.primary_output_schema,
+        )
+
+    def get_users(self, headers: dict, page: int = 1):
+        return self.get(
+            endpoint=f"/api/admin/users?page={page}",
+            headers=headers,
+            expected_schema=SchemaConfigs.ADMIN_USERS_GET_MANY.value.primary_output_schema,
+        )
+
+    def create_user(
+        self,
+        headers: dict,
+        email: str,
+        password: str,
+        permissions: List[str],
+    ):
+        return self.post(
+            endpoint="/api/admin/users",
+            headers=headers,
+            json={
+                "email": email,
+                "password": password,
+                "permissions": permissions,
+            },
+            expected_schema=SchemaConfigs.ADMIN_USERS_POST.value.primary_output_schema,
+        )
+
+    def update_admin_user(self, headers: dict, resource_id: str, password: str):
+        return self.put(
+            endpoint=f"/api/admin/users/{resource_id}",
+            headers=headers,
+            json={"password": password},
+            expected_schema=SchemaConfigs.ADMIN_USERS_BY_ID_PUT.value.primary_output_schema,
         )
 
     # endregion

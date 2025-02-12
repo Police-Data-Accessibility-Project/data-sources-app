@@ -6,7 +6,7 @@ from middleware.enums import PermissionsEnum
 
 
 class UserInfoNonSensitive(BaseModel):
-    id: int
+    user_id: int
     email: str
     created_at: datetime
     updated_at: datetime

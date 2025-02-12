@@ -590,9 +590,10 @@ class SchemaConfigs(Enum):
         primary_output_schema=AdminUsersGetByIDResponseSchema(),
     )
 
-    ADMIN_USERS_BY_ID_PUT = get_post_resource_endpoint_schema_config(
+    ADMIN_USERS_BY_ID_PUT = EndpointSchemaConfig(
         input_schema=AdminUsersPutSchema(),
         input_dto_class=AdminUserPutDTO,
+        primary_output_schema=MessageSchema(),
     )
 
     ADMIN_USERS_POST = get_post_resource_endpoint_schema_config(

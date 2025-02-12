@@ -11,7 +11,7 @@ from pydantic import BaseModel
 class AgencyInfoPutDTO(BaseModel):
     name: str = None
     jurisdiction_type: JurisdictionType = None
-    agency_type: AgencyType = AgencyType.NONE
+    agency_type: AgencyType = None
     multi_agency: bool = False
     no_web_presence: bool = False
     approved: bool = False

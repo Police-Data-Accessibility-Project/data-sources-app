@@ -86,6 +86,8 @@ class Relations(Enum):
     RECENT_SEARCHES = "recent_searches"
     RECENT_SEARCHES_EXPANDED = "recent_searches_expanded"
     LINK_RECENT_SEARCH_RECORD_CATEGORIES = "link_recent_search_record_categories"
+    PERMISSIONS = "permissions"
+    USER_PERMISSIONS = "user_permissions"
 
 
 class JurisdictionType(Enum):
@@ -119,7 +121,6 @@ class AgencyType(Enum):
     A list of valid agency types
     """
 
-    NONE = None
     AGGREGATED = "aggregated"
     COURT = "court"
     POLICE = "police"

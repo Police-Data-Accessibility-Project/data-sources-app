@@ -11,9 +11,8 @@ from middleware.decorators import (
 )
 from middleware.primary_resource_logic.admin import (
     get_users_admin,
-    get_user_by_id_admin,
     create_admin_user,
-    update_admin_user,
+    update_user_password,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GET_MANY_SCHEMA_POPULATE_PARAMETERS,
@@ -51,7 +50,6 @@ class AdminUsersByPage(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=get_users_admin,
             schema_populate_parameters=GET_MANY_SCHEMA_POPULATE_PARAMETERS,
-            access_info=access_info,
         )
 
     @endpoint_info(
@@ -71,21 +69,6 @@ class AdminUsersByPage(PsycopgResource):
 
 @namespace_admin.route("/users/<resource_id>", methods=["GET", "PUT", "DELETE"])
 class AdminUsersByID(PsycopgResource):
-    @endpoint_info(
-        namespace=namespace_admin,
-        auth_info=READ_USER_AUTH_INFO,
-        schema_config=SchemaConfigs.ADMIN_USERS_BY_ID_GET,
-        response_info=ResponseInfo(
-            success_message="Returns information on the specific admin user."
-        ),
-        description="Get an admin user by id",
-    )
-    def get(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
-        return self.run_endpoint(
-            wrapper_function=get_user_by_id_admin,
-            schema_populate_parameters=SchemaConfigs.ADMIN_USERS_BY_ID_GET.value.get_schema_populate_parameters(),
-            access_info=access_info,
-        )
 
     @endpoint_info(
         namespace=namespace_admin,
@@ -96,7 +79,7 @@ class AdminUsersByID(PsycopgResource):
     )
     def put(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
-            update_admin_user,
-            access_info=access_info,
-            admin_user_id=resource_id,
+            update_user_password,
+            schema_populate_parameters=SchemaConfigs.ADMIN_USERS_BY_ID_PUT.value.get_schema_populate_parameters(),
+            user_id=int(resource_id),
         )

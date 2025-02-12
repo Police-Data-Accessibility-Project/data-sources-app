@@ -6,6 +6,7 @@ from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 
 from middleware.util import get_env_variable
+from resources.Admin import namespace_admin
 from resources.Batch import namespace_bulk
 from resources.Callback import namespace_auth
 from resources.DataRequests import namespace_data_requests
@@ -72,6 +73,7 @@ NAMESPACES = [
     namespace_match,
     namespace_locations,
     namespace_metrics,
+    namespace_admin,
 ]
 
 MY_PREFIX = "/api"
@@ -147,7 +149,6 @@ def get_api_with_namespaces():
         description="The following is the API documentation for the PDAP Data Sources API."
         "\n\nFor API help, consult [our getting started guide.](https://docs.pdap.io/api/introduction)"
         "\n\nTo search the database, go to [pdap.io](https://pdap.io).",
-        
     )
     for namespace in NAMESPACES:
         api.add_namespace(namespace)
