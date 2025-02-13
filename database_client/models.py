@@ -236,10 +236,6 @@ class Agency(Base, CountMetadata):
 
     homepage_url: Mapped[Optional[str]]
     jurisdiction_type: Mapped[JurisdictionTypeLiteral]
-    state_iso: Mapped[Optional[str]]
-    municipality: Mapped[Optional[str]]
-    county_fips: Mapped[Optional[str]]
-    county_name: Mapped[Optional[str]]
     lat: Mapped[Optional[float]]
     lng: Mapped[Optional[float]]
     defunct_year: Mapped[Optional[str]]
@@ -269,6 +265,10 @@ class AgencyExpanded(Agency):
 
     state_name = Column(String)  #
     locality_name = Column(String)  #
+    state_iso: Mapped[Optional[str]]
+    municipality: Mapped[Optional[str]]
+    county_fips: Mapped[Optional[str]]
+    county_name: Mapped[Optional[str]]
 
     # Some attributes need to be overwritten by the attributes provided by locations_expanded
     state_iso = Column(String)
