@@ -11,7 +11,7 @@ import sqlalchemy.exc
 from dateutil.relativedelta import relativedelta
 from psycopg import sql, Cursor
 from psycopg.rows import dict_row, tuple_row
-from sqlalchemy import select, MetaData, delete, update, insert, Select, func
+from sqlalchemy import select, MetaData, delete, update, insert, Select, func, desc
 from sqlalchemy.orm import aliased, defaultload, load_only, selectinload, joinedload
 
 from database_client.DTOs import UserInfoNonSensitive, UsersWithPermissions
@@ -50,10 +50,15 @@ from database_client.models import (
     Agency,
     Location,
     LocationExpanded,
+    TableCountLog,
 )
 from middleware.enums import PermissionsEnum, Relations, AgencyType
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from middleware.initialize_sqlalchemy_session import initialize_sqlalchemy_session
+from middleware.miscellaneous_logic.table_count_logic import (
+    TableCountReference,
+    TableCountReferenceManager,
+)
 from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
     AgencyMatchResponseInnerDTO,
 )
@@ -588,6 +593,46 @@ class DatabaseClient:
                 "account_identifier": external_account_id,
             },
         )
+
+    @session_manager
+    def get_table_count(self, table_name: str) -> int:
+        table = SQL_ALCHEMY_TABLE_REFERENCE[table_name]
+        count = self.session.query(func.count(table.id)).scalar()
+        return count
+
+    @session_manager
+    def log_table_counts(self, tcrs: list[TableCountReference]):
+        # Add entry to TableCountLog
+        for tcr in tcrs:
+            new_entry = TableCountLog(table_name=tcr.table, count=tcr.count)
+            self.session.add(new_entry)
+
+    @session_manager
+    def get_most_recent_logged_table_counts(self) -> TableCountReferenceManager:
+        # Get the most recent table count for all distinct tables
+        subquery = select(
+            TableCountLog.table_name,
+            TableCountLog.count,
+            func.row_number()
+            .over(
+                partition_by=TableCountLog.table_name,
+                order_by=desc(TableCountLog.created_at),
+            )
+            .label("row_num"),
+        ).subquery()
+
+        stmt = select(subquery.c.table_name, subquery.c.count).where(
+            subquery.c.row_num == 1
+        )
+
+        results = self.session.execute(stmt).all()
+        tcr = TableCountReferenceManager()
+        for result in results:
+            tcr.add_table_count(
+                table_name=result[0],
+                count=result[1],
+            )
+        return tcr
 
     @cursor_manager()
     def add_user_permission(self, user_id: str or int, permission: PermissionsEnum):

@@ -273,6 +273,15 @@ class AgencyExpanded(Agency):
     )
 
 
+class TableCountLog(Base):
+    __tablename__ = Relations.TABLE_COUNT_LOG.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    table_name: Mapped[str]
+    count: Mapped[int]
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
+
 class County(Base):
     __tablename__ = Relations.COUNTIES.value
     __table_args__ = (UniqueConstraint("fips", name="unique_fips"),)
