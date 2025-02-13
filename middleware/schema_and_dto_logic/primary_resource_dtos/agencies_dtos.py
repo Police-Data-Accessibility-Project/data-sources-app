@@ -19,7 +19,6 @@ class AgencyInfoPutDTO(BaseModel):
     lat: float = None
     lng: float = None
     defunct_year: str = None
-    zip_code: str = None
     rejection_reason: str = None
     last_approval_editor: str = None
     submitter_contact: str = None
@@ -36,7 +35,6 @@ class AgencyInfoPostDTO(BaseModel):
     lat: Optional[float] = None
     lng: Optional[float] = None
     defunct_year: Optional[str] = None
-    zip_code: Optional[str] = None
     rejection_reason: Optional[str] = None
     last_approval_editor: Optional[str] = None
     submitter_contact: Optional[str] = None

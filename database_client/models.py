@@ -225,15 +225,6 @@ class Agency(Base, CountMetadata):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
-
-    # @hybrid_property
-    # def submitted_name(self):
-    #     return self.name
-    #
-    # @submitted_name.expression
-    # def submitted_name(cls):
-    #     return cls.name
-
     homepage_url: Mapped[Optional[str]]
     jurisdiction_type: Mapped[JurisdictionTypeLiteral]
     lat: Mapped[Optional[float]]
@@ -241,7 +232,6 @@ class Agency(Base, CountMetadata):
     defunct_year: Mapped[Optional[str]]
     agency_type: Mapped[Optional[str]]
     multi_agency: Mapped[bool] = mapped_column(server_default=false())
-    zip_code: Mapped[Optional[str]]
     no_web_presence: Mapped[bool] = mapped_column(server_default=false())
     airtable_agency_last_modified: Mapped[timestamp_tz] = mapped_column(
         server_default=func.current_timestamp()
