@@ -22,6 +22,7 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     op.execute("DROP VIEW IF EXISTS public.agencies_expanded;")
     op.drop_column(table_name="agencies", column_name="zip_code")
+    op.drop_column(table_name="agencies", column_name="county_airtable_uid")
     op.execute(
         """
     CREATE OR REPLACE VIEW public.agencies_expanded
@@ -66,6 +67,15 @@ def downgrade() -> None:
     op.add_column(
         table_name="agencies",
         column=sa.Column("zip_code", sa.VARCHAR(), autoincrement=False, nullable=True),
+    )
+    op.add_column(
+        table_name="agencies",
+        column=sa.Column(
+            "county_airtable_uid",
+            sa.VARCHAR(),
+            autoincrement=False,
+            nullable=True,
+        ),
     )
 
     op.execute(
