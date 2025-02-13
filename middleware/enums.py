@@ -88,6 +88,7 @@ class Relations(Enum):
     LINK_RECENT_SEARCH_RECORD_CATEGORIES = "link_recent_search_record_categories"
     PERMISSIONS = "permissions"
     USER_PERMISSIONS = "user_permissions"
+    TABLE_COUNT_LOG = "table_count_log"
 
 
 class JurisdictionType(Enum):

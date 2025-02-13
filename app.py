@@ -5,6 +5,8 @@ from flask import Flask
 from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 
+from middleware.SchedulerManager import SchedulerManager
+from middleware.scheduled_tasks.check_database_health import check_database_health
 from middleware.util import get_env_variable
 from resources.Admin import namespace_admin
 from resources.Batch import namespace_bulk
@@ -138,6 +140,16 @@ def create_app() -> Flask:
     oauth.init_app(app)
     limiter.init_app(app)
     jwt.init_app(app)
+
+    # Initialize and start the scheduler
+    scheduler = SchedulerManager(app)
+    scheduler.add_job(
+        "database_health_check", check_database_health, minutes=60, delay_minutes=3
+    )
+    scheduler.start()
+
+    # Store scheduler in the app context to manage it later
+    app.scheduler = scheduler
 
     return app
 
