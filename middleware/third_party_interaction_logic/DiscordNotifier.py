@@ -9,4 +9,4 @@ class DiscordPoster:
         self.webhook_url = get_env_variable("WEBHOOK_URL")
 
     def post_to_discord(self, message):
-        requests.post(self.webhook_url, json={"content": message})
+        requests.post(self.webhook_url, json={"content": message}, timeout=5)
