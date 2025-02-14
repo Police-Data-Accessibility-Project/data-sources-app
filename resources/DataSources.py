@@ -4,7 +4,7 @@ from config import limiter
 from middleware.access_logic import (
     AccessInfoPrimary,
     WRITE_ONLY_AUTH_INFO,
-    GET_AUTH_INFO,
+    API_OR_JWT_AUTH_INFO,
     STANDARD_JWT_AUTH_INFO,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
@@ -52,7 +52,7 @@ class DataSourceById(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_data_source,
-        auth_info=GET_AUTH_INFO,
+        auth_info=API_OR_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_SOURCES_GET_BY_ID,
         response_info=ResponseInfo(
             success_message="Returns information on the specific data source.",
@@ -142,7 +142,7 @@ class DataSources(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_data_source,
-        auth_info=GET_AUTH_INFO,
+        auth_info=API_OR_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_SOURCES_GET_MANY,
         response_info=ResponseInfo(
             success_message="Returns all requested data sources.",
@@ -197,7 +197,7 @@ class DataSourcesRelatedAgencies(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_data_source,
-        auth_info=GET_AUTH_INFO,
+        auth_info=API_OR_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_GET,
         response_info=ResponseInfo(
             success_message="Related agencies successfully retrieved.",

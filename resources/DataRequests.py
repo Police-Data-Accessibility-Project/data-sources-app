@@ -3,7 +3,7 @@ from flask import Response
 from config import limiter
 from middleware.access_logic import (
     AccessInfoPrimary,
-    GET_AUTH_INFO,
+    API_OR_JWT_AUTH_INFO,
     STANDARD_JWT_AUTH_INFO,
 )
 from middleware.primary_resource_logic.data_requests import (
@@ -44,7 +44,7 @@ class DataRequestsById(PsycopgResource):
     # TODO: More thoroughly update to endpoint_info_2
     @endpoint_info(
         namespace=namespace_data_requests,
-        auth_info=GET_AUTH_INFO,
+        auth_info=API_OR_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_REQUESTS_BY_ID_GET,
         response_info=ResponseInfo(
             success_message="Returns information on the specific data request.",
@@ -109,7 +109,7 @@ class DataRequests(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_data_requests,
-        auth_info=GET_AUTH_INFO,
+        auth_info=API_OR_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_REQUESTS_GET_MANY,
         response_info=ResponseInfo(
             success_message="Returns a paginated list of data requests.",
@@ -151,7 +151,7 @@ class DataRequestsRelatedSources(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_data_requests,
-        auth_info=GET_AUTH_INFO,
+        auth_info=API_OR_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_REQUESTS_RELATED_SOURCES_GET,
         response_info=ResponseInfo(
             success_message="Related sources successfully retrieved.",
@@ -240,7 +240,7 @@ class DataRequestsRelatedLocations(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_data_requests,
-        auth_info=GET_AUTH_INFO,
+        auth_info=API_OR_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_GET,
         response_info=ResponseInfo(
             success_message="Related locations successfully retrieved.",
