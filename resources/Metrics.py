@@ -1,6 +1,6 @@
 from flask import Response
 
-from middleware.access_logic import AccessInfoPrimary, GET_AUTH_INFO
+from middleware.access_logic import AccessInfoPrimary, API_OR_JWT_AUTH_INFO
 from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.metrics_logic import get_metrics
 from resources.PsycopgResource import PsycopgResource
@@ -16,7 +16,7 @@ class Metrics(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_metrics,
-        auth_info=GET_AUTH_INFO,
+        auth_info=API_OR_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.METRICS_GET,
         description="Returns the metrics for the application.",
         response_info=ResponseInfo(

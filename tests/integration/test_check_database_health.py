@@ -1,9 +1,6 @@
 from unittest.mock import MagicMock, call
 
 from middleware.scheduled_tasks.check_database_health import check_database_health_inner
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
-    TestDataCreatorFlask,
-)
 
 
 def wipe_database(db_client):

@@ -165,3 +165,10 @@ class RecordType(Enum):
     COURT_CASES = "Court Cases"
     INCARCERATION_RECORDS = "Incarceration Records"
     OTHER = "Other"
+
+
+class ContactFormMessageType(Enum):
+    GENERAL = "general"
+    BUG_REPORT = "bug_report"
+    SECURITY_VULNERABILITY = "security_vulnerability"
+    DATA_CORRECTION = "data_correction"

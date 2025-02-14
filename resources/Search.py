@@ -1,7 +1,7 @@
 from flask import Response
 
 from middleware.access_logic import (
-    GET_AUTH_INFO,
+    API_OR_JWT_AUTH_INFO,
     STANDARD_JWT_AUTH_INFO,
     AccessInfoPrimary,
 )
@@ -34,7 +34,7 @@ class Search(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_search,
-        auth_info=GET_AUTH_INFO,
+        auth_info=API_OR_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.SEARCH_LOCATION_AND_RECORD_TYPE_GET,
         response_info=ResponseInfo(success_message="Search successful."),
         description="Performs a search using the provided search terms and location.",
@@ -67,7 +67,7 @@ class SearchFederal(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_search,
-        auth_info=GET_AUTH_INFO,
+        auth_info=API_OR_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.SEARCH_FEDERAL_GET,
         response_info=ResponseInfo(success_message="Search successful."),
         description="Performs a search using the provided search terms and location.",
@@ -88,7 +88,7 @@ class SearchFollow(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_search,
-        auth_info=GET_AUTH_INFO,
+        auth_info=API_OR_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.SEARCH_FOLLOW_GET,
         response_info=ResponseInfo(
             success_message="Returns the searches that the user follows."

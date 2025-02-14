@@ -2,7 +2,7 @@ from flask import Response, request
 from flask_restx import fields
 
 from middleware.access_logic import (
-    GET_AUTH_INFO,
+    API_OR_JWT_AUTH_INFO,
     AccessInfoPrimary,
     WRITE_ONLY_AUTH_INFO,
 )
@@ -34,7 +34,7 @@ class Archives(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_archives,
-        auth_info=GET_AUTH_INFO,
+        auth_info=API_OR_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.ARCHIVES_GET,
         response_info=ResponseInfo(
             success_message="Returns a list of archived data sources.",

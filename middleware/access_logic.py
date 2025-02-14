@@ -46,7 +46,7 @@ WRITE_ONLY_AUTH_INFO = AuthenticationInfo(
 STANDARD_JWT_AUTH_INFO = AuthenticationInfo(
     allowed_access_methods=[AccessTypeEnum.JWT],
 )
-GET_AUTH_INFO = AuthenticationInfo(
+API_OR_JWT_AUTH_INFO = AuthenticationInfo(
     allowed_access_methods=[AccessTypeEnum.API_KEY, AccessTypeEnum.JWT],
 )
 NO_AUTH_INFO = AuthenticationInfo(no_auth=True)

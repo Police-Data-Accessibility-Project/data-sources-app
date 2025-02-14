@@ -19,6 +19,9 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.admin_dtos import (
 from middleware.schema_and_dto_logic.primary_resource_dtos.bulk_dtos import (
     BulkRequestDTO,
 )
+from middleware.schema_and_dto_logic.primary_resource_dtos.contact_dtos import (
+    ContactFormPostDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
     AgencyMatchRequestDTO,
 )
@@ -43,6 +46,9 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.bulk_schemas impor
     AgenciesPostBatchRequestSchema,
     DataSourcesPostBatchRequestSchema,
     DataSourcesPutBatchRequestSchema,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.contact_schemas import (
+    ContactFormPostSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.locations_schemas import (
     LocationInfoExpandedSchema,
@@ -600,3 +606,15 @@ class SchemaConfigs(Enum):
         input_schema=AdminUsersPostSchema(),
         input_dto_class=AdminUserPostDTO,
     )
+
+    # endregion
+
+    # region Contact
+
+    CONTACT_FORM_SUBMIT = EndpointSchemaConfig(
+        input_schema=ContactFormPostSchema(),
+        input_dto_class=ContactFormPostDTO,
+        primary_output_schema=MessageSchema(),
+    )
+
+    # endregion

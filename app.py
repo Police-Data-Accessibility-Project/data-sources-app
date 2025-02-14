@@ -11,6 +11,7 @@ from middleware.util import get_env_variable
 from resources.Admin import namespace_admin
 from resources.Batch import namespace_bulk
 from resources.Callback import namespace_auth
+from resources.Contact import namespace_contact
 from resources.DataRequests import namespace_data_requests
 from resources.GithubDataRequests import namespace_github
 from resources.LinkToGithub import namespace_link_to_github
@@ -76,6 +77,7 @@ NAMESPACES = [
     namespace_locations,
     namespace_metrics,
     namespace_admin,
+    namespace_contact,
 ]
 
 MY_PREFIX = "/api"

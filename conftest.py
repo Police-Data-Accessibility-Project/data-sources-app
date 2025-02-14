@@ -69,7 +69,7 @@ def monkeysession(request):
     mpatch.undo()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def test_data_creator_flask(setup_database, monkeysession) -> TestDataCreatorFlask:
     from app import create_app
 
