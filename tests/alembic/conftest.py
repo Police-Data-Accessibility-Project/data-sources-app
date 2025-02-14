@@ -44,12 +44,6 @@ def alembic_runner(connection, alembic_config) -> AlembicRunner:
     except Exception as e:
         runner.reset_schema()
         runner.stamp("base")
-    print("Running test")
     yield runner
-    print("Test complete")
+    runner.upgrade("head")
     runner.session.close()
-    # try:
-    #     runner.downgrade("base")
-    # except Exception as e:
-    #     runner.reset_schema()
-    #     runner.stamp("base")

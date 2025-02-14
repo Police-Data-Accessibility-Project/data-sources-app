@@ -71,11 +71,10 @@ class AgencyInfoBaseSchema(Schema):
         },
     )
     agency_type = fields.Enum(
-        required=False,
+        required=True,
         enum=AgencyType,
         by_value=fields.Str,
         allow_none=True,
-        load_default=AgencyType.NONE,
         metadata={
             "description": "The type of agency.",
             "source": SourceMappingEnum.JSON,
@@ -90,17 +89,6 @@ class AgencyInfoBaseSchema(Schema):
             "source": SourceMappingEnum.JSON,
             "csv_column_name": CSVColumnCondition.SAME_AS_FIELD,
         },
-    )
-    zip_code = fields.Str(
-        required=False,
-        allow_none=True,
-        metadata={
-            "description": "The zip code of the agency's location.",
-            "source": SourceMappingEnum.JSON,
-            "csv_column_name": CSVColumnCondition.SAME_AS_FIELD,
-        },
-        # TODO: Re-enable when all zip codes are of expected length
-        # validate=validate.Length(min=5),
     )
     no_web_presence = fields.Bool(
         required=False,

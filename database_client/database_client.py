@@ -11,9 +11,10 @@ import sqlalchemy.exc
 from dateutil.relativedelta import relativedelta
 from psycopg import sql, Cursor
 from psycopg.rows import dict_row, tuple_row
-from sqlalchemy import select, MetaData, delete, update, insert, Select, func
-from sqlalchemy.orm import aliased, defaultload, load_only
+from sqlalchemy import select, MetaData, delete, update, insert, Select, func, desc
+from sqlalchemy.orm import aliased, defaultload, load_only, selectinload, joinedload
 
+from database_client.DTOs import UserInfoNonSensitive, UsersWithPermissions
 from database_client.constants import METADATA_METHOD_NAMES, PAGE_SIZE
 from database_client.db_client_dataclasses import (
     OrderByParameters,
@@ -49,10 +50,15 @@ from database_client.models import (
     Agency,
     Location,
     LocationExpanded,
+    TableCountLog,
 )
 from middleware.enums import PermissionsEnum, Relations, AgencyType
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from middleware.initialize_sqlalchemy_session import initialize_sqlalchemy_session
+from middleware.miscellaneous_logic.table_count_logic import (
+    TableCountReference,
+    TableCountReferenceManager,
+)
 from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
     AgencyMatchResponseInnerDTO,
 )
@@ -192,7 +198,7 @@ class DatabaseClient:
             return None
         return int(results[0]["id"])
 
-    def set_user_password_digest(self, user_id: int, password_digest: str):
+    def update_user_password_digest(self, user_id: int, password_digest: str):
         """
         Updates the password digest for a user in the database.
         :param user_id:
@@ -588,8 +594,48 @@ class DatabaseClient:
             },
         )
 
+    @session_manager
+    def get_table_count(self, table_name: str) -> int:
+        table = SQL_ALCHEMY_TABLE_REFERENCE[table_name]
+        count = self.session.query(func.count(table.id)).scalar()
+        return count
+
+    @session_manager
+    def log_table_counts(self, tcrs: list[TableCountReference]):
+        # Add entry to TableCountLog
+        for tcr in tcrs:
+            new_entry = TableCountLog(table_name=tcr.table, count=tcr.count)
+            self.session.add(new_entry)
+
+    @session_manager
+    def get_most_recent_logged_table_counts(self) -> TableCountReferenceManager:
+        # Get the most recent table count for all distinct tables
+        subquery = select(
+            TableCountLog.table_name,
+            TableCountLog.count,
+            func.row_number()
+            .over(
+                partition_by=TableCountLog.table_name,
+                order_by=desc(TableCountLog.created_at),
+            )
+            .label("row_num"),
+        ).subquery()
+
+        stmt = select(subquery.c.table_name, subquery.c.count).where(
+            subquery.c.row_num == 1
+        )
+
+        results = self.session.execute(stmt).all()
+        tcr = TableCountReferenceManager()
+        for result in results:
+            tcr.add_table_count(
+                table_name=result[0],
+                count=result[1],
+            )
+        return tcr
+
     @cursor_manager()
-    def add_user_permission(self, user_id: str, permission: PermissionsEnum):
+    def add_user_permission(self, user_id: str or int, permission: PermissionsEnum):
         """
         Adds a permission to a user.
 
@@ -601,7 +647,7 @@ class DatabaseClient:
             INSERT INTO user_permissions (user_id, permission_id) 
             VALUES (
                 {id}, 
-                (SELECT permission_id FROM permissions WHERE permission_name = {permission})
+                (SELECT id FROM permissions WHERE permission_name = {permission})
             );
         """
         ).format(
@@ -616,7 +662,7 @@ class DatabaseClient:
             """
             DELETE FROM user_permissions
             WHERE user_id = {user_id}
-            AND permission_id = (SELECT permission_id FROM permissions WHERE permission_name = {permission});
+            AND permission_id = (SELECT id FROM permissions WHERE permission_name = {permission});
         """
         ).format(
             user_id=sql.Literal(user_id),
@@ -631,7 +677,7 @@ class DatabaseClient:
             SELECT p.permission_name
             FROM 
             user_permissions up
-            INNER JOIN permissions p on up.permission_id = p.permission_id
+            INNER JOIN permissions p on up.permission_id = p.id
             where up.user_id = {user_id}
         """
         ).format(
@@ -1442,6 +1488,55 @@ class DatabaseClient:
             where_mappings={"user_id": user_id},
         )
         return {row["account_type"]: row["account_identifier"] for row in raw_results}
+
+    def get_user_info_by_id(self, user_id: int) -> UserInfoNonSensitive:
+        result = self._select_single_entry_from_relation(
+            relation_name=Relations.USERS.value,
+            columns=[
+                "email",
+                "created_at",
+                "updated_at",
+            ],
+            where_mappings={"id": user_id},
+        )
+        return UserInfoNonSensitive(
+            user_id=user_id,
+            email=result["email"],
+            created_at=result["created_at"],
+            updated_at=result["updated_at"],
+        )
+
+    @session_manager
+    def get_users(self, page: int) -> List[UsersWithPermissions]:
+        raw_results = self.session.execute(
+            select(User)
+            .options(selectinload(User.permissions))
+            .order_by(User.created_at.desc())
+            .limit(100)
+            .offset((page - 1) * 100)
+        ).all()
+
+        final_results = []
+
+        for raw_result in raw_results:
+            user = raw_result[0]
+            permissions_db = user.permissions
+            permissions_str = [
+                permission.permission_name for permission in permissions_db
+            ]
+            permissions_enum = [
+                PermissionsEnum(permission) for permission in permissions_str
+            ]
+            uwp = UsersWithPermissions(
+                user_id=user.id,
+                email=user.email,
+                created_at=user.created_at,
+                updated_at=user.updated_at,
+                permissions=permissions_enum,
+            )
+            final_results.append(uwp)
+
+        return final_results
 
     def get_user_email(self, user_id: int) -> str:
         return self._select_single_entry_from_relation(

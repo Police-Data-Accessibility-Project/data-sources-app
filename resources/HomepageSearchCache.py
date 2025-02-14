@@ -43,7 +43,6 @@ get_result_model = namespace_homepage_search_cache.model(
         "county_name": fields.String(description="The name of the county"),
         "airtable_uid": fields.String(description="The Airtable UID of the agency"),
         "count_data_sources": fields.Integer(description="The count of data sources"),
-        "zip_code": fields.String(description="The ZIP code of the agency"),
         "no_web_presence": fields.Boolean(
             description="Indicates if the agency has no web presence"
         ),

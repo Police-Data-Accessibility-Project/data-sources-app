@@ -20,6 +20,7 @@ class PermissionsEnum(Enum):
     READ_ALL_USER_INFO = "read_all_user_info"
     NOTIFICATIONS = "notifications"
     SOURCE_COLLECTOR = "source_collector"
+    USER_CREATE_UPDATE = "user_create_update"
 
     @classmethod
     def values(cls):
@@ -85,6 +86,9 @@ class Relations(Enum):
     RECENT_SEARCHES = "recent_searches"
     RECENT_SEARCHES_EXPANDED = "recent_searches_expanded"
     LINK_RECENT_SEARCH_RECORD_CATEGORIES = "link_recent_search_record_categories"
+    PERMISSIONS = "permissions"
+    USER_PERMISSIONS = "user_permissions"
+    TABLE_COUNT_LOG = "table_count_log"
 
 
 class JurisdictionType(Enum):
@@ -118,7 +122,6 @@ class AgencyType(Enum):
     A list of valid agency types
     """
 
-    NONE = None
     AGGREGATED = "aggregated"
     COURT = "court"
     POLICE = "police"

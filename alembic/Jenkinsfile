@@ -14,4 +14,17 @@ pipeline {
             }
         }
     }
+    post {
+        failure {
+            script {
+                def payload = """{
+                    "content": "🚨 Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+                }"""
+
+                sh """
+                curl -X POST -H "Content-Type: application/json" -d '${payload}' ${env.WEBHOOK_URL}
+                """
+            }
+        }
+    }
 }

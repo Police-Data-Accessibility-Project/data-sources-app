@@ -6,7 +6,7 @@ Reach out to contact@pdap.io or make noise in Discord if you'd like access to th
 
 
 | Name                            | Description                                                                                            | Example                                         |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------- |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------ |-------------------------------------------------|
 | DO_DATABASE_URL                 | Used to connect to the database.                                                                       | `postgres://data_sources_app:<password>@db-url` |
 | VITE_VUE_API_BASE_URL           | The base URL for the API.                                                                              | `http://localhost:5000`                         |
 | VITE_VUE_APP_BASE_URL           | The base URL for the UI.                                                                               | `http://localhost:8888`                         |
@@ -19,6 +19,7 @@ Reach out to contact@pdap.io or make noise in Discord if you'd like access to th
 | GH_API_ACCESS_TOKEN             | Used to authenticate with GitHub when adding or retrieving information about GitHub Issues.            | `GithubProvidedAccessToken`                     |
 | GH_ISSUE_REPO_NAME              | Identifies the repository where issues will be created and retrieved.                                  | `github-username/github-repo-name`              |
 | VALIDATE_EMAIL_SECRET_KEY       | Used to sign and verify JWT tokens for email validation.                                               | `myCustomValidateEmailSecretKey`                |
+| WEBHOOK_URL                     | The URL where webhook events will be sent.                                                              | `https://example.com/webhook`                   |
 
 Additionally, if you are testing the email functionality, you will need to also provide the `MAILGUN_KEY` environment variable as well (also obtainable from the sources mentioned above).
 

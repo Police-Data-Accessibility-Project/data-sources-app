@@ -11,7 +11,7 @@ from database_client.enums import (
     ExternalAccountTypeEnum,
 )
 from database_client.models import SQL_ALCHEMY_TABLE_REFERENCE
-from middleware.enums import JurisdictionType, Relations
+from middleware.enums import JurisdictionType, Relations, AgencyType
 from tests.helper_scripts.common_endpoint_calls import CreatedDataSource
 from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,
@@ -239,6 +239,7 @@ class TestDataCreatorDBClient:
         column_value_mappings = {
             "name": agency_name,
             "jurisdiction_type": JurisdictionType.FEDERAL.value,
+            "agency_type": AgencyType.POLICE.value,
         }
         column_value_mappings.update(additional_column_value_mappings)
 

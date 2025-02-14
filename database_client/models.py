@@ -35,7 +35,7 @@ from sqlalchemy.orm import (
 from sqlalchemy.sql.expression import false, func
 
 from database_client.enums import LocationType, AccessType
-from middleware.enums import Relations
+from middleware.enums import Relations, PermissionsEnum
 
 ExternalAccountTypeLiteral = Literal["github"]
 RecordTypeLiteral = Literal[
@@ -225,27 +225,13 @@ class Agency(Base, CountMetadata):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
-
-    # @hybrid_property
-    # def submitted_name(self):
-    #     return self.name
-    #
-    # @submitted_name.expression
-    # def submitted_name(cls):
-    #     return cls.name
-
     homepage_url: Mapped[Optional[str]]
     jurisdiction_type: Mapped[JurisdictionTypeLiteral]
-    state_iso: Mapped[Optional[str]]
-    municipality: Mapped[Optional[str]]
-    county_fips: Mapped[Optional[str]]
-    county_name: Mapped[Optional[str]]
     lat: Mapped[Optional[float]]
     lng: Mapped[Optional[float]]
     defunct_year: Mapped[Optional[str]]
     agency_type: Mapped[Optional[str]]
     multi_agency: Mapped[bool] = mapped_column(server_default=false())
-    zip_code: Mapped[Optional[str]]
     no_web_presence: Mapped[bool] = mapped_column(server_default=false())
     airtable_agency_last_modified: Mapped[timestamp_tz] = mapped_column(
         server_default=func.current_timestamp()
@@ -269,6 +255,10 @@ class AgencyExpanded(Agency):
 
     state_name = Column(String)  #
     locality_name = Column(String)  #
+    state_iso: Mapped[Optional[str]]
+    municipality: Mapped[Optional[str]]
+    county_fips: Mapped[Optional[str]]
+    county_name: Mapped[Optional[str]]
 
     # Some attributes need to be overwritten by the attributes provided by locations_expanded
     state_iso = Column(String)
@@ -281,6 +271,15 @@ class AgencyExpanded(Agency):
         secondaryjoin="LinkAgencyDataSource.data_source_id == DataSourceExpanded.id",
         back_populates="agencies",
     )
+
+
+class TableCountLog(Base):
+    __tablename__ = Relations.TABLE_COUNT_LOG.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    table_name: Mapped[str]
+    count: Mapped[int]
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
 
 class County(Base):
@@ -630,6 +629,30 @@ class User(Base):
         server_default=text_func("generate_api_key()")
     )
     role: Mapped[Optional[text]]
+
+    # Relationships
+    permissions = relationship(
+        argument="Permission",
+        secondary="public.user_permissions",
+        primaryjoin="User.id == UserPermission.user_id",
+        secondaryjoin="UserPermission.permission_id == Permission.id",
+    )
+
+
+class Permission(Base):
+    __tablename__ = Relations.PERMISSIONS.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    permission_name: Mapped[str_255]
+    description: Mapped[Optional[text]]
+
+
+class UserPermission(Base):
+    __tablename__ = Relations.USER_PERMISSIONS.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
+    permission_id: Mapped[int] = mapped_column(ForeignKey("public.permissions.id"))
 
 
 class PendingUser(Base):
