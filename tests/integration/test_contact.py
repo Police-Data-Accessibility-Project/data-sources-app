@@ -2,7 +2,9 @@ from unittest.mock import MagicMock
 
 from middleware.enums import ContactFormMessageType
 from middleware.util import get_enum_values
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+    TestDataCreatorFlask,
+)
 
 
 def test_contact(test_data_creator_flask: TestDataCreatorFlask, monkeypatch):
@@ -10,7 +12,10 @@ def test_contact(test_data_creator_flask: TestDataCreatorFlask, monkeypatch):
 
     mock_send_via_mailgun = MagicMock()
 
-    monkeypatch.setattr("middleware.primary_resource_logic.contact_logic.send_via_mailgun", mock_send_via_mailgun)
+    monkeypatch.setattr(
+        "middleware.primary_resource_logic.contact_logic.send_via_mailgun",
+        mock_send_via_mailgun,
+    )
 
     for val in get_enum_values(ContactFormMessageType):
         tdc.request_validator.post(
@@ -19,12 +24,12 @@ def test_contact(test_data_creator_flask: TestDataCreatorFlask, monkeypatch):
             json={
                 "email": "xHbR3@example.com",
                 "type": val,
-                "message": "This is a test message"
+                "message": "This is a test message",
             },
         )
 
         mock_send_via_mailgun.assert_called_with(
             to_email="contact@pdap.io",
             subject=f"PDAP contact form: {val}",
-            text="This is a test message"
+            text="This is a test message",
         )

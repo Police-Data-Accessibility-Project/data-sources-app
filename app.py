@@ -77,7 +77,7 @@ NAMESPACES = [
     namespace_locations,
     namespace_metrics,
     namespace_admin,
-    namespace_contact
+    namespace_contact,
 ]
 
 MY_PREFIX = "/api"

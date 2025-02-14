@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, call
 
 from middleware.scheduled_tasks.check_database_health import check_database_health_inner
 
+
 def wipe_database(db_client):
     for table in ["agencies", "data_sources", "data_requests", "users"]:
         db_client.execute_raw_sql("DELETE FROM " + table)
