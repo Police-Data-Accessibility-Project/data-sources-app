@@ -187,7 +187,9 @@ def get_data_requests_wrapper(
         "order_by": OrderByParameters.construct_from_args(
             sort_by=dto.sort_by, sort_order=dto.sort_order
         ),
+        "limit": dto.limit,
     }
+
     if dto.request_statuses is not None:
         db_client_additional_args["where_mappings"] = {
             "request_status": [rs.value for rs in dto.request_statuses]
@@ -225,6 +227,7 @@ def get_data_requests_with_permitted_columns(
         order_by=OrderByParameters.construct_from_args(dto.sort_by, dto.sort_order),
         subquery_parameters=get_data_requests_subquery_params(),
         build_metadata=build_metadata,
+        limit=dto.limit,
     )
     return data_requests
 

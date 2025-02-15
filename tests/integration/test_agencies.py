@@ -83,6 +83,20 @@ def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
 
     assert data_asc[0]["name"] == data_asc[0]["submitted_name"]
 
+    # Test limit functionality
+    response_json = tdc.request_validator.get_agency(
+        headers=tus.api_authorization_header,
+        sort_by="name",
+        sort_order=SortOrder.ASCENDING,
+        limit=1,
+    )
+
+    assert_expected_get_many_result(
+        response_json=response_json,
+        expected_non_null_columns=["id"],
+    )
+    assert len(response_json["data"]) == 1
+
 
 def test_agencies_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     """

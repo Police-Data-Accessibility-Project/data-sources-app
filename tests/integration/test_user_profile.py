@@ -35,6 +35,25 @@ def test_user_profile_data_requests(test_data_creator_flask: TestDataCreatorFlas
     assert json_response["data"][0]["id"] == int(tdr.id)
     assert json_response["data"][0]["submission_notes"] == tdr.submission_notes
 
+    # Create additional data requests and confirm they are returned
+    create_test_data_request(tdc.flask_client, tus.jwt_authorization_header)
+    create_test_data_request(tdc.flask_client, tus.jwt_authorization_header)
+
+    json_response = tdc.request_validator.get_user_profile_data_requests(
+        headers=tus.jwt_authorization_header,
+    )
+
+    assert len(json_response["data"]) == 3
+
+    # Test limit
+
+    json_response = tdc.request_validator.get_user_profile_data_requests(
+        headers=tus.jwt_authorization_header,
+        limit=2,
+    )
+
+    assert len(json_response["data"]) == 2
+
 
 def test_user_profile_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
