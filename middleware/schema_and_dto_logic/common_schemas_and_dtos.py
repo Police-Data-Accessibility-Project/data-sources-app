@@ -9,6 +9,7 @@ from typing import Optional
 from marshmallow import Schema, fields, validate
 from pydantic import BaseModel
 
+from database_client.constants import PAGE_SIZE
 from database_client.enums import SortOrder, LocationType
 from middleware.schema_and_dto_logic.custom_fields import DataField
 from middleware.schema_and_dto_logic.non_dto_dataclasses import (
@@ -56,6 +57,14 @@ class GetManyRequestsBaseSchema(Schema):
             "description": "A comma-delimited list of the columns to return in the results. Defaults to all permitted if not provided.",
         },
     )
+    limit = fields.Integer(
+        required=False,
+        load_default=100,
+        metadata={
+            "source": SourceMappingEnum.QUERY_ARGS,
+            "description": "The maximum number of results to return. Defaults to 100 if not provided.",
+        },
+    )
 
 
 class GetManyBaseDTO(BaseModel):
@@ -67,6 +76,7 @@ class GetManyBaseDTO(BaseModel):
     sort_by: Optional[str] = None
     sort_order: Optional[SortOrder] = None
     requested_columns: Optional[list[str]] = None
+    limit: Optional[int] = PAGE_SIZE
 
 
 GET_MANY_SCHEMA_POPULATE_PARAMETERS = SchemaPopulateParameters(

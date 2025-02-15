@@ -875,6 +875,7 @@ class DatabaseClient:
         """
         Selects a single relation from the database
         """
+        limit = min(limit, 100)
         where_mappings = self._create_where_mappings_instance_if_dictionary(
             where_mappings
         )

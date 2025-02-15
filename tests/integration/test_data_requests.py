@@ -126,6 +126,14 @@ def test_data_requests_get(
 
     assert int(data_asc[0]["id"]) < int(data_desc[0]["id"])
 
+    # Test limit
+    data = tdc.request_validator.get_data_requests(
+        headers=tus_creator.jwt_authorization_header,
+        limit=1,
+    )[DATA_KEY]
+
+    assert len(data) == 1
+
 
 def test_data_requests_post(
     test_data_creator_flask: TestDataCreatorFlask,

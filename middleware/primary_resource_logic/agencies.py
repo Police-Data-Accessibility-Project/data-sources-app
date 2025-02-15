@@ -56,6 +56,7 @@ def get_agencies(
                 "order_by": OrderByParameters.construct_from_args(
                     sort_by=dto.sort_by, sort_order=dto.sort_order
                 ),
+                "limit": dto.limit,
             },
             subquery_parameters=SUBQUERY_PARAMS,
         ),
