@@ -1,6 +1,5 @@
 import uuid
 
-from dataclasses import dataclass
 from http import HTTPStatus
 from typing import Dict, Optional
 
@@ -9,7 +8,7 @@ from flask.testing import FlaskClient
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import RequestUrgency, LocationType, RequestStatus, SortOrder
 from middleware.constants import DATA_KEY
-from middleware.enums import PermissionsEnum, RecordType
+from middleware.enums import RecordType
 from middleware.util import get_enum_values
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.common_test_data import (
@@ -28,14 +27,13 @@ from tests.helper_scripts.constants import (
     DATA_REQUESTS_GET_RELATED_SOURCE_ENDPOINT,
     DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT,
     DATA_REQUESTS_RELATED_LOCATIONS,
-    DATA_REQUESTS_POST_DELETE_RELATED_LOCATIONS_ENDPOINT,
 )
 
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
-from conftest import test_data_creator_flask, monkeysession
+from conftest import test_data_creator_flask
 
 
 def test_data_requests_get(

@@ -119,7 +119,27 @@ class DynamicQueryConstructor:
         ]
 
     @staticmethod
-    def generate_new_typeahead_locations_query(search_term: str):
+    def generate_fuzzy_match_typeahead_locations_query(
+        search_term: str,
+    ) -> sql.Composed:
+        query = sql.SQL(
+            """
+            SELECT 
+                display_name,
+                type,
+                state_name,
+                county_name,
+                locality_name,
+                location_id
+            FROM typeahead_locations
+            ORDER BY similarity(concat(locality_name, ' ', county_name, ' ', state_name), {search_term}) DESC
+            LIMIT 10
+            """
+        ).format(search_term=sql.Literal(search_term))
+        return query
+
+    @staticmethod
+    def generate_like_typeahead_locations_query(search_term: str) -> sql.Composed:
         query = sql.SQL(
             """
         WITH combined AS (
