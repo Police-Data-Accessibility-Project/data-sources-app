@@ -610,6 +610,13 @@ def test_user_pending_notifications_view(
 
     tdc = test_data_creator_db_client
     tdc.clear_test_data()
+    tdc.create_states()
+
+    county_name = get_test_name()
+    tdc.county(
+        county_name=county_name,
+        state_iso="OH",
+    )
 
     location_both_following = tdc.locality()
     location_state_for_2 = tdc.db_client.get_location_id(
@@ -618,13 +625,13 @@ def test_user_pending_notifications_view(
     location_county_for_1 = tdc.db_client.get_location_id(
         where_mappings={
             "state_iso": "OH",
-            "county_name": "Cuyahoga",
+            "county_name": county_name,
             "type": LocationType.COUNTY.value,
         }
     )
 
     # These are both designed to be fake
-    locality_1_following = tdc.locality(state_iso="OH", county_name="Cuyahoga")
+    locality_1_following = tdc.locality(state_iso="OH", county_name=county_name)
     locality_2_following = tdc.locality(state_iso="CA", county_name="Orange")
 
     # Create two users

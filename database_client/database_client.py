@@ -519,10 +519,20 @@ class DatabaseClient:
         :param search_term: The search query.
         :return: List of data sources that match the search query.
         """
-        query = DynamicQueryConstructor.generate_new_typeahead_locations_query(
+        query = DynamicQueryConstructor.generate_like_typeahead_locations_query(
             search_term
         )
         self.cursor.execute(query)
+        results = self.cursor.fetchall()
+        if 0 < len(results) <= 10:
+            return results
+
+        fuzzy_match_query = (
+            DynamicQueryConstructor.generate_fuzzy_match_typeahead_locations_query(
+                search_term
+            )
+        )
+        self.cursor.execute(fuzzy_match_query)
         return self.cursor.fetchall()
 
     @cursor_manager()
@@ -858,6 +868,13 @@ class DatabaseClient:
         _create_entry_in_table,
         table_name=Relations.LINK_USER_FOLLOWED_LOCATION.value,
     )
+
+    def create_county(self, name: str, fips: str, state_id: int) -> int:
+        return self._create_entry_in_table(
+            table_name=Relations.COUNTIES.value,
+            column_value_mappings={"name": name, "fips": fips, "state_id": state_id},
+            column_to_return="id",
+        )
 
     @session_manager
     def _select_from_relation(

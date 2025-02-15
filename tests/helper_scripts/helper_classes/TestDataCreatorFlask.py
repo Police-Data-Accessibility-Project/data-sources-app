@@ -133,6 +133,9 @@ class TestDataCreatorFlask:
     def refresh_typeahead_agencies(self):
         self.db_client.execute_raw_sql("CALL refresh_typeahead_agencies();")
 
+    def refresh_typeahead_locations(self):
+        self.db_client.execute_raw_sql("CALL refresh_typeahead_locations();")
+
     def update_agency(self, agency_id: int, data_to_update: dict):
         run_and_validate_request(
             flask_client=self.flask_client,
