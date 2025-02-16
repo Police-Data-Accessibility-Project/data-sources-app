@@ -4,7 +4,10 @@ from flask.testing import FlaskClient
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import RequestStatus
-from middleware.enums import JurisdictionType, PermissionsEnum
+from middleware.enums import JurisdictionType, PermissionsEnum, AgencyType
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
+    AgencyInfoPostSchema,
+)
 from tests.helper_scripts.common_endpoint_calls import CreatedDataSource
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.complex_test_data_creation_functions import (
@@ -19,6 +22,9 @@ from tests.helper_scripts.constants import (
     DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT,
 )
 from tests.helper_scripts.helper_classes.RequestValidator import RequestValidator
+from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
+    generate_test_data_from_schema,
+)
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
 )
@@ -102,6 +108,36 @@ class TestDataCreatorFlask:
             json={"request_status": status.value},
         )
 
+    def get_sample_location_info(self, locality_name: Optional[str] = None) -> int:
+        if locality_name is None:
+            locality_name = get_test_name()
+        return self.locality(
+            locality_name=locality_name,
+        )
+
+    def get_sample_agency_post_parameters(
+        self,
+        name,
+        locality_name,
+        jurisdiction_type: JurisdictionType,
+        location_id: Optional[dict] = None,
+    ) -> dict:
+        if location_id is None:
+            location_id = self.locality(
+                locality_name=locality_name,
+            )
+        return {
+            "agency_info": generate_test_data_from_schema(
+                schema=AgencyInfoPostSchema(),
+                override={
+                    "name": name,
+                    "jurisdiction_type": JurisdictionType.LOCAL.value,
+                    "agency_type": AgencyType.POLICE.value,
+                },
+            ),
+            "location_id": location_id,
+        }
+
     def agency(
         self,
         location_info: Optional[dict] = None,
@@ -113,11 +149,11 @@ class TestDataCreatorFlask:
         else:
             submitted_name = agency_name
         locality_name = self.tdcdb.test_name()
-        sample_agency_post_parameters = get_sample_agency_post_parameters(
+        sample_agency_post_parameters = self.get_sample_agency_post_parameters(
             name=submitted_name,
             locality_name=locality_name,
             jurisdiction_type=JurisdictionType.LOCAL,
-            location_info=location_info,
+            location_id=location_info,
         )
 
         json = run_and_validate_request(

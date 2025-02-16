@@ -62,30 +62,26 @@ def get_agency_info_field(
 def validate_location_info_against_jurisdiction_type(data, jurisdiction_type):
     if (
         jurisdiction_type == JurisdictionType.FEDERAL
-        and data.get("location_info") is not None
+        and data.get("location_id") is not None
     ):
-        raise ValidationError(
-            "location_info must be None for jurisdiction type FEDERAL."
-        )
+        raise ValidationError("location_id must be None for jurisdiction type FEDERAL.")
     if (
         jurisdiction_type != JurisdictionType.FEDERAL
-        and data.get("location_info") is None
+        and data.get("location_id") is None
     ):
         raise ValidationError(
-            "location_info is required for non-FEDERAL jurisdiction type."
+            "location_id is required for non-FEDERAL jurisdiction type."
         )
 
 
 class AgenciesPostPutBaseSchema(Schema):
-    location_info = fields.Nested(
-        LocationInfoSchema,
+    location_id = fields.Integer(
         required=False,
         allow_none=True,
-        metadata={
-            "description": "The locational information of the agency. Must be None if agency is of jurisdiction_type `federal`",
-            "source": SourceMappingEnum.JSON,
-            "nested_dto_class": LocationInfoDTO,
-        },
+        load_default=None,
+        metadata=get_json_metadata(
+            description="The id of the location associated with the agency."
+        ),
     )
 
 
