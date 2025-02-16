@@ -104,7 +104,6 @@ def setup_get_typeahead_suggestion_test_data(cursor: Optional[psycopg.Cursor] = 
             column_value_mappings={
                 "fips": "12345",
                 "name": "Arxylodon",
-                "state_iso": "XY",
                 "state_id": state_id,
             },
             column_to_return="id",
