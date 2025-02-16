@@ -211,7 +211,7 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
 def test_agencies_put(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
 
-    data_to_post = get_sample_agency_post_parameters(
+    data_to_post = tdc.get_sample_agency_post_parameters(
         name=get_test_name(),
         jurisdiction_type=JurisdictionType.LOCAL,
         locality_name=get_test_name(),
