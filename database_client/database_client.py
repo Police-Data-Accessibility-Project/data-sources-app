@@ -817,10 +817,6 @@ class DatabaseClient:
             return result.fetchone()[0]
         return None
 
-    create_search_cache_entry = partialmethod(
-        _create_entry_in_table, table_name="agency_url_search_cache"
-    )
-
     create_data_request = partialmethod(
         _create_entry_in_table, table_name="data_requests", column_to_return="id"
     )
