@@ -29,7 +29,6 @@ jobs:
     name: Run Pytest
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    container: python:3.12.8
     steps:
     - uses: actions/checkout@v4
     - name: Load from cache if possible
@@ -41,20 +40,16 @@ jobs:
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
+    - name: Set up Python 3.12.8
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.12.8"
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pytest pytest-cov
         alembic upgrade head
-    - name: Save to cache
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-
     - name: Run tests
       run: |
         pytest tests
