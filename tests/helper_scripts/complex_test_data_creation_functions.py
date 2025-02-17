@@ -138,7 +138,7 @@ def get_sample_agency_post_parameters(
     """
 
     if location_info is None:
-        location_info = {
+        location_id = {
             "type": "Locality",
             "state_iso": "PA",
             "county_fips": "42003",
@@ -153,5 +153,5 @@ def get_sample_agency_post_parameters(
                 "agency_type": AgencyType.POLICE.value,
             },
         ),
-        "location_info": location_info,
+        "location_id": location_info,
     }

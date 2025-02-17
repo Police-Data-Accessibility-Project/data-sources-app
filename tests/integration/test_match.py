@@ -24,11 +24,10 @@ class TestMatchLocationInfo:
         self.tdc = tdc
         self.locality_name = get_test_name()
         self.locality_id = self.tdc.locality(locality_name=self.locality_name)
-        self.location_info = get_sample_location_info(locality_name=self.locality_name)
         self.location_kwargs = {
-            "state": "Pennsylvania",
-            "county": "Allegheny",
-            "locality": self.locality_name,
+            "state_name": "Pennsylvania",
+            "county_name": "Allegheny",
+            "locality_name": self.locality_name,
         }
 
 
@@ -40,10 +39,10 @@ class TestMatchAgencySetup:
     jwt_authorization_header: dict
 
     def additional_agency(
-        self, locality_name: Optional[str] = None, agency_name: str = ""
+        self, location_id: Optional[int] = None, agency_name: str = ""
     ):
         return self.tdc.agency(
-            location_info=get_sample_location_info(locality_name=locality_name),
+            location_info=location_id,
             agency_name=agency_name,
             add_test_name=False,
         )
@@ -56,7 +55,7 @@ def match_agency_setup(
     tdc = test_data_creator_flask
     tdc.clear_test_data()
     loc_info: TestMatchLocationInfo = TestMatchLocationInfo(tdc)
-    agency = tdc.agency(location_info=loc_info.location_info)
+    agency = tdc.agency(location_info=loc_info.locality_id)
     return TestMatchAgencySetup(
         tdc=tdc,
         location_kwargs=loc_info.location_kwargs,
@@ -73,7 +72,9 @@ def test_agency_match_exact_match(
     data = mas.tdc.request_validator.match_agency(
         headers=mas.jwt_authorization_header,
         name=mas.agency_name,
-        **mas.location_kwargs
+        state=mas.location_kwargs["state_name"],
+        county=mas.location_kwargs["county_name"],
+        locality=mas.location_kwargs["locality_name"],
     )
 
     assert data["status"] == AgencyMatchStatus.EXACT.value
@@ -88,16 +89,20 @@ def test_agency_match_partial_match(match_agency_setup: TestMatchAgencySetup):
     mas.additional_agency()
     # Create another agency with a slightly different name and the same location
     # This should be picked up
+    location_id = mas.tdc.db_client.get_location_id(where_mappings=mas.location_kwargs)
+
     mas.additional_agency(
         agency_name=mas.agency_name + "2",
-        locality_name=mas.location_kwargs["locality"],
+        location_id=location_id,
     )
 
     modified_agency_name = mas.agency_name + "1"
     data = mas.tdc.request_validator.match_agency(
         headers=mas.jwt_authorization_header,
         name=modified_agency_name,
-        **mas.location_kwargs
+        state=mas.location_kwargs["state_name"],
+        county=mas.location_kwargs["county_name"],
+        locality=mas.location_kwargs["locality_name"],
     )
 
     assert data["status"] == AgencyMatchStatus.PARTIAL.value

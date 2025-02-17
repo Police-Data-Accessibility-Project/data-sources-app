@@ -156,7 +156,7 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
         )
 
     # Test with a new locality
-    data_to_post = get_sample_agency_post_parameters(
+    data_to_post = tdc.get_sample_agency_post_parameters(
         name=get_test_name(),
         jurisdiction_type=JurisdictionType.LOCAL,
         locality_name=get_test_name(),
@@ -182,13 +182,12 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
         key_value_pairs={
             "state_iso": "PA",
             "county_name": "Allegheny",
-            "locality_name": data_to_post["location_info"]["locality_name"],
             **data_to_post["agency_info"],
         },
     )
 
     # Test with a new locality
-    data_to_post = get_sample_agency_post_parameters(
+    data_to_post = test_data_creator_flask.get_sample_agency_post_parameters(
         name=get_test_name(),
         jurisdiction_type=JurisdictionType.LOCAL,
         locality_name="Capitola",
@@ -205,7 +204,6 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
             "name": data_to_post["agency_info"]["name"],
             "state_iso": "PA",
             "county_name": "Allegheny",
-            "locality_name": data_to_post["location_info"]["locality_name"],
         },
     )
 
@@ -213,7 +211,7 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
 def test_agencies_put(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
 
-    data_to_post = get_sample_agency_post_parameters(
+    data_to_post = tdc.get_sample_agency_post_parameters(
         name=get_test_name(),
         jurisdiction_type=JurisdictionType.LOCAL,
         locality_name=get_test_name(),

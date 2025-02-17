@@ -170,21 +170,8 @@ def test_data_requests_post(
 
     submission_notes = uuid.uuid4().hex
 
-    tdc.locality(locality_name="Laguna Hills")
-    tdc.locality(locality_name="Seal Beach")
-
-    location_info_1 = {
-        "type": "Locality",
-        "state_name": "Pennsylvania",
-        "county_name": "Allegheny",
-        "locality_name": "Laguna Hills",
-    }
-    location_info_2 = {
-        "type": "Locality",
-        "state_name": "Pennsylvania",
-        "county_name": "Allegheny",
-        "locality_name": "Seal Beach",
-    }
+    location_id_1 = tdc.locality(locality_name="Laguna Hills")
+    location_id_2 = tdc.locality(locality_name="Seal Beach")
 
     json_request = {
         "request_info": {
@@ -194,7 +181,7 @@ def test_data_requests_post(
             "request_urgency": RequestUrgency.URGENT.value,
             "coverage_range": "2000-2005",
         },
-        "location_infos": [location_info_1, location_info_2],
+        "location_ids": [location_id_1, location_id_2],
     }
 
     json_data = post_data_request(json_request)
@@ -208,9 +195,9 @@ def test_data_requests_post(
     locations = data["locations"]
     assert len(locations) == 2
     for location in locations:
-        if location["locality_name"] == location_info_1["locality_name"]:
+        if location["locality_name"] == "Laguna Hills":
             continue
-        if location["locality_name"] == location_info_2["locality_name"]:
+        if location["locality_name"] == "Seal Beach":
             continue
         assert False
 

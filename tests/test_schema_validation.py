@@ -84,12 +84,7 @@ def test_agencies_post_schema():
             }
         }
         if include_location_info:
-            data["location_info"] = {
-                "type": "Locality",
-                "state_iso": "CA",
-                "county_fips": "06001",
-                "locality_name": "Los Angeles",
-            }
+            data["location_id"] = 1
         return data
 
     for jurisdiction_type in JurisdictionType:
