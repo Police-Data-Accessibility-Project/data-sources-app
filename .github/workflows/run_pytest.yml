@@ -19,7 +19,7 @@ jobs:
 
     env:
       FLASK_APP_COOKIE_ENCRYPTION_KEY: ${{ secrets.SECRET_KEY }}
-      DO_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/postgres
+      DO_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
       GH_CLIENT_ID: ${{secrets.GH_CLIENT_ID}}
       GH_CLIENT_SECRET: ${{secrets.GH_CLIENT_SECRET}}
       JWT_SECRET_KEY: "TestSecretKey"
