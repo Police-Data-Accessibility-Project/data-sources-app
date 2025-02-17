@@ -89,6 +89,16 @@ class Relations(Enum):
     PERMISSIONS = "permissions"
     USER_PERMISSIONS = "user_permissions"
     TABLE_COUNT_LOG = "table_count_log"
+    CHANGE_LOG = "change_log"
+
+
+class OperationType(Enum):
+    """
+    A list of valid change log operation types
+    """
+
+    UPDATE = "UPDATE"
+    DELETE = "DELETE"
 
 
 class JurisdictionType(Enum):

@@ -18,7 +18,7 @@ from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import ApprovalStatus, LocationType, RequestStatus, URLStatus
 from database_client.models import RecentSearch
-from middleware.enums import Relations, JurisdictionType
+from middleware.enums import Relations, JurisdictionType, OperationType
 from tests.conftest import live_database_client
 from conftest import test_data_creator_db_client
 from tests.helper_scripts.common_test_data import get_test_name
@@ -26,6 +26,7 @@ from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
 )
 from tests.helper_scripts.helper_functions_simple import get_notification_valid_date
+from tests.helper_scripts.test_dataclasses import TestAgencyInfo
 from utilities.enums import RecordCategories
 
 ID_COLUMN = "state_iso"
@@ -938,3 +939,181 @@ def test_update_broken_source_url_as_of(
 #             "record_type_id": 1,
 #         }
 #     )
+
+
+def delete_change_log(db_client):
+    db_client.execute_raw_sql("DELETE FROM CHANGE_LOG;")
+
+
+def test_localities_table_log_logic(
+    test_data_creator_db_client: TestDataCreatorDBClient,
+):
+    tdc = test_data_creator_db_client
+    db_client = tdc.db_client
+    delete_change_log(db_client)
+
+    old_name = get_test_name()
+    new_name = get_test_name()
+
+    # Create locality
+    location_id = tdc.locality(locality_name=old_name)
+    locality_id = db_client.get_locality_id_by_location_id(location_id)
+    # Change locality name
+    db_client._update_entry_in_table(
+        table_name=Relations.LOCALITIES.value,
+        entry_id=locality_id,
+        column_edit_mappings={"name": new_name},
+    )
+    # Check that update is logged for `localities`
+    logs = db_client.get_change_logs_for_table(Relations.LOCALITIES)
+    assert len(logs) == 1
+    log = logs[0]
+    assert log["operation_type"] == OperationType.UPDATE.value
+    assert log["table_name"] == Relations.LOCALITIES.value
+    assert log["affected_id"] == locality_id
+    assert log["old_data"] == {"name": old_name}
+    assert log["new_data"] == {"name": new_name}
+    assert log["created_at"] is not None
+    # Delete locality
+    db_client._delete_from_table(
+        table_name=Relations.LOCALITIES.value, id_column_value=locality_id
+    )
+    # Check that delete is logged for `localities`
+    logs = db_client.get_change_logs_for_table(Relations.LOCALITIES)
+    assert len(logs) == 2
+    log = logs[1]
+    assert log["operation_type"] == OperationType.DELETE.value
+    assert log["affected_id"] == locality_id
+    assert log["old_data"] == {"id": locality_id, "county_id": 1, "name": new_name}
+    assert log["new_data"] is None
+
+
+def test_counties_table_log_logic(test_data_creator_db_client: TestDataCreatorDBClient):
+
+    tdc = test_data_creator_db_client
+    delete_change_log(tdc.db_client)
+
+    new_name = get_test_name()
+    old_name = get_test_name()
+
+    county_id = tdc.county(county_name=old_name)
+
+    tdc.db_client._update_entry_in_table(
+        table_name=Relations.COUNTIES.value,
+        entry_id=county_id,
+        column_edit_mappings={"name": new_name},
+    )
+    logs = tdc.db_client.get_change_logs_for_table(Relations.COUNTIES)
+    assert len(logs) == 1
+    log = logs[0]
+    assert log["operation_type"] == OperationType.UPDATE.value
+    assert log["table_name"] == Relations.COUNTIES.value
+    assert log["affected_id"] == county_id
+    assert log["old_data"] == {"name": old_name}
+    assert log["new_data"] == {"name": new_name}
+    assert log["created_at"] is not None
+
+    tdc.db_client._delete_from_table(
+        table_name=Relations.COUNTIES.value, id_column_value=county_id
+    )
+    logs = tdc.db_client.get_change_logs_for_table(Relations.COUNTIES)
+    assert len(logs) == 2
+    log = logs[1]
+    assert log["operation_type"] == OperationType.DELETE.value
+    assert log["affected_id"] == county_id
+    assert len(list(log["old_data"].keys())) == 12
+    assert log["new_data"] is None
+
+
+def test_locations_table_log_logic(
+    test_data_creator_db_client: TestDataCreatorDBClient,
+):
+
+    tdc = test_data_creator_db_client
+    db_client = tdc.db_client
+    delete_change_log(db_client)
+
+    # Create locality
+    locality_name = get_test_name()
+    location_id = tdc.locality(locality_name)
+
+    # Create county
+    county_name = get_test_name()
+    county_id = tdc.county(county_name)
+
+    # Change locality's county to that county
+    db_client._update_entry_in_table(
+        table_name=Relations.LOCATIONS.value,
+        entry_id=location_id,
+        column_edit_mappings={"county_id": county_id},
+    )
+    # Check that update is logged for `locations`
+    logs = db_client.get_change_logs_for_table(Relations.LOCATIONS)
+    assert len(logs) == 1
+    log = logs[0]
+    assert log["operation_type"] == OperationType.UPDATE.value
+    assert log["table_name"] == Relations.LOCATIONS.value
+    assert log["affected_id"] == location_id
+    assert log["old_data"] == {"county_id": 1}
+    assert log["new_data"] == {"county_id": county_id}
+    assert log["created_at"] is not None
+    # Delete locality
+    locality_id = db_client.get_locality_id_by_location_id(location_id)
+    db_client._delete_from_table(
+        table_name=Relations.LOCALITIES.value, id_column_value=locality_id
+    )
+    # Check that delete is logged for `locations`
+    logs = db_client.get_change_logs_for_table(Relations.LOCATIONS)
+    assert len(logs) == 2
+    log = logs[1]
+    assert log["operation_type"] == OperationType.DELETE.value
+    assert log["affected_id"] == location_id
+    assert log["old_data"] == {
+        "id": location_id,
+        "state_id": 1,
+        "county_id": county_id,
+        "locality_id": locality_id,
+        "type": "Locality",
+    }
+    assert log["new_data"] is None
+
+
+def test_agencies_table_logic(test_data_creator_db_client: TestDataCreatorDBClient):
+    tdc = test_data_creator_db_client
+    db_client = tdc.db_client
+    delete_change_log(db_client)
+
+    # Create agency
+    old_name = get_test_name()
+    new_name = get_test_name()
+    agency_info: TestAgencyInfo = tdc.agency(name=old_name)
+
+    # Update agency name
+    db_client._update_entry_in_table(
+        table_name=Relations.AGENCIES.value,
+        entry_id=agency_info.id,
+        column_edit_mappings={"name": new_name},
+    )
+    # Check that update is logged for `agencies`
+    logs = db_client.get_change_logs_for_table(Relations.AGENCIES)
+    assert len(logs) == 1
+    log = logs[0]
+    assert log["operation_type"] == OperationType.UPDATE.value
+    assert log["table_name"] == Relations.AGENCIES.value
+    assert log["affected_id"] == agency_info.id
+    assert log["old_data"] == {"name": old_name}
+    assert log["new_data"] == {"name": new_name}
+    assert log["created_at"] is not None
+
+    # Delete agency
+    db_client._delete_from_table(
+        table_name=Relations.AGENCIES.value, id_column_value=agency_info.id
+    )
+    # Check that delete is logged for `agencies`
+    logs = db_client.get_change_logs_for_table(Relations.AGENCIES)
+    assert len(logs) == 2
+    log = logs[1]
+    assert log["operation_type"] == OperationType.DELETE.value
+    assert log["affected_id"] == agency_info.id
+    assert len(log["old_data"].keys()) == 18
+    assert log["new_data"] is None
