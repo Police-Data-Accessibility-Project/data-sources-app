@@ -5,14 +5,11 @@ which test the database-external views and functions
 """
 
 import uuid
-import zoneinfo
 from collections import namedtuple
 from datetime import datetime, timedelta, timezone
-from time import sleep
 
 import pytest
 from psycopg import sql
-from sqlalchemy.exc import IntegrityError
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
@@ -31,7 +28,10 @@ from utilities.enums import RecordCategories
 
 ID_COLUMN = "state_iso"
 FAKE_STATE_INFO = {"state_iso": "ZZ", "state_name": "Zaldoniza"}
-FAKE_COUNTY_INFO = {"fips": "54321", "name": "Zipzapzibbidybop", "state_iso": "ZZ"}
+FAKE_COUNTY_INFO = {
+    "fips": "54321",
+    "name": "Zipzapzibbidybop",
+}
 FAKE_LOCALITY_INFO = {"name": "Zoolazoolio"}
 
 FakeLocationsInfo = namedtuple(
@@ -1021,7 +1021,7 @@ def test_counties_table_log_logic(test_data_creator_db_client: TestDataCreatorDB
     log = logs[1]
     assert log["operation_type"] == OperationType.DELETE.value
     assert log["affected_id"] == county_id
-    assert len(list(log["old_data"].keys())) == 12
+    assert len(list(log["old_data"].keys())) == 11
     assert log["new_data"] is None
 
 

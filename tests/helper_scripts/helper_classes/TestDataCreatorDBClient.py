@@ -150,9 +150,14 @@ class TestDataCreatorDBClient:
         state_id = self.helper.get_state_id(state_iso=state_iso)
         if fips is None:
             fips = str(get_random_number_for_testing())
-        return self.db_client.create_county(
-            name=county_name, fips=fips, state_id=state_id
-        )
+        try:
+            return self.db_client.create_county(
+                name=county_name, fips=fips, state_id=state_id
+            )
+        except IntegrityError:
+            return self.db_client.get_county_id(
+                county_name=county_name, state_id=state_id
+            )
 
     def locality(
         self,

@@ -1204,6 +1204,16 @@ class DatabaseClient:
 
         return [row["column_name"] for row in results]
 
+    def get_county_id(self, county_name: str, state_id: int) -> int:
+        return self._select_single_entry_from_relation(
+            relation_name=Relations.COUNTIES.value,
+            columns=["id"],
+            where_mappings=[
+                WhereMapping(column="name", value=county_name),
+                WhereMapping(column="state_id", value=state_id),
+            ],
+        )
+
     def create_or_get(
         self,
         table_name: str,
