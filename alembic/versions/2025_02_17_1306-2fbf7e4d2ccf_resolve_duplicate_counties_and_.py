@@ -9,7 +9,6 @@ Create Date: 2025-02-17 13:06:06.522172
 from typing import Sequence, Union
 
 from alembic import op
-import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
@@ -19,7 +18,7 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
-def execute_query(fips, locality_name, county_type) -> None:
+def get_with_query(fips, locality_name):
     with_query = f"""
             WITH 
             county_info as (
@@ -35,15 +34,12 @@ def execute_query(fips, locality_name, county_type) -> None:
                 and locality_name = '{locality_name}'
             )
     """
+    return with_query
+
+
+def get_locality_to_county_queries(fips, locality_name, county_type) -> str:
+    with_query = get_with_query(fips, locality_name)
     query = f"""
-        
-        {with_query}
-        -- Change county name
-        UPDATE COUNTIES
-        SET name = concat(name, ' ', '{county_type}')
-        FROM county_info
-        WHERE ID = county_info.county_id;
-        
         {with_query}
         -- Change Locality Location to county location
         UPDATE AGENCIES
@@ -69,6 +65,27 @@ def execute_query(fips, locality_name, county_type) -> None:
         USING locality_info
         WHERE id = locality_info.locality_location_id;
     """
+    return query
+
+
+def convert_locality_to_county(fips, locality_name, county_type) -> None:
+    query = get_locality_to_county_queries(fips, locality_name, county_type)
+    op.execute(query)
+
+
+def execute_query(fips, locality_name, county_type) -> None:
+    with_query = get_with_query(fips, locality_name)
+    query = f"""
+        
+        {with_query}
+        -- Change county name
+        UPDATE COUNTIES
+        SET name = concat(name, ' ', '{county_type}')
+        FROM county_info
+        WHERE ID = county_info.county_id;
+        
+        {get_locality_to_county_queries(fips, locality_name, county_type)}
+    """
 
     op.execute(query)
 
@@ -87,10 +104,16 @@ def upgrade() -> None:
         ["51770", "City", "Roanoke"],
         ["29189", "County", "St. Louis"],
         ["29510", "City", "St. Louis"],
+    ]:
+        execute_query(fips=fips, locality_name=locality_name, county_type=county_type)
+
+    for fips, county_type, locality_name in [
         ["29189", "County", "Saint Louis"],
         ["29510", "City", "Saint Louis"],
     ]:
-        execute_query(fips=fips, locality_name=locality_name, county_type=county_type)
+        convert_locality_to_county(
+            fips=fips, locality_name=locality_name, county_type=county_type
+        )
 
 
 def downgrade() -> None:
