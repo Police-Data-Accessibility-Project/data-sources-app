@@ -1021,7 +1021,7 @@ def test_counties_table_log_logic(test_data_creator_db_client: TestDataCreatorDB
     log = logs[1]
     assert log["operation_type"] == OperationType.DELETE.value
     assert log["affected_id"] == county_id
-    assert len(list(log["old_data"].keys())) == 12
+    assert len(list(log["old_data"].keys())) == 11
     assert log["new_data"] is None
 
 

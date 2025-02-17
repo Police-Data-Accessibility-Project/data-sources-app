@@ -1,7 +1,7 @@
 """Add unique constraint for county name and state
 
 Revision ID: 0d1f14861bb6
-Revises: 9b4fc9265406
+Revises: 2fbf7e4d2ccf
 Create Date: 2025-02-15 16:06:46.492507
 
 """
@@ -14,7 +14,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = "0d1f14861bb6"
-down_revision: Union[str, None] = "9b4fc9265406"
+down_revision: Union[str, None] = "2fbf7e4d2ccf"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
