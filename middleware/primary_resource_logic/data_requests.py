@@ -130,7 +130,7 @@ def create_data_request_wrapper(
     :return:
     """
     # Check that location ids are valid, and get location ids for linking
-    location_ids = _get_location_ids(db_client, dto)
+    location_ids = dto.location_ids if dto.location_ids is not None else []
 
     column_value_mappings_raw = dict(dto.request_info)
     user_id = access_info.get_user_id()
@@ -153,9 +153,9 @@ def create_data_request_wrapper(
 
 def _get_location_ids(db_client, dto: DataRequestsPostDTO):
     location_ids = []
-    if dto.location_infos is None:
+    if dto.location_ids is None:
         return location_ids
-    for location_info in dto.location_infos:
+    for location_info in dto.location_ids:
         try:
             location_id = get_location_id_for_data_requests(
                 db_client=db_client, location_info=location_info

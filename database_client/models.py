@@ -22,6 +22,7 @@ from sqlalchemy.dialects.postgresql import (
     DATERANGE,
     TIMESTAMP,
     ENUM as pgEnum,
+    JSONB,
 )
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm import (
@@ -87,6 +88,9 @@ RequestStatusLiteral = Literal[
     "Waiting for FOIA",
     "Waiting for requestor",
 ]
+
+OperationTypeLiteral = Literal["UPDATE", "DELETE"]
+
 JurisdictionTypeLiteral = Literal[
     "federal", "state", "county", "local", "port", "tribal", "transit", "school"
 ]
@@ -770,6 +774,20 @@ class RecentSearchExpanded(Base, CountMetadata):
     record_categories = mapped_column(ARRAY(String, as_tuple=True))
 
 
+class ChangeLog(Base):
+    __tablename__ = Relations.CHANGE_LOG.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    operation_type: Mapped[OperationTypeLiteral]
+    table_name: Mapped[str]
+    affected_id: Mapped[int]
+    old_data: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    new_data: Mapped[dict] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[timestamp] = mapped_column(
+        server_default=func.current_timestamp()
+    )
+
+
 SQL_ALCHEMY_TABLE_REFERENCE = {
     "agencies": Agency,
     "agencies_expanded": AgencyExpanded,
@@ -802,6 +820,7 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     Relations.RECENT_SEARCHES_EXPANDED.value: RecentSearchExpanded,
     Relations.RECORD_TYPES.value: RecordType,
     Relations.PENDING_USERS.value: PendingUser,
+    Relations.CHANGE_LOG.value: ChangeLog,
 }
 
 

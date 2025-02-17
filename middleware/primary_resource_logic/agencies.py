@@ -80,17 +80,16 @@ def get_agency_by_id(
 
 
 def validate_and_add_location_info(
-    db_client: DatabaseClient, entry_data: dict, location_info: LocationInfoDTO
+    db_client: DatabaseClient, entry_data: dict, location_id: int
 ):
     """
     Checks that location provided is a valid one, and returns the associated location id
     In the case of a locality which does not yet exist, adds it and returns the location id
     :param db_client:
     :param entry_data: Modified in-place
-    :param location_info:
+    :param location_id:
     :return:
     """
-    location_id = get_location_id(db_client, location_info)
     entry_data["location_id"] = location_id
 
 
@@ -107,7 +106,7 @@ class AgencyPostHandler(PostHandler):
         validate_and_add_location_info(
             db_client=DatabaseClient(),
             entry_data=request.entry,
-            location_info=request.dto.location_info,
+            location_id=request.dto.location_id,
         )
 
 
@@ -120,12 +119,12 @@ class AgencyPutHandler(PutHandler):
         # The below values are probably incorrect, but serve as a placeholder
         entry_data = dict(request.dto.agency_info)
         request.entry = dict_enums_to_values(entry_data)
-        location_info = request.dto.location_info
-        if location_info is not None:
+        location_id = request.dto.location_id
+        if location_id is not None:
             validate_and_add_location_info(
                 db_client=DatabaseClient(),
                 entry_data=entry_data,
-                location_info=location_info,
+                location_id=location_id,
             )
 
 
@@ -146,7 +145,7 @@ def create_agency(
         db_client=db_client,
         jurisdiction_type=dto.agency_info.jurisdiction_type,
         entry_data=entry_data,
-        location_info=dto.location_info,
+        location_id=dto.location_id,
     )
 
     return post_entry(
@@ -162,7 +161,7 @@ def optionally_get_location_info_deferred_function(
     db_client: DatabaseClient,
     jurisdiction_type: JurisdictionType,
     entry_data: dict,
-    location_info: LocationInfoDTO,
+    location_id: int,
 ):
     if jurisdiction_type == JurisdictionType.FEDERAL:
         deferred_function = None
@@ -171,7 +170,7 @@ def optionally_get_location_info_deferred_function(
             function=validate_and_add_location_info,
             db_client=db_client,
             entry_data=entry_data,
-            location_info=location_info,
+            location_id=location_id,
         )
     return deferred_function
 
@@ -190,14 +189,14 @@ def update_agency(
 ) -> Response:
     AgenciesPutSchema().load(request.json)
     entry_data = request.json.get("agency_info")
-    location_info = request.json.get("location_info")
-    if location_info is not None:
+    location_id = request.json.get("location_id")
+    if location_id is not None:
         jurisdiction_type = entry_data.get("jurisdiction_type")
         deferred_function = optionally_get_location_info_deferred_function(
             db_client=db_client,
             jurisdiction_type=jurisdiction_type,
             entry_data=entry_data,
-            location_info=location_info,
+            location_id=location_id,
         )
     else:
         deferred_function = None

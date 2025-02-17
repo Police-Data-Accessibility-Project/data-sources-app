@@ -125,6 +125,7 @@ class DatabaseClient:
             self.session = self.session_maker()
             try:
                 result = method(self, *args, **kwargs)
+                self.session.flush()
                 self.session.commit()
                 return result
             except Exception as e:
@@ -866,6 +867,9 @@ class DatabaseClient:
     )
 
     def create_county(self, name: str, fips: str, state_id: int) -> int:
+        """
+        Create county and return county id
+        """
         return self._create_entry_in_table(
             table_name=Relations.COUNTIES.value,
             column_value_mappings={"name": name, "fips": fips, "state_id": state_id},
@@ -884,6 +888,7 @@ class DatabaseClient:
         subquery_parameters: Optional[list[SubqueryParameters]] = [],
         build_metadata: Optional[bool] = False,
         alias_mappings: Optional[dict[str, str]] = None,
+        apply_uniqueness_constraints: Optional[bool] = True,
     ) -> list[dict]:
         """
         Selects a single relation from the database
@@ -906,7 +911,10 @@ class DatabaseClient:
             subquery_parameters,
             alias_mappings,
         )
-        raw_results = self.session.execute(query()).mappings().unique().all()
+        if apply_uniqueness_constraints:
+            raw_results = self.session.execute(query()).mappings().unique().all()
+        else:
+            raw_results = self.session.execute(query()).mappings().all()
         results = self._process_results(
             build_metadata=build_metadata,
             raw_results=raw_results,
@@ -1530,6 +1538,22 @@ class DatabaseClient:
             updated_at=result["updated_at"],
         )
 
+    def get_change_logs_for_table(self, table: Relations):
+        return self._select_from_relation(
+            relation_name=Relations.CHANGE_LOG.value,
+            columns=[
+                "id",
+                "operation_type",
+                "table_name",
+                "affected_id",
+                "old_data",
+                "new_data",
+                "created_at",
+            ],
+            where_mappings={"table_name": table.value},
+            apply_uniqueness_constraints=False,
+        )
+
     @session_manager
     def get_users(self, page: int) -> List[UsersWithPermissions]:
         raw_results = self.session.execute(
@@ -1611,6 +1635,13 @@ class DatabaseClient:
             id_column_value=email,
             id_column_name="email",
         )
+
+    def get_locality_id_by_location_id(self, location_id: int):
+        return self._select_single_entry_from_relation(
+            relation_name=Relations.LOCATIONS_EXPANDED.value,
+            columns=["locality_id"],
+            where_mappings={"id": location_id},
+        )["locality_id"]
 
     def get_location_by_id(self, location_id: int):
         return self._select_single_entry_from_relation(

@@ -82,4 +82,4 @@ class RequestInfoPostDTO(BaseModel):
 
 class DataRequestsPostDTO(BaseModel):
     request_info: RequestInfoPostDTO
-    location_infos: Optional[list[DataRequestLocationInfoPostDTO]] = None
+    location_ids: Optional[list[int]] = None

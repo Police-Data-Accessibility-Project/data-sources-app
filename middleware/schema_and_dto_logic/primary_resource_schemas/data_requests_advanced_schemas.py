@@ -117,26 +117,22 @@ class DataRequestsPostSchema(Schema):
         ),
         required=True,
     )
-    location_infos = fields.List(
-        fields.Nested(
-            nested=TypeaheadLocationsResponseSchema(
-                only=["type", "state_name", "county_name", "locality_name"]
-            ),
+    location_ids = fields.List(
+        fields.Integer(
             metadata=get_json_metadata(
-                "The locations associated with the data request",
-                nested_dto_class=DataRequestLocationInfoPostDTO,
+                "The location ids associated with the data request",
             ),
         ),
         required=False,
         allow_none=True,
-        metadata=get_json_metadata("The locations associated with the data request"),
+        metadata=get_json_metadata("The location ids associated with the data request"),
     )
 
     @post_load
-    def location_infos_convert_empty_list_to_none(self, in_data, **kwargs):
-        location_infos = in_data.get("location_infos", None)
-        if location_infos == []:
-            in_data["location_infos"] = None
+    def location_ids_convert_empty_list_to_none(self, in_data, **kwargs):
+        location_ids = in_data.get("location_ids", None)
+        if location_ids == []:
+            in_data["location_ids"] = None
         return in_data
 
 
