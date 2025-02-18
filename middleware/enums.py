@@ -136,6 +136,7 @@ class AgencyType(Enum):
     COURT = "court"
     POLICE = "police"
     JAIL = "jail"
+    UNKNOWN = "unknown"
 
 
 class RecordType(Enum):
