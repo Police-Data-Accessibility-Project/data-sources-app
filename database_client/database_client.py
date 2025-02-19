@@ -1725,10 +1725,10 @@ class DatabaseClient:
                 DATA_SOURCES
             UNION
             SELECT
-                COUNT(DISTINCT (ID)),
+                COUNT(DISTINCT (AGENCY_ID)),
                 'agency_count' "Count Type"
             FROM
-                AGENCIES
+                link_agencies_data_sources
             UNION
             SELECT
                 COUNT(DISTINCT L.ID),
