@@ -1,0 +1,37 @@
+name: Auto-populate PR with Fixed Issues
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+
+jobs:
+  update-pr-body:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get merged PRs from `dev` branch
+        id: merged_prs
+        run: |
+          PRS=$(gh pr list --base dev --state merged --json number,title,body)
+          echo "prs=$PRS" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract issue references
+        id: extract_issues
+        run: |
+          ISSUES=$(echo '${{ env.prs }}' | jq -r 'map(.body | capture("#(?<issue>\\d+)") | .issue) | unique | join("\n")')
+          echo "issues=$ISSUES" >> $GITHUB_ENV
+
+      - name: Update PR Description
+        run: |
+          NEW_BODY="This PR merges \`dev\` into \`main\`.\n\n### Issues Fixed:\n${{ env.issues }}"
+          gh pr edit ${{ github.event.pull_request.number }} --body "$NEW_BODY"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
