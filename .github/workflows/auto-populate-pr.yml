@@ -26,9 +26,11 @@ jobs:
       - name: Extract issue references
         id: extract_issues
         run: |
-          echo '${{ env.prs }}' | jq -r '[.[] | .body | scan("#\\d+")] | flatten | unique | join("\n")' > issues.txt
+          echo '${{ env.prs }}' > prs.json
+          cat prs.json | jq -r '[.[] | .body | scan("#\\d+")] | flatten | unique | join("\n")' > issues.txt
           cat issues.txt
-          echo "issues=$(cat issues.txt)" >> $GITHUB_ENV
+          echo "issues=$(cat issues.txt | tr '\n' ' ')" >> $GITHUB_ENV
+
 
 
       - name: Update PR Description
