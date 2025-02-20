@@ -1,4 +1,4 @@
-name: Auto-populate PR with Fixed Issues
+name: Extract Issue Numbers from PRs
 
 on:
   pull_request:
@@ -7,43 +7,24 @@ on:
     types:
       - opened
       - synchronize
-
 jobs:
-  update-pr-body:
+  extract_issues:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Get merged PRs from `dev` branch
-        id: merged_prs
+      - name: Install GitHub CLI
         run: |
-          PRS=$(gh pr list --base dev --state merged --json number,title,body)
-          echo "prs=$PRS" >> $GITHUB_ENV
+          sudo apt update
+          sudo apt install -y gh
+
+      - name: Authenticate GitHub CLI
+        run: gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Run script
+        run: python .github/scripts/get_pr_issues.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract issue references
-        id: extract_issues
-        run: |
-          # Store the JSON safely in a file
-          echo '${{ env.prs }}' | jq '.' > prs.json
-      
-          # Extract issue numbers safely
-          jq -r '[.[] | .body | scan("#\\d+")] | flatten | unique | join("\n")' prs.json > issues.txt
-      
-          # Print for debugging
-          cat issues.txt
-      
-          # Convert newlines to a single space-separated string for safe environment variable handling
-          ISSUES=$(cat issues.txt | tr '\n' ' ')
-          echo "issues=$ISSUES" >> $GITHUB_ENV
-
-
-
-      - name: Update PR Description
-        run: |
-          NEW_BODY="This PR merges \`dev\` into \`main\`.\n\n### Issues Fixed:\n${{ env.issues }}"
-          gh pr edit ${{ github.event.pull_request.number }} --body "$NEW_BODY"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
