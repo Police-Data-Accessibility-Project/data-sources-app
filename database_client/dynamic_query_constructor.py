@@ -152,7 +152,7 @@ class DynamicQueryConstructor:
                 locality_name,
                 location_id
             FROM typeahead_locations
-            WHERE display_name ILIKE {search_term_prefix}
+            WHERE search_name ILIKE {search_term_prefix}
             UNION ALL
             SELECT
                 2 AS sort_order,
@@ -163,8 +163,8 @@ class DynamicQueryConstructor:
                 locality_name,
                 location_id
             FROM typeahead_locations
-            WHERE display_name ILIKE {search_term_anywhere}
-            AND display_name NOT ILIKE {search_term_prefix}
+            WHERE search_name ILIKE {search_term_anywhere}
+            AND search_name NOT ILIKE {search_term_prefix}
         )
         SELECT display_name, type, state_name, county_name, locality_name, location_id
         FROM (
