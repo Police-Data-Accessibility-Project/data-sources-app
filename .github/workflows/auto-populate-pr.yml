@@ -1,10 +1,12 @@
 name: Extract Issue Numbers from PRs
 
 on:
-  push:
+  pull_request:
     branches:
       - main
-
+    types:
+      - opened
+      - synchronize
 jobs:
   extract-issues:
     runs-on: ubuntu-latest
