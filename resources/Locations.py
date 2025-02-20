@@ -24,7 +24,7 @@ class LocationsByID(PsycopgResource):
     @endpoint_info(
         namespace=namespace_locations,
         description="Get a location by ID",
-        auth_info=STANDARD_JWT_AUTH_INFO,
+        auth_info=API_OR_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.LOCATIONS_BY_ID_GET,
         response_info=ResponseInfo(
             success_message="Returns a location by ID.",
