@@ -8,17 +8,26 @@ on:
       - opened
       - synchronize
 jobs:
-  run-script:
+  extract-issues:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
+
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Ensure we get full history
+
+      - name: Get commits in dev but not in main
+        id: new_commits
+        run: |
+          git fetch origin main dev
+          COMMITS=$(git log main..dev --pretty=format:"%H" | tr '\n' ' ')
+          echo "commits=$COMMITS" >> $GITHUB_ENV
 
       - name: Run script
         run: python .github/scripts/get_pr_issues.py
