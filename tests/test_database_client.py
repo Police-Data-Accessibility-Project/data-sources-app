@@ -608,7 +608,7 @@ def test_get_typeahead_locations(live_database_client: DatabaseClient):
     # Check that the results are as expected
     assert len(results) == 3
 
-    assert results[0]["display_name"] == "Xylodammerung"
+    assert results[0]["display_name"] == "Xylodammerung, Arxylodon, Xylonsylvania"
     assert results[0]["type"] == "Locality"
     assert results[0]["state_name"] == "Xylonsylvania"
     assert results[0]["county_name"] == "Arxylodon"
@@ -620,7 +620,7 @@ def test_get_typeahead_locations(live_database_client: DatabaseClient):
     assert results[1]["county_name"] is None
     assert results[1]["locality_name"] is None
 
-    assert results[2]["display_name"] == "Arxylodon"
+    assert results[2]["display_name"] == "Arxylodon, Xylonsylvania"
     assert results[2]["type"] == "County"
     assert results[2]["state_name"] == "Xylonsylvania"
     assert results[2]["county_name"] == "Arxylodon"
