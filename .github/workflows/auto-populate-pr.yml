@@ -8,35 +8,17 @@ on:
       - opened
       - synchronize
 jobs:
-  extract-issues:
+  run-script:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          fetch-depth: 0 # Ensure we get full history
+          python-version: '3.12'
 
-      - name: Get commits in dev but not in main
-        id: new_commits
-        run: |
-          git fetch origin main dev
-          COMMITS=$(git log main..dev --pretty=format:"%H" | tr '\n' ' ')
-          echo "commits=$COMMITS" >> $GITHUB_ENV
-
-      - name: Get associated PRs
-        id: pr_list
-        run: |
-          PRS=$(gh pr list --base dev --state merged --json number,title,body | jq -r '.[] | "\(.number) \(.title) \(.body)"')
-          echo "prs=$PRS" >> $GITHUB_ENV
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract issue numbers
-        id: extract_issues
-        run: |
-          ISSUES=$(echo "$PRS" | grep -oE "#[0-9]+" | tr -d "#" | sort -u | tr '\n' ' ')
-          echo "issues=$ISSUES" >> $GITHUB_ENV
-
-      - name: Output extracted issues
-        run: |
-          echo "Extracted issues: ${{ env.issues }}"
+      - name: Run script
+        run: python .github/scripts/get_pr_issues.py
