@@ -58,8 +58,8 @@ issue_urls.sort()
 issue_string = " * " + "\n * ".join(issue_urls)
 number_string = " * " + "\n * ".join(numbers)
 
-new_body = "\n\n### Extracted Issues:\n" + issue_string
-new_body += "\n\n### Extracted PRs:\n" + number_string
+new_body = "\n\n### Resolves Issues:\n" + issue_string
+new_body += "\n\n### Contains PRs:\n" + number_string
 
 
 def edit_pr_body():
