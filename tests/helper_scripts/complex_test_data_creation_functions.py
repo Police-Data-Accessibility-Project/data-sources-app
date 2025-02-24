@@ -6,7 +6,7 @@ from flask.testing import FlaskClient
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import RequestUrgency
-from middleware.enums import JurisdictionType
+from middleware.enums import JurisdictionType, AgencyType
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgencyInfoPostSchema,
 )
@@ -128,7 +128,7 @@ def get_sample_location_info(locality_name: Optional[str] = None) -> dict:
 
 
 def get_sample_agency_post_parameters(
-    submitted_name,
+    name,
     locality_name,
     jurisdiction_type: JurisdictionType,
     location_info: Optional[dict] = None,
@@ -138,7 +138,7 @@ def get_sample_agency_post_parameters(
     """
 
     if location_info is None:
-        location_info = {
+        location_id = {
             "type": "Locality",
             "state_iso": "PA",
             "county_fips": "42003",
@@ -148,9 +148,10 @@ def get_sample_agency_post_parameters(
         "agency_info": generate_test_data_from_schema(
             schema=AgencyInfoPostSchema(),
             override={
-                "submitted_name": submitted_name,
+                "name": name,
                 "jurisdiction_type": JurisdictionType.LOCAL.value,
+                "agency_type": AgencyType.POLICE.value,
             },
         ),
-        "location_info": location_info,
+        "location_id": location_info,
     }

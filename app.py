@@ -5,9 +5,13 @@ from flask import Flask
 from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 
+from middleware.SchedulerManager import SchedulerManager
+from middleware.scheduled_tasks.check_database_health import check_database_health
 from middleware.util import get_env_variable
+from resources.Admin import namespace_admin
 from resources.Batch import namespace_bulk
 from resources.Callback import namespace_auth
+from resources.Contact import namespace_contact
 from resources.DataRequests import namespace_data_requests
 from resources.GithubDataRequests import namespace_github
 from resources.LinkToGithub import namespace_link_to_github
@@ -60,8 +64,6 @@ NAMESPACES = [
     namespace_permissions,
     namespace_create_test_user,
     namespace_data_requests,
-    # Below should not be enabled until https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/458
-    # namespace_homepage_search_cache,
     namespace_url_checker,
     namespace_user,
     namespace_github,
@@ -72,6 +74,8 @@ NAMESPACES = [
     namespace_match,
     namespace_locations,
     namespace_metrics,
+    namespace_admin,
+    namespace_contact,
 ]
 
 MY_PREFIX = "/api"
@@ -137,6 +141,16 @@ def create_app() -> Flask:
     limiter.init_app(app)
     jwt.init_app(app)
 
+    # Initialize and start the scheduler
+    scheduler = SchedulerManager(app)
+    scheduler.add_job(
+        "database_health_check", check_database_health, minutes=60, delay_minutes=3
+    )
+    scheduler.start()
+
+    # Store scheduler in the app context to manage it later
+    app.scheduler = scheduler
+
     return app
 
 
@@ -145,7 +159,8 @@ def get_api_with_namespaces():
         version="2.0",
         title="PDAP Data Sources API",
         description="The following is the API documentation for the PDAP Data Sources API."
-        "\n\nFor information on how to get started, consult [our getting started guide.](https://docs.pdap.io/api/introduction)",
+        "\n\nFor API help, consult [our getting started guide.](https://docs.pdap.io/api/introduction)"
+        "\n\nTo search the database, go to [pdap.io](https://pdap.io).",
     )
     for namespace in NAMESPACES:
         api.add_namespace(namespace)

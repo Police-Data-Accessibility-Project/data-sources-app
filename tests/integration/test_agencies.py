@@ -5,7 +5,7 @@ from datetime import datetime, timezone, timedelta
 
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import SortOrder
-from middleware.enums import JurisdictionType
+from middleware.enums import JurisdictionType, AgencyType
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgencyInfoPutSchema,
 )
@@ -81,6 +81,22 @@ def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
     assert data_asc != data_desc
     assert data_asc[0]["name"] < data_desc[0]["name"]
 
+    assert data_asc[0]["name"] == data_asc[0]["submitted_name"]
+
+    # Test limit functionality
+    response_json = tdc.request_validator.get_agency(
+        headers=tus.api_authorization_header,
+        sort_by="name",
+        sort_order=SortOrder.ASCENDING,
+        limit=1,
+    )
+
+    assert_expected_get_many_result(
+        response_json=response_json,
+        expected_non_null_columns=["id"],
+    )
+    assert len(response_json["data"]) == 1
+
 
 def test_agencies_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     """
@@ -104,6 +120,7 @@ def test_agencies_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     )
 
     data = response_json["data"]
+    assert data["name"] == data["submitted_name"]
     assert data["id"] == int(agency_id)
     assert data["data_sources"][0]["id"] == int(cds.id)
 
@@ -139,8 +156,8 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
         )
 
     # Test with a new locality
-    data_to_post = get_sample_agency_post_parameters(
-        submitted_name=get_test_name(),
+    data_to_post = tdc.get_sample_agency_post_parameters(
+        name=get_test_name(),
         jurisdiction_type=JurisdictionType.LOCAL,
         locality_name=get_test_name(),
     )
@@ -165,14 +182,13 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
         key_value_pairs={
             "state_iso": "PA",
             "county_name": "Allegheny",
-            "locality_name": data_to_post["location_info"]["locality_name"],
             **data_to_post["agency_info"],
         },
     )
 
     # Test with a new locality
-    data_to_post = get_sample_agency_post_parameters(
-        submitted_name=get_test_name(),
+    data_to_post = test_data_creator_flask.get_sample_agency_post_parameters(
+        name=get_test_name(),
         jurisdiction_type=JurisdictionType.LOCAL,
         locality_name="Capitola",
     )
@@ -185,10 +201,9 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
     assert_contains_key_value_pairs(
         dict_to_check=json_data["data"],
         key_value_pairs={
-            "submitted_name": data_to_post["agency_info"]["submitted_name"],
+            "name": data_to_post["agency_info"]["name"],
             "state_iso": "PA",
             "county_name": "Allegheny",
-            "locality_name": data_to_post["location_info"]["locality_name"],
         },
     )
 
@@ -196,8 +211,8 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
 def test_agencies_put(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
 
-    data_to_post = get_sample_agency_post_parameters(
-        submitted_name=get_test_name(),
+    data_to_post = tdc.get_sample_agency_post_parameters(
+        name=get_test_name(),
         jurisdiction_type=JurisdictionType.LOCAL,
         locality_name=get_test_name(),
     )
@@ -265,8 +280,9 @@ def test_agencies_delete(test_data_creator_flask: TestDataCreatorFlask):
         headers=admin_tus.jwt_authorization_header,
         json={
             "agency_info": {
-                "submitted_name": get_test_name(),
+                "name": get_test_name(),
                 "jurisdiction_type": JurisdictionType.FEDERAL.value,
+                "agency_type": AgencyType.COURT.value,
             }
         },
     )
@@ -283,7 +299,7 @@ def test_agencies_delete(test_data_creator_flask: TestDataCreatorFlask):
 
     results = tdc.db_client._select_from_relation(
         relation_name="agencies",
-        columns=["submitted_name"],
+        columns=["name"],
         where_mappings=[WhereMapping(column="id", value=int(agency_id))],
     )
 

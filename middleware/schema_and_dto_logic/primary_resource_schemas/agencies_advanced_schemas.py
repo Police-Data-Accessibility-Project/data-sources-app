@@ -11,6 +11,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetByIDBaseSchema,
     LocationInfoDTO,
 )
+from middleware.schema_and_dto_logic.enums import CSVColumnCondition
 from middleware.schema_and_dto_logic.primary_resource_schemas.locations_schemas import (
     LocationInfoSchema,
 )
@@ -19,7 +20,7 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import 
     AgencyInfoPostDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_base_schemas import (
-    get_submitted_name_field,
+    get_name_field,
     get_jurisdiction_type_field,
     AgencyInfoBaseSchema,
     AgenciesExpandedSchema,
@@ -35,12 +36,12 @@ from utilities.enums import SourceMappingEnum
 
 
 class AgencyInfoPostSchema(AgencyInfoBaseSchema):
-    submitted_name = get_submitted_name_field(required=True)
+    name = get_name_field(required=True)
     jurisdiction_type = get_jurisdiction_type_field(required=True)
 
 
 class AgencyInfoPutSchema(AgencyInfoBaseSchema):
-    submitted_name = get_submitted_name_field(required=False)
+    name = get_name_field(required=False)
     jurisdiction_type = get_jurisdiction_type_field(required=False)
 
 
@@ -62,30 +63,27 @@ def get_agency_info_field(
 def validate_location_info_against_jurisdiction_type(data, jurisdiction_type):
     if (
         jurisdiction_type == JurisdictionType.FEDERAL
-        and data.get("location_info") is not None
+        and data.get("location_id") is not None
     ):
-        raise ValidationError(
-            "location_info must be None for jurisdiction type FEDERAL."
-        )
+        raise ValidationError("location_id must be None for jurisdiction type FEDERAL.")
     if (
         jurisdiction_type != JurisdictionType.FEDERAL
-        and data.get("location_info") is None
+        and data.get("location_id") is None
     ):
         raise ValidationError(
-            "location_info is required for non-FEDERAL jurisdiction type."
+            "location_id is required for non-FEDERAL jurisdiction type."
         )
 
 
 class AgenciesPostPutBaseSchema(Schema):
-    location_info = fields.Nested(
-        LocationInfoSchema,
+    location_id = fields.Integer(
         required=False,
         allow_none=True,
-        metadata={
-            "description": "The locational information of the agency. Must be None if agency is of jurisdiction_type `federal`",
-            "source": SourceMappingEnum.JSON,
-            "nested_dto_class": LocationInfoDTO,
-        },
+        load_default=None,
+        metadata=get_json_metadata(
+            description="The id of the location associated with the agency.",
+            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
+        ),
     )
 
 

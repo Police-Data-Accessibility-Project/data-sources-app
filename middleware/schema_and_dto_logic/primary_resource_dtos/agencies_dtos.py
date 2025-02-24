@@ -9,9 +9,9 @@ from pydantic import BaseModel
 
 
 class AgencyInfoPutDTO(BaseModel):
-    submitted_name: str = None
+    name: str = None
     jurisdiction_type: JurisdictionType = None
-    agency_type: AgencyType = AgencyType.NONE
+    agency_type: AgencyType = None
     multi_agency: bool = False
     no_web_presence: bool = False
     approved: bool = False
@@ -19,14 +19,13 @@ class AgencyInfoPutDTO(BaseModel):
     lat: float = None
     lng: float = None
     defunct_year: str = None
-    zip_code: str = None
     rejection_reason: str = None
     last_approval_editor: str = None
     submitter_contact: str = None
 
 
 class AgencyInfoPostDTO(BaseModel):
-    submitted_name: str
+    name: str
     jurisdiction_type: JurisdictionType
     agency_type: AgencyType
     multi_agency: bool = False
@@ -36,7 +35,6 @@ class AgencyInfoPostDTO(BaseModel):
     lat: Optional[float] = None
     lng: Optional[float] = None
     defunct_year: Optional[str] = None
-    zip_code: Optional[str] = None
     rejection_reason: Optional[str] = None
     last_approval_editor: Optional[str] = None
     submitter_contact: Optional[str] = None
@@ -44,12 +42,12 @@ class AgencyInfoPostDTO(BaseModel):
 
 class AgenciesPostDTO(BaseModel):
     agency_info: AgencyInfoPostDTO
-    location_info: Optional[LocationInfoDTO] = None
+    location_id: Optional[int] = None
 
 
 class AgenciesPutDTO(BaseModel):
     agency_info: AgencyInfoPutDTO
-    location_info: Optional[LocationInfoDTO] = None
+    location_id: Optional[int] = None
 
 
 class RelatedAgencyByIDDTO(GetByIDBaseDTO):

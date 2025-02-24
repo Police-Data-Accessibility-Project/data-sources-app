@@ -15,6 +15,7 @@ from middleware.enums import (
     PermissionsEnum,
     Relations,
     JurisdictionType,
+    AgencyType,
 )
 from resources.ApiKeyResource import API_KEY_ROUTE
 from tests.helper_scripts.common_test_data import get_test_name, get_test_email
@@ -103,7 +104,6 @@ def setup_get_typeahead_suggestion_test_data(cursor: Optional[psycopg.Cursor] = 
             column_value_mappings={
                 "fips": "12345",
                 "name": "Arxylodon",
-                "state_iso": "XY",
                 "state_id": state_id,
             },
             column_to_return="id",
@@ -130,8 +130,9 @@ def setup_get_typeahead_suggestion_test_data(cursor: Optional[psycopg.Cursor] = 
         agency_id = db_client.create_or_get(
             table_name=Relations.AGENCIES.value,
             column_value_mappings={
-                "submitted_name": "Xylodammerung Police Agency",
+                "name": "Xylodammerung Police Agency",
                 "jurisdiction_type": JurisdictionType.STATE,
+                "agency_type": AgencyType.POLICE.value,
                 "location_id": location_id,
             },
             column_to_return="id",
@@ -175,6 +176,10 @@ def create_test_user_setup(
 def create_admin_test_user_setup(flask_client: FlaskClient) -> TestUserSetup:
     tus_admin = create_test_user_setup(
         flask_client,
-        permissions=[PermissionsEnum.READ_ALL_USER_INFO, PermissionsEnum.DB_WRITE],
+        permissions=[
+            PermissionsEnum.READ_ALL_USER_INFO,
+            PermissionsEnum.DB_WRITE,
+            PermissionsEnum.USER_CREATE_UPDATE,
+        ],
     )
     return tus_admin

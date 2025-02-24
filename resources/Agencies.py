@@ -3,7 +3,7 @@ from flask import Response
 from config import limiter
 from middleware.access_logic import (
     AccessInfoPrimary,
-    GET_AUTH_INFO,
+    API_OR_JWT_AUTH_INFO,
     WRITE_ONLY_AUTH_INFO,
 )
 from middleware.column_permission_logic import create_column_permissions_string_table
@@ -41,7 +41,7 @@ class AgenciesByPage(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_agencies,
-        auth_info=GET_AUTH_INFO,
+        auth_info=API_OR_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.AGENCIES_GET_MANY,
         response_info=ResponseInfo(
             success_message="Returns a paginated list of approved agencies."
@@ -81,7 +81,7 @@ class AgenciesById(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_agencies,
-        auth_info=GET_AUTH_INFO,
+        auth_info=API_OR_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.AGENCIES_BY_ID_GET,
         response_info=ResponseInfo(
             success_message="Returns information on the specific agency."

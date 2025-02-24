@@ -42,6 +42,7 @@ ARCHIVE_INFO_APPROVED_COLUMNS = [
 
 DATA_SOURCES_MAP_COLUMN = [
     "data_source_id",
+    "location_id",
     "name",
     "agency_id",
     "agency_name",

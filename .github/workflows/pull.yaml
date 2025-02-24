@@ -4,8 +4,8 @@ on:
   pull_request:
 
 jobs:
-  setup_api:
-    name: Setup API
+  setup:
+    name: Setup
     runs-on: ubuntu-latest
     steps:
     - name: Cancel previous
@@ -22,17 +22,17 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-  lint_api:
-    name: Lint API
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: psf/black@stable
 
-  test_api:
+  test:
     env:
       FLASK_APP_COOKIE_ENCRYPTION_KEY: ${{ secrets.SECRET_KEY }}
-    name: Test API
+    name: Test
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -44,84 +44,3 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-
-  setup_client:
-    defaults:
-      run:
-        working-directory: client    
-    name: Setup client
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cancel previous
-        uses: styfle/cancel-workflow-action@0.11.0
-        with:
-          access_token: ${{ secrets.GITHUB_TOKEN }}
-          
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18.x'
-          cache: 'npm'
-          cache-dependency-path: 'client/package-lock.json'
-      - name: Install deps
-        run: npm ci
-        
-
-  lint_client:
-    defaults:
-      run:
-        working-directory: client    
-    name: Lint client
-    needs: setup_client
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18.x'
-          cache: 'npm'
-          cache-dependency-path: 'client/package-lock.json'
-      - run: npm ci
-      - name: Lint JS and Vue
-        run: npm run lint
-
-  test_client:
-    defaults:
-      run:
-        working-directory: client
-    name: Test client
-    needs: setup_client
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18.x'
-          cache: 'npm'
-          cache-dependency-path: 'client/package-lock.json'
-      - uses: szenius/set-timezone@v1.2
-        with:
-          timezoneLinux: "America/New_York"
-      - run: npm ci
-      - name: Run tests
-        run: npm run test:ci
-
-  build_client:
-    defaults:
-      run:
-        working-directory: client
-    name: Build client
-    needs: setup_client
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18.x'
-          cache: 'npm'
-          cache-dependency-path: 'client/package-lock.json'
-      - run: npm ci
-      - name: Build app
-        run: npm run build

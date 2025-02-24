@@ -40,7 +40,7 @@ def test_locations_get_by_id(locations_test_setup: LocationsTestSetup):
     # Get location, confirm information matches
     data = tdc.request_validator.get_location_by_id(
         location_id=lts.location_info["location_id"],
-        headers=tdc.get_admin_tus().jwt_authorization_header,
+        headers=tdc.get_admin_tus().api_authorization_header,
         expected_json_content=lts.location_info,
     )
 

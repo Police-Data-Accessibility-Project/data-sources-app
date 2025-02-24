@@ -12,14 +12,27 @@ from middleware.primary_resource_logic.permissions_logic import (
     PermissionsRequestDTO,
     PermissionsGetRequestSchema,
 )
+from middleware.schema_and_dto_logic.primary_resource_dtos.admin_dtos import (
+    AdminUserPutDTO,
+    AdminUserPostDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_dtos.bulk_dtos import (
     BulkRequestDTO,
+)
+from middleware.schema_and_dto_logic.primary_resource_dtos.contact_dtos import (
+    ContactFormPostDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
     AgencyMatchRequestDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.reset_token_dtos import (
     ResetPasswordDTO,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.admin_schemas import (
+    AdminUsersGetByIDResponseSchema,
+    AdminUsersPutSchema,
+    AdminUsersPostSchema,
+    AdminUsersGetManyResponseSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.archives_schemas import (
     ArchivesGetResponseSchema,
@@ -33,6 +46,9 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.bulk_schemas impor
     AgenciesPostBatchRequestSchema,
     DataSourcesPostBatchRequestSchema,
     DataSourcesPutBatchRequestSchema,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.contact_schemas import (
+    ContactFormPostSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.locations_schemas import (
     LocationInfoExpandedSchema,
@@ -563,6 +579,42 @@ class SchemaConfigs(Enum):
     # region Metrics
     METRICS_GET = EndpointSchemaConfig(
         primary_output_schema=MetricsGetResponseSchema(),
+    )
+
+    # endregion
+
+    # region Admin
+    ADMIN_USERS_GET_MANY = EndpointSchemaConfig(
+        input_schema=GetManyRequestsBaseSchema(),
+        input_dto_class=GetManyBaseDTO,
+        primary_output_schema=AdminUsersGetManyResponseSchema(),
+    )
+
+    ADMIN_USERS_BY_ID_GET = EndpointSchemaConfig(
+        input_schema=GetByIDBaseSchema(),
+        input_dto_class=GetByIDBaseDTO,
+        primary_output_schema=AdminUsersGetByIDResponseSchema(),
+    )
+
+    ADMIN_USERS_BY_ID_PUT = EndpointSchemaConfig(
+        input_schema=AdminUsersPutSchema(),
+        input_dto_class=AdminUserPutDTO,
+        primary_output_schema=MessageSchema(),
+    )
+
+    ADMIN_USERS_POST = get_post_resource_endpoint_schema_config(
+        input_schema=AdminUsersPostSchema(),
+        input_dto_class=AdminUserPostDTO,
+    )
+
+    # endregion
+
+    # region Contact
+
+    CONTACT_FORM_SUBMIT = EndpointSchemaConfig(
+        input_schema=ContactFormPostSchema(),
+        input_dto_class=ContactFormPostDTO,
+        primary_output_schema=MessageSchema(),
     )
 
     # endregion

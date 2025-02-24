@@ -5,13 +5,14 @@ Class based means to run and validate requests
 from dataclasses import dataclass
 from http import HTTPStatus
 from io import BytesIO
-from typing import Optional, Type, Union
+from typing import Optional, Type, Union, List
 
 from flask.testing import FlaskClient
 from marshmallow import Schema
 
+from database_client.constants import PAGE_SIZE
 from database_client.enums import SortOrder, RequestStatus, ApprovalStatus
-from middleware.enums import OutputFormatEnum
+from middleware.enums import OutputFormatEnum, PermissionsEnum
 from middleware.util import update_if_not_none
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.common_test_data import get_test_name
@@ -414,6 +415,7 @@ class RequestValidator:
         sort_by: Optional[str] = None,
         sort_order: Optional[SortOrder] = None,
         request_statuses: Optional[list[RequestStatus]] = None,
+        limit: Optional[int] = PAGE_SIZE,
     ):
         query_params = {}
         update_if_not_none(
@@ -426,6 +428,7 @@ class RequestValidator:
                     if request_statuses is not None
                     else None
                 ),
+                "limit": limit,
             },
         )
         return self.get(
@@ -505,21 +508,34 @@ class RequestValidator:
         )
 
     def get_user_profile_data_requests(
-        self, headers: dict, expected_json_content: Optional[dict] = None
+        self,
+        headers: dict,
+        expected_json_content: Optional[dict] = None,
+        limit: int = PAGE_SIZE,
     ):
         return self.get(
-            endpoint="/api/user/data-requests?page=1",
+            endpoint=f"/api/user/data-requests?page=1&limit={limit}",
             headers=headers,
             expected_json_content=expected_json_content,
             expected_schema=SchemaConfigs.USER_PROFILE_DATA_REQUESTS_GET.value.primary_output_schema,
         )
 
     def get_agency(
-        self, sort_by: str, sort_order: SortOrder, headers: dict, page: int = 1
+        self,
+        sort_by: str,
+        sort_order: SortOrder,
+        headers: dict,
+        page: int = 1,
+        limit: int = PAGE_SIZE,
     ):
         url = add_query_params(
             url=AGENCIES_BASE_ENDPOINT,
-            params={"sort_by": sort_by, "sort_order": sort_order.value, "page": page},
+            params={
+                "sort_by": sort_by,
+                "sort_order": sort_order.value,
+                "page": page,
+                "limit": limit,
+            },
         )
         return self.get(
             endpoint=url,
@@ -606,6 +622,34 @@ class RequestValidator:
             expected_response_status=bop.expected_response_status,
         )
 
+    def get_data_sources(
+        self,
+        headers: dict,
+        sort_by: Optional[str] = None,
+        sort_order: Optional[SortOrder] = None,
+        page: int = 1,
+        limit: int = PAGE_SIZE,
+        approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
+    ):
+        query_params = {}
+        update_if_not_none(
+            dict_to_update=query_params,
+            secondary_dict={
+                "sort_by": sort_by,
+                "sort_order": sort_order.value if sort_order is not None else None,
+                "page": page,
+                "limit": limit,
+                "approval_status": approval_status.value,
+            },
+        )
+
+        return self.get(
+            endpoint=DATA_SOURCES_BASE_ENDPOINT,
+            query_parameters=query_params,
+            headers=headers,
+            expected_schema=SchemaConfigs.DATA_SOURCES_GET_MANY.value.primary_output_schema,
+        )
+
     def get_agency_by_id(self, headers: dict, id: int):
         return self.get(
             endpoint=f"/api/agencies/{id}",
@@ -679,6 +723,46 @@ class RequestValidator:
             endpoint=f"/api/metrics",
             headers=headers,
             expected_schema=SchemaConfigs.METRICS_GET.value.primary_output_schema,
+        )
+
+    def get_user_by_id_admin(self, headers: dict, user_id: str):
+        return self.get(
+            endpoint=f"/api/admin/users/{user_id}",
+            headers=headers,
+            expected_schema=SchemaConfigs.ADMIN_USERS_BY_ID_GET.value.primary_output_schema,
+        )
+
+    def get_users(self, headers: dict, page: int = 1):
+        return self.get(
+            endpoint=f"/api/admin/users?page={page}",
+            headers=headers,
+            expected_schema=SchemaConfigs.ADMIN_USERS_GET_MANY.value.primary_output_schema,
+        )
+
+    def create_user(
+        self,
+        headers: dict,
+        email: str,
+        password: str,
+        permissions: List[str],
+    ):
+        return self.post(
+            endpoint="/api/admin/users",
+            headers=headers,
+            json={
+                "email": email,
+                "password": password,
+                "permissions": permissions,
+            },
+            expected_schema=SchemaConfigs.ADMIN_USERS_POST.value.primary_output_schema,
+        )
+
+    def update_admin_user(self, headers: dict, resource_id: str, password: str):
+        return self.put(
+            endpoint=f"/api/admin/users/{resource_id}",
+            headers=headers,
+            json={"password": password},
+            expected_schema=SchemaConfigs.ADMIN_USERS_BY_ID_PUT.value.primary_output_schema,
         )
 
     # endregion

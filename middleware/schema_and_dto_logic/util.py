@@ -16,7 +16,7 @@ def _get_required_argument(
     try:
         return metadata[argument_name]
     except KeyError:
-        name = field_name if field_name else schema_class.__class__.__name__
+        name = field_name if field_name else schema_class.__name__
         raise MissingArgumentError(
             f"The argument {argument_name} must be specified as a metadata argument in class {name} (as in `Fields.Str(metadata={argument_name}:value`)"
         )

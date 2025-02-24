@@ -1,6 +1,5 @@
 import uuid
 
-from dataclasses import dataclass
 from http import HTTPStatus
 from typing import Dict, Optional
 
@@ -9,7 +8,7 @@ from flask.testing import FlaskClient
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import RequestUrgency, LocationType, RequestStatus, SortOrder
 from middleware.constants import DATA_KEY
-from middleware.enums import PermissionsEnum, RecordType
+from middleware.enums import RecordType
 from middleware.util import get_enum_values
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.common_test_data import (
@@ -28,14 +27,13 @@ from tests.helper_scripts.constants import (
     DATA_REQUESTS_GET_RELATED_SOURCE_ENDPOINT,
     DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT,
     DATA_REQUESTS_RELATED_LOCATIONS,
-    DATA_REQUESTS_POST_DELETE_RELATED_LOCATIONS_ENDPOINT,
 )
 
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
-from conftest import test_data_creator_flask, monkeysession
+from conftest import test_data_creator_flask
 
 
 def test_data_requests_get(
@@ -126,6 +124,14 @@ def test_data_requests_get(
 
     assert int(data_asc[0]["id"]) < int(data_desc[0]["id"])
 
+    # Test limit
+    data = tdc.request_validator.get_data_requests(
+        headers=tus_creator.jwt_authorization_header,
+        limit=1,
+    )[DATA_KEY]
+
+    assert len(data) == 1
+
 
 def test_data_requests_post(
     test_data_creator_flask: TestDataCreatorFlask,
@@ -164,21 +170,8 @@ def test_data_requests_post(
 
     submission_notes = uuid.uuid4().hex
 
-    tdc.locality(locality_name="Laguna Hills")
-    tdc.locality(locality_name="Seal Beach")
-
-    location_info_1 = {
-        "type": "Locality",
-        "state_name": "Pennsylvania",
-        "county_name": "Allegheny",
-        "locality_name": "Laguna Hills",
-    }
-    location_info_2 = {
-        "type": "Locality",
-        "state_name": "Pennsylvania",
-        "county_name": "Allegheny",
-        "locality_name": "Seal Beach",
-    }
+    location_id_1 = tdc.locality(locality_name="Laguna Hills")
+    location_id_2 = tdc.locality(locality_name="Seal Beach")
 
     json_request = {
         "request_info": {
@@ -188,7 +181,7 @@ def test_data_requests_post(
             "request_urgency": RequestUrgency.URGENT.value,
             "coverage_range": "2000-2005",
         },
-        "location_infos": [location_info_1, location_info_2],
+        "location_ids": [location_id_1, location_id_2],
     }
 
     json_data = post_data_request(json_request)
@@ -202,9 +195,9 @@ def test_data_requests_post(
     locations = data["locations"]
     assert len(locations) == 2
     for location in locations:
-        if location["locality_name"] == location_info_1["locality_name"]:
+        if location["locality_name"] == "Laguna Hills":
             continue
-        if location["locality_name"] == location_info_2["locality_name"]:
+        if location["locality_name"] == "Seal Beach":
             continue
         assert False
 

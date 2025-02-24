@@ -14,6 +14,7 @@ from sqlalchemy import (
     Enum,
     Integer,
     UniqueConstraint,
+    inspect,
 )
 from sqlalchemy.dialects.postgresql import (
     ARRAY,
@@ -21,18 +22,21 @@ from sqlalchemy.dialects.postgresql import (
     DATERANGE,
     TIMESTAMP,
     ENUM as pgEnum,
+    JSONB,
 )
-from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
     mapped_column,
     relationship,
+    column_property,
+    MappedColumn,
 )
 from sqlalchemy.sql.expression import false, func
 
 from database_client.enums import LocationType, AccessType
-from middleware.enums import Relations
+from middleware.enums import Relations, PermissionsEnum
 
 ExternalAccountTypeLiteral = Literal["github"]
 RecordTypeLiteral = Literal[
@@ -84,6 +88,9 @@ RequestStatusLiteral = Literal[
     "Waiting for FOIA",
     "Waiting for requestor",
 ]
+
+OperationTypeLiteral = Literal["UPDATE", "DELETE"]
+
 JurisdictionTypeLiteral = Literal[
     "federal", "state", "county", "local", "port", "tribal", "transit", "school"
 ]
@@ -222,21 +229,13 @@ class Agency(Base, CountMetadata):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
-    submitted_name: Mapped[Optional[str]]
     homepage_url: Mapped[Optional[str]]
     jurisdiction_type: Mapped[JurisdictionTypeLiteral]
-    state_iso: Mapped[Optional[str]]
-    municipality: Mapped[Optional[str]]
-    county_fips: Mapped[Optional[str]] = mapped_column(
-        ForeignKey("public.counties.fips")
-    )
-    county_name: Mapped[Optional[str]]
     lat: Mapped[Optional[float]]
     lng: Mapped[Optional[float]]
     defunct_year: Mapped[Optional[str]]
     agency_type: Mapped[Optional[str]]
     multi_agency: Mapped[bool] = mapped_column(server_default=false())
-    zip_code: Mapped[Optional[str]]
     no_web_presence: Mapped[bool] = mapped_column(server_default=false())
     airtable_agency_last_modified: Mapped[timestamp_tz] = mapped_column(
         server_default=func.current_timestamp()
@@ -256,8 +255,14 @@ class AgencyExpanded(Agency):
     __tablename__ = Relations.AGENCIES_EXPANDED.value
     id = mapped_column(None, ForeignKey("public.agencies.id"), primary_key=True)
 
+    submitted_name = Column(String)
+
     state_name = Column(String)  #
     locality_name = Column(String)  #
+    state_iso: Mapped[Optional[str]]
+    municipality: Mapped[Optional[str]]
+    county_fips: Mapped[Optional[str]]
+    county_name: Mapped[Optional[str]]
 
     # Some attributes need to be overwritten by the attributes provided by locations_expanded
     state_iso = Column(String)
@@ -270,6 +275,15 @@ class AgencyExpanded(Agency):
         secondaryjoin="LinkAgencyDataSource.data_source_id == DataSourceExpanded.id",
         back_populates="agencies",
     )
+
+
+class TableCountLog(Base):
+    __tablename__ = Relations.TABLE_COUNT_LOG.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    table_name: Mapped[str]
+    count: Mapped[int]
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
 
 class County(Base):
@@ -620,6 +634,30 @@ class User(Base):
     )
     role: Mapped[Optional[text]]
 
+    # Relationships
+    permissions = relationship(
+        argument="Permission",
+        secondary="public.user_permissions",
+        primaryjoin="User.id == UserPermission.user_id",
+        secondaryjoin="UserPermission.permission_id == Permission.id",
+    )
+
+
+class Permission(Base):
+    __tablename__ = Relations.PERMISSIONS.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    permission_name: Mapped[str_255]
+    description: Mapped[Optional[text]]
+
+
+class UserPermission(Base):
+    __tablename__ = Relations.USER_PERMISSIONS.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
+    permission_id: Mapped[int] = mapped_column(ForeignKey("public.permissions.id"))
+
 
 class PendingUser(Base):
     __tablename__ = Relations.PENDING_USERS.value
@@ -736,6 +774,20 @@ class RecentSearchExpanded(Base, CountMetadata):
     record_categories = mapped_column(ARRAY(String, as_tuple=True))
 
 
+class ChangeLog(Base):
+    __tablename__ = Relations.CHANGE_LOG.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    operation_type: Mapped[OperationTypeLiteral]
+    table_name: Mapped[str]
+    affected_id: Mapped[int]
+    old_data: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    new_data: Mapped[dict] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[timestamp] = mapped_column(
+        server_default=func.current_timestamp()
+    )
+
+
 SQL_ALCHEMY_TABLE_REFERENCE = {
     "agencies": Agency,
     "agencies_expanded": AgencyExpanded,
@@ -768,6 +820,7 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     Relations.RECENT_SEARCHES_EXPANDED.value: RecentSearchExpanded,
     Relations.RECORD_TYPES.value: RecordType,
     Relations.PENDING_USERS.value: PendingUser,
+    Relations.CHANGE_LOG.value: ChangeLog,
 }
 
 

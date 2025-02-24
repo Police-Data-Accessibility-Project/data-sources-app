@@ -11,9 +11,10 @@ import sqlalchemy.exc
 from dateutil.relativedelta import relativedelta
 from psycopg import sql, Cursor
 from psycopg.rows import dict_row, tuple_row
-from sqlalchemy import select, MetaData, delete, update, insert, Select, func
-from sqlalchemy.orm import aliased, defaultload, load_only
+from sqlalchemy import select, MetaData, delete, update, insert, Select, func, desc
+from sqlalchemy.orm import aliased, defaultload, load_only, selectinload, joinedload
 
+from database_client.DTOs import UserInfoNonSensitive, UsersWithPermissions
 from database_client.constants import METADATA_METHOD_NAMES, PAGE_SIZE
 from database_client.db_client_dataclasses import (
     OrderByParameters,
@@ -49,10 +50,15 @@ from database_client.models import (
     Agency,
     Location,
     LocationExpanded,
+    TableCountLog,
 )
 from middleware.enums import PermissionsEnum, Relations, AgencyType
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from middleware.initialize_sqlalchemy_session import initialize_sqlalchemy_session
+from middleware.miscellaneous_logic.table_count_logic import (
+    TableCountReference,
+    TableCountReferenceManager,
+)
 from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
     AgencyMatchResponseInnerDTO,
 )
@@ -119,6 +125,7 @@ class DatabaseClient:
             self.session = self.session_maker()
             try:
                 result = method(self, *args, **kwargs)
+                self.session.flush()
                 self.session.commit()
                 return result
             except Exception as e:
@@ -192,7 +199,7 @@ class DatabaseClient:
             return None
         return int(results[0]["id"])
 
-    def set_user_password_digest(self, user_id: int, password_digest: str):
+    def update_user_password_digest(self, user_id: int, password_digest: str):
         """
         Updates the password digest for a user in the database.
         :param user_id:
@@ -304,6 +311,7 @@ class DatabaseClient:
         "MapInfo",
         [
             "data_source_id",
+            "location_id",
             "data_source_name",
             "agency_id",
             "agency_name",
@@ -326,9 +334,10 @@ class DatabaseClient:
         sql_query = """
             SELECT
                 DATA_SOURCES.id AS DATA_SOURCE_ID,
+                LE.ID as LOCATION_ID,
                 DATA_SOURCES.NAME,
                 AGENCIES.ID AS AGENCY_ID,
-                AGENCIES.SUBMITTED_NAME AS AGENCY_NAME,
+                AGENCIES.NAME AS AGENCY_NAME,
                 LE.STATE_ISO,
                 LE.LOCALITY_NAME AS MUNICIPALITY,
                 LE.COUNTY_NAME,
@@ -511,10 +520,20 @@ class DatabaseClient:
         :param search_term: The search query.
         :return: List of data sources that match the search query.
         """
-        query = DynamicQueryConstructor.generate_new_typeahead_locations_query(
+        query = DynamicQueryConstructor.generate_like_typeahead_locations_query(
             search_term
         )
         self.cursor.execute(query)
+        results = self.cursor.fetchall()
+        if 0 < len(results) <= 10:
+            return results
+
+        fuzzy_match_query = (
+            DynamicQueryConstructor.generate_fuzzy_match_typeahead_locations_query(
+                search_term
+            )
+        )
+        self.cursor.execute(fuzzy_match_query)
         return self.cursor.fetchall()
 
     @cursor_manager()
@@ -586,8 +605,48 @@ class DatabaseClient:
             },
         )
 
+    @session_manager
+    def get_table_count(self, table_name: str) -> int:
+        table = SQL_ALCHEMY_TABLE_REFERENCE[table_name]
+        count = self.session.query(func.count(table.id)).scalar()
+        return count
+
+    @session_manager
+    def log_table_counts(self, tcrs: list[TableCountReference]):
+        # Add entry to TableCountLog
+        for tcr in tcrs:
+            new_entry = TableCountLog(table_name=tcr.table, count=tcr.count)
+            self.session.add(new_entry)
+
+    @session_manager
+    def get_most_recent_logged_table_counts(self) -> TableCountReferenceManager:
+        # Get the most recent table count for all distinct tables
+        subquery = select(
+            TableCountLog.table_name,
+            TableCountLog.count,
+            func.row_number()
+            .over(
+                partition_by=TableCountLog.table_name,
+                order_by=desc(TableCountLog.created_at),
+            )
+            .label("row_num"),
+        ).subquery()
+
+        stmt = select(subquery.c.table_name, subquery.c.count).where(
+            subquery.c.row_num == 1
+        )
+
+        results = self.session.execute(stmt).all()
+        tcr = TableCountReferenceManager()
+        for result in results:
+            tcr.add_table_count(
+                table_name=result[0],
+                count=result[1],
+            )
+        return tcr
+
     @cursor_manager()
-    def add_user_permission(self, user_id: str, permission: PermissionsEnum):
+    def add_user_permission(self, user_id: str or int, permission: PermissionsEnum):
         """
         Adds a permission to a user.
 
@@ -599,7 +658,7 @@ class DatabaseClient:
             INSERT INTO user_permissions (user_id, permission_id) 
             VALUES (
                 {id}, 
-                (SELECT permission_id FROM permissions WHERE permission_name = {permission})
+                (SELECT id FROM permissions WHERE permission_name = {permission})
             );
         """
         ).format(
@@ -614,7 +673,7 @@ class DatabaseClient:
             """
             DELETE FROM user_permissions
             WHERE user_id = {user_id}
-            AND permission_id = (SELECT permission_id FROM permissions WHERE permission_name = {permission});
+            AND permission_id = (SELECT id FROM permissions WHERE permission_name = {permission});
         """
         ).format(
             user_id=sql.Literal(user_id),
@@ -629,7 +688,7 @@ class DatabaseClient:
             SELECT p.permission_name
             FROM 
             user_permissions up
-            INNER JOIN permissions p on up.permission_id = p.permission_id
+            INNER JOIN permissions p on up.permission_id = p.id
             where up.user_id = {user_id}
         """
         ).format(
@@ -748,7 +807,7 @@ class DatabaseClient:
             column_value_mappings
         )
         table = SQL_ALCHEMY_TABLE_REFERENCE[table_name]
-        statement = insert(table).values(**column_value_mappings)
+        statement = insert(table.__table__).values(**column_value_mappings)
 
         if column_to_return is not None:
             column = getattr(table, column_to_return)
@@ -758,10 +817,6 @@ class DatabaseClient:
         if column_to_return is not None:
             return result.fetchone()[0]
         return None
-
-    create_search_cache_entry = partialmethod(
-        _create_entry_in_table, table_name="agency_url_search_cache"
-    )
 
     create_data_request = partialmethod(
         _create_entry_in_table, table_name="data_requests", column_to_return="id"
@@ -811,6 +866,16 @@ class DatabaseClient:
         table_name=Relations.LINK_USER_FOLLOWED_LOCATION.value,
     )
 
+    def create_county(self, name: str, fips: str, state_id: int) -> int:
+        """
+        Create county and return county id
+        """
+        return self._create_entry_in_table(
+            table_name=Relations.COUNTIES.value,
+            column_value_mappings={"name": name, "fips": fips, "state_id": state_id},
+            column_to_return="id",
+        )
+
     @session_manager
     def _select_from_relation(
         self,
@@ -823,10 +888,12 @@ class DatabaseClient:
         subquery_parameters: Optional[list[SubqueryParameters]] = [],
         build_metadata: Optional[bool] = False,
         alias_mappings: Optional[dict[str, str]] = None,
+        apply_uniqueness_constraints: Optional[bool] = True,
     ) -> list[dict]:
         """
         Selects a single relation from the database
         """
+        limit = min(limit, 100)
         where_mappings = self._create_where_mappings_instance_if_dictionary(
             where_mappings
         )
@@ -844,7 +911,10 @@ class DatabaseClient:
             subquery_parameters,
             alias_mappings,
         )
-        raw_results = self.session.execute(query()).mappings().unique().all()
+        if apply_uniqueness_constraints:
+            raw_results = self.session.execute(query()).mappings().unique().all()
+        else:
+            raw_results = self.session.execute(query()).mappings().all()
         results = self._process_results(
             build_metadata=build_metadata,
             raw_results=raw_results,
@@ -1133,6 +1203,16 @@ class DatabaseClient:
         )
 
         return [row["column_name"] for row in results]
+
+    def get_county_id(self, county_name: str, state_id: int) -> int:
+        return self._select_single_entry_from_relation(
+            relation_name=Relations.COUNTIES.value,
+            columns=["id"],
+            where_mappings=[
+                WhereMapping(column="name", value=county_name),
+                WhereMapping(column="state_id", value=state_id),
+            ],
+        )
 
     def create_or_get(
         self,
@@ -1441,6 +1521,71 @@ class DatabaseClient:
         )
         return {row["account_type"]: row["account_identifier"] for row in raw_results}
 
+    def get_user_info_by_id(self, user_id: int) -> UserInfoNonSensitive:
+        result = self._select_single_entry_from_relation(
+            relation_name=Relations.USERS.value,
+            columns=[
+                "email",
+                "created_at",
+                "updated_at",
+            ],
+            where_mappings={"id": user_id},
+        )
+        return UserInfoNonSensitive(
+            user_id=user_id,
+            email=result["email"],
+            created_at=result["created_at"],
+            updated_at=result["updated_at"],
+        )
+
+    def get_change_logs_for_table(self, table: Relations):
+        return self._select_from_relation(
+            relation_name=Relations.CHANGE_LOG.value,
+            columns=[
+                "id",
+                "operation_type",
+                "table_name",
+                "affected_id",
+                "old_data",
+                "new_data",
+                "created_at",
+            ],
+            where_mappings={"table_name": table.value},
+            apply_uniqueness_constraints=False,
+        )
+
+    @session_manager
+    def get_users(self, page: int) -> List[UsersWithPermissions]:
+        raw_results = self.session.execute(
+            select(User)
+            .options(selectinload(User.permissions))
+            .order_by(User.created_at.desc())
+            .limit(100)
+            .offset((page - 1) * 100)
+        ).all()
+
+        final_results = []
+
+        for raw_result in raw_results:
+            user = raw_result[0]
+            permissions_db = user.permissions
+            permissions_str = [
+                permission.permission_name for permission in permissions_db
+            ]
+            permissions_enum = [
+                PermissionsEnum(permission) for permission in permissions_str
+            ]
+            uwp = UsersWithPermissions(
+                user_id=user.id,
+                email=user.email,
+                created_at=user.created_at,
+                updated_at=user.updated_at,
+                permissions=permissions_enum,
+            )
+            final_results.append(uwp)
+
+        return final_results
+
     def get_user_email(self, user_id: int) -> str:
         return self._select_single_entry_from_relation(
             relation_name=Relations.USERS.value,
@@ -1491,6 +1636,13 @@ class DatabaseClient:
             id_column_name="email",
         )
 
+    def get_locality_id_by_location_id(self, location_id: int):
+        return self._select_single_entry_from_relation(
+            relation_name=Relations.LOCATIONS_EXPANDED.value,
+            columns=["locality_id"],
+            where_mappings={"id": location_id},
+        )["locality_id"]
+
     def get_location_by_id(self, location_id: int):
         return self._select_single_entry_from_relation(
             relation_name=Relations.LOCATIONS_EXPANDED.value,
@@ -1519,22 +1671,20 @@ class DatabaseClient:
         """
         query = Select(
             Agency.id,
-            Agency.submitted_name,
+            Agency.name,
             Agency.agency_type,
             LocationExpanded.state_name,
             LocationExpanded.county_name,
             LocationExpanded.locality_name,
             LocationExpanded.type,
-            func.similarity(Agency.submitted_name, name),
+            func.similarity(Agency.name, name),
         )
         if location_id is not None:
             query = query.where(Agency.location_id == location_id)
         query = query.outerjoin(
             LocationExpanded, Agency.location_id == LocationExpanded.id
         )
-        query = query.order_by(
-            func.similarity(Agency.submitted_name, name).desc()
-        ).limit(10)
+        query = query.order_by(func.similarity(Agency.name, name).desc()).limit(10)
         execute_results = self.session.execute(query).all()
         if len(execute_results) == 0:
             return []
@@ -1578,7 +1728,7 @@ class DatabaseClient:
                 COUNT(DISTINCT (AGENCY_ID)),
                 'agency_count' "Count Type"
             FROM
-                LINK_AGENCIES_DATA_SOURCES
+                link_agencies_data_sources
             UNION
             SELECT
                 COUNT(DISTINCT L.ID),

@@ -20,6 +20,7 @@ class PermissionsEnum(Enum):
     READ_ALL_USER_INFO = "read_all_user_info"
     NOTIFICATIONS = "notifications"
     SOURCE_COLLECTOR = "source_collector"
+    USER_CREATE_UPDATE = "user_create_update"
 
     @classmethod
     def values(cls):
@@ -85,6 +86,19 @@ class Relations(Enum):
     RECENT_SEARCHES = "recent_searches"
     RECENT_SEARCHES_EXPANDED = "recent_searches_expanded"
     LINK_RECENT_SEARCH_RECORD_CATEGORIES = "link_recent_search_record_categories"
+    PERMISSIONS = "permissions"
+    USER_PERMISSIONS = "user_permissions"
+    TABLE_COUNT_LOG = "table_count_log"
+    CHANGE_LOG = "change_log"
+
+
+class OperationType(Enum):
+    """
+    A list of valid change log operation types
+    """
+
+    UPDATE = "UPDATE"
+    DELETE = "DELETE"
 
 
 class JurisdictionType(Enum):
@@ -118,11 +132,11 @@ class AgencyType(Enum):
     A list of valid agency types
     """
 
-    NONE = None
     AGGREGATED = "aggregated"
     COURT = "court"
     POLICE = "police"
     JAIL = "jail"
+    UNKNOWN = "unknown"
 
 
 class RecordType(Enum):
@@ -162,3 +176,10 @@ class RecordType(Enum):
     COURT_CASES = "Court Cases"
     INCARCERATION_RECORDS = "Incarceration Records"
     OTHER = "Other"
+
+
+class ContactFormMessageType(Enum):
+    GENERAL = "general"
+    BUG_REPORT = "bug_report"
+    SECURITY_VULNERABILITY = "security_vulnerability"
+    DATA_CORRECTION = "data_correction"

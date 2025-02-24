@@ -74,7 +74,7 @@ def test_data_requests_post_dto_population(
         ANY,
         dto=DataRequestsPostDTO(
             request_info=expected_request_info_dto,
-            location_infos=expected_locations_info_dto,
+            location_ids=expected_locations_info_dto,
         ),
         access_info=ANY,
     )

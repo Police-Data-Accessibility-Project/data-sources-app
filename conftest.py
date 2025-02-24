@@ -20,6 +20,12 @@ from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
 dotenv.load_dotenv()
 
 
+def get_alembic_conn_string() -> str:
+    conn_string = get_env_variable("DO_DATABASE_URL")
+    conn_string = conn_string.replace("postgresql", "postgresql+psycopg")
+    return conn_string
+
+
 def downgrade_to_base(alembic_cfg: Config, engine):
     try:
         command.downgrade(alembic_cfg, "base")
@@ -35,8 +41,7 @@ def downgrade_to_base(alembic_cfg: Config, engine):
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_database():
-    conn_string = get_env_variable("DO_DATABASE_URL")
-    conn_string = conn_string.replace("postgresql", "postgresql+psycopg")
+    conn_string = get_alembic_conn_string()
     engine = create_engine(conn_string)
     # Base.metadata.drop_all(engine)
     alembic_cfg = Config("alembic.ini")
@@ -47,6 +52,10 @@ def setup_database():
     except Exception as e:
         # Downgrade to base and try again
         downgrade_to_base(alembic_cfg, engine)
+        connection = alembic_cfg.attributes["connection"]
+        connection.exec_driver_sql("DROP SCHEMA public CASCADE;")
+        connection.exec_driver_sql("CREATE SCHEMA public;")
+        connection.commit()
         command.upgrade(alembic_cfg, "head")
     yield
     downgrade_to_base(alembic_cfg, engine)
@@ -60,7 +69,7 @@ def monkeysession(request):
     mpatch.undo()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def test_data_creator_flask(setup_database, monkeysession) -> TestDataCreatorFlask:
     from app import create_app
 

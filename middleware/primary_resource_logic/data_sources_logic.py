@@ -85,6 +85,7 @@ def get_data_sources_wrapper(
                     )
                 ],
                 "build_metadata": True,
+                "limit": dto.limit,
             },
             entry_name="data source",
             subquery_parameters=SUBQUERY_PARAMS,

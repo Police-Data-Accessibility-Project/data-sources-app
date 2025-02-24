@@ -13,6 +13,7 @@ from database_client.enums import (
     URLStatus,
     ApprovalStatus,
     UpdateMethod,
+    SortOrder,
 )
 from middleware.enums import RecordType
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_schemas import (
@@ -52,35 +53,36 @@ def test_data_sources_get(
     tus = tdc.standard_user()
     for i in range(100):
         test_data_creator_db_client.data_source(approval_status=ApprovalStatus.APPROVED)
-    response_json = run_and_validate_request(
-        flask_client=tdc.flask_client,
-        http_method="get",
-        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&approval_status=approved",  # ENDPOINT,
+    response_json = tdc.request_validator.get_data_sources(
         headers=tus.api_authorization_header,
-        expected_schema=SchemaConfigs.DATA_SOURCES_GET_MANY.value.primary_output_schema,
     )
     data = response_json["data"]
     assert len(data) == 100
 
     # Test sort functionality
-    response_json = run_and_validate_request(
-        flask_client=tdc.flask_client,
-        http_method="get",
-        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&sort_by=name&sort_order=ASC&approval_status=approved",
+    response_json = tdc.request_validator.get_data_sources(
         headers=tus.api_authorization_header,
-        expected_schema=SchemaConfigs.DATA_SOURCES_GET_MANY.value.primary_output_schema,
+        sort_by="name",
+        sort_order=SortOrder.ASCENDING,
     )
     data_asc = response_json["data"]
 
-    response_json = run_and_validate_request(
-        flask_client=tdc.flask_client,
-        http_method="get",
-        endpoint=f"{DATA_SOURCES_BASE_ENDPOINT}?page=1&sort_by=name&sort_order=DESC&approval_status=approved",
+    response_json = tdc.request_validator.get_data_sources(
         headers=tus.api_authorization_header,
+        sort_by="name",
+        sort_order=SortOrder.DESCENDING,
     )
     data_desc = response_json["data"]
 
     assert data_asc[0]["name"] < data_desc[0]["name"]
+
+    # Test limit functionality
+    response_json = tdc.request_validator.get_data_sources(
+        headers=tus.api_authorization_header,
+        limit=10,
+    )
+    data = response_json["data"]
+    assert len(data) == 10
 
 
 def test_data_sources_get_many_limit_columns(
@@ -205,6 +207,7 @@ def test_data_sources_by_id_get(test_data_creator_flask: TestDataCreatorFlask):
     assert data["name"] == cds.name
     assert data["data_requests"][0]["id"] == int(request_id)
     assert data["agencies"][0]["id"] == int(agency_id)
+    assert data["agencies"][0]["name"] == data["agencies"][0]["submitted_name"]
 
 
 def test_data_sources_by_id_put(test_data_creator_flask: TestDataCreatorFlask):
