@@ -1,10 +1,12 @@
 from dataclasses import dataclass
+from http import HTTPStatus
 from typing import Optional
 
 from marshmallow import Schema, fields, validates_schema, ValidationError
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
-from middleware.enums import OutputFormatEnum
+from middleware.enums import OutputFormatEnum, RecordTypes
+from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.schema_helpers import create_get_many_schema
 from middleware.schema_and_dto_logic.util import get_json_metadata, get_query_metadata
 from utilities.common import get_enums_from_string
@@ -17,6 +19,12 @@ def transform_record_categories(value: str) -> Optional[list[RecordCategories]]:
     return None
 
 
+def transform_record_types(value: str) -> Optional[list[RecordTypes]]:
+    if value is not None:
+        return get_enums_from_string(RecordTypes, value, case_insensitive=True)
+    return None
+
+
 RECORD_CATEGORY_METADATA = {
     "transformation_function": transform_record_categories,
     "description": "The record categories of the search. If empty, all categories will be searched."
@@ -24,6 +32,15 @@ RECORD_CATEGORY_METADATA = {
     "Interactions,Agency-published Resources'."
     "Allowable record categories include: \n  * "
     + "\n  * ".join([e.value for e in RecordCategories]),
+    "source": SourceMappingEnum.QUERY_ARGS,
+    "location": ParserLocation.QUERY.value,
+}
+
+RECORD_TYPE_METADATA = {
+    "transformation_function": transform_record_types,
+    "description": "The record types of the search. If empty, all types will be searched."
+    "Multiple record types can be provided as a comma-separated list, eg. 'Accident Reports,"
+    "Stops'. Mutually exclusive with `record_categories`.",
     "source": SourceMappingEnum.QUERY_ARGS,
     "location": ParserLocation.QUERY.value,
 }
@@ -123,6 +140,11 @@ class SearchRequestSchema(Schema):
         load_default="All",
         metadata=RECORD_CATEGORY_METADATA,
     )
+    record_types = fields.Str(
+        required=False,
+        metadata=RECORD_TYPE_METADATA,
+    )
+
     output_format = fields.Enum(
         required=False,
         enum=OutputFormatEnum,
@@ -282,4 +304,21 @@ class FederalSearchRequestDTO(BaseModel):
 class SearchRequestsDTO(BaseModel):
     location_id: int
     record_categories: Optional[list[RecordCategories]] = None
+    record_types: Optional[list[RecordTypes]] = None
     output_format: Optional[OutputFormatEnum] = None
+
+    @model_validator(mode="after")
+    def check_exclusive_fields(self):
+
+        if self.record_categories is not None and self.record_types is not None:
+            if self.record_categories == [RecordCategories.ALL]:
+                self.record_categories = None
+                return
+
+            FlaskResponseManager.abort(
+                message="Only one of 'record_categories' or 'record_types' should be provided.",
+                code=HTTPStatus.BAD_REQUEST,
+            )
+            raise ValueError(
+                "Only one of 'record_categories' or 'record_types' should be provided, not both."
+            )

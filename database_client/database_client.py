@@ -32,6 +32,7 @@ from database_client.enums import (
     EventType,
     LocationType,
 )
+from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
 from middleware.custom_dataclasses import EventInfo, EventBatch
 from middleware.exceptions import (
     UserNotFoundError,
@@ -51,8 +52,10 @@ from database_client.models import (
     Location,
     LocationExpanded,
     TableCountLog,
+    LinkRecentSearchRecordTypes,
+    RecordType,
 )
-from middleware.enums import PermissionsEnum, Relations, AgencyType
+from middleware.enums import PermissionsEnum, Relations, AgencyType, RecordTypes
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from middleware.initialize_sqlalchemy_session import initialize_sqlalchemy_session
 from middleware.miscellaneous_logic.table_count_logic import (
@@ -555,6 +558,7 @@ class DatabaseClient:
         self,
         location_id: int,
         record_categories: Optional[list[RecordCategories]] = None,
+        record_types: Optional[list[RecordTypes]] = None,
     ) -> List[dict]:
         """
         Searches for data sources in the database.
@@ -565,9 +569,12 @@ class DatabaseClient:
         :param locality: The locality to search for data sources in. If None, all data sources will be searched for.
         :return: A list of dictionaries.
         """
+        check_for_mutually_exclusive_arguments(record_categories, record_types)
+
         query = DynamicQueryConstructor.create_search_query(
             location_id=location_id,
             record_categories=record_categories,
+            record_types=record_types,
         )
         self.cursor.execute(query)
         return self.cursor.fetchall()
@@ -1270,29 +1277,6 @@ class DatabaseClient:
         )
         return linked_results
 
-        #
-        # # TODO: Some of this logic may better fit in DynamicQueryConstructor
-        # column_references = self._build_column_references(
-        #     LinkedRelation, alias_mappings, columns_to_retrieve
-        # )
-        #
-        # query_with_select = self.session.query(*column_references)
-        # query_with_join = query_with_select.join(
-        #     LinkTable,
-        #     getattr(LinkTable, right_link_column)
-        #     == getattr(LinkedRelation, linked_relation_linking_column),
-        # )
-        # query_with_filter = query_with_join.filter(
-        #     getattr(LinkTable, left_link_column) == left_id
-        # )
-        #
-        # dict_results = [dict(result._mapping) for result in query_with_filter.all()]
-        #
-        # return ResultFormatter.format_with_metadata(
-        #     data=dict_results,
-        #     relation_name=linked_relation.value,
-        # )
-
     def _build_column_references(
         self, LinkedRelation, alias_mappings, columns_to_retrieve
     ):
@@ -1464,7 +1448,10 @@ class DatabaseClient:
         self,
         user_id: int,
         location_id: int,
-        record_categories: Union[list[RecordCategories], RecordCategories],
+        record_categories: Optional[
+            Union[list[RecordCategories], RecordCategories]
+        ] = None,
+        record_types: Optional[Union[list[RecordTypes], RecordTypes]] = None,
     ):
         if isinstance(record_categories, RecordCategories):
             record_categories = [record_categories]
@@ -1479,17 +1466,38 @@ class DatabaseClient:
             result = self.session.execute(query)
             recent_search_id = result.fetchone()[0]
 
-            # For all record types, insert into link table
-            for record_type in record_categories:
-                query = select(RecordCategory).filter(
-                    RecordCategory.name == record_type.value
+            if record_categories is not None:
+                self.insert_record_category_search_records(
+                    recent_search_id, record_categories
                 )
-                rc_id = self.session.execute(query).fetchone()[0].id
+            if record_types is not None:
+                self.insert_record_type_search_records(recent_search_id, record_types)
 
-                query = insert(LinkRecentSearchRecordCategories).values(
-                    {"recent_search_id": recent_search_id, "record_category_id": rc_id}
-                )
-                self.session.execute(query)
+    def insert_record_type_search_records(self, recent_search_id, record_types):
+        # For all record types, insert into link table
+        for record_type in record_types:
+            query = select(RecordType).filter(RecordType.name == record_type.value)
+            rt_id = self.session.execute(query).fetchone()[0].id
+
+            query = insert(LinkRecentSearchRecordTypes).values(
+                {"recent_search_id": recent_search_id, "record_type_id": rt_id}
+            )
+            self.session.execute(query)
+
+    def insert_record_category_search_records(
+        self, recent_search_id, record_categories
+    ):
+        # For all record types, insert into link table
+        for record_type in record_categories:
+            query = select(RecordCategory).filter(
+                RecordCategory.name == record_type.value
+            )
+            rc_id = self.session.execute(query).fetchone()[0].id
+
+            query = insert(LinkRecentSearchRecordCategories).values(
+                {"recent_search_id": recent_search_id, "record_category_id": rc_id}
+            )
+            self.session.execute(query)
 
     def get_user_recent_searches(self, user_id: int):
         return self._select_from_relation(

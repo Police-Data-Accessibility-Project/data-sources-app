@@ -22,6 +22,7 @@ from database_client.models import (
     SQL_ALCHEMY_TABLE_REFERENCE,
     convert_to_column_reference,
 )
+from middleware.enums import RecordTypes
 from utilities.enums import RecordCategories
 
 TableColumn = namedtuple("TableColumn", ["table", "column"])
@@ -314,6 +315,7 @@ class DynamicQueryConstructor:
     def create_search_query(
         location_id: int,
         record_categories: Optional[list[RecordCategories]] = None,
+        record_types: Optional[list[RecordTypes]] = None,
     ) -> sql.Composed:
 
         base_query = sql.SQL(
@@ -373,6 +375,15 @@ class DynamicQueryConstructor:
             ]
             where_subclauses.append(
                 sql.SQL("record_categories.name = ANY({record_types})").format(
+                    record_types=sql.Literal(record_type_str_list)
+                )
+            )
+
+        if record_types is not None:
+
+            record_type_str_list = [[record_type.value for record_type in record_types]]
+            where_subclauses.append(
+                sql.SQL("record_types.name = ANY({record_types})").format(
                     record_types=sql.Literal(record_type_str_list)
                 )
             )

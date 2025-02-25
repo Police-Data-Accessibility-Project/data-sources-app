@@ -15,7 +15,7 @@ from database_client.enums import (
     UpdateMethod,
     SortOrder,
 )
-from middleware.enums import RecordType
+from middleware.enums import RecordTypes
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_schemas import (
     DataSourceExpandedSchema,
 )
@@ -248,7 +248,7 @@ def test_data_sources_by_id_put(test_data_creator_flask: TestDataCreatorFlask):
         "data_portal_type_other": uuid.uuid4().hex,
         "access_notes": uuid.uuid4().hex,
         "url_status": URLStatus.OK.value,
-        "record_type_name": RecordType.ARREST_RECORDS.value,
+        "record_type_name": RecordTypes.ARREST_RECORDS.value,
     }
 
     run_and_validate_request(

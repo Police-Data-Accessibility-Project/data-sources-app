@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields
 
 from database_client.enums import RequestStatus, RequestUrgency
-from middleware.enums import RecordType
+from middleware.enums import RecordTypes
 from middleware.schema_and_dto_logic.util import get_json_metadata
 
 
@@ -69,7 +69,7 @@ class DataRequestsSchema(Schema):
     )
     record_types_required = fields.List(
         fields.Enum(
-            enum=RecordType,
+            enum=RecordTypes,
             by_value=fields.Str,
             metadata=get_json_metadata(
                 "The record types associated with the data request. Editable only by admins."
