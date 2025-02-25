@@ -21,6 +21,7 @@ class PermissionsEnum(Enum):
     NOTIFICATIONS = "notifications"
     SOURCE_COLLECTOR = "source_collector"
     USER_CREATE_UPDATE = "user_create_update"
+    ARCHIVE_WRITE = "archive_write"
 
     @classmethod
     def values(cls):
