@@ -42,6 +42,10 @@ WRITE_ONLY_AUTH_INFO = AuthenticationInfo(
     allowed_access_methods=[AccessTypeEnum.JWT],
     restrict_to_permissions=[PermissionsEnum.DB_WRITE],
 )
+ARCHIVE_WRITE_AUTH_INFO = AuthenticationInfo(
+    allowed_access_methods=[AccessTypeEnum.JWT],
+    restrict_to_permissions=[PermissionsEnum.ARCHIVE_WRITE],
+)
 # Allow owners of a resource to use the endpoint as well, instead of only admin-level users
 STANDARD_JWT_AUTH_INFO = AuthenticationInfo(
     allowed_access_methods=[AccessTypeEnum.JWT],

@@ -5,6 +5,7 @@ from middleware.access_logic import (
     API_OR_JWT_AUTH_INFO,
     AccessInfoPrimary,
     WRITE_ONLY_AUTH_INFO,
+    ARCHIVE_WRITE_AUTH_INFO,
 )
 from middleware.decorators import api_key_required, permissions_required, endpoint_info
 from middleware.primary_resource_logic.archives_queries import (
@@ -59,7 +60,7 @@ class Archives(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_archives,
-        auth_info=WRITE_ONLY_AUTH_INFO,
+        auth_info=ARCHIVE_WRITE_AUTH_INFO,
         schema_config=SchemaConfigs.ARCHIVES_PUT,
         response_info=ResponseInfo(
             success_message="Successfully updated the archive data.",
