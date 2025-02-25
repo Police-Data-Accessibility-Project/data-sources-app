@@ -86,6 +86,7 @@ class Relations(Enum):
     RECENT_SEARCHES = "recent_searches"
     RECENT_SEARCHES_EXPANDED = "recent_searches_expanded"
     LINK_RECENT_SEARCH_RECORD_CATEGORIES = "link_recent_search_record_categories"
+    LINK_RECENT_SEARCH_RECORD_TYPES = "link_recent_search_record_types"
     PERMISSIONS = "permissions"
     USER_PERMISSIONS = "user_permissions"
     TABLE_COUNT_LOG = "table_count_log"
@@ -139,7 +140,7 @@ class AgencyType(Enum):
     UNKNOWN = "unknown"
 
 
-class RecordType(Enum):
+class RecordTypes(Enum):
     ACCIDENT_REPORTS = "Accident Reports"
     ARREST_RECORDS = "Arrest Records"
     CALLS_FOR_SERVICE = "Calls for Service"

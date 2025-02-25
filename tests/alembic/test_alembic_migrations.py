@@ -80,3 +80,8 @@ def test_add_user_create_update_permissions(alembic_runner: AlembicRunner):
         """
     )
     assert len(results) == 1
+
+
+def test_revision_upgrade_downgrade(alembic_runner: AlembicRunner):
+    alembic_runner.upgrade("head")
+    alembic_runner.downgrade("base")

@@ -757,6 +757,16 @@ class LinkRecentSearchRecordCategories(Base):
     )
 
 
+class LinkRecentSearchRecordTypes(Base):
+    __tablename__ = Relations.LINK_RECENT_SEARCH_RECORD_TYPES.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    recent_search_id: Mapped[int] = mapped_column(
+        ForeignKey("public.recent_searches.id")
+    )
+    record_type_id: Mapped[int] = mapped_column(ForeignKey("public.record_types.id"))
+
+
 # TODO: Change user_id references in models to be from singular factory function or constant, to avoid duplication
 # Do the same for other common foreign keys, or for things such as primary keys
 
@@ -816,6 +826,7 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     Relations.USER_NOTIFICATION_QUEUE.value: UserNotificationQueue,
     Relations.RECENT_SEARCHES.value: RecentSearch,
     Relations.LINK_RECENT_SEARCH_RECORD_CATEGORIES.value: LinkRecentSearchRecordCategories,
+    Relations.LINK_RECENT_SEARCH_RECORD_TYPES.value: LinkRecentSearchRecordTypes,
     Relations.RECORD_CATEGORIES.value: RecordCategory,
     Relations.RECENT_SEARCHES_EXPANDED.value: RecentSearchExpanded,
     Relations.RECORD_TYPES.value: RecordType,

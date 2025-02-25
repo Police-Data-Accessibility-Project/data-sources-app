@@ -12,7 +12,7 @@ from marshmallow import Schema
 
 from database_client.constants import PAGE_SIZE
 from database_client.enums import SortOrder, RequestStatus, ApprovalStatus
-from middleware.enums import OutputFormatEnum, PermissionsEnum
+from middleware.enums import OutputFormatEnum, PermissionsEnum, RecordTypes
 from middleware.util import update_if_not_none
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.common_test_data import get_test_name
@@ -274,12 +274,19 @@ class RequestValidator:
         headers: dict,
         location_id: int,
         record_categories: Optional[list[RecordCategories]] = None,
+        record_types: Optional[list[RecordTypes]] = None,
         format: Optional[OutputFormatEnum] = OutputFormatEnum.JSON,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_schema: Optional[
+            Union[Type[Schema], Schema]
+        ] = SchemaConfigs.SEARCH_LOCATION_AND_RECORD_TYPE_GET.value.primary_output_schema,
+        expected_json_content: Optional[dict] = None,
     ):
         endpoint_base = "/search/search-location-and-record-type"
         query_params = self._get_search_query_params(
             location_id=location_id,
             record_categories=record_categories,
+            record_types=record_types,
         )
         query_params.update({} if format is None else {"output_format": format.value})
         endpoint = add_query_params(
@@ -290,7 +297,9 @@ class RequestValidator:
         return self.get(
             endpoint=endpoint,
             headers=headers,
-            expected_schema=SchemaConfigs.SEARCH_LOCATION_AND_RECORD_TYPE_GET.value.primary_output_schema,
+            expected_schema=expected_schema,
+            expected_response_status=expected_response_status,
+            expected_json_content=expected_json_content,
             **kwargs,
         )
 
@@ -317,7 +326,11 @@ class RequestValidator:
         )
 
     @staticmethod
-    def _get_search_query_params(record_categories, location_id: int):
+    def _get_search_query_params(
+        record_categories: Optional[list[RecordCategories]],
+        location_id: int,
+        record_types: Optional[list[RecordTypes]] = None,
+    ):
         query_params = {
             "location_id": location_id,
         }
@@ -325,6 +338,9 @@ class RequestValidator:
             query_params["record_categories"] = ",".join(
                 [rc.value for rc in record_categories]
             )
+
+        if record_types is not None:
+            query_params["record_types"] = ",".join([rt.value for rt in record_types])
         return query_params
 
     def create_agency(

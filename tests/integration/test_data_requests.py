@@ -8,7 +8,7 @@ from flask.testing import FlaskClient
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import RequestUrgency, LocationType, RequestStatus, SortOrder
 from middleware.constants import DATA_KEY
-from middleware.enums import RecordType
+from middleware.enums import RecordTypes
 from middleware.util import get_enum_values
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.common_test_data import (
@@ -357,7 +357,7 @@ def test_data_requests_by_id_put(
                 "github_issue_url": uuid.uuid4().hex,
                 "github_issue_number": get_random_number_for_testing(),
                 "pdap_response": uuid.uuid4().hex,
-                "record_types_required": get_enum_values(RecordType),
+                "record_types_required": get_enum_values(RecordTypes),
             }
         },
     )

@@ -1,7 +1,7 @@
 from marshmallow import fields, Schema, post_load
 
 from database_client.enums import RequestStatus, RequestUrgency
-from middleware.enums import RecordType
+from middleware.enums import RecordTypes
 from middleware.primary_resource_logic.data_requests import RequestInfoPostDTO
 from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import (
     TypeaheadLocationsResponseSchema,
@@ -94,7 +94,7 @@ class DataRequestsSchema(Schema):
     )
     record_types_required = fields.List(
         fields.Enum(
-            enum=RecordType,
+            enum=RecordTypes,
             by_value=fields.Str,
             metadata=get_json_metadata(
                 "The record types associated with the data request. Editable only by admins."
