@@ -26,8 +26,6 @@ jobs:
       - name: Authenticate GitHub CLI
         run: gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
 
-
-
       - name: Run script
         run: python .github/scripts/get_pr_issues.py
         env:

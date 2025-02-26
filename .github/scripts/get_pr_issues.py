@@ -114,6 +114,6 @@ def edit_pr_body():
         exit(1)
 
 
-# edit_pr_body()
-print(new_body)
+edit_pr_body()
+# print(new_body)
 print("Updated PR body successfully!")
