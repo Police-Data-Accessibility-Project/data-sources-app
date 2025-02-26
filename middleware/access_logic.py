@@ -332,8 +332,7 @@ def validate_refresh_token(token: str, **kwargs) -> Optional[RefreshAccessInfo]:
     decoded_refresh_token = decode_token(token)
     token_type: str = decoded_refresh_token["type"]
     # The below is flagged as a false positive through bandit security linting, misidentifying it as a password
-    # nosec
-    if token_type != "refresh":
+    if token_type != "refresh":  # nosec
         FlaskResponseManager.abort(
             code=HTTPStatus.BAD_REQUEST, message="Invalid refresh token"
         )
