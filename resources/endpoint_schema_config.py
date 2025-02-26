@@ -60,6 +60,9 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.match_schemas impo
 from middleware.schema_and_dto_logic.primary_resource_schemas.metrics_schemas import (
     MetricsGetResponseSchema,
 )
+from middleware.schema_and_dto_logic.primary_resource_schemas.record_type_and_category_schemas import (
+    RecordTypeAndCategoryResponseSchema,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.reset_token_schemas import (
     ResetPasswordSchema,
 )
@@ -616,3 +619,8 @@ class SchemaConfigs(Enum):
     )
 
     # endregion
+
+    # region Metadata
+    RECORD_TYPE_AND_CATEGORY_GET = EndpointSchemaConfig(
+        primary_output_schema=RecordTypeAndCategoryResponseSchema(),
+    )

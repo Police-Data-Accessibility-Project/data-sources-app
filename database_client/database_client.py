@@ -1767,3 +1767,33 @@ class DatabaseClient:
         for row in result:
             d[row["Count Type"]] = row["count"]
         return d
+
+    @session_manager
+    def get_record_types_and_categories(self):
+        query = (
+            select(RecordCategory)
+            .options(selectinload(RecordCategory.record_types))
+            .order_by(RecordCategory.id)
+        )
+
+        results: list[RecordCategory] = self.session.execute(query).scalars().all()
+
+        record_types = []
+        record_categories = []
+        for result in results:
+            record_cat_dict = {
+                "id": result.id,
+                "name": result.name,
+                "description": result.description,
+            }
+            record_categories.append(record_cat_dict)
+            for record_type in result.record_types:
+                record_type_dict = {
+                    "id": record_type.id,
+                    "name": record_type.name,
+                    "category_id": record_type.category_id,
+                    "description": record_type.description,
+                }
+                record_types.append(record_type_dict)
+
+        return {"record_types": record_types, "record_categories": record_categories}
