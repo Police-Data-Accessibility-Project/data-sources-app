@@ -37,7 +37,7 @@ pr_only_requests = [result for result in results if "Merge pull request" in resu
 pr_numbers = []
 
 for result in pr_only_requests:
-    pr_number = re.search(r"\d+", result).group()
+    pr_number = re.search(r"#(\d+)", result).group(1)
     pr_numbers.append(pr_number)
 
 
@@ -114,5 +114,6 @@ def edit_pr_body():
         exit(1)
 
 
-edit_pr_body()
+# edit_pr_body()
+print(new_body)
 print("Updated PR body successfully!")
