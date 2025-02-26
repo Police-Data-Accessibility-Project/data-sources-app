@@ -781,4 +781,11 @@ class RequestValidator:
             expected_schema=SchemaConfigs.ADMIN_USERS_BY_ID_PUT.value.primary_output_schema,
         )
 
+    def get_record_types_and_categories(self, headers: dict):
+        return self.get(
+            endpoint="/api/metadata/record-types-and-categories",
+            headers=headers,
+            expected_schema=SchemaConfigs.RECORD_TYPE_AND_CATEGORY_GET.value.primary_output_schema,
+        )
+
     # endregion

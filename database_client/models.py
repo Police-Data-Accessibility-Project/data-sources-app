@@ -592,6 +592,12 @@ class RecordCategory(Base):
     name: Mapped[str_255]
     description: Mapped[Optional[text]]
 
+    # Relationships
+    record_types: Mapped[list["RecordType"]] = relationship(
+        argument="RecordType",
+        back_populates="record_categories",
+    )
+
 
 class RecordType(Base):
     __tablename__ = Relations.RECORD_TYPES.value
@@ -600,6 +606,12 @@ class RecordType(Base):
     name: Mapped[str_255]
     category_id: Mapped[int] = mapped_column(ForeignKey("public.record_categories.id"))
     description: Mapped[Optional[text]]
+
+    # Relationships
+    record_categories: Mapped[list[RecordCategory]] = relationship(
+        argument="RecordCategory",
+        back_populates="record_types",
+    )
 
 
 class ResetToken(Base):
