@@ -18,6 +18,13 @@ jobs:
       - name: Fetch all branches
         run: git fetch --all
 
+      - name: Debug - List remotes and branches
+        run: |
+          echo "Available remotes:"
+          git remote -v
+          echo "Available branches:"
+          git branch -r
+
       - name: Install GitHub CLI
         run: |
           sudo apt update
@@ -25,6 +32,8 @@ jobs:
 
       - name: Authenticate GitHub CLI
         run: gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
+
+
 
       - name: Run script
         run: python .github/scripts/get_pr_issues.py
