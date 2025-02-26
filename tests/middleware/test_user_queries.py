@@ -89,7 +89,9 @@ def setup_try_logging_in_mocks(check_password_hash_return_value):
 
 def assert_try_logging_in_preconditions(mock):
     mock.db_client.get_user_info.assert_called_with(mock.dto.email)
-    mock.check_password_hash.assert_called_with(mock.password_digest, mock.dto.password)
+    mock.check_password_hash.assert_called_with(
+        pwhash=mock.password_digest, password=mock.dto.password
+    )
 
 
 def test_try_logging_in_successful():

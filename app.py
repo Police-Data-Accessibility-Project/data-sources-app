@@ -127,7 +127,7 @@ def create_app() -> Flask:
     # JWT settings
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=15)
-    app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
+    app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=1)
 
     # Other configuration settings
     app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024

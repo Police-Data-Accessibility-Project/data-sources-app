@@ -37,13 +37,23 @@ def add_jwt_header_arg(
     )
 
 
+def add_refresh_jwt_header_arg(
+    parser: RequestParser,
+):
+    add_jwt_header_arg(
+        parser=parser,
+        description="Refresh token required to access this endpoint",
+        default_name="YOUR_REFRESH_TOKEN",
+    )
+
+
 def add_password_reset_token_header_arg(
     parser: RequestParser,
 ):
     add_jwt_header_arg(
         parser=parser,
         description="Password Reset token required to access this endpoint",
-        default_name="Bearer YOUR_PASSWORD_RESET_TOKEN",
+        default_name="YOUR_PASSWORD_RESET_TOKEN",
     )
 
 
@@ -53,7 +63,7 @@ def add_validate_email_header_arg(
     add_jwt_header_arg(
         parser=parser,
         description="Email validation token required to access this endpoint",
-        default_name="Bearer YOUR_EMAIL_VALIDATION_TOKEN",
+        default_name="YOUR_EMAIL_VALIDATION_TOKEN",
     )
 
 

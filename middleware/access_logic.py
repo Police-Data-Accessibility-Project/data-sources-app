@@ -4,7 +4,7 @@ from http import HTTPStatus
 from typing import Optional
 
 from flask import request
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request, decode_token
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_restx import abort
 from jwt import ExpiredSignatureError
@@ -50,6 +50,7 @@ ARCHIVE_WRITE_AUTH_INFO = AuthenticationInfo(
 STANDARD_JWT_AUTH_INFO = AuthenticationInfo(
     allowed_access_methods=[AccessTypeEnum.JWT],
 )
+
 API_OR_JWT_AUTH_INFO = AuthenticationInfo(
     allowed_access_methods=[AccessTypeEnum.API_KEY, AccessTypeEnum.JWT],
 )
@@ -122,6 +123,11 @@ class AccessInfoPrimary(AccessInfoBase):
         if self.user_id is None:
             self.user_id = DatabaseClient().get_user_id(email=self.user_email)
         return self.user_id
+
+
+class RefreshAccessInfo(AccessInfoBase):
+    access_type: AccessTypeEnum = AccessTypeEnum.REFRESH_JWT
+    user_email: str
 
 
 class PasswordResetTokenAccessInfo(AccessInfoBase):
@@ -322,6 +328,17 @@ def validate_email_handler(
     )
 
 
+def validate_refresh_token(token: str, **kwargs) -> Optional[RefreshAccessInfo]:
+    decoded_refresh_token = decode_token(token)
+    token_type: str = decoded_refresh_token["type"]
+    if token_type != "refresh":
+        FlaskResponseManager.abort(
+            code=HTTPStatus.BAD_REQUEST, message="Invalid refresh token"
+        )
+    decoded_email = decoded_refresh_token["email"]
+    return RefreshAccessInfo(user_email=decoded_email)
+
+
 class AuthMethodConfig(BaseModel):
     handler: Callable
     scheme: AuthScheme
@@ -337,6 +354,9 @@ AUTH_METHODS_MAP = {
     ),
     AccessTypeEnum.VALIDATE_EMAIL: AuthMethodConfig(
         handler=validate_email_handler, scheme=AuthScheme.BEARER
+    ),
+    AccessTypeEnum.REFRESH_JWT: AuthMethodConfig(
+        handler=validate_refresh_token, scheme=AuthScheme.BEARER
     ),
 }
 

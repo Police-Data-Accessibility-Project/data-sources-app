@@ -1,5 +1,6 @@
 from datetime import timedelta, timezone, datetime
 from http import HTTPStatus
+from typing import Optional
 
 from flask import Response, make_response, jsonify
 from flask_jwt_extended import (
@@ -11,7 +12,7 @@ from werkzeug.security import check_password_hash
 
 from database_client.database_client import DatabaseClient
 from middleware.SimpleJWT import JWTPurpose, SimpleJWT
-from middleware.access_logic import AccessInfoPrimary
+from middleware.access_logic import AccessInfoPrimary, RefreshAccessInfo
 from middleware.exceptions import UserNotFoundError
 from middleware.primary_resource_logic.user_queries import UserRequestDTO
 from middleware.schema_and_dto_logic.primary_resource_schemas.refresh_session_schemas import (
@@ -29,17 +30,25 @@ class JWTAccessRefreshTokens:
             "user_email": email,
             "permissions": [permission.value for permission in permissions],
         }
-        identity = str(db_client.get_user_id(email))
+        identity = str(user_id)
         simple_jwt = SimpleJWT(
             sub=identity,
-            exp=(datetime.now(tz=timezone.utc) + timedelta(minutes=15)).timestamp(),
+            exp=self.get_expiry(),
             purpose=JWTPurpose.STANDARD_ACCESS_TOKEN,
             **other_claims
         )
+
+        # Expiration of access token and refresh
+        #  provided in JWT_ACCESS_TOKEN_EXPIRES and
+        #  JWT_REFRESH_TOKEN_EXPIRES variables in `app.py`
         self.access_token = simple_jwt.encode()
         self.refresh_token = create_refresh_token(
             identity=identity, additional_claims={"email": email}
         )
+
+    @staticmethod
+    def get_expiry():
+        return (datetime.now(tz=timezone.utc) + timedelta(minutes=15)).timestamp()
 
 
 INVALID_MESSAGE = "Invalid email or password"
@@ -54,18 +63,24 @@ def try_logging_in(db_client: DatabaseClient, dto: UserRequestDTO) -> Response:
     :param password: User's password.
     :return: A response object with a message and status code.
     """
-    try:
-        user_info = db_client.get_user_info(dto.email)
-    except UserNotFoundError:
-        user_info = None
+    user_info = get_user_info(db_client, dto)
     if user_info is None:
         if db_client.pending_user_exists(dto.email):
             return unauthorized_response("Email not verified.")
         return unauthorized_response(INVALID_MESSAGE)
-    valid_password_hash = check_password_hash(user_info.password_digest, dto.password)
+    valid_password_hash = check_password_hash(
+        pwhash=user_info.password_digest, password=dto.password
+    )
     if not valid_password_hash:
         return unauthorized_response(INVALID_MESSAGE)
     return login_response(user_info)
+
+
+def get_user_info(db_client, dto) -> Optional[DatabaseClient.UserInfo]:
+    try:
+        return db_client.get_user_info(dto.email)
+    except UserNotFoundError:
+        return None
 
 
 def unauthorized_response(msg: str = "Unauthorized") -> Response:
@@ -109,20 +124,16 @@ def access_and_refresh_token_response(
 
 def refresh_session(
     db_client: DatabaseClient,
-    access_info: AccessInfoPrimary,
-    dto: RefreshSessionRequestDTO,
+    access_info: RefreshAccessInfo,
 ) -> Response:
     """
     Requires an active flask context and a valid JWT passed in the Authorization header
     :return:
     """
-    decoded_refresh_token = decode_token(dto.refresh_token)
-    decoded_email = decoded_refresh_token["email"]
-    if access_info.user_email != decoded_email:
+    return handle_refresh_session_responses(access_info.user_email)
 
-        return make_response(
-            {"message": "Invalid refresh token"}, HTTPStatus.UNAUTHORIZED
-        )
+
+def handle_refresh_session_responses(decoded_email):
     return access_and_refresh_token_response(
         email=decoded_email,
         message="Successfully refreshed session token.",
