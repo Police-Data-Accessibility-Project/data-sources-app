@@ -14,8 +14,9 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Get all history
+
+      - name: Fetch all branches
+        run: git fetch --all
 
       - name: Install GitHub CLI
         run: |
