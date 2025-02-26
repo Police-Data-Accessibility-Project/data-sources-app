@@ -39,6 +39,7 @@ class PermissionsActionEnum(Enum):
 
 class AccessTypeEnum(Enum):
     JWT = auto()
+    REFRESH_JWT = auto()
     API_KEY = auto()
     RESET_PASSWORD = auto()
     VALIDATE_EMAIL = auto()

@@ -28,6 +28,7 @@ from resources.resource_helpers import (
     create_response_dictionary,
     add_password_reset_token_header_arg,
     add_validate_email_header_arg,
+    add_refresh_jwt_header_arg,
 )
 from resources.endpoint_schema_config import SchemaConfigs, OutputSchemaManager
 
@@ -213,6 +214,7 @@ ACCESS_TYPE_HEADER_ARG_FUNC_MAP = {
     AccessTypeEnum.API_KEY: add_api_key_header_arg,
     AccessTypeEnum.RESET_PASSWORD: add_password_reset_token_header_arg,
     AccessTypeEnum.VALIDATE_EMAIL: add_validate_email_header_arg,
+    AccessTypeEnum.REFRESH_JWT: add_refresh_jwt_header_arg,
 }
 
 

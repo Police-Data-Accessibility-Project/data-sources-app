@@ -34,8 +34,7 @@ def test_refresh_session_post(test_data_creator_flask: TestDataCreatorFlask):
         flask_client=tdc.flask_client,
         http_method="post",
         endpoint="/api/auth/refresh-session",
-        headers=admin_tus.jwt_authorization_header,
-        json={"refresh_token": jwt_tokens.refresh_token},
+        headers={"Authorization": f"Bearer {jwt_tokens.refresh_token}"},
     )
 
     new_access_token = response_json.get("access_token")
@@ -58,22 +57,20 @@ def test_refresh_session_post(test_data_creator_flask: TestDataCreatorFlask):
     )
 
 
-def test_refresh_session_post_invalid_refresh_token(
+def test_refresh_session_post_access_token(
     test_data_creator_flask: TestDataCreatorFlask,
 ):
     tdc = test_data_creator_flask
-    admin_tus = tdc.get_admin_tus()
 
     standard_tus = tdc.standard_user()
 
     jwt_tokens = login_and_return_jwt_tokens(tdc.flask_client, standard_tus.user_info)
 
-    # Test that refresh session fails when the refresh token is invalid
-    response_json = run_and_validate_request(
+    # Test that refresh session fails when the access token is used
+    run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="post",
         endpoint="/api/auth/refresh-session",
-        headers=admin_tus.jwt_authorization_header,
-        json={"refresh_token": f"{jwt_tokens.refresh_token}"},
-        expected_response_status=HTTPStatus.UNAUTHORIZED,
+        headers={"Authorization": f"Bearer {jwt_tokens.access_token}"},
+        expected_response_status=HTTPStatus.BAD_REQUEST,
     )
