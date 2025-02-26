@@ -108,6 +108,7 @@ def search_wrapper(
     search_results = db_client.search_with_location_and_record_type(
         location_id=dto.location_id,
         record_categories=explicit_record_categories,
+        record_types=dto.record_types,
         # Pass modified record categories, which breaks down ALL into individual categories
     )
     return send_search_results(
@@ -140,6 +141,7 @@ def create_search_record(access_info, db_client, dto):
         location_id=dto.location_id,
         # Pass originally provided record categories
         record_categories=dto.record_categories,
+        record_types=dto.record_types,
     )
 
 
@@ -169,8 +171,10 @@ def send_as_csv(search_results):
 
 
 def get_explicit_record_categories(
-    record_categories=list[RecordCategories],
-) -> list[RecordCategories]:
+    record_categories=Optional[list[RecordCategories]],
+) -> Optional[list[RecordCategories]]:
+    if record_categories is None:
+        return None
     if RecordCategories.ALL in record_categories:
         if len(record_categories) > 1:
             FlaskResponseManager.abort(

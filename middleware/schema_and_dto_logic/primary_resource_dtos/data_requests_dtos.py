@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import LocationType, RequestStatus, RequestUrgency
-from middleware.enums import RecordType
+from middleware.enums import RecordTypes
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyBaseDTO,
     GetByIDBaseDTO,
@@ -44,7 +44,7 @@ class DataRequestsPutDTO(BaseModel):
     github_issue_url: Optional[str] = None
     github_issue_number: Optional[int] = None
     internal_notes: Optional[str] = None
-    record_types_required: Optional[list[RecordType]] = None
+    record_types_required: Optional[list[RecordTypes]] = None
     pdap_response: Optional[str] = None
 
 

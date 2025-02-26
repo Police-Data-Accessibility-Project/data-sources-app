@@ -36,7 +36,7 @@ from database_client.models import (
     User,
     SQL_ALCHEMY_TABLE_REFERENCE,
 )
-from middleware.enums import PermissionsEnum, Relations, RecordType
+from middleware.enums import PermissionsEnum, Relations, RecordTypes
 from tests.conftest import live_database_client, test_table_data, clear_data_requests
 from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,
@@ -692,7 +692,7 @@ def test_search_with_location_and_record_types_real_data(
     secondary_location_id = tdc.locality()
 
     def agency_and_data_source(
-        location_id, record_type: RecordType = RecordType.LIST_OF_DATA_SOURCES
+        location_id, record_type: RecordTypes = RecordTypes.LIST_OF_DATA_SOURCES
     ):
         record_type_id = live_database_client.get_record_type_id_by_name(
             record_type.value
@@ -706,7 +706,7 @@ def test_search_with_location_and_record_types_real_data(
     # State
     agency_and_data_source(pennsylvania_location_id)
     agency_and_data_source(
-        pennsylvania_location_id, record_type=RecordType.RECORDS_REQUEST_INFO
+        pennsylvania_location_id, record_type=RecordTypes.RECORDS_REQUEST_INFO
     )
     # Counties
     agency_and_data_source(allegheny_location_id)
@@ -715,7 +715,7 @@ def test_search_with_location_and_record_types_real_data(
     agency_and_data_source(pittsburgh_location_id)
     agency_and_data_source(secondary_location_id)
     agency_and_data_source(
-        pittsburgh_location_id, record_type=RecordType.RECORDS_REQUEST_INFO
+        pittsburgh_location_id, record_type=RecordTypes.RECORDS_REQUEST_INFO
     )
 
     def search(state, record_categories=None, county=None, locality=None):
@@ -779,7 +779,7 @@ def test_search_with_location_and_record_types_real_data_multiple_records(
     tdc = test_data_creator_db_client
 
     def agency_and_data_source(
-        location_id, record_type: RecordType = RecordType.LIST_OF_DATA_SOURCES
+        location_id, record_type: RecordTypes = RecordTypes.LIST_OF_DATA_SOURCES
     ):
         record_type_id = live_database_client.get_record_type_id_by_name(
             record_type.value
@@ -790,7 +790,7 @@ def test_search_with_location_and_record_types_real_data_multiple_records(
         a_id = tdc.agency(location_id=location_id).id
         tdc.link_data_source_to_agency(data_source_id=ds_id, agency_id=a_id)
 
-    record_types = [record_type for record_type in RecordType]
+    record_types = [record_type for record_type in RecordTypes]
     for record_type in record_types:
         agency_and_data_source(pa_location_id, record_type=record_type)
 

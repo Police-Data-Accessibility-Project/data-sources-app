@@ -499,9 +499,7 @@ class SchemaConfigs(Enum):
 
     # endregion
     REFRESH_SESSION = EndpointSchemaConfig(
-        input_schema=RefreshSessionRequestSchema(),
         primary_output_schema=LoginResponseSchema(),
-        input_dto_class=RefreshSessionRequestDTO,
     )
     # region Reset Password
     REQUEST_RESET_PASSWORD = schema_config_with_message_output(

@@ -13,7 +13,7 @@ from database_client.enums import (
     URLStatus,
     UpdateMethod,
 )
-from middleware.enums import RecordType
+from middleware.enums import RecordTypes
 
 
 class DataSourceEntryDataPostDTO(BaseModel):
@@ -48,7 +48,7 @@ class DataSourceEntryDataPostDTO(BaseModel):
     broken_source_url_as_of: Optional[date] = None
     access_notes: Optional[str] = None
     url_status: Optional[URLStatus] = None
-    record_type_name: Optional[RecordType] = None
+    record_type_name: Optional[RecordTypes] = None
 
 
 class DataSourceEntryDataPutDTO(BaseModel):
@@ -79,7 +79,7 @@ class DataSourceEntryDataPutDTO(BaseModel):
     data_portal_type_other: Optional[str] = None
     access_notes: Optional[str] = None
     url_status: Optional[URLStatus] = None
-    record_type_name: Optional[RecordType] = None
+    record_type_name: Optional[RecordTypes] = None
 
 
 class DataSourcesPutDTO(BaseModel):

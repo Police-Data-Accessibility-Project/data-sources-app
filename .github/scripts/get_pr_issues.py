@@ -16,6 +16,8 @@ result = subprocess.run(
         "gh",
         "pr",
         "list",
+        "--head",
+        "main",
         "--base",
         "dev",
         "--state",
@@ -89,5 +91,4 @@ def edit_pr_body():
 
 
 edit_pr_body()
-
 print("Updated PR body successfully!")

@@ -17,6 +17,7 @@ class JWTPurpose(Enum):
     VALIDATE_EMAIL = auto()
     GITHUB_ACCESS_TOKEN = auto()
     STANDARD_ACCESS_TOKEN = auto()
+    REFRESH_TOKEN = auto()
 
 
 def get_secret_key(purpose: JWTPurpose):
