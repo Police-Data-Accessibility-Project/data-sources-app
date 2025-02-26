@@ -15,6 +15,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Fetch all branches
+        run: git fetch --all
+
       - name: Install GitHub CLI
         run: |
           sudo apt update

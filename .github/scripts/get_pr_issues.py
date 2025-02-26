@@ -11,38 +11,62 @@ import os
 PATTERN = r"https:\/\/github\.com\/Police\-Data\-Accessibility\-Project\/data\-sources\-app\/issues\/\d+"
 
 
-result = subprocess.run(
+'git log origin/main..origin/dev --oneline --merges | grep "Merge pull request"'
+git_log = subprocess.run(
     [
-        "gh",
-        "pr",
-        "list",
-        "--head",
-        "main",
-        "--base",
-        "dev",
-        "--state",
-        "merged",
-        "--json",
-        "url,body",
+        "git",
+        "log",
+        "origin/main..origin/dev",
+        "--oneline",
+        "--merges",
     ],
     capture_output=True,
     text=True,
 )
 
-if result.returncode != 0:
-    print("Error fetching PRs:", result.stderr)
+if git_log.returncode != 0:
+    print("Error fetching PRs:", git_log.stderr)
     exit(1)
 
-text = result.stdout
-json_text = json.loads(text)
+results = git_log.stdout.split("\n")
+
+# Retrieve PRs
+pr_only_requests = [result for result in results if "Merge pull request" in result]
+
+# Retrieve PR numbers
+pr_numbers = []
+
+for result in pr_only_requests:
+    pr_number = re.search(r"#(\d+)", result).group(1)
+    pr_numbers.append(pr_number)
+
 
 issue_urls = []
 numbers = []
 
-for issue in json_text:
-    number = issue.get("url", "")
+for number in pr_numbers:
+    result = subprocess.run(
+        [
+            "gh",
+            "pr",
+            "view",
+            number,
+            "--json",
+            "url,body",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        print("Error fetching PRs:", result.stderr)
+        exit(1)
+
+    text = result.stdout
+    json_text = json.loads(text)
+
+    number = json_text.get("url", "")
     numbers.append(str(number))
-    body = issue.get("body", "")
+    body = json_text.get("body", "")
     issues_in_body = re.findall(PATTERN, body)
     issue_urls.extend(issues_in_body)
 
@@ -91,4 +115,5 @@ def edit_pr_body():
 
 
 edit_pr_body()
+# print(new_body)
 print("Updated PR body successfully!")
