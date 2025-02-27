@@ -1,3 +1,13 @@
+## 4.0.0 (2025-02-27)
+
+### BREAKING CHANGE
+
+- `approved` will no longer be a valid attribute on data sources to pull. Instead `approval_status` will need to be used.
+
+### Fix
+
+- **database**: remove agencies approved and add approval_status column
+
 ## 3.0.1 (2025-02-27)
 
 ### Fix
