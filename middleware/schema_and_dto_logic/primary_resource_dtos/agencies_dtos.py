@@ -1,5 +1,6 @@
 from typing import Optional
 
+from database_client.enums import ApprovalStatus
 from middleware.enums import JurisdictionType, AgencyType
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     LocationInfoDTO,
@@ -14,7 +15,7 @@ class AgencyInfoPutDTO(BaseModel):
     agency_type: AgencyType = None
     multi_agency: bool = False
     no_web_presence: bool = False
-    approved: bool = False
+    approval_status: ApprovalStatus = ApprovalStatus.PENDING
     homepage_url: str = None
     lat: float = None
     lng: float = None
@@ -30,7 +31,7 @@ class AgencyInfoPostDTO(BaseModel):
     agency_type: AgencyType
     multi_agency: bool = False
     no_web_presence: bool = False
-    approved: bool = False
+    approval_status: ApprovalStatus = ApprovalStatus.PENDING
     homepage_url: Optional[str] = None
     lat: Optional[float] = None
     lng: Optional[float] = None

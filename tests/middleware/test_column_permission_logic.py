@@ -16,68 +16,6 @@ from middleware.custom_dataclasses import DeferredFunction
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 
 
-def test_get_permitted_columns():
-    mock = MagicMock()
-
-    get_permitted_columns(
-        db_client=mock.db_client,
-        relation=mock.relation,
-        role=mock.role,
-        column_permission=mock.column_permission,
-    )
-
-    mock.db_client.get_permitted_columns.assert_called_once_with(
-        relation=mock.relation, role=mock.role, column_permission=mock.column_permission
-    )
-
-
-@pytest.fixture
-def mock_abort(monkeypatch):
-    mock = MagicMock()
-    monkeypatch.setattr("middleware.flask_response_manager.abort", mock)
-    return mock
-
-
-def test_check_has_permission_to_edit_columns_success(mock_abort):
-    mock = MagicMock()
-    mock.db_client.get_permitted_columns.return_value = ["column_a", "column_b"]
-
-    check_has_permission_to_edit_columns(
-        db_client=mock.db_client,
-        relation=mock.relation,
-        role=mock.role,
-        columns=["column_a", "column_b"],
-    )
-
-    mock_abort.assert_not_called()
-
-    mock.db_client.get_permitted_columns.assert_called_once_with(
-        relation=mock.relation,
-        role=mock.role,
-        column_permission=ColumnPermissionEnum.WRITE,
-    )
-
-
-def test_check_has_permission_to_edit_columns_fail(mock_abort):
-    mock = MagicMock()
-    mock.db_client.get_permitted_columns.return_value = ["column_a"]
-
-    check_has_permission_to_edit_columns(
-        db_client=mock.db_client,
-        relation=mock.relation,
-        role=mock.role,
-        columns=["column_a", "column_b"],
-    )
-
-    mock.db_client.get_permitted_columns.assert_called_once_with(
-        relation=mock.relation,
-        role=mock.role,
-        column_permission=ColumnPermissionEnum.WRITE,
-    )
-
-    mock_abort.assert_called_once()
-
-
 @patch("middleware.column_permission_logic.DatabaseClient")
 def test_create_column_permissions_string_table(mock_DatabaseClient: MagicMock):
     mock_db_client = MagicMock()

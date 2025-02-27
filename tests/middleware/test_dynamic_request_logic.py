@@ -124,7 +124,7 @@ def test_get_by_id(monkeypatch):
         db_client=mock.mp.db_client,
         relation=mock.mp.relation,
         role=mock.relation_role_parameters.get_relation_role_from_parameters.return_value,
-        column_permission=ColumnPermissionEnum.READ,
+        user_permission=ColumnPermissionEnum.READ,
     )
 
     mock.mp.db_client_method.assert_called_once_with(

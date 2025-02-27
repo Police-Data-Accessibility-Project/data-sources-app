@@ -40,7 +40,7 @@ def get_many(
         db_client=mp.db_client,
         relation=mp.relation,
         role=relation_role,
-        column_permission=ColumnPermissionEnum.READ,
+        user_permission=ColumnPermissionEnum.READ,
     )
 
     permitted_columns = optionally_limit_to_requested_columns(

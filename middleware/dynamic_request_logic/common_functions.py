@@ -46,6 +46,6 @@ def optionally_get_permitted_columns_to_subquery_parameters_(
                     db_client=mp.db_client,
                     relation=parameter.relation_name,
                     role=relation_role,
-                    column_permission=ColumnPermissionEnum.READ,
+                    user_permission=ColumnPermissionEnum.READ,
                 )
             )
