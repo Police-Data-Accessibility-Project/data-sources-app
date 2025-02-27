@@ -1,3 +1,9 @@
+## 4.1.0 (2025-02-27)
+
+### Feat
+
+- **database**: rename select agency type values and set to enum in db
+
 ## 4.0.0 (2025-02-27)
 
 ### BREAKING CHANGE

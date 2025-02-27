@@ -135,7 +135,13 @@ EventTypeLiteral = Literal[
 ]
 EntityTypeLiteral = Literal["Data Request", "Data Source"]
 AgencyAggregationLiteral = Literal["county", "local", "state", "federal"]
-
+AgencyTypeLiteral = Literal[
+    "incarceration",
+    "law enforcement",
+    "aggregated",
+    "court",
+    "unknown",
+]
 
 text = Annotated[Text, None]
 timestamp_tz = Annotated[
@@ -234,7 +240,7 @@ class Agency(Base, CountMetadata):
     lat: Mapped[Optional[float]]
     lng: Mapped[Optional[float]]
     defunct_year: Mapped[Optional[str]]
-    agency_type: Mapped[Optional[str]]
+    agency_type: Mapped[AgencyTypeLiteral]
     multi_agency: Mapped[bool] = mapped_column(server_default=false())
     no_web_presence: Mapped[bool] = mapped_column(server_default=false())
     airtable_agency_last_modified: Mapped[timestamp_tz] = mapped_column(

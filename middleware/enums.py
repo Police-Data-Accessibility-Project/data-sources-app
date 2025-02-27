@@ -137,8 +137,8 @@ class AgencyType(Enum):
 
     AGGREGATED = "aggregated"
     COURT = "court"
-    POLICE = "police"
-    JAIL = "jail"
+    POLICE = "law enforcement"
+    JAIL = "incarceration"
     UNKNOWN = "unknown"
 
 
