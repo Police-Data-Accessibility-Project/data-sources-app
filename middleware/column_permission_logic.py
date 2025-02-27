@@ -192,6 +192,30 @@ ROLE_COLUMN_PERMISSIONS = {
 }
 
 
+def create_column_permissions_string_table(relation: str) -> str:
+    permissions = ROLE_COLUMN_PERMISSIONS[relation]
+    # Get all unique roles
+    roles = sorted({role for perms in permissions.values() for role in perms})
+
+    # Create the header row
+    header = "| associated_column | " + " | ".join(roles) + " |"
+    separator = "|---" + "|---" * len(roles) + "|"
+
+    # Create rows for each associated column
+    rows = []
+    for column, perms in permissions.items():
+        row = (
+            f"| {column} | "
+            + " | ".join(perms.get(role, "NONE") for role in roles)
+            + " |"
+        )
+        rows.append(row)
+
+    # Combine everything into a markdown table
+    markdown_table = "\n".join([header, separator] + rows)
+    return markdown_table
+
+
 def get_permitted_columns(
     db_client: DatabaseClient,
     relation: str,
@@ -264,37 +288,6 @@ def check_has_permission_to_edit_columns(
         {invalid_columns}
         """,
     )
-
-
-def create_column_permissions_string_table(relation: str):
-    """
-    Creates a table of column permissions for the given relation
-    this is to be displayed in the swagger ui
-    :param relation:
-    :return:
-    """
-    db_client = DatabaseClient()
-    db_rows = db_client.get_column_permissions_as_permission_table(relation=relation)
-
-    headers = list(db_rows[0].keys())
-
-    # Create the header row
-    header_row = " | ".join(headers)
-    header_row = f"| {header_row} |"
-
-    # Create the separator row
-    separator_row = "|".join(["-" * len(header) for header in headers])
-    separator_row = f"|{separator_row}|"
-
-    # Create the data rows
-    data_rows = []
-    for item in db_rows:
-        row = " | ".join(item[key] for key in headers)
-        data_rows.append(f"| {row} |")
-
-    # Combine all rows
-    table = "\n".join([header_row, separator_row] + data_rows)
-    return table
 
 
 def get_relation_role(access_info: AccessInfoPrimary) -> RelationRoleEnum:

@@ -856,38 +856,6 @@ def test_remove_user_permission(live_database_client):
     assert len(test_user_permissions) == 0
 
 
-def test_get_permitted_columns(live_database_client: DatabaseClient):
-
-    insert_test_column_permission_data(live_database_client)
-
-    results = live_database_client.get_permitted_columns(
-        relation="test_relation",
-        role=RelationRoleEnum.STANDARD,
-        column_permission=ColumnPermissionEnum.READ,
-    )
-    assert len(results) == 2
-    assert "column_a" in results
-    assert "column_b" in results
-
-    results = live_database_client.get_permitted_columns(
-        relation="test_relation",
-        role=RelationRoleEnum.OWNER,
-        column_permission=ColumnPermissionEnum.READ,
-    )
-    assert len(results) == 2
-    assert "column_a" in results
-    assert "column_b" in results
-
-    results = live_database_client.get_permitted_columns(
-        relation="test_relation",
-        role=RelationRoleEnum.ADMIN,
-        column_permission=ColumnPermissionEnum.WRITE,
-    )
-    assert len(results) == 2
-    assert "column_a" in results
-    assert "column_b" in results
-
-
 def test_get_data_requests_for_creator(live_database_client: DatabaseClient):
     test_user = create_test_user_db_client(live_database_client)
     submission_notes_list = [uuid.uuid4().hex, uuid.uuid4().hex, uuid.uuid4().hex]
@@ -940,36 +908,6 @@ def test_user_is_creator_of_data_request(live_database_client):
         user_id=test_user.user_id, data_request_id=data_request_id
     )
     assert results is False
-
-
-def test_get_column_permissions_as_permission_table(
-    live_database_client: DatabaseClient,
-):
-    insert_test_column_permission_data(live_database_client)
-
-    results = live_database_client.get_column_permissions_as_permission_table(
-        relation="test_relation"
-    )
-    assert results == [
-        {
-            "associated_column": "column_a",
-            "STANDARD": "READ",
-            "OWNER": "READ",
-            "ADMIN": "WRITE",
-        },
-        {
-            "associated_column": "column_b",
-            "STANDARD": "READ",
-            "OWNER": "WRITE",
-            "ADMIN": "WRITE",
-        },
-        {
-            "associated_column": "column_c",
-            "STANDARD": "NONE",
-            "OWNER": "NONE",
-            "ADMIN": "READ",
-        },
-    ]
 
 
 # Commented out until: https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/458
