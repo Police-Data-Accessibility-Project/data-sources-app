@@ -240,7 +240,7 @@ class Agency(Base, CountMetadata):
     airtable_agency_last_modified: Mapped[timestamp_tz] = mapped_column(
         server_default=func.current_timestamp()
     )
-    approved: Mapped[bool] = mapped_column(server_default=false())
+    approval_status: Mapped[ApprovalStatusLiteral]
     rejection_reason: Mapped[Optional[str]]
     last_approval_editor = Column(String, nullable=True)
     submitter_contact: Mapped[Optional[str]]
