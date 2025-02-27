@@ -293,7 +293,6 @@ class County(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     fips: Mapped[str]
     name: Mapped[Optional[text]]
-    name_ascii: Mapped[Optional[text]]
     state_iso: Mapped[Optional[text]]
     lat: Mapped[Optional[float]]
     lng: Mapped[Optional[float]]
