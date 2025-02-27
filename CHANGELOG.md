@@ -1,3 +1,10 @@
+## 4.1.1 (2025-02-27)
+
+### Fix
+
+- **database**: remove column permission tables
+- **database**: remove column permission tables
+
 ## 4.1.0 (2025-02-27)
 
 ### Feat
