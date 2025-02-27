@@ -1,3 +1,9 @@
+## 3.0.1 (2025-02-27)
+
+### Fix
+
+- **database**: remove name_ascii column from counties table
+
 ## 3.0.0 (2025-02-26)
 
 ### BREAKING CHANGE
