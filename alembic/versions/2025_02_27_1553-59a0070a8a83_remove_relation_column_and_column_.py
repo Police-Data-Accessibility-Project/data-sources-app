@@ -1,7 +1,7 @@
 """Remove relation_column and column_permission tables
 
 Revision ID: 59a0070a8a83
-Revises: 203f11778425
+Revises: 89b4dbcb8827
 Create Date: 2025-02-27 15:53:22.901082
 
 """
@@ -14,7 +14,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = "59a0070a8a83"
-down_revision: Union[str, None] = "203f11778425"
+down_revision: Union[str, None] = "89b4dbcb8827"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
