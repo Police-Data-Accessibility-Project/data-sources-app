@@ -106,7 +106,7 @@ class AgencyPostHandler(PostHandler):
         validate_and_add_location_info(
             db_client=DatabaseClient(),
             entry_data=request.entry,
-            location_id=request.dto.location_id,
+            location_id=request.dto.location_ids,
         )
 
 
@@ -140,14 +140,19 @@ def create_agency(
     dto: AgenciesPostDTO,
     make_response: bool = True,
 ) -> Response:
+    # TODO: Destroy and replace all this logic with something more straightforward
+
+    db_client.create_agency(dto)
+
     entry_data = dict(dto.agency_info)
     pre_insertion_function = optionally_get_location_info_deferred_function(
         db_client=db_client,
         jurisdiction_type=dto.agency_info.jurisdiction_type,
         entry_data=entry_data,
-        location_id=dto.location_id,
+        location_id=dto.location_ids,
     )
 
+    # TODO: Destroy and replace
     return post_entry(
         middleware_parameters=AGENCY_POST_MIDDLEWARE_PARAMETERS,
         entry=entry_data,

@@ -277,7 +277,7 @@ def test_link_user_followed_locations_link_exists(
     results = live_database_client._select_from_relation(
         relation_name=Relations.LINK_USER_FOLLOWED_LOCATION.value,
         columns=["user_id"],
-        where_mappings=WhereMapping.from_dict({"location_id": test_info.location_id}),
+        where_mappings=WhereMapping.from_dict({"location_id": test_info.location_ids}),
     )
     assert len(results) == 1
     assert results[0]["user_id"] == test_info.user_id
@@ -288,7 +288,7 @@ def test_link_user_followed_locations_link_exists(
         where_mappings=WhereMapping.from_dict({"user_id": test_info.user_id}),
     )
     assert len(results) == 1
-    assert results[0]["location_id"] == test_info.location_id
+    assert results[0]["location_id"] == test_info.location_ids
 
 
 def test_link_user_followed_locations_link_user_deletion_cascade(
@@ -319,7 +319,7 @@ def assert_link_user_followed_location_deleted(live_database_client, test_info):
     results = live_database_client._select_from_relation(
         relation_name=Relations.LINK_USER_FOLLOWED_LOCATION.value,
         columns=["user_id"],
-        where_mappings=WhereMapping.from_dict({"location_id": test_info.location_id}),
+        where_mappings=WhereMapping.from_dict({"location_id": test_info.location_ids}),
     )
     assert len(results) == 0
     results = live_database_client._select_from_relation(

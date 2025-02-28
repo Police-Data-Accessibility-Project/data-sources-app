@@ -138,7 +138,7 @@ def federal_search_wrapper(
 def create_search_record(access_info, db_client, dto):
     db_client.create_search_record(
         user_id=access_info.get_user_id(),
-        location_id=dto.location_id,
+        location_id=dto.location_ids,
         # Pass originally provided record categories
         record_categories=dto.record_categories,
         record_types=dto.record_types,

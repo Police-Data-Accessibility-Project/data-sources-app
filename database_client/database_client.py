@@ -54,6 +54,8 @@ from database_client.models import (
     TableCountLog,
     LinkRecentSearchRecordTypes,
     RecordType,
+    LinkAgencyDataSource,
+    LinkAgencyLocation,
 )
 from middleware.enums import PermissionsEnum, Relations, AgencyType, RecordTypes
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
@@ -61,6 +63,9 @@ from middleware.initialize_sqlalchemy_session import initialize_sqlalchemy_sessi
 from middleware.miscellaneous_logic.table_count_logic import (
     TableCountReference,
     TableCountReferenceManager,
+)
+from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
+    AgenciesPostDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
     AgencyMatchResponseInnerDTO,
@@ -829,9 +834,35 @@ class DatabaseClient:
         _create_entry_in_table, table_name="data_requests", column_to_return="id"
     )
 
-    create_agency = partialmethod(
-        _create_entry_in_table, table_name="agencies", column_to_return="id"
-    )
+    def create_agency(
+        self,
+        dto: AgenciesPostDTO,
+    ):
+        # Create Agency Entry
+        agency_info = dto.agency_info
+        agency = Agency(
+            name=agency_info.name,
+            agency_type=agency_info.agency_type.value,
+            jurisdiction_type=agency_info.jurisdiction_type.value,
+            multi_agency=agency_info.multi_agency,
+            no_web_presence=agency_info.no_web_presence,
+            approval_status=agency_info.approval_status.value,
+            homepage_url=agency_info.homepage_url,
+            lat=agency_info.lat,
+            lng=agency_info.lng,
+            defunct_year=agency_info.defunct_year,
+            rejection_reason=agency_info.rejection_reason,
+            last_approval_editor=agency_info.last_approval_editor,
+            submitter_contact=agency_info.submitter_contact,
+        )
+
+        # Flush to get agency id
+        self.session.flush()
+
+        # Link to Locations
+        for location_id in dto.location_ids:
+            lal = LinkAgencyLocation(location_id=location_id, agency_id=agency.id)
+            self.session.add(lal)
 
     create_request_source_relation = partialmethod(
         _create_entry_in_table,

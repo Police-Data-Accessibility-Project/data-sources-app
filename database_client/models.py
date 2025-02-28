@@ -256,6 +256,15 @@ class Agency(Base, CountMetadata):
     )
     location_id: Mapped[Optional[int]]
 
+    # relationships
+    locations: Mapped[list["Location"]] = relationship(
+        argument="Location",
+        secondary="public.link_agencies_locations",
+        primaryjoin="LinkAgencyLocation.agency_id == Agency.id",
+        secondaryjoin="LinkAgencyLocation.location_id == Location.id",
+        back_populates="agencies",
+    )
+
 
 class AgencyExpanded(Agency):
 
@@ -281,6 +290,18 @@ class AgencyExpanded(Agency):
         primaryjoin="LinkAgencyDataSource.agency_id == AgencyExpanded.id",
         secondaryjoin="LinkAgencyDataSource.data_source_id == DataSourceExpanded.id",
         back_populates="agencies",
+    )
+
+
+class LinkAgencyLocation(Base):
+    __tablename__ = Relations.LINK_AGENCIES_LOCATIONS.value
+
+    id: Mapped[int]
+    location_id: Mapped[int] = mapped_column(
+        ForeignKey("public.locations.id"), primary_key=True
+    )
+    agency_id: Mapped[int] = mapped_column(
+        ForeignKey("public.agencies.id"), primary_key=True
     )
 
 
@@ -334,6 +355,16 @@ class Location(Base):
 
     def __iter__(self):
         yield from iter_with_special_cases(self)
+
+    # Relationships
+
+    agencies: Mapped[list["Agency"]] = relationship(
+        argument="Agency",
+        secondary="public.link_agencies_locations",
+        primaryjoin="Location.id == LinkAgencyLocation.location_id",
+        secondaryjoin="LinkAgencyLocation.agency_id == Agency.id",
+        back_populates="locations",
+    )
 
 
 class LocationExpanded(Base, CountMetadata):
