@@ -1,3 +1,9 @@
+## 6.1.2 (2025-02-28)
+
+### Fix
+
+- **api**: refine `/archives` `PUT` limiter to 25/min, 1000/hour
+
 ## 6.1.1 (2025-02-28)
 
 ### Fix
