@@ -1,3 +1,13 @@
+## 5.0.0 (2025-02-28)
+
+### BREAKING CHANGE
+
+- References to `submitted_name` in `data_sources` related endpoints have been removed -- only `name`, if anything, is included in their place.
+
+### Fix
+
+- **database**: remove select data sources columns
+
 ## 4.1.1 (2025-02-27)
 
 ### Fix
