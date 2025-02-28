@@ -1,6 +1,6 @@
 [project]
 name="data_sources_app"
-version="6.1.0"
+version="6.1.1"
 
 [tool.commitizen]
 name = "cz_conventional_commits"

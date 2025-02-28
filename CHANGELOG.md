@@ -1,3 +1,9 @@
+## 6.1.1 (2025-02-28)
+
+### Fix
+
+- **database**: address comma in locality name
+
 ## 6.1.0 (2025-02-28)
 
 ### Feat
