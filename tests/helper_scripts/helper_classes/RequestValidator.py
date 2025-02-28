@@ -599,38 +599,12 @@ class RequestValidator:
             expected_response_status=bop.expected_response_status,
         )
 
-    def update_agencies_bulk(
-        self,
-        bop: BulkOperationParams,
-        expected_schema=SchemaConfigs.BULK_AGENCIES_PUT.value.primary_output_schema,
-    ):
-        return self.put(
-            endpoint="/api/bulk/agencies",
-            headers=bop.headers,
-            file=bop.file,
-            expected_schema=expected_schema,
-            expected_response_status=bop.expected_response_status,
-        )
-
     def insert_data_sources_bulk(
         self,
         bop: BulkOperationParams,
         expected_schema=SchemaConfigs.BULK_DATA_SOURCES_POST.value.primary_output_schema,
     ):
         return self.post(
-            endpoint="/api/bulk/data-sources",
-            headers=bop.headers,
-            file=bop.file,
-            expected_schema=expected_schema,
-            expected_response_status=bop.expected_response_status,
-        )
-
-    def update_data_sources_bulk(
-        self,
-        bop: BulkOperationParams,
-        expected_schema=SchemaConfigs.BULK_DATA_SOURCES_PUT.value.primary_output_schema,
-    ):
-        return self.put(
             endpoint="/api/bulk/data-sources",
             headers=bop.headers,
             file=bop.file,
