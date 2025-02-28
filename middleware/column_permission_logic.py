@@ -111,7 +111,6 @@ ROLE_COLUMN_PERMISSIONS = {
     },
     "data_sources_expanded": {
         "name": {"ADMIN": "WRITE", "STANDARD": "READ"},
-        "submitted_name": {"ADMIN": "WRITE", "STANDARD": "READ"},
         "description": {"ADMIN": "WRITE", "STANDARD": "READ"},
         "source_url": {"ADMIN": "WRITE", "STANDARD": "READ"},
         "agency_supplied": {"ADMIN": "WRITE", "STANDARD": "READ"},
@@ -133,7 +132,6 @@ ROLE_COLUMN_PERMISSIONS = {
         "rejection_note": {"ADMIN": "WRITE", "STANDARD": "READ"},
         "last_approval_editor": {"ADMIN": "WRITE", "STANDARD": "READ"},
         "submitter_contact_info": {"ADMIN": "WRITE", "STANDARD": "READ"},
-        "agency_described_submitted": {"ADMIN": "WRITE", "STANDARD": "READ"},
         "agency_described_not_in_database": {"ADMIN": "WRITE", "STANDARD": "READ"},
         "data_portal_type_other": {"ADMIN": "WRITE", "STANDARD": "READ"},
         "data_source_request": {"ADMIN": "WRITE", "STANDARD": "READ"},
@@ -151,7 +149,6 @@ ROLE_COLUMN_PERMISSIONS = {
     },
     "data_sources": {
         "name": {"ADMIN": "WRITE", "STANDARD": "READ"},
-        "submitted_name": {"ADMIN": "WRITE", "STANDARD": "READ"},
         "description": {"ADMIN": "WRITE", "STANDARD": "READ"},
         "source_url": {"ADMIN": "WRITE", "STANDARD": "READ"},
         "agency_supplied": {"ADMIN": "WRITE", "STANDARD": "READ"},
@@ -173,7 +170,6 @@ ROLE_COLUMN_PERMISSIONS = {
         "rejection_note": {"ADMIN": "WRITE", "STANDARD": "READ"},
         "last_approval_editor": {"ADMIN": "WRITE", "STANDARD": "READ"},
         "submitter_contact_info": {"ADMIN": "WRITE", "STANDARD": "READ"},
-        "agency_described_submitted": {"ADMIN": "WRITE", "STANDARD": "READ"},
         "agency_described_not_in_database": {"ADMIN": "WRITE", "STANDARD": "READ"},
         "data_portal_type_other": {"ADMIN": "WRITE", "STANDARD": "READ"},
         "data_source_request": {"ADMIN": "WRITE", "STANDARD": "READ"},

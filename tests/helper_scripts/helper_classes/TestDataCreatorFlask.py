@@ -62,7 +62,7 @@ class TestDataCreatorFlask:
         submitted_name = get_test_name()
         json = self.request_validator.create_data_source(
             headers=self.get_admin_tus().jwt_authorization_header,
-            submitted_name=submitted_name,
+            name=submitted_name,
         )
 
         return CreatedDataSource(

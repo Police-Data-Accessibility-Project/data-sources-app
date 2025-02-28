@@ -17,7 +17,7 @@ from middleware.enums import RecordTypes
 
 
 class DataSourceEntryDataPostDTO(BaseModel):
-    submitted_name: str
+    name: str
     description: Optional[str] = None
     approval_status: Optional[ApprovalStatus] = None
     source_url: Optional[str] = None
@@ -41,7 +41,6 @@ class DataSourceEntryDataPostDTO(BaseModel):
     rejection_note: Optional[str] = None
     last_approval_editor: Optional[str] = None
     submitter_contact_info: Optional[str] = None
-    agency_described_submitted: Optional[str] = None
     agency_described_not_in_database: Optional[str] = None
     data_portal_type_other: Optional[str] = None
     data_source_request: Optional[str] = None
@@ -52,7 +51,7 @@ class DataSourceEntryDataPostDTO(BaseModel):
 
 
 class DataSourceEntryDataPutDTO(BaseModel):
-    submitted_name: str
+    name: str
     description: Optional[str] = None
     approval_status: Optional[ApprovalStatus] = None
     source_url: Optional[str] = None
@@ -74,7 +73,6 @@ class DataSourceEntryDataPutDTO(BaseModel):
     scraper_url: Optional[str] = None
     submission_notes: Optional[str] = None
     submitter_contact_info: Optional[str] = None
-    agency_described_submitted: Optional[str] = None
     agency_described_not_in_database: Optional[str] = None
     data_portal_type_other: Optional[str] = None
     access_notes: Optional[str] = None

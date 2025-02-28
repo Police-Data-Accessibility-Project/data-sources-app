@@ -484,7 +484,6 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
-    submitted_name: Mapped[Optional[str]]
     description: Mapped[Optional[str]]
     source_url: Mapped[Optional[str]]
     agency_supplied: Mapped[Optional[bool]]
@@ -514,7 +513,6 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
     rejection_note: Mapped[Optional[str]]
     last_approval_editor: Mapped[Optional[int]]
     submitter_contact_info: Mapped[Optional[str]]
-    agency_described_submitted: Mapped[Optional[str]]
     agency_described_not_in_database: Mapped[Optional[str]]
     data_portal_type_other: Mapped[Optional[str]]
     data_source_request: Mapped[Optional[str]]

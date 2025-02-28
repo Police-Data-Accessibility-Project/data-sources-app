@@ -358,7 +358,7 @@ class RequestValidator:
         self,
         headers: dict,
         source_url: str = "http://src1.com",
-        submitted_name: str = get_test_name(),
+        name: str = get_test_name(),
         approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
         **kwargs,
     ):
@@ -368,7 +368,7 @@ class RequestValidator:
             json={
                 "entry_data": {
                     "source_url": source_url,
-                    "submitted_name": submitted_name,
+                    "name": name,
                     "approval_status": approval_status.value,
                     **kwargs,
                 }

@@ -397,7 +397,7 @@ def test_approval_status_updated_at(
     assert approval_status_updated_at > initial_approval_status_updated_at
 
     # Make an edit to a different column and confirm that `approval_status_updated_at` is not updated
-    update_data_source({"submitted_name": get_test_name()})
+    update_data_source({"name": get_test_name()})
 
     new_approval_status_updated_at = get_approval_status_updated_at()
     assert approval_status_updated_at == new_approval_status_updated_at
