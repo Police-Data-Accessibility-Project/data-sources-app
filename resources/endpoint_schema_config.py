@@ -41,11 +41,8 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.archives_schemas i
 from middleware.schema_and_dto_logic.primary_resource_schemas.bulk_schemas import (
     BatchRequestSchema,
     BatchPostResponseSchema,
-    BatchPutResponseSchema,
-    AgenciesPutBatchRequestSchema,
     AgenciesPostBatchRequestSchema,
     DataSourcesPostBatchRequestSchema,
-    DataSourcesPutBatchRequestSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.contact_schemas import (
     ContactFormPostSchema,
@@ -150,7 +147,6 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_
 from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
     AgenciesPostDTO,
     RelatedAgencyByIDDTO,
-    AgenciesPutDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_advanced_schemas import (
     GetManyDataRequestsResponseSchema,
@@ -173,7 +169,6 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advan
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.data_sources_dtos import (
     DataSourcesPostDTO,
-    DataSourcesPutDTO,
 )
 from middleware.schema_and_dto_logic.common_response_schemas import (
     IDAndMessageSchema,
@@ -542,20 +537,10 @@ class SchemaConfigs(Enum):
         input_dto_class=DataSourcesPostDTO,
         primary_output_schema=BatchPostResponseSchema(),
     )
-    BULK_DATA_SOURCES_PUT = EndpointSchemaConfig(
-        input_schema=DataSourcesPutBatchRequestSchema(),
-        input_dto_class=DataSourcesPutDTO,
-        primary_output_schema=BatchPutResponseSchema(),
-    )
     BULK_AGENCIES_POST = EndpointSchemaConfig(
         input_schema=AgenciesPostBatchRequestSchema(),
         input_dto_class=AgenciesPostDTO,
         primary_output_schema=BatchPostResponseSchema(),
-    )
-    BULK_AGENCIES_PUT = EndpointSchemaConfig(
-        input_schema=AgenciesPutBatchRequestSchema(),
-        input_dto_class=AgenciesPutDTO,
-        primary_output_schema=BatchPutResponseSchema(),
     )
     # endregion
     # region Match

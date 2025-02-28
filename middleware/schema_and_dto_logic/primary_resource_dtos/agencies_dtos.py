@@ -46,11 +46,6 @@ class AgenciesPostDTO(BaseModel):
     location_id: Optional[int] = None
 
 
-class AgenciesPutDTO(BaseModel):
-    agency_info: AgencyInfoPutDTO
-    location_id: Optional[int] = None
-
-
 class RelatedAgencyByIDDTO(GetByIDBaseDTO):
     agency_id: int
 

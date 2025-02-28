@@ -37,13 +37,9 @@ class BatchPutRequestSchema(BatchRequestSchema):
 DataSourcesPostRequestFlatBaseSchema = generate_flat_csv_schema(
     schema=DataSourcesPostSchema()
 )
-DataSourcesPutRequestFlatBaseSchema = generate_flat_csv_schema(
-    schema=DataSourcesPutSchema(),
-)
 AgenciesPostRequestFlatBaseSchema = generate_flat_csv_schema(
     schema=AgenciesPostSchema()
 )
-AgenciesPutRequestFlatBaseSchema = generate_flat_csv_schema(schema=AgenciesPutSchema())
 # endregion
 
 
@@ -54,20 +50,8 @@ class DataSourcesPostBatchRequestSchema(
     pass
 
 
-class DataSourcesPutBatchRequestSchema(
-    BatchPutRequestSchema, DataSourcesPutRequestFlatBaseSchema
-):
-    pass
-
-
 class AgenciesPostBatchRequestSchema(
     BatchRequestSchema, AgenciesPostRequestFlatBaseSchema
-):
-    pass
-
-
-class AgenciesPutBatchRequestSchema(
-    BatchPutRequestSchema, AgenciesPutRequestFlatBaseSchema
 ):
     pass
 
@@ -84,11 +68,4 @@ class BatchPostResponseSchema(MessageSchema):
     errors = fields.Dict(
         required=True,
         metadata=get_json_metadata("The errors associated with resources not created"),
-    )
-
-
-class BatchPutResponseSchema(MessageSchema):
-    errors = fields.Dict(
-        required=True,
-        metadata=get_json_metadata("The errors associated with resources not updated"),
     )

@@ -228,20 +228,6 @@ def bulk_post_agencies(db_client: DatabaseClient, dto: BulkRequestDTO):
     return manage_response(brm=brm, resource_name="agencies", verb="created")
 
 
-def bulk_put_agencies(db_client: DatabaseClient, dto: BulkRequestDTO):
-    brm = run_bulk(
-        bulk_config=BulkConfig(
-            dto=dto,
-            handler=AgencyPutHandler(),
-            brp_class=BulkRowProcessor,
-            schema=dto.csv_schema.__class__(exclude=["file"]),
-        )
-    )
-    return manage_response(
-        brm=brm, resource_name="agencies", verb="updated", include_ids=False
-    )
-
-
 def bulk_post_data_sources(db_client: DatabaseClient, dto: BulkRequestDTO):
     brm = run_bulk(
         bulk_config=BulkConfig(
@@ -252,17 +238,3 @@ def bulk_post_data_sources(db_client: DatabaseClient, dto: BulkRequestDTO):
         )
     )
     return manage_response(brm=brm, resource_name="data sources", verb="created")
-
-
-def bulk_put_data_sources(db_client: DatabaseClient, dto: BulkRequestDTO):
-    brm = run_bulk(
-        bulk_config=BulkConfig(
-            dto=dto,
-            handler=DataSourcesPutHandler(),
-            brp_class=BulkRowProcessor,
-            schema=dto.csv_schema.__class__(exclude=["file"]),
-        )
-    )
-    return manage_response(
-        brm=brm, resource_name="data_sources", verb="updated", include_ids=False
-    )
