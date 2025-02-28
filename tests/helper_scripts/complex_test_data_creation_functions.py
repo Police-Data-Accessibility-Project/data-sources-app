@@ -68,7 +68,6 @@ def create_data_source_entry_for_url_duplicate_checking(
         db_client._create_entry_in_table(
             table_name="data_sources",
             column_value_mappings={
-                "submitted_name": submitted_name,
                 "name": submitted_name,
                 "rejection_note": "Test rejection note",
                 "approval_status": "rejected",

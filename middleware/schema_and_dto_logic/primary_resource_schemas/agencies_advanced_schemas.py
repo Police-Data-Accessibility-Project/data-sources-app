@@ -126,7 +126,7 @@ class AgenciesPutSchema(AgenciesPostPutBaseSchema):
 class AgenciesGetSchema(AgenciesExpandedSchema):
     data_sources = fields.List(
         cls_or_instance=fields.Nested(
-            nested=DataSourceExpandedSchema(only=["id", "submitted_name"]),
+            nested=DataSourceExpandedSchema(only=["id", "name"]),
             required=True,
             metadata=get_json_metadata(
                 description="The data sources associated with the agency",

@@ -39,7 +39,7 @@ from utilities.enums import SourceMappingEnum
 class DataRequestsGetSchemaBase(DataRequestsSchema):
     data_sources = fields.List(
         fields.Nested(
-            nested=DataSourceExpandedSchema(only=["id", "submitted_name"]),
+            nested=DataSourceExpandedSchema(only=["id", "name"]),
             metadata=get_json_metadata(
                 "The data sources associated with the data request"
             ),

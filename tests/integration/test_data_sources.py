@@ -95,14 +95,13 @@ def test_data_sources_get_many_limit_columns(
     tdc = test_data_creator_flask
 
     tus = tdc.standard_user()
-    allowed_columns = ["name", "submitted_name", "id"]
+    allowed_columns = ["name", "id"]
     url_encoded_column_string = urllib.parse.quote_plus(str(allowed_columns))
     expected_schema = SchemaConfigs.DATA_SOURCES_GET_MANY.value.primary_output_schema
     expected_schema.only = [
         "message",
         "metadata",
         "data.name",
-        "data.submitted_name",
         "data.id",
     ]
     expected_schema.partial = True
@@ -136,7 +135,6 @@ def test_data_sources_post(
         schema=DataSourceExpandedSchema(
             exclude=[
                 "id",
-                "name",
                 "updated_at",
                 "created_at",
                 "record_type_id",
@@ -218,7 +216,7 @@ def test_data_sources_by_id_put(test_data_creator_flask: TestDataCreatorFlask):
     cdr = tdc.data_source()
 
     entry_data = {
-        "submitted_name": get_test_name(),
+        "name": get_test_name(),
         "description": uuid.uuid4().hex,
         "source_url": uuid.uuid4().hex,
         "agency_supplied": True,
@@ -243,7 +241,6 @@ def test_data_sources_by_id_put(test_data_creator_flask: TestDataCreatorFlask):
         "scraper_url": uuid.uuid4().hex,
         "submission_notes": uuid.uuid4().hex,
         "submitter_contact_info": uuid.uuid4().hex,
-        "agency_described_submitted": uuid.uuid4().hex,
         "agency_described_not_in_database": uuid.uuid4().hex,
         "data_portal_type_other": uuid.uuid4().hex,
         "access_notes": uuid.uuid4().hex,

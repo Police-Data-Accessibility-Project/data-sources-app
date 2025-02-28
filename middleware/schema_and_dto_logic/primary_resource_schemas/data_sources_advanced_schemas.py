@@ -101,7 +101,6 @@ class DataSourcesPostSchema(Schema):
         nested=DataSourceExpandedSchema(
             exclude=[
                 "id",
-                "name",
                 "updated_at",
                 "created_at",
                 "record_type_id",
@@ -137,7 +136,6 @@ class DataSourcesPutSchema(Schema):
     entry_data = fields.Nested(
         nested=DataSourceExpandedSchema(
             exclude=[
-                "name",
                 "id",
                 "updated_at",
                 "created_at",
