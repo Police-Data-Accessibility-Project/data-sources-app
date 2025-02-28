@@ -1,3 +1,9 @@
+## 6.1.0 (2025-02-28)
+
+### Feat
+
+- **database**: add data_sources to change_log tracking
+
 ## 6.0.0 (2025-02-28)
 
 ### BREAKING CHANGE
