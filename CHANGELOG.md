@@ -1,3 +1,13 @@
+## 6.0.0 (2025-02-28)
+
+### BREAKING CHANGE
+
+- Batch update endpoints removed.
+
+### Fix
+
+- **api**: remove batch update endpoints
+
 ## 5.0.0 (2025-02-28)
 
 ### BREAKING CHANGE
