@@ -15,6 +15,7 @@ from sqlalchemy import (
     Integer,
     UniqueConstraint,
     inspect,
+    CheckConstraint,
 )
 from sqlalchemy.dialects.postgresql import (
     ARRAY,
@@ -311,6 +312,9 @@ class County(Base):
 
 class Locality(Base):
     __tablename__ = Relations.LOCALITIES.value
+    __table_args__ = (
+        CheckConstraint("name NOT LIKE '%,%'", name="localities_name_check"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[Optional[Text]] = mapped_column(Text)
