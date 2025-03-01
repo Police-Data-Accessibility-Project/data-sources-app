@@ -170,7 +170,7 @@ class ResultFormatter:
         # Associated agencies
         agencies = []
         for agency in data_source.agencies:
-            if agency.locations is not None:
+            if len(agency.locations) > 0:
                 first_location = agency.locations[0]
             else:
                 first_location = None
