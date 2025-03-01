@@ -178,6 +178,7 @@ class ResultFormatter:
             agency_dict = {
                 "id": agency.id,
                 "name": agency.name,
+                "submitted_name": agency.name,
                 "jurisdiction_type": agency.jurisdiction_type,
                 "agency_type": agency.agency_type,
                 "homepage_url": agency.homepage_url,
