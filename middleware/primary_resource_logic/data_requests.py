@@ -216,7 +216,6 @@ def get_data_requests_with_permitted_columns(
 ) -> list[dict]:
 
     columns = get_permitted_columns(
-        db_client=db_client,
         relation=RELATION,
         role=relation_role,
         user_permission=ColumnPermissionEnum.READ,

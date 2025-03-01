@@ -17,6 +17,7 @@ from middleware.schema_and_dto_logic.dynamic_logic.dynamic_csv_to_schema_convers
 from middleware.schema_and_dto_logic.primary_resource_schemas.bulk_schemas import (
     AgenciesPostRequestFlatBaseSchema,
     DataSourcesPostRequestFlatBaseSchema,
+    AgenciesPostRequestFlatSchema,
 )
 from middleware.util import stringify_lists
 from tests.helper_scripts.common_test_data import get_test_name
@@ -62,8 +63,8 @@ def agencies_post_runner(
 ):
     return BatchTestRunner(
         tdc=test_data_creator_flask,
-        csv_creator=TestCSVCreator(AgenciesPostRequestFlatBaseSchema()),
-        schema=AgenciesPostRequestFlatBaseSchema(),
+        csv_creator=TestCSVCreator(AgenciesPostRequestFlatSchema()),
+        schema=AgenciesPostRequestFlatSchema(),
     )
 
 
@@ -145,7 +146,7 @@ def test_batch_agencies_insert_happy_path(
         assert_contains_key_value_pairs(
             dict_to_check=data["data"], key_value_pairs=unflattened_row["agency_info"]
         )
-        assert data["data"]["locality_name"] == test_name
+        assert data["data"]["locations"][0]["locality_name"] == test_name
 
 
 def test_batch_agencies_insert_some_errors(

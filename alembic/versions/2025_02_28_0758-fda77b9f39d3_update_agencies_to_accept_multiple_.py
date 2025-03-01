@@ -29,10 +29,12 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["agency_id"],
             ["agencies.id"],
+            ondelete="CASCADE",
         ),
         sa.ForeignKeyConstraint(
             ["location_id"],
             ["locations.id"],
+            ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("agency_id", "location_id", name="unique_agency_location"),
@@ -80,11 +82,68 @@ def upgrade() -> None:
     )
     op.drop_column("agencies", "location_id")
 
+    op.execute(
+        """
+    CREATE OR REPLACE VIEW public.qualifying_notifications
+ AS
+ WITH cutoff_point AS (
+         SELECT date_trunc('month'::text, CURRENT_DATE::timestamp with time zone) - '1 mon'::interval AS date_range_min,
+            date_trunc('month'::text, CURRENT_DATE::timestamp with time zone) AS date_range_max
+        )
+ SELECT
+        CASE
+            WHEN dr.request_status = 'Ready to start'::request_status THEN 'Request Ready to Start'::event_type
+            WHEN dr.request_status = 'Complete'::request_status THEN 'Request Complete'::event_type
+            ELSE NULL::event_type
+        END AS event_type,
+    dr.id AS entity_id,
+    'Data Request'::entity_type AS entity_type,
+    dr.title AS entity_name,
+    lnk_dr.location_id,
+    dr.date_status_last_changed AS event_timestamp
+   FROM cutoff_point cp,
+    data_requests dr
+     JOIN link_locations_data_requests lnk_dr ON lnk_dr.data_request_id = dr.id
+  WHERE dr.date_status_last_changed > cp.date_range_min AND dr.date_status_last_changed < cp.date_range_max AND (dr.request_status = 'Ready to start'::request_status OR dr.request_status = 'Complete'::request_status)
+UNION ALL
+ SELECT 'Data Source Approved'::event_type AS event_type,
+    ds.id AS entity_id,
+    'Data Source'::entity_type AS entity_type,
+    ds.name AS entity_name,
+    lal.location_id,
+    ds.approval_status_updated_at AS event_timestamp
+   FROM cutoff_point cp,
+    data_sources ds
+     JOIN link_agencies_data_sources lnk ON lnk.data_source_id = ds.id
+     JOIN agencies a ON lnk.agency_id = a.id
+     LEFT JOIN LINK_AGENCIES_LOCATIONS lal ON lal.agency_id = a.id
+  WHERE ds.approval_status_updated_at > cp.date_range_min AND ds.approval_status_updated_at < cp.date_range_max AND ds.approval_status = 'approved'::approval_status;
+    """
+    )
+    op.execute(
+        """
+    CREATE OR REPLACE VIEW public.user_pending_notifications
+     AS
+     SELECT DISTINCT q.event_type,
+        q.entity_id,
+        q.entity_type,
+        q.entity_name,
+        q.location_id,
+        q.event_timestamp,
+        l.user_id,
+        u.email
+       FROM qualifying_notifications q
+         JOIN dependent_locations d ON d.dependent_location_id = q.location_id
+         JOIN link_user_followed_location l ON l.location_id = q.location_id OR l.location_id = d.parent_location_id
+         JOIN users u ON u.id = l.user_id;
+    """
+    )
+
 
 def downgrade() -> None:
 
     # Add agencies location ids to agencies table
-    op.add_column("agencies", sa.Column("location_id", sa.Integer(), nullable=False))
+    op.add_column("agencies", sa.Column("location_id", sa.Integer(), nullable=True))
     op.execute(
         """
         UPDATE agencies

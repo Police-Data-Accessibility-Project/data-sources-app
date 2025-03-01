@@ -3,7 +3,6 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
-from database_client.database_client import DatabaseClient
 from database_client.enums import RelationRoleEnum, ColumnPermissionEnum
 from middleware.access_logic import AccessInfoPrimary
 from middleware.custom_dataclasses import DeferredFunction
@@ -213,7 +212,6 @@ def create_column_permissions_string_table(relation: str) -> str:
 
 
 def get_permitted_columns(
-    db_client: DatabaseClient,
     relation: str,
     role: RelationRoleEnum,
     user_permission: ColumnPermissionEnum,
@@ -255,7 +253,7 @@ def get_invalid_columns(
 
 
 def check_has_permission_to_edit_columns(
-    db_client: DatabaseClient, relation: str, role: RelationRoleEnum, columns: list[str]
+    relation: str, role: RelationRoleEnum, columns: list[str]
 ):
     """
     Checks if the user has permission to edit the given columns
@@ -266,7 +264,6 @@ def check_has_permission_to_edit_columns(
     :return:
     """
     writeable_columns = get_permitted_columns(
-        db_client=db_client,
         relation=relation,
         role=role,
         user_permission=ColumnPermissionEnum.WRITE,

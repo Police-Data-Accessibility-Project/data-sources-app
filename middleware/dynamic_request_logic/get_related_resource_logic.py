@@ -45,7 +45,6 @@ def get_related_resource(
     )
     if permitted_columns is None:
         permitted_columns = get_permitted_columns(
-            db_client=gerp.db_client,
             relation=gerp.related_relation.value,
             role=RelationRoleEnum.STANDARD,
             user_permission=ColumnPermissionEnum.READ,

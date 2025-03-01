@@ -143,6 +143,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_
     AgenciesPostSchema,
     AgenciesGetManyResponseSchema,
     RelatedAgencyByIDSchema,
+    AgenciesRelatedLocationSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
     AgenciesPostDTO,
@@ -372,6 +373,15 @@ class SchemaConfigs(Enum):
         input_schema=AgenciesPutSchema(),
     )
     AGENCIES_BY_ID_DELETE = DELETE_BY_ID
+    AGENCIES_BY_ID_RELATED_LOCATIONS_DELETE = EndpointSchemaConfig(
+        input_schema=AgenciesRelatedLocationSchema(),
+        primary_output_schema=MessageSchema(),
+    )
+    AGENCIES_BY_ID_RELATED_LOCATIONS_POST = EndpointSchemaConfig(
+        input_schema=AgenciesRelatedLocationSchema(),
+        primary_output_schema=MessageSchema(),
+    )
+
     # endregion
     # region Data Sources
     DATA_SOURCES_GET_MANY = EndpointSchemaConfig(

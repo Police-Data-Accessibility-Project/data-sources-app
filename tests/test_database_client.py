@@ -295,85 +295,6 @@ def test_select_from_relation_all_parameters(
     ]
 
 
-def test_select_from_relation_subquery(
-    test_data_creator_db_client: TestDataCreatorDBClient,
-):
-    tdc = test_data_creator_db_client
-    agency_info = tdc.agency()
-    data_source_info = tdc.data_source()
-
-    tdc.db_client.execute_sqlalchemy(
-        lambda: insert(LinkAgencyDataSource).values(
-            data_source_id=data_source_info.id, agency_id=agency_info.id
-        )
-    )
-
-    where_mappings_for_data_sources = [
-        WhereMapping(column="id", value=data_source_info.id)
-    ]
-    subquery_parameters_for_data_sources = [
-        SubqueryParameters(
-            relation_name=Relations.AGENCIES_EXPANDED.value,
-            columns=["id", "submitted_name"],
-            linking_column="agencies",
-        )
-    ]
-
-    # Test can get agency from data sources, where the `agencies` property is defined
-    results = tdc.db_client._select_from_relation(
-        relation_name=Relations.DATA_SOURCES_EXPANDED.value,
-        columns=["id", "name"],
-        where_mappings=where_mappings_for_data_sources,
-        subquery_parameters=subquery_parameters_for_data_sources,
-    )
-
-    assert results == [
-        {
-            "name": data_source_info.name,
-            "id": data_source_info.id,
-            # "agency_ids": [agency_info.id],
-            "agencies": [
-                {
-                    "submitted_name": agency_info.submitted_name,
-                    "id": agency_info.id,
-                }
-            ],
-        }
-    ]
-
-    # Test can also get data sources from agency
-    # Which does not have a `data_sources` property
-    # but which is defined via backref in `DataSourceExpanded.agencies
-    where_mappings_for_agencies = [WhereMapping(column="id", value=agency_info.id)]
-    subquery_parameters_for_agencies = [
-        SubqueryParameters(
-            relation_name=Relations.DATA_SOURCES_EXPANDED.value,
-            columns=["id", "name"],
-            linking_column="data_sources",
-        )
-    ]
-    results = tdc.db_client._select_from_relation(
-        relation_name=Relations.AGENCIES_EXPANDED.value,
-        columns=["id", "submitted_name"],
-        where_mappings=where_mappings_for_agencies,
-        subquery_parameters=subquery_parameters_for_agencies,
-    )
-
-    assert results == [
-        {
-            "submitted_name": agency_info.submitted_name,
-            "id": agency_info.id,
-            # "data_source_ids": [data_source_info.id],
-            "data_sources": [
-                {
-                    "name": data_source_info.name,
-                    "id": data_source_info.id,
-                }
-            ],
-        }
-    ]
-
-
 def test_create_entry_in_table_return_columns(live_database_client, test_table_data):
     id = live_database_client._create_entry_in_table(
         table_name="test_table",
@@ -1066,18 +987,6 @@ def test_get_data_requests(test_data_creator_db_client: TestDataCreatorDBClient)
 
     results = tdc.db_client.get_data_requests(
         columns=["id"], subquery_parameters=[SubqueryParameterManager.data_sources()]
-    )
-    assert results
-
-
-def test_get_data_sources(live_database_client):
-    results = live_database_client.get_data_sources(
-        columns=["id"],
-        subquery_parameters=[
-            SubqueryParameterManager.agencies(
-                columns=["id"],
-            )
-        ],
     )
     assert results
 

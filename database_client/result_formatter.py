@@ -10,8 +10,14 @@ from database_client.constants import (
     METADATA_METHOD_NAMES,
 )
 from database_client.db_client_dataclasses import WhereMapping
-from database_client.models import SQL_ALCHEMY_TABLE_REFERENCE
+from database_client.models import (
+    SQL_ALCHEMY_TABLE_REFERENCE,
+    Agency,
+    DataSourceExpanded,
+    LocationExpanded,
+)
 from database_client.subquery_logic import SubqueryParameters
+from middleware.enums import AgencyType, JurisdictionType
 from utilities.common import format_arrays
 
 
@@ -69,6 +75,119 @@ class ResultFormatter:
         return {
             "metadata": metadata_dict,
             "data": data,
+        }
+
+    @staticmethod
+    def agency_to_agency_dict(agency: Agency) -> dict[str, Any]:
+        return {
+            "id": agency.id,
+            "submitted_name": agency.name,
+            "name": agency.name,
+            "homepage_url": agency.homepage_url,
+            "lat": agency.lat,
+            "lng": agency.lng,
+            "defunct_year": agency.defunct_year,
+            "agency_type": agency.agency_type,
+            "multi_agency": agency.multi_agency,
+            "no_web_presence": agency.no_web_presence,
+            "approval_status": agency.approval_status,
+            "rejection_reason": agency.rejection_reason,
+            "last_approval_editor": agency.last_approval_editor,
+            "submitter_contact": agency.submitter_contact,
+            "jurisdiction_type": agency.jurisdiction_type,
+            "airtable_agency_last_modified": agency.airtable_agency_last_modified,
+            "agency_created": agency.agency_created,
+        }
+
+    @staticmethod
+    def agency_to_get_agencies_output(
+        agency: Agency, requested_columns: Optional[list[str]] = None
+    ) -> dict[str, Any]:
+
+        if requested_columns is not None:
+            d = {}
+            for column in requested_columns:
+                d[column] = getattr(agency, column)
+        else:
+            d = ResultFormatter.agency_to_agency_dict(agency)
+        data_sources = []
+        for data_source in agency.data_sources:
+            data_sources.append(
+                {
+                    "id": data_source.id,
+                    "name": data_source.name,
+                }
+            )
+        d["data_sources"] = data_sources
+        locations = []
+        for location in agency.locations:
+            locations.append(ResultFormatter.location_to_location_info(location))
+        d["locations"] = locations
+        return d
+
+    @staticmethod
+    def agency_to_data_sources_get_related_agencies_output(
+        agency: Agency,
+    ):
+        agency_dict = ResultFormatter.agency_to_agency_dict(agency)
+        locations = []
+        for location in agency.locations:
+            location_dict = ResultFormatter.location_to_location_info(location)
+            locations.append(location_dict)
+        agency_dict["locations"] = locations
+        return agency_dict
+
+    @staticmethod
+    def data_source_to_get_data_sources_output(
+        data_source: DataSourceExpanded,
+        data_sources_columns: list[str] = None,
+        data_requests_columns: list[str] = None,
+    ) -> dict[str, Any]:
+        # Data source itself
+        data_source_dict = {}
+        for column in data_sources_columns:
+            data_source_dict[column] = getattr(data_source, column)
+
+        # Associated data requests
+        data_requests = []
+        for data_request in data_source.data_requests:
+            data_request_dict = {}
+            for column in data_requests_columns:
+                data_request_dict[column] = getattr(data_request, column)
+            data_requests.append(data_request_dict)
+        data_source_dict["data_requests"] = data_requests
+
+        # Associated agencies
+        agencies = []
+        for agency in data_source.agencies:
+            agency_dict = {
+                "id": agency.id,
+                "name": agency.name,
+                "jurisdiction_type": agency.jurisdiction_type,
+                "agency_type": agency.agency_type,
+                "homepage_url": agency.homepage_url,
+            }
+            # Associated locations
+            locations = []
+            for location in agency.locations:
+                locations.append(ResultFormatter.location_to_location_info(location))
+            agency_dict["locations"] = locations
+            agencies.append(agency_dict)
+        data_source_dict["agencies"] = agencies
+
+        return data_source_dict
+
+    @staticmethod
+    def location_to_location_info(location: LocationExpanded) -> dict[str, Any]:
+        return {
+            "type": location.type,
+            "location_id": location.id,
+            "state_iso": location.state_iso,
+            "state_name": location.state_name,
+            "county_name": location.county_name,
+            "county_fips": location.county_fips,
+            "locality_name": location.locality_name,
+            "display_name": location.display_name,
         }
 
 

@@ -6,18 +6,19 @@ from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import OrderByParameters
 from database_client.subquery_logic import SubqueryParameterManager
 from middleware.access_logic import AccessInfoPrimary
-from middleware.custom_dataclasses import DeferredFunction
+from middleware.common_response_formatting import (
+    created_id_response,
+    message_response,
+    multiple_results_response,
+)
 from middleware.dynamic_request_logic.delete_logic import delete_entry
-from middleware.dynamic_request_logic.get_by_id_logic import get_by_id
-from middleware.dynamic_request_logic.get_many_logic import get_many
 from middleware.dynamic_request_logic.post_logic import post_entry, PostHandler
-from middleware.dynamic_request_logic.put_logic import put_entry, PutHandler
 from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,
     PutPostRequestInfo,
 )
-from middleware.location_logic import get_location_id
+from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgenciesPutSchema,
 )
@@ -27,10 +28,8 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import 
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyBaseDTO,
     GetByIDBaseDTO,
-    LocationInfoDTO,
 )
-from middleware.enums import Relations, JurisdictionType
-from middleware.util import dict_enums_to_values
+from middleware.enums import Relations
 
 SUBQUERY_PARAMS = [SubqueryParameterManager.data_sources()]
 
@@ -45,38 +44,35 @@ def get_agencies(
     :param page: The page number of results to return.
     :return: A response object with the relevant agency information and status code.
     """
-    return get_many(
-        middleware_parameters=MiddlewareParameters(
-            access_info=access_info,
-            entry_name="agencies",
-            relation=Relations.AGENCIES_EXPANDED.value,
-            db_client_method=DatabaseClient.get_agencies,
-            db_client_additional_args={
-                "build_metadata": True,
-                "order_by": OrderByParameters.construct_from_args(
-                    sort_by=dto.sort_by, sort_order=dto.sort_order
-                ),
-                "limit": dto.limit,
-            },
-            subquery_parameters=SUBQUERY_PARAMS,
+
+    results = db_client.get_agencies(
+        order_by=OrderByParameters.construct_from_args(
+            sort_by=dto.sort_by, sort_order=dto.sort_order
         ),
         page=dto.page,
+        limit=dto.limit,
+        requested_columns=dto.requested_columns,
+    )
+
+    return FlaskResponseManager.make_response(
+        data={
+            "metadata": {"count": len(results)},
+            "message": "Successfully retrieved agencies",
+            "data": results,
+        }
     )
 
 
 def get_agency_by_id(
     db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: GetByIDBaseDTO
 ) -> Response:
-    return get_by_id(
-        middleware_parameters=MiddlewareParameters(
-            access_info=access_info,
-            entry_name="agency",
-            relation=Relations.AGENCIES_EXPANDED.value,
-            db_client_method=DatabaseClient.get_agencies,
-            subquery_parameters=SUBQUERY_PARAMS,
-        ),
-        id=dto.resource_id,
-    )
+
+    result = db_client.get_agency_by_id(int(dto.resource_id))
+
+    if result is None:
+        return message_response(message="No such agency exists")
+    else:
+        return message_response(message="Successfully retrieved agency", data=result)
 
 
 def validate_and_add_location_info(
@@ -110,24 +106,6 @@ class AgencyPostHandler(PostHandler):
         )
 
 
-class AgencyPutHandler(PutHandler):
-
-    def __init__(self):
-        super().__init__(middleware_parameters=AGENCY_PUT_MIDDLEWARE_PARAMETERS)
-
-    def pre_execute(self, request: PutPostRequestInfo):
-        # The below values are probably incorrect, but serve as a placeholder
-        entry_data = dict(request.dto.agency_info)
-        request.entry = dict_enums_to_values(entry_data)
-        location_id = request.dto.location_id
-        if location_id is not None:
-            validate_and_add_location_info(
-                db_client=DatabaseClient(),
-                entry_data=entry_data,
-                location_id=location_id,
-            )
-
-
 AGENCY_POST_MIDDLEWARE_PARAMETERS = MiddlewareParameters(
     entry_name="agency",
     relation=Relations.AGENCIES.value,
@@ -138,46 +116,11 @@ AGENCY_POST_MIDDLEWARE_PARAMETERS = MiddlewareParameters(
 def create_agency(
     db_client: DatabaseClient,
     dto: AgenciesPostDTO,
-    make_response: bool = True,
 ) -> Response:
-    # TODO: Destroy and replace all this logic with something more straightforward
 
-    db_client.create_agency(dto)
+    agency_id = db_client.create_agency(dto)
 
-    entry_data = dict(dto.agency_info)
-    pre_insertion_function = optionally_get_location_info_deferred_function(
-        db_client=db_client,
-        jurisdiction_type=dto.agency_info.jurisdiction_type,
-        entry_data=entry_data,
-        location_id=dto.location_ids,
-    )
-
-    # TODO: Destroy and replace
-    return post_entry(
-        middleware_parameters=AGENCY_POST_MIDDLEWARE_PARAMETERS,
-        entry=entry_data,
-        pre_insertion_function_with_parameters=pre_insertion_function,
-        check_for_permission=False,
-        make_response=make_response,
-    )
-
-
-def optionally_get_location_info_deferred_function(
-    db_client: DatabaseClient,
-    jurisdiction_type: JurisdictionType,
-    entry_data: dict,
-    location_id: int,
-):
-    if jurisdiction_type == JurisdictionType.FEDERAL:
-        deferred_function = None
-    else:
-        deferred_function = DeferredFunction(
-            function=validate_and_add_location_info,
-            db_client=db_client,
-            entry_data=entry_data,
-            location_id=location_id,
-        )
-    return deferred_function
+    return created_id_response(new_id=str(agency_id), message=f"Agency created.")
 
 
 AGENCY_PUT_MIDDLEWARE_PARAMETERS = MiddlewareParameters(
@@ -194,29 +137,13 @@ def update_agency(
 ) -> Response:
     AgenciesPutSchema().load(request.json)
     entry_data = request.json.get("agency_info")
-    location_id = request.json.get("location_id")
-    if location_id is not None:
-        jurisdiction_type = entry_data.get("jurisdiction_type")
-        deferred_function = optionally_get_location_info_deferred_function(
-            db_client=db_client,
-            jurisdiction_type=jurisdiction_type,
-            entry_data=entry_data,
-            location_id=location_id,
-        )
-    else:
-        deferred_function = None
 
-    return put_entry(
-        middleware_parameters=MiddlewareParameters(
-            access_info=access_info,
-            entry_name="agency",
-            relation=Relations.AGENCIES.value,
-            db_client_method=DatabaseClient.update_agency,
-        ),
-        entry=entry_data,
+    db_client.update_agency(
         entry_id=int(agency_id),
-        pre_update_method_with_parameters=deferred_function,
+        column_edit_mappings=entry_data,
     )
+
+    return message_response(message=f"Agency updated.")
 
 
 def delete_agency(
@@ -231,3 +158,17 @@ def delete_agency(
         ),
         id_info=IDInfo(id_column_value=int(agency_id)),
     )
+
+
+def add_agency_related_location(
+    db_client: DatabaseClient, agency_id: int, location_id: int
+) -> Response:
+    db_client.add_location_to_agency(agency_id=agency_id, location_id=location_id)
+    return message_response(message=f"Location added to agency.")
+
+
+def remove_agency_related_location(
+    db_client: DatabaseClient, agency_id: int, location_id: int
+) -> Response:
+    db_client.remove_location_from_agency(agency_id=agency_id, location_id=location_id)
+    return message_response(message=f"Location removed from agency.")

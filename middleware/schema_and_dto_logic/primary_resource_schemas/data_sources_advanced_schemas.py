@@ -11,6 +11,9 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.data_sources_dtos imp
     DataSourceEntryDataPostDTO,
     DataSourceEntryDataPutDTO,
 )
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
+    AgenciesGetSchema,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_base_schemas import (
     AgenciesExpandedSchema,
 )
@@ -37,33 +40,20 @@ class DataSourceGetSchema(DataSourceExpandedSchema):
 
     agencies = fields.List(
         fields.Nested(
-            AgenciesExpandedSchema(
+            AgenciesGetSchema(
                 only=[
                     "id",
                     "name",
-                    "submitted_name",
-                    "state_name",
-                    "locality_name",
-                    "state_iso",
-                    "county_name",
                     "agency_type",
                     "jurisdiction_type",
                     "homepage_url",
+                    "locations",
                 ],
             ),
             metadata=get_json_metadata("The agencies associated with the data source."),
         ),
         allow_none=True,
         metadata=get_json_metadata("The agencies associated with the data source."),
-    )
-    agency_ids = fields.List(
-        fields.Integer(
-            allow_none=True,
-            metadata=get_json_metadata(
-                "The agency ids associated with the data source."
-            ),
-        ),
-        metadata=get_json_metadata("The agency ids associated with the data source."),
     )
     data_requests = fields.List(
         fields.Nested(

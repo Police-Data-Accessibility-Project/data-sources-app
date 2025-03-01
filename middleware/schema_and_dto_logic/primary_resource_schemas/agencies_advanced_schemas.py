@@ -14,6 +14,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
 from middleware.schema_and_dto_logic.enums import CSVColumnCondition
 from middleware.schema_and_dto_logic.primary_resource_schemas.locations_schemas import (
     LocationInfoSchema,
+    LocationInfoResponseSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
     AgencyInfoPutDTO,
@@ -62,6 +63,8 @@ def get_agency_info_field(
 
 def validate_location_info_against_jurisdiction_type(data, jurisdiction_type):
     location_ids = data.get("location_ids")
+    if location_ids is None:
+        location_ids = []
     if jurisdiction_type == JurisdictionType.FEDERAL and len(location_ids) > 0:
         raise ValidationError("No locations ids allowed for jurisdiction type FEDERAL.")
     if jurisdiction_type != JurisdictionType.FEDERAL and len(location_ids) == 0:
@@ -87,6 +90,7 @@ class AgenciesPostSchema(Schema):
         ),
         metadata=get_json_metadata(
             description="The ids of locations associated with the agency.",
+            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
 
@@ -116,6 +120,19 @@ class AgenciesGetSchema(AgenciesExpandedSchema):
         required=True,
         metadata=get_json_metadata(
             description="The data sources associated with the agency",
+        ),
+    )
+    locations = fields.List(
+        cls_or_instance=fields.Nested(
+            nested=LocationInfoResponseSchema(),
+            required=True,
+            metadata=get_json_metadata(
+                description="The locations associated with the agency",
+            ),
+        ),
+        required=True,
+        metadata=get_json_metadata(
+            description="The locations associated with the agency",
         ),
     )
 
@@ -154,6 +171,16 @@ class RelatedAgencyByIDSchema(GetByIDBaseSchema):
         required=True,
         metadata={
             "description": "The id of the related agency.",
+            "source": SourceMappingEnum.PATH,
+        },
+    )
+
+
+class AgenciesRelatedLocationSchema(GetByIDBaseSchema):
+    location_id = fields.Integer(
+        required=True,
+        metadata={
+            "description": "The id of the related location.",
             "source": SourceMappingEnum.PATH,
         },
     )

@@ -205,7 +205,6 @@ def test_data_sources_by_id_get(test_data_creator_flask: TestDataCreatorFlask):
     assert data["name"] == cds.name
     assert data["data_requests"][0]["id"] == int(request_id)
     assert data["agencies"][0]["id"] == int(agency_id)
-    assert data["agencies"][0]["name"] == data["agencies"][0]["submitted_name"]
 
 
 def test_data_sources_by_id_put(test_data_creator_flask: TestDataCreatorFlask):
@@ -322,11 +321,12 @@ def test_data_sources_by_id_delete(
 
     ds_info = tdc.data_source()
 
-    result = tdc.db_client.get_data_sources(
-        columns=["description"],
-        where_mappings=[WhereMapping(column="id", value=int(ds_info.id))],
+    result = tdc.db_client.get_data_source_by_id(
+        data_source_id=int(ds_info.id),
+        data_sources_columns=["id"],
+        data_requests_columns=[],
     )
-    assert len(result) == 1
+    assert result is not None
 
     run_and_validate_request(
         flask_client=tdc.flask_client,
@@ -335,12 +335,13 @@ def test_data_sources_by_id_delete(
         headers=tdc.get_admin_tus().jwt_authorization_header,
     )
 
-    result = tdc.db_client.get_data_sources(
-        columns=["description"],
-        where_mappings=[WhereMapping(column="id", value=int(ds_info.id))],
+    result = tdc.db_client.get_data_source_by_id(
+        data_source_id=int(ds_info.id),
+        data_sources_columns=["id"],
+        data_requests_columns=[],
     )
 
-    assert len(result) == 0
+    assert result is None
 
 
 def test_data_source_by_id_related_agencies(

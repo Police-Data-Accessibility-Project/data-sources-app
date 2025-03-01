@@ -254,14 +254,21 @@ class Agency(Base, CountMetadata):
     agency_created: Mapped[timestamp_tz] = mapped_column(
         server_default=func.current_timestamp()
     )
-    location_id: Mapped[Optional[int]]
 
     # relationships
-    locations: Mapped[list["Location"]] = relationship(
-        argument="Location",
+    locations: Mapped[list["LocationExpanded"]] = relationship(
+        argument="LocationExpanded",
         secondary="public.link_agencies_locations",
         primaryjoin="LinkAgencyLocation.agency_id == Agency.id",
-        secondaryjoin="LinkAgencyLocation.location_id == Location.id",
+        secondaryjoin="LinkAgencyLocation.location_id == LocationExpanded.id",
+        back_populates="agencies",
+    )
+
+    data_sources: Mapped[list["DataSourceExpanded"]] = relationship(
+        argument="DataSourceExpanded",
+        secondary="public.link_agencies_data_sources",
+        primaryjoin="LinkAgencyDataSource.agency_id == Agency.id",
+        secondaryjoin="LinkAgencyDataSource.data_source_id == DataSourceExpanded.id",
         back_populates="agencies",
     )
 
@@ -284,19 +291,11 @@ class AgencyExpanded(Agency):
     state_iso = Column(String)
     county_name = Column(String)
 
-    data_sources: Mapped[list["DataSourceExpanded"]] = relationship(
-        argument="DataSourceExpanded",
-        secondary="public.link_agencies_data_sources",
-        primaryjoin="LinkAgencyDataSource.agency_id == AgencyExpanded.id",
-        secondaryjoin="LinkAgencyDataSource.data_source_id == DataSourceExpanded.id",
-        back_populates="agencies",
-    )
-
 
 class LinkAgencyLocation(Base):
     __tablename__ = Relations.LINK_AGENCIES_LOCATIONS.value
 
-    id: Mapped[int]
+    id: Mapped[int] = mapped_column(primary_key=True)
     location_id: Mapped[int] = mapped_column(
         ForeignKey("public.locations.id"), primary_key=True
     )
@@ -358,14 +357,6 @@ class Location(Base):
 
     # Relationships
 
-    agencies: Mapped[list["Agency"]] = relationship(
-        argument="Agency",
-        secondary="public.link_agencies_locations",
-        primaryjoin="Location.id == LinkAgencyLocation.location_id",
-        secondaryjoin="LinkAgencyLocation.agency_id == Agency.id",
-        back_populates="locations",
-    )
-
 
 class LocationExpanded(Base, CountMetadata):
     __tablename__ = Relations.LOCATIONS_EXPANDED.value
@@ -385,6 +376,16 @@ class LocationExpanded(Base, CountMetadata):
 
     def __iter__(self):
         yield from iter_with_special_cases(self)
+
+    # relationships
+
+    agencies: Mapped[list["AgencyExpanded"]] = relationship(
+        argument="AgencyExpanded",
+        secondary="public.link_agencies_locations",
+        primaryjoin="LocationExpanded.id == LinkAgencyLocation.location_id",
+        secondaryjoin="LinkAgencyLocation.agency_id == AgencyExpanded.id",
+        back_populates="locations",
+    )
 
 
 class ExternalAccount(Base):
@@ -559,7 +560,6 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
         ForeignKey("public.record_types.id")
     )
     approval_status_updated_at: Mapped[Optional[timestamp_tz]]
-    last_approval_editor_old: Mapped[Optional[str]]
 
 
 class DataSourceExpanded(DataSource):
@@ -569,11 +569,11 @@ class DataSourceExpanded(DataSource):
 
     record_type_name: Mapped[Optional[str]]
 
-    agencies: Mapped[list[AgencyExpanded]] = relationship(
-        argument="AgencyExpanded",
+    agencies: Mapped[list[Agency]] = relationship(
+        argument="Agency",
         secondary="public.link_agencies_data_sources",
         primaryjoin="LinkAgencyDataSource.data_source_id == DataSourceExpanded.id",
-        secondaryjoin="LinkAgencyDataSource.agency_id == AgencyExpanded.id",
+        secondaryjoin="LinkAgencyDataSource.agency_id == Agency.id",
         back_populates="data_sources",
     )
 

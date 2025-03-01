@@ -121,7 +121,6 @@ def test_get_by_id(monkeypatch):
     )
 
     mock.get_permitted_columns.assert_called_once_with(
-        db_client=mock.mp.db_client,
         relation=mock.mp.relation,
         role=mock.relation_role_parameters.get_relation_role_from_parameters.return_value,
         user_permission=ColumnPermissionEnum.READ,
@@ -208,7 +207,6 @@ def test_put_entry(monkeypatch):
     )
 
     mock.check_has_permission_to_edit_columns.assert_called_once_with(
-        db_client=mock.mp.db_client,
         relation=mock.mp.relation,
         role=mock.relation_role_parameters.get_relation_role_from_parameters.return_value,
         columns=list(mock.entry.keys()),

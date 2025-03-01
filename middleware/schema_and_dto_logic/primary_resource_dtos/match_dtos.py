@@ -20,14 +20,18 @@ class AgencyMatchRequestDTO(BaseModel):
         )
 
 
-class AgencyMatchResponseInnerDTO(BaseModel):
-    id: int
-    name: str
-    agency_type: AgencyType
+class AgencyMatchResponseLocationDTO(BaseModel):
     state: Optional[str]
     county: Optional[str]
     locality: Optional[str]
     location_type: Optional[LocationType]
+
+
+class AgencyMatchResponseInnerDTO(BaseModel):
+    id: int
+    name: str
+    agency_type: AgencyType
+    locations: list[AgencyMatchResponseLocationDTO]
     similarity: float
 
 

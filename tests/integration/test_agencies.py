@@ -104,8 +104,13 @@ def test_agencies_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     """
     tdc = test_data_creator_flask
 
+    location_id_1 = tdc.locality()
+    location_id_2 = tdc.locality()
+
     # Add data via db client
-    agency_id = tdc.agency().id
+    agency_id = tdc.agency(
+        location_ids=[location_id_1, location_id_2],
+    ).id
 
     # link agency id to data source
     cds = tdc.data_source()
@@ -123,6 +128,9 @@ def test_agencies_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     assert data["name"] == data["submitted_name"]
     assert data["id"] == int(agency_id)
     assert data["data_sources"][0]["id"] == int(cds.id)
+
+    assert data["locations"][0]["location_id"] == int(location_id_1)
+    assert data["locations"][1]["location_id"] == int(location_id_2)
 
 
 def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
@@ -180,8 +188,6 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
     assert_contains_key_value_pairs(
         dict_to_check=json_data["data"],
         key_value_pairs={
-            "state_iso": "PA",
-            "county_name": "Allegheny",
             **data_to_post["agency_info"],
         },
     )
@@ -202,8 +208,6 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
         dict_to_check=json_data["data"],
         key_value_pairs={
             "name": data_to_post["agency_info"]["name"],
-            "state_iso": "PA",
-            "county_name": "Allegheny",
         },
     )
 
@@ -304,3 +308,41 @@ def test_agencies_delete(test_data_creator_flask: TestDataCreatorFlask):
     )
 
     assert len(results) == 0
+
+
+def test_agencies_locations(test_data_creator_flask: TestDataCreatorFlask):
+    tdc = test_data_creator_flask
+    # Create agency
+    agency_id = tdc.agency().id
+
+    location_id = tdc.locality()
+
+    # Add location
+    tdc.request_validator.add_location_to_agency(
+        headers=tdc.get_admin_tus().jwt_authorization_header,
+        agency_id=agency_id,
+        location_id=location_id,
+    )
+
+    # Get agency and confirm presence
+    result = tdc.request_validator.get_agency_by_id(
+        headers=tdc.get_admin_tus().api_authorization_header,
+        id=agency_id,
+    )
+
+    assert len(result["data"]["locations"]) == 2
+
+    # Remove location
+    tdc.request_validator.remove_location_from_agency(
+        headers=tdc.get_admin_tus().jwt_authorization_header,
+        agency_id=agency_id,
+        location_id=location_id,
+    )
+
+    # Get agency and confirm absence
+    result = tdc.request_validator.get_agency_by_id(
+        headers=tdc.get_admin_tus().api_authorization_header,
+        id=agency_id,
+    )
+
+    assert len(result["data"]["locations"]) == 1

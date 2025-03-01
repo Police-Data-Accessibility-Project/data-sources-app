@@ -124,6 +124,11 @@ class AccessInfoPrimary(AccessInfoBase):
             self.user_id = DatabaseClient().get_user_id(email=self.user_email)
         return self.user_id
 
+    def has_permission(self, permission: PermissionsEnum) -> bool:
+        if self.permissions is None:
+            return False
+        return permission in self.permissions
+
 
 class RefreshAccessInfo(AccessInfoBase):
     access_type: AccessTypeEnum = AccessTypeEnum.REFRESH_JWT
