@@ -1,3 +1,9 @@
+## 7.0.2 (2025-03-01)
+
+### Fix
+
+- **app**: re-add `submitted_name` to data sources `agencies` entries
+
 ## 7.0.1 (2025-03-01)
 
 ### Fix
