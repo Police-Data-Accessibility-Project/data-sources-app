@@ -1,3 +1,20 @@
+## 7.0.0 (2025-03-01)
+
+### BREAKING CHANGE
+
+- `GET` `/data-sources`: `agencies` key for each data source now has `locations` field with list of locations, in place of flat locational data
+  `GET``/data-sources/{id}`: `agencies` key for each data source now has `locations` field with list of locations, in place of flat locational data
+  `GET``/data-sources/{id}/related-agencies`: All agencies now have `locations` field with list of locations, in place of flat locational data
+  `GET` `/agencies`: All agencies now have `locations` field with list of locations, in place of flat locational data
+  `GET` `/agencies/{id}`: Results now have `locations` field with list of locations, in place of flat locational data
+  `PUT` `/agencies/{id}`: `location_id` field removed
+  `POST` `/agencies`: `location_id` field replaced with `location_ids` field, which accepts list of integers representing location ids.
+  `GET` `/match/agency`: Flat location keys removed and replaced with `locations` field with list of locations
+
+### Feat
+
+- **app**: allow agencies to have multiple locations
+
 ## 6.1.2 (2025-02-28)
 
 ### Fix
