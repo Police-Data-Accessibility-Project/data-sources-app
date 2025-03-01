@@ -44,6 +44,7 @@ class DataSourceGetSchema(DataSourceExpandedSchema):
                 only=[
                     "id",
                     "name",
+                    "submitted_name",
                     "agency_type",
                     "jurisdiction_type",
                     "homepage_url",
