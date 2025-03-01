@@ -24,7 +24,7 @@ from middleware.schema_and_dto_logic.non_dto_dataclasses import (
 
 
 def handle_exceptions(
-    func: Callable[..., Any]
+    func: Callable[..., Any],
 ) -> Callable[..., Union[Any, Tuple[Dict[str, str], int]]]:
     """
     A decorator to handle exceptions raised by a function.
