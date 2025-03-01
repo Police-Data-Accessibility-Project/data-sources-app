@@ -1,3 +1,9 @@
+## 7.0.1 (2025-03-01)
+
+### Fix
+
+- **app**: re-add location fields to main agency level
+
 ## 7.0.0 (2025-03-01)
 
 ### BREAKING CHANGE
