@@ -79,6 +79,11 @@ class ResultFormatter:
 
     @staticmethod
     def agency_to_agency_dict(agency: Agency) -> dict[str, Any]:
+        if agency.locations is not None:
+            first_location = agency.locations[0]
+        else:
+            first_location = None
+
         return {
             "id": agency.id,
             "submitted_name": agency.name,
@@ -97,6 +102,11 @@ class ResultFormatter:
             "jurisdiction_type": agency.jurisdiction_type,
             "airtable_agency_last_modified": agency.airtable_agency_last_modified,
             "agency_created": agency.agency_created,
+            "state_iso": first_location.state_iso if first_location else None,
+            "state_name": first_location.state_name if first_location else None,
+            "county_name": first_location.county_name if first_location else None,
+            "county_fips": first_location.county_fips if first_location else None,
+            "locality_name": first_location.locality_name if first_location else None,
         }
 
     @staticmethod
@@ -160,12 +170,24 @@ class ResultFormatter:
         # Associated agencies
         agencies = []
         for agency in data_source.agencies:
+            if agency.locations is not None:
+                first_location = agency.locations[0]
+            else:
+                first_location = None
+
             agency_dict = {
                 "id": agency.id,
                 "name": agency.name,
                 "jurisdiction_type": agency.jurisdiction_type,
                 "agency_type": agency.agency_type,
                 "homepage_url": agency.homepage_url,
+                "state_iso": first_location.state_iso if first_location else None,
+                "state_name": first_location.state_name if first_location else None,
+                "county_name": first_location.county_name if first_location else None,
+                "county_fips": first_location.county_fips if first_location else None,
+                "locality_name": (
+                    first_location.locality_name if first_location else None
+                ),
             }
             # Associated locations
             locations = []

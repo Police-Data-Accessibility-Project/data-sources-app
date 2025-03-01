@@ -189,3 +189,22 @@ class AgenciesExpandedSchema(AgencyInfoBaseSchema):
             "source": SourceMappingEnum.JSON,
         },
     )
+    state_iso = STATE_ISO_FIELD
+    state_name = fields.Str(
+        required=False,
+        allow_none=True,
+        metadata={
+            "description": "The name of the state in which the agency is located. Does not apply to federal agencies",
+            "source": SourceMappingEnum.JSON,
+        },
+    )
+    county_name = fields.Str(
+        required=False,
+        allow_none=True,
+        metadata={
+            "description": "The name of the county in which the agency is located.",
+            "source": SourceMappingEnum.JSON,
+        },
+    )
+    county_fips = COUNTY_FIPS_FIELD
+    locality_name = LOCALITY_NAME_FIELD
