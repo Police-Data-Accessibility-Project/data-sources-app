@@ -39,7 +39,6 @@ def get_locations_related_data_requests_wrapper(
         linked_relation=Relations.DATA_REQUESTS_EXPANDED,
         linked_relation_linking_column="id",
         columns_to_retrieve=get_permitted_columns(
-            db_client=db_client,
             relation=Relations.DATA_REQUESTS_EXPANDED.value,
             role=get_relation_role(access_info=access_info),
             user_permission=ColumnPermissionEnum.READ,

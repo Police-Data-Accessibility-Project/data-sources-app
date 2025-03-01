@@ -1,24 +1,26 @@
-from dataclasses import dataclass
 from http import HTTPStatus
 from typing import List, Optional
 
 from flask import make_response, Response
+from pydantic import BaseModel
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import OrderByParameters, WhereMapping
 from database_client.subquery_logic import SubqueryParameters, SubqueryParameterManager
-from database_client.enums import ApprovalStatus
+from database_client.enums import ApprovalStatus, RelationRoleEnum, ColumnPermissionEnum
 from database_client.result_formatter import ResultFormatter
 from middleware.access_logic import AccessInfoPrimary
+from middleware.column_permission_logic import get_permitted_columns
 from middleware.dynamic_request_logic.delete_logic import delete_entry
 from middleware.dynamic_request_logic.get_by_id_logic import get_by_id
-from middleware.dynamic_request_logic.get_many_logic import get_many
+from middleware.dynamic_request_logic.get_many_logic import (
+    optionally_limit_to_requested_columns,
+)
 from middleware.dynamic_request_logic.get_related_resource_logic import (
     GetRelatedResourcesParameters,
     get_related_resource,
 )
 from middleware.dynamic_request_logic.post_logic import (
-    post_entry,
     PostLogic,
     PostHandler,
     post_entry_with_handler,
@@ -30,7 +32,8 @@ from middleware.dynamic_request_logic.supporting_classes import (
     PutPostRequestInfo,
 )
 
-from middleware.enums import Relations
+from middleware.enums import Relations, PermissionsEnum
+from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import (
     RelatedSourceByIDDTO,
 )
@@ -41,7 +44,6 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
 )
 from middleware.common_response_formatting import format_list_response, message_response
 from middleware.schema_and_dto_logic.primary_resource_dtos.data_sources_dtos import (
-    DataSourceEntryDataPostDTO,
     DataSourcesPostDTO,
     DataSourcesPutDTO,
 )
@@ -63,51 +65,92 @@ class DataSourcesGetManyRequestDTO(GetManyBaseDTO):
     page_number: int = 1
 
 
+class DataSourcesColumnRequestObject(BaseModel):
+    data_sources_columns: list[str]
+    data_requests_columns: list[str]
+
+
+def get_data_sources_columns(
+    access_info: AccessInfoPrimary, requested_columns: Optional[list[str]] = None
+) -> DataSourcesColumnRequestObject:
+    requested_columns = requested_columns
+
+    if access_info.has_permission(PermissionsEnum.DB_WRITE):
+        role = RelationRoleEnum.ADMIN
+    else:
+        role = RelationRoleEnum.STANDARD
+
+    data_requests_columns = get_permitted_columns(
+        relation=Relations.DATA_REQUESTS.value,
+        role=role,
+        user_permission=ColumnPermissionEnum.READ,
+    )
+
+    # Data sources columns are also variable depending on permission,
+    # but are also potentially limited by requested columns
+    data_sources_columns = optionally_limit_to_requested_columns(
+        permitted_columns=get_permitted_columns(
+            relation=Relations.DATA_SOURCES_EXPANDED.value,
+            role=role,
+            user_permission=ColumnPermissionEnum.READ,
+        ),
+        requested_columns=requested_columns,
+    )
+
+    return DataSourcesColumnRequestObject(
+        data_sources_columns=data_sources_columns,
+        data_requests_columns=data_requests_columns,
+    )
+
+
 def get_data_sources_wrapper(
     db_client: DatabaseClient,
     access_info: AccessInfoPrimary,
     dto: DataSourcesGetManyRequestDTO,
 ) -> Response:
-    return get_many(
-        middleware_parameters=MiddlewareParameters(
-            access_info=access_info,
-            relation=Relations.DATA_SOURCES_EXPANDED.value,
-            db_client_method=DatabaseClient.get_data_sources,
-            db_client=db_client,
-            db_client_additional_args={
-                "order_by": OrderByParameters.construct_from_args(
-                    sort_by=dto.sort_by,
-                    sort_order=dto.sort_order,
-                ),
-                "where_mappings": [
-                    WhereMapping(
-                        column="approval_status", value=dto.approval_status.value
-                    )
-                ],
-                "build_metadata": True,
-                "limit": dto.limit,
-            },
-            entry_name="data source",
-            subquery_parameters=SUBQUERY_PARAMS,
+
+    cro: DataSourcesColumnRequestObject = get_data_sources_columns(
+        access_info=access_info, requested_columns=dto.requested_columns
+    )
+
+    results = db_client.get_data_sources(
+        data_sources_columns=cro.data_sources_columns,
+        data_requests_columns=cro.data_requests_columns,
+        order_by=OrderByParameters.construct_from_args(
+            sort_by=dto.sort_by, sort_order=dto.sort_order
         ),
         page=dto.page,
-        requested_columns=dto.requested_columns,
+        limit=dto.limit,
+    )
+
+    return FlaskResponseManager.make_response(
+        data={
+            "metadata": {"count": len(results)},
+            "message": "Successfully retrieved data sources",
+            "data": results,
+        }
     )
 
 
 def data_source_by_id_wrapper(
     db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: GetByIDBaseDTO
 ) -> Response:
-    return get_by_id(
-        middleware_parameters=MiddlewareParameters(
-            access_info=access_info,
-            relation=Relations.DATA_SOURCES_EXPANDED.value,
-            db_client_method=DatabaseClient.get_data_sources,
-            entry_name="data source",
-            subquery_parameters=SUBQUERY_PARAMS,
-        ),
-        id=dto.resource_id,
-        id_column_name="id",
+
+    cro: DataSourcesColumnRequestObject = get_data_sources_columns(
+        access_info=access_info,
+    )
+
+    result = db_client.get_data_source_by_id(
+        int(dto.resource_id),
+        data_requests_columns=cro.data_requests_columns,
+        data_sources_columns=cro.data_sources_columns,
+    )
+
+    return FlaskResponseManager.make_response(
+        data={
+            "data": result,
+            "message": "Successfully retrieved data source",
+        }
     )
 
 
@@ -276,17 +319,19 @@ def add_new_data_source_wrapper(
 def get_data_source_related_agencies(
     db_client: DatabaseClient, dto: GetByIDBaseDTO
 ) -> Response:
-    return get_related_resource(
-        get_related_resources_parameters=GetRelatedResourcesParameters(
-            db_client=db_client,
-            dto=dto,
-            db_client_method=DatabaseClient.get_data_sources,
-            primary_relation=Relations.DATA_SOURCES_EXPANDED,
-            related_relation=Relations.AGENCIES_EXPANDED,
-            linking_column="agencies",
-            metadata_count_name="agencies_count",
-            resource_name="agencies",
-        )
+
+    results = db_client.get_data_source_related_agencies(
+        data_source_id=int(dto.resource_id)
+    )
+    if results is None:
+        return message_response("Data Source not found.")
+
+    return FlaskResponseManager.make_response(
+        data={
+            "metadata": {"count": len(results)},
+            "message": "Successfully retrieved related agencies",
+            "data": results,
+        }
     )
 
 

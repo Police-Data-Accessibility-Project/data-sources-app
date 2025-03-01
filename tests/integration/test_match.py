@@ -42,7 +42,7 @@ class TestMatchAgencySetup:
         self, location_id: Optional[int] = None, agency_name: str = ""
     ):
         return self.tdc.agency(
-            location_info=location_id,
+            location_ids=[location_id] if location_id is not None else None,
             agency_name=agency_name,
             add_test_name=False,
         )
@@ -55,7 +55,7 @@ def match_agency_setup(
     tdc = test_data_creator_flask
     tdc.clear_test_data()
     loc_info: TestMatchLocationInfo = TestMatchLocationInfo(tdc)
-    agency = tdc.agency(location_info=loc_info.locality_id)
+    agency = tdc.agency(location_ids=[loc_info.locality_id])
     return TestMatchAgencySetup(
         tdc=tdc,
         location_kwargs=loc_info.location_kwargs,

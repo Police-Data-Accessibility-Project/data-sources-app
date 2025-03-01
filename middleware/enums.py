@@ -93,6 +93,7 @@ class Relations(Enum):
     USER_PERMISSIONS = "user_permissions"
     TABLE_COUNT_LOG = "table_count_log"
     CHANGE_LOG = "change_log"
+    LINK_AGENCIES_LOCATIONS = "link_agencies_locations"
 
 
 class OperationType(Enum):

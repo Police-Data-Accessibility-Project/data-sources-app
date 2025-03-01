@@ -1115,5 +1115,5 @@ def test_agencies_table_logic(test_data_creator_db_client: TestDataCreatorDBClie
     log = logs[1]
     assert log["operation_type"] == OperationType.DELETE.value
     assert log["affected_id"] == agency_info.id
-    assert len(log["old_data"].keys()) == 18
+    assert len(log["old_data"].keys()) == 17
     assert log["new_data"] is None

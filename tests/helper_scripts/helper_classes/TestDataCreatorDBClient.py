@@ -13,6 +13,10 @@ from database_client.enums import (
 )
 from database_client.models import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import JurisdictionType, Relations, AgencyType
+from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
+    AgenciesPostDTO,
+    AgencyInfoPostDTO,
+)
 from tests.helper_scripts.common_endpoint_calls import CreatedDataSource
 from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,
@@ -258,19 +262,20 @@ class TestDataCreatorDBClient:
         self, location_id: Optional[int] = None, **additional_column_value_mappings
     ) -> TestAgencyInfo:
         agency_name = self.test_name()
-        column_value_mappings = {
-            "name": agency_name,
-            "jurisdiction_type": JurisdictionType.FEDERAL.value,
-            "agency_type": AgencyType.POLICE.value,
-        }
-        column_value_mappings.update(additional_column_value_mappings)
-
-        if location_id is not None:
-            column_value_mappings["location_id"] = location_id
-
-        agency_id = self.db_client.create_agency(
-            column_value_mappings=column_value_mappings
+        agency_info = AgencyInfoPostDTO(
+            name=agency_name,
+            agency_type=AgencyType.POLICE,
+            jurisdiction_type=JurisdictionType.FEDERAL,
         )
+        for key, value in additional_column_value_mappings.items():
+            setattr(agency_info, key, value)
+
+        dto = AgenciesPostDTO(
+            agency_info=agency_info,
+            location_ids=[location_id] if location_id is not None else None,
+        )
+
+        agency_id = self.db_client.create_agency(dto=dto)
         return TestAgencyInfo(id=agency_id, submitted_name=agency_name)
 
     def update_agency(self, agency_id: int, column_value_mappings: dict):

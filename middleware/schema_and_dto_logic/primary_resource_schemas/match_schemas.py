@@ -12,6 +12,15 @@ class AgencyMatchSchema(Schema):
     locality = fields.String(metadata=get_json_metadata("The locality of the agency"))
 
 
+class MatchAgenciesLocationSchema(Schema):
+    state = fields.String(metadata=get_json_metadata("The state of the agency"))
+    county = fields.String(metadata=get_json_metadata("The county of the agency"))
+    locality = fields.String(metadata=get_json_metadata("The locality of the agency"))
+    location_type = fields.String(
+        metadata=get_json_metadata("The location type of the agency")
+    )
+
+
 class MatchAgenciesResultSchema(Schema):
     id = fields.Integer(metadata=get_json_metadata("The id of the agency"))
     name = fields.String(metadata=get_json_metadata("The name of the agency"))
@@ -19,11 +28,14 @@ class MatchAgenciesResultSchema(Schema):
         metadata=get_json_metadata("The type of the agency"),
         allow_none=True,
     )
-    state = fields.String(metadata=get_json_metadata("The state of the agency"))
-    county = fields.String(metadata=get_json_metadata("The county of the agency"))
-    locality = fields.String(metadata=get_json_metadata("The locality of the agency"))
-    location_type = fields.String(
-        metadata=get_json_metadata("The location type of the agency")
+    locations = fields.List(
+        fields.Nested(
+            MatchAgenciesLocationSchema(),
+            required=False,
+            metadata=get_json_metadata("The locations of the agency"),
+        ),
+        required=False,
+        metadata=get_json_metadata("The locations of the agency"),
     )
     similarity = fields.Float(
         metadata=get_json_metadata("The similarity of the agency to the search")

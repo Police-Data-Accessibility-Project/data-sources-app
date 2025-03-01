@@ -43,7 +43,6 @@ def optionally_get_permitted_columns_to_subquery_parameters_(
         if parameter.columns is None:
             parameter.set_columns(
                 get_permitted_columns(
-                    db_client=mp.db_client,
                     relation=parameter.relation_name,
                     role=relation_role,
                     user_permission=ColumnPermissionEnum.READ,

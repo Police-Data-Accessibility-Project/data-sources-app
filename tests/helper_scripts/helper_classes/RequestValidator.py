@@ -559,6 +559,20 @@ class RequestValidator:
             expected_schema=SchemaConfigs.AGENCIES_GET_MANY.value.primary_output_schema,
         )
 
+    def add_location_to_agency(self, headers: dict, agency_id: int, location_id: int):
+        return self.post(
+            endpoint=f"/api/agencies/{agency_id}/locations/{location_id}",
+            headers=headers,
+        )
+
+    def remove_location_from_agency(
+        self, headers: dict, agency_id: int, location_id: int
+    ):
+        return self.delete(
+            endpoint=f"/api/agencies/{agency_id}/locations/{location_id}",
+            headers=headers,
+        )
+
     def update_password(
         self,
         headers: dict,

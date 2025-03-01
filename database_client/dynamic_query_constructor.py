@@ -5,7 +5,7 @@ from typing import Callable, Optional
 
 from psycopg import sql
 from sqlalchemy import select
-from sqlalchemy.orm import load_only, InstrumentedAttribute, aliased
+from sqlalchemy.orm import load_only, InstrumentedAttribute, aliased, selectinload
 from sqlalchemy.schema import Column
 from sqlalchemy.sql.util import join_condition
 
@@ -21,8 +21,12 @@ from database_client.subquery_logic import SubqueryParameters
 from database_client.models import (
     SQL_ALCHEMY_TABLE_REFERENCE,
     convert_to_column_reference,
+    Agency,
+    DataSourceExpanded,
+    DataRequest,
+    DataRequestExpanded,
 )
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypes, Relations
 from utilities.enums import RecordCategories
 
 TableColumn = namedtuple("TableColumn", ["table", "column"])
@@ -67,6 +71,60 @@ class DynamicQueryConstructor:
         fields_sql = sql.SQL(", ").join(all_fields)
 
         return fields_sql
+
+    @staticmethod
+    def agencies_get_load_options(
+        requested_columns: Optional[list[str]] = None,
+    ) -> list:
+        load_options = [
+            selectinload(Agency.data_sources).load_only(
+                DataSourceExpanded.id, DataSourceExpanded.name
+            ),
+            selectinload(Agency.locations),
+        ]
+
+        if requested_columns is not None:
+            column_references = convert_to_column_reference(
+                columns=requested_columns, relation=Relations.AGENCIES.value
+            )
+            load_options.append(load_only(*column_references))
+
+        return load_options
+
+    @staticmethod
+    def data_sources_get_load_options(
+        data_sources_columns: list[str],
+        data_requests_columns: list[str],
+    ) -> list:
+        load_options = [
+            selectinload(DataSourceExpanded.agencies).selectinload(Agency.locations)
+        ]
+
+        data_sources_attributes = [
+            getattr(DataSourceExpanded, column) for column in data_sources_columns
+        ]
+        load_options.append(load_only(*data_sources_attributes))
+
+        data_requests_attributes = [
+            getattr(DataRequestExpanded, column) for column in data_requests_columns
+        ]
+        load_options.append(
+            selectinload(DataSourceExpanded.data_requests).load_only(
+                *data_requests_attributes
+            )
+        )
+
+        return load_options
+
+    @staticmethod
+    def get_sql_alchemy_order_by_clause(
+        order_by: OrderByParameters, relation: str, default
+    ):
+        if order_by is not None:
+            order_by_clause = order_by.build_order_by_clause(relation=relation)
+        else:
+            order_by_clause = default
+        return order_by_clause
 
     @staticmethod
     def create_table_columns(table: str, columns: list[str]) -> list[TableColumn]:
@@ -340,8 +398,10 @@ class DynamicQueryConstructor:
                 data_sources ON agency_source_link.data_source_id = data_sources.id
             INNER JOIN
                 agencies ON agency_source_link.agency_id = agencies.id
+            LEFT JOIN 
+                link_agencies_locations LAL ON LAL.agency_id = agencies.id
             INNER JOIN
-				locations_expanded on agencies.location_id = locations_expanded.id
+				locations_expanded on LAL.location_id = locations_expanded.id
             INNER JOIN 
                 record_types on record_types.id = data_sources.record_type_id
             LEFT JOIN

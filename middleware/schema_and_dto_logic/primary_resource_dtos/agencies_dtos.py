@@ -43,7 +43,7 @@ class AgencyInfoPostDTO(BaseModel):
 
 class AgenciesPostDTO(BaseModel):
     agency_info: AgencyInfoPostDTO
-    location_id: Optional[int] = None
+    location_ids: Optional[list[int]] = None
 
 
 class RelatedAgencyByIDDTO(GetByIDBaseDTO):
