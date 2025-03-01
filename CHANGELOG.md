@@ -1,3 +1,10 @@
+## 7.0.3 (2025-03-01)
+
+### Fix
+
+- **db_client**: fix bug when agency had no associated locations
+- **db_client**: fix bug when agency had no associated locations
+
 ## 7.0.2 (2025-03-01)
 
 ### Fix
