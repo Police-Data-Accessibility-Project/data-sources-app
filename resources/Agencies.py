@@ -1,6 +1,7 @@
 from flask import Response
 
 from config import limiter
+from database_client.database_client import DatabaseClient
 from middleware.access_logic import (
     AccessInfoPrimary,
     API_OR_JWT_AUTH_INFO,
@@ -17,6 +18,8 @@ from middleware.primary_resource_logic.agencies import (
     create_agency,
     update_agency,
     delete_agency,
+    add_agency_related_location,
+    remove_agency_related_location,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GET_MANY_SCHEMA_POPULATE_PARAMETERS,
@@ -127,4 +130,41 @@ class AgenciesById(PsycopgResource):
     def delete(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             delete_agency, agency_id=resource_id, access_info=access_info
+        )
+
+
+@namespace_agencies.route("/<resource_id>/locations/<location_id>")
+class AgenciesRelatedLocations(PsycopgResource):
+    @endpoint_info(
+        namespace=namespace_agencies,
+        auth_info=WRITE_ONLY_AUTH_INFO,
+        schema_config=SchemaConfigs.AGENCIES_BY_ID_RELATED_LOCATIONS_POST,
+        response_info=ResponseInfo(
+            success_message="Returns locations related to the specific agency."
+        ),
+    )
+    def post(
+        self, resource_id: str, location_id: str, access_info: AccessInfoPrimary
+    ) -> Response:
+        return add_agency_related_location(
+            db_client=DatabaseClient(),
+            agency_id=int(resource_id),
+            location_id=int(location_id),
+        )
+
+    @endpoint_info(
+        namespace=namespace_agencies,
+        auth_info=WRITE_ONLY_AUTH_INFO,
+        schema_config=SchemaConfigs.AGENCIES_BY_ID_RELATED_LOCATIONS_DELETE,
+        response_info=ResponseInfo(
+            success_message="Returns locations related to the specific agency."
+        ),
+    )
+    def delete(
+        self, resource_id: str, location_id: str, access_info: AccessInfoPrimary
+    ) -> Response:
+        return remove_agency_related_location(
+            db_client=DatabaseClient(),
+            agency_id=int(resource_id),
+            location_id=int(location_id),
         )

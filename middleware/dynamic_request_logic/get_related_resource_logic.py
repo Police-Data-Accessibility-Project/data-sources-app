@@ -45,10 +45,9 @@ def get_related_resource(
     )
     if permitted_columns is None:
         permitted_columns = get_permitted_columns(
-            db_client=gerp.db_client,
             relation=gerp.related_relation.value,
             role=RelationRoleEnum.STANDARD,
-            column_permission=ColumnPermissionEnum.READ,
+            user_permission=ColumnPermissionEnum.READ,
         )
     subquery_parameters = [
         SubqueryParameterManager.get_subquery_params(

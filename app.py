@@ -19,6 +19,7 @@ from resources.Locations import namespace_locations
 from resources.LoginWithGithub import namespace_login_with_github
 from resources.Map import namespace_map
 from resources.Match import namespace_match
+from resources.Metadata import namespace_metadata
 from resources.Metrics import namespace_metrics
 from resources.Notifications import namespace_notifications
 from resources.OAuth import namespace_oauth
@@ -76,6 +77,7 @@ NAMESPACES = [
     namespace_metrics,
     namespace_admin,
     namespace_contact,
+    namespace_metadata,
 ]
 
 MY_PREFIX = "/api"

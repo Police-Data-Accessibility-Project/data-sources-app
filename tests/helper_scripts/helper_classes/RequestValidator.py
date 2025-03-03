@@ -358,7 +358,7 @@ class RequestValidator:
         self,
         headers: dict,
         source_url: str = "http://src1.com",
-        submitted_name: str = get_test_name(),
+        name: str = get_test_name(),
         approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
         **kwargs,
     ):
@@ -368,7 +368,7 @@ class RequestValidator:
             json={
                 "entry_data": {
                     "source_url": source_url,
-                    "submitted_name": submitted_name,
+                    "name": name,
                     "approval_status": approval_status.value,
                     **kwargs,
                 }
@@ -559,6 +559,20 @@ class RequestValidator:
             expected_schema=SchemaConfigs.AGENCIES_GET_MANY.value.primary_output_schema,
         )
 
+    def add_location_to_agency(self, headers: dict, agency_id: int, location_id: int):
+        return self.post(
+            endpoint=f"/api/agencies/{agency_id}/locations/{location_id}",
+            headers=headers,
+        )
+
+    def remove_location_from_agency(
+        self, headers: dict, agency_id: int, location_id: int
+    ):
+        return self.delete(
+            endpoint=f"/api/agencies/{agency_id}/locations/{location_id}",
+            headers=headers,
+        )
+
     def update_password(
         self,
         headers: dict,
@@ -599,38 +613,12 @@ class RequestValidator:
             expected_response_status=bop.expected_response_status,
         )
 
-    def update_agencies_bulk(
-        self,
-        bop: BulkOperationParams,
-        expected_schema=SchemaConfigs.BULK_AGENCIES_PUT.value.primary_output_schema,
-    ):
-        return self.put(
-            endpoint="/api/bulk/agencies",
-            headers=bop.headers,
-            file=bop.file,
-            expected_schema=expected_schema,
-            expected_response_status=bop.expected_response_status,
-        )
-
     def insert_data_sources_bulk(
         self,
         bop: BulkOperationParams,
         expected_schema=SchemaConfigs.BULK_DATA_SOURCES_POST.value.primary_output_schema,
     ):
         return self.post(
-            endpoint="/api/bulk/data-sources",
-            headers=bop.headers,
-            file=bop.file,
-            expected_schema=expected_schema,
-            expected_response_status=bop.expected_response_status,
-        )
-
-    def update_data_sources_bulk(
-        self,
-        bop: BulkOperationParams,
-        expected_schema=SchemaConfigs.BULK_DATA_SOURCES_PUT.value.primary_output_schema,
-    ):
-        return self.put(
             endpoint="/api/bulk/data-sources",
             headers=bop.headers,
             file=bop.file,
@@ -779,6 +767,13 @@ class RequestValidator:
             headers=headers,
             json={"password": password},
             expected_schema=SchemaConfigs.ADMIN_USERS_BY_ID_PUT.value.primary_output_schema,
+        )
+
+    def get_record_types_and_categories(self, headers: dict):
+        return self.get(
+            endpoint="/api/metadata/record-types-and-categories",
+            headers=headers,
+            expected_schema=SchemaConfigs.RECORD_TYPE_AND_CATEGORY_GET.value.primary_output_schema,
         )
 
     # endregion

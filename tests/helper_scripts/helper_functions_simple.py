@@ -41,4 +41,4 @@ def add_query_params(url, params: dict):
 
 
 def get_notification_valid_date():
-    return datetime.now(timezone.utc) - timedelta(days=30)
+    return datetime.now(timezone.utc) - timedelta(days=25)

@@ -1,6 +1,7 @@
 from flask import Response, request
 from flask_restx import fields
 
+from config import limiter
 from middleware.access_logic import (
     API_OR_JWT_AUTH_INFO,
     AccessInfoPrimary,
@@ -72,6 +73,7 @@ class Archives(PsycopgResource):
         This will be changed in a later update to conform to the standard JSON schema.
         """,
     )
+    @limiter.limit("25/minute;1000/hour")
     def put(self, access_info: AccessInfoPrimary) -> Response:
         """
         Updates the archive data based on the provided JSON payload.

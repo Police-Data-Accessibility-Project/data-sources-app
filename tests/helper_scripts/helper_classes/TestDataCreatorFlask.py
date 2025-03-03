@@ -62,7 +62,7 @@ class TestDataCreatorFlask:
         submitted_name = get_test_name()
         json = self.request_validator.create_data_source(
             headers=self.get_admin_tus().jwt_authorization_header,
-            submitted_name=submitted_name,
+            name=submitted_name,
         )
 
         return CreatedDataSource(
@@ -120,12 +120,13 @@ class TestDataCreatorFlask:
         name,
         locality_name,
         jurisdiction_type: JurisdictionType,
-        location_id: Optional[dict] = None,
+        location_ids: Optional[list[dict]] = None,
     ) -> dict:
-        if location_id is None:
+        if location_ids is None:
             location_id = self.locality(
                 locality_name=locality_name,
             )
+            location_ids = [location_id]
         return {
             "agency_info": generate_test_data_from_schema(
                 schema=AgencyInfoPostSchema(),
@@ -135,12 +136,12 @@ class TestDataCreatorFlask:
                     "agency_type": AgencyType.POLICE.value,
                 },
             ),
-            "location_id": location_id,
+            "location_ids": location_ids,
         }
 
     def agency(
         self,
-        location_info: Optional[dict] = None,
+        location_ids: Optional[list[dict]] = None,
         agency_name: str = "",
         add_test_name: bool = True,
     ) -> TestAgencyInfo:
@@ -153,7 +154,7 @@ class TestDataCreatorFlask:
             name=submitted_name,
             locality_name=locality_name,
             jurisdiction_type=JurisdictionType.LOCAL,
-            location_id=location_info,
+            location_ids=location_ids,
         )
 
         json = run_and_validate_request(

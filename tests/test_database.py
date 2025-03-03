@@ -397,7 +397,7 @@ def test_approval_status_updated_at(
     assert approval_status_updated_at > initial_approval_status_updated_at
 
     # Make an edit to a different column and confirm that `approval_status_updated_at` is not updated
-    update_data_source({"submitted_name": get_test_name()})
+    update_data_source({"name": get_test_name()})
 
     new_approval_status_updated_at = get_approval_status_updated_at()
     assert approval_status_updated_at == new_approval_status_updated_at
@@ -1021,7 +1021,7 @@ def test_counties_table_log_logic(test_data_creator_db_client: TestDataCreatorDB
     log = logs[1]
     assert log["operation_type"] == OperationType.DELETE.value
     assert log["affected_id"] == county_id
-    assert len(list(log["old_data"].keys())) == 11
+    assert len(list(log["old_data"].keys())) == 10
     assert log["new_data"] is None
 
 
@@ -1115,5 +1115,5 @@ def test_agencies_table_logic(test_data_creator_db_client: TestDataCreatorDBClie
     log = logs[1]
     assert log["operation_type"] == OperationType.DELETE.value
     assert log["affected_id"] == agency_info.id
-    assert len(log["old_data"].keys()) == 18
+    assert len(log["old_data"].keys()) == 17
     assert log["new_data"] is None

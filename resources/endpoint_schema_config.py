@@ -41,11 +41,8 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.archives_schemas i
 from middleware.schema_and_dto_logic.primary_resource_schemas.bulk_schemas import (
     BatchRequestSchema,
     BatchPostResponseSchema,
-    BatchPutResponseSchema,
-    AgenciesPutBatchRequestSchema,
     AgenciesPostBatchRequestSchema,
     DataSourcesPostBatchRequestSchema,
-    DataSourcesPutBatchRequestSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.contact_schemas import (
     ContactFormPostSchema,
@@ -59,6 +56,9 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.match_schemas impo
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.metrics_schemas import (
     MetricsGetResponseSchema,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.record_type_and_category_schemas import (
+    RecordTypeAndCategoryResponseSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.reset_token_schemas import (
     ResetPasswordSchema,
@@ -143,11 +143,11 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_
     AgenciesPostSchema,
     AgenciesGetManyResponseSchema,
     RelatedAgencyByIDSchema,
+    AgenciesRelatedLocationSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
     AgenciesPostDTO,
     RelatedAgencyByIDDTO,
-    AgenciesPutDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_advanced_schemas import (
     GetManyDataRequestsResponseSchema,
@@ -170,7 +170,6 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advan
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.data_sources_dtos import (
     DataSourcesPostDTO,
-    DataSourcesPutDTO,
 )
 from middleware.schema_and_dto_logic.common_response_schemas import (
     IDAndMessageSchema,
@@ -374,6 +373,15 @@ class SchemaConfigs(Enum):
         input_schema=AgenciesPutSchema(),
     )
     AGENCIES_BY_ID_DELETE = DELETE_BY_ID
+    AGENCIES_BY_ID_RELATED_LOCATIONS_DELETE = EndpointSchemaConfig(
+        input_schema=AgenciesRelatedLocationSchema(),
+        primary_output_schema=MessageSchema(),
+    )
+    AGENCIES_BY_ID_RELATED_LOCATIONS_POST = EndpointSchemaConfig(
+        input_schema=AgenciesRelatedLocationSchema(),
+        primary_output_schema=MessageSchema(),
+    )
+
     # endregion
     # region Data Sources
     DATA_SOURCES_GET_MANY = EndpointSchemaConfig(
@@ -539,20 +547,10 @@ class SchemaConfigs(Enum):
         input_dto_class=DataSourcesPostDTO,
         primary_output_schema=BatchPostResponseSchema(),
     )
-    BULK_DATA_SOURCES_PUT = EndpointSchemaConfig(
-        input_schema=DataSourcesPutBatchRequestSchema(),
-        input_dto_class=DataSourcesPutDTO,
-        primary_output_schema=BatchPutResponseSchema(),
-    )
     BULK_AGENCIES_POST = EndpointSchemaConfig(
         input_schema=AgenciesPostBatchRequestSchema(),
         input_dto_class=AgenciesPostDTO,
         primary_output_schema=BatchPostResponseSchema(),
-    )
-    BULK_AGENCIES_PUT = EndpointSchemaConfig(
-        input_schema=AgenciesPutBatchRequestSchema(),
-        input_dto_class=AgenciesPutDTO,
-        primary_output_schema=BatchPutResponseSchema(),
     )
     # endregion
     # region Match
@@ -616,3 +614,8 @@ class SchemaConfigs(Enum):
     )
 
     # endregion
+
+    # region Metadata
+    RECORD_TYPE_AND_CATEGORY_GET = EndpointSchemaConfig(
+        primary_output_schema=RecordTypeAndCategoryResponseSchema(),
+    )

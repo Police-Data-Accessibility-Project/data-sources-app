@@ -21,14 +21,7 @@ class DataSourceBaseSchema(Schema):
 
     name = fields.String(
         metadata=get_json_metadata(
-            "The name of the data source concatenated with the state iso."
-        ),
-    )
-    submitted_name = fields.String(
-        required=True,
-        allow_none=True,
-        metadata=get_json_metadata(
-            "The name of the data source as originally submitted.",
+            "The name of the data source concatenated with the state iso.",
             csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
@@ -229,13 +222,6 @@ class DataSourceBaseSchema(Schema):
         allow_none=True,
         metadata=get_json_metadata(
             "Contact information for the individual who provided the data source",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
-        ),
-    )
-    agency_described_submitted = fields.String(
-        allow_none=True,
-        metadata=get_json_metadata(
-            "To which criminal legal systems agency or agencies does this Data Source refer?",
             csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )

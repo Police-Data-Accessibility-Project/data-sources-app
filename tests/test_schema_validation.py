@@ -84,7 +84,7 @@ def test_agencies_post_schema():
             }
         }
         if include_location_info:
-            data["location_id"] = 1
+            data["location_ids"] = [1]
         return data
 
     for jurisdiction_type in JurisdictionType:

@@ -433,7 +433,7 @@ def test_search_federal(test_data_creator_flask: TestDataCreatorFlask):
                     schema=AgencyInfoPostSchema(),
                     override={
                         "jurisdiction_type": JurisdictionType.FEDERAL.value,
-                        "approved": True,
+                        "approval_status": ApprovalStatus.APPROVED.value,
                         "agency_type": AgencyType.POLICE.value,
                     },
                 ),

@@ -11,7 +11,7 @@ import sqlalchemy.exc
 from dateutil.relativedelta import relativedelta
 from psycopg import sql, Cursor
 from psycopg.rows import dict_row, tuple_row
-from sqlalchemy import select, MetaData, delete, update, insert, Select, func, desc
+from sqlalchemy import select, MetaData, delete, update, insert, Select, func, desc, asc
 from sqlalchemy.orm import aliased, defaultload, load_only, selectinload, joinedload
 
 from database_client.DTOs import UserInfoNonSensitive, UsersWithPermissions
@@ -25,8 +25,6 @@ from database_client.subquery_logic import SubqueryParameters
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
 from database_client.enums import (
     ExternalAccountTypeEnum,
-    RelationRoleEnum,
-    ColumnPermissionEnum,
     RequestStatus,
     EntityType,
     EventType,
@@ -54,16 +52,30 @@ from database_client.models import (
     TableCountLog,
     LinkRecentSearchRecordTypes,
     RecordType,
+    LinkAgencyDataSource,
+    LinkAgencyLocation,
+    DataSourceExpanded,
+    DataSource,
 )
-from middleware.enums import PermissionsEnum, Relations, AgencyType, RecordTypes
+from middleware.enums import (
+    PermissionsEnum,
+    Relations,
+    AgencyType,
+    RecordTypes,
+    JurisdictionType,
+)
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from middleware.initialize_sqlalchemy_session import initialize_sqlalchemy_session
 from middleware.miscellaneous_logic.table_count_logic import (
     TableCountReference,
     TableCountReferenceManager,
 )
+from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
+    AgenciesPostDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
     AgencyMatchResponseInnerDTO,
+    AgencyMatchResponseLocationDTO,
 )
 from utilities.enums import RecordCategories
 
@@ -351,7 +363,8 @@ class DatabaseClient:
                 LINK_AGENCIES_DATA_SOURCES AS AGENCY_SOURCE_LINK
                 INNER JOIN DATA_SOURCES ON AGENCY_SOURCE_LINK.DATA_SOURCE_ID = DATA_SOURCES.ID
                 INNER JOIN AGENCIES ON AGENCY_SOURCE_LINK.AGENCY_ID = AGENCIES.ID
-                INNER JOIN LOCATIONS_EXPANDED LE ON AGENCIES.LOCATION_ID = LE.ID
+                INNER JOIN LINK_AGENCIES_LOCATIONS LAL ON AGENCIES.ID = LAL.AGENCY_ID
+                LEFT JOIN LOCATIONS_EXPANDED LE ON LAL.LOCATION_ID = LE.ID
                 INNER JOIN RECORD_TYPES RT ON RT.ID = DATA_SOURCES.RECORD_TYPE_ID
             WHERE
                 DATA_SOURCES.APPROVAL_STATUS = 'approved'
@@ -705,49 +718,6 @@ class DatabaseClient:
         results = self.cursor.fetchall()
         return [PermissionsEnum(row["permission_name"]) for row in results]
 
-    @cursor_manager()
-    def get_permitted_columns(
-        self,
-        relation: str,
-        role: RelationRoleEnum,
-        column_permission: ColumnPermissionEnum,
-    ) -> list[str]:
-        """
-        Gets permitted columns for a given relation, role, and permission type
-        :param relation:
-        :param role:
-        :param column_permission:
-        :return:
-        """
-        # If the column permission is READ, return also WRITE values, which are assumed to include READ
-        if column_permission == ColumnPermissionEnum.READ:
-            column_permissions = [
-                ColumnPermissionEnum.READ.value,
-                ColumnPermissionEnum.WRITE.value,
-            ]
-        else:
-            column_permissions = [
-                column_permission.value,
-            ]
-
-        query = sql.SQL(
-            """
-         SELECT rc.associated_column
-            FROM column_permission cp
-            INNER JOIN relation_column rc on rc.id = cp.rc_id
-            WHERE rc.relation = {relation}
-            and cp.relation_role = {relation_role}
-            and cp.access_permission = ANY({column_permissions})
-        """
-        ).format(
-            relation=sql.Literal(relation),
-            relation_role=sql.Literal(role.value),
-            column_permissions=sql.Literal(column_permissions),
-        )
-        self.cursor.execute(query)
-        results = self.cursor.fetchall()
-        return [row["associated_column"] for row in results]
-
     @session_manager
     def _update_entry_in_table(
         self,
@@ -829,9 +799,55 @@ class DatabaseClient:
         _create_entry_in_table, table_name="data_requests", column_to_return="id"
     )
 
-    create_agency = partialmethod(
-        _create_entry_in_table, table_name="agencies", column_to_return="id"
-    )
+    @session_manager
+    def create_agency(
+        self,
+        dto: AgenciesPostDTO,
+    ):
+        # Create Agency Entry
+        agency_info = dto.agency_info
+        agency = Agency(
+            name=agency_info.name,
+            agency_type=agency_info.agency_type.value,
+            jurisdiction_type=agency_info.jurisdiction_type.value,
+            multi_agency=agency_info.multi_agency,
+            no_web_presence=agency_info.no_web_presence,
+            approval_status=agency_info.approval_status.value,
+            homepage_url=agency_info.homepage_url,
+            lat=agency_info.lat,
+            lng=agency_info.lng,
+            defunct_year=agency_info.defunct_year,
+            rejection_reason=agency_info.rejection_reason,
+            last_approval_editor=agency_info.last_approval_editor,
+            submitter_contact=agency_info.submitter_contact,
+        )
+        self.session.add(agency)
+
+        # Flush to get agency id
+        self.session.flush()
+
+        # Link to Locations
+        if dto.location_ids is not None:
+            for location_id in dto.location_ids:
+                lal = LinkAgencyLocation(location_id=location_id, agency_id=agency.id)
+                self.session.add(lal)
+
+        return agency.id
+
+    @session_manager
+    def add_location_to_agency(self, location_id: int, agency_id: int):
+        lal = LinkAgencyLocation(location_id=location_id, agency_id=agency_id)
+        self.session.add(lal)
+
+    @session_manager
+    def remove_location_from_agency(self, location_id: int, agency_id: int):
+        query = delete(LinkAgencyLocation).where(
+            and_(
+                LinkAgencyLocation.location_id == location_id,
+                LinkAgencyLocation.agency_id == agency_id,
+            )
+        )
+        self.session.execute(query)
 
     create_request_source_relation = partialmethod(
         _create_entry_in_table,
@@ -1000,13 +1016,172 @@ class DatabaseClient:
         _select_from_relation, relation_name=Relations.DATA_REQUESTS_EXPANDED.value
     )
 
-    get_agencies = partialmethod(
-        _select_from_relation, relation_name=Relations.AGENCIES_EXPANDED.value
-    )
+    @session_manager
+    def get_agencies(
+        self,
+        order_by: Optional[OrderByParameters] = None,
+        page: Optional[int] = 1,
+        limit: Optional[int] = PAGE_SIZE,
+        requested_columns: Optional[list[str]] = None,
+    ):
+
+        order_by_clause = DynamicQueryConstructor.get_sql_alchemy_order_by_clause(
+            order_by=order_by,
+            relation=Relations.AGENCIES.value,
+            default=asc(Agency.id),
+        )
+
+        load_options = DynamicQueryConstructor.agencies_get_load_options(
+            requested_columns=requested_columns
+        )
+
+        # TODO: This format can be extracted to a function (see get_data_sources)
+        query = (
+            select(Agency)
+            .options(*load_options)
+            .order_by(order_by_clause)
+            .limit(limit)
+            .offset(self.get_offset(page))
+        )
+
+        results: list[Agency] = self.session.execute(query).scalars(Agency).all()
+        final_results = []
+        for result in results:
+            agency_dictionary = ResultFormatter.agency_to_get_agencies_output(
+                result, requested_columns=requested_columns
+            )
+            final_results.append(agency_dictionary)
+
+        return final_results
+
+    @session_manager
+    def get_agency_by_id(
+        self,
+        agency_id: int,
+    ):
+
+        load_options = DynamicQueryConstructor.agencies_get_load_options()
+
+        query = select(Agency).options(*load_options).where(Agency.id == agency_id)
+
+        result: Agency = self.session.execute(query).scalars(Agency).first()
+        agency_dictionary = ResultFormatter.agency_to_get_agencies_output(
+            result,
+        )
+
+        return agency_dictionary
 
     get_data_sources = partialmethod(
         _select_from_relation, relation_name=Relations.DATA_SOURCES_EXPANDED.value
     )
+
+    @session_manager
+    def get_data_sources(
+        self,
+        data_sources_columns: list[str],
+        data_requests_columns: list[str],
+        order_by: Optional[OrderByParameters] = None,
+        page: Optional[int] = 1,
+        limit: Optional[int] = PAGE_SIZE,
+    ):
+
+        order_by_clause = DynamicQueryConstructor.get_sql_alchemy_order_by_clause(
+            order_by=order_by,
+            relation=Relations.DATA_SOURCES.value,
+            default=asc(DataSourceExpanded.id),
+        )
+
+        load_options = DynamicQueryConstructor.data_sources_get_load_options(
+            data_requests_columns=data_requests_columns,
+            data_sources_columns=data_sources_columns,
+        )
+
+        # TODO: This format can be extracted to a function (see get_agencies)
+        query = (
+            select(DataSourceExpanded)
+            .options(*load_options)
+            .order_by(order_by_clause)
+            .limit(limit)
+            .offset(self.get_offset(page))
+        )
+
+        results: list[DataSourceExpanded] = (
+            self.session.execute(query).scalars(DataSource).all()
+        )
+        final_results = []
+        for result in results:
+            data_source_dictionary = (
+                ResultFormatter.data_source_to_get_data_sources_output(
+                    result,
+                    data_sources_columns=data_sources_columns,
+                    data_requests_columns=data_requests_columns,
+                )
+            )
+            final_results.append(data_source_dictionary)
+
+        return final_results
+
+    @session_manager
+    def get_data_source_related_agencies(
+        self,
+        data_source_id: int,
+    ) -> Optional[list[dict]]:
+        query = (
+            select(DataSourceExpanded)
+            .options(
+                selectinload(DataSourceExpanded.agencies).selectinload(Agency.locations)
+            )
+            .where(DataSourceExpanded.id == data_source_id)
+        )
+
+        result: DataSourceExpanded = (
+            self.session.execute(query).scalars(DataSourceExpanded).first()
+        )
+        if result is None:
+            return None
+
+        agency_dicts = []
+        for agency in result.agencies:
+            agency_dict = (
+                ResultFormatter.agency_to_data_sources_get_related_agencies_output(
+                    agency
+                )
+            )
+            agency_dicts.append(agency_dict)
+
+        return agency_dicts
+
+    @session_manager
+    def get_data_source_by_id(
+        self,
+        data_source_id: int,
+        data_sources_columns: list[str],
+        data_requests_columns: list[str],
+    ):
+        load_options = DynamicQueryConstructor.data_sources_get_load_options(
+            data_sources_columns=data_sources_columns,
+            data_requests_columns=data_requests_columns,
+        )
+
+        query = (
+            select(DataSourceExpanded)
+            .options(*load_options)
+            .where(DataSourceExpanded.id == data_source_id)
+        )
+
+        result: DataSourceExpanded = (
+            self.session.execute(query).scalars(DataSourceExpanded).first()
+        )
+        if result is None:
+            return None
+
+        data_source_dictionary = ResultFormatter.data_source_to_get_data_sources_output(
+            result,
+            data_requests_columns=data_requests_columns,
+            data_sources_columns=data_sources_columns,
+        )
+
+        return data_source_dictionary
 
     get_request_source_relations = partialmethod(
         _select_from_relation, relation_name=Relations.RELATED_SOURCES.value
@@ -1141,24 +1316,6 @@ class DatabaseClient:
         self.cursor.execute(query)
         if return_results:
             return self.cursor.fetchall()
-
-    def get_column_permissions_as_permission_table(self, relation: str) -> list[dict]:
-        result = self.execute_raw_sql(
-            """
-            SELECT DISTINCT cp.relation_role 
-            FROM public.column_permission cp 
-            INNER JOIN relation_column rc on rc.id = cp.rc_id
-            WHERE rc.relation = %s
-            """,
-            (relation,),
-        )
-        relation_roles = [row["relation_role"] for row in result]
-        query = (
-            DynamicQueryConstructor.get_column_permissions_as_permission_table_query(
-                relation, relation_roles
-            )
-        )
-        return self.execute_composed_sql(query, return_results=True)
 
     def get_agencies_without_homepage_urls(self) -> list[dict]:
         return self.execute_raw_sql(
@@ -1678,47 +1835,52 @@ class DatabaseClient:
         Optionally filtering based on the location id
         """
         query = Select(
-            Agency.id,
-            Agency.name,
-            Agency.agency_type,
-            LocationExpanded.state_name,
-            LocationExpanded.county_name,
-            LocationExpanded.locality_name,
-            LocationExpanded.type,
+            Agency,
             func.similarity(Agency.name, name),
+        ).options(
+            load_only(Agency.id, Agency.name, Agency.agency_type),
+            selectinload(Agency.locations).load_only(
+                LocationExpanded.state_name,
+                LocationExpanded.county_name,
+                LocationExpanded.locality_name,
+                LocationExpanded.type,
+            ),
         )
         if location_id is not None:
-            query = query.where(Agency.location_id == location_id)
-        query = query.outerjoin(
-            LocationExpanded, Agency.location_id == LocationExpanded.id
-        )
+            query = query.where(
+                Agency.locations.any(LocationExpanded.id == location_id)
+            )
         query = query.order_by(func.similarity(Agency.name, name).desc()).limit(10)
         execute_results = self.session.execute(query).all()
         if len(execute_results) == 0:
             return []
-        first_similarity_value = execute_results[0][6]
 
-        def result_to_dto(result):
+        def result_to_dto(agency: Agency, similarity: float):
+            locations = []
+            for location in agency.locations:
+                location_dto = AgencyMatchResponseLocationDTO(
+                    state=location.state_name,
+                    county=location.county_name,
+                    locality=location.locality_name,
+                    location_type=LocationType(location.type),
+                )
+                locations.append(location_dto)
+
             return AgencyMatchResponseInnerDTO(
-                id=result[0],
-                name=result[1],
-                agency_type=AgencyType(result[2]),
-                state=result[3],
-                county=result[4],
-                locality=result[5],
-                location_type=(
-                    LocationType(result[6]) if result[6] is not None else None
-                ),
-                similarity=result[7],
+                id=agency.id,
+                name=agency.name,
+                agency_type=AgencyType(agency.agency_type),
+                similarity=similarity,
+                locations=locations,
             )
 
-        if first_similarity_value == 1:
-            return [
-                result_to_dto(execute_results[0]),
-            ]
         dto_results = []
-        for result in execute_results:
-            dto = result_to_dto(result)
+        for result, similarity in execute_results:
+            if similarity == 1:
+                return [
+                    result_to_dto(result, similarity),
+                ]
+            dto = result_to_dto(result, similarity)
             dto_results.append(dto)
 
         return dto_results
@@ -1744,8 +1906,9 @@ class DatabaseClient:
             FROM
                 LINK_AGENCIES_DATA_SOURCES LINK
                 INNER JOIN AGENCIES A ON A.ID = LINK.AGENCY_ID
-                JOIN DEPENDENT_LOCATIONS DL ON A.LOCATION_ID = DL.DEPENDENT_LOCATION_ID
-                JOIN LOCATIONS L ON L.ID = A.LOCATION_ID
+                LEFT JOIN LINK_AGENCIES_LOCATIONS LAL on A.ID = LAL.AGENCY_ID
+                JOIN DEPENDENT_LOCATIONS DL ON LAL.LOCATION_ID = DL.DEPENDENT_LOCATION_ID
+                JOIN LOCATIONS L ON L.ID = LAL.LOCATION_ID
                 OR L.ID = DL.PARENT_LOCATION_ID
             WHERE
                 L.TYPE = 'State'
@@ -1756,8 +1919,9 @@ class DatabaseClient:
             FROM
                 LINK_AGENCIES_DATA_SOURCES LINK
                 INNER JOIN AGENCIES A ON A.ID = LINK.AGENCY_ID
-                JOIN DEPENDENT_LOCATIONS DL ON A.LOCATION_ID = DL.DEPENDENT_LOCATION_ID
-                JOIN LOCATIONS L ON L.ID = A.LOCATION_ID
+                LEFT JOIN LINK_AGENCIES_LOCATIONS LAL on A.ID = LAL.AGENCY_ID
+                JOIN DEPENDENT_LOCATIONS DL ON LAL.LOCATION_ID = DL.DEPENDENT_LOCATION_ID
+                JOIN LOCATIONS L ON L.ID = LAL.LOCATION_ID
                 OR L.ID = DL.PARENT_LOCATION_ID
             WHERE
                 L.TYPE = 'County'
@@ -1767,3 +1931,33 @@ class DatabaseClient:
         for row in result:
             d[row["Count Type"]] = row["count"]
         return d
+
+    @session_manager
+    def get_record_types_and_categories(self):
+        query = (
+            select(RecordCategory)
+            .options(selectinload(RecordCategory.record_types))
+            .order_by(RecordCategory.id)
+        )
+
+        results: list[RecordCategory] = self.session.execute(query).scalars().all()
+
+        record_types = []
+        record_categories = []
+        for result in results:
+            record_cat_dict = {
+                "id": result.id,
+                "name": result.name,
+                "description": result.description,
+            }
+            record_categories.append(record_cat_dict)
+            for record_type in result.record_types:
+                record_type_dict = {
+                    "id": record_type.id,
+                    "name": record_type.name,
+                    "category_id": record_type.category_id,
+                    "description": record_type.description,
+                }
+                record_types.append(record_type_dict)
+
+        return {"record_types": record_types, "record_categories": record_categories}
