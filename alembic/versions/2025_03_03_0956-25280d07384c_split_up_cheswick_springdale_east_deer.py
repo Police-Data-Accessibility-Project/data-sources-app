@@ -109,3 +109,7 @@ def upgrade() -> None:
     WHERE ID = {locality_id}
     """
     )
+
+
+def downgrade():
+    pass
