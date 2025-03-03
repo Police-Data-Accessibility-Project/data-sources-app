@@ -94,9 +94,7 @@ def spacy_search_query(
 
     print(f"Query parameters: '%{depluralized_search_term}%', '%{location}%'")
 
-    cursor.execute(
-        QUICK_SEARCH_SQL.format(depluralized_search_term, location)
-    )
+    cursor.execute(QUICK_SEARCH_SQL.format(depluralized_search_term, location))
     results = cursor.fetchall()
 
     return results
