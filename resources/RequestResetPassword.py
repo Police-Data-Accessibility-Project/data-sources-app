@@ -1,21 +1,37 @@
-from flask import request
-from middleware.user_queries import user_check_email
-from middleware.reset_token_queries import add_reset_token
-import os
-import uuid
-import requests
-from typing import Dict, Any
+from flask import request, Response
 
-from resources.PsycopgResource import PsycopgResource
+from middleware.access_logic import NO_AUTH_INFO, AccessInfoPrimary
+from middleware.decorators import endpoint_info
+from middleware.primary_resource_logic.reset_token_queries import request_reset_password
+from resources.endpoint_schema_config import SchemaConfigs
+from resources.resource_helpers import ResponseInfo
+from utilities.namespace import create_namespace, AppNamespaces
+
+from resources.PsycopgResource import PsycopgResource, handle_exceptions
+
+namespace_request_reset_password = create_namespace(AppNamespaces.AUTH)
 
 
+@namespace_request_reset_password.route("/request-reset-password")
 class RequestResetPassword(PsycopgResource):
     """
     Provides a resource for users to request a password reset. Generates a reset token
     and sends an email to the user with instructions on how to reset their password.
     """
 
-    def post(self) -> Dict[str, Any]:
+    @endpoint_info(
+        namespace=namespace_request_reset_password,
+        auth_info=NO_AUTH_INFO,
+        schema_config=SchemaConfigs.REQUEST_RESET_PASSWORD,
+        response_info=ResponseInfo(
+            response_dictionary={
+                200: "OK; Password reset request successful",
+                500: "Internal server error",
+            }
+        ),
+        description="Allows a user to request a password reset. Generates sends an email with instructions on how to reset their password.",
+    )
+    def post(self, access_info: AccessInfoPrimary) -> Response:
         """
         Processes a password reset request. Checks if the user's email exists in the database,
         generates a reset token, and sends an email with the reset link.
@@ -23,34 +39,7 @@ class RequestResetPassword(PsycopgResource):
         Returns:
         - A dictionary containing a success message and the reset token, or an error message if an exception occurs.
         """
-        try:
-            data = request.get_json()
-            email = data.get("email")
-            cursor = self.psycopg2_connection.cursor()
-            user_data = user_check_email(cursor, email)
-            id = user_data["id"]
-            token = uuid.uuid4().hex
-            add_reset_token(cursor, email, token)
-            self.psycopg2_connection.commit()
-
-            body = f"To reset your password, click the following link: {os.getenv('VITE_VUE_APP_BASE_URL')}/reset-password/{token}"
-            r = requests.post(
-                "https://api.mailgun.net/v3/mail.pdap.io/messages",
-                auth=("api", os.getenv("MAILGUN_KEY")),
-                data={
-                    "from": "mail@pdap.io",
-                    "to": [email],
-                    "subject": "PDAP Data Sources Reset Password",
-                    "text": body,
-                },
-            )
-
-            return {
-                "message": "An email has been sent to your email address with a link to reset your password. It will be valid for 15 minutes.",
-                "token": token,
-            }
-
-        except Exception as e:
-            self.psycopg2_connection.rollback()
-            print(str(e))
-            return {"error": str(e)}, 500
+        return self.run_endpoint(
+            request_reset_password,
+            schema_populate_parameters=SchemaConfigs.REQUEST_RESET_PASSWORD.value.get_schema_populate_parameters(),
+        )

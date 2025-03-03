@@ -1,9 +1,0 @@
-{
-	"root": true,
-	"extends": [
-		"@pdap-design-system/eslint-config"
-	],
-	"plugins": [
-		"prettier"
-	]
-}

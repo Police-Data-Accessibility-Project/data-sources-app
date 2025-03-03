@@ -1,18 +1,42 @@
-from flask import request
-from middleware.login_queries import token_results, create_session_token
-from datetime import datetime as dt
-from typing import Dict, Any
+from flask import Response
 
+from middleware.access_logic import (
+    STANDARD_JWT_AUTH_INFO,
+    AccessInfoPrimary,
+    AuthenticationInfo,
+    RefreshAccessInfo,
+)
+from middleware.decorators import endpoint_info
+from middleware.enums import AccessTypeEnum
+from middleware.primary_resource_logic.login_queries import (
+    refresh_session,
+)
+from resources.endpoint_schema_config import SchemaConfigs
+from resources.resource_helpers import ResponseInfo
+
+from utilities.namespace import create_namespace, AppNamespaces
 from resources.PsycopgResource import PsycopgResource
 
+namespace_refresh_session = create_namespace(AppNamespaces.AUTH)
 
+
+@namespace_refresh_session.route("/refresh-session")
 class RefreshSession(PsycopgResource):
     """
     Provides a resource for refreshing a user's session token.
     If the provided session token is valid and not expired, it is replaced with a new one.
     """
 
-    def post(self) -> Dict[str, Any]:
+    @endpoint_info(
+        namespace=namespace_refresh_session,
+        auth_info=AuthenticationInfo(
+            allowed_access_methods=[AccessTypeEnum.REFRESH_JWT],
+        ),
+        description="Allows a user to refresh their session token.",
+        response_info=ResponseInfo(success_message="Session token refreshed."),
+        schema_config=SchemaConfigs.REFRESH_SESSION,
+    )
+    def post(self, access_info: RefreshAccessInfo) -> Response:
         """
         Processes the session token refresh request. If the provided session token is valid,
         it generates a new session token, invalidates the old one, and returns the new token.
@@ -20,29 +44,8 @@ class RefreshSession(PsycopgResource):
         Returns:
         - A dictionary containing a message of success or failure, and the new session token if successful.
         """
-        try:
-            data = request.get_json()
-            old_token = data.get("session_token")
-            cursor = self.psycopg2_connection.cursor()
-            user_data = token_results(cursor, old_token)
-            cursor.execute(
-                f"delete from session_tokens where token = '{old_token}' and expiration_date < '{dt.utcnow()}'"
-            )
-            self.psycopg2_connection.commit()
 
-            if "id" in user_data:
-                token = create_session_token(
-                    cursor, user_data["id"], user_data["email"]
-                )
-                self.psycopg2_connection.commit()
-                return {
-                    "message": "Successfully refreshed session token",
-                    "data": token,
-                }
-
-            return {"message": "Invalid session token"}, 403
-
-        except Exception as e:
-            self.psycopg2_connection.rollback()
-            print(str(e))
-            return {"message": str(e)}, 500
+        return self.run_endpoint(
+            wrapper_function=refresh_session,
+            access_info=access_info,
+        )

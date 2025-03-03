@@ -1,8 +1,13 @@
-# data-sources-app
+![Python Version](https://img.shields.io/badge/python-3.12-blue?style=for-the-badge&logo=python&logoColor=ffdd54)
+
+# data-sources-app-v2
+
+Development of the next big iteration of the data sources app according to https://github.com/Police-Data-Accessibility-Project/data-sources-app/issues/248
 
 An API and UI for searching, using, and maintaining Data Sources. 
 
-#### [Live app](https://data-sources.pdap.io/)
+#### [Live app](https://data-sources-v2.pdap.io/) deployed from `main`
+#### [Dev app](https://data-sources-v2.pdap.dev/) deployed from `dev`
 #### [API docs](https://docs.pdap.io/api/introduction)
 
 ## Running the app for local development
@@ -45,47 +50,22 @@ source venv/bin/activate
 ```
 
 pip install -r requirements.txt
+pip install "psycopg[binary,pool]"
+
+pre-commit install
+
+# To optionally run the pre-commit against all files (as pre-commit usually only runs on changed files)
+pre-commit run --all-files
 
 ```
 
 ### 5. Add environment secrets
 
-Either add a `.env` file to your local root directory or manually export these secrets. Reach out to contact@pdap.io or make noise in Discord if you'd like access. 
+For more information on setting up environment secrets, see `ENV.md`
 
-#### Sample `.env` file
-```
-# Local development
-VITE_VUE_API_BASE_URL=http://localhost:5000
-VITE_VUE_APP_BASE_URL=http://localhost:8888
+### 6. Set up Local Database
 
-# Deployed app
-# VITE_VUE_API_BASE_URL=https://data-sources.pdap.io/api
-# VITE_VUE_APP_BASE_URL=https://data-sources.pdap.io/
-
-# Production database and API
-DO_DATABASE_URL=secret
-SECRET_KEY=secret
-
-# Mailgun key for notifications
-MAILGUN_KEY=secret
-
-# Discord key for #dev-alerts channel
-WEBHOOK_URL=secret
-```
-
-#### shell
-```
-export VITE_VUE_API_BASE_URL=http://localhost:5000
-export VITE_VUE_APP_BASE_URL=http://localhost:8888
-export DO_DATABASE_URL=secret
-export SECRET_KEY=secret
-export MAILGUN_KEY=secret
-export WEBHOOK_URL=secret
-```
-
-### 6. Allow your IP address
-
-To connect to the database, your IP address will need to be added to the "allow" list in DigitalOcean database settings. Reach out to someone with admin access to get your IP address added.
+Follow instructions in the `/local_database` directory to set up a local database for testing.
 
 ### 7. Run the Python app.
 
@@ -96,99 +76,11 @@ python3 app.py
 ```
 
 
-### 8. In a new terminal window, install the Vue app.
+### 8. (If necessary) run the client locally against the API
 
-```
+If you need to run the client web application, refer to the [pdap.io documentation](https://github.com/Police-Data-Accessibility-Project/pdap.io). 
 
-cd client
-npm install
+Generally, local development on the client is done based on the stable deployed `dev` API, and API development can usually be verified using `curl`. But if you are working on a full stack project for which you need to run the client locally against the API locally, reach out to @maxachis and @joshuagraber in Discord for help.
 
-```
-
-### 9. Run the development server.
-
-```
-
-npm run dev
-
-```
-
-## Testing
-
-All unit tests for the API live in the app_test.py file. It is best practice to add tests for any new feature to ensure it is working as expected and that any future code changes do not affect its functionality. All tests will be automatically run when a PR into dev is opened in order to ensure any changes do not break current app functionality. If a test fails, it is a sign that the new code should be checked or possibly that the test needs to be updated. Tests are currently run with pytest and can be run locally with the `pytest` command.
-
-Endpoints are structured for simplified testing and debugging. Code for interacting with the database is contained in a function suffixed with "_results" and tested against a local sqlite database instance. Limited rows (stored in the DATA_SOURCES_ROWS and AGENCIES_ROWS variables in app_test_data.py) are inserted into this local instance on setup, you may need to add additional rows to test other functionality fully. 
-
-Remaining API code is stored in functions suffixed with "_query" tested against static query results stored in app_test_data.py. Tests for hitting the endpoint directly should be included in regular_api_checks.py, makes sure to add the test function name in the list at the bottom so it is included in the Github actions run every 15 minutes.
-
-```
-pip install pytest
-pytest
-
-```
-## Linting
-Linting is enforced with black on PR creation. You can use black to automatically reformat your files before commiting them, this will allow your PR to pass this check. Any files that require reformatting will be listed on any failed checks on the PR.
-```
-black app_test.py
-```
-
-## Docstring and Type Checking
-
-Docstrings and Type Checking are checked using the [pydocstyle](https://www.pydocstyle.org/en/stable/) and [mypy](https://mypy-lang.org/)
-modules, respectively. When making a pull request, a Github Action (`python_checks.yml`) will run and, 
-if it detects any missing docstrings or type hints in files that you have modified, post them in the Pull Request.
-
-These will *not* block any Pull request, but exist primarily as advisory comments to encourage good coding standards.
-
-Note that `python_checks.yml` will only function on pull requests made from within the repo, not from a forked repo.
-
-## Client App
-
-A few things to know:
-
-- We use Vue3. This allows for using either the options or composition APIs. Feel free to use whichever you are most fluent in.
-- We use `pinia` for state management. This works much better with the composition API than with options, so it is recommended to use the composition API if you need data from one of the `pinia` stores.
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Serves production build locally
-```
-npm run preview
-```
-
-### Lints files
-```
-npm run lint
-```
-
-### Lints and fixes any fixable errors
-```
-npm run lint:fix
-```
-
-### Runs tests with debug output
-```
-npm run test
-```
-
-### Runs tests quietly for CI
-```
-npm run test:ci
-```
-
-### Runs tests only on changed files
-```
-npm run test:changed
-```
-
-### Runs tests and outputs coverage reports
-```
-npm run coverage
-```
-
-### Customize configuration
-
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## Contributing
+If you're here to submit a Pull Request, please review the important information available in CONTRIBUTING.md.

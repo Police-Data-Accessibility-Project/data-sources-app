@@ -1,0 +1,30 @@
+pipeline {
+        agent {
+        dockerfile {
+            filename 'Dockerfile'
+            args '-e DO_DATABASE_URL=DO_DATABASE_URL'
+        }
+    }
+
+    stages {
+        stage('Migrate using Alembic') {
+            steps {
+                echo 'Building..'
+                sh 'alembic upgrade head'
+            }
+        }
+    }
+    post {
+        failure {
+            script {
+                def payload = """{
+                    "content": "🚨 Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+                }"""
+
+                sh """
+                curl -X POST -H "Content-Type: application/json" -d '${payload}' ${env.WEBHOOK_URL}
+                """
+            }
+        }
+    }
+}

@@ -1,22 +1,66 @@
-from flask import request
-from middleware.security import api_required
-from middleware.data_source_queries import data_source_by_id_query, data_sources_query
-from datetime import datetime
+from flask import Response
 
-import uuid
-from typing import Dict, Any, Tuple
+from config import limiter
+from middleware.access_logic import (
+    AccessInfoPrimary,
+    WRITE_ONLY_AUTH_INFO,
+    API_OR_JWT_AUTH_INFO,
+    STANDARD_JWT_AUTH_INFO,
+)
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+    EntryCreateUpdateRequestDTO,
+    EntryDataRequestSchema,
+    GetByIDBaseSchema,
+    GetByIDBaseDTO,
+)
+from middleware.decorators import (
+    endpoint_info,
+)
+from middleware.primary_resource_logic.data_sources_logic import (
+    get_data_sources_wrapper,
+    data_source_by_id_wrapper,
+    add_new_data_source_wrapper,
+    update_data_source_wrapper,
+    DataSourcesGetManyRequestDTO,
+    delete_data_source_wrapper,
+    create_data_source_related_agency,
+    delete_data_source_related_agency,
+    get_data_source_related_agencies,
+)
 
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advanced_schemas import (
+    DataSourcesGetManyRequestSchema,
+)
+from resources.endpoint_schema_config import SchemaConfigs
+from resources.resource_helpers import (
+    ResponseInfo,
+)
+from utilities.namespace import create_namespace, AppNamespaces
 from resources.PsycopgResource import PsycopgResource
 
+from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 
+namespace_data_source = create_namespace(AppNamespaces.DATA_SOURCES)
+
+
+@namespace_data_source.route("/<resource_id>")
 class DataSourceById(PsycopgResource):
     """
     A resource for managing data source entities by their unique identifier.
     Provides methods for retrieving and updating data source details.
     """
 
-    @api_required
-    def get(self, data_source_id: str) -> Tuple[Dict[str, Any], int]:
+    @endpoint_info(
+        namespace=namespace_data_source,
+        auth_info=API_OR_JWT_AUTH_INFO,
+        schema_config=SchemaConfigs.DATA_SOURCES_GET_BY_ID,
+        response_info=ResponseInfo(
+            success_message="Returns information on the specific data source.",
+        ),
+        description="Get details of a specific data source by its ID.",
+    )
+    @limiter.limit("50/minute;250/hour")
+    def get(self, access_info: AccessInfoPrimary, resource_id: str) -> Response:
         """
         Retrieves details of a specific data source by its ID.
 
@@ -26,25 +70,24 @@ class DataSourceById(PsycopgResource):
         Returns:
         - Tuple containing the response message with data source details if found, and the HTTP status code.
         """
-        try:
-            data_source_details = data_source_by_id_query(
-                conn=self.psycopg2_connection, data_source_id=data_source_id
-            )
-            if data_source_details:
-                return {
-                    "message": "Successfully found data source",
-                    "data": data_source_details,
-                }
+        return self.run_endpoint(
+            data_source_by_id_wrapper,
+            access_info=access_info,
+            schema_populate_parameters=SchemaPopulateParameters(
+                schema=GetByIDBaseSchema(), dto_class=GetByIDBaseDTO
+            ),
+        )
 
-            else:
-                return {"message": "Data source not found."}, 404
-
-        except Exception as e:
-            print(str(e))
-            return {"message": "There has been an error pulling data!"}, 500
-
-    @api_required
-    def put(self, data_source_id: str) -> Dict[str, str]:
+    @endpoint_info(
+        namespace=namespace_data_source,
+        auth_info=WRITE_ONLY_AUTH_INFO,
+        schema_config=SchemaConfigs.DATA_SOURCES_PUT,
+        response_info=ResponseInfo(
+            success_message="Data source successfully updated.",
+        ),
+        description="Update details of a specific data source by its ID.",
+    )
+    def put(self, access_info: AccessInfoPrimary, resource_id: str) -> Response:
         """
         Updates a data source by its ID based on the provided JSON payload.
 
@@ -54,179 +97,167 @@ class DataSourceById(PsycopgResource):
         Returns:
         - A dictionary containing a message about the update operation.
         """
-        try:
-            data = request.get_json()
+        return self.run_endpoint(
+            wrapper_function=update_data_source_wrapper,
+            schema_populate_parameters=SchemaPopulateParameters(
+                dto_class=EntryCreateUpdateRequestDTO,
+                schema=EntryDataRequestSchema(),
+            ),
+            data_source_id=resource_id,
+            access_info=access_info,
+        )
 
-            restricted_columns = [
-                "rejection_note",
-                "data_source_request",
-                "approval_status",
-                "airtable_uid",
-                "airtable_source_last_modified",
-            ]
+    @endpoint_info(
+        namespace=namespace_data_source,
+        auth_info=WRITE_ONLY_AUTH_INFO,
+        response_info=ResponseInfo(
+            success_message="Data source successfully deleted.",
+        ),
+        description="Delete a data source by its ID.",
+        schema_config=SchemaConfigs.DATA_SOURCES_BY_ID_DELETE,
+    )
+    def delete(self, access_info: AccessInfoPrimary, resource_id: str) -> Response:
+        """
+        Deletes a data source by its ID.
 
-            data_to_update = ""
+        Parameters:
+        - data_source_id (str): The unique identifier of the data source to delete.
 
-            for key, value in data.items():
-                if key not in restricted_columns:
-                    if type(value) == str:
-                        data_to_update += f"{key} = '{value}', "
-                    else:
-                        data_to_update += f"{key} = {value}, "
-
-            data_to_update = data_to_update[:-2]
-
-            cursor = self.psycopg2_connection.cursor()
-
-            sql_query = f"""
-            UPDATE data_sources 
-            SET {data_to_update}
-            WHERE airtable_uid = '{data_source_id}'
-            """
-
-            cursor.execute(sql_query)
-            self.psycopg2_connection.commit()
-            return {"message": "Data source updated successfully."}
-
-        except Exception as e:
-            print(str(e))
-            return {"message": "There has been an error updating the data source"}, 500
+        Returns:
+        - A dictionary containing a message about the deletion operation.
+        """
+        return self.run_endpoint(
+            wrapper_function=delete_data_source_wrapper,
+            data_source_id=resource_id,
+            access_info=access_info,
+        )
 
 
+@namespace_data_source.route("")
 class DataSources(PsycopgResource):
     """
     A resource for managing collections of data sources.
     Provides methods for retrieving all data sources and adding new ones.
     """
 
-    @api_required
-    def get(self) -> Dict[str, Any]:
+    @endpoint_info(
+        namespace=namespace_data_source,
+        auth_info=API_OR_JWT_AUTH_INFO,
+        schema_config=SchemaConfigs.DATA_SOURCES_GET_MANY,
+        response_info=ResponseInfo(
+            success_message="Returns all requested data sources.",
+        ),
+        description="Retrieves all data sources.",
+    )
+    def get(self, access_info: AccessInfoPrimary) -> Response:
         """
-        Retrieves all data sources.
+        Retrieves all data sources. The data sources endpoint returns all approved rows in the corresponding Data
+        Sources database table.
 
         Returns:
         - A dictionary containing the count of data sources and their details.
         """
-        try:
-            data_source_matches = data_sources_query(
-                self.psycopg2_connection, [], "approved"
-            )
+        return self.run_endpoint(
+            wrapper_function=get_data_sources_wrapper,
+            schema_populate_parameters=SchemaPopulateParameters(
+                schema=DataSourcesGetManyRequestSchema(),
+                dto_class=DataSourcesGetManyRequestDTO,
+            ),
+            access_info=access_info,
+        )
 
-            data_sources = {
-                "count": len(data_source_matches),
-                "data": data_source_matches,
-            }
-
-            return data_sources
-
-        except Exception as e:
-            self.psycopg2_connection.rollback()
-            print(str(e))
-            return {"message": "There has been an error pulling data!"}, 500
-
-    @api_required
-    def post(self) -> Dict[str, str]:
+    @endpoint_info(
+        namespace=namespace_data_source,
+        auth_info=STANDARD_JWT_AUTH_INFO,
+        schema_config=SchemaConfigs.DATA_SOURCES_POST,
+        response_info=ResponseInfo(
+            success_message="Data source successfully added.",
+        ),
+        description="Adds a new data source.",
+    )
+    def post(self, access_info: AccessInfoPrimary) -> Response:
         """
         Adds a new data source based on the provided JSON payload.
 
         Returns:
         - A dictionary containing a message about the addition operation.
         """
-        try:
-            data = request.get_json()
-            cursor = self.psycopg2_connection.cursor()
-
-            restricted_columns = [
-                "rejection_note",
-                "data_source_request",
-                "approval_status",
-                "airtable_uid",
-                "airtable_source_last_modified",
-                "test_flag",
-            ]
-
-            column_names = ""
-            column_values = ""
-            for key, value in data.items():
-                if key not in restricted_columns:
-                    column_names += f"{key}, "
-                    if type(value) == str:
-                        column_values += f"'{value}', "
-                    else:
-                        column_values += f"{value}, "
-
-            now = datetime.now().strftime("%Y-%m-%d")
-            airtable_uid = str(uuid.uuid4())
-
-            if "approval_status" not in data:
-                column_names += "approval_status, "
-                column_values += "'intake', "
-            column_names += "url_status, data_source_created, airtable_uid"
-            column_values += f"'[\"ok\"]', '{now}', '{airtable_uid}'"
-
-            sql_query = f"INSERT INTO data_sources ({column_names}) VALUES ({column_values}) RETURNING *"
-
-            if "test_flag" not in data:
-                cursor.execute(sql_query)
-                self.psycopg2_connection.commit()
-
-            return {"message": "Data source added successfully."}
-
-        except Exception as e:
-            self.psycopg2_connection.rollback()
-            print(str(e))
-            return {"message": "There has been an error adding the data source"}, 500
+        return self.run_endpoint(
+            wrapper_function=add_new_data_source_wrapper,
+            schema_populate_parameters=SchemaConfigs.DATA_SOURCES_POST.value.get_schema_populate_parameters(),
+            access_info=access_info,
+        )
 
 
-class DataSourcesNeedsIdentification(PsycopgResource):
-
-    @api_required
-    def get(self):
-        try:
-            data_source_matches = data_sources_query(
-                self.psycopg2_connection, [], "needs_identification"
-            )
-
-            data_sources = {
-                "count": len(data_source_matches),
-                "data": data_source_matches,
-            }
-
-            return data_sources
-
-        except Exception as e:
-            self.psycopg2_connection.rollback()
-            print(str(e))
-            return {"message": "There has been an error pulling data!"}, 500
+# region Related Agencies
 
 
-class DataSourcesMap(PsycopgResource):
-    """
-    A resource for managing collections of data sources for mapping.
-    Provides a method for retrieving all data sources.
-    """
+@namespace_data_source.route("/<resource_id>/related-agencies")
+class DataSourcesRelatedAgencies(PsycopgResource):
 
-    @api_required
-    def get(self) -> Dict[str, Any]:
+    @endpoint_info(
+        namespace=namespace_data_source,
+        auth_info=API_OR_JWT_AUTH_INFO,
+        schema_config=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_GET,
+        response_info=ResponseInfo(
+            success_message="Related agencies successfully retrieved.",
+        ),
+        description="Get related agencies to a data source",
+    )
+    def get(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
         """
-        Retrieves location relevant columns for data sources.
-
-        Returns:
-        - A dictionary containing the count of data sources and their details.
+        Get related agencies to a data source.
         """
-        try:
-            data_source_matches = data_sources_query(
-                self.psycopg2_connection, [], "approved", True
-            )
+        return self.run_endpoint(
+            wrapper_function=get_data_source_related_agencies,
+            schema_populate_parameters=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_GET.value.get_schema_populate_parameters(),
+        )
 
-            data_sources = {
-                "count": len(data_source_matches),
-                "data": data_source_matches,
-            }
 
-            return data_sources
+@namespace_data_source.route("/<resource_id>/related-agencies/<agency_id>")
+class DataSourcesRelatedAgenciesById(PsycopgResource):
 
-        except Exception as e:
-            self.psycopg2_connection.rollback()
-            print(str(e))
-            return {"message": "There has been an error pulling data!"}, 500
+    @endpoint_info(
+        namespace=namespace_data_source,
+        auth_info=WRITE_ONLY_AUTH_INFO,
+        schema_config=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_POST,
+        response_info=ResponseInfo(
+            success_message="Data source successfully associated with data request.",
+        ),
+        description="Mark a data source as related to a data request",
+    )
+    def post(
+        self, resource_id: str, agency_id: str, access_info: AccessInfoPrimary
+    ) -> Response:
+        """
+        Mark a data source as related to a data request
+        """
+        return self.run_endpoint(
+            wrapper_function=create_data_source_related_agency,
+            schema_populate_parameters=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_POST.value.get_schema_populate_parameters(),
+            access_info=access_info,
+        )
+
+    @endpoint_info(
+        namespace=namespace_data_source,
+        auth_info=WRITE_ONLY_AUTH_INFO,
+        schema_config=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_DELETE,
+        response_info=ResponseInfo(
+            success_message="Data source successfully removed from data request.",
+        ),
+        description="Remove an association of a data source with a data request",
+    )
+    def delete(
+        self, resource_id: str, agency_id: str, access_info: AccessInfoPrimary
+    ) -> Response:
+        """
+        Remove an association of a data source with a data request
+        """
+        return self.run_endpoint(
+            wrapper_function=delete_data_source_related_agency,
+            schema_populate_parameters=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_DELETE.value.get_schema_populate_parameters(),
+            access_info=access_info,
+        )
+
+
+# endregion

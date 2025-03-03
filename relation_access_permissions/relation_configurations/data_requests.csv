@@ -1,0 +1,17 @@
+column_name,ADMIN,STANDARD,OWNER
+id,READ,READ,READ
+submission_notes,WRITE,READ,WRITE
+request_status,WRITE,READ,READ
+archive_reason,WRITE,NONE,READ
+date_created,READ,READ,READ
+date_status_last_changed,READ,READ,READ
+creator_user_id,READ,NONE,READ
+internal_notes,WRITE,NONE,NONE
+record_types_required,WRITE,READ,READ
+pdap_response,WRITE,READ,READ
+coverage_range,WRITE,READ,WRITE
+data_requirements,WRITE,READ,WRITE
+request_urgency,WRITE,READ,WRITE
+title,WRITE,READ,WRITE
+github_issue_number,WRITE,READ,READ
+github_issue_url,WRITE,READ,READ

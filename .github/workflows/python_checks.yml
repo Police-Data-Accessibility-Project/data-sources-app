@@ -12,10 +12,11 @@ jobs:
       - name: Set up Python environment
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - run: pip install flake8 flake8-docstrings flake8-simplify flake8-unused-arguments flake8-annotations
       - name: flake8 Lint with Reviewdog
         uses: reviewdog/action-flake8@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          flake8_args: --ignore E501,W291  # Does not check for max line exceed or trailing whitespace
           level: warning
