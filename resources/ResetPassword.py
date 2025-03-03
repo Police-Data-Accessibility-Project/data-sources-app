@@ -1,22 +1,39 @@
-from werkzeug.security import generate_password_hash
-from flask import request
-from middleware.reset_token_queries import (
-    check_reset_token,
-    delete_reset_token,
+from flask import Response
+
+from middleware.access_logic import (
+    RESET_PASSWORD_AUTH_INFO,
+    PasswordResetTokenAccessInfo,
 )
-from datetime import datetime as dt
-from typing import Dict, Any
+from middleware.decorators import endpoint_info
+from middleware.primary_resource_logic.reset_token_queries import (
+    reset_password,
+)
+from resources.endpoint_schema_config import SchemaConfigs
+from resources.resource_helpers import ResponseInfo
+from utilities.namespace import create_namespace, AppNamespaces
 
-from resources.PsycopgResource import PsycopgResource
+from resources.PsycopgResource import PsycopgResource, handle_exceptions
+
+namespace_reset_password = create_namespace(AppNamespaces.AUTH)
 
 
+@namespace_reset_password.route("/reset-password")
 class ResetPassword(PsycopgResource):
     """
     Provides a resource for users to reset their password using a valid reset token.
     If the token is valid and not expired, allows the user to set a new password.
     """
 
-    def post(self) -> Dict[str, Any]:
+    @endpoint_info(
+        namespace=namespace_reset_password,
+        auth_info=RESET_PASSWORD_AUTH_INFO,
+        schema_config=SchemaConfigs.RESET_PASSWORD,
+        response_info=ResponseInfo(
+            success_message="Password reset successful",
+        ),
+        description="Allows a user to reset their password using a valid reset token.",
+    )
+    def post(self, access_info: PasswordResetTokenAccessInfo) -> Response:
         """
         Processes a password reset request. Validates the provided reset token and,
         if valid, updates the user's password with the new password provided in the request.
@@ -24,32 +41,8 @@ class ResetPassword(PsycopgResource):
         Returns:
         - A dictionary containing a message indicating whether the password was successfully updated or an error occurred.
         """
-        try:
-            data = request.get_json()
-            token = data.get("token")
-            password = data.get("password")
-            cursor = self.psycopg2_connection.cursor()
-            token_data = check_reset_token(cursor, token)
-            email = token_data.get("email")
-            if "create_date" not in token_data:
-                return {"message": "The submitted token is invalid"}, 400
-
-            token_create_date = token_data["create_date"]
-            token_expired = (dt.utcnow() - token_create_date).total_seconds() > 900
-            delete_reset_token(cursor, token_data["email"], token)
-            if token_expired:
-                return {"message": "The submitted token is invalid"}, 400
-
-            password_digest = generate_password_hash(password)
-            cursor = self.psycopg2_connection.cursor()
-            cursor.execute(
-                f"update users set password_digest = '{password_digest}' where email = '{email}'"
-            )
-            self.psycopg2_connection.commit()
-
-            return {"message": "Successfully updated password"}
-
-        except Exception as e:
-            self.psycopg2_connection.rollback()
-            print(str(e))
-            return {"message": str(e)}, 500
+        return self.run_endpoint(
+            wrapper_function=reset_password,
+            schema_populate_parameters=SchemaConfigs.RESET_PASSWORD.value.get_schema_populate_parameters(),
+            access_info=access_info,
+        )

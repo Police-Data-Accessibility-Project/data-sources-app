@@ -1,32 +1,41 @@
-from flask import request
-from middleware.reset_token_queries import (
-    check_reset_token,
+from flask import request, Response
+from flask_restx import fields
+
+from middleware.access_logic import (
+    RESET_PASSWORD_AUTH_INFO,
+    PasswordResetTokenAccessInfo,
 )
-from datetime import datetime as dt
+from middleware.decorators import endpoint_info
+from middleware.primary_resource_logic.reset_token_queries import (
+    reset_token_validation,
+)
+from resources.endpoint_schema_config import SchemaConfigs
+from resources.resource_helpers import ResponseInfo
 
-from resources.PsycopgResource import PsycopgResource
+from utilities.namespace import create_namespace, AppNamespaces
+from resources.PsycopgResource import PsycopgResource, handle_exceptions
+
+namespace_reset_token_validation = create_namespace(AppNamespaces.AUTH)
 
 
+@namespace_reset_token_validation.route("/reset-token-validation")
 class ResetTokenValidation(PsycopgResource):
 
-    def post(self):
-        try:
-            data = request.get_json()
-            token = data.get("token")
-            cursor = self.psycopg2_connection.cursor()
-            token_data = check_reset_token(cursor, token)
-            if "create_date" not in token_data:
-                return {"message": "The submitted token is invalid"}, 400
-
-            token_create_date = token_data["create_date"]
-            token_expired = (dt.utcnow() - token_create_date).total_seconds() > 900
-
-            if token_expired:
-                return {"message": "The submitted token is invalid"}, 400
-
-            return {"message": "Token is valid"}
-
-        except Exception as e:
-            self.psycopg2_connection.rollback()
-            print(str(e))
-            return {"message": str(e)}, 500
+    @endpoint_info(
+        namespace=namespace_reset_token_validation,
+        auth_info=RESET_PASSWORD_AUTH_INFO,
+        schema_config=SchemaConfigs.RESET_TOKEN_VALIDATION,
+        response_info=ResponseInfo(
+            response_dictionary={
+                200: "OK; Reset password token validated",
+                500: "Internal server error",
+                400: "Bad request; token is invalid",
+            }
+        ),
+    )
+    def post(self, access_info: PasswordResetTokenAccessInfo) -> Response:
+        """
+        If the token matches a row in the database, 'Token is valid' is returned.
+        :return:
+        """
+        return self.run_endpoint(reset_token_validation, token=access_info.reset_token)

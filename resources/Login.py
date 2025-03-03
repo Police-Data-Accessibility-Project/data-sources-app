@@ -1,15 +1,33 @@
-from werkzeug.security import check_password_hash
-from flask import request
-from middleware.login_queries import login_results, create_session_token
+from flask import Response
+
+from config import limiter
+from middleware.access_logic import NO_AUTH_INFO, AccessInfoPrimary
+from middleware.decorators import endpoint_info
+from middleware.primary_resource_logic.login_queries import try_logging_in
+from resources.endpoint_schema_config import SchemaConfigs
+from resources.resource_helpers import ResponseInfo
+from utilities.namespace import create_namespace, AppNamespaces
+
 from resources.PsycopgResource import PsycopgResource
 
+namespace_login = create_namespace(AppNamespaces.AUTH)
 
+
+@namespace_login.route("/login")
 class Login(PsycopgResource):
     """
     A resource for authenticating users. Allows users to log in using their email and password.
     """
 
-    def post(self):
+    @endpoint_info(
+        namespace=namespace_login,
+        auth_info=NO_AUTH_INFO,
+        description="Allows a user to log in. If successful, returns a session token.",
+        response_info=ResponseInfo(success_message="User logged in."),
+        schema_config=SchemaConfigs.LOGIN_POST,
+    )
+    @limiter.limit("5 per minute")
+    def post(self, access_info: AccessInfoPrimary) -> Response:
         """
         Processes the login request. Validates user credentials against the stored hashed password and,
         if successful, generates a session token for the user.
@@ -17,27 +35,7 @@ class Login(PsycopgResource):
         Returns:
         - A dictionary containing a message of success or failure, and the session token if successful.
         """
-        try:
-            data = request.get_json()
-            email = data.get("email")
-            password = data.get("password")
-            cursor = self.psycopg2_connection.cursor()
-
-            user_data = login_results(cursor, email)
-
-            if "password_digest" in user_data and check_password_hash(
-                user_data["password_digest"], password
-            ):
-                token = create_session_token(cursor, user_data["id"], email)
-                self.psycopg2_connection.commit()
-                return {
-                    "message": "Successfully logged in",
-                    "data": token,
-                }
-
-            return {"message": "Invalid email or password"}, 401
-
-        except Exception as e:
-            self.psycopg2_connection.rollback()
-            print(str(e))
-            return {"message": str(e)}, 500
+        return self.run_endpoint(
+            wrapper_function=try_logging_in,
+            schema_populate_parameters=SchemaConfigs.LOGIN_POST.value.get_schema_populate_parameters(),
+        )

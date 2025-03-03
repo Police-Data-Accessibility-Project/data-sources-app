@@ -1,0 +1,16 @@
+# This is the docker compose file for creating
+#  a local database for testing
+
+services:
+  postgres:
+    image: postgres:15
+    ports:
+      - 5432:5432
+    volumes:
+      - ds_dbscripts:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=ClandestineCornucopiaCommittee
+      - POSTGRES_USER=test_data_sources_app_user
+      - POSTGRES_DB=test_data_sources_app_db
+volumes:
+  ds_dbscripts:
