@@ -71,6 +71,9 @@ def upgrade() -> None:
     """
     )
 
+    if result is None:
+        # Not needed
+        return
     location_id, locality_id, county_id = result
 
     result = execute_and_return(
