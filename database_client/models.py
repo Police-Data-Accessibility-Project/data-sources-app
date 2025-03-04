@@ -90,7 +90,7 @@ RequestStatusLiteral = Literal[
     "Waiting for requestor",
 ]
 
-OperationTypeLiteral = Literal["UPDATE", "DELETE"]
+OperationTypeLiteral = Literal["UPDATE", "DELETE", "INSERT"]
 
 JurisdictionTypeLiteral = Literal[
     "federal", "state", "county", "local", "port", "tribal", "transit", "school"
