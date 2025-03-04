@@ -67,9 +67,9 @@ def test_archives_put(
         endpoint=ENDPOINT,
         headers=test_user_admin.jwt_authorization_header,
         json={
-                "id": data_source_id,
-                "last_cached": str(last_cached),
-            }
+            "id": data_source_id,
+            "last_cached": str(last_cached),
+        },
     )
 
     row = tdc.db_client.execute_raw_sql(
