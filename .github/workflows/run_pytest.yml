@@ -20,7 +20,7 @@ jobs:
           - 5432:5432
 
     env:
-      FLASK_APP_COOKIE_ENCRYPTION_KEY: ${{ secrets.SECRET_KEY }}
+      FLASK_APP_COOKIE_ENCRYPTION_KEY: "cookieEncryptionKey"
       DO_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
       GH_CLIENT_ID: ${{secrets.GH_CLIENT_ID}}
       GH_CLIENT_SECRET: ${{secrets.GH_CLIENT_SECRET}}
