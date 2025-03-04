@@ -31,6 +31,7 @@ from tests.helper_scripts.helper_classes.TestCSVCreator import TestCSVCreator
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
+from tests.integration.test_check_database_health import wipe_database
 
 
 @dataclass
@@ -186,6 +187,7 @@ def test_batch_data_sources_insert_happy_path(
     data_sources_post_runner: BatchTestRunner,
 ):
     runner = data_sources_post_runner
+    wipe_database(runner.tdc.db_client)
     for _ in range(3):
         runner.tdc.agency()
     rows = [

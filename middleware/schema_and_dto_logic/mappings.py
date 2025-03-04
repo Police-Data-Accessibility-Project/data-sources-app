@@ -31,4 +31,5 @@ RESTX_FIELD_TO_NATIVE_TYPE_MAPPING = {
     restx_fields.List: list,
     restx_fields.Nested: dict,
     restx_fields.Url: str,
+    restx_fields.DateTime: str,
 }
