@@ -68,9 +68,6 @@ class Archives(PsycopgResource):
         ),
         description="""
         Updates the archive data based on the provided JSON payload.
-        Note that, for this endpoint only, the schema must be provided first as a json string,
-        rather than as a typical JSON object.
-        This will be changed in a later update to conform to the standard JSON schema.
         """,
     )
     @limiter.limit("25/minute;1000/hour")
@@ -86,12 +83,11 @@ class Archives(PsycopgResource):
             -   dict: A status message indicating success or an error message if an exception occurs.
         """
         json_data = request.get_json()
-        data = json.loads(json_data)
-        id = data["id"] if "id" in data else None
-        last_cached = data["last_cached"] if "last_cached" in data else None
+        id = json_data["id"] if "id" in json_data else None
+        last_cached = json_data["last_cached"] if "last_cached" in json_data else None
         broken_as_of = (
-            data["broken_source_url_as_of"]
-            if "broken_source_url_as_of" in data
+            json_data["broken_source_url_as_of"]
+            if "broken_source_url_as_of" in json_data
             else None
         )
         return self.run_endpoint(
