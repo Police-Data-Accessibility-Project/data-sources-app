@@ -52,12 +52,10 @@ class Archives(PsycopgResource):
         Returns:
         - Any: The cleaned results of archives combined from the database query, or an error message if an exception occurs.
         """
-        with self.setup_database_client() as db_client:
-            archives_combined_results_clean = archives_get_query(
-                db_client=db_client,
-            )
-
-        return archives_combined_results_clean
+        return self.run_endpoint(
+            wrapper_function=archives_get_query,
+            schema_populate_parameters=SchemaConfigs.ARCHIVES_GET.value.get_schema_populate_parameters(),
+        )
 
     @endpoint_info(
         namespace=namespace_archives,
