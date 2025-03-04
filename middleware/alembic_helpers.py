@@ -1,6 +1,3 @@
-from alembic import op
-import sqlalchemy as sa
-
 import sqlalchemy as sa
 from alembic import op
 
@@ -23,11 +20,19 @@ def switch_enum_type(
     """
     conn = op.get_bind()
 
+    # Ensure names are safely quoted
+    quoted_table_name = f'"{table_name}"'
+    quoted_column_name = f'"{column_name}"'
+    quoted_enum_name = f'"{enum_name}"'
+
     # Step 1: Rename the old ENUM type
     old_enum_temp_name = f"{enum_name}_old"
-    op.execute(f'ALTER TYPE "{enum_name}" RENAME TO "{old_enum_temp_name}"')
+    quoted_old_enum_name = f'"{old_enum_temp_name}"'
+    op.execute(
+        sa.text(f"ALTER TYPE {quoted_enum_name} RENAME TO {quoted_old_enum_name}")
+    )
 
-    # Step 2: Create the new ENUM type
+    # Step 2: Create the new ENUM type safely
     new_enum_type = sa.Enum(*new_enum_values, name=enum_name)
     new_enum_type.create(conn)
 
@@ -35,7 +40,7 @@ def switch_enum_type(
     existing_values = [
         row[0]
         for row in conn.execute(
-            sa.text(f'SELECT DISTINCT "{column_name}" FROM "{table_name}"')
+            sa.text(f"SELECT DISTINCT {quoted_column_name} FROM {quoted_table_name}")
         ).fetchall()
     ]
 
@@ -45,16 +50,18 @@ def switch_enum_type(
             f"Existing column '{column_name}' contains invalid values: {invalid_values}"
         )
 
-    # Step 4: Change column type (explicit cast)
+    # Step 4: Change column type using explicit cast
     op.execute(
-        f"""
-        ALTER TABLE "{table_name}" 
-        ALTER COLUMN "{column_name}" 
-        SET DATA TYPE "{enum_name}" 
-        USING "{column_name}"::text::{enum_name}
+        sa.text(
+            f"""
+        ALTER TABLE {quoted_table_name} 
+        ALTER COLUMN {quoted_column_name} 
+        SET DATA TYPE {quoted_enum_name} 
+        USING {quoted_column_name}::text::{quoted_enum_name}
     """
+        )
     )
 
-    # Step 5: Drop the old ENUM type
+    # Step 5: Drop the old ENUM type if required
     if drop_old_enum:
-        op.execute(f'DROP TYPE "{old_enum_temp_name}"')
+        op.execute(sa.text(f"DROP TYPE {quoted_old_enum_name}"))
