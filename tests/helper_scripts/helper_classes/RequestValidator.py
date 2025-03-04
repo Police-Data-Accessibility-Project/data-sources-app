@@ -3,6 +3,7 @@ Class based means to run and validate requests
 """
 
 from dataclasses import dataclass
+from datetime import datetime
 from http import HTTPStatus
 from io import BytesIO
 from typing import Optional, Type, Union, List
@@ -11,7 +12,7 @@ from flask.testing import FlaskClient
 from marshmallow import Schema
 
 from database_client.constants import PAGE_SIZE
-from database_client.enums import SortOrder, RequestStatus, ApprovalStatus
+from database_client.enums import SortOrder, RequestStatus, ApprovalStatus, UpdateFrequency
 from middleware.enums import OutputFormatEnum, PermissionsEnum, RecordTypes
 from middleware.util import update_if_not_none
 from resources.endpoint_schema_config import SchemaConfigs
@@ -301,6 +302,36 @@ class RequestValidator:
             expected_response_status=expected_response_status,
             expected_json_content=expected_json_content,
             **kwargs,
+        )
+
+    def archives_get(
+            self,
+            headers: dict,
+            update_frequency: Optional[UpdateFrequency] = None,
+            last_archived_before: Optional[datetime] = None,
+            page: int = 1
+    ):
+        endpoint_base = "/archives"
+        if last_archived_before is not None:
+            last_archived_before = last_archived_before.isoformat()
+
+        params = {}
+        d = {
+                "update_frequency": update_frequency,
+                "last_archived_before": last_archived_before,
+                "page": page
+            }
+        update_if_not_none(
+            dict_to_update=params,
+            secondary_dict=d)
+        url = add_query_params(
+            url=endpoint_base,
+            params=params,
+        )
+        return self.get(
+            endpoint=url,
+            expected_schema=SchemaConfigs.ARCHIVES_GET.value.primary_output_schema,
+            headers=headers
         )
 
     def federal_search(

@@ -164,3 +164,17 @@ class EventType(Enum):
     REQUEST_READY_TO_START = "Request Ready to Start"
     REQUEST_COMPLETE = "Request Complete"
     DATA_SOURCE_APPROVED = "Data Source Approved"
+
+class UpdateFrequency(Enum):
+    WEEKLY = "Weekly"
+    DAILY = "Daily"
+    NO_UPDATES = "No updates / rarely updated"
+    MORE_THAN_ANNUALLY = "> Annually"
+    ON_REQUEST = "On request"
+    MONTHLY = "Monthly"
+    INCIDENT_BASED = "Incident-based"
+    ANNUALLY = "Annually"
+    LESS_THAN_HOURLY = "< Hourly"
+    BI_WEEKLY = "Bi-weekly"
+    HOURLY = "Hourly"
+    QUARTERLY = "Quarterly"

@@ -398,13 +398,21 @@ class DatabaseClient:
     )
 
     @cursor_manager()
-    def get_data_sources_to_archive(self) -> list[ArchiveInfo]:
+    def get_data_sources_to_archive(
+            self,
+            update_frequency: Optional[str] = None,
+            last_archived_before: Optional[datetime] = None,
+            page: int = 1
+    ) -> list[ArchiveInfo]:
         """
         Pulls data sources to be archived by the automatic archives script.
 
         A data source is selected for archival if:
         The data source has been approved
-        AND (the data source has not been archived previously OR the data source is updated regularly)
+        AND (
+            the data source has not been archived previously
+            OR the data source is updated regularly
+        )
         AND the source url is not broken
         AND the source url is not null.
 
@@ -424,8 +432,21 @@ class DatabaseClient:
         ON
             data_sources.id = data_sources_archive_info.data_source_id
         WHERE 
-            approval_status = 'approved' AND (last_cached IS NULL OR update_frequency IS NOT NULL) AND broken_source_url_as_of IS NULL AND url_status <> 'broken' AND source_url IS NOT NULL
+            approval_status = 'approved' AND (
+                last_cached IS NULL 
+                OR update_frequency IS NOT NULL
+            )
+            AND url_status <> 'broken' 
+            AND source_url IS NOT NULL
         """
+
+        if update_frequency is not None:
+            sql_query += f" AND update_frequency = '{update_frequency.value}'"
+        if last_archived_before is not None:
+            sql_query += f" AND last_cached < '{last_archived_before}'"
+
+        sql_query += f" LIMIT {PAGE_SIZE} OFFSET {self.get_offset(page)}"
+
         self.cursor.execute(sql_query)
         data_sources = self.cursor.fetchall()
 
