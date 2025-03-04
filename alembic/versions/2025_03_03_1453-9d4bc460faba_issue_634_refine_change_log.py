@@ -197,6 +197,13 @@ def downgrade() -> None:
 
     op.execute("DROP TRIGGER IF EXISTS log_users_changes ON public.users")
 
+    op.execute(
+        """
+    DELETE FROM CHANGE_LOG
+    WHERE operation_type = 'INSERT'
+    """
+    )
+
     switch_enum_type(
         "change_log",
         column_name="operation_type",
