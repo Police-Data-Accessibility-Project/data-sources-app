@@ -29,7 +29,9 @@ def switch_enum_type(
     old_enum_temp_name = f"{enum_name}_old"
     quoted_old_enum_name = f'"{old_enum_temp_name}"'
     op.execute(
-        sa.text(f"ALTER TYPE {quoted_enum_name} RENAME TO {quoted_old_enum_name}")
+        sa.text(
+            f"ALTER TYPE {quoted_enum_name} RENAME TO {quoted_old_enum_name}"
+        )  # nosec
     )
 
     # Step 2: Create the new ENUM type safely

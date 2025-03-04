@@ -165,6 +165,7 @@ class EventType(Enum):
     REQUEST_COMPLETE = "Request Complete"
     DATA_SOURCE_APPROVED = "Data Source Approved"
 
+
 class UpdateFrequency(Enum):
     WEEKLY = "Weekly"
     DAILY = "Daily"

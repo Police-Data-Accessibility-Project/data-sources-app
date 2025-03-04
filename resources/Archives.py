@@ -57,7 +57,6 @@ class Archives(PsycopgResource):
             schema_populate_parameters=SchemaConfigs.ARCHIVES_GET.value.get_schema_populate_parameters(),
         )
 
-
     @endpoint_info(
         namespace=namespace_archives,
         auth_info=ARCHIVE_WRITE_AUTH_INFO,

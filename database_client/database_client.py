@@ -399,10 +399,10 @@ class DatabaseClient:
 
     @cursor_manager()
     def get_data_sources_to_archive(
-            self,
-            update_frequency: Optional[str] = None,
-            last_archived_before: Optional[datetime] = None,
-            page: int = 1
+        self,
+        update_frequency: Optional[str] = None,
+        last_archived_before: Optional[datetime] = None,
+        page: int = 1,
     ) -> list[ArchiveInfo]:
         """
         Pulls data sources to be archived by the automatic archives script.

@@ -6,7 +6,9 @@ import psycopg
 from flask import make_response
 
 from database_client.database_client import DatabaseClient
-from middleware.schema_and_dto_logic.primary_resource_dtos.archives_dtos import ArchivesGetRequestDTO
+from middleware.schema_and_dto_logic.primary_resource_dtos.archives_dtos import (
+    ArchivesGetRequestDTO,
+)
 from utilities.common import convert_dates_to_strings
 from psycopg import connection as PgConnection
 
@@ -20,8 +22,7 @@ ARCHIVES_GET_COLUMNS = [
 
 
 def archives_get_query(
-    db_client: DatabaseClient,
-    dto: ArchivesGetRequestDTO
+    db_client: DatabaseClient, dto: ArchivesGetRequestDTO
 ) -> List[Dict[str, Any]]:
     """
     Processes the archives get results, either from the database and converts dates to strings.
@@ -32,7 +33,7 @@ def archives_get_query(
     results = db_client.get_data_sources_to_archive(
         page=dto.page,
         last_archived_before=dto.last_archived_before,
-        update_frequency=dto.update_frequency
+        update_frequency=dto.update_frequency,
     )
     archives_combined_results = [
         dict(zip(ARCHIVES_GET_COLUMNS, result)) for result in results

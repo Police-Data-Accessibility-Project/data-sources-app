@@ -16,7 +16,9 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.admin_dtos import (
     AdminUserPutDTO,
     AdminUserPostDTO,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.archives_dtos import ArchivesGetRequestDTO
+from middleware.schema_and_dto_logic.primary_resource_dtos.archives_dtos import (
+    ArchivesGetRequestDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_dtos.bulk_dtos import (
     BulkRequestDTO,
 )
@@ -37,7 +39,8 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.admin_schemas impo
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.archives_schemas import (
     ArchivesGetResponseSchema,
-    ArchivesPutRequestSchema, ArchivesGetRequestSchema,
+    ArchivesPutRequestSchema,
+    ArchivesGetRequestSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.bulk_schemas import (
     BatchRequestSchema,
