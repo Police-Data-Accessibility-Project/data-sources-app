@@ -1,1 +1,0 @@
-{"version":3,"file":"IHTMLBaseElement.d.ts","sourceRoot":"","sources":["../../../src/nodes/html-base-element/IHTMLBaseElement.ts"],"names":[],"mappings":"AAAA,OAAO,YAAY,MAAM,iCAAiC,CAAC;AAE3D;;;;;GAKG;AACH,MAAM,CAAC,OAAO,WAAW,gBAAiB,SAAQ,YAAY;IAC7D,IAAI,EAAE,MAAM,CAAC;IACb,MAAM,EAAE,MAAM,CAAC;IAEf;;;;;;OAMG;IACH,SAAS,CAAC,IAAI,CAAC,EAAE,OAAO,GAAG,gBAAgB,CAAC;CAC5C"}

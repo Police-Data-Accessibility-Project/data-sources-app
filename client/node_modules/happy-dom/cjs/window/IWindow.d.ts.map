@@ -1,1 +1,0 @@
-{"version":3,"file":"IWindow.d.ts","sourceRoot":"","sources":["../../src/window/IWindow.ts"],"names":[],"mappings":"AAAA,OAAO,iBAAiB,MAAM,wBAAwB,CAAC;AACvD,OAAO,cAAc,MAAM,qBAAqB,CAAC;AAEjD;;GAEG;AACH,MAAM,CAAC,OAAO,WAAW,OAAQ,SAAQ,cAAc;IAEtD,QAAQ,CAAC,QAAQ,EAAE,iBAAiB,CAAC;CACrC"}
