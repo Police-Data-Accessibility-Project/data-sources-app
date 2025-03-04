@@ -37,14 +37,8 @@ def switch_enum_type(
     new_enum_type.create(conn)
 
     # Step 3: Ensure existing values are compatible with the new enum
-    existing_values = [
-        row[0]
-        for row in conn.execute(
-            sa.text(
-                f"SELECT DISTINCT {quoted_column_name} FROM {quoted_table_name}"
-            )  # nosec
-        ).fetchall()
-    ]
+    query = f"SELECT DISTINCT {quoted_column_name} FROM {quoted_table_name}"  # nosec
+    existing_values = [row[0] for row in conn.execute(sa.text(query)).fetchall()]
 
     invalid_values = [val for val in existing_values if val not in new_enum_values]
     if invalid_values:
