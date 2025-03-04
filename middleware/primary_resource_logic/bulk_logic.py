@@ -241,6 +241,7 @@ def manage_agencies_response(responses: list[BulkPostResponse]) -> Response:
             data={
                 "message": "No agencies were created from the provided csv file.",
                 "errors": error_dict,
+                "ids": created_ids,
             },
         )
     return FlaskResponseManager.make_response(
@@ -271,7 +272,7 @@ def manage_response(
             "ids": [request.entry_id for request in brm.get_requests_without_error()]
         }
     else:
-        kwargs = {}
+        kwargs = {"ids": []}
 
     return FlaskResponseManager.make_response(
         status_code=HTTPStatus.OK,

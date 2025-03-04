@@ -124,6 +124,7 @@ def test_batch_agencies_insert_happy_path(
     agencies_post_runner: BatchTestRunner,
 ):
     runner = agencies_post_runner
+    runner.tdc.agency()
 
     test_name = get_test_name()
     locality_info = {"location_id": runner.tdc.locality(locality_name=test_name)}
@@ -154,6 +155,7 @@ def test_batch_agencies_insert_some_errors(
     agencies_post_runner: BatchTestRunner,
 ):
     runner = agencies_post_runner
+    runner.tdc.agency()
 
     rows = [
         runner.generate_test_data(override={"lat": "not a number"}),
@@ -187,11 +189,11 @@ def test_batch_data_sources_insert_happy_path(
     data_sources_post_runner: BatchTestRunner,
 ):
     runner = data_sources_post_runner
-    wipe_database(runner.tdc.db_client)
+    agency_ids = [runner.tdc.agency().id for _ in range(3)]
     for _ in range(3):
         runner.tdc.agency()
     rows = [
-        runner.generate_test_data(override={"linked_agency_ids": [1, 2, 3]})
+        runner.generate_test_data(override={"linked_agency_ids": agency_ids})
         for _ in range(3)
     ]
     data = create_csv_and_run(
@@ -220,9 +222,10 @@ def test_batch_data_sources_insert_some_errors(
     data_sources_post_runner: BatchTestRunner,
 ):
     runner = data_sources_post_runner
+    agency_ids = [runner.tdc.agency().id for _ in range(3)]
     rows = [
         runner.generate_test_data(override={"linked_agency_ids": "not a list"}),
-        runner.generate_test_data(override={"linked_agency_ids": [1, 2, 3]}),
+        runner.generate_test_data(override={"linked_agency_ids": agency_ids}),
         runner.generate_test_data(override={"coverage_start": "not a date"}),
     ]
     data = create_csv_and_run(
