@@ -52,9 +52,12 @@ class GetManyRequestsBaseSchema(Schema):
         metadata={
             "source": SourceMappingEnum.QUERY_ARGS,
             "transformation_function": lambda value: (
-                (value.split(",")) if value else None
+                ast.literal_eval(value) if value else None
             ),
-            "description": "A comma-delimited list of the columns to return in the results. Defaults to all permitted if not provided.",
+            "description": "A comma-delimited list of the columns to return in the results. "
+            "Defaults to all permitted if not provided."
+            "Note that these columns must be in URL-encoded format."
+            "\nFor example, for `name` and `id`: '/api/data-sources?page=1&requested_columns=%5B%27name%27%2C+%27id%27%5D'",
         },
     )
     limit = fields.Integer(
