@@ -1,10 +1,12 @@
 from flask import Response, request
 from flask_restx import fields
 
+from config import limiter
 from middleware.access_logic import (
-    GET_AUTH_INFO,
+    API_OR_JWT_AUTH_INFO,
     AccessInfoPrimary,
     WRITE_ONLY_AUTH_INFO,
+    ARCHIVE_WRITE_AUTH_INFO,
 )
 from middleware.decorators import api_key_required, permissions_required, endpoint_info
 from middleware.primary_resource_logic.archives_queries import (
@@ -34,7 +36,7 @@ class Archives(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_archives,
-        auth_info=GET_AUTH_INFO,
+        auth_info=API_OR_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.ARCHIVES_GET,
         response_info=ResponseInfo(
             success_message="Returns a list of archived data sources.",
@@ -50,27 +52,23 @@ class Archives(PsycopgResource):
         Returns:
         - Any: The cleaned results of archives combined from the database query, or an error message if an exception occurs.
         """
-        with self.setup_database_client() as db_client:
-            archives_combined_results_clean = archives_get_query(
-                db_client=db_client,
-            )
-
-        return archives_combined_results_clean
+        return self.run_endpoint(
+            wrapper_function=archives_get_query,
+            schema_populate_parameters=SchemaConfigs.ARCHIVES_GET.value.get_schema_populate_parameters(),
+        )
 
     @endpoint_info(
         namespace=namespace_archives,
-        auth_info=WRITE_ONLY_AUTH_INFO,
+        auth_info=ARCHIVE_WRITE_AUTH_INFO,
         schema_config=SchemaConfigs.ARCHIVES_PUT,
         response_info=ResponseInfo(
             success_message="Successfully updated the archive data.",
         ),
         description="""
         Updates the archive data based on the provided JSON payload.
-        Note that, for this endpoint only, the schema must be provided first as a json string,
-        rather than as a typical JSON object.
-        This will be changed in a later update to conform to the standard JSON schema.
         """,
     )
+    @limiter.limit("25/minute;1000/hour")
     def put(self, access_info: AccessInfoPrimary) -> Response:
         """
         Updates the archive data based on the provided JSON payload.
@@ -83,12 +81,11 @@ class Archives(PsycopgResource):
             -   dict: A status message indicating success or an error message if an exception occurs.
         """
         json_data = request.get_json()
-        data = json.loads(json_data)
-        id = data["id"] if "id" in data else None
-        last_cached = data["last_cached"] if "last_cached" in data else None
+        id = json_data["id"] if "id" in json_data else None
+        last_cached = json_data["last_cached"] if "last_cached" in json_data else None
         broken_as_of = (
-            data["broken_source_url_as_of"]
-            if "broken_source_url_as_of" in data
+            json_data["broken_source_url_as_of"]
+            if "broken_source_url_as_of" in json_data
             else None
         )
         return self.run_endpoint(

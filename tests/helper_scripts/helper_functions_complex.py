@@ -15,10 +15,18 @@ from middleware.enums import (
     PermissionsEnum,
     Relations,
     JurisdictionType,
+    AgencyType,
+)
+from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
+    AgenciesPostDTO,
+    AgencyInfoPostDTO,
 )
 from resources.ApiKeyResource import API_KEY_ROUTE
 from tests.helper_scripts.common_test_data import get_test_name, get_test_email
 from tests.helper_scripts.helper_classes.RequestValidator import RequestValidator
+from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
+    TestDataCreatorDBClient,
+)
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_classes.UserInfo import UserInfo
 from tests.helper_scripts.helper_functions_simple import get_authorization_header
@@ -103,7 +111,6 @@ def setup_get_typeahead_suggestion_test_data(cursor: Optional[psycopg.Cursor] = 
             column_value_mappings={
                 "fips": "12345",
                 "name": "Arxylodon",
-                "state_iso": "XY",
                 "state_id": state_id,
             },
             column_to_return="id",
@@ -127,16 +134,16 @@ def setup_get_typeahead_suggestion_test_data(cursor: Optional[psycopg.Cursor] = 
             ),
         )[0]["id"]
 
-        agency_id = db_client.create_or_get(
-            table_name=Relations.AGENCIES.value,
-            column_value_mappings={
-                "name": "Xylodammerung Police Agency",
-                "jurisdiction_type": JurisdictionType.STATE,
-                "location_id": location_id,
-            },
-            column_to_return="id",
+        agency_id = db_client.create_agency(
+            dto=AgenciesPostDTO(
+                agency_info=AgencyInfoPostDTO(
+                    name="Xylodammerung Police Agency",
+                    jurisdiction_type=JurisdictionType.STATE,
+                    agency_type=AgencyType.POLICE,
+                ),
+                location_ids=[location_id],
+            )
         )
-
         db_client.execute_raw_sql("CALL refresh_typeahead_agencies();")
         db_client.execute_raw_sql("CALL refresh_typeahead_locations();")
 
@@ -175,6 +182,11 @@ def create_test_user_setup(
 def create_admin_test_user_setup(flask_client: FlaskClient) -> TestUserSetup:
     tus_admin = create_test_user_setup(
         flask_client,
-        permissions=[PermissionsEnum.READ_ALL_USER_INFO, PermissionsEnum.DB_WRITE],
+        permissions=[
+            PermissionsEnum.READ_ALL_USER_INFO,
+            PermissionsEnum.DB_WRITE,
+            PermissionsEnum.USER_CREATE_UPDATE,
+            PermissionsEnum.ARCHIVE_WRITE,
+        ],
     )
     return tus_admin

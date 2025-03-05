@@ -2,6 +2,7 @@ import uuid
 from typing import Optional
 
 from sqlalchemy import delete, select, and_
+from sqlalchemy.exc import IntegrityError
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import (
@@ -11,7 +12,11 @@ from database_client.enums import (
     ExternalAccountTypeEnum,
 )
 from database_client.models import SQL_ALCHEMY_TABLE_REFERENCE
-from middleware.enums import JurisdictionType, Relations
+from middleware.enums import JurisdictionType, Relations, AgencyType
+from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
+    AgenciesPostDTO,
+    AgencyInfoPostDTO,
+)
 from tests.helper_scripts.common_endpoint_calls import CreatedDataSource
 from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,
@@ -76,7 +81,10 @@ class TDCSQLAlchemyHelper:
         column_id = getattr(table, "id")
         query = select(column_id).where(column_name == state_iso)
         result = self.db_client.execute_sqlalchemy(lambda: query)
-        return [row[0] for row in result][0]
+        results = [result[0] for result in result]
+        if len(results) == 0:
+            raise Exception(f"Could not find state with iso {state_iso}")
+        return results[0]
 
     def clear_user_notification_queue(self):
         table = SQL_ALCHEMY_TABLE_REFERENCE[Relations.USER_NOTIFICATION_QUEUE.value]
@@ -136,6 +144,24 @@ class TestDataCreatorDBClient:
         )
 
         self.helper.clear_user_notification_queue()
+
+    def county(
+        self,
+        county_name: str,
+        state_iso: str = "PA",
+        fips: Optional[str] = None,
+    ) -> int:
+        state_id = self.helper.get_state_id(state_iso=state_iso)
+        if fips is None:
+            fips = str(get_random_number_for_testing())
+        try:
+            return self.db_client.create_county(
+                name=county_name, fips=fips, state_id=state_id
+            )
+        except IntegrityError:
+            return self.db_client.get_county_id(
+                county_name=county_name, state_id=state_id
+            )
 
     def locality(
         self,
@@ -236,18 +262,20 @@ class TestDataCreatorDBClient:
         self, location_id: Optional[int] = None, **additional_column_value_mappings
     ) -> TestAgencyInfo:
         agency_name = self.test_name()
-        column_value_mappings = {
-            "name": agency_name,
-            "jurisdiction_type": JurisdictionType.FEDERAL.value,
-        }
-        column_value_mappings.update(additional_column_value_mappings)
-
-        if location_id is not None:
-            column_value_mappings["location_id"] = location_id
-
-        agency_id = self.db_client.create_agency(
-            column_value_mappings=column_value_mappings
+        agency_info = AgencyInfoPostDTO(
+            name=agency_name,
+            agency_type=AgencyType.POLICE,
+            jurisdiction_type=JurisdictionType.FEDERAL,
         )
+        for key, value in additional_column_value_mappings.items():
+            setattr(agency_info, key, value)
+
+        dto = AgenciesPostDTO(
+            agency_info=agency_info,
+            location_ids=[location_id] if location_id is not None else None,
+        )
+
+        agency_id = self.db_client.create_agency(dto=dto)
         return TestAgencyInfo(id=agency_id, submitted_name=agency_name)
 
     def update_agency(self, agency_id: int, column_value_mappings: dict):
@@ -297,6 +325,77 @@ class TestDataCreatorDBClient:
             external_account_type=ExternalAccountTypeEnum.GITHUB,
         )
         return fake_id
+
+    def create_states(self):
+        states = [
+            ["AL", "Alabama"],
+            ["AK", "Alaska"],
+            ["AZ", "Arizona"],
+            ["AR", "Arkansas"],
+            ["CA", "California"],
+            ["CZ", "Canal Zone"],
+            ["CO", "Colorado"],
+            ["CT", "Connecticut"],
+            ["DE", "Delaware"],
+            ["DC", "District of Columbia"],
+            ["FL", "Florida"],
+            ["GA", "Georgia"],
+            ["GU", "Guam"],
+            ["HI", "Hawaii"],
+            ["ID", "Idaho"],
+            ["IL", "Illinois"],
+            ["IN", "Indiana"],
+            ["IA", "Iowa"],
+            ["KS", "Kansas"],
+            ["KY", "Kentucky"],
+            ["LA", "Louisiana"],
+            ["ME", "Maine"],
+            ["MD", "Maryland"],
+            ["MA", "Massachusetts"],
+            ["MI", "Michigan"],
+            ["MN", "Minnesota"],
+            ["MS", "Mississippi"],
+            ["MO", "Missouri"],
+            ["MT", "Montana"],
+            ["NE", "Nebraska"],
+            ["NV", "Nevada"],
+            ["NH", "New Hampshire"],
+            ["NJ", "New Jersey"],
+            ["NM", "New Mexico"],
+            ["NY", "New York"],
+            ["NC", "North Carolina"],
+            ["ND", "North Dakota"],
+            ["OH", "Ohio"],
+            ["OK", "Oklahoma"],
+            ["OR", "Oregon"],
+            ["PA", "Pennsylvania"],
+            ["PR", "Puerto Rico"],
+            ["RI", "Rhode Island"],
+            ["SC", "South Carolina"],
+            ["SD", "South Dakota"],
+            ["TN", "Tennessee"],
+            ["TX", "Texas"],
+            ["UT", "Utah"],
+            ["VT", "Vermont"],
+            ["VI", "Virgin Islands"],
+            ["VA", "Virginia"],
+            ["WA", "Washington"],
+            ["WV", "West Virginia"],
+            ["WI", "Wisconsin"],
+            ["WY", "Wyoming"],
+        ]
+        for state_abbr, state_name in states:
+            try:
+                self.db_client._create_entry_in_table(
+                    table_name=Relations.US_STATES.value,
+                    column_value_mappings={
+                        "state_name": state_name,
+                        "state_iso": state_abbr,
+                    },
+                )
+            except IntegrityError:
+                # Already exists. Keep going
+                pass
 
 
 class ValidNotificationEventCreator:

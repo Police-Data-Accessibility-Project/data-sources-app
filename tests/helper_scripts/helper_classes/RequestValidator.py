@@ -3,15 +3,22 @@ Class based means to run and validate requests
 """
 
 from dataclasses import dataclass
+from datetime import datetime
 from http import HTTPStatus
 from io import BytesIO
-from typing import Optional, Type, Union
+from typing import Optional, Type, Union, List
 
 from flask.testing import FlaskClient
 from marshmallow import Schema
 
-from database_client.enums import SortOrder, RequestStatus, ApprovalStatus
-from middleware.enums import OutputFormatEnum
+from database_client.constants import PAGE_SIZE
+from database_client.enums import (
+    SortOrder,
+    RequestStatus,
+    ApprovalStatus,
+    UpdateFrequency,
+)
+from middleware.enums import OutputFormatEnum, PermissionsEnum, RecordTypes
 from middleware.util import update_if_not_none
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.common_test_data import get_test_name
@@ -273,12 +280,19 @@ class RequestValidator:
         headers: dict,
         location_id: int,
         record_categories: Optional[list[RecordCategories]] = None,
+        record_types: Optional[list[RecordTypes]] = None,
         format: Optional[OutputFormatEnum] = OutputFormatEnum.JSON,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_schema: Optional[
+            Union[Type[Schema], Schema]
+        ] = SchemaConfigs.SEARCH_LOCATION_AND_RECORD_TYPE_GET.value.primary_output_schema,
+        expected_json_content: Optional[dict] = None,
     ):
         endpoint_base = "/search/search-location-and-record-type"
         query_params = self._get_search_query_params(
             location_id=location_id,
             record_categories=record_categories,
+            record_types=record_types,
         )
         query_params.update({} if format is None else {"output_format": format.value})
         endpoint = add_query_params(
@@ -289,8 +303,38 @@ class RequestValidator:
         return self.get(
             endpoint=endpoint,
             headers=headers,
-            expected_schema=SchemaConfigs.SEARCH_LOCATION_AND_RECORD_TYPE_GET.value.primary_output_schema,
+            expected_schema=expected_schema,
+            expected_response_status=expected_response_status,
+            expected_json_content=expected_json_content,
             **kwargs,
+        )
+
+    def archives_get(
+        self,
+        headers: dict,
+        update_frequency: Optional[UpdateFrequency] = None,
+        last_archived_before: Optional[datetime] = None,
+        page: int = 1,
+    ):
+        endpoint_base = "/archives"
+        if last_archived_before is not None:
+            last_archived_before = last_archived_before.isoformat()
+
+        params = {}
+        d = {
+            "update_frequency": update_frequency,
+            "last_archived_before": last_archived_before,
+            "page": page,
+        }
+        update_if_not_none(dict_to_update=params, secondary_dict=d)
+        url = add_query_params(
+            url=endpoint_base,
+            params=params,
+        )
+        return self.get(
+            endpoint=url,
+            expected_schema=SchemaConfigs.ARCHIVES_GET.value.primary_output_schema,
+            headers=headers,
         )
 
     def federal_search(
@@ -316,7 +360,11 @@ class RequestValidator:
         )
 
     @staticmethod
-    def _get_search_query_params(record_categories, location_id: int):
+    def _get_search_query_params(
+        record_categories: Optional[list[RecordCategories]],
+        location_id: int,
+        record_types: Optional[list[RecordTypes]] = None,
+    ):
         query_params = {
             "location_id": location_id,
         }
@@ -324,6 +372,9 @@ class RequestValidator:
             query_params["record_categories"] = ",".join(
                 [rc.value for rc in record_categories]
             )
+
+        if record_types is not None:
+            query_params["record_types"] = ",".join([rt.value for rt in record_types])
         return query_params
 
     def create_agency(
@@ -341,7 +392,7 @@ class RequestValidator:
         self,
         headers: dict,
         source_url: str = "http://src1.com",
-        submitted_name: str = get_test_name(),
+        name: str = get_test_name(),
         approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
         **kwargs,
     ):
@@ -351,7 +402,7 @@ class RequestValidator:
             json={
                 "entry_data": {
                     "source_url": source_url,
-                    "submitted_name": submitted_name,
+                    "name": name,
                     "approval_status": approval_status.value,
                     **kwargs,
                 }
@@ -414,6 +465,7 @@ class RequestValidator:
         sort_by: Optional[str] = None,
         sort_order: Optional[SortOrder] = None,
         request_statuses: Optional[list[RequestStatus]] = None,
+        limit: Optional[int] = PAGE_SIZE,
     ):
         query_params = {}
         update_if_not_none(
@@ -426,6 +478,7 @@ class RequestValidator:
                     if request_statuses is not None
                     else None
                 ),
+                "limit": limit,
             },
         )
         return self.get(
@@ -505,26 +558,53 @@ class RequestValidator:
         )
 
     def get_user_profile_data_requests(
-        self, headers: dict, expected_json_content: Optional[dict] = None
+        self,
+        headers: dict,
+        expected_json_content: Optional[dict] = None,
+        limit: int = PAGE_SIZE,
     ):
         return self.get(
-            endpoint="/api/user/data-requests?page=1",
+            endpoint=f"/api/user/data-requests?page=1&limit={limit}",
             headers=headers,
             expected_json_content=expected_json_content,
             expected_schema=SchemaConfigs.USER_PROFILE_DATA_REQUESTS_GET.value.primary_output_schema,
         )
 
     def get_agency(
-        self, sort_by: str, sort_order: SortOrder, headers: dict, page: int = 1
+        self,
+        sort_by: str,
+        sort_order: SortOrder,
+        headers: dict,
+        page: int = 1,
+        limit: int = PAGE_SIZE,
     ):
         url = add_query_params(
             url=AGENCIES_BASE_ENDPOINT,
-            params={"sort_by": sort_by, "sort_order": sort_order.value, "page": page},
+            params={
+                "sort_by": sort_by,
+                "sort_order": sort_order.value,
+                "page": page,
+                "limit": limit,
+            },
         )
         return self.get(
             endpoint=url,
             headers=headers,
             expected_schema=SchemaConfigs.AGENCIES_GET_MANY.value.primary_output_schema,
+        )
+
+    def add_location_to_agency(self, headers: dict, agency_id: int, location_id: int):
+        return self.post(
+            endpoint=f"/api/agencies/{agency_id}/locations/{location_id}",
+            headers=headers,
+        )
+
+    def remove_location_from_agency(
+        self, headers: dict, agency_id: int, location_id: int
+    ):
+        return self.delete(
+            endpoint=f"/api/agencies/{agency_id}/locations/{location_id}",
+            headers=headers,
         )
 
     def update_password(
@@ -567,19 +647,6 @@ class RequestValidator:
             expected_response_status=bop.expected_response_status,
         )
 
-    def update_agencies_bulk(
-        self,
-        bop: BulkOperationParams,
-        expected_schema=SchemaConfigs.BULK_AGENCIES_PUT.value.primary_output_schema,
-    ):
-        return self.put(
-            endpoint="/api/bulk/agencies",
-            headers=bop.headers,
-            file=bop.file,
-            expected_schema=expected_schema,
-            expected_response_status=bop.expected_response_status,
-        )
-
     def insert_data_sources_bulk(
         self,
         bop: BulkOperationParams,
@@ -593,17 +660,32 @@ class RequestValidator:
             expected_response_status=bop.expected_response_status,
         )
 
-    def update_data_sources_bulk(
+    def get_data_sources(
         self,
-        bop: BulkOperationParams,
-        expected_schema=SchemaConfigs.BULK_DATA_SOURCES_PUT.value.primary_output_schema,
+        headers: dict,
+        sort_by: Optional[str] = None,
+        sort_order: Optional[SortOrder] = None,
+        page: int = 1,
+        limit: int = PAGE_SIZE,
+        approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
     ):
-        return self.put(
-            endpoint="/api/bulk/data-sources",
-            headers=bop.headers,
-            file=bop.file,
-            expected_schema=expected_schema,
-            expected_response_status=bop.expected_response_status,
+        query_params = {}
+        update_if_not_none(
+            dict_to_update=query_params,
+            secondary_dict={
+                "sort_by": sort_by,
+                "sort_order": sort_order.value if sort_order is not None else None,
+                "page": page,
+                "limit": limit,
+                "approval_status": approval_status.value,
+            },
+        )
+
+        return self.get(
+            endpoint=DATA_SOURCES_BASE_ENDPOINT,
+            query_parameters=query_params,
+            headers=headers,
+            expected_schema=SchemaConfigs.DATA_SOURCES_GET_MANY.value.primary_output_schema,
         )
 
     def get_agency_by_id(self, headers: dict, id: int):
@@ -679,6 +761,53 @@ class RequestValidator:
             endpoint=f"/api/metrics",
             headers=headers,
             expected_schema=SchemaConfigs.METRICS_GET.value.primary_output_schema,
+        )
+
+    def get_user_by_id_admin(self, headers: dict, user_id: str):
+        return self.get(
+            endpoint=f"/api/admin/users/{user_id}",
+            headers=headers,
+            expected_schema=SchemaConfigs.ADMIN_USERS_BY_ID_GET.value.primary_output_schema,
+        )
+
+    def get_users(self, headers: dict, page: int = 1):
+        return self.get(
+            endpoint=f"/api/admin/users?page={page}",
+            headers=headers,
+            expected_schema=SchemaConfigs.ADMIN_USERS_GET_MANY.value.primary_output_schema,
+        )
+
+    def create_user(
+        self,
+        headers: dict,
+        email: str,
+        password: str,
+        permissions: List[str],
+    ):
+        return self.post(
+            endpoint="/api/admin/users",
+            headers=headers,
+            json={
+                "email": email,
+                "password": password,
+                "permissions": permissions,
+            },
+            expected_schema=SchemaConfigs.ADMIN_USERS_POST.value.primary_output_schema,
+        )
+
+    def update_admin_user(self, headers: dict, resource_id: str, password: str):
+        return self.put(
+            endpoint=f"/api/admin/users/{resource_id}",
+            headers=headers,
+            json={"password": password},
+            expected_schema=SchemaConfigs.ADMIN_USERS_BY_ID_PUT.value.primary_output_schema,
+        )
+
+    def get_record_types_and_categories(self, headers: dict):
+        return self.get(
+            endpoint="/api/metadata/record-types-and-categories",
+            headers=headers,
+            expected_schema=SchemaConfigs.RECORD_TYPE_AND_CATEGORY_GET.value.primary_output_schema,
         )
 
     # endregion

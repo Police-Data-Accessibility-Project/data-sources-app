@@ -65,6 +65,12 @@ class PutPostRequestInfo(BaseModel):
     error_message: Optional[str] = None
 
 
+class BulkPostResponse(BaseModel):
+    request_id: int = 1
+    entry_id: Optional[int] = None
+    error_message: Optional[str] = None
+
+
 class PostPutHandler(ABC):
 
     def __init__(
@@ -127,7 +133,6 @@ class PutPostBase(ABC):
 
     def check_can_edit_columns(self, relation_role: RelationRoleEnum):
         check_has_permission_to_edit_columns(
-            db_client=self.mp.db_client,
             relation=self.mp.relation,
             role=relation_role,
             columns=list(self.entry.keys()),

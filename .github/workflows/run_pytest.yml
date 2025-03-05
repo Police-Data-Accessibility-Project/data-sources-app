@@ -16,12 +16,14 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
 
     env:
-      FLASK_APP_COOKIE_ENCRYPTION_KEY: ${{ secrets.SECRET_KEY }}
-      DO_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/postgres
-      GH_CLIENT_ID: ${{secrets.GH_CLIENT_ID}}
-      GH_CLIENT_SECRET: ${{secrets.GH_CLIENT_SECRET}}
+      FLASK_APP_COOKIE_ENCRYPTION_KEY: "cookieEncryptionKey"
+      DO_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+      GH_CLIENT_ID: "GithubProvidedClientId"
+      GH_CLIENT_SECRET: "GithubProvidedClientSecret"
       JWT_SECRET_KEY: "TestSecretKey"
       RESET_PASSWORD_SECRET_KEY: "resetTokenSecretKey"
       VALIDATE_EMAIL_SECRET_KEY: "validateEmailSecretKey"
@@ -29,14 +31,21 @@ jobs:
     name: Run Pytest
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    container: python:3.12.8
     steps:
     - uses: actions/checkout@v4
+    - name: Set up Python 3.12.8
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.12.8"
+        cache: 'pip'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pytest pytest-cov
+    - name: Run migrations
+      run: |
+        alembic upgrade head
     - name: Run tests
       run: |
         pytest tests

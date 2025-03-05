@@ -7,7 +7,15 @@ import pytest
 from marshmallow import Schema
 
 from database_client.enums import LocationType, ApprovalStatus
-from middleware.enums import OutputFormatEnum, JurisdictionSimplified, JurisdictionType
+from middleware.enums import (
+    OutputFormatEnum,
+    JurisdictionSimplified,
+    JurisdictionType,
+    AgencyType,
+    RecordTypes,
+    Relations,
+)
+from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgencyInfoPostSchema,
 )
@@ -30,6 +38,7 @@ from tests.helper_scripts.run_and_validate_request import (
     http_methods,
 )
 from conftest import test_data_creator_flask, monkeysession
+from tests.integration.test_check_database_health import wipe_database
 from utilities.enums import RecordCategories
 
 ENDPOINT_SEARCH_LOCATION_AND_RECORD_TYPE = "/search/search-location-and-record-type"
@@ -50,6 +59,8 @@ class SearchTestSetup:
 @pytest.fixture
 def search_test_setup(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
+    wipe_database(tdc.db_client)
+
     try:
         tdc.locality(TEST_LOCALITY)
     except Exception:
@@ -179,6 +190,96 @@ def test_search_get_record_categories_all(
     data_empty = run_search(record_categories=[])
     assert data_empty["count"] > 0
     assert data_empty["count"] == data_all_explicit["count"]
+
+
+def test_search_get_record_type_singular(search_test_setup: SearchTestSetup):
+    """
+    The `record_type` parameter should be able to be provided as a singular value
+    """
+    sts = search_test_setup
+    tdc = sts.tdc
+    tus = sts.tus
+
+    tdcdb = tdc.tdcdb
+
+    for i in range(2):
+        tdcdb.link_data_source_to_agency(
+            data_source_id=tdcdb.data_source(record_type_id=i + 1).id,
+            agency_id=tdcdb.agency(location_id=sts.location_id).id,
+        )
+
+    results = tdc.request_validator.search(
+        headers=tus.api_authorization_header,
+        location_id=sts.location_id,
+        record_types=[RecordTypes.ARREST_RECORDS],
+    )
+    assert results["count"] == 1
+    assert (
+        results["data"]["federal"]["results"][0]["record_type"]
+        == RecordTypes.ARREST_RECORDS.value
+    )
+
+    links = tdc.db_client._select_from_relation(
+        relation_name=Relations.LINK_RECENT_SEARCH_RECORD_TYPES.value,
+        columns=["record_type_id"],
+    )
+    assert len(links) == 1
+    assert {link["record_type_id"] for link in links} == {2}
+
+
+def test_search_get_record_type_multiple(search_test_setup: SearchTestSetup):
+    """
+    The `record_type` parameter should be able to be provided as a list of values
+    """
+    sts = search_test_setup
+    tdc = sts.tdc
+    tus = sts.tus
+
+    tdcdb = tdc.tdcdb
+
+    for i in range(3):
+        tdcdb.link_data_source_to_agency(
+            data_source_id=tdcdb.data_source(record_type_id=i + 1).id,
+            agency_id=tdcdb.agency(location_id=sts.location_id).id,
+        )
+
+    results = tdc.request_validator.search(
+        headers=tus.api_authorization_header,
+        location_id=sts.location_id,
+        record_types=[RecordTypes.ARREST_RECORDS, RecordTypes.ACCIDENT_REPORTS],
+    )
+    assert results["count"] == 2
+
+    links = tdc.db_client._select_from_relation(
+        relation_name=Relations.LINK_RECENT_SEARCH_RECORD_TYPES.value,
+        columns=["record_type_id"],
+    )
+    assert len(links) == 2
+    assert {link["record_type_id"] for link in links} == {1, 2}
+
+
+def test_search_get_record_type_not_with_record_category(
+    search_test_setup: SearchTestSetup,
+):
+    """
+    The `record_type` parameter should not be provided if `record_category` is provided.
+    If this occurs, an error should be returned
+    """
+    sts = search_test_setup
+    tdc = sts.tdc
+    tus = sts.tus
+
+    tdc.request_validator.search(
+        headers=tus.api_authorization_header,
+        location_id=sts.location_id,
+        record_categories=[RecordCategories.POLICE],
+        record_types=[RecordTypes.ARREST_RECORDS],
+        expected_response_status=HTTPStatus.BAD_REQUEST,
+        expected_schema=MessageSchema,
+        expected_json_content={
+            "message": "Only one of 'record_categories' or 'record_types' should be provided."
+        },
+    )
 
 
 def test_search_follow(search_test_setup: SearchTestSetup):
@@ -332,7 +433,8 @@ def test_search_federal(test_data_creator_flask: TestDataCreatorFlask):
                     schema=AgencyInfoPostSchema(),
                     override={
                         "jurisdiction_type": JurisdictionType.FEDERAL.value,
-                        "approved": True,
+                        "approval_status": ApprovalStatus.APPROVED.value,
+                        "agency_type": AgencyType.POLICE.value,
                     },
                 ),
             },

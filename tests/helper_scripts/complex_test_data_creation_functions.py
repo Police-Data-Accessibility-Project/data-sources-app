@@ -6,7 +6,7 @@ from flask.testing import FlaskClient
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import RequestUrgency
-from middleware.enums import JurisdictionType
+from middleware.enums import JurisdictionType, AgencyType
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgencyInfoPostSchema,
 )
@@ -68,7 +68,6 @@ def create_data_source_entry_for_url_duplicate_checking(
         db_client._create_entry_in_table(
             table_name="data_sources",
             column_value_mappings={
-                "submitted_name": submitted_name,
                 "name": submitted_name,
                 "rejection_note": "Test rejection note",
                 "approval_status": "rejected",
@@ -138,7 +137,7 @@ def get_sample_agency_post_parameters(
     """
 
     if location_info is None:
-        location_info = {
+        location_id = {
             "type": "Locality",
             "state_iso": "PA",
             "county_fips": "42003",
@@ -150,7 +149,8 @@ def get_sample_agency_post_parameters(
             override={
                 "name": name,
                 "jurisdiction_type": JurisdictionType.LOCAL.value,
+                "agency_type": AgencyType.POLICE.value,
             },
         ),
-        "location_info": location_info,
+        "location_id": location_info,
     }

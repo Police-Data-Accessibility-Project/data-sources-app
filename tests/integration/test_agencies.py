@@ -5,7 +5,7 @@ from datetime import datetime, timezone, timedelta
 
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import SortOrder
-from middleware.enums import JurisdictionType
+from middleware.enums import JurisdictionType, AgencyType
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgencyInfoPutSchema,
 )
@@ -83,6 +83,20 @@ def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
 
     assert data_asc[0]["name"] == data_asc[0]["submitted_name"]
 
+    # Test limit functionality
+    response_json = tdc.request_validator.get_agency(
+        headers=tus.api_authorization_header,
+        sort_by="name",
+        sort_order=SortOrder.ASCENDING,
+        limit=1,
+    )
+
+    assert_expected_get_many_result(
+        response_json=response_json,
+        expected_non_null_columns=["id"],
+    )
+    assert len(response_json["data"]) == 1
+
 
 def test_agencies_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     """
@@ -90,8 +104,13 @@ def test_agencies_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     """
     tdc = test_data_creator_flask
 
+    location_id_1 = tdc.locality()
+    location_id_2 = tdc.locality()
+
     # Add data via db client
-    agency_id = tdc.agency().id
+    agency_id = tdc.agency(
+        location_ids=[location_id_1, location_id_2],
+    ).id
 
     # link agency id to data source
     cds = tdc.data_source()
@@ -109,6 +128,9 @@ def test_agencies_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     assert data["name"] == data["submitted_name"]
     assert data["id"] == int(agency_id)
     assert data["data_sources"][0]["id"] == int(cds.id)
+
+    assert data["locations"][0]["location_id"] == int(location_id_1)
+    assert data["locations"][1]["location_id"] == int(location_id_2)
 
 
 def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
@@ -142,7 +164,7 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
         )
 
     # Test with a new locality
-    data_to_post = get_sample_agency_post_parameters(
+    data_to_post = tdc.get_sample_agency_post_parameters(
         name=get_test_name(),
         jurisdiction_type=JurisdictionType.LOCAL,
         locality_name=get_test_name(),
@@ -166,15 +188,12 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
     assert_contains_key_value_pairs(
         dict_to_check=json_data["data"],
         key_value_pairs={
-            "state_iso": "PA",
-            "county_name": "Allegheny",
-            "locality_name": data_to_post["location_info"]["locality_name"],
             **data_to_post["agency_info"],
         },
     )
 
     # Test with a new locality
-    data_to_post = get_sample_agency_post_parameters(
+    data_to_post = test_data_creator_flask.get_sample_agency_post_parameters(
         name=get_test_name(),
         jurisdiction_type=JurisdictionType.LOCAL,
         locality_name="Capitola",
@@ -189,9 +208,6 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
         dict_to_check=json_data["data"],
         key_value_pairs={
             "name": data_to_post["agency_info"]["name"],
-            "state_iso": "PA",
-            "county_name": "Allegheny",
-            "locality_name": data_to_post["location_info"]["locality_name"],
         },
     )
 
@@ -199,7 +215,7 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
 def test_agencies_put(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
 
-    data_to_post = get_sample_agency_post_parameters(
+    data_to_post = tdc.get_sample_agency_post_parameters(
         name=get_test_name(),
         jurisdiction_type=JurisdictionType.LOCAL,
         locality_name=get_test_name(),
@@ -270,6 +286,7 @@ def test_agencies_delete(test_data_creator_flask: TestDataCreatorFlask):
             "agency_info": {
                 "name": get_test_name(),
                 "jurisdiction_type": JurisdictionType.FEDERAL.value,
+                "agency_type": AgencyType.COURT.value,
             }
         },
     )
@@ -291,3 +308,41 @@ def test_agencies_delete(test_data_creator_flask: TestDataCreatorFlask):
     )
 
     assert len(results) == 0
+
+
+def test_agencies_locations(test_data_creator_flask: TestDataCreatorFlask):
+    tdc = test_data_creator_flask
+    # Create agency
+    agency_id = tdc.agency().id
+
+    location_id = tdc.locality()
+
+    # Add location
+    tdc.request_validator.add_location_to_agency(
+        headers=tdc.get_admin_tus().jwt_authorization_header,
+        agency_id=agency_id,
+        location_id=location_id,
+    )
+
+    # Get agency and confirm presence
+    result = tdc.request_validator.get_agency_by_id(
+        headers=tdc.get_admin_tus().api_authorization_header,
+        id=agency_id,
+    )
+
+    assert len(result["data"]["locations"]) == 2
+
+    # Remove location
+    tdc.request_validator.remove_location_from_agency(
+        headers=tdc.get_admin_tus().jwt_authorization_header,
+        agency_id=agency_id,
+        location_id=location_id,
+    )
+
+    # Get agency and confirm absence
+    result = tdc.request_validator.get_agency_by_id(
+        headers=tdc.get_admin_tus().api_authorization_header,
+        id=agency_id,
+    )
+
+    assert len(result["data"]["locations"]) == 1

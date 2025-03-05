@@ -4,7 +4,7 @@ from http import HTTPStatus
 from typing import Optional
 
 from flask import request
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request, decode_token
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_restx import abort
 from jwt import ExpiredSignatureError
@@ -42,11 +42,16 @@ WRITE_ONLY_AUTH_INFO = AuthenticationInfo(
     allowed_access_methods=[AccessTypeEnum.JWT],
     restrict_to_permissions=[PermissionsEnum.DB_WRITE],
 )
+ARCHIVE_WRITE_AUTH_INFO = AuthenticationInfo(
+    allowed_access_methods=[AccessTypeEnum.JWT],
+    restrict_to_permissions=[PermissionsEnum.ARCHIVE_WRITE],
+)
 # Allow owners of a resource to use the endpoint as well, instead of only admin-level users
 STANDARD_JWT_AUTH_INFO = AuthenticationInfo(
     allowed_access_methods=[AccessTypeEnum.JWT],
 )
-GET_AUTH_INFO = AuthenticationInfo(
+
+API_OR_JWT_AUTH_INFO = AuthenticationInfo(
     allowed_access_methods=[AccessTypeEnum.API_KEY, AccessTypeEnum.JWT],
 )
 NO_AUTH_INFO = AuthenticationInfo(no_auth=True)
@@ -55,6 +60,14 @@ RESET_PASSWORD_AUTH_INFO = AuthenticationInfo(
 )
 VALIDATE_EMAIL_AUTH_INFO = AuthenticationInfo(
     allowed_access_methods=[AccessTypeEnum.VALIDATE_EMAIL],
+)
+READ_USER_AUTH_INFO = AuthenticationInfo(
+    allowed_access_methods=[AccessTypeEnum.JWT],
+    restrict_to_permissions=[PermissionsEnum.READ_ALL_USER_INFO],
+)
+WRITE_USER_AUTH_INFO = AuthenticationInfo(
+    allowed_access_methods=[AccessTypeEnum.JWT],
+    restrict_to_permissions=[PermissionsEnum.USER_CREATE_UPDATE],
 )
 
 
@@ -110,6 +123,16 @@ class AccessInfoPrimary(AccessInfoBase):
         if self.user_id is None:
             self.user_id = DatabaseClient().get_user_id(email=self.user_email)
         return self.user_id
+
+    def has_permission(self, permission: PermissionsEnum) -> bool:
+        if self.permissions is None:
+            return False
+        return permission in self.permissions
+
+
+class RefreshAccessInfo(AccessInfoBase):
+    access_type: AccessTypeEnum = AccessTypeEnum.REFRESH_JWT
+    user_email: str
 
 
 class PasswordResetTokenAccessInfo(AccessInfoBase):
@@ -200,6 +223,8 @@ def get_user_email_from_api_key(token: str) -> Optional[str]:
     api_key = ApiKey(raw_key=token)
     db_client = get_db_client()
     user_identifiers = db_client.get_user_by_api_key(api_key.key_hash)
+    if user_identifiers is None:
+        return None
     return user_identifiers.email
 
 
@@ -308,6 +333,18 @@ def validate_email_handler(
     )
 
 
+def validate_refresh_token(token: str, **kwargs) -> Optional[RefreshAccessInfo]:
+    decoded_refresh_token = decode_token(token)
+    token_type: str = decoded_refresh_token["type"]
+    # The below is flagged as a false positive through bandit security linting, misidentifying it as a password
+    if token_type != "refresh":  # nosec
+        FlaskResponseManager.abort(
+            code=HTTPStatus.BAD_REQUEST, message="Invalid refresh token"
+        )
+    decoded_email = decoded_refresh_token["email"]
+    return RefreshAccessInfo(user_email=decoded_email)
+
+
 class AuthMethodConfig(BaseModel):
     handler: Callable
     scheme: AuthScheme
@@ -324,7 +361,21 @@ AUTH_METHODS_MAP = {
     AccessTypeEnum.VALIDATE_EMAIL: AuthMethodConfig(
         handler=validate_email_handler, scheme=AuthScheme.BEARER
     ),
+    AccessTypeEnum.REFRESH_JWT: AuthMethodConfig(
+        handler=validate_refresh_token, scheme=AuthScheme.BEARER
+    ),
 }
+
+
+def check_if_valid_auth_scheme(
+    auth_scheme: AuthScheme, allowed_access_methods: list[AccessTypeEnum]
+):
+    for access_method in allowed_access_methods:
+        amc: AuthMethodConfig = AUTH_METHODS_MAP.get(access_method)
+        if auth_scheme == amc.scheme:
+            return
+
+    bad_request_abort("Invalid Auth Scheme for endpoint")
 
 
 def get_authentication(
@@ -345,14 +396,11 @@ def get_authentication(
 
     hai = get_header_auth_info()
 
-    invalid_auth_scheme = False
+    check_if_valid_auth_scheme(hai.auth_scheme, allowed_access_methods)
+
     for access_method in allowed_access_methods:
         amc: AuthMethodConfig = AUTH_METHODS_MAP.get(access_method)
         if amc is None:
-            continue
-
-        if hai.auth_scheme != amc.scheme:
-            invalid_auth_scheme = True
             continue
 
         access_info = try_authentication(
@@ -365,8 +413,6 @@ def get_authentication(
         if access_info:
             return access_info
 
-    if invalid_auth_scheme:
-        bad_request_abort("Invalid Auth Scheme for endpoint")
     abort(
         code=HTTPStatus.UNAUTHORIZED,
         message=get_authentication_error_message(allowed_access_methods),

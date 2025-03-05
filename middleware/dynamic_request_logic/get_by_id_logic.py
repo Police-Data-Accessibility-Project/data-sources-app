@@ -74,10 +74,9 @@ def get_by_id(
         access_info=mp.access_info,
     )
     columns = get_permitted_columns(
-        db_client=mp.db_client,
         relation=mp.relation,
         role=relation_role,
-        column_permission=ColumnPermissionEnum.READ,
+        user_permission=ColumnPermissionEnum.READ,
     )
     # TODO: Extract to separate function
     optionally_get_permitted_columns_to_subquery_parameters_(mp, relation_role)

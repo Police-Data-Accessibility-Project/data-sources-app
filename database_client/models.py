@@ -15,6 +15,7 @@ from sqlalchemy import (
     Integer,
     UniqueConstraint,
     inspect,
+    CheckConstraint,
 )
 from sqlalchemy.dialects.postgresql import (
     ARRAY,
@@ -22,6 +23,7 @@ from sqlalchemy.dialects.postgresql import (
     DATERANGE,
     TIMESTAMP,
     ENUM as pgEnum,
+    JSONB,
 )
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm import (
@@ -35,7 +37,7 @@ from sqlalchemy.orm import (
 from sqlalchemy.sql.expression import false, func
 
 from database_client.enums import LocationType, AccessType
-from middleware.enums import Relations
+from middleware.enums import Relations, PermissionsEnum
 
 ExternalAccountTypeLiteral = Literal["github"]
 RecordTypeLiteral = Literal[
@@ -87,6 +89,9 @@ RequestStatusLiteral = Literal[
     "Waiting for FOIA",
     "Waiting for requestor",
 ]
+
+OperationTypeLiteral = Literal["UPDATE", "DELETE", "INSERT"]
+
 JurisdictionTypeLiteral = Literal[
     "federal", "state", "county", "local", "port", "tribal", "transit", "school"
 ]
@@ -131,7 +136,13 @@ EventTypeLiteral = Literal[
 ]
 EntityTypeLiteral = Literal["Data Request", "Data Source"]
 AgencyAggregationLiteral = Literal["county", "local", "state", "federal"]
-
+AgencyTypeLiteral = Literal[
+    "incarceration",
+    "law enforcement",
+    "aggregated",
+    "court",
+    "unknown",
+]
 
 text = Annotated[Text, None]
 timestamp_tz = Annotated[
@@ -225,39 +236,41 @@ class Agency(Base, CountMetadata):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
-
-    # @hybrid_property
-    # def submitted_name(self):
-    #     return self.name
-    #
-    # @submitted_name.expression
-    # def submitted_name(cls):
-    #     return cls.name
-
     homepage_url: Mapped[Optional[str]]
     jurisdiction_type: Mapped[JurisdictionTypeLiteral]
-    state_iso: Mapped[Optional[str]]
-    municipality: Mapped[Optional[str]]
-    county_fips: Mapped[Optional[str]]
-    county_name: Mapped[Optional[str]]
     lat: Mapped[Optional[float]]
     lng: Mapped[Optional[float]]
     defunct_year: Mapped[Optional[str]]
-    agency_type: Mapped[Optional[str]]
+    agency_type: Mapped[AgencyTypeLiteral]
     multi_agency: Mapped[bool] = mapped_column(server_default=false())
-    zip_code: Mapped[Optional[str]]
     no_web_presence: Mapped[bool] = mapped_column(server_default=false())
     airtable_agency_last_modified: Mapped[timestamp_tz] = mapped_column(
         server_default=func.current_timestamp()
     )
-    approved: Mapped[bool] = mapped_column(server_default=false())
+    approval_status: Mapped[ApprovalStatusLiteral]
     rejection_reason: Mapped[Optional[str]]
     last_approval_editor = Column(String, nullable=True)
     submitter_contact: Mapped[Optional[str]]
     agency_created: Mapped[timestamp_tz] = mapped_column(
         server_default=func.current_timestamp()
     )
-    location_id: Mapped[Optional[int]]
+
+    # relationships
+    locations: Mapped[list["LocationExpanded"]] = relationship(
+        argument="LocationExpanded",
+        secondary="public.link_agencies_locations",
+        primaryjoin="LinkAgencyLocation.agency_id == Agency.id",
+        secondaryjoin="LinkAgencyLocation.location_id == LocationExpanded.id",
+        back_populates="agencies",
+    )
+
+    data_sources: Mapped[list["DataSourceExpanded"]] = relationship(
+        argument="DataSourceExpanded",
+        secondary="public.link_agencies_data_sources",
+        primaryjoin="LinkAgencyDataSource.agency_id == Agency.id",
+        secondaryjoin="LinkAgencyDataSource.data_source_id == DataSourceExpanded.id",
+        back_populates="agencies",
+    )
 
 
 class AgencyExpanded(Agency):
@@ -269,18 +282,35 @@ class AgencyExpanded(Agency):
 
     state_name = Column(String)  #
     locality_name = Column(String)  #
+    state_iso: Mapped[Optional[str]]
+    municipality: Mapped[Optional[str]]
+    county_fips: Mapped[Optional[str]]
+    county_name: Mapped[Optional[str]]
 
     # Some attributes need to be overwritten by the attributes provided by locations_expanded
     state_iso = Column(String)
     county_name = Column(String)
 
-    data_sources: Mapped[list["DataSourceExpanded"]] = relationship(
-        argument="DataSourceExpanded",
-        secondary="public.link_agencies_data_sources",
-        primaryjoin="LinkAgencyDataSource.agency_id == AgencyExpanded.id",
-        secondaryjoin="LinkAgencyDataSource.data_source_id == DataSourceExpanded.id",
-        back_populates="agencies",
+
+class LinkAgencyLocation(Base):
+    __tablename__ = Relations.LINK_AGENCIES_LOCATIONS.value
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    location_id: Mapped[int] = mapped_column(
+        ForeignKey("public.locations.id"), primary_key=True
     )
+    agency_id: Mapped[int] = mapped_column(
+        ForeignKey("public.agencies.id"), primary_key=True
+    )
+
+
+class TableCountLog(Base):
+    __tablename__ = Relations.TABLE_COUNT_LOG.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    table_name: Mapped[str]
+    count: Mapped[int]
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
 
 class County(Base):
@@ -290,7 +320,6 @@ class County(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     fips: Mapped[str]
     name: Mapped[Optional[text]]
-    name_ascii: Mapped[Optional[text]]
     state_iso: Mapped[Optional[text]]
     lat: Mapped[Optional[float]]
     lng: Mapped[Optional[float]]
@@ -303,6 +332,9 @@ class County(Base):
 
 class Locality(Base):
     __tablename__ = Relations.LOCALITIES.value
+    __table_args__ = (
+        CheckConstraint("name NOT LIKE '%,%'", name="localities_name_check"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[Optional[Text]] = mapped_column(Text)
@@ -323,6 +355,8 @@ class Location(Base):
     def __iter__(self):
         yield from iter_with_special_cases(self)
 
+    # Relationships
+
 
 class LocationExpanded(Base, CountMetadata):
     __tablename__ = Relations.LOCATIONS_EXPANDED.value
@@ -342,6 +376,16 @@ class LocationExpanded(Base, CountMetadata):
 
     def __iter__(self):
         yield from iter_with_special_cases(self)
+
+    # relationships
+
+    agencies: Mapped[list["AgencyExpanded"]] = relationship(
+        argument="AgencyExpanded",
+        secondary="public.link_agencies_locations",
+        primaryjoin="LocationExpanded.id == LinkAgencyLocation.location_id",
+        secondaryjoin="LinkAgencyLocation.agency_id == AgencyExpanded.id",
+        back_populates="locations",
+    )
 
 
 class ExternalAccount(Base):
@@ -476,7 +520,6 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
-    submitted_name: Mapped[Optional[str]]
     description: Mapped[Optional[str]]
     source_url: Mapped[Optional[str]]
     agency_supplied: Mapped[Optional[bool]]
@@ -506,7 +549,6 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
     rejection_note: Mapped[Optional[str]]
     last_approval_editor: Mapped[Optional[int]]
     submitter_contact_info: Mapped[Optional[str]]
-    agency_described_submitted: Mapped[Optional[str]]
     agency_described_not_in_database: Mapped[Optional[str]]
     data_portal_type_other: Mapped[Optional[str]]
     data_source_request: Mapped[Optional[str]]
@@ -518,7 +560,6 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
         ForeignKey("public.record_types.id")
     )
     approval_status_updated_at: Mapped[Optional[timestamp_tz]]
-    last_approval_editor_old: Mapped[Optional[str]]
 
 
 class DataSourceExpanded(DataSource):
@@ -528,11 +569,11 @@ class DataSourceExpanded(DataSource):
 
     record_type_name: Mapped[Optional[str]]
 
-    agencies: Mapped[list[AgencyExpanded]] = relationship(
-        argument="AgencyExpanded",
+    agencies: Mapped[list[Agency]] = relationship(
+        argument="Agency",
         secondary="public.link_agencies_data_sources",
         primaryjoin="LinkAgencyDataSource.data_source_id == DataSourceExpanded.id",
-        secondaryjoin="LinkAgencyDataSource.agency_id == AgencyExpanded.id",
+        secondaryjoin="LinkAgencyDataSource.agency_id == Agency.id",
         back_populates="data_sources",
     )
 
@@ -589,6 +630,12 @@ class RecordCategory(Base):
     name: Mapped[str_255]
     description: Mapped[Optional[text]]
 
+    # Relationships
+    record_types: Mapped[list["RecordType"]] = relationship(
+        argument="RecordType",
+        back_populates="record_categories",
+    )
+
 
 class RecordType(Base):
     __tablename__ = Relations.RECORD_TYPES.value
@@ -597,6 +644,12 @@ class RecordType(Base):
     name: Mapped[str_255]
     category_id: Mapped[int] = mapped_column(ForeignKey("public.record_categories.id"))
     description: Mapped[Optional[text]]
+
+    # Relationships
+    record_categories: Mapped[list[RecordCategory]] = relationship(
+        argument="RecordCategory",
+        back_populates="record_types",
+    )
 
 
 class ResetToken(Base):
@@ -630,6 +683,30 @@ class User(Base):
         server_default=text_func("generate_api_key()")
     )
     role: Mapped[Optional[text]]
+
+    # Relationships
+    permissions = relationship(
+        argument="Permission",
+        secondary="public.user_permissions",
+        primaryjoin="User.id == UserPermission.user_id",
+        secondaryjoin="UserPermission.permission_id == Permission.id",
+    )
+
+
+class Permission(Base):
+    __tablename__ = Relations.PERMISSIONS.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    permission_name: Mapped[str_255]
+    description: Mapped[Optional[text]]
+
+
+class UserPermission(Base):
+    __tablename__ = Relations.USER_PERMISSIONS.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
+    permission_id: Mapped[int] = mapped_column(ForeignKey("public.permissions.id"))
 
 
 class PendingUser(Base):
@@ -730,6 +807,16 @@ class LinkRecentSearchRecordCategories(Base):
     )
 
 
+class LinkRecentSearchRecordTypes(Base):
+    __tablename__ = Relations.LINK_RECENT_SEARCH_RECORD_TYPES.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    recent_search_id: Mapped[int] = mapped_column(
+        ForeignKey("public.recent_searches.id")
+    )
+    record_type_id: Mapped[int] = mapped_column(ForeignKey("public.record_types.id"))
+
+
 # TODO: Change user_id references in models to be from singular factory function or constant, to avoid duplication
 # Do the same for other common foreign keys, or for things such as primary keys
 
@@ -745,6 +832,20 @@ class RecentSearchExpanded(Base, CountMetadata):
     locality_name: Mapped[str]
     location_type: Mapped[LocationTypeLiteral]
     record_categories = mapped_column(ARRAY(String, as_tuple=True))
+
+
+class ChangeLog(Base):
+    __tablename__ = Relations.CHANGE_LOG.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    operation_type: Mapped[OperationTypeLiteral]
+    table_name: Mapped[str]
+    affected_id: Mapped[int]
+    old_data: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    new_data: Mapped[dict] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[timestamp] = mapped_column(
+        server_default=func.current_timestamp()
+    )
 
 
 SQL_ALCHEMY_TABLE_REFERENCE = {
@@ -775,10 +876,12 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     Relations.USER_NOTIFICATION_QUEUE.value: UserNotificationQueue,
     Relations.RECENT_SEARCHES.value: RecentSearch,
     Relations.LINK_RECENT_SEARCH_RECORD_CATEGORIES.value: LinkRecentSearchRecordCategories,
+    Relations.LINK_RECENT_SEARCH_RECORD_TYPES.value: LinkRecentSearchRecordTypes,
     Relations.RECORD_CATEGORIES.value: RecordCategory,
     Relations.RECENT_SEARCHES_EXPANDED.value: RecentSearchExpanded,
     Relations.RECORD_TYPES.value: RecordType,
     Relations.PENDING_USERS.value: PendingUser,
+    Relations.CHANGE_LOG.value: ChangeLog,
 }
 
 

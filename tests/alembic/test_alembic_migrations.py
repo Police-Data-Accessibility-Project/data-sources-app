@@ -10,11 +10,13 @@ def test_submitted_name(alembic_runner: AlembicRunner):
         INSERT INTO AGENCIES (
         submitted_name,
         state_iso,
-        jurisdiction_type
+        jurisdiction_type,
+        agency_type
         ) VALUES (
         'Test Name',
         'TX',
-        'state'
+        'state',
+        'police'
         );    
     """
     )
@@ -58,3 +60,28 @@ def test_submitted_name(alembic_runner: AlembicRunner):
     """
     )
     assert results[0][0] == "Test Name"
+
+
+def test_add_user_create_update_permissions(alembic_runner: AlembicRunner):
+    alembic_runner.upgrade("83090d813802")
+    # Check that create update permission does not exist
+    results = alembic_runner.execute(
+        """
+        SELECT * FROM PERMISSIONS WHERE permission_name = 'user_create_update';
+    """
+    )
+    assert len(results) == 0
+
+    alembic_runner.upgrade("61978d612820")
+    # Check that create update permission exists
+    results = alembic_runner.execute(
+        """
+        SELECT * FROM PERMISSIONS WHERE permission_name = 'user_create_update';
+        """
+    )
+    assert len(results) == 1
+
+
+def test_revision_upgrade_downgrade(alembic_runner: AlembicRunner):
+    alembic_runner.upgrade("head")
+    alembic_runner.downgrade("base")

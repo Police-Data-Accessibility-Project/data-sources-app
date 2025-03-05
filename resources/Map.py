@@ -1,6 +1,7 @@
 from flask import Response
 
-from middleware.access_logic import GET_AUTH_INFO, AccessInfoPrimary
+from config import limiter
+from middleware.access_logic import API_OR_JWT_AUTH_INFO, AccessInfoPrimary
 from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.data_sources_logic import (
     get_data_sources_for_map_wrapper,
@@ -22,13 +23,14 @@ class DataSourcesMap(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_map,
-        auth_info=GET_AUTH_INFO,
+        auth_info=API_OR_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.DATA_SOURCES_MAP,
         response_info=ResponseInfo(
             success_message="Returns all requested data sources.",
         ),
         description="Retrieves location-relevant columns for data sources.",
     )
+    @limiter.exempt
     def get(self, access_info: AccessInfoPrimary) -> Response:
         """
         Retrieves location relevant columns for data sources.

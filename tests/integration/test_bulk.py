@@ -8,6 +8,7 @@ from marshmallow import Schema
 
 from conftest import test_data_creator_flask, monkeysession
 from database_client.enums import LocationType
+from middleware.enums import AgencyType
 from middleware.primary_resource_logic.bulk_logic import listify_strings
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_csv_to_schema_conversion_logic import (
@@ -16,10 +17,7 @@ from middleware.schema_and_dto_logic.dynamic_logic.dynamic_csv_to_schema_convers
 from middleware.schema_and_dto_logic.primary_resource_schemas.bulk_schemas import (
     AgenciesPostRequestFlatBaseSchema,
     DataSourcesPostRequestFlatBaseSchema,
-    AgenciesPutRequestFlatBaseSchema,
-    DataSourcesPutRequestFlatBaseSchema,
-    AgenciesPutBatchRequestSchema,
-    DataSourcesPutBatchRequestSchema,
+    AgenciesPostRequestFlatSchema,
 )
 from middleware.util import stringify_lists
 from tests.helper_scripts.common_test_data import get_test_name
@@ -33,6 +31,7 @@ from tests.helper_scripts.helper_classes.TestCSVCreator import TestCSVCreator
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
+from tests.integration.test_check_database_health import wipe_database
 
 
 @dataclass
@@ -65,8 +64,8 @@ def agencies_post_runner(
 ):
     return BatchTestRunner(
         tdc=test_data_creator_flask,
-        csv_creator=TestCSVCreator(AgenciesPostRequestFlatBaseSchema()),
-        schema=AgenciesPostRequestFlatBaseSchema(),
+        csv_creator=TestCSVCreator(AgenciesPostRequestFlatSchema()),
+        schema=AgenciesPostRequestFlatSchema(),
     )
 
 
@@ -79,31 +78,10 @@ def data_sources_post_runner(test_data_creator_flask: TestDataCreatorFlask):
     )
 
 
-@pytest.fixture
-def agencies_put_runner(test_data_creator_flask):
-    return BatchTestRunner(
-        tdc=test_data_creator_flask,
-        csv_creator=TestCSVCreator(AgenciesPutBatchRequestSchema(exclude=["file"])),
-        schema=AgenciesPutRequestFlatBaseSchema(),
-    )
-
-
-@pytest.fixture
-def data_sources_put_runner(runner: BatchTestRunner):
-    return BatchTestRunner(
-        tdc=runner.tdc,
-        csv_creator=TestCSVCreator(DataSourcesPutBatchRequestSchema(exclude=["file"])),
-        schema=DataSourcesPutRequestFlatBaseSchema(),
-    )
-
-
 def generate_agencies_locality_data():
     locality_name = get_test_name()
     return {
-        "location_type": LocationType.LOCALITY.value,
-        "locality_name": locality_name,
-        "county_fips": "42003",
-        "state_iso": "PA",
+        "location_id": "1",
     }
 
 
@@ -146,8 +124,11 @@ def test_batch_agencies_insert_happy_path(
     agencies_post_runner: BatchTestRunner,
 ):
     runner = agencies_post_runner
+    runner.tdc.agency()
 
-    locality_info = generate_agencies_locality_data()
+    test_name = get_test_name()
+    locality_info = {"location_id": runner.tdc.locality(locality_name=test_name)}
+
     rows = [runner.generate_test_data(override=locality_info) for _ in range(3)]
     data = create_csv_and_run(
         runner=runner,
@@ -167,18 +148,19 @@ def test_batch_agencies_insert_happy_path(
         assert_contains_key_value_pairs(
             dict_to_check=data["data"], key_value_pairs=unflattened_row["agency_info"]
         )
-        assert data["data"]["locality_name"] == row["locality_name"]
+        assert data["data"]["locations"][0]["locality_name"] == test_name
 
 
 def test_batch_agencies_insert_some_errors(
     agencies_post_runner: BatchTestRunner,
 ):
     runner = agencies_post_runner
+    runner.tdc.agency()
 
     rows = [
         runner.generate_test_data(override={"lat": "not a number"}),
         runner.generate_test_data(override=generate_agencies_locality_data()),
-        runner.generate_test_data(override={"location_type": ""}),
+        runner.generate_test_data(override={"lng": "not a number"}),
     ]
     data = create_csv_and_run(
         runner=runner,
@@ -203,81 +185,15 @@ def test_batch_agencies_insert_wrong_file_type(
     )
 
 
-def test_batch_agencies_update_happy_path(
-    agencies_put_runner: BatchTestRunner,
-):
-    runner = agencies_put_runner
-    agencies = [runner.tdc.agency() for _ in range(3)]
-    locality_info = generate_agencies_locality_data()
-    rows = [
-        runner.generate_test_data(override={**locality_info, "id": agencies[i].id})
-        for i in range(3)
-    ]
-    data = create_csv_and_run(
-        runner=runner,
-        rows=rows,
-        request_validator_method=runner.tdc.request_validator.update_agencies_bulk,
-    )
-    assert len(data["errors"]) == 0, f"Incorrect number of errors: {data['errors']}"
-
-    ids = [agencies[i].id for i in range(3)]
-
-    unflattener = SchemaUnflattener(flat_schema_class=AgenciesPutRequestFlatBaseSchema)
-
-    for row, id in zip(rows, ids):
-        unflattened_row = unflattener.unflatten(flat_data=row)
-        data = runner.tdc.request_validator.get_agency_by_id(
-            id=id, headers=runner.tdc.get_admin_tus().jwt_authorization_header
-        )
-        assert_contains_key_value_pairs(
-            dict_to_check=data["data"], key_value_pairs=unflattened_row["agency_info"]
-        )
-        assert data["data"]["locality_name"] == row["locality_name"]
-
-
-def test_batch_agencies_update_some_errors(
-    agencies_put_runner: BatchTestRunner,
-):
-    runner = agencies_put_runner
-    locality_info = generate_agencies_locality_data()
-    agencies = [runner.tdc.agency() for _ in range(3)]
-    rows = [
-        runner.generate_test_data(
-            override={"lat": "not a number", "id": agencies[0].id}
-        ),
-        runner.generate_test_data(override={**locality_info, "id": agencies[1].id}),
-        runner.generate_test_data(override={"location_type": "", "id": agencies[2].id}),
-    ]
-    data = create_csv_and_run(
-        runner=runner,
-        rows=rows,
-        request_validator_method=runner.tdc.request_validator.update_agencies_bulk,
-    )
-    check_for_errors(data, check_ids=False)
-
-
-def test_batch_agencies_update_wrong_file_type(
-    agencies_put_runner: BatchTestRunner,
-):
-    runner = agencies_put_runner
-    create_csv_and_run(
-        runner=agencies_put_runner,
-        rows=[],
-        suffix=".json",
-        request_validator_method=runner.tdc.request_validator.update_agencies_bulk,
-        expected_response_status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
-        expected_schema=MessageSchema(),
-    )
-
-
 def test_batch_data_sources_insert_happy_path(
     data_sources_post_runner: BatchTestRunner,
 ):
     runner = data_sources_post_runner
+    agency_ids = [runner.tdc.agency().id for _ in range(3)]
     for _ in range(3):
         runner.tdc.agency()
     rows = [
-        runner.generate_test_data(override={"linked_agency_ids": [1, 2, 3]})
+        runner.generate_test_data(override={"linked_agency_ids": agency_ids})
         for _ in range(3)
     ]
     data = create_csv_and_run(
@@ -306,9 +222,10 @@ def test_batch_data_sources_insert_some_errors(
     data_sources_post_runner: BatchTestRunner,
 ):
     runner = data_sources_post_runner
+    agency_ids = [runner.tdc.agency().id for _ in range(3)]
     rows = [
         runner.generate_test_data(override={"linked_agency_ids": "not a list"}),
-        runner.generate_test_data(override={"linked_agency_ids": [1, 2, 3]}),
+        runner.generate_test_data(override={"linked_agency_ids": agency_ids}),
         runner.generate_test_data(override={"coverage_start": "not a date"}),
     ]
     data = create_csv_and_run(
@@ -328,75 +245,6 @@ def test_batch_data_sources_insert_wrong_file_type(
         rows=[],
         suffix=".json",
         request_validator_method=runner.tdc.request_validator.insert_data_sources_bulk,
-        expected_response_status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
-        expected_schema=MessageSchema(),
-    )
-
-
-def test_batch_data_sources_update_happy_path(
-    data_sources_put_runner: BatchTestRunner,
-):
-    runner = data_sources_put_runner
-    data_sources = [runner.tdc.data_source() for i in range(3)]
-    rows = [
-        runner.generate_test_data(override={"id": data_sources[i].id}) for i in range(3)
-    ]
-    data = create_csv_and_run(
-        runner=runner,
-        rows=rows,
-        request_validator_method=runner.tdc.request_validator.update_data_sources_bulk,
-    )
-
-    ids = [data_source.id for data_source in data_sources]
-
-    unflattener = SchemaUnflattener(
-        flat_schema_class=DataSourcesPutRequestFlatBaseSchema
-    )
-    for row, id in zip(rows, ids):
-        unflattened_row = unflattener.unflatten(flat_data=row)
-        data = runner.tdc.request_validator.get_data_source_by_id(
-            id=id, headers=runner.tdc.get_admin_tus().jwt_authorization_header
-        )
-        listify_strings([unflattened_row["entry_data"]])
-        assert_contains_key_value_pairs(
-            dict_to_check=data["data"],
-            key_value_pairs=unflattened_row["entry_data"],
-        )
-
-
-def test_batch_data_sources_update_some_errors(
-    data_sources_put_runner: BatchTestRunner,
-):
-    runner = data_sources_put_runner
-
-    data_sources = [runner.tdc.data_source() for i in range(3)]
-    rows = [
-        runner.generate_test_data(
-            override={"id": data_sources[0].id, "access_types": "A String"}
-        ),
-        runner.generate_test_data(override={"id": data_sources[1].id}),
-        runner.generate_test_data(
-            override={"id": data_sources[2].id, "record_type_name": "Not a record type"}
-        ),
-    ]
-
-    data = create_csv_and_run(
-        runner=runner,
-        rows=rows,
-        request_validator_method=runner.tdc.request_validator.update_data_sources_bulk,
-    )
-    check_for_errors(data, check_ids=False)
-
-
-def test_batch_data_sources_update_wrong_file_type(
-    data_sources_put_runner: BatchTestRunner,
-):
-    runner = data_sources_put_runner
-    create_csv_and_run(
-        runner=data_sources_put_runner,
-        rows=[],
-        suffix=".json",
-        request_validator_method=runner.tdc.request_validator.update_data_sources_bulk,
         expected_response_status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
         expected_schema=MessageSchema(),
     )

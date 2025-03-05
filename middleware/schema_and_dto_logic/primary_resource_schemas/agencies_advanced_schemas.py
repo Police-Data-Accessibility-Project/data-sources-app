@@ -11,8 +11,10 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetByIDBaseSchema,
     LocationInfoDTO,
 )
+from middleware.schema_and_dto_logic.enums import CSVColumnCondition
 from middleware.schema_and_dto_logic.primary_resource_schemas.locations_schemas import (
     LocationInfoSchema,
+    LocationInfoResponseSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
     AgencyInfoPutDTO,
@@ -60,40 +62,36 @@ def get_agency_info_field(
 
 
 def validate_location_info_against_jurisdiction_type(data, jurisdiction_type):
-    if (
-        jurisdiction_type == JurisdictionType.FEDERAL
-        and data.get("location_info") is not None
-    ):
+    location_ids = data.get("location_ids")
+    if location_ids is None:
+        location_ids = []
+    if jurisdiction_type == JurisdictionType.FEDERAL and len(location_ids) > 0:
+        raise ValidationError("No locations ids allowed for jurisdiction type FEDERAL.")
+    if jurisdiction_type != JurisdictionType.FEDERAL and len(location_ids) == 0:
         raise ValidationError(
-            "location_info must be None for jurisdiction type FEDERAL."
-        )
-    if (
-        jurisdiction_type != JurisdictionType.FEDERAL
-        and data.get("location_info") is None
-    ):
-        raise ValidationError(
-            "location_info is required for non-FEDERAL jurisdiction type."
+            "location_id is required for non-FEDERAL jurisdiction type."
         )
 
 
-class AgenciesPostPutBaseSchema(Schema):
-    location_info = fields.Nested(
-        LocationInfoSchema,
-        required=False,
-        allow_none=True,
-        metadata={
-            "description": "The locational information of the agency. Must be None if agency is of jurisdiction_type `federal`",
-            "source": SourceMappingEnum.JSON,
-            "nested_dto_class": LocationInfoDTO,
-        },
-    )
-
-
-class AgenciesPostSchema(AgenciesPostPutBaseSchema):
-    #
+class AgenciesPostSchema(Schema):
     agency_info = get_agency_info_field(
         schema=AgencyInfoPostSchema,
         nested_dto_class=AgencyInfoPostDTO,
+    )
+    location_ids = fields.List(
+        fields.Integer(
+            required=False,
+            allow_none=True,
+            load_default=None,
+            metadata=get_json_metadata(
+                description="The ids of locations associated with the agency.",
+                csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
+            ),
+        ),
+        metadata=get_json_metadata(
+            description="The ids of locations associated with the agency.",
+            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
+        ),
     )
 
     @validates_schema
@@ -102,33 +100,18 @@ class AgenciesPostSchema(AgenciesPostPutBaseSchema):
         validate_location_info_against_jurisdiction_type(data, jurisdiction_type)
 
 
-class AgenciesPutSchema(AgenciesPostPutBaseSchema):
+class AgenciesPutSchema(Schema):
     #
     agency_info = get_agency_info_field(
         schema=AgencyInfoPutSchema,
         nested_dto_class=AgencyInfoPutDTO,
     )
 
-    @validates_schema
-    def validate_location_info(self, data, **kwargs):
-        # Modified from PostSchema to account for the fact that
-        # jurisdiction type may not be specified in a Put request
-        jurisdiction_type = data["agency_info"].get("jurisdiction_type", None)
-        if jurisdiction_type is None and data.get("location_info") is None:
-            # location info is not being updated
-            return
-        if jurisdiction_type is None and data.get("location_info") is not None:
-            raise ValidationError(
-                "jurisdiction_type is required if location_info is provided."
-            )
-
-        validate_location_info_against_jurisdiction_type(data, jurisdiction_type)
-
 
 class AgenciesGetSchema(AgenciesExpandedSchema):
     data_sources = fields.List(
         cls_or_instance=fields.Nested(
-            nested=DataSourceExpandedSchema(only=["id", "submitted_name"]),
+            nested=DataSourceExpandedSchema(only=["id", "name"]),
             required=True,
             metadata=get_json_metadata(
                 description="The data sources associated with the agency",
@@ -137,6 +120,19 @@ class AgenciesGetSchema(AgenciesExpandedSchema):
         required=True,
         metadata=get_json_metadata(
             description="The data sources associated with the agency",
+        ),
+    )
+    locations = fields.List(
+        cls_or_instance=fields.Nested(
+            nested=LocationInfoResponseSchema(),
+            required=True,
+            metadata=get_json_metadata(
+                description="The locations associated with the agency",
+            ),
+        ),
+        required=True,
+        metadata=get_json_metadata(
+            description="The locations associated with the agency",
         ),
     )
 
@@ -175,6 +171,16 @@ class RelatedAgencyByIDSchema(GetByIDBaseSchema):
         required=True,
         metadata={
             "description": "The id of the related agency.",
+            "source": SourceMappingEnum.PATH,
+        },
+    )
+
+
+class AgenciesRelatedLocationSchema(GetByIDBaseSchema):
+    location_id = fields.Integer(
+        required=True,
+        metadata={
+            "description": "The id of the related location.",
             "source": SourceMappingEnum.PATH,
         },
     )

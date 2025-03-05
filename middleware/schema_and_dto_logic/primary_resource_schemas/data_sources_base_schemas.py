@@ -9,7 +9,7 @@ from database_client.enums import (
     URLStatus,
     ApprovalStatus,
 )
-from middleware.enums import RecordType
+from middleware.enums import RecordTypes
 from middleware.schema_and_dto_logic.enums import CSVColumnCondition
 from middleware.schema_and_dto_logic.util import get_json_metadata
 
@@ -21,14 +21,7 @@ class DataSourceBaseSchema(Schema):
 
     name = fields.String(
         metadata=get_json_metadata(
-            "The name of the data source concatenated with the state iso."
-        ),
-    )
-    submitted_name = fields.String(
-        required=True,
-        allow_none=True,
-        metadata=get_json_metadata(
-            "The name of the data source as originally submitted.",
+            "The name of the data source concatenated with the state iso.",
             csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
@@ -232,13 +225,6 @@ class DataSourceBaseSchema(Schema):
             csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
-    agency_described_submitted = fields.String(
-        allow_none=True,
-        metadata=get_json_metadata(
-            "To which criminal legal systems agency or agencies does this Data Source refer?",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
-        ),
-    )
     agency_described_not_in_database = fields.String(
         allow_none=True,
         metadata=get_json_metadata(
@@ -304,7 +290,7 @@ class DataSourceBaseSchema(Schema):
 
 class DataSourceExpandedSchema(DataSourceBaseSchema):
     record_type_name = fields.Enum(
-        enum=RecordType,
+        enum=RecordTypes,
         by_value=fields.Str,
         allow_none=True,
         metadata=get_json_metadata(

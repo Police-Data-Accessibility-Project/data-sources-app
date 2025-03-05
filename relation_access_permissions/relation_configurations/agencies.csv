@@ -11,7 +11,6 @@ lng,WRITE,READ
 defunct_year,WRITE,READ
 agency_type,WRITE,READ
 multi_agency,WRITE,READ
-zip_code,WRITE,READ
 no_web_presence,WRITE,READ
 airtable_agency_last_modified,READ,READ
 approved,WRITE,READ
@@ -19,7 +18,6 @@ rejection_reason,WRITE,READ
 last_approval_editor,WRITE,READ
 submitter_contact,WRITE,READ
 agency_created,READ,READ
-county_airtable_uid,READ,READ
 municipality,READ,READ
 location_id,WRITE,READ
 id,READ,READ
