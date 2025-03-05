@@ -93,6 +93,7 @@ def test_data_sources_get_many_limit_columns(
      when passed the `requested_columns` query parameter
     """
     tdc = test_data_creator_flask
+    tdc.data_source()
 
     tus = tdc.standard_user()
     allowed_columns = ["name", "id"]
