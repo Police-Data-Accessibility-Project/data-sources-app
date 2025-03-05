@@ -20,10 +20,10 @@ jobs:
           - 5432:5432
 
     env:
-      FLASK_APP_COOKIE_ENCRYPTION_KEY: ${{ secrets.SECRET_KEY }}
+      FLASK_APP_COOKIE_ENCRYPTION_KEY: "cookieEncryptionKey"
       DO_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
-      GH_CLIENT_ID: ${{secrets.GH_CLIENT_ID}}
-      GH_CLIENT_SECRET: ${{secrets.GH_CLIENT_SECRET}}
+      GH_CLIENT_ID: "GithubProvidedClientId"
+      GH_CLIENT_SECRET: "GithubProvidedClientSecret"
       JWT_SECRET_KEY: "TestSecretKey"
       RESET_PASSWORD_SECRET_KEY: "resetTokenSecretKey"
       VALIDATE_EMAIL_SECRET_KEY: "validateEmailSecretKey"

@@ -528,13 +528,7 @@ def test_dependent_locations_view(test_data_creator_db_client: TestDataCreatorDB
         return len(results) == 1
 
     # Get location IDs for Pittsburgh, Allegheny County, and Pennsylvania
-    pittsburgh_id = get_location_id(
-        {
-            "state_iso": "PA",
-            "county_name": "Allegheny",
-            "locality_name": "Pittsburgh",
-        }
-    )
+    allegheny_locality_id = tdc.locality(county_name="Allegheny", state_iso="PA")
 
     allegheny_county_id = get_location_id(
         {
@@ -554,11 +548,12 @@ def test_dependent_locations_view(test_data_creator_db_client: TestDataCreatorDB
     # Confirm that in the dependent locations view, Pittsburgh is a
     # dependent location of both Allegheny County and Pennsylvania
     assert is_dependent_location(
-        dependent_location_id=pittsburgh_id, parent_location_id=allegheny_county_id
+        dependent_location_id=allegheny_locality_id,
+        parent_location_id=allegheny_county_id,
     )
 
     assert is_dependent_location(
-        dependent_location_id=pittsburgh_id, parent_location_id=pennsylvania_id
+        dependent_location_id=allegheny_locality_id, parent_location_id=pennsylvania_id
     )
 
     # Confirm that in the dependent locations view, Allegheny County is
@@ -581,9 +576,9 @@ def test_dependent_locations_view(test_data_creator_db_client: TestDataCreatorDB
         dependent_location_id=allegheny_county_id, parent_location_id=california_id
     )
 
-    # And that Pittsburgh is NOT a dependent location of California
+    # And that the locality is NOT a dependent location of California
     assert not is_dependent_location(
-        dependent_location_id=pittsburgh_id, parent_location_id=california_id
+        dependent_location_id=allegheny_locality_id, parent_location_id=california_id
     )
 
     # Get location for Orange County, California
@@ -595,10 +590,10 @@ def test_dependent_locations_view(test_data_creator_db_client: TestDataCreatorDB
         }
     )
 
-    # Confirm that in the dependent locations view, Pittsburgh is NOT
+    # Confirm that in the dependent locations view, the locality is NOT
     # a dependent location of Orange County
     assert not is_dependent_location(
-        dependent_location_id=pittsburgh_id, parent_location_id=orange_county_id
+        dependent_location_id=allegheny_locality_id, parent_location_id=orange_county_id
     )
 
 
@@ -958,6 +953,10 @@ def test_localities_table_log_logic(
     # Create locality
     location_id = tdc.locality(locality_name=old_name)
     locality_id = db_client.get_locality_id_by_location_id(location_id)
+    # Check that creation is logged:
+    logs = db_client.get_change_logs_for_table(Relations.LOCALITIES)
+    assert len(logs) == 1
+
     # Change locality name
     db_client._update_entry_in_table(
         table_name=Relations.LOCALITIES.value,
@@ -966,8 +965,8 @@ def test_localities_table_log_logic(
     )
     # Check that update is logged for `localities`
     logs = db_client.get_change_logs_for_table(Relations.LOCALITIES)
-    assert len(logs) == 1
-    log = logs[0]
+    assert len(logs) == 2
+    log = logs[1]
     assert log["operation_type"] == OperationType.UPDATE.value
     assert log["table_name"] == Relations.LOCALITIES.value
     assert log["affected_id"] == locality_id
@@ -980,8 +979,8 @@ def test_localities_table_log_logic(
     )
     # Check that delete is logged for `localities`
     logs = db_client.get_change_logs_for_table(Relations.LOCALITIES)
-    assert len(logs) == 2
-    log = logs[1]
+    assert len(logs) == 3
+    log = logs[2]
     assert log["operation_type"] == OperationType.DELETE.value
     assert log["affected_id"] == locality_id
     assert log["old_data"] == {"id": locality_id, "county_id": 1, "name": new_name}
@@ -1004,8 +1003,8 @@ def test_counties_table_log_logic(test_data_creator_db_client: TestDataCreatorDB
         column_edit_mappings={"name": new_name},
     )
     logs = tdc.db_client.get_change_logs_for_table(Relations.COUNTIES)
-    assert len(logs) == 1
-    log = logs[0]
+    assert len(logs) == 2
+    log = logs[1]
     assert log["operation_type"] == OperationType.UPDATE.value
     assert log["table_name"] == Relations.COUNTIES.value
     assert log["affected_id"] == county_id
@@ -1017,8 +1016,8 @@ def test_counties_table_log_logic(test_data_creator_db_client: TestDataCreatorDB
         table_name=Relations.COUNTIES.value, id_column_value=county_id
     )
     logs = tdc.db_client.get_change_logs_for_table(Relations.COUNTIES)
-    assert len(logs) == 2
-    log = logs[1]
+    assert len(logs) == 3
+    log = logs[2]
     assert log["operation_type"] == OperationType.DELETE.value
     assert log["affected_id"] == county_id
     assert len(list(log["old_data"].keys())) == 10
@@ -1049,8 +1048,8 @@ def test_locations_table_log_logic(
     )
     # Check that update is logged for `locations`
     logs = db_client.get_change_logs_for_table(Relations.LOCATIONS)
-    assert len(logs) == 1
-    log = logs[0]
+    assert len(logs) == 3
+    log = logs[2]
     assert log["operation_type"] == OperationType.UPDATE.value
     assert log["table_name"] == Relations.LOCATIONS.value
     assert log["affected_id"] == location_id
@@ -1064,8 +1063,8 @@ def test_locations_table_log_logic(
     )
     # Check that delete is logged for `locations`
     logs = db_client.get_change_logs_for_table(Relations.LOCATIONS)
-    assert len(logs) == 2
-    log = logs[1]
+    assert len(logs) == 4
+    log = logs[3]
     assert log["operation_type"] == OperationType.DELETE.value
     assert log["affected_id"] == location_id
     assert log["old_data"] == {
@@ -1096,8 +1095,8 @@ def test_agencies_table_logic(test_data_creator_db_client: TestDataCreatorDBClie
     )
     # Check that update is logged for `agencies`
     logs = db_client.get_change_logs_for_table(Relations.AGENCIES)
-    assert len(logs) == 1
-    log = logs[0]
+    assert len(logs) == 2
+    log = logs[1]
     assert log["operation_type"] == OperationType.UPDATE.value
     assert log["table_name"] == Relations.AGENCIES.value
     assert log["affected_id"] == agency_info.id
@@ -1111,8 +1110,8 @@ def test_agencies_table_logic(test_data_creator_db_client: TestDataCreatorDBClie
     )
     # Check that delete is logged for `agencies`
     logs = db_client.get_change_logs_for_table(Relations.AGENCIES)
-    assert len(logs) == 2
-    log = logs[1]
+    assert len(logs) == 3
+    log = logs[2]
     assert log["operation_type"] == OperationType.DELETE.value
     assert log["affected_id"] == agency_info.id
     assert len(log["old_data"].keys()) == 17

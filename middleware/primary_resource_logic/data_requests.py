@@ -204,6 +204,7 @@ def get_data_requests_wrapper(
             db_client_additional_args=db_client_additional_args,
         ),
         page=dto.page,
+        requested_columns=dto.requested_columns,
     )
 
 
