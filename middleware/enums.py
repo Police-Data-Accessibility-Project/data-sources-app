@@ -82,8 +82,6 @@ class Relations(Enum):
     USERS = "users"
     PENDING_USERS = "pending_users"
     DEPENDENT_LOCATIONS = "dependent_locations"
-    QUALIFYING_NOTIFICATIONS = "qualifying_notifications"
-    USER_PENDING_NOTIFICATIONS = "user_pending_notifications"
     USER_NOTIFICATION_QUEUE = "user_notification_queue"
     RECENT_SEARCHES = "recent_searches"
     RECENT_SEARCHES_EXPANDED = "recent_searches_expanded"
@@ -94,6 +92,13 @@ class Relations(Enum):
     TABLE_COUNT_LOG = "table_count_log"
     CHANGE_LOG = "change_log"
     LINK_AGENCIES_LOCATIONS = "link_agencies_locations"
+    PENDING_EVENT_NOTIFICATIONS = "pending_event_notifications"
+    LINK_PENDING_EVENT_NOTIFICATIONS_DATA_REQUESTS = (
+        "link_data_request_pending_event_notifications"
+    )
+    LINK_PENDING_EVENT_NOTIFICATIONS_DATA_SOURCES = (
+        "link_data_source_pending_event_notification"
+    )
 
 
 class OperationType(Enum):
