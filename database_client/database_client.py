@@ -1214,19 +1214,6 @@ class DatabaseClient:
         _select_from_relation, relation_name=Relations.RELATED_SOURCES.value
     )
 
-    get_pending_notifications = partialmethod(
-        _select_from_relation,
-        relation_name=Relations.USER_PENDING_NOTIFICATIONS.value,
-        columns=[
-            "user_id",
-            "email",
-            "event_type",
-            "entity_id",
-            "entity_type",
-            "entity_name",
-        ],
-    )
-
     def _select_single_entry_from_relation(
         self,
         relation_name: str,

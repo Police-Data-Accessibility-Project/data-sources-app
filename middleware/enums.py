@@ -82,8 +82,6 @@ class Relations(Enum):
     USERS = "users"
     PENDING_USERS = "pending_users"
     DEPENDENT_LOCATIONS = "dependent_locations"
-    QUALIFYING_NOTIFICATIONS = "qualifying_notifications"
-    USER_PENDING_NOTIFICATIONS = "user_pending_notifications"
     USER_NOTIFICATION_QUEUE = "user_notification_queue"
     RECENT_SEARCHES = "recent_searches"
     RECENT_SEARCHES_EXPANDED = "recent_searches_expanded"

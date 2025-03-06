@@ -1107,108 +1107,16 @@ def test_get_notifications_no_results(live_database_client):
     """
 
 
-def test_get_pending_notifications(test_data_creator_db_client):
-    tdc = test_data_creator_db_client
-    tdc.clear_test_data()
-
-    location_id = tdc.locality()
-
-    # Create agency and tie to location
-    agency_id = tdc.agency(location_id=location_id)
-
-    # Create data source with approval status of "approved" and associate with agency
-    ds_info = tdc.data_source(approval_status=ApprovalStatus.APPROVED)
-    tdc.link_data_source_to_agency(
-        data_source_id=ds_info.id,
-        agency_id=agency_id.id,
-    )
-
-    # Create standard user and have them follow location
-    user_info = tdc.user()
-    tdc.db_client.create_followed_search(
-        column_value_mappings={"user_id": user_info.id, "location_id": location_id}
-    )
-
-    # Call `get_notifications`
-    results = tdc.db_client.get_pending_notifications()
-    schema = TestGetPendingNotificationsOutputSchema(many=True)
-    schema.load(results)
-
-
 def get_user_notification_queue(db_client: DatabaseClient):
     return db_client._select_from_relation(
         relation_name=Relations.USER_NOTIFICATION_QUEUE.value,
         columns=[
             "id",
-            "entity_id",
+            "user_id",
+            "pen_id",
             "sent_at",
         ],
     )
-
-
-def test_optionally_update_user_notification_queue(test_data_creator_db_client):
-    # Note: Based on testing on 11/30/2024, this test may be wonky on the last day of the month
-
-    tdc = test_data_creator_db_client
-    tdc.clear_test_data()
-
-    # Confirm that the queue is empty
-    queue = get_user_notification_queue(tdc.db_client)
-    assert len(queue) == 0
-
-    entity_id = tdc.create_valid_notification_event()
-
-    # Call method
-    tdc.db_client.optionally_update_user_notification_queue()
-
-    # Confirm queue is populated with one entry
-    queue = get_user_notification_queue(tdc.db_client)
-    assert len(queue) == 1
-    assert queue[0]["entity_id"] == entity_id
-
-    # Modify `sent_at` column for the entry
-    expected_sent_at = datetime.now(timezone.utc)
-    tdc.db_client._update_entry_in_table(
-        table_name=Relations.USER_NOTIFICATION_QUEUE.value,
-        entry_id=queue[0]["id"],
-        column_edit_mappings={"sent_at": expected_sent_at},
-    )
-
-    # Try calling method again
-    tdc.db_client.optionally_update_user_notification_queue()
-
-    # Confirm queue remains populated with the same entry, with the `sent_at` column remaining unchanged
-    queue = get_user_notification_queue(tdc.db_client)
-    assert len(queue) == 1
-    assert queue[0]["entity_id"] == entity_id
-    assert queue[0]["sent_at"] == expected_sent_at
-
-    # Change `event_timestamp` of entry to two months ago
-    two_months_ago_event_timestamp = datetime.now(timezone.utc) - timedelta(days=61)
-    tdc.db_client._update_entry_in_table(
-        table_name=Relations.USER_NOTIFICATION_QUEUE.value,
-        entry_id=queue[0]["id"],
-        column_edit_mappings={"event_timestamp": two_months_ago_event_timestamp},
-    )
-    # Change also original entry to two months ago, to ensure it is not pulled again
-    tdc.db_client._update_entry_in_table(
-        table_name=Relations.DATA_SOURCES.value,
-        entry_id=queue[0]["entity_id"],
-        column_edit_mappings={
-            "approval_status_updated_at": two_months_ago_event_timestamp
-        },
-    )
-
-    # Create new valid notification event
-    new_entity_id = tdc.create_valid_notification_event()
-
-    # Call method again
-    tdc.db_client.optionally_update_user_notification_queue()
-
-    # Confirm former entry is no longer in the queue, and new entry is present
-    queue = get_user_notification_queue(tdc.db_client)
-    assert len(queue) == 1
-    assert queue[0]["entity_id"] == new_entity_id
 
 
 def test_get_next_user_events_and_mark_user_events_as_sent(test_data_creator_db_client):

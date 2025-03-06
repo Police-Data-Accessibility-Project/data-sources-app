@@ -743,35 +743,6 @@ class DependentLocation(Base):
     )
 
 
-class QualifyingNotification(Base):
-    __tablename__ = Relations.QUALIFYING_NOTIFICATIONS.value
-    __mapper_args__ = {"primary_key": ["entity_id", "entity_type"]}
-
-    event_type: Mapped[str]
-    entity_id: Mapped[int]
-    entity_type: Mapped[str]
-    entity_name: Mapped[str]
-    location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
-    event_timestamp: Mapped[timestamp]
-
-
-class UserPendingNotification(Base):
-    __tablename__ = Relations.USER_PENDING_NOTIFICATIONS.value
-    __mapper_args__ = {"primary_key": ["user_id", "entity_id"]}
-    event_type: Mapped[EventTypeLiteral] = mapped_column(
-        Enum(*get_args(EventTypeLiteral), name="event_type")
-    )
-    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
-    email: Mapped[str]
-    entity_id: Mapped[int]
-    entity_type: Mapped[EntityTypeLiteral] = mapped_column(
-        Enum(*get_args(EntityTypeLiteral), name="entity_type")
-    )
-    entity_name: Mapped[str]
-    location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
-    event_timestamp: Mapped[timestamp]
-
-
 class LinkPendingEventNotificationsDataRequests(Base):
     __tablename__ = Relations.LINK_PENDING_EVENT_NOTIFICATIONS_DATA_REQUESTS.value
     __table_args__ = {"schema": "public"}
@@ -932,8 +903,6 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     "external_accounts": ExternalAccount,
     "data_requests_github_issue_info": DataRequestsGithubIssueInfo,
     Relations.DEPENDENT_LOCATIONS.value: DependentLocation,
-    Relations.QUALIFYING_NOTIFICATIONS.value: QualifyingNotification,
-    Relations.USER_PENDING_NOTIFICATIONS.value: UserPendingNotification,
     Relations.USER_NOTIFICATION_QUEUE.value: UserNotificationQueue,
     Relations.RECENT_SEARCHES.value: RecentSearch,
     Relations.LINK_RECENT_SEARCH_RECORD_CATEGORIES.value: LinkRecentSearchRecordCategories,
