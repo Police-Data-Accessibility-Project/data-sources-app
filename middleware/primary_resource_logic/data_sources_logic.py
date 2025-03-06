@@ -119,6 +119,7 @@ def get_data_sources_wrapper(
         order_by=OrderByParameters.construct_from_args(
             sort_by=dto.sort_by, sort_order=dto.sort_order
         ),
+        approval_status=dto.approval_status,
         page=dto.page,
         limit=dto.limit,
     )
