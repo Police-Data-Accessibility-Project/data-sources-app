@@ -691,6 +691,12 @@ class User(Base):
         primaryjoin="User.id == UserPermission.user_id",
         secondaryjoin="UserPermission.permission_id == Permission.id",
     )
+    events = relationship(
+        argument="PendingEventNotification",
+        secondary="public.user_notification_queue",
+        primaryjoin="User.id == UserNotificationQueue.user_id",
+        secondaryjoin="UserNotificationQueue.pen_id == PendingEventNotification.id",
+    )
 
 
 class Permission(Base):
@@ -766,22 +772,77 @@ class UserPendingNotification(Base):
     event_timestamp: Mapped[timestamp]
 
 
-class UserNotificationQueue(Base):
-    __tablename__ = Relations.USER_NOTIFICATION_QUEUE.value
+class LinkPendingEventNotificationsDataRequests(Base):
+    __tablename__ = Relations.LINK_PENDING_EVENT_NOTIFICATIONS_DATA_REQUESTS.value
+    __table_args__ = {"schema": "public"}
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    event_id: Mapped[int] = mapped_column(
+        ForeignKey("public.pending_event_notifications.id")
+    )
+    data_request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
+
+
+class LinkPendingEventNotificationsDataSources(Base):
+    __tablename__ = Relations.LINK_PENDING_EVENT_NOTIFICATIONS_DATA_SOURCES.value
+    __table_args__ = {"schema": "public"}
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    event_id: Mapped[int] = mapped_column(
+        ForeignKey("public.pending_event_notifications.id")
+    )
+    data_source_id: Mapped[int] = mapped_column(ForeignKey("public.data_sources.id"))
+
+
+class PendingEventNotification(Base):
+    __tablename__ = Relations.PENDING_EVENT_NOTIFICATIONS.value
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     event_type: Mapped[EventTypeLiteral] = mapped_column(
         Enum(*get_args(EventTypeLiteral), name="event_type")
     )
-    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
-    email: Mapped[str]
-    entity_id: Mapped[int]
-    entity_type: Mapped[EntityTypeLiteral] = mapped_column(
-        Enum(*get_args(EntityTypeLiteral), name="entity_type")
+    created_at: Mapped[timestamp] = mapped_column(
+        server_default=func.current_timestamp()
     )
-    entity_name: Mapped[str]
-    event_timestamp: Mapped[timestamp]
+
+    # Relationships
+    data_request = relationship(
+        argument="DataRequest",
+        secondary="public.link_data_request_pending_event_notifications",
+        primaryjoin="PendingEventNotification.id == LinkPendingEventNotificationsDataRequests.event_id",
+        secondaryjoin="LinkPendingEventNotificationsDataRequests.data_request_id == DataRequest.id",
+        uselist=False,
+    )
+    data_source = relationship(
+        argument="DataSource",
+        secondary="public.link_data_source_pending_event_notification",
+        primaryjoin="PendingEventNotification.id == LinkPendingEventNotificationsDataSources.event_id",
+        secondaryjoin="LinkPendingEventNotificationsDataSources.data_source_id == DataSource.id",
+        uselist=False,
+    )
+
+
+class UserNotificationQueue(Base):
+    __tablename__ = Relations.USER_NOTIFICATION_QUEUE.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
+    pen_id: Mapped[int] = mapped_column(
+        ForeignKey("public.pending_event_notifications.id")
+    )
     sent_at: Mapped[Optional[timestamp]]
+
+    # Relationships
+    pending_event_notification = relationship(
+        argument="PendingEventNotification",
+        primaryjoin="UserNotificationQueue.pen_id == PendingEventNotification.id",
+        uselist=False,
+    )
+    user = relationship(
+        argument="User",
+        primaryjoin="UserNotificationQueue.user_id == User.id",
+        uselist=False,
+    )
 
 
 class RecentSearch(Base):

@@ -56,6 +56,12 @@ from database_client.models import (
     LinkAgencyLocation,
     DataSourceExpanded,
     DataSource,
+    PendingEventNotification,
+    LinkPendingEventNotificationsDataRequests,
+    DataRequest,
+    LinkLocationDataRequest,
+    LinkUserFollowedLocation,
+    LinkPendingEventNotificationsDataSources,
 )
 from middleware.enums import (
     PermissionsEnum,
@@ -1516,101 +1522,148 @@ class DatabaseClient:
     @session_manager
     def optionally_update_user_notification_queue(self):
         """
-        Clears and repopulates the user notification queue with new notifications if it does not contain
-        any events from the prior month.
-        Otherwise, does nothing.
+        Clears and repopulates the user notification queue with new notifications
         :return:
         """
-        with self.session.begin():
-            queue = SQL_ALCHEMY_TABLE_REFERENCE[Relations.USER_NOTIFICATION_QUEUE.value]
-
-            # Get beginning and end of prior month
-            # Get the current time
-            now = datetime.now()
-
-            # First day, hour, and minute of the current month
-            first_day_current_month = now.replace(
-                day=1, hour=0, minute=0, second=0, microsecond=0
+        # Get all data requests associated with the user's location that have a corresponding event
+        # (and that event is not already in user_notification_queue for that user)
+        data_request_query = (
+            select(
+                PendingEventNotification.id.label("event_id"),
+                User.id.label("user_id"),
             )
-
-            # First day, hour, and minute of the prior month
-            first_day_prior_month = first_day_current_month - relativedelta(months=1)
-
-            query = select(queue).where(
-                and_(
-                    queue.event_timestamp >= first_day_prior_month,
-                    queue.event_timestamp < first_day_current_month,
-                )
+            .join(
+                LinkPendingEventNotificationsDataRequests,
+                LinkPendingEventNotificationsDataRequests.event_id
+                == PendingEventNotification.id,
             )
-
-            results = self.session.execute(query).all()
-
-            # If any results are present within the given daterange, then do nothing
-            if len(results) != 0:
-                return
-
-            # Delete all rows from the queue
-            self.session.query(queue).delete()
-
-            # Insert all new rows from UserPendingNotification table
-            user_pending_notification = SQL_ALCHEMY_TABLE_REFERENCE[
-                Relations.USER_PENDING_NOTIFICATIONS.value
-            ]
-
-            results = [
-                result for result in self.session.query(user_pending_notification)
-            ]
-
-            for result in results:
-                self.session.add(
-                    queue(
-                        user_id=result.user_id,
-                        entity_id=result.entity_id,
-                        entity_type=result.entity_type,
-                        entity_name=result.entity_name,
-                        email=result.email,
-                        event_type=result.event_type,
-                        event_timestamp=result.event_timestamp,
+            .join(
+                DataRequest,
+                DataRequest.id
+                == LinkPendingEventNotificationsDataRequests.data_request_id,
+            )
+            .join(
+                LinkLocationDataRequest,
+                LinkLocationDataRequest.data_request_id == DataRequest.id,
+            )
+            .join(Location, Location.id == LinkLocationDataRequest.location_id)
+            .join(
+                LinkUserFollowedLocation,
+                LinkUserFollowedLocation.location_id == Location.id,
+            )
+            .join(User, User.id == LinkUserFollowedLocation.user_id)
+            .where(
+                # Event ID should not be in user_notification_queue for that user
+                PendingEventNotification.id.notin_(
+                    select(UserNotificationQueue.pen_id).where(
+                        UserNotificationQueue.user_id == User.id
                     )
                 )
+            )
+        )
+
+        raw_results = self.session.execute(data_request_query).mappings().all()
+        for result in raw_results:
+            queue = UserNotificationQueue(
+                user_id=result["user_id"],
+                pen_id=result["event_id"],
+            )
+            self.session.add(queue)
+        self.session.flush()
+
+        data_source_query = (
+            select(
+                PendingEventNotification.id.label("event_id"),
+                User.id.label("user_id"),
+            )
+            .join(
+                LinkPendingEventNotificationsDataSources,
+                LinkPendingEventNotificationsDataSources.event_id
+                == PendingEventNotification.id,
+            )
+            .join(
+                DataSource,
+                DataSource.id
+                == LinkPendingEventNotificationsDataSources.data_source_id,
+            )
+            .join(
+                LinkAgencyDataSource,
+                LinkAgencyDataSource.data_source_id == DataSource.id,
+            )
+            .join(Agency, Agency.id == LinkAgencyDataSource.agency_id)
+            .join(LinkAgencyLocation, LinkAgencyLocation.agency_id == Agency.id)
+            .join(Location, Location.id == LinkAgencyLocation.location_id)
+            .join(
+                LinkUserFollowedLocation,
+                LinkUserFollowedLocation.location_id == Location.id,
+            )
+            .join(User, User.id == LinkUserFollowedLocation.user_id)
+            .where(
+                # Event ID should not be in user_notification_queue for that user
+                PendingEventNotification.id.notin_(
+                    select(UserNotificationQueue.pen_id).where(
+                        UserNotificationQueue.user_id == User.id
+                    )
+                )
+            )
+        )
+
+        raw_results = self.session.execute(data_source_query).mappings().all()
+        for result in raw_results:
+            queue = UserNotificationQueue(
+                user_id=result["user_id"],
+                pen_id=result["event_id"],
+            )
+            self.session.add(queue)
 
     @session_manager
     def get_next_user_event_batch(self) -> Optional[EventBatch]:
+        """
+        Get next user
 
-        queue = UserNotificationQueue
-
-        with self.session.begin():
-            next_user_info = (
-                self.session.query(queue)
-                .filter(queue.sent_at.is_(None))
-                .order_by(queue.event_timestamp.asc())
-                .first()
+        """
+        query = (
+            select(User)
+            .join(UserNotificationQueue)
+            .where(UserNotificationQueue.sent_at.is_(None))
+            .options(
+                selectinload(User.events).selectinload(
+                    PendingEventNotification.data_request
+                ),
+                selectinload(User.events).selectinload(
+                    PendingEventNotification.data_source
+                ),
             )
+            .limit(1)
+        )
 
-            if next_user_info is None:
-                return None
-            user_email = next_user_info.email
-            next_user_id = next_user_info.user_id
-
-            user_events = (
-                self.session.query(queue)
-                .filter(queue.user_id == next_user_id)
-                .filter(queue.sent_at.is_(None))
-            )
-
-        events = []
-        for user_event in user_events:
-            event_info = EventInfo(
-                event_id=user_event.id,
-                event_type=EventType(user_event.event_type),
-                entity_id=user_event.entity_id,
-                entity_type=EntityType(user_event.entity_type),
-                entity_name=user_event.entity_name,
-            )
-
-            events.append(event_info)
-
-        return EventBatch(user_id=next_user_id, user_email=user_email, events=events)
+        raw_results = self.session.execute(query).first()
+        if raw_results is None:
+            return None
+        user = raw_results[0]
+        event_infos = []
+        for event in user.events:
+            if event.event_type in ["Request Ready to Start", "Request Complete"]:
+                data_request = event.data_request
+                event_info = EventInfo(
+                    event_id=event.id,
+                    event_type=EventType(event.event_type),
+                    entity_id=data_request.id,
+                    entity_type=EntityType.DATA_REQUEST,
+                    entity_name=data_request.title,
+                )
+                event_infos.append(event_info)
+            elif event.event_type == "Data Source Approved":
+                data_source = event.data_source
+                event_info = EventInfo(
+                    event_id=event.id,
+                    event_type=EventType(event.event_type),
+                    entity_id=data_source.id,
+                    entity_type=EntityType.DATA_SOURCE,
+                    entity_name=data_source.name,
+                )
+                event_infos.append(event_info)
+        return EventBatch(user_id=user.id, user_email=user.email, events=event_infos)
 
     @session_manager
     def mark_user_events_as_sent(self, user_id: int):

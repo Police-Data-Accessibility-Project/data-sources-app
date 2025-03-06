@@ -94,6 +94,13 @@ class Relations(Enum):
     TABLE_COUNT_LOG = "table_count_log"
     CHANGE_LOG = "change_log"
     LINK_AGENCIES_LOCATIONS = "link_agencies_locations"
+    PENDING_EVENT_NOTIFICATIONS = "pending_event_notifications"
+    LINK_PENDING_EVENT_NOTIFICATIONS_DATA_REQUESTS = (
+        "link_data_request_pending_event_notifications"
+    )
+    LINK_PENDING_EVENT_NOTIFICATIONS_DATA_SOURCES = (
+        "link_data_source_pending_event_notification"
+    )
 
 
 class OperationType(Enum):
