@@ -29,6 +29,7 @@ from database_client.enums import (
     EntityType,
     EventType,
     LocationType,
+    ApprovalStatus,
 )
 from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
 from middleware.custom_dataclasses import EventInfo, EventBatch
@@ -1098,10 +1099,6 @@ class DatabaseClient:
 
         return agency_dictionary
 
-    get_data_sources = partialmethod(
-        _select_from_relation, relation_name=Relations.DATA_SOURCES_EXPANDED.value
-    )
-
     @session_manager
     def get_data_sources(
         self,
@@ -1110,6 +1107,7 @@ class DatabaseClient:
         order_by: Optional[OrderByParameters] = None,
         page: Optional[int] = 1,
         limit: Optional[int] = PAGE_SIZE,
+        approval_status: Optional[ApprovalStatus] = None,
     ):
 
         order_by_clause = DynamicQueryConstructor.get_sql_alchemy_order_by_clause(
@@ -1124,13 +1122,16 @@ class DatabaseClient:
         )
 
         # TODO: This format can be extracted to a function (see get_agencies)
+        query = select(DataSourceExpanded)
+
+        if approval_status is not None:
+            query = query.where(
+                DataSourceExpanded.approval_status == approval_status.value
+            )
+
         query = (
-            select(DataSourceExpanded)
-            .options(*load_options)
-            .order_by(order_by_clause)
-            .limit(limit)
-            .offset(self.get_offset(page))
-        )
+            query.options(*load_options).order_by(order_by_clause).limit(limit)
+        ).offset(self.get_offset(page))
 
         results: list[DataSourceExpanded] = (
             self.session.execute(query).scalars(DataSource).all()
