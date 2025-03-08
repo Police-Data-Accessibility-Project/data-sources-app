@@ -795,6 +795,13 @@ class RequestValidator:
             expected_schema=SchemaConfigs.ADMIN_USERS_POST.value.primary_output_schema,
         )
 
+    def delete_user(self, headers: dict, user_id: str):
+        return self.delete(
+            endpoint=f"/api/admin/users/{user_id}",
+            headers=headers,
+            expected_schema=SchemaConfigs.ADMIN_USERS_BY_ID_DELETE.value.primary_output_schema,
+        )
+
     def update_admin_user(self, headers: dict, resource_id: str, password: str):
         return self.put(
             endpoint=f"/api/admin/users/{resource_id}",

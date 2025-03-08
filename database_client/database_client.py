@@ -1293,7 +1293,7 @@ class DatabaseClient:
     def _delete_from_table(
         self,
         table_name: str,
-        id_column_value: str,
+        id_column_value: str | int,
         id_column_name: str = "id",
     ):
         """
@@ -1838,6 +1838,13 @@ class DatabaseClient:
                 "password_digest": password_digest,
                 "validation_token": validation_token,
             },
+        )
+
+    def delete_user(self, user_id: int):
+        self._delete_from_table(
+            table_name=Relations.USERS.value,
+            id_column_value=user_id,
+            id_column_name="id",
         )
 
     def update_pending_user_validation_token(self, email: str, validation_token: str):
