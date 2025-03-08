@@ -227,6 +227,8 @@ class TestDataCreatorDBClient:
             "source_url": self.test_url(),
             "agency_supplied": True,
             "record_type_id": record_type_id,
+            "coverage_start": "2020-01-01",
+            "coverage_end": "2020-12-31",
         }
         source_column_value_mapping.update(additional_column_values)
         if approval_status is not None:

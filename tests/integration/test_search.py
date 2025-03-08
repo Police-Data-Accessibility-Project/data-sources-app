@@ -288,54 +288,23 @@ def test_search_follow(search_test_setup: SearchTestSetup):
     # Create standard user
     tus_1 = sts.tus
 
-    location_to_follow = {
-        "location_id": sts.location_id,
-    }
-    url_for_following = add_query_params(
-        SEARCH_FOLLOW_BASE_ENDPOINT, location_to_follow
-    )
-
-    def call_search_endpoint(
-        tus: TestUserSetup,
-        http_method: http_methods,
-        endpoint: str = SEARCH_FOLLOW_BASE_ENDPOINT,
-        expected_json_content: Optional[dict] = None,
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_schema: Optional[Schema] = None,
-    ):
-        return run_and_validate_request(
-            flask_client=tdc.flask_client,
-            http_method=http_method,
-            endpoint=endpoint,
-            headers=tus.jwt_authorization_header,
-            expected_json_content=expected_json_content,
-            expected_response_status=expected_response_status,
-            expected_schema=expected_schema,
-        )
-
     def call_follow_delete(
         tus: TestUserSetup,
-        endpoint: str = url_for_following,
         expected_json_content: Optional[dict] = None,
     ):
-        return call_search_endpoint(
-            tus=tus,
-            http_method="delete",
-            endpoint=endpoint,
+        return tdc.request_validator.delete_followed_searches(
+            headers=tus.jwt_authorization_header,
+            location_id=sts.location_id,
             expected_json_content=expected_json_content,
-            expected_schema=SchemaConfigs.SEARCH_FOLLOW_DELETE.value.primary_output_schema,
         )
 
     def call_follow_get(
         tus: TestUserSetup,
         expected_json_content: Optional[dict] = None,
     ):
-        return call_search_endpoint(
-            tus=tus,
-            http_method="get",
-            endpoint=SEARCH_FOLLOW_BASE_ENDPOINT,
+        return tdc.request_validator.get_followed_searches(
+            headers=tus.jwt_authorization_header,
             expected_json_content=expected_json_content,
-            expected_schema=SchemaConfigs.SEARCH_FOLLOW_GET.value.primary_output_schema,
         )
 
     no_results_json = {
@@ -365,7 +334,7 @@ def test_search_follow(search_test_setup: SearchTestSetup):
         tdc.request_validator.follow_search(
             headers=tus_1.jwt_authorization_header,
             expected_json_content={"message": message},
-            **location_to_follow
+            location_id=sts.location_id,
         )
 
     follow_extant_location()
@@ -401,7 +370,6 @@ def test_search_follow(search_test_setup: SearchTestSetup):
     # The original user should now try to unfollow the location and succeed
     call_follow_delete(
         tus=tus_1,
-        endpoint=url_for_following,
         expected_json_content={"message": "Location for followed search deleted."},
     )
 
@@ -414,9 +382,16 @@ def test_search_follow(search_test_setup: SearchTestSetup):
     # If the original user tries to unfollow the location again, it should fail
     call_follow_delete(
         tus=tus_1,
-        endpoint=url_for_following,
         expected_json_content={"message": "Location not followed."},
     )
+
+
+def test_search_follow_record_categories(search_test_setup: SearchTestSetup):
+    sts = search_test_setup
+    tdc = sts.tdc
+    # Create standard user
+    tus_1 = sts.tus
+    raise NotImplementedError
 
 
 def test_search_federal(test_data_creator_flask: TestDataCreatorFlask):

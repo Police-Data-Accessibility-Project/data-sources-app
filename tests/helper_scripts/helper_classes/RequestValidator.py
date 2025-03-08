@@ -10,6 +10,7 @@ from typing import Optional, Type, Union, List
 
 from flask.testing import FlaskClient
 from marshmallow import Schema
+from pydantic import BaseModel
 
 from database_client.constants import PAGE_SIZE
 from database_client.enums import (
@@ -27,6 +28,7 @@ from tests.helper_scripts.constants import (
     AGENCIES_BASE_ENDPOINT,
     DATA_REQUESTS_POST_DELETE_RELATED_LOCATIONS_ENDPOINT,
     DATA_SOURCES_BASE_ENDPOINT,
+    SEARCH_FOLLOW_BASE_ENDPOINT,
 )
 from tests.helper_scripts.helper_functions_simple import (
     get_authorization_header,
@@ -307,6 +309,38 @@ class RequestValidator:
             expected_response_status=expected_response_status,
             expected_json_content=expected_json_content,
             **kwargs,
+        )
+
+    def get_followed_searches(
+        self,
+        headers: dict,
+        expected_json_content: Optional[dict] = None,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_schema: Optional[
+            Schema
+        ] = SchemaConfigs.SEARCH_FOLLOW_GET.value.primary_output_schema,
+    ):
+
+        return self.get(
+            endpoint=SEARCH_FOLLOW_BASE_ENDPOINT,
+            headers=headers,
+            expected_json_content=expected_json_content,
+            expected_response_status=expected_response_status,
+            expected_schema=expected_schema,
+        )
+
+    def delete_followed_searches(
+        self,
+        headers: dict,
+        location_id: int,
+        expected_json_content: Optional[dict] = None,
+    ):
+        return self.delete(
+            endpoint=SEARCH_FOLLOW_BASE_ENDPOINT,
+            headers=headers,
+            query_parameters={"location_id": location_id},
+            expected_json_content=expected_json_content,
+            expected_schema=SchemaConfigs.SEARCH_FOLLOW_DELETE.value.primary_output_schema,
         )
 
     def archives_get(
