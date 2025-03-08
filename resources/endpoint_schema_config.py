@@ -609,6 +609,12 @@ class SchemaConfigs(Enum):
         input_dto_class=AdminUserPostDTO,
     )
 
+    ADMIN_USERS_BY_ID_DELETE = EndpointSchemaConfig(
+        input_schema=GetByIDBaseSchema(),
+        input_dto_class=GetByIDBaseDTO,
+        primary_output_schema=MessageSchema(),
+    )
+
     # endregion
 
     # region Contact

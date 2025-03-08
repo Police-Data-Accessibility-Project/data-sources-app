@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
@@ -24,6 +26,19 @@ def test_admin_user_create(test_data_creator_flask: TestDataCreatorFlask):
     tdc.request_validator.login(
         email=new_user_data["email"],
         password=new_user_data["password"],
+    )
+
+    # Delete the user
+    tdc.request_validator.delete_user(
+        headers=admin_tus.jwt_authorization_header,
+        user_id=response["id"],
+    )
+
+    # Attempt to login as the deleted user and fail
+    tdc.request_validator.login(
+        email=new_user_data["email"],
+        password=new_user_data["password"],
+        expected_response_status=HTTPStatus.UNAUTHORIZED,
     )
 
 

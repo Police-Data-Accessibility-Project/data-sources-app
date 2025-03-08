@@ -13,6 +13,7 @@ from middleware.primary_resource_logic.admin import (
     get_users_admin,
     create_admin_user,
     update_user_password,
+    delete_user,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GET_MANY_SCHEMA_POPULATE_PARAMETERS,
@@ -88,4 +89,20 @@ class AdminUsersByID(PsycopgResource):
             update_user_password,
             schema_populate_parameters=SchemaConfigs.ADMIN_USERS_BY_ID_PUT.value.get_schema_populate_parameters(),
             user_id=int(resource_id),
+        )
+
+    @endpoint_info(
+        namespace=namespace_admin,
+        auth_info=WRITE_USER_AUTH_INFO,
+        schema_config=SchemaConfigs.ADMIN_USERS_BY_ID_DELETE,
+        response_info=ResponseInfo(success_message="Admin user deleted."),
+        description="Deletes an admin user",
+    )
+    def delete(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
+        """
+        Deletes a user
+        """
+        return self.run_endpoint(
+            wrapper_function=delete_user,
+            schema_populate_parameters=SchemaConfigs.ADMIN_USERS_BY_ID_DELETE.value.get_schema_populate_parameters(),
         )
