@@ -28,9 +28,8 @@ def create_github_issue(title: str, body: str) -> GithubIssueInfo:
 
     g = Github(auth=auth)
     repo_name = get_env_variable("GH_ISSUE_REPO_NAME")
-    repo_owner = get_env_variable("GH_ISSUE_REPO_OWNER")
 
-    repo = g.get_repo(f"{repo_owner}/{repo_name}")
+    repo = g.get_repo(repo_name)
 
     issue = repo.create_issue(title=title, body=body)
 

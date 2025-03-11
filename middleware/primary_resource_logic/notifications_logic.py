@@ -22,7 +22,7 @@ class NotificationEmailContent(BaseModel):
     base_text: str
 
 
-DATA_REQUEST_SUBDIRECTORY = "request"
+DATA_REQUEST_SUBDIRECTORY = "data-request"
 DATA_SOURCE_SUBDIRECTORY = "data-source"
 PROFILE_SUBDIRECTORY = "profile"
 
