@@ -11,7 +11,11 @@ from database_client.enums import (
     EventType,
     ExternalAccountTypeEnum,
 )
-from database_client.models import SQL_ALCHEMY_TABLE_REFERENCE
+from database_client.models import (
+    SQL_ALCHEMY_TABLE_REFERENCE,
+    DataRequestUserNotificationQueue,
+    DataSourceUserNotificationQueue,
+)
 from middleware.enums import JurisdictionType, Relations, AgencyType
 from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
     AgenciesPostDTO,
@@ -87,9 +91,10 @@ class TDCSQLAlchemyHelper:
         return results[0]
 
     def clear_user_notification_queue(self):
-        table = SQL_ALCHEMY_TABLE_REFERENCE[Relations.USER_NOTIFICATION_QUEUE.value]
-        query = delete(table)
-        self.db_client.execute_sqlalchemy(lambda: query)
+        query_1 = delete(DataRequestUserNotificationQueue)
+        query_2 = delete(DataSourceUserNotificationQueue)
+        for query in [query_1, query_2]:
+            self.db_client.execute_sqlalchemy(lambda: query)
 
 
 class TestDataCreatorDBClient:

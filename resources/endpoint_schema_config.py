@@ -183,6 +183,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.github_issue_app_s
     GithubDataRequestsIssuesPostRequestSchema,
     GithubDataRequestsIssuesPostResponseSchema,
     GithubDataRequestsIssuesPostDTO,
+    GithubSynchronizeResponseSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.user_profile_schemas import (
     GetUserRecentSearchesOuterSchema,
@@ -422,7 +423,9 @@ class SchemaConfigs(Enum):
         primary_output_schema=GithubDataRequestsIssuesPostResponseSchema(),
         input_dto_class=GithubDataRequestsIssuesPostDTO,
     )
-    GITHUB_DATA_REQUESTS_SYNCHRONIZE_POST = schema_config_with_message_output()
+    GITHUB_DATA_REQUESTS_SYNCHRONIZE_POST = EndpointSchemaConfig(
+        primary_output_schema=GithubSynchronizeResponseSchema(),
+    )
     # endregion
     # region Search
     SEARCH_LOCATION_AND_RECORD_TYPE_GET = EndpointSchemaConfig(

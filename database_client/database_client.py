@@ -3,18 +3,33 @@ from collections import namedtuple
 from datetime import datetime, timezone
 from enum import Enum
 from functools import wraps, partialmethod
-from operator import and_
-from typing import Optional, Any, List, Callable, Union
+from operator import and_, or_
+from typing import Optional, Any, List, Callable, Union, Type
 from psycopg import connection as PgConnection
 import psycopg
 import sqlalchemy.exc
 from dateutil.relativedelta import relativedelta
 from psycopg import sql, Cursor
 from psycopg.rows import dict_row, tuple_row
-from sqlalchemy import select, MetaData, delete, update, insert, Select, func, desc, asc
+from sqlalchemy import (
+    select,
+    MetaData,
+    delete,
+    update,
+    insert,
+    Select,
+    func,
+    desc,
+    asc,
+    exists,
+)
 from sqlalchemy.orm import aliased, defaultload, load_only, selectinload, joinedload
 
-from database_client.DTOs import UserInfoNonSensitive, UsersWithPermissions
+from database_client.DTOs import (
+    UserInfoNonSensitive,
+    UsersWithPermissions,
+    DataRequestInfoForGithub,
+)
 from database_client.constants import METADATA_METHOD_NAMES, PAGE_SIZE
 from database_client.db_client_dataclasses import (
     OrderByParameters,
@@ -43,7 +58,6 @@ from database_client.models import (
     SQL_ALCHEMY_TABLE_REFERENCE,
     User,
     DataRequestExpanded,
-    UserNotificationQueue,
     RecentSearch,
     LinkRecentSearchRecordCategories,
     RecordCategory,
@@ -57,12 +71,15 @@ from database_client.models import (
     LinkAgencyLocation,
     DataSourceExpanded,
     DataSource,
-    PendingEventNotification,
-    LinkPendingEventNotificationsDataRequests,
     DataRequest,
     LinkLocationDataRequest,
     LinkUserFollowedLocation,
-    LinkPendingEventNotificationsDataSources,
+    DataRequestsGithubIssueInfo,
+    Base,
+    DataSourceUserNotificationQueue,
+    DataRequestUserNotificationQueue,
+    DataRequestPendingEventNotification,
+    DataSourcePendingEventNotification,
 )
 from middleware.enums import (
     PermissionsEnum,
@@ -1045,6 +1062,42 @@ class DatabaseClient:
     )
 
     @session_manager
+    def get_data_requests_ready_to_start_without_github_issue(
+        self,
+    ) -> list[DataRequestInfoForGithub]:
+        query = (
+            select(
+                DataRequest.id,
+                DataRequest.title,
+                DataRequest.submission_notes,
+                DataRequest.data_requirements,
+            )
+            .where(
+                and_(
+                    DataRequest.request_status == RequestStatus.READY_TO_START.value,
+                    DataRequestsGithubIssueInfo.id == None,
+                )
+            )
+            .outerjoin(DataRequestsGithubIssueInfo)
+        )
+
+        execute_results = self.session.execute(query)
+
+        raw_results = execute_results.all()
+
+        final_results = []
+        for result in raw_results:
+            dto = DataRequestInfoForGithub(
+                id=result[0],
+                title=result[1],
+                submission_notes=result[2],
+                data_requirements=result[3],
+            )
+            final_results.append(dto)
+
+        return final_results
+
+    @session_manager
     def get_agencies(
         self,
         order_by: Optional[OrderByParameters] = None,
@@ -1490,9 +1543,11 @@ class DatabaseClient:
             dre.id, dre.github_issue_url, dre.github_issue_number, dre.request_status
         )
 
-        with_filter = select_statement.filter(
-            (dre.request_status != RequestStatus.ARCHIVED.value)
-            & (dre.github_issue_url is not None)
+        with_filter = select_statement.where(
+            and_(
+                dre.request_status != RequestStatus.ARCHIVED.value,
+                dre.github_issue_url != None,
+            )
         )
 
         results = self.session.execute(with_filter).mappings().all()
@@ -1517,18 +1572,12 @@ class DatabaseClient:
         # (and that event is not already in user_notification_queue for that user)
         data_request_query = (
             select(
-                PendingEventNotification.id.label("event_id"),
+                DataRequestPendingEventNotification.id.label("event_id"),
                 User.id.label("user_id"),
             )
             .join(
-                LinkPendingEventNotificationsDataRequests,
-                LinkPendingEventNotificationsDataRequests.event_id
-                == PendingEventNotification.id,
-            )
-            .join(
                 DataRequest,
-                DataRequest.id
-                == LinkPendingEventNotificationsDataRequests.data_request_id,
+                DataRequest.id == DataRequestPendingEventNotification.data_request_id,
             )
             .join(
                 LinkLocationDataRequest,
@@ -1542,9 +1591,9 @@ class DatabaseClient:
             .join(User, User.id == LinkUserFollowedLocation.user_id)
             .where(
                 # Event ID should not be in user_notification_queue for that user
-                PendingEventNotification.id.notin_(
-                    select(UserNotificationQueue.pen_id).where(
-                        UserNotificationQueue.user_id == User.id
+                DataRequestPendingEventNotification.id.notin_(
+                    select(DataRequestUserNotificationQueue.event_id).where(
+                        DataRequestUserNotificationQueue.user_id == User.id
                     )
                 )
             )
@@ -1552,27 +1601,21 @@ class DatabaseClient:
 
         raw_results = self.session.execute(data_request_query).mappings().all()
         for result in raw_results:
-            queue = UserNotificationQueue(
+            queue = DataRequestUserNotificationQueue(
                 user_id=result["user_id"],
-                pen_id=result["event_id"],
+                event_id=result["event_id"],
             )
             self.session.add(queue)
         self.session.flush()
 
         data_source_query = (
             select(
-                PendingEventNotification.id.label("event_id"),
+                DataSourcePendingEventNotification.id.label("event_id"),
                 User.id.label("user_id"),
             )
             .join(
-                LinkPendingEventNotificationsDataSources,
-                LinkPendingEventNotificationsDataSources.event_id
-                == PendingEventNotification.id,
-            )
-            .join(
                 DataSource,
-                DataSource.id
-                == LinkPendingEventNotificationsDataSources.data_source_id,
+                DataSource.id == DataSourcePendingEventNotification.data_source_id,
             )
             .join(
                 LinkAgencyDataSource,
@@ -1588,9 +1631,9 @@ class DatabaseClient:
             .join(User, User.id == LinkUserFollowedLocation.user_id)
             .where(
                 # Event ID should not be in user_notification_queue for that user
-                PendingEventNotification.id.notin_(
-                    select(UserNotificationQueue.pen_id).where(
-                        UserNotificationQueue.user_id == User.id
+                DataSourcePendingEventNotification.id.notin_(
+                    select(DataSourceUserNotificationQueue.event_id).where(
+                        DataSourceUserNotificationQueue.user_id == User.id
                     )
                 )
             )
@@ -1598,9 +1641,9 @@ class DatabaseClient:
 
         raw_results = self.session.execute(data_source_query).mappings().all()
         for result in raw_results:
-            queue = UserNotificationQueue(
+            queue = DataSourceUserNotificationQueue(
                 user_id=result["user_id"],
-                pen_id=result["event_id"],
+                event_id=result["event_id"],
             )
             self.session.add(queue)
 
@@ -1612,15 +1655,29 @@ class DatabaseClient:
         """
         query = (
             select(User)
-            .join(UserNotificationQueue)
-            .where(UserNotificationQueue.sent_at.is_(None))
+            .where(
+                or_(
+                    exists(
+                        select(DataSourceUserNotificationQueue.id).where(
+                            and_(
+                                DataSourceUserNotificationQueue.user_id == User.id,
+                                DataSourceUserNotificationQueue.sent_at.is_(None),
+                            )
+                        )
+                    ),
+                    exists(
+                        select(DataRequestUserNotificationQueue.id).where(
+                            and_(
+                                DataRequestUserNotificationQueue.user_id == User.id,
+                                DataRequestUserNotificationQueue.sent_at.is_(None),
+                            )
+                        )
+                    ),
+                )
+            )
             .options(
-                selectinload(User.events).selectinload(
-                    PendingEventNotification.data_request
-                ),
-                selectinload(User.events).selectinload(
-                    PendingEventNotification.data_source
-                ),
+                selectinload(User.data_request_events),
+                selectinload(User.data_source_events),
             )
             .limit(1)
         )
@@ -1630,37 +1687,37 @@ class DatabaseClient:
             return None
         user = raw_results[0]
         event_infos = []
-        for event in user.events:
-            if event.event_type in ["Request Ready to Start", "Request Complete"]:
-                data_request = event.data_request
-                event_info = EventInfo(
-                    event_id=event.id,
-                    event_type=EventType(event.event_type),
-                    entity_id=data_request.id,
-                    entity_type=EntityType.DATA_REQUEST,
-                    entity_name=data_request.title,
-                )
-                event_infos.append(event_info)
-            elif event.event_type == "Data Source Approved":
-                data_source = event.data_source
-                event_info = EventInfo(
-                    event_id=event.id,
-                    event_type=EventType(event.event_type),
-                    entity_id=data_source.id,
-                    entity_type=EntityType.DATA_SOURCE,
-                    entity_name=data_source.name,
-                )
-                event_infos.append(event_info)
+        for event in user.data_request_events:
+            event_info = EventInfo(
+                event_id=event.id,
+                event_type=EventType(event.event_type),
+                entity_id=event.data_request.id,
+                entity_type=EntityType.DATA_REQUEST,
+                entity_name=event.data_request.title,
+            )
+            event_infos.append(event_info)
+        for event in user.data_source_events:
+            event_info = EventInfo(
+                event_id=event.id,
+                event_type=EventType(event.event_type),
+                entity_id=event.data_source.id,
+                entity_type=EntityType.DATA_SOURCE,
+                entity_name=event.data_source.name,
+            )
+            event_infos.append(event_info)
         return EventBatch(user_id=user.id, user_email=user.email, events=event_infos)
 
     @session_manager
     def mark_user_events_as_sent(self, user_id: int):
-        queue = UserNotificationQueue
 
         with self.session.begin():
-            self.session.query(queue).filter(queue.user_id == user_id).update(
-                {queue.sent_at: datetime.now()}, synchronize_session=False
-            )
+            for queue in (
+                DataRequestUserNotificationQueue,
+                DataSourceUserNotificationQueue,
+            ):
+                self.session.query(queue).filter(queue.user_id == user_id).update(
+                    {queue.sent_at: datetime.now()}
+                )
 
     @session_manager
     def create_search_record(
@@ -2030,3 +2087,15 @@ class DatabaseClient:
                 record_types.append(record_type_dict)
 
         return {"record_types": record_types, "record_categories": record_categories}
+
+    @session_manager
+    def get_all(self, model: Type[Base]):
+
+        def to_dict(instance):
+            return {
+                c.name: getattr(instance, c.name) for c in instance.__table__.columns
+            }
+
+        results = self.session.query(model).all()
+
+        return [to_dict(result) for result in results]

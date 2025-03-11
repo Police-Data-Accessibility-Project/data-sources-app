@@ -5,6 +5,10 @@ from unittest.mock import MagicMock, call, ANY
 import pytest
 
 from database_client.enums import EventType, EntityType
+from database_client.models import (
+    DataRequestUserNotificationQueue,
+    DataSourceUserNotificationQueue,
+)
 from middleware.custom_dataclasses import EventInfo, EventBatch
 from middleware.enums import Relations
 from resources.endpoint_schema_config import SchemaConfigs
@@ -130,15 +134,15 @@ def test_notifications_followed_searches(
     # Test that it calls the `format_and_send_notification` function with the requisite results 3 times
 
     # In the database, check that each notification has a non-null `sent_at`
-    results = tdc_db.db_client._select_from_relation(
-        relation_name=Relations.USER_NOTIFICATION_QUEUE.value, columns=["id", "sent_at"]
-    )
-    assert len(results) == 4
-    for result in results:
-        assert result["sent_at"] is not None
+    data_requests_queue = tdc_db.db_client.get_all(DataRequestUserNotificationQueue)
+    assert len(data_requests_queue) == 3
+    for data_request in data_requests_queue:
+        assert data_request["sent_at"] is not None
 
-
-# TODO: Create separate middleware test for `format_and_send_notification`
+    data_sources_queue = tdc_db.db_client.get_all(DataSourceUserNotificationQueue)
+    assert len(data_sources_queue) == 1
+    for data_source in data_sources_queue:
+        assert data_source["sent_at"] is not None
 
 
 def test_notifications_permission_denied(
