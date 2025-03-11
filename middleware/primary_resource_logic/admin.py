@@ -61,3 +61,11 @@ def update_user_password(
 
     # Return response
     return FlaskResponseManager.make_response({"message": "User updated."})
+
+
+def delete_user(db_client: DatabaseClient, dto: GetByIDBaseDTO) -> Response:
+    # Apply database client method
+    db_client.delete_user(user_id=int(dto.resource_id))
+
+    # Return response
+    return FlaskResponseManager.make_response({"message": "User deleted."})

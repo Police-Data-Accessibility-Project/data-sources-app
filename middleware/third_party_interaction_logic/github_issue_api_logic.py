@@ -1,4 +1,5 @@
 import re
+from typing import Optional
 
 from github import Github
 from github import Auth
@@ -13,6 +14,7 @@ from dataclasses import dataclass
 class GithubIssueInfo(BaseModel):
     url: str
     number: int
+    data_request_id: Optional[int] = None
 
 
 def create_github_issue(title: str, body: str) -> GithubIssueInfo:
@@ -38,7 +40,7 @@ def create_github_issue(title: str, body: str) -> GithubIssueInfo:
 class GithubIssueProjectInfo:
 
     def __init__(self):
-        self.d = {}
+        self.d: dict[int, str] = {}
 
     def add_project_status(self, issue_number: int, project_status: str):
         if issue_number in self.d:

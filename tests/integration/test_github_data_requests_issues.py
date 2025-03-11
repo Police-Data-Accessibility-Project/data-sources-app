@@ -1,10 +1,15 @@
 from http import HTTPStatus
+from typing import Optional
+from unittest.mock import MagicMock
 
 from marshmallow import Schema
+from pydantic import BaseModel
 
 from conftest import test_data_creator_flask, monkeysession
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import RequestStatus
+from database_client.models import DataRequest, DataRequestsGithubIssueInfo
+from middleware.enums import Relations
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from middleware.third_party_interaction_logic.github_issue_api_logic import (
     GithubIssueInfo,
@@ -25,92 +30,14 @@ from tests.helper_scripts.constants import (
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from tests.conftest import clear_data_requests, dev_db_client
+from tests.integration.test_check_database_health import wipe_database
 
 PATCH_ROOT = "middleware.primary_resource_logic.github_issue_app_logic"
 
 
-def generate_fake_github_issue_info() -> GithubIssueInfo:
-    number = get_random_number_for_testing()
-    return GithubIssueInfo(
-        url=f"https://github.com/cool-github-issue-url/{number}", number=number
-    )
-
-
-def test_github_data_requests_issues_post(
-    test_data_creator_flask: TestDataCreatorFlask, monkeypatch
-):
-    tdc = test_data_creator_flask
-
-    # Mock `create_github_issue` to return a mock issue url
-    fake_github_issue_info = generate_fake_github_issue_info()
-    mock_github_issue_url = fake_github_issue_info.url
-    mock_create_github_issue = lambda *args, **kwargs: GithubIssueInfo(
-        url=mock_github_issue_url, number=fake_github_issue_info.number
-    )
-    monkeypatch.setattr(f"{PATCH_ROOT}.create_github_issue", mock_create_github_issue)
-
-    # Create standard user
-    tus = tdc.standard_user()
-
-    # Create test data request
-    cdr = tdc.data_request(tus)
-
-    def call_endpoint(
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_schema: Schema = SchemaConfigs.GITHUB_DATA_REQUESTS_ISSUES_POST.value.primary_output_schema,
-        expected_json_content: dict = None,
-        user_tus: TestUserSetup = tdc.get_admin_tus(),
-    ):
-        return run_and_validate_request(
-            flask_client=tdc.flask_client,
-            http_method="post",
-            endpoint=GITHUB_DATA_REQUESTS_ISSUES_ENDPOINT.format(
-                data_request_id=cdr.id
-            ),
-            headers=user_tus.jwt_authorization_header,
-            expected_schema=expected_schema,
-            expected_response_status=expected_response_status,
-            expected_json_content=expected_json_content,
-        )
-
-    # The user themselves should not be able to create an issue
-    call_endpoint(
-        user_tus=tus,
-        expected_response_status=HTTPStatus.FORBIDDEN,
-        expected_schema=MessageSchema(),
-        expected_json_content={
-            "message": "You do not have permission to access this endpoint"
-        },
-    )
-
-    # Call endpoint and confirm it returns a mock issue url
-    response_json = call_endpoint(
-        expected_json_content={
-            "message": "Issue created successfully",
-            "github_issue_url": mock_github_issue_url,
-        }
-    )
-
-    github_issue_url = response_json["github_issue_url"]
-
-    # TODO: Modify so that this is done via a GET request
-    # Check database to confirm it is present
-    result = tdc.db_client.get_data_requests(
-        columns=["github_issue_url", "github_issue_number"],
-        where_mappings=[WhereMapping(column="id", value=int(cdr.id))],
-    )
-    assert result[0]["github_issue_url"] == github_issue_url
-    # Check that the issue number is present and aligns with the issue url
-    assert result[0]["github_issue_number"] == int(github_issue_url.split("/")[-1])
-
-    # Try to run again and confirm it is rejected, because it already exists
-    call_endpoint(
-        expected_response_status=HTTPStatus.CONFLICT,
-        expected_json_content={
-            "message": f"Data Request already has an associated Github Issue.",
-            "github_issue_url": github_issue_url,
-        },
-    )
+class SynchronizeTestInfo(BaseModel):
+    data_request_id: int
+    github_issue_info: GithubIssueInfo
 
 
 def test_synchronize_github_issue(
@@ -118,74 +45,33 @@ def test_synchronize_github_issue(
 ):
 
     tdc = test_data_creator_flask
+    wipe_database(tdc.db_client)
 
-    def update_data_request(
-        data_request_id: int,
-        request_status: RequestStatus,
-    ):
-        run_and_validate_request(
-            flask_client=tdc.flask_client,
-            http_method="put",
-            endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
-                data_request_id=data_request_id
-            ),
-            headers=tdc.get_admin_tus().jwt_authorization_header,
-            json={
-                "entry_data": {"request_status": request_status.value},
-            },
-        )
-        # Use post requests to update the request status
+    # Mock GitHub repo -- a simple dictionary of issue number to project status
+    mock_issue_count = 0
+    mock_repo: dict[int, str] = {}
 
-    def add_fake_github_info_for_data_request(data_request_id: int) -> GithubIssueInfo:
-        fake_github_info = generate_fake_github_issue_info()
-        # Directly update the database with the github info
-        tdc.db_client.create_data_request_github_info(
-            column_value_mappings={
-                "data_request_id": data_request_id,
-                "github_issue_url": fake_github_info.url,
-                "github_issue_number": fake_github_info.number,
-            }
+    # Mock create GitHub Issue
+    def mock_create_github_issue(title: str, body: str) -> GithubIssueInfo:
+        # Create mock github issue with status "Ready to Start"
+        nonlocal mock_issue_count
+        mock_issue_count += 1
+        issue_count = mock_issue_count
+        mock_repo[issue_count] = "Ready to start"
+        return GithubIssueInfo(
+            url=f"https://github.com/cool-github-issue-url/{issue_count}",
+            number=issue_count,
         )
 
-        return fake_github_info
+    monkeypatch.setattr(f"{PATCH_ROOT}.create_github_issue", mock_create_github_issue)
 
-    # Create standard user
-    tus = test_data_creator_flask.standard_user()
-
-    # Add 3 data requests, 2 corresponding to these issues
-    # The 3rd data request should be listed as archived.
-    dr1 = tdc.data_request(tus)
-    dr2 = tdc.data_request(tus)
-    dr3 = tdc.data_request(tus)
-
-    # Update data requests to required statuses
-    update_data_request(data_request_id=dr1.id, request_status=RequestStatus.ACTIVE)
-    update_data_request(data_request_id=dr2.id, request_status=RequestStatus.ACTIVE)
-    update_data_request(data_request_id=dr3.id, request_status=RequestStatus.ARCHIVED)
-
-    # Add github info for data requests
-    fgi_1 = add_fake_github_info_for_data_request(data_request_id=dr1.id)
-    fgi_2 = add_fake_github_info_for_data_request(data_request_id=dr2.id)
-    fgi_3 = add_fake_github_info_for_data_request(data_request_id=dr3.id)
-
-    # Create GithubIssueProjectInfo with mock information
-    gipi = GithubIssueProjectInfo()
-    gipi.add_project_status(
-        issue_number=fgi_1.number, project_status=RequestStatus.ACTIVE.value
-    )
-    gipi.add_project_status(
-        issue_number=fgi_2.number, project_status=RequestStatus.COMPLETE.value
-    )  # This one will yield a db update
-
-    # Create a mock version of `get_github_issue_project_statuses` which validates the proper values are received
-    # and returns the mock GithubIssueProjectInfo
     def mock_get_github_issue_project_statuses(
         issue_numbers: list[int],
     ) -> GithubIssueProjectInfo:
-        assert issue_numbers == [
-            fgi_1.number,
-            fgi_2.number,
-        ], f"Unexpected issue number in {issue_numbers}; expected only {fgi_1.number} and {fgi_2.number}"
+
+        gipi = GithubIssueProjectInfo()
+        for issue_number in issue_numbers:
+            gipi.add_project_status(issue_number, mock_repo[issue_number])
         return gipi
 
     # Patch `git_github_issue_project_statuses` to return the mock
@@ -194,60 +80,114 @@ def test_synchronize_github_issue(
         mock_get_github_issue_project_statuses,
     )
 
-    def call_endpoint(
-        tus: TestUserSetup = tdc.get_admin_tus(),
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-    ):
-        run_and_validate_request(
-            flask_client=tdc.flask_client,
-            http_method="post",
-            endpoint=GITHUB_DATA_REQUESTS_SYNCHRONIZE,
-            headers=tus.jwt_authorization_header,
-            expected_response_status=expected_response_status,
-        )
-
-    # Confirm a standard user cannot call the endpoint
-    call_endpoint(
-        tus=tdc.standard_user(), expected_response_status=HTTPStatus.FORBIDDEN
-    )
-
-    # Call the synchronize endpoint
-    call_endpoint()
-
-    # Confirm the data requests have been updated
-    def check_data_request_github_info(
-        data_request_id: int,
-        github_issue_url: str,
-        github_issue_number: int,
-        expected_status: RequestStatus,
-    ):
-        response_json = run_and_validate_request(
-            flask_client=tdc.flask_client,
-            http_method="get",
-            endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
-                data_request_id=data_request_id
-            ),
+    def sync(expected_json_content=None):
+        if expected_json_content is None:
+            expected_json_content = {
+                "message": "Added 0 data requests to GitHub. Updated 0 data requests in database.",
+                "issues_created": [],
+            }
+        return tdc.request_validator.github_data_requests_issues_synchronize(
             headers=tdc.get_admin_tus().jwt_authorization_header,
+            expected_json_content=expected_json_content,
         )
-        assert response_json["data"]["github_issue_url"] == github_issue_url
-        assert response_json["data"]["github_issue_number"] == github_issue_number
-        assert response_json["data"]["request_status"] == expected_status.value
 
-    check_data_request_github_info(
-        data_request_id=dr1.id,
-        github_issue_url=fgi_1.url,
-        github_issue_number=fgi_1.number,
-        expected_status=RequestStatus.ACTIVE,
+    def get_all_data_requests():
+        return tdc.db_client.get_all(DataRequest)
+
+    def get_all_data_request_github_issue_infos():
+        return tdc.db_client.get_all(DataRequestsGithubIssueInfo)
+
+    # Sync 1: No data requests created; no issues created
+    sync()
+
+    # Confirm the presence of no data requests and no data request github info
+    assert len(get_all_data_requests()) == 0
+    assert len(get_all_data_request_github_issue_infos()) == 0
+    assert mock_issue_count == 0
+
+    # Sync 2: Create 3 Issues in the database, mark 2 as 'Ready to Start', 1 as 'Complete'
+    # Check that 2 github issues are created for the 2 marked 'Ready to Start'
+    data_request_ids = []
+    for i in range(3):
+        data_request_id = tdc.db_client.create_data_request(
+            column_value_mappings={
+                "title": f"Data Request {i}",
+                "request_status": "Ready to start" if i < 2 else "Complete",
+                "submission_notes": f"Submission Notes {i}",
+                "data_requirements": f"Data Requirements {i}",
+            }
+        )
+        data_request_ids.append(data_request_id)
+    sync(
+        expected_json_content={
+            "message": "Added 2 data requests to GitHub. Updated 0 data requests in database.",
+            "issues_created": [
+                {
+                    "data_request_id": data_request_ids[0],
+                    "github_issue_url": "https://github.com/cool-github-issue-url/1",
+                },
+                {
+                    "data_request_id": data_request_ids[1],
+                    "github_issue_url": "https://github.com/cool-github-issue-url/2",
+                },
+            ],
+        }
     )
-    check_data_request_github_info(
-        data_request_id=dr2.id,
-        github_issue_url=fgi_2.url,
-        github_issue_number=fgi_2.number,
-        expected_status=RequestStatus.COMPLETE,
+
+    # Check that 2 github issues are created for the 2 marked 'Ready to Start'
+    assert mock_issue_count == 2
+    assert list(mock_repo.values()) == ["Ready to start", "Ready to start"]
+
+    # Confirm the presence of 3 data requests and 2 data request github info
+    assert len(get_all_data_requests()) == 3
+    assert len(get_all_data_request_github_issue_infos()) == 2
+
+    # Sync 3: Create 1 Issue in the database, mark 1 as 'Ready to Start', update existing Github Issue
+    # Check that 1 github issue is created, and the existing issue is updated in the database
+
+    data_request_id = tdc.db_client.create_data_request(
+        column_value_mappings={
+            "title": "Data Request 3",
+            "request_status": "Ready to start",
+            "submission_notes": "Submission Notes 3",
+            "data_requirements": "Data Requirements 3",
+        }
     )
-    check_data_request_github_info(
-        data_request_id=dr3.id,
-        github_issue_url=fgi_3.url,
-        github_issue_number=fgi_3.number,
-        expected_status=RequestStatus.ARCHIVED,
+    data_request_ids.append(data_request_id)
+    mock_repo[1] = "Complete"
+    sync(
+        expected_json_content={
+            "message": "Added 1 data requests to GitHub. Updated 1 data requests in database.",
+            "issues_created": [
+                {
+                    "data_request_id": data_request_ids[3],
+                    "github_issue_url": "https://github.com/cool-github-issue-url/3",
+                },
+            ],
+        }
     )
+    assert mock_issue_count == 3
+    assert list(mock_repo.values()) == ["Complete", "Ready to start", "Ready to start"]
+
+    # Confirm the presence of 4 data requests and 3 data request github info
+    assert len(get_all_data_requests()) == 4
+    assert len(get_all_data_request_github_issue_infos()) == 3
+
+    # Get the modified data request and confirm the status in the database is updated
+
+    # Sync 4: Do nothing
+    # Check that no github issues are created, no data updated
+
+    sync(
+        expected_json_content={
+            "message": "Added 0 data requests to GitHub. Updated 0 data requests in database.",
+            "issues_created": [],
+        }
+    )
+
+    # Confirm the presence of 4 data requests and 3 data request github info
+    assert mock_issue_count == 3
+    assert list(mock_repo.values()) == ["Complete", "Ready to start", "Ready to start"]
+
+    assert len(get_all_data_requests()) == 4
+    assert len(get_all_data_request_github_issue_infos()) == 3

@@ -795,6 +795,13 @@ class RequestValidator:
             expected_schema=SchemaConfigs.ADMIN_USERS_POST.value.primary_output_schema,
         )
 
+    def delete_user(self, headers: dict, user_id: str):
+        return self.delete(
+            endpoint=f"/api/admin/users/{user_id}",
+            headers=headers,
+            expected_schema=SchemaConfigs.ADMIN_USERS_BY_ID_DELETE.value.primary_output_schema,
+        )
+
     def update_admin_user(self, headers: dict, resource_id: str, password: str):
         return self.put(
             endpoint=f"/api/admin/users/{resource_id}",
@@ -811,3 +818,17 @@ class RequestValidator:
         )
 
     # endregion
+
+    def github_data_requests_issues_synchronize(
+        self,
+        headers: dict,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_json_content: Optional[dict] = None,
+    ) -> dict:
+        return self.post(
+            endpoint="/api/github/data-requests/synchronize",
+            headers=headers,
+            expected_schema=SchemaConfigs.GITHUB_DATA_REQUESTS_SYNCHRONIZE_POST.value.primary_output_schema,
+            expected_response_status=expected_response_status,
+            expected_json_content=expected_json_content,
+        )
