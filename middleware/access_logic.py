@@ -334,6 +334,12 @@ def validate_email_handler(
 
 
 def validate_refresh_token(token: str, **kwargs) -> Optional[RefreshAccessInfo]:
+    try:
+        decode_token(token)
+    except ExpiredSignatureError:
+        FlaskResponseManager.abort(
+            code=HTTPStatus.UNAUTHORIZED, message="Refresh token has expired"
+        )
     decoded_refresh_token = decode_token(token)
     token_type: str = decoded_refresh_token["type"]
     # The below is flagged as a false positive through bandit security linting, misidentifying it as a password
