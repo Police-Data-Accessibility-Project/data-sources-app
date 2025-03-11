@@ -818,3 +818,17 @@ class RequestValidator:
         )
 
     # endregion
+
+    def github_data_requests_issues_synchronize(
+        self,
+        headers: dict,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_json_content: Optional[dict] = None,
+    ) -> dict:
+        return self.post(
+            endpoint="/api/github/data-requests/synchronize",
+            headers=headers,
+            expected_schema=SchemaConfigs.GITHUB_DATA_REQUESTS_SYNCHRONIZE_POST.value.primary_output_schema,
+            expected_response_status=expected_response_status,
+            expected_json_content=expected_json_content,
+        )

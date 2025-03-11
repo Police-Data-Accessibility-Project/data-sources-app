@@ -1,3 +1,5 @@
+import logging
+
 from sqlalchemy import CursorResult
 
 from tests.alembic.AlembicRunner import AlembicRunner
@@ -83,5 +85,7 @@ def test_add_user_create_update_permissions(alembic_runner: AlembicRunner):
 
 
 def test_revision_upgrade_downgrade(alembic_runner: AlembicRunner):
+    logging.disable(logging.NOTSET)
     alembic_runner.upgrade("head")
     alembic_runner.downgrade("base")
+    logging.disable(logging.CRITICAL)

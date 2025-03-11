@@ -1,3 +1,4 @@
+import logging
 import os
 from unittest.mock import MagicMock
 
@@ -44,7 +45,11 @@ def setup_database():
     conn_string = get_alembic_conn_string()
     engine = create_engine(conn_string)
     # Base.metadata.drop_all(engine)
+
     alembic_cfg = Config("alembic.ini")
+    alembic_cfg.set_section_option("logger_alembic", "level", "WARN")
+    logging.getLogger("alembic").setLevel(logging.CRITICAL)
+    logging.disable(logging.CRITICAL)
     alembic_cfg.attributes["connection"] = engine.connect()
     alembic_cfg.set_main_option("sqlalchemy.url", conn_string)
     try:
@@ -80,6 +85,7 @@ def test_data_creator_flask(setup_database, monkeysession) -> TestDataCreatorFla
     app = create_app()
     app.config["TESTING"] = True
     app.config["PROPAGATE_EXCEPTIONS"] = True
+
     # Disable rate limiting for tests
     limiter.enabled = False
     with app.test_client() as client:

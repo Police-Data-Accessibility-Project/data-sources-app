@@ -14,3 +14,14 @@ class UserInfoNonSensitive(BaseModel):
 
 class UsersWithPermissions(UserInfoNonSensitive):
     permissions: list[PermissionsEnum]
+
+
+class DataRequestInfoForGithub(BaseModel):
+    """
+    Data Request Info to be used in the creation of GitHub Issues
+    """
+
+    id: int
+    title: str
+    submission_notes: str
+    data_requirements: str
