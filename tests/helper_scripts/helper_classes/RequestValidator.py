@@ -318,7 +318,7 @@ class RequestValidator:
     ):
         endpoint_base = "/archives"
         if last_archived_before is not None:
-            last_archived_before = last_archived_before.isoformat()
+            last_archived_before = last_archived_before.strftime("%Y-%m-%d")
 
         params = {}
         d = {
