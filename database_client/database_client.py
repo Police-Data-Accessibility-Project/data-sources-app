@@ -1066,9 +1066,7 @@ class DatabaseClient:
         self,
     ) -> list[DataRequestInfoForGithub]:
         query = (
-            select(
-                DataRequest
-            )
+            select(DataRequest)
             .where(
                 and_(
                     DataRequest.request_status == RequestStatus.READY_TO_START.value,
@@ -1076,11 +1074,7 @@ class DatabaseClient:
                 )
             )
             .outerjoin(DataRequestsGithubIssueInfo)
-            .options(
-                selectinload(
-                    DataRequest.locations
-                )
-            )
+            .options(selectinload(DataRequest.locations))
         )
 
         execute_results = self.session.execute(query).scalars()
@@ -1097,7 +1091,7 @@ class DatabaseClient:
                 title=result.title,
                 submission_notes=result.submission_notes,
                 data_requirements=result.data_requirements,
-                locations=display_names
+                locations=display_names,
             )
             final_results.append(dto)
 

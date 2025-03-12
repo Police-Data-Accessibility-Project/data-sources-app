@@ -34,18 +34,18 @@ def get_github_issue_title(submission_notes: str) -> str:
 
 
 def get_github_issue_body(
-        submission_notes: str,
-        data_requirements: str,
-        locations: Optional[list[str]]
+    submission_notes: str, data_requirements: str, locations: Optional[list[str]]
 ) -> str:
     if locations is not None:
         locations_str = "## Locations: \n * " + "\n * ".join(locations)
     else:
         locations_str = ""
 
-    full_text = (f"## Submission Notes: \n{submission_notes}\n\n"
-                 f"## Data Requirements:\n{data_requirements}\n\n"
-                 f"{locations_str}")
+    full_text = (
+        f"## Submission Notes: \n{submission_notes}\n\n"
+        f"## Data Requirements:\n{data_requirements}\n\n"
+        f"{locations_str}"
+    )
     return full_text
 
 
@@ -71,7 +71,7 @@ def add_ready_data_requests_as_github_issues(
             body=get_github_issue_body(
                 submission_notes=data_request.submission_notes,
                 data_requirements=data_request.data_requirements,
-                locations=data_request.locations
+                locations=data_request.locations,
             ),
         )
 

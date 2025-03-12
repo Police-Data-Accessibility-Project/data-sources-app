@@ -23,7 +23,7 @@ def test_get_github_issue_body():
     result = get_github_issue_body(
         submission_notes="Test issue",
         data_requirements="* Do x\n* Do y\n* Do z",
-        locations=["Pennsylvania", "Arlington, Virginia"]
+        locations=["Pennsylvania", "Arlington, Virginia"],
     )
     assert (
         result
