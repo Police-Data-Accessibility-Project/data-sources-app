@@ -118,6 +118,10 @@ def test_synchronize_github_issue(
             }
         )
         data_request_ids.append(data_request_id)
+        # Link to location
+        tdc.db_client.create_request_location_relation(
+            column_value_mappings={"data_request_id": data_request_id, "location_id": 1}
+        )
     sync(
         expected_json_content={
             "message": "Added 2 data requests to GitHub. Updated 0 data requests in database.",

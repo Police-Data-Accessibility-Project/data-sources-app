@@ -27,9 +27,10 @@ def create_github_issue(title: str, body: str) -> GithubIssueInfo:
     auth = Auth.Token(get_env_variable("GH_API_ACCESS_TOKEN"))
 
     g = Github(auth=auth)
+    repo_owner = get_env_variable("GH_ISSUE_REPO_OWNER")
     repo_name = get_env_variable("GH_ISSUE_REPO_NAME")
 
-    repo = g.get_repo(repo_name)
+    repo = g.get_repo(f"{repo_owner}/{repo_name}")
 
     issue = repo.create_issue(title=title, body=body)
 
@@ -119,6 +120,7 @@ def get_github_issue_project_statuses(
         json={"query": query},
         timeout=10,
     )
+    response.raise_for_status()
 
     gipi = convert_graph_ql_result_to_issue_info(response.json())
 
