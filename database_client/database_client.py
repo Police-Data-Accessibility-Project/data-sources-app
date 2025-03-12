@@ -1067,10 +1067,7 @@ class DatabaseClient:
     ) -> list[DataRequestInfoForGithub]:
         query = (
             select(
-                DataRequest.id,
-                DataRequest.title,
-                DataRequest.submission_notes,
-                DataRequest.data_requirements,
+                DataRequest
             )
             .where(
                 and_(
@@ -1079,19 +1076,28 @@ class DatabaseClient:
                 )
             )
             .outerjoin(DataRequestsGithubIssueInfo)
+            .options(
+                selectinload(
+                    DataRequest.locations
+                )
+            )
         )
 
-        execute_results = self.session.execute(query)
+        execute_results = self.session.execute(query).scalars()
 
         raw_results = execute_results.all()
 
         final_results = []
         for result in raw_results:
+            display_names = []
+            for location in result.locations:
+                display_names.append(location.display_name)
             dto = DataRequestInfoForGithub(
-                id=result[0],
-                title=result[1],
-                submission_notes=result[2],
-                data_requirements=result[3],
+                id=result.id,
+                title=result.title,
+                submission_notes=result.submission_notes,
+                data_requirements=result.data_requirements,
+                locations=display_names
             )
             final_results.append(dto)
 

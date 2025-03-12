@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -25,3 +26,4 @@ class DataRequestInfoForGithub(BaseModel):
     title: str
     submission_notes: str
     data_requirements: str
+    locations: Optional[list[str]]
