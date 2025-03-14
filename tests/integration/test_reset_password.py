@@ -6,7 +6,7 @@ import uuid
 
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
 from middleware.enums import Relations
-from tests.conftest import dev_db_client
+from tests.conftest import dev_db_client, test_data_creator_flask, monkeysession
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
@@ -16,7 +16,6 @@ from tests.helper_scripts.helper_functions_complex import (
     request_reset_password_api,
 )
 from tests.helper_scripts.helper_functions_simple import get_authorization_header
-from conftest import test_data_creator_flask, monkeysession
 
 
 def test_reset_password_post(

@@ -5,7 +5,12 @@ from http import HTTPStatus
 from middleware.api_key import ApiKey
 from resources.ApiKeyResource import API_KEY_ROUTE
 from resources.endpoint_schema_config import SchemaConfigs
-from tests.conftest import dev_db_client, flask_client_with_db
+from tests.conftest import (
+    dev_db_client,
+    flask_client_with_db,
+    test_data_creator_flask,
+    monkeysession,
+)
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
@@ -13,7 +18,6 @@ from tests.helper_scripts.helper_functions_complex import (
     create_test_user_db_client,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-from conftest import test_data_creator_flask, monkeysession
 
 
 def test_api_key_post(test_data_creator_flask: TestDataCreatorFlask):

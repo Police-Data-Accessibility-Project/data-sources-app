@@ -1,7 +1,7 @@
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from conftest import test_data_creator_flask, monkeysession
+from tests.conftest import test_data_creator_flask, monkeysession
 
 
 def test_metrics(test_data_creator_flask: TestDataCreatorFlask):

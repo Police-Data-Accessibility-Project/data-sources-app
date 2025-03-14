@@ -6,7 +6,7 @@ from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
 
-from conftest import test_data_creator_flask, monkeysession
+from tests.conftest import test_data_creator_flask, monkeysession
 
 
 # This endpoint no longer works because of the other data source endpoint

@@ -90,7 +90,7 @@ def add_ready_data_requests_as_github_issues(
 
 
 def synchronize_github_issues_with_data_requests(
-    db_client: DatabaseClient, access_info: AccessInfoPrimary
+    db_client: DatabaseClient, access_info: Optional[AccessInfoPrimary]
 ) -> Response:
     """
     Synchronizes github issues with data requests

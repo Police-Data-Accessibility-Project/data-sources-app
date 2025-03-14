@@ -5,7 +5,6 @@ from unittest.mock import MagicMock
 from marshmallow import Schema
 from pydantic import BaseModel
 
-from conftest import test_data_creator_flask, monkeysession
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import RequestStatus
 from database_client.models import DataRequest, DataRequestsGithubIssueInfo
@@ -29,7 +28,12 @@ from tests.helper_scripts.constants import (
 )
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-from tests.conftest import clear_data_requests, dev_db_client
+from tests.conftest import (
+    clear_data_requests,
+    dev_db_client,
+    test_data_creator_flask,
+    monkeysession,
+)
 from tests.integration.test_check_database_health import wipe_database
 
 PATCH_ROOT = "middleware.primary_resource_logic.github_issue_app_logic"

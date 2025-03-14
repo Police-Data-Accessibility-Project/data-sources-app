@@ -44,7 +44,11 @@ class GithubIssueProjectInfo:
 
     def add_project_status(self, issue_number: int, project_status: str):
         if issue_number in self.d:
-            raise ValueError(f"Duplicate issue number {issue_number}")
+            if self.d[issue_number] == project_status:
+                return
+            raise ValueError(
+                f"Issue number with conflicting status {issue_number}: {project_status} vs {self.d[issue_number]}"
+            )
         self.d[issue_number] = project_status
 
     def get_project_status(self, issue_number: int) -> RequestStatus:
@@ -54,52 +58,93 @@ class GithubIssueProjectInfo:
             raise ValueError(f"Unknown issue number {issue_number}")
 
 
-def generate_graphql_query(issue_numbers: list[int]):
-    issue_template = """
-    issue_{num}: issue(number: {num}) {{
-      projectItems(first: 5) {{
-        nodes {{
-          status: fieldValueByName(name: "Status") {{
-            ... on ProjectV2ItemFieldSingleSelectValue {{
-              name
-            }}
-          }}
-        }}
-      }}
-    }}"""
+def get_project_id():
+    query = """
+    query {
+      organization(login: "Police-Data-Accessibility-Project") {
+        projectV2(number: 26) {  # Specific project number
+          id
+        }
+      }
+    }
+    """
+    response = make_graph_ql_query(query=query)
+    return response.json()["data"]["organization"]["projectV2"]["id"]
 
-    issues = "\n".join(
-        [issue_template.format(num=issue_number) for issue_number in issue_numbers]
+
+def get_repository_id():
+    query = """
+    query FindRepo {
+      repository(owner: "Police-Data-Accessibility-Project", name: "data-requests") {
+        id
+      }
+    }
+    """
+    response = make_graph_ql_query(query=query)
+    return response.json()["data"]["repository"]["id"]
+
+
+def create_issue(title: str, body: str):
+    query = """
+    mutation CreateIssue {
+      repository(owner: "Police-Data-Accessibility-Project", name: "data-requests") {
+        createIssue(input: {title: "%s", body: "%s"}) {
+          issue {
+            number,
+            id
+          }
+        }
+      }
+    }
+    """ % (
+        title,
+        body,
     )
+    response = make_graph_ql_query(query=query)
+    return response.json()
 
-    owner = get_env_variable("GH_ISSUE_REPO_OWNER")
-    repository_name = get_env_variable("GH_ISSUE_REPO_NAME")
-    full_query = """
-    query {{
-      repository(owner: "{owner}", name: "{repository_name}") {{
-        {issues}
-      }}
-    }}""".format(
-        owner=owner, repository_name=repository_name, issues=issues
-    )
 
-    return full_query
+def generate_issues_and_project_get_graphql_query():
+    return """
+    query {
+      organization(login: "Police-Data-Accessibility-Project") {
+        projectV2(number: 26) {  # Specific project number
+          title
+          items(first: 100) {
+            nodes {
+              content {
+                ... on Issue {
+                  number
+                  title
+                }
+              }
+              fieldValueByName(name: "Status") {
+                ... on ProjectV2ItemFieldSingleSelectValue {
+                  name
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    """
 
 
 def convert_graph_ql_result_to_issue_info(result: dict):
     gipi = GithubIssueProjectInfo()
     data = result.get("data")
-    repository = data.get("repository")
+    organization = data.get("organization")
+    project_v2 = organization.get("projectV2")
+    items = project_v2.get("items")
+    nodes = items.get("nodes")
+    for node in nodes:
+        issue_number = node.get("content").get("number")
+        project_status = node.get("fieldValueByName").get("name")
 
-    for issue_name, issue_info in repository.items():
-        issue_number = re.match(r"issue_(\d+)", issue_name).group(1)
-
-        project_items = issue_info.get("projectItems")
-        nodes = project_items.get("nodes")
-        for node in nodes:
-            status = node.get("status")
-            name = status.get("name")
-            gipi.add_project_status(issue_number=issue_number, project_status=name)
+        gipi.add_project_status(
+            issue_number=issue_number, project_status=project_status
+        )
 
     return gipi
 
@@ -108,20 +153,24 @@ def get_github_issue_project_statuses(
     issue_numbers: list[int],
 ) -> GithubIssueProjectInfo:
 
-    query = generate_graphql_query(issue_numbers)
+    query = generate_issues_and_project_get_graphql_query()
 
-    token = get_env_variable("GH_API_ACCESS_TOKEN")
+    response = make_graph_ql_query(query=query)
 
+    gipi = convert_graph_ql_result_to_issue_info(response.json())
+
+    return gipi
+
+
+def make_graph_ql_query(query: str):
+    access_token = get_env_variable("GH_API_ACCESS_TOKEN")
     response = requests.post(
         url="https://api.github.com/graphql",
         headers={
-            "Authorization": f"Bearer {token}",
+            "Authorization": f"Bearer {access_token}",
         },
         json={"query": query},
         timeout=10,
     )
     response.raise_for_status()
-
-    gipi = convert_graph_ql_result_to_issue_info(response.json())
-
-    return gipi
+    return response

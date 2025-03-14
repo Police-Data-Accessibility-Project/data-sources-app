@@ -9,8 +9,7 @@ from tests.helper_scripts.helper_functions_complex import (
     setup_get_typeahead_suggestion_test_data,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-from tests.conftest import flask_client_with_db
-from conftest import test_data_creator_flask, monkeysession
+from tests.conftest import flask_client_with_db, test_data_creator_flask, monkeysession
 
 
 def test_typeahead_locations(flask_client_with_db):

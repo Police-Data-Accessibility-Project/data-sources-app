@@ -7,7 +7,7 @@ from tests.helper_scripts.complex_test_data_creation_functions import (
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from conftest import test_data_creator_flask, monkeysession
+from tests.conftest import test_data_creator_flask, monkeysession
 
 
 def test_user_profile_data_requests(test_data_creator_flask: TestDataCreatorFlask):
