@@ -10,20 +10,17 @@ from requests import request
 
 from database_client.DTOs import DataRequestInfoForGithub
 from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import WhereMapping
+from database_client.enums import RequestStatus
 from middleware.access_logic import AccessInfoPrimary
 from middleware.common_response_formatting import message_response
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.primary_resource_schemas.github_issue_app_schemas import (
-    GithubDataRequestsIssuesPostDTO,
-    GithubIssueURLInfosSchema,
     GithubIssueURLInfosDTO,
 )
 from middleware.third_party_interaction_logic.github_issue_api_logic import (
     create_github_issue,
     GithubIssueProjectInfo,
     get_github_issue_project_statuses,
-    GithubIssueInfo,
+    GithubIssueInfo, GithubIssueManager,
 )
 
 
@@ -61,10 +58,11 @@ def add_ready_data_requests_as_github_issues(
         db_client.get_data_requests_ready_to_start_without_github_issue()
     )
 
+    gim = GithubIssueManager()
     # Add each data request as a GitHub issue
     github_issue_infos = []
     for data_request in data_requests:
-        github_issue_info = create_github_issue(
+        github_issue_info = gim.create_issue_with_status(
             title=get_github_issue_title(
                 submission_notes=data_request.title,
             ),
@@ -73,6 +71,7 @@ def add_ready_data_requests_as_github_issues(
                 data_requirements=data_request.data_requirements,
                 locations=data_request.locations,
             ),
+            status=RequestStatus.READY_TO_START
         )
 
         # Update the data request with the github issue url
