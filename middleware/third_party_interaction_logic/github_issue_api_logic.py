@@ -69,7 +69,7 @@ def get_project_id():
     }
     """
     response = make_graph_ql_query(query=query)
-    return response.json()["data"]["organization"]["projectV2"]["id"]
+    return response["data"]["organization"]["projectV2"]["id"]
 
 
 def get_repository_id():
@@ -81,27 +81,101 @@ def get_repository_id():
     }
     """
     response = make_graph_ql_query(query=query)
-    return response.json()["data"]["repository"]["id"]
+    return response["data"]["repository"]["id"]
 
 
-def create_issue(title: str, body: str):
+class GithubIssueInfo(BaseModel):
+    issue: int
+    id: str
+
+
+def create_issue(title: str, body: str) -> GithubIssueInfo:
     query = """
     mutation CreateIssue {
-      repository(owner: "Police-Data-Accessibility-Project", name: "data-requests") {
-        createIssue(input: {title: "%s", body: "%s"}) {
-          issue {
+        createIssue(input: {
+          repositoryId: "%s",
+          title: "%s", 
+          body: "%s"
+        }
+      ) {
+      issue {
             number,
             id
           }
         }
       }
-    }
     """ % (
+        get_env_variable("GH_REPO_ID"),
         title,
         body,
     )
     response = make_graph_ql_query(query=query)
-    return response.json()
+    data = response["data"]
+    issue = data["createIssue"]["issue"]
+    return GithubIssueInfo(issue=issue["number"], id=issue["id"])
+
+
+def assign_issue_to_project(issue_id: str):
+    query = """
+    mutation AssignIssueToProject {
+        addProjectV2ItemById(
+            input: {
+                projectId: "%s",
+                contentId: "%s"
+            }
+        ) 
+    {
+        item {
+          id
+        }
+      }
+    }
+    """ % (
+        get_env_variable("GH_PROJECT_ID"),
+        issue_id,
+    )
+    return make_graph_ql_query(query=query)
+
+
+def get_project_status_field():
+    query = """
+    query {
+      node(id: "%s") {
+        ... on ProjectV2 {
+          id
+          title
+          fields(first: 20) {
+            nodes {
+              ... on ProjectV2Field {
+                id
+                name
+                dataType
+              }
+              ... on ProjectV2SingleSelectField {
+                id
+                name
+                dataType
+                options {
+                  id
+                  name
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    """ % get_env_variable(
+        "GH_PROJECT_ID"
+    )
+    response = make_graph_ql_query(query=query)
+    data = response["data"]
+    project = data["node"]
+    fields = project["fields"]
+    nodes = fields["nodes"]
+    for node in nodes:
+        if node["name"] == "Status":
+            return node
 
 
 def generate_issues_and_project_get_graphql_query():
@@ -157,7 +231,7 @@ def get_github_issue_project_statuses(
 
     response = make_graph_ql_query(query=query)
 
-    gipi = convert_graph_ql_result_to_issue_info(response.json())
+    gipi = convert_graph_ql_result_to_issue_info(response)
 
     return gipi
 
@@ -173,4 +247,4 @@ def make_graph_ql_query(query: str):
         timeout=10,
     )
     response.raise_for_status()
-    return response
+    return response.json()
