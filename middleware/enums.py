@@ -22,6 +22,7 @@ class PermissionsEnum(Enum):
     SOURCE_COLLECTOR = "source_collector"
     USER_CREATE_UPDATE = "user_create_update"
     ARCHIVE_WRITE = "archive_write"
+    GITHUB_SYNC = "github_sync"
 
     @classmethod
     def values(cls):
