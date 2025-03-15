@@ -16,26 +16,6 @@ class GithubIssueInfo(BaseModel):
     data_request_id: Optional[int] = None
 
 
-def create_github_issue(title: str, body: str) -> GithubIssueInfo:
-    """
-    Create a github issue and return its url
-    :param title: The title of the issue
-    :param body: The body of the issue
-    :return:
-    """
-    auth = Auth.Token(get_env_variable("GH_API_ACCESS_TOKEN"))
-
-    g = Github(auth=auth)
-    repo_owner = get_env_variable("GH_ISSUE_REPO_OWNER")
-    repo_name = get_env_variable("GH_ISSUE_REPO_NAME")
-
-    repo = g.get_repo(f"{repo_owner}/{repo_name}")
-
-    issue = repo.create_issue(title=title, body=body)
-
-    return GithubIssueInfo(url=issue.url, number=issue.number)
-
-
 class ProjectStatusManager:
 
     def __init__(self, options: dict):
@@ -81,8 +61,8 @@ class GithubIssueManager:
         self.project_id = self.get_project_id()
         self.repo_id = self.get_repository_id()
         node = self.get_project_status_field()
-        self.project_status_field_id = node['id']
-        self.project_status_manager = ProjectStatusManager(node['options'])
+        self.project_status_field_id = node["id"]
+        self.project_status_manager = ProjectStatusManager(node["options"])
 
     def get_project_id(self):
         query = """
@@ -93,7 +73,10 @@ class GithubIssueManager:
             }
           }
         }
-        """ % (GH_ORG_NAME, GH_PROJECT_NUMBER)
+        """ % (
+            GH_ORG_NAME,
+            GH_PROJECT_NUMBER,
+        )
         response = make_graph_ql_query(query=query)
         return response["data"]["organization"]["projectV2"]["id"]
 
@@ -104,7 +87,10 @@ class GithubIssueManager:
             id
           }
         }
-        """ % (GH_ORG_NAME, GH_REPO_NAME)
+        """ % (
+            GH_ORG_NAME,
+            GH_REPO_NAME,
+        )
         response = make_graph_ql_query(query=query)
         return response["data"]["repository"]["id"]
 
@@ -132,11 +118,7 @@ class GithubIssueManager:
         response = make_graph_ql_query(query=query)
         data = response["data"]
         issue = data["createIssue"]["issue"]
-        return GithubIssueInfo(
-            url=issue["url"],
-            number=issue["number"],
-            id=issue["id"]
-        )
+        return GithubIssueInfo(url=issue["url"], number=issue["number"], id=issue["id"])
 
     def assign_status(self, project_item_id: str, status: RequestStatus):
         option_id = self.project_status_manager.get_id(status.value)
@@ -162,23 +144,17 @@ class GithubIssueManager:
             self.project_id,
             project_item_id,
             self.project_status_field_id,
-            option_id
+            option_id,
         )
         response = make_graph_ql_query(query)
         return response
 
     def create_issue_with_status(
-            self,
-            title: str,
-            body: str,
-            status: RequestStatus
+        self, title: str, body: str, status: RequestStatus
     ) -> GithubIssueInfo:
         gii: GithubIssueInfo = self.create_issue(title=title, body=body)
         project_item_id = self.assign_issue_to_project(gii.id)
-        self.assign_status(
-            project_item_id=project_item_id,
-            status=status
-        )
+        self.assign_status(project_item_id=project_item_id, status=status)
         return gii
 
     def assign_issue_to_project(self, issue_id: str) -> str:
@@ -204,7 +180,8 @@ class GithubIssueManager:
         return response["data"]["addProjectV2ItemById"]["item"]["id"]
 
     def get_project_status_field(self):
-        query = """
+        query = (
+            """
         query {
           node(id: "%s") {
             ... on ProjectV2 {
@@ -231,7 +208,9 @@ class GithubIssueManager:
             }
           }
         }
-        """ % self.project_id
+        """
+            % self.project_id
+        )
         response = make_graph_ql_query(query=query)
         data = response["data"]
         project = data["node"]
@@ -240,7 +219,6 @@ class GithubIssueManager:
         for node in nodes:
             if node["name"] == "Status":
                 return node
-
 
 
 def assign_issue_to_project(issue_id: str):
@@ -263,7 +241,6 @@ def assign_issue_to_project(issue_id: str):
         issue_id,
     )
     return make_graph_ql_query(query=query)
-
 
 
 def generate_issues_and_project_get_graphql_query():
@@ -312,7 +289,7 @@ def convert_graph_ql_result_to_issue_info(result: dict):
 
 
 def get_github_issue_project_statuses(
-        issue_numbers: list[int],
+    issue_numbers: list[int],
 ) -> GithubIssueProjectInfo:
     query = generate_issues_and_project_get_graphql_query()
 

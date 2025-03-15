@@ -17,7 +17,6 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.github_issue_app_s
     GithubIssueURLInfosDTO,
 )
 from middleware.third_party_interaction_logic.github_issue_api_logic import (
-    create_github_issue,
     GithubIssueProjectInfo,
     get_github_issue_project_statuses,
     GithubIssueInfo,

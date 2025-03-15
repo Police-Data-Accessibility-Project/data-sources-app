@@ -1,7 +1,7 @@
 from database_client.enums import RequestStatus
 from middleware.third_party_interaction_logic.github_issue_api_logic import (
     get_github_issue_project_statuses,
-    create_github_issue, GithubIssueManager,
+    GithubIssueManager,
 )
 
 
@@ -12,13 +12,8 @@ def test_get_github_issue_project_statuses():
     print(results)
 
 
-def test_create_github_issue():
-    create_github_issue(title="Testing", body="Testing Body")
-
 def test_github_issue_manager():
     gim = GithubIssueManager()
     gim.create_issue_with_status(
-        title="test",
-        body="test body",
-        status=RequestStatus.READY_TO_START
+        title="test", body="test body", status=RequestStatus.READY_TO_START
     )

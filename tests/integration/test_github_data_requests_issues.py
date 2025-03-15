@@ -56,18 +56,24 @@ def test_synchronize_github_issue(
     mock_repo: dict[int, str] = {}
 
     # Mock create GitHub Issue
-    def mock_create_github_issue(title: str, body: str) -> GithubIssueInfo:
+    def mock_create_github_issue(
+        self, title: str, body: str, status: RequestStatus
+    ) -> GithubIssueInfo:
         # Create mock github issue with status "Ready to Start"
         nonlocal mock_issue_count
         mock_issue_count += 1
         issue_count = mock_issue_count
-        mock_repo[issue_count] = "Ready to start"
+        mock_repo[issue_count] = status.value
         return GithubIssueInfo(
+            id="mock_github_issue_id",
             url=f"https://github.com/cool-github-issue-url/{issue_count}",
             number=issue_count,
         )
 
-    monkeypatch.setattr(f"{PATCH_ROOT}.create_github_issue", mock_create_github_issue)
+    monkeypatch.setattr(
+        f"{PATCH_ROOT}.GithubIssueManager.create_issue_with_status",
+        mock_create_github_issue,
+    )
 
     def mock_get_github_issue_project_statuses(
         issue_numbers: list[int],
