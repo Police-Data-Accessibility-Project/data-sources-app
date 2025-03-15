@@ -221,28 +221,6 @@ class GithubIssueManager:
                 return node
 
 
-def assign_issue_to_project(issue_id: str):
-    query = """
-    mutation AssignIssueToProject {
-        addProjectV2ItemById(
-            input: {
-                projectId: "%s",
-                contentId: "%s"
-            }
-        ) 
-    {
-        item {
-          id
-        }
-      }
-    }
-    """ % (
-        get_env_variable("GH_PROJECT_ID"),
-        issue_id,
-    )
-    return make_graph_ql_query(query=query)
-
-
 def generate_issues_and_project_get_graphql_query():
     return """
     query {
