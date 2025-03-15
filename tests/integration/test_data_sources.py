@@ -22,7 +22,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_
 
 from resources.endpoint_schema_config import SchemaConfigs
 
-from conftest import test_data_creator_flask, monkeysession
+from tests.conftest import test_data_creator_flask, monkeysession
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,

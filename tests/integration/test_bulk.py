@@ -6,7 +6,7 @@ import pytest
 
 from marshmallow import Schema
 
-from conftest import test_data_creator_flask, monkeysession
+from tests.conftest import test_data_creator_flask, monkeysession
 from database_client.enums import LocationType
 from middleware.enums import AgencyType
 from middleware.primary_resource_logic.bulk_logic import listify_strings

@@ -5,7 +5,13 @@ from enum import Enum
 from http import HTTPStatus
 from typing import Type, Union
 
+from alembic import command
+from alembic.config import Config
+
 from flask_restx import abort
+from sqlalchemy import text
+
+from middleware.util import get_env_variable
 
 
 def convert_dates_to_strings(data_dict: dict) -> dict:
@@ -84,3 +90,22 @@ def get_valid_enum_value(enum_type: Type[Enum], value: str) -> Enum:
             code=HTTPStatus.BAD_REQUEST,
             message=f"Invalid {enum_type.__name__} '{value}'. Must be one of the following: {[item.value for item in enum_type]}",
         )
+
+
+def get_alembic_conn_string() -> str:
+    conn_string = get_env_variable("DO_DATABASE_URL")
+    conn_string = conn_string.replace("postgresql", "postgresql+psycopg")
+    return conn_string
+
+
+def downgrade_to_base(alembic_cfg: Config, engine):
+    try:
+        command.downgrade(alembic_cfg, "base")
+    except Exception as e:
+        with engine.connect() as connection:
+            connection.execute(text("DROP SCHEMA public CASCADE"))
+            connection.execute(text("CREATE SCHEMA public"))
+            connection.commit()
+
+        command.stamp(alembic_cfg, "base")
+        raise e

@@ -37,7 +37,12 @@ from database_client.models import (
     SQL_ALCHEMY_TABLE_REFERENCE,
 )
 from middleware.enums import PermissionsEnum, Relations, RecordTypes
-from tests.conftest import live_database_client, test_table_data, clear_data_requests
+from tests.conftest import (
+    live_database_client,
+    test_table_data,
+    clear_data_requests,
+    test_data_creator_db_client,
+)
 from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,
     get_test_name,
@@ -58,7 +63,6 @@ from tests.helper_scripts.helper_functions_complex import (
     create_test_user_db_client,
 )
 from utilities.enums import RecordCategories
-from conftest import test_data_creator_db_client
 
 
 def test_add_new_user(live_database_client: DatabaseClient):

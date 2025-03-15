@@ -8,7 +8,7 @@ from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
 from tests.helper_scripts.common_asserts import (
     assert_jwt_token_matches_user_email,
 )
-from conftest import monkeysession, test_data_creator_flask
+from tests.conftest import test_data_creator_flask, monkeysession
 
 
 def test_login_post(test_data_creator_flask: TestDataCreatorFlask):

@@ -5,7 +5,6 @@ from unittest.mock import MagicMock
 from marshmallow import Schema
 from pydantic import BaseModel
 
-from conftest import test_data_creator_flask, monkeysession
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import RequestStatus
 from database_client.models import DataRequest, DataRequestsGithubIssueInfo
@@ -29,7 +28,12 @@ from tests.helper_scripts.constants import (
 )
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-from tests.conftest import clear_data_requests, dev_db_client
+from tests.conftest import (
+    clear_data_requests,
+    dev_db_client,
+    test_data_creator_flask,
+    monkeysession,
+)
 from tests.integration.test_check_database_health import wipe_database
 
 PATCH_ROOT = "middleware.primary_resource_logic.github_issue_app_logic"
@@ -51,19 +55,27 @@ def test_synchronize_github_issue(
     mock_issue_count = 0
     mock_repo: dict[int, str] = {}
 
-    # Mock create GitHub Issue
-    def mock_create_github_issue(title: str, body: str) -> GithubIssueInfo:
-        # Create mock github issue with status "Ready to Start"
-        nonlocal mock_issue_count
-        mock_issue_count += 1
-        issue_count = mock_issue_count
-        mock_repo[issue_count] = "Ready to start"
-        return GithubIssueInfo(
-            url=f"https://github.com/cool-github-issue-url/{issue_count}",
-            number=issue_count,
-        )
+    class MockGithubIssueManager:
 
-    monkeypatch.setattr(f"{PATCH_ROOT}.create_github_issue", mock_create_github_issue)
+        # Mock create GitHub Issue
+        def create_issue_with_status(
+            self, title: str, body: str, status: RequestStatus
+        ) -> GithubIssueInfo:
+            # Create mock github issue with status "Ready to Start"
+            nonlocal mock_issue_count
+            mock_issue_count += 1
+            issue_count = mock_issue_count
+            mock_repo[issue_count] = status.value
+            return GithubIssueInfo(
+                id="mock_github_issue_id",
+                url=f"https://github.com/cool-github-issue-url/{issue_count}",
+                number=issue_count,
+            )
+
+    monkeypatch.setattr(
+        f"{PATCH_ROOT}.GithubIssueManager",
+        MockGithubIssueManager,
+    )
 
     def mock_get_github_issue_project_statuses(
         issue_numbers: list[int],

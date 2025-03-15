@@ -33,7 +33,7 @@ from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
-from conftest import test_data_creator_flask
+from tests.conftest import test_data_creator_flask
 
 
 def test_data_requests_get(

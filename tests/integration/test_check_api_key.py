@@ -29,8 +29,7 @@ from tests.helper_scripts.common_mocks_and_patches import (
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from conftest import test_data_creator_flask, monkeysession
-
+from tests.conftest import test_data_creator_flask, monkeysession
 
 PATCH_API_KEY_ROOT = "middleware.primary_resource_logic.api_key_logic"
 

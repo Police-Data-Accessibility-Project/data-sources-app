@@ -4,7 +4,7 @@ from http import HTTPStatus
 
 from flask.testing import FlaskClient
 
-from conftest import test_data_creator_flask, monkeysession
+from tests.conftest import test_data_creator_flask, monkeysession
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from resources.endpoint_schema_config import SchemaConfigs

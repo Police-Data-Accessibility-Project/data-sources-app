@@ -3,7 +3,7 @@ from http import HTTPStatus
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from conftest import monkeysession, test_data_creator_flask
+from tests.conftest import test_data_creator_flask, monkeysession
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from tests_comprehensive.helper_scripts.SpecManager import SpecManager
 
