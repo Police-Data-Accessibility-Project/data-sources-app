@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import RequestStatus
 from database_client.models import DataRequest, DataRequestsGithubIssueInfo
-from middleware.enums import Relations
+from middleware.enums import Relations, PermissionsEnum
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from middleware.third_party_interaction_logic.github_issue_api_logic import (
     GithubIssueInfo,
@@ -27,6 +27,7 @@ from tests.helper_scripts.constants import (
     GITHUB_DATA_REQUESTS_SYNCHRONIZE,
 )
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
+from tests.helper_scripts.helper_functions_complex import create_test_user_setup
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from tests.conftest import (
     clear_data_requests,
@@ -42,6 +43,25 @@ PATCH_ROOT = "middleware.primary_resource_logic.github_issue_app_logic"
 class SynchronizeTestInfo(BaseModel):
     data_request_id: int
     github_issue_info: GithubIssueInfo
+
+
+def test_synchronize_github_issue_denied(
+    test_data_creator_flask: TestDataCreatorFlask, monkeypatch, clear_data_requests
+):
+    # Give a user every permission except github_sync
+    tdc = test_data_creator_flask
+    tus = create_test_user_setup(
+        tdc.flask_client,
+        permissions=[
+            permission
+            for permission in PermissionsEnum
+            if permission != PermissionsEnum.GITHUB_SYNC
+        ],
+    )
+    return tdc.request_validator.github_data_requests_issues_synchronize(
+        headers=tus.jwt_authorization_header,
+        expected_response_status=HTTPStatus.FORBIDDEN,
+    )
 
 
 def test_synchronize_github_issue(

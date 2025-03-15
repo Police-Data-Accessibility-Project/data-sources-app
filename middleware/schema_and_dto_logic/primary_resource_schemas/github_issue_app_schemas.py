@@ -68,7 +68,7 @@ class GithubSynchronizeResponseSchema(Schema):
                 description="The urls of the created github issues."
             ),
         ),
-        required=True,
+        required=False,
         metadata=get_json_metadata(
             description="The urls of the created github issues."
         ),
