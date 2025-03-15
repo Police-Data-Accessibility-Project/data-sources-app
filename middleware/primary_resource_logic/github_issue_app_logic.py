@@ -20,7 +20,8 @@ from middleware.third_party_interaction_logic.github_issue_api_logic import (
     create_github_issue,
     GithubIssueProjectInfo,
     get_github_issue_project_statuses,
-    GithubIssueInfo, GithubIssueManager,
+    GithubIssueInfo,
+    GithubIssueManager,
 )
 
 
@@ -71,7 +72,7 @@ def add_ready_data_requests_as_github_issues(
                 data_requirements=data_request.data_requirements,
                 locations=data_request.locations,
             ),
-            status=RequestStatus.READY_TO_START
+            status=RequestStatus.READY_TO_START,
         )
 
         # Update the data request with the github issue url
@@ -97,19 +98,6 @@ def synchronize_github_issues_with_data_requests(
     :param access_info: AccessInfo object
     :return: A response object
     """
-    requests_added: list[GithubIssueInfo] = add_ready_data_requests_as_github_issues(
-        db_client
-    )
-
-    # Get all data requests with issues in the database
-
-    github_issue_response_infos = [
-        GithubIssueURLInfosDTO(
-            data_request_id=request_added.data_request_id,
-            github_issue_url=request_added.url,
-        )
-        for request_added in requests_added
-    ]
 
     # Get all data requests with issues in the database
     data_requests_with_issues: list[db_client.DataRequestIssueInfo] = (
@@ -135,6 +123,19 @@ def synchronize_github_issues_with_data_requests(
         )
 
         requests_updated += 1
+
+    # Add data requests to GitHub
+    requests_added: list[GithubIssueInfo] = add_ready_data_requests_as_github_issues(
+        db_client
+    )
+
+    github_issue_response_infos = [
+        GithubIssueURLInfosDTO(
+            data_request_id=request_added.data_request_id,
+            github_issue_url=request_added.url,
+        )
+        for request_added in requests_added
+    ]
 
     return message_response(
         message=f"Added {len(requests_added)} data requests to GitHub. "
