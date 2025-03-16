@@ -19,7 +19,7 @@ config = Config()
 secret_key = get_env_variable("FLASK_APP_COOKIE_ENCRYPTION_KEY")
 cache_secret_key = f"_state_github_{secret_key}"
 
-is_production = os.environ.get('ENVIRONMENT') == "production"
+is_production = os.environ.get("ENVIRONMENT") == "production"
 base_callback_url = (
     "https://data-sources.pdap.io/api/auth/callback"
     if is_production
