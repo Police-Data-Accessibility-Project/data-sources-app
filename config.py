@@ -19,13 +19,6 @@ config = Config()
 secret_key = get_env_variable("FLASK_APP_COOKIE_ENCRYPTION_KEY")
 cache_secret_key = f"_state_github_{secret_key}"
 
-is_production = os.environ.get("ENVIRONMENT") == "production"
-base_callback_url = (
-    "https://data-sources.pdap.io/api/auth/callback"
-    if is_production
-    else "https://data-sources.pdap.dev/api/auth/callback"
-)
-
 oauth = OAuth()
 oauth.register(
     name="github",
@@ -36,7 +29,10 @@ oauth.register(
     authorize_url="https://github.com/login/oauth/authorize",
     authorize_params=None,
     api_base_url="https://api.github.com/",
-    client_kwargs={"scope": "user:email", "redirect_uri": base_callback_url},
+    client_kwargs={
+        "scope": "user:email",
+        "redirect_uri": get_env_variable("GH_CALLBACK_URL"),
+    },
 )
 
 limiter = Limiter(
