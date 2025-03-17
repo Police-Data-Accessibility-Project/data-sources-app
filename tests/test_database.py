@@ -16,8 +16,7 @@ from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import ApprovalStatus, LocationType, RequestStatus, URLStatus
 from database_client.models import RecentSearch
 from middleware.enums import Relations, JurisdictionType, OperationType
-from tests.conftest import live_database_client
-from conftest import test_data_creator_db_client
+from tests.conftest import live_database_client, test_data_creator_db_client
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from conftest import test_data_creator_flask, monkeysession
+from tests.conftest import test_data_creator_flask, monkeysession
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,

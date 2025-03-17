@@ -1,4 +1,3 @@
-import re
 from typing import Optional
 
 from github import Github
@@ -8,32 +7,26 @@ from pydantic import BaseModel
 
 from database_client.enums import RequestStatus
 from middleware.util import get_env_variable
-from dataclasses import dataclass
 
 
 class GithubIssueInfo(BaseModel):
+    id: str
     url: str
     number: int
     data_request_id: Optional[int] = None
 
 
-def create_github_issue(title: str, body: str) -> GithubIssueInfo:
-    """
-    Create a github issue and return its url
-    :param title: The title of the issue
-    :param body: The body of the issue
-    :return:
-    """
-    auth = Auth.Token(get_env_variable("GH_API_ACCESS_TOKEN"))
+class ProjectStatusManager:
 
-    g = Github(auth=auth)
-    repo_name = get_env_variable("GH_ISSUE_REPO_NAME")
+    def __init__(self, options: dict):
+        self.d = {}
+        for option in options:
+            id_ = option["id"]
+            name = option["name"]
+            self.d[name] = id_
 
-    repo = g.get_repo(repo_name)
-
-    issue = repo.create_issue(title=title, body=body)
-
-    return GithubIssueInfo(url=issue.url, number=issue.number)
+    def get_id(self, name):
+        return self.d[name]
 
 
 class GithubIssueProjectInfo:
@@ -43,7 +36,11 @@ class GithubIssueProjectInfo:
 
     def add_project_status(self, issue_number: int, project_status: str):
         if issue_number in self.d:
-            raise ValueError(f"Duplicate issue number {issue_number}")
+            if self.d[issue_number] == project_status:
+                return
+            raise ValueError(
+                f"Issue number with conflicting status {issue_number}: {project_status} vs {self.d[issue_number]}"
+            )
         self.d[issue_number] = project_status
 
     def get_project_status(self, issue_number: int) -> RequestStatus:
@@ -53,52 +50,218 @@ class GithubIssueProjectInfo:
             raise ValueError(f"Unknown issue number {issue_number}")
 
 
-def generate_graphql_query(issue_numbers: list[int]):
-    issue_template = """
-    issue_{num}: issue(number: {num}) {{
-      projectItems(first: 5) {{
-        nodes {{
-          status: fieldValueByName(name: "Status") {{
-            ... on ProjectV2ItemFieldSingleSelectValue {{
-              name
-            }}
-          }}
-        }}
-      }}
-    }}"""
+GH_PROJECT_NUMBER = 26
+GH_ORG_NAME = "Police-Data-Accessibility-Project"
+GH_REPO_NAME = "data-requests"
 
-    issues = "\n".join(
-        [issue_template.format(num=issue_number) for issue_number in issue_numbers]
-    )
 
-    owner = get_env_variable("GH_ISSUE_REPO_OWNER")
-    repository_name = get_env_variable("GH_ISSUE_REPO_NAME")
-    full_query = """
-    query {{
-      repository(owner: "{owner}", name: "{repository_name}") {{
-        {issues}
-      }}
-    }}""".format(
-        owner=owner, repository_name=repository_name, issues=issues
-    )
+class GithubIssueManager:
 
-    return full_query
+    def __init__(self):
+        self.project_id = self.get_project_id()
+        self.repo_id = self.get_repository_id()
+        node = self.get_project_status_field()
+        self.project_status_field_id = node["id"]
+        self.project_status_manager = ProjectStatusManager(node["options"])
+
+    def get_project_id(self):
+        query = """
+        query {
+          organization(login: "%s") {
+            projectV2(number: %s) {
+              id
+            }
+          }
+        }
+        """ % (
+            GH_ORG_NAME,
+            GH_PROJECT_NUMBER,
+        )
+        response = make_graph_ql_query(query=query)
+        return response["data"]["organization"]["projectV2"]["id"]
+
+    def get_repository_id(self):
+        query = """
+        query FindRepo {
+          repository(owner: "%s", name: "%s") {
+            id
+          }
+        }
+        """ % (
+            GH_ORG_NAME,
+            GH_REPO_NAME,
+        )
+        response = make_graph_ql_query(query=query)
+        return response["data"]["repository"]["id"]
+
+    def create_issue(self, title: str, body: str) -> GithubIssueInfo:
+        query = """
+        mutation CreateIssue {
+            createIssue(input: {
+              repositoryId: "%s",
+              title: "%s", 
+              body: "%s"
+            }
+          ) {
+          issue {
+                number,
+                id,
+                url
+              }
+            }
+          }
+        """ % (
+            self.repo_id,
+            title,
+            body,
+        )
+        response = make_graph_ql_query(query=query)
+        data = response["data"]
+        issue = data["createIssue"]["issue"]
+        return GithubIssueInfo(url=issue["url"], number=issue["number"], id=issue["id"])
+
+    def assign_status(self, project_item_id: str, status: RequestStatus):
+        option_id = self.project_status_manager.get_id(status.value)
+
+        query = """
+        mutation {
+          updateProjectV2ItemFieldValue(
+            input: {
+              projectId: "%s",
+              itemId: "%s",
+              fieldId: "%s",
+              value: {
+                singleSelectOptionId: "%s"
+              }
+            }
+          ) {
+            projectV2Item {
+              id
+            }
+          }
+        }
+        """ % (
+            self.project_id,
+            project_item_id,
+            self.project_status_field_id,
+            option_id,
+        )
+        response = make_graph_ql_query(query)
+        return response
+
+    def create_issue_with_status(
+        self, title: str, body: str, status: RequestStatus
+    ) -> GithubIssueInfo:
+        gii: GithubIssueInfo = self.create_issue(title=title, body=body)
+        project_item_id = self.assign_issue_to_project(gii.id)
+        self.assign_status(project_item_id=project_item_id, status=status)
+        return gii
+
+    def assign_issue_to_project(self, issue_id: str) -> str:
+        query = """
+        mutation AssignIssueToProject {
+            addProjectV2ItemById(
+                input: {
+                    projectId: "%s",
+                    contentId: "%s"
+                }
+            ) 
+        {
+            item {
+              id
+            }
+          }
+        }
+        """ % (
+            self.project_id,
+            issue_id,
+        )
+        response = make_graph_ql_query(query=query)
+        return response["data"]["addProjectV2ItemById"]["item"]["id"]
+
+    def get_project_status_field(self):
+        query = (
+            """
+        query {
+          node(id: "%s") {
+            ... on ProjectV2 {
+              id
+              title
+              fields(first: 20) {
+                nodes {
+                  ... on ProjectV2Field {
+                    id
+                    name
+                    dataType
+                  }
+                  ... on ProjectV2SingleSelectField {
+                    id
+                    name
+                    dataType
+                    options {
+                      id
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """
+            % self.project_id
+        )
+        response = make_graph_ql_query(query=query)
+        data = response["data"]
+        project = data["node"]
+        fields = project["fields"]
+        nodes = fields["nodes"]
+        for node in nodes:
+            if node["name"] == "Status":
+                return node
+
+
+def generate_issues_and_project_get_graphql_query():
+    return """
+    query {
+      organization(login: "Police-Data-Accessibility-Project") {
+        projectV2(number: 26) {  # Specific project number
+          title
+          items(first: 100) {
+            nodes {
+              content {
+                ... on Issue {
+                  number
+                  title
+                }
+              }
+              fieldValueByName(name: "Status") {
+                ... on ProjectV2ItemFieldSingleSelectValue {
+                  name
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    """
 
 
 def convert_graph_ql_result_to_issue_info(result: dict):
     gipi = GithubIssueProjectInfo()
     data = result.get("data")
-    repository = data.get("repository")
+    organization = data.get("organization")
+    project_v2 = organization.get("projectV2")
+    items = project_v2.get("items")
+    nodes = items.get("nodes")
+    for node in nodes:
+        issue_number = node.get("content").get("number")
+        project_status = node.get("fieldValueByName").get("name")
 
-    for issue_name, issue_info in repository.items():
-        issue_number = re.match(r"issue_(\d+)", issue_name).group(1)
-
-        project_items = issue_info.get("projectItems")
-        nodes = project_items.get("nodes")
-        for node in nodes:
-            status = node.get("status")
-            name = status.get("name")
-            gipi.add_project_status(issue_number=issue_number, project_status=name)
+        gipi.add_project_status(
+            issue_number=issue_number, project_status=project_status
+        )
 
     return gipi
 
@@ -106,20 +269,24 @@ def convert_graph_ql_result_to_issue_info(result: dict):
 def get_github_issue_project_statuses(
     issue_numbers: list[int],
 ) -> GithubIssueProjectInfo:
+    query = generate_issues_and_project_get_graphql_query()
 
-    query = generate_graphql_query(issue_numbers)
+    response = make_graph_ql_query(query=query)
 
-    token = get_env_variable("GH_API_ACCESS_TOKEN")
+    gipi = convert_graph_ql_result_to_issue_info(response)
 
+    return gipi
+
+
+def make_graph_ql_query(query: str):
+    access_token = get_env_variable("GH_API_ACCESS_TOKEN")
     response = requests.post(
         url="https://api.github.com/graphql",
         headers={
-            "Authorization": f"Bearer {token}",
+            "Authorization": f"Bearer {access_token}",
         },
         json={"query": query},
         timeout=10,
     )
-
-    gipi = convert_graph_ql_result_to_issue_info(response.json())
-
-    return gipi
+    response.raise_for_status()
+    return response.json()

@@ -32,7 +32,7 @@ from tests.helper_scripts.common_asserts import (
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
-from conftest import test_data_creator_flask, monkeysession
+from tests.conftest import test_data_creator_flask, monkeysession
 
 
 def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):

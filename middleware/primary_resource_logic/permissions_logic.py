@@ -1,10 +1,6 @@
-from dataclasses import dataclass
-from enum import Enum
 from http import HTTPStatus
-from typing import Type
 
 from flask import Response, make_response
-from flask_jwt_extended import get_jwt_identity
 from flask_restx import abort
 from marshmallow import Schema, fields
 from pydantic import BaseModel
@@ -80,7 +76,6 @@ class PermissionsManager:
         self.db_client = db_client
         self.user_email = user_email
         self.user_id = user_info.id
-
         self.permissions = self.db_client.get_user_permissions(user_info.id)
 
     def has_permission(self, permission: PermissionsEnum) -> bool:

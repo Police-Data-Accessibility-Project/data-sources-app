@@ -24,6 +24,7 @@ class DataSourceBaseSchema(Schema):
             "The name of the data source concatenated with the state iso.",
             csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
+        required=True,
     )
     description = fields.String(
         required=True,

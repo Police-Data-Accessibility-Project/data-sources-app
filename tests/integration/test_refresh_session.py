@@ -9,7 +9,7 @@ from tests.helper_scripts.helper_functions_complex import (
     login_and_return_jwt_tokens,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-from conftest import monkeysession, test_data_creator_flask
+from tests.conftest import test_data_creator_flask, monkeysession
 
 
 def test_refresh_session_post(test_data_creator_flask: TestDataCreatorFlask):

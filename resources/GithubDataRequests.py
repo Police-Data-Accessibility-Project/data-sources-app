@@ -1,5 +1,6 @@
-from middleware.access_logic import AccessInfoPrimary, WRITE_ONLY_AUTH_INFO
+from middleware.access_logic import AccessInfoPrimary, AuthenticationInfo
 from middleware.decorators import endpoint_info
+from middleware.enums import AccessTypeEnum, PermissionsEnum
 from middleware.primary_resource_logic.github_issue_app_logic import (
     synchronize_github_issues_with_data_requests,
 )
@@ -16,7 +17,10 @@ class GithubDataRequestsSynchronize(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_github,
-        auth_info=WRITE_ONLY_AUTH_INFO,
+        auth_info=AuthenticationInfo(
+            allowed_access_methods=[AccessTypeEnum.JWT],
+            restrict_to_permissions=[PermissionsEnum.GITHUB_SYNC],
+        ),
         schema_config=SchemaConfigs.GITHUB_DATA_REQUESTS_SYNCHRONIZE_POST,
         response_info=ResponseInfo(
             success_message="Data requests successfully synchronized."

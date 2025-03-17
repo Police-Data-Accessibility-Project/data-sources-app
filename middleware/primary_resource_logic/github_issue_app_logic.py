@@ -3,26 +3,24 @@ This module handles the middleware functionality for interfacing with Github iss
 """
 
 from http import HTTPStatus
+from typing import Optional
 
 from flask import Response
 from requests import request
 
 from database_client.DTOs import DataRequestInfoForGithub
 from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import WhereMapping
+from database_client.enums import RequestStatus
 from middleware.access_logic import AccessInfoPrimary
 from middleware.common_response_formatting import message_response
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.primary_resource_schemas.github_issue_app_schemas import (
-    GithubDataRequestsIssuesPostDTO,
-    GithubIssueURLInfosSchema,
     GithubIssueURLInfosDTO,
 )
 from middleware.third_party_interaction_logic.github_issue_api_logic import (
-    create_github_issue,
     GithubIssueProjectInfo,
     get_github_issue_project_statuses,
     GithubIssueInfo,
+    GithubIssueManager,
 )
 
 
@@ -32,8 +30,19 @@ def get_github_issue_title(submission_notes: str) -> str:
     return submission_notes
 
 
-def get_github_issue_body(submission_notes: str, data_requirements: str) -> str:
-    full_text = f"Submission Notes: {submission_notes}\n\nData Requirements:\n{data_requirements}"
+def get_github_issue_body(
+    submission_notes: str, data_requirements: str, locations: Optional[list[str]]
+) -> str:
+    if locations is not None:
+        locations_str = "## Locations: \n * " + "\n * ".join(locations)
+    else:
+        locations_str = ""
+
+    full_text = (
+        f"## Submission Notes: \n{submission_notes}\n\n"
+        f"## Data Requirements:\n{data_requirements}\n\n"
+        f"{locations_str}"
+    )
     return full_text
 
 
@@ -49,17 +58,20 @@ def add_ready_data_requests_as_github_issues(
         db_client.get_data_requests_ready_to_start_without_github_issue()
     )
 
+    gim = GithubIssueManager()
     # Add each data request as a GitHub issue
     github_issue_infos = []
     for data_request in data_requests:
-        github_issue_info = create_github_issue(
+        github_issue_info = gim.create_issue_with_status(
             title=get_github_issue_title(
                 submission_notes=data_request.title,
             ),
             body=get_github_issue_body(
                 submission_notes=data_request.submission_notes,
                 data_requirements=data_request.data_requirements,
+                locations=data_request.locations,
             ),
+            status=RequestStatus.READY_TO_START,
         )
 
         # Update the data request with the github issue url
@@ -77,7 +89,7 @@ def add_ready_data_requests_as_github_issues(
 
 
 def synchronize_github_issues_with_data_requests(
-    db_client: DatabaseClient, access_info: AccessInfoPrimary
+    db_client: DatabaseClient, access_info: Optional[AccessInfoPrimary]
 ) -> Response:
     """
     Synchronizes github issues with data requests
@@ -85,19 +97,6 @@ def synchronize_github_issues_with_data_requests(
     :param access_info: AccessInfo object
     :return: A response object
     """
-    requests_added: list[GithubIssueInfo] = add_ready_data_requests_as_github_issues(
-        db_client
-    )
-
-    # Get all data requests with issues in the database
-
-    github_issue_response_infos = [
-        GithubIssueURLInfosDTO(
-            data_request_id=request_added.data_request_id,
-            github_issue_url=request_added.url,
-        )
-        for request_added in requests_added
-    ]
 
     # Get all data requests with issues in the database
     data_requests_with_issues: list[db_client.DataRequestIssueInfo] = (
@@ -123,6 +122,19 @@ def synchronize_github_issues_with_data_requests(
         )
 
         requests_updated += 1
+
+    # Add data requests to GitHub
+    requests_added: list[GithubIssueInfo] = add_ready_data_requests_as_github_issues(
+        db_client
+    )
+
+    github_issue_response_infos = [
+        GithubIssueURLInfosDTO(
+            data_request_id=request_added.data_request_id,
+            github_issue_url=request_added.url,
+        )
+        for request_added in requests_added
+    ]
 
     return message_response(
         message=f"Added {len(requests_added)} data requests to GitHub. "

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone, timedelta
 from http import HTTPStatus
 
-from conftest import test_data_creator_flask, monkeysession
+from tests.conftest import test_data_creator_flask, monkeysession
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from tests.helper_scripts.common_test_data import get_test_email
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (

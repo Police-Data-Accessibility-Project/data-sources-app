@@ -37,7 +37,7 @@ from tests.helper_scripts.run_and_validate_request import (
     run_and_validate_request,
     http_methods,
 )
-from conftest import test_data_creator_flask, monkeysession
+from tests.conftest import test_data_creator_flask, monkeysession
 from tests.integration.test_check_database_health import wipe_database
 from utilities.enums import RecordCategories
 

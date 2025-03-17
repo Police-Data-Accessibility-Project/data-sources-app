@@ -13,7 +13,7 @@ from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
 )
 
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-from conftest import test_data_creator_flask, monkeysession
+from tests.conftest import test_data_creator_flask, monkeysession
 from tests.integration.test_check_database_health import wipe_database
 
 ENDPOINT = "/api/archives"

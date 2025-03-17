@@ -5,11 +5,10 @@ from unittest.mock import MagicMock
 from marshmallow import Schema
 from pydantic import BaseModel
 
-from conftest import test_data_creator_flask, monkeysession
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import RequestStatus
 from database_client.models import DataRequest, DataRequestsGithubIssueInfo
-from middleware.enums import Relations
+from middleware.enums import Relations, PermissionsEnum
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from middleware.third_party_interaction_logic.github_issue_api_logic import (
     GithubIssueInfo,
@@ -28,8 +27,14 @@ from tests.helper_scripts.constants import (
     GITHUB_DATA_REQUESTS_SYNCHRONIZE,
 )
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
+from tests.helper_scripts.helper_functions_complex import create_test_user_setup
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-from tests.conftest import clear_data_requests, dev_db_client
+from tests.conftest import (
+    clear_data_requests,
+    dev_db_client,
+    test_data_creator_flask,
+    monkeysession,
+)
 from tests.integration.test_check_database_health import wipe_database
 
 PATCH_ROOT = "middleware.primary_resource_logic.github_issue_app_logic"
@@ -38,6 +43,25 @@ PATCH_ROOT = "middleware.primary_resource_logic.github_issue_app_logic"
 class SynchronizeTestInfo(BaseModel):
     data_request_id: int
     github_issue_info: GithubIssueInfo
+
+
+def test_synchronize_github_issue_denied(
+    test_data_creator_flask: TestDataCreatorFlask, monkeypatch, clear_data_requests
+):
+    # Give a user every permission except github_sync
+    tdc = test_data_creator_flask
+    tus = create_test_user_setup(
+        tdc.flask_client,
+        permissions=[
+            permission
+            for permission in PermissionsEnum
+            if permission != PermissionsEnum.GITHUB_SYNC
+        ],
+    )
+    return tdc.request_validator.github_data_requests_issues_synchronize(
+        headers=tus.jwt_authorization_header,
+        expected_response_status=HTTPStatus.FORBIDDEN,
+    )
 
 
 def test_synchronize_github_issue(
@@ -51,19 +75,27 @@ def test_synchronize_github_issue(
     mock_issue_count = 0
     mock_repo: dict[int, str] = {}
 
-    # Mock create GitHub Issue
-    def mock_create_github_issue(title: str, body: str) -> GithubIssueInfo:
-        # Create mock github issue with status "Ready to Start"
-        nonlocal mock_issue_count
-        mock_issue_count += 1
-        issue_count = mock_issue_count
-        mock_repo[issue_count] = "Ready to start"
-        return GithubIssueInfo(
-            url=f"https://github.com/cool-github-issue-url/{issue_count}",
-            number=issue_count,
-        )
+    class MockGithubIssueManager:
 
-    monkeypatch.setattr(f"{PATCH_ROOT}.create_github_issue", mock_create_github_issue)
+        # Mock create GitHub Issue
+        def create_issue_with_status(
+            self, title: str, body: str, status: RequestStatus
+        ) -> GithubIssueInfo:
+            # Create mock github issue with status "Ready to Start"
+            nonlocal mock_issue_count
+            mock_issue_count += 1
+            issue_count = mock_issue_count
+            mock_repo[issue_count] = status.value
+            return GithubIssueInfo(
+                id="mock_github_issue_id",
+                url=f"https://github.com/cool-github-issue-url/{issue_count}",
+                number=issue_count,
+            )
+
+    monkeypatch.setattr(
+        f"{PATCH_ROOT}.GithubIssueManager",
+        MockGithubIssueManager,
+    )
 
     def mock_get_github_issue_project_statuses(
         issue_numbers: list[int],
@@ -118,6 +150,10 @@ def test_synchronize_github_issue(
             }
         )
         data_request_ids.append(data_request_id)
+        # Link to location
+        tdc.db_client.create_request_location_relation(
+            column_value_mappings={"data_request_id": data_request_id, "location_id": 1}
+        )
     sync(
         expected_json_content={
             "message": "Added 2 data requests to GitHub. Updated 0 data requests in database.",
