@@ -19,7 +19,6 @@ Reach out to contact@pdap.io or make noise in Discord if you'd like access to th
 | GH_API_ACCESS_TOKEN             | Used to authenticate with GitHub when adding or retrieving information about GitHub Issues.           | `GithubProvidedAccessToken`                     |
 | GH_ISSUE_REPO_OWNER             | Identifies the owner of the repository where issues will be created and retrieved.                    | `github-username`                              |
 | GH_ISSUE_REPO_NAME              | Identifies the repository where issues will be created and retrieved, in `username/repo-name` format. | `github-repo-name`                              |
-| GH_CALLBACK_URL                 | The callback URL for GitHub OAuth.                                                                     | `https://example.com/api/auth/callback`         |
 | VALIDATE_EMAIL_SECRET_KEY       | Used to sign and verify JWT tokens for email validation.                                              | `myCustomValidateEmailSecretKey`                |
 | WEBHOOK_URL                     | The URL where webhook events will be sent.                                                            | `https://example.com/webhook`                   |
 

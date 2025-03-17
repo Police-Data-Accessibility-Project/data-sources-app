@@ -29,10 +29,7 @@ oauth.register(
     authorize_url="https://github.com/login/oauth/authorize",
     authorize_params=None,
     api_base_url="https://api.github.com/",
-    client_kwargs={
-        "scope": "user:email",
-        "redirect_uri": get_env_variable("GH_CALLBACK_URL"),
-    },
+    client_kwargs={"scope": "user:email"},
 )
 
 limiter = Limiter(
