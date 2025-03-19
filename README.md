@@ -2,7 +2,7 @@
 
 # data-sources-app
 
-An API and UI for searching, using, and maintaining Data Sources. 
+An API for searching, using, and maintaining Data Sources. 
 
 #### Live app: https://data-sources.pdap.io/ deployed from `main`
 #### Dev app:https://data-sources.pdap.dev/ deployed from `dev`
