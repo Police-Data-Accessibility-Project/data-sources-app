@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from middleware.enums import PermissionsEnum
+from middleware.enums import PermissionsEnum, RecordTypes
 
 
 class UserInfoNonSensitive(BaseModel):
@@ -27,3 +27,4 @@ class DataRequestInfoForGithub(BaseModel):
     submission_notes: str
     data_requirements: str
     locations: Optional[list[str]]
+    record_types: Optional[list[RecordTypes]]
