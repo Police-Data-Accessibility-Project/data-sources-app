@@ -13,6 +13,7 @@ from database_client.database_client import DatabaseClient
 from database_client.enums import RequestStatus
 from middleware.access_logic import AccessInfoPrimary
 from middleware.common_response_formatting import message_response
+from middleware.enums import RecordTypes
 from middleware.schema_and_dto_logic.primary_resource_schemas.github_issue_app_schemas import (
     GithubIssueURLInfosDTO,
 )
@@ -57,6 +58,8 @@ def add_ready_data_requests_as_github_issues(
     data_requests: list[DataRequestInfoForGithub] = (
         db_client.get_data_requests_ready_to_start_without_github_issue()
     )
+    if len(data_requests) == 0:
+        return []
 
     gim = GithubIssueManager()
     # Add each data request as a GitHub issue
@@ -72,6 +75,7 @@ def add_ready_data_requests_as_github_issues(
                 locations=data_request.locations,
             ),
             status=RequestStatus.READY_TO_START,
+            record_types=data_request.record_types or [],
         )
 
         # Update the data request with the github issue url
@@ -86,6 +90,24 @@ def add_ready_data_requests_as_github_issues(
         github_issue_infos.append(github_issue_info)
 
     return github_issue_infos
+
+
+def is_empty(a: Optional[list]) -> bool:
+    return a is None or len(a) == 0
+
+
+def record_types_match(
+    record_types_required_str: Optional[list[str]],
+    record_types_enums: Optional[list[RecordTypes]],
+) -> bool:
+    if is_empty(record_types_required_str) and is_empty(record_types_enums):
+        return True
+    if not is_empty(record_types_required_str) and is_empty(record_types_enums):
+        return False
+    if is_empty(record_types_required_str) and not is_empty(record_types_enums):
+        return False
+    record_types_str = [record_type.value for record_type in record_types_enums]
+    return set(record_types_required_str) == set(record_types_str)
 
 
 def synchronize_github_issues_with_data_requests(
@@ -112,13 +134,20 @@ def synchronize_github_issues_with_data_requests(
     # Update in the database data requests whose GitHub issue status has changed
     requests_updated = 0
     for dri in data_requests_with_issues:
+        gipi_info = gipi.get_info(issue_number=dri.github_issue_number)
         request_status = gipi.get_project_status(issue_number=dri.github_issue_number)
-        if request_status == dri.request_status:
+        record_types_required = dri.record_types_required
+        if request_status == dri.request_status and record_types_match(
+            record_types_required, gipi_info.record_types
+        ):
             continue
 
         db_client.update_data_request(
             entry_id=dri.data_request_id,
-            column_edit_mappings={"request_status": request_status.value},
+            column_edit_mappings={
+                "request_status": request_status.value,
+                "record_types_required": gipi_info.record_types_as_list_of_strings(),
+            },
         )
 
         requests_updated += 1
