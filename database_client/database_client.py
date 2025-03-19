@@ -1092,6 +1092,7 @@ class DatabaseClient:
                 submission_notes=result.submission_notes,
                 data_requirements=result.data_requirements,
                 locations=display_names,
+                record_types=result.record_types_required,
             )
             final_results.append(dto)
 
@@ -1532,6 +1533,7 @@ class DatabaseClient:
             "github_issue_url",
             "github_issue_number",
             "request_status",
+            "record_types_required",
         ],
     )
 
@@ -1540,7 +1542,11 @@ class DatabaseClient:
         dre = aliased(DataRequestExpanded)
 
         select_statement = select(
-            dre.id, dre.github_issue_url, dre.github_issue_number, dre.request_status
+            dre.id,
+            dre.github_issue_url,
+            dre.github_issue_number,
+            dre.request_status,
+            dre.record_types_required,
         )
 
         with_filter = select_statement.where(
@@ -1558,6 +1564,7 @@ class DatabaseClient:
                 github_issue_url=result["github_issue_url"],
                 github_issue_number=result["github_issue_number"],
                 request_status=RequestStatus(result["request_status"]),
+                record_types_required=result["record_types_required"],
             )
             for result in results
         ]

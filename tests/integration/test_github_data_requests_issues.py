@@ -8,11 +8,12 @@ from pydantic import BaseModel
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import RequestStatus
 from database_client.models import DataRequest, DataRequestsGithubIssueInfo
-from middleware.enums import Relations, PermissionsEnum
+from middleware.enums import Relations, PermissionsEnum, RecordTypes
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from middleware.third_party_interaction_logic.github_issue_api_logic import (
     GithubIssueInfo,
     GithubIssueProjectInfo,
+    GIPIInfo,
 )
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.common_test_data import (
@@ -73,19 +74,20 @@ def test_synchronize_github_issue(
 
     # Mock GitHub repo -- a simple dictionary of issue number to project status
     mock_issue_count = 0
-    mock_repo: dict[int, str] = {}
+    mock_repo: dict[int, GIPIInfo] = {}
 
     class MockGithubIssueManager:
 
         # Mock create GitHub Issue
         def create_issue_with_status(
-            self, title: str, body: str, status: RequestStatus
+            self, title: str, body: str, status: RequestStatus, record_types: list
         ) -> GithubIssueInfo:
             # Create mock github issue with status "Ready to Start"
             nonlocal mock_issue_count
             mock_issue_count += 1
             issue_count = mock_issue_count
-            mock_repo[issue_count] = status.value
+            gipi_info = GIPIInfo(project_status=status.value, record_types=record_types)
+            mock_repo[issue_count] = gipi_info
             return GithubIssueInfo(
                 id="mock_github_issue_id",
                 url=f"https://github.com/cool-github-issue-url/{issue_count}",
@@ -103,7 +105,7 @@ def test_synchronize_github_issue(
 
         gipi = GithubIssueProjectInfo()
         for issue_number in issue_numbers:
-            gipi.add_project_status(issue_number, mock_repo[issue_number])
+            gipi.add_info(issue_number, mock_repo[issue_number])
         return gipi
 
     # Patch `git_github_issue_project_statuses` to return the mock
@@ -172,7 +174,10 @@ def test_synchronize_github_issue(
 
     # Check that 2 github issues are created for the 2 marked 'Ready to Start'
     assert mock_issue_count == 2
-    assert list(mock_repo.values()) == ["Ready to start", "Ready to start"]
+    assert list(mock_repo.values()) == [
+        GIPIInfo(project_status="Ready to start", record_types=[]),
+        GIPIInfo(project_status="Ready to start", record_types=[]),
+    ]
 
     # Confirm the presence of 3 data requests and 2 data request github info
     assert len(get_all_data_requests()) == 3
@@ -187,10 +192,14 @@ def test_synchronize_github_issue(
             "request_status": "Ready to start",
             "submission_notes": "Submission Notes 3",
             "data_requirements": "Data Requirements 3",
+            "record_types_required": ["Dispatch Recordings", "Incarceration Records"],
         }
     )
     data_request_ids.append(data_request_id)
-    mock_repo[1] = "Complete"
+    # Update existing issue to "Complete"
+    mock_repo[1] = GIPIInfo(
+        project_status="Complete", record_types=[RecordTypes.RECORDS_REQUEST_INFO]
+    )
     sync(
         expected_json_content={
             "message": "Added 1 data requests to GitHub. Updated 1 data requests in database.",
@@ -203,7 +212,19 @@ def test_synchronize_github_issue(
         }
     )
     assert mock_issue_count == 3
-    assert list(mock_repo.values()) == ["Complete", "Ready to start", "Ready to start"]
+    assert list(mock_repo.values()) == [
+        GIPIInfo(
+            project_status="Complete", record_types=[RecordTypes.RECORDS_REQUEST_INFO]
+        ),
+        GIPIInfo(project_status="Ready to start", record_types=[]),
+        GIPIInfo(
+            project_status="Ready to start",
+            record_types=[
+                RecordTypes.DISPATCH_RECORDINGS,
+                RecordTypes.INCARCERATION_RECORDS,
+            ],
+        ),
+    ]
 
     # Confirm the presence of 4 data requests and 3 data request github info
     assert len(get_all_data_requests()) == 4
@@ -223,7 +244,19 @@ def test_synchronize_github_issue(
 
     # Confirm the presence of 4 data requests and 3 data request github info
     assert mock_issue_count == 3
-    assert list(mock_repo.values()) == ["Complete", "Ready to start", "Ready to start"]
+    assert list(mock_repo.values()) == [
+        GIPIInfo(
+            project_status="Complete", record_types=[RecordTypes.RECORDS_REQUEST_INFO]
+        ),
+        GIPIInfo(project_status="Ready to start", record_types=[]),
+        GIPIInfo(
+            project_status="Ready to start",
+            record_types=[
+                RecordTypes.DISPATCH_RECORDINGS,
+                RecordTypes.INCARCERATION_RECORDS,
+            ],
+        ),
+    ]
 
     assert len(get_all_data_requests()) == 4
     assert len(get_all_data_request_github_issue_infos()) == 3
