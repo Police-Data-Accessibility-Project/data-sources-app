@@ -1941,21 +1941,27 @@ class DatabaseClient:
             where_mappings={"id": location_id},
         )["locality_id"]
 
+    @session_manager
     def get_location_by_id(self, location_id: int):
-        return self._select_single_entry_from_relation(
-            relation_name=Relations.LOCATIONS_EXPANDED.value,
-            columns=[
-                "state_name",
-                "state_iso",
-                "county_name",
-                "county_fips",
-                "locality_name",
-                "type",
-                "id",
-            ],
-            where_mappings={"id": location_id},
-            alias_mappings={"id": "location_id"},
-        )
+        query = Select(
+            LocationExpanded,
+        ).where(LocationExpanded.id == location_id)
+
+        result = self.session.execute(query).scalar()
+
+        if result is None:
+            raise ValueError(f"Location with id {location_id} not found")
+
+        return {
+            "type": result.type,
+            "location_id": result.id,
+            "state_name": result.state_name,
+            "state_iso": result.state_iso,
+            "county_name": result.county_name,
+            "county_fips": result.county_fips,
+            "locality_name": result.locality_name,
+            "display_name": ResultFormatter.get_expanded_display_name(result),
+        }
 
     @session_manager
     def get_similar_agencies(

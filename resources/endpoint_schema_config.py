@@ -52,7 +52,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.contact_schemas im
     ContactFormPostSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.locations_schemas import (
-    LocationInfoExpandedSchema,
+    GetLocationInfoByIDResponseSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.match_schemas import (
     AgencyMatchSchema,
@@ -572,7 +572,7 @@ class SchemaConfigs(Enum):
 
     # region Location
     LOCATIONS_BY_ID_GET = get_get_by_id_endpoint_schema_config(
-        primary_output_schema=LocationInfoExpandedSchema(),
+        primary_output_schema=GetLocationInfoByIDResponseSchema(),
     )
     LOCATIONS_RELATED_DATA_REQUESTS_GET = EndpointSchemaConfig(
         input_schema=GetByIDBaseSchema(),
