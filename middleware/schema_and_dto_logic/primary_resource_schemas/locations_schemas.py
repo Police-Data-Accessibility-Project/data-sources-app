@@ -59,6 +59,10 @@ COUNTY_NAME_FIELD = fields.Str(
     allow_none=True,
     metadata=get_json_metadata(description="The name of the county."),
 )
+DISPLAY_NAME_FIELD = fields.Str(
+    required=True,
+    metadata=get_json_metadata(description="The display name for the location"),
+)
 
 
 class LocationInfoResponseSchema(Schema):
@@ -68,10 +72,7 @@ class LocationInfoResponseSchema(Schema):
     county_name = COUNTY_FIPS_FIELD
     county_fips = COUNTY_NAME_FIELD
     locality_name = LOCALITY_NAME_FIELD
-    display_name = fields.Str(
-        required=True,
-        metadata=get_json_metadata(description="The display name for the location"),
-    )
+    display_name = DISPLAY_NAME_FIELD
     location_id = LOCATION_ID_FIELD
 
 
@@ -123,3 +124,9 @@ class LocationInfoSchema(Schema):
 class LocationInfoExpandedSchema(LocationInfoSchema):
     state_name = STATE_NAME_FIELD
     county_name = COUNTY_NAME_FIELD
+
+
+class GetLocationInfoByIDResponseSchema(LocationInfoSchema):
+    state_name = STATE_NAME_FIELD
+    county_name = COUNTY_NAME_FIELD
+    display_name = DISPLAY_NAME_FIELD

@@ -9,7 +9,7 @@ from database_client.constants import (
     DATA_SOURCES_MAP_COLUMN,
     METADATA_METHOD_NAMES,
 )
-from database_client.db_client_dataclasses import WhereMapping
+from database_client.enums import LocationType
 from database_client.models import (
     SQL_ALCHEMY_TABLE_REFERENCE,
     Agency,
@@ -17,7 +17,6 @@ from database_client.models import (
     LocationExpanded,
 )
 from database_client.subquery_logic import SubqueryParameters
-from middleware.enums import AgencyType, JurisdictionType
 from utilities.common import format_arrays
 
 
@@ -212,6 +211,17 @@ class ResultFormatter:
             "locality_name": location.locality_name,
             "display_name": location.display_name,
         }
+
+    @staticmethod
+    def get_expanded_display_name(location: LocationExpanded) -> str:
+        loc_type = LocationType(location.type)
+        match loc_type:
+            case LocationType.STATE:
+                return location.state_name
+            case LocationType.COUNTY:
+                return f"{location.county_name}, {location.state_name}"
+            case LocationType.LOCALITY:
+                return f"{location.locality_name}, {location.county_name}, {location.state_name}"
 
 
 def dictify_namedtuple(result: list[namedtuple]) -> list[dict[str, Any]]:
