@@ -29,6 +29,7 @@ def locations_test_setup(test_data_creator_flask: TestDataCreatorFlask):
         "county_fips": "42003",
         "locality_name": locality_name,
         "location_id": location_id,
+        "display_name": f"{locality_name}, Allegheny, Pennsylvania",
     }
     return LocationsTestSetup(tdc=tdc, location_info=loc_info)
 
