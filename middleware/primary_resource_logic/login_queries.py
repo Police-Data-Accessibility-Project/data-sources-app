@@ -44,7 +44,8 @@ class JWTAccessRefreshTokens:
         #  JWT_REFRESH_TOKEN_EXPIRES variables in `app.py`
         self.access_token = simple_jwt.encode()
         self.refresh_token = create_refresh_token(
-            identity=identity, additional_claims={"email": email}
+            identity=identity,
+            additional_claims={"email": email},
         )
 
     @staticmethod

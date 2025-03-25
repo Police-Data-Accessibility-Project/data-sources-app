@@ -4,6 +4,7 @@ from datetime import timedelta, date, datetime
 from flask import Flask
 from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
+from jwt import DecodeError, ExpiredSignatureError
 
 from middleware.SchedulerManager import SchedulerManager
 from middleware.SimpleJWT import SimpleJWT
@@ -116,11 +117,11 @@ class WSGIMiddleware(object):
         auth_header = environ.get("HTTP_AUTHORIZATION", "")
         if auth_header.startswith("Bearer "):
             token = auth_header[len("Bearer ") :]
-            my_jwt = SimpleJWT.decode(token)
             try:
+                my_jwt = SimpleJWT.decode(token)
                 environ["HTTP_X_USER_ID"] = my_jwt.other_claims["user_id"]
                 return
-            except KeyError:
+            except (KeyError, DecodeError, ExpiredSignatureError):
                 pass
 
         environ["HTTP_X_USER_ID"] = "-"
