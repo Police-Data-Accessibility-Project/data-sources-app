@@ -1,6 +1,7 @@
 from flask import request, Response
 
-from middleware.access_logic import NO_AUTH_INFO, AccessInfoPrimary
+from middleware.access_logic import AccessInfoPrimary
+from middleware.authentication_info import NO_AUTH_INFO
 from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.reset_token_queries import request_reset_password
 from resources.endpoint_schema_config import SchemaConfigs

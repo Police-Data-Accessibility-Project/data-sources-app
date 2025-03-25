@@ -1,6 +1,7 @@
 from flask import Response
 
-from middleware.access_logic import AccessInfoPrimary, API_OR_JWT_AUTH_INFO
+from middleware.access_logic import AccessInfoPrimary
+from middleware.authentication_info import API_OR_JWT_AUTH_INFO
 from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.metadata_logic import (
     get_record_types_and_categories,

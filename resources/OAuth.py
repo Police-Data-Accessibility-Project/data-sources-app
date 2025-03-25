@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
-from middleware.access_logic import NO_AUTH_INFO, AccessInfoPrimary
+from middleware.access_logic import AccessInfoPrimary
+from middleware.authentication_info import NO_AUTH_INFO
 from middleware.decorators import endpoint_info
 from middleware.enums import CallbackFunctionsEnum
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import (

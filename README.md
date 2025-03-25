@@ -71,6 +71,8 @@ Follow instructions in the `/local_database` directory to set up a local databas
 
 python3 app.py
 
+# Within a container -- ensure docker ports are properly bound as well
+gunicorn  --bind 0.0.0.0:8080 --access-logfile - --access-logformat '%(h)s %({http_x_user_id}e)s %(m)s %(U)s %(q)s %(s)s' --error-logfile - 'app:create_app()'
 ```
 
 

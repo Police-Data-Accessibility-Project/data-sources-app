@@ -4,8 +4,10 @@ from datetime import timedelta, date, datetime
 from flask import Flask
 from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
+from jwt import DecodeError, ExpiredSignatureError
 
 from middleware.SchedulerManager import SchedulerManager
+from middleware.SimpleJWT import SimpleJWT
 from middleware.scheduled_tasks.check_database_health import check_database_health
 from middleware.util import get_env_variable
 from resources.Admin import namespace_admin
@@ -83,7 +85,7 @@ NAMESPACES = [
 MY_PREFIX = "/api"
 
 
-class ReverseProxied(object):
+class WSGIMiddleware(object):
     """Wrap the application in this middleware and configure the
     front-end server to add these headers, to let you quietly bind
     this to a URL other than / and to an HTTP scheme that is
@@ -96,6 +98,11 @@ class ReverseProxied(object):
         self.app = app
 
     def __call__(self, environ, start_response):
+        self.set_up_reverse_proxy(environ)
+        self.inject_user_id(environ)
+        return self.app(environ, start_response)
+
+    def set_up_reverse_proxy(self, environ):
         script_name = MY_PREFIX
         environ["SCRIPT_NAME"] = script_name
         path_info = environ["PATH_INFO"]
@@ -105,7 +112,19 @@ class ReverseProxied(object):
         scheme = environ.get("HTTP_X_SCHEME", "")
         if scheme:
             environ["wsgi.url_scheme"] = scheme
-        return self.app(environ, start_response)
+
+    def inject_user_id(self, environ):
+        auth_header = environ.get("HTTP_AUTHORIZATION", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header[len("Bearer ") :]
+            try:
+                my_jwt = SimpleJWT.decode(token)
+                environ["HTTP_X_USER_ID"] = my_jwt.other_claims["user_id"]
+                return
+            except (KeyError, DecodeError, ExpiredSignatureError):
+                pass
+
+        environ["HTTP_X_USER_ID"] = "-"
 
 
 def get_flask_app_cookie_encryption_key() -> str:
@@ -135,7 +154,7 @@ def create_app() -> Flask:
     app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
 
     app.secret_key = get_flask_app_cookie_encryption_key()
-    app.wsgi_app = ReverseProxied(app.wsgi_app)
+    app.wsgi_app = WSGIMiddleware(app.wsgi_app)
     CORS(app)
 
     api.init_app(app)

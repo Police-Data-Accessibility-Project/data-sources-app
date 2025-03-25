@@ -24,7 +24,9 @@ def test_request_reset_password_post(
         mocker=mocker,
     )
 
-    decoded_token = SimpleJWT.decode(token=token, purpose=JWTPurpose.PASSWORD_RESET)
+    decoded_token = SimpleJWT.decode(
+        token=token, expected_purpose=JWTPurpose.PASSWORD_RESET
+    )
 
     db_client = DatabaseClient()
     rows = db_client.execute_raw_sql(
