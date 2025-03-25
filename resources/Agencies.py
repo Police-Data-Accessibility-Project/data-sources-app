@@ -4,9 +4,8 @@ from config import limiter
 from database_client.database_client import DatabaseClient
 from middleware.access_logic import (
     AccessInfoPrimary,
-    API_OR_JWT_AUTH_INFO,
-    WRITE_ONLY_AUTH_INFO,
 )
+from middleware.authentication_info import WRITE_ONLY_AUTH_INFO, API_OR_JWT_AUTH_INFO
 from middleware.column_permission_logic import create_column_permissions_string_table
 from middleware.decorators import (
     endpoint_info,

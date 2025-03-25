@@ -2,9 +2,9 @@ from flask import request, Response
 from flask_restx import fields
 
 from middleware.access_logic import (
-    RESET_PASSWORD_AUTH_INFO,
     PasswordResetTokenAccessInfo,
 )
+from middleware.authentication_info import RESET_PASSWORD_AUTH_INFO
 from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.reset_token_queries import (
     reset_token_validation,

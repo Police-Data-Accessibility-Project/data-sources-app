@@ -8,9 +8,9 @@ from marshmallow import Schema
 
 from middleware.access_logic import (
     get_authentication,
-    AuthenticationInfo,
     ParserDeterminator,
 )
+from middleware.authentication_info import AuthenticationInfo
 from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_construction import (

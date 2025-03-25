@@ -2,11 +2,10 @@ from http import HTTPStatus
 
 
 from middleware.access_logic import (
-    NO_AUTH_INFO,
     AccessInfoPrimary,
-    VALIDATE_EMAIL_AUTH_INFO,
     ValidateEmailTokenAccessInfo,
 )
+from middleware.authentication_info import NO_AUTH_INFO, VALIDATE_EMAIL_AUTH_INFO
 from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.signup_logic import (
     resend_validation_email_wrapper,

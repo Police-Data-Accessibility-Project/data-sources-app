@@ -3,10 +3,9 @@ from http import HTTPStatus
 from flask import Response
 
 from middleware.access_logic import (
-    NO_AUTH_INFO,
     AccessInfoPrimary,
-    STANDARD_JWT_AUTH_INFO,
 )
+from middleware.authentication_info import STANDARD_JWT_AUTH_INFO, NO_AUTH_INFO
 from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.api_key_logic import create_api_key_for_user
 

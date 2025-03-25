@@ -1,6 +1,7 @@
 from flask import Response
 
-from middleware.access_logic import AccessInfoPrimary, NO_AUTH_INFO
+from middleware.access_logic import AccessInfoPrimary
+from middleware.authentication_info import NO_AUTH_INFO
 from middleware.decorators import authentication_required, endpoint_info
 from middleware.enums import AccessTypeEnum
 from middleware.primary_resource_logic.unique_url_checker import (

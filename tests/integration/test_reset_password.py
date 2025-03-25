@@ -107,7 +107,9 @@ def test_reset_token_validation_invalid_token_expired(
     )
 
     # Go into database and manually expire token
-    decoded_token = SimpleJWT.decode(token=token, purpose=JWTPurpose.PASSWORD_RESET)
+    decoded_token = SimpleJWT.decode(
+        token=token, expected_purpose=JWTPurpose.PASSWORD_RESET
+    )
     tdc.db_client._update_entry_in_table(
         table_name=Relations.RESET_TOKENS.value,
         entry_id=decoded_token.sub["token"],

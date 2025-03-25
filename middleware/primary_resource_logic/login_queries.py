@@ -27,6 +27,7 @@ class JWTAccessRefreshTokens:
         user_id = db_client.get_user_id(email)
         permissions = db_client.get_user_permissions(user_id)
         other_claims = {
+            "user_id": user_id,
             "user_email": email,
             "permissions": [permission.value for permission in permissions],
         }

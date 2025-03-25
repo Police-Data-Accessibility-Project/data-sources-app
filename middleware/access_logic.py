@@ -1,4 +1,3 @@
-from collections import namedtuple
 from enum import Enum
 from http import HTTPStatus
 from typing import Optional
@@ -20,55 +19,6 @@ from middleware.exceptions import (
     InvalidAPIKeyException,
 )
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.primary_resource_logic.permissions_logic import get_user_permissions
-
-
-class AuthenticationInfo(BaseModel):
-    """
-    A dataclass providing information on how the user was authenticated
-    """
-
-    allowed_access_methods: Optional[list[AccessTypeEnum]] = None
-    no_auth: bool = False
-    restrict_to_permissions: Optional[list[PermissionsEnum]] = None
-
-    def requires_admin_permissions(self) -> bool:
-        if self.restrict_to_permissions is None:
-            return False
-        return len(self.restrict_to_permissions) > 0
-
-
-WRITE_ONLY_AUTH_INFO = AuthenticationInfo(
-    allowed_access_methods=[AccessTypeEnum.JWT],
-    restrict_to_permissions=[PermissionsEnum.DB_WRITE],
-)
-ARCHIVE_WRITE_AUTH_INFO = AuthenticationInfo(
-    allowed_access_methods=[AccessTypeEnum.JWT],
-    restrict_to_permissions=[PermissionsEnum.ARCHIVE_WRITE],
-)
-# Allow owners of a resource to use the endpoint as well, instead of only admin-level users
-STANDARD_JWT_AUTH_INFO = AuthenticationInfo(
-    allowed_access_methods=[AccessTypeEnum.JWT],
-)
-
-API_OR_JWT_AUTH_INFO = AuthenticationInfo(
-    allowed_access_methods=[AccessTypeEnum.API_KEY, AccessTypeEnum.JWT],
-)
-NO_AUTH_INFO = AuthenticationInfo(no_auth=True)
-RESET_PASSWORD_AUTH_INFO = AuthenticationInfo(
-    allowed_access_methods=[AccessTypeEnum.RESET_PASSWORD]
-)
-VALIDATE_EMAIL_AUTH_INFO = AuthenticationInfo(
-    allowed_access_methods=[AccessTypeEnum.VALIDATE_EMAIL],
-)
-READ_USER_AUTH_INFO = AuthenticationInfo(
-    allowed_access_methods=[AccessTypeEnum.JWT],
-    restrict_to_permissions=[PermissionsEnum.READ_ALL_USER_INFO],
-)
-WRITE_USER_AUTH_INFO = AuthenticationInfo(
-    allowed_access_methods=[AccessTypeEnum.JWT],
-    restrict_to_permissions=[PermissionsEnum.USER_CREATE_UPDATE],
-)
 
 
 class AuthScheme(Enum):
@@ -86,12 +36,14 @@ def get_header_auth_info() -> HeaderAuthInfo:
     try:
         authorization_header_parts = authorization_header.split(" ")
         if len(authorization_header_parts) != 2:
-            bad_request_abort()
+            FlaskResponseManager.bad_request_abort()
         scheme_string = AuthScheme(authorization_header_parts[0])
         token = authorization_header_parts[1]
         return HeaderAuthInfo(auth_scheme=AuthScheme(scheme_string), token=token)
     except (ValueError, IndexError, AttributeError):
-        bad_request_abort(message="Improperly formatted authorization header")
+        FlaskResponseManager.bad_request_abort(
+            message="Improperly formatted authorization header"
+        )
 
 
 class ParserDeterminator:
@@ -164,7 +116,7 @@ class JWTService:
     def get_access_info(token: str):
         try:
             simple_jwt = SimpleJWT.decode(
-                token, purpose=JWTPurpose.STANDARD_ACCESS_TOKEN
+                token, expected_purpose=JWTPurpose.STANDARD_ACCESS_TOKEN
             )
         except Exception:
             return None
@@ -186,7 +138,7 @@ def get_key_from_authorization_header(
     try:
         authorization_header_parts = authorization_header.split(" ")
         if len(authorization_header_parts) != 2:
-            bad_request_abort()
+            FlaskResponseManager.bad_request_abort()
         if authorization_header_parts[0] != scheme:
             raise InvalidAPIKeyException
         return authorization_header_parts[1]
@@ -196,7 +148,7 @@ def get_key_from_authorization_header(
 
 def decode_jwt_with_purpose(token: str, purpose: JWTPurpose):
     try:
-        return SimpleJWT.decode(token=token, purpose=purpose)
+        return SimpleJWT.decode(token=token, expected_purpose=purpose)
     except ExpiredSignatureError:
         abort(
             code=HTTPStatus.UNAUTHORIZED,
@@ -238,27 +190,14 @@ def get_authorization_header_from_request() -> str:
         )
 
 
-def bad_request_abort(
-    message: str = "Improperly formatted authorization header",
-):
-    return FlaskResponseManager.abort(code=HTTPStatus.BAD_REQUEST, message=message)
-
-
-def permission_denied_abort() -> None:
-    abort(
-        code=HTTPStatus.FORBIDDEN,
-        message="You do not have permission to access this endpoint",
-    )
-
-
 def check_permissions_with_access_info(
     access_info: AccessInfoPrimary, permissions: list[PermissionsEnum]
 ) -> None:
     if access_info is None:
-        return permission_denied_abort()
+        return FlaskResponseManager.permission_denied_abort()
     for permission in permissions:
         if permission not in access_info.permissions:
-            return permission_denied_abort()
+            return FlaskResponseManager.permission_denied_abort()
 
 
 def get_authentication_error_message(
@@ -381,7 +320,7 @@ def check_if_valid_auth_scheme(
         if auth_scheme == amc.scheme:
             return
 
-    bad_request_abort("Invalid Auth Scheme for endpoint")
+    FlaskResponseManager.bad_request_abort("Invalid Auth Scheme for endpoint")
 
 
 def get_authentication(

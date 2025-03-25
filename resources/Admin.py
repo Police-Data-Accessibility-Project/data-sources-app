@@ -3,9 +3,8 @@ from flask import Response
 from config import limiter
 from middleware.access_logic import (
     AccessInfoPrimary,
-    WRITE_USER_AUTH_INFO,
-    READ_USER_AUTH_INFO,
 )
+from middleware.authentication_info import READ_USER_AUTH_INFO, WRITE_USER_AUTH_INFO
 from middleware.decorators import (
     endpoint_info,
 )

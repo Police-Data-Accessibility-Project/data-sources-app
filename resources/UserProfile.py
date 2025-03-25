@@ -2,8 +2,8 @@ from flask import Response
 
 from middleware.access_logic import (
     AccessInfoPrimary,
-    STANDARD_JWT_AUTH_INFO,
 )
+from middleware.authentication_info import STANDARD_JWT_AUTH_INFO
 from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.reset_token_queries import (
     change_password_wrapper,
