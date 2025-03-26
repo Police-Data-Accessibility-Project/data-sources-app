@@ -135,7 +135,6 @@ class DataSourcesPutSchema(Schema):
                 "id",
                 "updated_at",
                 "created_at",
-                "rejection_note",
                 "record_type_id",
                 "data_source_request",
                 "approval_status_updated_at",
