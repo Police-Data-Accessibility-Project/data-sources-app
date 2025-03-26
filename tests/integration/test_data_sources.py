@@ -265,6 +265,7 @@ def test_data_sources_by_id_put(test_data_creator_flask: TestDataCreatorFlask):
         "readme_url": uuid.uuid4().hex,
         "originating_entity": uuid.uuid4().hex,
         "retention_schedule": RetentionSchedule.ONE_TO_TEN_YEARS.value,
+        "rejection_note": uuid.uuid4().hex,
         "scraper_url": uuid.uuid4().hex,
         "submission_notes": uuid.uuid4().hex,
         "submitter_contact_info": uuid.uuid4().hex,
