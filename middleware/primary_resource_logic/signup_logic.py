@@ -48,7 +48,7 @@ def get_signup_html(signup_link: str):
     <p> We're happy to have you in our community. 
     If you'd like, you can reply to this email with a bit more about 
     what you hope to accomplish, or if there's any way we can support your 
-    project. You are also invited to join us in <a href='https://discord.gg/wMqex8nKZJ'>Discord</a>, where you can 
+    project. You are also invited to <a href='https://discord.gg/wMqex8nKZJ'>join us in Discord</a>, where you can 
     chat with our team and other folks interested in police data.</p>
     </body>
     </html>
