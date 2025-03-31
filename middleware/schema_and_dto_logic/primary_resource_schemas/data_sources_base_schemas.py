@@ -10,6 +10,7 @@ from database_client.enums import (
     ApprovalStatus,
 )
 from middleware.enums import RecordTypes
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetByIDBaseSchema
 from middleware.schema_and_dto_logic.enums import CSVColumnCondition
 from middleware.schema_and_dto_logic.util import get_json_metadata
 
@@ -327,3 +328,9 @@ class DataSourcesMapResponseInnerSchema(Schema):
     record_type = fields.String(metadata=get_json_metadata("The type of the record"))
     lat = fields.Float(metadata=get_json_metadata("The latitude of the data source"))
     lng = fields.Float(metadata=get_json_metadata("The longitude of the data source"))
+
+
+class DataSourceRejectSchema(GetByIDBaseSchema):
+    rejection_note = fields.String(
+        metadata=get_json_metadata("Why the note was rejected.")
+    )

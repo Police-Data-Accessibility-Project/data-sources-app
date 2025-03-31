@@ -5,21 +5,17 @@ from flask import make_response, Response
 from pydantic import BaseModel
 
 from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import OrderByParameters, WhereMapping
-from database_client.subquery_logic import SubqueryParameters, SubqueryParameterManager
+from database_client.db_client_dataclasses import OrderByParameters
+from database_client.subquery_logic import SubqueryParameterManager
 from database_client.enums import ApprovalStatus, RelationRoleEnum, ColumnPermissionEnum
 from database_client.result_formatter import ResultFormatter
 from middleware.access_logic import AccessInfoPrimary
 from middleware.column_permission_logic import get_permitted_columns
 from middleware.dynamic_request_logic.delete_logic import delete_entry
-from middleware.dynamic_request_logic.get_by_id_logic import get_by_id
 from middleware.dynamic_request_logic.get_many_logic import (
     optionally_limit_to_requested_columns,
 )
-from middleware.dynamic_request_logic.get_related_resource_logic import (
-    GetRelatedResourcesParameters,
-    get_related_resource,
-)
+
 from middleware.dynamic_request_logic.post_logic import (
     PostLogic,
     PostHandler,
@@ -46,6 +42,7 @@ from middleware.common_response_formatting import format_list_response, message_
 from middleware.schema_and_dto_logic.primary_resource_dtos.data_sources_dtos import (
     DataSourcesPostDTO,
     DataSourcesPutDTO,
+    DataSourcesRejectDTO,
 )
 from middleware.util import dataclass_to_filtered_dict
 
@@ -376,6 +373,20 @@ def delete_data_source_related_agency(
             additional_where_mappings=dto.get_where_mapping(),
         ),
     )
+
+
+# endregion
+
+
+# region Reject Data Source
+def reject_data_source(
+    db_client: DatabaseClient,
+    dto: DataSourcesRejectDTO,
+) -> Response:
+    db_client.reject_data_source(
+        data_source_id=int(dto.resource_id), rejection_note=dto.rejection_note
+    )
+    return message_response("Successfully rejected data source.")
 
 
 # endregion
