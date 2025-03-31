@@ -4,7 +4,8 @@ import time
 from datetime import datetime, timezone, timedelta
 
 from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import SortOrder
+from database_client.enums import SortOrder, ApprovalStatus
+from database_client.models import Agency
 from middleware.enums import JurisdictionType, AgencyType
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgencyInfoPutSchema,
@@ -44,6 +45,7 @@ def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
     tdc.agency()
     tus = tdc.standard_user()
 
+    # Check basic data retrieval
     response_json = tdc.request_validator.get_agency(
         headers=tus.api_authorization_header,
         sort_by="name",
@@ -66,6 +68,7 @@ def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
 
     assert response_json != response_json_2
 
+    # Test sort functionality
     response_json = tdc.request_validator.get_agency(
         headers=tus.api_authorization_header,
         sort_by="name",
@@ -95,6 +98,48 @@ def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
         response_json=response_json,
         expected_non_null_columns=["id"],
     )
+    assert len(response_json["data"]) == 1
+
+
+def test_agencies_get_approval_filter(test_data_creator_flask: TestDataCreatorFlask):
+    """
+    Test that GET call to /agencies endpoint properly retrieves a nonzero amount of data
+    """
+    # Delete all agencies
+    tdc = test_data_creator_flask
+    tdc.clear_test_data()
+
+    # Create two agencies with approved status
+    tdc.agency()
+    tdc.agency()
+
+    # Create one agency with pending status
+    tdc.agency(approval_status=ApprovalStatus.PENDING)
+
+    # Get all agencies
+    response_json = tdc.request_validator.get_agency(
+        headers=tdc.get_admin_tus().jwt_authorization_header,
+    )
+
+    # Check that all agencies are retrieved
+    assert len(response_json["data"]) == 3
+
+    # Get all approved agencies
+    response_json = tdc.request_validator.get_agency(
+        headers=tdc.get_admin_tus().jwt_authorization_header,
+        approval_status=ApprovalStatus.APPROVED,
+    )
+
+    # Check that only two agencies are retrieved
+    assert len(response_json["data"]) == 2
+
+    # Get all pending agencies
+    response_json = tdc.request_validator.get_agency(
+        headers=tdc.get_admin_tus().jwt_authorization_header,
+        approval_status=ApprovalStatus.PENDING,
+    )
+
+    # Check that only one agency is retrieved
     assert len(response_json["data"]) == 1
 
 
@@ -135,6 +180,7 @@ def test_agencies_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
 
 def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
+    tdc.clear_test_data()
 
     start_of_test_datetime = datetime.now(timezone.utc)
     # Test once with an existing locality, and once with a new locality
@@ -191,6 +237,10 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
             **data_to_post["agency_info"],
         },
     )
+    # Check user id is correct
+    agencies = tdc.db_client.get_all(Agency)
+    assert len(agencies) == 1
+    assert agencies[0]["creator_user_id"] == tus_admin.user_info.user_id
 
     # Test with a new locality
     data_to_post = test_data_creator_flask.get_sample_agency_post_parameters(

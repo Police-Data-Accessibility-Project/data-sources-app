@@ -36,6 +36,7 @@ class AppNamespaces(Enum):
     ADMIN = NamespaceAttributes(path="admin", description="Admin Namespace")
     CONTACT = NamespaceAttributes(path="contact", description="Contact Namespace")
     METADATA = NamespaceAttributes(path="metadata", description="Metadata Namespace")
+    PROPOSALS = NamespaceAttributes(path="proposals", description="Proposals Namespace")
 
 
 def create_namespace(

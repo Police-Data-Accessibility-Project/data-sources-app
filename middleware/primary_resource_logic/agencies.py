@@ -24,6 +24,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
     AgenciesPostDTO,
+    AgenciesGetManyDTO,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyBaseDTO,
@@ -35,13 +36,14 @@ SUBQUERY_PARAMS = [SubqueryParameterManager.data_sources()]
 
 
 def get_agencies(
-    db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: GetManyBaseDTO
+    db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: AgenciesGetManyDTO
 ) -> Response:
     """
     Retrieves a paginated list of approved agencies from the database.
 
     :param db_client: The database client object.
     :param page: The page number of results to return.
+    :param dto: The AgenciesGetManyDTO object.
     :return: A response object with the relevant agency information and status code.
     """
 
@@ -52,6 +54,7 @@ def get_agencies(
         page=dto.page,
         limit=dto.limit,
         requested_columns=dto.requested_columns,
+        approval_status=dto.approval_status,
     )
 
     return FlaskResponseManager.make_response(
@@ -116,9 +119,10 @@ AGENCY_POST_MIDDLEWARE_PARAMETERS = MiddlewareParameters(
 def create_agency(
     db_client: DatabaseClient,
     dto: AgenciesPostDTO,
+    access_info: AccessInfoPrimary,
 ) -> Response:
 
-    agency_id = db_client.create_agency(dto)
+    agency_id = db_client.create_agency(dto, user_id=access_info.user_id)
 
     return created_id_response(new_id=str(agency_id), message=f"Agency created.")
 

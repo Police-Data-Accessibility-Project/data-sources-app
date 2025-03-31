@@ -3,7 +3,7 @@ from typing import Optional
 from flask.testing import FlaskClient
 
 from database_client.database_client import DatabaseClient
-from database_client.enums import RequestStatus
+from database_client.enums import RequestStatus, ApprovalStatus
 from middleware.enums import JurisdictionType, PermissionsEnum, AgencyType
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgencyInfoPostSchema,
@@ -121,6 +121,7 @@ class TestDataCreatorFlask:
         locality_name,
         jurisdiction_type: JurisdictionType,
         location_ids: Optional[list[dict]] = None,
+        approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
     ) -> dict:
         if location_ids is None:
             location_id = self.locality(
@@ -134,6 +135,7 @@ class TestDataCreatorFlask:
                     "name": name,
                     "jurisdiction_type": JurisdictionType.LOCAL.value,
                     "agency_type": AgencyType.POLICE.value,
+                    "approval_status": approval_status.value,
                 },
             ),
             "location_ids": location_ids,
@@ -144,6 +146,7 @@ class TestDataCreatorFlask:
         location_ids: Optional[list[dict]] = None,
         agency_name: str = "",
         add_test_name: bool = True,
+        approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
     ) -> TestAgencyInfo:
         if add_test_name and agency_name == "":
             submitted_name = self.tdcdb.test_name(agency_name)
@@ -155,6 +158,7 @@ class TestDataCreatorFlask:
             locality_name=locality_name,
             jurisdiction_type=JurisdictionType.LOCAL,
             location_ids=location_ids,
+            approval_status=approval_status,
         )
 
         json = run_and_validate_request(

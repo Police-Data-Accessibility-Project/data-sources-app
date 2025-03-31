@@ -26,6 +26,7 @@ from resources.Metrics import namespace_metrics
 from resources.Notifications import namespace_notifications
 from resources.OAuth import namespace_oauth
 from resources.Permissions import namespace_permissions
+from resources.Proposals import namespace_proposals
 from resources.Search import namespace_search
 from resources.Signup import namespace_signup
 from resources.TypeaheadSuggestions import (
@@ -80,6 +81,7 @@ NAMESPACES = [
     namespace_admin,
     namespace_contact,
     namespace_metadata,
+    namespace_proposals,
 ]
 
 MY_PREFIX = "/api"

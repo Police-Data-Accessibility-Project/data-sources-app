@@ -5,6 +5,7 @@ from middleware.enums import JurisdictionType, AgencyType
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     LocationInfoDTO,
     GetByIDBaseDTO,
+    GetManyBaseDTO,
 )
 from pydantic import BaseModel
 
@@ -54,3 +55,7 @@ class RelatedAgencyByIDDTO(GetByIDBaseDTO):
             "data_source_id": int(self.resource_id),
             "agency_id": int(self.agency_id),
         }
+
+
+class AgenciesGetManyDTO(GetManyBaseDTO):
+    approval_status: Optional[ApprovalStatus] = None
