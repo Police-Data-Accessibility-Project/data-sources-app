@@ -123,23 +123,28 @@ class TestDataCreatorFlask:
         location_ids: Optional[list[dict]] = None,
         approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
     ) -> dict:
-        if location_ids is None:
-            location_id = self.locality(
-                locality_name=locality_name,
-            )
-            location_ids = [location_id]
-        return {
+        d = {
             "agency_info": generate_test_data_from_schema(
                 schema=AgencyInfoPostSchema(),
                 override={
                     "name": name,
-                    "jurisdiction_type": JurisdictionType.LOCAL.value,
+                    "jurisdiction_type": jurisdiction_type.value,
                     "agency_type": AgencyType.POLICE.value,
                     "approval_status": approval_status.value,
                 },
             ),
-            "location_ids": location_ids,
         }
+
+        if location_ids is None and jurisdiction_type != JurisdictionType.FEDERAL:
+            location_id = self.locality(
+                locality_name=locality_name,
+            )
+            location_ids = [location_id]
+
+        if location_ids is not None:
+            d["location_ids"] = location_ids
+
+        return d
 
     def agency(
         self,
@@ -147,6 +152,7 @@ class TestDataCreatorFlask:
         agency_name: str = "",
         add_test_name: bool = True,
         approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
+        jurisdiction_type: JurisdictionType = JurisdictionType.LOCAL,
     ) -> TestAgencyInfo:
         if add_test_name and agency_name == "":
             submitted_name = self.tdcdb.test_name(agency_name)
@@ -156,7 +162,7 @@ class TestDataCreatorFlask:
         sample_agency_post_parameters = self.get_sample_agency_post_parameters(
             name=submitted_name,
             locality_name=locality_name,
-            jurisdiction_type=JurisdictionType.LOCAL,
+            jurisdiction_type=jurisdiction_type,
             location_ids=location_ids,
             approval_status=approval_status,
         )

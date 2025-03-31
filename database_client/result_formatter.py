@@ -78,7 +78,7 @@ class ResultFormatter:
 
     @staticmethod
     def agency_to_agency_dict(agency: Agency) -> dict[str, Any]:
-        if agency.locations is not None:
+        if agency.locations is not None and len(agency.locations) > 0:
             first_location = agency.locations[0]
         else:
             first_location = None
