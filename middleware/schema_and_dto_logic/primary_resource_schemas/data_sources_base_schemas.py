@@ -28,7 +28,7 @@ class DataSourceBaseSchema(Schema):
         required=True,
     )
     description = fields.String(
-        required=True,
+        required=False,
         allow_none=True,
         metadata=get_json_metadata(
             description="Information to give clarity and confidence about what this source is, how it was "
@@ -36,6 +36,7 @@ class DataSourceBaseSchema(Schema):
             "Especially important if the source is difficult to preview or categorize.",
             csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
+        default="",
     )
 
     source_url = fields.String(
