@@ -26,7 +26,7 @@ def get_signup_link(token: str):
 
 def get_signup_text(signup_link: str):
     return f"""
-    Welcome to PDAP! If you meant to create an account, please verify your email by clicking this link: \n\n
+    Welcome to PDAP! If you meant to create an account, please verify your email by clicking this link. \n\n
 
     {signup_link}
 
@@ -41,9 +41,7 @@ def get_signup_html(signup_link: str):
     <title>PDAP</title>
     </head>
     <body>
-    <p> Welcome to PDAP! If you meant to create an account, please verify your email by clicking this link: </p>
-
-    <p> {signup_link} </p>
+    <p> Welcome to PDAP! If you meant to create an account, <a href='{signup_link}'>please verify your email by clicking this link.</a> </p>
     
     <p> We're happy to have you in our community. 
     If you'd like, you can reply to this email with a bit more about 
@@ -61,9 +59,7 @@ def send_signup_link(email: str, token: str):
 
     text = get_signup_text(signup_link=signup_link)
 
-    html = get_signup_html(
-        signup_link=f"<a href='{signup_link}'>Click here to validate your email.</a>"
-    )
+    html = get_signup_html(signup_link=signup_link)
 
     send_via_mailgun(
         to_email=email,
