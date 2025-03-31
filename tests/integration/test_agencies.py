@@ -43,6 +43,7 @@ def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
     tdc.agency()
     tdc.agency()
+    tdc.agency(jurisdiction_type=JurisdictionType.FEDERAL)
     tus = tdc.standard_user()
 
     # Check basic data retrieval
