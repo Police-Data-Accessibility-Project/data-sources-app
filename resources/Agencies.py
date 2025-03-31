@@ -59,7 +59,7 @@ class AgenciesByPage(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=get_agencies,
-            schema_populate_parameters=GET_MANY_SCHEMA_POPULATE_PARAMETERS,
+            schema_populate_parameters=SchemaConfigs.AGENCIES_GET_MANY.value.get_schema_populate_parameters(),
             access_info=access_info,
         )
 
@@ -75,6 +75,7 @@ class AgenciesByPage(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=create_agency,
             schema_populate_parameters=SchemaConfigs.AGENCIES_POST.value.get_schema_populate_parameters(),
+            access_info=access_info,
         )
 
 

@@ -19,6 +19,9 @@ from database_client.enums import (
     UpdateFrequency,
 )
 from middleware.enums import OutputFormatEnum, PermissionsEnum, RecordTypes
+from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
+    AgenciesPostDTO,
+)
 from middleware.util import update_if_not_none
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.common_test_data import get_test_name
@@ -572,20 +575,30 @@ class RequestValidator:
 
     def get_agency(
         self,
-        sort_by: str,
-        sort_order: SortOrder,
         headers: dict,
+        sort_by: Optional[str] = None,
+        sort_order: Optional[SortOrder] = None,
         page: int = 1,
         limit: int = PAGE_SIZE,
+        approval_status: Optional[ApprovalStatus] = None,
     ):
-        url = add_query_params(
-            url=AGENCIES_BASE_ENDPOINT,
-            params={
+        params = {}
+        update_if_not_none(
+            dict_to_update=params,
+            secondary_dict={
+                "approval_status": (
+                    approval_status.value if approval_status is not None else None
+                ),
                 "sort_by": sort_by,
-                "sort_order": sort_order.value,
+                "sort_order": sort_order.value if sort_order is not None else None,
                 "page": page,
                 "limit": limit,
             },
+        )
+
+        url = add_query_params(
+            url=AGENCIES_BASE_ENDPOINT,
+            params=params,
         )
         return self.get(
             endpoint=url,
@@ -829,6 +842,28 @@ class RequestValidator:
             endpoint="/api/github/data-requests/synchronize",
             headers=headers,
             expected_schema=SchemaConfigs.GITHUB_DATA_REQUESTS_SYNCHRONIZE_POST.value.primary_output_schema,
+            expected_response_status=expected_response_status,
+            expected_json_content=expected_json_content,
+        )
+
+    def typeahead_agency(self, query: str):
+        return self.get(
+            endpoint=f"/api/typeahead/agencies?query={query}",
+            expected_schema=SchemaConfigs.TYPEAHEAD_AGENCIES.value.primary_output_schema,
+        )
+
+    def create_proposal_agency(
+        self,
+        headers: dict,
+        data: dict,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_json_content: Optional[dict] = None,
+    ):
+        return self.post(
+            endpoint="/api/proposals/agencies",
+            headers=headers,
+            json=data,
+            expected_schema=SchemaConfigs.PROPOSAL_AGENCIES_POST.value.primary_output_schema,
             expected_response_status=expected_response_status,
             expected_json_content=expected_json_content,
         )

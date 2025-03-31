@@ -1,13 +1,17 @@
-from marshmallow import fields, Schema
+from marshmallow import fields, Schema, pre_load
 
-from database_client.enums import ApprovalStatus
+from database_client.enums import ApprovalStatus, RequestStatus
 from middleware.enums import JurisdictionType, AgencyType
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+    GetManyRequestsBaseSchema,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.locations_schemas import (
     STATE_ISO_FIELD,
     COUNTY_FIPS_FIELD,
     LOCALITY_NAME_FIELD,
 )
 from middleware.schema_and_dto_logic.enums import CSVColumnCondition
+from middleware.schema_and_dto_logic.util import get_query_metadata
 from utilities.enums import SourceMappingEnum
 
 
@@ -189,22 +193,12 @@ class AgenciesExpandedSchema(AgencyInfoBaseSchema):
             "source": SourceMappingEnum.JSON,
         },
     )
-    state_iso = STATE_ISO_FIELD
-    state_name = fields.Str(
-        required=False,
+
+
+class GetManyAgenciesRequestsSchema(GetManyRequestsBaseSchema):
+    approval_status = fields.Enum(
+        enum=ApprovalStatus,
+        by_value=fields.Str,
         allow_none=True,
-        metadata={
-            "description": "The name of the state in which the agency is located. Does not apply to federal agencies",
-            "source": SourceMappingEnum.JSON,
-        },
+        metadata=get_query_metadata("The approval status of the agencies to return."),
     )
-    county_name = fields.Str(
-        required=False,
-        allow_none=True,
-        metadata={
-            "description": "The name of the county in which the agency is located.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    county_fips = COUNTY_FIPS_FIELD
-    locality_name = LOCALITY_NAME_FIELD

@@ -848,6 +848,7 @@ class DatabaseClient:
     def create_agency(
         self,
         dto: AgenciesPostDTO,
+        user_id: Optional[int] = None,
     ):
         # Create Agency Entry
         agency_info = dto.agency_info
@@ -865,6 +866,7 @@ class DatabaseClient:
             rejection_reason=agency_info.rejection_reason,
             last_approval_editor=agency_info.last_approval_editor,
             submitter_contact=agency_info.submitter_contact,
+            creator_user_id=user_id,
         )
         self.session.add(agency)
 
@@ -1105,6 +1107,7 @@ class DatabaseClient:
         page: Optional[int] = 1,
         limit: Optional[int] = PAGE_SIZE,
         requested_columns: Optional[list[str]] = None,
+        approval_status: Optional[ApprovalStatus] = None,
     ):
 
         order_by_clause = DynamicQueryConstructor.get_sql_alchemy_order_by_clause(
@@ -1118,9 +1121,13 @@ class DatabaseClient:
         )
 
         # TODO: This format can be extracted to a function (see get_data_sources)
+        query = select(Agency)
+
+        if approval_status is not None:
+            query = query.where(Agency.approval_status == approval_status.value)
+
         query = (
-            select(Agency)
-            .options(*load_options)
+            query.options(*load_options)
             .order_by(order_by_clause)
             .limit(limit)
             .offset(self.get_offset(page))

@@ -865,6 +865,8 @@ def test_agencies_table_logic(test_data_creator_db_client: TestDataCreatorDBClie
     db_client = tdc.db_client
     delete_change_log(db_client)
 
+    NUMBER_OF_AGENCY_TABLE_COLUMNS = 18
+
     # Create agency
     old_name = get_test_name()
     new_name = get_test_name()
@@ -897,5 +899,5 @@ def test_agencies_table_logic(test_data_creator_db_client: TestDataCreatorDBClie
     log = logs[2]
     assert log["operation_type"] == OperationType.DELETE.value
     assert log["affected_id"] == agency_info.id
-    assert len(log["old_data"].keys()) == 17
+    assert len(log["old_data"].keys()) == NUMBER_OF_AGENCY_TABLE_COLUMNS
     assert log["new_data"] is None

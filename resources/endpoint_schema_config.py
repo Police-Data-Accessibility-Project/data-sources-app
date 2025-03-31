@@ -2,7 +2,7 @@ from enum import Enum
 from http import HTTPStatus
 from typing import Optional, Type
 
-from marshmallow import Schema
+from marshmallow import Schema, RAISE
 
 from middleware.primary_resource_logic.github_oauth_logic import (
     LinkToGithubRequestDTO,
@@ -36,6 +36,9 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.admin_schemas impo
     AdminUsersPutSchema,
     AdminUsersPostSchema,
     AdminUsersGetManyResponseSchema,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_base_schemas import (
+    GetManyAgenciesRequestsSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.archives_schemas import (
     ArchivesGetResponseSchema,
@@ -152,6 +155,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_
 from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
     AgenciesPostDTO,
     RelatedAgencyByIDDTO,
+    AgenciesGetManyDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_advanced_schemas import (
     GetManyDataRequestsResponseSchema,
@@ -366,9 +370,9 @@ class SchemaConfigs(Enum):
         primary_output_schema=AgenciesGetByIDResponseSchema(),
     )
     AGENCIES_GET_MANY = EndpointSchemaConfig(
-        input_schema=GetManyRequestsBaseSchema(),
+        input_schema=GetManyAgenciesRequestsSchema(),
         primary_output_schema=AgenciesGetManyResponseSchema(),
-        input_dto_class=GetManyBaseDTO,
+        input_dto_class=AgenciesGetManyDTO,
     )
     AGENCIES_POST = get_post_resource_endpoint_schema_config(
         input_schema=AgenciesPostSchema(),
@@ -633,4 +637,18 @@ class SchemaConfigs(Enum):
     # region Metadata
     RECORD_TYPE_AND_CATEGORY_GET = EndpointSchemaConfig(
         primary_output_schema=RecordTypeAndCategoryResponseSchema(),
+    )
+    # endregion
+
+    PROPOSAL_AGENCIES_POST = EndpointSchemaConfig(
+        input_schema=AgenciesPostSchema(
+            exclude=[
+                "agency_info.approval_status",
+                "agency_info.last_approval_editor",
+                "agency_info.submitter_contact",
+                "agency_info.rejection_reason",
+            ],
+            unknown=RAISE,
+        ),
+        input_dto_class=AgenciesPostDTO,
     )
