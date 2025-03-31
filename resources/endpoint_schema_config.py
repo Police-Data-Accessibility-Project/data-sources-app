@@ -54,6 +54,9 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.bulk_schemas impor
 from middleware.schema_and_dto_logic.primary_resource_schemas.contact_schemas import (
     ContactFormPostSchema,
 )
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_schemas import (
+    DataSourceRejectSchema,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.locations_schemas import (
     GetLocationInfoByIDResponseSchema,
 )
@@ -178,6 +181,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advan
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.data_sources_dtos import (
     DataSourcesPostDTO,
+    DataSourcesRejectDTO,
 )
 from middleware.schema_and_dto_logic.common_response_schemas import (
     IDAndMessageSchema,
@@ -419,6 +423,11 @@ class SchemaConfigs(Enum):
     )
     DATA_SOURCES_RELATED_AGENCIES_POST = DATA_SOURCES_RELATED_AGENCY_BY_ID
     DATA_SOURCES_RELATED_AGENCIES_DELETE = DATA_SOURCES_RELATED_AGENCY_BY_ID
+    DATA_SOURCES_BY_ID_REJECT = EndpointSchemaConfig(
+        input_schema=DataSourceRejectSchema(),
+        input_dto_class=DataSourcesRejectDTO,
+        primary_output_schema=MessageSchema(),
+    )
     # endregion
 
     # region Github

@@ -2,7 +2,7 @@
 
 import urllib.parse
 import uuid
-
+from http import HTTPStatus
 
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import (
@@ -434,3 +434,46 @@ def test_data_source_by_id_related_agencies(
     json_data = get_related_agencies()
     assert len(json_data["data"]) == 0
     assert json_data["metadata"]["count"] == 0
+
+
+def test_data_sources_reject_happy_path(test_data_creator_flask: TestDataCreatorFlask):
+    tdc = test_data_creator_flask
+    data_source = tdc.data_source()
+
+    header = tdc.get_admin_tus().jwt_authorization_header
+
+    def check_data_source_status(approval_status: ApprovalStatus):
+        json_data = tdc.request_validator.get_data_source_by_id(
+            headers=header, id=data_source.id
+        )
+
+        assert json_data["data"]["approval_status"] == approval_status.value
+
+    check_data_source_status(ApprovalStatus.APPROVED)
+
+    tdc.request_validator.reject_data_source(
+        headers=header,
+        data_source_id=data_source.id,
+        rejection_note="This data source is not appropriate for our system",
+        expected_json_content={
+            "message": "Successfully rejected data source.",
+        },
+    )
+
+    check_data_source_status(ApprovalStatus.REJECTED)
+
+
+def test_data_sources_reject_wrong_authorization(
+    test_data_creator_flask: TestDataCreatorFlask,
+):
+    tdc = test_data_creator_flask
+
+    data_source = tdc.data_source()
+
+    run_and_validate_request(
+        flask_client=tdc.flask_client,
+        http_method="post",
+        endpoint=f"/api/data-sources/{data_source.id}/reject",
+        headers=tdc.standard_user().jwt_authorization_header,
+        expected_response_status=HTTPStatus.FORBIDDEN,
+    )

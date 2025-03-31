@@ -2108,6 +2108,15 @@ class DatabaseClient:
 
         return {"record_types": record_types, "record_categories": record_categories}
 
+    def reject_data_source(self, data_source_id: int, rejection_note: str):
+        self.update_data_source(
+            entry_id=data_source_id,
+            column_edit_mappings={
+                "approval_status": ApprovalStatus.REJECTED.value,
+                "rejection_note": rejection_note,
+            },
+        )
+
     @session_manager
     def get_all(self, model: Type[Base]):
 

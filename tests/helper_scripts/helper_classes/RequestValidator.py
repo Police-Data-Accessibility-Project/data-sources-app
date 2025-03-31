@@ -867,3 +867,21 @@ class RequestValidator:
             expected_response_status=expected_response_status,
             expected_json_content=expected_json_content,
         )
+
+    def reject_data_source(
+        self,
+        headers: dict,
+        data_source_id: int,
+        rejection_note: str,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_json_content: Optional[dict] = None,
+        expected_schema: Schema = SchemaConfigs.DATA_SOURCES_BY_ID_REJECT.value.primary_output_schema,
+    ):
+        return self.post(
+            endpoint=f"/api/data-sources/{data_source_id}/reject",
+            headers=headers,
+            json={"rejection_note": rejection_note},
+            expected_schema=expected_schema,
+            expected_response_status=expected_response_status,
+            expected_json_content=expected_json_content,
+        )
