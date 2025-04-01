@@ -20,6 +20,7 @@ Reach out to contact@pdap.io or make noise in Discord if you'd like access to th
 | GH_CALLBACK_URL                 | The callback URL for GitHub OAuth.                                                                     | `https://example.com/api/auth/callback`         |
 | VALIDATE_EMAIL_SECRET_KEY       | Used to sign and verify JWT tokens for email validation.                                              | `myCustomValidateEmailSecretKey`                |
 | WEBHOOK_URL                     | The URL where webhook events will be sent.                                                            | `https://example.com/webhook`                   |
+|TEST_EMAIL_ADDRESS              | The email address to which test emails will be sent.                                                  | `b0M0w@example.com`                   |
 
 Additionally, if you are testing the email functionality, you will need to also provide the `MAILGUN_KEY` environment variable as well (also obtainable from the sources mentioned above).
 

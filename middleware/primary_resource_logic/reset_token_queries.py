@@ -58,6 +58,7 @@ def request_reset_password(
         },
         exp=(datetime.now(tz=timezone.utc) + timedelta(minutes=15)).timestamp(),
         purpose=JWTPurpose.PASSWORD_RESET,
+        user_id=user_id,
     )
     send_password_reset_link(email=email, token=jwt_token.encode())
     return request_reset_password_response()

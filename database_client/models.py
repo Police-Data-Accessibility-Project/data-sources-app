@@ -254,8 +254,14 @@ class Agency(Base, CountMetadata):
     agency_created: Mapped[timestamp_tz] = mapped_column(
         server_default=func.current_timestamp()
     )
+    creator_user_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("public.users.id")
+    )
 
     # relationships
+    creator: Mapped["User"] = relationship(
+        argument="User", back_populates="created_agencies", uselist=False
+    )
     locations: Mapped[list["LocationExpanded"]] = relationship(
         argument="LocationExpanded",
         secondary="public.link_agencies_locations",
@@ -695,6 +701,10 @@ class User(Base):
     role: Mapped[Optional[text]]
 
     # Relationships
+    created_agencies = relationship(
+        argument="Agency",
+        back_populates="creator",
+    )
     permissions = relationship(
         argument="Permission",
         secondary="public.user_permissions",

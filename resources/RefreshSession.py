@@ -1,11 +1,10 @@
 from flask import Response
 
 from middleware.access_logic import (
-    STANDARD_JWT_AUTH_INFO,
     AccessInfoPrimary,
-    AuthenticationInfo,
     RefreshAccessInfo,
 )
+from middleware.authentication_info import AuthenticationInfo, STANDARD_JWT_AUTH_INFO
 from middleware.decorators import endpoint_info
 from middleware.enums import AccessTypeEnum
 from middleware.primary_resource_logic.login_queries import (

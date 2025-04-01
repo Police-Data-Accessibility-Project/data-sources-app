@@ -3,9 +3,11 @@ from flask import Response
 from config import limiter
 from middleware.access_logic import (
     AccessInfoPrimary,
+)
+from middleware.authentication_info import (
     WRITE_ONLY_AUTH_INFO,
-    API_OR_JWT_AUTH_INFO,
     STANDARD_JWT_AUTH_INFO,
+    API_OR_JWT_AUTH_INFO,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     EntryCreateUpdateRequestDTO,
@@ -26,6 +28,7 @@ from middleware.primary_resource_logic.data_sources_logic import (
     create_data_source_related_agency,
     delete_data_source_related_agency,
     get_data_source_related_agencies,
+    reject_data_source,
 )
 
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advanced_schemas import (
@@ -261,3 +264,26 @@ class DataSourcesRelatedAgenciesById(PsycopgResource):
 
 
 # endregion
+
+# region Reject
+
+
+@namespace_data_source.route("/<resource_id>/reject")
+class DataSourcesRejectByID(PsycopgResource):
+    @endpoint_info(
+        namespace=namespace_data_source,
+        auth_info=WRITE_ONLY_AUTH_INFO,
+        schema_config=SchemaConfigs.DATA_SOURCES_BY_ID_REJECT,
+        response_info=ResponseInfo(
+            success_message="Data source successfully rejected.",
+        ),
+        description="Reject a data source",
+    )
+    def post(self, access_info: AccessInfoPrimary, resource_id: str) -> Response:
+        """
+        Reject a data source
+        """
+        return self.run_endpoint(
+            wrapper_function=reject_data_source,
+            schema_populate_parameters=SchemaConfigs.DATA_SOURCES_BY_ID_REJECT.value.get_schema_populate_parameters(),
+        )

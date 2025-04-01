@@ -108,7 +108,7 @@ def get_github_user_info(access_token: str) -> GithubUserInfo:
     """
     try:
         simple_jwt = SimpleJWT.decode(
-            access_token, purpose=JWTPurpose.GITHUB_ACCESS_TOKEN
+            access_token, expected_purpose=JWTPurpose.GITHUB_ACCESS_TOKEN
         )
     except ExpiredSignatureError:
         abort(HTTPStatus.UNAUTHORIZED, "Access token has expired.")

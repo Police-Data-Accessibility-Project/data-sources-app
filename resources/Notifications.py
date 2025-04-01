@@ -1,4 +1,5 @@
-from middleware.access_logic import AccessInfoPrimary, AuthenticationInfo
+from middleware.access_logic import AccessInfoPrimary
+from middleware.authentication_info import AuthenticationInfo
 from middleware.decorators import endpoint_info
 from middleware.enums import AccessTypeEnum, PermissionsEnum
 from middleware.primary_resource_logic.notifications_logic import send_notifications

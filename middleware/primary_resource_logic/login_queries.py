@@ -27,6 +27,7 @@ class JWTAccessRefreshTokens:
         user_id = db_client.get_user_id(email)
         permissions = db_client.get_user_permissions(user_id)
         other_claims = {
+            "user_id": user_id,
             "user_email": email,
             "permissions": [permission.value for permission in permissions],
         }
@@ -43,7 +44,8 @@ class JWTAccessRefreshTokens:
         #  JWT_REFRESH_TOKEN_EXPIRES variables in `app.py`
         self.access_token = simple_jwt.encode()
         self.refresh_token = create_refresh_token(
-            identity=identity, additional_claims={"email": email}
+            identity=identity,
+            additional_claims={"email": email},
         )
 
     @staticmethod

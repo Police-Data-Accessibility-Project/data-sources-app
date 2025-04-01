@@ -2,7 +2,7 @@
 
 # data-sources-app
 
-An API and UI for searching, using, and maintaining Data Sources. 
+An API for searching, using, and maintaining Data Sources. 
 
 #### Live app: https://data-sources.pdap.io/ deployed from `main`
 #### Dev app:https://data-sources.pdap.dev/ deployed from `dev`
@@ -71,6 +71,8 @@ Follow instructions in the `/local_database` directory to set up a local databas
 
 python3 app.py
 
+# Within a container -- ensure docker ports are properly bound as well
+gunicorn  --bind 0.0.0.0:8080 --access-logfile - --access-logformat '%(h)s %({http_x_user_id}e)s %(m)s %(U)s %(q)s %(s)s' --error-logfile - 'app:create_app()'
 ```
 
 

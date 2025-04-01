@@ -2,7 +2,8 @@ from http import HTTPStatus
 
 from config import limiter
 from database_client.database_client import DatabaseClient
-from middleware.access_logic import NO_AUTH_INFO, AccessInfoPrimary
+from middleware.access_logic import AccessInfoPrimary
+from middleware.authentication_info import NO_AUTH_INFO
 from middleware.decorators import endpoint_info
 
 from middleware.primary_resource_logic.github_oauth_logic import (

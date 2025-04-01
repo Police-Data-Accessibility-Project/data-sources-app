@@ -24,19 +24,48 @@ def get_signup_link(token: str):
     return url
 
 
+def get_signup_text(signup_link: str):
+    return f"""
+    Welcome to PDAP! If you meant to create an account, please verify your email by clicking this link. \n\n
+
+    {signup_link}
+
+    \n\nWe're happy to have you in our community. If you'd like, you can reply to this email with a bit more about what you hope to accomplish, or if there's any way we can support your project. You are also invited to join us in Discord, where you can chat with our team and other folks interested in police data: https://discord.gg/wMqex8nKZJ
+    """
+
+
+def get_signup_html(signup_link: str):
+    return f"""
+    <!DOCTYPE html>
+    <head>
+    <title>PDAP</title>
+    </head>
+    <body>
+    <p> Welcome to PDAP! If you meant to create an account, <a href='{signup_link}'>please verify your email by clicking this link.</a> </p>
+    
+    <p> We're happy to have you in our community. 
+    If you'd like, you can reply to this email with a bit more about 
+    what you hope to accomplish, or if there's any way we can support your 
+    project. You are also invited to <a href='https://discord.gg/wMqex8nKZJ'>join us in Discord</a>, where you can 
+    chat with our team and other folks interested in police data.</p>
+    </body>
+    </html>
+    """
+
+
 def send_signup_link(email: str, token: str):
 
-    text = f"""
-    Welcome to PDAP! If you meant to create an account, please verify your email by clicking this link: {get_signup_link(token)}
+    signup_link = get_signup_link(token=token)
 
-    We're happy to have you in our community. If you'd like, you can reply to this email with a bit more about what you hope to accomplish, or if there's any way we can support your project. You are also invited to join us in Discord, where you can chat with our team and other folks interested in police data: https://discord.gg/wMqex8nKZJ
-    """
+    text = get_signup_text(signup_link=signup_link)
+
+    html = get_signup_html(signup_link=signup_link)
 
     send_via_mailgun(
         to_email=email,
         subject="Please validate your account",
         text=text,
-        html=text,
+        html=html,
         bcc="josh.chamberlain@pdap.io",
     )
 

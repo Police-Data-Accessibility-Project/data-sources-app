@@ -848,6 +848,7 @@ class DatabaseClient:
     def create_agency(
         self,
         dto: AgenciesPostDTO,
+        user_id: Optional[int] = None,
     ):
         # Create Agency Entry
         agency_info = dto.agency_info
@@ -865,6 +866,7 @@ class DatabaseClient:
             rejection_reason=agency_info.rejection_reason,
             last_approval_editor=agency_info.last_approval_editor,
             submitter_contact=agency_info.submitter_contact,
+            creator_user_id=user_id,
         )
         self.session.add(agency)
 
@@ -1105,6 +1107,7 @@ class DatabaseClient:
         page: Optional[int] = 1,
         limit: Optional[int] = PAGE_SIZE,
         requested_columns: Optional[list[str]] = None,
+        approval_status: Optional[ApprovalStatus] = None,
     ):
 
         order_by_clause = DynamicQueryConstructor.get_sql_alchemy_order_by_clause(
@@ -1118,9 +1121,13 @@ class DatabaseClient:
         )
 
         # TODO: This format can be extracted to a function (see get_data_sources)
+        query = select(Agency)
+
+        if approval_status is not None:
+            query = query.where(Agency.approval_status == approval_status.value)
+
         query = (
-            select(Agency)
-            .options(*load_options)
+            query.options(*load_options)
             .order_by(order_by_clause)
             .limit(limit)
             .offset(self.get_offset(page))
@@ -1941,21 +1948,27 @@ class DatabaseClient:
             where_mappings={"id": location_id},
         )["locality_id"]
 
+    @session_manager
     def get_location_by_id(self, location_id: int):
-        return self._select_single_entry_from_relation(
-            relation_name=Relations.LOCATIONS_EXPANDED.value,
-            columns=[
-                "state_name",
-                "state_iso",
-                "county_name",
-                "county_fips",
-                "locality_name",
-                "type",
-                "id",
-            ],
-            where_mappings={"id": location_id},
-            alias_mappings={"id": "location_id"},
-        )
+        query = Select(
+            LocationExpanded,
+        ).where(LocationExpanded.id == location_id)
+
+        result = self.session.execute(query).scalar()
+
+        if result is None:
+            raise ValueError(f"Location with id {location_id} not found")
+
+        return {
+            "type": result.type,
+            "location_id": result.id,
+            "state_name": result.state_name,
+            "state_iso": result.state_iso,
+            "county_name": result.county_name,
+            "county_fips": result.county_fips,
+            "locality_name": result.locality_name,
+            "display_name": ResultFormatter.get_expanded_display_name(result),
+        }
 
     @session_manager
     def get_similar_agencies(
@@ -2094,6 +2107,15 @@ class DatabaseClient:
                 record_types.append(record_type_dict)
 
         return {"record_types": record_types, "record_categories": record_categories}
+
+    def reject_data_source(self, data_source_id: int, rejection_note: str):
+        self.update_data_source(
+            entry_id=data_source_id,
+            column_edit_mappings={
+                "approval_status": ApprovalStatus.REJECTED.value,
+                "rejection_note": rejection_note,
+            },
+        )
 
     @session_manager
     def get_all(self, model: Type[Base]):

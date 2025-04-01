@@ -1,10 +1,9 @@
 from flask import Response
 
 from middleware.access_logic import (
-    API_OR_JWT_AUTH_INFO,
-    STANDARD_JWT_AUTH_INFO,
     AccessInfoPrimary,
 )
+from middleware.authentication_info import STANDARD_JWT_AUTH_INFO, API_OR_JWT_AUTH_INFO
 from middleware.primary_resource_logic.search_logic import (
     search_wrapper,
     get_followed_searches,

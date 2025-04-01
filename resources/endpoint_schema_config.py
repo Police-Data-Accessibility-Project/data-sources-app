@@ -2,7 +2,7 @@ from enum import Enum
 from http import HTTPStatus
 from typing import Optional, Type
 
-from marshmallow import Schema
+from marshmallow import Schema, RAISE
 
 from middleware.primary_resource_logic.github_oauth_logic import (
     LinkToGithubRequestDTO,
@@ -37,6 +37,9 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.admin_schemas impo
     AdminUsersPostSchema,
     AdminUsersGetManyResponseSchema,
 )
+from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_base_schemas import (
+    GetManyAgenciesRequestsSchema,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.archives_schemas import (
     ArchivesGetResponseSchema,
     ArchivesPutRequestSchema,
@@ -51,8 +54,11 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.bulk_schemas impor
 from middleware.schema_and_dto_logic.primary_resource_schemas.contact_schemas import (
     ContactFormPostSchema,
 )
+from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_schemas import (
+    DataSourceRejectSchema,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.locations_schemas import (
-    LocationInfoExpandedSchema,
+    GetLocationInfoByIDResponseSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.match_schemas import (
     AgencyMatchSchema,
@@ -152,6 +158,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_
 from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
     AgenciesPostDTO,
     RelatedAgencyByIDDTO,
+    AgenciesGetManyDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_advanced_schemas import (
     GetManyDataRequestsResponseSchema,
@@ -174,6 +181,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advan
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.data_sources_dtos import (
     DataSourcesPostDTO,
+    DataSourcesRejectDTO,
 )
 from middleware.schema_and_dto_logic.common_response_schemas import (
     IDAndMessageSchema,
@@ -366,9 +374,9 @@ class SchemaConfigs(Enum):
         primary_output_schema=AgenciesGetByIDResponseSchema(),
     )
     AGENCIES_GET_MANY = EndpointSchemaConfig(
-        input_schema=GetManyRequestsBaseSchema(),
+        input_schema=GetManyAgenciesRequestsSchema(),
         primary_output_schema=AgenciesGetManyResponseSchema(),
-        input_dto_class=GetManyBaseDTO,
+        input_dto_class=AgenciesGetManyDTO,
     )
     AGENCIES_POST = get_post_resource_endpoint_schema_config(
         input_schema=AgenciesPostSchema(),
@@ -415,6 +423,11 @@ class SchemaConfigs(Enum):
     )
     DATA_SOURCES_RELATED_AGENCIES_POST = DATA_SOURCES_RELATED_AGENCY_BY_ID
     DATA_SOURCES_RELATED_AGENCIES_DELETE = DATA_SOURCES_RELATED_AGENCY_BY_ID
+    DATA_SOURCES_BY_ID_REJECT = EndpointSchemaConfig(
+        input_schema=DataSourceRejectSchema(),
+        input_dto_class=DataSourcesRejectDTO,
+        primary_output_schema=MessageSchema(),
+    )
     # endregion
 
     # region Github
@@ -572,7 +585,7 @@ class SchemaConfigs(Enum):
 
     # region Location
     LOCATIONS_BY_ID_GET = get_get_by_id_endpoint_schema_config(
-        primary_output_schema=LocationInfoExpandedSchema(),
+        primary_output_schema=GetLocationInfoByIDResponseSchema(),
     )
     LOCATIONS_RELATED_DATA_REQUESTS_GET = EndpointSchemaConfig(
         input_schema=GetByIDBaseSchema(),
@@ -633,4 +646,18 @@ class SchemaConfigs(Enum):
     # region Metadata
     RECORD_TYPE_AND_CATEGORY_GET = EndpointSchemaConfig(
         primary_output_schema=RecordTypeAndCategoryResponseSchema(),
+    )
+    # endregion
+
+    PROPOSAL_AGENCIES_POST = EndpointSchemaConfig(
+        input_schema=AgenciesPostSchema(
+            exclude=[
+                "agency_info.approval_status",
+                "agency_info.last_approval_editor",
+                "agency_info.submitter_contact",
+                "agency_info.rejection_reason",
+            ],
+            unknown=RAISE,
+        ),
+        input_dto_class=AgenciesPostDTO,
     )

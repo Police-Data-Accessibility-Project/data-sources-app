@@ -82,7 +82,8 @@ def test_check_permissions_with_access_info(
 
     mock_permission_denied_abort = MagicMock()
     monkeypatch.setattr(
-        "middleware.access_logic.permission_denied_abort", mock_permission_denied_abort
+        "middleware.access_logic.FlaskResponseManager.permission_denied_abort",
+        mock_permission_denied_abort,
     )
     check_permissions_with_access_info(access_info, permissions)
 

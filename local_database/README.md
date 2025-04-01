@@ -24,7 +24,7 @@ To set up a test database using Docker Compose, you'll need to have Docker insta
 
 The `docker-compose.yml` file in this directory contains instructions for setting up a test PostgreSQL database using Docker Compose. To start the test database, run the following command:
 ```bash
-docker compose up -d
+docker compose -f docker_compose.yml up -d
 ```
 
 Once the test database is started, make sure to add the following environmental variables to your `.env` file in the root directory of the repository.:

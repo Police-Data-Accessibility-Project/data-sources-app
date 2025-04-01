@@ -87,3 +87,8 @@ class DataSourcesPutDTO(BaseModel):
 class DataSourcesPostDTO(BaseModel):
     entry_data: DataSourceEntryDataPostDTO
     linked_agency_ids: Optional[List[int]] = None
+
+
+class DataSourcesRejectDTO(BaseModel):
+    resource_id: int
+    rejection_note: str

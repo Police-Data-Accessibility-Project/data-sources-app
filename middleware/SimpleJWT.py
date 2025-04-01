@@ -1,7 +1,7 @@
 import datetime
 from enum import Enum, auto
 from http import HTTPStatus
-from typing import Union
+from typing import Union, Optional
 
 import jwt
 from jwt import InvalidSignatureError
@@ -45,20 +45,31 @@ class SimpleJWT:
         self.other_claims = other_claims
 
     def encode(self):
-        payload = {"sub": self.sub, "exp": self.exp, "purpose": self.purpose.value}
+        payload = {
+            "sub": self.sub,
+            "exp": self.exp,
+        }
         payload.update(self.other_claims)
-        return jwt.encode(payload=payload, key=self.key, algorithm=ALGORITHM)
+        return jwt.encode(
+            payload=payload,
+            key=self.key,
+            algorithm=ALGORITHM,
+            headers={"kid": str(self.purpose.value)},
+        )
 
     @staticmethod
-    def decode(token, purpose: JWTPurpose):
+    def decode(token, expected_purpose: Optional[JWTPurpose] = None):
+        kid = int(jwt.get_unverified_header(token)["kid"])
+        decoded_purpose = JWTPurpose(kid)
+        if expected_purpose is not None:
+            SimpleJWT.validate_purpose(decoded_purpose, expected_purpose)
         try:
             payload = jwt.decode(
-                jwt=token, key=get_secret_key(purpose), algorithms=[ALGORITHM]
+                jwt=token, key=get_secret_key(decoded_purpose), algorithms=[ALGORITHM]
             )
         except InvalidSignatureError as e:
             FlaskResponseManager.abort(code=HTTPStatus.UNAUTHORIZED, message=str(e))
-        purpose = JWTPurpose(payload["purpose"])
-        del payload["purpose"]
+
         sub = payload["sub"]
         del payload["sub"]
         exp = payload["exp"]
@@ -67,12 +78,17 @@ class SimpleJWT:
         simple_jwt = SimpleJWT(
             sub=sub,
             exp=exp,
-            purpose=purpose,
+            purpose=decoded_purpose,
             **payload,
         )
-        if simple_jwt.purpose != purpose:
-            raise Exception(f"Invalid JWT Purpose: {simple_jwt.purpose} != {purpose}")
         return simple_jwt
+
+    @staticmethod
+    def validate_purpose(decoded_purpose, purpose):
+        if decoded_purpose != purpose:
+            FlaskResponseManager.bad_request_abort(
+                f"Invalid JWT Purpose: {decoded_purpose} != {purpose}"
+            )
 
     def is_expired(self):
         return self.exp < datetime.datetime.now(tz=datetime.timezone.utc).timestamp()

@@ -10,6 +10,7 @@ from database_client.enums import (
     ApprovalStatus,
 )
 from middleware.enums import RecordTypes
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetByIDBaseSchema
 from middleware.schema_and_dto_logic.enums import CSVColumnCondition
 from middleware.schema_and_dto_logic.util import get_json_metadata
 
@@ -27,7 +28,7 @@ class DataSourceBaseSchema(Schema):
         required=True,
     )
     description = fields.String(
-        required=True,
+        required=False,
         allow_none=True,
         metadata=get_json_metadata(
             description="Information to give clarity and confidence about what this source is, how it was "
@@ -35,6 +36,7 @@ class DataSourceBaseSchema(Schema):
             "Especially important if the source is difficult to preview or categorize.",
             csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
+        default="",
     )
 
     source_url = fields.String(
@@ -327,3 +329,9 @@ class DataSourcesMapResponseInnerSchema(Schema):
     record_type = fields.String(metadata=get_json_metadata("The type of the record"))
     lat = fields.Float(metadata=get_json_metadata("The latitude of the data source"))
     lng = fields.Float(metadata=get_json_metadata("The longitude of the data source"))
+
+
+class DataSourceRejectSchema(GetByIDBaseSchema):
+    rejection_note = fields.String(
+        metadata=get_json_metadata("Why the note was rejected.")
+    )
