@@ -61,3 +61,22 @@ def switch_enum_type(
     # Step 5: Drop the old ENUM type if required
     if drop_old_enum:
         op.execute(sa.text(f"DROP TYPE {quoted_old_enum_name}"))
+
+
+def add_permission(permission_name, description):
+    op.execute(
+        sa.text(
+            """
+        INSERT INTO permissions (permission_name, description)
+        VALUES (:permission_name, :description)"""
+        ).bindparams(permission_name=permission_name, description=description)
+    )
+
+
+def remove_permission(permission_name):
+    op.execute(
+        sa.text(
+            """
+        DELETE FROM permissions WHERE permission_name = :permission_name"""
+        ).bindparams(permission_name=permission_name)
+    )
