@@ -207,6 +207,7 @@ class DataSourcesRelatedAgencies(PsycopgResource):
         ),
         description="Get related agencies to a data source",
     )
+    @limiter.limit("50/minute;250/hour")
     def get(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
         """
         Get related agencies to a data source.
