@@ -37,6 +37,9 @@ class AppNamespaces(Enum):
     CONTACT = NamespaceAttributes(path="contact", description="Contact Namespace")
     METADATA = NamespaceAttributes(path="metadata", description="Metadata Namespace")
     PROPOSALS = NamespaceAttributes(path="proposals", description="Proposals Namespace")
+    SOURCE_COLLECTOR = NamespaceAttributes(
+        path="source-collector", description="Source Collector Namespace"
+    )
 
 
 def create_namespace(

@@ -23,7 +23,14 @@ from sqlalchemy import (
     asc,
     exists,
 )
-from sqlalchemy.orm import aliased, defaultload, load_only, selectinload, joinedload
+from sqlalchemy.orm import (
+    aliased,
+    defaultload,
+    load_only,
+    selectinload,
+    joinedload,
+    Session,
+)
 
 from database_client.DTOs import (
     UserInfoNonSensitive,
@@ -87,6 +94,7 @@ from middleware.enums import (
     AgencyType,
     RecordTypes,
     JurisdictionType,
+    DataSourceCreationResponse,
 )
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
 from middleware.initialize_sqlalchemy_session import initialize_sqlalchemy_session
@@ -100,6 +108,10 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import 
 from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
     AgencyMatchResponseInnerDTO,
     AgencyMatchResponseLocationDTO,
+)
+from middleware.schema_and_dto_logic.primary_resource_dtos.source_collector_dtos import (
+    SourceCollectorPostRequestInnerDTO,
+    SourceCollectorPostResponseInnerDTO,
 )
 from utilities.enums import RecordCategories
 
@@ -2128,3 +2140,63 @@ class DatabaseClient:
         results = self.session.query(model).all()
 
         return [to_dict(result) for result in results]
+
+    def get_record_type_cache(self, session: Session) -> dict[str, int]:
+        d = {}
+        for record_type in session.query(RecordType).all():
+            d[record_type.name] = record_type.id
+        return d
+
+    @session_manager
+    def add_data_sources_from_source_collector(
+        self, data_sources: list[SourceCollectorPostRequestInnerDTO]
+    ):
+        record_type_cache = self.get_record_type_cache(self.session)
+        results: list[SourceCollectorPostResponseInnerDTO] = []
+
+        for data_source in data_sources:
+            self.session.begin_nested()  # Starts a savepoint
+            try:
+                data_source_db = DataSource(
+                    name=data_source.name,
+                    description=data_source.description,
+                    source_url=data_source.source_url,
+                    record_type_id=record_type_cache[data_source.record_type.value],
+                    record_formats=data_source.record_formats,
+                    data_portal_type=data_source.data_portal_type,
+                    last_approval_editor=data_source.last_approval_editor,
+                    supplying_entity=data_source.supplying_entity,
+                    submission_notes="Auto-submitted from Source Collector",
+                )
+                self.session.add(data_source_db)
+                self.session.flush()  # Execute the insert immediately
+                for agency_id in data_source.agency_ids:
+                    link = LinkAgencyDataSource(
+                        data_source_id=data_source_db.id, agency_id=agency_id
+                    )
+                    self.session.add(link)
+
+                self.session.flush()  # Execute the insert immediately
+
+                # Success! Add to results
+                dto = SourceCollectorPostResponseInnerDTO(
+                    url=data_source.source_url,
+                    status=DataSourceCreationResponse.SUCCESS,
+                    data_source_id=data_source_db.id,
+                )
+                results.append(dto)
+
+            except sqlalchemy.exc.IntegrityError as e:
+                self.session.rollback()  # Roll back to the savepoint
+                # Failure! Add to results
+                dto = SourceCollectorPostResponseInnerDTO(
+                    url=data_source.source_url,
+                    status=DataSourceCreationResponse.FAILURE,
+                    data_source_id=None,
+                    error=str(e),
+                )
+                results.append(dto)
+            else:
+                self.session.commit()  # Release the savepoint
+
+        return results

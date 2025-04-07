@@ -31,6 +31,9 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
 from middleware.schema_and_dto_logic.primary_resource_dtos.reset_token_dtos import (
     ResetPasswordDTO,
 )
+from middleware.schema_and_dto_logic.primary_resource_dtos.source_collector_dtos import (
+    SourceCollectorPostRequestDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.admin_schemas import (
     AdminUsersGetByIDResponseSchema,
     AdminUsersPutSchema,
@@ -94,6 +97,10 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos im
     RelatedSourceByIDDTO,
     RelatedLocationsByIDDTO,
     DataRequestsPostDTO,
+)
+from middleware.schema_and_dto_logic.primary_resource_schemas.source_collector_schemas import (
+    SourceCollectorPostRequestSchema,
+    SourceCollectorPostResponseSchema,
 )
 
 from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import (
@@ -660,4 +667,10 @@ class SchemaConfigs(Enum):
             unknown=RAISE,
         ),
         input_dto_class=AgenciesPostDTO,
+    )
+
+    SOURCE_COLLECTOR_DATA_SOURCES_POST = EndpointSchemaConfig(
+        input_schema=SourceCollectorPostRequestSchema(),
+        input_dto_class=SourceCollectorPostRequestDTO,
+        primary_output_schema=SourceCollectorPostResponseSchema(),
     )
