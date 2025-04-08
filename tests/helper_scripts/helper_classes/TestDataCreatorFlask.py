@@ -4,7 +4,7 @@ from flask.testing import FlaskClient
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import RequestStatus, ApprovalStatus
-from middleware.enums import JurisdictionType, PermissionsEnum, AgencyType
+from middleware.enums import JurisdictionType, PermissionsEnum, AgencyType, RecordTypes
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgencyInfoPostSchema,
 )
@@ -65,6 +65,7 @@ class TestDataCreatorFlask:
             headers=self.get_admin_tus().jwt_authorization_header,
             source_url=url,
             name=submitted_name,
+            record_type_name=RecordTypes.ARREST_RECORDS.value
         )
 
         return CreatedDataSource(

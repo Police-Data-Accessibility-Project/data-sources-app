@@ -4,7 +4,9 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.source_collector_dtos
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import TestDataCreatorFlask
 
 
-def test_source_collector(test_data_creator_flask: TestDataCreatorFlask):
+def test_source_collector(
+        test_data_creator_flask: TestDataCreatorFlask
+):
     tdc = test_data_creator_flask
     agency_ids = [tdc.agency().id for _ in range(3)]
 
@@ -54,21 +56,21 @@ def test_source_collector(test_data_creator_flask: TestDataCreatorFlask):
         dto=dto
     )
 
-    assert len(response["data"]["data_sources"]) == 3
-    response_1 = response["data"]["data_sources"][0]
-    assert response_1["data_source_id"] is not None
+    assert len(response["data_sources"]) == 3
+    response_1 = response["data_sources"][0]
+    assert response_1["data_source_id"] is not None, response_1['error']
     data_source_id_1 = response_1["data_source_id"]
     assert response_1['error'] is None
     assert response_1['status'] == 'success'
     assert response_1['url'] == dto.data_sources[0].source_url
 
-    response_2 = response["data"]["data_sources"][1]
+    response_2 = response["data_sources"][1]
     assert response_2["data_source_id"] is None
     assert response_2['error'] is not None
     assert response_2['status'] == 'failure'
     assert response_2['url'] is None
 
-    response_3 = response["data"]["data_sources"][2]
+    response_3 = response["data_sources"][2]
     assert response_3["data_source_id"] is not None
     data_source_id_3 = response_3["data_source_id"]
     assert response_3['error'] is None

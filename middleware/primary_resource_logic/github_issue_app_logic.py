@@ -6,7 +6,6 @@ from http import HTTPStatus
 from typing import Optional
 
 from flask import Response
-from requests import request
 
 from database_client.DTOs import DataRequestInfoForGithub
 from database_client.database_client import DatabaseClient

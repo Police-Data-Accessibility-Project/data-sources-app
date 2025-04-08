@@ -2160,6 +2160,7 @@ class DatabaseClient:
                 data_source_db = DataSource(
                     name=data_source.name,
                     description=data_source.description,
+                    approval_status=ApprovalStatus.APPROVED.value,
                     source_url=data_source.source_url,
                     record_type_id=record_type_cache[data_source.record_type.value],
                     record_formats=data_source.record_formats,
@@ -2172,7 +2173,8 @@ class DatabaseClient:
                 self.session.flush()  # Execute the insert immediately
                 for agency_id in data_source.agency_ids:
                     link = LinkAgencyDataSource(
-                        data_source_id=data_source_db.id, agency_id=agency_id
+                        data_source_id=data_source_db.id,
+                        agency_id=agency_id
                     )
                     self.session.add(link)
 
