@@ -895,6 +895,6 @@ class RequestValidator:
         return self.post(
             endpoint="/api/source-collector/data-sources",
             headers=headers,
-            json=dto.model_dump(),
+            json=dto.model_dump(mode="json"),
             expected_schema=SchemaConfigs.SOURCE_COLLECTOR_DATA_SOURCES_POST.value.primary_output_schema,
         )

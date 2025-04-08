@@ -13,7 +13,7 @@ from utilities.namespace import create_namespace, AppNamespaces
 namespace_source_collector = create_namespace(AppNamespaces.SOURCE_COLLECTOR)
 
 
-@namespace_source_collector.route("/data_sources", methods=["POST"])
+@namespace_source_collector.route("/data-sources", methods=["POST"])
 class SourceCollectorDataSources(PsycopgResource):
 
     @endpoint_info(

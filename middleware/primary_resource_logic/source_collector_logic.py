@@ -9,8 +9,11 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.source_collector_dtos
 def add_data_sources_from_source_collector(
     db_client: DatabaseClient, dto: SourceCollectorPostRequestDTO
 ):
-    result = db_client.add_data_sources_from_source_collector(dto.data_sources)
+    results = db_client.add_data_sources_from_source_collector(dto.data_sources)
 
     return FlaskResponseManager.make_response(
-        data={"message": "Successfully processed data sources", "data_sources": result}
+        data={
+            "message": "Successfully processed data sources",
+            "data_sources": [result.model_dump(mode="json") for result in results]
+        }
     )

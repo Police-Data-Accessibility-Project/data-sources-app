@@ -2150,7 +2150,7 @@ class DatabaseClient:
     @session_manager
     def add_data_sources_from_source_collector(
         self, data_sources: list[SourceCollectorPostRequestInnerDTO]
-    ):
+    ) -> list[SourceCollectorPostResponseInnerDTO]:
         record_type_cache = self.get_record_type_cache(self.session)
         results: list[SourceCollectorPostResponseInnerDTO] = []
 

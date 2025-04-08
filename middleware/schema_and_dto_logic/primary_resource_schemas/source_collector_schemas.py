@@ -34,13 +34,11 @@ class SourceCollectorPostRequestInnerSchema(Schema):
             "What formats the data source can be obtained in.",
         ),
     )
-    data_portal_type = (
-        fields.String(
+    data_portal_type = fields.String(
             allow_none=True,
             metadata=get_json_metadata(
                 "The data portal type of the data source.",
             ),
-        ),
     )
     last_approval_editor = fields.Integer(
         required=True,
@@ -55,7 +53,12 @@ class SourceCollectorPostRequestInnerSchema(Schema):
         ),
     )
     agency_ids = fields.List(
-        fields.Integer(),
+        fields.Integer(
+            required=True,
+            metadata=get_json_metadata(
+                "The agencies that are associated with this data source."
+            ),
+        ),
         required=True,
         metadata=get_json_metadata(
             "The agencies that are associated with this data source."

@@ -60,14 +60,17 @@ class TestDataCreatorFlask:
 
     def data_source(self) -> CreatedDataSource:
         submitted_name = get_test_name()
+        url = "https://example.com"
         json = self.request_validator.create_data_source(
             headers=self.get_admin_tus().jwt_authorization_header,
+            source_url=url,
             name=submitted_name,
         )
 
         return CreatedDataSource(
             id=json["id"],
             name=submitted_name,
+            url=url
         )
 
     def clear_test_data(self):

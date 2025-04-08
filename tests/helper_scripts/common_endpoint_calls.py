@@ -13,4 +13,10 @@ from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.constants import DATA_SOURCES_BASE_ENDPOINT
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
-CreatedDataSource = namedtuple("CreatedDataSource", ["id", "name"])
+CreatedDataSource = namedtuple(
+    "CreatedDataSource", [
+        "id",
+        "name",
+        "url"
+    ]
+)
