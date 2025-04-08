@@ -65,14 +65,10 @@ class TestDataCreatorFlask:
             headers=self.get_admin_tus().jwt_authorization_header,
             source_url=url,
             name=submitted_name,
-            record_type_name=RecordTypes.ARREST_RECORDS.value
+            record_type_name=RecordTypes.ARREST_RECORDS.value,
         )
 
-        return CreatedDataSource(
-            id=json["id"],
-            name=submitted_name,
-            url=url
-        )
+        return CreatedDataSource(id=json["id"], name=submitted_name, url=url)
 
     def clear_test_data(self):
         tdc_db = TestDataCreatorDBClient()

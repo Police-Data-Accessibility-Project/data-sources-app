@@ -2173,8 +2173,7 @@ class DatabaseClient:
                 self.session.flush()  # Execute the insert immediately
                 for agency_id in data_source.agency_ids:
                     link = LinkAgencyDataSource(
-                        data_source_id=data_source_db.id,
-                        agency_id=agency_id
+                        data_source_id=data_source_db.id, agency_id=agency_id
                     )
                     self.session.add(link)
 

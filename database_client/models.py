@@ -15,7 +15,10 @@ from sqlalchemy import (
     Integer,
     UniqueConstraint,
     inspect,
-    CheckConstraint, DateTime, PrimaryKeyConstraint, Identity,
+    CheckConstraint,
+    DateTime,
+    PrimaryKeyConstraint,
+    Identity,
 )
 from sqlalchemy.dialects.postgresql import (
     ARRAY,
@@ -212,11 +215,7 @@ class CountSubqueryMetadata:
 class LinkAgencyDataSource(Base):
     __tablename__ = Relations.LINK_AGENCIES_DATA_SOURCES.value
 
-    id: Mapped[int] = Column(
-        Integer,
-        primary_key=False,
-        server_default=Identity()
-    )
+    id: Mapped[int] = Column(Integer, primary_key=False, server_default=Identity())
     data_source_id: Mapped[str] = mapped_column(
         ForeignKey("public.data_sources.id"), primary_key=True
     )
