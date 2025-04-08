@@ -1,4 +1,8 @@
-from middleware.enums import RecordTypes
+from http import HTTPStatus
+
+from database_client.models import DataSource
+from middleware.enums import RecordTypes, PermissionsEnum
+from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from middleware.schema_and_dto_logic.primary_resource_dtos.source_collector_dtos import (
     SourceCollectorPostRequestDTO,
     SourceCollectorPostRequestInnerDTO,
@@ -10,10 +14,15 @@ from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
 
 def test_source_collector(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
-    agency_ids = [tdc.agency().id for _ in range(3)]
+    tdc.clear_test_data()
+
+    agency_ids = [int(tdc.agency().id) for _ in range(3)]
 
     tus_admin = tdc.get_admin_tus()
     tus_standard = tdc.standard_user()
+    tus_source_collector = tdc.user_with_permissions(
+        permissions=[PermissionsEnum.SOURCE_COLLECTOR_DATA_SOURCES]
+    )
 
     # Create one data source which will also be included in the request as a duplicate
     data_source = tdc.data_source()
@@ -35,7 +44,7 @@ def test_source_collector(test_data_creator_flask: TestDataCreatorFlask):
                 name=data_source.name,
                 description="Test Data Source Description",
                 source_url=data_source.url,
-                record_type=RecordTypes.PERSONNEL_RECORDS,
+                record_type=RecordTypes.ARREST_RECORDS.value,  # This should trigger a duplicate error
                 record_formats=["CSV"],
                 data_portal_type="test",
                 last_approval_editor=tus_admin.user_info.user_id,
@@ -47,14 +56,23 @@ def test_source_collector(test_data_creator_flask: TestDataCreatorFlask):
                 description="Test Data Source Description",
                 source_url="http://new_test.com",
                 record_type=RecordTypes.PERSONNEL_RECORDS,
-                last_approval_editor=tus_standard.user_info.user_id,
+                last_approval_editor=tus_admin.user_info.user_id,
                 agency_ids=agency_ids[:2],
             ),
         ]
     )
 
+    # Try initially with standard user and be denied
     response = tdc.request_validator.source_collector_data_sources(
-        headers=tus_admin.jwt_authorization_header, dto=dto
+        headers=tus_standard.jwt_authorization_header,
+        dto=dto,
+        expected_response_status=HTTPStatus.FORBIDDEN,
+        expected_schema=MessageSchema(),
+    )
+
+    # Try with source collector and succeed
+    response = tdc.request_validator.source_collector_data_sources(
+        headers=tus_source_collector.jwt_authorization_header, dto=dto
     )
 
     assert len(response["data_sources"]) == 3
@@ -69,7 +87,7 @@ def test_source_collector(test_data_creator_flask: TestDataCreatorFlask):
     assert response_2["data_source_id"] is None
     assert response_2["error"] is not None
     assert response_2["status"] == "failure"
-    assert response_2["url"] is None
+    assert response_2["url"] is not None
 
     response_3 = response["data_sources"][2]
     assert response_3["data_source_id"] is not None
@@ -78,6 +96,49 @@ def test_source_collector(test_data_creator_flask: TestDataCreatorFlask):
     assert response_3["status"] == "success"
     assert response_3["url"] == dto.data_sources[2].source_url
 
-    pass
+    data_sources = tdc.request_validator.get_data_sources(
+        headers=tus_admin.jwt_authorization_header
+    )["data"]
 
-    # TODO: Add tests that middle one errs, and other two are added to database with requisite info
+    assert len(data_sources) == 3
+    assert data_sources[0]["id"] == int(data_source.id)
+    assert data_sources[1]["id"] == int(data_source_id_1)
+    assert data_sources[2]["id"] == int(data_source_id_3)
+
+    for data_source in data_sources:
+        assert data_source["approval_status"] == "approved"
+
+    # Check submission notes
+    assert data_sources[1]["submission_notes"] == "Auto-submitted from Source Collector"
+    assert data_sources[2]["submission_notes"] == "Auto-submitted from Source Collector"
+
+    # Check last approval editor
+    assert data_sources[1]["last_approval_editor"] == tus_standard.user_info.user_id
+    assert data_sources[2]["last_approval_editor"] == tus_admin.user_info.user_id
+
+    # Check supplying entity
+    assert data_sources[1]["supplying_entity"] == "Test Supplying Entity"
+    assert data_sources[2]["supplying_entity"] is None
+
+    # Check data portal type
+    assert data_sources[1]["data_portal_type"] == "test"
+    assert data_sources[2]["data_portal_type"] is None
+
+    # Check record type
+    assert data_sources[1]["record_type_id"] == 35  # Incarceration Records
+    assert data_sources[2]["record_type_id"] == 19  # Personnel Records
+
+    # Check record formats
+    assert data_sources[1]["record_formats"] == ["CSV"]
+    assert data_sources[2]["record_formats"] is None
+
+    # Check source url
+    assert data_sources[1]["source_url"] == "http://test.com"
+    assert data_sources[2]["source_url"] == "http://new_test.com"
+
+    # Check agencies
+    ds_1_agency_ids = [agency["id"] for agency in data_sources[1]["agencies"]]
+    assert ds_1_agency_ids == agency_ids
+
+    ds_2_agency_ids = [agency["id"] for agency in data_sources[2]["agencies"]]
+    assert ds_2_agency_ids == agency_ids[:2]

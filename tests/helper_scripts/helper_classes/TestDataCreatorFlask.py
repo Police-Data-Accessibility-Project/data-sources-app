@@ -60,7 +60,7 @@ class TestDataCreatorFlask:
 
     def data_source(self) -> CreatedDataSource:
         submitted_name = get_test_name()
-        url = "https://example.com"
+        url = self.tdcdb.test_url()
         json = self.request_validator.create_data_source(
             headers=self.get_admin_tus().jwt_authorization_header,
             source_url=url,
@@ -227,6 +227,11 @@ class TestDataCreatorFlask:
         return create_test_user_setup(
             self.flask_client, permissions=[PermissionsEnum.NOTIFICATIONS]
         )
+
+    def user_with_permissions(
+        self, permissions: list[PermissionsEnum]
+    ) -> TestUserSetup:
+        return create_test_user_setup(self.flask_client, permissions=permissions)
 
     def locality(
         self,

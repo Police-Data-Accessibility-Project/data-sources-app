@@ -890,11 +890,16 @@ class RequestValidator:
         )
 
     def source_collector_data_sources(
-        self, headers: dict, dto: SourceCollectorPostRequestDTO
+        self,
+        headers: dict,
+        dto: SourceCollectorPostRequestDTO,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_schema: Schema = SchemaConfigs.SOURCE_COLLECTOR_DATA_SOURCES_POST.value.primary_output_schema,
     ):
         return self.post(
             endpoint="/api/source-collector/data-sources",
             headers=headers,
             json=dto.model_dump(mode="json"),
-            expected_schema=SchemaConfigs.SOURCE_COLLECTOR_DATA_SOURCES_POST.value.primary_output_schema,
+            expected_schema=expected_schema,
+            expected_response_status=expected_response_status,
         )

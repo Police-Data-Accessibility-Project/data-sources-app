@@ -568,7 +568,9 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
     data_source_request: Mapped[Optional[str]]
     broken_source_url_as_of: Mapped[Optional[date]]
     access_notes: Mapped[Optional[text]]
-    url_status: Mapped[URLStatusLiteral] = Column(String, server_default="ok")
+    url_status: Mapped[URLStatusLiteral] = Column(
+        Enum(*get_args(URLStatusLiteral), name="url_status"), server_default="ok"
+    )
     approval_status: Mapped[ApprovalStatusLiteral]
     record_type_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("public.record_types.id")
