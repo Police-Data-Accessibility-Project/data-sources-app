@@ -35,10 +35,10 @@ class SourceCollectorPostRequestInnerSchema(Schema):
         ),
     )
     data_portal_type = fields.String(
-            allow_none=True,
-            metadata=get_json_metadata(
-                "The data portal type of the data source.",
-            ),
+        allow_none=True,
+        metadata=get_json_metadata(
+            "The data portal type of the data source.",
+        ),
     )
     last_approval_editor = fields.Integer(
         required=True,

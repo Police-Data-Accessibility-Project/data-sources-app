@@ -14,6 +14,6 @@ def add_data_sources_from_source_collector(
     return FlaskResponseManager.make_response(
         data={
             "message": "Successfully processed data sources",
-            "data_sources": [result.model_dump(mode="json") for result in results]
+            "data_sources": [result.model_dump(mode="json") for result in results],
         }
     )
