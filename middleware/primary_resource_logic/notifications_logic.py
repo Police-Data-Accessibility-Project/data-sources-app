@@ -15,6 +15,7 @@ import dominate
 from dominate.tags import *
 
 from middleware.third_party_interaction_logic.mailgun_logic import send_via_mailgun
+from middleware.util import get_env_variable
 
 
 class NotificationEmailContent(BaseModel):
@@ -96,7 +97,7 @@ class NotificationEmailBuilder:
         if len(event_batch.events) == 0:
             raise ValueError(f"No events in batch for user {event_batch.user_id}")
 
-        self.url_builder = URLBuilder(domain=os.environ["VITE_VUE_APP_BASE_URL"])
+        self.url_builder = URLBuilder(domain=get_env_variable("VITE_VUE_APP_BASE_URL"))
         self.email = event_batch.user_email
         self.user_id = event_batch.user_id
         self.data_request_started_events = event_batch.get_events_of_type(
@@ -120,7 +121,7 @@ class NotificationEmailBuilder:
             ptb = sp.get_past_tense_to_be()
             section_builders.append(
                 SectionBuilder(
-                    title=f"{data_source_name} Approved",
+                    title=f"New {data_source_name}",
                     introductory_paragraph=f"The following {data_source_name.lower()} {ptb} approved:",
                     url_base=self.url_builder.build_url(DATA_SOURCE_SUBDIRECTORY),
                     events=self.data_source_approved_events,
@@ -170,25 +171,30 @@ class NotificationEmailBuilder:
             base_text_sections.append(section_builder.build_text_list())
         base_sections_text = "\n\n".join(base_text_sections)
         base_main_text = f"""
-There have been updates to locations you've followed.
+Greetings from the Police Data Access Point! 
+
+There have been updates to locations you've followed since we last sent notifications.
         
 {base_sections_text}
 
-Click the following link to view and update your user profile: {self.url_builder.build_url(PROFILE_SUBDIRECTORY)}
+Click here to view and update your followed locations: {self.url_builder.build_url(PROFILE_SUBDIRECTORY)}
 """
         return base_main_text
 
     def build_html_text(self):
         doc = dominate.document(title="Notifications")
         with doc:
-            p("There have been updates to locations you've followed.")
+            p("Greetings from the Police Data Access Point!")
+            p(
+                "There have been updates to locations you've followed since we last sent notifications."
+            )
             br()
             for section_builder in self.get_section_builders():
                 section_builder.build_html_list()
             p(
                 "Click ",
                 a("here", href=self.url_builder.build_url(PROFILE_SUBDIRECTORY)),
-                " to view and update your user profile.",
+                " to view and update your followed locations.",
             )
         html_text = doc.render()
         return html_text
@@ -201,7 +207,7 @@ def format_and_send_notifications(
     email_content = neb.build_email_content()
     send_via_mailgun(
         to_email=event_batch.user_email,
-        subject="Updates to your followed searches this month",
+        subject="Updates to police data sources in locations you follow",
         text=email_content.base_text,
         html=email_content.html_text,
     )
