@@ -16,6 +16,9 @@ from sqlalchemy import (
     UniqueConstraint,
     inspect,
     CheckConstraint,
+    DateTime,
+    PrimaryKeyConstraint,
+    Identity,
 )
 from sqlalchemy.dialects.postgresql import (
     ARRAY,
@@ -212,7 +215,7 @@ class CountSubqueryMetadata:
 class LinkAgencyDataSource(Base):
     __tablename__ = Relations.LINK_AGENCIES_DATA_SOURCES.value
 
-    id: Mapped[int]
+    id: Mapped[int] = Column(Integer, primary_key=False, server_default=Identity())
     data_source_id: Mapped[str] = mapped_column(
         ForeignKey("public.data_sources.id"), primary_key=True
     )
@@ -539,7 +542,7 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
     agency_aggregation: Mapped[Optional[AgencyAggregationLiteral]]
     coverage_start: Mapped[Optional[date]]
     coverage_end: Mapped[Optional[date]]
-    updated_at: Mapped[Optional[date]]
+    updated_at: Mapped[Optional[date]] = Column(DateTime, default=func.now())
     detail_level: Mapped[Optional[DetailLevelLiteral]]
     # Note: Below is an array of enums in Postgres but this is cumbersome to convey in SQLAlchemy terms
     access_types = Column(
@@ -565,7 +568,9 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
     data_source_request: Mapped[Optional[str]]
     broken_source_url_as_of: Mapped[Optional[date]]
     access_notes: Mapped[Optional[text]]
-    url_status: Mapped[URLStatusLiteral]
+    url_status: Mapped[URLStatusLiteral] = Column(
+        Enum(*get_args(URLStatusLiteral), name="url_status"), server_default="ok"
+    )
     approval_status: Mapped[ApprovalStatusLiteral]
     record_type_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("public.record_types.id")
@@ -922,7 +927,7 @@ class ChangeLog(Base):
 SQL_ALCHEMY_TABLE_REFERENCE = {
     "agencies": Agency,
     "agencies_expanded": AgencyExpanded,
-    "link_agencies_data_sources": LinkAgencyDataSource,
+    Relations.LINK_AGENCIES_DATA_SOURCES.value: LinkAgencyDataSource,
     Relations.LINK_LOCATIONS_DATA_REQUESTS.value: LinkLocationDataRequest,
     "data_requests": DataRequest,
     "data_requests_expanded": DataRequestExpanded,

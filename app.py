@@ -29,6 +29,7 @@ from resources.Permissions import namespace_permissions
 from resources.Proposals import namespace_proposals
 from resources.Search import namespace_search
 from resources.Signup import namespace_signup
+from resources.SourceCollector import namespace_source_collector
 from resources.TypeaheadSuggestions import (
     namespace_typeahead_suggestions,
 )
@@ -82,6 +83,7 @@ NAMESPACES = [
     namespace_contact,
     namespace_metadata,
     namespace_proposals,
+    namespace_source_collector,
 ]
 
 MY_PREFIX = "/api"

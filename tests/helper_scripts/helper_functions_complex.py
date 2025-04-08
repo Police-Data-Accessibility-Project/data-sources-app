@@ -190,6 +190,7 @@ def create_admin_test_user_setup(flask_client: FlaskClient) -> TestUserSetup:
             PermissionsEnum.USER_CREATE_UPDATE,
             PermissionsEnum.ARCHIVE_WRITE,
             PermissionsEnum.GITHUB_SYNC,
+            PermissionsEnum.SOURCE_COLLECTOR_DATA_SOURCES,
         ],
     )
     return tus_admin

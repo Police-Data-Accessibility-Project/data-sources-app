@@ -23,6 +23,8 @@ class PermissionsEnum(Enum):
     USER_CREATE_UPDATE = "user_create_update"
     ARCHIVE_WRITE = "archive_write"
     GITHUB_SYNC = "github_sync"
+    SOURCE_COLLECTOR_FINAL_REVIEW = "source_collector_final_review"
+    SOURCE_COLLECTOR_DATA_SOURCES = "source_collector_data_sources"
 
     @classmethod
     def values(cls):
@@ -191,3 +193,9 @@ class ContactFormMessageType(Enum):
     BUG_REPORT = "bug_report"
     SECURITY_VULNERABILITY = "security_vulnerability"
     DATA_CORRECTION = "data_correction"
+
+
+class DataSourceCreationResponse(Enum):
+    SUCCESS = "success"
+    FAILURE = "failure"
+    ALREADY_EXISTS = "already_exists"
