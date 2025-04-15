@@ -64,7 +64,7 @@ class TDCSQLAlchemyHelper:
         like_column_name: str,
     ):
         self.delete_like(
-            table_name=table_name, like_column_name=like_column_name, like_text="TEST_%"
+            table_name=table_name, like_column_name=like_column_name, like_text="%"
         )
 
     def get_county_id(self, county_name: str, state_iso: str = "PA") -> int:
@@ -226,10 +226,12 @@ class TestDataCreatorDBClient:
         record_type_id: int = 1,
         **additional_column_values,
     ) -> CreatedDataSource:
-        cds = CreatedDataSource(id=uuid.uuid4().hex, name=self.test_name())
+        name = self.test_name()
+        url = self.test_url()
+
         source_column_value_mapping = {
-            "name": cds.name,
-            "source_url": self.test_url(),
+            "name": name,
+            "source_url": url,
             "agency_supplied": True,
             "record_type_id": record_type_id,
         }
@@ -240,7 +242,7 @@ class TestDataCreatorDBClient:
         id = self.db_client.add_new_data_source(
             column_value_mappings=source_column_value_mapping
         )
-        return CreatedDataSource(id=id, name=cds.name)
+        return CreatedDataSource(id=id, name=name, url=url)
 
     def link_data_request_to_location(self, data_request_id: int, location_id: int):
         self.db_client.create_request_location_relation(

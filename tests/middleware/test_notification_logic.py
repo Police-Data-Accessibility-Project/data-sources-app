@@ -108,8 +108,9 @@ def test_format_and_send_notification_all_categories(
     <title>Notifications</title>
   </head>
   <body>
-    <p>There have been updates to locations you've followed.</p><br>
-    <h1>Data Sources Approved</h1>
+    <p>Greetings from the Police Data Access Point!</p>
+    <p>There have been updates to locations you've followed since we last sent notifications.</p><br>
+    <h1>New Data Sources</h1>
     <p>The following data sources were approved:</p>
     <div>
       <ul>
@@ -140,15 +141,18 @@ def test_format_and_send_notification_all_categories(
       </ul>
     </div><br>
     <p>Click 
-      <a href="https://test.com/profile">here</a> to view and update your user profile.
+      <a href="https://test.com/profile">here</a> to view and update your followed locations.
     </p>
   </body>
 </html>"""
 
-    base_text = """There have been updates to locations you've followed.
+    base_text = """
+    Greetings from the Police Data Access Point!
+    
+    There have been updates to locations you've followed since we last sent notifications.
         
 
-Data Sources Approved
+New Data Sources
 The following data sources were approved:
 	- "Test Data Source 1" at https://test.com/data-source/52
 	- "Test Data Source 2" at https://test.com/data-source/79
@@ -163,11 +167,11 @@ Data Request Started
 The following data request was started:
 	- "Test Data Request 1" at https://test.com/data-request/39
 
-Click the following link to view and update your user profile: https://test.com/profile"""
+Click here to view and update your followed locations: https://test.com/profile"""
 
     mock_send_via_mailgun.assert_called_once_with(
         to_email=test_event_batch.user_email,
-        subject="Updates to your followed searches this month",
+        subject="Updates to police data sources in locations you follow",
         text=SpaceAgnosticStringComparator(base_text),
         html=html_text,
     )
@@ -210,7 +214,8 @@ def test_format_and_send_notification_single_category(
     <title>Notifications</title>
   </head>
   <body>
-    <p>There have been updates to locations you've followed.</p><br>
+    <p>Greetings from the Police Data Access Point!</p>
+    <p>There have been updates to locations you've followed since we last sent notifications.</p><br>
     <h1>Data Requests Completed</h1>
     <p>The following data requests were completed:</p>
     <div>
@@ -224,26 +229,30 @@ def test_format_and_send_notification_single_category(
       </ul>
     </div><br>
     <p>Click 
-      <a href="https://test.com/profile">here</a> to view and update your user profile.
+      <a href="https://test.com/profile">here</a> to view and update your followed locations.
     </p>
   </body>
 </html>"""
 
     base_text = """
-There have been updates to locations you've followed.
+Greetings from the Police Data Access Point!
+    
+There have been updates to locations you've followed since we last sent notifications.
         
 
-Data Requests Completed
+    Data Requests Completed
 The following data requests were completed:
 	- "Test Data Request Alpha" at https://test.com/data-request/22
 	- "Test Data Request Omega" at https://test.com/data-request/91
 
-Click the following link to view and update your user profile: https://test.com/profile
+    Click here to view and update your followed locations: 
+    https://test.com/profile
+    
 """
 
     mock_send_via_mailgun.assert_called_once_with(
         to_email=test_event_batch.user_email,
-        subject="Updates to your followed searches this month",
+        subject="Updates to police data sources in locations you follow",
         text=SpaceAgnosticStringComparator(base_text),
         html=SpaceAgnosticStringComparator(html_text),
     )

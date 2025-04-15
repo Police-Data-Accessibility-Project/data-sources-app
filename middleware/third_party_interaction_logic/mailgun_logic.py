@@ -22,7 +22,12 @@ def send_via_mailgun(
     :param text: The body of the email
     :return:
     """
-    data = {"from": FROM_EMAIL, "to": [to_email], "subject": subject, "text": text}
+    data = {
+        "from": f"PDAP Notifications <{FROM_EMAIL}>",
+        "to": [to_email],
+        "subject": subject,
+        "text": text,
+    }
 
     if html is not None:
         data["html"] = html
