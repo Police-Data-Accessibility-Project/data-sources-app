@@ -1,6 +1,5 @@
-import json
 from collections import namedtuple
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
 from functools import wraps, partialmethod
 from operator import and_, or_
@@ -8,12 +7,10 @@ from typing import Optional, Any, List, Callable, Union, Type
 from psycopg import connection as PgConnection
 import psycopg
 import sqlalchemy.exc
-from dateutil.relativedelta import relativedelta
 from psycopg import sql, Cursor
 from psycopg.rows import dict_row, tuple_row
 from sqlalchemy import (
     select,
-    MetaData,
     delete,
     update,
     insert,
@@ -25,10 +22,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import (
     aliased,
-    defaultload,
     load_only,
     selectinload,
-    joinedload,
     Session,
 )
 
@@ -37,11 +32,12 @@ from database_client.DTOs import (
     UsersWithPermissions,
     DataRequestInfoForGithub,
 )
-from database_client.constants import METADATA_METHOD_NAMES, PAGE_SIZE
+from database_client.constants import PAGE_SIZE
 from database_client.db_client_dataclasses import (
     OrderByParameters,
     WhereMapping,
 )
+from database_client.exceptions import LocationDoesNotExistError
 from database_client.result_formatter import ResultFormatter
 from database_client.subquery_logic import SubqueryParameters
 from database_client.dynamic_query_constructor import DynamicQueryConstructor
@@ -104,6 +100,9 @@ from middleware.miscellaneous_logic.table_count_logic import (
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
     AgenciesPostDTO,
+)
+from middleware.schema_and_dto_logic.primary_resource_dtos.locations_dtos import (
+    LocationPutDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
     AgencyMatchResponseInnerDTO,
@@ -2201,3 +2200,150 @@ class DatabaseClient:
                 self.session.commit()  # Release the savepoint
 
         return results
+
+    @session_manager
+    def update_location_by_id(self, location_id: int, dto: LocationPutDTO):
+        try:
+            location = (
+                self.session.query(Location).filter(Location.id == location_id).one()
+            )
+            location.lat = dto.latitude
+            location.lng = dto.longitude
+        except sqlalchemy.exc.NoResultFound:
+            raise LocationDoesNotExistError
+
+    def refresh_materialized_view(self, view_name: str):
+        self.session.execute_raw_sql(f"REFRESH MATERIALIZED VIEW {view_name};")
+
+    def refresh_all_materialized_views(self):
+        self.execute_raw_sql(
+            """
+        DO $$
+        DECLARE
+            rec RECORD;
+        BEGIN
+            FOR rec IN SELECT schemaname, matviewname FROM pg_matviews
+            LOOP
+                EXECUTE 'REFRESH MATERIALIZED VIEW ' || quote_ident(rec.schemaname) || '.' || quote_ident(rec.matviewname);
+            END LOOP;
+        END;
+        $$;
+        """
+        )
+
+    def get_map_localities(self):
+        return self.execute_raw_sql(
+            """
+            SELECT 
+                location_id,
+                LOCALITY_NAME as name,
+                county_name,
+                JSON_BUILD_OBJECT(
+                    'lat', lat,
+                    'lng', lng
+                ) AS location_data,
+                DATA_SOURCE_COUNT as source_count
+            FROM
+                PUBLIC.MAP_LOCALITIES
+            """
+        )
+
+    def get_map_counties(self):
+        return self.execute_raw_sql(
+            """
+            SELECT 
+                location_id,
+                county_name as name,
+                state_iso,
+                DATA_SOURCE_COUNT as source_count
+            FROM
+                PUBLIC.MAP_COUNTIES
+            """
+        )
+
+    def get_map_states(self):
+        return self.execute_raw_sql(
+            """
+            SELECT 
+                location_id,
+                STATE_NAME as name,
+                DATA_SOURCE_COUNT as source_count
+            FROM
+                PUBLIC.MAP_STATES
+            """
+        )
+
+    def get_data_source_count_by_location_type(self):
+        return self.execute_raw_sql(
+            """
+            SELECT 
+                localities,
+                counties,
+                states
+            FROM
+                PUBLIC.TOTAL_DATA_SOURCES_BY_LOCATION_TYPE
+            """
+        )[0]
+
+    @session_manager
+    def get_many_locations(
+        self,
+        page: int,
+        has_coordinates: Optional[bool] = None,
+        type_: Optional[LocationType] = None,
+    ):
+        query = select(Location)
+        if has_coordinates is not None:
+            query = query.where(
+                and_(
+                    (
+                        Location.lat is not None
+                        if has_coordinates
+                        else Location.lat is None
+                    ),
+                    (
+                        Location.lng is not None
+                        if has_coordinates
+                        else Location.lng is None
+                    ),
+                )
+            )
+        if type_ is not None:
+            query = query.where(Location.type == type_.value)
+
+        # Select In Load
+        for relationship in (
+            "locality",
+            "county",
+            "state",
+        ):
+            query = query.options(selectinload(getattr(Location, relationship)))
+
+        # Pagination
+        query = query.offset((page - 1) * PAGE_SIZE).limit(PAGE_SIZE)
+
+        raw_results = self.session.execute(query).scalars().all()
+        results = []
+        for raw_result in raw_results:
+            result = {
+                "location_id": raw_result.id,
+                "type": raw_result.type,
+                "state_name": (
+                    raw_result.state.name if raw_result.state is not None else None
+                ),
+                "state_iso": (
+                    raw_result.state.iso if raw_result.state is not None else None
+                ),
+                "county_name": (
+                    raw_result.county.name if raw_result.county is not None else None
+                ),
+                "locality_name": (
+                    raw_result.locality.name
+                    if raw_result.locality is not None
+                    else None
+                ),
+                "county_fips": (
+                    raw_result.county.fips if raw_result.county is not None else None
+                ),
+                "display_name": raw_result.display_name,
+            }

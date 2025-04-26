@@ -338,6 +338,11 @@ class County(Base):
     airtable_county_created: Mapped[Optional[text]]
     state_id: Mapped[Optional[int]] = mapped_column(ForeignKey("public.us_states.id"))
 
+    # Relationships
+    state = relationship("USState", back_populates="counties", uselist=False)
+    locations = relationship("Location", back_populates="county")
+    localities = relationship("Locality", back_populates="county")
+
 
 class Locality(Base):
     __tablename__ = Relations.LOCALITIES.value
@@ -347,7 +352,11 @@ class Locality(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[Optional[Text]] = mapped_column(Text)
-    county_id: Mapped[int] = mapped_column(ForeignKey("public.counties.id"))
+    county_id: Mapped[int] = mapped_column(ForeignKey("counties.id"))
+
+    # Relationships
+    county = relationship("County", back_populates="localities", uselist=False)
+    location = relationship("Location", back_populates="locality", uselist=False)
 
 
 class Location(Base):
@@ -358,13 +367,20 @@ class Location(Base):
     state_id: Mapped[int] = mapped_column(
         ForeignKey("public.us_states.id"), nullable=False
     )
-    county_id: Mapped[int] = mapped_column(ForeignKey("public.counties.id"))
-    locality_id: Mapped[int] = mapped_column(ForeignKey("public.localities.id"))
+    county_id: Mapped[int] = mapped_column(ForeignKey("counties.id"))
+    locality_id: Mapped[int] = mapped_column(ForeignKey("localities.id"))
+    lat: Mapped[float]
+    lng: Mapped[float]
 
     def __iter__(self):
         yield from iter_with_special_cases(self)
 
     # Relationships
+    county = relationship(argument="County", back_populates="locations", uselist=False)
+    locality = relationship(
+        argument="Locality", back_populates="location", uselist=False
+    )
+    state = relationship(argument="USState", back_populates="locations", uselist=False)
 
 
 class LocationExpanded(Base, CountMetadata):
@@ -412,6 +428,10 @@ class USState(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     state_iso: Mapped[str] = mapped_column(String(255), nullable=False)
     state_name: Mapped[str] = mapped_column(String(255))
+
+    # Relationships
+    locations = relationship("Location", back_populates="state")
+    counties = relationship("County", back_populates="state")
 
 
 class DataRequest(Base, CountMetadata, CountSubqueryMetadata):

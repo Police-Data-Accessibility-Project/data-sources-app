@@ -1,6 +1,9 @@
 from marshmallow import Schema, fields, validate, validates_schema, ValidationError
 
 from database_client.enums import LocationType
+from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+    GetManyRequestsBaseSchema,
+)
 from middleware.schema_and_dto_logic.enums import CSVColumnCondition
 from middleware.schema_and_dto_logic.util import get_json_metadata
 from utilities.enums import SourceMappingEnum
@@ -126,7 +129,163 @@ class LocationInfoExpandedSchema(LocationInfoSchema):
     county_name = COUNTY_NAME_FIELD
 
 
-class GetLocationInfoByIDResponseSchema(LocationInfoSchema):
-    state_name = STATE_NAME_FIELD
-    county_name = COUNTY_NAME_FIELD
+class LatLngSchema(Schema):
+    lat = fields.Float(
+        required=True,
+        allow_none=False,
+        metadata=get_json_metadata("The latitude of the location"),
+    )
+    lng = fields.Float(
+        required=True,
+        allow_none=False,
+        metadata=get_json_metadata("The longitude of the location"),
+    )
+
+
+class LocationInfoGetManyInnerSchema(LocationInfoExpandedSchema):
+    coordinates = fields.Nested(
+        LatLngSchema(),
+        required=True,
+        metadata=get_json_metadata("The latitude and longitude of the location"),
+    )
+
+
+class GetLocationInfoByIDResponseSchema(LocationInfoExpandedSchema):
     display_name = DISPLAY_NAME_FIELD
+
+
+class LocationsGetManySchema(Schema):
+    results = fields.List(
+        fields.Nested(
+            LocationInfoGetManyInnerSchema(),
+            required=True,
+            metadata=get_json_metadata("The list of results"),
+        ),
+        required=True,
+        metadata=get_json_metadata("The list of results"),
+    )
+
+
+class LocationPutSchema(Schema):
+    latitude = fields.Float(
+        required=True,
+        allow_none=True,
+        metadata=get_json_metadata("The latitude of the location"),
+    )
+    longitude = fields.Float(
+        required=True,
+        allow_none=True,
+        metadata=get_json_metadata("The longitude of the location"),
+    )
+
+
+class LocalitiesLocationsMapInnerSchema(Schema):
+    source_count = fields.Int(
+        metadata=get_json_metadata("The number of data sources for the locality")
+    )
+    name = fields.Str(metadata=get_json_metadata("The name of the locality"))
+    location_id = fields.Integer(metadata=get_json_metadata("The id of the locality"))
+    county_name = fields.Str(metadata=get_json_metadata("The name of the county"))
+    coordinates = fields.Nested(
+        LatLngSchema(),
+        required=True,
+        metadata=get_json_metadata("The latitude and longitude of the location"),
+    )
+
+
+class CountiesLocationsMapInnerSchema(Schema):
+    source_count = fields.Int(
+        metadata=get_json_metadata("The number of data sources for the county")
+    )
+    name = fields.Str(metadata=get_json_metadata("The name of the county"))
+    location_id = fields.Integer(metadata=get_json_metadata("The id of the county"))
+    state_iso = fields.Str(metadata=get_json_metadata("The iso code of the state"))
+
+
+class StatesLocationsMapInnerSchema(Schema):
+    source_count = fields.Int(
+        metadata=get_json_metadata("The number of data sources for the state")
+    )
+    name = fields.Str(metadata=get_json_metadata("The name of the state"))
+    location_id = fields.Integer(metadata=get_json_metadata("The id of the state"))
+
+
+class DataSourceMapInnerSchema(Schema):
+    counties = fields.Integer(
+        metadata=get_json_metadata(
+            "The number of data sources associated with counties"
+        )
+    )
+    states = fields.Integer(
+        metadata=get_json_metadata("The number of data sources associated with states")
+    )
+    localities = fields.Integer(
+        metadata=get_json_metadata(
+            "The number of data sources associated with localities"
+        )
+    )
+
+
+class LocationsMapResponseSchema(Schema):
+    localities = fields.List(
+        fields.Nested(
+            LocalitiesLocationsMapInnerSchema(),
+            required=True,
+            metadata=get_json_metadata("The list of localities"),
+        ),
+        required=True,
+        metadata=get_json_metadata("The list of localities"),
+    )
+    counties = fields.List(
+        fields.Nested(
+            CountiesLocationsMapInnerSchema(),
+            required=True,
+            metadata=get_json_metadata("The list of counties"),
+        ),
+        required=True,
+        metadata=get_json_metadata("The list of counties"),
+    )
+    states = fields.List(
+        fields.Nested(
+            StatesLocationsMapInnerSchema(),
+            required=True,
+            metadata=get_json_metadata("The list of states"),
+        ),
+        required=True,
+        metadata=get_json_metadata("The list of states"),
+    )
+    data_source_count = fields.Nested(
+        DataSourceMapInnerSchema(),
+        required=True,
+        metadata=get_json_metadata(
+            "A count of how many data sources are associated "
+            "with each location type."
+        ),
+    )
+
+
+class LocationsGetManyRequestSchema(Schema):
+    page = fields.Integer(
+        validate=validate.Range(min=1),
+        load_default=1,
+        metadata={
+            "description": "The page number of the results to retrieve. Begins at 1.",
+            "source": SourceMappingEnum.QUERY_ARGS,
+        },
+    )
+    type = fields.Enum(
+        required=False,
+        enum=LocationType,
+        by_value=fields.Str,
+        metadata={
+            "description": "The type of location. ",
+            "source": SourceMappingEnum.QUERY_ARGS,
+        },
+    )
+    has_coordinates = fields.Boolean(
+        required=False,
+        metadata={
+            "description": "Whether or not the location has coordinates",
+            "source": SourceMappingEnum.QUERY_ARGS,
+        },
+    )

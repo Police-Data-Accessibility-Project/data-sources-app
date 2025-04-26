@@ -22,6 +22,9 @@ from middleware.enums import OutputFormatEnum, PermissionsEnum, RecordTypes
 from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
     AgenciesPostDTO,
 )
+from middleware.schema_and_dto_logic.primary_resource_dtos.locations_dtos import (
+    LocationPutDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_dtos.source_collector_dtos import (
     SourceCollectorPostRequestDTO,
 )
@@ -902,4 +905,31 @@ class RequestValidator:
             json=dto.model_dump(mode="json"),
             expected_schema=expected_schema,
             expected_response_status=expected_response_status,
+        )
+
+    def update_location(
+        self,
+        headers: dict,
+        location_id: int,
+        dto: LocationPutDTO,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_json_content: Optional[dict] = None,
+    ):
+        return self.put(
+            endpoint=f"/api/locations/{location_id}",
+            headers=headers,
+            json=dto.model_dump(mode="json"),
+            expected_schema=SchemaConfigs.LOCATIONS_BY_ID_PUT.value.primary_output_schema,
+            expected_response_status=expected_response_status,
+            expected_json_content=expected_json_content,
+        )
+
+    def get_locations_map(
+        self, headers: dict, expected_json_content: Optional[dict] = None
+    ):
+        return self.get(
+            endpoint="/api/map/locations",
+            headers=headers,
+            expected_schema=SchemaConfigs.LOCATIONS_MAP.value.primary_output_schema,
+            expected_json_content=expected_json_content,
         )
