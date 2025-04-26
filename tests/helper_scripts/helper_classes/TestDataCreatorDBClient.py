@@ -182,7 +182,10 @@ class TestDataCreatorDBClient:
         if locality_name == "":
             locality_name = self.test_name(locality_name)
         locality_id = self.db_client.create_locality(
-            column_value_mappings={"name": locality_name, "county_id": county_id}
+            column_value_mappings={
+                "name": locality_name,
+                "county_id": county_id,
+            }
         )
         location_id = self.db_client.get_location_id(
             where_mappings={"locality_id": locality_id}

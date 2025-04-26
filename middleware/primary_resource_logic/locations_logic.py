@@ -4,6 +4,7 @@ from flask import Response
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import ColumnPermissionEnum
+from database_client.exceptions import LocationDoesNotExistError
 from middleware.access_logic import AccessInfoPrimary
 from middleware.column_permission_logic import get_permitted_columns, get_relation_role
 from middleware.common_response_formatting import (
@@ -17,6 +18,10 @@ from middleware.primary_resource_logic.data_requests import (
 )
 
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetByIDBaseDTO
+from middleware.schema_and_dto_logic.primary_resource_dtos.locations_dtos import (
+    LocationPutDTO,
+    LocationsGetRequestDTO,
+)
 
 
 def get_location_by_id_wrapper(db_client: DatabaseClient, location_id: int) -> Response:
@@ -26,6 +31,34 @@ def get_location_by_id_wrapper(db_client: DatabaseClient, location_id: int) -> R
             message="Location not found.", status_code=HTTPStatus.BAD_REQUEST
         )
     return FlaskResponseManager.make_response(data=result)
+
+
+def get_many_locations_wrapper(
+    db_client: DatabaseClient, dto: LocationsGetRequestDTO
+) -> Response:
+    return FlaskResponseManager.make_response(
+        data={
+            "results": db_client.get_many_locations(
+                page=dto.page, has_coordinates=dto.has_coordinates, type_=dto.type
+            ),
+        }
+    )
+
+
+def update_location_by_id_wrapper(
+    db_client: DatabaseClient,
+    dto: LocationPutDTO,
+    location_id: int,
+) -> Response:
+    try:
+        db_client.update_location_by_id(location_id=int(location_id), dto=dto)
+    except LocationDoesNotExistError:
+        return message_response(
+            message="Location not found.", status_code=HTTPStatus.BAD_REQUEST
+        )
+    return message_response(
+        message="Successfully updated location.", status_code=HTTPStatus.OK
+    )
 
 
 def get_locations_related_data_requests_wrapper(
@@ -52,3 +85,14 @@ def get_locations_related_data_requests_wrapper(
             status_code=HTTPStatus.BAD_REQUEST,
         )
     return multiple_results_response(message="Data requests found.", data=results)
+
+
+def get_locations_for_map_wrapper(db_client: DatabaseClient) -> Response:
+    return FlaskResponseManager.make_response(
+        data={
+            "localities": db_client.get_map_localities(),
+            "counties": db_client.get_map_counties(),
+            "states": db_client.get_map_states(),
+            "data_source_count": db_client.get_data_source_count_by_location_type(),
+        }
+    )

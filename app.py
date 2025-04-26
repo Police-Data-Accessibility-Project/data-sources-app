@@ -1,11 +1,13 @@
 import os
 from datetime import timedelta, date, datetime
 
+from apscheduler.triggers.interval import IntervalTrigger
 from flask import Flask
 from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 from jwt import DecodeError, ExpiredSignatureError
 
+from database_client.database_client import DatabaseClient
 from middleware.SchedulerManager import SchedulerManager
 from middleware.SimpleJWT import SimpleJWT
 from middleware.scheduled_tasks.check_database_health import check_database_health
@@ -166,12 +168,27 @@ def create_app() -> Flask:
     limiter.init_app(app)
     jwt.init_app(app)
 
+    current_time = datetime.now()
+
     # Initialize and start the scheduler
     scheduler = SchedulerManager(app)
     scheduler.add_job(
-        "database_health_check", check_database_health, minutes=60, delay_minutes=3
+        job_id="database_health_check",
+        func=check_database_health,
+        interval=IntervalTrigger(
+            start_date=current_time + timedelta(minutes=3), minutes=60
+        ),
     )
-    scheduler.start()
+
+    scheduler.add_materialized_view_scheduled_job("typeahead_locations", 1)
+    scheduler.add_materialized_view_scheduled_job("typeahead_agencies", 2)
+    scheduler.add_materialized_view_scheduled_job("unique_urls", 3)
+    scheduler.add_materialized_view_scheduled_job("map_states", 4)
+    scheduler.add_materialized_view_scheduled_job("map_counties", 5)
+    scheduler.add_materialized_view_scheduled_job("map_localities", 6)
+    scheduler.add_materialized_view_scheduled_job(
+        "total_data_sources_by_location_type", 7
+    )
 
     # Store scheduler in the app context to manage it later
     app.scheduler = scheduler

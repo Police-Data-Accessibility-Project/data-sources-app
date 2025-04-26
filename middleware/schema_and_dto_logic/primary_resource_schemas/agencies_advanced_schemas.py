@@ -9,11 +9,9 @@ from middleware.schema_and_dto_logic.common_response_schemas import (
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetByIDBaseSchema,
-    LocationInfoDTO,
 )
 from middleware.schema_and_dto_logic.enums import CSVColumnCondition
 from middleware.schema_and_dto_logic.primary_resource_schemas.locations_schemas import (
-    LocationInfoSchema,
     LocationInfoResponseSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
