@@ -43,7 +43,6 @@ def get_many_locations_wrapper(
             ),
         }
     )
-    raise NotImplementedError
 
 
 def update_location_by_id_wrapper(

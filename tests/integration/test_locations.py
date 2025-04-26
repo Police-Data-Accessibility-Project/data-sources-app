@@ -1,11 +1,14 @@
 from dataclasses import dataclass
 from http import HTTPStatus
+from typing import Optional
 
 import pytest
 
+from database_client.enums import LocationType
 from database_client.models import Location
 from middleware.schema_and_dto_logic.primary_resource_dtos.locations_dtos import (
     LocationPutDTO,
+    LocationsGetRequestDTO,
 )
 from tests.conftest import test_data_creator_flask
 from tests.helper_scripts.common_test_data import get_test_name
@@ -215,3 +218,59 @@ def test_map_locations(test_data_creator_flask: TestDataCreatorFlask):
 
     # 8 for States
     assert count["states"] == 6
+
+
+def test_get_many_locations(test_data_creator_flask: TestDataCreatorFlask):
+    tdc = test_data_creator_flask
+    tdc.clear_test_data()
+
+    def get_many_locations(
+        page: int = 1,
+        has_coordinates: Optional[bool] = None,
+        type_: Optional[LocationType] = None,
+    ):
+        return tdc.request_validator.get_many_locations(
+            headers=tdc.get_admin_tus().jwt_authorization_header,
+            dto=LocationsGetRequestDTO(
+                page=page,
+                has_coordinates=has_coordinates,
+                type=type_,
+            ),
+        )["results"]
+
+    # Run get many locations with no data and confirm no entries
+    data = get_many_locations()
+    assert len(data) == 7
+
+    # Set Up Locations
+    mls = MultiLocationSetup(tdc.tdcdb)
+
+    # Run get many locations with data
+    data = get_many_locations()
+
+    # Validate expected count of locations
+    assert len(data) == 9
+
+    # Filter on states and get expected location count
+    data = get_many_locations(type_=LocationType.STATE)
+    assert len(data) == 3
+
+    # Filter on counties and get expected location count
+    data = get_many_locations(type_=LocationType.COUNTY)
+    assert len(data) == 4
+
+    # Filter on localities and get expected location count
+    data = get_many_locations(type_=LocationType.LOCALITY)
+    assert len(data) == 2
+
+    # Filter on has_coordinates = False and get all but one location
+    data = get_many_locations(has_coordinates=False)
+    assert len(data) == 8
+
+    # Filter on has_coordinates = True and get 1 location
+    data = get_many_locations(has_coordinates=True)
+    assert len(data) == 1
+
+    # Set page to 2 and get no results
+    data = get_many_locations(page=2)
+    assert len(data) == 0

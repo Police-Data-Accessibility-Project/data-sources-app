@@ -24,6 +24,9 @@ def add_query_params(url, params: dict):
     :return:
     """
 
+    # Remove all parameters that are none
+    params = {k: v for k, v in params.items() if v is not None}
+
     stringify_lists(d=params)
 
     # Parse the original URL into components

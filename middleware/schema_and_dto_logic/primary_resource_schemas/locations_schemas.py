@@ -132,12 +132,12 @@ class LocationInfoExpandedSchema(LocationInfoSchema):
 class LatLngSchema(Schema):
     lat = fields.Float(
         required=True,
-        allow_none=False,
+        allow_none=True,
         metadata=get_json_metadata("The latitude of the location"),
     )
     lng = fields.Float(
         required=True,
-        allow_none=False,
+        allow_none=True,
         metadata=get_json_metadata("The longitude of the location"),
     )
 
@@ -275,6 +275,7 @@ class LocationsGetManyRequestSchema(Schema):
     )
     type = fields.Enum(
         required=False,
+        allow_none=True,
         enum=LocationType,
         by_value=fields.Str,
         metadata={
@@ -284,6 +285,7 @@ class LocationsGetManyRequestSchema(Schema):
     )
     has_coordinates = fields.Boolean(
         required=False,
+        allow_none=True,
         metadata={
             "description": "Whether or not the location has coordinates",
             "source": SourceMappingEnum.QUERY_ARGS,

@@ -23,7 +23,7 @@ from utilities.namespace import create_namespace, AppNamespaces
 namespace_locations = create_namespace(AppNamespaces.LOCATIONS)
 
 
-@namespace_locations.route("/")
+@namespace_locations.route("")
 class Locations(PsycopgResource):
 
     @endpoint_info(
@@ -38,7 +38,6 @@ class Locations(PsycopgResource):
     def get(self, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             wrapper_function=get_many_locations_wrapper,
-            access_info=access_info,
             schema_populate_parameters=SchemaConfigs.LOCATIONS_GET_MANY.value.get_schema_populate_parameters(),
         )
 

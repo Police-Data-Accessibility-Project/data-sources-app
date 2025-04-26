@@ -24,6 +24,7 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import 
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.locations_dtos import (
     LocationPutDTO,
+    LocationsGetRequestDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.source_collector_dtos import (
     SourceCollectorPostRequestDTO,
@@ -931,5 +932,19 @@ class RequestValidator:
             endpoint="/api/map/locations",
             headers=headers,
             expected_schema=SchemaConfigs.LOCATIONS_MAP.value.primary_output_schema,
+            expected_json_content=expected_json_content,
+        )
+
+    def get_many_locations(
+        self,
+        headers: dict,
+        dto: LocationsGetRequestDTO,
+        expected_json_content: Optional[dict] = None,
+    ):
+        return self.get(
+            endpoint="/api/locations",
+            headers=headers,
+            query_parameters=dto.model_dump(mode="json"),
+            expected_schema=SchemaConfigs.LOCATIONS_GET_MANY.value.primary_output_schema,
             expected_json_content=expected_json_content,
         )

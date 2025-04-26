@@ -2241,7 +2241,7 @@ class DatabaseClient:
                 JSON_BUILD_OBJECT(
                     'lat', lat,
                     'lng', lng
-                ) AS location_data,
+                ) AS coordinates,
                 DATA_SOURCE_COUNT as source_count
             FROM
                 PUBLIC.MAP_LOCALITIES
@@ -2294,20 +2294,20 @@ class DatabaseClient:
     ):
         query = select(Location)
         if has_coordinates is not None:
-            query = query.where(
-                and_(
-                    (
-                        Location.lat is not None
-                        if has_coordinates
-                        else Location.lat is None
-                    ),
-                    (
-                        Location.lng is not None
-                        if has_coordinates
-                        else Location.lng is None
-                    ),
+            if has_coordinates:
+                query = query.where(
+                    and_(
+                        Location.lat != None,
+                        Location.lng != None,
+                    )
                 )
-            )
+            else:
+                query = query.where(
+                    and_(
+                        Location.lat == None,
+                        Location.lng == None,
+                    )
+                )
         if type_ is not None:
             query = query.where(Location.type == type_.value)
 
@@ -2329,10 +2329,12 @@ class DatabaseClient:
                 "location_id": raw_result.id,
                 "type": raw_result.type,
                 "state_name": (
-                    raw_result.state.name if raw_result.state is not None else None
+                    raw_result.state.state_name
+                    if raw_result.state is not None
+                    else None
                 ),
                 "state_iso": (
-                    raw_result.state.iso if raw_result.state is not None else None
+                    raw_result.state.state_iso if raw_result.state is not None else None
                 ),
                 "county_name": (
                     raw_result.county.name if raw_result.county is not None else None
@@ -2345,5 +2347,11 @@ class DatabaseClient:
                 "county_fips": (
                     raw_result.county.fips if raw_result.county is not None else None
                 ),
-                "display_name": raw_result.display_name,
+                "coordinates": {
+                    "lat": raw_result.lat,
+                    "lng": raw_result.lng,
+                },
             }
+            results.append(result)
+
+        return results
