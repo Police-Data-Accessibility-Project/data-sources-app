@@ -186,10 +186,6 @@ def create_app() -> Flask:
     scheduler.add_materialized_view_scheduled_job("map_states", 4)
     scheduler.add_materialized_view_scheduled_job("map_counties", 5)
     scheduler.add_materialized_view_scheduled_job("map_localities", 6)
-    scheduler.add_materialized_view_scheduled_job(
-        "total_data_sources_by_location_type", 7
-    )
-
     # Store scheduler in the app context to manage it later
     app.scheduler = scheduler
 
