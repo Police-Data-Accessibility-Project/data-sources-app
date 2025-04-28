@@ -47,13 +47,14 @@ def upgrade() -> None:
         )
         SELECT 
             s.state_name,
+            s.state_iso,
             asl.state_location_id AS location_id,
             COUNT(DISTINCT las.data_source_id) AS data_source_count
         FROM all_state_locations asl
         JOIN us_states s ON s.id = (SELECT state_id FROM locations WHERE id = asl.state_location_id)
         LEFT JOIN link_agencies_locations lal ON lal.location_id = asl.dependent_location_id
         LEFT JOIN link_agencies_data_sources las ON las.agency_id = lal.agency_id
-        GROUP BY s.state_name, asl.state_location_id;
+        GROUP BY s.state_name, s.state_iso, asl.state_location_id;
 
     """
     )
@@ -112,39 +113,11 @@ def upgrade() -> None:
     """
     )
 
-    op.execute(
-        """
-    CREATE MATERIALIZED VIEW total_data_sources_by_location_type AS
-        WITH all_location_mappings AS (
-            SELECT parent_location_id, dependent_location_id FROM dependent_locations
-            UNION ALL
-            SELECT id, id FROM locations
-        ),
-        data_sources_per_location AS (
-        SELECT 
-            alm.parent_location_id,
-            las.data_source_id
-        FROM all_location_mappings alm
-        JOIN link_agencies_locations lal 
-            ON lal.location_id = alm.dependent_location_id
-        JOIN link_agencies_data_sources las 
-            ON las.agency_id = lal.agency_id
-    )
-    SELECT
-        COUNT(DISTINCT data_sources_per_location.data_source_id) FILTER (WHERE locations.type = 'State') AS states,
-        COUNT(DISTINCT data_sources_per_location.data_source_id) FILTER (WHERE locations.type = 'County') AS counties,
-        COUNT(DISTINCT data_sources_per_location.data_source_id) FILTER (WHERE locations.type = 'Locality') AS localities
-    FROM data_sources_per_location
-    JOIN locations ON locations.id = data_sources_per_location.parent_location_id;
-    """
-    )
-
 
 def downgrade() -> None:
     op.execute("DROP MATERIALIZED VIEW IF EXISTS map_states")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS map_counties")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS map_localities")
-    op.execute("DROP MATERIALIZED VIEW IF EXISTS total_data_sources_by_location_type")
 
     op.drop_column("locations", "lat")
     op.drop_column("locations", "lng")

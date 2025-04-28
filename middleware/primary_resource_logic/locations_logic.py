@@ -93,6 +93,5 @@ def get_locations_for_map_wrapper(db_client: DatabaseClient) -> Response:
             "localities": db_client.get_map_localities(),
             "counties": db_client.get_map_counties(),
             "states": db_client.get_map_states(),
-            "data_source_count": db_client.get_data_source_count_by_location_type(),
         }
     )

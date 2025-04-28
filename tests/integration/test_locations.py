@@ -153,7 +153,6 @@ def test_map_locations(test_data_creator_flask: TestDataCreatorFlask):
     no_data_sources(states)
     no_data_sources(counties)
     no_data_sources(localities)
-    assert data["data_source_count"] == {"localities": 0, "counties": 0, "states": 0}
 
     def add_data_sources(location_id: int, count: int):
         for i in range(count):
@@ -206,18 +205,6 @@ def test_map_locations(test_data_creator_flask: TestDataCreatorFlask):
 
     # Validate there is 1 data source for the state of California
     check_location_source_count(name="California", data=states, expected_value=1)
-
-    # Validate that the total data source count is correct
-    count = data["data_source_count"]
-
-    # 2 for Localities
-    assert count["localities"] == 2
-
-    # 4 for Counties
-    assert count["counties"] == 5
-
-    # 8 for States
-    assert count["states"] == 6
 
 
 def test_get_many_locations(test_data_creator_flask: TestDataCreatorFlask):
