@@ -12,14 +12,19 @@ class MultiFollowSetup:
         self.tdc = tdc
         self.mls = mls
         self.mus = mus
-        self.follow_1 = self.tdc.tdcdb.user_follow_location(
-            user_id=self.mus.user_1.user_info.user_id,
-            location_id=self.mls.pittsburgh_id,
-        )
-        self.follow_2 = self.tdc.tdcdb.user_follow_location(
-            user_id=self.mus.user_2.user_info.user_id,
-            location_id=self.mls.pennsylvania_id,
-        )
+        # All three users follow Pittsburgh
+        for user in [self.mus.user_1, self.mus.user_2, self.mus.user_3]:
+            self.tdc.tdcdb.user_follow_location(
+                user_id=user.user_info.user_id,
+                location_id=self.mls.pittsburgh_id,
+            )
+        # User 1 and 2 follow Pennsylvania
+        for user in [self.mus.user_1, self.mus.user_2]:
+            self.tdc.tdcdb.user_follow_location(
+                user_id=user.user_info.user_id,
+                location_id=self.mls.pennsylvania_id,
+            )
+        # User 3 follows Orange County
         self.follow_3 = self.tdc.tdcdb.user_follow_location(
             user_id=self.mus.user_3.user_info.user_id,
             location_id=self.mls.orange_county_id,

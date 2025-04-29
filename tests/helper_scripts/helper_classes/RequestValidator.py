@@ -961,3 +961,10 @@ class RequestValidator:
             query_parameters=dto.model_dump(mode="json"),
             expected_schema=SchemaConfigs.METRICS_FOLLOWED_SEARCHES_BREAKDOWN_GET.value.primary_output_schema,
         )
+
+    def get_metrics_followed_searches_aggregate(self, headers: dict):
+        return self.get(
+            endpoint="/api/metrics/followed-searches/aggregate",
+            headers=headers,
+            expected_schema=SchemaConfigs.METRICS_FOLLOWED_SEARCHES_AGGREGATE_GET.value.primary_output_schema,
+        )

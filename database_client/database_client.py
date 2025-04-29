@@ -2,6 +2,7 @@ from collections import namedtuple
 from datetime import datetime
 from enum import Enum
 from functools import wraps, partialmethod
+from http import HTTPStatus
 from operator import and_, or_
 from typing import Optional, Any, List, Callable, Union, Type
 from psycopg import connection as PgConnection
@@ -27,6 +28,7 @@ from sqlalchemy.orm import (
     selectinload,
     Session,
 )
+from werkzeug.exceptions import HTTPException, BadRequest
 
 from database_client.DTOs import (
     UserInfoNonSensitive,
@@ -2385,6 +2387,31 @@ class DatabaseClient:
             f"/search/follow?location_id="
         )
 
+        follower_count = func.count(
+            func.distinct(LinkUserFollowedLocation.user_id)
+        ).label("follower_count")
+        source_count = func.count(
+            func.distinct(LinkLocationDataSourceView.data_source_id)
+        ).label("source_count")
+        request_count = func.count(
+            func.distinct(LinkLocationDataRequest.data_request_id)
+        ).label("request_count")
+        display_name = LocationExpanded.full_display_name.label("display_name")
+
+        sortable_columns = {
+            "follower_count": follower_count,
+            "source_count": source_count,
+            "request_count": request_count,
+            "location_name": display_name,
+        }
+        allowed_columns = list(sortable_columns.keys())
+
+        if dto.sort_by is not None:
+            if dto.sort_by not in allowed_columns:
+                raise BadRequest(
+                    description=f"Invalid sort_by value: {dto.sort_by}; must be one of {allowed_columns}",
+                )
+
         dlsq = union_all(
             select(
                 Location.id.label("location_id"),
@@ -2403,14 +2430,10 @@ class DatabaseClient:
         query = (
             select(
                 dlsq.c.location_id.label("location_id"),
-                LocationExpanded.display_name.label("display_name"),
-                func.count(LinkUserFollowedLocation.user_id).label("follower_count"),
-                func.count(LinkLocationDataSourceView.data_source_id).label(
-                    "source_count"
-                ),
-                func.count(LinkLocationDataRequest.data_request_id).label(
-                    "request_count"
-                ),
+                display_name,
+                follower_count,
+                source_count,
+                request_count,
                 func.concat(base_search_url, LocationExpanded.id).label("search_url"),
             )
             .join(LocationExpanded, dlsq.c.location_id == LocationExpanded.id)
@@ -2429,20 +2452,19 @@ class DatabaseClient:
                 isouter=True,
             )
             .group_by(
-                LocationExpanded.display_name,
+                LocationExpanded.id,
+                LocationExpanded.full_display_name,
                 dlsq.c.location_id.label("location_id"),
             )
         )
 
-        # TODO: May need to convert above to a subquery and sort on that
         if dto.sort_by is not None:
-            attribute = getattr(LocationExpanded, dto.sort_by)
+            attribute = sortable_columns[dto.sort_by]
             query = query.order_by(
                 attribute.asc()
                 if dto.sort_order == SortOrder.ASCENDING
                 else attribute.desc()
             )
-        query = query.group_by(LocationExpanded.id)
         query = query.limit(100).offset((dto.page - 1) * 100)
 
         raw_results = self.session.execute(query).all()
@@ -2467,17 +2489,15 @@ class DatabaseClient:
             select(NotificationLog.created_at.label("last_notification"))
             .order_by(NotificationLog.created_at.desc())
             .limit(1)
-            .scalar_subquery
+            .scalar_subquery()
         )
 
         statement = select(
             func.count(func.distinct(LinkUserFollowedLocation.user_id)).label(
                 "total_followers"
             ),
-            func.count(func.distinct(LinkUserFollowedLocation.location_id)).label(
-                "location_count"
-            ),
-            subquery_latest_notification,
+            func.count(LinkUserFollowedLocation.location_id).label("location_count"),
+            subquery_latest_notification.label("last_notification"),
         )
 
         result = self.session.execute(statement).one()
@@ -2485,5 +2505,5 @@ class DatabaseClient:
         return {
             "total_followers": result.total_followers,
             "total_followed_searches": result.location_count,
-            "last_notification": result.last_notification,
+            "last_notification_date": result.last_notification,
         }

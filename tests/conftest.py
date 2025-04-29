@@ -205,7 +205,9 @@ def test_data_creator_flask(monkeysession) -> TestDataCreatorFlask:
     # Disable rate limiting for tests
     limiter.enabled = False
     with app.test_client() as client:
-        yield TestDataCreatorFlask(client)
+        tdc = TestDataCreatorFlask(client)
+        tdc.clear_test_data()
+        yield tdc
     limiter.enabled = True
 
 

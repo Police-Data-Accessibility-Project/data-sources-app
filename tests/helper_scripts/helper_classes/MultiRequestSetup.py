@@ -18,8 +18,23 @@ class MultiRequestSetup:
         self.tdc = tdc
         self.mls = mls
         self.request_1 = self.tdc.tdcdb.data_request()
-        self.tdc.link_data_request_to_data_source(self.request_1.id, mss.source_1.id)
+        self.tdc.link_data_request_to_data_source(
+            data_request_id=self.request_1.id, data_source_id=mss.source_1.id
+        )
+        self.tdc.tdcdb.link_data_request_to_location(
+            self.request_1.id, self.mls.pittsburgh_id
+        )
         self.request_2 = self.tdc.tdcdb.data_request()
-        self.tdc.link_data_request_to_data_source(self.request_2.id, mss.source_2.id)
+        self.tdc.link_data_request_to_data_source(
+            data_request_id=self.request_2.id, data_source_id=mss.source_2.id
+        )
+        self.tdc.tdcdb.link_data_request_to_location(
+            self.request_2.id, self.mls.pennsylvania_id
+        )
         self.request_3 = self.tdc.tdcdb.data_request()
-        self.tdc.link_data_request_to_data_source(self.request_3.id, mss.source_3.id)
+        self.tdc.link_data_request_to_data_source(
+            data_request_id=self.request_3.id, data_source_id=mss.source_3.id
+        )
+        self.tdc.tdcdb.link_data_request_to_location(
+            self.request_3.id, self.mls.orange_county_id
+        )

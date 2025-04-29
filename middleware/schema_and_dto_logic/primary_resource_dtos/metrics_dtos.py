@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel
 
 from database_client.enums import SortOrder
 
