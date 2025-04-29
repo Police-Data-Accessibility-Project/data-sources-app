@@ -103,6 +103,8 @@ class Relations(Enum):
     MAP_STATES = "map_states"
     MAP_COUNTIES = "map_counties"
     MAP_LOCALITIES = "map_localities"
+    NOTIFICATION_LOG = "notification_log"
+    LINK_LOCATIONS_DATA_SOURCES_VIEW = "link_locations_data_sources_view"
 
 
 class OperationType(Enum):

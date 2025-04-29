@@ -32,6 +32,9 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.locations_dtos import
 from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
     AgencyMatchRequestDTO,
 )
+from middleware.schema_and_dto_logic.primary_resource_dtos.metrics_dtos import (
+    MetricsFollowedSearchesBreakdownRequestDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_dtos.reset_token_dtos import (
     ResetPasswordDTO,
 )
@@ -77,6 +80,9 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.match_schemas impo
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.metrics_schemas import (
     MetricsGetResponseSchema,
+    MetricsFollowedSearchesBreakdownOuterSchema,
+    MetricsFollowedSearchesBreakdownRequestSchema,
+    MetricsFollowedSearchesAggregateResponseSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.record_type_and_category_schemas import (
     RecordTypeAndCategoryResponseSchema,
@@ -625,6 +631,14 @@ class SchemaConfigs(Enum):
     # region Metrics
     METRICS_GET = EndpointSchemaConfig(
         primary_output_schema=MetricsGetResponseSchema(),
+    )
+    METRICS_FOLLOWED_SEARCHES_BREAKDOWN_GET = EndpointSchemaConfig(
+        input_schema=MetricsFollowedSearchesBreakdownRequestSchema(),
+        input_dto_class=MetricsFollowedSearchesBreakdownRequestDTO,
+        primary_output_schema=MetricsFollowedSearchesBreakdownOuterSchema(),
+    )
+    METRICS_FOLLOWED_SEARCHES_AGGREGATE_GET = EndpointSchemaConfig(
+        primary_output_schema=MetricsFollowedSearchesAggregateResponseSchema(),
     )
 
     # endregion

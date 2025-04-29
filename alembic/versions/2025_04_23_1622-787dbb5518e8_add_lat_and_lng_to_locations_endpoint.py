@@ -33,7 +33,9 @@ def upgrade() -> None:
         """
         CREATE MATERIALIZED VIEW map_states AS
         WITH all_state_locations AS (
-            SELECT lp.id AS state_location_id, dp.dependent_location_id
+            SELECT 
+                lp.id AS state_location_id, 
+                dp.dependent_location_id
             FROM locations lp
             LEFT JOIN dependent_locations dp ON lp.id = dp.parent_location_id
             WHERE lp.type = 'State'
@@ -41,7 +43,8 @@ def upgrade() -> None:
             UNION ALL
             
             -- Include self
-            SELECT id AS state_location_id, id AS dependent_location_id
+            SELECT id AS state_location_id, 
+            id AS dependent_location_id
             FROM locations
             WHERE type = 'State'
         )
@@ -51,9 +54,16 @@ def upgrade() -> None:
             asl.state_location_id AS location_id,
             COUNT(DISTINCT las.data_source_id) AS data_source_count
         FROM all_state_locations asl
-        JOIN us_states s ON s.id = (SELECT state_id FROM locations WHERE id = asl.state_location_id)
-        LEFT JOIN link_agencies_locations lal ON lal.location_id = asl.dependent_location_id
-        LEFT JOIN link_agencies_data_sources las ON las.agency_id = lal.agency_id
+        JOIN us_states s 
+            ON s.id = (
+                SELECT state_id 
+                FROM locations 
+                WHERE id = asl.state_location_id
+            )
+        LEFT JOIN link_agencies_locations lal 
+            ON lal.location_id = asl.dependent_location_id
+        LEFT JOIN link_agencies_data_sources las 
+            ON las.agency_id = lal.agency_id
         GROUP BY s.state_name, s.state_iso, asl.state_location_id;
 
     """

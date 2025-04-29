@@ -2,6 +2,7 @@ from collections import namedtuple
 from datetime import datetime
 from enum import Enum
 from functools import wraps, partialmethod
+from http import HTTPStatus
 from operator import and_, or_
 from typing import Optional, Any, List, Callable, Union, Type
 from psycopg import connection as PgConnection
@@ -19,6 +20,7 @@ from sqlalchemy import (
     desc,
     asc,
     exists,
+    union_all,
 )
 from sqlalchemy.orm import (
     aliased,
@@ -26,6 +28,7 @@ from sqlalchemy.orm import (
     selectinload,
     Session,
 )
+from werkzeug.exceptions import HTTPException, BadRequest
 
 from database_client.DTOs import (
     UserInfoNonSensitive,
@@ -48,6 +51,7 @@ from database_client.enums import (
     EventType,
     LocationType,
     ApprovalStatus,
+    SortOrder,
 )
 from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
 from middleware.custom_dataclasses import EventInfo, EventBatch
@@ -83,6 +87,9 @@ from database_client.models import (
     DataRequestUserNotificationQueue,
     DataRequestPendingEventNotification,
     DataSourcePendingEventNotification,
+    NotificationLog,
+    LinkLocationDataSourceView,
+    DependentLocation,
 )
 from middleware.enums import (
     PermissionsEnum,
@@ -108,10 +115,14 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
     AgencyMatchResponseInnerDTO,
     AgencyMatchResponseLocationDTO,
 )
+from middleware.schema_and_dto_logic.primary_resource_dtos.metrics_dtos import (
+    MetricsFollowedSearchesBreakdownRequestDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_dtos.source_collector_dtos import (
     SourceCollectorPostRequestInnerDTO,
     SourceCollectorPostResponseInnerDTO,
 )
+from middleware.util import get_env_variable
 from utilities.enums import RecordCategories
 
 DATA_SOURCES_MAP_COLUMN = [
@@ -2356,3 +2367,143 @@ class DatabaseClient:
             results.append(result)
 
         return results
+
+    @session_manager
+    def add_to_notification_log(
+        self,
+        user_count: int,
+    ):
+        item = NotificationLog(
+            user_count=user_count,
+        )
+        self.session.add(item)
+
+    @session_manager
+    def get_metrics_followed_searches_breakdown(
+        self, dto: MetricsFollowedSearchesBreakdownRequestDTO
+    ):
+        base_search_url = (
+            f"{get_env_variable("VITE_VUE_APP_BASE_URL")}"
+            f"/search/follow?location_id="
+        )
+
+        follower_count = func.count(
+            func.distinct(LinkUserFollowedLocation.user_id)
+        ).label("follower_count")
+        source_count = func.count(
+            func.distinct(LinkLocationDataSourceView.data_source_id)
+        ).label("source_count")
+        request_count = func.count(
+            func.distinct(LinkLocationDataRequest.data_request_id)
+        ).label("request_count")
+        display_name = LocationExpanded.full_display_name.label("display_name")
+
+        sortable_columns = {
+            "follower_count": follower_count,
+            "source_count": source_count,
+            "request_count": request_count,
+            "location_name": display_name,
+        }
+        allowed_columns = list(sortable_columns.keys())
+
+        if dto.sort_by is not None:
+            if dto.sort_by not in allowed_columns:
+                raise BadRequest(
+                    description=f"Invalid sort_by value: {dto.sort_by}; must be one of {allowed_columns}",
+                )
+
+        dlsq = union_all(
+            select(
+                Location.id.label("location_id"),
+                DependentLocation.dependent_location_id,
+            ).join(
+                DependentLocation,
+                Location.id == DependentLocation.parent_location_id,
+                isouter=True,
+            ),
+            select(
+                Location.id.label("location_id"),
+                Location.id.label("dependent_location_id"),
+            ),
+        ).subquery()
+
+        query = (
+            select(
+                dlsq.c.location_id.label("location_id"),
+                display_name,
+                follower_count,
+                source_count,
+                request_count,
+                func.concat(base_search_url, LocationExpanded.id).label("search_url"),
+            )
+            .join(LocationExpanded, dlsq.c.location_id == LocationExpanded.id)
+            .join(
+                LinkUserFollowedLocation,
+                dlsq.c.location_id == LinkUserFollowedLocation.location_id,
+            )
+            .join(
+                LinkLocationDataSourceView,
+                dlsq.c.dependent_location_id == LinkLocationDataSourceView.location_id,
+                isouter=True,
+            )
+            .join(
+                LinkLocationDataRequest,
+                dlsq.c.dependent_location_id == LinkLocationDataRequest.location_id,
+                isouter=True,
+            )
+            .group_by(
+                LocationExpanded.id,
+                LocationExpanded.full_display_name,
+                dlsq.c.location_id.label("location_id"),
+            )
+        )
+
+        if dto.sort_by is not None:
+            attribute = sortable_columns[dto.sort_by]
+            query = query.order_by(
+                attribute.asc()
+                if dto.sort_order == SortOrder.ASCENDING
+                else attribute.desc()
+            )
+        query = query.limit(100).offset((dto.page - 1) * 100)
+
+        raw_results = self.session.execute(query).all()
+
+        results = []
+        for result in raw_results:
+            d = {
+                "location_name": result.display_name,
+                "location_id": result.location_id,
+                "follower_count": result.follower_count,
+                "source_count": result.source_count,
+                "request_count": result.request_count,
+                "search_url": result.search_url,
+            }
+            results.append(d)
+
+        return results
+
+    @session_manager
+    def get_metrics_followed_searches_aggregate(self):
+        subquery_latest_notification = (
+            select(NotificationLog.created_at.label("last_notification"))
+            .order_by(NotificationLog.created_at.desc())
+            .limit(1)
+            .scalar_subquery()
+        )
+
+        statement = select(
+            func.count(func.distinct(LinkUserFollowedLocation.user_id)).label(
+                "total_followers"
+            ),
+            func.count(LinkUserFollowedLocation.location_id).label("location_count"),
+            subquery_latest_notification.label("last_notification"),
+        )
+
+        result = self.session.execute(statement).one()
+
+        return {
+            "total_followers": result.total_followers,
+            "total_followed_searches": result.location_count,
+            "last_notification_date": result.last_notification,
+        }

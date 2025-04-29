@@ -8,9 +8,9 @@ from database_client.enums import EventType, EntityType
 from database_client.models import (
     DataRequestUserNotificationQueue,
     DataSourceUserNotificationQueue,
+    NotificationLog,
 )
 from middleware.custom_dataclasses import EventInfo, EventBatch
-from middleware.enums import Relations
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
@@ -143,6 +143,12 @@ def test_notifications_followed_searches(
     assert len(data_sources_queue) == 1
     for data_source in data_sources_queue:
         assert data_source["sent_at"] is not None
+
+    # Check that notification log was created
+    notification_log = tdc_db.db_client.get_all(NotificationLog)
+    assert len(notification_log) == 1
+    assert notification_log[0]["created_at"] is not None
+    assert notification_log[0]["user_count"] == 2
 
 
 def test_notifications_permission_denied(
