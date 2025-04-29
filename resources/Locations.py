@@ -1,5 +1,6 @@
 from flask import Response
 
+from config import limiter
 from middleware.access_logic import (
     AccessInfoPrimary,
 )
@@ -69,6 +70,7 @@ class LocationsByID(PsycopgResource):
             success_message="Successfully updates a location by ID.",
         ),
     )
+    @limiter.limit("60/minute")
     def put(self, location_id: int, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             wrapper_function=update_location_by_id_wrapper,
