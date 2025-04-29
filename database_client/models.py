@@ -381,6 +381,15 @@ class Location(Base):
     )
     state = relationship(argument="USState", back_populates="locations", uselist=False)
 
+    data_sources = relationship(
+        "DataSource",
+        secondary="public.link_locations_data_sources_view",
+        primaryjoin="Location.id == LinkLocationDataSourceView.location_id",
+        secondaryjoin="LinkLocationDataSourceView.data_source_id == DataSource.id",
+        back_populates="locations",
+        viewonly=True,
+    )
+
 
 class LocationExpanded(Base, CountMetadata):
     __tablename__ = Relations.LOCATIONS_EXPANDED.value
@@ -595,6 +604,16 @@ class DataSource(Base, CountMetadata, CountSubqueryMetadata):
         ForeignKey("public.record_types.id")
     )
     approval_status_updated_at: Mapped[Optional[timestamp_tz]]
+
+    # Relationships
+    locations: Mapped[list[Location]] = relationship(
+        argument="Location",
+        secondary="public.link_locations_data_sources_view",
+        primaryjoin="LinkLocationDataSourceView.data_source_id == DataSource.id",
+        secondaryjoin="LinkLocationDataSourceView.location_id == Location.id",
+        back_populates="data_sources",
+        viewonly=True,
+    )
 
 
 class DataSourceExpanded(DataSource):
@@ -943,6 +962,26 @@ class ChangeLog(Base):
     )
 
 
+class NotificationLog(Base):
+    __tablename__ = Relations.NOTIFICATION_LOG.value
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    created_at: Mapped[timestamp] = mapped_column(server_default=func.now())
+    user_count: Mapped[int]
+
+
+# region Views
+
+
+class LinkLocationDataSourceView(Base):
+    __tablename__ = Relations.LINK_LOCATIONS_DATA_SOURCES_VIEW.value
+    location_id = Column(Integer, primary_key=True)
+    data_source_id = Column(Integer, primary_key=True)
+
+
+# endregion
+
+
 SQL_ALCHEMY_TABLE_REFERENCE = {
     "agencies": Agency,
     "agencies_expanded": AgencyExpanded,
@@ -974,6 +1013,8 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     Relations.RECORD_TYPES.value: RecordType,
     Relations.PENDING_USERS.value: PendingUser,
     Relations.CHANGE_LOG.value: ChangeLog,
+    Relations.NOTIFICATION_LOG.value: NotificationLog,
+    Relations.LINK_LOCATIONS_DATA_SOURCES_VIEW.value: LinkLocationDataSourceView,
 }
 
 

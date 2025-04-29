@@ -237,6 +237,7 @@ def send_notifications(
                 message=f"Error sending notification for event batch for user {next_event_batch.user_id}: {e}. Sent {count} batches prior to this error.",
                 code=HTTPStatus.INTERNAL_SERVER_ERROR,
             )
+    db_client.add_to_notification_log(user_count=count)
     return FlaskResponseManager.make_response(
         data={"message": "Notifications sent successfully.", "count": count}
     )

@@ -11,7 +11,6 @@ from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
 class MultiLocationSetup:
     def __init__(self, tdc: TestDataCreatorDBClient) -> None:
         self.tdc = tdc
-        self.tdc.clear_test_data()
         self.pittsburgh_id = self.tdc.locality(
             locality_name="Pittsburgh",
             county_name="Allegheny",
