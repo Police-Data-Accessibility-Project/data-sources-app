@@ -30,8 +30,9 @@ def test_metrics(test_data_creator_flask: TestDataCreatorFlask):
 
 
 def test_metrics_followed_searches_breakdown(
-    test_data_creator_flask: TestDataCreatorFlask,
+    test_data_creator_flask: TestDataCreatorFlask, monkeypatch
 ):
+    monkeypatch.setenv("VITE_VUE_APP_BASE_URL", "https://example.com")
 
     tdc = test_data_creator_flask
 
