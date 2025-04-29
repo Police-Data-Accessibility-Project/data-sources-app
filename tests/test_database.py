@@ -18,6 +18,7 @@ from database_client.models import RecentSearch
 from middleware.enums import Relations, JurisdictionType, OperationType
 from tests.conftest import live_database_client, test_data_creator_db_client
 from tests.helper_scripts.common_test_data import get_test_name
+from tests.helper_scripts.helper_classes.MultiLocationSetup import MultiLocationSetup
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
 )
@@ -404,10 +405,7 @@ def test_approval_status_updated_at(
 
 def test_dependent_locations_view(test_data_creator_db_client: TestDataCreatorDBClient):
     tdc = test_data_creator_db_client
-    tdc.clear_test_data()
-
-    def get_location_id(d: dict):
-        return tdc.db_client.get_location_id(where_mappings=WhereMapping.from_dict(d))
+    mls = MultiLocationSetup(tdc)
 
     def is_dependent_location(dependent_location_id: int, parent_location_id: int):
         results = tdc.db_client._select_from_relation(
@@ -420,73 +418,40 @@ def test_dependent_locations_view(test_data_creator_db_client: TestDataCreatorDB
         )
         return len(results) == 1
 
-    # Get location IDs for Pittsburgh, Allegheny County, and Pennsylvania
-    allegheny_locality_id = tdc.locality(county_name="Allegheny", state_iso="PA")
-
-    allegheny_county_id = get_location_id(
-        {
-            "state_iso": "PA",
-            "county_name": "Allegheny",
-            "type": LocationType.COUNTY,
-        }
-    )
-
-    pennsylvania_id = get_location_id(
-        {
-            "state_iso": "PA",
-            "type": LocationType.STATE,
-        }
-    )
-
     # Confirm that in the dependent locations view, Pittsburgh is a
     # dependent location of both Allegheny County and Pennsylvania
     assert is_dependent_location(
-        dependent_location_id=allegheny_locality_id,
-        parent_location_id=allegheny_county_id,
+        dependent_location_id=mls.pittsburgh_id,
+        parent_location_id=mls.allegheny_county_id,
     )
 
     assert is_dependent_location(
-        dependent_location_id=allegheny_locality_id, parent_location_id=pennsylvania_id
+        dependent_location_id=mls.pittsburgh_id, parent_location_id=mls.pennsylvania_id
     )
 
     # Confirm that in the dependent locations view, Allegheny County is
     # a dependent location of Pennsylvania
     assert is_dependent_location(
-        dependent_location_id=allegheny_county_id, parent_location_id=pennsylvania_id
-    )
-
-    # Get location ID for California
-    california_id = get_location_id(
-        {
-            "state_iso": "CA",
-            "type": LocationType.STATE,
-        }
+        dependent_location_id=mls.allegheny_county_id,
+        parent_location_id=mls.pennsylvania_id,
     )
 
     # Confirm that in the dependent locations view, Allegheny County is NOT
     # a dependent location of California
     assert not is_dependent_location(
-        dependent_location_id=allegheny_county_id, parent_location_id=california_id
+        dependent_location_id=mls.allegheny_county_id,
+        parent_location_id=mls.california_id,
     )
 
     # And that the locality is NOT a dependent location of California
     assert not is_dependent_location(
-        dependent_location_id=allegheny_locality_id, parent_location_id=california_id
-    )
-
-    # Get location for Orange County, California
-    orange_county_id = get_location_id(
-        {
-            "state_iso": "CA",
-            "county_name": "Orange",
-            "type": LocationType.COUNTY,
-        }
+        dependent_location_id=mls.pittsburgh_id, parent_location_id=mls.california_id
     )
 
     # Confirm that in the dependent locations view, the locality is NOT
     # a dependent location of Orange County
     assert not is_dependent_location(
-        dependent_location_id=allegheny_locality_id, parent_location_id=orange_county_id
+        dependent_location_id=mls.pittsburgh_id, parent_location_id=mls.orange_county_id
     )
 
 
@@ -855,6 +820,8 @@ def test_locations_table_log_logic(
         "state_id": 1,
         "county_id": county_id,
         "locality_id": locality_id,
+        "lat": None,
+        "lng": None,
         "type": "Locality",
     }
     assert log["new_data"] is None

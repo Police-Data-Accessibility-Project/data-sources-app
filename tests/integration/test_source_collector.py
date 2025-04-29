@@ -137,7 +137,7 @@ def test_source_collector(test_data_creator_flask: TestDataCreatorFlask):
     assert data_sources[2]["source_url"] == "http://new_test.com"
 
     # Check agencies
-    ds_1_agency_ids = [agency["id"] for agency in data_sources[1]["agencies"]]
+    ds_1_agency_ids = sorted([agency["id"] for agency in data_sources[1]["agencies"]])
     assert ds_1_agency_ids == agency_ids
 
     ds_2_agency_ids = [agency["id"] for agency in data_sources[2]["agencies"]]

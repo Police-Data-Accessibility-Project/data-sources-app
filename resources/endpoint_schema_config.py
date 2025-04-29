@@ -25,6 +25,10 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.bulk_dtos import (
 from middleware.schema_and_dto_logic.primary_resource_dtos.contact_dtos import (
     ContactFormPostDTO,
 )
+from middleware.schema_and_dto_logic.primary_resource_dtos.locations_dtos import (
+    LocationPutDTO,
+    LocationsGetRequestDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
     AgencyMatchRequestDTO,
 )
@@ -62,6 +66,10 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.locations_schemas import (
     GetLocationInfoByIDResponseSchema,
+    LocationPutSchema,
+    LocationsMapResponseSchema,
+    LocationsGetManySchema,
+    LocationsGetManyRequestSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.match_schemas import (
     AgencyMatchSchema,
@@ -420,6 +428,14 @@ class SchemaConfigs(Enum):
     DATA_SOURCES_MAP = EndpointSchemaConfig(
         primary_output_schema=DataSourcesMapResponseSchema(),
     )
+    LOCATIONS_MAP = EndpointSchemaConfig(
+        primary_output_schema=LocationsMapResponseSchema(),
+    )
+    LOCATIONS_GET_MANY = EndpointSchemaConfig(
+        input_schema=LocationsGetManyRequestSchema(),
+        input_dto_class=LocationsGetRequestDTO,
+        primary_output_schema=LocationsGetManySchema(),
+    )
     DATA_SOURCES_PUT = get_put_resource_endpoint_schema_config(
         input_schema=DataSourcesPutSchema(), input_dto_class=EntryDataRequestSchema
     )
@@ -593,6 +609,11 @@ class SchemaConfigs(Enum):
     # region Location
     LOCATIONS_BY_ID_GET = get_get_by_id_endpoint_schema_config(
         primary_output_schema=GetLocationInfoByIDResponseSchema(),
+    )
+    LOCATIONS_BY_ID_PUT = EndpointSchemaConfig(
+        input_schema=LocationPutSchema(),
+        input_dto_class=LocationPutDTO,
+        primary_output_schema=MessageSchema(),
     )
     LOCATIONS_RELATED_DATA_REQUESTS_GET = EndpointSchemaConfig(
         input_schema=GetByIDBaseSchema(),

@@ -74,6 +74,12 @@ def run_and_validate_request(
     if expected_schema is not None:
         if not isinstance(expected_schema, Schema):
             expected_schema = expected_schema()
-        expected_schema.load(response.json)
+        try:
+            expected_schema.load(response.json)
+        except Exception as e:
+            raise AssertionError(
+                f"Failed to validate response against schema: {e}"
+                f"\nResponse: {response.json}"
+            )
 
     return response.json

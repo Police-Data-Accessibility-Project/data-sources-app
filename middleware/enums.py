@@ -100,6 +100,9 @@ class Relations(Enum):
     DATA_SOURCES_PENDING_EVENT_NOTIFICATIONS = "data_source_pending_event_notification"
     DATA_REQUESTS_USER_NOTIFICATION_QUEUE = "data_request_user_notification_queue"
     DATA_SOURCES_USER_NOTIFICATION_QUEUE = "data_source_user_notification_queue"
+    MAP_STATES = "map_states"
+    MAP_COUNTIES = "map_counties"
+    MAP_LOCALITIES = "map_localities"
 
 
 class OperationType(Enum):

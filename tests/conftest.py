@@ -196,6 +196,8 @@ def test_data_creator_flask(monkeysession) -> TestDataCreatorFlask:
     monkeysession.setattr(
         "app.get_flask_app_cookie_encryption_key", mock_get_flask_app_secret_key
     )
+    mock_scheduler_manager = MagicMock()
+    monkeysession.setattr("app.SchedulerManager", mock_scheduler_manager)
     app = create_app()
     app.config["TESTING"] = True
     app.config["PROPAGATE_EXCEPTIONS"] = True
