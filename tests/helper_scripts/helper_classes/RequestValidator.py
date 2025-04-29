@@ -26,6 +26,9 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.locations_dtos import
     LocationPutDTO,
     LocationsGetRequestDTO,
 )
+from middleware.schema_and_dto_logic.primary_resource_dtos.metrics_dtos import (
+    MetricsFollowedSearchesBreakdownRequestDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_dtos.source_collector_dtos import (
     SourceCollectorPostRequestDTO,
 )
@@ -947,4 +950,21 @@ class RequestValidator:
             query_parameters=dto.model_dump(mode="json"),
             expected_schema=SchemaConfigs.LOCATIONS_GET_MANY.value.primary_output_schema,
             expected_json_content=expected_json_content,
+        )
+
+    def get_metrics_followed_searches_breakdown(
+        self, headers: dict, dto: MetricsFollowedSearchesBreakdownRequestDTO
+    ):
+        return self.get(
+            endpoint="/api/metrics/followed-searches/breakdown",
+            headers=headers,
+            query_parameters=dto.model_dump(mode="json"),
+            expected_schema=SchemaConfigs.METRICS_FOLLOWED_SEARCHES_BREAKDOWN_GET.value.primary_output_schema,
+        )
+
+    def get_metrics_followed_searches_aggregate(self, headers: dict):
+        return self.get(
+            endpoint="/api/metrics/followed-searches/aggregate",
+            headers=headers,
+            expected_schema=SchemaConfigs.METRICS_FOLLOWED_SEARCHES_AGGREGATE_GET.value.primary_output_schema,
         )

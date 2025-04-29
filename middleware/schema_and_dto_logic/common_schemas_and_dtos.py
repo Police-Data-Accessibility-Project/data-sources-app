@@ -11,6 +11,11 @@ from pydantic import BaseModel
 
 from database_client.constants import PAGE_SIZE
 from database_client.enums import SortOrder, LocationType
+from middleware.schema_and_dto_logic.common_fields import (
+    PAGE_FIELD,
+    SORT_ORDER_FIELD,
+    SORT_BY_FIELD,
+)
 from middleware.schema_and_dto_logic.custom_fields import DataField
 from middleware.schema_and_dto_logic.non_dto_dataclasses import (
     SchemaPopulateParameters,
@@ -22,31 +27,9 @@ from utilities.enums import SourceMappingEnum
 
 
 class GetManyRequestsBaseSchema(Schema):
-    page = fields.Integer(
-        validate=validate.Range(min=1),
-        load_default=1,
-        metadata={
-            "description": "The page number of the results to retrieve. Begins at 1.",
-            "source": SourceMappingEnum.QUERY_ARGS,
-        },
-    )
-    sort_by = fields.Str(
-        required=False,
-        metadata={
-            "description": "The field to sort the results by.",
-            "source": SourceMappingEnum.QUERY_ARGS,
-        },
-    )
-    sort_order = fields.Enum(
-        required=False,
-        enum=SortOrder,
-        by_value=fields.Str,
-        load_default=SortOrder.DESCENDING,
-        metadata={
-            "source": SourceMappingEnum.QUERY_ARGS,
-            "description": "The order to sort the results by.",
-        },
-    )
+    page = PAGE_FIELD
+    sort_by = SORT_BY_FIELD
+    sort_order = SORT_ORDER_FIELD
     requested_columns = fields.Str(
         required=False,
         metadata={
