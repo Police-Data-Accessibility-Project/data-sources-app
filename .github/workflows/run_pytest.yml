@@ -45,8 +45,8 @@ jobs:
           **/requirements*.txt
     - name: Install dependencies
       run: |
-        uv pip install -r requirements.txt
-        uv pip install pytest pytest-cov
+        uv pip install --system -r requirements.txt
+        uv pip install --system pytest pytest-cov
     - name: Run migrations
       run: |
         alembic upgrade head
