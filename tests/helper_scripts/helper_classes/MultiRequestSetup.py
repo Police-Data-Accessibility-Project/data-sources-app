@@ -1,3 +1,5 @@
+from typing import Optional
+
 from database_client.enums import RequestStatus
 from tests.helper_scripts.helper_classes.MultiLocationSetup import MultiLocationSetup
 from tests.helper_scripts.helper_classes.MultiDataSourceSetup import (
@@ -6,6 +8,7 @@ from tests.helper_scripts.helper_classes.MultiDataSourceSetup import (
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
+from tests.helper_scripts.test_dataclasses import TestDataRequestInfo
 
 
 class MultiRequestSetup:
@@ -18,58 +21,69 @@ class MultiRequestSetup:
     ):
         self.tdc = tdc
         self.mls = mls
-        self.request_pittsburgh = self.tdc.tdcdb.data_request()
-        self.tdc.link_data_request_to_data_source(
-            data_request_id=self.request_pittsburgh.id,
+        self.request_pittsburgh = self.setup_request(
+            location_id=self.mls.pittsburgh_id,
             data_source_id=mss.approved_source_pittsburgh.id,
+            request_status=RequestStatus.INTAKE,
         )
-        self.tdc.tdcdb.link_data_request_to_location(
-            self.request_pittsburgh.id, self.mls.pittsburgh_id
-        )
-        self.request_pennsylvania = self.tdc.tdcdb.data_request()
-        self.tdc.link_data_request_to_data_source(
-            data_request_id=self.request_pennsylvania.id,
+        self.request_pennsylvania = self.setup_request(
+            location_id=self.mls.pennsylvania_id,
             data_source_id=mss.approved_source_pennsylvania.id,
+            request_status=RequestStatus.INTAKE,
         )
-        self.tdc.tdcdb.link_data_request_to_location(
-            self.request_pennsylvania.id, self.mls.pennsylvania_id
-        )
-        self.request_federal = self.tdc.tdcdb.data_request()
-        self.tdc.link_data_request_to_data_source(
-            data_request_id=self.request_federal.id,
+        self.request_federal = self.setup_request(
+            location_id=self.mls.orange_county_id,
             data_source_id=mss.approved_source_federal.id,
+            request_status=RequestStatus.INTAKE,
         )
-        self.tdc.tdcdb.link_data_request_to_location(
-            self.request_federal.id, self.mls.orange_county_id
+        # Add Ready to Start Requests
+        self.request_ready_pittsburgh = self.setup_request(
+            location_id=self.mls.pittsburgh_id,
+            data_source_id=mss.approved_source_pittsburgh.id,
+            request_status=RequestStatus.READY_TO_START,
+        )
+        self.request_ready_pennsylvania = self.setup_request(
+            location_id=self.mls.pennsylvania_id,
+            data_source_id=mss.approved_source_pennsylvania.id,
+            request_status=RequestStatus.READY_TO_START,
+        )
+        self.request_ready_federal = self.setup_request(
+            location_id=self.mls.orange_county_id,
+            data_source_id=mss.approved_source_federal.id,
+            request_status=RequestStatus.READY_TO_START,
         )
         # Add completed requests as well
-        self.completed_request_1 = self.tdc.tdcdb.data_request(
-            request_status=RequestStatus.COMPLETE
-        )
-        self.tdc.link_data_request_to_data_source(
-            data_request_id=self.completed_request_1.id,
+        self.completed_request_pittsburgh = self.setup_request(
+            location_id=self.mls.pittsburgh_id,
             data_source_id=mss.approved_source_pittsburgh.id,
+            request_status=RequestStatus.COMPLETE,
         )
-        self.tdc.tdcdb.link_data_request_to_location(
-            self.completed_request_1.id, self.mls.pittsburgh_id
-        )
-        self.completed_request_2 = self.tdc.tdcdb.data_request(
-            request_status=RequestStatus.COMPLETE
-        )
-        self.tdc.link_data_request_to_data_source(
-            data_request_id=self.completed_request_2.id,
+        self.completed_request_pennsylvania = self.setup_request(
+            location_id=self.mls.pennsylvania_id,
             data_source_id=mss.approved_source_pennsylvania.id,
+            request_status=RequestStatus.COMPLETE,
         )
-        self.tdc.tdcdb.link_data_request_to_location(
-            self.completed_request_2.id, self.mls.pennsylvania_id
+        self.completed_request_federal = self.setup_request(
+            location_id=self.mls.orange_county_id,
+            data_source_id=mss.approved_source_federal.id,
+            request_status=RequestStatus.COMPLETE,
         )
-        self.completed_request_3 = self.tdc.tdcdb.data_request(
-            request_status=RequestStatus.COMPLETE
+
+    def setup_request(
+            self,
+            data_source_id: int,
+            location_id: Optional[int] = None,
+            request_status: RequestStatus = RequestStatus.INTAKE,
+    ) -> TestDataRequestInfo:
+        request = self.tdc.tdcdb.data_request(
+            request_status=request_status
         )
         self.tdc.link_data_request_to_data_source(
-            data_request_id=self.completed_request_3.id,
-            data_source_id=mss.approved_source_federal.id,
+            data_request_id=request.id,
+            data_source_id=data_source_id
         )
         self.tdc.tdcdb.link_data_request_to_location(
-            self.completed_request_3.id, self.mls.orange_county_id
+            data_request_id=request.id,
+            location_id=location_id
         )
+        return request

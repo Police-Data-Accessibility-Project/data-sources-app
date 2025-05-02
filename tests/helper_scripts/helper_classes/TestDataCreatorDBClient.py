@@ -51,11 +51,11 @@ class TDCSQLAlchemyHelper:
         query = delete(table).where(column.like(like_text))
         self.db_client.execute_sqlalchemy(lambda: query)
 
-    def delete_from_table(
+    def clear_table(
         self,
-        table_name: str,
+        relation: Relations,
     ):
-        table = SQL_ALCHEMY_TABLE_REFERENCE[table_name]
+        table = SQL_ALCHEMY_TABLE_REFERENCE[relation.value]
         query = delete(table)
         self.db_client.execute_sqlalchemy(lambda: query)
 
@@ -115,39 +115,17 @@ class TestDataCreatorDBClient:
 
     def clear_test_data(self):
         # Remove test data from data request
-        self.helper.delete_test_like(
-            table_name=Relations.DATA_REQUESTS.value,
-            like_column_name="title",
-        )
-        self.helper.delete_test_like(
-            table_name=Relations.DATA_REQUESTS.value,
-            like_column_name="submission_notes",
-        )
+        self.helper.clear_table(Relations.DATA_REQUESTS)
         # Remove test data from agency
-        self.helper.delete_from_table(
-            table_name=Relations.AGENCIES.value,
-        )
-        self.helper.delete_test_like(
-            table_name=Relations.AGENCIES.value,
-            like_column_name="name",
-        )
+        self.helper.clear_table(Relations.AGENCIES)
         # Remove test data from locality
-        self.helper.delete_test_like(
-            table_name=Relations.LOCALITIES.value,
-            like_column_name="name",
-        )
-
+        self.helper.clear_table(Relations.LOCALITIES)
         # Remove test data from data source
-        self.helper.delete_test_like(
-            table_name=Relations.DATA_SOURCES.value,
-            like_column_name="name",
-        )
-
+        self.helper.clear_table(Relations.DATA_SOURCES)
         # Remove test data from user
-        self.helper.delete_test_like(
-            table_name=Relations.USERS.value,
-            like_column_name="email",
-        )
+        self.helper.clear_table(Relations.USERS)
+        # Remove test data from notification log
+        self.helper.clear_table(Relations.NOTIFICATION_LOG)
 
         self.helper.clear_user_notification_queue()
 

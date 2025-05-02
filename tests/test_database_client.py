@@ -1036,7 +1036,7 @@ def test_get_unarchived_data_requests_with_issues(
     def create_data_request_with_issue_and_request_status(
         request_status: RequestStatus,
     ) -> TestDataRequestInfo:
-        dr_info = tdc.data_request(request_status=request_status.value)
+        dr_info = tdc.data_request(request_status=request_status)
         issue_number = get_random_number_for_testing()
         tdc.db_client.create_data_request_github_info(
             column_value_mappings={

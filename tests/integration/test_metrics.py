@@ -39,11 +39,11 @@ def test_metrics_followed_searches_breakdown(
     tdc = test_data_creator_flask
     last_notification_datetime = tdc.tdcdb.notification_log()
 
-    # data = tdc.request_validator.get_metrics_followed_searches_breakdown(
-    # headers=tdc.get_admin_tus().jwt_authorization_header,
-    # dto=MetricsFollowedSearchesBreakdownRequestDTO(),
-    # )
-    # assert len(data["results"]) == 0
+    data = tdc.request_validator.get_metrics_followed_searches_breakdown(
+    headers=tdc.get_admin_tus().jwt_authorization_header,
+    dto=MetricsFollowedSearchesBreakdownRequestDTO(),
+    )
+    assert len(data["results"]) == 0
 
     mfs = MultiFollowSetup.setup(tdc)
     mas = MultiAgencySetup(tdc, mfs.mls)
@@ -57,11 +57,11 @@ def test_metrics_followed_searches_breakdown(
         entry_id=int(mds.approved_source_pittsburgh.id),
         column_edit_mappings={"created_at": pre_notification_datetime},
     )
-    # Pending Requests Pittsburgh and Pennsylvania
-    for request in [mrs.request_pittsburgh, mrs.request_pennsylvania]:
+    # Ready Requests Pittsburgh and Pennsylvania
+    for request in [mrs.request_ready_pittsburgh, mrs.request_ready_pennsylvania]:
         tdc.db_client.update_data_request(
             entry_id=int(request.id),
-            column_edit_mappings={"date_created": pre_notification_datetime},
+            column_edit_mappings={"date_status_last_changed": pre_notification_datetime},
         )
     # Orange County User Follower
     tdc.db_client._update_entry_in_table(
@@ -89,32 +89,27 @@ def test_metrics_followed_searches_breakdown(
         source_change: int,
         complete_request_count: int,
         complete_request_change: int,
-        incomplete_request_count: int,
-        incomplete_request_change: int,
+        approved_request_count: int,
+        approved_request_change: int,
     ) -> None:
+        pairs = [
+            ("follower_count", follower_count),
+            ("follower_change", follower_change),
+            ("source_count", source_count),
+            ("source_change", source_change),
+            ("completed_requests_count", complete_request_count),
+            ("completed_requests_change", complete_request_change),
+            ("approved_requests_count", approved_request_count),
+            ("approved_requests_change", approved_request_change),
+        ]
+
         for result in data["results"]:
             if result["location_name"] != location_name:
                 continue
             try:
-                assert result["follower_change"] == follower_change, "follower_change"
-                assert result["follower_count"] == follower_count, "follower_count"
-                assert result["source_count"] == source_count, "source_count"
-                assert result["source_change"] == source_change, "source_change"
-                assert (
-                    result["approved_requests_count"] == incomplete_request_count
-                ), "approved_requests_count"
-                assert (
-                    result["approved_requests_change"] == incomplete_request_change
-                ), "approved_requests_change"
-                assert (
-                    result["completed_requests_count"] == complete_request_count
-                ), "completed_requests_count"
-                assert (
-                    result["completed_requests_change"] == complete_request_change
-                ), "completed_requests_change"
-                assert (
-                    result["search_url"] == f"{search_url_base}{result['location_id']}"
-                )
+                for key, value in pairs:
+                    assert result[key] == value
+                assert result["search_url"] == f"{search_url_base}{result['location_id']}"
             except AssertionError as e:
                 raise AssertionError(
                     f"Assertion error in {result['location_name']}: {e}"
@@ -127,9 +122,9 @@ def test_metrics_followed_searches_breakdown(
         source_count=2,
         source_change=1,
         complete_request_count=2,
-        complete_request_change=0,
-        incomplete_request_count=2,
-        incomplete_request_change=2,
+        complete_request_change=2,
+        approved_request_count=2,
+        approved_request_change=0,
     )
     validate_location(
         location_name="Pittsburgh, Allegheny, Pennsylvania",
@@ -139,8 +134,8 @@ def test_metrics_followed_searches_breakdown(
         source_change=0,
         complete_request_count=1,
         complete_request_change=1,
-        incomplete_request_count=1,
-        incomplete_request_change=0,
+        approved_request_count=1,
+        approved_request_change=0,
     )
     validate_location(
         location_name="Orange, California",
@@ -150,12 +145,11 @@ def test_metrics_followed_searches_breakdown(
         source_change=0,
         complete_request_count=1,
         complete_request_change=1,
-        incomplete_request_count=1,
-        incomplete_request_change=1,
+        approved_request_count=1,
+        approved_request_change=1,
     )
 
     # Test pagination
-
     data = tdc.request_validator.get_metrics_followed_searches_breakdown(
         headers=tdc.get_admin_tus().jwt_authorization_header,
         dto=MetricsFollowedSearchesBreakdownRequestDTO(page=2),
@@ -163,7 +157,6 @@ def test_metrics_followed_searches_breakdown(
     assert len(data["results"]) == 0
 
     # Test sorting
-
     data = tdc.request_validator.get_metrics_followed_searches_breakdown(
         headers=tdc.get_admin_tus().jwt_authorization_header,
         dto=MetricsFollowedSearchesBreakdownRequestDTO(sort_by="follower_count"),
@@ -214,4 +207,4 @@ def test_metrics_followed_searches_aggregate(test_data_creator_flask):
     )
     assert data["total_followers"] == 3
     assert data["total_followed_searches"] == 6
-    assert data["last_notification_date"] == last_notification_datetime
+    assert data["last_notification_date"] == last_notification_datetime.strftime("%Y-%m-%d")
