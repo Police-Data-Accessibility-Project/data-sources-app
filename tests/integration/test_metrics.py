@@ -40,8 +40,8 @@ def test_metrics_followed_searches_breakdown(
     last_notification_datetime = tdc.tdcdb.notification_log()
 
     data = tdc.request_validator.get_metrics_followed_searches_breakdown(
-    headers=tdc.get_admin_tus().jwt_authorization_header,
-    dto=MetricsFollowedSearchesBreakdownRequestDTO(),
+        headers=tdc.get_admin_tus().jwt_authorization_header,
+        dto=MetricsFollowedSearchesBreakdownRequestDTO(),
     )
     assert len(data["results"]) == 0
 
@@ -61,7 +61,9 @@ def test_metrics_followed_searches_breakdown(
     for request in [mrs.request_ready_pittsburgh, mrs.request_ready_pennsylvania]:
         tdc.db_client.update_data_request(
             entry_id=int(request.id),
-            column_edit_mappings={"date_status_last_changed": pre_notification_datetime},
+            column_edit_mappings={
+                "date_status_last_changed": pre_notification_datetime
+            },
         )
     # Orange County User Follower
     tdc.db_client._update_entry_in_table(
@@ -109,7 +111,9 @@ def test_metrics_followed_searches_breakdown(
             try:
                 for key, value in pairs:
                     assert result[key] == value
-                assert result["search_url"] == f"{search_url_base}{result['location_id']}"
+                assert (
+                    result["search_url"] == f"{search_url_base}{result['location_id']}"
+                )
             except AssertionError as e:
                 raise AssertionError(
                     f"Assertion error in {result['location_name']}: {e}"
@@ -207,4 +211,6 @@ def test_metrics_followed_searches_aggregate(test_data_creator_flask):
     )
     assert data["total_followers"] == 3
     assert data["total_followed_searches"] == 6
-    assert data["last_notification_date"] == last_notification_datetime.strftime("%Y-%m-%d")
+    assert data["last_notification_date"] == last_notification_datetime.strftime(
+        "%Y-%m-%d"
+    )

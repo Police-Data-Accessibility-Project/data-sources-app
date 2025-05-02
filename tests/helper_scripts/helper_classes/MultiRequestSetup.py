@@ -70,20 +70,16 @@ class MultiRequestSetup:
         )
 
     def setup_request(
-            self,
-            data_source_id: int,
-            location_id: Optional[int] = None,
-            request_status: RequestStatus = RequestStatus.INTAKE,
+        self,
+        data_source_id: int,
+        location_id: Optional[int] = None,
+        request_status: RequestStatus = RequestStatus.INTAKE,
     ) -> TestDataRequestInfo:
-        request = self.tdc.tdcdb.data_request(
-            request_status=request_status
-        )
+        request = self.tdc.tdcdb.data_request(request_status=request_status)
         self.tdc.link_data_request_to_data_source(
-            data_request_id=request.id,
-            data_source_id=data_source_id
+            data_request_id=request.id, data_source_id=data_source_id
         )
         self.tdc.tdcdb.link_data_request_to_location(
-            data_request_id=request.id,
-            location_id=location_id
+            data_request_id=request.id, location_id=location_id
         )
         return request
