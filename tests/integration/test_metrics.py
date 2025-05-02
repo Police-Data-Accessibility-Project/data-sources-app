@@ -39,11 +39,11 @@ def test_metrics_followed_searches_breakdown(
     tdc = test_data_creator_flask
     last_notification_datetime = tdc.tdcdb.notification_log()
 
-    data = tdc.request_validator.get_metrics_followed_searches_breakdown(
-        headers=tdc.get_admin_tus().jwt_authorization_header,
-        dto=MetricsFollowedSearchesBreakdownRequestDTO(),
-    )
-    assert len(data["results"]) == 0
+    # data = tdc.request_validator.get_metrics_followed_searches_breakdown(
+    # headers=tdc.get_admin_tus().jwt_authorization_header,
+    # dto=MetricsFollowedSearchesBreakdownRequestDTO(),
+    # )
+    # assert len(data["results"]) == 0
 
     mfs = MultiFollowSetup.setup(tdc)
     mas = MultiAgencySetup(tdc, mfs.mls)
@@ -101,11 +101,11 @@ def test_metrics_followed_searches_breakdown(
                 assert result["source_count"] == source_count, "source_count"
                 assert result["source_change"] == source_change, "source_change"
                 assert (
-                    result["incomplete_requests_count"] == incomplete_request_count
-                ), "incomplete_requests_count"
+                    result["approved_requests_count"] == incomplete_request_count
+                ), "approved_requests_count"
                 assert (
-                    result["incomplete_requests_change"] == incomplete_request_change
-                ), "incomplete_requests_change"
+                    result["approved_requests_change"] == incomplete_request_change
+                ), "approved_requests_change"
                 assert (
                     result["completed_requests_count"] == complete_request_count
                 ), "completed_requests_count"

@@ -2431,7 +2431,7 @@ class DatabaseClient:
         def debug_print(query):
             print(query.compile(compile_kwargs={"literal_binds": True}))
 
-        # Dependent Location Subquery
+        # Dependent Location CTE
         dlsq = union_all(
             select(
                 Location.id.label("location_id"),
@@ -2445,9 +2445,7 @@ class DatabaseClient:
                 Location.id.label("location_id"),
                 Location.id.label("dependent_location_id"),
             ),
-        ).subquery()
-
-        debug_print(dlsq)
+        ).cte(name="dependent_locations")
 
         def maybe_limit(column, limit_to_before_last_notification):
             """Maybe limit to before the last notification"""
@@ -2562,51 +2560,44 @@ class DatabaseClient:
             all_completed_requests, last_completed_requests, "completed_requests"
         )
 
+        def coalesce(attr, label):
+            return func.coalesce(attr, 0).label(label)
+
         final_query = (
             select(
-                dlsq.c.location_id.label("location_id"),
+                all_follows.c.location_id,
                 LocationExpanded.full_display_name.label("display_name"),
-                all_follows.c.count.label("follower_count"),
+                coalesce(all_follows.c.count, "follower_count"),
                 diff_follows,
-                all_sources.c.count.label("source_count"),
-                diff_sources,
-                all_approved_requests.c.count.label("approved_requests_count"),
-                diff_approved_requests,
-                all_completed_requests.c.count.label("completed_requests_count"),
-                diff_completed_requests,
-                func.concat(base_search_url, LocationExpanded.id).label("search_url"),
+                # coalesce(all_sources.c.count,"source_count"),
+                # diff_sources,
+                # coalesce(all_approved_requests.c.count, "approved_requests_count"),
+                # diff_approved_requests,
+                # coalesce(all_completed_requests.c.count, "completed_requests_count"),
+                # diff_completed_requests,
+                # func.concat(base_search_url, LocationExpanded.id).label("search_url"),
             )
-            .select_from(dlsq)
-            .join(LocationExpanded, dlsq.c.location_id == LocationExpanded.id)
+            .select_from(all_follows)
+            .join(LocationExpanded, all_follows.c.location_id == LocationExpanded.id)
         )
-        for subquery in [
-            all_follows,
-            last_follows,
-            all_sources,
-            last_sources,
-            all_approved_requests,
-            last_approved_requests,
-            all_completed_requests,
-            last_completed_requests,
-        ]:
-            debug_print(subquery)
-            final_query = final_query.outerjoin(
-                subquery,
-                dlsq.c.dependent_location_id == subquery.c.location_id,
-            )
 
-        # At least one of the counts must be nonzero
+        # for subquery in [
+        #     last_follows,
+        #     all_sources,
+        #     last_sources,
+        #     all_approved_requests,
+        #     last_approved_requests,
+        #     all_completed_requests,
+        #     last_completed_requests,
+        # ]:
+        #     final_query = final_query.outerjoin(
+        #         subquery,
+        #         dlsq.c.dependent_location_id == subquery.c.location_id,
+        #     )
+
+        # The follower count must be nonzero
         final_query = final_query.where(
-            or_(
-                all_follows.c.count > 0,
-                or_(
-                    all_sources.c.count > 0,
-                    or_(
-                        all_approved_requests.c.count > 0,
-                        all_completed_requests.c.count > 0,
-                    ),
-                ),
-            )
+            all_follows.c.count > 0,
         )
 
         # ==
@@ -2713,6 +2704,7 @@ class DatabaseClient:
                 else attribute.desc()
             )
         final_query = final_query.limit(100).offset((dto.page - 1) * 100)
+        debug_print(final_query)
 
         raw_results = self.session.execute(final_query).all()
 
@@ -2722,13 +2714,13 @@ class DatabaseClient:
                 "location_name": result.display_name,
                 "location_id": result.location_id,
                 "follower_count": result.follower_count,
-                "follower_change": result.follower_count_change,
+                "follower_change": result.follower_change,
                 "source_count": result.source_count,
-                "source_change": result.source_count_change,
+                "source_change": result.source_change,
                 "approved_requests_count": result.approved_requests_count,
                 "approved_requests_change": result.approved_requests_change,
                 "completed_requests_count": result.completed_requests_count,
-                "completed_requests_change": result.completed_requests_count_change,
+                "completed_requests_change": result.completed_requests_change,
                 "search_url": result.search_url,
             }
             results.append(d)
