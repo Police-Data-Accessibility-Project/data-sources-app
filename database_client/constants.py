@@ -59,3 +59,14 @@ METADATA_METHOD_NAMES = [
 ]
 
 PAGE_SIZE = 100
+
+GET_METRICS_FOLLOWED_SEARCHES_BREAKDOWN_SORTABLE_COLUMNS = [
+    "data_source_count",
+    "data_source_change",
+    "data_request_started_count",
+    "data_request_started_change",
+    "data_request_completed_count",
+    "data_request_completed_change",
+    "follower_count",
+    "follower_change",
+]

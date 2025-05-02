@@ -1,3 +1,4 @@
+import datetime
 import uuid
 from typing import Optional
 
@@ -294,7 +295,10 @@ class TestDataCreatorDBClient:
         )
 
     def data_request(
-        self, user_id: Optional[int] = None, **column_value_kwargs
+        self,
+        user_id: Optional[int] = None,
+        request_status: Optional[RequestStatus] = RequestStatus.INTAKE,
+        **column_value_kwargs,
     ) -> TestDataRequestInfo:
         if user_id is None:
             user_id = self.user().id
@@ -305,6 +309,7 @@ class TestDataCreatorDBClient:
                 "submission_notes": submission_notes,
                 "title": get_test_name(),
                 "creator_user_id": user_id,
+                "request_status": request_status.value,
                 **column_value_kwargs,
             }
         )
@@ -406,6 +411,11 @@ class TestDataCreatorDBClient:
             except IntegrityError:
                 # Already exists. Keep going
                 pass
+
+    def notification_log(self) -> datetime.datetime:
+        dt = datetime.datetime.now() - datetime.timedelta(weeks=4)
+        self.db_client.add_to_notification_log(user_count=0, dt=dt)
+        return dt
 
 
 class ValidNotificationEventCreator:

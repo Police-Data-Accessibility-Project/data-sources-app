@@ -18,6 +18,19 @@ SORT_BY_FIELD = fields.Str(
         "source": SourceMappingEnum.QUERY_ARGS,
     },
 )
+
+
+def get_sort_by_field(allowed_values: list) -> fields.Str:
+    return fields.Str(
+        required=False,
+        metadata={
+            "description": f"The field to sort the results by. Sortable fields are: {', '.join(allowed_values)}",
+            "source": SourceMappingEnum.QUERY_ARGS,
+        },
+        validate=validate.OneOf(allowed_values),
+    )
+
+
 SORT_ORDER_FIELD = fields.Enum(
     required=False,
     enum=SortOrder,

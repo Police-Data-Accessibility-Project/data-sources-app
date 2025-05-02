@@ -680,6 +680,7 @@ class LinkUserFollowedLocation(Base, CountMetadata):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
     location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
+    created_at: Mapped[timestamp] = mapped_column(server_default=func.now())
 
 
 class RecordCategory(Base):

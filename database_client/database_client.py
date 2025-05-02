@@ -35,7 +35,10 @@ from database_client.DTOs import (
     UsersWithPermissions,
     DataRequestInfoForGithub,
 )
-from database_client.constants import PAGE_SIZE
+from database_client.constants import (
+    PAGE_SIZE,
+    GET_METRICS_FOLLOWED_SEARCHES_BREAKDOWN_SORTABLE_COLUMNS,
+)
 from database_client.db_client_dataclasses import (
     OrderByParameters,
     WhereMapping,
@@ -2372,46 +2375,63 @@ class DatabaseClient:
     def add_to_notification_log(
         self,
         user_count: int,
+        dt: Optional[datetime] = None,
     ):
         item = NotificationLog(
             user_count=user_count,
         )
+        if dt is not None:
+            item.created_at = dt
         self.session.add(item)
 
     @session_manager
     def get_metrics_followed_searches_breakdown(
         self, dto: MetricsFollowedSearchesBreakdownRequestDTO
     ):
-        base_search_url = (
-            f"{get_env_variable("VITE_VUE_APP_BASE_URL")}"
-            f"/search/follow?location_id="
-        )
-
-        follower_count = func.count(
-            func.distinct(LinkUserFollowedLocation.user_id)
-        ).label("follower_count")
-        source_count = func.count(
-            func.distinct(LinkLocationDataSourceView.data_source_id)
-        ).label("source_count")
-        request_count = func.count(
-            func.distinct(LinkLocationDataRequest.data_request_id)
-        ).label("request_count")
-        display_name = LocationExpanded.full_display_name.label("display_name")
-
-        sortable_columns = {
-            "follower_count": follower_count,
-            "source_count": source_count,
-            "request_count": request_count,
-            "location_name": display_name,
-        }
-        allowed_columns = list(sortable_columns.keys())
+        sortable_columns = GET_METRICS_FOLLOWED_SEARCHES_BREAKDOWN_SORTABLE_COLUMNS
 
         if dto.sort_by is not None:
-            if dto.sort_by not in allowed_columns:
+            if dto.sort_by not in sortable_columns:
                 raise BadRequest(
-                    description=f"Invalid sort_by value: {dto.sort_by}; must be one of {allowed_columns}",
+                    description=f"Invalid sort_by value: {dto.sort_by}; must be one of {sortable_columns}",
                 )
 
+        # Get last notification time
+        # TODO: Look into optimization here later
+        last_notification = (
+            self.session.query(NotificationLog.created_at)
+            .order_by(NotificationLog.created_at.desc())
+            .first()[0]
+        )
+
+        base_search_url = (
+            f"{get_env_variable("VITE_VUE_APP_BASE_URL")}"
+            f"/search/results?location_id="
+        )
+
+        # approved_requests = aliased(DataRequest)
+        # completed_requests = aliased(DataRequest)
+
+        def count_distinct(field, label):
+            return func.count(func.distinct(field)).label(label)
+
+        # follower_count = count_distinct(
+        #     LinkUserFollowedLocation.user_id, "follower_count"
+        # )
+        # source_count = count_distinct(DataSource.id, "source_count")
+        # incomplete_requests_count = count_distinct(
+        #     approved_requests.id, "approved_requests_count"
+        # )
+        # completed_requests_count = count_distinct(
+        #     completed_requests.id, "completed_requests_count"
+        # )
+
+        # display_name = LocationExpanded.full_display_name.label("display_name")
+
+        def debug_print(query):
+            print(query.compile(compile_kwargs={"literal_binds": True}))
+
+        # Dependent Location Subquery
         dlsq = union_all(
             select(
                 Location.id.label("location_id"),
@@ -2427,47 +2447,274 @@ class DatabaseClient:
             ),
         ).subquery()
 
-        query = (
+        debug_print(dlsq)
+
+        def maybe_limit(column, limit_to_before_last_notification):
+            """Maybe limit to before the last notification"""
+            return (
+                column < last_notification
+                if limit_to_before_last_notification
+                else True
+            )
+
+        # ==
+        def follower_count_subquery(limit_to_before_last_notification: bool):
+            return (
+                select(
+                    LinkUserFollowedLocation.location_id,
+                    count_distinct(LinkUserFollowedLocation.user_id, "count"),
+                )
+                .select_from(dlsq)
+                .where(
+                    maybe_limit(
+                        LinkUserFollowedLocation.created_at,
+                        limit_to_before_last_notification,
+                    )
+                )
+                .group_by(LinkUserFollowedLocation.location_id)
+                .subquery()
+            )
+
+        def source_count_subquery(limit_to_before_last_notification: bool):
+            return (
+                select(dlsq.c.location_id, count_distinct(DataSource.id, "count"))
+                .select_from(dlsq)
+                .join(
+                    LinkLocationDataSourceView,
+                    dlsq.c.dependent_location_id
+                    == LinkLocationDataSourceView.location_id,
+                    isouter=True,
+                )
+                .join(
+                    DataSource,
+                    LinkLocationDataSourceView.data_source_id == DataSource.id,
+                    isouter=True,
+                )
+                .where(
+                    maybe_limit(
+                        DataSource.created_at, limit_to_before_last_notification
+                    )
+                )
+                .group_by(dlsq.c.location_id)
+                .subquery()
+            )
+
+        def requests_count_subquery(
+            limit_to_before_last_notification: bool, request_status: RequestStatus
+        ):
+            return (
+                select(dlsq.c.location_id, count_distinct(DataRequest.id, "count"))
+                .select_from(dlsq)
+                .join(
+                    LinkLocationDataRequest,
+                    dlsq.c.dependent_location_id == LinkLocationDataRequest.location_id,
+                    isouter=True,
+                )
+                .join(
+                    DataRequest,
+                    LinkLocationDataRequest.data_request_id == DataRequest.id,
+                    isouter=True,
+                )
+                .where(
+                    DataRequest.request_status == request_status.value,
+                    maybe_limit(
+                        DataRequest.date_status_last_changed,
+                        limit_to_before_last_notification,
+                    ),
+                )
+                .group_by(dlsq.c.location_id)
+            ).subquery()
+
+        def get_diff(q1, q2, attribute_name):
+            return (func.coalesce(q1.c.count, 0) - func.coalesce(q2.c.count, 0)).label(
+                f"{attribute_name}_change"
+            )
+
+        all_follows = follower_count_subquery(limit_to_before_last_notification=False)
+        last_follows = follower_count_subquery(limit_to_before_last_notification=True)
+        diff_follows = get_diff(all_follows, last_follows, "follower")
+
+        all_sources = source_count_subquery(limit_to_before_last_notification=False)
+        last_sources = source_count_subquery(limit_to_before_last_notification=True)
+        diff_sources = get_diff(all_sources, last_sources, "source")
+
+        all_approved_requests = requests_count_subquery(
+            limit_to_before_last_notification=False,
+            request_status=RequestStatus.READY_TO_START,
+        )
+        last_approved_requests = requests_count_subquery(
+            limit_to_before_last_notification=True,
+            request_status=RequestStatus.READY_TO_START,
+        )
+        diff_approved_requests = get_diff(
+            all_approved_requests, last_approved_requests, "approved_requests"
+        )
+
+        all_completed_requests = requests_count_subquery(
+            limit_to_before_last_notification=False,
+            request_status=RequestStatus.COMPLETE,
+        )
+        last_completed_requests = requests_count_subquery(
+            limit_to_before_last_notification=True,
+            request_status=RequestStatus.COMPLETE,
+        )
+        diff_completed_requests = get_diff(
+            all_completed_requests, last_completed_requests, "completed_requests"
+        )
+
+        final_query = (
             select(
                 dlsq.c.location_id.label("location_id"),
-                display_name,
-                follower_count,
-                source_count,
-                request_count,
+                LocationExpanded.full_display_name.label("display_name"),
+                all_follows.c.count.label("follower_count"),
+                diff_follows,
+                all_sources.c.count.label("source_count"),
+                diff_sources,
+                all_approved_requests.c.count.label("approved_requests_count"),
+                diff_approved_requests,
+                all_completed_requests.c.count.label("completed_requests_count"),
+                diff_completed_requests,
                 func.concat(base_search_url, LocationExpanded.id).label("search_url"),
             )
+            .select_from(dlsq)
             .join(LocationExpanded, dlsq.c.location_id == LocationExpanded.id)
-            .join(
-                LinkUserFollowedLocation,
-                dlsq.c.location_id == LinkUserFollowedLocation.location_id,
+        )
+        for subquery in [
+            all_follows,
+            last_follows,
+            all_sources,
+            last_sources,
+            all_approved_requests,
+            last_approved_requests,
+            all_completed_requests,
+            last_completed_requests,
+        ]:
+            debug_print(subquery)
+            final_query = final_query.outerjoin(
+                subquery,
+                dlsq.c.dependent_location_id == subquery.c.location_id,
             )
-            .join(
-                LinkLocationDataSourceView,
-                dlsq.c.dependent_location_id == LinkLocationDataSourceView.location_id,
-                isouter=True,
-            )
-            .join(
-                LinkLocationDataRequest,
-                dlsq.c.dependent_location_id == LinkLocationDataRequest.location_id,
-                isouter=True,
-            )
-            .group_by(
-                LocationExpanded.id,
-                LocationExpanded.full_display_name,
-                dlsq.c.location_id.label("location_id"),
+
+        # At least one of the counts must be nonzero
+        final_query = final_query.where(
+            or_(
+                all_follows.c.count > 0,
+                or_(
+                    all_sources.c.count > 0,
+                    or_(
+                        all_approved_requests.c.count > 0,
+                        all_completed_requests.c.count > 0,
+                    ),
+                ),
             )
         )
 
+        # ==
+        # def build_query(limit_to_before_last_notification: bool):
+        #     query = (
+        #         select(
+        #             dlsq.c.location_id.label("location_id"),
+        #             display_name,
+        #             follower_count,
+        #             source_count,
+        #             incomplete_requests_count,
+        #             completed_requests_count,
+        #             func.concat(base_search_url, LocationExpanded.id).label("search_url"),
+        #     )
+        #         .join(LocationExpanded, dlsq.c.location_id == LocationExpanded.id)
+        #         .join(
+        #             LinkUserFollowedLocation,
+        #             and_(
+        #                 dlsq.c.location_id == LinkUserFollowedLocation.location_id,
+        #                 maybe_limit(LinkUserFollowedLocation.created_at, limit_to_before_last_notification),
+        #             )
+        #         ).join(
+        #             LinkLocationDataSourceView,
+        #             dlsq.c.dependent_location_id == LinkLocationDataSourceView.location_id,
+        #             isouter=True,
+        #         ).join(
+        #             LinkLocationDataRequest,
+        #             dlsq.c.dependent_location_id == LinkLocationDataRequest.location_id,
+        #             isouter=True,
+        #         ).join(
+        #             DataSource,
+        #             and_(
+        #                 LinkLocationDataSourceView.data_source_id == DataSource.id,
+        #                 and_(
+        #                     DataSource.approval_status == ApprovalStatus.APPROVED.value,
+        #                     maybe_limit(DataSource.created_at, limit_to_before_last_notification),
+        #                 ),
+        #             ),
+        #             isouter=True
+        #         ).join(
+        #             approved_requests,
+        #             and_(
+        #                 LinkLocationDataRequest.data_request_id == approved_requests.id,
+        #                 and_(
+        #                     approved_requests.request_status == RequestStatus.READY_TO_START.value,
+        #                     maybe_limit(approved_requests.date_status_last_changed, limit_to_before_last_notification),
+        #                 ),
+        #             ),
+        #             isouter=True
+        #         ).join(
+        #             completed_requests,
+        #             and_(
+        #                 LinkLocationDataRequest.data_request_id == completed_requests.id,
+        #                 and_(
+        #                     completed_requests.request_status == RequestStatus.COMPLETE.value,
+        #                     maybe_limit(completed_requests.date_status_last_changed, limit_to_before_last_notification)
+        #                 )
+        #             ),
+        #             isouter=True
+        #         # Finalize query
+        #         ).group_by(
+        #             LocationExpanded.id,
+        #             LocationExpanded.full_display_name,
+        #             dlsq.c.location_id
+        #         ).subquery()
+        #     )
+        #
+        #     return query
+        #
+        # query_all = build_query(limit_to_before_last_notification=False)
+        # query_last = build_query(limit_to_before_last_notification=True)
+        #
+        # def get_change(attribute_name):
+        #     all_attribute = getattr(query_all.c, attribute_name)
+        #     last_attribute = getattr(query_last.c, attribute_name)
+        #     return (
+        #             func.coalesce(all_attribute, 0) -
+        #             func.coalesce(last_attribute, 0)
+        #     ).label(f"{attribute_name}_change")
+        #
+        # final_query = select(
+        #     query_all.c.location_id,
+        #     query_all.c.display_name,
+        #     query_all.c.follower_count,
+        #     get_change("follower_count"),
+        #     query_all.c.source_count,
+        #     get_change("source_count"),
+        #     query_all.c.approved_requests_count,
+        #     get_change("approved_requests_count"),
+        #     query_all.c.completed_requests_count,
+        #     get_change("completed_requests_count"),
+        #     query_all.c.search_url,
+        # ).join(
+        #     query_last,
+        #     query_all.c.location_id == query_last.c.location_id,
+        #     isouter=True
+        # )
+
         if dto.sort_by is not None:
             attribute = sortable_columns[dto.sort_by]
-            query = query.order_by(
+            final_query = final_query.order_by(
                 attribute.asc()
                 if dto.sort_order == SortOrder.ASCENDING
                 else attribute.desc()
             )
-        query = query.limit(100).offset((dto.page - 1) * 100)
+        final_query = final_query.limit(100).offset((dto.page - 1) * 100)
 
-        raw_results = self.session.execute(query).all()
+        raw_results = self.session.execute(final_query).all()
 
         results = []
         for result in raw_results:
@@ -2475,8 +2722,13 @@ class DatabaseClient:
                 "location_name": result.display_name,
                 "location_id": result.location_id,
                 "follower_count": result.follower_count,
+                "follower_change": result.follower_count_change,
                 "source_count": result.source_count,
-                "request_count": result.request_count,
+                "source_change": result.source_count_change,
+                "approved_requests_count": result.approved_requests_count,
+                "approved_requests_change": result.approved_requests_change,
+                "completed_requests_count": result.completed_requests_count,
+                "completed_requests_change": result.completed_requests_count_change,
                 "search_url": result.search_url,
             }
             results.append(d)
