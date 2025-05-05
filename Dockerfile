@@ -1,10 +1,11 @@
 FROM python:3.12.8
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 ENV PYTHONUNBUFFERED=1
 
 COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
-RUN pip3 install "psycopg[binary,pool]"
+RUN uv pip install --system -r requirements.txt
+RUN uv pip install --system "psycopg[binary,pool]"
 
 EXPOSE 8080
 

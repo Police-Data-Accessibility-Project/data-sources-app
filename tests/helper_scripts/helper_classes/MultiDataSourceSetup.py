@@ -1,3 +1,4 @@
+from database_client.enums import ApprovalStatus
 from tests.helper_scripts.helper_classes.MultiAgencySetup import MultiAgencySetup
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
@@ -9,15 +10,34 @@ class MultiDataSourceSetup:
     def __init__(self, tdc: TestDataCreatorFlask, mas: MultiAgencySetup):
         self.tdc = tdc
         self.mas = mas
-        self.source_1 = self.tdc.data_source()
+        self.approved_source_pittsburgh = self.tdc.data_source()
         self.tdc.link_data_source_to_agency(
-            self.source_1.id, self.mas.pittsburgh_agency.id
+            self.approved_source_pittsburgh.id, self.mas.pittsburgh_agency.id
         )
-        self.source_2 = self.tdc.data_source()
+        self.approved_source_pennsylvania = self.tdc.data_source()
         self.tdc.link_data_source_to_agency(
-            self.source_2.id, self.mas.pennsylvania_id.id
+            self.approved_source_pennsylvania.id, self.mas.pennsylvania_id.id
         )
-        self.source_3 = self.tdc.data_source()
+        self.approved_source_federal = self.tdc.data_source()
         self.tdc.link_data_source_to_agency(
-            self.source_3.id, self.mas.federal_agency.id
+            self.approved_source_federal.id, self.mas.federal_agency.id
+        )
+        # Add pending data sources as well
+        self.pending_source_1 = self.tdc.tdcdb.data_source(
+            approval_status=ApprovalStatus.PENDING
+        )
+        self.tdc.link_data_source_to_agency(
+            self.pending_source_1.id, self.mas.pittsburgh_agency.id
+        )
+        self.pending_source_2 = self.tdc.tdcdb.data_source(
+            approval_status=ApprovalStatus.PENDING
+        )
+        self.tdc.link_data_source_to_agency(
+            self.pending_source_2.id, self.mas.pennsylvania_id.id
+        )
+        self.pending_source_3 = self.tdc.tdcdb.data_source(
+            approval_status=ApprovalStatus.PENDING
+        )
+        self.tdc.link_data_source_to_agency(
+            self.pending_source_3.id, self.mas.federal_agency.id
         )

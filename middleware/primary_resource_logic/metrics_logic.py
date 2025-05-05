@@ -18,4 +18,5 @@ def get_metrics_followed_searches_breakdown(
 
 
 def get_metrics_followed_searches_aggregate(db_client: DatabaseClient):
-    return db_client.get_metrics_followed_searches_aggregate()
+    result = db_client.get_metrics_followed_searches_aggregate()
+    return result
