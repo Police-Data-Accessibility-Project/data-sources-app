@@ -43,15 +43,15 @@ jobs:
         enable-cache: true
         cache-dependency-glob: |
           **/requirements*.txt
-    - name: Install dependencies
-      run: |
-        uv pip install --system -r requirements.txt
-        uv pip install --system pytest pytest-cov
+
+    - name: Install the project
+      run: uv sync --locked --all-extras --dev
+
     - name: Run migrations
       run: |
-        alembic upgrade head
+        uv run alembic upgrade head
     - name: Run tests
       run: |
-        pytest tests
+        uv run pytest tests
         
       
