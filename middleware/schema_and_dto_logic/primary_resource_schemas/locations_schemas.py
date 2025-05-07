@@ -200,6 +200,7 @@ class CountiesLocationsMapInnerSchema(Schema):
     name = fields.Str(metadata=get_json_metadata("The name of the county"))
     location_id = fields.Integer(metadata=get_json_metadata("The id of the county"))
     state_iso = fields.Str(metadata=get_json_metadata("The iso code of the state"))
+    fips = fields.Str(metadata=get_json_metadata("The fips code of the county"))
 
 
 class StatesLocationsMapInnerSchema(Schema):
