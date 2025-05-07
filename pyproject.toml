@@ -91,6 +91,7 @@ major_version_zero = false
 
 [dependency-groups]
 dev = [
+    "black>=25.1.0",
     "docker>=7.1.0",
     "pytest==8.3.3",
     "pytest-cov>=6.1.1",
