@@ -1,4 +1,4 @@
-from marshmallow import fields, Schema, post_load
+from marshmallow import fields, Schema, post_load, validate
 
 from database_client.enums import RequestStatus, RequestUrgency
 from middleware.enums import RecordTypes
@@ -41,6 +41,7 @@ class DataRequestsSchema(Schema):
     title = fields.String(
         metadata=get_json_metadata("The title of the data request"),
         required=True,
+        validate=validate.Length(min=1, max=255),
     )
     submission_notes = fields.String(
         allow_none=True,
