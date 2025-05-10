@@ -13,6 +13,7 @@ def test_get_github_issue_project_statuses():
 
     results = get_github_issue_project_statuses(issue_numbers=[115])
     print(results)
+    print(results.issue_number_to_info)
 
 
 def test_github_issue_manager():

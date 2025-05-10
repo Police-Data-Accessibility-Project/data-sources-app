@@ -180,6 +180,15 @@ def test_map_locations(test_data_creator_flask: TestDataCreatorFlask):
     counties = data["counties"]
     localities = data["localities"]
 
+    # Check all localities have county fips and state iso
+    for locality in localities:
+        assert locality["county_fips"] is not None
+        assert locality["state_iso"] is not None
+
+    # Check all counties have fips
+    for county in counties:
+        assert county["fips"] is not None
+
     ## VALIDATE DATA SOURCE COUNTS
     def check_location_source_count(name: str, data: list[dict], expected_value: int):
         for location in data:

@@ -241,6 +241,18 @@ def test_data_requests_post(
         expected_response_status=HTTPStatus.BAD_REQUEST,
     )
 
+    # Check that response fails if title is too long
+    post_data_request(
+        json_request={
+            "request_info": {
+                "submission_notes": submission_notes,
+                "title": get_test_name() * 100,
+                "request_urgency": RequestUrgency.URGENT.value,
+            }
+        },
+        expected_response_status=HTTPStatus.BAD_REQUEST,
+    )
+
 
 def test_data_requests_by_id_get(
     test_data_creator_flask: TestDataCreatorFlask,

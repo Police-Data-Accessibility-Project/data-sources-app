@@ -2258,6 +2258,8 @@ class DatabaseClient:
                     'lat', lat,
                     'lng', lng
                 ) AS coordinates,
+                county_fips,
+                state_iso,
                 DATA_SOURCE_COUNT as source_count
             FROM
                 PUBLIC.MAP_LOCALITIES
@@ -2271,6 +2273,7 @@ class DatabaseClient:
                 location_id,
                 county_name as name,
                 state_iso,
+                fips,
                 DATA_SOURCE_COUNT as source_count
             FROM
                 PUBLIC.MAP_COUNTIES
