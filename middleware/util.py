@@ -1,10 +1,11 @@
 import csv
 import os
+import re
 from dataclasses import is_dataclass, asdict
 from datetime import datetime
 from enum import Enum
 from io import BytesIO, StringIO
-from typing import Any, Dict, TextIO, Generator
+from typing import Any, Dict, Generator
 
 from dotenv import dotenv_values, find_dotenv
 from pydantic import BaseModel
@@ -158,3 +159,14 @@ def stringify_lists(d: dict):
             v = stringify_list_of_ints(v)
             d[k] = ",".join(v)
     return d
+
+
+def normalize_url(source_url: str) -> str:
+    # Remove 'https://', 'http://' from the beginning
+    url = re.sub(r"^(https://|http://)", "", source_url)
+    # Remove "www." from the beginning
+    url = re.sub(r"^www\.", "", url)
+    # Remove trailing '/'
+    url = url.rstrip("/")
+
+    return url

@@ -26,3 +26,7 @@ class SourceCollectorPostResponseInnerDTO(BaseModel):
     status: DataSourceCreationResponse
     data_source_id: Optional[int] = None
     error: Optional[str] = None
+
+
+class SourceCollectorDuplicatesPostRequestDTO(BaseModel):
+    urls: list[str]
