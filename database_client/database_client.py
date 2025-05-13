@@ -95,6 +95,7 @@ from database_client.models import (
     NotificationLog,
     LinkLocationDataSourceView,
     DependentLocation,
+    DistinctSourceURL,
 )
 from middleware.enums import (
     PermissionsEnum,
@@ -2229,7 +2230,7 @@ class DatabaseClient:
             raise LocationDoesNotExistError
 
     def refresh_materialized_view(self, view_name: str):
-        self.session.execute_raw_sql(f"REFRESH MATERIALIZED VIEW {view_name};")
+        self.execute_raw_sql(f"REFRESH MATERIALIZED VIEW {view_name};")
 
     def refresh_all_materialized_views(self):
         self.execute_raw_sql(
@@ -2621,3 +2622,14 @@ class DatabaseClient:
             "total_followed_searches": result.location_count,
             "last_notification_date": result.last_notification.strftime("%Y-%m-%d"),
         }
+
+    @session_manager
+    def get_duplicate_urls_bulk(self, urls: List[str]) -> list[str]:
+        """
+        Returns all URLs that already exist in the database
+        """
+        stmt = select(DistinctSourceURL.original_url).where(
+            DistinctSourceURL.base_url.in_(urls)
+        )
+        existing_urls = self.session.scalars(stmt).all()
+        return existing_urls

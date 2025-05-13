@@ -968,3 +968,11 @@ class RequestValidator:
             headers=headers,
             expected_schema=SchemaConfigs.METRICS_FOLLOWED_SEARCHES_AGGREGATE_GET.value.primary_output_schema,
         )
+
+    def post_source_collector_duplicates(self, headers: dict, urls: List[str]):
+        return self.post(
+            endpoint="/api/source-collector/data-sources/duplicates",
+            headers=headers,
+            json={"urls": urls},
+            expected_schema=SchemaConfigs.SOURCE_COLLECTOR_DUPLICATES_POST.value.primary_output_schema,
+        )
