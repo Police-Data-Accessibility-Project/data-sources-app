@@ -40,6 +40,7 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.reset_token_dtos impo
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.source_collector_dtos import (
     SourceCollectorPostRequestDTO,
+    SourceCollectorDuplicatesPostRequestDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.admin_schemas import (
     AdminUsersGetByIDResponseSchema,
@@ -115,6 +116,8 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos im
 from middleware.schema_and_dto_logic.primary_resource_schemas.source_collector_schemas import (
     SourceCollectorPostRequestSchema,
     SourceCollectorPostResponseSchema,
+    SourceCollectorDuplicatesPostRequestSchema,
+    SourceCollectorDuplicatePostResponseSchema,
 )
 
 from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import (
@@ -708,4 +711,9 @@ class SchemaConfigs(Enum):
         input_schema=SourceCollectorPostRequestSchema(),
         input_dto_class=SourceCollectorPostRequestDTO,
         primary_output_schema=SourceCollectorPostResponseSchema(),
+    )
+    SOURCE_COLLECTOR_DUPLICATES_POST = EndpointSchemaConfig(
+        input_schema=SourceCollectorDuplicatesPostRequestSchema(),
+        input_dto_class=SourceCollectorDuplicatesPostRequestDTO,
+        primary_output_schema=SourceCollectorDuplicatePostResponseSchema(),
     )

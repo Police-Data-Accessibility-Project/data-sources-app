@@ -105,6 +105,7 @@ class Relations(Enum):
     MAP_LOCALITIES = "map_localities"
     NOTIFICATION_LOG = "notification_log"
     LINK_LOCATIONS_DATA_SOURCES_VIEW = "link_locations_data_sources_view"
+    DISTINCT_SOURCE_URLS = "distinct_source_urls"
 
 
 class OperationType(Enum):

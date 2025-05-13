@@ -972,6 +972,15 @@ class NotificationLog(Base):
     user_count: Mapped[int]
 
 
+class DistinctSourceURL(Base):
+    __tablename__ = Relations.DISTINCT_SOURCE_URLS.value
+
+    base_url: Mapped[str] = mapped_column(primary_key=True)
+    original_url: Mapped[str]
+    rejection_note: Mapped[str]
+    approval_status: Mapped[str]
+
+
 # region Views
 
 
@@ -1017,6 +1026,7 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     Relations.CHANGE_LOG.value: ChangeLog,
     Relations.NOTIFICATION_LOG.value: NotificationLog,
     Relations.LINK_LOCATIONS_DATA_SOURCES_VIEW.value: LinkLocationDataSourceView,
+    Relations.DISTINCT_SOURCE_URLS.value: DistinctSourceURL,
 }
 
 
