@@ -170,8 +170,8 @@ class GithubIssueManager:
         mutation CreateIssue {
             createIssue(input: {
               repositoryId: "%s",
-              title: "%s", 
-              body: "%s",
+              title: %s, 
+              body: %s,
               labelIds: %s
             }
           ) {
@@ -184,12 +184,15 @@ class GithubIssueManager:
           }
         """ % (
             self.repo_id,
-            title,
-            body,
+            json.dumps(title),
+            json.dumps(body),
             json.dumps(label_ids),
         )
         response = make_graph_ql_query(query=query)
-        data = response["data"]
+        try:
+            data = response["data"]
+        except KeyError:
+            raise ValueError(f"Failed to create issue: {response}")
         issue = data["createIssue"]["issue"]
         return GithubIssueInfo(url=issue["url"], number=issue["number"], id=issue["id"])
 
