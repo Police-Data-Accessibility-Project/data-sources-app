@@ -1,22 +1,15 @@
 from flask import Response
 
+from config import limiter
 from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import NO_AUTH_INFO
-from middleware.decorators import authentication_required, endpoint_info
-from middleware.enums import AccessTypeEnum
+from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.unique_url_checker import (
-    UniqueURLCheckerRequestSchema,
-    UniqueURLCheckerResponseOuterSchema,
     unique_url_checker_wrapper,
-    UniqueURLCheckerRequestDTO,
 )
-from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_construction import (
-    get_restx_param_documentation,
-)
-from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
-from resources.PsycopgResource import PsycopgResource, handle_exceptions
-from resources.endpoint_schema_config import EndpointSchemaConfig, SchemaConfigs
-from resources.resource_helpers import add_api_key_header_arg, ResponseInfo
+from resources.PsycopgResource import PsycopgResource
+from resources.endpoint_schema_config import SchemaConfigs
+from resources.resource_helpers import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_url_checker = create_namespace(namespace_attributes=AppNamespaces.CHECK)
@@ -37,6 +30,7 @@ class UniqueURLChecker(PsycopgResource):
             }
         ),
     )
+    @limiter.exempt()
     def get(self, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             wrapper_function=unique_url_checker_wrapper,
