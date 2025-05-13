@@ -30,7 +30,7 @@ class UniqueURLChecker(PsycopgResource):
             }
         ),
     )
-    @limiter.exempt()
+    @limiter.exempt
     def get(self, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             wrapper_function=unique_url_checker_wrapper,
