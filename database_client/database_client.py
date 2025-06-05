@@ -83,7 +83,6 @@ from database_client.models.core import (
     LinkLocationDataRequest,
     LinkUserFollowedLocation,
     DataRequestsGithubIssueInfo,
-    Base,
     DataSourceUserNotificationQueue,
     DataRequestUserNotificationQueue,
     DataRequestPendingEventNotification,
@@ -93,6 +92,7 @@ from database_client.models.core import (
     DependentLocation,
     DistinctSourceURL,
 )
+from database_client.models.base import Base
 from database_client.models.helpers import convert_to_column_reference
 from database_client.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import (

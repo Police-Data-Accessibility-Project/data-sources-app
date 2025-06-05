@@ -16,15 +16,12 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import (
     ARRAY,
-    DATE,
-    DATERANGE,
     TIMESTAMP,
     ENUM as pgEnum,
     JSONB,
 )
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import (
-    DeclarativeBase,
     Mapped,
     mapped_column,
     relationship,
@@ -32,6 +29,7 @@ from sqlalchemy.orm import (
 from sqlalchemy.sql.expression import false, func
 
 from database_client.enums import AccessType
+from database_client.models.base import Base
 from database_client.models.types import (
     ExternalAccountTypeLiteral,
     RecordTypeLiteral,
@@ -53,38 +51,9 @@ from database_client.models.types import (
     text,
     timestamp_tz,
     timestamp,
-    daterange,
     str_255,
 )
 from middleware.enums import Relations
-
-
-class Base(DeclarativeBase):
-    __table_args__ = {"schema": "public"}
-    type_annotation_map = {
-        text: Text,
-        date: DATE,
-        timestamp: TIMESTAMP,
-        daterange: DATERANGE,
-        str_255: String(255),
-    }
-
-    @hybrid_method
-    def to_dict(cls, subquery_parameters=[]) -> dict:
-        # Calls the class's __iter__ implementation
-        dict_result = dict(cls)
-        keyorder = cls.__mapper__.column_attrs.items()
-
-        for param in subquery_parameters:
-            if param.linking_column not in dict_result:
-                dict_result[param.linking_column] = []
-
-        sorted_dict = {
-            col: dict_result[col] for col, descriptor in keyorder if col in dict_result
-        }
-        sorted_dict.update(dict_result)
-
-        return sorted_dict
 
 
 class CountMetadata:
