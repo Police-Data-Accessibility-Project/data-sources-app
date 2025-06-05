@@ -2,7 +2,6 @@ from collections import namedtuple
 from datetime import datetime
 from enum import Enum
 from functools import wraps, partialmethod
-from http import HTTPStatus
 from operator import and_, or_
 from typing import Optional, Any, List, Callable, Union, Type
 from psycopg import connection as PgConnection
@@ -30,7 +29,7 @@ from sqlalchemy.orm import (
     selectinload,
     Session,
 )
-from werkzeug.exceptions import HTTPException, BadRequest
+from werkzeug.exceptions import BadRequest
 
 from database_client.DTOs import (
     UserInfoNonSensitive,
@@ -56,7 +55,6 @@ from database_client.enums import (
     EventType,
     LocationType,
     ApprovalStatus,
-    SortOrder,
 )
 from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
 from middleware.custom_dataclasses import EventInfo, EventBatch
@@ -64,7 +62,7 @@ from middleware.exceptions import (
     UserNotFoundError,
     DuplicateUserError,
 )
-from database_client.models import (
+from database_client.models.core import (
     convert_to_column_reference,
     ExternalAccount,
     SQL_ALCHEMY_TABLE_REFERENCE,
@@ -102,7 +100,6 @@ from middleware.enums import (
     Relations,
     AgencyType,
     RecordTypes,
-    JurisdictionType,
     DataSourceCreationResponse,
 )
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection

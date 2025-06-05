@@ -1,11 +1,10 @@
-import time
 from http import HTTPStatus
 from unittest.mock import MagicMock, call, ANY
 
 import pytest
 
 from database_client.enums import EventType, EntityType
-from database_client.models import (
+from database_client.models.core import (
     DataRequestUserNotificationQueue,
     DataSourceUserNotificationQueue,
     NotificationLog,
@@ -20,7 +19,7 @@ from tests.helper_scripts.helper_classes.AnyOrder import AnyOrder
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
 )
-from tests.conftest import test_data_creator_flask, monkeysession
+from tests.conftest import test_data_creator_flask
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 

@@ -1,12 +1,11 @@
-from dataclasses import dataclass
 from functools import partialmethod
 from typing import Optional
 
 from pydantic import BaseModel
-from sqlalchemy.orm import defaultload, joinedload
+from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.base import ExecutableOption
 
-from database_client.models import convert_to_column_reference
+from database_client.models.core import convert_to_column_reference
 from middleware.enums import Relations
 
 

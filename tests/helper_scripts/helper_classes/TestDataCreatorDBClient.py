@@ -12,7 +12,7 @@ from database_client.enums import (
     EventType,
     ExternalAccountTypeEnum,
 )
-from database_client.models import (
+from database_client.models.core import (
     SQL_ALCHEMY_TABLE_REFERENCE,
     DataRequestUserNotificationQueue,
     DataSourceUserNotificationQueue,

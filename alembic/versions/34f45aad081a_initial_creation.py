@@ -12,7 +12,7 @@ from alembic import op
 from sqlalchemy import Table
 from sqlalchemy.dialects.postgresql import ENUM
 
-from database_client.models import Base
+from database_client.models.core import Base
 from relation_access_permissions.upload_relation_configurations_to_db import (
     upload_relation_configurations_to_db_alembic,
 )

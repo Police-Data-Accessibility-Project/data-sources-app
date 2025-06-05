@@ -1,6 +1,5 @@
 from http import HTTPStatus
 
-from database_client.models import DataSource
 from middleware.enums import RecordTypes, PermissionsEnum
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from middleware.schema_and_dto_logic.primary_resource_dtos.source_collector_dtos import (
