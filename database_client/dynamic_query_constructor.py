@@ -16,12 +16,12 @@ from database_client.db_client_dataclasses import (
 )
 from database_client.subquery_logic import SubqueryParameters
 from database_client.models.core import (
-    SQL_ALCHEMY_TABLE_REFERENCE,
-    convert_to_column_reference,
     Agency,
     DataSourceExpanded,
     DataRequestExpanded,
 )
+from database_client.models.helpers import convert_to_column_reference
+from database_client.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import RecordTypes, Relations
 from utilities.enums import RecordCategories
 

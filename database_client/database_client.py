@@ -63,9 +63,7 @@ from middleware.exceptions import (
     DuplicateUserError,
 )
 from database_client.models.core import (
-    convert_to_column_reference,
     ExternalAccount,
-    SQL_ALCHEMY_TABLE_REFERENCE,
     User,
     DataRequestExpanded,
     RecentSearch,
@@ -95,6 +93,8 @@ from database_client.models.core import (
     DependentLocation,
     DistinctSourceURL,
 )
+from database_client.models.helpers import convert_to_column_reference
+from database_client.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import (
     PermissionsEnum,
     Relations,

@@ -13,10 +13,10 @@ from database_client.enums import (
     ExternalAccountTypeEnum,
 )
 from database_client.models.core import (
-    SQL_ALCHEMY_TABLE_REFERENCE,
     DataRequestUserNotificationQueue,
     DataSourceUserNotificationQueue,
 )
+from database_client.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import JurisdictionType, Relations, AgencyType
 from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
     AgenciesPostDTO,

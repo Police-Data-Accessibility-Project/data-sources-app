@@ -8,8 +8,7 @@ from sqlalchemy.schema import Column
 from sqlalchemy.sql.expression import asc, desc, BinaryExpression
 
 from database_client.enums import SortOrder
-from database_client.models.core import SQL_ALCHEMY_TABLE_REFERENCE
-
+from database_client.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 
 ORDER_BY_REFERENCE = {
     "ASC": lambda column: asc(column),

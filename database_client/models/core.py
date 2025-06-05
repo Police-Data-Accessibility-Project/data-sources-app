@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from typing import Optional, Literal, get_args, Callable
+from typing import Optional, Literal, get_args
 
 from sqlalchemy.dialects import postgresql
 from typing_extensions import Annotated
@@ -14,10 +14,8 @@ from sqlalchemy import (
     Enum,
     Integer,
     UniqueConstraint,
-    inspect,
     CheckConstraint,
     DateTime,
-    PrimaryKeyConstraint,
     Identity,
 )
 from sqlalchemy.dialects.postgresql import (
@@ -28,19 +26,17 @@ from sqlalchemy.dialects.postgresql import (
     ENUM as pgEnum,
     JSONB,
 )
-from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
+from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
     mapped_column,
     relationship,
-    column_property,
-    MappedColumn,
 )
 from sqlalchemy.sql.expression import false, func
 
 from database_client.enums import LocationType, AccessType
-from middleware.enums import Relations, PermissionsEnum
+from middleware.enums import Relations
 
 ExternalAccountTypeLiteral = Literal["github"]
 RecordTypeLiteral = Literal[
@@ -991,65 +987,3 @@ class LinkLocationDataSourceView(Base):
 
 
 # endregion
-
-
-SQL_ALCHEMY_TABLE_REFERENCE = {
-    "agencies": Agency,
-    "agencies_expanded": AgencyExpanded,
-    Relations.LINK_AGENCIES_DATA_SOURCES.value: LinkAgencyDataSource,
-    Relations.LINK_LOCATIONS_DATA_REQUESTS.value: LinkLocationDataRequest,
-    "data_requests": DataRequest,
-    "data_requests_expanded": DataRequestExpanded,
-    "data_sources": DataSource,
-    "data_sources_expanded": DataSourceExpanded,
-    "data_sources_archive_info": DataSourceArchiveInfo,
-    "link_data_sources_data_requests": LinkDataSourceDataRequest,
-    "reset_tokens": ResetToken,
-    "test_table": TestTable,
-    "users": User,
-    "us_states": USState,
-    "counties": County,
-    "localities": Locality,
-    "locations": Location,
-    "locations_expanded": LocationExpanded,
-    "link_user_followed_location": LinkUserFollowedLocation,
-    "external_accounts": ExternalAccount,
-    "data_requests_github_issue_info": DataRequestsGithubIssueInfo,
-    Relations.DEPENDENT_LOCATIONS.value: DependentLocation,
-    Relations.RECENT_SEARCHES.value: RecentSearch,
-    Relations.LINK_RECENT_SEARCH_RECORD_CATEGORIES.value: LinkRecentSearchRecordCategories,
-    Relations.LINK_RECENT_SEARCH_RECORD_TYPES.value: LinkRecentSearchRecordTypes,
-    Relations.RECORD_CATEGORIES.value: RecordCategory,
-    Relations.RECENT_SEARCHES_EXPANDED.value: RecentSearchExpanded,
-    Relations.RECORD_TYPES.value: RecordType,
-    Relations.PENDING_USERS.value: PendingUser,
-    Relations.CHANGE_LOG.value: ChangeLog,
-    Relations.NOTIFICATION_LOG.value: NotificationLog,
-    Relations.LINK_LOCATIONS_DATA_SOURCES_VIEW.value: LinkLocationDataSourceView,
-    Relations.DISTINCT_SOURCE_URLS.value: DistinctSourceURL,
-}
-
-
-def convert_to_column_reference(columns: list[str], relation: str) -> list[Column]:
-    """Converts a list of column strings to SQLAlchemy column references.
-
-    :param columns: List of column strings.
-    :param relation: Relation string.
-    :return:
-    """
-    try:
-        relation_reference = SQL_ALCHEMY_TABLE_REFERENCE[relation]
-    except KeyError:
-        raise ValueError(
-            f"SQL Model does not exist in SQL_ALCHEMY_TABLE_REFERENCE: {relation}"
-        )
-
-    def get_attribute(column: str) -> Column:
-        try:
-            return getattr(relation_reference, column)
-        except AttributeError:
-            raise AttributeError(
-                f'Column "{column}" does not exist in SQLAlchemy Table Model for "{relation}"'
-            )
-
-    return [get_attribute(column) for column in columns]

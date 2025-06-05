@@ -31,8 +31,8 @@ from database_client.models.core import (
     ExternalAccount,
     TestTable,
     User,
-    SQL_ALCHEMY_TABLE_REFERENCE,
 )
+from database_client.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import PermissionsEnum, Relations, RecordTypes
 from tests.conftest import (
     live_database_client,
