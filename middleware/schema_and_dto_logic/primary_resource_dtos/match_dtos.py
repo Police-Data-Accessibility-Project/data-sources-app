@@ -4,6 +4,9 @@ from pydantic import BaseModel, Field
 
 from db.enums import LocationType
 from middleware.enums import AgencyType
+from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
+    MetadataInfo,
+)
 
 
 class AgencyMatchRequestDTO(BaseModel):
@@ -13,17 +16,17 @@ class AgencyMatchRequestDTO(BaseModel):
     state: Optional[str] = Field(
         default=None,
         description="The state of the agency to match.",
-        json_schema_extra={"required": False},
+        json_schema_extra=MetadataInfo(required=False),
     )
     county: Optional[str] = Field(
         default=None,
         description="The county of the agency to match.",
-        json_schema_extra={"required": False},
+        json_schema_extra=MetadataInfo(required=False),
     )
     locality: Optional[str] = Field(
         default=None,
         description="The locality of the agency to match.",
-        json_schema_extra={"required": False},
+        json_schema_extra=MetadataInfo(required=False),
     )
 
     def has_location_data(self) -> bool:

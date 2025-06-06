@@ -1,5 +1,11 @@
+from enum import Enum
+from typing import cast
+
 from marshmallow import Schema
+from marshmallow.fields import Field, Enum as MarshmallowEnum
 from pydantic import BaseModel
+from pydantic.fields import FieldInfo, Field as PydanticField
+from pydantic_core import PydanticUndefinedType
 
 from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.helpers import (
     is_optional,
@@ -11,34 +17,121 @@ from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.mappi
 from utilities.enums import SourceMappingEnum
 
 
-def generate_marshmallow_schema(pydantic_model_cls: type[BaseModel]) -> type[Schema]:
-    schema_fields = {}
+class MetadataInfo(BaseModel):
+    source: SourceMappingEnum = SourceMappingEnum.JSON
+    required: bool = True
 
-    for field_name, model_field in pydantic_model_cls.model_fields.items():
-        field_type = model_field.annotation
+    def get(self, key: str, default=None):
+        return self.model_dump().get(key, default)
 
-        allow_none = is_optional(field_type)
 
-        if model_field.json_schema_extra is None:
-            model_field.json_schema_extra = {}
-        is_required = model_field.json_schema_extra.get("required", True)
+class MarshmallowFieldInfo(BaseModel):
+    class Config:
+        arbitrary_types_allowed = True
 
-        inner_type = extract_inner_type(field_type)
-        marshmallow_field_cls = TYPE_MAPPING.get(inner_type)
+    field: type[Field]
+    field_kwargs: dict = PydanticField(default_factory=dict)
 
-        if marshmallow_field_cls is None:
-            raise ValueError(f"Unsupported field type: {inner_type}")
 
-        # Prepare metadata (handle description)
-        metadata = {"source": SourceMappingEnum.JSON}
-        if model_field.description:
-            metadata["description"] = model_field.description
+class FieldProcessor:
+
+    def __init__(self, model_field: FieldInfo):
+        self.model_field = model_field
+        if self.model_field.json_schema_extra is None:
+            self.model_field.json_schema_extra = {}
+        if isinstance(self.model_field.json_schema_extra, dict):
+            self.metadata_info: MetadataInfo = MetadataInfo(
+                **self.model_field.json_schema_extra
+            )
+        else:
+            self.metadata_info: MetadataInfo = cast(
+                MetadataInfo, self.model_field.json_schema_extra
+            )
+        self.field_type = self.model_field.annotation
+
+    def get_additional_kwargs(self):
+        if not isinstance(self.model_field.default, PydanticUndefinedType):
+            additional_kwargs = {"load_default": self.model_field.default}
+        else:
+            additional_kwargs = {}
+        return additional_kwargs
+
+    def process_field(self) -> Field:
+        allow_none = is_optional(self.field_type)
+
+        additional_kwargs = self.get_additional_kwargs()
+
+        marshmallow_field_info = self.get_marshmallow_field_cls()
+
+        metadata = self.prepare_metadata()
+
+        # Combine kwargs
+        marshmallow_field_info.field_kwargs = {
+            **marshmallow_field_info.field_kwargs,
+            **additional_kwargs,
+        }
 
         # Instantiate the marshmallow field
-        marshmallow_field = marshmallow_field_cls(
-            required=is_required, allow_none=allow_none, metadata=metadata
+        marshmallow_field = marshmallow_field_info.field(
+            required=self.metadata_info.required,
+            allow_none=allow_none,
+            metadata=metadata,
+            **marshmallow_field_info.field_kwargs,
         )
 
-        schema_fields[field_name] = marshmallow_field
+        return marshmallow_field
 
-    return type(f"{pydantic_model_cls.__name__}AutoSchema", (Schema,), schema_fields)
+    def prepare_metadata(self):
+        metadata = {"source": self.metadata_info.source}
+        if self.model_field.description:
+            metadata["description"] = self.model_field.description
+        return metadata
+
+    def get_marshmallow_field_cls(self) -> MarshmallowFieldInfo:
+        inner_type = extract_inner_type(self.field_type)
+        # If enum, we need to use EnumField
+        if issubclass(inner_type, Enum):
+            return MarshmallowFieldInfo(
+                field=MarshmallowEnum,
+                field_kwargs={"enum": inner_type, "by_value": True},
+            )
+
+        marshmallow_field_cls = TYPE_MAPPING.get(inner_type)
+        if marshmallow_field_cls is None:
+            raise ValueError(f"Unsupported field type: {inner_type}")
+        return MarshmallowFieldInfo(field=marshmallow_field_cls)
+
+
+class MarshmallowSchemaGenerator:
+
+    def __init__(
+        self,
+        pydantic_model_cls: type[BaseModel],
+    ):
+        self.pydantic_model_cls = pydantic_model_cls
+
+    @staticmethod
+    def process_field(model_field: FieldInfo):
+        processor = FieldProcessor(model_field)
+        return processor.process_field()
+
+    def generate_marshmallow_schema(self) -> type[Schema]:
+        schema_fields = {}
+
+        for field_name, model_field in self.pydantic_model_cls.model_fields.items():
+            marshmallow_field = self.process_field(model_field)
+            schema_fields[field_name] = marshmallow_field
+
+        return type(
+            f"{self.pydantic_model_cls.__name__}AutoSchema", (Schema,), schema_fields
+        )
+
+
+def generate_marshmallow_schema(pydantic_model_cls: type[BaseModel]) -> type[Schema]:
+    generator = MarshmallowSchemaGenerator(pydantic_model_cls)
+    try:
+        return generator.generate_marshmallow_schema()
+    except ValueError as e:
+        raise ValueError(
+            f"Failed to generate marshmallow schema " f"for {pydantic_model_cls}: {e}"
+        )

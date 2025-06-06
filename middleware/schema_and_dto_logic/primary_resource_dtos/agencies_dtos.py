@@ -7,39 +7,62 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetByIDBaseDTO,
     GetManyBaseDTO,
 )
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
-class AgencyInfoPutDTO(BaseModel):
+class AgencyInfoBaseDTO(BaseModel):
+    multi_agency: bool = Field(
+        default=False,
+        description="Whether or not the agency is a multi-agency.",
+    )
+    no_web_presence: bool = Field(
+        default=False,
+        description="Whether or not the agency has no web presence.",
+    )
+    approval_status: ApprovalStatus = Field(
+        default=ApprovalStatus.PENDING,
+        description="The approval status of the agency.",
+    )
+    homepage_url: Optional[str] = Field(
+        default=None,
+        description="The homepage URL of the agency.",
+    )
+    lat: Optional[float] = Field(
+        default=None,
+        description="Latitude of the location of the agency",
+    )
+    lng: Optional[float] = Field(
+        default=None,
+        description="Longitude of the location of the agency",
+    )
+    defunct_year: Optional[str] = Field(
+        default=None,
+        description="If present, denotes an agency which has defunct but may still have relevant records.",
+    )
+    rejection_reason: Optional[str] = Field(
+        default=None,
+        description="If present, denotes a rejection reason for an agency.",
+    )
+    last_approval_editor: Optional[str] = Field(
+        default=None,
+        description="The user who last approved the agency.",
+    )
+    submitter_contact: Optional[str] = Field(
+        default=None,
+        description="The contact information of the user who submitted the agency.",
+    )
+
+
+class AgencyInfoPutDTO(AgencyInfoBaseDTO):
     name: str = None
     jurisdiction_type: JurisdictionType = None
     agency_type: AgencyType = None
-    multi_agency: bool = False
-    no_web_presence: bool = False
-    approval_status: ApprovalStatus = ApprovalStatus.PENDING
-    homepage_url: str = None
-    lat: float = None
-    lng: float = None
-    defunct_year: str = None
-    rejection_reason: str = None
-    last_approval_editor: str = None
-    submitter_contact: str = None
 
 
-class AgencyInfoPostDTO(BaseModel):
+class AgencyInfoPostDTO(AgencyInfoBaseDTO):
     name: str
     jurisdiction_type: JurisdictionType
     agency_type: AgencyType
-    multi_agency: bool = False
-    no_web_presence: bool = False
-    approval_status: ApprovalStatus = ApprovalStatus.PENDING
-    homepage_url: Optional[str] = None
-    lat: Optional[float] = None
-    lng: Optional[float] = None
-    defunct_year: Optional[str] = None
-    rejection_reason: Optional[str] = None
-    last_approval_editor: Optional[str] = None
-    submitter_contact: Optional[str] = None
 
 
 class AgenciesPostDTO(BaseModel):

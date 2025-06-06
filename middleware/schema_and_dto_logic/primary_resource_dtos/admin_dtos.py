@@ -14,7 +14,6 @@ class AdminUserPostDTO:
 
 
 class AdminUserPutDTO(BaseModel):
-    password: Optional[str] = Field(
-        default=None,
+    password: str = Field(
         description="The new password of the admin user",
     )

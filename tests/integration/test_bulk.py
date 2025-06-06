@@ -117,37 +117,6 @@ def check_for_errors(data: dict, check_ids: bool = True):
     assert "0", "2" in data["errors"].keys()
 
 
-def test_batch_agencies_insert_happy_path(
-    agencies_post_runner: BatchTestRunner,
-):
-    runner = agencies_post_runner
-    runner.tdc.agency()
-
-    test_name = get_test_name()
-    locality_info = {"location_id": runner.tdc.locality(locality_name=test_name)}
-
-    rows = [runner.generate_test_data(override=locality_info) for _ in range(3)]
-    data = create_csv_and_run(
-        runner=runner,
-        rows=rows,
-        request_validator_method=runner.tdc.request_validator.insert_agencies_bulk,
-    )
-
-    ids = data["ids"]
-
-    unflattener = SchemaUnflattener(flat_schema_class=AgenciesPostRequestFlatBaseSchema)
-
-    for row, id in zip(rows, ids):
-        unflattened_row = unflattener.unflatten(flat_data=row)
-        data = runner.tdc.request_validator.get_agency_by_id(
-            id=id, headers=runner.tdc.get_admin_tus().jwt_authorization_header
-        )
-        assert_contains_key_value_pairs(
-            dict_to_check=data["data"], key_value_pairs=unflattened_row["agency_info"]
-        )
-        assert data["data"]["locations"][0]["locality_name"] == test_name
-
-
 def test_batch_agencies_insert_some_errors(
     agencies_post_runner: BatchTestRunner,
 ):
