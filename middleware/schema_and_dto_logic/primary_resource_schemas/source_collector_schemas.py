@@ -3,6 +3,7 @@ from marshmallow import Schema, fields, validate
 from middleware.enums import RecordTypes, DataSourceCreationResponse
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from middleware.schema_and_dto_logic.util import get_json_metadata
+from middleware.util import normalize_url
 
 
 class SourceCollectorPostRequestInnerSchema(Schema):
@@ -113,4 +114,33 @@ class SourceCollectorPostResponseSchema(MessageSchema):
         required=True,
         metadata=get_json_metadata("The data sources associated with the data request"),
         validate=validate.Length(min=1, max=100),
+    )
+
+
+class SourceCollectorDuplicatesPostRequestSchema(Schema):
+    urls = fields.List(
+        fields.String(
+            required=True,
+            metadata=get_json_metadata("The URLs of the data sources to check"),
+        ),
+        required=True,
+        metadata=get_json_metadata("The URLs of the data sources to check"),
+        validate=validate.Length(min=1, max=100),
+    )
+
+
+class SourceCollectorDuplicatePostResponseSchema(Schema):
+    results = fields.Dict(
+        keys=fields.String(
+            required=True,
+            metadata=get_json_metadata("The URLs of the data sources to check"),
+        ),
+        values=fields.Boolean(
+            required=True,
+            metadata=get_json_metadata("The results of the duplicate check"),
+        ),
+        required=True,
+        metadata=get_json_metadata(
+            "The results of the duplicate check",
+        ),
     )

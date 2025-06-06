@@ -18,6 +18,7 @@ JURISDICTION_TYPES = [
 class TypeaheadBaseResponseSchema(Schema):
     state_name = fields.String(
         required=True,
+        allow_none=True,
         metadata={
             "source": SourceMappingEnum.JSON,
             "description": "The state of the suggestion",
@@ -26,6 +27,7 @@ class TypeaheadBaseResponseSchema(Schema):
     )
     state_iso = fields.String(
         required=True,
+        allow_none=True,
         metadata={
             "source": SourceMappingEnum.JSON,
             "description": "The state ISO of the suggestion",

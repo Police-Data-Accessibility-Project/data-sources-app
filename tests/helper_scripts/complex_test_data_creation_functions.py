@@ -13,7 +13,6 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.constants import (
     DATA_REQUESTS_BASE_ENDPOINT,
-    AGENCIES_BASE_ENDPOINT,
 )
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,

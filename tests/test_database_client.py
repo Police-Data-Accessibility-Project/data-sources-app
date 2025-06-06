@@ -3,7 +3,7 @@ Module for testing database client functionality against a live database
 """
 
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 from unittest.mock import MagicMock
 
 import pytest
@@ -16,11 +16,9 @@ from database_client.db_client_dataclasses import (
     OrderByParameters,
     WhereMapping,
 )
-from database_client.subquery_logic import SubqueryParameters, SubqueryParameterManager
+from database_client.subquery_logic import SubqueryParameterManager
 from database_client.enums import (
     ExternalAccountTypeEnum,
-    RelationRoleEnum,
-    ColumnPermissionEnum,
     SortOrder,
     RequestStatus,
     ApprovalStatus,
@@ -29,13 +27,12 @@ from middleware.exceptions import (
     UserNotFoundError,
     DuplicateUserError,
 )
-from database_client.models import (
-    LinkAgencyDataSource,
+from database_client.models.implementations.core import (
     ExternalAccount,
     TestTable,
     User,
-    SQL_ALCHEMY_TABLE_REFERENCE,
 )
+from database_client.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import PermissionsEnum, Relations, RecordTypes
 from tests.conftest import (
     live_database_client,
@@ -48,7 +45,6 @@ from tests.helper_scripts.common_test_data import (
     get_test_name,
 )
 from tests.helper_scripts.complex_test_data_creation_functions import (
-    insert_test_column_permission_data,
     create_data_source_entry_for_url_duplicate_checking,
 )
 
@@ -56,7 +52,6 @@ from tests.helper_scripts.helper_classes.AnyOrder import AnyOrder
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
 )
-from tests.helper_scripts.helper_schemas import TestGetPendingNotificationsOutputSchema
 from tests.helper_scripts.test_dataclasses import TestDataRequestInfo
 from tests.helper_scripts.helper_functions_complex import (
     setup_get_typeahead_suggestion_test_data,

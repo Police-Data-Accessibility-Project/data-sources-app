@@ -5,7 +5,7 @@ from datetime import datetime, timezone, timedelta
 
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import SortOrder, ApprovalStatus
-from database_client.models import Agency
+from database_client.models.implementations.core import Agency
 from middleware.enums import JurisdictionType, AgencyType
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgencyInfoPutSchema,
@@ -16,9 +16,6 @@ from middleware.schema_and_dto_logic.common_response_schemas import (
 from resources.endpoint_schema_config import SchemaConfigs
 
 from tests.helper_scripts.common_test_data import get_test_name
-from tests.helper_scripts.complex_test_data_creation_functions import (
-    get_sample_agency_post_parameters,
-)
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,
 )
@@ -33,7 +30,7 @@ from tests.helper_scripts.common_asserts import (
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
-from tests.conftest import test_data_creator_flask, monkeysession
+from tests.conftest import test_data_creator_flask
 
 
 def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
@@ -175,8 +172,8 @@ def test_agencies_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     assert data["id"] == int(agency_id)
     assert data["data_sources"][0]["id"] == int(cds.id)
 
-    assert data["locations"][0]["location_id"] == int(location_id_1)
-    assert data["locations"][1]["location_id"] == int(location_id_2)
+    assert data["locations"][0]["location_id"] == int(location_id_2)
+    assert data["locations"][1]["location_id"] == int(location_id_1)
 
 
 def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):

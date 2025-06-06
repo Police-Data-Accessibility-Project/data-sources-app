@@ -12,11 +12,11 @@ from database_client.enums import (
     EventType,
     ExternalAccountTypeEnum,
 )
-from database_client.models import (
-    SQL_ALCHEMY_TABLE_REFERENCE,
+from database_client.models.implementations.core import (
     DataRequestUserNotificationQueue,
     DataSourceUserNotificationQueue,
 )
+from database_client.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import JurisdictionType, Relations, AgencyType
 from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
     AgenciesPostDTO,

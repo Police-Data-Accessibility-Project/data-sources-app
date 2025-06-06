@@ -4,6 +4,7 @@ from middleware.decorators import endpoint_info
 from middleware.enums import AccessTypeEnum, PermissionsEnum
 from middleware.primary_resource_logic.source_collector_logic import (
     add_data_sources_from_source_collector,
+    check_for_duplicate_urls,
 )
 from resources.PsycopgResource import PsycopgResource
 from resources.endpoint_schema_config import SchemaConfigs
@@ -32,4 +33,26 @@ class SourceCollectorDataSources(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=add_data_sources_from_source_collector,
             schema_populate_parameters=SchemaConfigs.SOURCE_COLLECTOR_DATA_SOURCES_POST.value.get_schema_populate_parameters(),
+        )
+
+
+@namespace_source_collector.route("/data-sources/duplicates", methods=["POST"])
+class SourceCollectorDataSourcesDuplicates(PsycopgResource):
+
+    @endpoint_info(
+        namespace=namespace_source_collector,
+        auth_info=AuthenticationInfo(
+            allowed_access_methods=[AccessTypeEnum.JWT],
+            restrict_to_permissions=[PermissionsEnum.SOURCE_COLLECTOR_DATA_SOURCES],
+        ),
+        schema_config=SchemaConfigs.SOURCE_COLLECTOR_DUPLICATES_POST,
+        response_info=ResponseInfo(
+            success_message="Successfully checks for duplicate URLs"
+        ),
+        description="Checks for duplicate URLs in Bulk.",
+    )
+    def post(self, access_info: AccessInfoPrimary):
+        return self.run_endpoint(
+            wrapper_function=check_for_duplicate_urls,
+            schema_populate_parameters=SchemaConfigs.SOURCE_COLLECTOR_DUPLICATES_POST.value.get_schema_populate_parameters(),
         )

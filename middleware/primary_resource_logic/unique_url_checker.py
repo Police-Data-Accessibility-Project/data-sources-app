@@ -1,25 +1,12 @@
-from dataclasses import dataclass
-import re
-
 from flask import Response
-from marshmallow import Schema, fields, validate
+from marshmallow import Schema, fields
 from pydantic import BaseModel
 
 from database_client.database_client import DatabaseClient
 from database_client.enums import ApprovalStatus
 from middleware.flask_response_manager import FlaskResponseManager
+from middleware.util import normalize_url
 from utilities.enums import SourceMappingEnum
-
-
-def normalize_url(source_url: str) -> str:
-    # Remove 'https://', 'http://' from the beginning
-    url = re.sub(r"^(https://|http://)", "", source_url)
-    # Remove "www." from the beginning
-    url = re.sub(r"^www\.", "", url)
-    # Remove trailing '/'
-    url = url.rstrip("/")
-
-    return url
 
 
 class UniqueURLCheckerRequestSchema(Schema):

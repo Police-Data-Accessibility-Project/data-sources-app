@@ -5,7 +5,7 @@ from typing import Optional
 import pytest
 
 from database_client.enums import LocationType
-from database_client.models import Location
+from database_client.models.implementations.core import Location
 from middleware.schema_and_dto_logic.primary_resource_dtos.locations_dtos import (
     LocationPutDTO,
     LocationsGetRequestDTO,
@@ -236,7 +236,7 @@ def test_get_many_locations(test_data_creator_flask: TestDataCreatorFlask):
 
     # Run get many locations with no data and confirm no entries
     data = get_many_locations()
-    assert len(data) == 7
+    assert len(data) == 8
 
     # Set Up Locations
     mls = MultiLocationSetup(tdc.tdcdb)
@@ -245,7 +245,7 @@ def test_get_many_locations(test_data_creator_flask: TestDataCreatorFlask):
     data = get_many_locations()
 
     # Validate expected count of locations
-    assert len(data) == 9
+    assert len(data) == 10
 
     # Filter on states and get expected location count
     data = get_many_locations(type_=LocationType.STATE)
@@ -261,7 +261,7 @@ def test_get_many_locations(test_data_creator_flask: TestDataCreatorFlask):
 
     # Filter on has_coordinates = False and get all but one location
     data = get_many_locations(has_coordinates=False)
-    assert len(data) == 8
+    assert len(data) == 9
 
     # Filter on has_coordinates = True and get 1 location
     data = get_many_locations(has_coordinates=True)
