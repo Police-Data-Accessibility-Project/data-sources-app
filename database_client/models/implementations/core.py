@@ -28,8 +28,6 @@ from sqlalchemy.sql.expression import false, func
 from database_client.enums import AccessType
 from database_client.models.base import Base
 from database_client.models.helpers import (
-    iter_with_special_cases,
-    get_iter_model_list_of_dict,
     make_get_iter_model_list_of_dict,
 )
 from database_client.models.mixins import (
@@ -314,7 +312,6 @@ class DataRequestExpanded(DataRequest):
 class DataSource(
     StandardBase,
     CountMetadata,
-    CountSubqueryMetadata,
     CreatedAtMixin,
     IterWithSpecialCasesMixin,
 ):
