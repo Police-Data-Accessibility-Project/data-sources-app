@@ -196,6 +196,7 @@ def create_materialized_views():
                le.county_name,
                le.locality_name
         FROM locations_expanded le
+        WHERE le.type = 'Locality'::location_type OR le.type = 'County'::location_type OR le.type = 'State'::location_type;
 """
     )
 
