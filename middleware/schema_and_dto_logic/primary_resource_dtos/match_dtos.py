@@ -1,16 +1,30 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from db.enums import LocationType
 from middleware.enums import AgencyType
 
 
 class AgencyMatchRequestDTO(BaseModel):
-    name: str
-    state: Optional[str] = None
-    county: Optional[str] = None
-    locality: Optional[str] = None
+    name: str = Field(
+        description="The name of the agency to match.",
+    )
+    state: Optional[str] = Field(
+        default=None,
+        description="The state of the agency to match.",
+        json_schema_extra={"required": False},
+    )
+    county: Optional[str] = Field(
+        default=None,
+        description="The county of the agency to match.",
+        json_schema_extra={"required": False},
+    )
+    locality: Optional[str] = Field(
+        default=None,
+        description="The locality of the agency to match.",
+        json_schema_extra={"required": False},
+    )
 
     def has_location_data(self) -> bool:
         return (

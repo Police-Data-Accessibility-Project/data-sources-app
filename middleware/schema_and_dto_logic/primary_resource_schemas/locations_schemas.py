@@ -4,7 +4,14 @@ from db.enums import LocationType
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyRequestsBaseSchema,
 )
+from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
+    generate_marshmallow_schema,
+)
 from middleware.schema_and_dto_logic.enums import CSVColumnCondition
+from middleware.schema_and_dto_logic.primary_resource_dtos.locations_dtos import (
+    LocationPutDTO,
+    LatLngDTO,
+)
 from middleware.schema_and_dto_logic.util import get_json_metadata
 from utilities.enums import SourceMappingEnum
 
@@ -131,17 +138,7 @@ class LocationInfoExpandedSchema(LocationInfoSchema):
     county_name = COUNTY_NAME_FIELD
 
 
-class LatLngSchema(Schema):
-    lat = fields.Float(
-        required=True,
-        allow_none=True,
-        metadata=get_json_metadata("The latitude of the location"),
-    )
-    lng = fields.Float(
-        required=True,
-        allow_none=True,
-        metadata=get_json_metadata("The longitude of the location"),
-    )
+LatLngSchema = generate_marshmallow_schema(LatLngDTO)
 
 
 class LocationInfoGetManyInnerSchema(LocationInfoExpandedSchema):
@@ -168,17 +165,7 @@ class LocationsGetManySchema(Schema):
     )
 
 
-class LocationPutSchema(Schema):
-    latitude = fields.Float(
-        required=True,
-        allow_none=True,
-        metadata=get_json_metadata("The latitude of the location"),
-    )
-    longitude = fields.Float(
-        required=True,
-        allow_none=True,
-        metadata=get_json_metadata("The longitude of the location"),
-    )
+LocationPutSchema = generate_marshmallow_schema(LocationPutDTO)
 
 
 class LocalitiesLocationsMapInnerSchema(Schema):

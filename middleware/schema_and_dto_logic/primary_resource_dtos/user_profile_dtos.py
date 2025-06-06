@@ -1,8 +1,6 @@
-from dataclasses import dataclass
-
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class UserPutDTO(BaseModel):
-    old_password: str
-    new_password: str
+    old_password: str = Field(description="The old password of the user.")
+    new_password: str = Field(description="The new password of the user.")

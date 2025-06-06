@@ -2,14 +2,16 @@ from marshmallow import Schema, fields
 
 from middleware.primary_resource_logic.match import AgencyMatchStatus
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
+from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
+    generate_marshmallow_schema,
+)
+from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
+    AgencyMatchRequestDTO,
+)
 from middleware.schema_and_dto_logic.util import get_json_metadata
 
 
-class AgencyMatchSchema(Schema):
-    name = fields.String(metadata=get_json_metadata("The name of the agency"))
-    state = fields.String(metadata=get_json_metadata("The state of the agency"))
-    county = fields.String(metadata=get_json_metadata("The county of the agency"))
-    locality = fields.String(metadata=get_json_metadata("The locality of the agency"))
+AgencyMatchSchema = generate_marshmallow_schema(AgencyMatchRequestDTO)
 
 
 class MatchAgenciesLocationSchema(Schema):

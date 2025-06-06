@@ -1,19 +1,18 @@
-from marshmallow import Schema, fields, validates_schema
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    GetManyRequestsBaseSchema,
-)
-from middleware.enums import PermissionsEnum
-
-
 from marshmallow import Schema, fields
+
+from middleware.enums import PermissionsEnum
 from middleware.schema_and_dto_logic.common_response_schemas import (
-    MessageSchema,
     GetManyResponseSchemaBase,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetByIDBaseSchema,
 )
-
+from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
+    generate_marshmallow_schema,
+)
+from middleware.schema_and_dto_logic.primary_resource_dtos.admin_dtos import (
+    AdminUserPutDTO,
+)
 from middleware.schema_and_dto_logic.util import get_json_metadata
 
 
@@ -75,11 +74,7 @@ class AdminUsersPostSchema(Schema):
     )
 
 
-class AdminUsersPutSchema(Schema):
-    password = fields.String(
-        required=False,
-        metadata=get_json_metadata(description="The new password of the admin user"),
-    )
+AdminUsersPutSchema = generate_marshmallow_schema(AdminUserPutDTO)
 
 
 class AdminUsersGetByIDResponseSchema(GetByIDBaseSchema):

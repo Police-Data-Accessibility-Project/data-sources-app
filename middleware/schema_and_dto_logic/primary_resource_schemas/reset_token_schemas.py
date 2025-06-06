@@ -1,30 +1,14 @@
 from marshmallow import Schema, fields
 
+from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
+    generate_marshmallow_schema,
+)
+from middleware.schema_and_dto_logic.primary_resource_dtos.reset_token_dtos import (
+    RequestResetPasswordRequestDTO,
+    ResetPasswordDTO,
+)
 from utilities.enums import SourceMappingEnum
 
+ResetPasswordRequestSchema = generate_marshmallow_schema(RequestResetPasswordRequestDTO)
 
-class ResetPasswordRequestSchema(Schema):
-    email = fields.Str(
-        required=True,
-        metadata={
-            "description": "The email of the user",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    token = fields.Str(
-        required=True,
-        metadata={
-            "description": "The token of the user",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-
-
-class ResetPasswordSchema(Schema):
-    password = fields.Str(
-        required=True,
-        metadata={
-            "description": "The new password of the user",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
+ResetPasswordSchema = generate_marshmallow_schema(ResetPasswordDTO)

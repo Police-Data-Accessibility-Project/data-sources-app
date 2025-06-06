@@ -1,6 +1,12 @@
 from marshmallow import Schema, fields
 
 from middleware.enums import PermissionsEnum
+from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
+    generate_marshmallow_schema,
+)
+from middleware.schema_and_dto_logic.primary_resource_dtos.user_profile_dtos import (
+    UserPutDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_advanced_schemas import (
     GetManyDataRequestsResponseSchema,
 )
@@ -12,15 +18,7 @@ from middleware.schema_and_dto_logic.util import get_json_metadata
 from utilities.enums import RecordCategories
 
 
-class UserPutSchema(Schema):
-    old_password = fields.Str(
-        required=True,
-        metadata=get_json_metadata("The old password of the user"),
-    )
-    new_password = fields.Str(
-        required=True,
-        metadata=get_json_metadata("The new password of the user"),
-    )
+UserPutSchema = generate_marshmallow_schema(UserPutDTO)
 
 
 class GetUserRecentSearchesInnerSchema(Schema):

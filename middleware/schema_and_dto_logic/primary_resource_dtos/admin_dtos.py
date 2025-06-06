@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from pydantic import BaseModel, Field
+
 from middleware.enums import PermissionsEnum
 
 
@@ -11,6 +13,8 @@ class AdminUserPostDTO:
     permissions: list[PermissionsEnum]
 
 
-@dataclass
-class AdminUserPutDTO:
-    password: Optional[str] = None
+class AdminUserPutDTO(BaseModel):
+    password: Optional[str] = Field(
+        default=None,
+        description="The new password of the admin user",
+    )
