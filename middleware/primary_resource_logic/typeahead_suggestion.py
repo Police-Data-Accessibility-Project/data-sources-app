@@ -1,6 +1,6 @@
 from typing import Callable
 
-from database_client.database_client import DatabaseClient
+from database_client.client import DatabaseClient
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     TypeaheadDTO,

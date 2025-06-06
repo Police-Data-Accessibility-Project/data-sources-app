@@ -10,7 +10,7 @@ from jwt import ExpiredSignatureError
 from pydantic import BaseModel
 from typing_extensions import Callable
 
-from database_client.database_client import DatabaseClient
+from database_client.client import DatabaseClient
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
 from middleware.api_key import ApiKey
 from middleware.enums import PermissionsEnum, AccessTypeEnum

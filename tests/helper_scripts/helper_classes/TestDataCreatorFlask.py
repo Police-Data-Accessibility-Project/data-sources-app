@@ -2,7 +2,7 @@ from typing import Optional
 
 from flask.testing import FlaskClient
 
-from database_client.database_client import DatabaseClient
+from database_client.client import DatabaseClient
 from database_client.enums import RequestStatus, ApprovalStatus
 from middleware.enums import JurisdictionType, PermissionsEnum, AgencyType, RecordTypes
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (

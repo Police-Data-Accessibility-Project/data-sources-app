@@ -7,7 +7,7 @@ from flask_restx import abort
 from jwt import ExpiredSignatureError
 from pydantic import BaseModel
 
-from database_client.database_client import DatabaseClient
+from database_client.client import DatabaseClient
 from database_client.enums import ExternalAccountTypeEnum
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
 from middleware.common_response_formatting import message_response

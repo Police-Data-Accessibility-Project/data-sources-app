@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
-from database_client.database_client import DatabaseClient
+from database_client.client import DatabaseClient
 
 
 class SchedulerManager:

@@ -1,4 +1,4 @@
-from database_client.database_client import DatabaseClient
+from database_client.client import DatabaseClient
 from middleware.primary_resource_logic.github_issue_app import (
     synchronize_github_issues_with_data_requests,
 )

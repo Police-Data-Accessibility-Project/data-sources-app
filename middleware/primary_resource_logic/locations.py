@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 from flask import Response
 
-from database_client.database_client import DatabaseClient
+from database_client.client import DatabaseClient
 from database_client.enums import ColumnPermissionEnum
 from database_client.exceptions import LocationDoesNotExistError
 from middleware.access_logic import AccessInfoPrimary

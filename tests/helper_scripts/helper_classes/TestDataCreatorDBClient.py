@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy import delete, select, and_
 from sqlalchemy.exc import IntegrityError
 
-from database_client.database_client import DatabaseClient
+from database_client.client import DatabaseClient
 from database_client.enums import (
     ApprovalStatus,
     RequestStatus,

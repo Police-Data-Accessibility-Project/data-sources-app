@@ -11,7 +11,7 @@ import sqlalchemy
 from sqlalchemy import insert, select, update
 from sqlalchemy.exc import IntegrityError
 
-from database_client.database_client import DatabaseClient
+from database_client.client import DatabaseClient
 from database_client.db_client_dataclasses import (
     OrderByParameters,
     WhereMapping,
@@ -233,7 +233,7 @@ def test_select_from_relation_limit_and_offset(
     live_database_client: DatabaseClient, monkeypatch
 ):
     # Used alongside limit; we mock PAGE_SIZE to be one
-    monkeypatch.setattr("database_client.database_client.PAGE_SIZE", 1)
+    monkeypatch.setattr("database_client.client.PAGE_SIZE", 1)
 
     live_database_client.get_offset = MagicMock(return_value=1)
 
@@ -267,7 +267,7 @@ def test_select_from_relation_all_parameters(
     live_database_client: DatabaseClient, monkeypatch
 ):
     # Used alongside limit; we mock PAGE_SIZE to be one
-    monkeypatch.setattr("database_client.database_client.PAGE_SIZE", 1)
+    monkeypatch.setattr("database_client.client.PAGE_SIZE", 1)
 
     # Add additional row to the table to test the offset and limit
     live_database_client.execute_sqlalchemy(

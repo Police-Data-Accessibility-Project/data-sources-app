@@ -1,7 +1,7 @@
 from flask import Response
 
 from config import limiter
-from database_client.database_client import DatabaseClient
+from database_client.client import DatabaseClient
 from middleware.access_logic import (
     AccessInfoPrimary,
 )

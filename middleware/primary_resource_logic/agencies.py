@@ -2,7 +2,7 @@ from dataclasses import asdict
 
 from flask import Response, request
 
-from database_client.database_client import DatabaseClient
+from database_client.client import DatabaseClient
 from database_client.db_client_dataclasses import OrderByParameters
 from database_client.subquery_logic import SubqueryParameterManager
 from middleware.access_logic import AccessInfoPrimary

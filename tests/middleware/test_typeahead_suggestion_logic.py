@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
-from database_client.database_client import DatabaseClient
+from database_client.client import DatabaseClient
 
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 

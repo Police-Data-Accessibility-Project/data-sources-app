@@ -4,7 +4,7 @@ from typing import Optional
 from flask import Response
 
 from database_client.db_client_dataclasses import WhereMapping, OrderByParameters
-from database_client.database_client import DatabaseClient
+from database_client.client import DatabaseClient
 from database_client.enums import (
     ColumnPermissionEnum,
     RelationRoleEnum,

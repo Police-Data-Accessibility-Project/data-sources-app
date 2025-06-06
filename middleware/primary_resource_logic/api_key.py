@@ -5,7 +5,7 @@ from flask import Response, make_response
 from flask_restx import abort
 from werkzeug.security import check_password_hash
 
-from database_client.database_client import DatabaseClient
+from database_client.client import DatabaseClient
 from database_client.helper_functions import get_db_client
 from middleware.access_logic import (
     get_token_from_request_header,

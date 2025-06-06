@@ -3,7 +3,7 @@ from typing import Optional, List
 
 from flask import Response
 
-from database_client.database_client import DatabaseClient
+from database_client.client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (

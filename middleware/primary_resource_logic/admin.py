@@ -3,7 +3,7 @@ from flask import Response
 from werkzeug.security import generate_password_hash
 
 from database_client.DTOs import UserInfoNonSensitive, UsersWithPermissions
-from database_client.database_client import DatabaseClient
+from database_client.client import DatabaseClient
 from middleware.access_logic import AccessInfoPrimary
 
 from middleware.common_response_formatting import created_id_response

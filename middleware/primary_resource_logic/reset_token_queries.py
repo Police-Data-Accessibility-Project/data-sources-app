@@ -5,7 +5,7 @@ from flask import Response, make_response
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from database_client.database_client import DatabaseClient
+from database_client.client import DatabaseClient
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
 from middleware.access_logic import PasswordResetTokenAccessInfo, AccessInfoPrimary
 from middleware.common_response_formatting import message_response

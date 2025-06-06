@@ -4,7 +4,7 @@ from typing import List, Optional
 from flask import make_response, Response
 from pydantic import BaseModel
 
-from database_client.database_client import DatabaseClient
+from database_client.client import DatabaseClient
 from database_client.db_client_dataclasses import OrderByParameters
 from database_client.subquery_logic import SubqueryParameterManager
 from database_client.enums import ApprovalStatus, RelationRoleEnum, ColumnPermissionEnum

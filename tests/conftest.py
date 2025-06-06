@@ -10,7 +10,7 @@ from alembic.config import Config
 from sqlalchemy import create_engine
 
 from config import limiter
-from database_client.database_client import DatabaseClient
+from database_client.client import DatabaseClient
 from tests.helper_scripts.common_mocks_and_patches import patch_and_return_mock
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
