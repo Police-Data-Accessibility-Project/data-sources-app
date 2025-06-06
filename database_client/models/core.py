@@ -31,6 +31,10 @@ from database_client.models.mixins import (
     CountMetadata,
     CountSubqueryMetadata,
     CreatedAtMixin,
+    UserIDMixin,
+    LocationIDMixin,
+    DataRequestIDMixin,
+    DataSourceIDMixin,
 )
 from database_client.models.templates.standard import StandardBase
 from database_client.models.types import (
@@ -286,10 +290,9 @@ class LocationExpanded(StandardBase, CountMetadata):
     )
 
 
-class ExternalAccount(Base):
+class ExternalAccount(Base, UserIDMixin):
     __tablename__ = Relations.EXTERNAL_ACCOUNTS.value
     row_id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
     account_type: Mapped[ExternalAccountTypeLiteral]
     account_identifier: Mapped[str_255]
     linked_at: Mapped[Optional[timestamp]] = mapped_column(server_default=func.now())
@@ -372,7 +375,7 @@ class DataRequestExpanded(DataRequest):
     )
 
 
-class DataSource(StandardBase, CountMetadata, CountSubqueryMetadata):
+class DataSource(StandardBase, CountMetadata, CountSubqueryMetadata, CreatedAtMixin):
     __tablename__ = Relations.DATA_SOURCES.value
 
     def __iter__(self):
@@ -410,9 +413,6 @@ class DataSource(StandardBase, CountMetadata, CountSubqueryMetadata):
     originating_entity: Mapped[Optional[str]]
     retention_schedule: Mapped[Optional[RetentionScheduleLiteral]]
     scraper_url: Mapped[Optional[str]]
-    created_at: Mapped[Optional[timestamp_tz]] = mapped_column(
-        server_default=func.now()
-    )
     submission_notes: Mapped[Optional[str]]
     rejection_note: Mapped[Optional[str]]
     last_approval_editor: Mapped[Optional[int]]
@@ -477,31 +477,23 @@ class DataSourceArchiveInfo(Base):
     next_cached: Mapped[Optional[timestamp]]
 
 
-class LinkDataSourceDataRequest(StandardBase):
+class LinkDataSourceDataRequest(StandardBase, DataSourceIDMixin):
     __tablename__ = Relations.LINK_DATA_SOURCES_DATA_REQUESTS.value
 
-    data_source_id: Mapped[text] = mapped_column(ForeignKey("public.data_sources.id"))
     request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
 
 
-class DataRequestsGithubIssueInfo(StandardBase):
+class DataRequestsGithubIssueInfo(StandardBase, DataRequestIDMixin):
     __tablename__ = Relations.DATA_REQUESTS_GITHUB_ISSUE_INFO.value
 
-    data_request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
     github_issue_url: Mapped[str]
     github_issue_number: Mapped[int]
 
-    # Relationships
-    data_request = relationship(
-        argument="DataRequest", back_populates="github_issue_info", uselist=False
-    )
 
-
-class LinkUserFollowedLocation(StandardBase, CountMetadata, CreatedAtMixin):
+class LinkUserFollowedLocation(
+    StandardBase, CountMetadata, CreatedAtMixin, UserIDMixin, LocationIDMixin
+):
     __tablename__ = Relations.LINK_USER_FOLLOWED_LOCATION.value
-
-    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
-    location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
 
 
 class RecordCategory(StandardBase):
@@ -532,10 +524,9 @@ class RecordType(StandardBase):
     )
 
 
-class ResetToken(StandardBase):
+class ResetToken(StandardBase, UserIDMixin):
     __tablename__ = Relations.RESET_TOKENS.value
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
     token: Mapped[Optional[text]]
     create_date: Mapped[timestamp] = mapped_column(
         server_default=func.current_timestamp()
@@ -592,10 +583,9 @@ class Permission(StandardBase):
     description: Mapped[Optional[text]]
 
 
-class UserPermission(StandardBase):
+class UserPermission(StandardBase, UserIDMixin):
     __tablename__ = Relations.USER_PERMISSIONS.value
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
     permission_id: Mapped[int] = mapped_column(ForeignKey("public.permissions.id"))
 
 
@@ -607,11 +597,8 @@ class PendingUser(StandardBase, CreatedAtMixin):
     validation_token: Mapped[Optional[text]]
 
 
-class LinkLocationDataRequest(StandardBase):
+class LinkLocationDataRequest(StandardBase, LocationIDMixin, DataRequestIDMixin):
     __tablename__ = Relations.LINK_LOCATIONS_DATA_REQUESTS.value
-
-    location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
-    data_request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
 
 
 class DependentLocation(Base):
@@ -624,45 +611,31 @@ class DependentLocation(Base):
     )
 
 
-class DataRequestPendingEventNotification(StandardBase, CreatedAtMixin):
+class DataRequestPendingEventNotification(
+    StandardBase, CreatedAtMixin, DataRequestIDMixin
+):
     __tablename__ = Relations.DATA_REQUESTS_PENDING_EVENT_NOTIFICATIONS.value
-
-    data_request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
     event_type: Mapped[EventTypeDataRequestLiteral] = mapped_column(
         Enum(*get_args(EventTypeDataRequestLiteral), name="event_type_data_request")
     )
 
-    # Relationships
-    data_request = relationship(
-        argument="DataRequest",
-        primaryjoin="DataRequestPendingEventNotification.data_request_id == DataRequest.id",
-        uselist=False,
-    )
 
-
-class DataSourcePendingEventNotification(StandardBase, CreatedAtMixin):
+class DataSourcePendingEventNotification(
+    StandardBase, CreatedAtMixin, DataSourceIDMixin
+):
     __tablename__ = Relations.DATA_SOURCES_PENDING_EVENT_NOTIFICATIONS.value
 
-    data_source_id: Mapped[int] = mapped_column(ForeignKey("public.data_sources.id"))
     event_type: Mapped[EventTypeDataSourceLiteral] = mapped_column(
         Enum(*get_args(EventTypeDataSourceLiteral), name="event_type_data_source")
     )
 
-    # Relationships
-    data_source = relationship(
-        argument="DataSource",
-        primaryjoin="DataSourcePendingEventNotification.data_source_id == DataSource.id",
-        uselist=False,
-    )
 
-
-class DataRequestUserNotificationQueue(StandardBase):
+class DataRequestUserNotificationQueue(StandardBase, UserIDMixin):
     __tablename__ = Relations.DATA_REQUESTS_USER_NOTIFICATION_QUEUE.value
 
     event_id: Mapped[int] = mapped_column(
         ForeignKey("public.data_request_pending_event_notification.id")
     )
-    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
     sent_at: Mapped[Optional[timestamp]]
 
     # Relationships
@@ -671,20 +644,14 @@ class DataRequestUserNotificationQueue(StandardBase):
         primaryjoin="DataRequestUserNotificationQueue.event_id == DataRequestPendingEventNotification.id",
         uselist=False,
     )
-    user = relationship(
-        argument="User",
-        primaryjoin="DataRequestUserNotificationQueue.user_id == User.id",
-        uselist=False,
-    )
 
 
-class DataSourceUserNotificationQueue(StandardBase):
+class DataSourceUserNotificationQueue(StandardBase, UserIDMixin):
     __tablename__ = Relations.DATA_SOURCES_USER_NOTIFICATION_QUEUE.value
 
     event_id: Mapped[int] = mapped_column(
         ForeignKey("public.data_source_pending_event_notification.id")
     )
-    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
     sent_at: Mapped[Optional[timestamp]]
 
     # Relationships
@@ -693,18 +660,10 @@ class DataSourceUserNotificationQueue(StandardBase):
         primaryjoin="DataSourceUserNotificationQueue.event_id == DataSourcePendingEventNotification.id",
         uselist=False,
     )
-    user = relationship(
-        argument="User",
-        primaryjoin="DataSourceUserNotificationQueue.user_id == User.id",
-        uselist=False,
-    )
 
 
-class RecentSearch(StandardBase, CreatedAtMixin):
+class RecentSearch(StandardBase, CreatedAtMixin, UserIDMixin, LocationIDMixin):
     __tablename__ = Relations.RECENT_SEARCHES.value
-
-    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
-    location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
 
 
 class LinkRecentSearchRecordCategories(StandardBase):
@@ -727,15 +686,9 @@ class LinkRecentSearchRecordTypes(StandardBase):
     record_type_id: Mapped[int] = mapped_column(ForeignKey("public.record_types.id"))
 
 
-# TODO: Change user_id references in models to be from singular factory function or constant, to avoid duplication
-# Do the same for other common foreign keys, or for things such as primary keys
-
-
-class RecentSearchExpanded(StandardBase, CountMetadata):
+class RecentSearchExpanded(StandardBase, CountMetadata, UserIDMixin, LocationIDMixin):
     __tablename__ = Relations.RECENT_SEARCHES_EXPANDED.value
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
-    location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
     state_name: Mapped[str]
     county_name: Mapped[str]
     locality_name: Mapped[str]
