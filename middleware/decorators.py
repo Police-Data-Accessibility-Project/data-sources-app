@@ -11,15 +11,15 @@ from middleware.access_logic import (
     ParserDeterminator,
 )
 from middleware.authentication_info import AuthenticationInfo
-from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
 from middleware.enums import PermissionsEnum, AccessTypeEnum
+from middleware.primary_resource_logic.api_key_logic import check_api_key
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_construction import (
     get_restx_param_documentation,
 )
 from middleware.schema_and_dto_logic.non_dto_dataclasses import FlaskRestxDocInfo
 from middleware.security import check_permissions
-from middleware.primary_resource_logic.api_key_logic import check_api_key
 from resources.PsycopgResource import handle_exceptions
+from resources.endpoint_schema_config import SchemaConfigs, OutputSchemaManager
 from resources.resource_helpers import (
     add_jwt_or_api_key_header_arg,
     add_jwt_header_arg,
@@ -30,7 +30,6 @@ from resources.resource_helpers import (
     add_validate_email_header_arg,
     add_refresh_jwt_header_arg,
 )
-from resources.endpoint_schema_config import SchemaConfigs, OutputSchemaManager
 
 
 def api_key_required(func):
