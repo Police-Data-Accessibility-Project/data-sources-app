@@ -172,8 +172,8 @@ def test_agencies_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     assert data["id"] == int(agency_id)
     assert data["data_sources"][0]["id"] == int(cds.id)
 
-    assert data["locations"][0]["location_id"] == int(location_id_1)
-    assert data["locations"][1]["location_id"] == int(location_id_2)
+    assert data["locations"][0]["location_id"] == int(location_id_2)
+    assert data["locations"][1]["location_id"] == int(location_id_1)
 
 
 def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):

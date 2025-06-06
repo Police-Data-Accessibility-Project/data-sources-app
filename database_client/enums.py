@@ -57,6 +57,7 @@ class LocationType(Enum):
     STATE = "State"
     COUNTY = "County"
     LOCALITY = "Locality"
+    NATIONAL = "National"
 
 
 class RequestStatus(Enum):

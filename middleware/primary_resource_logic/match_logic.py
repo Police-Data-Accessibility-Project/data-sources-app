@@ -112,6 +112,8 @@ def _get_agencies(db_client, location_id):
 
 
 def _get_location_id(db_client, dto: AgencyMatchRequestDTO):
+    if dto.state is None and dto.county is None and dto.locality is None:
+        return None
     return db_client.get_location_id(
         where_mappings=WhereMapping.from_dict(
             {

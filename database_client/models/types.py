@@ -90,11 +90,12 @@ RequestUrgencyLiteral = Literal[
     "long_term",
     "indefinite_unknown",
 ]
-LocationTypeLiteral = Literal["State", "County", "Locality"]
+LocationTypeLiteral = Literal["State", "County", "Locality", "National"]
 LocationTypePGEnum = postgresql.ENUM(
     LocationType.STATE.value,
     LocationType.COUNTY.value,
     LocationType.LOCALITY.value,
+    LocationType.NATIONAL.value,
     name="location_type",
 )
 EventTypeDataRequestLiteral = Literal["Request Ready to Start", "Request Complete"]

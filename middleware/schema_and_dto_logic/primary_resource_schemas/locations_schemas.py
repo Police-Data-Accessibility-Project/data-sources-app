@@ -55,7 +55,9 @@ LOCATION_TYPE_FIELD = fields.Enum(
     },
 )
 STATE_NAME_FIELD = fields.Str(
-    required=True, metadata=get_json_metadata(description="The name of the state.")
+    required=True,
+    allow_none=True,
+    metadata=get_json_metadata(description="The name of the state."),
 )
 COUNTY_NAME_FIELD = fields.Str(
     required=True,
