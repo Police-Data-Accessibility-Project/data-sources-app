@@ -3,7 +3,12 @@ from alembic import op
 
 
 def switch_enum_type(
-    table_name, column_name, enum_name, new_enum_values, drop_old_enum=True
+    table_name,
+    column_name,
+    enum_name,
+    new_enum_values,
+    drop_old_enum=True,
+    mapping_dict=None,
 ):
     """
     Switches an ENUM type in a PostgreSQL column by:
@@ -17,6 +22,7 @@ def switch_enum_type(
     :param enum_name: Name of the ENUM type in PostgreSQL.
     :param new_enum_values: List of new ENUM values.
     :param drop_old_enum: Whether to drop the old ENUM type.
+    :param mapping_dict: Optional dict mapping old values to new values.
     """
     conn = op.get_bind()
 
@@ -40,21 +46,44 @@ def switch_enum_type(
     query = f"SELECT DISTINCT {quoted_column_name} FROM {quoted_table_name}"  # nosec
     existing_values = [row[0] for row in conn.execute(sa.text(query)).fetchall()]
 
-    invalid_values = [val for val in existing_values if val not in new_enum_values]
+    # Build the mapping of final target values:
+    if mapping_dict:
+        mapped_values = [mapping_dict.get(val, val) for val in existing_values]
+    else:
+        mapped_values = existing_values
+
+    # Validate that all mapped values are in the new enum:
+    invalid_values = [val for val in mapped_values if val not in new_enum_values]
     if invalid_values:
         raise ValueError(
-            f"Existing column '{column_name}' contains invalid values: {invalid_values}"
+            f"Existing column '{column_name}' contains invalid mapped values: {invalid_values}"
         )
 
-    # Step 4: Change column type using explicit cast
+    # Step 4: Change column type using explicit cast or CASE
+    if mapping_dict:
+        # Build explicit CASE WHEN statement
+        case_clauses = "\n".join(
+            f"WHEN '{old_val}' THEN '{new_val}'::{quoted_enum_name}"
+            for old_val, new_val in mapping_dict.items()
+        )
+        using_expr = f"""
+            CASE ({quoted_column_name}::text)
+                {case_clauses}
+                ELSE ({quoted_column_name}::text):: {quoted_enum_name}
+            END
+        """
+    else:
+        # Default text cast if no mapping provided
+        using_expr = f"{quoted_column_name}::text::{quoted_enum_name}"
+
     op.execute(
         sa.text(
             f"""
-        ALTER TABLE {quoted_table_name} 
-        ALTER COLUMN {quoted_column_name} 
-        SET DATA TYPE {quoted_enum_name} 
-        USING {quoted_column_name}::text::{quoted_enum_name}
-    """
+            ALTER TABLE {quoted_table_name} 
+            ALTER COLUMN {quoted_column_name} 
+            SET DATA TYPE {quoted_enum_name} 
+            USING {using_expr}
+            """
         )
     )
 

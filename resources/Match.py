@@ -4,7 +4,6 @@ from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import STANDARD_JWT_AUTH_INFO
 from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.match_logic import (
-    try_matching_agency,
     match_agency_wrapper,
 )
 from resources.PsycopgResource import PsycopgResource
