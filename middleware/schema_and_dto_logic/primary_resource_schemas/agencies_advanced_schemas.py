@@ -10,38 +10,36 @@ from middleware.schema_and_dto_logic.common_response_schemas import (
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetByIDBaseSchema,
 )
-from middleware.schema_and_dto_logic.enums import CSVColumnCondition
-from middleware.schema_and_dto_logic.primary_resource_schemas.locations_schemas import (
-    LocationInfoResponseSchema,
+from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
+    generate_marshmallow_schema,
 )
+from middleware.schema_and_dto_logic.enums import CSVColumnCondition
 from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
     AgencyInfoPutDTO,
     AgencyInfoPostDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_base_schemas import (
+    AgencyInfoBaseSchema,
     get_name_field,
     get_jurisdiction_type_field,
-    AgencyInfoBaseSchema,
-    AgenciesExpandedSchema,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_schemas import (
     DataSourceExpandedSchema,
 )
+from middleware.schema_and_dto_logic.primary_resource_schemas.locations_schemas import (
+    LocationInfoResponseSchema,
+    STATE_ISO_FIELD,
+    COUNTY_FIPS_FIELD,
+    LOCALITY_NAME_FIELD,
+)
 from middleware.schema_and_dto_logic.util import get_json_metadata
 from utilities.enums import SourceMappingEnum
 
-
 # Base Schema
 
+AgencyInfoPostSchema = generate_marshmallow_schema(AgencyInfoPostDTO)
 
-class AgencyInfoPostSchema(AgencyInfoBaseSchema):
-    name = get_name_field(required=True)
-    jurisdiction_type = get_jurisdiction_type_field(required=True)
-
-
-class AgencyInfoPutSchema(AgencyInfoBaseSchema):
-    name = get_name_field(required=False)
-    jurisdiction_type = get_jurisdiction_type_field(required=False)
+AgencyInfoPutSchema = generate_marshmallow_schema(AgencyInfoPutDTO)
 
 
 def get_agency_info_field(
@@ -106,7 +104,58 @@ class AgenciesPutSchema(Schema):
     )
 
 
-class AgenciesGetSchema(AgenciesExpandedSchema):
+class AgenciesGetSchema(AgencyInfoBaseSchema):
+    id = fields.Integer(
+        required=True,
+        metadata={
+            "description": "The id of the agency.",
+            "source": SourceMappingEnum.JSON,
+        },
+    )
+    submitted_name = get_name_field(required=True)
+    jurisdiction_type = get_jurisdiction_type_field(required=True)
+    name = fields.Str(
+        required=False,
+        metadata={
+            "description": "The name of the agency.",
+            "source": SourceMappingEnum.JSON,
+        },
+    )
+    state_iso = STATE_ISO_FIELD
+    state_name = fields.Str(
+        required=False,
+        allow_none=True,
+        metadata={
+            "description": "The name of the state in which the agency is located. Does not apply to federal agencies",
+            "source": SourceMappingEnum.JSON,
+        },
+    )
+    county_name = fields.Str(
+        required=False,
+        allow_none=True,
+        metadata={
+            "description": "The name of the county in which the agency is located.",
+            "source": SourceMappingEnum.JSON,
+        },
+    )
+    county_fips = COUNTY_FIPS_FIELD
+    locality_name = LOCALITY_NAME_FIELD
+    airtable_agency_last_modified = fields.DateTime(
+        required=False,
+        format="iso",
+        metadata={
+            "description": "When the agency was last modified",
+            "source": SourceMappingEnum.JSON,
+        },
+    )
+    agency_created = fields.DateTime(
+        required=False,
+        format="iso",
+        metadata={
+            "description": "When the agency was created",
+            "source": SourceMappingEnum.JSON,
+        },
+    )
     data_sources = fields.List(
         cls_or_instance=fields.Nested(
             nested=DataSourceExpandedSchema(only=["id", "name"]),

@@ -6,29 +6,36 @@ to be inherited by other get many requests.
 import ast
 from typing import Optional
 
-from marshmallow import Schema, fields, validate
-from pydantic import BaseModel
+from marshmallow import Schema, fields
+from pydantic import BaseModel, Field
 
 from db.constants import PAGE_SIZE
 from db.enums import SortOrder, LocationType
 from middleware.schema_and_dto_logic.common_fields import (
     PAGE_FIELD,
     SORT_ORDER_FIELD,
-    SORT_BY_FIELD,
 )
 from middleware.schema_and_dto_logic.custom_fields import DataField
+from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
+    generate_marshmallow_schema,
+    MetadataInfo,
+)
 from middleware.schema_and_dto_logic.non_dto_dataclasses import (
     SchemaPopulateParameters,
     DTOPopulateParameters,
 )
-from middleware.schema_and_dto_logic.util import get_json_metadata
-
 from utilities.enums import SourceMappingEnum
 
 
 class GetManyRequestsBaseSchema(Schema):
     page = PAGE_FIELD
-    sort_by = SORT_BY_FIELD
+    sort_by = fields.Str(
+        required=False,
+        metadata={
+            "description": "The field to sort the results by.",
+            "source": SourceMappingEnum.QUERY_ARGS,
+        },
+    )
     sort_order = SORT_ORDER_FIELD
     requested_columns = fields.Str(
         required=False,
@@ -71,18 +78,14 @@ GET_MANY_SCHEMA_POPULATE_PARAMETERS = SchemaPopulateParameters(
 )
 
 
-class GetByIDBaseSchema(Schema):
-    resource_id = fields.Str(
-        required=True,
-        metadata={
-            "source": SourceMappingEnum.PATH,
-            "description": "The ID of the object to retrieve.",
-        },
+class GetByIDBaseDTO(BaseModel):
+    resource_id: str = Field(
+        description="The ID of the object to retrieve.",
+        json_schema_extra=MetadataInfo(required=True, source=SourceMappingEnum.PATH),
     )
 
 
-class GetByIDBaseDTO(BaseModel):
-    resource_id: str
+GetByIDBaseSchema = generate_marshmallow_schema(GetByIDBaseDTO)
 
 
 class EntryDataRequestSchema(Schema):
@@ -111,18 +114,16 @@ class EntryCreateUpdateRequestDTO(BaseModel):
         )
 
 
-class TypeaheadQuerySchema(Schema):
-    query = fields.Str(
-        required=True,
-        metadata={
-            "source": SourceMappingEnum.QUERY_ARGS,
-            "description": "The search query to get suggestions for.",
-        },
+class TypeaheadDTO(BaseModel):
+    query: str = Field(
+        description="The search query to get suggestions for.",
+        json_schema_extra=MetadataInfo(
+            source=SourceMappingEnum.QUERY_ARGS, required=True
+        ),
     )
 
 
-class TypeaheadDTO(BaseModel):
-    query: str
+TypeaheadQuerySchema = generate_marshmallow_schema(TypeaheadDTO)
 
 
 class LocationInfoDTO(BaseModel):
@@ -132,12 +133,11 @@ class LocationInfoDTO(BaseModel):
     locality_name: Optional[str] = None
 
 
-class EmailOnlySchema(Schema):
-    email = fields.Email(
-        required=True,
-        metadata=get_json_metadata(description="The user's email address"),
+class EmailOnlyDTO(BaseModel):
+    email: str = Field(
+        description="The user's email address",
+        json_schema_extra=MetadataInfo(required=True),
     )
 
 
-class EmailOnlyDTO(BaseModel):
-    email: str
+EmailOnlySchema = generate_marshmallow_schema(EmailOnlyDTO)

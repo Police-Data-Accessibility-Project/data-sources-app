@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from db.db_client_dataclasses import WhereMapping
 from db.enums import LocationType, RequestStatus, RequestUrgency
@@ -9,6 +9,10 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyBaseDTO,
     GetByIDBaseDTO,
 )
+from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
+    MetadataInfo,
+)
+from utilities.enums import SourceMappingEnum
 
 
 class DataRequestLocationInfoPostDTO(BaseModel):
@@ -53,7 +57,12 @@ class DataRequestsPutOuterDTO(BaseModel):
 
 
 class RelatedSourceByIDDTO(GetByIDBaseDTO):
-    data_source_id: int
+    data_source_id: int = Field(
+        description="The ID of the data source to retrieve.",
+        json_schema_extra=MetadataInfo(
+            source=SourceMappingEnum.PATH,
+        ),
+    )
 
     def get_where_mapping(self):
         return {
@@ -63,7 +72,12 @@ class RelatedSourceByIDDTO(GetByIDBaseDTO):
 
 
 class RelatedLocationsByIDDTO(GetByIDBaseDTO):
-    location_id: int
+    location_id: int = Field(
+        description="The ID of the location to add or remove from the data request.",
+        json_schema_extra=MetadataInfo(
+            source=SourceMappingEnum.PATH,
+        ),
+    )
 
     def get_where_mapping(self):
         return {

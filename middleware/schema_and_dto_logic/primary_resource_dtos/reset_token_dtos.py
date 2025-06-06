@@ -1,12 +1,14 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 
-from pydantic import BaseModel, Field
+from middleware.schema_and_dto_logic.primary_resource_dtos.helpers import (
+    default_field_required,
+)
 
 
 class RequestResetPasswordRequestDTO(BaseModel):
-    email: str = Field(description="The email of the user.")
-    token: str = Field(description="The token of the user.")
+    email: str = default_field_required(description="The email of the user.")
+    token: str = default_field_required(description="The token of the user.")
 
 
 class ResetPasswordDTO(BaseModel):
-    password: str = Field(description="The new password of the user.")
+    password: str = default_field_required(description="The new password of the user.")

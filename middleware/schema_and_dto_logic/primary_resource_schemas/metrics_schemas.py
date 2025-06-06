@@ -5,7 +5,6 @@ from db.constants import (
 )
 from middleware.schema_and_dto_logic.common_fields import (
     PAGE_FIELD,
-    SORT_BY_FIELD,
     SORT_ORDER_FIELD,
     get_sort_by_field,
 )

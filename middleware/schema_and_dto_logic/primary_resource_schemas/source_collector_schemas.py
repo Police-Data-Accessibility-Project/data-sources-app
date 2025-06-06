@@ -2,6 +2,12 @@ from marshmallow import Schema, fields, validate
 
 from middleware.enums import RecordTypes, DataSourceCreationResponse
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
+from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
+    generate_marshmallow_schema,
+)
+from middleware.schema_and_dto_logic.primary_resource_dtos.source_collector_dtos import (
+    SourceCollectorPostResponseInnerDTO,
+)
 from middleware.schema_and_dto_logic.util import get_json_metadata
 
 
@@ -78,27 +84,9 @@ class SourceCollectorPostRequestSchema(Schema):
     )
 
 
-class SourceCollectorPostResponseInnerSchema(Schema):
-    url = fields.String(
-        metadata=get_json_metadata("The URL of the data source"), required=True
-    )
-    status = fields.Enum(
-        enum=DataSourceCreationResponse,
-        by_value=fields.Str,
-        metadata=get_json_metadata("The resulting status of the data source creation"),
-    )
-    data_source_id = fields.Integer(
-        metadata=get_json_metadata(
-            "The ID of the newly created data source, if successful."
-        ),
-        allow_none=True,
-    )
-    error = fields.String(
-        metadata=get_json_metadata(
-            "The error messages associated with the data source, if any"
-        ),
-        allow_none=True,
-    )
+SourceCollectorPostResponseInnerSchema = generate_marshmallow_schema(
+    SourceCollectorPostResponseInnerDTO
+)
 
 
 class SourceCollectorPostResponseSchema(MessageSchema):

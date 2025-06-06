@@ -5,6 +5,12 @@ from middleware.enums import JurisdictionType, AgencyType
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyRequestsBaseSchema,
 )
+from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
+    generate_marshmallow_schema,
+)
+from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
+    AgencyInfoBaseDTO,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.locations_schemas import (
     STATE_ISO_FIELD,
     COUNTY_FIPS_FIELD,
@@ -37,152 +43,7 @@ def get_jurisdiction_type_field(required: bool) -> fields.Enum:
     )
 
 
-class AgencyInfoBaseSchema(Schema):
-    homepage_url = fields.Str(
-        allow_none=True,
-        metadata={
-            "description": "The URL of the agency's homepage.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    lat = fields.Float(
-        required=False,
-        allow_none=True,
-        metadata={
-            "description": "The latitude of the agency's location.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    lng = fields.Float(
-        required=False,
-        allow_none=True,
-        metadata={
-            "description": "The longitude of the agency's location.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    defunct_year = fields.Str(
-        required=False,
-        allow_none=True,
-        metadata={
-            "description": "If present, denotes an agency which has defunct but may still have relevant records.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    agency_type = fields.Enum(
-        required=True,
-        enum=AgencyType,
-        by_value=fields.Str,
-        allow_none=True,
-        metadata={
-            "description": "The type of agency.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    multi_agency = fields.Bool(
-        required=False,
-        load_default=False,
-        metadata={
-            "description": "Whether the agency is a multi-agency.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    no_web_presence = fields.Bool(
-        required=False,
-        load_default=False,
-        metadata={
-            "description": "True when an agency does not have a dedicated website.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    approval_status = fields.Enum(
-        enum=ApprovalStatus,
-        by_value=True,
-        required=False,
-        load_default=ApprovalStatus.PENDING.value,
-        metadata={
-            "description": "Approval status of the agency.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    rejection_reason = fields.Str(
-        required=False,
-        allow_none=True,
-        metadata={
-            "description": "The reason the agency was rejected.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    last_approval_editor = fields.String(
-        required=False,
-        allow_none=True,
-        metadata={
-            "description": "The user who last approved or rejected the agency.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    submitter_contact = fields.Str(
-        required=False,
-        allow_none=True,
-        metadata={
-            "description": "The contact information of the user who submitted the agency.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-
-
-class AgenciesExpandedSchema(AgencyInfoBaseSchema):
-    id = fields.Integer(
-        required=True,
-        metadata={
-            "description": "The id of the agency.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    submitted_name = get_name_field(required=True)
-    jurisdiction_type = get_jurisdiction_type_field(required=True)
-    name = fields.Str(
-        required=False,
-        metadata={
-            "description": "The name of the agency.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    state_iso = STATE_ISO_FIELD
-    state_name = fields.Str(
-        required=False,
-        allow_none=True,
-        metadata={
-            "description": "The name of the state in which the agency is located. Does not apply to federal agencies",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    county_name = fields.Str(
-        required=False,
-        allow_none=True,
-        metadata={
-            "description": "The name of the county in which the agency is located.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    county_fips = COUNTY_FIPS_FIELD
-    locality_name = LOCALITY_NAME_FIELD
-    airtable_agency_last_modified = fields.DateTime(
-        required=False,
-        format="iso",
-        metadata={
-            "description": "When the agency was last modified",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-    agency_created = fields.DateTime(
-        required=False,
-        format="iso",
-        metadata={
-            "description": "When the agency was created",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
+AgencyInfoBaseSchema = generate_marshmallow_schema(AgencyInfoBaseDTO)
 
 
 class GetManyAgenciesRequestsSchema(GetManyRequestsBaseSchema):

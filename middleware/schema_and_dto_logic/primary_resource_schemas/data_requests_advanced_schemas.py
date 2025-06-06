@@ -1,6 +1,9 @@
 from marshmallow import fields, Schema, post_load, pre_load
 
 from db.enums import RequestStatus
+from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
+    generate_marshmallow_schema,
+)
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_base_schema import (
     DataRequestsSchema,
 )
@@ -20,6 +23,8 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos im
     DataRequestLocationInfoPostDTO,
     DataRequestsPutDTO,
     RequestInfoPostDTO,
+    RelatedSourceByIDDTO,
+    RelatedLocationsByIDDTO,
 )
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_schemas import (
     DataSourceExpandedSchema,
@@ -172,21 +177,8 @@ GetManyDataRequestsRelatedLocationsSchema = create_get_many_schema(
     description="The list of locations associated with the data request",
 )
 
+DataRequestsRelatedLocationAddRemoveSchema = generate_marshmallow_schema(
+    RelatedLocationsByIDDTO
+)
 
-class DataRequestsRelatedLocationAddRemoveSchema(GetByIDBaseSchema):
-    location_id = fields.Integer(
-        required=True,
-        metadata=get_path_metadata(
-            "The ID of the location to add or remove from the data request."
-        ),
-    )
-
-
-class RelatedSourceByIDSchema(GetByIDBaseSchema):
-    data_source_id = fields.Str(
-        required=True,
-        metadata={
-            "description": "The ID of the data source",
-            "source": SourceMappingEnum.PATH,
-        },
-    )
+RelatedSourceByIDSchema = generate_marshmallow_schema(RelatedSourceByIDDTO)

@@ -11,13 +11,6 @@ PAGE_FIELD = fields.Integer(
         "source": SourceMappingEnum.QUERY_ARGS,
     },
 )
-SORT_BY_FIELD = fields.Str(
-    required=False,
-    metadata={
-        "description": "The field to sort the results by.",
-        "source": SourceMappingEnum.QUERY_ARGS,
-    },
-)
 
 
 def get_sort_by_field(allowed_values: list) -> fields.Str:
