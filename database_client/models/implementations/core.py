@@ -39,6 +39,7 @@ from database_client.models.mixins import (
     LocationIDMixin,
     DataRequestIDMixin,
     DataSourceIDMixin,
+    IterWithSpecialCasesMixin,
 )
 from database_client.models.templates.standard import StandardBase
 from database_client.models.types import (
@@ -174,7 +175,7 @@ class Locality(StandardBase):
     location = relationship("Location", back_populates="locality", uselist=False)
 
 
-class Location(StandardBase):
+class Location(StandardBase, IterWithSpecialCasesMixin):
     __tablename__ = Relations.LOCATIONS.value
 
     type = Column(LocationTypePGEnum, nullable=False)
@@ -185,9 +186,6 @@ class Location(StandardBase):
     locality_id: Mapped[int] = mapped_column(ForeignKey("localities.id"))
     lat: Mapped[float]
     lng: Mapped[float]
-
-    def __iter__(self):
-        yield from iter_with_special_cases(self)
 
     # Relationships
     county = relationship(argument="County", back_populates="locations", uselist=False)
@@ -206,7 +204,7 @@ class Location(StandardBase):
     )
 
 
-class LocationExpanded(StandardBase, CountMetadata):
+class LocationExpanded(StandardBase, CountMetadata, IterWithSpecialCasesMixin):
     __tablename__ = Relations.LOCATIONS_EXPANDED.value
     __table_args__ = {"extend_existing": True}
 
@@ -221,9 +219,6 @@ class LocationExpanded(StandardBase, CountMetadata):
     locality_id = Column(Integer)
     display_name = Column(String)
     full_display_name = Column(String)
-
-    def __iter__(self):
-        yield from iter_with_special_cases(self)
 
     # relationships
 
@@ -255,21 +250,19 @@ class USState(StandardBase):
     counties = relationship("County", back_populates="state")
 
 
-class DataRequest(StandardBase, CountMetadata, CountSubqueryMetadata):
+class DataRequest(
+    StandardBase, CountMetadata, CountSubqueryMetadata, IterWithSpecialCasesMixin
+):
     __tablename__ = Relations.DATA_REQUESTS.value
 
-    def __iter__(self):
-
-        special_cases = {
-            "data_sources": lambda instance: get_iter_model_list_of_dict(
-                instance, attr_name="data_sources"
-            ),
-            "locations": lambda instance: get_iter_model_list_of_dict(
-                instance, attr_name="locations"
-            ),
-        }
-
-        yield from iter_with_special_cases(self, special_cases=special_cases)
+    special_cases = {
+        "data_sources": lambda instance: get_iter_model_list_of_dict(
+            instance, attr_name="data_sources"
+        ),
+        "locations": lambda instance: get_iter_model_list_of_dict(
+            instance, attr_name="locations"
+        ),
+    }
 
     submission_notes: Mapped[Optional[text]]
     request_status: Mapped[RequestStatusLiteral] = mapped_column(
@@ -321,20 +314,23 @@ class DataRequestExpanded(DataRequest):
     )
 
 
-class DataSource(StandardBase, CountMetadata, CountSubqueryMetadata, CreatedAtMixin):
+class DataSource(
+    StandardBase,
+    CountMetadata,
+    CountSubqueryMetadata,
+    CreatedAtMixin,
+    IterWithSpecialCasesMixin,
+):
     __tablename__ = Relations.DATA_SOURCES.value
 
-    def __iter__(self):
-
-        special_cases = {
-            "agencies": lambda instance: get_iter_model_list_of_dict(
-                instance, attr_name="agencies"
-            ),
-            "data_requests": lambda instance: get_iter_model_list_of_dict(
-                instance, attr_name="data_requests"
-            ),
-        }
-        yield from iter_with_special_cases(self, special_cases)
+    special_cases = {
+        "agencies": lambda instance: get_iter_model_list_of_dict(
+            instance, attr_name="agencies"
+        ),
+        "data_requests": lambda instance: get_iter_model_list_of_dict(
+            instance, attr_name="data_requests"
+        ),
+    }
 
     name: Mapped[str]
     description: Mapped[Optional[str]]

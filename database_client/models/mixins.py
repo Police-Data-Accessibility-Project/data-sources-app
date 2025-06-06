@@ -4,6 +4,7 @@ from sqlalchemy import func, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import Mapped, mapped_column, relationship, declared_attr
 
+from database_client.models.helpers import iter_with_special_cases
 from database_client.models.types import timestamp
 
 
@@ -87,3 +88,11 @@ class DataSourceIDMixin:
             primaryjoin=f"foreign({cls.__name__}.data_source_id) == DataSource.id",
             uselist=False,
         )
+
+
+class IterWithSpecialCasesMixin:
+
+    special_cases: Optional[dict] = None
+
+    def __iter__(self):
+        yield from iter_with_special_cases(self, special_cases=self.special_cases)
