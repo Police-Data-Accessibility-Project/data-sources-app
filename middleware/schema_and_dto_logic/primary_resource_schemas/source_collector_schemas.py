@@ -3,7 +3,6 @@ from marshmallow import Schema, fields, validate
 from middleware.enums import RecordTypes, DataSourceCreationResponse
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from middleware.schema_and_dto_logic.util import get_json_metadata
-from middleware.util import normalize_url
 
 
 class SourceCollectorPostRequestInnerSchema(Schema):

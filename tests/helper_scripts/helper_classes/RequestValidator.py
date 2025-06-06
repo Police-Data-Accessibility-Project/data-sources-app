@@ -18,10 +18,7 @@ from database_client.enums import (
     ApprovalStatus,
     UpdateFrequency,
 )
-from middleware.enums import OutputFormatEnum, PermissionsEnum, RecordTypes
-from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
-    AgenciesPostDTO,
-)
+from middleware.enums import OutputFormatEnum, RecordTypes
 from middleware.schema_and_dto_logic.primary_resource_dtos.locations_dtos import (
     LocationPutDTO,
     LocationsGetRequestDTO,
@@ -32,7 +29,7 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.metrics_dtos import (
 from middleware.schema_and_dto_logic.primary_resource_dtos.source_collector_dtos import (
     SourceCollectorPostRequestDTO,
 )
-from middleware.util import update_if_not_none
+from middleware.util.dict import update_if_not_none
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.constants import (
@@ -46,7 +43,6 @@ from tests.helper_scripts.helper_functions_simple import (
     add_query_params,
 )
 from tests.helper_scripts.run_and_validate_request import (
-    http_methods,
     run_and_validate_request,
 )
 from utilities.enums import RecordCategories

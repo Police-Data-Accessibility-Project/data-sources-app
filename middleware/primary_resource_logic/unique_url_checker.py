@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from database_client.database_client import DatabaseClient
 from database_client.enums import ApprovalStatus
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.util import normalize_url
+from middleware.util.url import normalize_url
 from utilities.enums import SourceMappingEnum
 
 

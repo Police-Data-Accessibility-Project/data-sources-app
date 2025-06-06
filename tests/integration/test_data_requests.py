@@ -9,7 +9,7 @@ from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import RequestUrgency, LocationType, RequestStatus, SortOrder
 from middleware.constants import DATA_KEY
 from middleware.enums import RecordTypes
-from middleware.util import get_enum_values
+from middleware.util.type_conversion import get_enum_values
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,

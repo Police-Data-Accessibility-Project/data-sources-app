@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 from middleware.enums import ContactFormMessageType
-from middleware.util import get_enum_values
+from middleware.util.type_conversion import get_enum_values
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )

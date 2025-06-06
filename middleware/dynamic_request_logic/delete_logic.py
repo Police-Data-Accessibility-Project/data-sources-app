@@ -9,7 +9,7 @@ from middleware.dynamic_request_logic.supporting_classes import (
     IDInfo,
 )
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.util_dynamic import call_if_not_none
+from middleware.util.dynamic import call_if_not_none
 
 
 def check_for_delete_permissions(check_function: DeferredFunction, entry_name: str):

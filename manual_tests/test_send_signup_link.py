@@ -1,5 +1,5 @@
 from middleware.primary_resource_logic.signup import send_signup_link
-from middleware.util import get_env_variable
+from middleware.util.env import get_env_variable
 
 
 def test_send_signup_link():

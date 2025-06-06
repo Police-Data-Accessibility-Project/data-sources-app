@@ -4,7 +4,7 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.source_collector_dtos
     SourceCollectorPostRequestDTO,
     SourceCollectorDuplicatesPostRequestDTO,
 )
-from middleware.util import normalize_url
+from middleware.util.url import normalize_url
 
 
 def add_data_sources_from_source_collector(

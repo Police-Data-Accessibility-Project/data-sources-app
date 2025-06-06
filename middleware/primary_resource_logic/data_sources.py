@@ -44,7 +44,7 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.data_sources_dtos imp
     DataSourcesPutDTO,
     DataSourcesRejectDTO,
 )
-from middleware.util import dataclass_to_filtered_dict
+from middleware.util.type_conversion import dataclass_to_filtered_dict
 
 RELATION = Relations.DATA_SOURCES.value
 SUBQUERY_PARAMS = [

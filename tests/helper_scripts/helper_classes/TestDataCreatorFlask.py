@@ -8,12 +8,10 @@ from middleware.enums import JurisdictionType, PermissionsEnum, AgencyType, Reco
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgencyInfoPostSchema,
 )
-from middleware.util import normalize_url
 from tests.helper_scripts.common_endpoint_calls import CreatedDataSource
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.complex_test_data_creation_functions import (
     create_test_data_request,
-    get_sample_agency_post_parameters,
 )
 from tests.helper_scripts.constants import (
     DATA_REQUESTS_BY_ID_ENDPOINT,

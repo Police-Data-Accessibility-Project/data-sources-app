@@ -8,7 +8,7 @@ from typing import Optional
 from flask_restx import Namespace, Model, fields
 from flask_restx.reqparse import RequestParser
 
-from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
+from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
 
 
 def add_api_key_header_arg(parser: RequestParser):

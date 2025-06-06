@@ -3,9 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
-from database_client.subquery_logic import SubqueryParameters
 from database_client.enums import ColumnPermissionEnum
 from middleware.dynamic_request_logic.common_functions import check_for_id
 from middleware.dynamic_request_logic.delete_logic import (
@@ -17,21 +15,16 @@ from middleware.dynamic_request_logic.get_by_id_logic import (
     get_by_id,
 )
 from middleware.dynamic_request_logic.get_many_logic import (
-    get_many,
     optionally_limit_to_requested_columns,
     check_requested_columns,
 )
-from middleware.dynamic_request_logic.post_logic import post_entry
 from middleware.dynamic_request_logic.put_logic import put_entry
 from middleware.dynamic_request_logic.supporting_classes import IDInfo
-from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import (
-    RelatedSourceByIDDTO,
-)
 
 from middleware.schema_and_dto_logic.common_response_schemas import (
     EntryDataResponseSchema,
 )
-from middleware.util_dynamic import call_if_not_none, execute_if_not_none
+from middleware.util.dynamic import call_if_not_none, execute_if_not_none
 from tests.conftest import FakeAbort, mock_flask_response_manager
 from tests.helper_scripts.common_mocks_and_patches import (
     patch_and_return_mock,

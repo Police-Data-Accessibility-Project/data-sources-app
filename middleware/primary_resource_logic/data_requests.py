@@ -53,7 +53,7 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos im
     DataRequestsPostDTO,
     DataRequestLocationInfoPostDTO,
 )
-from middleware.util import dataclass_to_filtered_dict
+from middleware.util.type_conversion import dataclass_to_filtered_dict
 
 RELATION = Relations.DATA_REQUESTS.value
 RELATED_SOURCES_RELATION = Relations.RELATED_SOURCES.value

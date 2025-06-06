@@ -35,7 +35,7 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.bulk_dtos import (
     BulkRequestDTO,
 )
 
-from middleware.util import bytes_to_text_iter, read_from_csv
+from middleware.util.csv import read_from_csv
 
 
 def replace_empty_strings_with_none(row: dict):

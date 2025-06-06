@@ -2,7 +2,7 @@ from typing import Optional
 
 import requests
 
-from middleware.util import get_env_variable
+from middleware.util.env import get_env_variable
 
 MAILGUN_URL = "https://api.mailgun.net/v3/mail.pdap.io/messages"
 FROM_EMAIL = "mail@pdap.io"

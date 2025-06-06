@@ -56,7 +56,7 @@ from database_client.enums import (
     LocationType,
     ApprovalStatus,
 )
-from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
+from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
 from middleware.custom_dataclasses import EventInfo, EventBatch
 from middleware.exceptions import (
     UserNotFoundError,
@@ -129,7 +129,7 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.source_collector_dtos
     SourceCollectorPostRequestInnerDTO,
     SourceCollectorPostResponseInnerDTO,
 )
-from middleware.util import get_env_variable
+from middleware.util.env import get_env_variable
 from utilities.enums import RecordCategories
 
 DATA_SOURCES_MAP_COLUMN = [

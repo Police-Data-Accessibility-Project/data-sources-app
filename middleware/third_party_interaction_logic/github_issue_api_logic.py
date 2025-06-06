@@ -2,14 +2,12 @@ import json
 import re
 from typing import Optional
 
-from github import Github
-from github import Auth
 import requests
 from pydantic import BaseModel
 
 from database_client.enums import RequestStatus
 from middleware.enums import RecordTypes
-from middleware.util import get_env_variable
+from middleware.util.env import get_env_variable
 
 
 class GithubIssueInfo(BaseModel):

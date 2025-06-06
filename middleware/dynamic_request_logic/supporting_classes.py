@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from enum import Enum, auto
 from typing import Optional, Union, Any
 
 from flask import Response
@@ -15,7 +14,7 @@ from middleware.column_permission_logic import (
     check_has_permission_to_edit_columns,
 )
 from middleware.custom_dataclasses import DeferredFunction
-from middleware.util_dynamic import execute_if_not_none
+from middleware.util.dynamic import execute_if_not_none
 
 
 @dataclass

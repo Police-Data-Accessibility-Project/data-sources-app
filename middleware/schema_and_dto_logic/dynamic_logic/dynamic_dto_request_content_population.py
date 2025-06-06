@@ -1,6 +1,6 @@
 from typing import Type, Optional, Callable, Any
 
-from middleware.argument_checking_logic import (
+from middleware.util.argument_checking import (
     check_for_mutually_exclusive_arguments,
     check_for_either_or_argument,
 )

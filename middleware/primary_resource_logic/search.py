@@ -22,7 +22,7 @@ from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas imp
     FederalSearchRequestDTO,
 )
 from middleware.common_response_formatting import message_response
-from middleware.util import get_datetime_now, write_to_csv, find_root_directory
+from middleware.util.datetime import get_datetime_now
 from utilities.enums import RecordCategories
 
 

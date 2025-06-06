@@ -10,7 +10,7 @@ from jwt import DecodeError, ExpiredSignatureError
 from middleware.SchedulerManager import SchedulerManager
 from middleware.SimpleJWT import SimpleJWT
 from middleware.scheduled_tasks.check_database_health import check_database_health
-from middleware.util import get_env_variable
+from middleware.util.env import get_env_variable
 from resources.instantiations.admin import namespace_admin
 from resources.instantiations.batch import namespace_bulk
 from resources.instantiations.callback import namespace_auth

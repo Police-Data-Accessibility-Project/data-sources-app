@@ -1,5 +1,3 @@
-import os
-import time
 from dataclasses import dataclass
 from http import HTTPStatus
 
@@ -15,7 +13,7 @@ import dominate
 from dominate.tags import *
 
 from middleware.third_party_interaction_logic.mailgun_logic import send_via_mailgun
-from middleware.util import get_env_variable
+from middleware.util.env import get_env_variable
 
 
 class NotificationEmailContent(BaseModel):

@@ -24,7 +24,7 @@ from middleware.primary_resource_logic.user_queries import (
     user_post_results,
     UserRequestDTO,
 )
-from middleware.util import get_env_variable
+from middleware.util.env import get_env_variable
 from resources.PsycopgResource import PsycopgResource
 from utilities.namespace import AppNamespaces, create_namespace
 
