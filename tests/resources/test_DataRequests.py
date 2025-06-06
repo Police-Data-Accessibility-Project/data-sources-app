@@ -13,7 +13,7 @@ from tests.helper_scripts.common_mocks_and_patches import (
 )
 from tests.helper_scripts.constants import DATA_REQUESTS_BASE_ENDPOINT
 
-PATCH_ROOT = "resources.DataRequests"
+PATCH_ROOT = "resources.instantiations.data_requests"
 
 STANDARD_REQUEST_INFO_JSON = {
     "submission_notes": "test_sb",

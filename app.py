@@ -7,50 +7,55 @@ from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 from jwt import DecodeError, ExpiredSignatureError
 
-from database_client.database_client import DatabaseClient
 from middleware.SchedulerManager import SchedulerManager
 from middleware.SimpleJWT import SimpleJWT
 from middleware.scheduled_tasks.check_database_health import check_database_health
 from middleware.util import get_env_variable
-from resources.Admin import namespace_admin
-from resources.Batch import namespace_bulk
-from resources.Callback import namespace_auth
-from resources.Contact import namespace_contact
-from resources.DataRequests import namespace_data_requests
-from resources.GithubDataRequests import namespace_github
-from resources.LinkToGithub import namespace_link_to_github
-from resources.Locations import namespace_locations
-from resources.LoginWithGithub import namespace_login_with_github
-from resources.Map import namespace_map
-from resources.Match import namespace_match
-from resources.Metadata import namespace_metadata
-from resources.Metrics import namespace_metrics
-from resources.Notifications import namespace_notifications
-from resources.OAuth import namespace_oauth
-from resources.Permissions import namespace_permissions
-from resources.Proposals import namespace_proposals
-from resources.Search import namespace_search
-from resources.Signup import namespace_signup
-from resources.SourceCollector import namespace_source_collector
-from resources.TypeaheadSuggestions import (
+from resources.instantiations.admin import namespace_admin
+from resources.instantiations.batch import namespace_bulk
+from resources.instantiations.callback import namespace_auth
+from resources.instantiations.contact import namespace_contact
+from resources.instantiations.data_requests import namespace_data_requests
+from resources.instantiations.github_data_requests import namespace_github
+from resources.instantiations.link_to_github import namespace_link_to_github
+from resources.instantiations.locations import namespace_locations
+from resources.instantiations.login_with_github import namespace_login_with_github
+from resources.instantiations.map import namespace_map
+from resources.instantiations.match import namespace_match
+from resources.instantiations.metadata import namespace_metadata
+from resources.instantiations.metrics import namespace_metrics
+from resources.instantiations.notifications import namespace_notifications
+from resources.instantiations.oauth import namespace_oauth
+from resources.instantiations.permissions import namespace_permissions
+from resources.instantiations.proposals import namespace_proposals
+from resources.instantiations.search import namespace_search
+from resources.instantiations.signup import namespace_signup
+from resources.instantiations.source_collector import namespace_source_collector
+from resources.instantiations.typeahead_suggestions import (
     namespace_typeahead_suggestions,
 )
 from flask_restx import Api
 
 from config import config, oauth, limiter, jwt
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection
-from resources.Agencies import namespace_agencies
-from resources.ApiKeyResource import namespace_api_key
-from resources.Archives import namespace_archives
-from resources.DataSources import namespace_data_source
-from resources.Login import namespace_login
-from resources.RefreshSession import namespace_refresh_session
-from resources.RequestResetPassword import namespace_request_reset_password
-from resources.ResetPassword import namespace_reset_password
-from resources.ResetTokenValidation import namespace_reset_token_validation
-from resources.UniqueURLChecker import namespace_url_checker
-from resources.CreateTestUserWithElevatedPermissions import namespace_create_test_user
-from resources.UserProfile import namespace_user
+from resources.instantiations.agencies import namespace_agencies
+from resources.instantiations.api_key import namespace_api_key
+from resources.instantiations.archives import namespace_archives
+from resources.instantiations.data_sources import namespace_data_source
+from resources.instantiations.login import namespace_login
+from resources.instantiations.refresh_session import namespace_refresh_session
+from resources.instantiations.request_reset_password import (
+    namespace_request_reset_password,
+)
+from resources.instantiations.reset_password import namespace_reset_password
+from resources.instantiations.reset_token_validation import (
+    namespace_reset_token_validation,
+)
+from resources.instantiations.unique_url_checker import namespace_url_checker
+from resources.instantiations.create_test_user_with_elevated_permissions import (
+    namespace_create_test_user,
+)
+from resources.instantiations.user_profile import namespace_user
 
 NAMESPACES = [
     namespace_api_key,

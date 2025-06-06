@@ -22,12 +22,9 @@ from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import 
     AgenciesPostDTO,
     AgencyInfoPostDTO,
 )
-from resources.ApiKeyResource import API_KEY_ROUTE
+from resources.instantiations.api_key import API_KEY_ROUTE
 from tests.helper_scripts.common_test_data import get_test_name, get_test_email
 from tests.helper_scripts.helper_classes.RequestValidator import RequestValidator
-from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
-    TestDataCreatorDBClient,
-)
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_classes.UserInfo import UserInfo
 from tests.helper_scripts.helper_functions_simple import get_authorization_header
