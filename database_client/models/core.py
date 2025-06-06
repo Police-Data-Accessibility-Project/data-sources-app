@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import date, datetime
 from typing import Optional, get_args
 
 from sqlalchemy import (
@@ -12,7 +12,6 @@ from sqlalchemy import (
     UniqueConstraint,
     CheckConstraint,
     DateTime,
-    Identity,
 )
 from sqlalchemy.dialects.postgresql import (
     ARRAY,
@@ -20,7 +19,6 @@ from sqlalchemy.dialects.postgresql import (
     ENUM as pgEnum,
     JSONB,
 )
-from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import (
     Mapped,
     mapped_column,
@@ -30,6 +28,8 @@ from sqlalchemy.sql.expression import false, func
 
 from database_client.enums import AccessType
 from database_client.models.base import Base
+from database_client.models.mixins import CountMetadata, CountSubqueryMetadata
+from database_client.models.templates.standard import StandardBase
 from database_client.models.types import (
     ExternalAccountTypeLiteral,
     RecordTypeLiteral,
@@ -56,38 +56,45 @@ from database_client.models.types import (
 from middleware.enums import Relations
 
 
-class CountMetadata:
-    @hybrid_method
-    def count(
-        cls,
-        data: list[dict],
-        **kwargs,
-    ) -> int:
-        return {"count": len(data)}
+def iter_with_special_cases(instance, special_cases=None):
+    """Generates key-value pairs for an instance, applying special case handling."""
+    if special_cases is None:
+        special_cases = {}
+    for key in instance.__dict__.copy():
+        # Skip the _sa_instance_state key
+        if key == "_sa_instance_state":
+            continue
+
+        # Handle keys with special cases defined in the special_cases dictionary
+        if key in special_cases:
+            mapped_key_value_pairs = special_cases[key](instance).copy()
+            for mapped_key, mapped_value in mapped_key_value_pairs:
+                if mapped_value is not None:
+                    yield mapped_key, mapped_value
+        else:
+            # General case for other keys
+            value = getattr(instance, key)
+            if isinstance(value, datetime) or isinstance(value, date):
+                value = str(value)  # Convert datetime to string if needed
+            yield key, value
 
 
-class CountSubqueryMetadata:
-    @hybrid_method
-    def count_subquery(
-        cls, data: list[dict], subquery_parameters, **kwargs
-    ) -> Optional[dict[str, int]]:
-        if not subquery_parameters or len(data) != 1:
-            return None
-
-        subquery_counts = {}
-        for subquery_param in subquery_parameters:
-            linking_column = subquery_param.linking_column
-            key = linking_column + "_count"
-            count = len(data[0][linking_column])
-            subquery_counts.update({key: count})
-
-        return subquery_counts
+def get_iter_model_list_of_dict(instance, attr_name: str):
+    return [
+        (
+            attr_name,
+            (
+                [item.to_dict() for item in getattr(instance, attr_name)]
+                if getattr(instance, attr_name) is not None
+                else None
+            ),
+        )
+    ]
 
 
-class LinkAgencyDataSource(Base):
+class LinkAgencyDataSource(StandardBase):
     __tablename__ = Relations.LINK_AGENCIES_DATA_SOURCES.value
 
-    id: Mapped[int] = Column(Integer, primary_key=False, server_default=Identity())
     data_source_id: Mapped[str] = mapped_column(
         ForeignKey("public.data_sources.id"), primary_key=True
     )
@@ -96,20 +103,15 @@ class LinkAgencyDataSource(Base):
     )
 
 
-class Agency(Base, CountMetadata):
+class Agency(StandardBase, CountMetadata):
     __tablename__ = Relations.AGENCIES.value
 
-    def __iter__(self):
+    # special_cases = {
+    #     "data_sources": lambda instance: get_iter_model_list_of_dict(
+    #         instance, attr_name="data_sources"
+    #     ),
+    # }
 
-        special_cases = {
-            "data_sources": lambda instance: get_iter_model_list_of_dict(
-                instance, attr_name="data_sources"
-            ),
-        }
-
-        yield from iter_with_special_cases(self, special_cases=special_cases)
-
-    id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     homepage_url: Mapped[Optional[str]]
     jurisdiction_type: Mapped[JurisdictionTypeLiteral]
@@ -173,10 +175,9 @@ class AgencyExpanded(Agency):
     county_name = Column(String)
 
 
-class LinkAgencyLocation(Base):
+class LinkAgencyLocation(StandardBase):
     __tablename__ = Relations.LINK_AGENCIES_LOCATIONS.value
 
-    id: Mapped[int] = mapped_column(primary_key=True)
     location_id: Mapped[int] = mapped_column(
         ForeignKey("public.locations.id"), primary_key=True
     )
@@ -185,20 +186,18 @@ class LinkAgencyLocation(Base):
     )
 
 
-class TableCountLog(Base):
+class TableCountLog(StandardBase):
     __tablename__ = Relations.TABLE_COUNT_LOG.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     table_name: Mapped[str]
     count: Mapped[int]
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
 
-class County(Base):
+class County(StandardBase):
     __tablename__ = Relations.COUNTIES.value
     __table_args__ = (UniqueConstraint("fips", name="unique_fips"),)
 
-    id: Mapped[int] = mapped_column(primary_key=True)
     fips: Mapped[str]
     name: Mapped[Optional[text]]
     lat: Mapped[Optional[float]]
@@ -215,13 +214,12 @@ class County(Base):
     localities = relationship("Locality", back_populates="county")
 
 
-class Locality(Base):
+class Locality(StandardBase):
     __tablename__ = Relations.LOCALITIES.value
     __table_args__ = (
         CheckConstraint("name NOT LIKE '%,%'", name="localities_name_check"),
     )
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[Optional[Text]] = mapped_column(Text)
     county_id: Mapped[int] = mapped_column(ForeignKey("counties.id"))
 
@@ -230,10 +228,9 @@ class Locality(Base):
     location = relationship("Location", back_populates="locality", uselist=False)
 
 
-class Location(Base):
+class Location(StandardBase):
     __tablename__ = Relations.LOCATIONS.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     type = Column(LocationTypePGEnum, nullable=False)
     state_id: Mapped[int] = mapped_column(
         ForeignKey("public.us_states.id"), nullable=False
@@ -263,11 +260,10 @@ class Location(Base):
     )
 
 
-class LocationExpanded(Base, CountMetadata):
+class LocationExpanded(StandardBase, CountMetadata):
     __tablename__ = Relations.LOCATIONS_EXPANDED.value
     __table_args__ = {"extend_existing": True}
 
-    id = Column(Integer, primary_key=True)
     type = Column(LocationTypePGEnum, nullable=False)
     state_name = Column(String)
     state_iso = Column(String)
@@ -303,10 +299,9 @@ class ExternalAccount(Base):
     linked_at: Mapped[Optional[timestamp]] = mapped_column(server_default=func.now())
 
 
-class USState(Base):
+class USState(StandardBase):
     __tablename__ = Relations.US_STATES.value
 
-    id: Mapped[int] = mapped_column(primary_key=True)
     state_iso: Mapped[str] = mapped_column(String(255), nullable=False)
     state_name: Mapped[str] = mapped_column(String(255))
 
@@ -315,7 +310,7 @@ class USState(Base):
     counties = relationship("County", back_populates="state")
 
 
-class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
+class DataRequest(StandardBase, CountMetadata, CountSubqueryMetadata):
     __tablename__ = Relations.DATA_REQUESTS.value
 
     def __iter__(self):
@@ -331,7 +326,6 @@ class DataRequest(Base, CountMetadata, CountSubqueryMetadata):
 
         yield from iter_with_special_cases(self, special_cases=special_cases)
 
-    id: Mapped[int] = mapped_column(primary_key=True)
     submission_notes: Mapped[Optional[text]]
     request_status: Mapped[RequestStatusLiteral] = mapped_column(
         server_default="Intake"
@@ -382,43 +376,7 @@ class DataRequestExpanded(DataRequest):
     )
 
 
-def iter_with_special_cases(instance, special_cases=None):
-    """Generates key-value pairs for an instance, applying special case handling."""
-    if special_cases is None:
-        special_cases = {}
-    for key in instance.__dict__.copy():
-        # Skip the _sa_instance_state key
-        if key == "_sa_instance_state":
-            continue
-
-        # Handle keys with special cases defined in the special_cases dictionary
-        if key in special_cases:
-            mapped_key_value_pairs = special_cases[key](instance).copy()
-            for mapped_key, mapped_value in mapped_key_value_pairs:
-                if mapped_value is not None:
-                    yield mapped_key, mapped_value
-        else:
-            # General case for other keys
-            value = getattr(instance, key)
-            if isinstance(value, datetime) or isinstance(value, date):
-                value = str(value)  # Convert datetime to string if needed
-            yield key, value
-
-
-def get_iter_model_list_of_dict(instance, attr_name: str):
-    return [
-        (
-            attr_name,
-            (
-                [item.to_dict() for item in getattr(instance, attr_name)]
-                if getattr(instance, attr_name) is not None
-                else None
-            ),
-        )
-    ]
-
-
-class DataSource(Base, CountMetadata, CountSubqueryMetadata):
+class DataSource(StandardBase, CountMetadata, CountSubqueryMetadata):
     __tablename__ = Relations.DATA_SOURCES.value
 
     def __iter__(self):
@@ -524,18 +482,16 @@ class DataSourceArchiveInfo(Base):
     next_cached: Mapped[Optional[timestamp]]
 
 
-class LinkDataSourceDataRequest(Base):
+class LinkDataSourceDataRequest(StandardBase):
     __tablename__ = Relations.LINK_DATA_SOURCES_DATA_REQUESTS.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     data_source_id: Mapped[text] = mapped_column(ForeignKey("public.data_sources.id"))
     request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
 
 
-class DataRequestsGithubIssueInfo(Base):
+class DataRequestsGithubIssueInfo(StandardBase):
     __tablename__ = Relations.DATA_REQUESTS_GITHUB_ISSUE_INFO.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     data_request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
     github_issue_url: Mapped[str]
     github_issue_number: Mapped[int]
@@ -546,19 +502,17 @@ class DataRequestsGithubIssueInfo(Base):
     )
 
 
-class LinkUserFollowedLocation(Base, CountMetadata):
+class LinkUserFollowedLocation(StandardBase, CountMetadata):
     __tablename__ = Relations.LINK_USER_FOLLOWED_LOCATION.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
     location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
     created_at: Mapped[timestamp] = mapped_column(server_default=func.now())
 
 
-class RecordCategory(Base):
+class RecordCategory(StandardBase):
     __tablename__ = Relations.RECORD_CATEGORIES.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     # TODO: Update so that names reference literals
     name: Mapped[str_255]
     description: Mapped[Optional[text]]
@@ -570,10 +524,9 @@ class RecordCategory(Base):
     )
 
 
-class RecordType(Base):
+class RecordType(StandardBase):
     __tablename__ = Relations.RECORD_TYPES.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str_255]
     category_id: Mapped[int] = mapped_column(ForeignKey("public.record_categories.id"))
     description: Mapped[Optional[text]]
@@ -585,10 +538,9 @@ class RecordType(Base):
     )
 
 
-class ResetToken(Base):
+class ResetToken(StandardBase):
     __tablename__ = Relations.RESET_TOKENS.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
     token: Mapped[Optional[text]]
     create_date: Mapped[timestamp] = mapped_column(
@@ -596,18 +548,16 @@ class ResetToken(Base):
     )
 
 
-class TestTable(Base):
+class TestTable(StandardBase):
     __tablename__ = Relations.TEST_TABLE.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     pet_name: Mapped[Optional[str_255]]
     species: Mapped[Optional[str_255]]
 
 
-class User(Base):
+class User(StandardBase):
     __tablename__ = Relations.USERS.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     created_at: Mapped[Optional[timestamp_tz]]
     updated_at: Mapped[Optional[timestamp_tz]]
     email: Mapped[text] = mapped_column(unique=True)
@@ -642,36 +592,32 @@ class User(Base):
     )
 
 
-class Permission(Base):
+class Permission(StandardBase):
     __tablename__ = Relations.PERMISSIONS.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     permission_name: Mapped[str_255]
     description: Mapped[Optional[text]]
 
 
-class UserPermission(Base):
+class UserPermission(StandardBase):
     __tablename__ = Relations.USER_PERMISSIONS.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
     permission_id: Mapped[int] = mapped_column(ForeignKey("public.permissions.id"))
 
 
-class PendingUser(Base):
+class PendingUser(StandardBase):
     __tablename__ = Relations.PENDING_USERS.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     created_at: Mapped[Optional[timestamp_tz]]
     email: Mapped[text] = mapped_column(unique=True)
     password_digest: Mapped[Optional[text]]
     validation_token: Mapped[Optional[text]]
 
 
-class LinkLocationDataRequest(Base):
+class LinkLocationDataRequest(StandardBase):
     __tablename__ = Relations.LINK_LOCATIONS_DATA_REQUESTS.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
     data_request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
 
@@ -686,10 +632,9 @@ class DependentLocation(Base):
     )
 
 
-class DataRequestPendingEventNotification(Base):
+class DataRequestPendingEventNotification(StandardBase):
     __tablename__ = Relations.DATA_REQUESTS_PENDING_EVENT_NOTIFICATIONS.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     data_request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
     event_type: Mapped[EventTypeDataRequestLiteral] = mapped_column(
         Enum(*get_args(EventTypeDataRequestLiteral), name="event_type_data_request")
@@ -706,10 +651,9 @@ class DataRequestPendingEventNotification(Base):
     )
 
 
-class DataSourcePendingEventNotification(Base):
+class DataSourcePendingEventNotification(StandardBase):
     __tablename__ = Relations.DATA_SOURCES_PENDING_EVENT_NOTIFICATIONS.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     data_source_id: Mapped[int] = mapped_column(ForeignKey("public.data_sources.id"))
     event_type: Mapped[EventTypeDataSourceLiteral] = mapped_column(
         Enum(*get_args(EventTypeDataSourceLiteral), name="event_type_data_source")
@@ -726,10 +670,9 @@ class DataSourcePendingEventNotification(Base):
     )
 
 
-class DataRequestUserNotificationQueue(Base):
+class DataRequestUserNotificationQueue(StandardBase):
     __tablename__ = Relations.DATA_REQUESTS_USER_NOTIFICATION_QUEUE.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     event_id: Mapped[int] = mapped_column(
         ForeignKey("public.data_request_pending_event_notification.id")
     )
@@ -749,10 +692,9 @@ class DataRequestUserNotificationQueue(Base):
     )
 
 
-class DataSourceUserNotificationQueue(Base):
+class DataSourceUserNotificationQueue(StandardBase):
     __tablename__ = Relations.DATA_SOURCES_USER_NOTIFICATION_QUEUE.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     event_id: Mapped[int] = mapped_column(
         ForeignKey("public.data_source_pending_event_notification.id")
     )
@@ -772,10 +714,9 @@ class DataSourceUserNotificationQueue(Base):
     )
 
 
-class RecentSearch(Base):
+class RecentSearch(StandardBase):
     __tablename__ = Relations.RECENT_SEARCHES.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
     location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
     created_at: Mapped[timestamp] = mapped_column(
@@ -783,10 +724,9 @@ class RecentSearch(Base):
     )
 
 
-class LinkRecentSearchRecordCategories(Base):
+class LinkRecentSearchRecordCategories(StandardBase):
     __tablename__ = Relations.LINK_RECENT_SEARCH_RECORD_CATEGORIES.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     recent_search_id: Mapped[int] = mapped_column(
         ForeignKey("public.recent_searches.id")
     )
@@ -795,10 +735,9 @@ class LinkRecentSearchRecordCategories(Base):
     )
 
 
-class LinkRecentSearchRecordTypes(Base):
+class LinkRecentSearchRecordTypes(StandardBase):
     __tablename__ = Relations.LINK_RECENT_SEARCH_RECORD_TYPES.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     recent_search_id: Mapped[int] = mapped_column(
         ForeignKey("public.recent_searches.id")
     )
@@ -809,10 +748,9 @@ class LinkRecentSearchRecordTypes(Base):
 # Do the same for other common foreign keys, or for things such as primary keys
 
 
-class RecentSearchExpanded(Base, CountMetadata):
+class RecentSearchExpanded(StandardBase, CountMetadata):
     __tablename__ = Relations.RECENT_SEARCHES_EXPANDED.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
     location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
     state_name: Mapped[str]
@@ -822,10 +760,9 @@ class RecentSearchExpanded(Base, CountMetadata):
     record_categories = mapped_column(ARRAY(String, as_tuple=True))
 
 
-class ChangeLog(Base):
+class ChangeLog(StandardBase):
     __tablename__ = Relations.CHANGE_LOG.value
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     operation_type: Mapped[OperationTypeLiteral]
     table_name: Mapped[str]
     affected_id: Mapped[int]
@@ -836,7 +773,7 @@ class ChangeLog(Base):
     )
 
 
-class NotificationLog(Base):
+class NotificationLog(StandardBase):
     __tablename__ = Relations.NOTIFICATION_LOG.value
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
