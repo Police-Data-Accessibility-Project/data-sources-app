@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from database_client.enums import UpdateFrequency
+from db.enums import UpdateFrequency
 
 
 class ArchivesGetRequestDTO(BaseModel):

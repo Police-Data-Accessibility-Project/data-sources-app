@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields, validate, validates_schema, ValidationError
 
-from database_client.enums import LocationType
+from db.enums import LocationType
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyRequestsBaseSchema,
 )

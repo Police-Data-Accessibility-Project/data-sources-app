@@ -1,4 +1,4 @@
-from database_client.enums import RequestStatus
+from db.enums import RequestStatus
 from middleware.enums import RecordTypes
 from middleware.third_party_interaction_logic.github_issue_api_logic import (
     get_github_issue_project_statuses,

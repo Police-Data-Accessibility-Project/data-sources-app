@@ -11,8 +11,8 @@ from typing import Optional, Type, Union, List
 from flask.testing import FlaskClient
 from marshmallow import Schema
 
-from database_client.constants import PAGE_SIZE
-from database_client.enums import (
+from db.constants import PAGE_SIZE
+from db.enums import (
     SortOrder,
     RequestStatus,
     ApprovalStatus,

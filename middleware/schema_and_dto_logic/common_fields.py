@@ -1,6 +1,6 @@
 from marshmallow import fields, validate
 
-from database_client.enums import SortOrder
+from db.enums import SortOrder
 from utilities.enums import SourceMappingEnum
 
 PAGE_FIELD = fields.Integer(

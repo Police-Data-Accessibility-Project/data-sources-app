@@ -1,4 +1,4 @@
-from database_client.enums import EventType, EntityType
+from db.enums import EventType, EntityType
 from middleware.custom_dataclasses import EventBatch, EventInfo
 from middleware.primary_resource_logic.notifications import (
     format_and_send_notifications,

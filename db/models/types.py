@@ -7,7 +7,7 @@ from typing_extensions import Annotated
 
 from sqlalchemy.dialects import postgresql
 
-from database_client.enums import LocationType
+from db.enums import LocationType
 
 ExternalAccountTypeLiteral = Literal["github"]
 RecordTypeLiteral = Literal[

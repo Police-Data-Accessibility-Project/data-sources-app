@@ -1,8 +1,8 @@
 from http import HTTPStatus
 
-from database_client.client import DatabaseClient
-from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import RelationRoleEnum
+from db.client import DatabaseClient
+from db.db_client_dataclasses import WhereMapping
+from db.enums import RelationRoleEnum
 from middleware.access_logic import AccessInfoPrimary
 from middleware.common_response_formatting import format_list_response
 from middleware.enums import PermissionsEnum

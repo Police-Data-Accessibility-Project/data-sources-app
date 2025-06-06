@@ -4,11 +4,11 @@ from typing import List, Optional
 from flask import make_response, Response
 from pydantic import BaseModel
 
-from database_client.client import DatabaseClient
-from database_client.db_client_dataclasses import OrderByParameters
-from database_client.subquery_logic import SubqueryParameterManager
-from database_client.enums import ApprovalStatus, RelationRoleEnum, ColumnPermissionEnum
-from database_client.result_formatter import ResultFormatter
+from db.client import DatabaseClient
+from db.db_client_dataclasses import OrderByParameters
+from db.subquery_logic import SubqueryParameterManager
+from db.enums import ApprovalStatus, RelationRoleEnum, ColumnPermissionEnum
+from db.result_formatter import ResultFormatter
 from middleware.access_logic import AccessInfoPrimary
 from middleware.column_permission_logic import get_permitted_columns
 from middleware.dynamic_request_logic.delete_logic import delete_entry

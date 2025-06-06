@@ -1,5 +1,5 @@
-from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import LocationType
+from db.db_client_dataclasses import WhereMapping
+from db.enums import LocationType
 from middleware.schema_and_dto_logic.primary_resource_dtos.locations_dtos import (
     LocationPutDTO,
 )

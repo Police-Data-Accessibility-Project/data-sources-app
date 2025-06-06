@@ -4,7 +4,7 @@ from typing import Optional, List
 
 from pydantic import BaseModel
 
-from database_client.enums import (
+from db.enums import (
     ApprovalStatus,
     AgencyAggregation,
     DetailLevel,

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Mapped, mapped_column
 
-from database_client.models.base import Base
+from db.models.base import Base
 
 
 class StandardBase(Base):

@@ -1,4 +1,4 @@
-from database_client.client import DatabaseClient
+from db.client import DatabaseClient
 
 
 def get_record_types_and_categories(

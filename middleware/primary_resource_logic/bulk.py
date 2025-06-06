@@ -6,7 +6,7 @@ from flask import Response
 from marshmallow import Schema, ValidationError
 from werkzeug.datastructures import FileStorage
 
-from database_client.client import DatabaseClient
+from db.client import DatabaseClient
 from middleware.dynamic_request_logic.supporting_classes import (
     PutPostRequestInfo,
     PostPutHandler,

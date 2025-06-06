@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields
 
-from database_client.enums import (
+from db.enums import (
     ApprovalStatus,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (

@@ -7,8 +7,8 @@ performed in a manner designed to be consistent among all endpoints using them.
 
 from flask import Response
 
-from database_client.enums import ColumnPermissionEnum
-from database_client.db_client_dataclasses import WhereMapping
+from db.enums import ColumnPermissionEnum
+from db.db_client_dataclasses import WhereMapping
 from middleware.column_permission_logic import (
     get_permitted_columns,
     RelationRoleParameters,

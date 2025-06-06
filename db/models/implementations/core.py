@@ -25,12 +25,12 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.sql.expression import false, func
 
-from database_client.enums import AccessType
-from database_client.models.base import Base
-from database_client.models.helpers import (
+from db.enums import AccessType
+from db.models.base import Base
+from db.models.helpers import (
     make_get_iter_model_list_of_dict,
 )
-from database_client.models.mixins import (
+from db.models.mixins import (
     CountMetadata,
     CountSubqueryMetadata,
     CreatedAtMixin,
@@ -40,8 +40,8 @@ from database_client.models.mixins import (
     DataSourceIDMixin,
     IterWithSpecialCasesMixin,
 )
-from database_client.models.templates.standard import StandardBase
-from database_client.models.types import (
+from db.models.templates.standard import StandardBase
+from db.models.types import (
     ExternalAccountTypeLiteral,
     RecordTypeLiteral,
     RequestStatusLiteral,

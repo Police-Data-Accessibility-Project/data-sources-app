@@ -4,8 +4,8 @@ import urllib.parse
 import uuid
 from http import HTTPStatus
 
-from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import (
+from db.db_client_dataclasses import WhereMapping
+from db.enums import (
     AgencyAggregation,
     DetailLevel,
     AccessType,

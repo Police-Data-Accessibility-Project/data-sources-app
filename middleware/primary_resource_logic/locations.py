@@ -2,9 +2,9 @@ from http import HTTPStatus
 
 from flask import Response
 
-from database_client.client import DatabaseClient
-from database_client.enums import ColumnPermissionEnum
-from database_client.exceptions import LocationDoesNotExistError
+from db.client import DatabaseClient
+from db.enums import ColumnPermissionEnum
+from db.exceptions import LocationDoesNotExistError
 from middleware.access_logic import AccessInfoPrimary
 from middleware.column_permission_logic import get_permitted_columns, get_relation_role
 from middleware.common_response_formatting import (

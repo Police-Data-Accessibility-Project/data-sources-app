@@ -1,6 +1,6 @@
 from sqlalchemy import Column
 
-from database_client.models.implementations.core import (
+from db.models.implementations.core import (
     Agency,
     AgencyExpanded,
     DataRequest,
@@ -28,7 +28,7 @@ from database_client.models.implementations.core import (
     NotificationLog,
     DistinctSourceURL,
 )
-from database_client.models.implementations.link import (
+from db.models.implementations.link import (
     LinkAgencyDataSource,
     LinkDataSourceDataRequest,
     LinkUserFollowedLocation,

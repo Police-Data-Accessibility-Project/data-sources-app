@@ -11,13 +11,13 @@ import sqlalchemy
 from sqlalchemy import insert, select, update
 from sqlalchemy.exc import IntegrityError
 
-from database_client.client import DatabaseClient
-from database_client.db_client_dataclasses import (
+from db.client import DatabaseClient
+from db.db_client_dataclasses import (
     OrderByParameters,
     WhereMapping,
 )
-from database_client.subquery_logic import SubqueryParameterManager
-from database_client.enums import (
+from db.subquery_logic import SubqueryParameterManager
+from db.enums import (
     ExternalAccountTypeEnum,
     SortOrder,
     RequestStatus,
@@ -27,12 +27,12 @@ from middleware.exceptions import (
     UserNotFoundError,
     DuplicateUserError,
 )
-from database_client.models.implementations.core import (
+from db.models.implementations.core import (
     ExternalAccount,
     TestTable,
     User,
 )
-from database_client.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
+from db.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import PermissionsEnum, Relations, RecordTypes
 from tests.conftest import (
     live_database_client,
@@ -233,7 +233,7 @@ def test_select_from_relation_limit_and_offset(
     live_database_client: DatabaseClient, monkeypatch
 ):
     # Used alongside limit; we mock PAGE_SIZE to be one
-    monkeypatch.setattr("database_client.client.PAGE_SIZE", 1)
+    monkeypatch.setattr("db.client.PAGE_SIZE", 1)
 
     live_database_client.get_offset = MagicMock(return_value=1)
 
@@ -267,7 +267,7 @@ def test_select_from_relation_all_parameters(
     live_database_client: DatabaseClient, monkeypatch
 ):
     # Used alongside limit; we mock PAGE_SIZE to be one
-    monkeypatch.setattr("database_client.client.PAGE_SIZE", 1)
+    monkeypatch.setattr("db.client.PAGE_SIZE", 1)
 
     # Add additional row to the table to test the offset and limit
     live_database_client.execute_sqlalchemy(

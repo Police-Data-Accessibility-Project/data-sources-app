@@ -1,7 +1,7 @@
 from sqlalchemy.orm.collections import InstrumentedList
 
-from database_client.models.implementations.core import DataSourceExpanded, Agency
-from database_client.result_formatter import ResultFormatter
+from db.models.implementations.core import DataSourceExpanded, Agency
+from db.result_formatter import ResultFormatter
 
 
 def test_data_source_to_get_data_sources_output_no_agencies():

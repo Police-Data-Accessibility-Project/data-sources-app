@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from database_client.client import DatabaseClient
+from db.client import DatabaseClient
 from middleware.exceptions import UserNotFoundError, DuplicateUserError
 from middleware.primary_resource_logic.login_queries import try_logging_in
 from middleware.primary_resource_logic.user_queries import (

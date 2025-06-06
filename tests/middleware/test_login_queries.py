@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 from flask import Response
 
-from database_client.enums import ExternalAccountTypeEnum
+from db.enums import ExternalAccountTypeEnum
 from middleware.primary_resource_logic.login_queries import (
     refresh_session,
 )

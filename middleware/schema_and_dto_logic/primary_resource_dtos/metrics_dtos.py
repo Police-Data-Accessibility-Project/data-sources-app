@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from database_client.enums import SortOrder
+from db.enums import SortOrder
 
 
 class MetricsFollowedSearchesBreakdownRequestDTO(BaseModel):

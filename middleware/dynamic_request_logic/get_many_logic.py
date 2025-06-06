@@ -3,8 +3,8 @@ from typing import Optional
 
 from flask import Response
 
-from database_client.enums import ColumnPermissionEnum, RelationRoleEnum
-from database_client.subquery_logic import SubqueryParameters
+from db.enums import ColumnPermissionEnum, RelationRoleEnum
+from db.subquery_logic import SubqueryParameters
 from middleware.column_permission_logic import (
     RelationRoleParameters,
     get_permitted_columns,

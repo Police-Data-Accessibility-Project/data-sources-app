@@ -1,6 +1,6 @@
 from marshmallow import fields, Schema, post_load, validate
 
-from database_client.enums import RequestStatus, RequestUrgency
+from db.enums import RequestStatus, RequestUrgency
 from middleware.enums import RecordTypes
 from middleware.primary_resource_logic.data_requests import RequestInfoPostDTO
 from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import (

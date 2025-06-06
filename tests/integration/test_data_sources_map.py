@@ -1,6 +1,6 @@
 """Integration tests for /data-sources-map endpoint"""
 
-from database_client.enums import ApprovalStatus
+from db.enums import ApprovalStatus
 from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,

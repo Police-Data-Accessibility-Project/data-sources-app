@@ -3,7 +3,7 @@ from http import HTTPStatus
 
 from werkzeug.security import generate_password_hash
 
-from database_client.client import DatabaseClient
+from db.client import DatabaseClient
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
 from middleware.access_logic import ValidateEmailTokenAccessInfo
 from middleware.common_response_formatting import message_response

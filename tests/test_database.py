@@ -1,6 +1,6 @@
 """
 These functions test various database-internal views and functions.
-This is distinct from the functions in the `database_client` module
+This is distinct from the functions in the `db` module
 which test the database-external views and functions
 """
 
@@ -10,10 +10,10 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from database_client.client import DatabaseClient
-from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import ApprovalStatus, URLStatus
-from database_client.models.implementations.core import RecentSearch
+from db.client import DatabaseClient
+from db.db_client_dataclasses import WhereMapping
+from db.enums import ApprovalStatus, URLStatus
+from db.models.implementations.core import RecentSearch
 from middleware.enums import Relations, OperationType
 from tests.conftest import live_database_client, test_data_creator_db_client
 from tests.helper_scripts.common_test_data import get_test_name

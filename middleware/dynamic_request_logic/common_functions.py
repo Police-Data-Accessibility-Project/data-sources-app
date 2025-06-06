@@ -4,8 +4,8 @@ Contains functions common across multiple dynamic request functions
 
 from http import HTTPStatus
 
-from database_client.client import DatabaseClient
-from database_client.enums import RelationRoleEnum, ColumnPermissionEnum
+from db.client import DatabaseClient
+from db.enums import RelationRoleEnum, ColumnPermissionEnum
 from middleware.column_permission_logic import get_permitted_columns
 from middleware.dynamic_request_logic.supporting_classes import (
     IDInfo,

@@ -4,8 +4,8 @@ from sqlalchemy import func, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import Mapped, mapped_column, relationship, declared_attr
 
-from database_client.models.helpers import iter_with_special_cases
-from database_client.models.types import timestamp
+from db.models.helpers import iter_with_special_cases
+from db.models.types import timestamp
 
 
 class CountMetadata:

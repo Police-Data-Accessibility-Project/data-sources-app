@@ -3,7 +3,7 @@
 import datetime
 import json
 
-from database_client.enums import ApprovalStatus
+from db.enums import ApprovalStatus
 from middleware.enums import Relations
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,

@@ -6,7 +6,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from database_client.models.base import Base
+from db.models.base import Base
 from middleware.util.env import get_env_variable
 
 # this is the Alembic Config object, which provides

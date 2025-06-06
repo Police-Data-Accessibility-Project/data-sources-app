@@ -4,8 +4,8 @@ from typing import Optional
 
 import pytest
 
-from database_client.enums import LocationType
-from database_client.models.implementations.core import Location
+from db.enums import LocationType
+from db.models.implementations.core import Location
 from middleware.schema_and_dto_logic.primary_resource_dtos.locations_dtos import (
     LocationPutDTO,
     LocationsGetRequestDTO,

@@ -1,6 +1,6 @@
 from marshmallow import fields, Schema, pre_load
 
-from database_client.enums import ApprovalStatus, RequestStatus
+from db.enums import ApprovalStatus, RequestStatus
 from middleware.enums import JurisdictionType, AgencyType
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyRequestsBaseSchema,

@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from database_client.enums import LocationType
+from db.enums import LocationType
 
 
 class LocationPutDTO(BaseModel):

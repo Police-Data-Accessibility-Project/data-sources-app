@@ -1,6 +1,6 @@
 import datetime
 
-from database_client.enums import SortOrder
+from db.enums import SortOrder
 from middleware.schema_and_dto_logic.primary_resource_dtos.metrics_dtos import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )

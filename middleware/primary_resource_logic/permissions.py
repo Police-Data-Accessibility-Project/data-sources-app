@@ -5,8 +5,8 @@ from flask_restx import abort
 from marshmallow import Schema, fields
 from pydantic import BaseModel
 
-from database_client.client import DatabaseClient
-from database_client.helper_functions import get_db_client
+from db.client import DatabaseClient
+from db.helper_functions import get_db_client
 from middleware.exceptions import UserNotFoundError
 from middleware.enums import PermissionsEnum, PermissionsActionEnum
 from middleware.common_response_formatting import message_response

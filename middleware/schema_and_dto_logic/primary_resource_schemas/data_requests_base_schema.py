@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields, validate
 
-from database_client.enums import RequestStatus, RequestUrgency
+from db.enums import RequestStatus, RequestUrgency
 from middleware.enums import RecordTypes
 from middleware.schema_and_dto_logic.util import get_json_metadata
 

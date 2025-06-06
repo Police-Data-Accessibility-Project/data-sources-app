@@ -6,8 +6,8 @@ from typing import Optional
 from flask import Response, make_response, send_file
 from pydantic import BaseModel
 
-from database_client.client import DatabaseClient
-from database_client.db_client_dataclasses import WhereMapping
+from db.client import DatabaseClient
+from db.db_client_dataclasses import WhereMapping
 from middleware.access_logic import AccessInfoPrimary
 from middleware.dynamic_request_logic.delete_logic import delete_entry
 from middleware.dynamic_request_logic.post_logic import post_entry, PostLogic

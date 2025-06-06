@@ -1,8 +1,8 @@
 from sqlalchemy import ForeignKey, Column, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 
-from database_client.models.base import Base
-from database_client.models.mixins import (
+from db.models.base import Base
+from db.models.mixins import (
     DataSourceIDMixin,
     CountMetadata,
     CreatedAtMixin,
@@ -10,7 +10,7 @@ from database_client.models.mixins import (
     LocationIDMixin,
     DataRequestIDMixin,
 )
-from database_client.models.templates.standard import StandardBase
+from db.models.templates.standard import StandardBase
 from middleware.enums import Relations
 
 

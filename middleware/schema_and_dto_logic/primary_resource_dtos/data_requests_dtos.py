@@ -2,8 +2,8 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import LocationType, RequestStatus, RequestUrgency
+from db.db_client_dataclasses import WhereMapping
+from db.enums import LocationType, RequestStatus, RequestUrgency
 from middleware.enums import RecordTypes
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyBaseDTO,

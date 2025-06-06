@@ -4,8 +4,8 @@ from typing import Optional
 import psycopg
 from flask.testing import FlaskClient
 
-from database_client.client import DatabaseClient
-from database_client.enums import RequestUrgency
+from db.client import DatabaseClient
+from db.enums import RequestUrgency
 from middleware.enums import JurisdictionType, AgencyType
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgencyInfoPostSchema,

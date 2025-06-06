@@ -2,7 +2,7 @@ import urllib.parse
 from collections import namedtuple
 from http import HTTPStatus
 
-from database_client.enums import SortOrder
+from db.enums import SortOrder
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyBaseDTO
 
 # region Users

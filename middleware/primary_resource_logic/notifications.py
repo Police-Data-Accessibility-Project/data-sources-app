@@ -4,8 +4,8 @@ from http import HTTPStatus
 from flask import Response
 from pydantic import BaseModel
 
-from database_client.client import DatabaseClient
-from database_client.enums import EventType
+from db.client import DatabaseClient
+from db.enums import EventType
 from middleware.access_logic import AccessInfoPrimary
 from middleware.custom_dataclasses import EventInfo, EventBatch
 from middleware.flask_response_manager import FlaskResponseManager

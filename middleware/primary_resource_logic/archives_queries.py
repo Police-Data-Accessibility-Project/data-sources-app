@@ -5,7 +5,7 @@ from typing import List, Dict, Any, Optional, Tuple
 import psycopg
 from flask import make_response
 
-from database_client.client import DatabaseClient
+from db.client import DatabaseClient
 from middleware.schema_and_dto_logic.primary_resource_dtos.archives_dtos import (
     ArchivesGetRequestDTO,
 )

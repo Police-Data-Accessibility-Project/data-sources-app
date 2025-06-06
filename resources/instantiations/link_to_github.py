@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from config import limiter
-from database_client.client import DatabaseClient
+from db.client import DatabaseClient
 from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import NO_AUTH_INFO
 from middleware.decorators import endpoint_info

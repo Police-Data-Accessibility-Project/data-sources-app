@@ -9,8 +9,8 @@ from typing import Optional
 from marshmallow import Schema, fields, validate
 from pydantic import BaseModel
 
-from database_client.constants import PAGE_SIZE
-from database_client.enums import SortOrder, LocationType
+from db.constants import PAGE_SIZE
+from db.enums import SortOrder, LocationType
 from middleware.schema_and_dto_logic.common_fields import (
     PAGE_FIELD,
     SORT_ORDER_FIELD,

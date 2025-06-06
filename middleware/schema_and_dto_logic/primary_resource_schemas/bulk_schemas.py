@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields
 
-from database_client.enums import ApprovalStatus
+from db.enums import ApprovalStatus
 from middleware.enums import AgencyType
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_csv_to_schema_conversion_logic import (

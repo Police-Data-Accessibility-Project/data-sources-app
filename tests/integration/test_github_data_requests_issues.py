@@ -2,8 +2,8 @@ from http import HTTPStatus
 
 from pydantic import BaseModel
 
-from database_client.enums import RequestStatus
-from database_client.models.implementations.core import (
+from db.enums import RequestStatus
+from db.models.implementations.core import (
     DataRequest,
     DataRequestsGithubIssueInfo,
 )

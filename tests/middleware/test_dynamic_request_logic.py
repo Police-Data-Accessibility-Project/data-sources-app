@@ -3,8 +3,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import ColumnPermissionEnum
+from db.db_client_dataclasses import WhereMapping
+from db.enums import ColumnPermissionEnum
 from middleware.dynamic_request_logic.common_functions import check_for_id
 from middleware.dynamic_request_logic.delete_logic import (
     check_for_delete_permissions,

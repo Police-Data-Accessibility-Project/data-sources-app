@@ -5,7 +5,7 @@ from typing import Optional
 import pytest
 from marshmallow import Schema
 
-from database_client.enums import LocationType, ApprovalStatus
+from db.enums import LocationType, ApprovalStatus
 from middleware.enums import (
     OutputFormatEnum,
     JurisdictionSimplified,

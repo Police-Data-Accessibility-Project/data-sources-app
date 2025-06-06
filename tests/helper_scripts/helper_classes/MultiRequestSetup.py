@@ -1,6 +1,6 @@
 from typing import Optional
 
-from database_client.enums import RequestStatus
+from db.enums import RequestStatus
 from tests.helper_scripts.helper_classes.MultiLocationSetup import MultiLocationSetup
 from tests.helper_scripts.helper_classes.MultiDataSourceSetup import (
     MultiDataSourceSetup,

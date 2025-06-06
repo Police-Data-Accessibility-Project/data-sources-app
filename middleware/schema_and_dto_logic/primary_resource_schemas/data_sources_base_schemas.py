@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields
 
-from database_client.enums import (
+from db.enums import (
     AgencyAggregation,
     DetailLevel,
     AccessType,

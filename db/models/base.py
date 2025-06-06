@@ -5,7 +5,7 @@ from sqlalchemy.dialects.postgresql import TIMESTAMP, DATERANGE
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import DeclarativeBase
 
-from database_client.models.types import text, timestamp, daterange, str_255
+from db.models.types import text, timestamp, daterange, str_255
 
 
 class Base(DeclarativeBase):

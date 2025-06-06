@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields
 
-from database_client.constants import (
+from db.constants import (
     GET_METRICS_FOLLOWED_SEARCHES_BREAKDOWN_SORTABLE_COLUMNS,
 )
 from middleware.schema_and_dto_logic.common_fields import (

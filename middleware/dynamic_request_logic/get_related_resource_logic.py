@@ -3,10 +3,10 @@ from typing import Optional
 from flask import Response
 from pydantic import BaseModel
 
-from database_client.client import DatabaseClient
-from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import RelationRoleEnum, ColumnPermissionEnum
-from database_client.subquery_logic import SubqueryParameterManager
+from db.client import DatabaseClient
+from db.db_client_dataclasses import WhereMapping
+from db.enums import RelationRoleEnum, ColumnPermissionEnum
+from db.subquery_logic import SubqueryParameterManager
 from middleware.column_permission_logic import get_permitted_columns
 from middleware.dynamic_request_logic.common_functions import check_for_id
 from middleware.dynamic_request_logic.supporting_classes import IDInfo

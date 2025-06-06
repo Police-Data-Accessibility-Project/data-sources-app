@@ -5,7 +5,7 @@ But which are not used in the app code itself
 
 from marshmallow import Schema, fields
 
-from database_client.enums import EntityType
+from db.enums import EntityType
 
 
 class TestGetPendingNotificationsOutputSchema(Schema):

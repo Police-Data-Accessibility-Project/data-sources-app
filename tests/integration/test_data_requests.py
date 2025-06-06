@@ -5,8 +5,8 @@ from typing import Dict, Optional
 
 from flask.testing import FlaskClient
 
-from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import RequestUrgency, LocationType, RequestStatus, SortOrder
+from db.db_client_dataclasses import WhereMapping
+from db.enums import RequestUrgency, LocationType, RequestStatus, SortOrder
 from middleware.constants import DATA_KEY
 from middleware.enums import RecordTypes
 from middleware.util.type_conversion import get_enum_values

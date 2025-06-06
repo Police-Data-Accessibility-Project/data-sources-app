@@ -31,24 +31,24 @@ from sqlalchemy.orm import (
 )
 from werkzeug.exceptions import BadRequest
 
-from database_client.DTOs import (
+from db.DTOs import (
     UserInfoNonSensitive,
     UsersWithPermissions,
     DataRequestInfoForGithub,
 )
-from database_client.constants import (
+from db.constants import (
     PAGE_SIZE,
     GET_METRICS_FOLLOWED_SEARCHES_BREAKDOWN_SORTABLE_COLUMNS,
 )
-from database_client.db_client_dataclasses import (
+from db.db_client_dataclasses import (
     OrderByParameters,
     WhereMapping,
 )
-from database_client.exceptions import LocationDoesNotExistError
-from database_client.result_formatter import ResultFormatter
-from database_client.subquery_logic import SubqueryParameters
-from database_client.dynamic_query_constructor import DynamicQueryConstructor
-from database_client.enums import (
+from db.exceptions import LocationDoesNotExistError
+from db.result_formatter import ResultFormatter
+from db.subquery_logic import SubqueryParameters
+from db.dynamic_query_constructor import DynamicQueryConstructor
+from db.enums import (
     ExternalAccountTypeEnum,
     RequestStatus,
     EntityType,
@@ -62,7 +62,7 @@ from middleware.exceptions import (
     UserNotFoundError,
     DuplicateUserError,
 )
-from database_client.models.implementations.core import (
+from db.models.implementations.core import (
     ExternalAccount,
     User,
     DataRequestExpanded,
@@ -85,7 +85,7 @@ from database_client.models.implementations.core import (
     DependentLocation,
     DistinctSourceURL,
 )
-from database_client.models.implementations.link import (
+from db.models.implementations.link import (
     LinkAgencyDataSource,
     LinkAgencyLocation,
     LinkUserFollowedLocation,
@@ -94,8 +94,8 @@ from database_client.models.implementations.link import (
     LinkRecentSearchRecordTypes,
     LinkLocationDataSourceView,
 )
-from database_client.models.base import Base
-from database_client.models.table_reference import (
+from db.models.base import Base
+from db.models.table_reference import (
     SQL_ALCHEMY_TABLE_REFERENCE,
     convert_to_column_reference,
 )

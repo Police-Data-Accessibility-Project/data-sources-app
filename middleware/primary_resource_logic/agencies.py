@@ -2,9 +2,9 @@ from dataclasses import asdict
 
 from flask import Response, request
 
-from database_client.client import DatabaseClient
-from database_client.db_client_dataclasses import OrderByParameters
-from database_client.subquery_logic import SubqueryParameterManager
+from db.client import DatabaseClient
+from db.db_client_dataclasses import OrderByParameters
+from db.subquery_logic import SubqueryParameterManager
 from middleware.access_logic import AccessInfoPrimary
 from middleware.common_response_formatting import (
     created_id_response,

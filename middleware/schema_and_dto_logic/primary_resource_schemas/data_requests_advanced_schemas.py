@@ -1,6 +1,6 @@
 from marshmallow import fields, Schema, post_load, pre_load
 
-from database_client.enums import RequestStatus
+from db.enums import RequestStatus
 from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_base_schema import (
     DataRequestsSchema,
 )
