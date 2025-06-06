@@ -15,7 +15,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import (
     ARRAY,
-    TIMESTAMP,
     ENUM as pgEnum,
     JSONB,
 )
@@ -28,7 +27,11 @@ from sqlalchemy.sql.expression import false, func
 
 from database_client.enums import AccessType
 from database_client.models.base import Base
-from database_client.models.mixins import CountMetadata, CountSubqueryMetadata
+from database_client.models.mixins import (
+    CountMetadata,
+    CountSubqueryMetadata,
+    CreatedAtMixin,
+)
 from database_client.models.templates.standard import StandardBase
 from database_client.models.types import (
     ExternalAccountTypeLiteral,
@@ -106,12 +109,6 @@ class LinkAgencyDataSource(StandardBase):
 class Agency(StandardBase, CountMetadata):
     __tablename__ = Relations.AGENCIES.value
 
-    # special_cases = {
-    #     "data_sources": lambda instance: get_iter_model_list_of_dict(
-    #         instance, attr_name="data_sources"
-    #     ),
-    # }
-
     name: Mapped[str]
     homepage_url: Mapped[Optional[str]]
     jurisdiction_type: Mapped[JurisdictionTypeLiteral]
@@ -186,12 +183,11 @@ class LinkAgencyLocation(StandardBase):
     )
 
 
-class TableCountLog(StandardBase):
+class TableCountLog(StandardBase, CreatedAtMixin):
     __tablename__ = Relations.TABLE_COUNT_LOG.value
 
     table_name: Mapped[str]
     count: Mapped[int]
-    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
 
 class County(StandardBase):
@@ -391,7 +387,6 @@ class DataSource(StandardBase, CountMetadata, CountSubqueryMetadata):
         }
         yield from iter_with_special_cases(self, special_cases)
 
-    id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     description: Mapped[Optional[str]]
     source_url: Mapped[Optional[str]]
@@ -502,12 +497,11 @@ class DataRequestsGithubIssueInfo(StandardBase):
     )
 
 
-class LinkUserFollowedLocation(StandardBase, CountMetadata):
+class LinkUserFollowedLocation(StandardBase, CountMetadata, CreatedAtMixin):
     __tablename__ = Relations.LINK_USER_FOLLOWED_LOCATION.value
 
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
     location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
-    created_at: Mapped[timestamp] = mapped_column(server_default=func.now())
 
 
 class RecordCategory(StandardBase):
@@ -555,10 +549,9 @@ class TestTable(StandardBase):
     species: Mapped[Optional[str_255]]
 
 
-class User(StandardBase):
+class User(StandardBase, CreatedAtMixin):
     __tablename__ = Relations.USERS.value
 
-    created_at: Mapped[Optional[timestamp_tz]]
     updated_at: Mapped[Optional[timestamp_tz]]
     email: Mapped[text] = mapped_column(unique=True)
     password_digest: Mapped[Optional[text]]
@@ -606,10 +599,9 @@ class UserPermission(StandardBase):
     permission_id: Mapped[int] = mapped_column(ForeignKey("public.permissions.id"))
 
 
-class PendingUser(StandardBase):
+class PendingUser(StandardBase, CreatedAtMixin):
     __tablename__ = Relations.PENDING_USERS.value
 
-    created_at: Mapped[Optional[timestamp_tz]]
     email: Mapped[text] = mapped_column(unique=True)
     password_digest: Mapped[Optional[text]]
     validation_token: Mapped[Optional[text]]
@@ -632,15 +624,12 @@ class DependentLocation(Base):
     )
 
 
-class DataRequestPendingEventNotification(StandardBase):
+class DataRequestPendingEventNotification(StandardBase, CreatedAtMixin):
     __tablename__ = Relations.DATA_REQUESTS_PENDING_EVENT_NOTIFICATIONS.value
 
     data_request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
     event_type: Mapped[EventTypeDataRequestLiteral] = mapped_column(
         Enum(*get_args(EventTypeDataRequestLiteral), name="event_type_data_request")
-    )
-    created_at: Mapped[timestamp] = mapped_column(
-        server_default=func.current_timestamp()
     )
 
     # Relationships
@@ -651,15 +640,12 @@ class DataRequestPendingEventNotification(StandardBase):
     )
 
 
-class DataSourcePendingEventNotification(StandardBase):
+class DataSourcePendingEventNotification(StandardBase, CreatedAtMixin):
     __tablename__ = Relations.DATA_SOURCES_PENDING_EVENT_NOTIFICATIONS.value
 
     data_source_id: Mapped[int] = mapped_column(ForeignKey("public.data_sources.id"))
     event_type: Mapped[EventTypeDataSourceLiteral] = mapped_column(
         Enum(*get_args(EventTypeDataSourceLiteral), name="event_type_data_source")
-    )
-    created_at: Mapped[timestamp] = mapped_column(
-        server_default=func.current_timestamp()
     )
 
     # Relationships
@@ -714,14 +700,11 @@ class DataSourceUserNotificationQueue(StandardBase):
     )
 
 
-class RecentSearch(StandardBase):
+class RecentSearch(StandardBase, CreatedAtMixin):
     __tablename__ = Relations.RECENT_SEARCHES.value
 
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
     location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
-    created_at: Mapped[timestamp] = mapped_column(
-        server_default=func.current_timestamp()
-    )
 
 
 class LinkRecentSearchRecordCategories(StandardBase):
@@ -760,7 +743,7 @@ class RecentSearchExpanded(StandardBase, CountMetadata):
     record_categories = mapped_column(ARRAY(String, as_tuple=True))
 
 
-class ChangeLog(StandardBase):
+class ChangeLog(StandardBase, CreatedAtMixin):
     __tablename__ = Relations.CHANGE_LOG.value
 
     operation_type: Mapped[OperationTypeLiteral]
@@ -768,16 +751,12 @@ class ChangeLog(StandardBase):
     affected_id: Mapped[int]
     old_data: Mapped[dict] = mapped_column(JSONB, nullable=False)
     new_data: Mapped[dict] = mapped_column(JSONB, nullable=True)
-    created_at: Mapped[timestamp] = mapped_column(
-        server_default=func.current_timestamp()
-    )
 
 
-class NotificationLog(StandardBase):
+class NotificationLog(StandardBase, CreatedAtMixin):
     __tablename__ = Relations.NOTIFICATION_LOG.value
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    created_at: Mapped[timestamp] = mapped_column(server_default=func.now())
     user_count: Mapped[int]
 
 

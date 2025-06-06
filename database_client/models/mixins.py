@@ -1,6 +1,10 @@
 from typing import Optional
 
+from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy.orm import Mapped, mapped_column
+
+from database_client.models.types import timestamp
 
 
 class CountMetadata:
@@ -29,3 +33,9 @@ class CountSubqueryMetadata:
             subquery_counts.update({key: count})
 
         return subquery_counts
+
+
+class CreatedAtMixin:
+    created_at: Mapped[timestamp] = mapped_column(
+        server_default=func.current_timestamp()
+    )
