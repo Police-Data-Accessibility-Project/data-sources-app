@@ -5,7 +5,7 @@ from datetime import datetime, timezone, timedelta
 
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import SortOrder, ApprovalStatus
-from database_client.models.core import Agency
+from database_client.models.implementations.core import Agency
 from middleware.enums import JurisdictionType, AgencyType
 from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
     AgencyInfoPutSchema,

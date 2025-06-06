@@ -13,7 +13,7 @@ import pytest
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
 from database_client.enums import ApprovalStatus, URLStatus
-from database_client.models.core import RecentSearch
+from database_client.models.implementations.core import RecentSearch
 from middleware.enums import Relations, OperationType
 from tests.conftest import live_database_client, test_data_creator_db_client
 from tests.helper_scripts.common_test_data import get_test_name

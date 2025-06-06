@@ -12,7 +12,7 @@ from database_client.enums import (
     EventType,
     ExternalAccountTypeEnum,
 )
-from database_client.models.core import (
+from database_client.models.implementations.core import (
     DataRequestUserNotificationQueue,
     DataSourceUserNotificationQueue,
 )

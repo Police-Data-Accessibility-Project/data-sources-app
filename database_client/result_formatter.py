@@ -9,7 +9,7 @@ from database_client.constants import (
     METADATA_METHOD_NAMES,
 )
 from database_client.enums import LocationType
-from database_client.models.core import (
+from database_client.models.implementations.core import (
     Agency,
     DataSourceExpanded,
     LocationExpanded,

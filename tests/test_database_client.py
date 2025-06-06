@@ -27,7 +27,7 @@ from middleware.exceptions import (
     UserNotFoundError,
     DuplicateUserError,
 )
-from database_client.models.core import (
+from database_client.models.implementations.core import (
     ExternalAccount,
     TestTable,
     User,

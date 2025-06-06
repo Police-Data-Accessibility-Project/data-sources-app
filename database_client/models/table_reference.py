@@ -1,14 +1,13 @@
-from database_client.models.core import (
+from sqlalchemy import Column
+
+from database_client.models.implementations.core import (
     Agency,
     AgencyExpanded,
-    LinkAgencyDataSource,
-    LinkLocationDataRequest,
     DataRequest,
     DataRequestExpanded,
     DataSource,
     DataSourceExpanded,
     DataSourceArchiveInfo,
-    LinkDataSourceDataRequest,
     ResetToken,
     TestTable,
     User,
@@ -17,21 +16,26 @@ from database_client.models.core import (
     Locality,
     Location,
     LocationExpanded,
-    LinkUserFollowedLocation,
     ExternalAccount,
     DataRequestsGithubIssueInfo,
     DependentLocation,
     RecentSearch,
-    LinkRecentSearchRecordCategories,
-    LinkRecentSearchRecordTypes,
     RecordCategory,
     RecentSearchExpanded,
     RecordType,
     PendingUser,
     ChangeLog,
     NotificationLog,
-    LinkLocationDataSourceView,
     DistinctSourceURL,
+)
+from database_client.models.implementations.link import (
+    LinkAgencyDataSource,
+    LinkDataSourceDataRequest,
+    LinkUserFollowedLocation,
+    LinkLocationDataRequest,
+    LinkRecentSearchRecordCategories,
+    LinkRecentSearchRecordTypes,
+    LinkLocationDataSourceView,
 )
 from middleware.enums import Relations
 
@@ -70,3 +74,28 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     Relations.LINK_LOCATIONS_DATA_SOURCES_VIEW.value: LinkLocationDataSourceView,
     Relations.DISTINCT_SOURCE_URLS.value: DistinctSourceURL,
 }
+
+
+def convert_to_column_reference(columns: list[str], relation: str) -> list[Column]:
+    """Converts a list of column strings to SQLAlchemy column references.
+
+    :param columns: List of column strings.
+    :param relation: Relation string.
+    :return:
+    """
+    try:
+        relation_reference = SQL_ALCHEMY_TABLE_REFERENCE[relation]
+    except KeyError:
+        raise ValueError(
+            f"SQL Model does not exist in SQL_ALCHEMY_TABLE_REFERENCE: {relation}"
+        )
+
+    def get_attribute(column: str) -> Column:
+        try:
+            return getattr(relation_reference, column)
+        except AttributeError:
+            raise AttributeError(
+                f'Column "{column}" does not exist in SQLAlchemy Table Model for "{relation}"'
+            )
+
+    return [get_attribute(column) for column in columns]

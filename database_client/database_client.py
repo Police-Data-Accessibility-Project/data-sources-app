@@ -62,39 +62,43 @@ from middleware.exceptions import (
     UserNotFoundError,
     DuplicateUserError,
 )
-from database_client.models.core import (
+from database_client.models.implementations.core import (
     ExternalAccount,
     User,
     DataRequestExpanded,
     RecentSearch,
-    LinkRecentSearchRecordCategories,
     RecordCategory,
     Agency,
     Location,
     LocationExpanded,
     TableCountLog,
-    LinkRecentSearchRecordTypes,
     RecordType,
-    LinkAgencyDataSource,
-    LinkAgencyLocation,
     DataSourceExpanded,
     DataSource,
     DataRequest,
-    LinkLocationDataRequest,
-    LinkUserFollowedLocation,
     DataRequestsGithubIssueInfo,
     DataSourceUserNotificationQueue,
     DataRequestUserNotificationQueue,
     DataRequestPendingEventNotification,
     DataSourcePendingEventNotification,
     NotificationLog,
-    LinkLocationDataSourceView,
     DependentLocation,
     DistinctSourceURL,
 )
+from database_client.models.implementations.link import (
+    LinkAgencyDataSource,
+    LinkAgencyLocation,
+    LinkUserFollowedLocation,
+    LinkLocationDataRequest,
+    LinkRecentSearchRecordCategories,
+    LinkRecentSearchRecordTypes,
+    LinkLocationDataSourceView,
+)
 from database_client.models.base import Base
-from database_client.models.helpers import convert_to_column_reference
-from database_client.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
+from database_client.models.table_reference import (
+    SQL_ALCHEMY_TABLE_REFERENCE,
+    convert_to_column_reference,
+)
 from middleware.enums import (
     PermissionsEnum,
     Relations,

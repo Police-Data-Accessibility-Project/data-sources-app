@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, call, ANY
 import pytest
 
 from database_client.enums import EventType, EntityType
-from database_client.models.core import (
+from database_client.models.implementations.core import (
     DataRequestUserNotificationQueue,
     DataSourceUserNotificationQueue,
     NotificationLog,
