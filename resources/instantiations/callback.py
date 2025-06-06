@@ -1,5 +1,5 @@
 from config import limiter
-from middleware.primary_resource_logic.callback_primary_logic import (
+from middleware.primary_resource_logic.callback import (
     callback_outer_wrapper,
 )
 from resources.PsycopgResource import PsycopgResource

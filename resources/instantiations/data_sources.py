@@ -18,7 +18,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
 from middleware.decorators import (
     endpoint_info,
 )
-from middleware.primary_resource_logic.data_sources_logic import (
+from middleware.primary_resource_logic.data_sources import (
     get_data_sources_wrapper,
     data_source_by_id_wrapper,
     add_new_data_source_wrapper,

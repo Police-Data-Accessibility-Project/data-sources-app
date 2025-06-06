@@ -19,7 +19,7 @@ from flask_restx import fields, abort
 
 from middleware.access_logic import AccessInfoPrimary
 from middleware.enums import PermissionsEnum, AccessTypeEnum
-from middleware.primary_resource_logic.api_key_logic import create_api_key_for_user
+from middleware.primary_resource_logic.api_key import create_api_key_for_user
 from middleware.primary_resource_logic.user_queries import (
     user_post_results,
     UserRequestDTO,

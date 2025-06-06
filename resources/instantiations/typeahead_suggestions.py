@@ -7,7 +7,7 @@ from database_client.database_client import DatabaseClient
 from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import NO_AUTH_INFO
 from middleware.decorators import endpoint_info
-from middleware.primary_resource_logic.typeahead_suggestion_logic import (
+from middleware.primary_resource_logic.typeahead_suggestion import (
     get_typeahead_results,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (

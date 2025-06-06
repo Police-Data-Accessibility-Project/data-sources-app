@@ -13,7 +13,7 @@ def test_contact(test_data_creator_flask: TestDataCreatorFlask, monkeypatch):
     mock_send_via_mailgun = MagicMock()
 
     monkeypatch.setattr(
-        "middleware.primary_resource_logic.contact_logic.send_via_mailgun",
+        "middleware.primary_resource_logic.contact.send_via_mailgun",
         mock_send_via_mailgun,
     )
 

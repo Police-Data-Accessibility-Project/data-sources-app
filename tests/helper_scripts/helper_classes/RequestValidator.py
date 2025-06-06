@@ -198,9 +198,7 @@ class RequestValidator:
         expected_json_content: Optional[dict] = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
-        mock = mocker.patch(
-            "middleware.primary_resource_logic.signup_logic.send_signup_link"
-        )
+        mock = mocker.patch("middleware.primary_resource_logic.signup.send_signup_link")
         self.post(
             endpoint="/api/auth/signup",
             json={"email": email, "password": password},
@@ -234,9 +232,7 @@ class RequestValidator:
         expected_response_status: HTTPStatus = HTTPStatus.OK,
         expected_json_content: Optional[dict] = None,
     ):
-        mock = mocker.patch(
-            "middleware.primary_resource_logic.signup_logic.send_signup_link"
-        )
+        mock = mocker.patch("middleware.primary_resource_logic.signup.send_signup_link")
         self.post(
             endpoint="/api/auth/resend-validation-email",
             json={"email": email},

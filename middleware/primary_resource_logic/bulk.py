@@ -17,7 +17,7 @@ from middleware.primary_resource_logic.agencies import (
     AgencyPostRequestInfo,
     AgencyPostHandler,
 )
-from middleware.primary_resource_logic.data_sources_logic import (
+from middleware.primary_resource_logic.data_sources import (
     DataSourcesPostHandler,
 )
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_csv_to_schema_conversion_logic import (

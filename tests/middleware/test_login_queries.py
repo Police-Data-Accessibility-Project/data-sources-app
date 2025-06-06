@@ -8,7 +8,7 @@ from database_client.enums import ExternalAccountTypeEnum
 from middleware.primary_resource_logic.login_queries import (
     refresh_session,
 )
-from middleware.primary_resource_logic.api_key_logic import generate_token
+from middleware.primary_resource_logic.api_key import generate_token
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 

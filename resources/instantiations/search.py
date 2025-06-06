@@ -4,7 +4,7 @@ from middleware.access_logic import (
     AccessInfoPrimary,
 )
 from middleware.authentication_info import STANDARD_JWT_AUTH_INFO, API_OR_JWT_AUTH_INFO
-from middleware.primary_resource_logic.search_logic import (
+from middleware.primary_resource_logic.search import (
     search_wrapper,
     get_followed_searches,
     delete_followed_search,

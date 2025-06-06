@@ -9,7 +9,7 @@ from marshmallow import Schema
 from tests.conftest import test_data_creator_flask, monkeysession
 from database_client.enums import LocationType
 from middleware.enums import AgencyType
-from middleware.primary_resource_logic.bulk_logic import listify_strings
+from middleware.primary_resource_logic.bulk import listify_strings
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_csv_to_schema_conversion_logic import (
     SchemaUnflattener,

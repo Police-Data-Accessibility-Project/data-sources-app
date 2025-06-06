@@ -3,7 +3,7 @@ from typing import Optional
 
 import pytest
 from tests.conftest import test_data_creator_flask, monkeysession
-from middleware.primary_resource_logic.match_logic import (
+from middleware.primary_resource_logic.match import (
     try_matching_agency,
     AgencyMatchStatus,
 )

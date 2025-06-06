@@ -5,14 +5,14 @@ from flask import Response
 
 from middleware.exceptions import UserNotFoundError
 from middleware.enums import PermissionsEnum, PermissionsActionEnum
-from middleware.primary_resource_logic.permissions_logic import (
+from middleware.primary_resource_logic.permissions import (
     PermissionsManager,
     manage_user_permissions,
     update_permissions_wrapper,
 )
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
-PATCH_ROOT = "middleware.primary_resource_logic.permissions_logic"
+PATCH_ROOT = "middleware.primary_resource_logic.permissions"
 
 
 class PermissionsManagerMocks(DynamicMagicMock):

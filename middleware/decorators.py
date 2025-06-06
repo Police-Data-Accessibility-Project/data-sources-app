@@ -12,7 +12,7 @@ from middleware.access_logic import (
 )
 from middleware.authentication_info import AuthenticationInfo
 from middleware.enums import PermissionsEnum, AccessTypeEnum
-from middleware.primary_resource_logic.api_key_logic import check_api_key
+from middleware.primary_resource_logic.api_key import check_api_key
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_construction import (
     get_restx_param_documentation,
 )

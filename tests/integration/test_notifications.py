@@ -24,7 +24,7 @@ from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
 
-PATCH_ROOT = "middleware.primary_resource_logic.notifications_logic"
+PATCH_ROOT = "middleware.primary_resource_logic.notifications"
 
 
 @pytest.fixture

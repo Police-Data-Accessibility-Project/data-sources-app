@@ -1,4 +1,4 @@
-from middleware.primary_resource_logic.signup_logic import send_signup_link
+from middleware.primary_resource_logic.signup import send_signup_link
 from middleware.util import get_env_variable
 
 

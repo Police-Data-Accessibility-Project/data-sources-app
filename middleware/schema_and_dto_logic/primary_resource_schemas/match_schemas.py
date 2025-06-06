@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields
 
-from middleware.primary_resource_logic.match_logic import AgencyMatchStatus
+from middleware.primary_resource_logic.match import AgencyMatchStatus
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from middleware.schema_and_dto_logic.util import get_json_metadata
 

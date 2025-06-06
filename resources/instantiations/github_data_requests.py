@@ -2,7 +2,7 @@ from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import AuthenticationInfo
 from middleware.decorators import endpoint_info
 from middleware.enums import AccessTypeEnum, PermissionsEnum
-from middleware.primary_resource_logic.github_issue_app_logic import (
+from middleware.primary_resource_logic.github_issue_app import (
     synchronize_github_issues_with_data_requests,
 )
 from resources.PsycopgResource import PsycopgResource

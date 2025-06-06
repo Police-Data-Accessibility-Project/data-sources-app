@@ -6,7 +6,7 @@ from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import NO_AUTH_INFO
 from middleware.decorators import endpoint_info
 
-from middleware.primary_resource_logic.github_oauth_logic import (
+from middleware.primary_resource_logic.github_oauth import (
     link_github_account_request_wrapper,
 )
 

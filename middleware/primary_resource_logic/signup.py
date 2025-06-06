@@ -7,7 +7,7 @@ from database_client.database_client import DatabaseClient
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
 from middleware.access_logic import ValidateEmailTokenAccessInfo
 from middleware.common_response_formatting import message_response
-from middleware.primary_resource_logic.api_key_logic import generate_token
+from middleware.primary_resource_logic.api_key import generate_token
 from middleware.primary_resource_logic.login_queries import (
     access_and_refresh_token_response,
 )

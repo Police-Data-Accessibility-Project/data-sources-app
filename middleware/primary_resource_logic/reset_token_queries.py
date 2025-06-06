@@ -11,7 +11,7 @@ from middleware.access_logic import PasswordResetTokenAccessInfo, AccessInfoPrim
 from middleware.common_response_formatting import message_response
 from middleware.exceptions import UserNotFoundError
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.primary_resource_logic.api_key_logic import generate_token
+from middleware.primary_resource_logic.api_key import generate_token
 from middleware.primary_resource_logic.user_queries import user_check_email
 from middleware.schema_and_dto_logic.primary_resource_dtos.reset_token_dtos import (
     RequestResetPasswordRequestDTO,

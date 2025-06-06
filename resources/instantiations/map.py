@@ -4,10 +4,10 @@ from config import limiter
 from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import API_OR_JWT_AUTH_INFO
 from middleware.decorators import endpoint_info
-from middleware.primary_resource_logic.data_sources_logic import (
+from middleware.primary_resource_logic.data_sources import (
     get_data_sources_for_map_wrapper,
 )
-from middleware.primary_resource_logic.locations_logic import (
+from middleware.primary_resource_logic.locations import (
     get_locations_for_map_wrapper,
 )
 from resources.PsycopgResource import PsycopgResource

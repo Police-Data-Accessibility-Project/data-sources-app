@@ -8,7 +8,7 @@ from middleware.access_logic import (
 from middleware.authentication_info import AuthenticationInfo, WRITE_ONLY_AUTH_INFO
 from middleware.decorators import permissions_required, endpoint_info
 from middleware.enums import PermissionsEnum, AccessTypeEnum
-from middleware.primary_resource_logic.permissions_logic import (
+from middleware.primary_resource_logic.permissions import (
     manage_user_permissions,
     update_permissions_wrapper,
     PermissionsRequestDTO,

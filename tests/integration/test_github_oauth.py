@@ -24,7 +24,7 @@ from tests.helper_scripts.constants import (
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
-GITHUB_OATH_LOGIC_PATCH_ROOT = "middleware.primary_resource_logic.github_oauth_logic"
+GITHUB_OATH_LOGIC_PATCH_ROOT = "middleware.primary_resource_logic.github_oauth"
 
 
 def login_with_github(client: FlaskClient, access_token: str) -> str:

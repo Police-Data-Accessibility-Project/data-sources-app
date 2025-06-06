@@ -6,10 +6,10 @@ import pytest
 from flask import Response
 
 from database_client.enums import ExternalAccountTypeEnum
-from middleware.primary_resource_logic.callback_primary_logic import (
+from middleware.primary_resource_logic.callback import (
     get_flask_session_callback_info,
 )
-from middleware.primary_resource_logic.github_oauth_logic import (
+from middleware.primary_resource_logic.github_oauth import (
     link_github_account_request,
     link_github_account,
     get_github_user_info,
@@ -21,8 +21,8 @@ from middleware.custom_dataclasses import (
 )
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
-PATCH_PREFIX = "middleware.primary_resource_logic.callback_primary_logic"
-GITHUB_OAUTH_PREFIX = "middleware.primary_resource_logic.github_oauth_logic"
+PATCH_PREFIX = "middleware.primary_resource_logic.callback"
+GITHUB_OAUTH_PREFIX = "middleware.primary_resource_logic.github_oauth"
 
 
 class GetFlaskSessionCallbackInfoMocks(DynamicMagicMock):

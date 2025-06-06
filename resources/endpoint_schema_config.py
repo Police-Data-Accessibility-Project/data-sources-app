@@ -4,10 +4,10 @@ from typing import Optional, Type
 
 from marshmallow import Schema, RAISE
 
-from middleware.primary_resource_logic.github_oauth_logic import (
+from middleware.primary_resource_logic.github_oauth import (
     LinkToGithubRequestDTO,
 )
-from middleware.primary_resource_logic.permissions_logic import (
+from middleware.primary_resource_logic.permissions import (
     PermissionsPutRequestSchema,
     PermissionsRequestDTO,
     PermissionsGetRequestSchema,

@@ -1,4 +1,4 @@
-from middleware.primary_resource_logic.github_issue_app_logic import (
+from middleware.primary_resource_logic.github_issue_app import (
     get_github_issue_title,
     get_github_issue_body,
 )

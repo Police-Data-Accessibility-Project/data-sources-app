@@ -2,7 +2,7 @@ from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import AuthenticationInfo
 from middleware.decorators import endpoint_info
 from middleware.enums import AccessTypeEnum, PermissionsEnum
-from middleware.primary_resource_logic.source_collector_logic import (
+from middleware.primary_resource_logic.source_collector import (
     add_data_sources_from_source_collector,
     check_for_duplicate_urls,
 )

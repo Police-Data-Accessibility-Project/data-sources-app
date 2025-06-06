@@ -5,7 +5,7 @@ from middleware.access_logic import (
 )
 from middleware.authentication_info import WRITE_ONLY_AUTH_INFO, STANDARD_JWT_AUTH_INFO
 from middleware.decorators import endpoint_info
-from middleware.primary_resource_logic.bulk_logic import (
+from middleware.primary_resource_logic.bulk import (
     bulk_post_agencies,
     bulk_post_data_sources,
 )

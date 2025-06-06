@@ -4,7 +4,7 @@ from flask_restx import abort
 
 from database_client.helper_functions import get_db_client
 from middleware.enums import PermissionsEnum
-from middleware.primary_resource_logic.permissions_logic import PermissionsManager
+from middleware.primary_resource_logic.permissions import PermissionsManager
 
 
 def check_permissions(permission: PermissionsEnum) -> None:

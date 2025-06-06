@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
-from middleware.primary_resource_logic.search_logic import (
+from middleware.primary_resource_logic.search import (
     search_wrapper,
     format_search_results,
 )
