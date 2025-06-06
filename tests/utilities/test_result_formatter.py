@@ -1,6 +1,6 @@
 from sqlalchemy.orm.collections import InstrumentedList
 
-from database_client.models import DataSourceExpanded, Agency
+from database_client.models.implementations.core import DataSourceExpanded, Agency
 from database_client.result_formatter import ResultFormatter
 
 

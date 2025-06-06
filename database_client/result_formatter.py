@@ -1,7 +1,6 @@
 from collections import namedtuple
 from typing import Any, Optional
 
-from sqlalchemy import RowMapping
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.inspection import inspect
 
@@ -10,12 +9,12 @@ from database_client.constants import (
     METADATA_METHOD_NAMES,
 )
 from database_client.enums import LocationType
-from database_client.models import (
-    SQL_ALCHEMY_TABLE_REFERENCE,
+from database_client.models.implementations.core import (
     Agency,
     DataSourceExpanded,
     LocationExpanded,
 )
+from database_client.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from database_client.subquery_logic import SubqueryParameters
 from utilities.common import format_arrays
 

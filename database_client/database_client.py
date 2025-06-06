@@ -2,7 +2,6 @@ from collections import namedtuple
 from datetime import datetime
 from enum import Enum
 from functools import wraps, partialmethod
-from http import HTTPStatus
 from operator import and_, or_
 from typing import Optional, Any, List, Callable, Union, Type
 from psycopg import connection as PgConnection
@@ -30,7 +29,7 @@ from sqlalchemy.orm import (
     selectinload,
     Session,
 )
-from werkzeug.exceptions import HTTPException, BadRequest
+from werkzeug.exceptions import BadRequest
 
 from database_client.DTOs import (
     UserInfoNonSensitive,
@@ -56,7 +55,6 @@ from database_client.enums import (
     EventType,
     LocationType,
     ApprovalStatus,
-    SortOrder,
 )
 from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
 from middleware.custom_dataclasses import EventInfo, EventBatch
@@ -64,45 +62,48 @@ from middleware.exceptions import (
     UserNotFoundError,
     DuplicateUserError,
 )
-from database_client.models import (
-    convert_to_column_reference,
+from database_client.models.implementations.core import (
     ExternalAccount,
-    SQL_ALCHEMY_TABLE_REFERENCE,
     User,
     DataRequestExpanded,
     RecentSearch,
-    LinkRecentSearchRecordCategories,
     RecordCategory,
     Agency,
     Location,
     LocationExpanded,
     TableCountLog,
-    LinkRecentSearchRecordTypes,
     RecordType,
-    LinkAgencyDataSource,
-    LinkAgencyLocation,
     DataSourceExpanded,
     DataSource,
     DataRequest,
-    LinkLocationDataRequest,
-    LinkUserFollowedLocation,
     DataRequestsGithubIssueInfo,
-    Base,
     DataSourceUserNotificationQueue,
     DataRequestUserNotificationQueue,
     DataRequestPendingEventNotification,
     DataSourcePendingEventNotification,
     NotificationLog,
-    LinkLocationDataSourceView,
     DependentLocation,
     DistinctSourceURL,
+)
+from database_client.models.implementations.link import (
+    LinkAgencyDataSource,
+    LinkAgencyLocation,
+    LinkUserFollowedLocation,
+    LinkLocationDataRequest,
+    LinkRecentSearchRecordCategories,
+    LinkRecentSearchRecordTypes,
+    LinkLocationDataSourceView,
+)
+from database_client.models.base import Base
+from database_client.models.table_reference import (
+    SQL_ALCHEMY_TABLE_REFERENCE,
+    convert_to_column_reference,
 )
 from middleware.enums import (
     PermissionsEnum,
     Relations,
     AgencyType,
     RecordTypes,
-    JurisdictionType,
     DataSourceCreationResponse,
 )
 from middleware.initialize_psycopg_connection import initialize_psycopg_connection

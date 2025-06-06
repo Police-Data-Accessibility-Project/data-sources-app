@@ -9,20 +9,18 @@ from collections import namedtuple
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from psycopg import sql
 
 from database_client.database_client import DatabaseClient
 from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import ApprovalStatus, LocationType, RequestStatus, URLStatus
-from database_client.models import RecentSearch
-from middleware.enums import Relations, JurisdictionType, OperationType
+from database_client.enums import ApprovalStatus, URLStatus
+from database_client.models.implementations.core import RecentSearch
+from middleware.enums import Relations, OperationType
 from tests.conftest import live_database_client, test_data_creator_db_client
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.MultiLocationSetup import MultiLocationSetup
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
 )
-from tests.helper_scripts.helper_functions_simple import get_notification_valid_date
 from tests.helper_scripts.test_dataclasses import TestAgencyInfo
 from utilities.enums import RecordCategories
 

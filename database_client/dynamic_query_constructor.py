@@ -1,13 +1,10 @@
-import uuid
 from collections import namedtuple
-from datetime import datetime
 from typing import Callable, Optional
 
 from psycopg import sql
 from sqlalchemy import select
-from sqlalchemy.orm import load_only, InstrumentedAttribute, aliased, selectinload
+from sqlalchemy.orm import load_only, InstrumentedAttribute, selectinload
 from sqlalchemy.schema import Column
-from sqlalchemy.sql.util import join_condition
 
 from database_client.constants import (
     DATA_SOURCES_APPROVED_COLUMNS,
@@ -18,13 +15,14 @@ from database_client.db_client_dataclasses import (
     WhereMapping,
 )
 from database_client.subquery_logic import SubqueryParameters
-from database_client.models import (
-    SQL_ALCHEMY_TABLE_REFERENCE,
-    convert_to_column_reference,
+from database_client.models.implementations.core import (
     Agency,
     DataSourceExpanded,
-    DataRequest,
     DataRequestExpanded,
+)
+from database_client.models.table_reference import (
+    SQL_ALCHEMY_TABLE_REFERENCE,
+    convert_to_column_reference,
 )
 from middleware.enums import RecordTypes, Relations
 from utilities.enums import RecordCategories
