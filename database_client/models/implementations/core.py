@@ -30,6 +30,7 @@ from database_client.models.base import Base
 from database_client.models.helpers import (
     iter_with_special_cases,
     get_iter_model_list_of_dict,
+    make_get_iter_model_list_of_dict,
 )
 from database_client.models.mixins import (
     CountMetadata,
@@ -256,12 +257,8 @@ class DataRequest(
     __tablename__ = Relations.DATA_REQUESTS.value
 
     special_cases = {
-        "data_sources": lambda instance: get_iter_model_list_of_dict(
-            instance, attr_name="data_sources"
-        ),
-        "locations": lambda instance: get_iter_model_list_of_dict(
-            instance, attr_name="locations"
-        ),
+        "data_sources": make_get_iter_model_list_of_dict("data_sources"),
+        "locations": make_get_iter_model_list_of_dict("locations"),
     }
 
     submission_notes: Mapped[Optional[text]]
@@ -324,12 +321,8 @@ class DataSource(
     __tablename__ = Relations.DATA_SOURCES.value
 
     special_cases = {
-        "agencies": lambda instance: get_iter_model_list_of_dict(
-            instance, attr_name="agencies"
-        ),
-        "data_requests": lambda instance: get_iter_model_list_of_dict(
-            instance, attr_name="data_requests"
-        ),
+        "agencies": make_get_iter_model_list_of_dict("agencies"),
+        "data_requests": make_get_iter_model_list_of_dict("data_requests"),
     }
 
     name: Mapped[str]

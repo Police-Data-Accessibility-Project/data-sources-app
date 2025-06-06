@@ -35,3 +35,7 @@ def get_iter_model_list_of_dict(instance, attr_name: str):
             ),
         )
     ]
+
+
+def make_get_iter_model_list_of_dict(attr_name):
+    return lambda instance: get_iter_model_list_of_dict(instance, attr_name=attr_name)
