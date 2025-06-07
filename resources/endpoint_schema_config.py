@@ -95,15 +95,21 @@ from middleware.schema_and_dto_logic.schemas.admin_schemas import (
     AdminUsersPostSchema,
     AdminUsersGetManyResponseSchema,
 )
-from middleware.schema_and_dto_logic.schemas.agencies.agencies_advanced_schemas import (
-    AgenciesGetByIDResponseSchema,
-    AgenciesPutSchema,
-    AgenciesPostSchema,
-    AgenciesGetManyResponseSchema,
-    RelatedAgencyByIDSchema,
+from middleware.schema_and_dto_logic.schemas.agencies.related_location import (
     AgenciesRelatedLocationSchema,
 )
-from middleware.schema_and_dto_logic.schemas.agencies.agencies_base_schemas import (
+from middleware.schema_and_dto_logic.schemas.data_sources.related_agency.by_id import (
+    RelatedAgencyByIDSchema,
+)
+from middleware.schema_and_dto_logic.schemas.agencies.get.many.response import (
+    AgenciesGetManyResponseSchema,
+)
+from middleware.schema_and_dto_logic.schemas.agencies.get.by_id.response import (
+    AgenciesGetByIDResponseSchema,
+)
+from middleware.schema_and_dto_logic.schemas.agencies.put import AgenciesPutSchema
+from middleware.schema_and_dto_logic.schemas.agencies.post import AgenciesPostSchema
+from middleware.schema_and_dto_logic.schemas.agencies.get.many.requests import (
     GetManyAgenciesRequestsSchema,
 )
 from middleware.schema_and_dto_logic.schemas.api_key_schemas import (

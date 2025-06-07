@@ -1,8 +1,6 @@
 from marshmallow import fields
 
-from middleware.schema_and_dto_logic.schemas.agencies.agencies_advanced_schemas import (
-    AgenciesGetSchema,
-)
+from middleware.schema_and_dto_logic.schemas.agencies.get.base import AgenciesGetSchema
 from middleware.schema_and_dto_logic.schemas.data_requests.base import (
     DataRequestsSchema,
 )

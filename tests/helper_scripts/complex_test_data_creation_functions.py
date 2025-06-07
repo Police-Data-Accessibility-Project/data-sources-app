@@ -7,7 +7,7 @@ from flask.testing import FlaskClient
 from db.client import DatabaseClient
 from db.enums import RequestUrgency
 from middleware.enums import JurisdictionType, AgencyType
-from middleware.schema_and_dto_logic.schemas.agencies.agencies_advanced_schemas import (
+from middleware.schema_and_dto_logic.schemas.agencies.info.post import (
     AgencyInfoPostSchema,
 )
 from tests.helper_scripts.common_test_data import get_test_name
