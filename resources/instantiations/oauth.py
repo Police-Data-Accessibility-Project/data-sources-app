@@ -7,9 +7,7 @@ from middleware.enums import CallbackFunctionsEnum
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import (
     populate_schema_with_request_content,
 )
-from middleware.schema_and_dto_logic.schemas.auth_schemas import (
-    GithubOAuthRequestDTO,
-)
+from middleware.schema_and_dto_logic.dtos.github.oauth import GithubOAuthRequestDTO
 from middleware.third_party_interaction_logic.callback_flask_sessions_logic import (
     setup_callback_session,
 )

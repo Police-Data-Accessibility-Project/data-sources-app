@@ -114,22 +114,30 @@ from middleware.schema_and_dto_logic.schemas.agencies.post import AgenciesPostSc
 from middleware.schema_and_dto_logic.schemas.agencies.get.many.requests import (
     GetManyAgenciesRequestsSchema,
 )
-from middleware.schema_and_dto_logic.schemas.api_key_schemas import (
+from middleware.schema_and_dto_logic.schemas.api_key import (
     APIKeyResponseSchema,
 )
-from middleware.schema_and_dto_logic.schemas.archives_schemas import (
-    ArchivesGetResponseSchema,
+from middleware.schema_and_dto_logic.schemas.archives.put import (
     ArchivesPutRequestSchema,
+)
+from middleware.schema_and_dto_logic.schemas.archives.get.response import (
+    ArchivesGetResponseSchema,
+)
+from middleware.schema_and_dto_logic.schemas.archives.get.request import (
     ArchivesGetRequestSchema,
 )
-from middleware.schema_and_dto_logic.schemas.auth_schemas import (
-    LoginResponseSchema,
-    LinkToGithubRequestSchema,
+from middleware.schema_and_dto_logic.dtos.github.oauth import GithubOAuthRequestDTO
+from middleware.schema_and_dto_logic.schemas.auth.github.oauth import (
     GithubOAuthRequestSchema,
-    GithubOAuthRequestDTO,
-    LoginWithGithubRequestDTO,
+)
+from middleware.schema_and_dto_logic.schemas.auth.github.login import (
     GithubRequestSchema,
 )
+from middleware.schema_and_dto_logic.dtos.github.login import LoginWithGithubRequestDTO
+from middleware.schema_and_dto_logic.schemas.auth.github.link import (
+    LinkToGithubRequestSchema,
+)
+from middleware.schema_and_dto_logic.schemas.auth.login import LoginResponseSchema
 from middleware.schema_and_dto_logic.schemas.bulk_schemas import (
     BatchPostResponseSchema,
     AgenciesPostBatchRequestSchema,
