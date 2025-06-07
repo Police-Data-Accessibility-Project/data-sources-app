@@ -130,15 +130,29 @@ from middleware.schema_and_dto_logic.schemas.bulk_schemas import (
 from middleware.schema_and_dto_logic.schemas.contact_schemas import (
     ContactFormPostSchema,
 )
-from middleware.schema_and_dto_logic.schemas.data_requests.data_requests_advanced_schemas import (
-    GetManyDataRequestsResponseSchema,
-    DataRequestsPostSchema,
-    GetByIDDataRequestsResponseSchema,
-    GetManyDataRequestsRequestsSchema,
-    DataRequestsRelatedLocationAddRemoveSchema,
+from middleware.schema_and_dto_logic.schemas.data_requests.related_location.get import (
     GetManyDataRequestsRelatedLocationsSchema,
-    DataRequestsPutSchema,
+)
+from middleware.schema_and_dto_logic.schemas.data_requests.get.by_id.response import (
+    GetByIDDataRequestsResponseSchema,
+)
+from middleware.schema_and_dto_logic.schemas.data_requests.get.many.response import (
+    GetManyDataRequestsResponseSchema,
+)
+from middleware.schema_and_dto_logic.schemas.data_requests.get.many.requests import (
+    GetManyDataRequestsRequestsSchema,
+)
+from middleware.schema_and_dto_logic.schemas.data_requests.related_location.by_id import (
     RelatedSourceByIDSchema,
+)
+from middleware.schema_and_dto_logic.schemas.data_requests.related_location.add_remove import (
+    DataRequestsRelatedLocationAddRemoveSchema,
+)
+from middleware.schema_and_dto_logic.schemas.data_requests.post import (
+    DataRequestsPostSchema,
+)
+from middleware.schema_and_dto_logic.schemas.data_requests.put import (
+    DataRequestsPutSchema,
 )
 from middleware.schema_and_dto_logic.schemas.data_sources.map.outer import (
     DataSourcesMapResponseSchema,

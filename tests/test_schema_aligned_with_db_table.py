@@ -6,7 +6,7 @@ from marshmallow import Schema
 
 from db.client import DatabaseClient
 from middleware.enums import Relations
-from middleware.schema_and_dto_logic.schemas.data_requests.data_requests_base_schema import (
+from middleware.schema_and_dto_logic.schemas.data_requests.base import (
     DataRequestsSchema,
 )
 from tests.conftest import live_database_client
