@@ -89,12 +89,14 @@ from middleware.schema_and_dto_logic.dtos.source_collector_dtos import (
 from middleware.schema_and_dto_logic.dtos.user_profile_dtos import (
     UserPutDTO,
 )
-from middleware.schema_and_dto_logic.schemas.admin_schemas import (
-    AdminUsersGetByIDResponseSchema,
-    AdminUsersPutSchema,
-    AdminUsersPostSchema,
+from middleware.schema_and_dto_logic.schemas.admin.get_many import (
     AdminUsersGetManyResponseSchema,
 )
+from middleware.schema_and_dto_logic.schemas.admin.by_id import (
+    AdminUsersGetByIDResponseSchema,
+)
+from middleware.schema_and_dto_logic.schemas.admin.put import AdminUsersPutSchema
+from middleware.schema_and_dto_logic.schemas.admin.post import AdminUsersPostSchema
 from middleware.schema_and_dto_logic.schemas.agencies.related_location import (
     AgenciesRelatedLocationSchema,
 )
