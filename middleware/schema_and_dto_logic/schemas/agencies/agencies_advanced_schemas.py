@@ -18,12 +18,12 @@ from middleware.schema_and_dto_logic.dtos.agencies_dtos import (
     AgencyInfoPutDTO,
     AgencyInfoPostDTO,
 )
-from middleware.schema_and_dto_logic.schemas.agencies_base_schemas import (
+from middleware.schema_and_dto_logic.schemas.agencies.agencies_base_schemas import (
     AgencyInfoBaseSchema,
     get_name_field,
     get_jurisdiction_type_field,
 )
-from middleware.schema_and_dto_logic.schemas.data_sources_base_schemas import (
+from middleware.schema_and_dto_logic.schemas.data_sources.data_sources_base_schemas import (
     DataSourceExpandedSchema,
 )
 from middleware.schema_and_dto_logic.schemas.locations_schemas import (

@@ -6,10 +6,9 @@ from marshmallow.fields import Field
 
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import (
     get_nested_dto_info_list,
-    SourceDataInfo,
 )
 from middleware.schema_and_dto_logic.enums import CSVColumnCondition
-from middleware.schema_and_dto_logic.schemas.data_sources_advanced_schemas import (
+from middleware.schema_and_dto_logic.schemas.data_sources.data_sources_advanced_schemas import (
     DataSourcesPostSchema,
 )
 

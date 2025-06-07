@@ -1,22 +1,19 @@
 from marshmallow import Schema, fields
 
-from db.enums import ApprovalStatus
 from middleware.enums import AgencyType
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_csv_to_schema_conversion_logic import (
     generate_flat_csv_schema,
 )
-from middleware.schema_and_dto_logic.schemas.agencies_advanced_schemas import (
+from middleware.schema_and_dto_logic.schemas.agencies.agencies_advanced_schemas import (
     AgenciesPostSchema,
-    AgenciesPutSchema,
 )
-from middleware.schema_and_dto_logic.schemas.agencies_base_schemas import (
+from middleware.schema_and_dto_logic.schemas.agencies.agencies_base_schemas import (
     get_jurisdiction_type_field,
     get_name_field,
 )
-from middleware.schema_and_dto_logic.schemas.data_sources_advanced_schemas import (
+from middleware.schema_and_dto_logic.schemas.data_sources.data_sources_advanced_schemas import (
     DataSourcesPostSchema,
-    DataSourcesPutSchema,
 )
 from middleware.schema_and_dto_logic.util import get_json_metadata
 from utilities.enums import SourceMappingEnum

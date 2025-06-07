@@ -7,7 +7,7 @@ from db.db_client_dataclasses import WhereMapping
 from db.enums import SortOrder, ApprovalStatus
 from db.models.implementations.core import Agency
 from middleware.enums import JurisdictionType, AgencyType
-from middleware.schema_and_dto_logic.schemas.agencies_advanced_schemas import (
+from middleware.schema_and_dto_logic.schemas.agencies.agencies_advanced_schemas import (
     AgencyInfoPutSchema,
 )
 from middleware.schema_and_dto_logic.common_response_schemas import (

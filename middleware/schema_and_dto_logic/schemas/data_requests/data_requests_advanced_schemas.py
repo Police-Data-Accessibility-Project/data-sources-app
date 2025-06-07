@@ -4,29 +4,23 @@ from db.enums import RequestStatus
 from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
     generate_marshmallow_schema,
 )
-from middleware.schema_and_dto_logic.schemas.data_requests_base_schema import (
+from middleware.schema_and_dto_logic.schemas.data_requests.data_requests_base_schema import (
     DataRequestsSchema,
-)
-from middleware.schema_and_dto_logic.schemas.typeahead_suggestion_schemas import (
-    TypeaheadLocationsResponseSchema,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetManyRequestsBaseSchema,
-    GetByIDBaseSchema,
 )
 from middleware.schema_and_dto_logic.schemas.locations_schemas import (
-    LocationInfoSchema,
     LocationInfoExpandedSchema,
     LocationInfoResponseSchema,
 )
 from middleware.schema_and_dto_logic.dtos.data_requests_dtos import (
-    DataRequestLocationInfoPostDTO,
     DataRequestsPutDTO,
     RequestInfoPostDTO,
     RelatedSourceByIDDTO,
     RelatedLocationsByIDDTO,
 )
-from middleware.schema_and_dto_logic.schemas.data_sources_base_schemas import (
+from middleware.schema_and_dto_logic.schemas.data_sources.data_sources_base_schemas import (
     DataSourceExpandedSchema,
 )
 from middleware.schema_and_dto_logic.schema_helpers import (
@@ -36,9 +30,7 @@ from middleware.schema_and_dto_logic.schema_helpers import (
 from middleware.schema_and_dto_logic.util import (
     get_json_metadata,
     get_query_metadata,
-    get_path_metadata,
 )
-from utilities.enums import SourceMappingEnum
 
 
 class DataRequestsGetSchemaBase(DataRequestsSchema):

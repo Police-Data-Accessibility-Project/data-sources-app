@@ -15,13 +15,13 @@ from middleware.schema_and_dto_logic.dtos.data_sources_dtos import (
     DataSourceEntryDataPostDTO,
     DataSourceEntryDataPutDTO,
 )
-from middleware.schema_and_dto_logic.schemas.agencies_advanced_schemas import (
+from middleware.schema_and_dto_logic.schemas.agencies.agencies_advanced_schemas import (
     AgenciesGetSchema,
 )
-from middleware.schema_and_dto_logic.schemas.data_requests_base_schema import (
+from middleware.schema_and_dto_logic.schemas.data_requests.data_requests_base_schema import (
     DataRequestsSchema,
 )
-from middleware.schema_and_dto_logic.schemas.data_sources_base_schemas import (
+from middleware.schema_and_dto_logic.schemas.data_sources.data_sources_base_schemas import (
     DataSourceExpandedSchema,
     DataSourcesMapResponseInnerSchema,
 )

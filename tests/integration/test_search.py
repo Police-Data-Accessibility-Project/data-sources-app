@@ -15,7 +15,7 @@ from middleware.enums import (
     Relations,
 )
 from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
-from middleware.schema_and_dto_logic.schemas.agencies_advanced_schemas import (
+from middleware.schema_and_dto_logic.schemas.agencies.agencies_advanced_schemas import (
     AgencyInfoPostSchema,
 )
 from middleware.util.type_conversion import get_enum_values

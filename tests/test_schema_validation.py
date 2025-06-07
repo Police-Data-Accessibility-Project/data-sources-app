@@ -4,7 +4,7 @@ import pytest
 from marshmallow import ValidationError
 
 from middleware.enums import JurisdictionType, AgencyType
-from middleware.schema_and_dto_logic.schemas.agencies_advanced_schemas import (
+from middleware.schema_and_dto_logic.schemas.agencies.agencies_advanced_schemas import (
     AgenciesPostSchema,
 )
 from middleware.schema_and_dto_logic.schemas.locations_schemas import (

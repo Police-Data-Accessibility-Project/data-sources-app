@@ -95,7 +95,7 @@ from middleware.schema_and_dto_logic.schemas.admin_schemas import (
     AdminUsersPostSchema,
     AdminUsersGetManyResponseSchema,
 )
-from middleware.schema_and_dto_logic.schemas.agencies_advanced_schemas import (
+from middleware.schema_and_dto_logic.schemas.agencies.agencies_advanced_schemas import (
     AgenciesGetByIDResponseSchema,
     AgenciesPutSchema,
     AgenciesPostSchema,
@@ -103,7 +103,7 @@ from middleware.schema_and_dto_logic.schemas.agencies_advanced_schemas import (
     RelatedAgencyByIDSchema,
     AgenciesRelatedLocationSchema,
 )
-from middleware.schema_and_dto_logic.schemas.agencies_base_schemas import (
+from middleware.schema_and_dto_logic.schemas.agencies.agencies_base_schemas import (
     GetManyAgenciesRequestsSchema,
 )
 from middleware.schema_and_dto_logic.schemas.api_key_schemas import (
@@ -130,7 +130,7 @@ from middleware.schema_and_dto_logic.schemas.bulk_schemas import (
 from middleware.schema_and_dto_logic.schemas.contact_schemas import (
     ContactFormPostSchema,
 )
-from middleware.schema_and_dto_logic.schemas.data_requests_advanced_schemas import (
+from middleware.schema_and_dto_logic.schemas.data_requests.data_requests_advanced_schemas import (
     GetManyDataRequestsResponseSchema,
     DataRequestsPostSchema,
     GetByIDDataRequestsResponseSchema,
@@ -140,7 +140,7 @@ from middleware.schema_and_dto_logic.schemas.data_requests_advanced_schemas impo
     DataRequestsPutSchema,
     RelatedSourceByIDSchema,
 )
-from middleware.schema_and_dto_logic.schemas.data_sources_advanced_schemas import (
+from middleware.schema_and_dto_logic.schemas.data_sources.data_sources_advanced_schemas import (
     DataSourcesGetManySchema,
     DataSourcesGetByIDSchema,
     DataSourcesPostSchema,
@@ -148,7 +148,7 @@ from middleware.schema_and_dto_logic.schemas.data_sources_advanced_schemas impor
     DataSourcesGetManyRequestSchema,
     DataSourcesMapResponseSchema,
 )
-from middleware.schema_and_dto_logic.schemas.data_sources_base_schemas import (
+from middleware.schema_and_dto_logic.schemas.data_sources.data_sources_base_schemas import (
     DataSourceRejectSchema,
 )
 from middleware.schema_and_dto_logic.schemas.github_issue_app_schemas import (

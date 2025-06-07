@@ -7,7 +7,7 @@ from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core 
 from middleware.schema_and_dto_logic.dtos.user_profile_dtos import (
     UserPutDTO,
 )
-from middleware.schema_and_dto_logic.schemas.data_requests_advanced_schemas import (
+from middleware.schema_and_dto_logic.schemas.data_requests.data_requests_advanced_schemas import (
     GetManyDataRequestsResponseSchema,
 )
 from middleware.schema_and_dto_logic.schemas.search_schemas import (
