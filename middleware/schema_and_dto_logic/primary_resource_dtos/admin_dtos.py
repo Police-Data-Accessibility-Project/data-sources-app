@@ -4,6 +4,9 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 from middleware.enums import PermissionsEnum
+from middleware.schema_and_dto_logic.primary_resource_dtos.helpers import (
+    default_field_required,
+)
 
 
 @dataclass
@@ -14,6 +17,6 @@ class AdminUserPostDTO:
 
 
 class AdminUserPutDTO(BaseModel):
-    password: str = Field(
+    password: str = default_field_required(
         description="The new password of the admin user",
     )

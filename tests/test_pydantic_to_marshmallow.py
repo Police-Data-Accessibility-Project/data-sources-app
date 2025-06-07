@@ -39,18 +39,34 @@ class TestDTO(BaseModel):
         description="An enum field",
         json_schema_extra=MetadataInfo(required=False),
     )
+    list_str_: list[str] = Field(
+        description="A list of strings field",
+        json_schema_extra=MetadataInfo(required=True),
+    )
 
 
 def test_pydantic_to_marshmallow():
     SchemaAuto = generate_marshmallow_schema(TestDTO)
     schema = SchemaAuto()
 
-    d = schema.load({"int_": None, "float_": 1.0})
+    d = schema.load(
+        {
+            "int_": None,
+            "float_": 1.0,
+            "list_str_": ["a", "b", "c"],
+        }
+    )
     assert d["bool_"] is not None
     assert not d["bool_"]
     assert d["enum_"] == TestEnum.ALPHA
 
-    d = schema.load({"int_": 1, "enum_": "beta"})
+    d = schema.load(
+        {
+            "int_": 1,
+            "enum_": "beta",
+            "list_str_": ["a", "b", "c"],
+        }
+    )
     assert d["enum_"] == TestEnum.BETA
 
     print(schema.fields)

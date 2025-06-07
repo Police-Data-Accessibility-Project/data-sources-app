@@ -8,6 +8,7 @@ from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core 
 )
 from middleware.schema_and_dto_logic.primary_resource_dtos.helpers import (
     default_field_required,
+    default_field_not_required,
 )
 
 
@@ -28,19 +29,17 @@ class SourceCollectorPostRequestDTO(BaseModel):
 
 
 class SourceCollectorPostResponseInnerDTO(BaseModel):
-    url: str = default_field_required(description="The URL of the created data source.")
+    url: Optional[str] = default_field_not_required(
+        description="The URL of the created data source."
+    )
     status: DataSourceCreationResponse = default_field_required(
         description="The status of the data source creation."
     )
-    data_source_id: Optional[int] = Field(
-        default=None,
+    data_source_id: Optional[int] = default_field_not_required(
         description="The ID of the created data source, if successful.",
-        json_schema_extra=MetadataInfo(required=True),
     )
-    error: Optional[str] = Field(
-        default=None,
+    error: Optional[str] = default_field_not_required(
         description="The error message, if the data source creation failed.",
-        json_schema_extra=MetadataInfo(required=True),
     )
 
 

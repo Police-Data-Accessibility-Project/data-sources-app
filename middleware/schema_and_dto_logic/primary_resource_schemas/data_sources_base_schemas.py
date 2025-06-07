@@ -23,7 +23,6 @@ class DataSourceBaseSchema(Schema):
     name = fields.String(
         metadata=get_json_metadata(
             "The name of the data source concatenated with the state iso.",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
         required=True,
     )
@@ -34,7 +33,6 @@ class DataSourceBaseSchema(Schema):
             description="Information to give clarity and confidence about what this source is, how it was "
             "processed, and whether the person reading the description might want to use it. "
             "Especially important if the source is difficult to preview or categorize.",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
         default="",
     )
@@ -44,7 +42,6 @@ class DataSourceBaseSchema(Schema):
         allow_none=True,
         metadata=get_json_metadata(
             "A URL where these records can be found or are referenced.",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
     agency_supplied = fields.Boolean(
@@ -53,14 +50,12 @@ class DataSourceBaseSchema(Schema):
             'Is the relevant Agency also the entity supplying the data? This may be "no" if the Agency or local '
             "government contracted with a third party to publish this data, or if a third party was the original "
             "record-keeper.",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
     supplying_entity = fields.String(
         allow_none=True,
         metadata=get_json_metadata(
             "If the Agency didn't publish this, who did?",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
     agency_originated = fields.Boolean(
@@ -68,7 +63,6 @@ class DataSourceBaseSchema(Schema):
         metadata=get_json_metadata(
             'Is the relevant Agency also the original record-keeper? This is usually "yes", unless a third party '
             "collected data about a police Agency.",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
     agency_aggregation = fields.Enum(
@@ -76,7 +70,6 @@ class DataSourceBaseSchema(Schema):
         by_value=fields.Str,
         metadata=get_json_metadata(
             "If present, the Data Source describes multiple agencies.",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
         allow_none=True,
     )
@@ -84,7 +77,6 @@ class DataSourceBaseSchema(Schema):
         allow_none=True,
         metadata=get_json_metadata(
             "The start date of the data source's coverage, in the format YYYY-MM-DD.",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
         format="iso",
     )
@@ -92,7 +84,6 @@ class DataSourceBaseSchema(Schema):
         allow_none=True,
         metadata=get_json_metadata(
             "The end date of the data source's coverage, in the format YYYY-MM-DD.",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
         format="iso",
     )
@@ -109,7 +100,6 @@ class DataSourceBaseSchema(Schema):
         by_value=fields.Str,
         metadata=get_json_metadata(
             "Is this an individual record, an aggregated set of records, or a summary without underlying data?",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
     access_types = fields.List(
@@ -123,27 +113,23 @@ class DataSourceBaseSchema(Schema):
         allow_none=True,
         metadata=get_json_metadata(
             "The ways the data source can be accessed. Editable only by admins.",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
     data_portal_type = fields.String(
         allow_none=True,
         metadata=get_json_metadata(
             "The data portal type of the data source.",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
     record_formats = fields.List(
         fields.String(
             metadata=get_json_metadata(
                 "What formats the data source can be obtained in.",
-                csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
             ),
         ),
         allow_none=True,
         metadata=get_json_metadata(
             "What formats the data source can be obtained in.",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
     update_method = fields.Enum(
@@ -152,7 +138,6 @@ class DataSourceBaseSchema(Schema):
         allow_none=True,
         metadata=get_json_metadata(
             "How is the data source updated?",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
     tags = fields.List(
@@ -164,14 +149,12 @@ class DataSourceBaseSchema(Schema):
         ),
         metadata=get_json_metadata(
             "Are there any keyword descriptors which might help people find this in a search? Try to limit tags to information which can't be contained in other properties.",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
         allow_none=True,
     )
     readme_url = fields.String(
         metadata=get_json_metadata(
             "A URL where supplementary information about the source is published.",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
         allow_none=True,
     )
@@ -179,7 +162,6 @@ class DataSourceBaseSchema(Schema):
         allow_none=True,
         metadata=get_json_metadata(
             "Who is the originator of the data source?",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
     retention_schedule = fields.Enum(
@@ -187,7 +169,6 @@ class DataSourceBaseSchema(Schema):
         by_value=fields.Str,
         metadata=get_json_metadata(
             "How long are records kept? Are there published guidelines regarding how long important information must remain accessible for future use? Editable only by admins.",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
         allow_none=True,
     )
@@ -199,7 +180,6 @@ class DataSourceBaseSchema(Schema):
         allow_none=True,
         metadata=get_json_metadata(
             "URL for the webscraper that produces this source",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
     created_at = fields.DateTime(
@@ -209,7 +189,6 @@ class DataSourceBaseSchema(Schema):
         allow_none=True,
         metadata=get_json_metadata(
             "What are you trying to learn? Are you trying to answer a specific question, or complete a specific project? Is there anything you've already tried?",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
     rejection_note = fields.String(
@@ -225,21 +204,18 @@ class DataSourceBaseSchema(Schema):
         allow_none=True,
         metadata=get_json_metadata(
             "Contact information for the individual who provided the data source",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
     agency_described_not_in_database = fields.String(
         allow_none=True,
         metadata=get_json_metadata(
             "If the agency associated is not in the database, why?",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
     data_portal_type_other = fields.String(
         allow_none=True,
         metadata=get_json_metadata(
             "What unconventional data portal this data source is derived from",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
     data_source_request = fields.String(
@@ -256,7 +232,6 @@ class DataSourceBaseSchema(Schema):
     access_notes = fields.String(
         metadata=get_json_metadata(
             "How the source can be accessed,",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
         allow_none=True,
     )
@@ -298,7 +273,6 @@ class DataSourceExpandedSchema(DataSourceBaseSchema):
         allow_none=True,
         metadata=get_json_metadata(
             "The record type of the data source.",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
 

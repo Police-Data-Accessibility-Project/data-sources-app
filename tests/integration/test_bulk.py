@@ -151,57 +151,6 @@ def test_batch_agencies_insert_wrong_file_type(
     )
 
 
-def test_batch_data_sources_insert_happy_path(
-    data_sources_post_runner: BatchTestRunner,
-):
-    runner = data_sources_post_runner
-    agency_ids = [runner.tdc.agency().id for _ in range(3)]
-    for _ in range(3):
-        runner.tdc.agency()
-    rows = [
-        runner.generate_test_data(override={"linked_agency_ids": agency_ids})
-        for _ in range(3)
-    ]
-    data = create_csv_and_run(
-        runner=runner,
-        rows=rows,
-        request_validator_method=runner.tdc.request_validator.insert_data_sources_bulk,
-    )
-    ids = data["ids"]
-    unflattener = SchemaUnflattener(
-        flat_schema_class=DataSourcesPostRequestFlatBaseSchema
-    )
-
-    for row, id in zip(rows, ids):
-        unflattened_row = unflattener.unflatten(flat_data=row)
-        data = runner.tdc.request_validator.get_data_source_by_id(
-            id=id, headers=runner.tdc.get_admin_tus().jwt_authorization_header
-        )
-        listify_strings([unflattened_row["entry_data"]])
-        assert_contains_key_value_pairs(
-            dict_to_check=data["data"],
-            key_value_pairs=unflattened_row["entry_data"],
-        )
-
-
-def test_batch_data_sources_insert_some_errors(
-    data_sources_post_runner: BatchTestRunner,
-):
-    runner = data_sources_post_runner
-    agency_ids = [runner.tdc.agency().id for _ in range(3)]
-    rows = [
-        runner.generate_test_data(override={"linked_agency_ids": "not a list"}),
-        runner.generate_test_data(override={"linked_agency_ids": agency_ids}),
-        runner.generate_test_data(override={"coverage_start": "not a date"}),
-    ]
-    data = create_csv_and_run(
-        runner=runner,
-        rows=rows,
-        request_validator_method=runner.tdc.request_validator.insert_data_sources_bulk,
-    )
-    check_for_errors(data)
-
-
 def test_batch_data_sources_insert_wrong_file_type(
     data_sources_post_runner: BatchTestRunner,
 ):

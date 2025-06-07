@@ -1,21 +1,18 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from middleware.enums import ContactFormMessageType
-from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
-    MetadataInfo,
+from middleware.schema_and_dto_logic.primary_resource_dtos.helpers import (
+    default_field_required,
 )
 
 
 class ContactFormPostDTO(BaseModel):
-    email: str = Field(
+    email: str = default_field_required(
         description="The email of the user",
-        json_schema_extra=MetadataInfo(),
     )
-    message: str = Field(
+    message: str = default_field_required(
         description="The message of the user",
-        json_schema_extra=MetadataInfo(),
     )
-    type: ContactFormMessageType = Field(
+    type: ContactFormMessageType = default_field_required(
         description="The type of message",
-        json_schema_extra=MetadataInfo(),
     )

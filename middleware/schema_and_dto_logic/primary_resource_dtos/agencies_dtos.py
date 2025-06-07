@@ -1,14 +1,13 @@
 from typing import Optional
 
+from pydantic import BaseModel, Field
+
 from db.enums import ApprovalStatus
 from middleware.enums import JurisdictionType, AgencyType
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    LocationInfoDTO,
     GetByIDBaseDTO,
     GetManyBaseDTO,
 )
-from pydantic import BaseModel, Field
-
 from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
     MetadataInfo,
 )

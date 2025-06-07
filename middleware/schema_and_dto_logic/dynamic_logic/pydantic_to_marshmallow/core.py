@@ -1,5 +1,6 @@
 from enum import Enum
-from typing import cast
+from types import GenericAlias
+from typing import cast, get_origin, get_args
 
 from marshmallow import Schema
 from marshmallow.fields import Field, Enum as MarshmallowEnum
@@ -66,10 +67,9 @@ class FieldProcessor:
 
         additional_kwargs = self.get_additional_kwargs()
 
-        marshmallow_field_info = self.get_marshmallow_field_cls()
-
         metadata = self.prepare_metadata()
 
+        marshmallow_field_info = self.get_marshmallow_field_cls(self.field_type)
         # Combine kwargs
         marshmallow_field_info.field_kwargs = {
             **marshmallow_field_info.field_kwargs,
@@ -80,7 +80,7 @@ class FieldProcessor:
         marshmallow_field = marshmallow_field_info.field(
             required=self.metadata_info.required,
             allow_none=allow_none,
-            metadata=metadata,
+            metadata=self.prepare_metadata(),
             **marshmallow_field_info.field_kwargs,
         )
 
@@ -92,13 +92,25 @@ class FieldProcessor:
             metadata["description"] = self.model_field.description
         return metadata
 
-    def get_marshmallow_field_cls(self) -> MarshmallowFieldInfo:
-        inner_type = extract_inner_type(self.field_type)
+    def get_marshmallow_field_cls(self, field_type: type) -> MarshmallowFieldInfo:
+        inner_type = extract_inner_type(field_type)
         # If enum, we need to use EnumField
         if issubclass(inner_type, Enum):
             return MarshmallowFieldInfo(
                 field=MarshmallowEnum,
                 field_kwargs={"enum": inner_type, "by_value": True},
+            )
+        if get_origin(inner_type) is list:
+            type_arg = get_args(inner_type)[0]
+            type_arg_field = self.get_marshmallow_field_cls(type_arg)
+
+            return MarshmallowFieldInfo(
+                field=Field,
+                field_kwargs={
+                    "cls_or_instance": type_arg_field.field(
+                        metadata=self.prepare_metadata()
+                    ),
+                },
             )
 
         marshmallow_field_cls = TYPE_MAPPING.get(inner_type)
