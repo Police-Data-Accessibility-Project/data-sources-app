@@ -6,15 +6,15 @@ from middleware.schema_and_dto_logic.common_response_schemas import MessageSchem
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_csv_to_schema_conversion_logic import (
     generate_flat_csv_schema,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
+from middleware.schema_and_dto_logic.schemas.agencies_advanced_schemas import (
     AgenciesPostSchema,
     AgenciesPutSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_base_schemas import (
+from middleware.schema_and_dto_logic.schemas.agencies_base_schemas import (
     get_jurisdiction_type_field,
     get_name_field,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advanced_schemas import (
+from middleware.schema_and_dto_logic.schemas.data_sources_advanced_schemas import (
     DataSourcesPostSchema,
     DataSourcesPutSchema,
 )

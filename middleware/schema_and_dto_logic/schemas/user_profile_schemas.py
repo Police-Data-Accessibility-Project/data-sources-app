@@ -4,13 +4,13 @@ from middleware.enums import PermissionsEnum
 from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
     generate_marshmallow_schema,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.user_profile_dtos import (
+from middleware.schema_and_dto_logic.dtos.user_profile_dtos import (
     UserPutDTO,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_requests_advanced_schemas import (
+from middleware.schema_and_dto_logic.schemas.data_requests_advanced_schemas import (
     GetManyDataRequestsResponseSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.search_schemas import (
+from middleware.schema_and_dto_logic.schemas.search_schemas import (
     GetUserFollowedSearchesSchema,
 )
 from middleware.schema_and_dto_logic.schema_helpers import create_get_many_schema

@@ -6,7 +6,7 @@ from flask import Response
 from db.client import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.primary_resource_dtos.match_dtos import (
+from middleware.schema_and_dto_logic.dtos.match_dtos import (
     AgencyMatchResponseOuterDTO,
     AgencyMatchRequestDTO,
     AgencyMatchResponseInnerDTO,

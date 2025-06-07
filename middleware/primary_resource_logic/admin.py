@@ -13,7 +13,7 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetByIDBaseDTO,
     GetManyBaseDTO,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.admin_dtos import (
+from middleware.schema_and_dto_logic.dtos.admin_dtos import (
     AdminUserPostDTO,
     AdminUserPutDTO,
 )

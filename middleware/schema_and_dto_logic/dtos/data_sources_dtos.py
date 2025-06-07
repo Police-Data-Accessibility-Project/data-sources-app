@@ -17,7 +17,7 @@ from middleware.enums import RecordTypes
 from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
     MetadataInfo,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.helpers import (
+from middleware.schema_and_dto_logic.dtos.helpers import (
     default_field_not_required,
     default_field_required,
 )

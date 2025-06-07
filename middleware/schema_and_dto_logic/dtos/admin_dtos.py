@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 from middleware.enums import PermissionsEnum
-from middleware.schema_and_dto_logic.primary_resource_dtos.helpers import (
+from middleware.schema_and_dto_logic.dtos.helpers import (
     default_field_required,
 )
 

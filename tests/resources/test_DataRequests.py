@@ -3,7 +3,7 @@ from unittest.mock import ANY
 import pytest
 
 from db.enums import RequestUrgency
-from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import (
+from middleware.schema_and_dto_logic.dtos.data_requests_dtos import (
     RequestInfoPostDTO,
     DataRequestsPostDTO,
 )

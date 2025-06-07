@@ -44,7 +44,7 @@ from middleware.common_response_formatting import (
     message_response,
     created_id_response,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import (
+from middleware.schema_and_dto_logic.dtos.data_requests_dtos import (
     GetManyDataRequestsRequestsDTO,
     DataRequestsPutDTO,
     DataRequestsPutOuterDTO,

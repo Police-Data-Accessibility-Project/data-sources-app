@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 from db.enums import LocationType
 from middleware.enums import AgencyType
-from middleware.schema_and_dto_logic.primary_resource_dtos.helpers import (
+from middleware.schema_and_dto_logic.dtos.helpers import (
     default_field_not_required,
     default_field_required,
 )

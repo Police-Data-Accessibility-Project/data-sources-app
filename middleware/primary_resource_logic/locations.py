@@ -18,7 +18,7 @@ from middleware.primary_resource_logic.data_requests import (
 )
 
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetByIDBaseDTO
-from middleware.schema_and_dto_logic.primary_resource_dtos.locations_dtos import (
+from middleware.schema_and_dto_logic.dtos.locations_dtos import (
     LocationPutDTO,
     LocationsGetRequestDTO,
 )

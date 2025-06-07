@@ -1,5 +1,5 @@
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.primary_resource_dtos.contact_dtos import (
+from middleware.schema_and_dto_logic.dtos.contact_dtos import (
     ContactFormPostDTO,
 )
 from middleware.third_party_interaction_logic.mailgun_logic import send_via_mailgun

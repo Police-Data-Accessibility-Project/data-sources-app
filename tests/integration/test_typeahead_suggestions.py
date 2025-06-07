@@ -1,5 +1,5 @@
 from db.enums import ApprovalStatus
-from middleware.schema_and_dto_logic.primary_resource_schemas.typeahead_suggestion_schemas import (
+from middleware.schema_and_dto_logic.schemas.typeahead_suggestion_schemas import (
     TypeaheadAgenciesOuterResponseSchema,
     TypeaheadLocationsOuterResponseSchema,
 )

@@ -1,6 +1,6 @@
 from db.client import DatabaseClient
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.primary_resource_dtos.source_collector_dtos import (
+from middleware.schema_and_dto_logic.dtos.source_collector_dtos import (
     SourceCollectorPostRequestDTO,
     SourceCollectorDuplicatesPostRequestDTO,
 )

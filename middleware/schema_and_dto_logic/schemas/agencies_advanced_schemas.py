@@ -14,19 +14,19 @@ from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core 
     generate_marshmallow_schema,
 )
 from middleware.schema_and_dto_logic.enums import CSVColumnCondition
-from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
+from middleware.schema_and_dto_logic.dtos.agencies_dtos import (
     AgencyInfoPutDTO,
     AgencyInfoPostDTO,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_base_schemas import (
+from middleware.schema_and_dto_logic.schemas.agencies_base_schemas import (
     AgencyInfoBaseSchema,
     get_name_field,
     get_jurisdiction_type_field,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_schemas import (
+from middleware.schema_and_dto_logic.schemas.data_sources_base_schemas import (
     DataSourceExpandedSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.locations_schemas import (
+from middleware.schema_and_dto_logic.schemas.locations_schemas import (
     LocationInfoResponseSchema,
     STATE_ISO_FIELD,
     COUNTY_FIPS_FIELD,

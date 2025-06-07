@@ -5,7 +5,7 @@ from middleware.schema_and_dto_logic.common_response_schemas import MessageSchem
 from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
     generate_marshmallow_schema,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.source_collector_dtos import (
+from middleware.schema_and_dto_logic.dtos.source_collector_dtos import (
     SourceCollectorPostResponseInnerDTO,
 )
 from middleware.schema_and_dto_logic.util import get_json_metadata

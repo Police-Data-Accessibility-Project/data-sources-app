@@ -31,7 +31,7 @@ from middleware.primary_resource_logic.data_sources import (
     reject_data_source,
 )
 
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advanced_schemas import (
+from middleware.schema_and_dto_logic.schemas.data_sources_advanced_schemas import (
     DataSourcesGetManyRequestSchema,
 )
 from resources.endpoint_schema_config import SchemaConfigs

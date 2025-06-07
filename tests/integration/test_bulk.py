@@ -12,7 +12,7 @@ from middleware.schema_and_dto_logic.common_response_schemas import MessageSchem
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_csv_to_schema_conversion_logic import (
     SchemaUnflattener,
 )
-from middleware.schema_and_dto_logic.primary_resource_schemas.bulk_schemas import (
+from middleware.schema_and_dto_logic.schemas.bulk_schemas import (
     AgenciesPostRequestFlatBaseSchema,
     DataSourcesPostRequestFlatBaseSchema,
     AgenciesPostRequestFlatSchema,

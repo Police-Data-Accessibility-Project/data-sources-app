@@ -19,10 +19,10 @@ from middleware.dynamic_request_logic.supporting_classes import (
     PutPostRequestInfo,
 )
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
+from middleware.schema_and_dto_logic.schemas.agencies_advanced_schemas import (
     AgenciesPutSchema,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
+from middleware.schema_and_dto_logic.dtos.agencies_dtos import (
     AgenciesPostDTO,
     AgenciesGetManyDTO,
 )

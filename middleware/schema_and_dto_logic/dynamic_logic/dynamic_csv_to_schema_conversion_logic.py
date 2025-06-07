@@ -9,7 +9,7 @@ from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_conten
     SourceDataInfo,
 )
 from middleware.schema_and_dto_logic.enums import CSVColumnCondition
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_advanced_schemas import (
+from middleware.schema_and_dto_logic.schemas.data_sources_advanced_schemas import (
     DataSourcesPostSchema,
 )
 

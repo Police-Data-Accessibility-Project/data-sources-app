@@ -6,7 +6,7 @@ import pytest
 
 from db.enums import LocationType
 from db.models.implementations.core import Location
-from middleware.schema_and_dto_logic.primary_resource_dtos.locations_dtos import (
+from middleware.schema_and_dto_logic.dtos.locations_dtos import (
     LocationPutDTO,
     LocationsGetRequestDTO,
 )
