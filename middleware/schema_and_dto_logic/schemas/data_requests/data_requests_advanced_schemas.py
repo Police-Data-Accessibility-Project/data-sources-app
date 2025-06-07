@@ -20,7 +20,7 @@ from middleware.schema_and_dto_logic.dtos.data_requests_dtos import (
     RelatedSourceByIDDTO,
     RelatedLocationsByIDDTO,
 )
-from middleware.schema_and_dto_logic.schemas.data_sources.data_sources_base_schemas import (
+from middleware.schema_and_dto_logic.schemas.data_sources.expanded import (
     DataSourceExpandedSchema,
 )
 from middleware.schema_and_dto_logic.schema_helpers import (

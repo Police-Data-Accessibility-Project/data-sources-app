@@ -15,7 +15,7 @@ from db.enums import (
     SortOrder,
 )
 from middleware.enums import RecordTypes
-from middleware.schema_and_dto_logic.schemas.data_sources.data_sources_base_schemas import (
+from middleware.schema_and_dto_logic.schemas.data_sources.expanded import (
     DataSourceExpandedSchema,
 )
 

@@ -140,15 +140,25 @@ from middleware.schema_and_dto_logic.schemas.data_requests.data_requests_advance
     DataRequestsPutSchema,
     RelatedSourceByIDSchema,
 )
-from middleware.schema_and_dto_logic.schemas.data_sources.data_sources_advanced_schemas import (
-    DataSourcesGetManySchema,
-    DataSourcesGetByIDSchema,
-    DataSourcesPostSchema,
-    DataSourcesPutSchema,
-    DataSourcesGetManyRequestSchema,
+from middleware.schema_and_dto_logic.schemas.data_sources.map.outer import (
     DataSourcesMapResponseSchema,
 )
-from middleware.schema_and_dto_logic.schemas.data_sources.data_sources_base_schemas import (
+from middleware.schema_and_dto_logic.schemas.data_sources.get.many.request import (
+    DataSourcesGetManyRequestSchema,
+)
+from middleware.schema_and_dto_logic.schemas.data_sources.put import (
+    DataSourcesPutSchema,
+)
+from middleware.schema_and_dto_logic.schemas.data_sources.post import (
+    DataSourcesPostSchema,
+)
+from middleware.schema_and_dto_logic.schemas.data_sources.get.many.response import (
+    DataSourcesGetManySchema,
+)
+from middleware.schema_and_dto_logic.schemas.data_sources.get.by_id import (
+    DataSourcesGetByIDSchema,
+)
+from middleware.schema_and_dto_logic.schemas.data_sources.reject import (
     DataSourceRejectSchema,
 )
 from middleware.schema_and_dto_logic.schemas.github_issue_app_schemas import (

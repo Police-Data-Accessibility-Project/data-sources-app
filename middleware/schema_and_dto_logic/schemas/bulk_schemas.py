@@ -12,7 +12,7 @@ from middleware.schema_and_dto_logic.schemas.agencies.agencies_base_schemas impo
     get_jurisdiction_type_field,
     get_name_field,
 )
-from middleware.schema_and_dto_logic.schemas.data_sources.data_sources_advanced_schemas import (
+from middleware.schema_and_dto_logic.schemas.data_sources.post import (
     DataSourcesPostSchema,
 )
 from middleware.schema_and_dto_logic.util import get_json_metadata

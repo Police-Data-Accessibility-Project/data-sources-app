@@ -4,7 +4,7 @@ from db.enums import RequestStatus
 from middleware.schema_and_dto_logic.schemas.data_requests.data_requests_base_schema import (
     DataRequestsSchema,
 )
-from middleware.schema_and_dto_logic.schemas.data_sources.data_sources_base_schemas import (
+from middleware.schema_and_dto_logic.schemas.data_sources.expanded import (
     DataSourceExpandedSchema,
 )
 from middleware.schema_and_dto_logic.schemas.locations_schemas import (
