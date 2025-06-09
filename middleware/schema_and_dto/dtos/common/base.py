@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 from db.constants import PAGE_SIZE
 from db.enums import SortOrder
-from middleware.schema_and_dto.dynamic_logic.pydantic_to_marshmallow.core import (
+from middleware.schema_and_dto.dynamic_logic.pydantic_to_marshmallow.generator.models.metadata import (
     MetadataInfo,
 )
 from middleware.schema_and_dto.schemas.common.fields import (
