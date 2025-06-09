@@ -1,20 +1,19 @@
 from flask import Response
 
 from middleware.access_logic import (
-    AccessInfoPrimary,
     RefreshAccessInfo,
 )
-from middleware.authentication_info import AuthenticationInfo, STANDARD_JWT_AUTH_INFO
+from middleware.authentication_info import AuthenticationInfo
 from middleware.decorators import endpoint_info
 from middleware.enums import AccessTypeEnum
 from middleware.primary_resource_logic.login_queries import (
     refresh_session,
 )
-from endpoints.endpoint_schema_config import SchemaConfigs
-from endpoints.resource_helpers import ResponseInfo
+from endpoints.schema_config import SchemaConfigs
+from endpoints._helpers.response_info import ResponseInfo
 
 from utilities.namespace import create_namespace, AppNamespaces
-from endpoints.PsycopgResource import PsycopgResource
+from endpoints.psycopg_resource import PsycopgResource
 
 namespace_refresh_session = create_namespace(AppNamespaces.AUTH)
 

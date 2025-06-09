@@ -1,31 +1,25 @@
 from flask import Response, request
-from flask_restx import fields
 
 from config import limiter
 from middleware.access_logic import (
     AccessInfoPrimary,
 )
 from middleware.authentication_info import (
-    WRITE_ONLY_AUTH_INFO,
     ARCHIVE_WRITE_AUTH_INFO,
     API_OR_JWT_AUTH_INFO,
 )
-from middleware.decorators import api_key_required, permissions_required, endpoint_info
+from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.archives_queries import (
     archives_get_query,
     update_archives_data,
 )
 
-import json
 from typing import Any
 
-from middleware.enums import PermissionsEnum
-from endpoints.endpoint_schema_config import SchemaConfigs
-from endpoints.resource_helpers import (
-    ResponseInfo,
-)
+from endpoints.schema_config import SchemaConfigs
+from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import create_namespace
-from endpoints.PsycopgResource import PsycopgResource
+from endpoints.psycopg_resource import PsycopgResource
 
 namespace_archives = create_namespace()
 

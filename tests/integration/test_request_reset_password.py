@@ -2,7 +2,7 @@
 
 from db.client import DatabaseClient
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
-from endpoints.endpoint_schema_config import SchemaConfigs
+from endpoints.schema_config import SchemaConfigs
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )

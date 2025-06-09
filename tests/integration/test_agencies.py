@@ -13,7 +13,7 @@ from middleware.schema_and_dto.schemas.agencies.info.put import (
 from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )
-from endpoints.endpoint_schema_config import SchemaConfigs
+from endpoints.schema_config import SchemaConfigs
 
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (

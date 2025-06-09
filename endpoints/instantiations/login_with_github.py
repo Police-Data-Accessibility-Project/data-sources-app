@@ -8,9 +8,9 @@ from middleware.primary_resource_logic.github_oauth import (
     login_with_github_wrapper,
 )
 
-from endpoints.PsycopgResource import PsycopgResource
-from endpoints.endpoint_schema_config import SchemaConfigs
-from endpoints.resource_helpers import ResponseInfo
+from endpoints.psycopg_resource import PsycopgResource
+from endpoints.schema_config import SchemaConfigs
+from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_login_with_github = create_namespace(AppNamespaces.OAUTH)

@@ -1,19 +1,17 @@
-from http import HTTPStatus
-
 from flask import Response
 
 from middleware.access_logic import (
     AccessInfoPrimary,
 )
-from middleware.authentication_info import STANDARD_JWT_AUTH_INFO, NO_AUTH_INFO
+from middleware.authentication_info import STANDARD_JWT_AUTH_INFO
 from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.api_key import create_api_key_for_user
 
-from endpoints.endpoint_schema_config import SchemaConfigs
-from endpoints.resource_helpers import ResponseInfo
+from endpoints.schema_config import SchemaConfigs
+from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 
-from endpoints.PsycopgResource import PsycopgResource, handle_exceptions
+from endpoints.psycopg_resource import PsycopgResource
 
 namespace_api_key = create_namespace(namespace_attributes=AppNamespaces.AUTH)
 API_KEY_ROUTE = "/api-key"

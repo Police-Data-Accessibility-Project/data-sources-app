@@ -2,7 +2,7 @@ from config import limiter
 from middleware.primary_resource_logic.callback import (
     callback_outer_wrapper,
 )
-from endpoints.PsycopgResource import PsycopgResource
+from endpoints.psycopg_resource import PsycopgResource
 from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_auth = create_namespace(AppNamespaces.AUTH)

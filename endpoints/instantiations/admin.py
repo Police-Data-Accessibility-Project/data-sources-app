@@ -1,6 +1,5 @@
 from flask import Response
 
-from config import limiter
 from middleware.access_logic import (
     AccessInfoPrimary,
 )
@@ -17,11 +16,9 @@ from middleware.primary_resource_logic.admin import (
 from middleware.schema_and_dto.populate_parameters import (
     GET_MANY_SCHEMA_POPULATE_PARAMETERS,
 )
-from endpoints.PsycopgResource import PsycopgResource
-from endpoints.endpoint_schema_config import SchemaConfigs
-from endpoints.resource_helpers import (
-    ResponseInfo,
-)
+from endpoints.psycopg_resource import PsycopgResource
+from endpoints.schema_config import SchemaConfigs
+from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_admin = create_namespace(

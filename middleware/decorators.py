@@ -18,18 +18,18 @@ from middleware.schema_and_dto.dynamic_logic.dynamic_schema_documentation_constr
 )
 from middleware.schema_and_dto.non_dto_dataclasses import FlaskRestxDocInfo
 from middleware.security import check_permissions
-from endpoints.PsycopgResource import handle_exceptions
-from endpoints.endpoint_schema_config import SchemaConfigs, OutputSchemaManager
-from endpoints.resource_helpers import (
-    add_jwt_or_api_key_header_arg,
-    add_jwt_header_arg,
+from endpoints.psycopg_resource import handle_exceptions
+from endpoints.schema_config import SchemaConfigs, OutputSchemaManager
+from endpoints._helpers.docs import create_response_dictionary
+from endpoints._helpers.parser import (
     add_api_key_header_arg,
-    ResponseInfo,
-    create_response_dictionary,
+    add_jwt_header_arg,
+    add_refresh_jwt_header_arg,
     add_password_reset_token_header_arg,
     add_validate_email_header_arg,
-    add_refresh_jwt_header_arg,
+    add_jwt_or_api_key_header_arg,
 )
+from endpoints._helpers.response_info import ResponseInfo
 
 
 def api_key_required(func):

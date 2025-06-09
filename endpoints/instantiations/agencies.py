@@ -20,16 +20,10 @@ from middleware.primary_resource_logic.agencies import (
     add_agency_related_location,
     remove_agency_related_location,
 )
-from middleware.schema_and_dto.populate_parameters import (
-    GET_MANY_SCHEMA_POPULATE_PARAMETERS,
-)
-from endpoints.PsycopgResource import PsycopgResource
-from endpoints.endpoint_schema_config import SchemaConfigs
-from endpoints.resource_helpers import (
-    create_response_dictionary,
-    column_permissions_description,
-    ResponseInfo,
-)
+from endpoints.psycopg_resource import PsycopgResource
+from endpoints.schema_config import SchemaConfigs
+from endpoints._helpers.docs import column_permissions_description
+from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_agencies = create_namespace(

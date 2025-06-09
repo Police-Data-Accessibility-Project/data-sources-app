@@ -10,9 +10,9 @@ from middleware.primary_resource_logic.data_sources import (
 from middleware.primary_resource_logic.locations import (
     get_locations_for_map_wrapper,
 )
-from endpoints.PsycopgResource import PsycopgResource
-from endpoints.endpoint_schema_config import SchemaConfigs
-from endpoints.resource_helpers import ResponseInfo
+from endpoints.psycopg_resource import PsycopgResource
+from endpoints.schema_config import SchemaConfigs
+from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import AppNamespaces, create_namespace
 
 namespace_map = create_namespace(AppNamespaces.MAP)

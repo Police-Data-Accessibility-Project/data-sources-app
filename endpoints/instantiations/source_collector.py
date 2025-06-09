@@ -6,9 +6,9 @@ from middleware.primary_resource_logic.source_collector import (
     add_data_sources_from_source_collector,
     check_for_duplicate_urls,
 )
-from endpoints.PsycopgResource import PsycopgResource
-from endpoints.endpoint_schema_config import SchemaConfigs
-from endpoints.resource_helpers import ResponseInfo
+from endpoints.psycopg_resource import PsycopgResource
+from endpoints.schema_config import SchemaConfigs
+from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_source_collector = create_namespace(AppNamespaces.SOURCE_COLLECTOR)

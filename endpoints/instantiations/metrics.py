@@ -8,9 +8,9 @@ from middleware.primary_resource_logic.metrics import (
     get_metrics_followed_searches_breakdown,
     get_metrics_followed_searches_aggregate,
 )
-from endpoints.PsycopgResource import PsycopgResource
-from endpoints.endpoint_schema_config import SchemaConfigs
-from endpoints.resource_helpers import ResponseInfo
+from endpoints.psycopg_resource import PsycopgResource
+from endpoints.schema_config import SchemaConfigs
+from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import AppNamespaces, create_namespace
 
 namespace_metrics = create_namespace(AppNamespaces.METRICS)

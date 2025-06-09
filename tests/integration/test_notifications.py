@@ -10,7 +10,7 @@ from db.models.implementations.core import (
     NotificationLog,
 )
 from middleware.custom_dataclasses import EventInfo, EventBatch
-from endpoints.endpoint_schema_config import SchemaConfigs
+from endpoints.schema_config import SchemaConfigs
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )

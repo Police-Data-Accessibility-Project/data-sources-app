@@ -43,7 +43,7 @@ from middleware.schema_and_dto.types import (
 )
 
 from middleware.schema_and_dto.util import _get_required_argument
-from endpoints.resource_helpers import create_variable_columns_model
+from endpoints._helpers.docs import create_variable_columns_model
 from utilities.enums import SourceMappingEnum
 
 PARSER_FIELDS = [

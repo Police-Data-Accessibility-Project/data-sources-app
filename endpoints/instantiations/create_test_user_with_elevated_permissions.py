@@ -25,7 +25,7 @@ from middleware.primary_resource_logic.user_queries import (
     UserRequestDTO,
 )
 from middleware.util.env import get_env_variable
-from endpoints.PsycopgResource import PsycopgResource
+from endpoints.psycopg_resource import PsycopgResource
 from utilities.namespace import AppNamespaces, create_namespace
 
 namespace_create_test_user = create_namespace(namespace_attributes=AppNamespaces.DEV)

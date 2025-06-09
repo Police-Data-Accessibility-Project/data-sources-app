@@ -3,15 +3,15 @@ from flask import Response
 from middleware.access_logic import (
     AccessInfoPrimary,
 )
-from middleware.authentication_info import WRITE_ONLY_AUTH_INFO, STANDARD_JWT_AUTH_INFO
+from middleware.authentication_info import STANDARD_JWT_AUTH_INFO
 from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.bulk import (
     bulk_post_agencies,
     bulk_post_data_sources,
 )
-from endpoints.PsycopgResource import PsycopgResource
-from endpoints.endpoint_schema_config import SchemaConfigs
-from endpoints.resource_helpers import ResponseInfo
+from endpoints.psycopg_resource import PsycopgResource
+from endpoints.schema_config import SchemaConfigs
+from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_bulk = create_namespace(AppNamespaces.BULK)

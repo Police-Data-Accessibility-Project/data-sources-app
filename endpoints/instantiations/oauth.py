@@ -14,9 +14,9 @@ from middleware.third_party_interaction_logic.callback_flask_sessions_logic impo
 from middleware.third_party_interaction_logic.callback_oauth_logic import (
     redirect_to_github_authorization,
 )
-from endpoints.PsycopgResource import PsycopgResource
-from endpoints.endpoint_schema_config import SchemaConfigs
-from endpoints.resource_helpers import ResponseInfo
+from endpoints.psycopg_resource import PsycopgResource
+from endpoints.schema_config import SchemaConfigs
+from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_oauth = create_namespace(AppNamespaces.OAUTH)

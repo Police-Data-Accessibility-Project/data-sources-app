@@ -1,5 +1,4 @@
-from flask import request, Response
-from flask_restx import fields
+from flask import Response
 
 from middleware.access_logic import (
     PasswordResetTokenAccessInfo,
@@ -9,11 +8,11 @@ from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.reset_token_queries import (
     reset_token_validation,
 )
-from endpoints.endpoint_schema_config import SchemaConfigs
-from endpoints.resource_helpers import ResponseInfo
+from endpoints.schema_config import SchemaConfigs
+from endpoints._helpers.response_info import ResponseInfo
 
 from utilities.namespace import create_namespace, AppNamespaces
-from endpoints.PsycopgResource import PsycopgResource, handle_exceptions
+from endpoints.psycopg_resource import PsycopgResource
 
 namespace_reset_token_validation = create_namespace(AppNamespaces.AUTH)
 

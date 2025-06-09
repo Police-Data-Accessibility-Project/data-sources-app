@@ -13,11 +13,9 @@ from middleware.primary_resource_logic.search import (
 )
 
 from middleware.decorators import endpoint_info
-from endpoints.PsycopgResource import PsycopgResource
-from endpoints.endpoint_schema_config import SchemaConfigs
-from endpoints.resource_helpers import (
-    ResponseInfo,
-)
+from endpoints.psycopg_resource import PsycopgResource
+from endpoints.schema_config import SchemaConfigs
+from endpoints._helpers.response_info import ResponseInfo
 
 from utilities.namespace import create_namespace, AppNamespaces
 

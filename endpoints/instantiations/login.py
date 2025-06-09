@@ -5,11 +5,11 @@ from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import NO_AUTH_INFO
 from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.login_queries import try_logging_in
-from endpoints.endpoint_schema_config import SchemaConfigs
-from endpoints.resource_helpers import ResponseInfo
+from endpoints.schema_config import SchemaConfigs
+from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 
-from endpoints.PsycopgResource import PsycopgResource
+from endpoints.psycopg_resource import PsycopgResource
 
 namespace_login = create_namespace(AppNamespaces.AUTH)
 

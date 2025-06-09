@@ -6,7 +6,7 @@ from middleware.access_logic import (
     AccessInfoPrimary,
 )
 from middleware.authentication_info import AuthenticationInfo, WRITE_ONLY_AUTH_INFO
-from middleware.decorators import permissions_required, endpoint_info
+from middleware.decorators import endpoint_info
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from middleware.primary_resource_logic.permissions import (
     manage_user_permissions,
@@ -14,9 +14,10 @@ from middleware.primary_resource_logic.permissions import (
     PermissionsRequestDTO,
     PermissionsPutRequestSchema,
 )
-from endpoints.PsycopgResource import handle_exceptions, PsycopgResource
-from endpoints.endpoint_schema_config import SchemaConfigs
-from endpoints.resource_helpers import add_jwt_header_arg, ResponseInfo
+from endpoints.psycopg_resource import PsycopgResource
+from endpoints.schema_config import SchemaConfigs
+from endpoints._helpers.parser import add_jwt_header_arg
+from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import AppNamespaces, create_namespace
 from middleware.schema_and_dto.dynamic_logic.dynamic_schema_documentation_construction import (
     get_restx_param_documentation,
