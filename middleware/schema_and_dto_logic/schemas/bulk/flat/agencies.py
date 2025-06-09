@@ -1,43 +1,16 @@
 from marshmallow import Schema, fields
 
 from middleware.enums import AgencyType
-from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_csv_to_schema_conversion_logic import (
     generate_flat_csv_schema,
 )
-from middleware.schema_and_dto_logic.schemas.agencies.post import AgenciesPostSchema
 from middleware.schema_and_dto_logic.schemas.agencies.helpers import (
     get_name_field,
     get_jurisdiction_type_field,
 )
-from middleware.schema_and_dto_logic.schemas.data_sources.post import (
-    DataSourcesPostSchema,
-)
-from middleware.schema_and_dto_logic.util import get_json_metadata
+from middleware.schema_and_dto_logic.schemas.agencies.post import AgenciesPostSchema
 from utilities.enums import SourceMappingEnum
 
-
-class BatchRequestSchema(Schema):
-
-    file = fields.String(
-        required=True,
-        metadata={
-            "source": SourceMappingEnum.FILE,
-            "description": "The file to upload",
-        },
-    )
-
-
-class BatchPutRequestSchema(BatchRequestSchema):
-    id = fields.Integer(
-        required=True, metadata=get_json_metadata("The id of the resource to update")
-    )
-
-
-# region Base Schemas
-DataSourcesPostRequestFlatBaseSchema = generate_flat_csv_schema(
-    schema=DataSourcesPostSchema()
-)
 AgenciesPostRequestFlatBaseSchema = generate_flat_csv_schema(
     schema=AgenciesPostSchema()
 )
@@ -118,35 +91,4 @@ class AgenciesPostRequestFlatSchema(Schema):
             "description": "The id of the location of the agency.",
             "source": SourceMappingEnum.JSON,
         },
-    )
-
-
-# endregion
-
-
-# region RequestSchemas
-class DataSourcesPostBatchRequestSchema(
-    BatchRequestSchema, DataSourcesPostRequestFlatBaseSchema
-):
-    pass
-
-
-class AgenciesPostBatchRequestSchema(
-    BatchRequestSchema, AgenciesPostRequestFlatBaseSchema
-):
-    pass
-
-
-# endregion
-
-
-class BatchPostResponseSchema(MessageSchema):
-    ids = fields.List(
-        fields.Integer(metadata=get_json_metadata("The ids of the resources created")),
-        required=True,
-        metadata=get_json_metadata("The ids of the resources created"),
-    )
-    errors = fields.Dict(
-        required=True,
-        metadata=get_json_metadata("The errors associated with resources not created"),
     )
