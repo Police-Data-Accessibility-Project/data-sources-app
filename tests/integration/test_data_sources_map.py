@@ -1,12 +1,12 @@
 """Integration tests for /data-sources-map endpoint"""
 
 from db.enums import ApprovalStatus
-from endpoints.schema_config import SchemaConfigs
+from endpoints.schema_config.enums import SchemaConfigs
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
 
-from tests.conftest import test_data_creator_flask, monkeysession
+from tests.conftest import test_data_creator_flask
 
 
 # This endpoint no longer works because of the other data source endpoint

@@ -10,7 +10,7 @@ from db.enums import RequestUrgency, LocationType, RequestStatus, SortOrder
 from middleware.constants import DATA_KEY
 from middleware.enums import RecordTypes
 from middleware.util.type_conversion import get_enum_values
-from endpoints.schema_config import SchemaConfigs
+from endpoints.schema_config.enums import SchemaConfigs
 from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,
     get_test_name,

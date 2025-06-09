@@ -8,7 +8,7 @@ from middleware.primary_resource_logic.unique_url_checker import (
     unique_url_checker_wrapper,
 )
 from endpoints.psycopg_resource import PsycopgResource
-from endpoints.schema_config import SchemaConfigs
+from endpoints.schema_config.enums import SchemaConfigs
 from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 

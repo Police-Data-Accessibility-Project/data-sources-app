@@ -9,7 +9,7 @@ from middleware.primary_resource_logic.metrics import (
     get_metrics_followed_searches_aggregate,
 )
 from endpoints.psycopg_resource import PsycopgResource
-from endpoints.schema_config import SchemaConfigs
+from endpoints.schema_config.enums import SchemaConfigs
 from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import AppNamespaces, create_namespace
 

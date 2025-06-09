@@ -5,7 +5,7 @@ from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import NO_AUTH_INFO
 from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.login_queries import try_logging_in
-from endpoints.schema_config import SchemaConfigs
+from endpoints.schema_config.enums import SchemaConfigs
 from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 

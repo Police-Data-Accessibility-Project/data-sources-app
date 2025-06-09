@@ -9,7 +9,7 @@ from middleware.enums import AccessTypeEnum
 from middleware.primary_resource_logic.login_queries import (
     refresh_session,
 )
-from endpoints.schema_config import SchemaConfigs
+from endpoints.schema_config.enums import SchemaConfigs
 from endpoints._helpers.response_info import ResponseInfo
 
 from utilities.namespace import create_namespace, AppNamespaces

@@ -19,7 +19,8 @@ from middleware.schema_and_dto.dynamic_logic.dynamic_schema_documentation_constr
 from middleware.schema_and_dto.non_dto_dataclasses import FlaskRestxDocInfo
 from middleware.security import check_permissions
 from endpoints.psycopg_resource import handle_exceptions
-from endpoints.schema_config import SchemaConfigs, OutputSchemaManager
+from endpoints.schema_config.enums import SchemaConfigs
+from endpoints.schema_config.config.manager import OutputSchemaManager
 from endpoints._helpers.docs import create_response_dictionary
 from endpoints._helpers.parser import (
     add_api_key_header_arg,

@@ -16,7 +16,7 @@ from middleware.schema_and_dto.schemas.typeahead.request import (
 from middleware.schema_and_dto.dtos.typeahead import TypeaheadDTO
 from middleware.schema_and_dto.non_dto_dataclasses import SchemaPopulateParameters
 from endpoints.psycopg_resource import PsycopgResource
-from endpoints.schema_config import SchemaConfigs
+from endpoints.schema_config.enums import SchemaConfigs
 from endpoints._helpers.response_info import ResponseInfo
 
 from utilities.namespace import create_namespace, AppNamespaces

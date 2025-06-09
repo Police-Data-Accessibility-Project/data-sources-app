@@ -27,7 +27,7 @@ from middleware.decorators import (
 from middleware.schema_and_dto.non_dto_dataclasses import SchemaPopulateParameters
 from endpoints.psycopg_resource import PsycopgResource
 from endpoints._helpers.response_info import ResponseInfo
-from endpoints.schema_config import SchemaConfigs
+from endpoints.schema_config.enums import SchemaConfigs
 from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_data_requests = create_namespace(AppNamespaces.DATA_REQUESTS)

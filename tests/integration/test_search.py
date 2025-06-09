@@ -22,7 +22,7 @@ from middleware.schema_and_dto.schemas.agencies.info.post import (
 )
 from middleware.util.type_conversion import get_enum_values
 from middleware.util.csv import read_from_csv
-from endpoints.schema_config import SchemaConfigs
+from endpoints.schema_config.enums import SchemaConfigs
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,
 )

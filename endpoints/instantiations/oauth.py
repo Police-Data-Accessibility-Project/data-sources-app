@@ -15,7 +15,7 @@ from middleware.third_party_interaction_logic.callback_oauth_logic import (
     redirect_to_github_authorization,
 )
 from endpoints.psycopg_resource import PsycopgResource
-from endpoints.schema_config import SchemaConfigs
+from endpoints.schema_config.enums import SchemaConfigs
 from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 

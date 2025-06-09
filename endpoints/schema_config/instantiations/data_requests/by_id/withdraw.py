@@ -1,0 +1,3 @@
+from endpoints.schema_config.helpers import schema_config_with_message_output
+
+DataRequestsByIDWithdrawEndpointSchemaConfig = schema_config_with_message_output()

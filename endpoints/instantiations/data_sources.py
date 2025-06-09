@@ -34,7 +34,7 @@ from middleware.primary_resource_logic.data_sources import (
 from middleware.schema_and_dto.schemas.data_sources.get.many.request import (
     DataSourcesGetManyRequestSchema,
 )
-from endpoints.schema_config import SchemaConfigs
+from endpoints.schema_config.enums import SchemaConfigs
 from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 from endpoints.psycopg_resource import PsycopgResource

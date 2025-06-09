@@ -6,7 +6,7 @@ from middleware.primary_resource_logic.github_issue_app import (
     synchronize_github_issues_with_data_requests,
 )
 from endpoints.psycopg_resource import PsycopgResource
-from endpoints.schema_config import SchemaConfigs
+from endpoints.schema_config.enums import SchemaConfigs
 from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 

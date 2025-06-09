@@ -7,7 +7,7 @@ from middleware.primary_resource_logic.metadata import (
     get_record_types_and_categories,
 )
 from endpoints.psycopg_resource import PsycopgResource
-from endpoints.schema_config import SchemaConfigs
+from endpoints.schema_config.enums import SchemaConfigs
 from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 

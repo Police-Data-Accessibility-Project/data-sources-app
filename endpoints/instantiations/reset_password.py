@@ -8,7 +8,7 @@ from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.reset_token_queries import (
     reset_password,
 )
-from endpoints.schema_config import SchemaConfigs
+from endpoints.schema_config.enums import SchemaConfigs
 from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces
 
