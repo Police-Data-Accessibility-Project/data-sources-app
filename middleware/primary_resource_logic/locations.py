@@ -17,9 +17,9 @@ from middleware.primary_resource_logic.data_requests import (
     get_data_requests_subquery_params,
 )
 
-from middleware.schema_and_dto_logic.dtos.common.base import GetByIDBaseDTO
-from middleware.schema_and_dto_logic.dtos.locations.get import LocationsGetRequestDTO
-from middleware.schema_and_dto_logic.dtos.locations.put import LocationPutDTO
+from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
+from middleware.schema_and_dto.dtos.locations.get import LocationsGetRequestDTO
+from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
 
 
 def get_location_by_id_wrapper(db_client: DatabaseClient, location_id: int) -> Response:

@@ -16,10 +16,10 @@ from middleware.dynamic_request_logic.supporting_classes import (
     PutPostRequestInfo,
 )
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.schemas.agencies.put import AgenciesPutSchema
-from middleware.schema_and_dto_logic.dtos.agencies.post import AgenciesPostDTO
-from middleware.schema_and_dto_logic.dtos.agencies.get_many import AgenciesGetManyDTO
-from middleware.schema_and_dto_logic.dtos.common.base import GetByIDBaseDTO
+from middleware.schema_and_dto.schemas.agencies.put import AgenciesPutSchema
+from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
+from middleware.schema_and_dto.dtos.agencies.get_many import AgenciesGetManyDTO
+from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
 from middleware.enums import Relations
 
 SUBQUERY_PARAMS = [SubqueryParameterManager.data_sources()]

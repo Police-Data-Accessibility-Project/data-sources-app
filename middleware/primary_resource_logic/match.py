@@ -6,11 +6,11 @@ from flask import Response
 from db.client import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.dtos.match.response import (
+from middleware.schema_and_dto.dtos.match.response import (
     AgencyMatchResponseOuterDTO,
     AgencyMatchResponseInnerDTO,
 )
-from middleware.schema_and_dto_logic.dtos.match.request import AgencyMatchRequestDTO
+from middleware.schema_and_dto.dtos.match.request import AgencyMatchRequestDTO
 
 
 class AgencyMatchStatus(Enum):

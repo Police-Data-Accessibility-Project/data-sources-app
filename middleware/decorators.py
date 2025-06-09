@@ -13,14 +13,14 @@ from middleware.access_logic import (
 from middleware.authentication_info import AuthenticationInfo
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from middleware.primary_resource_logic.api_key import check_api_key
-from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_construction import (
+from middleware.schema_and_dto.dynamic_logic.dynamic_schema_documentation_construction import (
     get_restx_param_documentation,
 )
-from middleware.schema_and_dto_logic.non_dto_dataclasses import FlaskRestxDocInfo
+from middleware.schema_and_dto.non_dto_dataclasses import FlaskRestxDocInfo
 from middleware.security import check_permissions
-from resources.PsycopgResource import handle_exceptions
-from resources.endpoint_schema_config import SchemaConfigs, OutputSchemaManager
-from resources.resource_helpers import (
+from endpoints.PsycopgResource import handle_exceptions
+from endpoints.endpoint_schema_config import SchemaConfigs, OutputSchemaManager
+from endpoints.resource_helpers import (
     add_jwt_or_api_key_header_arg,
     add_jwt_header_arg,
     add_api_key_header_arg,

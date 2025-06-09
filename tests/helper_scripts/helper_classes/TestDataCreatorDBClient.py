@@ -18,7 +18,7 @@ from db.models.implementations.core import (
 )
 from db.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import JurisdictionType, Relations, AgencyType
-from middleware.schema_and_dto_logic.dtos.agencies.post import (
+from middleware.schema_and_dto.dtos.agencies.post import (
     AgencyInfoPostDTO,
     AgenciesPostDTO,
 )

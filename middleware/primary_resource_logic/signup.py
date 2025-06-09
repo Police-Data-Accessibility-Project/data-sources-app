@@ -12,7 +12,7 @@ from middleware.primary_resource_logic.login_queries import (
     access_and_refresh_token_response,
 )
 from middleware.primary_resource_logic.user_queries import UserRequestDTO
-from middleware.schema_and_dto_logic.dtos.signup import EmailOnlyDTO
+from middleware.schema_and_dto.dtos.signup import EmailOnlyDTO
 from middleware.third_party_interaction_logic.mailgun_logic import send_via_mailgun
 from middleware.util.url import create_web_app_url
 from tests.helper_scripts.helper_functions_simple import add_query_params

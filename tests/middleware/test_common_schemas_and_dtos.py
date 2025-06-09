@@ -1,7 +1,7 @@
 import pytest
 from marshmallow import ValidationError
 
-from middleware.schema_and_dto_logic.schemas.data_sources.base import (
+from middleware.schema_and_dto.schemas.data_sources.base import (
     EntryDataRequestSchema,
 )
 

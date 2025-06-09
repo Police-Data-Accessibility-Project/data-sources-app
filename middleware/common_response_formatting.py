@@ -5,7 +5,7 @@ from flask import Response
 from marshmallow import Schema
 
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.schemas.common.common_response_schemas import (
+from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     IDAndMessageSchema,
 )
 

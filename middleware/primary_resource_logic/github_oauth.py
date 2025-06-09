@@ -18,7 +18,7 @@ from middleware.primary_resource_logic.user_queries import (
     user_post_results,
     UserRequestDTO,
 )
-from middleware.schema_and_dto_logic.dtos.github.login import LoginWithGithubRequestDTO
+from middleware.schema_and_dto.dtos.github.login import LoginWithGithubRequestDTO
 from middleware.third_party_interaction_logic.callback_oauth_logic import (
     get_github_user_id,
     get_github_user_email,

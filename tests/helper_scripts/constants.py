@@ -3,7 +3,7 @@ from collections import namedtuple
 from http import HTTPStatus
 
 from db.enums import SortOrder
-from middleware.schema_and_dto_logic.dtos.common.base import GetManyBaseDTO
+from middleware.schema_and_dto.dtos.common.base import GetManyBaseDTO
 
 # region Users
 

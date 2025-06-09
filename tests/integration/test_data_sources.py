@@ -15,11 +15,11 @@ from db.enums import (
     SortOrder,
 )
 from middleware.enums import RecordTypes
-from middleware.schema_and_dto_logic.schemas.data_sources.expanded import (
+from middleware.schema_and_dto.schemas.data_sources.expanded import (
     DataSourceExpandedSchema,
 )
 
-from resources.endpoint_schema_config import SchemaConfigs
+from endpoints.endpoint_schema_config import SchemaConfigs
 
 from tests.conftest import test_data_creator_flask
 from tests.helper_scripts.common_test_data import get_test_name

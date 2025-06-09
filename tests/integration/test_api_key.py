@@ -3,8 +3,8 @@
 from http import HTTPStatus
 
 from middleware.api_key import ApiKey
-from resources.instantiations.api_key import API_KEY_ROUTE
-from resources.endpoint_schema_config import SchemaConfigs
+from endpoints.instantiations.api_key import API_KEY_ROUTE
+from endpoints.endpoint_schema_config import SchemaConfigs
 from tests.conftest import (
     test_data_creator_flask,
 )

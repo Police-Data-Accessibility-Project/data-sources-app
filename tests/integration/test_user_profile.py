@@ -1,6 +1,6 @@
 from http import HTTPStatus
 from middleware.enums import PermissionsEnum
-from middleware.schema_and_dto_logic.schemas.common.common_response_schemas import (
+from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )
 from tests.helper_scripts.complex_test_data_creation_functions import (

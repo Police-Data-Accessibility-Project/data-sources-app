@@ -112,19 +112,19 @@ from middleware.miscellaneous_logic.table_count_logic import (
     TableCountReference,
     TableCountReferenceManager,
 )
-from middleware.schema_and_dto_logic.dtos.agencies.post import AgenciesPostDTO
-from middleware.schema_and_dto_logic.dtos.locations.put import LocationPutDTO
-from middleware.schema_and_dto_logic.dtos.match.response import (
+from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
+from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
+from middleware.schema_and_dto.dtos.match.response import (
     AgencyMatchResponseInnerDTO,
     AgencyMatchResponseLocationDTO,
 )
-from middleware.schema_and_dto_logic.dtos.metrics import (
+from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
-from middleware.schema_and_dto_logic.dtos.source_collector.post.response import (
+from middleware.schema_and_dto.dtos.source_collector.post.response import (
     SourceCollectorPostResponseInnerDTO,
 )
-from middleware.schema_and_dto_logic.dtos.source_collector.post.request import (
+from middleware.schema_and_dto.dtos.source_collector.post.request import (
     SourceCollectorPostRequestInnerDTO,
 )
 from middleware.util.env import get_env_variable

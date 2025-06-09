@@ -10,7 +10,7 @@ from db.helper_functions import get_db_client
 from middleware.exceptions import UserNotFoundError
 from middleware.enums import PermissionsEnum, PermissionsActionEnum
 from middleware.common_response_formatting import message_response
-from middleware.schema_and_dto_logic.util import get_query_metadata
+from middleware.schema_and_dto.util import get_query_metadata
 from utilities.common import get_valid_enum_value
 from utilities.enums import SourceMappingEnum, ParserLocation
 

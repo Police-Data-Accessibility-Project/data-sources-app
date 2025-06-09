@@ -19,16 +19,16 @@ from db.enums import (
     UpdateFrequency,
 )
 from middleware.enums import OutputFormatEnum, RecordTypes
-from middleware.schema_and_dto_logic.dtos.locations.get import LocationsGetRequestDTO
-from middleware.schema_and_dto_logic.dtos.locations.put import LocationPutDTO
-from middleware.schema_and_dto_logic.dtos.metrics import (
+from middleware.schema_and_dto.dtos.locations.get import LocationsGetRequestDTO
+from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
+from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
-from middleware.schema_and_dto_logic.dtos.source_collector.post.request import (
+from middleware.schema_and_dto.dtos.source_collector.post.request import (
     SourceCollectorPostRequestDTO,
 )
 from middleware.util.dict import update_if_not_none
-from resources.endpoint_schema_config import SchemaConfigs
+from endpoints.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.constants import (
     DATA_REQUESTS_BY_ID_ENDPOINT,

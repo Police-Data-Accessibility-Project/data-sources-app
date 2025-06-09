@@ -1,5 +1,5 @@
 from db.enums import ApprovalStatus
-from middleware.schema_and_dto_logic.schemas.typeahead.locations import (
+from middleware.schema_and_dto.schemas.typeahead.locations import (
     TypeaheadLocationsOuterResponseSchema,
 )
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (

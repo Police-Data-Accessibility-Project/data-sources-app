@@ -12,7 +12,7 @@ from middleware.dynamic_request_logic.common_functions import check_for_id
 from middleware.dynamic_request_logic.supporting_classes import IDInfo
 from middleware.enums import Relations
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.dtos.common.base import GetByIDBaseDTO
+from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
 from dataclasses import dataclass
 
 

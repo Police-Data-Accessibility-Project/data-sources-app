@@ -14,15 +14,15 @@ from middleware.enums import (
     RecordTypes,
     Relations,
 )
-from middleware.schema_and_dto_logic.schemas.common.common_response_schemas import (
+from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )
-from middleware.schema_and_dto_logic.schemas.agencies.info.post import (
+from middleware.schema_and_dto.schemas.agencies.info.post import (
     AgencyInfoPostSchema,
 )
 from middleware.util.type_conversion import get_enum_values
 from middleware.util.csv import read_from_csv
-from resources.endpoint_schema_config import SchemaConfigs
+from endpoints.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,
 )

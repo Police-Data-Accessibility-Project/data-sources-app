@@ -1,0 +1,55 @@
+from middleware.access_logic import AccessInfoPrimary
+from middleware.authentication_info import AuthenticationInfo
+from middleware.decorators import endpoint_info
+from middleware.enums import AccessTypeEnum, PermissionsEnum
+from middleware.primary_resource_logic.notifications import send_notifications
+from endpoints.PsycopgResource import PsycopgResource
+from endpoints.endpoint_schema_config import SchemaConfigs
+from endpoints.resource_helpers import ResponseInfo
+from utilities.namespace import create_namespace, AppNamespaces
+
+namespace_notifications = create_namespace(
+    namespace_attributes=AppNamespaces.NOTIFICATIONS
+)
+
+
+@namespace_notifications.route("")
+class Notifications(PsycopgResource):
+
+    @endpoint_info(
+        namespace=namespace_notifications,
+        auth_info=AuthenticationInfo(
+            allowed_access_methods=[AccessTypeEnum.JWT],
+            restrict_to_permissions=[PermissionsEnum.NOTIFICATIONS],
+        ),
+        schema_config=SchemaConfigs.NOTIFICATIONS_POST,
+        response_info=ResponseInfo(
+            success_message="Notifications sent.",
+        ),
+        description="Sends notifications about events to users following their associated locations.",
+    )
+    def post(self, access_info: AccessInfoPrimary):
+        """
+        Sends notification to all users.
+        This endpoint will pull qualifying events for locations which users have subscribed to
+        And send updates on those events to the associated users
+
+        Qualifying events include:
+        * A data source associated with a followed location is approved
+        * A data request associated with a followed location is started
+        * A data request associated with a followed location is completed
+
+        Note that "followed location" includes both the location explicitly followed by the user
+        as well as any locations which are subdivisions of the location followed
+        (i.e. counties and localities for states, localities for counties).
+
+        This endpoint, as designed, will send notifications for qualifying events that occurred
+        in the month *prior to the month* in which the endpoint was called.
+
+        :param access_info:
+        :return:
+        """
+        return self.run_endpoint(
+            wrapper_function=send_notifications,
+            access_info=access_info,
+        )

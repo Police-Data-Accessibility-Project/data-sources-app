@@ -1,7 +1,7 @@
 import datetime
 
 from db.enums import SortOrder
-from middleware.schema_and_dto_logic.dtos.metrics import (
+from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
 from middleware.util.env import get_env_variable

@@ -38,23 +38,23 @@ from middleware.dynamic_request_logic.supporting_classes import (
 )
 from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.dtos.common.base import (
+from middleware.schema_and_dto.dtos.common.base import (
     GetManyBaseDTO,
     GetByIDBaseDTO,
 )
-from middleware.schema_and_dto_logic.dtos.data_requests.by_id.locations import (
+from middleware.schema_and_dto.dtos.data_requests.by_id.locations import (
     RelatedLocationsByIDDTO,
 )
-from middleware.schema_and_dto_logic.dtos.data_requests.by_id.source import (
+from middleware.schema_and_dto.dtos.data_requests.by_id.source import (
     RelatedSourceByIDDTO,
 )
-from middleware.schema_and_dto_logic.dtos.data_requests.post import (
+from middleware.schema_and_dto.dtos.data_requests.post import (
     DataRequestsPostDTO,
 )
-from middleware.schema_and_dto_logic.dtos.data_requests.get_many import (
+from middleware.schema_and_dto.dtos.data_requests.get_many import (
     GetManyDataRequestsRequestsDTO,
 )
-from middleware.schema_and_dto_logic.dtos.data_requests.put import (
+from middleware.schema_and_dto.dtos.data_requests.put import (
     DataRequestsPutDTO,
     DataRequestsPutOuterDTO,
 )

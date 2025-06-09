@@ -2,7 +2,7 @@ from datetime import datetime, timezone, timedelta
 from http import HTTPStatus
 
 from tests.conftest import test_data_creator_flask
-from middleware.schema_and_dto_logic.schemas.common.common_response_schemas import (
+from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )
 from tests.helper_scripts.common_test_data import get_test_email

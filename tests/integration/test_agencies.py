@@ -7,13 +7,13 @@ from db.db_client_dataclasses import WhereMapping
 from db.enums import SortOrder, ApprovalStatus
 from db.models.implementations.core import Agency
 from middleware.enums import JurisdictionType, AgencyType
-from middleware.schema_and_dto_logic.schemas.agencies.info.put import (
+from middleware.schema_and_dto.schemas.agencies.info.put import (
     AgencyInfoPutSchema,
 )
-from middleware.schema_and_dto_logic.schemas.common.common_response_schemas import (
+from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )
-from resources.endpoint_schema_config import SchemaConfigs
+from endpoints.endpoint_schema_config import SchemaConfigs
 
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (

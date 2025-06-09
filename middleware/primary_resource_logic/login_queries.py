@@ -15,7 +15,7 @@ from middleware.SimpleJWT import JWTPurpose, SimpleJWT
 from middleware.access_logic import AccessInfoPrimary, RefreshAccessInfo
 from middleware.exceptions import UserNotFoundError
 from middleware.primary_resource_logic.user_queries import UserRequestDTO
-from middleware.schema_and_dto_logic.dtos.refresh_session import (
+from middleware.schema_and_dto.dtos.refresh_session import (
     RefreshSessionRequestDTO,
 )
 

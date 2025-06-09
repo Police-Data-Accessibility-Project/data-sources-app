@@ -7,13 +7,13 @@ import pytest
 from marshmallow import Schema
 
 from tests.conftest import test_data_creator_flask
-from middleware.schema_and_dto_logic.schemas.common.common_response_schemas import (
+from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )
-from middleware.schema_and_dto_logic.schemas.bulk.flat.data_sources import (
+from middleware.schema_and_dto.schemas.bulk.flat.data_sources import (
     DataSourcesPostRequestFlatBaseSchema,
 )
-from middleware.schema_and_dto_logic.schemas.bulk.flat.agencies import (
+from middleware.schema_and_dto.schemas.bulk.flat.agencies import (
     AgenciesPostRequestFlatBaseSchema,
     AgenciesPostRequestFlatSchema,
 )

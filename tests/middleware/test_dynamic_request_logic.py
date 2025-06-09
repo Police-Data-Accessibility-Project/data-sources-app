@@ -21,7 +21,7 @@ from middleware.dynamic_request_logic.get_many_logic import (
 from middleware.dynamic_request_logic.put_logic import put_entry
 from middleware.dynamic_request_logic.supporting_classes import IDInfo
 
-from middleware.schema_and_dto_logic.schemas.common.common_response_schemas import (
+from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     EntryDataResponseSchema,
 )
 from middleware.util.dynamic import call_if_not_none, execute_if_not_none
