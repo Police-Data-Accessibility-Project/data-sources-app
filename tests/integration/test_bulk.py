@@ -7,19 +7,18 @@ import pytest
 from marshmallow import Schema
 
 from tests.conftest import test_data_creator_flask
-from middleware.primary_resource_logic.bulk import listify_strings
-from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
-from middleware.schema_and_dto_logic.dynamic_logic.dynamic_csv_to_schema_conversion_logic import (
-    SchemaUnflattener,
+from middleware.schema_and_dto_logic.schemas.common.common_response_schemas import (
+    MessageSchema,
 )
-from middleware.schema_and_dto_logic.schemas.bulk_schemas import (
-    AgenciesPostRequestFlatBaseSchema,
+from middleware.schema_and_dto_logic.schemas.bulk.flat.data_sources import (
     DataSourcesPostRequestFlatBaseSchema,
+)
+from middleware.schema_and_dto_logic.schemas.bulk.flat.agencies import (
+    AgenciesPostRequestFlatBaseSchema,
     AgenciesPostRequestFlatSchema,
 )
 from middleware.util.type_conversion import stringify_lists
 from tests.helper_scripts.common_test_data import get_test_name
-from tests.helper_scripts.common_asserts import assert_contains_key_value_pairs
 from tests.helper_scripts.helper_classes.RequestValidator import RequestValidator
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,

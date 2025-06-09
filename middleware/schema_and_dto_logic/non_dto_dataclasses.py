@@ -6,7 +6,7 @@ from marshmallow import Schema
 from pydantic import BaseModel, ConfigDict
 from dataclasses import dataclass
 
-from middleware.schema_and_dto_logic.custom_types import SchemaTypes, DTOTypes
+from middleware.schema_and_dto_logic.types import SchemaTypes, DTOTypes
 from utilities.enums import SourceMappingEnum
 
 

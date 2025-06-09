@@ -21,7 +21,7 @@ from middleware.schema_and_dto_logic.dynamic_logic.dynamic_dto_request_content_p
     populate_dto_with_request_content,
     _optionally_check_against_schema,
 )
-from middleware.schema_and_dto_logic.custom_exceptions import AttributeNotInClassError
+from middleware.schema_and_dto_logic.exceptions import AttributeNotInClassError
 from utilities.enums import SourceMappingEnum
 from utilities.argument_checking_logic import (
     MutuallyExclusiveArgumentError,

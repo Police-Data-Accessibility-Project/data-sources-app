@@ -4,8 +4,8 @@ from middleware.util.argument_checking import (
     check_for_mutually_exclusive_arguments,
     check_for_either_or_argument,
 )
-from middleware.schema_and_dto_logic.custom_exceptions import AttributeNotInClassError
-from middleware.schema_and_dto_logic.custom_types import DTOTypes, ValidationSchema
+from middleware.schema_and_dto_logic.exceptions import AttributeNotInClassError
+from middleware.schema_and_dto_logic.types import DTOTypes, ValidationSchema
 from middleware.schema_and_dto_logic.util import _get_source_getting_function
 from utilities.enums import SourceMappingEnum
 

@@ -1,6 +1,5 @@
 from db.enums import ApprovalStatus
-from middleware.schema_and_dto_logic.schemas.typeahead_suggestion_schemas import (
-    TypeaheadAgenciesOuterResponseSchema,
+from middleware.schema_and_dto_logic.schemas.typeahead.locations import (
     TypeaheadLocationsOuterResponseSchema,
 )
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
@@ -10,7 +9,7 @@ from tests.helper_scripts.helper_functions_complex import (
     setup_get_typeahead_suggestion_test_data,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-from tests.conftest import flask_client_with_db, test_data_creator_flask, monkeysession
+from tests.conftest import flask_client_with_db, test_data_creator_flask
 
 
 def test_typeahead_locations(flask_client_with_db):

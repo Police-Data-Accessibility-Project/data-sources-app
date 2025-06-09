@@ -1,6 +1,8 @@
 from marshmallow import fields
 
-from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
+from middleware.schema_and_dto_logic.schemas.common.common_response_schemas import (
+    MessageSchema,
+)
 from middleware.schema_and_dto_logic.schemas.agencies.get.base import AgenciesGetSchema
 from utilities.enums import SourceMappingEnum
 

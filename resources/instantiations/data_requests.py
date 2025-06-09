@@ -19,10 +19,8 @@ from middleware.primary_resource_logic.data_requests import (
     delete_data_request_related_location,
     withdraw_data_request_wrapper,
 )
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    GetByIDBaseSchema,
-    GetByIDBaseDTO,
-)
+from middleware.schema_and_dto_logic.schemas.common.base import GetByIDBaseSchema
+from middleware.schema_and_dto_logic.dtos.common.base import GetByIDBaseDTO
 from middleware.decorators import (
     endpoint_info,
 )

@@ -17,10 +17,8 @@ from middleware.dynamic_request_logic.supporting_classes import (
 )
 from middleware.enums import JurisdictionSimplified, Relations, OutputFormatEnum
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.schemas.search_schemas import (
-    SearchRequestsDTO,
-    FederalSearchRequestDTO,
-)
+from middleware.schema_and_dto_logic.dtos.search.request import SearchRequestsDTO
+from middleware.schema_and_dto_logic.dtos.search.federal import FederalSearchRequestDTO
 from middleware.common_response_formatting import message_response
 from middleware.util.datetime import get_datetime_now
 from utilities.enums import RecordCategories

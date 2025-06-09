@@ -14,7 +14,9 @@ from middleware.enums import (
     RecordTypes,
     Relations,
 )
-from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
+from middleware.schema_and_dto_logic.schemas.common.common_response_schemas import (
+    MessageSchema,
+)
 from middleware.schema_and_dto_logic.schemas.agencies.info.post import (
     AgencyInfoPostSchema,
 )

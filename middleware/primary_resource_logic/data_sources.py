@@ -33,9 +33,11 @@ from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.dtos.data_requests.by_id.source import (
     RelatedSourceByIDDTO,
 )
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    GetManyBaseDTO,
+from middleware.schema_and_dto_logic.schemas.data_sources.base import (
     EntryCreateUpdateRequestDTO,
+)
+from middleware.schema_and_dto_logic.dtos.common.base import (
+    GetManyBaseDTO,
     GetByIDBaseDTO,
 )
 from middleware.common_response_formatting import format_list_response, message_response

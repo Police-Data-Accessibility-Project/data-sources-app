@@ -1,5 +1,7 @@
-from middleware.schema_and_dto_logic.schema_helpers import create_get_many_schema
-from middleware.schema_and_dto_logic.schemas.locations_schemas import (
+from middleware.schema_and_dto_logic.schemas.schema_helpers import (
+    create_get_many_schema,
+)
+from middleware.schema_and_dto_logic.schemas.locations.info.expanded import (
     LocationInfoExpandedSchema,
 )
 

@@ -1,9 +1,7 @@
 from marshmallow import fields, pre_load
 
 from db.enums import RequestStatus
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    GetManyRequestsBaseSchema,
-)
+from middleware.schema_and_dto_logic.dtos.common.base import GetManyRequestsBaseSchema
 from middleware.schema_and_dto_logic.util import get_query_metadata
 
 

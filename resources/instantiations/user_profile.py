@@ -13,7 +13,7 @@ from middleware.primary_resource_logic.user_profile import (
     get_user_recent_searches,
     get_user_by_id_wrapper,
 )
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+from middleware.schema_and_dto_logic.populate_parameters import (
     GET_MANY_SCHEMA_POPULATE_PARAMETERS,
 )
 from resources.PsycopgResource import PsycopgResource

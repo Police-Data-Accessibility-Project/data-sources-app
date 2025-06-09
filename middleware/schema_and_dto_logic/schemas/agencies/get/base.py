@@ -8,11 +8,13 @@ from middleware.schema_and_dto_logic.schemas.agencies.helpers import (
 from middleware.schema_and_dto_logic.schemas.data_sources.expanded import (
     DataSourceExpandedSchema,
 )
-from middleware.schema_and_dto_logic.schemas.locations_schemas import (
+from middleware.schema_and_dto_logic.schemas.locations.info.response import (
+    LocationInfoResponseSchema,
+)
+from middleware.schema_and_dto_logic.schemas.locations._helpers import (
     STATE_ISO_FIELD,
     COUNTY_FIPS_FIELD,
     LOCALITY_NAME_FIELD,
-    LocationInfoResponseSchema,
 )
 from middleware.schema_and_dto_logic.util import get_json_metadata
 from utilities.enums import SourceMappingEnum

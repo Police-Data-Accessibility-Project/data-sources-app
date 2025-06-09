@@ -10,7 +10,7 @@ from middleware.enums import JurisdictionType, AgencyType
 from middleware.schema_and_dto_logic.schemas.agencies.info.put import (
     AgencyInfoPutSchema,
 )
-from middleware.schema_and_dto_logic.common_response_schemas import (
+from middleware.schema_and_dto_logic.schemas.common.common_response_schemas import (
     MessageSchema,
 )
 from resources.endpoint_schema_config import SchemaConfigs

@@ -1,6 +1,6 @@
 from marshmallow import fields
 
-from middleware.schema_and_dto_logic.common_response_schemas import (
+from middleware.schema_and_dto_logic.schemas.common.common_response_schemas import (
     GetManyResponseSchemaBase,
 )
 from middleware.schema_and_dto_logic.schemas.admin.base import AdminUserBaseSchema

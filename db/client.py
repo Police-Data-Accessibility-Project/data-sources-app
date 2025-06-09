@@ -121,9 +121,11 @@ from middleware.schema_and_dto_logic.dtos.match.response import (
 from middleware.schema_and_dto_logic.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
-from middleware.schema_and_dto_logic.dtos.source_collector_dtos import (
-    SourceCollectorPostRequestInnerDTO,
+from middleware.schema_and_dto_logic.dtos.source_collector.post.response import (
     SourceCollectorPostResponseInnerDTO,
+)
+from middleware.schema_and_dto_logic.dtos.source_collector.post.request import (
+    SourceCollectorPostRequestInnerDTO,
 )
 from middleware.util.env import get_env_variable
 from utilities.enums import RecordCategories

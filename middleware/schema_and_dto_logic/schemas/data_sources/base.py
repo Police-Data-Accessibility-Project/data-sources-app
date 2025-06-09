@@ -1,4 +1,5 @@
 from marshmallow import Schema, fields
+from pydantic import BaseModel
 
 from db.enums import (
     AgencyAggregation,
@@ -9,7 +10,10 @@ from db.enums import (
     URLStatus,
     ApprovalStatus,
 )
+from middleware.schema_and_dto_logic.non_dto_dataclasses import DTOPopulateParameters
+from middleware.schema_and_dto_logic.schemas.common.custom_fields import DataField
 from middleware.schema_and_dto_logic.util import get_json_metadata
+from utilities.enums import SourceMappingEnum
 
 
 class DataSourceBaseSchema(Schema):
@@ -261,3 +265,29 @@ class DataSourceBaseSchema(Schema):
             "Former identifier of who provided approval for the data source."
         ),
     )
+
+
+class EntryDataRequestSchema(Schema):
+    entry_data = DataField(
+        required=True,
+        metadata={
+            "source": SourceMappingEnum.JSON,
+            "description": "The entry data field for adding and updating entries",
+        },
+    )
+
+
+class EntryCreateUpdateRequestDTO(BaseModel):
+    """
+    Contains data for creating or updating an entry
+    """
+
+    entry_data: dict
+
+    @classmethod
+    def get_dto_populate_parameters(cls) -> DTOPopulateParameters:
+        return DTOPopulateParameters(
+            dto_class=EntryCreateUpdateRequestDTO,
+            source=SourceMappingEnum.JSON,
+            validation_schema=EntryDataRequestSchema,
+        )

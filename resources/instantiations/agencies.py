@@ -20,7 +20,7 @@ from middleware.primary_resource_logic.agencies import (
     add_agency_related_location,
     remove_agency_related_location,
 )
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+from middleware.schema_and_dto_logic.populate_parameters import (
     GET_MANY_SCHEMA_POPULATE_PARAMETERS,
 )
 from resources.PsycopgResource import PsycopgResource

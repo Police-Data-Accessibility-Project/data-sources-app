@@ -21,22 +21,26 @@ from middleware.primary_resource_logic.user_queries import (
     UserRequestSchema,
     UserRequestDTO,
 )
-from middleware.schema_and_dto_logic.common_response_schemas import (
+from middleware.schema_and_dto_logic.schemas.common.common_response_schemas import (
     IDAndMessageSchema,
     MessageSchema,
 )
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    GetManyRequestsBaseSchema,
-    GetManyBaseDTO,
-    GetByIDBaseSchema,
-    GetByIDBaseDTO,
-    EntryDataRequestSchema,
-    TypeaheadDTO,
+from middleware.schema_and_dto_logic.schemas.common.base import GetByIDBaseSchema
+from middleware.schema_and_dto_logic.schemas.typeahead.request import (
     TypeaheadQuerySchema,
-    EmailOnlyDTO,
-    EmailOnlySchema,
 )
-from middleware.schema_and_dto_logic.custom_types import DTOTypes
+from middleware.schema_and_dto_logic.schemas.signup import EmailOnlySchema
+from middleware.schema_and_dto_logic.dtos.typeahead import TypeaheadDTO
+from middleware.schema_and_dto_logic.dtos.signup import EmailOnlyDTO
+from middleware.schema_and_dto_logic.schemas.data_sources.base import (
+    EntryDataRequestSchema,
+)
+from middleware.schema_and_dto_logic.dtos.common.base import (
+    GetManyBaseDTO,
+    GetByIDBaseDTO,
+    GetManyRequestsBaseSchema,
+)
+from middleware.schema_and_dto_logic.types import DTOTypes
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 from middleware.schema_and_dto_logic.dtos.admin.put import AdminUserPutDTO
 from middleware.schema_and_dto_logic.dtos.admin.post import AdminUserPostDTO
@@ -80,11 +84,13 @@ from middleware.schema_and_dto_logic.dtos.reset_password.request import (
     RequestResetPasswordRequestDTO,
 )
 from middleware.schema_and_dto_logic.dtos.reset_password.reset import ResetPasswordDTO
-from middleware.schema_and_dto_logic.dtos.source_collector_dtos import (
-    SourceCollectorPostRequestDTO,
+from middleware.schema_and_dto_logic.dtos.source_collector.duplicates import (
     SourceCollectorDuplicatesPostRequestDTO,
 )
-from middleware.schema_and_dto_logic.dtos.user_profile_dtos import (
+from middleware.schema_and_dto_logic.dtos.source_collector.post.request import (
+    SourceCollectorPostRequestDTO,
+)
+from middleware.schema_and_dto_logic.dtos.user_profile import (
     UserPutDTO,
 )
 from middleware.schema_and_dto_logic.schemas.admin.get_many import (
@@ -136,12 +142,16 @@ from middleware.schema_and_dto_logic.schemas.auth.github.link import (
     LinkToGithubRequestSchema,
 )
 from middleware.schema_and_dto_logic.schemas.auth.login import LoginResponseSchema
-from middleware.schema_and_dto_logic.schemas.bulk_schemas import (
-    BatchPostResponseSchema,
-    AgenciesPostBatchRequestSchema,
+from middleware.schema_and_dto_logic.schemas.bulk.data_sources import (
     DataSourcesPostBatchRequestSchema,
 )
-from middleware.schema_and_dto_logic.schemas.contact_schemas import (
+from middleware.schema_and_dto_logic.schemas.bulk.agencies import (
+    AgenciesPostBatchRequestSchema,
+)
+from middleware.schema_and_dto_logic.schemas.bulk.response import (
+    BatchPostResponseSchema,
+)
+from middleware.schema_and_dto_logic.schemas.contact import (
     ContactFormPostSchema,
 )
 from middleware.schema_and_dto_logic.schemas.data_requests.related_location.get import (
@@ -189,65 +199,97 @@ from middleware.schema_and_dto_logic.schemas.data_sources.get.by_id import (
 from middleware.schema_and_dto_logic.schemas.data_sources.reject import (
     DataSourceRejectSchema,
 )
-from middleware.schema_and_dto_logic.schemas.github_issue_app_schemas import (
+from middleware.schema_and_dto_logic.schemas.github.data_requests.request import (
     GithubDataRequestsIssuesPostRequestSchema,
+)
+from middleware.schema_and_dto_logic.schemas.github.data_requests.response import (
     GithubDataRequestsIssuesPostResponseSchema,
+)
+from middleware.schema_and_dto_logic.dtos.github.data_requests import (
     GithubDataRequestsIssuesPostDTO,
+)
+from middleware.schema_and_dto_logic.schemas.github.synchronize import (
     GithubSynchronizeResponseSchema,
 )
-from middleware.schema_and_dto_logic.schemas.locations_schemas import (
-    GetLocationInfoByIDResponseSchema,
-    LocationPutSchema,
+from middleware.schema_and_dto_logic.schemas.locations.map.response import (
     LocationsMapResponseSchema,
-    LocationsGetManySchema,
+)
+from middleware.schema_and_dto_logic.schemas.locations.by_id import (
+    GetLocationInfoByIDResponseSchema,
+)
+from middleware.schema_and_dto_logic.schemas.locations.get_many.request import (
     LocationsGetManyRequestSchema,
 )
-from middleware.schema_and_dto_logic.schemas.match_schemas import (
-    AgencyMatchSchema,
+from middleware.schema_and_dto_logic.schemas.locations.put import LocationPutSchema
+from middleware.schema_and_dto_logic.schemas.locations.get_many.response import (
+    LocationsGetManyResponseSchema,
+)
+from middleware.schema_and_dto_logic.schemas.match.request import AgencyMatchSchema
+from middleware.schema_and_dto_logic.schemas.match.response import (
     MatchAgencyResponseSchema,
 )
-from middleware.schema_and_dto_logic.schemas.metrics_schemas import (
-    MetricsGetResponseSchema,
-    MetricsFollowedSearchesBreakdownOuterSchema,
-    MetricsFollowedSearchesBreakdownRequestSchema,
+from middleware.schema_and_dto_logic.schemas.metrics.aggregate import (
     MetricsFollowedSearchesAggregateResponseSchema,
 )
-from middleware.schema_and_dto_logic.schemas.notifications_schemas import (
+from middleware.schema_and_dto_logic.schemas.metrics.get import MetricsGetResponseSchema
+from middleware.schema_and_dto_logic.schemas.metrics.breakdown.response import (
+    MetricsFollowedSearchesBreakdownOuterSchema,
+)
+from middleware.schema_and_dto_logic.schemas.metrics.breakdown.request import (
+    MetricsFollowedSearchesBreakdownRequestSchema,
+)
+from middleware.schema_and_dto_logic.schemas.notifications import (
     NotificationsResponseSchema,
 )
-from middleware.schema_and_dto_logic.schemas.record_type_and_category_schemas import (
+from middleware.schema_and_dto_logic.schemas.record_type_and_category.response import (
     RecordTypeAndCategoryResponseSchema,
 )
-from middleware.schema_and_dto_logic.schemas.request_reset_password_schemas import (
+from middleware.schema_and_dto_logic.schemas.reset_password.request import (
     RequestResetPasswordRequestSchema,
 )
-from middleware.schema_and_dto_logic.schemas.reset_token_schemas import (
+from middleware.schema_and_dto_logic.schemas.reset_password.reset import (
     ResetPasswordSchema,
 )
-from middleware.schema_and_dto_logic.schemas.search_schemas import (
-    SearchRequestSchema,
-    GetUserFollowedSearchesSchema,
-    SearchRequestsDTO,
+from middleware.schema_and_dto_logic.schemas.search.response.response import (
     SearchResponseSchema,
-    FederalSearchRequestSchema,
-    FederalSearchResponseSchema,
-    FederalSearchRequestDTO,
 )
-from middleware.schema_and_dto_logic.schemas.source_collector_schemas import (
+from middleware.schema_and_dto_logic.schemas.search.request import SearchRequestSchema
+from middleware.schema_and_dto_logic.dtos.search.request import SearchRequestsDTO
+from middleware.schema_and_dto_logic.dtos.search.federal import FederalSearchRequestDTO
+from middleware.schema_and_dto_logic.schemas.search.follow import (
+    GetUserFollowedSearchesSchema,
+)
+from middleware.schema_and_dto_logic.schemas.search.federal.response import (
+    FederalSearchResponseSchema,
+)
+from middleware.schema_and_dto_logic.schemas.search.federal.request import (
+    FederalSearchRequestSchema,
+)
+from middleware.schema_and_dto_logic.schemas.source_collector.post.request import (
     SourceCollectorPostRequestSchema,
+)
+from middleware.schema_and_dto_logic.schemas.source_collector.post.response import (
     SourceCollectorPostResponseSchema,
+)
+from middleware.schema_and_dto_logic.schemas.source_collector.duplicate.request import (
     SourceCollectorDuplicatesPostRequestSchema,
+)
+from middleware.schema_and_dto_logic.schemas.source_collector.duplicate.response import (
     SourceCollectorDuplicatePostResponseSchema,
 )
-from middleware.schema_and_dto_logic.schemas.typeahead_suggestion_schemas import (
+from middleware.schema_and_dto_logic.schemas.typeahead.agencies import (
     TypeaheadAgenciesOuterResponseSchema,
+)
+from middleware.schema_and_dto_logic.schemas.typeahead.locations import (
     TypeaheadLocationsOuterResponseSchema,
 )
-from middleware.schema_and_dto_logic.schemas.user_profile_schemas import (
-    GetUserRecentSearchesOuterSchema,
+from middleware.schema_and_dto_logic.schemas.user_profile.response import (
     UserProfileResponseSchema,
-    UserPutSchema,
 )
+from middleware.schema_and_dto_logic.schemas.user_profile.recent_searches import (
+    GetUserRecentSearchesOuterSchema,
+)
+from middleware.schema_and_dto_logic.schemas.user_profile.put import UserPutSchema
 
 
 class OutputSchemaManager:
@@ -469,7 +511,7 @@ class SchemaConfigs(Enum):
     LOCATIONS_GET_MANY = EndpointSchemaConfig(
         input_schema=LocationsGetManyRequestSchema(),
         input_dto_class=LocationsGetRequestDTO,
-        primary_output_schema=LocationsGetManySchema(),
+        primary_output_schema=LocationsGetManyResponseSchema(),
     )
     DATA_SOURCES_PUT = get_put_resource_endpoint_schema_config(
         input_schema=DataSourcesPutSchema(), input_dto_class=EntryDataRequestSchema

@@ -9,12 +9,12 @@ from middleware.authentication_info import (
     STANDARD_JWT_AUTH_INFO,
     API_OR_JWT_AUTH_INFO,
 )
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    EntryCreateUpdateRequestDTO,
+from middleware.schema_and_dto_logic.schemas.common.base import GetByIDBaseSchema
+from middleware.schema_and_dto_logic.schemas.data_sources.base import (
     EntryDataRequestSchema,
-    GetByIDBaseSchema,
-    GetByIDBaseDTO,
+    EntryCreateUpdateRequestDTO,
 )
+from middleware.schema_and_dto_logic.dtos.common.base import GetByIDBaseDTO
 from middleware.decorators import (
     endpoint_info,
 )

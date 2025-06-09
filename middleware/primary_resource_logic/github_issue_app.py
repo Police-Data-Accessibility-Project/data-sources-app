@@ -13,9 +13,7 @@ from db.enums import RequestStatus
 from middleware.access_logic import AccessInfoPrimary
 from middleware.common_response_formatting import message_response
 from middleware.enums import RecordTypes
-from middleware.schema_and_dto_logic.schemas.github_issue_app_schemas import (
-    GithubIssueURLInfosDTO,
-)
+from middleware.schema_and_dto_logic.dtos.github.issue import GithubIssueURLInfosDTO
 from middleware.third_party_interaction_logic.github_issue_api_logic import (
     GithubIssueProjectInfo,
     get_github_issue_project_statuses,

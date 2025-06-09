@@ -36,7 +36,7 @@ from middleware.schema_and_dto_logic.mappings import (
 )
 from middleware.schema_and_dto_logic.non_dto_dataclasses import FlaskRestxDocInfo
 from middleware.schema_and_dto_logic.enums import RestxModelPlaceholder
-from middleware.schema_and_dto_logic.custom_types import (
+from middleware.schema_and_dto_logic.types import (
     MarshmallowFields,
     RestxFields,
     SchemaTypes,

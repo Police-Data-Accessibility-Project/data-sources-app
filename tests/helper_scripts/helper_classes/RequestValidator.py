@@ -24,7 +24,7 @@ from middleware.schema_and_dto_logic.dtos.locations.put import LocationPutDTO
 from middleware.schema_and_dto_logic.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
-from middleware.schema_and_dto_logic.dtos.source_collector_dtos import (
+from middleware.schema_and_dto_logic.dtos.source_collector.post.request import (
     SourceCollectorPostRequestDTO,
 )
 from middleware.util.dict import update_if_not_none

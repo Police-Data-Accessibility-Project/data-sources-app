@@ -2,8 +2,8 @@ from typing import Any, Callable, Optional
 
 from flask import request
 
-from middleware.schema_and_dto_logic.custom_exceptions import MissingArgumentError
-from middleware.schema_and_dto_logic.custom_types import SchemaTypes
+from middleware.schema_and_dto_logic.exceptions import MissingArgumentError
+from middleware.schema_and_dto_logic.types import SchemaTypes
 from utilities.enums import SourceMappingEnum
 
 

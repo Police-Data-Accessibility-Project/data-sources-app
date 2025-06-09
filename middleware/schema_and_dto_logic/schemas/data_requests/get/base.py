@@ -3,7 +3,7 @@ from marshmallow import fields
 from middleware.schema_and_dto_logic.schemas.data_requests.base import (
     DataRequestsSchema,
 )
-from middleware.schema_and_dto_logic.schemas.locations_schemas import (
+from middleware.schema_and_dto_logic.schemas.locations.info.response import (
     LocationInfoResponseSchema,
 )
 from middleware.schema_and_dto_logic.schemas.data_sources.expanded import (

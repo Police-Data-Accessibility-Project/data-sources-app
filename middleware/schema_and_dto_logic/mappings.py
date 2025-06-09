@@ -1,7 +1,7 @@
 from flask_restx import fields as restx_fields
 from marshmallow import fields as marshmallow_fields
 
-from middleware.schema_and_dto_logic.custom_fields import (
+from middleware.schema_and_dto_logic.schemas.common.custom_fields import (
     DataField,
     EntryDataListField,
 )

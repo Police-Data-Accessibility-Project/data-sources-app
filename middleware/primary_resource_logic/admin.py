@@ -9,9 +9,9 @@ from middleware.access_logic import AccessInfoPrimary
 from middleware.common_response_formatting import created_id_response
 
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    GetByIDBaseDTO,
+from middleware.schema_and_dto_logic.dtos.common.base import (
     GetManyBaseDTO,
+    GetByIDBaseDTO,
 )
 from middleware.schema_and_dto_logic.dtos.admin.put import AdminUserPutDTO
 from middleware.schema_and_dto_logic.dtos.admin.post import AdminUserPostDTO

@@ -10,10 +10,10 @@ from middleware.decorators import endpoint_info
 from middleware.primary_resource_logic.typeahead_suggestion import (
     get_typeahead_results,
 )
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
+from middleware.schema_and_dto_logic.schemas.typeahead.request import (
     TypeaheadQuerySchema,
-    TypeaheadDTO,
 )
+from middleware.schema_and_dto_logic.dtos.typeahead import TypeaheadDTO
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
 from resources.PsycopgResource import PsycopgResource
 from resources.endpoint_schema_config import SchemaConfigs

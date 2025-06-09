@@ -1,8 +1,6 @@
 from marshmallow import fields
 
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    GetByIDBaseSchema,
-)
+from middleware.schema_and_dto_logic.schemas.common.base import GetByIDBaseSchema
 from utilities.enums import SourceMappingEnum
 
 # Base Schema

@@ -1,6 +1,6 @@
 from pydantic import Field
 
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetByIDBaseDTO
+from middleware.schema_and_dto_logic.dtos.common.base import GetByIDBaseDTO
 from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
     MetadataInfo,
 )

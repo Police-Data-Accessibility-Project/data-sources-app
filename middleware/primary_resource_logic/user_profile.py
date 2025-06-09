@@ -10,7 +10,7 @@ from middleware.flask_response_manager import FlaskResponseManager
 from middleware.primary_resource_logic.data_requests import (
     get_data_requests_with_permitted_columns,
 )
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyBaseDTO
+from middleware.schema_and_dto_logic.dtos.common.base import GetManyBaseDTO
 
 
 def get_owner_data_requests_wrapper(

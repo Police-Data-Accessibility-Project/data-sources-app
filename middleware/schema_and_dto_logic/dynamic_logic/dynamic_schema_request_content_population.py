@@ -7,7 +7,7 @@ from flask import request
 from pydantic import BaseModel
 
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.custom_types import SchemaTypes, DTOTypes
+from middleware.schema_and_dto_logic.types import SchemaTypes, DTOTypes
 from middleware.schema_and_dto_logic.dtos.bulk import (
     BulkRequestDTO,
 )

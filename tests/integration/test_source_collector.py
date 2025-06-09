@@ -1,10 +1,12 @@
 from http import HTTPStatus
 
 from middleware.enums import RecordTypes, PermissionsEnum
-from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
-from middleware.schema_and_dto_logic.dtos.source_collector_dtos import (
-    SourceCollectorPostRequestDTO,
+from middleware.schema_and_dto_logic.schemas.common.common_response_schemas import (
+    MessageSchema,
+)
+from middleware.schema_and_dto_logic.dtos.source_collector.post.request import (
     SourceCollectorPostRequestInnerDTO,
+    SourceCollectorPostRequestDTO,
 )
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,

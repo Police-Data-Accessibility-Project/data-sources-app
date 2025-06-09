@@ -4,7 +4,7 @@ from db.client import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
 from db.enums import LocationType
 from middleware.enums import Relations
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import LocationInfoDTO
+from middleware.schema_and_dto_logic.dtos.locations.info import LocationInfoDTO
 
 
 class InvalidLocationError(Exception):
