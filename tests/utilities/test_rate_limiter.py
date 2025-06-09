@@ -42,7 +42,8 @@ def test_rate_limiter_explicit_limit(
     """
 
     monkeypatch.setattr(
-        f"resources.Login.try_logging_in", MagicMock(return_value=TEST_RESPONSE)
+        f"endpoints.instantiations.login.try_logging_in",
+        MagicMock(return_value=TEST_RESPONSE),
     )
 
     for i in range(5):
@@ -75,7 +76,7 @@ def test_rate_limiter_default_limit(
     # that I'm willing to leave it commented out for now
     #
     # monkeypatch.setattr(
-    #     f"resources.RefreshSession.refresh_session",
+    #     f"endpoints.RefreshSession.refresh_session",
     #     MagicMock(return_value=TEST_RESPONSE),
     # )
     #

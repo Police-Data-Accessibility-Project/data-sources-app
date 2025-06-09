@@ -2,8 +2,8 @@ from http import HTTPStatus
 
 from pydantic import BaseModel
 
-from database_client.enums import RequestStatus
-from database_client.models.implementations.core import (
+from db.enums import RequestStatus
+from db.models.implementations.core import (
     DataRequest,
     DataRequestsGithubIssueInfo,
 )
@@ -23,7 +23,7 @@ from tests.conftest import (
 )
 from tests.integration.test_check_database_health import wipe_database
 
-PATCH_ROOT = "middleware.primary_resource_logic.github_issue_app_logic"
+PATCH_ROOT = "middleware.primary_resource_logic.github_issue_app"
 
 
 class SynchronizeTestInfo(BaseModel):

@@ -5,22 +5,22 @@ from typing import Optional
 from sqlalchemy import delete, select, and_
 from sqlalchemy.exc import IntegrityError
 
-from database_client.database_client import DatabaseClient
-from database_client.enums import (
+from db.client import DatabaseClient
+from db.enums import (
     ApprovalStatus,
     RequestStatus,
     EventType,
     ExternalAccountTypeEnum,
 )
-from database_client.models.implementations.core import (
+from db.models.implementations.core import (
     DataRequestUserNotificationQueue,
     DataSourceUserNotificationQueue,
 )
-from database_client.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
+from db.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import JurisdictionType, Relations, AgencyType
-from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
-    AgenciesPostDTO,
+from middleware.schema_and_dto.dtos.agencies.post import (
     AgencyInfoPostDTO,
+    AgenciesPostDTO,
 )
 from tests.helper_scripts.common_endpoint_calls import CreatedDataSource
 from tests.helper_scripts.common_test_data import (

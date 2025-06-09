@@ -4,8 +4,7 @@ import urllib.parse
 import uuid
 from http import HTTPStatus
 
-from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import (
+from db.enums import (
     AgencyAggregation,
     DetailLevel,
     AccessType,
@@ -16,13 +15,13 @@ from database_client.enums import (
     SortOrder,
 )
 from middleware.enums import RecordTypes
-from middleware.schema_and_dto_logic.primary_resource_schemas.data_sources_base_schemas import (
+from middleware.schema_and_dto.schemas.data_sources.expanded import (
     DataSourceExpandedSchema,
 )
 
-from resources.endpoint_schema_config import SchemaConfigs
+from endpoints.schema_config.enums import SchemaConfigs
 
-from tests.conftest import test_data_creator_flask, monkeysession
+from tests.conftest import test_data_creator_flask
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,

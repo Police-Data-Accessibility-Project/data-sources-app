@@ -11,26 +11,26 @@ from middleware.access_logic import (
     ParserDeterminator,
 )
 from middleware.authentication_info import AuthenticationInfo
-from middleware.argument_checking_logic import check_for_mutually_exclusive_arguments
 from middleware.enums import PermissionsEnum, AccessTypeEnum
-from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_construction import (
+from middleware.primary_resource_logic.api_key import check_api_key
+from middleware.schema_and_dto.dynamic_logic.dynamic_schema_documentation_construction import (
     get_restx_param_documentation,
 )
-from middleware.schema_and_dto_logic.non_dto_dataclasses import FlaskRestxDocInfo
+from middleware.schema_and_dto.non_dto_dataclasses import FlaskRestxDocInfo
 from middleware.security import check_permissions
-from middleware.primary_resource_logic.api_key_logic import check_api_key
-from resources.PsycopgResource import handle_exceptions
-from resources.resource_helpers import (
-    add_jwt_or_api_key_header_arg,
-    add_jwt_header_arg,
+from endpoints.psycopg_resource import handle_exceptions
+from endpoints.schema_config.enums import SchemaConfigs
+from endpoints.schema_config.config.manager import OutputSchemaManager
+from endpoints._helpers.docs import create_response_dictionary
+from endpoints._helpers.parser import (
     add_api_key_header_arg,
-    ResponseInfo,
-    create_response_dictionary,
+    add_jwt_header_arg,
+    add_refresh_jwt_header_arg,
     add_password_reset_token_header_arg,
     add_validate_email_header_arg,
-    add_refresh_jwt_header_arg,
+    add_jwt_or_api_key_header_arg,
 )
-from resources.endpoint_schema_config import SchemaConfigs, OutputSchemaManager
+from endpoints._helpers.response_info import ResponseInfo
 
 
 def api_key_required(func):

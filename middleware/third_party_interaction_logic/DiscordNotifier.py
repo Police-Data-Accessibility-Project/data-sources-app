@@ -1,6 +1,6 @@
 import requests
 
-from middleware.util import get_env_variable
+from middleware.util.env import get_env_variable
 
 
 class DiscordPoster:

@@ -4,10 +4,12 @@ from http import HTTPStatus
 
 from flask.testing import FlaskClient
 
-from tests.conftest import test_data_creator_flask, monkeysession
+from tests.conftest import test_data_creator_flask
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
-from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
-from resources.endpoint_schema_config import SchemaConfigs
+from middleware.schema_and_dto.schemas.common.common_response_schemas import (
+    MessageSchema,
+)
+from endpoints.schema_config.enums import SchemaConfigs
 from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,
     get_test_name,
@@ -24,7 +26,7 @@ from tests.helper_scripts.constants import (
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
-GITHUB_OATH_LOGIC_PATCH_ROOT = "middleware.primary_resource_logic.github_oauth_logic"
+GITHUB_OATH_LOGIC_PATCH_ROOT = "middleware.primary_resource_logic.github_oauth"
 
 
 def login_with_github(client: FlaskClient, access_token: str) -> str:

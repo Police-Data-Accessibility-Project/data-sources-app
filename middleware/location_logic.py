@@ -1,10 +1,10 @@
 from typing import Union
 
-from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import LocationType
+from db.client import DatabaseClient
+from db.db_client_dataclasses import WhereMapping
+from db.enums import LocationType
 from middleware.enums import Relations
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import LocationInfoDTO
+from middleware.schema_and_dto.dtos.locations.info import LocationInfoDTO
 
 
 class InvalidLocationError(Exception):

@@ -10,7 +10,7 @@ from middleware.exceptions import (
 from middleware.security import (
     check_permissions,
 )
-from middleware.primary_resource_logic.api_key_logic import (
+from middleware.primary_resource_logic.api_key import (
     INVALID_API_KEY_MESSAGE,
     check_api_key,
 )

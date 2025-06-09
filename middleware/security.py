@@ -2,9 +2,9 @@ from http import HTTPStatus
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from flask_restx import abort
 
-from database_client.helper_functions import get_db_client
+from db.helper_functions import get_db_client
 from middleware.enums import PermissionsEnum
-from middleware.primary_resource_logic.permissions_logic import PermissionsManager
+from middleware.primary_resource_logic.permissions import PermissionsManager
 
 
 def check_permissions(permission: PermissionsEnum) -> None:

@@ -7,7 +7,7 @@ import jwt
 from jwt import InvalidSignatureError
 
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.util import get_env_variable
+from middleware.util.env import get_env_variable
 
 ALGORITHM = "HS256"
 

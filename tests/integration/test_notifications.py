@@ -3,14 +3,14 @@ from unittest.mock import MagicMock, call, ANY
 
 import pytest
 
-from database_client.enums import EventType, EntityType
-from database_client.models.implementations.core import (
+from db.enums import EventType, EntityType
+from db.models.implementations.core import (
     DataRequestUserNotificationQueue,
     DataSourceUserNotificationQueue,
     NotificationLog,
 )
 from middleware.custom_dataclasses import EventInfo, EventBatch
-from resources.endpoint_schema_config import SchemaConfigs
+from endpoints.schema_config.enums import SchemaConfigs
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
@@ -24,7 +24,7 @@ from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
 
-PATCH_ROOT = "middleware.primary_resource_logic.notifications_logic"
+PATCH_ROOT = "middleware.primary_resource_logic.notifications"
 
 
 @pytest.fixture

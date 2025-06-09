@@ -3,16 +3,16 @@ from typing import Optional
 from flask import Response
 from pydantic import BaseModel
 
-from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import RelationRoleEnum, ColumnPermissionEnum
-from database_client.subquery_logic import SubqueryParameterManager
+from db.client import DatabaseClient
+from db.db_client_dataclasses import WhereMapping
+from db.enums import RelationRoleEnum, ColumnPermissionEnum
+from db.subquery_logic import SubqueryParameterManager
 from middleware.column_permission_logic import get_permitted_columns
 from middleware.dynamic_request_logic.common_functions import check_for_id
 from middleware.dynamic_request_logic.supporting_classes import IDInfo
 from middleware.enums import Relations
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetByIDBaseDTO
+from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
 from dataclasses import dataclass
 
 

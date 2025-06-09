@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Optional, Callable, Type, Any
+from typing import Optional, Type, Any
 
 import psycopg.errors
 import sqlalchemy
@@ -17,7 +17,6 @@ from middleware.dynamic_request_logic.supporting_classes import (
     PutPostRequestInfo,
 )
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.util_dynamic import execute_if_not_none
 
 
 class PostHandler(PostPutHandler):

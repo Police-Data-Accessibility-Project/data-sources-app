@@ -1,8 +1,8 @@
 from http import HTTPStatus
 
-from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import RelationRoleEnum
+from db.client import DatabaseClient
+from db.db_client_dataclasses import WhereMapping
+from db.enums import RelationRoleEnum
 from middleware.access_logic import AccessInfoPrimary
 from middleware.common_response_formatting import format_list_response
 from middleware.enums import PermissionsEnum
@@ -10,7 +10,7 @@ from middleware.flask_response_manager import FlaskResponseManager
 from middleware.primary_resource_logic.data_requests import (
     get_data_requests_with_permitted_columns,
 )
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import GetManyBaseDTO
+from middleware.schema_and_dto.dtos.common.base import GetManyBaseDTO
 
 
 def get_owner_data_requests_wrapper(

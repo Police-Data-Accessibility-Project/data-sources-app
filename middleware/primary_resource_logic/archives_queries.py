@@ -5,8 +5,8 @@ from typing import List, Dict, Any, Optional, Tuple
 import psycopg
 from flask import make_response
 
-from database_client.database_client import DatabaseClient
-from middleware.schema_and_dto_logic.primary_resource_dtos.archives_dtos import (
+from db.client import DatabaseClient
+from middleware.schema_and_dto.dtos.archives import (
     ArchivesGetRequestDTO,
 )
 from utilities.common import convert_dates_to_strings

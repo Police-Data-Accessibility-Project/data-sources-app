@@ -10,12 +10,12 @@ from flask_jwt_extended import (
 )
 from werkzeug.security import check_password_hash
 
-from database_client.database_client import DatabaseClient
+from db.client import DatabaseClient
 from middleware.SimpleJWT import JWTPurpose, SimpleJWT
 from middleware.access_logic import AccessInfoPrimary, RefreshAccessInfo
 from middleware.exceptions import UserNotFoundError
 from middleware.primary_resource_logic.user_queries import UserRequestDTO
-from middleware.schema_and_dto_logic.primary_resource_schemas.refresh_session_schemas import (
+from middleware.schema_and_dto.dtos.refresh_session import (
     RefreshSessionRequestDTO,
 )
 

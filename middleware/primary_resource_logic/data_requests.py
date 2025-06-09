@@ -3,18 +3,22 @@ from typing import Optional
 
 from flask import Response
 
-from database_client.db_client_dataclasses import WhereMapping, OrderByParameters
-from database_client.database_client import DatabaseClient
-from database_client.enums import (
+from db.client import DatabaseClient
+from db.db_client_dataclasses import WhereMapping, OrderByParameters
+from db.enums import (
     ColumnPermissionEnum,
     RelationRoleEnum,
     RequestStatus,
 )
-from database_client.subquery_logic import SubqueryParameterManager, SubqueryParameters
+from db.subquery_logic import SubqueryParameterManager, SubqueryParameters
 from middleware.access_logic import AccessInfoPrimary
 from middleware.column_permission_logic import (
     get_permitted_columns,
     RelationRoleParameters,
+)
+from middleware.common_response_formatting import (
+    message_response,
+    created_id_response,
 )
 from middleware.custom_dataclasses import (
     DeferredFunction,
@@ -32,28 +36,29 @@ from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,
 )
-from middleware.flask_response_manager import FlaskResponseManager
-from middleware.location_logic import InvalidLocationError
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    GetByIDBaseDTO,
-    GetManyBaseDTO,
-)
 from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
-
-from middleware.common_response_formatting import (
-    message_response,
-    created_id_response,
+from middleware.flask_response_manager import FlaskResponseManager
+from middleware.schema_and_dto.dtos.common.base import (
+    GetManyBaseDTO,
+    GetByIDBaseDTO,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import (
+from middleware.schema_and_dto.dtos.data_requests.by_id.locations import (
+    RelatedLocationsByIDDTO,
+)
+from middleware.schema_and_dto.dtos.data_requests.by_id.source import (
+    RelatedSourceByIDDTO,
+)
+from middleware.schema_and_dto.dtos.data_requests.post import (
+    DataRequestsPostDTO,
+)
+from middleware.schema_and_dto.dtos.data_requests.get_many import (
     GetManyDataRequestsRequestsDTO,
+)
+from middleware.schema_and_dto.dtos.data_requests.put import (
     DataRequestsPutDTO,
     DataRequestsPutOuterDTO,
-    RelatedSourceByIDDTO,
-    RelatedLocationsByIDDTO,
-    DataRequestsPostDTO,
-    DataRequestLocationInfoPostDTO,
 )
-from middleware.util import dataclass_to_filtered_dict
+from middleware.util.type_conversion import dataclass_to_filtered_dict
 
 RELATION = Relations.DATA_REQUESTS.value
 RELATED_SOURCES_RELATION = Relations.RELATED_SOURCES.value
@@ -64,31 +69,6 @@ def get_data_requests_subquery_params() -> list[SubqueryParameters]:
         SubqueryParameterManager.data_sources(),
         SubqueryParameterManager.locations(),
     ]
-
-
-def get_location_id_for_data_requests(
-    db_client: DatabaseClient, location_info: DataRequestLocationInfoPostDTO
-) -> int:
-    """
-    Get the location id for the data request
-    :param db_client:
-    :param location_info:
-    :return:
-    """
-    # Rename keys to match where mappings
-    revised_location_info = {
-        "type": location_info.type,
-        "state_name": location_info.state_name,
-        "county_name": location_info.county_name,
-        "locality_name": location_info.locality_name,
-    }
-
-    location_id = db_client.get_location_id(
-        where_mappings=WhereMapping.from_dict(revised_location_info)
-    )
-    if location_id is None:
-        raise InvalidLocationError()
-    return location_id
 
 
 def get_data_requests_relation_role(
@@ -149,25 +129,6 @@ def create_data_request_wrapper(
 
     # Return data request id
     return created_id_response(new_id=str(dr_id), message=f"Data request created.")
-
-
-def _get_location_ids(db_client, dto: DataRequestsPostDTO):
-    location_ids = []
-    if dto.location_ids is None:
-        return location_ids
-    for location_info in dto.location_ids:
-        try:
-            location_id = get_location_id_for_data_requests(
-                db_client=db_client, location_info=location_info
-            )
-        except InvalidLocationError:
-            FlaskResponseManager.abort(
-                code=HTTPStatus.BAD_REQUEST,
-                message=f"Invalid location: {location_info}",
-            )
-
-        location_ids.append(location_id)
-    return location_ids
 
 
 def get_data_requests_wrapper(

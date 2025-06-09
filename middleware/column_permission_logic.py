@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
-from database_client.enums import RelationRoleEnum, ColumnPermissionEnum
+from db.enums import RelationRoleEnum, ColumnPermissionEnum
 from middleware.access_logic import AccessInfoPrimary
 from middleware.custom_dataclasses import DeferredFunction
 from middleware.enums import PermissionsEnum, AccessTypeEnum

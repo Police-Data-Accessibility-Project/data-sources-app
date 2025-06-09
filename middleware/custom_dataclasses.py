@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from database_client.enums import EntityType, EventType
+from db.enums import EntityType, EventType
 from middleware.enums import CallbackFunctionsEnum
 
 

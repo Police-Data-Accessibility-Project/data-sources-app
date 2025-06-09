@@ -1,13 +1,15 @@
 from http import HTTPStatus
 from middleware.enums import PermissionsEnum
-from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
+from middleware.schema_and_dto.schemas.common.common_response_schemas import (
+    MessageSchema,
+)
 from tests.helper_scripts.complex_test_data_creation_functions import (
     create_test_data_request,
 )
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from tests.conftest import test_data_creator_flask, monkeysession
+from tests.conftest import test_data_creator_flask
 
 
 def test_user_profile_data_requests(test_data_creator_flask: TestDataCreatorFlask):

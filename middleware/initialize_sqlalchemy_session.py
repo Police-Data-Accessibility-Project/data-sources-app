@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session as SQLAlchemySession
 from sqlalchemy.orm import sessionmaker
 
-from middleware.util import get_env_variable
+from middleware.util.env import get_env_variable
 
 
 class DatabaseInitializationError(Exception):

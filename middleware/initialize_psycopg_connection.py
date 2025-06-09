@@ -1,8 +1,6 @@
-from asyncio import Lock
-
 import psycopg
 from psycopg import connection as PgConnection
-from middleware.util import get_env_variable
+from middleware.util.env import get_env_variable
 
 
 class DatabaseInitializationError(Exception):

@@ -3,17 +3,17 @@
 import time
 from datetime import datetime, timezone, timedelta
 
-from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import SortOrder, ApprovalStatus
-from database_client.models.implementations.core import Agency
+from db.db_client_dataclasses import WhereMapping
+from db.enums import SortOrder, ApprovalStatus
+from db.models.implementations.core import Agency
 from middleware.enums import JurisdictionType, AgencyType
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
+from middleware.schema_and_dto.schemas.agencies.info.put import (
     AgencyInfoPutSchema,
 )
-from middleware.schema_and_dto_logic.common_response_schemas import (
+from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )
-from resources.endpoint_schema_config import SchemaConfigs
+from endpoints.schema_config.enums import SchemaConfigs
 
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (

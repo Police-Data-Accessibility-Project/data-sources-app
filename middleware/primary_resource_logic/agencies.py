@@ -1,35 +1,25 @@
-from dataclasses import asdict
-
 from flask import Response, request
 
-from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import OrderByParameters
-from database_client.subquery_logic import SubqueryParameterManager
+from db.client import DatabaseClient
+from db.db_client_dataclasses import OrderByParameters
+from db.subquery_logic import SubqueryParameterManager
 from middleware.access_logic import AccessInfoPrimary
 from middleware.common_response_formatting import (
     created_id_response,
     message_response,
-    multiple_results_response,
 )
 from middleware.dynamic_request_logic.delete_logic import delete_entry
-from middleware.dynamic_request_logic.post_logic import post_entry, PostHandler
+from middleware.dynamic_request_logic.post_logic import PostHandler
 from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,
     PutPostRequestInfo,
 )
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
-    AgenciesPutSchema,
-)
-from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
-    AgenciesPostDTO,
-    AgenciesGetManyDTO,
-)
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    GetManyBaseDTO,
-    GetByIDBaseDTO,
-)
+from middleware.schema_and_dto.schemas.agencies.put import AgenciesPutSchema
+from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
+from middleware.schema_and_dto.dtos.agencies.get_many import AgenciesGetManyDTO
+from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
 from middleware.enums import Relations
 
 SUBQUERY_PARAMS = [SubqueryParameterManager.data_sources()]

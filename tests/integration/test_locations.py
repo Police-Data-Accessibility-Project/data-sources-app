@@ -4,12 +4,10 @@ from typing import Optional
 
 import pytest
 
-from database_client.enums import LocationType
-from database_client.models.implementations.core import Location
-from middleware.schema_and_dto_logic.primary_resource_dtos.locations_dtos import (
-    LocationPutDTO,
-    LocationsGetRequestDTO,
-)
+from db.enums import LocationType
+from db.models.implementations.core import Location
+from middleware.schema_and_dto.dtos.locations.get import LocationsGetRequestDTO
+from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
 from tests.conftest import test_data_creator_flask
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.MultiLocationSetup import MultiLocationSetup

@@ -1,14 +1,12 @@
 from http import HTTPStatus
 from typing import Type, Optional
 
-from flask import Response, make_response
+from flask import Response
 from marshmallow import Schema
 
-from middleware.constants import DATA_KEY
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.common_response_schemas import (
+from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     IDAndMessageSchema,
-    GetManyResponseSchema,
 )
 
 

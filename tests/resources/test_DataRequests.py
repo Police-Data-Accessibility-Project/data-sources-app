@@ -2,8 +2,8 @@ from unittest.mock import ANY
 
 import pytest
 
-from database_client.enums import RequestUrgency
-from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import (
+from db.enums import RequestUrgency
+from middleware.schema_and_dto.dtos.data_requests.post import (
     RequestInfoPostDTO,
     DataRequestsPostDTO,
 )
@@ -13,7 +13,7 @@ from tests.helper_scripts.common_mocks_and_patches import (
 )
 from tests.helper_scripts.constants import DATA_REQUESTS_BASE_ENDPOINT
 
-PATCH_ROOT = "resources.DataRequests"
+PATCH_ROOT = "endpoints.instantiations.data_requests"
 
 STANDARD_REQUEST_INFO_JSON = {
     "submission_notes": "test_sb",

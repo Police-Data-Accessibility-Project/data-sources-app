@@ -1,8 +1,8 @@
 from http import HTTPStatus
 
-from database_client.enums import ApprovalStatus
-from database_client.models.implementations.core import Agency
-from database_client.models.implementations.link import LinkAgencyLocation
+from db.enums import ApprovalStatus
+from db.models.implementations.core import Agency
+from db.models.implementations.link import LinkAgencyLocation
 from middleware.enums import JurisdictionType, AgencyType
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,

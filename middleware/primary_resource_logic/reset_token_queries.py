@@ -5,19 +5,19 @@ from flask import Response, make_response
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from database_client.database_client import DatabaseClient
+from db.client import DatabaseClient
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
 from middleware.access_logic import PasswordResetTokenAccessInfo, AccessInfoPrimary
 from middleware.common_response_formatting import message_response
 from middleware.exceptions import UserNotFoundError
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.primary_resource_logic.api_key_logic import generate_token
+from middleware.primary_resource_logic.api_key import generate_token
 from middleware.primary_resource_logic.user_queries import user_check_email
-from middleware.schema_and_dto_logic.primary_resource_dtos.reset_token_dtos import (
+from middleware.schema_and_dto.dtos.reset_password.request import (
     RequestResetPasswordRequestDTO,
-    ResetPasswordDTO,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.user_profile_dtos import (
+from middleware.schema_and_dto.dtos.reset_password.reset import ResetPasswordDTO
+from middleware.schema_and_dto.dtos.user_profile import (
     UserPutDTO,
 )
 from middleware.webhook_logic import send_password_reset_link

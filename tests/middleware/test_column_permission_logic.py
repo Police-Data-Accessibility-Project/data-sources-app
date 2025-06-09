@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from database_client.enums import ColumnPermissionEnum, RelationRoleEnum
+from db.enums import ColumnPermissionEnum, RelationRoleEnum
 from middleware.access_logic import AccessInfoPrimary
 from middleware.column_permission_logic import (
     get_permitted_columns,

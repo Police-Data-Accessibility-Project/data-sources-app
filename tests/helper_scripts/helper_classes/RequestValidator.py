@@ -11,29 +11,24 @@ from typing import Optional, Type, Union, List
 from flask.testing import FlaskClient
 from marshmallow import Schema
 
-from database_client.constants import PAGE_SIZE
-from database_client.enums import (
+from db.constants import PAGE_SIZE
+from db.enums import (
     SortOrder,
     RequestStatus,
     ApprovalStatus,
     UpdateFrequency,
 )
-from middleware.enums import OutputFormatEnum, PermissionsEnum, RecordTypes
-from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
-    AgenciesPostDTO,
-)
-from middleware.schema_and_dto_logic.primary_resource_dtos.locations_dtos import (
-    LocationPutDTO,
-    LocationsGetRequestDTO,
-)
-from middleware.schema_and_dto_logic.primary_resource_dtos.metrics_dtos import (
+from middleware.enums import OutputFormatEnum, RecordTypes
+from middleware.schema_and_dto.dtos.locations.get import LocationsGetRequestDTO
+from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
+from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.source_collector_dtos import (
+from middleware.schema_and_dto.dtos.source_collector.post.request import (
     SourceCollectorPostRequestDTO,
 )
-from middleware.util import update_if_not_none
-from resources.endpoint_schema_config import SchemaConfigs
+from middleware.util.dict import update_if_not_none
+from endpoints.schema_config.enums import SchemaConfigs
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.constants import (
     DATA_REQUESTS_BY_ID_ENDPOINT,
@@ -46,7 +41,6 @@ from tests.helper_scripts.helper_functions_simple import (
     add_query_params,
 )
 from tests.helper_scripts.run_and_validate_request import (
-    http_methods,
     run_and_validate_request,
 )
 from utilities.enums import RecordCategories
@@ -198,9 +192,7 @@ class RequestValidator:
         expected_json_content: Optional[dict] = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
-        mock = mocker.patch(
-            "middleware.primary_resource_logic.signup_logic.send_signup_link"
-        )
+        mock = mocker.patch("middleware.primary_resource_logic.signup.send_signup_link")
         self.post(
             endpoint="/api/auth/signup",
             json={"email": email, "password": password},
@@ -234,9 +226,7 @@ class RequestValidator:
         expected_response_status: HTTPStatus = HTTPStatus.OK,
         expected_json_content: Optional[dict] = None,
     ):
-        mock = mocker.patch(
-            "middleware.primary_resource_logic.signup_logic.send_signup_link"
-        )
+        mock = mocker.patch("middleware.primary_resource_logic.signup.send_signup_link")
         self.post(
             endpoint="/api/auth/resend-validation-email",
             json={"email": email},

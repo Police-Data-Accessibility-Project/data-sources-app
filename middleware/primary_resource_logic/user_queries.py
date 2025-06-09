@@ -5,7 +5,7 @@ from marshmallow import Schema, fields
 from pydantic import BaseModel
 from werkzeug.security import generate_password_hash
 
-from database_client.database_client import DatabaseClient
+from db.client import DatabaseClient
 from middleware.common_response_formatting import message_response
 from middleware.exceptions import UserNotFoundError, DuplicateUserError
 from utilities.enums import SourceMappingEnum

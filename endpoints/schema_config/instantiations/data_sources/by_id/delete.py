@@ -1,0 +1,3 @@
+from endpoints.schema_config.helpers import DELETE_BY_ID
+
+DataSourcesByIDDeleteEndpointSchemaConfig = DELETE_BY_ID
