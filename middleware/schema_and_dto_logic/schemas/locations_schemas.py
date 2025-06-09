@@ -1,17 +1,14 @@
 from marshmallow import Schema, fields, validate, validates_schema, ValidationError
 
 from db.enums import LocationType
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    GetManyRequestsBaseSchema,
-)
 from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
     generate_marshmallow_schema,
 )
 from middleware.schema_and_dto_logic.enums import CSVColumnCondition
-from middleware.schema_and_dto_logic.dtos.locations_dtos import (
-    LocationPutDTO,
+from middleware.schema_and_dto_logic.dtos.locations.lat_lng import (
     LatLngDTO,
 )
+from middleware.schema_and_dto_logic.dtos.locations.put import LocationPutDTO
 from middleware.schema_and_dto_logic.util import get_json_metadata
 from utilities.enums import SourceMappingEnum
 

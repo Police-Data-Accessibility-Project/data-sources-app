@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields
 
-from middleware.schema_and_dto_logic.dtos.data_sources_dtos import (
+from middleware.schema_and_dto_logic.dtos.data_sources.put import (
     DataSourceEntryDataPutDTO,
 )
 from middleware.schema_and_dto_logic.schemas.data_sources.expanded import (

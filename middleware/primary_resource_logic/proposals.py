@@ -2,9 +2,7 @@ from db.client import DatabaseClient
 from db.enums import ApprovalStatus
 from middleware.access_logic import AccessInfoPrimary
 from middleware.common_response_formatting import created_id_response
-from middleware.schema_and_dto_logic.dtos.agencies_dtos import (
-    AgenciesPostDTO,
-)
+from middleware.schema_and_dto_logic.dtos.agencies.post import AgenciesPostDTO
 
 
 def propose_agency(

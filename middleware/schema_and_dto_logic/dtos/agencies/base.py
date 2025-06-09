@@ -3,11 +3,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 from db.enums import ApprovalStatus
-from middleware.enums import JurisdictionType, AgencyType
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    GetByIDBaseDTO,
-    GetManyBaseDTO,
-)
+from middleware.enums import AgencyType
 from middleware.schema_and_dto_logic.dynamic_logic.pydantic_to_marshmallow.core import (
     MetadataInfo,
 )
@@ -68,55 +64,3 @@ class AgencyInfoBaseDTO(BaseModel):
         description="The type of the agency.",
         json_schema_extra=MetadataInfo(required=True),
     )
-
-
-def get_name_field(required: bool):
-    return Field(
-        description="The name of the agency.",
-        json_schema_extra=MetadataInfo(required=required),
-    )
-
-
-def get_jurisdiction_type_field(required: bool):
-    return Field(
-        description="The highest level of jurisdiction of the agency.",
-        json_schema_extra=MetadataInfo(required=required),
-    )
-
-
-class AgencyInfoPutDTO(AgencyInfoBaseDTO):
-    name: str = get_name_field(required=False)
-    jurisdiction_type: JurisdictionType = get_jurisdiction_type_field(required=False)
-    agency_type: Optional[AgencyType] = Field(
-        default=None,
-        description="The type of the agency.",
-        json_schema_extra=MetadataInfo(required=False),
-    )
-
-
-class AgencyInfoPostDTO(AgencyInfoBaseDTO):
-    name: str = get_name_field(required=True)
-    jurisdiction_type: JurisdictionType = get_jurisdiction_type_field(required=True)
-    agency_type: AgencyType = Field(
-        description="The type of the agency.",
-        json_schema_extra=MetadataInfo(required=True),
-    )
-
-
-class AgenciesPostDTO(BaseModel):
-    agency_info: AgencyInfoPostDTO
-    location_ids: Optional[list[int]] = None
-
-
-class RelatedAgencyByIDDTO(GetByIDBaseDTO):
-    agency_id: int
-
-    def get_where_mapping(self):
-        return {
-            "data_source_id": int(self.resource_id),
-            "agency_id": int(self.agency_id),
-        }
-
-
-class AgenciesGetManyDTO(GetManyBaseDTO):
-    approval_status: Optional[ApprovalStatus] = None

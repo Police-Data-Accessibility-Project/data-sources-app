@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from middleware.schema_and_dto_logic.dtos.helpers import (
+from middleware.schema_and_dto_logic.dtos._helpers import (
     default_field_required,
 )
 

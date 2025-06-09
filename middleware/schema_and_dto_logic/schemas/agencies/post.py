@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields, validates_schema, ValidationError
 
 from middleware.enums import JurisdictionType
-from middleware.schema_and_dto_logic.dtos.agencies_dtos import AgencyInfoPostDTO
+from middleware.schema_and_dto_logic.dtos.agencies.post import AgencyInfoPostDTO
 from middleware.schema_and_dto_logic.enums import CSVColumnCondition
 from middleware.schema_and_dto_logic.schemas.agencies.helpers import (
     get_agency_info_field,

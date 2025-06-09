@@ -13,10 +13,8 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetByIDBaseDTO,
     GetManyBaseDTO,
 )
-from middleware.schema_and_dto_logic.dtos.admin_dtos import (
-    AdminUserPostDTO,
-    AdminUserPutDTO,
-)
+from middleware.schema_and_dto_logic.dtos.admin.put import AdminUserPutDTO
+from middleware.schema_and_dto_logic.dtos.admin.post import AdminUserPostDTO
 
 
 def get_users_admin(db_client: DatabaseClient, dto: GetManyBaseDTO) -> Response:

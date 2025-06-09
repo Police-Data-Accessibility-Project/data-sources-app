@@ -38,50 +38,48 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
 )
 from middleware.schema_and_dto_logic.custom_types import DTOTypes
 from middleware.schema_and_dto_logic.non_dto_dataclasses import SchemaPopulateParameters
-from middleware.schema_and_dto_logic.dtos.admin_dtos import (
-    AdminUserPutDTO,
-    AdminUserPostDTO,
-)
-from middleware.schema_and_dto_logic.dtos.agencies_dtos import (
-    AgenciesPostDTO,
+from middleware.schema_and_dto_logic.dtos.admin.put import AdminUserPutDTO
+from middleware.schema_and_dto_logic.dtos.admin.post import AdminUserPostDTO
+from middleware.schema_and_dto_logic.dtos.agencies.related_agency_by_id import (
     RelatedAgencyByIDDTO,
-    AgenciesGetManyDTO,
 )
-from middleware.schema_and_dto_logic.dtos.archives_dtos import (
+from middleware.schema_and_dto_logic.dtos.agencies.post import AgenciesPostDTO
+from middleware.schema_and_dto_logic.dtos.agencies.get_many import AgenciesGetManyDTO
+from middleware.schema_and_dto_logic.dtos.archives import (
     ArchivesGetRequestDTO,
 )
-from middleware.schema_and_dto_logic.dtos.contact_dtos import (
+from middleware.schema_and_dto_logic.dtos.contact import (
     ContactFormPostDTO,
 )
-from middleware.schema_and_dto_logic.dtos.data_requests_dtos import (
-    DataRequestsPutOuterDTO,
-    RelatedSourceByIDDTO,
-    RelatedLocationsByIDDTO,
+from middleware.schema_and_dto_logic.dtos.data_requests.post import (
     DataRequestsPostDTO,
 )
-from middleware.schema_and_dto_logic.dtos.data_requests_dtos import (
+from middleware.schema_and_dto_logic.dtos.data_requests.by_id.source import (
+    RelatedSourceByIDDTO,
+)
+from middleware.schema_and_dto_logic.dtos.data_requests.by_id.locations import (
+    RelatedLocationsByIDDTO,
+)
+from middleware.schema_and_dto_logic.dtos.data_requests.put import (
+    DataRequestsPutOuterDTO,
+)
+from middleware.schema_and_dto_logic.dtos.data_requests.get_many import (
     GetManyDataRequestsRequestsDTO,
 )
-from middleware.schema_and_dto_logic.dtos.data_sources_dtos import (
-    DataSourcesPostDTO,
+from middleware.schema_and_dto_logic.dtos.data_sources.post import DataSourcesPostDTO
+from middleware.schema_and_dto_logic.dtos.data_sources.reject import (
     DataSourcesRejectDTO,
 )
-from middleware.schema_and_dto_logic.dtos.locations_dtos import (
-    LocationPutDTO,
-    LocationsGetRequestDTO,
-)
-from middleware.schema_and_dto_logic.dtos.match_dtos import (
-    AgencyMatchRequestDTO,
-)
-from middleware.schema_and_dto_logic.dtos.metrics_dtos import (
+from middleware.schema_and_dto_logic.dtos.locations.get import LocationsGetRequestDTO
+from middleware.schema_and_dto_logic.dtos.locations.put import LocationPutDTO
+from middleware.schema_and_dto_logic.dtos.match.request import AgencyMatchRequestDTO
+from middleware.schema_and_dto_logic.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
-from middleware.schema_and_dto_logic.dtos.request_reset_password_dtos import (
+from middleware.schema_and_dto_logic.dtos.reset_password.request import (
     RequestResetPasswordRequestDTO,
 )
-from middleware.schema_and_dto_logic.dtos.reset_token_dtos import (
-    ResetPasswordDTO,
-)
+from middleware.schema_and_dto_logic.dtos.reset_password.reset import ResetPasswordDTO
 from middleware.schema_and_dto_logic.dtos.source_collector_dtos import (
     SourceCollectorPostRequestDTO,
     SourceCollectorDuplicatesPostRequestDTO,

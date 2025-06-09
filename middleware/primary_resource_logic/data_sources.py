@@ -30,7 +30,7 @@ from middleware.dynamic_request_logic.supporting_classes import (
 
 from middleware.enums import Relations, PermissionsEnum
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.dtos.data_requests_dtos import (
+from middleware.schema_and_dto_logic.dtos.data_requests.by_id.source import (
     RelatedSourceByIDDTO,
 )
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
@@ -39,9 +39,11 @@ from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetByIDBaseDTO,
 )
 from middleware.common_response_formatting import format_list_response, message_response
-from middleware.schema_and_dto_logic.dtos.data_sources_dtos import (
-    DataSourcesPostDTO,
+from middleware.schema_and_dto_logic.dtos.data_sources.put import (
     DataSourcesPutDTO,
+)
+from middleware.schema_and_dto_logic.dtos.data_sources.post import DataSourcesPostDTO
+from middleware.schema_and_dto_logic.dtos.data_sources.reject import (
     DataSourcesRejectDTO,
 )
 from middleware.util.type_conversion import dataclass_to_filtered_dict

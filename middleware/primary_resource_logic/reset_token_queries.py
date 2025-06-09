@@ -13,10 +13,10 @@ from middleware.exceptions import UserNotFoundError
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.primary_resource_logic.api_key import generate_token
 from middleware.primary_resource_logic.user_queries import user_check_email
-from middleware.schema_and_dto_logic.dtos.reset_token_dtos import (
+from middleware.schema_and_dto_logic.dtos.reset_password.request import (
     RequestResetPasswordRequestDTO,
-    ResetPasswordDTO,
 )
+from middleware.schema_and_dto_logic.dtos.reset_password.reset import ResetPasswordDTO
 from middleware.schema_and_dto_logic.dtos.user_profile_dtos import (
     UserPutDTO,
 )

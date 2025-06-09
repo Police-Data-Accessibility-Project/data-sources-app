@@ -17,10 +17,8 @@ from middleware.dynamic_request_logic.supporting_classes import (
 )
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto_logic.schemas.agencies.put import AgenciesPutSchema
-from middleware.schema_and_dto_logic.dtos.agencies_dtos import (
-    AgenciesPostDTO,
-    AgenciesGetManyDTO,
-)
+from middleware.schema_and_dto_logic.dtos.agencies.post import AgenciesPostDTO
+from middleware.schema_and_dto_logic.dtos.agencies.get_many import AgenciesGetManyDTO
 from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
     GetByIDBaseDTO,
 )

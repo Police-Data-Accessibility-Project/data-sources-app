@@ -26,12 +26,12 @@ from middleware.schema_and_dto_logic.dynamic_logic.dynamic_csv_to_schema_convers
 from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import (
     setup_dto_class,
 )
-from middleware.schema_and_dto_logic.dtos.agencies_dtos import (
-    AgenciesPostDTO,
+from middleware.schema_and_dto_logic.dtos.agencies.post import (
     AgencyInfoPostDTO,
+    AgenciesPostDTO,
 )
 
-from middleware.schema_and_dto_logic.dtos.bulk_dtos import (
+from middleware.schema_and_dto_logic.dtos.bulk import (
     BulkRequestDTO,
 )
 

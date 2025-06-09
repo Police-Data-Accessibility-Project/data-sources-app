@@ -19,11 +19,9 @@ from db.enums import (
     UpdateFrequency,
 )
 from middleware.enums import OutputFormatEnum, RecordTypes
-from middleware.schema_and_dto_logic.dtos.locations_dtos import (
-    LocationPutDTO,
-    LocationsGetRequestDTO,
-)
-from middleware.schema_and_dto_logic.dtos.metrics_dtos import (
+from middleware.schema_and_dto_logic.dtos.locations.get import LocationsGetRequestDTO
+from middleware.schema_and_dto_logic.dtos.locations.put import LocationPutDTO
+from middleware.schema_and_dto_logic.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
 from middleware.schema_and_dto_logic.dtos.source_collector_dtos import (

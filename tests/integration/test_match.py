@@ -2,18 +2,11 @@ from dataclasses import dataclass
 from typing import Optional
 
 import pytest
-from tests.conftest import test_data_creator_flask, monkeysession
+from tests.conftest import test_data_creator_flask
 from middleware.primary_resource_logic.match import (
-    try_matching_agency,
     AgencyMatchStatus,
 )
-from middleware.schema_and_dto_logic.dtos.match_dtos import (
-    AgencyMatchRequestDTO,
-)
 from tests.helper_scripts.common_test_data import get_test_name
-from tests.helper_scripts.complex_test_data_creation_functions import (
-    get_sample_location_info,
-)
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )

@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields, post_load
 
-from middleware.schema_and_dto_logic.dtos.data_requests_dtos import RequestInfoPostDTO
+from middleware.schema_and_dto_logic.dtos.data_requests.post import RequestInfoPostDTO
 from middleware.schema_and_dto_logic.schemas.data_requests.base import (
     DataRequestsSchema,
 )

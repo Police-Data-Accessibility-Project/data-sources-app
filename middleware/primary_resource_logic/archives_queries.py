@@ -6,7 +6,7 @@ import psycopg
 from flask import make_response
 
 from db.client import DatabaseClient
-from middleware.schema_and_dto_logic.dtos.archives_dtos import (
+from middleware.schema_and_dto_logic.dtos.archives import (
     ArchivesGetRequestDTO,
 )
 from utilities.common import convert_dates_to_strings

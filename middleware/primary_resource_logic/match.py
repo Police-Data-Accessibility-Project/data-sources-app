@@ -1,16 +1,16 @@
 from enum import Enum
-from typing import Optional, List
+from typing import Optional
 
 from flask import Response
 
 from db.client import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.dtos.match_dtos import (
+from middleware.schema_and_dto_logic.dtos.match.response import (
     AgencyMatchResponseOuterDTO,
-    AgencyMatchRequestDTO,
     AgencyMatchResponseInnerDTO,
 )
+from middleware.schema_and_dto_logic.dtos.match.request import AgencyMatchRequestDTO
 
 
 class AgencyMatchStatus(Enum):

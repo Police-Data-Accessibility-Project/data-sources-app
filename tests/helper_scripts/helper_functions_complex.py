@@ -18,9 +18,9 @@ from middleware.enums import (
     JurisdictionType,
     AgencyType,
 )
-from middleware.schema_and_dto_logic.dtos.agencies_dtos import (
-    AgenciesPostDTO,
+from middleware.schema_and_dto_logic.dtos.agencies.post import (
     AgencyInfoPostDTO,
+    AgenciesPostDTO,
 )
 from resources.instantiations.api_key import API_KEY_ROUTE
 from tests.helper_scripts.common_test_data import get_test_name, get_test_email
