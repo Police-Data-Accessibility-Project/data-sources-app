@@ -15,4 +15,10 @@ class SearchRequestsDTO(SearchFollowRequestBaseDTO):
         description="The id of the location.",
         json_schema_extra=MetadataInfo(source=SourceMappingEnum.QUERY_ARGS),
     )
-    output_format: Optional[OutputFormatEnum] = None
+    output_format: Optional[OutputFormatEnum] = Field(
+        default=None,
+        description="Desired output format.",
+        json_schema_extra=MetadataInfo(
+            required=False, source=SourceMappingEnum.QUERY_ARGS
+        ),
+    )

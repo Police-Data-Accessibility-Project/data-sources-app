@@ -45,6 +45,12 @@ from db.db_client_dataclasses import (
     WhereMapping,
 )
 from db.exceptions import LocationDoesNotExistError
+from db.models.implementations.core.location.county import County
+from db.models.implementations.core.location.locality import Locality
+from db.models.implementations.core.location.us_state import USState
+from db.queries.user_profile.get_user_recent_searches import (
+    GetUserRecentSearchesQueryBuilder,
+)
 from db.result_formatter import ResultFormatter
 from db.subquery_logic import SubqueryParameters
 from db.dynamic_query_constructor import DynamicQueryConstructor
@@ -1824,20 +1830,10 @@ class DatabaseClient:
             )
             self.session.execute(query)
 
+    @session_manager
     def get_user_recent_searches(self, user_id: int):
-        return self._select_from_relation(
-            relation_name=Relations.RECENT_SEARCHES_EXPANDED.value,
-            columns=[
-                "location_id",
-                "state_name",
-                "county_name",
-                "locality_name",
-                "location_type",
-                "record_categories",
-            ],
-            where_mappings={"user_id": user_id},
-            build_metadata=True,
-        )
+        builder = GetUserRecentSearchesQueryBuilder(user_id, self.session)
+        return builder.run()
 
     def get_record_type_id_by_name(self, record_type_name: str):
         return self._select_single_entry_from_relation(

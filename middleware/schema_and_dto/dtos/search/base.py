@@ -1,29 +1,37 @@
-from pydantic import BaseModel, model_validator
+from typing import Optional
+
+from pydantic import BaseModel, model_validator, Field
 from werkzeug.exceptions import BadRequest
 
 from middleware.enums import RecordTypes
-from middleware.schema_and_dto.dtos._helpers import default_field_not_required
-from utilities.enums import RecordCategories
+from middleware.schema_and_dto.dynamic_logic.pydantic_to_marshmallow.generator.models.metadata import (
+    MetadataInfo,
+)
+from utilities.enums import RecordCategories, SourceMappingEnum
 
 
 class SearchFollowRequestBaseDTO(BaseModel):
-    record_categories: list[RecordCategories] = default_field_not_required(
-        description="Selected record categories."
+    record_categories: Optional[list[RecordCategories]] = Field(
+        default=None,
+        description="Selected record categories.",
+        json_schema_extra=MetadataInfo(
+            required=False, source=SourceMappingEnum.QUERY_ARGS
+        ),
     )
-    record_types: list[RecordTypes] = default_field_not_required(
-        description="Selected record types."
+    record_types: Optional[list[RecordTypes]] = Field(
+        default=None,
+        description="Selected record types.",
+        json_schema_extra=MetadataInfo(
+            required=False, source=SourceMappingEnum.QUERY_ARGS
+        ),
     )
 
     @model_validator(mode="before")
     def check_exclusive_fields(cls, values):
         record_categories = values.get("record_categories")
         record_types = values.get("record_types")
-        if record_categories is None and record_types is None:
-            raise BadRequest(
-                "One of record_categories or record_types must be provided."
-            )
         if record_categories is not None and record_types is not None:
             raise BadRequest(
-                "Only one of record_categories or record_types can be provided."
+                "Only one of 'record_categories' or 'record_types' should be provided."
             )
         return values
