@@ -1,19 +1,9 @@
-from typing import Any
-
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from db.models.implementations.core.record.type import RecordType
-from db.models.implementations.core.record.category import RecordCategory
 from db.queries.builder import QueryBuilderBase
-from middleware.enums import RecordTypes
-from middleware.schema_and_dto.dtos.search.national import (
-    SearchFollowNationalRequestDTO,
-)
-from utilities.enums import RecordCategories
 
 
-class FollowNationalBaseQueryBuilder(QueryBuilderBase):
+class FollowBaseQueryBuilder(QueryBuilderBase):
 
     def __init__(self, dto: SearchFollowNationalRequestDTO, session: Session):
         super().__init__(session)
@@ -52,5 +42,3 @@ class FollowNationalBaseQueryBuilder(QueryBuilderBase):
             )
 
         return record_type_ids
-
-    def run(self) -> Any: ...

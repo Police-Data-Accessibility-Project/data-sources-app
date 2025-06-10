@@ -90,6 +90,18 @@ class DataSourceIDMixin:
         )
 
 
+class RecordTypeIDMixin:
+    record_type_id: Mapped[int] = mapped_column(ForeignKey("public.record_types.id"))
+
+    @declared_attr
+    def record_type(cls) -> Mapped["RecordType"]:
+        return relationship(
+            "RecordType",
+            primaryjoin=f"foreign({cls.__name__}.record_type_id) == RecordType.id",
+            uselist=False,
+        )
+
+
 class IterWithSpecialCasesMixin:
 
     special_cases: Optional[dict] = None

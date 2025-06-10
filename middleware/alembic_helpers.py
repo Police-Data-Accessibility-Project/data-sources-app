@@ -109,3 +109,25 @@ def remove_permission(permission_name):
         DELETE FROM permissions WHERE permission_name = :permission_name"""
         ).bindparams(permission_name=permission_name)
     )
+
+
+def id_column():
+    return sa.Column("id", sa.Integer, primary_key=True, nullable=False)
+
+
+def user_id_column():
+    return sa.Column(
+        "user_id",
+        sa.Integer,
+        sa.ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+
+
+def record_type_id_column():
+    return sa.Column(
+        "record_type_id",
+        sa.Integer,
+        sa.ForeignKey("record_types.id", ondelete="CASCADE"),
+        nullable=False,
+    )
