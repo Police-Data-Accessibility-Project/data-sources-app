@@ -1,5 +1,11 @@
 from flask import Response
 
+from endpoints.schema_config.instantiations.bulk.agencies import (
+    BulkAgenciesPostEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.bulk.data_sources import (
+    BulkDataSourcesPostEndpointSchemaConfig,
+)
 from middleware.access_logic import (
     AccessInfoPrimary,
 )
@@ -42,7 +48,7 @@ class AgenciesBulk(PsycopgResource):
     def post(self, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             wrapper_function=bulk_post_agencies,
-            schema_populate_parameters=SchemaConfigs.BULK_AGENCIES_POST.value.get_schema_populate_parameters(),
+            schema_populate_parameters=BulkAgenciesPostEndpointSchemaConfig.get_schema_populate_parameters(),
         )
 
 
@@ -63,5 +69,5 @@ class DataSourcesBulk(PsycopgResource):
     def post(self, access_info: AccessInfoPrimary):
         return self.run_endpoint(
             wrapper_function=bulk_post_data_sources,
-            schema_populate_parameters=SchemaConfigs.BULK_DATA_SOURCES_POST.value.get_schema_populate_parameters(),
+            schema_populate_parameters=BulkDataSourcesPostEndpointSchemaConfig.get_schema_populate_parameters(),
         )

@@ -1,6 +1,30 @@
 from flask import Response
 
 from config import limiter
+from endpoints.schema_config.instantiations.data_requests.get_many import (
+    DataRequestsGetManyEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.data_requests.post import (
+    DataRequestsPostEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.data_requests.related_locations.delete import (
+    DataRequestsRelatedLocationsDeleteEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.data_requests.related_locations.get import (
+    DataRequestsRelatedLocationsGetEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.data_requests.related_locations.post import (
+    DataRequestsRelatedLocationsPostEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.data_requests.related_sources.delete import (
+    DataRequestsRelatedSourcesDeleteEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.data_requests.related_sources.get import (
+    DataRequestsRelatedSourcesGetEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.data_requests.related_sources.post import (
+    DataRequestsRelatedSourcesPost,
+)
 from middleware.access_logic import (
     AccessInfoPrimary,
 )
@@ -117,7 +141,7 @@ class DataRequests(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=get_data_requests_wrapper,
-            schema_populate_parameters=SchemaConfigs.DATA_REQUESTS_GET_MANY.value.get_schema_populate_parameters(),
+            schema_populate_parameters=DataRequestsGetManyEndpointSchemaConfig.get_schema_populate_parameters(),
             access_info=access_info,
         )
 
@@ -136,7 +160,7 @@ class DataRequests(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=create_data_request_wrapper,
-            schema_populate_parameters=SchemaConfigs.DATA_REQUESTS_POST.value.get_schema_populate_parameters(),
+            schema_populate_parameters=DataRequestsPostEndpointSchemaConfig.get_schema_populate_parameters(),
             access_info=access_info,
         )
 
@@ -159,7 +183,7 @@ class DataRequestsRelatedSources(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=get_data_request_related_sources,
-            schema_populate_parameters=SchemaConfigs.DATA_REQUESTS_RELATED_SOURCES_GET.value.get_schema_populate_parameters(),
+            schema_populate_parameters=DataRequestsRelatedSourcesGetEndpointSchemaConfig.get_schema_populate_parameters(),
         )
 
 
@@ -184,7 +208,7 @@ class DataRequestsRelatedSourcesById(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=create_data_request_related_source,
             access_info=access_info,
-            schema_populate_parameters=SchemaConfigs.DATA_REQUESTS_RELATED_SOURCES_POST.value.get_schema_populate_parameters(),
+            schema_populate_parameters=DataRequestsRelatedSourcesPost.get_schema_populate_parameters(),
         )
 
     @endpoint_info(
@@ -203,7 +227,7 @@ class DataRequestsRelatedSourcesById(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=delete_data_request_related_source,
-            schema_populate_parameters=SchemaConfigs.DATA_REQUESTS_RELATED_SOURCES_POST.value.get_schema_populate_parameters(),
+            schema_populate_parameters=DataRequestsRelatedSourcesDeleteEndpointSchemaConfig.get_schema_populate_parameters(),
             access_info=access_info,
         )
 
@@ -248,7 +272,7 @@ class DataRequestsRelatedLocations(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=get_data_request_related_locations,
-            schema_populate_parameters=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_GET.value.get_schema_populate_parameters(),
+            schema_populate_parameters=DataRequestsRelatedLocationsGetEndpointSchemaConfig.get_schema_populate_parameters(),
         )
 
 
@@ -271,7 +295,7 @@ class DataRequestsRelatedLocationsById(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=create_data_request_related_location,
             access_info=access_info,
-            schema_populate_parameters=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_POST.value.get_schema_populate_parameters(),
+            schema_populate_parameters=DataRequestsRelatedLocationsPostEndpointSchemaConfig.get_schema_populate_parameters(),
         )
 
     @endpoint_info(
@@ -291,6 +315,6 @@ class DataRequestsRelatedLocationsById(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=delete_data_request_related_location,
-            schema_populate_parameters=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_POST.value.get_schema_populate_parameters(),
+            schema_populate_parameters=DataRequestsRelatedLocationsDeleteEndpointSchemaConfig.get_schema_populate_parameters(),
             access_info=access_info,
         )

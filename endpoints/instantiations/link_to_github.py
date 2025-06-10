@@ -2,6 +2,9 @@ from http import HTTPStatus
 
 from config import limiter
 from db.client import DatabaseClient
+from endpoints.schema_config.instantiations.auth.github.link import (
+    AuthGithubLinkEndpointSchemaConfig,
+)
 from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import NO_AUTH_INFO
 from middleware.decorators import endpoint_info
@@ -53,11 +56,7 @@ class LinkToGithub(PsycopgResource):
         Link the user to their Github account
         :return:
         """
-        dto = populate_schema_with_request_content(
-            schema=SchemaConfigs.AUTH_GITHUB_LINK.value.input_schema,
-            dto_class=SchemaConfigs.AUTH_GITHUB_LINK.value.input_dto_class,
-        )
-        return link_github_account_request_wrapper(
-            db_client=DatabaseClient(),
-            dto=dto,
+        return self.run_endpoint(
+            wrapper_function=link_github_account_request_wrapper,
+            schema_populate_parameters=AuthGithubLinkEndpointSchemaConfig.get_schema_populate_parameters(),
         )

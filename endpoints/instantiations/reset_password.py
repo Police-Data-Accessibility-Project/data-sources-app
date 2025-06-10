@@ -1,5 +1,8 @@
 from flask import Response
 
+from endpoints.schema_config.instantiations.reset_password.reset import (
+    ResetPasswordEndpointSchemaConfig,
+)
 from middleware.access_logic import (
     PasswordResetTokenAccessInfo,
 )
@@ -43,6 +46,6 @@ class ResetPassword(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=reset_password,
-            schema_populate_parameters=SchemaConfigs.RESET_PASSWORD.value.get_schema_populate_parameters(),
+            schema_populate_parameters=ResetPasswordEndpointSchemaConfig.get_schema_populate_parameters(),
             access_info=access_info,
         )

@@ -1,6 +1,11 @@
 from http import HTTPStatus
 
-
+from endpoints.schema_config.instantiations.auth.resend_validate_email import (
+    AuthResendValidationEmailEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.auth.signup import (
+    AuthSignupEndpointSchemaConfig,
+)
 from middleware.access_logic import (
     AccessInfoPrimary,
     ValidateEmailTokenAccessInfo,
@@ -39,7 +44,7 @@ class Signup(PsycopgResource):
     def post(self, access_info: AccessInfoPrimary):
         return self.run_endpoint(
             wrapper_function=signup_wrapper,
-            schema_populate_parameters=SchemaConfigs.AUTH_SIGNUP.value.get_schema_populate_parameters(),
+            schema_populate_parameters=AuthSignupEndpointSchemaConfig.get_schema_populate_parameters(),
         )
 
 
@@ -85,5 +90,5 @@ class ResendValidationEmail(PsycopgResource):
     ):
         return self.run_endpoint(
             wrapper_function=resend_validation_email_wrapper,
-            schema_populate_parameters=SchemaConfigs.AUTH_RESEND_VALIDATION_EMAIL.value.get_schema_populate_parameters(),
+            schema_populate_parameters=AuthResendValidationEmailEndpointSchemaConfig.get_schema_populate_parameters(),
         )

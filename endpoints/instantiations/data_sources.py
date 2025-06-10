@@ -1,6 +1,24 @@
 from flask import Response
 
 from config import limiter
+from endpoints.schema_config.instantiations.data_sources.by_id.agencies.delete import (
+    DataSourcesRelatedAgenciesDeleteEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.data_sources.by_id.agencies.get import (
+    DataSourcesRelatedAgenciesGet,
+)
+from endpoints.schema_config.instantiations.data_sources.by_id.agencies.post import (
+    DataSourcesRelatedAgenciesPostEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.data_sources.by_id.reject import (
+    DataSourcesByIDRejectEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.data_sources.get_many import (
+    DataSourcesGetManyEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.data_sources.post import (
+    DataSourcesPostEndpointSchemaConfig,
+)
 from middleware.access_logic import (
     AccessInfoPrimary,
 )
@@ -160,10 +178,7 @@ class DataSources(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=get_data_sources_wrapper,
-            schema_populate_parameters=SchemaPopulateParameters(
-                schema=DataSourcesGetManyRequestSchema(),
-                dto_class=DataSourcesGetManyRequestDTO,
-            ),
+            schema_populate_parameters=DataSourcesGetManyEndpointSchemaConfig.get_schema_populate_parameters(),
             access_info=access_info,
         )
 
@@ -185,7 +200,7 @@ class DataSources(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=add_new_data_source_wrapper,
-            schema_populate_parameters=SchemaConfigs.DATA_SOURCES_POST.value.get_schema_populate_parameters(),
+            schema_populate_parameters=DataSourcesPostEndpointSchemaConfig.get_schema_populate_parameters(),
             access_info=access_info,
         )
 
@@ -212,7 +227,7 @@ class DataSourcesRelatedAgencies(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=get_data_source_related_agencies,
-            schema_populate_parameters=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_GET.value.get_schema_populate_parameters(),
+            schema_populate_parameters=DataSourcesRelatedAgenciesGet.get_schema_populate_parameters(),
         )
 
 
@@ -236,7 +251,7 @@ class DataSourcesRelatedAgenciesById(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=create_data_source_related_agency,
-            schema_populate_parameters=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_POST.value.get_schema_populate_parameters(),
+            schema_populate_parameters=DataSourcesRelatedAgenciesPostEndpointSchemaConfig.get_schema_populate_parameters(),
             access_info=access_info,
         )
 
@@ -257,7 +272,7 @@ class DataSourcesRelatedAgenciesById(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=delete_data_source_related_agency,
-            schema_populate_parameters=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_DELETE.value.get_schema_populate_parameters(),
+            schema_populate_parameters=DataSourcesRelatedAgenciesDeleteEndpointSchemaConfig.get_schema_populate_parameters(),
             access_info=access_info,
         )
 
@@ -284,5 +299,5 @@ class DataSourcesRejectByID(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=reject_data_source,
-            schema_populate_parameters=SchemaConfigs.DATA_SOURCES_BY_ID_REJECT.value.get_schema_populate_parameters(),
+            schema_populate_parameters=DataSourcesByIDRejectEndpointSchemaConfig.get_schema_populate_parameters(),
         )

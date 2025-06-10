@@ -1,6 +1,7 @@
 from flask import Response
 
 from config import limiter
+from endpoints.schema_config.instantiations.auth.login import LoginEndpointSchemaConfig
 from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import NO_AUTH_INFO
 from middleware.decorators import endpoint_info
@@ -38,5 +39,5 @@ class Login(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=try_logging_in,
-            schema_populate_parameters=SchemaConfigs.LOGIN_POST.value.get_schema_populate_parameters(),
+            schema_populate_parameters=LoginEndpointSchemaConfig.get_schema_populate_parameters(),
         )

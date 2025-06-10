@@ -1,6 +1,9 @@
 from http import HTTPStatus
 
 from config import limiter
+from endpoints.schema_config.instantiations.auth.github.login import (
+    AuthGithubLoginEndpointSchemaConfig,
+)
 from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import NO_AUTH_INFO
 from middleware.decorators import endpoint_info
@@ -55,5 +58,5 @@ class LoginWithGithub(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=login_with_github_wrapper,
-            schema_populate_parameters=SchemaConfigs.AUTH_GITHUB_LOGIN.value.get_schema_populate_parameters(),
+            schema_populate_parameters=AuthGithubLoginEndpointSchemaConfig.get_schema_populate_parameters(),
         )

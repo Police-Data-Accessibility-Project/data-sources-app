@@ -1,3 +1,9 @@
+from endpoints.schema_config.instantiations.source_collector.data_sources import (
+    SourceCollectorDataSourcesPostEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.source_collector.duplicates import (
+    SourceCollectorDuplicatesPostEndpointSchemaConfig,
+)
 from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import AuthenticationInfo
 from middleware.decorators import endpoint_info
@@ -32,7 +38,7 @@ class SourceCollectorDataSources(PsycopgResource):
     def post(self, access_info: AccessInfoPrimary):
         return self.run_endpoint(
             wrapper_function=add_data_sources_from_source_collector,
-            schema_populate_parameters=SchemaConfigs.SOURCE_COLLECTOR_DATA_SOURCES_POST.value.get_schema_populate_parameters(),
+            schema_populate_parameters=SourceCollectorDataSourcesPostEndpointSchemaConfig.get_schema_populate_parameters(),
         )
 
 
@@ -54,5 +60,5 @@ class SourceCollectorDataSourcesDuplicates(PsycopgResource):
     def post(self, access_info: AccessInfoPrimary):
         return self.run_endpoint(
             wrapper_function=check_for_duplicate_urls,
-            schema_populate_parameters=SchemaConfigs.SOURCE_COLLECTOR_DUPLICATES_POST.value.get_schema_populate_parameters(),
+            schema_populate_parameters=SourceCollectorDuplicatesPostEndpointSchemaConfig.get_schema_populate_parameters(),
         )

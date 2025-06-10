@@ -1,5 +1,6 @@
 from flask import Response
 
+from endpoints.schema_config.instantiations.match import MatchAgencyEndpointSchemaConfig
 from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import STANDARD_JWT_AUTH_INFO
 from middleware.decorators import endpoint_info
@@ -34,5 +35,5 @@ class MatchAgencies(PsycopgResource):
     def post(self, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             wrapper_function=match_agency_wrapper,
-            schema_populate_parameters=SchemaConfigs.MATCH_AGENCY.value.get_schema_populate_parameters(),
+            schema_populate_parameters=MatchAgencyEndpointSchemaConfig.get_schema_populate_parameters(),
         )
