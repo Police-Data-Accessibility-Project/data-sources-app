@@ -62,29 +62,37 @@ from middleware.exceptions import (
     UserNotFoundError,
     DuplicateUserError,
 )
-from db.models.implementations.core import (
-    ExternalAccount,
-    User,
-    DataRequestExpanded,
-    RecentSearch,
-    RecordCategory,
-    Agency,
-    Location,
-    LocationExpanded,
-    TableCountLog,
-    RecordType,
-    DataSourceExpanded,
-    DataSource,
-    DataRequest,
-    DataRequestsGithubIssueInfo,
+from db.models.implementations.core.notification.queue.data_source import (
     DataSourceUserNotificationQueue,
-    DataRequestUserNotificationQueue,
-    DataRequestPendingEventNotification,
-    DataSourcePendingEventNotification,
-    NotificationLog,
-    DependentLocation,
-    DistinctSourceURL,
 )
+from db.models.implementations.core.notification.queue.data_request import (
+    DataRequestUserNotificationQueue,
+)
+from db.models.implementations.core.notification.pending.data_source import (
+    DataSourcePendingEventNotification,
+)
+from db.models.implementations.core.notification.pending.data_request import (
+    DataRequestPendingEventNotification,
+)
+from db.models.implementations.core.recent_search.core import RecentSearch
+from db.models.implementations.core.distinct_source_url import DistinctSourceURL
+from db.models.implementations.core.log.notification import NotificationLog
+from db.models.implementations.core.location.dependent import DependentLocation
+from db.models.implementations.core.user.core import User
+from db.models.implementations.core.record.type import RecordType
+from db.models.implementations.core.record.category import RecordCategory
+from db.models.implementations.core.data_request.github_issue_info import (
+    DataRequestsGithubIssueInfo,
+)
+from db.models.implementations.core.data_source.expanded import DataSourceExpanded
+from db.models.implementations.core.data_source.core import DataSource
+from db.models.implementations.core.data_request.expanded import DataRequestExpanded
+from db.models.implementations.core.data_request.core import DataRequest
+from db.models.implementations.core.external_account import ExternalAccount
+from db.models.implementations.core.location.expanded import LocationExpanded
+from db.models.implementations.core.location.core import Location
+from db.models.implementations.core.log.table_count import TableCountLog
+from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.link import (
     LinkAgencyDataSource,
     LinkAgencyLocation,

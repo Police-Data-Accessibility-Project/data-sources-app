@@ -27,11 +27,9 @@ from middleware.exceptions import (
     UserNotFoundError,
     DuplicateUserError,
 )
-from db.models.implementations.core import (
-    ExternalAccount,
-    TestTable,
-    User,
-)
+from db.models.implementations.core.user.core import User
+from db.models.implementations.core.test import TestTable
+from db.models.implementations.core.external_account import ExternalAccount
 from db.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import PermissionsEnum, Relations, RecordTypes
 from tests.conftest import (

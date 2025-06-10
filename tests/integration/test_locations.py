@@ -5,7 +5,7 @@ from typing import Optional
 import pytest
 
 from db.enums import LocationType
-from db.models.implementations.core import Location
+from db.models.implementations.core.location.core import Location
 from middleware.schema_and_dto.dtos.locations.get import LocationsGetRequestDTO
 from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
 from tests.conftest import test_data_creator_flask

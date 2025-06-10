@@ -10,11 +10,9 @@ from db.db_client_dataclasses import (
     OrderByParameters,
     WhereMapping,
 )
-from db.models.implementations.core import (
-    Agency,
-    DataSourceExpanded,
-    DataRequestExpanded,
-)
+from db.models.implementations.core.data_source.expanded import DataSourceExpanded
+from db.models.implementations.core.data_request.expanded import DataRequestExpanded
+from db.models.implementations.core.agency.core import Agency
 from db.models.table_reference import (
     SQL_ALCHEMY_TABLE_REFERENCE,
     convert_to_column_reference,

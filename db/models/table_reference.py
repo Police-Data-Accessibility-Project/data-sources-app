@@ -1,33 +1,33 @@
 from sqlalchemy import Column
 
-from db.models.implementations.core import (
-    Agency,
-    AgencyExpanded,
-    DataRequest,
-    DataRequestExpanded,
-    DataSource,
-    DataSourceExpanded,
-    DataSourceArchiveInfo,
-    ResetToken,
-    TestTable,
-    User,
-    USState,
-    County,
-    Locality,
-    Location,
-    LocationExpanded,
-    ExternalAccount,
+from db.models.implementations.core.recent_search.expanded import RecentSearchExpanded
+from db.models.implementations.core.recent_search.core import RecentSearch
+from db.models.implementations.core.distinct_source_url import DistinctSourceURL
+from db.models.implementations.core.log.notification import NotificationLog
+from db.models.implementations.core.log.change import ChangeLog
+from db.models.implementations.core.location.dependent import DependentLocation
+from db.models.implementations.core.user.pending import PendingUser
+from db.models.implementations.core.user.core import User
+from db.models.implementations.core.test import TestTable
+from db.models.implementations.core.reset_token import ResetToken
+from db.models.implementations.core.record.type import RecordType
+from db.models.implementations.core.record.category import RecordCategory
+from db.models.implementations.core.data_request.github_issue_info import (
     DataRequestsGithubIssueInfo,
-    DependentLocation,
-    RecentSearch,
-    RecordCategory,
-    RecentSearchExpanded,
-    RecordType,
-    PendingUser,
-    ChangeLog,
-    NotificationLog,
-    DistinctSourceURL,
 )
+from db.models.implementations.core.data_source.archive import DataSourceArchiveInfo
+from db.models.implementations.core.data_source.expanded import DataSourceExpanded
+from db.models.implementations.core.data_source.core import DataSource
+from db.models.implementations.core.data_request.expanded import DataRequestExpanded
+from db.models.implementations.core.data_request.core import DataRequest
+from db.models.implementations.core.location.us_state import USState
+from db.models.implementations.core.external_account import ExternalAccount
+from db.models.implementations.core.location.expanded import LocationExpanded
+from db.models.implementations.core.location.core import Location
+from db.models.implementations.core.location.locality import Locality
+from db.models.implementations.core.location.county import County
+from db.models.implementations.core.agency.expanded import AgencyExpanded
+from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.link import (
     LinkAgencyDataSource,
     LinkDataSourceDataRequest,

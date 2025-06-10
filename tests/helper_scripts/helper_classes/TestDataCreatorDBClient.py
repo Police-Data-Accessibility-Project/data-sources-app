@@ -12,9 +12,11 @@ from db.enums import (
     EventType,
     ExternalAccountTypeEnum,
 )
-from db.models.implementations.core import (
-    DataRequestUserNotificationQueue,
+from db.models.implementations.core.notification.queue.data_source import (
     DataSourceUserNotificationQueue,
+)
+from db.models.implementations.core.notification.queue.data_request import (
+    DataRequestUserNotificationQueue,
 )
 from db.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import JurisdictionType, Relations, AgencyType

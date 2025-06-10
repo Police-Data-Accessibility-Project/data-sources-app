@@ -9,11 +9,9 @@ from db.constants import (
     METADATA_METHOD_NAMES,
 )
 from db.enums import LocationType
-from db.models.implementations.core import (
-    Agency,
-    DataSourceExpanded,
-    LocationExpanded,
-)
+from db.models.implementations.core.data_source.expanded import DataSourceExpanded
+from db.models.implementations.core.location.expanded import LocationExpanded
+from db.models.implementations.core.agency.core import Agency
 from db.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from db.subquery_logic import SubqueryParameters
 from utilities.common import format_arrays

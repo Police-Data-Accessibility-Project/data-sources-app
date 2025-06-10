@@ -10,7 +10,9 @@ from endpoints.schema_config.instantiations.search.location_and_record_type impo
 from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import API_OR_JWT_AUTH_INFO
 from middleware.decorators import endpoint_info
-from middleware.primary_resource_logic.search import search_wrapper
+from middleware.primary_resource_logic.search.wrappers.record_type_and_record_categories import (
+    search_wrapper,
+)
 
 
 @namespace_search.route("/search-location-and-record-type")

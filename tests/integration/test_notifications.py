@@ -4,11 +4,13 @@ from unittest.mock import MagicMock, call, ANY
 import pytest
 
 from db.enums import EventType, EntityType
-from db.models.implementations.core import (
-    DataRequestUserNotificationQueue,
+from db.models.implementations.core.notification.queue.data_source import (
     DataSourceUserNotificationQueue,
-    NotificationLog,
 )
+from db.models.implementations.core.notification.queue.data_request import (
+    DataRequestUserNotificationQueue,
+)
+from db.models.implementations.core.log.notification import NotificationLog
 from middleware.custom_dataclasses import EventInfo, EventBatch
 from endpoints.schema_config.enums import SchemaConfigs
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
