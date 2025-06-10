@@ -1,6 +1,5 @@
-from . import core, expanded
+from . import core
 
 __all__ = [
     "core",
-    "expanded",
 ]
