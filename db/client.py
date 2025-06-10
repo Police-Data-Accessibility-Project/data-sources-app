@@ -48,6 +48,8 @@ from db.exceptions import LocationDoesNotExistError
 from db.models.implementations.core.location.county import County
 from db.models.implementations.core.location.locality import Locality
 from db.models.implementations.core.location.us_state import USState
+from db.queries.search.follow.follow import CreateFollowQueryBuilder
+from db.queries.search.follow.unfollow import DeleteFollowQueryBuilder
 from db.queries.user_profile.get_user_recent_searches import (
     GetUserRecentSearchesQueryBuilder,
 )
@@ -163,6 +165,7 @@ class DatabaseClient:
     def __init__(self):
         self.connection: PgConnection = initialize_psycopg_connection()
         self.session_maker = initialize_sqlalchemy_session()
+        self.session = None
         self.cursor: Optional[Cursor] = None
 
     def cursor_manager(row_factory=dict_row):
@@ -972,10 +975,22 @@ class DatabaseClient:
         column_to_return="id",
     )
 
-    create_followed_search = partialmethod(
-        _create_entry_in_table,
-        table_name=Relations.LINK_USER_FOLLOWED_LOCATION.value,
-    )
+    @session_manager
+    def create_followed_search(
+        self,
+        user_id: int,
+        location_id: int,
+        record_types: Optional[list[RecordTypes]] = None,
+        record_categories: Optional[list[RecordCategories]] = None,
+    ) -> None:
+        builder = CreateFollowQueryBuilder(
+            user_id=user_id,
+            location_id=location_id,
+            record_types=record_types,
+            record_categories=record_categories,
+            session=self.session,
+        )
+        builder.run()
 
     def create_county(self, name: str, fips: str, state_id: int) -> int:
         """
@@ -1420,9 +1435,22 @@ class DatabaseClient:
         _delete_from_table, table_name=Relations.LINK_LOCATIONS_DATA_REQUESTS.value
     )
 
-    delete_followed_search = partialmethod(
-        _delete_from_table, table_name=Relations.LINK_USER_FOLLOWED_LOCATION.value
-    )
+    @session_manager
+    def delete_followed_search(
+        self,
+        user_id: int,
+        location_id: int,
+        record_types: Optional[list[RecordTypes]] = None,
+        record_categories: Optional[list[RecordCategories]] = None,
+    ):
+        builder = DeleteFollowQueryBuilder(
+            user_id=user_id,
+            location_id=location_id,
+            record_types=record_types,
+            record_categories=record_categories,
+            session=self.session,
+        )
+        builder.run()
 
     delete_data_source_agency_relation = partialmethod(
         _delete_from_table, table_name=Relations.LINK_AGENCIES_DATA_SOURCES.value

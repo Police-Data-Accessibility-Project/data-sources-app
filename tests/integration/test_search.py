@@ -357,7 +357,7 @@ def test_search_follow(search_test_setup: SearchTestSetup):
         headers=tus_1.jwt_authorization_header,
         location_id=-1,
         expected_response_status=HTTPStatus.BAD_REQUEST,
-        expected_json_content={"message": "Location for followed search not found."},
+        expected_json_content={"message": "Location not found."},
     )
 
     # User should try to follow an extant location and be granted
@@ -372,8 +372,8 @@ def test_search_follow(search_test_setup: SearchTestSetup):
 
     follow_extant_location()
 
-    # If the user tries to follow the same location again, it should fail
-    follow_extant_location(message="Location already followed.")
+    # If the user tries to follow the same location again, it should return the same result
+    follow_extant_location(message="Location followed.")
 
     # User should check current follows and find only the one they just followed
     call_follow_get(
@@ -404,7 +404,7 @@ def test_search_follow(search_test_setup: SearchTestSetup):
     call_follow_delete(
         tus=tus_1,
         endpoint=url_for_following,
-        expected_json_content={"message": "Location for followed search deleted."},
+        expected_json_content={"message": "Unfollowed search."},
     )
 
     # The original user, on checking their current follows, should now find no locations
@@ -413,11 +413,11 @@ def test_search_follow(search_test_setup: SearchTestSetup):
         expected_json_content=no_results_json,
     )
 
-    # If the original user tries to unfollow the location again, it should fail
+    # If the original user tries to unfollow the location again, it should return the same message.
     call_follow_delete(
         tus=tus_1,
         endpoint=url_for_following,
-        expected_json_content={"message": "Location not followed."},
+        expected_json_content={"message": "Unfollowed search."},
     )
 
 

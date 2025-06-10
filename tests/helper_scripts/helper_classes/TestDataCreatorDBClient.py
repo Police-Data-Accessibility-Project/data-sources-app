@@ -298,9 +298,7 @@ class TestDataCreatorDBClient:
         )
 
     def user_follow_location(self, user_id: int, location_id: int):
-        self.db_client.create_followed_search(
-            column_value_mappings={"user_id": user_id, "location_id": location_id}
-        )
+        self.db_client.create_followed_search(user_id=user_id, location_id=location_id)
 
     def link_data_request_to_data_source(
         self, data_request_id: int, data_source_id: str

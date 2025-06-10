@@ -1,6 +1,8 @@
 from flask import Response
+from werkzeug.exceptions import BadRequest
 
 from db.client import DatabaseClient
+from db.models.exceptions import LocationNotFound
 from middleware.access_logic import AccessInfoPrimary
 from middleware.common_response_formatting import message_response
 from middleware.dynamic_request_logic.post_logic import post_entry
@@ -18,26 +20,14 @@ def create_followed_search(
     access_info: AccessInfoPrimary,
     dto: SearchRequestsDTO,
 ) -> Response:
-    # Get location id. If not found, not a valid location. Raise error
-    location_link = get_location_link_and_raise_error_if_not_found(
-        db_client=db_client, access_info=access_info, dto=dto
-    )
-    if location_link.link_id is not None:
-        return message_response(
-            message="Location already followed.",
+    try:
+        db_client.create_followed_search(
+            user_id=access_info.get_user_id(),
+            location_id=dto.location_id,
+            record_types=dto.record_types,
+            record_categories=dto.record_categories,
         )
+    except LocationNotFound as e:
+        raise BadRequest("Location not found.") from e
 
-    return post_entry(
-        middleware_parameters=MiddlewareParameters(
-            entry_name="Location for followed search",
-            relation=Relations.LINK_USER_FOLLOWED_LOCATION.value,
-            db_client_method=DatabaseClient.create_followed_search,
-            access_info=access_info,
-        ),
-        entry={
-            "user_id": access_info.get_user_id(),
-            "location_id": location_link.location_id,
-        },
-        check_for_permission=False,
-        post_logic_class=FollowedSearchPostLogic,
-    )
+    return message_response("Location followed.")

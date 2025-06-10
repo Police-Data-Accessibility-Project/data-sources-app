@@ -1069,19 +1069,14 @@ def test_user_followed_searches_logic(
     user_info = tdc.user()
 
     # Have that user follow two searches
-    link_id = tdc.db_client.create_followed_search(
-        column_value_mappings={
-            "user_id": user_info.id,
-            "location_id": 1,
-        },
-        column_to_return="id",
+    tdc.db_client.create_followed_search(
+        user_id=user_info.id,
+        location_id=1,
     )
 
     tdc.db_client.create_followed_search(
-        column_value_mappings={
-            "user_id": user_info.id,
-            "location_id": 2,
-        }
+        user_id=user_info.id,
+        location_id=2,
     )
 
     # Get the user's followed searches
@@ -1089,7 +1084,10 @@ def test_user_followed_searches_logic(
     assert len(results["data"]) == 2
 
     # Unfollow one of the searches
-    tdc.db_client.delete_followed_search(id_column_value=link_id)
+    tdc.db_client.delete_followed_search(
+        user_id=user_info.id,
+        location_id=1,
+    )
 
     # Get the user's followed searches, and ensure the un-followed search is gone
     results = tdc.db_client.get_user_followed_searches(left_id=user_info.id)

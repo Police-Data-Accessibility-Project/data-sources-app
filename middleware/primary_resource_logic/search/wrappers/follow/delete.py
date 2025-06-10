@@ -20,25 +20,11 @@ def delete_followed_search(
     access_info: AccessInfoPrimary,
     dto: SearchRequestsDTO,
 ) -> Response:
-    # Get location id. If not found, not a valid location. Raise error
-    location_link = get_location_link_and_raise_error_if_not_found(
-        db_client=db_client, access_info=access_info, dto=dto
+    db_client.delete_followed_search(
+        user_id=access_info.get_user_id(),
+        location_id=dto.location_id,
+        record_types=dto.record_types,
+        record_categories=dto.record_categories,
     )
-    # Check if search is followed. If not, end early .
-    if location_link.link_id is None:
-        return message_response(
-            message="Location not followed.",
-        )
 
-    return delete_entry(
-        middleware_parameters=MiddlewareParameters(
-            entry_name="Location for followed search",
-            relation=Relations.LINK_USER_FOLLOWED_LOCATION.value,
-            db_client_method=DatabaseClient.delete_followed_search,
-            access_info=access_info,
-        ),
-        id_info=IDInfo(
-            id_column_name="id",
-            id_column_value=location_link.link_id,
-        ),
-    )
+    return message_response(message="Unfollowed search.")

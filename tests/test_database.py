@@ -249,10 +249,8 @@ def link_user_followed_test_info(
     )
 
     live_database_client.create_followed_search(
-        column_value_mappings={
-            "user_id": user_id,
-            "location_id": location_id,
-        }
+        user_id=user_id,
+        location_id=location_id,
     )
 
     yield LinkUserFollowedTestInfo(user_id, locality_id, location_id)
