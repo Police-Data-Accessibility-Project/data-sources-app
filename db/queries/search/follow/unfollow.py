@@ -19,7 +19,7 @@ class DeleteFollowQueryBuilder(FollowBaseQueryBuilder):
     def unfollow(self):
         rt_ids = self.record_type_ids
         # If record types are not specified, remove the follow completely
-        if len(rt_ids) == 0:
+        if self.all_record_types is True:
             self.remove_follow_if_exists()
             return
 

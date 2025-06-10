@@ -16,13 +16,21 @@ class FollowBaseQueryBuilder(QueryBuilderBase):
         self,
         location_id: int,
         user_id: int,
-        record_types: list[RecordTypes],
-        record_categories: list[RecordCategories],
+        record_types: Optional[list[RecordTypes]],
+        record_categories: Optional[list[RecordCategories]],
         session: Session,
     ):
         super().__init__(session)
         self.location_id = location_id
         self.user_id = user_id
+
+        # If none of the record types or categories are specified, get all
+        if record_types is None and record_categories is None:
+            self.all_record_types = True
+            record_types = [e for e in RecordTypes]
+        else:
+            self.all_record_types = False
+
         self.record_type_ids = self.get_record_type_ids(
             record_types=record_types, record_categories=record_categories
         )
