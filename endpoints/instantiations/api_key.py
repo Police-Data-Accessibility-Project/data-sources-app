@@ -4,7 +4,7 @@ from middleware.access_logic import (
     AccessInfoPrimary,
 )
 from middleware.authentication_info import STANDARD_JWT_AUTH_INFO
-from middleware.decorators import endpoint_info
+from middleware.decorators.decorators import endpoint_info
 from middleware.primary_resource_logic.api_key import create_api_key_for_user
 
 from endpoints.schema_config.enums import SchemaConfigs

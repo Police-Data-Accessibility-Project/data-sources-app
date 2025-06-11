@@ -1,6 +1,6 @@
 from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import AuthenticationInfo
-from middleware.decorators import endpoint_info
+from middleware.decorators.decorators import endpoint_info
 from middleware.enums import AccessTypeEnum, PermissionsEnum
 from middleware.primary_resource_logic.notifications import send_notifications
 from endpoints.psycopg_resource import PsycopgResource

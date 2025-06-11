@@ -10,7 +10,7 @@ from endpoints.schema_config.instantiations.search.follow.post import (
 )
 from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import API_OR_JWT_AUTH_INFO, STANDARD_JWT_AUTH_INFO
-from middleware.decorators import endpoint_info
+from middleware.decorators.decorators import endpoint_info
 from middleware.primary_resource_logic.search.wrappers.follow.get import (
     get_followed_searches,
 )

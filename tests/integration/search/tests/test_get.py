@@ -2,6 +2,9 @@ from typing import Optional
 
 from db.enums import LocationType
 from endpoints.schema_config.enums import SchemaConfigs
+from endpoints.schema_config.instantiations.user.profile.recent_searches import (
+    UserProfileRecentSearchesEndpointSchemaConfig,
+)
 from middleware.enums import OutputFormatEnum, JurisdictionSimplified
 from middleware.util.csv import read_from_csv
 from middleware.util.type_conversion import get_enum_values
@@ -44,7 +47,7 @@ def test_search_get(search_test_setup: SearchTestSetup):
     data = tdc.request_validator.get(
         endpoint=USER_PROFILE_RECENT_SEARCHES_ENDPOINT,
         headers=tus.jwt_authorization_header,
-        expected_schema=SchemaConfigs.USER_PROFILE_RECENT_SEARCHES.value.primary_output_schema,
+        expected_schema=UserProfileRecentSearchesEndpointSchemaConfig.primary_output_schema,
     )
 
     assert data["metadata"]["count"] == 1

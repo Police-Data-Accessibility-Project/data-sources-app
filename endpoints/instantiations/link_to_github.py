@@ -1,21 +1,17 @@
 from http import HTTPStatus
 
 from config import limiter
-from db.client import DatabaseClient
 from endpoints.schema_config.instantiations.auth.github.link import (
     AuthGithubLinkEndpointSchemaConfig,
 )
 from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import NO_AUTH_INFO
-from middleware.decorators import endpoint_info
+from middleware.decorators.decorators import endpoint_info
 
 from middleware.primary_resource_logic.github_oauth import (
     link_github_account_request_wrapper,
 )
 
-from middleware.schema_and_dto.dynamic_logic.dynamic_schema_request_content_population import (
-    populate_schema_with_request_content,
-)
 from endpoints.psycopg_resource import PsycopgResource
 from endpoints.schema_config.enums import SchemaConfigs
 from endpoints._helpers.response_info import ResponseInfo

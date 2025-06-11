@@ -7,7 +7,7 @@ from middleware.access_logic import (
     PasswordResetTokenAccessInfo,
 )
 from middleware.authentication_info import RESET_PASSWORD_AUTH_INFO
-from middleware.decorators import endpoint_info
+from middleware.decorators.decorators import endpoint_info
 from middleware.primary_resource_logic.reset_token_queries import (
     reset_password,
 )

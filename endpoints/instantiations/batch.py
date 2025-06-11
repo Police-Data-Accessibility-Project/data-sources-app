@@ -10,7 +10,7 @@ from middleware.access_logic import (
     AccessInfoPrimary,
 )
 from middleware.authentication_info import STANDARD_JWT_AUTH_INFO
-from middleware.decorators import endpoint_info
+from middleware.decorators.decorators import endpoint_info
 from middleware.primary_resource_logic.bulk import (
     bulk_post_agencies,
     bulk_post_data_sources,

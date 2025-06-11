@@ -538,6 +538,7 @@ class RequestValidator:
         headers: dict,
         location_id: int,
         record_categories: Optional[list[RecordCategories]] = None,
+        record_types: Optional[list[RecordTypes]] = None,
         expected_json_content: Optional[dict] = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
@@ -545,6 +546,7 @@ class RequestValidator:
         query_params = self._get_search_query_params(
             location_id=location_id,
             record_categories=record_categories,
+            record_types=record_types,
         )
         endpoint = add_query_params(
             url=endpoint_base,

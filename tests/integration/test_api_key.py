@@ -2,6 +2,9 @@
 
 from http import HTTPStatus
 
+from endpoints.schema_config.instantiations.api_key import (
+    ApiKeyPostEndpointSchemaConfig,
+)
 from middleware.api_key import ApiKey
 from endpoints.instantiations.api_key import API_KEY_ROUTE
 from endpoints.schema_config.enums import SchemaConfigs
@@ -27,7 +30,7 @@ def test_api_key_post(test_data_creator_flask: TestDataCreatorFlask):
         http_method="post",
         endpoint=f"/auth{API_KEY_ROUTE}",
         headers=tus.jwt_authorization_header,
-        expected_schema=SchemaConfigs.API_KEY_POST.value.primary_output_schema,
+        expected_schema=ApiKeyPostEndpointSchemaConfig.primary_output_schema,
     )
 
     # Check that API key aligned with user

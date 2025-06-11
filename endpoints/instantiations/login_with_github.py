@@ -6,7 +6,7 @@ from endpoints.schema_config.instantiations.auth.github.login import (
 )
 from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import NO_AUTH_INFO
-from middleware.decorators import endpoint_info
+from middleware.decorators.decorators import endpoint_info
 from middleware.primary_resource_logic.github_oauth import (
     login_with_github_wrapper,
 )

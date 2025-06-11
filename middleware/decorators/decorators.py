@@ -6,21 +6,6 @@ from flask_restx import Namespace, Model
 from flask_restx.reqparse import RequestParser
 from marshmallow import Schema
 
-from middleware.access_logic import (
-    get_authentication,
-    ParserDeterminator,
-)
-from middleware.authentication_info import AuthenticationInfo
-from middleware.enums import PermissionsEnum, AccessTypeEnum
-from middleware.primary_resource_logic.api_key import check_api_key
-from middleware.schema_and_dto.dynamic_logic.dynamic_schema_documentation_construction import (
-    get_restx_param_documentation,
-)
-from middleware.schema_and_dto.non_dto_dataclasses import FlaskRestxDocInfo
-from middleware.security import check_permissions
-from endpoints.psycopg_resource import handle_exceptions
-from endpoints.schema_config.enums import SchemaConfigs
-from endpoints.schema_config.config.manager import OutputSchemaManager
 from endpoints._helpers.docs import create_response_dictionary
 from endpoints._helpers.parser import (
     add_api_key_header_arg,
@@ -31,34 +16,19 @@ from endpoints._helpers.parser import (
     add_jwt_or_api_key_header_arg,
 )
 from endpoints._helpers.response_info import ResponseInfo
-
-
-def api_key_required(func):
-    """
-    The api_key_required decorator can be added to protect a route so that only authenticated users can access the information.
-    To protect a route with this decorator, add @api_key_required on the line above a given route.
-    The request header for a protected route must include an "Authorization" key with the value formatted as "Basic [api_key]".
-    A user can get an API key by signing up and logging in.
-    """
-
-    @wraps(func)
-    def decorator(*args, **kwargs):
-        check_api_key()
-        return func(*args, **kwargs)
-
-    return decorator
-
-
-def permissions_required(permissions: PermissionsEnum):
-    def decorator(func: Callable):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            check_permissions(permissions)
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
+from endpoints.psycopg_resource import handle_exceptions
+from endpoints.schema_config.config.manager import OutputSchemaManager
+from endpoints.schema_config.enums import SchemaConfigs
+from middleware.access_logic import (
+    get_authentication,
+    ParserDeterminator,
+)
+from middleware.authentication_info import AuthenticationInfo
+from middleware.enums import PermissionsEnum, AccessTypeEnum
+from middleware.schema_and_dto.dynamic_logic.dynamic_schema_documentation_construction import (
+    get_restx_param_documentation,
+)
+from middleware.schema_and_dto.non_dto_dataclasses import FlaskRestxDocInfo
 
 
 def authentication_required(

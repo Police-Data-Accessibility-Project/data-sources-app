@@ -204,6 +204,9 @@ from endpoints.schema_config.instantiations.search.federal import (
 from endpoints.schema_config.instantiations.search.follow.delete import (
     SearchFollowDeleteEndpointSchemaConfig,
 )
+from endpoints.schema_config.instantiations.search.follow.get import (
+    SearchFollowGetEndpointSchemaConfig,
+)
 from endpoints.schema_config.instantiations.search.follow.national import (
     SearchFollowNationalEndpointSchemaConfig,
 )
@@ -253,9 +256,6 @@ class SchemaConfigs(Enum):
         DataRequestsRelatedSourcesGetEndpointSchemaConfig
     )
     DATA_REQUESTS_RELATED_SOURCES_POST = DataRequestsRelatedSourcesPost
-    DATA_REQUESTS_RELATED_SOURCES_DELETE = (
-        DataRequestsRelatedSourcesDeleteEndpointSchemaConfig
-    )
     DATA_REQUESTS_RELATED_LOCATIONS_GET = (
         DataRequestsRelatedLocationsGetEndpointSchemaConfig
     )
@@ -308,9 +308,7 @@ class SchemaConfigs(Enum):
         SearchLocationAndRecordTypeGetEndpointSchemaConfig
     )
     SEARCH_FEDERAL_GET = SearchFederalGetEndpointSchemaConfig
-    SEARCH_FOLLOW_GET = EndpointSchemaConfig(
-        primary_output_schema=GetUserFollowedSearchesSchema(),
-    )
+    SEARCH_FOLLOW_GET = SearchFollowGetEndpointSchemaConfig
     SEARCH_FOLLOW_POST = SearchFollowPostEndpointSchemaConfig
     SEARCH_FOLLOW_DELETE = SearchFollowDeleteEndpointSchemaConfig
     SEARCH_FOLLOW_NATIONAL = SearchFollowNationalEndpointSchemaConfig
@@ -393,21 +391,14 @@ class SchemaConfigs(Enum):
 
     # region Admin
     ADMIN_USERS_GET_MANY = AdminUsersGetManyEndpointSchemaConfig
-
-    ADMIN_USERS_BY_ID_GET = AdminUsersByIDGetEndpointSchemaConfig
-
     ADMIN_USERS_BY_ID_PUT = AdminUsersByIDPutEndpointSchemaConfig
-
     ADMIN_USERS_POST = AdminUsersPostEndpointSchemaConfig
-
     ADMIN_USERS_BY_ID_DELETE = AdminUsersByIDDeleteEndpointSchemaConfig
-
     # endregion
 
     # region Contact
 
     CONTACT_FORM_SUBMIT = ContactFormSubmitEndpointSchemaConfig
-
     # endregion
 
     # region Metadata

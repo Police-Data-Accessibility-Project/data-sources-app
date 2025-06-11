@@ -4,6 +4,12 @@ from typing import Optional
 from marshmallow import Schema
 
 from endpoints.schema_config.enums import SchemaConfigs
+from endpoints.schema_config.instantiations.search.follow.delete import (
+    SearchFollowDeleteEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.search.follow.get import (
+    SearchFollowGetEndpointSchemaConfig,
+)
 from tests.helper_scripts.constants import SEARCH_FOLLOW_BASE_ENDPOINT
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_functions_simple import add_query_params
@@ -56,7 +62,7 @@ def test_search_follow(search_test_setup: SearchTestSetup):
             http_method="delete",
             endpoint=endpoint,
             expected_json_content=expected_json_content,
-            expected_schema=SchemaConfigs.SEARCH_FOLLOW_DELETE.value.primary_output_schema,
+            expected_schema=SearchFollowDeleteEndpointSchemaConfig.primary_output_schema,
         )
 
     def call_follow_get(
@@ -68,7 +74,7 @@ def test_search_follow(search_test_setup: SearchTestSetup):
             http_method="get",
             endpoint=SEARCH_FOLLOW_BASE_ENDPOINT,
             expected_json_content=expected_json_content,
-            expected_schema=SchemaConfigs.SEARCH_FOLLOW_GET.value.primary_output_schema,
+            expected_schema=SearchFollowGetEndpointSchemaConfig.primary_output_schema,
         )
 
     no_results_json = {

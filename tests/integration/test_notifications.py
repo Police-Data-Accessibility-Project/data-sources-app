@@ -11,6 +11,9 @@ from db.models.implementations.core.notification.queue.data_request import (
     DataRequestUserNotificationQueue,
 )
 from db.models.implementations.core.log.notification import NotificationLog
+from endpoints.schema_config.instantiations.notifications import (
+    NotificationsPostEndpointSchemaConfig,
+)
 from middleware.custom_dataclasses import EventInfo, EventBatch
 from endpoints.schema_config.enums import SchemaConfigs
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
@@ -78,7 +81,7 @@ def test_notifications_followed_searches(
             "message": "Notifications sent successfully.",
             "count": 2,
         },
-        expected_schema=SchemaConfigs.NOTIFICATIONS_POST.value.primary_output_schema,
+        expected_schema=NotificationsPostEndpointSchemaConfig.primary_output_schema,
     )
     mock_format_and_send_notifications.assert_has_calls(
         any_order=True,

@@ -33,7 +33,7 @@ from middleware.schema_and_dto.schemas.data_sources.base import (
     EntryCreateUpdateRequestDTO,
 )
 from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
-from middleware.decorators import (
+from middleware.decorators.decorators import (
     endpoint_info,
 )
 from middleware.primary_resource_logic.data_sources import (
@@ -41,7 +41,6 @@ from middleware.primary_resource_logic.data_sources import (
     data_source_by_id_wrapper,
     add_new_data_source_wrapper,
     update_data_source_wrapper,
-    DataSourcesGetManyRequestDTO,
     delete_data_source_wrapper,
     create_data_source_related_agency,
     delete_data_source_related_agency,
@@ -49,9 +48,6 @@ from middleware.primary_resource_logic.data_sources import (
     reject_data_source,
 )
 
-from middleware.schema_and_dto.schemas.data_sources.get.many.request import (
-    DataSourcesGetManyRequestSchema,
-)
 from endpoints.schema_config.enums import SchemaConfigs
 from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import create_namespace, AppNamespaces

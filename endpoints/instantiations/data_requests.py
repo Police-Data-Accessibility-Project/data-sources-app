@@ -1,6 +1,9 @@
 from flask import Response
 
 from config import limiter
+from endpoints.schema_config.instantiations.data_requests.by_id.put import (
+    DataRequestsByIDPutEndpointSchemaConfig,
+)
 from endpoints.schema_config.instantiations.data_requests.get_many import (
     DataRequestsGetManyEndpointSchemaConfig,
 )
@@ -45,7 +48,7 @@ from middleware.primary_resource_logic.data_requests import (
 )
 from middleware.schema_and_dto.schemas.common.base import GetByIDBaseSchema
 from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
-from middleware.decorators import (
+from middleware.decorators.decorators import (
     endpoint_info,
 )
 from middleware.schema_and_dto.non_dto_dataclasses import SchemaPopulateParameters
@@ -98,7 +101,7 @@ class DataRequestsById(PsycopgResource):
         """
         return self.run_endpoint(
             update_data_request_wrapper,
-            schema_populate_parameters=SchemaConfigs.DATA_REQUESTS_BY_ID_PUT.value.get_schema_populate_parameters(),
+            schema_populate_parameters=DataRequestsByIDPutEndpointSchemaConfig.get_schema_populate_parameters(),
             data_request_id=int(resource_id),
             access_info=access_info,
         )

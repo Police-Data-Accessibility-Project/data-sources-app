@@ -6,11 +6,14 @@ from endpoints.schema_config.instantiations.admin.users.by_id.delete import (
 from endpoints.schema_config.instantiations.admin.users.by_id.put import (
     AdminUsersByIDPutEndpointSchemaConfig,
 )
+from endpoints.schema_config.instantiations.admin.users.post import (
+    AdminUsersPostEndpointSchemaConfig,
+)
 from middleware.access_logic import (
     AccessInfoPrimary,
 )
 from middleware.authentication_info import READ_USER_AUTH_INFO, WRITE_USER_AUTH_INFO
-from middleware.decorators import (
+from middleware.decorators.decorators import (
     endpoint_info,
 )
 from middleware.primary_resource_logic.admin import (
@@ -69,7 +72,7 @@ class AdminUsersByPage(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=create_admin_user,
-            schema_populate_parameters=SchemaConfigs.ADMIN_USERS_POST.value.get_schema_populate_parameters(),
+            schema_populate_parameters=AdminUsersPostEndpointSchemaConfig.get_schema_populate_parameters(),
         )
 
 

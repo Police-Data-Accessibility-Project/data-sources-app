@@ -5,7 +5,7 @@ from endpoints.schema_config.instantiations.metrics.followed_searches.breakdown 
 )
 from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import API_OR_JWT_AUTH_INFO
-from middleware.decorators import endpoint_info
+from middleware.decorators.decorators import endpoint_info
 from middleware.primary_resource_logic.metrics import (
     get_metrics,
     get_metrics_followed_searches_breakdown,

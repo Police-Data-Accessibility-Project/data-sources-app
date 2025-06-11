@@ -11,7 +11,7 @@ from middleware.authentication_info import (
     ARCHIVE_WRITE_AUTH_INFO,
     API_OR_JWT_AUTH_INFO,
 )
-from middleware.decorators import endpoint_info
+from middleware.decorators.decorators import endpoint_info
 from middleware.primary_resource_logic.archives_queries import (
     archives_get_query,
     update_archives_data,
