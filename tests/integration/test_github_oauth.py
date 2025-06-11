@@ -4,6 +4,12 @@ from http import HTTPStatus
 
 from flask.testing import FlaskClient
 
+from endpoints.schema_config.instantiations.auth.github.link import (
+    AuthGithubLinkEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.auth.github.login import (
+    AuthGithubLoginEndpointSchemaConfig,
+)
 from tests.conftest import test_data_creator_flask
 from middleware.SimpleJWT import SimpleJWT, JWTPurpose
 from middleware.schema_and_dto.schemas.common.common_response_schemas import (
@@ -34,7 +40,7 @@ def login_with_github(client: FlaskClient, access_token: str) -> str:
         flask_client=client,
         http_method="post",
         endpoint=GITHUB_OAUTH_LOGIN_ENDPOINT,
-        expected_schema=SchemaConfigs.AUTH_GITHUB_LOGIN.value.primary_output_schema,
+        expected_schema=AuthGithubLoginEndpointSchemaConfig.primary_output_schema,
         json={"gh_access_token": access_token},
     )
     return data["access_token"]
@@ -86,7 +92,7 @@ def test_link_to_github_oauth(
         flask_client=tdc.flask_client,
         http_method="post",
         endpoint=GITHUB_OAUTH_LINK_ENDPOINT,
-        expected_schema=SchemaConfigs.AUTH_GITHUB_LINK.value.primary_output_schema,
+        expected_schema=AuthGithubLinkEndpointSchemaConfig.primary_output_schema,
         json={"user_email": tus.user_info.email, "gh_access_token": access_token},
     )
 
@@ -109,7 +115,7 @@ def test_link_to_github_oauth_user_email_not_in_db(
         flask_client=tdc.flask_client,
         http_method="post",
         endpoint=GITHUB_OAUTH_LINK_ENDPOINT,
-        expected_schema=SchemaConfigs.AUTH_GITHUB_LINK.value.primary_output_schema,
+        expected_schema=AuthGithubLinkEndpointSchemaConfig.primary_output_schema,
         expected_response_status=HTTPStatus.BAD_REQUEST,
         json={
             "user_email": get_test_name(),  # Create email guaranteed to not exist in database
@@ -136,7 +142,7 @@ def test_link_to_github_oauth_user_and_github_email_not_match(
         flask_client=tdc.flask_client,
         http_method="post",
         endpoint=GITHUB_OAUTH_LINK_ENDPOINT,
-        expected_schema=SchemaConfigs.AUTH_GITHUB_LINK.value.primary_output_schema,
+        expected_schema=AuthGithubLinkEndpointSchemaConfig.primary_output_schema,
         expected_response_status=HTTPStatus.BAD_REQUEST,
         json={
             "user_email": tus.user_info.email,

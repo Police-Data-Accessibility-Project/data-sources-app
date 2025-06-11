@@ -4,10 +4,15 @@ from unittest.mock import MagicMock, call, ANY
 import pytest
 
 from db.enums import EventType, EntityType
-from db.models.implementations.core import (
-    DataRequestUserNotificationQueue,
+from db.models.implementations.core.notification.queue.data_source import (
     DataSourceUserNotificationQueue,
-    NotificationLog,
+)
+from db.models.implementations.core.notification.queue.data_request import (
+    DataRequestUserNotificationQueue,
+)
+from db.models.implementations.core.log.notification import NotificationLog
+from endpoints.schema_config.instantiations.notifications import (
+    NotificationsPostEndpointSchemaConfig,
 )
 from middleware.custom_dataclasses import EventInfo, EventBatch
 from endpoints.schema_config.enums import SchemaConfigs
@@ -76,7 +81,7 @@ def test_notifications_followed_searches(
             "message": "Notifications sent successfully.",
             "count": 2,
         },
-        expected_schema=SchemaConfigs.NOTIFICATIONS_POST.value.primary_output_schema,
+        expected_schema=NotificationsPostEndpointSchemaConfig.primary_output_schema,
     )
     mock_format_and_send_notifications.assert_has_calls(
         any_order=True,

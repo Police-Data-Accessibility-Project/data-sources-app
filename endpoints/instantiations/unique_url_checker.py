@@ -1,9 +1,12 @@
 from flask import Response
 
 from config import limiter
+from endpoints.schema_config.instantiations.checker import (
+    UniqueURLCheckerEndpointSchemaConfig,
+)
 from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import NO_AUTH_INFO
-from middleware.decorators import endpoint_info
+from middleware.decorators.decorators import endpoint_info
 from middleware.primary_resource_logic.unique_url_checker import (
     unique_url_checker_wrapper,
 )
@@ -34,5 +37,5 @@ class UniqueURLChecker(PsycopgResource):
     def get(self, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             wrapper_function=unique_url_checker_wrapper,
-            schema_populate_parameters=SchemaConfigs.CHECKER_GET.value.get_schema_populate_parameters(),
+            schema_populate_parameters=UniqueURLCheckerEndpointSchemaConfig.get_schema_populate_parameters(),
         )

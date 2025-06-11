@@ -1,10 +1,19 @@
 from flask import Response
 
+from endpoints.schema_config.instantiations.admin.users.by_id.delete import (
+    AdminUsersByIDDeleteEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.admin.users.by_id.put import (
+    AdminUsersByIDPutEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.admin.users.post import (
+    AdminUsersPostEndpointSchemaConfig,
+)
 from middleware.access_logic import (
     AccessInfoPrimary,
 )
 from middleware.authentication_info import READ_USER_AUTH_INFO, WRITE_USER_AUTH_INFO
-from middleware.decorators import (
+from middleware.decorators.decorators import (
     endpoint_info,
 )
 from middleware.primary_resource_logic.admin import (
@@ -63,7 +72,7 @@ class AdminUsersByPage(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=create_admin_user,
-            schema_populate_parameters=SchemaConfigs.ADMIN_USERS_POST.value.get_schema_populate_parameters(),
+            schema_populate_parameters=AdminUsersPostEndpointSchemaConfig.get_schema_populate_parameters(),
         )
 
 
@@ -83,7 +92,7 @@ class AdminUsersByID(PsycopgResource):
         """
         return self.run_endpoint(
             update_user_password,
-            schema_populate_parameters=SchemaConfigs.ADMIN_USERS_BY_ID_PUT.value.get_schema_populate_parameters(),
+            schema_populate_parameters=AdminUsersByIDPutEndpointSchemaConfig.get_schema_populate_parameters(),
             user_id=int(resource_id),
         )
 
@@ -100,5 +109,5 @@ class AdminUsersByID(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=delete_user,
-            schema_populate_parameters=SchemaConfigs.ADMIN_USERS_BY_ID_DELETE.value.get_schema_populate_parameters(),
+            schema_populate_parameters=AdminUsersByIDDeleteEndpointSchemaConfig.get_schema_populate_parameters(),
         )

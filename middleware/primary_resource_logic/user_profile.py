@@ -60,7 +60,7 @@ def get_user_by_id_wrapper(
     email = db_client.get_user_email(user_id=user_id)
     external_accounts = db_client.get_user_external_accounts(user_id=user_id)
     recent_searches = db_client.get_user_recent_searches(user_id=user_id)
-    followed_searches = db_client.get_user_followed_searches(left_id=user_id)
+    followed_searches = db_client.get_user_followed_searches(user_id=user_id)
     data_requests = get_owner_data_requests(
         db_client=db_client, dto=GetManyBaseDTO(page=1), user_id=user_id
     )

@@ -13,7 +13,7 @@ from utilities.enums import SourceMappingEnum
 @dataclass
 class FlaskRestxDocInfo:
     parser: Optional[RequestParser]
-    model: Model = None
+    model: Optional[Model] = None
 
 
 @dataclass

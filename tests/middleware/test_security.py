@@ -3,18 +3,10 @@ from http import HTTPStatus
 import pytest
 from unittest.mock import MagicMock
 
-from middleware.exceptions import (
-    InvalidAPIKeyException,
-    InvalidAuthorizationHeaderException,
-)
 from middleware.security import (
     check_permissions,
 )
-from middleware.primary_resource_logic.api_key import (
-    INVALID_API_KEY_MESSAGE,
-    check_api_key,
-)
-from middleware.decorators import api_key_required
+from middleware.decorators.api_key_required import api_key_required
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_mocks_and_patches import patch_abort
 

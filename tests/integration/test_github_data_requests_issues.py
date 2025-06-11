@@ -3,10 +3,10 @@ from http import HTTPStatus
 from pydantic import BaseModel
 
 from db.enums import RequestStatus
-from db.models.implementations.core import (
-    DataRequest,
+from db.models.implementations.core.data_request.github_issue_info import (
     DataRequestsGithubIssueInfo,
 )
+from db.models.implementations.core.data_request.core import DataRequest
 from middleware.enums import PermissionsEnum, RecordTypes
 from middleware.third_party_interaction_logic.github_issue_api_logic import (
     GithubIssueInfo,

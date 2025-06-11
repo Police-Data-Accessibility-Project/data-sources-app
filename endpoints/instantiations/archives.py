@@ -1,6 +1,9 @@
 from flask import Response, request
 
 from config import limiter
+from endpoints.schema_config.instantiations.archives.get import (
+    ArchivesGetEndpointSchemaConfig,
+)
 from middleware.access_logic import (
     AccessInfoPrimary,
 )
@@ -8,7 +11,7 @@ from middleware.authentication_info import (
     ARCHIVE_WRITE_AUTH_INFO,
     API_OR_JWT_AUTH_INFO,
 )
-from middleware.decorators import endpoint_info
+from middleware.decorators.decorators import endpoint_info
 from middleware.primary_resource_logic.archives_queries import (
     archives_get_query,
     update_archives_data,
@@ -50,7 +53,7 @@ class Archives(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=archives_get_query,
-            schema_populate_parameters=SchemaConfigs.ARCHIVES_GET.value.get_schema_populate_parameters(),
+            schema_populate_parameters=ArchivesGetEndpointSchemaConfig.get_schema_populate_parameters(),
         )
 
     @endpoint_info(

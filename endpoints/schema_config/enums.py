@@ -1,7 +1,5 @@
 from enum import Enum
 
-from marshmallow import RAISE
-
 from endpoints.schema_config.config.core import EndpointSchemaConfig
 from endpoints.schema_config.instantiations.admin.users.by_id.delete import (
     AdminUsersByIDDeleteEndpointSchemaConfig,
@@ -206,6 +204,9 @@ from endpoints.schema_config.instantiations.search.federal import (
 from endpoints.schema_config.instantiations.search.follow.delete import (
     SearchFollowDeleteEndpointSchemaConfig,
 )
+from endpoints.schema_config.instantiations.search.follow.get import (
+    SearchFollowGetEndpointSchemaConfig,
+)
 from endpoints.schema_config.instantiations.search.follow.national import (
     SearchFollowNationalEndpointSchemaConfig,
 )
@@ -237,41 +238,9 @@ from endpoints.schema_config.instantiations.user.profile.recent_searches import 
     UserProfileRecentSearchesEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.user.put import UserPutEndpointSchemaConfig
-from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
-from middleware.schema_and_dto.dtos.contact import (
-    ContactFormPostDTO,
-)
-from middleware.schema_and_dto.dtos.source_collector.duplicates import (
-    SourceCollectorDuplicatesPostRequestDTO,
-)
-from middleware.schema_and_dto.dtos.source_collector.post.request import (
-    SourceCollectorPostRequestDTO,
-)
-from middleware.schema_and_dto.schemas.agencies.post import AgenciesPostSchema
 from middleware.schema_and_dto.schemas.auth.login import LoginResponseSchema
-from middleware.schema_and_dto.schemas.common.common_response_schemas import (
-    MessageSchema,
-)
-from middleware.schema_and_dto.schemas.contact import (
-    ContactFormPostSchema,
-)
-from middleware.schema_and_dto.schemas.record_type_and_category.response import (
-    RecordTypeAndCategoryResponseSchema,
-)
 from middleware.schema_and_dto.schemas.search.follow import (
     GetUserFollowedSearchesSchema,
-)
-from middleware.schema_and_dto.schemas.source_collector.duplicate.request import (
-    SourceCollectorDuplicatesPostRequestSchema,
-)
-from middleware.schema_and_dto.schemas.source_collector.duplicate.response import (
-    SourceCollectorDuplicatePostResponseSchema,
-)
-from middleware.schema_and_dto.schemas.source_collector.post.request import (
-    SourceCollectorPostRequestSchema,
-)
-from middleware.schema_and_dto.schemas.source_collector.post.response import (
-    SourceCollectorPostResponseSchema,
 )
 
 
@@ -287,9 +256,6 @@ class SchemaConfigs(Enum):
         DataRequestsRelatedSourcesGetEndpointSchemaConfig
     )
     DATA_REQUESTS_RELATED_SOURCES_POST = DataRequestsRelatedSourcesPost
-    DATA_REQUESTS_RELATED_SOURCES_DELETE = (
-        DataRequestsRelatedSourcesDeleteEndpointSchemaConfig
-    )
     DATA_REQUESTS_RELATED_LOCATIONS_GET = (
         DataRequestsRelatedLocationsGetEndpointSchemaConfig
     )
@@ -333,7 +299,6 @@ class SchemaConfigs(Enum):
     # endregion
 
     # region Github
-    GITHUB_DATA_REQUESTS_ISSUES_POST = GitHubDataRequestsIssuesPostEndpointSchemaConfig
     GITHUB_DATA_REQUESTS_SYNCHRONIZE_POST = (
         GitHubDataRequestsSynchronizePostEndpointSchemaConfig
     )
@@ -343,9 +308,7 @@ class SchemaConfigs(Enum):
         SearchLocationAndRecordTypeGetEndpointSchemaConfig
     )
     SEARCH_FEDERAL_GET = SearchFederalGetEndpointSchemaConfig
-    SEARCH_FOLLOW_GET = EndpointSchemaConfig(
-        primary_output_schema=GetUserFollowedSearchesSchema(),
-    )
+    SEARCH_FOLLOW_GET = SearchFollowGetEndpointSchemaConfig
     SEARCH_FOLLOW_POST = SearchFollowPostEndpointSchemaConfig
     SEARCH_FOLLOW_DELETE = SearchFollowDeleteEndpointSchemaConfig
     SEARCH_FOLLOW_NATIONAL = SearchFollowNationalEndpointSchemaConfig
@@ -428,21 +391,14 @@ class SchemaConfigs(Enum):
 
     # region Admin
     ADMIN_USERS_GET_MANY = AdminUsersGetManyEndpointSchemaConfig
-
-    ADMIN_USERS_BY_ID_GET = AdminUsersByIDGetEndpointSchemaConfig
-
     ADMIN_USERS_BY_ID_PUT = AdminUsersByIDPutEndpointSchemaConfig
-
     ADMIN_USERS_POST = AdminUsersPostEndpointSchemaConfig
-
     ADMIN_USERS_BY_ID_DELETE = AdminUsersByIDDeleteEndpointSchemaConfig
-
     # endregion
 
     # region Contact
 
     CONTACT_FORM_SUBMIT = ContactFormSubmitEndpointSchemaConfig
-
     # endregion
 
     # region Metadata

@@ -7,6 +7,15 @@ from flask.testing import FlaskClient
 
 from db.db_client_dataclasses import WhereMapping
 from db.enums import RequestUrgency, LocationType, RequestStatus, SortOrder
+from endpoints.schema_config.instantiations.data_requests.by_id.get import (
+    DataRequestsByIDGetEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.data_requests.related_locations.get import (
+    DataRequestsRelatedLocationsGetEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.data_requests.related_sources.get import (
+    DataRequestsRelatedSourcesGetEndpointSchemaConfig,
+)
 from middleware.constants import DATA_KEY
 from middleware.enums import RecordTypes
 from middleware.util.type_conversion import get_enum_values
@@ -165,7 +174,7 @@ def test_data_requests_post(
                 data_request_id=data_request_id
             ),
             headers=standard_tus.jwt_authorization_header,
-            expected_schema=SchemaConfigs.DATA_REQUESTS_BY_ID_GET.value.primary_output_schema,
+            expected_schema=DataRequestsByIDGetEndpointSchemaConfig.primary_output_schema,
         )
 
     submission_notes = uuid.uuid4().hex
@@ -268,7 +277,7 @@ def test_data_requests_by_id_get(
         data_source_id=data_source_id, data_request_id=tdr.id
     )
 
-    expected_schema = SchemaConfigs.DATA_REQUESTS_BY_ID_GET.value.primary_output_schema
+    expected_schema = DataRequestsByIDGetEndpointSchemaConfig.primary_output_schema
     # Modify exclude to account for old data which did not have archive_reason and creator_user_id
     expected_schema.exclude.update(
         ["data.archive_reason", "data.creator_user_id", "data.internal_notes"]
@@ -449,7 +458,7 @@ def get_data_request_related_sources_with_endpoint(
         ),
         headers=api_authorization_header,
         expected_json_content=expected_json_content,
-        expected_schema=SchemaConfigs.DATA_REQUESTS_RELATED_SOURCES_GET.value.primary_output_schema,
+        expected_schema=DataRequestsRelatedSourcesGetEndpointSchemaConfig.primary_output_schema,
     )
 
 
@@ -600,7 +609,7 @@ def test_link_unlink_data_requests_with_locations(
     def get_locations(
         tus: TestUserSetup = admin_tus,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_schema=SchemaConfigs.DATA_REQUESTS_RELATED_LOCATIONS_GET.value.primary_output_schema,
+        expected_schema=DataRequestsRelatedLocationsGetEndpointSchemaConfig.primary_output_schema,
     ):
         return run_and_validate_request(
             flask_client=tdc.flask_client,

@@ -2,6 +2,9 @@
 
 from db.enums import ApprovalStatus
 from endpoints.schema_config.enums import SchemaConfigs
+from endpoints.schema_config.instantiations.data_sources.map import (
+    DataSourcesMapEndpointSchemaConfig,
+)
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
@@ -35,7 +38,7 @@ def test_data_sources_map_get(test_data_creator_flask: TestDataCreatorFlask):
     response_json = tdcf.request_validator.get(
         endpoint="/api/map/data-sources",
         headers=tus.api_authorization_header,
-        expected_schema=SchemaConfigs.DATA_SOURCES_MAP.value.primary_output_schema,
+        expected_schema=DataSourcesMapEndpointSchemaConfig.primary_output_schema,
     )
     data = response_json["data"]
     assert len(data) > 0

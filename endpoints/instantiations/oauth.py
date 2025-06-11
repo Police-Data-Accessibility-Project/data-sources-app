@@ -1,12 +1,12 @@
 from http import HTTPStatus
 
+from endpoints.schema_config.instantiations.auth.github.oauth import (
+    AuthGitHubOAuthEndpointSchemaConfig,
+)
 from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import NO_AUTH_INFO
-from middleware.decorators import endpoint_info
+from middleware.decorators.decorators import endpoint_info
 from middleware.enums import CallbackFunctionsEnum
-from middleware.schema_and_dto.dynamic_logic.dynamic_schema_request_content_population import (
-    populate_schema_with_request_content,
-)
 from middleware.schema_and_dto.dtos.github.oauth import GithubOAuthRequestDTO
 from middleware.third_party_interaction_logic.callback_flask_sessions_logic import (
     setup_callback_session,
@@ -38,9 +38,8 @@ class GithubOAuth(PsycopgResource):
         description="Directs user to OAuth page for App.",
     )
     def get(self, access_info: AccessInfoPrimary):
-        dto: GithubOAuthRequestDTO = populate_schema_with_request_content(
-            schema=SchemaConfigs.AUTH_GITHUB_OAUTH.value.input_schema,
-            dto_class=SchemaConfigs.AUTH_GITHUB_OAUTH.value.input_dto_class,
+        dto: GithubOAuthRequestDTO = (
+            AuthGitHubOAuthEndpointSchemaConfig.populate_schema_with_request_content()
         )
         setup_callback_session(
             callback_functions_enum=CallbackFunctionsEnum.LOGIN_WITH_GITHUB,

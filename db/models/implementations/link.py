@@ -1,5 +1,5 @@
 from sqlalchemy import ForeignKey, Column, Integer
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.models.base import Base
 from db.models.mixins import (
@@ -9,6 +9,7 @@ from db.models.mixins import (
     UserIDMixin,
     LocationIDMixin,
     DataRequestIDMixin,
+    RecordTypeIDMixin,
 )
 from db.models.templates.standard import StandardBase
 from middleware.enums import Relations
@@ -47,6 +48,21 @@ class LinkUserFollowedLocation(
 ):
     __tablename__ = Relations.LINK_USER_FOLLOWED_LOCATION.value
 
+    record_types: Mapped[list["RecordType"]] = relationship(
+        "RecordType",
+        secondary="public.link_follow_record_types",
+        primaryjoin="LinkUserFollowedLocation.id == LinkFollowRecordType.follow_id",
+        secondaryjoin="LinkFollowRecordType.record_type_id == RecordType.id",
+    )
+
+
+class LinkFollowRecordType(StandardBase, RecordTypeIDMixin):
+    __tablename__ = Relations.LINK_FOLLOW_RECORD_TYPES.value
+
+    follow_id: Mapped[int] = mapped_column(
+        ForeignKey("public.link_user_followed_location.id")
+    )
+
 
 class LinkLocationDataRequest(StandardBase, LocationIDMixin, DataRequestIDMixin):
     __tablename__ = Relations.LINK_LOCATIONS_DATA_REQUESTS.value
@@ -63,13 +79,12 @@ class LinkRecentSearchRecordCategories(StandardBase):
     )
 
 
-class LinkRecentSearchRecordTypes(StandardBase):
+class LinkRecentSearchRecordTypes(StandardBase, RecordTypeIDMixin):
     __tablename__ = Relations.LINK_RECENT_SEARCH_RECORD_TYPES.value
 
     recent_search_id: Mapped[int] = mapped_column(
         ForeignKey("public.recent_searches.id")
     )
-    record_type_id: Mapped[int] = mapped_column(ForeignKey("public.record_types.id"))
 
 
 class LinkLocationDataSourceView(Base):

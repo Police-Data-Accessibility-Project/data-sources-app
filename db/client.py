@@ -45,6 +45,15 @@ from db.db_client_dataclasses import (
     WhereMapping,
 )
 from db.exceptions import LocationDoesNotExistError
+from db.models.implementations.core.location.county import County
+from db.models.implementations.core.location.locality import Locality
+from db.models.implementations.core.location.us_state import USState
+from db.queries.search.follow.get import GetUserFollowedSearchesQueryBuilder
+from db.queries.search.follow.post import CreateFollowQueryBuilder
+from db.queries.search.follow.delete import DeleteFollowQueryBuilder
+from db.queries.user_profile.get_user_recent_searches import (
+    GetUserRecentSearchesQueryBuilder,
+)
 from db.result_formatter import ResultFormatter
 from db.subquery_logic import SubqueryParameters
 from db.dynamic_query_constructor import DynamicQueryConstructor
@@ -62,29 +71,37 @@ from middleware.exceptions import (
     UserNotFoundError,
     DuplicateUserError,
 )
-from db.models.implementations.core import (
-    ExternalAccount,
-    User,
-    DataRequestExpanded,
-    RecentSearch,
-    RecordCategory,
-    Agency,
-    Location,
-    LocationExpanded,
-    TableCountLog,
-    RecordType,
-    DataSourceExpanded,
-    DataSource,
-    DataRequest,
-    DataRequestsGithubIssueInfo,
+from db.models.implementations.core.notification.queue.data_source import (
     DataSourceUserNotificationQueue,
-    DataRequestUserNotificationQueue,
-    DataRequestPendingEventNotification,
-    DataSourcePendingEventNotification,
-    NotificationLog,
-    DependentLocation,
-    DistinctSourceURL,
 )
+from db.models.implementations.core.notification.queue.data_request import (
+    DataRequestUserNotificationQueue,
+)
+from db.models.implementations.core.notification.pending.data_source import (
+    DataSourcePendingEventNotification,
+)
+from db.models.implementations.core.notification.pending.data_request import (
+    DataRequestPendingEventNotification,
+)
+from db.models.implementations.core.recent_search.core import RecentSearch
+from db.models.implementations.core.distinct_source_url import DistinctSourceURL
+from db.models.implementations.core.log.notification import NotificationLog
+from db.models.implementations.core.location.dependent import DependentLocation
+from db.models.implementations.core.user.core import User
+from db.models.implementations.core.record.type import RecordType
+from db.models.implementations.core.record.category import RecordCategory
+from db.models.implementations.core.data_request.github_issue_info import (
+    DataRequestsGithubIssueInfo,
+)
+from db.models.implementations.core.data_source.expanded import DataSourceExpanded
+from db.models.implementations.core.data_source.core import DataSource
+from db.models.implementations.core.data_request.expanded import DataRequestExpanded
+from db.models.implementations.core.data_request.core import DataRequest
+from db.models.implementations.core.external_account import ExternalAccount
+from db.models.implementations.core.location.expanded import LocationExpanded
+from db.models.implementations.core.location.core import Location
+from db.models.implementations.core.log.table_count import TableCountLog
+from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.link import (
     LinkAgencyDataSource,
     LinkAgencyLocation,
@@ -149,6 +166,7 @@ class DatabaseClient:
     def __init__(self):
         self.connection: PgConnection = initialize_psycopg_connection()
         self.session_maker = initialize_sqlalchemy_session()
+        self.session = None
         self.cursor: Optional[Cursor] = None
 
     def cursor_manager(row_factory=dict_row):
@@ -958,10 +976,22 @@ class DatabaseClient:
         column_to_return="id",
     )
 
-    create_followed_search = partialmethod(
-        _create_entry_in_table,
-        table_name=Relations.LINK_USER_FOLLOWED_LOCATION.value,
-    )
+    @session_manager
+    def create_followed_search(
+        self,
+        user_id: int,
+        location_id: int,
+        record_types: Optional[list[RecordTypes]] = None,
+        record_categories: Optional[list[RecordCategories]] = None,
+    ) -> None:
+        builder = CreateFollowQueryBuilder(
+            user_id=user_id,
+            location_id=location_id,
+            record_types=record_types,
+            record_categories=record_categories,
+            session=self.session,
+        )
+        builder.run()
 
     def create_county(self, name: str, fips: str, state_id: int) -> int:
         """
@@ -1406,9 +1436,22 @@ class DatabaseClient:
         _delete_from_table, table_name=Relations.LINK_LOCATIONS_DATA_REQUESTS.value
     )
 
-    delete_followed_search = partialmethod(
-        _delete_from_table, table_name=Relations.LINK_USER_FOLLOWED_LOCATION.value
-    )
+    @session_manager
+    def delete_followed_search(
+        self,
+        user_id: int,
+        location_id: int,
+        record_types: Optional[list[RecordTypes]] = None,
+        record_categories: Optional[list[RecordCategories]] = None,
+    ):
+        builder = DeleteFollowQueryBuilder(
+            user_id=user_id,
+            location_id=location_id,
+            record_types=record_types,
+            record_categories=record_categories,
+            session=self.session,
+        )
+        builder.run()
 
     delete_data_source_agency_relation = partialmethod(
         _delete_from_table, table_name=Relations.LINK_AGENCIES_DATA_SOURCES.value
@@ -1548,17 +1591,12 @@ class DatabaseClient:
             column_references.append(column_reference)
         return column_references
 
-    get_user_followed_searches = partialmethod(
-        get_linked_rows,
-        link_table=Relations.LINK_USER_FOLLOWED_LOCATION,
-        left_link_column="user_id",
-        right_link_column="location_id",
-        linked_relation=Relations.LOCATIONS_EXPANDED,
-        linked_relation_linking_column="id",
-        columns_to_retrieve=["state_name", "county_name", "locality_name", "id"],
-        build_metadata=True,
-        alias_mappings={"id": "location_id"},
-    )
+    @session_manager
+    def get_user_followed_searches(self, user_id: int) -> dict[str, Any]:
+        builder = GetUserFollowedSearchesQueryBuilder(
+            session=self.session, user_id=user_id
+        )
+        return builder.run()
 
     DataRequestIssueInfo = namedtuple(
         "DataRequestIssueInfo",
@@ -1816,20 +1854,10 @@ class DatabaseClient:
             )
             self.session.execute(query)
 
+    @session_manager
     def get_user_recent_searches(self, user_id: int):
-        return self._select_from_relation(
-            relation_name=Relations.RECENT_SEARCHES_EXPANDED.value,
-            columns=[
-                "location_id",
-                "state_name",
-                "county_name",
-                "locality_name",
-                "location_type",
-                "record_categories",
-            ],
-            where_mappings={"user_id": user_id},
-            build_metadata=True,
-        )
+        builder = GetUserRecentSearchesQueryBuilder(user_id, self.session)
+        return builder.run()
 
     def get_record_type_id_by_name(self, record_type_name: str):
         return self._select_single_entry_from_relation(

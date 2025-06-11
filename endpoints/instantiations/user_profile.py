@@ -1,10 +1,11 @@
 from flask import Response
 
+from endpoints.schema_config.instantiations.user.put import UserPutEndpointSchemaConfig
 from middleware.access_logic import (
     AccessInfoPrimary,
 )
 from middleware.authentication_info import STANDARD_JWT_AUTH_INFO
-from middleware.decorators import endpoint_info
+from middleware.decorators.decorators import endpoint_info
 from middleware.primary_resource_logic.reset_token_queries import (
     change_password_wrapper,
 )
@@ -50,7 +51,7 @@ class UserUpdatePassword(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=change_password_wrapper,
-            schema_populate_parameters=SchemaConfigs.USER_PUT.value.get_schema_populate_parameters(),
+            schema_populate_parameters=UserPutEndpointSchemaConfig.get_schema_populate_parameters(),
             access_info=access_info,
         )
 

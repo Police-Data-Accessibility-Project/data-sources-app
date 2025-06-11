@@ -4,7 +4,7 @@ from endpoints.psycopg_resource import PsycopgResource
 from endpoints.schema_config.enums import SchemaConfigs
 from middleware.access_logic import AccessInfoPrimary
 from middleware.authentication_info import STANDARD_JWT_AUTH_INFO
-from middleware.decorators import endpoint_info
+from middleware.decorators.decorators import endpoint_info
 
 
 @namespace_search.route("/follow/national")

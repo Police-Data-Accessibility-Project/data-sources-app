@@ -6,7 +6,7 @@ from middleware.access_logic import (
     AccessInfoPrimary,
 )
 from middleware.authentication_info import AuthenticationInfo, WRITE_ONLY_AUTH_INFO
-from middleware.decorators import endpoint_info
+from middleware.decorators.decorators import endpoint_info
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from middleware.primary_resource_logic.permissions import (
     manage_user_permissions,

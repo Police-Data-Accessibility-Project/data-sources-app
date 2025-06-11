@@ -5,7 +5,16 @@ from datetime import datetime, timezone, timedelta
 
 from db.db_client_dataclasses import WhereMapping
 from db.enums import SortOrder, ApprovalStatus
-from db.models.implementations.core import Agency
+from db.models.implementations.core.agency.core import Agency
+from endpoints.schema_config.instantiations.agencies.by_id.get import (
+    AgenciesByIDGetEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.agencies.by_id.put import (
+    AgenciesByIDPutEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.agencies.post import (
+    AgenciesPostEndpointSchemaConfig,
+)
 from middleware.enums import JurisdictionType, AgencyType
 from middleware.schema_and_dto.schemas.agencies.info.put import (
     AgencyInfoPutSchema,
@@ -164,7 +173,7 @@ def test_agencies_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
         http_method="get",
         endpoint=AGENCIES_BASE_ENDPOINT + f"/{agency_id}",
         headers=tdc.get_admin_tus().jwt_authorization_header,
-        expected_schema=SchemaConfigs.AGENCIES_BY_ID_GET.value.primary_output_schema,
+        expected_schema=AgenciesByIDGetEndpointSchemaConfig.primary_output_schema,
     )
 
     data = response_json["data"]
@@ -194,7 +203,7 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
             endpoint=AGENCIES_BASE_ENDPOINT,
             headers=tus_admin.jwt_authorization_header,
             json=json,
-            expected_schema=SchemaConfigs.AGENCIES_POST.value.primary_output_schema,
+            expected_schema=AgenciesPostEndpointSchemaConfig.primary_output_schema,
         )
 
     def run_get(
@@ -293,13 +302,13 @@ def test_agencies_put(test_data_creator_flask: TestDataCreatorFlask):
         },
     )
 
-    json_data = run_and_validate_request(
+    run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="put",
         endpoint=BY_ID_ENDPOINT,
         headers=admin_tus.jwt_authorization_header,
         json={"agency_info": agency_info},
-        expected_schema=SchemaConfigs.AGENCIES_BY_ID_PUT.value.primary_output_schema,
+        expected_schema=AgenciesByIDPutEndpointSchemaConfig.primary_output_schema,
     )
 
     json_data = run_and_validate_request(

@@ -1,6 +1,15 @@
 from flask import Response
 
 from config import limiter
+from endpoints.schema_config.instantiations.locations.by_id.put import (
+    LocationsByIDPutEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.locations.data_requests import (
+    LocationsRelatedDataRequestsGetEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.locations.get_many import (
+    LocationsGetManyEndpointSchemaConfig,
+)
 from middleware.access_logic import (
     AccessInfoPrimary,
 )
@@ -9,7 +18,7 @@ from middleware.authentication_info import (
     API_OR_JWT_AUTH_INFO,
     WRITE_ONLY_AUTH_INFO,
 )
-from middleware.decorators import endpoint_info
+from middleware.decorators.decorators import endpoint_info
 from middleware.primary_resource_logic.locations import (
     get_location_by_id_wrapper,
     get_locations_related_data_requests_wrapper,
@@ -39,7 +48,7 @@ class Locations(PsycopgResource):
     def get(self, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             wrapper_function=get_many_locations_wrapper,
-            schema_populate_parameters=SchemaConfigs.LOCATIONS_GET_MANY.value.get_schema_populate_parameters(),
+            schema_populate_parameters=LocationsGetManyEndpointSchemaConfig.get_schema_populate_parameters(),
         )
 
 
@@ -74,7 +83,7 @@ class LocationsByID(PsycopgResource):
     def put(self, location_id: int, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             wrapper_function=update_location_by_id_wrapper,
-            schema_populate_parameters=SchemaConfigs.LOCATIONS_BY_ID_PUT.value.get_schema_populate_parameters(),
+            schema_populate_parameters=LocationsByIDPutEndpointSchemaConfig.get_schema_populate_parameters(),
             location_id=int(location_id),
         )
 
@@ -95,5 +104,5 @@ class LocationsRelatedDataRequestsById(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=get_locations_related_data_requests_wrapper,
             access_info=access_info,
-            schema_populate_parameters=SchemaConfigs.LOCATIONS_RELATED_DATA_REQUESTS_GET.value.get_schema_populate_parameters(),
+            schema_populate_parameters=LocationsRelatedDataRequestsGetEndpointSchemaConfig.get_schema_populate_parameters(),
         )

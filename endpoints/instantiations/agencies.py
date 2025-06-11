@@ -2,12 +2,21 @@ from flask import Response
 
 from config import limiter
 from db.client import DatabaseClient
+from endpoints.schema_config.instantiations.agencies.by_id.get import (
+    AgenciesByIDGetEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.agencies.get_many import (
+    AgenciesGetManyEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.agencies.post import (
+    AgenciesPostEndpointSchemaConfig,
+)
 from middleware.access_logic import (
     AccessInfoPrimary,
 )
 from middleware.authentication_info import WRITE_ONLY_AUTH_INFO, API_OR_JWT_AUTH_INFO
 from middleware.column_permission_logic import create_column_permissions_string_table
-from middleware.decorators import (
+from middleware.decorators.decorators import (
     endpoint_info,
 )
 from middleware.enums import Relations
@@ -53,7 +62,7 @@ class AgenciesByPage(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=get_agencies,
-            schema_populate_parameters=SchemaConfigs.AGENCIES_GET_MANY.value.get_schema_populate_parameters(),
+            schema_populate_parameters=AgenciesGetManyEndpointSchemaConfig.get_schema_populate_parameters(),
             access_info=access_info,
         )
 
@@ -68,7 +77,7 @@ class AgenciesByPage(PsycopgResource):
     def post(self, access_info: AccessInfoPrimary):
         return self.run_endpoint(
             wrapper_function=create_agency,
-            schema_populate_parameters=SchemaConfigs.AGENCIES_POST.value.get_schema_populate_parameters(),
+            schema_populate_parameters=AgenciesPostEndpointSchemaConfig.get_schema_populate_parameters(),
             access_info=access_info,
         )
 
@@ -95,7 +104,7 @@ class AgenciesById(PsycopgResource):
     def get(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             wrapper_function=get_agency_by_id,
-            schema_populate_parameters=SchemaConfigs.AGENCIES_BY_ID_GET.value.get_schema_populate_parameters(),
+            schema_populate_parameters=AgenciesByIDGetEndpointSchemaConfig.get_schema_populate_parameters(),
             access_info=access_info,
         )
 
