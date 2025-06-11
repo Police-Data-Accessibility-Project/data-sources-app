@@ -1,5 +1,5 @@
 from sqlalchemy import ForeignKey, Column, Integer
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.models.base import Base
 from db.models.mixins import (
@@ -47,6 +47,13 @@ class LinkUserFollowedLocation(
     StandardBase, CountMetadata, CreatedAtMixin, UserIDMixin, LocationIDMixin
 ):
     __tablename__ = Relations.LINK_USER_FOLLOWED_LOCATION.value
+
+    record_types: Mapped[list["RecordType"]] = relationship(
+        "RecordType",
+        secondary="public.link_follow_record_types",
+        primaryjoin="LinkUserFollowedLocation.id == LinkFollowRecordType.follow_id",
+        secondaryjoin="LinkFollowRecordType.record_type_id == RecordType.id",
+    )
 
 
 class LinkFollowRecordType(StandardBase, RecordTypeIDMixin):

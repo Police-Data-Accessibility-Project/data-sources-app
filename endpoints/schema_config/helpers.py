@@ -96,7 +96,7 @@ DATA_SOURCES_RELATED_AGENCY_BY_ID = EndpointSchemaConfig(
 )
 SEARCH_FOLLOW_UPDATE = EndpointSchemaConfig(
     input_schema=SearchRequestSchema(
-        exclude=["record_categories", "output_format"],
+        exclude=["output_format"],
     ),
     input_dto_class=SearchRequestsDTO,
 )

@@ -29,6 +29,10 @@ class FollowSearchResponseSchema(Schema):
         required=True,
         metadata=get_json_metadata("The location ID of the search."),
     )
+    record_categories = fields.Dict(
+        required=True,
+        metadata=get_json_metadata("The record categories of the search."),
+    )
 
 
 GetUserFollowedSearchesSchema = create_get_many_schema(

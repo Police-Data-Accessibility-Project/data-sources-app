@@ -10,6 +10,7 @@ from endpoints.schema_config.instantiations.search.follow.delete import (
 from endpoints.schema_config.instantiations.search.follow.get import (
     SearchFollowGetEndpointSchemaConfig,
 )
+from middleware.enums import RecordTypes
 from tests.helper_scripts.constants import SEARCH_FOLLOW_BASE_ENDPOINT
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_functions_simple import add_query_params
@@ -19,6 +20,7 @@ from tests.helper_scripts.run_and_validate_request import (
 )
 from tests.integration.search.constants import TEST_STATE, TEST_COUNTY, TEST_LOCALITY
 from tests.integration.search.search_test_setup import SearchTestSetup
+from utilities.enums import RecordCategories
 
 
 def test_search_follow(search_test_setup: SearchTestSetup):
@@ -83,6 +85,68 @@ def test_search_follow(search_test_setup: SearchTestSetup):
         "message": "Followed searches found.",
     }
 
+    results_json = {
+        "metadata": {"count": 1},
+        "data": [
+            {
+                "state_name": TEST_STATE,
+                "county_name": TEST_COUNTY,
+                "locality_name": TEST_LOCALITY,
+                "location_id": sts.location_id,
+                "record_categories": {
+                    RecordCategories.POLICE.value: [
+                        RecordTypes.ACCIDENT_REPORTS.value,
+                        RecordTypes.ARREST_RECORDS.value,
+                        RecordTypes.CALLS_FOR_SERVICE.value,
+                        RecordTypes.CAR_GPS.value,
+                        RecordTypes.CITATIONS.value,
+                        RecordTypes.DISPATCH_LOGS.value,
+                        RecordTypes.DISPATCH_RECORDINGS.value,
+                        RecordTypes.FIELD_CONTACTS.value,
+                        RecordTypes.INCIDENT_REPORTS.value,
+                        RecordTypes.MISC_POLICE_ACTIVITY.value,
+                        RecordTypes.OFFICER_INVOLVED_SHOOTINGS.value,
+                        RecordTypes.STOPS.value,
+                        RecordTypes.SURVEYS.value,
+                        RecordTypes.USE_OF_FORCE_REPORTS.value,
+                        RecordTypes.VEHICLE_PURSUITS.value,
+                    ],
+                    RecordCategories.JAIL.value: [
+                        RecordTypes.BOOKING_REPORTS.value,
+                        RecordTypes.COURT_CASES.value,
+                        RecordTypes.INCARCERATION_RECORDS.value,
+                    ],
+                    RecordCategories.OFFICERS.value: [
+                        RecordTypes.COMPLAINTS_MISCONDUCT.value,
+                        RecordTypes.DAILY_ACTIVITY_LOGS.value,
+                        RecordTypes.TRAINING_HIRING_INFO.value,
+                        RecordTypes.PERSONNEL_RECORDS.value,
+                    ],
+                    RecordCategories.AGENCIES.value: [
+                        RecordTypes.ANNUAL_MONTHLY_REPORTS.value,
+                        RecordTypes.BUDGETS_FINANCES.value,
+                        RecordTypes.CONTACT_INFO_AGENCY_META.value,
+                        RecordTypes.GEOGRAPHIC.value,
+                        RecordTypes.LIST_OF_DATA_SOURCES.value,
+                        RecordTypes.POLICIES_CONTRACTS.value,
+                    ],
+                    RecordCategories.RESOURCE.value: [
+                        RecordTypes.CRIME_MAPS_REPORTS.value,
+                        RecordTypes.CRIME_STATISTICS.value,
+                        RecordTypes.MEDIA_BULLETINS.value,
+                        RecordTypes.RECORDS_REQUEST_INFO.value,
+                        RecordTypes.RESOURCES.value,
+                        RecordTypes.SEX_OFFENDER_REGISTRY.value,
+                        RecordTypes.WANTED_PERSONS.value,
+                    ],
+                    RecordCategories.OTHER.value: [
+                        RecordTypes.OTHER.value,
+                    ],
+                },
+            }
+        ],
+        "message": "Followed searches found.",
+    }
     # User should check current follows and find none
     call_follow_get(
         tus=tus_1,
@@ -115,18 +179,7 @@ def test_search_follow(search_test_setup: SearchTestSetup):
     # User should check current follows and find only the one they just followed
     call_follow_get(
         tus=tus_1,
-        expected_json_content={
-            "metadata": {"count": 1},
-            "data": [
-                {
-                    "state_name": TEST_STATE,
-                    "county_name": TEST_COUNTY,
-                    "locality_name": TEST_LOCALITY,
-                    "location_id": sts.location_id,
-                }
-            ],
-            "message": "Followed searches found.",
-        },
+        expected_json_content=results_json,
     )
 
     # A separate user should check their current follows and find nothing

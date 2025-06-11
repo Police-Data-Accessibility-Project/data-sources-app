@@ -48,8 +48,9 @@ from db.exceptions import LocationDoesNotExistError
 from db.models.implementations.core.location.county import County
 from db.models.implementations.core.location.locality import Locality
 from db.models.implementations.core.location.us_state import USState
-from db.queries.search.follow.follow import CreateFollowQueryBuilder
-from db.queries.search.follow.unfollow import DeleteFollowQueryBuilder
+from db.queries.search.follow.get import GetUserFollowedSearchesQueryBuilder
+from db.queries.search.follow.post import CreateFollowQueryBuilder
+from db.queries.search.follow.delete import DeleteFollowQueryBuilder
 from db.queries.user_profile.get_user_recent_searches import (
     GetUserRecentSearchesQueryBuilder,
 )
@@ -1590,17 +1591,12 @@ class DatabaseClient:
             column_references.append(column_reference)
         return column_references
 
-    get_user_followed_searches = partialmethod(
-        get_linked_rows,
-        link_table=Relations.LINK_USER_FOLLOWED_LOCATION,
-        left_link_column="user_id",
-        right_link_column="location_id",
-        linked_relation=Relations.LOCATIONS_EXPANDED,
-        linked_relation_linking_column="id",
-        columns_to_retrieve=["state_name", "county_name", "locality_name", "id"],
-        build_metadata=True,
-        alias_mappings={"id": "location_id"},
-    )
+    @session_manager
+    def get_user_followed_searches(self, user_id: int) -> dict[str, Any]:
+        builder = GetUserFollowedSearchesQueryBuilder(
+            session=self.session, user_id=user_id
+        )
+        return builder.run()
 
     DataRequestIssueInfo = namedtuple(
         "DataRequestIssueInfo",

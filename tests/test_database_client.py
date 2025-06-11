@@ -1080,7 +1080,7 @@ def test_user_followed_searches_logic(
     )
 
     # Get the user's followed searches
-    results = tdc.db_client.get_user_followed_searches(left_id=user_info.id)
+    results = tdc.db_client.get_user_followed_searches(user_id=user_info.id)
     assert len(results["data"]) == 2
 
     # Unfollow one of the searches
@@ -1090,7 +1090,7 @@ def test_user_followed_searches_logic(
     )
 
     # Get the user's followed searches, and ensure the un-followed search is gone
-    results = tdc.db_client.get_user_followed_searches(left_id=user_info.id)
+    results = tdc.db_client.get_user_followed_searches(user_id=user_info.id)
     assert len(results["data"]) == 1
 
 

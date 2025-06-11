@@ -17,7 +17,8 @@ class RecordType(StandardBase):
     description: Mapped[Optional[text]]
 
     # Relationships
-    record_categories: Mapped[list[RecordCategory]] = relationship(
+    record_category: Mapped[RecordCategory] = relationship(
         argument="RecordCategory",
         back_populates="record_types",
+        uselist=False,
     )

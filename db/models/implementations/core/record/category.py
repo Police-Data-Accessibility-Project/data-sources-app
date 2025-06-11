@@ -17,5 +17,4 @@ class RecordCategory(StandardBase):
     # Relationships
     record_types: Mapped[list["RecordType"]] = relationship(
         argument="RecordType",
-        back_populates="record_categories",
     )

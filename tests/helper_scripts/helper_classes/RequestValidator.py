@@ -119,6 +119,12 @@ from endpoints.schema_config.instantiations.reset_password.request import (
 from endpoints.schema_config.instantiations.search.federal import (
     SearchFederalGetEndpointSchemaConfig,
 )
+from endpoints.schema_config.instantiations.search.follow.delete import (
+    SearchFollowDeleteEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.search.follow.get import (
+    SearchFollowGetEndpointSchemaConfig,
+)
 from endpoints.schema_config.instantiations.search.follow.post import (
     SearchFollowPostEndpointSchemaConfig,
 )
@@ -558,6 +564,47 @@ class RequestValidator:
             expected_json_content=expected_json_content,
             expected_response_status=expected_response_status,
             expected_schema=SearchFollowPostEndpointSchemaConfig.primary_output_schema,
+        )
+
+    def unfollow_search(
+        self,
+        headers: dict,
+        location_id: int,
+        record_categories: Optional[list[RecordCategories]] = None,
+        record_types: Optional[list[RecordTypes]] = None,
+        expected_json_content: Optional[dict] = None,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+    ):
+        endpoint_base = "/api/search/follow"
+        query_params = self._get_search_query_params(
+            location_id=location_id,
+            record_categories=record_categories,
+            record_types=record_types,
+        )
+        endpoint = add_query_params(
+            url=endpoint_base,
+            params=query_params,
+        )
+        return self.delete(
+            endpoint=endpoint,
+            headers=headers,
+            expected_json_content=expected_json_content,
+            expected_response_status=expected_response_status,
+            expected_schema=SearchFollowDeleteEndpointSchemaConfig.primary_output_schema,
+        )
+
+    def get_followed_searches(
+        self,
+        headers: dict,
+        expected_json_content: Optional[dict] = None,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+    ):
+        return self.get(
+            endpoint="/api/search/follow",
+            headers=headers,
+            expected_json_content=expected_json_content,
+            expected_response_status=expected_response_status,
+            expected_schema=SearchFollowGetEndpointSchemaConfig.primary_output_schema,
         )
 
     def get_user_by_id(
