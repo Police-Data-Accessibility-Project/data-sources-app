@@ -45,9 +45,6 @@ from db.db_client_dataclasses import (
     WhereMapping,
 )
 from db.exceptions import LocationDoesNotExistError
-from db.models.implementations.core.location.county import County
-from db.models.implementations.core.location.locality import Locality
-from db.models.implementations.core.location.us_state import USState
 from db.queries.search.follow.get import GetUserFollowedSearchesQueryBuilder
 from db.queries.search.follow.post import CreateFollowQueryBuilder
 from db.queries.search.follow.delete import DeleteFollowQueryBuilder
@@ -123,9 +120,9 @@ from middleware.enums import (
     RecordTypes,
     DataSourceCreationResponse,
 )
-from middleware.initialize_psycopg_connection import initialize_psycopg_connection
-from middleware.initialize_sqlalchemy_session import initialize_sqlalchemy_session
-from middleware.miscellaneous_logic.table_count_logic import (
+from db.initialize_psycopg_connection import initialize_psycopg_connection
+from db.initialize_sqlalchemy_session import initialize_sqlalchemy_session
+from middleware.miscellaneous.table_count_logic import (
     TableCountReference,
     TableCountReferenceManager,
 )

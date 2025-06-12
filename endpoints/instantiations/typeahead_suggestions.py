@@ -5,7 +5,7 @@ from flask import Response
 from config import limiter
 from db.client import DatabaseClient
 from middleware.access_logic import AccessInfoPrimary
-from middleware.authentication_info import NO_AUTH_INFO
+from middleware.security.authentication_info import NO_AUTH_INFO
 from middleware.decorators.decorators import endpoint_info
 from middleware.primary_resource_logic.typeahead_suggestion import (
     get_typeahead_results,

@@ -13,7 +13,7 @@ from endpoints.schema_config.instantiations.locations.get_many import (
 from middleware.access_logic import (
     AccessInfoPrimary,
 )
-from middleware.authentication_info import (
+from middleware.security.authentication_info import (
     STANDARD_JWT_AUTH_INFO,
     API_OR_JWT_AUTH_INFO,
     WRITE_ONLY_AUTH_INFO,

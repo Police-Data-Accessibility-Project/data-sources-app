@@ -3,7 +3,7 @@ from flask import Response
 from db.client import DatabaseClient
 from middleware.access_logic import AccessInfoPrimary
 from middleware.common_response_formatting import message_response
-from middleware.dynamic_request_logic.delete_logic import delete_entry
+from middleware.dynamic_request_logic.delete import delete_entry
 from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,

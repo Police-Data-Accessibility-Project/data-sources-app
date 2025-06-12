@@ -12,7 +12,10 @@ from endpoints.schema_config.instantiations.admin.users.post import (
 from middleware.access_logic import (
     AccessInfoPrimary,
 )
-from middleware.authentication_info import READ_USER_AUTH_INFO, WRITE_USER_AUTH_INFO
+from middleware.security.authentication_info import (
+    READ_USER_AUTH_INFO,
+    WRITE_USER_AUTH_INFO,
+)
 from middleware.decorators.decorators import (
     endpoint_info,
 )

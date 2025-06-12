@@ -8,8 +8,8 @@ from middleware.common_response_formatting import (
     created_id_response,
     message_response,
 )
-from middleware.dynamic_request_logic.delete_logic import delete_entry
-from middleware.dynamic_request_logic.post_logic import PostHandler
+from middleware.dynamic_request_logic.delete import delete_entry
+from middleware.dynamic_request_logic.post import PostHandler
 from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,

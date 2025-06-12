@@ -1,16 +1,8 @@
 import psycopg
 from psycopg import connection as PgConnection
+
+from db.exceptions import DatabaseInitializationError
 from middleware.util.env import get_env_variable
-
-
-class DatabaseInitializationError(Exception):
-    """
-    Custom Exception to be raised when psycopg connection initialization fails.
-    """
-
-    def __init__(self, message="Failed to initialize psycopg connection."):
-        self.message = message
-        super().__init__(self.message)
 
 
 class DatabaseConnectionSingleton:

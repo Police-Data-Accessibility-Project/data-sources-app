@@ -3,14 +3,14 @@ from http import HTTPStatus
 import pytest
 from unittest.mock import MagicMock
 
-from middleware.security import (
+from middleware.security.helpers import (
     check_permissions,
 )
 from middleware.decorators.api_key_required import api_key_required
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_mocks_and_patches import patch_abort
 
-PATCH_ROOT = "middleware.security"
+PATCH_ROOT = "middleware.security.helpers"
 
 
 @pytest.fixture

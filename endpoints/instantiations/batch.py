@@ -9,7 +9,7 @@ from endpoints.schema_config.instantiations.bulk.data_sources import (
 from middleware.access_logic import (
     AccessInfoPrimary,
 )
-from middleware.authentication_info import STANDARD_JWT_AUTH_INFO
+from middleware.security.authentication_info import STANDARD_JWT_AUTH_INFO
 from middleware.decorators.decorators import endpoint_info
 from middleware.primary_resource_logic.bulk import (
     bulk_post_agencies,

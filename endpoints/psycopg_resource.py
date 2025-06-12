@@ -8,7 +8,7 @@ from flask_restx import Resource
 from config import config
 from db.client import DatabaseClient
 from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
-from middleware.initialize_psycopg_connection import initialize_psycopg_connection
+from db.initialize_psycopg_connection import initialize_psycopg_connection
 from middleware.schema_and_dto.dynamic_logic.dynamic_schema_request_content_population import (
     populate_schema_with_request_content,
 )

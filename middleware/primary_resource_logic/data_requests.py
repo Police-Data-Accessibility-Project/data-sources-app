@@ -23,15 +23,15 @@ from middleware.common_response_formatting import (
 from middleware.custom_dataclasses import (
     DeferredFunction,
 )
-from middleware.dynamic_request_logic.delete_logic import delete_entry
-from middleware.dynamic_request_logic.get_by_id_logic import get_by_id
-from middleware.dynamic_request_logic.get_many_logic import get_many
-from middleware.dynamic_request_logic.get_related_resource_logic import (
+from middleware.dynamic_request_logic.delete import delete_entry
+from middleware.dynamic_request_logic.get.by_id import get_by_id
+from middleware.dynamic_request_logic.get.many import get_many
+from middleware.dynamic_request_logic.get.related_resource import (
     get_related_resource,
     GetRelatedResourcesParameters,
 )
-from middleware.dynamic_request_logic.post_logic import PostLogic
-from middleware.dynamic_request_logic.put_logic import put_entry
+from middleware.dynamic_request_logic.post import PostLogic
+from middleware.dynamic_request_logic.put import put_entry
 from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,

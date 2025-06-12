@@ -13,7 +13,7 @@ from typing_extensions import Callable
 from db.client import DatabaseClient
 from middleware.jwt.core import SimpleJWT
 from middleware.jwt.enums import JWTPurpose
-from middleware.api_key import ApiKey
+from middleware.security.api_key import ApiKey
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from db.helper_functions import get_db_client
 from middleware.exceptions import (

@@ -6,19 +6,19 @@ import pytest
 from db.db_client_dataclasses import WhereMapping
 from db.enums import ColumnPermissionEnum
 from middleware.dynamic_request_logic.common_functions import check_for_id
-from middleware.dynamic_request_logic.delete_logic import (
+from middleware.dynamic_request_logic.delete import (
     check_for_delete_permissions,
     delete_entry,
 )
-from middleware.dynamic_request_logic.get_by_id_logic import (
+from middleware.dynamic_request_logic.get.by_id import (
     results_dependent_response,
     get_by_id,
 )
-from middleware.dynamic_request_logic.get_many_logic import (
+from middleware.dynamic_request_logic.get.many import (
     optionally_limit_to_requested_columns,
     check_requested_columns,
 )
-from middleware.dynamic_request_logic.put_logic import put_entry
+from middleware.dynamic_request_logic.put import put_entry
 from middleware.dynamic_request_logic.supporting_classes import IDInfo
 
 from middleware.schema_and_dto.schemas.common.common_response_schemas import (
@@ -53,7 +53,7 @@ def mock_abort(monkeypatch):
 
 def test_results_dependent_response_with_results(monkeypatch):
     mock_message_response = patch_and_return_mock(
-        f"{PATCH_ROOT}.get_by_id_logic.message_response", monkeypatch
+        f"{PATCH_ROOT}.get.by_id.message_response", monkeypatch
     )
 
     results_dependent_response(
@@ -70,7 +70,7 @@ def test_results_dependent_response_with_results(monkeypatch):
 
 def test_results_dependent_response_with_no_results(monkeypatch):
     mock_message_response = patch_and_return_mock(
-        f"{PATCH_ROOT}.get_by_id_logic.message_response", monkeypatch
+        f"{PATCH_ROOT}.get.by_id.message_response", monkeypatch
     )
 
     results_dependent_response(
@@ -86,17 +86,17 @@ def test_results_dependent_response_with_no_results(monkeypatch):
 def test_get_by_id(monkeypatch):
     mock = MagicMock()
     monkeypatch.setattr(
-        f"{PATCH_ROOT}.get_by_id_logic.results_dependent_response",
+        f"{PATCH_ROOT}.get.by_id.results_dependent_response",
         mock.results_dependent_response,
     )
     monkeypatch.setattr(
-        f"{PATCH_ROOT}.get_by_id_logic.get_permitted_columns",
+        f"{PATCH_ROOT}.get.by_id.get_permitted_columns",
         mock.get_permitted_columns,
     )
-    monkeypatch.setattr(f"{PATCH_ROOT}.get_by_id_logic.check_for_id", mock.check_for_id)
+    monkeypatch.setattr(f"{PATCH_ROOT}.get.by_id.check_for_id", mock.check_for_id)
     id_info = IDInfo(id_column_value=mock.id, id_column_name=mock.id_column_name)
     monkeypatch.setattr(
-        f"{PATCH_ROOT}.get_by_id_logic.IDInfo", MagicMock(return_value=id_info)
+        f"{PATCH_ROOT}.get.by_id.IDInfo", MagicMock(return_value=id_info)
     )
     result = get_by_id(
         middleware_parameters=mock.mp,
@@ -137,7 +137,7 @@ def test_get_by_id(monkeypatch):
 @pytest.fixture
 def mock_check_requested_columns(monkeypatch) -> MagicMock:
     mock = MagicMock()
-    monkeypatch.setattr(f"{PATCH_ROOT}.get_many_logic.check_requested_columns", mock)
+    monkeypatch.setattr(f"{PATCH_ROOT}.get.many.check_requested_columns", mock)
     return mock
 
 
@@ -180,7 +180,7 @@ def test_execute_if_none_is_not_none():
 def test_put_entry(monkeypatch):
     mock = MagicMock()
     monkeypatch.setattr(
-        f"{PATCH_ROOT}.put_logic.message_response",
+        f"{PATCH_ROOT}.put.message_response",
         mock.message_response,
     )
     monkeypatch.setattr(
@@ -255,7 +255,7 @@ def test_delete_entry(monkeypatch):
     mock = MagicMock()
     multi_monkeypatch(
         monkeypatch,
-        patch_root=f"{PATCH_ROOT}.delete_logic",
+        patch_root=f"{PATCH_ROOT}.delete",
         mock=mock,
         functions_to_patch=[
             "check_for_id",
@@ -298,7 +298,7 @@ def test_check_requested_columns_happy_path(mock_flask_response_manager, monkeyp
     mock = MagicMock()
     mock.get_invalid_columns.return_value = []
     monkeypatch.setattr(
-        f"{PATCH_ROOT}.get_many_logic.get_invalid_columns", mock.get_invalid_columns
+        f"{PATCH_ROOT}.get.many.get_invalid_columns", mock.get_invalid_columns
     )
     check_requested_columns(
         requested_columns=mock.requested_columns,
@@ -317,7 +317,7 @@ def test_check_requested_columns_invalid_columns(
     mock = MagicMock()
     mock.get_invalid_columns.return_value = ["invalid_column"]
     monkeypatch.setattr(
-        f"{PATCH_ROOT}.get_many_logic.get_invalid_columns", mock.get_invalid_columns
+        f"{PATCH_ROOT}.get.many.get_invalid_columns", mock.get_invalid_columns
     )
     with pytest.raises(FakeAbort):
         check_requested_columns(

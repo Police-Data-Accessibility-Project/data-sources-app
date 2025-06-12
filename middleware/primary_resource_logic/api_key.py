@@ -3,7 +3,6 @@ from http import HTTPStatus
 
 from flask import Response, make_response
 from flask_restx import abort
-from werkzeug.security import check_password_hash
 
 from db.client import DatabaseClient
 from db.helper_functions import get_db_client
@@ -12,12 +11,11 @@ from middleware.access_logic import (
     AuthScheme,
     AccessInfoPrimary,
 )
-from middleware.api_key import ApiKey
+from middleware.security.api_key import ApiKey
 from middleware.exceptions import (
     InvalidAPIKeyException,
     InvalidAuthorizationHeaderException,
 )
-from middleware.primary_resource_logic.user_queries import UserRequestDTO
 import hashlib
 
 

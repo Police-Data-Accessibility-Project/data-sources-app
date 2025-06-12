@@ -7,7 +7,7 @@ from endpoints.schema_config.instantiations.archives.get import (
 from middleware.access_logic import (
     AccessInfoPrimary,
 )
-from middleware.authentication_info import (
+from middleware.security.authentication_info import (
     ARCHIVE_WRITE_AUTH_INFO,
     API_OR_JWT_AUTH_INFO,
 )

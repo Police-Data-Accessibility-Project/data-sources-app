@@ -23,7 +23,7 @@ from middleware.access_logic import (
     get_authentication,
     ParserDeterminator,
 )
-from middleware.authentication_info import AuthenticationInfo
+from middleware.security.authentication_info import AuthenticationInfo
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from middleware.schema_and_dto.dynamic_logic.dynamic_schema_documentation_construction import (
     get_restx_param_documentation,

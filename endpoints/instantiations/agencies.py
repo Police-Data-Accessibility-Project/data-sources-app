@@ -14,7 +14,10 @@ from endpoints.schema_config.instantiations.agencies.post import (
 from middleware.access_logic import (
     AccessInfoPrimary,
 )
-from middleware.authentication_info import WRITE_ONLY_AUTH_INFO, API_OR_JWT_AUTH_INFO
+from middleware.security.authentication_info import (
+    WRITE_ONLY_AUTH_INFO,
+    API_OR_JWT_AUTH_INFO,
+)
 from middleware.column_permission_logic import create_column_permissions_string_table
 from middleware.decorators.decorators import (
     endpoint_info,

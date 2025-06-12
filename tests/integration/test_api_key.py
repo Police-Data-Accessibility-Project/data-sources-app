@@ -5,9 +5,8 @@ from http import HTTPStatus
 from endpoints.schema_config.instantiations.api_key import (
     ApiKeyPostEndpointSchemaConfig,
 )
-from middleware.api_key import ApiKey
+from middleware.security.api_key import ApiKey
 from endpoints.instantiations.api_key import API_KEY_ROUTE
-from endpoints.schema_config.enums import SchemaConfigs
 from tests.conftest import (
     test_data_creator_flask,
 )

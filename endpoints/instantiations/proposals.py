@@ -2,7 +2,7 @@ from endpoints.schema_config.instantiations.proposal_agencies import (
     ProposalAgenciesPostEndpointSchemaConfig,
 )
 from middleware.access_logic import AccessInfoPrimary
-from middleware.authentication_info import STANDARD_JWT_AUTH_INFO
+from middleware.security.authentication_info import STANDARD_JWT_AUTH_INFO
 from middleware.decorators.decorators import endpoint_info
 from middleware.primary_resource_logic.proposals import propose_agency
 from endpoints.psycopg_resource import PsycopgResource

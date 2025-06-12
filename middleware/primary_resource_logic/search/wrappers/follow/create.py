@@ -5,7 +5,7 @@ from db.client import DatabaseClient
 from db.models.exceptions import LocationNotFound
 from middleware.access_logic import AccessInfoPrimary
 from middleware.common_response_formatting import message_response
-from middleware.dynamic_request_logic.post_logic import post_entry
+from middleware.dynamic_request_logic.post import post_entry
 from middleware.dynamic_request_logic.supporting_classes import MiddlewareParameters
 from middleware.enums import Relations
 from middleware.primary_resource_logic.search.helpers import (

@@ -11,17 +11,17 @@ from db.enums import ApprovalStatus, RelationRoleEnum, ColumnPermissionEnum
 from db.result_formatter import ResultFormatter
 from middleware.access_logic import AccessInfoPrimary
 from middleware.column_permission_logic import get_permitted_columns
-from middleware.dynamic_request_logic.delete_logic import delete_entry
-from middleware.dynamic_request_logic.get_many_logic import (
+from middleware.dynamic_request_logic.delete import delete_entry
+from middleware.dynamic_request_logic.get.many import (
     optionally_limit_to_requested_columns,
 )
 
-from middleware.dynamic_request_logic.post_logic import (
+from middleware.dynamic_request_logic.post import (
     PostLogic,
     PostHandler,
     post_entry_with_handler,
 )
-from middleware.dynamic_request_logic.put_logic import put_entry, PutHandler
+from middleware.dynamic_request_logic.put import put_entry, PutHandler
 from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,
