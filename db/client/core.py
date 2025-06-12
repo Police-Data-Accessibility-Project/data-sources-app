@@ -708,14 +708,12 @@ class DatabaseClient:
         :param external_account_id: The ID of the external account.
         :param external_account_type: The type of the external account.
         """
-        self._create_entry_in_table(
-            table_name="external_accounts",
-            column_value_mappings={
-                "user_id": user_id,
-                "account_type": external_account_type.value,
-                "account_identifier": external_account_id,
-            },
+        ea = ExternalAccount(
+            user_id=int(user_id),
+            account_type=external_account_type.value,
+            account_identifier=external_account_id,
         )
+        self.add(ea)
 
     @session_manager
     def get_table_count(self, table_name: str) -> int:
@@ -732,6 +730,7 @@ class DatabaseClient:
 
     @session_manager
     def get_most_recent_logged_table_counts(self) -> TableCountReferenceManager:
+        # TODO: QueryBuilder
         # Get the most recent table count for all distinct tables
         subquery = select(
             TableCountLog.table_name,
@@ -933,7 +932,6 @@ class DatabaseClient:
         lal = LinkAgencyLocation(location_id=location_id, agency_id=agency_id)
         self.session.add(lal)
 
-    @session_manager
     def remove_location_from_agency(self, location_id: int, agency_id: int):
         query = delete(LinkAgencyLocation).where(
             and_(
@@ -941,7 +939,7 @@ class DatabaseClient:
                 LinkAgencyLocation.agency_id == agency_id,
             )
         )
-        self.session.execute(query)
+        self.execute(query)
 
     create_request_source_relation = partialmethod(
         _create_entry_in_table,
@@ -1166,6 +1164,7 @@ class DatabaseClient:
         requested_columns: Optional[list[str]] = None,
         approval_status: Optional[ApprovalStatus] = None,
     ):
+        # TODO: QueryBuilder
 
         order_by_clause = DynamicQueryConstructor.get_sql_alchemy_order_by_clause(
             order_by=order_by,
@@ -1205,7 +1204,7 @@ class DatabaseClient:
         self,
         agency_id: int,
     ):
-
+        # TODO: QueryBuilder
         load_options = DynamicQueryConstructor.agencies_get_load_options()
 
         query = select(Agency).options(*load_options).where(Agency.id == agency_id)
@@ -1227,6 +1226,7 @@ class DatabaseClient:
         limit: Optional[int] = PAGE_SIZE,
         approval_status: Optional[ApprovalStatus] = None,
     ):
+        # TODO: QueryBuilder
 
         order_by_clause = DynamicQueryConstructor.get_sql_alchemy_order_by_clause(
             order_by=order_by,
@@ -1298,6 +1298,7 @@ class DatabaseClient:
         data_sources_columns: list[str],
         data_requests_columns: list[str],
     ):
+        # TODO: QueryBuilder
         load_options = DynamicQueryConstructor.data_sources_get_load_options(
             data_sources_columns=data_sources_columns,
             data_requests_columns=data_requests_columns,
@@ -1322,10 +1323,6 @@ class DatabaseClient:
         )
 
         return data_source_dictionary
-
-    get_request_source_relations = partialmethod(
-        _select_from_relation, relation_name=Relations.RELATED_SOURCES.value
-    )
 
     @session_manager
     def run_query_builder(self, query_builder: QueryBuilderBase):
@@ -1383,26 +1380,22 @@ class DatabaseClient:
     def get_data_requests_for_creator(
         self, creator_user_id: str, columns: List[str]
     ) -> List[str]:
-        return self._select_from_relation(
-            relation_name="data_requests",
-            columns=columns,
-            where_mappings=[
-                WhereMapping(column="creator_user_id", value=creator_user_id)
-            ],
-        )
+        selects = []
+        for column in columns:
+            sel = getattr(DataRequest, column)
+            selects.append(sel)
+        query = select(*selects).where(DataRequest.creator_user_id == creator_user_id)
+        return self.mappings(query)
 
     def user_is_creator_of_data_request(
         self, user_id: int, data_request_id: int
     ) -> bool:
-        results = self._select_from_relation(
-            relation_name="data_requests",
-            columns=["id"],
-            where_mappings=[
-                WhereMapping(column="creator_user_id", value=int(user_id)),
-                WhereMapping(column="id", value=int(data_request_id)),
-            ],
+        query = select(DataRequest.id).where(
+            DataRequest.creator_user_id == int(user_id),
+            DataRequest.id == int(data_request_id),
         )
-        return len(results) == 1
+        result = self.scalar(query)
+        return result is not None
 
     # @cursor_manager()
     @session_manager
@@ -1932,6 +1925,7 @@ class DatabaseClient:
         Retrieve agencies similar to the query
         Optionally filtering based on the location id
         """
+        # TODO: QueryBuilder
         query = Select(
             Agency,
             func.similarity(Agency.name, name),
@@ -2237,6 +2231,7 @@ class DatabaseClient:
         has_coordinates: Optional[bool] = None,
         type_: Optional[LocationType] = None,
     ):
+        # TODO: QueryBuilder
         query = select(Location)
         if has_coordinates is not None:
             if has_coordinates:
@@ -2318,6 +2313,7 @@ class DatabaseClient:
     def get_metrics_followed_searches_breakdown(
         self, dto: MetricsFollowedSearchesBreakdownRequestDTO
     ):
+        # TODO: QueryBuilder
         sortable_columns = GET_METRICS_FOLLOWED_SEARCHES_BREAKDOWN_SORTABLE_COLUMNS
 
         if dto.sort_by is not None:
@@ -2523,6 +2519,7 @@ class DatabaseClient:
         return results
 
     def get_metrics_followed_searches_aggregate(self):
+        # TODO: QueryBuilder
         subquery_latest_notification = (
             select(NotificationLog.created_at.label("last_notification"))
             .order_by(NotificationLog.created_at.desc())
