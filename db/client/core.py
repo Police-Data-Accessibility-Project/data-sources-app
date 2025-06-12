@@ -56,8 +56,14 @@ from db.enums import (
     ApprovalStatus,
 )
 from db.exceptions import LocationDoesNotExistError
-from db.helpers_.result_formatter import ResultFormatter
 from db.helpers_.psycopg import initialize_psycopg_connection
+from db.helpers_.result_formatting import (
+    get_expanded_display_name,
+    data_source_to_get_data_sources_output,
+    agency_to_data_sources_get_related_agencies_output,
+    agency_to_get_agencies_output,
+    format_with_metadata,
+)
 from db.models.base import Base
 from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.data_request.core import DataRequest
@@ -1072,7 +1078,7 @@ class DatabaseClient:
         self, build_metadata: bool, relation_name, results, subquery_parameters
     ):
         if build_metadata is True:
-            results = ResultFormatter.format_with_metadata(
+            results = format_with_metadata(
                 results,
                 relation_name,
                 subquery_parameters,
@@ -1191,7 +1197,7 @@ class DatabaseClient:
         results: list[Agency] = self.session.execute(query).scalars(Agency).all()
         final_results = []
         for result in results:
-            agency_dictionary = ResultFormatter.agency_to_get_agencies_output(
+            agency_dictionary = agency_to_get_agencies_output(
                 result, requested_columns=requested_columns
             )
             final_results.append(agency_dictionary)
@@ -1209,7 +1215,7 @@ class DatabaseClient:
         query = select(Agency).options(*load_options).where(Agency.id == agency_id)
 
         result: Agency = self.session.execute(query).scalars(Agency).first()
-        agency_dictionary = ResultFormatter.agency_to_get_agencies_output(
+        agency_dictionary = agency_to_get_agencies_output(
             result,
         )
 
@@ -1254,12 +1260,10 @@ class DatabaseClient:
         )
         final_results = []
         for result in results:
-            data_source_dictionary = (
-                ResultFormatter.data_source_to_get_data_sources_output(
-                    result,
-                    data_sources_columns=data_sources_columns,
-                    data_requests_columns=data_requests_columns,
-                )
+            data_source_dictionary = data_source_to_get_data_sources_output(
+                result,
+                data_sources_columns=data_sources_columns,
+                data_requests_columns=data_requests_columns,
             )
             final_results.append(data_source_dictionary)
 
@@ -1286,11 +1290,7 @@ class DatabaseClient:
 
         agency_dicts = []
         for agency in result.agencies:
-            agency_dict = (
-                ResultFormatter.agency_to_data_sources_get_related_agencies_output(
-                    agency
-                )
-            )
+            agency_dict = agency_to_data_sources_get_related_agencies_output(agency)
             agency_dicts.append(agency_dict)
 
         return agency_dicts
@@ -1319,7 +1319,7 @@ class DatabaseClient:
         if result is None:
             return None
 
-        data_source_dictionary = ResultFormatter.data_source_to_get_data_sources_output(
+        data_source_dictionary = data_source_to_get_data_sources_output(
             result,
             data_requests_columns=data_requests_columns,
             data_sources_columns=data_sources_columns,
@@ -2029,7 +2029,7 @@ class DatabaseClient:
             "county_name": result.county_name,
             "county_fips": result.county_fips,
             "locality_name": result.locality_name,
-            "display_name": ResultFormatter.get_expanded_display_name(result),
+            "display_name": get_expanded_display_name(result),
         }
 
     @session_manager

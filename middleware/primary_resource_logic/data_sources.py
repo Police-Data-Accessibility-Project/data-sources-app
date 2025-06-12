@@ -7,7 +7,7 @@ from db.client.core import DatabaseClient
 from db.db_client_dataclasses import OrderByParameters
 from db.subquery_logic import SubqueryParameterManager
 from db.enums import ApprovalStatus, RelationRoleEnum, ColumnPermissionEnum
-from db.helpers_.result_formatter import ResultFormatter
+from db.helpers_.result_formatting import zip_get_datas_sources_for_map_results
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.column_permission_logic import get_permitted_columns
 from middleware.dynamic_request_logic.delete import delete_entry
@@ -156,7 +156,7 @@ def data_source_by_id_wrapper(
 
 def get_data_sources_for_map_wrapper(db_client: DatabaseClient) -> Response:
     raw_results = db_client.get_data_sources_for_map()
-    zipped_results = ResultFormatter.zip_get_datas_sources_for_map_results(raw_results)
+    zipped_results = zip_get_datas_sources_for_map_results(raw_results)
     return make_response(
         format_list_response(
             data={"data": zipped_results},
