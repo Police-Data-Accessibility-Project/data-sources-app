@@ -7,10 +7,16 @@ logic to be added as necessary.
 from http import HTTPStatus
 from typing import Optional, Type
 
-from flask import make_response, Response, redirect
-from flask_restx import abort
+from flask import make_response, Response
 from marshmallow import Schema, ValidationError
 from werkzeug.exceptions import InternalServerError
+
+
+def validate_data_with_schema(data, validation_schema):
+    try:
+        validation_schema().load(data)
+    except ValidationError as e:
+        raise InternalServerError(f"Error validating response schema: {e}")
 
 
 class FlaskResponseManager:
@@ -23,12 +29,5 @@ class FlaskResponseManager:
         validation_schema: Optional[Type[Schema]] = None,
     ) -> Response:
         if validation_schema is not None:
-            cls.validate_data_with_schema(data, validation_schema)
+            validate_data_with_schema(data, validation_schema)
         return make_response(data, status_code)
-
-    @classmethod
-    def validate_data_with_schema(cls, data, validation_schema):
-        try:
-            validation_schema().load(data)
-        except ValidationError as e:
-            raise InternalServerError(f"Error validating response schema: {e}")

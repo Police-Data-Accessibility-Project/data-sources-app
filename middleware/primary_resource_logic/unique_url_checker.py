@@ -1,4 +1,4 @@
-from flask import Response
+from flask import Response, make_response
 from marshmallow import Schema, fields
 from pydantic import BaseModel
 
@@ -71,6 +71,4 @@ class UniqueURLCheckerResponseOuterSchema(Schema):
 def unique_url_checker_wrapper(
     db_client: DatabaseClient, dto: UniqueURLCheckerRequestDTO
 ) -> Response:
-    return FlaskResponseManager.make_response(
-        data={"duplicates": db_client.check_for_url_duplicates(dto.url)}
-    )
+    return make_response({"duplicates": db_client.check_for_url_duplicates(dto.url)})

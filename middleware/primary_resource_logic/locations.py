@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from flask import Response
+from flask import Response, make_response
 
 from db.client import DatabaseClient
 from db.enums import ColumnPermissionEnum
@@ -28,14 +28,14 @@ def get_location_by_id_wrapper(db_client: DatabaseClient, location_id: int) -> R
         return message_response(
             message="Location not found.", status_code=HTTPStatus.BAD_REQUEST
         )
-    return FlaskResponseManager.make_response(data=result)
+    return make_response(result)
 
 
 def get_many_locations_wrapper(
     db_client: DatabaseClient, dto: LocationsGetRequestDTO
 ) -> Response:
-    return FlaskResponseManager.make_response(
-        data={
+    return make_response(
+        {
             "results": db_client.get_many_locations(
                 page=dto.page, has_coordinates=dto.has_coordinates, type_=dto.type
             ),
@@ -54,9 +54,7 @@ def update_location_by_id_wrapper(
         return message_response(
             message="Location not found.", status_code=HTTPStatus.BAD_REQUEST
         )
-    return message_response(
-        message="Successfully updated location.", status_code=HTTPStatus.OK
-    )
+    return message_response("Successfully updated location.")
 
 
 def get_locations_related_data_requests_wrapper(
@@ -86,8 +84,8 @@ def get_locations_related_data_requests_wrapper(
 
 
 def get_locations_for_map_wrapper(db_client: DatabaseClient) -> Response:
-    return FlaskResponseManager.make_response(
-        data={
+    return make_response(
+        {
             "localities": db_client.get_map_localities(),
             "counties": db_client.get_map_counties(),
             "states": db_client.get_map_states(),

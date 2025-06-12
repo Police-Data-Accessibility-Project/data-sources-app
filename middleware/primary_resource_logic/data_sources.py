@@ -125,8 +125,8 @@ def get_data_sources_wrapper(
         limit=dto.limit,
     )
 
-    return FlaskResponseManager.make_response(
-        data={
+    return make_response(
+        {
             "metadata": {"count": len(results)},
             "message": "Successfully retrieved data sources",
             "data": results,
@@ -148,8 +148,8 @@ def data_source_by_id_wrapper(
         data_sources_columns=cro.data_sources_columns,
     )
 
-    return FlaskResponseManager.make_response(
-        data={
+    return make_response(
+        {
             "data": result,
             "message": "Successfully retrieved data source",
         }
@@ -162,8 +162,7 @@ def get_data_sources_for_map_wrapper(db_client: DatabaseClient) -> Response:
     return make_response(
         format_list_response(
             data={"data": zipped_results},
-        ),
-        HTTPStatus.OK.value,
+        )
     )
 
 
@@ -328,8 +327,8 @@ def get_data_source_related_agencies(
     if results is None:
         return message_response("Data Source not found.")
 
-    return FlaskResponseManager.make_response(
-        data={
+    return make_response(
+        {
             "metadata": {"count": len(results)},
             "message": "Successfully retrieved related agencies",
             "data": results,

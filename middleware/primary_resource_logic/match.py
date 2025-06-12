@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 
-from flask import Response
+from flask import Response, make_response
 
 from db.client import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
@@ -56,9 +56,7 @@ class AgencyMatchResponse:
 
 
 def format_response(amr: AgencyMatchResponse) -> Response:
-    return FlaskResponseManager.make_response(
-        data=amr.to_json(),
-    )
+    return make_response(amr.to_json())
 
 
 def match_agency_wrapper(db_client: DatabaseClient, dto: AgencyMatchResponseOuterDTO):

@@ -1,5 +1,8 @@
 from http import HTTPStatus
 
+from flask import make_response
+from werkzeug.exceptions import Forbidden
+
 from db.client import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
 from db.enums import RelationRoleEnum
@@ -20,7 +23,7 @@ def get_owner_data_requests_wrapper(
     data_requests = get_owner_data_requests(db_client, dto, user_id)
     formatted_list_response = format_list_response(data_requests)
 
-    return FlaskResponseManager.make_response(formatted_list_response)
+    return make_response(formatted_list_response)
 
 
 def get_owner_data_requests(
@@ -41,7 +44,7 @@ def get_user_recent_searches(db_client: DatabaseClient, access_info: AccessInfoP
         user_id=access_info.get_user_id()
     )
 
-    return FlaskResponseManager.make_response(recent_searches)
+    return make_response(recent_searches)
 
 
 def get_user_by_id_wrapper(
@@ -52,9 +55,7 @@ def get_user_by_id_wrapper(
         user_id != access_info.get_user_id()
         and PermissionsEnum.READ_ALL_USER_INFO not in access_info.permissions
     ):
-        return FlaskResponseManager.make_response(
-            data={"message": "Forbidden."}, status_code=HTTPStatus.FORBIDDEN
-        )
+        raise Forbidden("Forbidden.")
 
     # Get user info
     email = db_client.get_user_email(user_id=user_id)

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from http import HTTPStatus
 
-from flask import Response
+from flask import Response, make_response
 from pydantic import BaseModel
 from werkzeug.exceptions import InternalServerError
 
@@ -238,6 +238,6 @@ def send_notifications(
             )
 
     db_client.add_to_notification_log(user_count=count)
-    return FlaskResponseManager.make_response(
-        data={"message": "Notifications sent successfully.", "count": count}
+    return make_response(
+        {"message": "Notifications sent successfully.", "count": count}
     )

@@ -1,4 +1,4 @@
-from flask import Response, request
+from flask import Response, request, make_response
 
 from db.client import DatabaseClient
 from db.db_client_dataclasses import OrderByParameters
@@ -47,8 +47,8 @@ def get_agencies(
         approval_status=dto.approval_status,
     )
 
-    return FlaskResponseManager.make_response(
-        data={
+    return make_response(
+        {
             "metadata": {"count": len(results)},
             "message": "Successfully retrieved agencies",
             "data": results,

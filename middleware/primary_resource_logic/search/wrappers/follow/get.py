@@ -1,4 +1,4 @@
-from flask import Response
+from flask import Response, make_response
 
 from db.client import DatabaseClient
 from middleware.security.access_info.primary import AccessInfoPrimary
@@ -13,4 +13,4 @@ def get_followed_searches(
         user_id=access_info.get_user_id(),
     )
     results["message"] = "Followed searches found."
-    return FlaskResponseManager.make_response(results)
+    return make_response(results)

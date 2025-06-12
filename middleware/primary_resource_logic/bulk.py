@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from http import HTTPStatus
 from io import BytesIO
 
-from flask import Response
+from flask import Response, make_response
 from marshmallow import Schema, ValidationError
 from werkzeug.datastructures import FileStorage
 from werkzeug.exceptions import BadRequest, UnsupportedMediaType
@@ -233,21 +233,19 @@ def manage_agencies_response(responses: list[BulkPostResponse]) -> Response:
         else:
             created_ids.append(response.entry_id)
     if not created_ids:
-        return FlaskResponseManager.make_response(
-            status_code=HTTPStatus.OK,
-            data={
+        return make_response(
+            {
                 "message": "No agencies were created from the provided csv file.",
                 "errors": error_dict,
                 "ids": created_ids,
-            },
+            }
         )
-    return FlaskResponseManager.make_response(
-        status_code=HTTPStatus.OK,
-        data={
+    return make_response(
+        {
             "message": f"At least some agencies created successfully.",
             "errors": error_dict,
             "ids": created_ids,
-        },
+        }
     )
 
 
@@ -256,12 +254,11 @@ def manage_response(
 ):
     errors = brm.get_error_dict()
     if brm.all_requests_errored_out():
-        return FlaskResponseManager.make_response(
-            status_code=HTTPStatus.OK,
-            data={
+        return make_response(
+            {
                 "message": f"No {resource_name} were {verb} from the provided csv file.",
                 "errors": errors,
-            },
+            }
         )
 
     if include_ids:
@@ -271,13 +268,12 @@ def manage_response(
     else:
         kwargs = {"ids": []}
 
-    return FlaskResponseManager.make_response(
-        status_code=HTTPStatus.OK,
-        data={
+    return make_response(
+        {
             "message": f"At least some {resource_name} created successfully.",
             "errors": errors,
             **kwargs,
-        },
+        }
     )
 
 

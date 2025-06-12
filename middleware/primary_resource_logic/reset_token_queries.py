@@ -83,9 +83,7 @@ def reset_password(
     validate_user_ids_match(access_info.user_id, user_id)
 
     set_user_password(db_client=db_client, user_id=user_id, password=dto.password)
-    return FlaskResponseManager.make_response(
-        {"message": "Successfully updated password"}, HTTPStatus.OK
-    )
+    return make_response({"message": "Successfully updated password"})
 
 
 def validate_user_ids_match(user_id: int, token_user_id: int):

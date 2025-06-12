@@ -1,6 +1,6 @@
 from typing import Optional
 
-from flask import Response
+from flask import Response, make_response
 from pydantic import BaseModel
 
 from db.client import DatabaseClient
@@ -73,9 +73,7 @@ def get_related_resource(
 
     _format_results(gerp, results)
 
-    return FlaskResponseManager.make_response(
-        data=results,
-    )
+    return make_response(results)
 
 
 def _format_results(gerp: GetRelatedResourcesParameters, results: dict):

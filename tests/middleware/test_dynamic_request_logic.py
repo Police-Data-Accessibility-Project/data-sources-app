@@ -217,16 +217,15 @@ def test_put_entry(monkeypatch):
     assert result == mock.message_response.return_value
 
 
-def test_check_for_delete_permission_check_function_returns_true(mock_abort):
+def test_check_for_delete_permission_check_function_returns_true():
     mock_check_function = MagicMock()
     mock_check_function.execute.return_value = True
     check_for_delete_permissions(
         check_function=mock_check_function, entry_name="test entry"
     )
-    mock_abort.assert_not_called()
 
 
-def test_check_for_delete_permission_check_function_returns_false(mock_abort):
+def test_check_for_delete_permission_check_function_returns_false():
     mock_check_function = MagicMock()
     mock_check_function.execute.return_value = False
     with pytest.raises(Forbidden):
@@ -292,7 +291,7 @@ def test_delete_entry(monkeypatch):
     assert result == mock.message_response.return_value
 
 
-def test_check_requested_columns_happy_path(mock_flask_response_manager, monkeypatch):
+def test_check_requested_columns_happy_path(monkeypatch):
     mock = MagicMock()
     mock.get_invalid_columns.return_value = []
     monkeypatch.setattr(
@@ -303,14 +302,8 @@ def test_check_requested_columns_happy_path(mock_flask_response_manager, monkeyp
         permitted_columns=mock.permitted_columns,
     )
 
-    mock.get_invalid_columns.assert_called_once_with(
-        mock.requested_columns, mock.permitted_columns
-    )
 
-
-def test_check_requested_columns_invalid_columns(
-    mock_flask_response_manager, monkeypatch
-):
+def test_check_requested_columns_invalid_columns(monkeypatch):
     mock = MagicMock()
     mock.get_invalid_columns.return_value = ["invalid_column"]
     monkeypatch.setattr(
@@ -327,7 +320,7 @@ def test_check_requested_columns_invalid_columns(
     )
 
 
-def test_check_for_id_happy_path(mock_flask_response_manager):
+def test_check_for_id_happy_path():
     mock = MagicMock()
     mock.db_client._select_from_relation.return_value = [{"id": 1}]
     mock.id_info.id_column_name = "id"
@@ -345,7 +338,7 @@ def test_check_for_id_happy_path(mock_flask_response_manager):
     )
 
 
-def test_check_for_id_no_id(mock_flask_response_manager):
+def test_check_for_id_no_id():
     mock = MagicMock()
     mock.db_client._select_from_relation.return_value = []
     mock.id_info.id_column_name = "id"

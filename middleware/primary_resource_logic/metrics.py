@@ -1,3 +1,5 @@
+from flask import make_response
+
 from db.client import DatabaseClient
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto.dtos.metrics import (
@@ -12,8 +14,8 @@ def get_metrics(db_client: DatabaseClient):
 def get_metrics_followed_searches_breakdown(
     db_client: DatabaseClient, dto: MetricsFollowedSearchesBreakdownRequestDTO
 ):
-    return FlaskResponseManager.make_response(
-        data={"results": db_client.get_metrics_followed_searches_breakdown(dto=dto)}
+    return make_response(
+        {"results": db_client.get_metrics_followed_searches_breakdown(dto=dto)}
     )
 
 
