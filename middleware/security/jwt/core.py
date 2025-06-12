@@ -4,6 +4,7 @@ from typing import Union, Optional
 
 import jwt
 from jwt import InvalidSignatureError
+from werkzeug.exceptions import BadRequest
 
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.security.jwt.constants import ALGORITHM
@@ -64,9 +65,7 @@ class SimpleJWT:
     @staticmethod
     def validate_purpose(decoded_purpose, purpose):
         if decoded_purpose != purpose:
-            FlaskResponseManager.bad_request_abort(
-                f"Invalid JWT Purpose: {decoded_purpose} != {purpose}"
-            )
+            raise BadRequest(f"Invalid JWT Purpose: {decoded_purpose} != {purpose}")
 
     def is_expired(self):
         return self.exp < datetime.datetime.now(tz=datetime.timezone.utc).timestamp()

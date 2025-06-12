@@ -38,23 +38,3 @@ class FlaskResponseManager:
     @classmethod
     def abort(cls, code: int, message: str) -> Response:
         abort(code=code, message=message)
-
-    @classmethod
-    def redirect(cls, url: str, data: Optional[dict]) -> Response:
-        if data is not None:
-            response = make_response(data, HTTPStatus.FOUND)
-            return redirect(url, code=HTTPStatus.FOUND, Response=response)
-        return redirect(url, code=HTTPStatus.FOUND)
-
-    @classmethod
-    def permission_denied_abort(cls) -> None:
-        abort(
-            code=HTTPStatus.FORBIDDEN,
-            message="You do not have permission to access this endpoint",
-        )
-
-    @classmethod
-    def bad_request_abort(
-        cls, message: str = "Improperly formatted authorization header"
-    ) -> None:
-        return abort(code=HTTPStatus.BAD_REQUEST, message=message)

@@ -4,6 +4,7 @@ from typing import Optional
 from flask_jwt_extended import decode_token
 from flask_restx import abort
 from jwt import ExpiredSignatureError
+from werkzeug.exceptions import Forbidden
 
 from db.helper_functions import get_db_client
 from middleware.enums import PermissionsEnum
@@ -19,10 +20,10 @@ def check_permissions_with_access_info(
     access_info: AccessInfoPrimary, permissions: list[PermissionsEnum]
 ) -> None:
     if access_info is None:
-        return FlaskResponseManager.permission_denied_abort()
+        raise Forbidden("You do not have permission to access this endpoint")
     for permission in permissions:
         if permission not in access_info.permissions:
-            return FlaskResponseManager.permission_denied_abort()
+            raise Forbidden("You do not have permission to access this endpoint")
 
 
 def get_user_email_from_api_key(token: str) -> Optional[str]:

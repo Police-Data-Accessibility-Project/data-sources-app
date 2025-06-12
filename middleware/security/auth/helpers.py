@@ -2,6 +2,7 @@ from http import HTTPStatus
 from typing import Optional
 
 from flask_restx import abort
+from werkzeug.exceptions import BadRequest
 
 from middleware.enums import AccessTypeEnum, PermissionsEnum
 from middleware.flask_response_manager import FlaskResponseManager
@@ -61,7 +62,7 @@ def check_if_valid_auth_scheme(
         if auth_scheme == amc.scheme:
             return
 
-    FlaskResponseManager.bad_request_abort("Invalid Auth Scheme for endpoint")
+    raise BadRequest("Invalid Auth Scheme for endpoint")
 
 
 def try_authentication(

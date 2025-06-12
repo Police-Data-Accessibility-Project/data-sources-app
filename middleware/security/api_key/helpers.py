@@ -1,3 +1,5 @@
+from werkzeug.exceptions import BadRequest
+
 from middleware.exceptions import InvalidAPIKeyException
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.security.access_logic import get_authorization_header_from_request
@@ -15,7 +17,7 @@ def get_key_from_authorization_header(
     try:
         authorization_header_parts = authorization_header.split(" ")
         if len(authorization_header_parts) != 2:
-            FlaskResponseManager.bad_request_abort()
+            raise BadRequest("Improperly formatted authorization header")
         if authorization_header_parts[0] != scheme:
             raise InvalidAPIKeyException
         return authorization_header_parts[1]
