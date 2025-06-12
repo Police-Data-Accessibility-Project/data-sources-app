@@ -1,7 +1,7 @@
 from flask import Response
 
 from db.client import DatabaseClient
-from middleware.access_logic import AccessInfoPrimary
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.primary_resource_logic.search.helpers import (
     create_search_record,
     get_explicit_record_categories,

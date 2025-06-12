@@ -11,10 +11,8 @@ from endpoints.schema_config.instantiations.agencies.get_many import (
 from endpoints.schema_config.instantiations.agencies.post import (
     AgenciesPostEndpointSchemaConfig,
 )
-from middleware.access_logic import (
-    AccessInfoPrimary,
-)
-from middleware.security.authentication_info import (
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.info.instantiations import (
     WRITE_ONLY_AUTH_INFO,
     API_OR_JWT_AUTH_INFO,
 )

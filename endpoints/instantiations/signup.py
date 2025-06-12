@@ -6,11 +6,9 @@ from endpoints.schema_config.instantiations.auth.resend_validate_email import (
 from endpoints.schema_config.instantiations.auth.signup import (
     AuthSignupEndpointSchemaConfig,
 )
-from middleware.access_logic import (
-    AccessInfoPrimary,
-    ValidateEmailTokenAccessInfo,
-)
-from middleware.security.authentication_info import (
+from middleware.security.access_info.validate_email import ValidateEmailTokenAccessInfo
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.info.instantiations import (
     NO_AUTH_INFO,
     VALIDATE_EMAIL_AUTH_INFO,
 )

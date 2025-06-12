@@ -6,12 +6,10 @@ from flask_restx import abort
 
 from db.client import DatabaseClient
 from db.helper_functions import get_db_client
-from middleware.access_logic import (
-    get_token_from_request_header,
-    AuthScheme,
-    AccessInfoPrimary,
-)
-from middleware.security.api_key import ApiKey
+from middleware.security.api_key.helpers import get_token_from_request_header
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.method_config.enums import AuthScheme
+from middleware.security.api_key.core import ApiKey
 from middleware.exceptions import (
     InvalidAPIKeyException,
     InvalidAuthorizationHeaderException,

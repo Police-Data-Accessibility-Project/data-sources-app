@@ -39,7 +39,7 @@ def mock_abort(monkeypatch) -> MagicMock:
     return patch_abort(monkeypatch, path=PATCH_API_KEY_ROOT)
 
 
-PATCH_REQUESTS_ROOT = "middleware.access_logic"
+PATCH_REQUESTS_ROOT = "middleware.security.access_logic"
 
 
 def test_check_api_key_happy_path(

@@ -1,5 +1,5 @@
 from db.client import DatabaseClient
-from middleware.access_logic import AccessInfoPrimary
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.common_response_formatting import message_response
 from middleware.schema_and_dto.dtos.search.national import (
     SearchFollowNationalRequestDTO,

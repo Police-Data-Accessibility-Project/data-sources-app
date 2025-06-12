@@ -8,8 +8,8 @@ from endpoints.schema_config.instantiations.search.follow.delete import (
 from endpoints.schema_config.instantiations.search.follow.post import (
     SearchFollowPostEndpointSchemaConfig,
 )
-from middleware.access_logic import AccessInfoPrimary
-from middleware.security.authentication_info import (
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.info.instantiations import (
     API_OR_JWT_AUTH_INFO,
     STANDARD_JWT_AUTH_INFO,
 )

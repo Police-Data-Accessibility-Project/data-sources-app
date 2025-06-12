@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 from db.client import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
-from middleware.access_logic import AccessInfoPrimary
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.dynamic_request_logic.post import PostLogic
 from middleware.enums import JurisdictionSimplified, Relations, OutputFormatEnum
 from middleware.flask_response_manager import FlaskResponseManager

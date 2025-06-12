@@ -8,8 +8,8 @@ from pydantic import BaseModel
 
 from db.client import DatabaseClient
 from db.enums import ExternalAccountTypeEnum
-from middleware.jwt.core import SimpleJWT
-from middleware.jwt.enums import JWTPurpose
+from middleware.security.jwt.core import SimpleJWT
+from middleware.security.jwt.enums import JWTPurpose
 from middleware.common_response_formatting import message_response
 from middleware.custom_dataclasses import GithubUserInfo
 from middleware.exceptions import UserNotFoundError

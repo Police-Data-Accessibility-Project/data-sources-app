@@ -3,8 +3,8 @@ from http import HTTPStatus
 from endpoints.schema_config.instantiations.auth.github.oauth import (
     AuthGitHubOAuthEndpointSchemaConfig,
 )
-from middleware.access_logic import AccessInfoPrimary
-from middleware.security.authentication_info import NO_AUTH_INFO
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.info.instantiations import NO_AUTH_INFO
 from middleware.decorators.decorators import endpoint_info
 from middleware.enums import CallbackFunctionsEnum
 from middleware.schema_and_dto.dtos.github.oauth import GithubOAuthRequestDTO

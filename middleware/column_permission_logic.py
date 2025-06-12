@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict
 
 from db.enums import RelationRoleEnum, ColumnPermissionEnum
-from middleware.access_logic import AccessInfoPrimary
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.custom_dataclasses import DeferredFunction
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from middleware.flask_response_manager import FlaskResponseManager

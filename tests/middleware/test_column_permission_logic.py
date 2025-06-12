@@ -1,14 +1,11 @@
 from typing import List
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
-from db.enums import ColumnPermissionEnum, RelationRoleEnum
-from middleware.access_logic import AccessInfoPrimary
+from db.enums import RelationRoleEnum
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.column_permission_logic import (
-    get_permitted_columns,
-    check_has_permission_to_edit_columns,
-    create_column_permissions_string_table,
     get_relation_role,
     RelationRoleParameters,
 )

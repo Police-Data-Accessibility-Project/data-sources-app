@@ -11,7 +11,7 @@ from db.enums import (
     RequestStatus,
 )
 from db.subquery_logic import SubqueryParameterManager, SubqueryParameters
-from middleware.access_logic import AccessInfoPrimary
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.column_permission_logic import (
     get_permitted_columns,
     RelationRoleParameters,

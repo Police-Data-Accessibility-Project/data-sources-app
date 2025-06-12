@@ -1,10 +1,8 @@
 from flask import Response
 
 from endpoints.schema_config.instantiations.user.put import UserPutEndpointSchemaConfig
-from middleware.access_logic import (
-    AccessInfoPrimary,
-)
-from middleware.security.authentication_info import STANDARD_JWT_AUTH_INFO
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.info.instantiations import STANDARD_JWT_AUTH_INFO
 from middleware.decorators.decorators import endpoint_info
 from middleware.primary_resource_logic.reset_token_queries import (
     change_password_wrapper,

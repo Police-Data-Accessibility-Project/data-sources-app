@@ -9,7 +9,7 @@ from db.db_client_dataclasses import OrderByParameters
 from db.subquery_logic import SubqueryParameterManager
 from db.enums import ApprovalStatus, RelationRoleEnum, ColumnPermissionEnum
 from db.result_formatter import ResultFormatter
-from middleware.access_logic import AccessInfoPrimary
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.column_permission_logic import get_permitted_columns
 from middleware.dynamic_request_logic.delete import delete_entry
 from middleware.dynamic_request_logic.get.many import (

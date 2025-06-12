@@ -10,7 +10,7 @@ from flask import Response
 from db.DTOs import DataRequestInfoForGithub
 from db.client import DatabaseClient
 from db.enums import RequestStatus
-from middleware.access_logic import AccessInfoPrimary
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.common_response_formatting import message_response
 from middleware.enums import RecordTypes
 from middleware.schema_and_dto.dtos.github.issue import GithubIssueURLInfosDTO

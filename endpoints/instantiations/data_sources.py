@@ -19,10 +19,8 @@ from endpoints.schema_config.instantiations.data_sources.get_many import (
 from endpoints.schema_config.instantiations.data_sources.post import (
     DataSourcesPostEndpointSchemaConfig,
 )
-from middleware.access_logic import (
-    AccessInfoPrimary,
-)
-from middleware.security.authentication_info import (
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.info.instantiations import (
     WRITE_ONLY_AUTH_INFO,
     STANDARD_JWT_AUTH_INFO,
     API_OR_JWT_AUTH_INFO,

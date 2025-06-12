@@ -11,8 +11,8 @@ from endpoints.schema_config.instantiations.auth.github.login import (
     AuthGithubLoginEndpointSchemaConfig,
 )
 from tests.conftest import test_data_creator_flask
-from middleware.jwt.core import SimpleJWT
-from middleware.jwt.enums import JWTPurpose
+from middleware.security.jwt.core import SimpleJWT
+from middleware.security.jwt.enums import JWTPurpose
 from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )

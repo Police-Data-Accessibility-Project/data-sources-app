@@ -3,8 +3,8 @@ from datetime import datetime, timezone, timedelta
 from flask import Response, redirect
 
 from db.client import DatabaseClient
-from middleware.jwt.core import SimpleJWT
-from middleware.jwt.enums import JWTPurpose
+from middleware.security.jwt.core import SimpleJWT
+from middleware.security.jwt.enums import JWTPurpose
 from middleware.exceptions import UserNotFoundError
 from middleware.third_party_interaction_logic.callback.flask_sessions import (
     get_callback_params,

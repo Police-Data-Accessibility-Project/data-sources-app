@@ -3,7 +3,7 @@ from flask import Response, request
 from db.client import DatabaseClient
 from db.db_client_dataclasses import OrderByParameters
 from db.subquery_logic import SubqueryParameterManager
-from middleware.access_logic import AccessInfoPrimary
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.common_response_formatting import (
     created_id_response,
     message_response,

@@ -8,7 +8,7 @@ from flask_cors import CORS
 from jwt import DecodeError, ExpiredSignatureError
 
 from middleware.scheduled_tasks.manager import SchedulerManager
-from middleware.jwt.core import SimpleJWT
+from middleware.security.jwt.core import SimpleJWT
 from middleware.scheduled_tasks.check_database_health import check_database_health
 from middleware.util.env import get_env_variable
 from endpoints.instantiations.admin import namespace_admin

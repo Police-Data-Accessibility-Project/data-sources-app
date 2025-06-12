@@ -6,9 +6,9 @@ import jwt
 from jwt import InvalidSignatureError
 
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.jwt.constants import ALGORITHM
-from middleware.jwt.enums import JWTPurpose
-from middleware.jwt.helpers import get_secret_key
+from middleware.security.jwt.constants import ALGORITHM
+from middleware.security.jwt.enums import JWTPurpose
+from middleware.security.jwt.helpers import get_secret_key
 
 
 class SimpleJWT:

@@ -3,7 +3,7 @@ from http import HTTPStatus
 from db.client import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
 from db.enums import RelationRoleEnum
-from middleware.access_logic import AccessInfoPrimary
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.common_response_formatting import format_list_response
 from middleware.enums import PermissionsEnum
 from middleware.flask_response_manager import FlaskResponseManager

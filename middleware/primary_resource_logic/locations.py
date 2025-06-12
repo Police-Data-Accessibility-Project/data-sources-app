@@ -5,7 +5,7 @@ from flask import Response
 from db.client import DatabaseClient
 from db.enums import ColumnPermissionEnum
 from db.exceptions import LocationDoesNotExistError
-from middleware.access_logic import AccessInfoPrimary
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.column_permission_logic import get_permitted_columns, get_relation_role
 from middleware.common_response_formatting import (
     message_response,

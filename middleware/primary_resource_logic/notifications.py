@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from db.client import DatabaseClient
 from db.enums import EventType
-from middleware.access_logic import AccessInfoPrimary
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.custom_dataclasses import EventInfo, EventBatch
 from middleware.flask_response_manager import FlaskResponseManager
 import dominate
