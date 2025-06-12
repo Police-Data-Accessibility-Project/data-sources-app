@@ -408,7 +408,9 @@ def test_update_last_cached(
     ds_info = tdc.data_source()
     # Update the data source's last_cached value with the DatabaseClient method
     new_last_cached = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    live_database_client.update_last_cached(id=ds_info.id, last_cached=new_last_cached)
+    live_database_client.update_last_cached(
+        data_source_id=ds_info.id, last_cached=new_last_cached
+    )
 
     # Fetch the data source from the database to confirm the change
     result = live_database_client._select_from_relation(

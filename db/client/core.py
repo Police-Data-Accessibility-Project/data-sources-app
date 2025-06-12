@@ -71,13 +71,16 @@ from db.models.implementations.core.data_request.expanded import DataRequestExpa
 from db.models.implementations.core.data_request.github_issue_info import (
     DataRequestsGithubIssueInfo,
 )
+from db.models.implementations.core.data_source.archive import DataSourceArchiveInfo
 from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.data_source.expanded import DataSourceExpanded
 from db.models.implementations.core.distinct_source_url import DistinctSourceURL
 from db.models.implementations.core.external_account import ExternalAccount
 from db.models.implementations.core.location.core import Location
+from db.models.implementations.core.location.county import County
 from db.models.implementations.core.location.dependent import DependentLocation
 from db.models.implementations.core.location.expanded import LocationExpanded
+from db.models.implementations.core.log.change import ChangeLog
 from db.models.implementations.core.log.notification import NotificationLog
 from db.models.implementations.core.log.table_count import TableCountLog
 from db.models.implementations.core.notification.pending.data_request import (
@@ -95,7 +98,9 @@ from db.models.implementations.core.notification.queue.data_source import (
 from db.models.implementations.core.recent_search.core import RecentSearch
 from db.models.implementations.core.record.category import RecordCategory
 from db.models.implementations.core.record.type import RecordType
+from db.models.implementations.core.reset_token import ResetToken
 from db.models.implementations.core.user.core import User
+from db.models.implementations.core.user.pending import PendingUser
 from db.models.implementations.link import (
     LinkAgencyDataSource,
     LinkAgencyLocation,
@@ -251,43 +256,57 @@ class DatabaseClient:
         return results
 
     @session_manager
+    def scalar(self, query: Select):
+        return self.session.execute(query).scalar()
+
+    @session_manager
+    def scalars(self, query: Select):
+        return self.session.execute(query).scalars().all()
+
+    @session_manager
+    def one(self, query: Select):
+        return self.session.execute(query).one()
+
+    @session_manager
     def execute_sqlalchemy(self, query: Callable):
         results = self.session.execute(query())
         return results
 
+    @session_manager
+    def all(self, stmt: Select):
+        return self.session.execute(stmt).all()
+
+    @session_manager
+    def execute(self, stmt):
+        self.session.execute(stmt)
+
+    @session_manager
+    def add(self, model):
+        self.session.add(model)
+
+    @session_manager
+    def mapping(self, query: Select):
+        return self.session.execute(query).mappings().first()
+
+    @session_manager
+    def mappings(self, query: Select):
+        return self.session.execute(query).mappings().all()
+
+    @session_manager
     def create_new_user(self, email: str, password_digest: str) -> Optional[int]:
-        """
-        Adds a new user to the database.
-        :param email:
-        :param password_digest:
-        :return:
-        """
+        """Adds a new user to the database."""
         try:
-            return self._create_entry_in_table(
-                table_name="users",
-                column_value_mappings={
-                    "email": email,
-                    "password_digest": password_digest,
-                },
-                column_to_return="id",
-            )
+            user = User(email=email, password_digest=password_digest)
+            self.session.add(user)
+            self.session.flush()
+            return user.id
         except sqlalchemy.exc.IntegrityError:
             raise DuplicateUserError
 
     def get_user_id(self, email: str) -> Optional[int]:
-        """
-        Gets the ID of a user in the database based on their email.
-        :param email:
-        :return:
-        """
-        results = self._select_from_relation(
-            relation_name="users",
-            columns=["id"],
-            where_mappings=[WhereMapping(column="email", value=email)],
-        )
-        if len(results) == 0:
-            return None
-        return int(results[0]["id"])
+        """Gets the ID of a user in the database based on their email."""
+        query = select(User.id).where(User.email == email)
+        return self.scalar(query)
 
     def update_user_password_digest(self, user_id: int, password_digest: str):
         """
@@ -296,27 +315,19 @@ class DatabaseClient:
         :param password_digest:
         :return:
         """
-        self._update_entry_in_table(
-            table_name="users",
-            entry_id=user_id,
-            column_edit_mappings={"password_digest": password_digest},
-            id_column_name="id",
+        query = (
+            update(User)
+            .where(User.id == user_id)
+            .values(password_digest=password_digest)
         )
+        self.execute(query)
 
-    @session_manager
     def get_password_digest(self, user_id: int) -> str:
         query = select(User.password_digest).where(User.id == user_id)
-        return self.session.execute(query).scalar()
+        return self.scalar(query)
 
     def password_digest_matches(self, user_id: int, password_digest: str) -> bool:
-        db_password_digest = self._select_single_entry_from_relation(
-            relation_name=Relations.USERS.value,
-            columns=["password_digest"],
-            where_mappings={
-                "id": user_id,
-            },
-        )["password_digest"]
-        return password_digest == db_password_digest
+        return password_digest == self.get_password_digest(user_id)
 
     ResetTokenInfo = namedtuple("ResetTokenInfo", ["id", "user_id", "create_date"])
 
@@ -327,16 +338,15 @@ class DatabaseClient:
         :param token: The reset token to check.
         :return: ResetTokenInfo if the token exists; otherwise, None.
         """
-        results = self._select_from_relation(
-            relation_name="reset_tokens",
-            columns=["id", "user_id", "create_date"],
-            where_mappings=[WhereMapping(column="token", value=token)],
-        )
-        if len(results) == 0:
+        rt = ResetToken
+        query = select(rt.id, rt.user_id, rt.create_date).where(rt.token == token)
+        result = self.mapping(query)
+        if result is None:
             return None
-        row = results[0]
         return self.ResetTokenInfo(
-            id=row["id"], user_id=row["user_id"], create_date=row["create_date"]
+            id=result["id"],
+            user_id=result["user_id"],
+            create_date=result["create_date"],
         )
 
     def add_reset_token(self, user_id: int, token: str):
@@ -346,12 +356,8 @@ class DatabaseClient:
         :param email: The email to associate with the reset token.
         :param token: The reset token to add.
         """
-        self._create_entry_in_table(
-            table_name="reset_tokens",
-            column_value_mappings={"user_id": user_id, "token": token},
-        )
+        self.add(ResetToken(user_id=user_id, token=token))
 
-    @cursor_manager()
     def delete_reset_token(self, user_id: int, token: str):
         """
         Deletes a reset token from the database for a specified email.
@@ -359,10 +365,10 @@ class DatabaseClient:
         :param email: The email associated with the reset token to delete.
         :param token: The reset token to delete.
         """
-        query = sql.SQL(
-            "delete from reset_tokens where user_id = {} and token = {}"
-        ).format(sql.Literal(user_id), sql.Literal(token))
-        self.cursor.execute(query)
+        query = delete(ResetToken).where(
+            ResetToken.user_id == user_id, ResetToken.token == token
+        )
+        self.execute(query)
 
     UserIdentifiers = namedtuple("UserIdentifiers", ["id", "email"])
 
@@ -372,14 +378,11 @@ class DatabaseClient:
         :param api_key: The api key to check.
         :return: RoleInfo if the token exists; otherwise, None.
         """
-        results = self._select_from_relation(
-            relation_name="users",
-            columns=["id", "email"],
-            where_mappings=[WhereMapping(column="api_key", value=api_key)],
-        )
-        if len(results) == 0:
+        query = select(User.id, User.email).where(User.api_key == api_key)
+        result = self.mapping(query)
+        if result is None:
             return None
-        return self.UserIdentifiers(id=results[0]["id"], email=results[0]["email"])
+        return self.UserIdentifiers(id=result["id"], email=result["email"])
 
     def update_user_api_key(self, api_key: str, user_id: int):
         """
@@ -387,11 +390,8 @@ class DatabaseClient:
         :param api_key: The api key to check.
         :param user_id: The user id to update.
         """
-        self._update_entry_in_table(
-            table_name="users",
-            entry_id=user_id,
-            column_edit_mappings={"api_key": api_key},
-        )
+        query = update(User).where(User.id == user_id).values(api_key=api_key)
+        self.execute(query)
 
     MapInfo = namedtuple(
         "MapInfo",
@@ -541,27 +541,27 @@ class DatabaseClient:
         :param id: The id of the data source.
         :param broken_as_of: The date when the source was identified as broken.
         """
-        self.update_data_source(
-            entry_id=id,
-            column_edit_mappings={
-                "url_status": "broken",
-                "broken_source_url_as_of": broken_as_of,
-            },
+        query = (
+            update(DataSource)
+            .where(DataSource.id == id)
+            .values(url_status="broken", broken_source_url_as_of=broken_as_of)
         )
+        self.execute(query)
 
-    def update_last_cached(self, id: str, last_cached: str) -> None:
+    def update_last_cached(self, data_source_id: str, last_cached: str) -> None:
         """
         Updates the last_cached field in the data_sources_archive_info table for a given id.
 
-        :param id: The id of the data source.
+        :param data_source_id: The id of the data source.
         :param last_cached: The last cached date to be updated.
         """
-        self._update_entry_in_table(
-            table_name=Relations.DATA_SOURCES_ARCHIVE_INFO.value,
-            entry_id=id,
-            column_edit_mappings={"last_cached": last_cached},
-            id_column_name="data_source_id",
+        d = DataSourceArchiveInfo
+        query = (
+            update(d)
+            .where(d.data_source_id == data_source_id)
+            .values(last_cached=last_cached)
         )
+        self.execute(query)
 
     DataSourceMatches = namedtuple("DataSourceMatches", ["converted", "ids"])
 
@@ -575,14 +575,15 @@ class DatabaseClient:
         :raise UserNotFoundError: If no user is found.
         :return: UserInfo namedtuple containing the user's information.
         """
-        results = self._select_from_relation(
-            relation_name="users",
-            columns=["id", "password_digest", "api_key", "email"],
-            where_mappings=[WhereMapping(column="email", value=email)],
-        )
-        if len(results) == 0:
+        query = select(
+            User.id,
+            User.password_digest,
+            User.api_key,
+            User.email,
+        ).where(User.email == email)
+        result = self.mapping(query)
+        if result is None:
             raise UserNotFoundError(email)
-        result = results[0]
 
         return self.UserInfo(
             id=result["id"],
@@ -591,12 +592,11 @@ class DatabaseClient:
             email=result["email"],
         )
 
-    @session_manager
     def get_user_info_by_external_account_id(
         self, external_account_id: str, external_account_type: ExternalAccountTypeEnum
     ) -> UserInfo:
-        u = aliased(User)
-        ea = aliased(ExternalAccount)
+        u = User
+        ea = ExternalAccount
 
         query = (
             select(u.id, u.email, u.password_digest, u.api_key)
@@ -606,7 +606,7 @@ class DatabaseClient:
                 ea.account_type == external_account_type.value,
             )
         )
-        results = self.session.execute(query).mappings().one_or_none()
+        results = self.mapping(query)
 
         if results is None:
             raise UserNotFoundError(
@@ -1511,14 +1511,11 @@ class DatabaseClient:
         return [row["column_name"] for row in results]
 
     def get_county_id(self, county_name: str, state_id: int) -> int:
-        return self._select_single_entry_from_relation(
-            relation_name=Relations.COUNTIES.value,
-            columns=["id"],
-            where_mappings=[
-                WhereMapping(column="name", value=county_name),
-                WhereMapping(column="state_id", value=state_id),
-            ],
+        query = select(County.id).where(
+            County.name == county_name,
+            County.state_id == state_id,
         )
+        return self.scalar(query)
 
     def create_or_get(
         self,
@@ -1576,17 +1573,6 @@ class DatabaseClient:
         )
         return linked_results
 
-    def _build_column_references(
-        self, LinkedRelation, alias_mappings, columns_to_retrieve
-    ):
-        column_references = []
-        for column in columns_to_retrieve:
-            column_reference = getattr(LinkedRelation, column)
-            if alias_mappings is not None and column in alias_mappings:
-                column_reference = column_reference.label(alias_mappings[column])
-            column_references.append(column_reference)
-        return column_references
-
     def get_user_followed_searches(self, user_id: int) -> dict[str, Any]:
         return self.run_query_builder(
             GetUserFollowedSearchesQueryBuilder(user_id=user_id)
@@ -1603,26 +1589,20 @@ class DatabaseClient:
         ],
     )
 
-    @session_manager
     def get_unarchived_data_requests_with_issues(self) -> list[DataRequestIssueInfo]:
-        dre = aliased(DataRequestExpanded)
-
-        select_statement = select(
+        dre = DataRequestExpanded
+        query = select(
             dre.id,
             dre.github_issue_url,
             dre.github_issue_number,
             dre.request_status,
             dre.record_types_required,
+        ).where(
+            dre.request_status != RequestStatus.ARCHIVED.value,
+            dre.github_issue_url != None,
         )
 
-        with_filter = select_statement.where(
-            and_(
-                dre.request_status != RequestStatus.ARCHIVED.value,
-                dre.github_issue_url != None,
-            )
-        )
-
-        results = self.session.execute(with_filter).mappings().all()
+        results = self.mappings(query)
 
         return [
             self.DataRequestIssueInfo(
@@ -1641,6 +1621,7 @@ class DatabaseClient:
         Clears and repopulates the user notification queue with new notifications
         :return:
         """
+        # TODO: QueryBuilder
         # Get all data requests associated with the user's location that have a corresponding event
         # (and that event is not already in user_notification_queue for that user)
         data_request_query = (
@@ -1720,14 +1701,13 @@ class DatabaseClient:
             )
             self.session.add(queue)
 
-    @session_manager
-    def get_national_location_id(self):
-        query = self.session.query(Location.id).where(
+    def get_national_location_id(self) -> int:
+        query = select(Location.id).where(
             Location.state_id.is_(None),
             Location.county_id.is_(None),
             Location.locality_id.is_(None),
         )
-        return self.session.execute(query).one()[0]
+        return self.scalar(query)
 
     def get_next_user_event_batch(self) -> Optional[EventBatch]:
         return self.run_query_builder(NotificationsPostQueryBuilder())
@@ -1754,6 +1734,7 @@ class DatabaseClient:
         ] = None,
         record_types: Optional[Union[list[RecordTypes], RecordTypes]] = None,
     ):
+        # TODO: Query Builder
         if isinstance(record_categories, RecordCategories):
             record_categories = [record_categories]
 
@@ -1804,29 +1785,22 @@ class DatabaseClient:
         return self.run_query_builder(GetUserRecentSearchesQueryBuilder(user_id))
 
     def get_record_type_id_by_name(self, record_type_name: str):
-        return self._select_single_entry_from_relation(
-            relation_name=Relations.RECORD_TYPES.value,
-            columns=["id"],
-            where_mappings={"name": record_type_name},
-        )["id"]
+        query = select(RecordType.id).where(RecordType.name == record_type_name)
+        return self.scalar(query)
 
     def get_user_external_accounts(self, user_id: int):
-        raw_results = self._select_from_relation(
-            relation_name=Relations.EXTERNAL_ACCOUNTS.value,
-            columns=["account_type", "account_identifier"],
-            where_mappings={"user_id": user_id},
+        ea = ExternalAccount
+        query = select(ea.account_type, ea.account_identifier).where(
+            ea.user_id == user_id
         )
+        raw_results = self.mappings(query)
         return {row["account_type"]: row["account_identifier"] for row in raw_results}
 
     def get_user_info_by_id(self, user_id: int) -> UserInfoNonSensitive:
-        result = self._select_single_entry_from_relation(
-            relation_name=Relations.USERS.value,
-            columns=[
-                "email",
-                "created_at",
-                "updated_at",
-            ],
-            where_mappings={"id": user_id},
+        result = self.mapping(
+            select(User.email, User.created_at, User.updated_at).where(
+                User.id == user_id
+            )
         )
         return UserInfoNonSensitive(
             user_id=user_id,
@@ -1836,23 +1810,20 @@ class DatabaseClient:
         )
 
     def get_change_logs_for_table(self, table: Relations):
-        return self._select_from_relation(
-            relation_name=Relations.CHANGE_LOG.value,
-            columns=[
-                "id",
-                "operation_type",
-                "table_name",
-                "affected_id",
-                "old_data",
-                "new_data",
-                "created_at",
-            ],
-            where_mappings={"table_name": table.value},
-            apply_uniqueness_constraints=False,
-        )
+        query = select(
+            ChangeLog.id,
+            ChangeLog.operation_type,
+            ChangeLog.table_name,
+            ChangeLog.affected_id,
+            ChangeLog.old_data,
+            ChangeLog.new_data,
+            ChangeLog.created_at,
+        ).where(ChangeLog.table_name == table.value)
+        return self.mappings(query)
 
     @session_manager
     def get_users(self, page: int) -> List[UsersWithPermissions]:
+        # TODO: QueryBuilder
         raw_results = self.session.execute(
             select(User)
             .options(selectinload(User.permissions))
@@ -1884,68 +1855,50 @@ class DatabaseClient:
         return final_results
 
     def get_user_email(self, user_id: int) -> str:
-        return self._select_single_entry_from_relation(
-            relation_name=Relations.USERS.value,
-            columns=["email"],
-            where_mappings={"id": user_id},
-        )["email"]
+        query = select(User.email).where(User.id == user_id)
+        return self.scalar(query)
 
     def pending_user_exists(self, email: str) -> bool:
-        results = self._select_from_relation(
-            relation_name=Relations.PENDING_USERS.value,
-            columns=["id"],
-            where_mappings={"email": email},
-        )
-        return len(results) > 0
+        query = select(PendingUser.id).where(PendingUser.email == email)
+        result = self.scalar(query)
+        return result is not None
 
     def create_pending_user(
         self, email: str, password_digest: str, validation_token: str
-    ) -> str:
-        return self._create_entry_in_table(
-            table_name=Relations.PENDING_USERS.value,
-            column_value_mappings={
-                "email": email,
-                "password_digest": password_digest,
-                "validation_token": validation_token,
-            },
+    ):
+        self.add(
+            PendingUser(
+                email=email,
+                password_digest=password_digest,
+                validation_token=validation_token,
+            )
         )
 
     def delete_user(self, user_id: int):
-        self._delete_from_table(
-            table_name=Relations.USERS.value,
-            id_column_value=user_id,
-            id_column_name="id",
-        )
+        query = delete(User).where(User.id == user_id)
+        self.execute(query)
 
     def update_pending_user_validation_token(self, email: str, validation_token: str):
-        self._update_entry_in_table(
-            table_name=Relations.PENDING_USERS.value,
-            entry_id=email,
-            column_edit_mappings={"validation_token": validation_token},
-            id_column_name="email",
+        query = (
+            update(PendingUser)
+            .where(PendingUser.email == email)
+            .values(validation_token=validation_token)
         )
+        self.execute(query)
 
     def get_pending_user_with_token(self, validation_token: str) -> Optional[dict]:
-        result = self._select_single_entry_from_relation(
-            relation_name=Relations.PENDING_USERS.value,
-            columns=["email", "password_digest"],
-            where_mappings={"validation_token": validation_token},
+        query = select(PendingUser.email, PendingUser.password_digest).where(
+            PendingUser.validation_token == validation_token
         )
-        return result
+        return self.mapping(query)
 
     def delete_pending_user(self, email: str):
-        self._delete_from_table(
-            table_name=Relations.PENDING_USERS.value,
-            id_column_value=email,
-            id_column_name="email",
-        )
+        stmt = delete(PendingUser).where(PendingUser.email == email)
+        self.execute(stmt)
 
     def get_locality_id_by_location_id(self, location_id: int):
-        return self._select_single_entry_from_relation(
-            relation_name=Relations.LOCATIONS_EXPANDED.value,
-            columns=["locality_id"],
-            where_mappings={"id": location_id},
-        )["locality_id"]
+        query = select(Location.locality_id).where(Location.id == location_id)
+        return self.scalar(query)
 
     @session_manager
     def get_location_by_id(self, location_id: int):
@@ -2569,7 +2522,6 @@ class DatabaseClient:
 
         return results
 
-    @session_manager
     def get_metrics_followed_searches_aggregate(self):
         subquery_latest_notification = (
             select(NotificationLog.created_at.label("last_notification"))
@@ -2586,7 +2538,7 @@ class DatabaseClient:
             subquery_latest_notification.label("last_notification"),
         )
 
-        result = self.session.execute(statement).one()
+        result = self.one(statement)
 
         return {
             "total_followers": result.total_followers,
@@ -2594,7 +2546,6 @@ class DatabaseClient:
             "last_notification_date": result.last_notification.strftime("%Y-%m-%d"),
         }
 
-    @session_manager
     def get_duplicate_urls_bulk(self, urls: List[str]) -> list[str]:
         """
         Returns all URLs that already exist in the database
@@ -2602,5 +2553,5 @@ class DatabaseClient:
         stmt = select(DistinctSourceURL.original_url).where(
             DistinctSourceURL.base_url.in_(urls)
         )
-        existing_urls = self.session.scalars(stmt).all()
+        existing_urls = self.scalars(stmt)
         return existing_urls

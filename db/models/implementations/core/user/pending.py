@@ -11,6 +11,6 @@ from middleware.enums import Relations
 class PendingUser(StandardBase, CreatedAtMixin):
     __tablename__ = Relations.PENDING_USERS.value
 
-    email: Mapped[text] = mapped_column(unique=True)
-    password_digest: Mapped[Optional[text]]
-    validation_token: Mapped[Optional[text]]
+    email: Mapped[str] = mapped_column(unique=True)
+    password_digest: Mapped[Optional[str]]
+    validation_token: Mapped[Optional[str]]
