@@ -1,12 +1,9 @@
 from datetime import datetime, timezone, timedelta
-from http import HTTPStatus
 
+from werkzeug.exceptions import BadRequest, Conflict
 from werkzeug.security import generate_password_hash
 
 from db.client.core import DatabaseClient
-from middleware.security.jwt.core import SimpleJWT
-from middleware.security.jwt.enums import JWTPurpose
-from middleware.security.access_info.validate_email import ValidateEmailTokenAccessInfo
 from middleware.common_response_formatting import message_response
 from middleware.primary_resource_logic.api_key import generate_token
 from middleware.primary_resource_logic.login_queries import (
@@ -14,6 +11,9 @@ from middleware.primary_resource_logic.login_queries import (
 )
 from middleware.primary_resource_logic.user_queries import UserRequestDTO
 from middleware.schema_and_dto.dtos.signup import EmailOnlyDTO
+from middleware.security.access_info.validate_email import ValidateEmailTokenAccessInfo
+from middleware.security.jwt.core import SimpleJWT
+from middleware.security.jwt.enums import JWTPurpose
 from middleware.third_party_interaction_logic.mailgun import send_via_mailgun
 from middleware.util.url import create_web_app_url
 from tests.helper_scripts.helper_functions_simple import add_query_params
@@ -73,7 +73,8 @@ def send_signup_link(email: str, token: str):
 
 def validation_email_sent_response(email: str):
     return message_response(
-        message=f"Validation email sent to {email}. To complete sign up, please validate your email.",
+        message=f"Validation email sent to {email}. "
+        f"To complete sign up, please validate your email.",
     )
 
 
@@ -86,16 +87,12 @@ def signup_wrapper(
     dto: UserRequestDTO,
 ):
     if db_client.get_user_id(email=dto.email) is not None:
-        return message_response(
-            status_code=HTTPStatus.CONFLICT,
-            message=f"User with email already exists.",
-        )
+        raise Conflict("User with email already exists.")
 
     if db_client.pending_user_exists(email=dto.email):
-        return message_response(
-            status_code=HTTPStatus.CONFLICT,
-            message=f"User with email has already signed up. "
-            f"Please validate your email or request a new validation email.",
+        raise Conflict(
+            f"User with email has already signed up. "
+            f"Please validate your email or request a new validation email."
         )
 
     jwt_token = setup_pending_user(db_client, dto)
@@ -116,10 +113,8 @@ def validate_email_wrapper(
         validation_token=access_info.validate_email_token
     )
     if pending_user_info is None:
-        return message_response(
-            status_code=HTTPStatus.BAD_REQUEST,
-            message="Invalid validation token.",
-        )
+        raise BadRequest("Invalid validation token.")
+
     email = pending_user_info["email"]
     db_client.create_new_user(
         email=email,
@@ -168,10 +163,7 @@ def resend_validation_email_wrapper(
 
     email = dto.email
     if not db_client.pending_user_exists(email=email):
-        return message_response(
-            status_code=HTTPStatus.BAD_REQUEST,
-            message="Email provided not associated with any pending user.",
-        )
+        raise BadRequest("Email provided not associated with any pending user.")
 
     token = generate_token()
     db_client.update_pending_user_validation_token(email=email, validation_token=token)

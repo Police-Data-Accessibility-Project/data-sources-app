@@ -174,9 +174,7 @@ def get_user_followed_search_link(
 
 class FollowedSearchPostLogic(PostLogic):
     def make_response(self) -> Response:
-        return message_response(
-            message=f"Location followed.",
-        )
+        return message_response(f"Location followed.")
 
 
 def get_link_id_and_raise_error_if_not_found(

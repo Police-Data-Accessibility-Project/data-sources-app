@@ -17,17 +17,3 @@ def validate_data_with_schema(data, validation_schema):
         validation_schema().load(data)
     except ValidationError as e:
         raise InternalServerError(f"Error validating response schema: {e}")
-
-
-class FlaskResponseManager:
-
-    @classmethod
-    def make_response(
-        cls,
-        data: dict,
-        status_code: HTTPStatus = HTTPStatus.OK,
-        validation_schema: Optional[Type[Schema]] = None,
-    ) -> Response:
-        if validation_schema is not None:
-            validate_data_with_schema(data, validation_schema)
-        return make_response(data, status_code)

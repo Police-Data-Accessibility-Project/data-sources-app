@@ -1,10 +1,9 @@
 from http import HTTPStatus
 
 from flask import Response, make_response
-from flask_restx import abort
 from marshmallow import Schema, fields
 from pydantic import BaseModel
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, Conflict
 
 from db.client.core import DatabaseClient
 from middleware.common_response_formatting import message_response
@@ -86,20 +85,17 @@ class PermissionsManager:
 
     def add_user_permission(self, permission: PermissionsEnum) -> Response:
         if permission in self.permissions:
-            return message_response(
-                f"Permission {permission.value} already exists for user",
-                HTTPStatus.CONFLICT,
-            )
+            raise Conflict(f"Permission {permission.value} already exists for user")
 
         self.db_client.add_user_permission(self.user_id, permission)
         return message_response("Permission added")
 
     def remove_user_permission(self, permission: PermissionsEnum) -> Response:
         if permission not in self.permissions:
-            return message_response(
-                f"Permission {permission.value} does not exist for user. Cannot remove.",
-                HTTPStatus.CONFLICT,
+            raise Conflict(
+                f"Permission {permission.value} does not exist for user. Cannot remove."
             )
+
         self.db_client.remove_user_permission(self.user_id, permission)
         return message_response("Permission removed")
 

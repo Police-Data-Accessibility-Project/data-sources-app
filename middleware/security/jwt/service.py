@@ -1,13 +1,10 @@
-from http import HTTPStatus
-
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from werkzeug.exceptions import BadRequest
 
-from middleware.flask_response_manager import FlaskResponseManager
-from middleware.security.jwt.helpers import get_jwt_access_info_with_permissions
 from middleware.security.jwt.core import SimpleJWT
 from middleware.security.jwt.enums import JWTPurpose
+from middleware.security.jwt.helpers import get_jwt_access_info_with_permissions
 
 
 class JWTService:

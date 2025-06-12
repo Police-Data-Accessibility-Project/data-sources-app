@@ -1,12 +1,10 @@
 import datetime
-from http import HTTPStatus
 from typing import Union, Optional
 
 import jwt
 from jwt import InvalidSignatureError
 from werkzeug.exceptions import BadRequest, Unauthorized
 
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.security.jwt.constants import ALGORITHM
 from middleware.security.jwt.enums import JWTPurpose
 from middleware.security.jwt.helpers import get_secret_key

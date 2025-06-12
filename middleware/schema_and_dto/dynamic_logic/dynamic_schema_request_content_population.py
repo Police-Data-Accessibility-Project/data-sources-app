@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-from http import HTTPStatus
 from typing import Type
 
 import marshmallow
@@ -7,11 +5,10 @@ from flask import request
 from pydantic import BaseModel
 from werkzeug.exceptions import BadRequest
 
-from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto.types import SchemaTypes, DTOTypes
 from middleware.schema_and_dto.dtos.bulk import (
     BulkRequestDTO,
 )
+from middleware.schema_and_dto.types import SchemaTypes, DTOTypes
 from middleware.schema_and_dto.util import (
     _get_required_argument,
     _get_source_getting_function,

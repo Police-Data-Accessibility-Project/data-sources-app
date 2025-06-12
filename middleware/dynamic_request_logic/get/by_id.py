@@ -43,7 +43,6 @@ def results_dependent_response(entry_name: str, results):
     return message_response(
         message=f"{entry_name} found",
         data=results[0],
-        validation_schema=EntryDataResponseSchema,
     )
 
 

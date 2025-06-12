@@ -4,11 +4,10 @@ from http import HTTPStatus
 from flask import Response, make_response
 from jwt import ExpiredSignatureError
 from pydantic import BaseModel
-from werkzeug.exceptions import Unauthorized
+from werkzeug.exceptions import Unauthorized, BadRequest
 
 from db.client.core import DatabaseClient
 from db.enums import ExternalAccountTypeEnum
-from middleware.common_response_formatting import message_response
 from middleware.custom_dataclasses import GithubUserInfo
 from middleware.exceptions import UserNotFoundError
 from middleware.primary_resource_logic.login_queries import login_response
@@ -57,15 +56,11 @@ def link_github_account_request_wrapper(
 ) -> Response:
     user_email = dto.user_email
     if not user_exists(db_client=db_client, email=user_email):
-        return message_response(
-            status_code=HTTPStatus.BAD_REQUEST,
-            message="Email provided not associated with any user.",
-        )
+        raise BadRequest("Email provided not associated with any user.")
     github_user_info = get_github_user_info(access_token=dto.gh_access_token)
     if user_email != github_user_info.user_email:
-        return message_response(
-            status_code=HTTPStatus.BAD_REQUEST,
-            message="Email provided does not match primary email in GitHub account.",
+        raise BadRequest(
+            "Email provided does not match primary email in GitHub account."
         )
     return link_github_account_request(
         db_client=db_client,
@@ -153,10 +148,10 @@ def try_logging_in_with_github_id(
     except UserNotFoundError:
         # Check if user email exists
         if user_exists(db_client=db_client, email=github_user_info.user_email):
-            return message_response(
-                status_code=HTTPStatus.UNAUTHORIZED,
-                message=f"User with email {github_user_info.user_email} already exists exists but is not linked to"
-                f" the Github Account with the same email. You must explicitly link their accounts in order to log in via Github.",
+            raise Unauthorized(
+                f"User with email {github_user_info.user_email} already exists exists but is not linked to"
+                f" the Github Account with the same email. "
+                f"You must explicitly link their accounts in order to log in via Github.",
             )
 
         create_user_with_github(db_client=db_client, github_user_info=github_user_info)

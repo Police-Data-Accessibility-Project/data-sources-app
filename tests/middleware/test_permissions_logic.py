@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch, call
 
 import pytest
 from flask import Response
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, Conflict
 
 from middleware.enums import PermissionsEnum, PermissionsActionEnum
 from middleware.exceptions import UserNotFoundError
@@ -52,23 +52,15 @@ def test_get_user_permissions(mock):
 def test_add_user_permission_conflict(mock):
     pm = PermissionsManager(mock.db_client, mock.user_email)
 
-    pm.add_user_permission(PermissionsEnum.READ_ALL_USER_INFO)
-
-    mock.message_response.assert_called_with(
-        f"Permission {PermissionsEnum.READ_ALL_USER_INFO.value} already exists for user",
-        HTTPStatus.CONFLICT,
-    )
+    with pytest.raises(Conflict):
+        pm.add_user_permission(PermissionsEnum.READ_ALL_USER_INFO)
 
 
 def test_remove_user_permission_not_found(mock):
     pm = PermissionsManager(mock.db_client, mock.user_email)
 
-    pm.remove_user_permission(PermissionsEnum.DB_WRITE)
-
-    mock.message_response.assert_called_with(
-        f"Permission {PermissionsEnum.DB_WRITE.value} does not exist for user. Cannot remove.",
-        HTTPStatus.CONFLICT,
-    )
+    with pytest.raises(Conflict):
+        pm.remove_user_permission(PermissionsEnum.DB_WRITE)
 
 
 @pytest.fixture

@@ -2,7 +2,6 @@
 This module handles the middleware functionality for interfacing with Github issues
 """
 
-from http import HTTPStatus
 from typing import Optional
 
 from flask import Response
@@ -10,19 +9,19 @@ from flask import Response
 from db.DTOs import DataRequestInfoForGithub
 from db.client.core import DatabaseClient
 from db.enums import RequestStatus
-from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.common_response_formatting import message_response
 from middleware.enums import RecordTypes
 from middleware.schema_and_dto.dtos.github.issue import GithubIssueURLInfosDTO
-from middleware.third_party_interaction_logic.github.issue_info import GithubIssueInfo
-from middleware.third_party_interaction_logic.github.issue_project_info.core import (
-    GithubIssueProjectInfo,
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.third_party_interaction_logic.github.helpers import (
+    get_github_issue_project_statuses,
 )
+from middleware.third_party_interaction_logic.github.issue_info import GithubIssueInfo
 from middleware.third_party_interaction_logic.github.issue_manager import (
     GithubIssueManager,
 )
-from middleware.third_party_interaction_logic.github.helpers import (
-    get_github_issue_project_statuses,
+from middleware.third_party_interaction_logic.github.issue_project_info.core import (
+    GithubIssueProjectInfo,
 )
 
 
@@ -169,6 +168,5 @@ def synchronize_github_issues_with_data_requests(
     return message_response(
         message=f"Added {len(requests_added)} data requests to GitHub. "
         f"Updated {requests_updated} data requests in database.",
-        status_code=HTTPStatus.OK,
         issues_created=[info.model_dump() for info in github_issue_response_infos],
     )

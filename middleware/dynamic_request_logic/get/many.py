@@ -16,7 +16,6 @@ from middleware.dynamic_request_logic.common_functions import (
     optionally_get_permitted_columns_to_subquery_parameters_,
 )
 from middleware.dynamic_request_logic.supporting_classes import MiddlewareParameters
-from middleware.flask_response_manager import FlaskResponseManager
 
 
 def get_many(

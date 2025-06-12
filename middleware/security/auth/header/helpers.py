@@ -1,6 +1,5 @@
 from werkzeug.exceptions import BadRequest
 
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.security.access_logic import get_authorization_header_from_request
 from middleware.security.auth.header.model import HeaderAuthInfo
 from middleware.security.auth.method_config.enums import AuthScheme

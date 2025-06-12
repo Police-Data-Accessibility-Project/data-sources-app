@@ -10,7 +10,6 @@ from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,
 )
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.util.dynamic import call_if_not_none
 
 

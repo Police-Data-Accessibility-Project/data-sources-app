@@ -1,13 +1,4 @@
-from http import HTTPStatus
-from typing import Type, Optional
-
 from flask import Response, make_response
-from marshmallow import Schema
-
-from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto.schemas.common.common_response_schemas import (
-    IDAndMessageSchema,
-)
 
 
 def format_list_response(data: dict, message: str = "") -> dict:
@@ -27,29 +18,15 @@ def multiple_results_response(data: list, message: str = "") -> Response:
 
 
 def created_id_response(new_id: str, message: str = "") -> Response:
-    return message_response(
-        message=message, id=new_id, validation_schema=IDAndMessageSchema
-    )
+    return message_response(message=message, id=new_id)
 
 
-def message_response(
-    message: str,
-    status_code: HTTPStatus = HTTPStatus.OK,
-    validation_schema: Optional[Type[Schema]] = None,
-    **kwargs
-) -> Response:
-    """
-    Formats response with standardized message format
+def message_response(message: str, **kwargs) -> Response:
+    """Format response with standardized message format.
     :param message:
-    :param status_code:
     :param kwargs:
-    :return:
     """
 
     dict_response = {"message": message}
     dict_response.update(kwargs)
-    status_code = status_code
-
-    return FlaskResponseManager.make_response(
-        data=dict_response, status_code=status_code, validation_schema=validation_schema
-    )
+    return make_response(dict_response)

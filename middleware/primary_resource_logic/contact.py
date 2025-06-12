@@ -1,5 +1,4 @@
 from middleware.common_response_formatting import message_response
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto.dtos.contact import (
     ContactFormPostDTO,
 )

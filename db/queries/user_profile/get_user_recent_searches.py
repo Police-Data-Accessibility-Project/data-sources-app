@@ -1,7 +1,6 @@
 from typing import Any
 
 from sqlalchemy import CTE, select, Subquery, func
-from sqlalchemy.orm import Session
 
 from db.models.implementations.core.location.core import Location
 from db.models.implementations.core.location.county import County
