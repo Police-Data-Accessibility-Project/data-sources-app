@@ -1,12 +1,12 @@
-from http import HTTPStatus
+from flask import make_response
+from werkzeug.exceptions import Forbidden
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
 from db.enums import RelationRoleEnum
-from middleware.access_logic import AccessInfoPrimary
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.common_response_formatting import format_list_response
 from middleware.enums import PermissionsEnum
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.primary_resource_logic.data_requests import (
     get_data_requests_with_permitted_columns,
 )
@@ -20,7 +20,7 @@ def get_owner_data_requests_wrapper(
     data_requests = get_owner_data_requests(db_client, dto, user_id)
     formatted_list_response = format_list_response(data_requests)
 
-    return FlaskResponseManager.make_response(formatted_list_response)
+    return make_response(formatted_list_response)
 
 
 def get_owner_data_requests(
@@ -41,7 +41,7 @@ def get_user_recent_searches(db_client: DatabaseClient, access_info: AccessInfoP
         user_id=access_info.get_user_id()
     )
 
-    return FlaskResponseManager.make_response(recent_searches)
+    return make_response(recent_searches)
 
 
 def get_user_by_id_wrapper(
@@ -52,9 +52,7 @@ def get_user_by_id_wrapper(
         user_id != access_info.get_user_id()
         and PermissionsEnum.READ_ALL_USER_INFO not in access_info.permissions
     ):
-        return FlaskResponseManager.make_response(
-            data={"message": "Forbidden."}, status_code=HTTPStatus.FORBIDDEN
-        )
+        raise Forbidden("Forbidden.")
 
     # Get user info
     email = db_client.get_user_email(user_id=user_id)
@@ -75,4 +73,4 @@ def get_user_by_id_wrapper(
     }
     json_body = {"data": data}
 
-    return FlaskResponseManager.make_response(data=json_body)
+    return make_response(json_body)

@@ -9,7 +9,7 @@ import sqlalchemy
 from flask.testing import FlaskClient
 from werkzeug.security import generate_password_hash
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
 from db.enums import ApprovalStatus
 from middleware.enums import (

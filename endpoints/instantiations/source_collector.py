@@ -4,8 +4,8 @@ from endpoints.schema_config.instantiations.source_collector.data_sources import
 from endpoints.schema_config.instantiations.source_collector.duplicates import (
     SourceCollectorDuplicatesPostEndpointSchemaConfig,
 )
-from middleware.access_logic import AccessInfoPrimary
-from middleware.authentication_info import AuthenticationInfo
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.info.base import AuthenticationInfo
 from middleware.decorators.decorators import endpoint_info
 from middleware.enums import AccessTypeEnum, PermissionsEnum
 from middleware.primary_resource_logic.source_collector import (

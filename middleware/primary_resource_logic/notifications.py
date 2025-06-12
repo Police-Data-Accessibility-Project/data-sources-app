@@ -1,18 +1,17 @@
 from dataclasses import dataclass
-from http import HTTPStatus
 
-from flask import Response
+from flask import Response, make_response
 from pydantic import BaseModel
+from werkzeug.exceptions import InternalServerError
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.enums import EventType
-from middleware.access_logic import AccessInfoPrimary
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.custom_dataclasses import EventInfo, EventBatch
-from middleware.flask_response_manager import FlaskResponseManager
 import dominate
 from dominate.tags import *
 
-from middleware.third_party_interaction_logic.mailgun_logic import send_via_mailgun
+from middleware.third_party_interaction_logic.mailgun import send_via_mailgun
 from middleware.util.env import get_env_variable
 
 
@@ -231,11 +230,12 @@ def send_notifications(
             count += 1
             next_event_batch = db_client.get_next_user_event_batch()
         except Exception as e:
-            FlaskResponseManager.abort(
-                message=f"Error sending notification for event batch for user {next_event_batch.user_id}: {e}. Sent {count} batches prior to this error.",
-                code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            raise InternalServerError(
+                f"Error sending notification for event batch for user {next_event_batch.user_id}: "
+                f"{e}. Sent {count} batches prior to this error."
             )
+
     db_client.add_to_notification_log(user_count=count)
-    return FlaskResponseManager.make_response(
-        data={"message": "Notifications sent successfully.", "count": count}
+    return make_response(
+        {"message": "Notifications sent successfully.", "count": count}
     )

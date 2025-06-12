@@ -1,17 +1,10 @@
 from flask import Response
 from werkzeug.exceptions import BadRequest
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.models.exceptions import LocationNotFound
-from middleware.access_logic import AccessInfoPrimary
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.common_response_formatting import message_response
-from middleware.dynamic_request_logic.post_logic import post_entry
-from middleware.dynamic_request_logic.supporting_classes import MiddlewareParameters
-from middleware.enums import Relations
-from middleware.primary_resource_logic.search.helpers import (
-    get_location_link_and_raise_error_if_not_found,
-    FollowedSearchPostLogic,
-)
 from middleware.schema_and_dto.dtos.search.request import SearchRequestsDTO
 
 

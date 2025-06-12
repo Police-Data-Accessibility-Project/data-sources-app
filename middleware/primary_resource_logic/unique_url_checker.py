@@ -1,10 +1,9 @@
-from flask import Response
+from flask import Response, make_response
 from marshmallow import Schema, fields
 from pydantic import BaseModel
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.enums import ApprovalStatus
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.util.url import normalize_url
 from utilities.enums import SourceMappingEnum
 
@@ -71,6 +70,4 @@ class UniqueURLCheckerResponseOuterSchema(Schema):
 def unique_url_checker_wrapper(
     db_client: DatabaseClient, dto: UniqueURLCheckerRequestDTO
 ) -> Response:
-    return FlaskResponseManager.make_response(
-        data={"duplicates": db_client.check_for_url_duplicates(dto.url)}
-    )
+    return make_response({"duplicates": db_client.check_for_url_duplicates(dto.url)})

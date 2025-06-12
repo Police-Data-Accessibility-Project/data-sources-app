@@ -1,7 +1,8 @@
 from typing import Callable
 
-from db.client import DatabaseClient
-from middleware.flask_response_manager import FlaskResponseManager
+from flask import make_response
+
+from db.client.core import DatabaseClient
 from middleware.schema_and_dto.dtos.typeahead import TypeaheadDTO
 from utilities.enums import SourceMappingEnum
 
@@ -15,6 +16,4 @@ def get_typeahead_results(
     dto: TypeaheadDTO,
     db_client_method: Callable,
 ):
-    return FlaskResponseManager.make_response(
-        data={"suggestions": db_client_method(db_client, dto.query)},
-    )
+    return make_response({"suggestions": db_client_method(db_client, dto.query)})

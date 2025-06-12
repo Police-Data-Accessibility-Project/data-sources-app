@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
 from db.enums import ApprovalStatus, URLStatus
 from db.models.implementations.core.recent_search.core import RecentSearch

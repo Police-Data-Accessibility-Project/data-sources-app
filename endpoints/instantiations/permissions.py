@@ -2,10 +2,11 @@ from http import HTTPStatus
 
 from flask import Response, request
 
-from middleware.access_logic import (
-    AccessInfoPrimary,
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.info.instantiations import (
+    WRITE_ONLY_AUTH_INFO,
 )
-from middleware.authentication_info import AuthenticationInfo, WRITE_ONLY_AUTH_INFO
+from middleware.security.auth.info.base import AuthenticationInfo
 from middleware.decorators.decorators import endpoint_info
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from middleware.primary_resource_logic.permissions import (

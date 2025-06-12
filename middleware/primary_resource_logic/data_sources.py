@@ -1,27 +1,26 @@
-from http import HTTPStatus
 from typing import List, Optional
 
 from flask import make_response, Response
 from pydantic import BaseModel
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.db_client_dataclasses import OrderByParameters
 from db.subquery_logic import SubqueryParameterManager
 from db.enums import ApprovalStatus, RelationRoleEnum, ColumnPermissionEnum
-from db.result_formatter import ResultFormatter
-from middleware.access_logic import AccessInfoPrimary
+from db.helpers_.result_formatting import zip_get_datas_sources_for_map_results
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.column_permission_logic import get_permitted_columns
-from middleware.dynamic_request_logic.delete_logic import delete_entry
-from middleware.dynamic_request_logic.get_many_logic import (
+from middleware.dynamic_request_logic.delete import delete_entry
+from middleware.dynamic_request_logic.get.many import (
     optionally_limit_to_requested_columns,
 )
 
-from middleware.dynamic_request_logic.post_logic import (
+from middleware.dynamic_request_logic.post import (
     PostLogic,
     PostHandler,
     post_entry_with_handler,
 )
-from middleware.dynamic_request_logic.put_logic import put_entry, PutHandler
+from middleware.dynamic_request_logic.put import put_entry, PutHandler
 from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,
@@ -29,7 +28,6 @@ from middleware.dynamic_request_logic.supporting_classes import (
 )
 
 from middleware.enums import Relations, PermissionsEnum
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto.dtos.data_requests.by_id.source import (
     RelatedSourceByIDDTO,
 )
@@ -125,8 +123,8 @@ def get_data_sources_wrapper(
         limit=dto.limit,
     )
 
-    return FlaskResponseManager.make_response(
-        data={
+    return make_response(
+        {
             "metadata": {"count": len(results)},
             "message": "Successfully retrieved data sources",
             "data": results,
@@ -148,8 +146,8 @@ def data_source_by_id_wrapper(
         data_sources_columns=cro.data_sources_columns,
     )
 
-    return FlaskResponseManager.make_response(
-        data={
+    return make_response(
+        {
             "data": result,
             "message": "Successfully retrieved data source",
         }
@@ -158,12 +156,11 @@ def data_source_by_id_wrapper(
 
 def get_data_sources_for_map_wrapper(db_client: DatabaseClient) -> Response:
     raw_results = db_client.get_data_sources_for_map()
-    zipped_results = ResultFormatter.zip_get_datas_sources_for_map_results(raw_results)
+    zipped_results = zip_get_datas_sources_for_map_results(raw_results)
     return make_response(
         format_list_response(
             data={"data": zipped_results},
-        ),
-        HTTPStatus.OK.value,
+        )
     )
 
 
@@ -328,8 +325,8 @@ def get_data_source_related_agencies(
     if results is None:
         return message_response("Data Source not found.")
 
-    return FlaskResponseManager.make_response(
-        data={
+    return make_response(
+        {
             "metadata": {"count": len(results)},
             "message": "Successfully retrieved related agencies",
             "data": results,

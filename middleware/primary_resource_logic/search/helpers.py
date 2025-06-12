@@ -5,13 +5,13 @@ from typing import Optional
 
 from flask import Response, make_response, send_file
 from pydantic import BaseModel
+from werkzeug.exceptions import BadRequest
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
-from middleware.access_logic import AccessInfoPrimary
-from middleware.dynamic_request_logic.post_logic import PostLogic
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.dynamic_request_logic.post import PostLogic
 from middleware.enums import JurisdictionSimplified, Relations, OutputFormatEnum
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto.dtos.search.request import SearchRequestsDTO
 from middleware.common_response_formatting import message_response
 from middleware.util.datetime import get_datetime_now
@@ -103,13 +103,9 @@ def create_search_record(access_info, db_client, dto):
 def send_search_results(search_results: list[dict], output_format: OutputFormatEnum):
     if output_format == OutputFormatEnum.JSON:
         return send_as_json(search_results)
-    elif output_format == OutputFormatEnum.CSV:
+    if output_format == OutputFormatEnum.CSV:
         return send_as_csv(search_results)
-    else:
-        FlaskResponseManager.abort(
-            message="Invalid output format.",
-            code=HTTPStatus.BAD_REQUEST,
-        )
+    raise BadRequest("Invalid output format.")
 
 
 def send_as_json(search_results):
@@ -132,10 +128,7 @@ def get_explicit_record_categories(
         return None
     if RecordCategories.ALL in record_categories:
         if len(record_categories) > 1:
-            FlaskResponseManager.abort(
-                message="ALL cannot be provided with other record categories.",
-                code=HTTPStatus.BAD_REQUEST,
-            )
+            raise BadRequest("ALL cannot be provided with other record categories.")
         return [rc for rc in RecordCategories if rc != RecordCategories.ALL]
     return record_categories
 
@@ -156,10 +149,8 @@ def try_getting_location_id_and_raise_error_if_not_found(
         where_mappings=where_mappings,
     )
     if not location_id:
-        FlaskResponseManager.abort(
-            message="Location not found.",
-            code=HTTPStatus.BAD_REQUEST,
-        )
+        raise BadRequest("Location not found.")
+
     return location_id
 
 

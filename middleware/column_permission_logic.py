@@ -2,9 +2,10 @@ from http import HTTPStatus
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
+from werkzeug.exceptions import Forbidden
 
 from db.enums import RelationRoleEnum, ColumnPermissionEnum
-from middleware.access_logic import AccessInfoPrimary
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.custom_dataclasses import DeferredFunction
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from middleware.flask_response_manager import FlaskResponseManager
@@ -274,12 +275,11 @@ def check_has_permission_to_edit_columns(
     if len(invalid_columns) == 0:
         return
 
-    FlaskResponseManager.abort(
-        code=HTTPStatus.FORBIDDEN,
-        message=f"""
+    raise Forbidden(
+        f"""
         You do not have permission to edit the following columns: 
         {invalid_columns}
-        """,
+        """
     )
 
 

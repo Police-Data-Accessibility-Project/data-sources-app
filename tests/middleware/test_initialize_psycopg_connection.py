@@ -1,10 +1,6 @@
-import pytest
-from unittest.mock import patch, MagicMock
-import psycopg
 from psycopg import Connection as PgConnection
-from middleware.initialize_psycopg_connection import (
+from db.helpers_.psycopg import (
     initialize_psycopg_connection,
-    DatabaseInitializationError,
 )
 
 PATCH_ROOT = "middleware.initialize_psycopg_connection"

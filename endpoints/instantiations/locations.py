@@ -10,10 +10,8 @@ from endpoints.schema_config.instantiations.locations.data_requests import (
 from endpoints.schema_config.instantiations.locations.get_many import (
     LocationsGetManyEndpointSchemaConfig,
 )
-from middleware.access_logic import (
-    AccessInfoPrimary,
-)
-from middleware.authentication_info import (
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.info.instantiations import (
     STANDARD_JWT_AUTH_INFO,
     API_OR_JWT_AUTH_INFO,
     WRITE_ONLY_AUTH_INFO,

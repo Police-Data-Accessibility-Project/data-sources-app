@@ -1,26 +1,22 @@
 # middleware/primary_resource_logic/admin.py
-from flask import Response
+from flask import Response, make_response
 from werkzeug.security import generate_password_hash
 
-from db.DTOs import UserInfoNonSensitive, UsersWithPermissions
-from db.client import DatabaseClient
-from middleware.access_logic import AccessInfoPrimary
-
-from middleware.common_response_formatting import created_id_response
-
-from middleware.flask_response_manager import FlaskResponseManager
+from db.DTOs import UsersWithPermissions
+from db.client.core import DatabaseClient
+from middleware.common_response_formatting import created_id_response, message_response
+from middleware.schema_and_dto.dtos.admin.post import AdminUserPostDTO
+from middleware.schema_and_dto.dtos.admin.put import AdminUserPutDTO
 from middleware.schema_and_dto.dtos.common.base import (
     GetManyBaseDTO,
     GetByIDBaseDTO,
 )
-from middleware.schema_and_dto.dtos.admin.put import AdminUserPutDTO
-from middleware.schema_and_dto.dtos.admin.post import AdminUserPostDTO
 
 
 def get_users_admin(db_client: DatabaseClient, dto: GetManyBaseDTO) -> Response:
     # Return database client method
     results: list[UsersWithPermissions] = db_client.get_users(page=dto.page)
-    return FlaskResponseManager.make_response(
+    return make_response(
         {
             "message": "Returning users",
             "data": [user.model_dump(mode="json") for user in results],
@@ -58,7 +54,7 @@ def update_user_password(
     )
 
     # Return response
-    return FlaskResponseManager.make_response({"message": "User updated."})
+    return message_response("User updated.")
 
 
 def delete_user(db_client: DatabaseClient, dto: GetByIDBaseDTO) -> Response:
@@ -66,4 +62,4 @@ def delete_user(db_client: DatabaseClient, dto: GetByIDBaseDTO) -> Response:
     db_client.delete_user(user_id=int(dto.resource_id))
 
     # Return response
-    return FlaskResponseManager.make_response({"message": "User deleted."})
+    return message_response("User deleted.")

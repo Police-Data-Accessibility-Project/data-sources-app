@@ -28,10 +28,11 @@ from endpoints.schema_config.instantiations.data_requests.related_sources.get im
 from endpoints.schema_config.instantiations.data_requests.related_sources.post import (
     DataRequestsRelatedSourcesPost,
 )
-from middleware.access_logic import (
-    AccessInfoPrimary,
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.info.instantiations import (
+    STANDARD_JWT_AUTH_INFO,
+    API_OR_JWT_AUTH_INFO,
 )
-from middleware.authentication_info import STANDARD_JWT_AUTH_INFO, API_OR_JWT_AUTH_INFO
 from middleware.primary_resource_logic.data_requests import (
     create_data_request_wrapper,
     get_data_requests_wrapper,

@@ -5,10 +5,10 @@ from typing import Optional, Union, Any
 from flask import Response
 from pydantic import BaseModel
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.enums import RelationRoleEnum
 from db.subquery_logic import SubqueryParameters
-from middleware.access_logic import AccessInfoPrimary
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.column_permission_logic import (
     RelationRoleParameters,
     check_has_permission_to_edit_columns,

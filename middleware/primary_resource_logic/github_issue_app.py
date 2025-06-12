@@ -8,17 +8,21 @@ from typing import Optional
 from flask import Response
 
 from db.DTOs import DataRequestInfoForGithub
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.enums import RequestStatus
-from middleware.access_logic import AccessInfoPrimary
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.common_response_formatting import message_response
 from middleware.enums import RecordTypes
 from middleware.schema_and_dto.dtos.github.issue import GithubIssueURLInfosDTO
-from middleware.third_party_interaction_logic.github_issue_api_logic import (
+from middleware.third_party_interaction_logic.github.issue_info import GithubIssueInfo
+from middleware.third_party_interaction_logic.github.issue_project_info.core import (
     GithubIssueProjectInfo,
-    get_github_issue_project_statuses,
-    GithubIssueInfo,
+)
+from middleware.third_party_interaction_logic.github.issue_manager import (
     GithubIssueManager,
+)
+from middleware.third_party_interaction_logic.github.helpers import (
+    get_github_issue_project_statuses,
 )
 
 

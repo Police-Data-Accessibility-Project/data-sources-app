@@ -17,7 +17,7 @@ from http import HTTPStatus
 from flask import request
 from flask_restx import fields, abort
 
-from middleware.access_logic import AccessInfoPrimary
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from middleware.primary_resource_logic.api_key import create_api_key_for_user
 from middleware.primary_resource_logic.user_queries import (

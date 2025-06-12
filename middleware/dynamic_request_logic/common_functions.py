@@ -2,16 +2,15 @@
 Contains functions common across multiple dynamic request functions
 """
 
-from http import HTTPStatus
+from werkzeug.exceptions import NotFound
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.enums import RelationRoleEnum, ColumnPermissionEnum
 from middleware.column_permission_logic import get_permitted_columns
 from middleware.dynamic_request_logic.supporting_classes import (
     IDInfo,
     MiddlewareParameters,
 )
-from middleware.flask_response_manager import FlaskResponseManager
 
 
 def check_for_id(
@@ -29,10 +28,8 @@ def check_for_id(
         columns=[id_info.id_column_name],
     )
     if len(result) == 0:
-        FlaskResponseManager.abort(
-            code=HTTPStatus.NOT_FOUND,
-            message=f"Entry for {id_info.where_mappings} not found.",
-        )
+        raise NotFound(f"Entry for {id_info.where_mappings} not found.")
+
     return result[0][id_info.id_column_name]
 
 

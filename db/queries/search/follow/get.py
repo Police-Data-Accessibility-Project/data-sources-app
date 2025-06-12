@@ -4,6 +4,8 @@ from requests import Session
 from sqlalchemy import select, Select
 from sqlalchemy.orm import selectinload
 
+from db.enums import LocationType
+from db.helpers_.result_formatting import get_display_name
 from db.models.implementations.core.location.core import Location
 from db.models.implementations.core.record.type import RecordType
 from db.models.implementations.link import LinkUserFollowedLocation
@@ -50,6 +52,7 @@ class GetUserFollowedSearchesQueryBuilder(QueryBuilderBase):
         final_results = []
         for result in raw_results:
             location = result.location
+            location_type = LocationType(location.type)
             location_id = location.id
             state_name = (
                 location.state.state_name if location.state is not None else None
@@ -62,10 +65,18 @@ class GetUserFollowedSearchesQueryBuilder(QueryBuilderBase):
             final_results.append(
                 {
                     "location_id": location_id,
+                    "display_name": get_display_name(
+                        location_type=location_type,
+                        state_name=state_name,
+                        county_name=county_name,
+                        locality_name=locality_name,
+                    ),
                     "state_name": state_name,
                     "county_name": county_name,
                     "locality_name": locality_name,
-                    "record_categories": self.process_record_types(record_types),
+                    "subscriptions_by_category": self.process_record_types(
+                        record_types
+                    ),
                 }
             )
         return {

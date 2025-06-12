@@ -4,10 +4,8 @@ from config import limiter
 from endpoints.schema_config.instantiations.archives.get import (
     ArchivesGetEndpointSchemaConfig,
 )
-from middleware.access_logic import (
-    AccessInfoPrimary,
-)
-from middleware.authentication_info import (
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.info.instantiations import (
     ARCHIVE_WRITE_AUTH_INFO,
     API_OR_JWT_AUTH_INFO,
 )

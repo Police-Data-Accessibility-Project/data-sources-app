@@ -7,8 +7,8 @@ from endpoints.schema_config.enums import SchemaConfigs
 from endpoints.schema_config.instantiations.search.federal import (
     SearchFederalGetEndpointSchemaConfig,
 )
-from middleware.access_logic import AccessInfoPrimary
-from middleware.authentication_info import API_OR_JWT_AUTH_INFO
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.info.instantiations import API_OR_JWT_AUTH_INFO
 from middleware.decorators.decorators import endpoint_info
 from middleware.primary_resource_logic.search.wrappers.federal import (
     federal_search_wrapper,

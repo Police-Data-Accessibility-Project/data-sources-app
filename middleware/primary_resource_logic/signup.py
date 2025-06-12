@@ -3,9 +3,10 @@ from http import HTTPStatus
 
 from werkzeug.security import generate_password_hash
 
-from db.client import DatabaseClient
-from middleware.SimpleJWT import SimpleJWT, JWTPurpose
-from middleware.access_logic import ValidateEmailTokenAccessInfo
+from db.client.core import DatabaseClient
+from middleware.security.jwt.core import SimpleJWT
+from middleware.security.jwt.enums import JWTPurpose
+from middleware.security.access_info.validate_email import ValidateEmailTokenAccessInfo
 from middleware.common_response_formatting import message_response
 from middleware.primary_resource_logic.api_key import generate_token
 from middleware.primary_resource_logic.login_queries import (
@@ -13,7 +14,7 @@ from middleware.primary_resource_logic.login_queries import (
 )
 from middleware.primary_resource_logic.user_queries import UserRequestDTO
 from middleware.schema_and_dto.dtos.signup import EmailOnlyDTO
-from middleware.third_party_interaction_logic.mailgun_logic import send_via_mailgun
+from middleware.third_party_interaction_logic.mailgun import send_via_mailgun
 from middleware.util.url import create_web_app_url
 from tests.helper_scripts.helper_functions_simple import add_query_params
 

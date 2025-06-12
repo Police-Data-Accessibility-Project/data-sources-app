@@ -5,11 +5,10 @@ from flask_restx import abort
 from marshmallow import Schema, fields
 from pydantic import BaseModel
 
-from db.client import DatabaseClient
-from db.helper_functions import get_db_client
-from middleware.exceptions import UserNotFoundError
-from middleware.enums import PermissionsEnum, PermissionsActionEnum
+from db.client.core import DatabaseClient
 from middleware.common_response_formatting import message_response
+from middleware.enums import PermissionsEnum, PermissionsActionEnum
+from middleware.exceptions import UserNotFoundError
 from middleware.schema_and_dto.util import get_query_metadata
 from utilities.common import get_valid_enum_value
 from utilities.enums import SourceMappingEnum, ParserLocation
@@ -134,6 +133,6 @@ def update_permissions_wrapper(
 
 
 def get_user_permissions(user_email: str) -> list[PermissionsEnum]:
-    db_client = get_db_client()
+    db_client = DatabaseClient()
     pm = PermissionsManager(db_client, user_email)
     return pm.permissions

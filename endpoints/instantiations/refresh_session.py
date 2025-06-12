@@ -1,9 +1,7 @@
 from flask import Response
 
-from middleware.access_logic import (
-    RefreshAccessInfo,
-)
-from middleware.authentication_info import AuthenticationInfo
+from middleware.security.access_info.refresh import RefreshAccessInfo
+from middleware.security.auth.info.base import AuthenticationInfo
 from middleware.decorators.decorators import endpoint_info
 from middleware.enums import AccessTypeEnum
 from middleware.primary_resource_logic.login_queries import (

@@ -1,5 +1,5 @@
-from middleware.access_logic import AccessInfoPrimary
-from middleware.authentication_info import API_OR_JWT_AUTH_INFO
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.info.instantiations import API_OR_JWT_AUTH_INFO
 from middleware.decorators.decorators import endpoint_info
 from middleware.primary_resource_logic.contact import submit_contact_form
 from endpoints.psycopg_resource import PsycopgResource

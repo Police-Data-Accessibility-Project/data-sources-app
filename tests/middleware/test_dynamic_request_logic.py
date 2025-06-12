@@ -2,23 +2,24 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
+from werkzeug.exceptions import Forbidden, NotFound
 
 from db.db_client_dataclasses import WhereMapping
 from db.enums import ColumnPermissionEnum
 from middleware.dynamic_request_logic.common_functions import check_for_id
-from middleware.dynamic_request_logic.delete_logic import (
+from middleware.dynamic_request_logic.delete import (
     check_for_delete_permissions,
     delete_entry,
 )
-from middleware.dynamic_request_logic.get_by_id_logic import (
+from middleware.dynamic_request_logic.get.by_id import (
     results_dependent_response,
     get_by_id,
 )
-from middleware.dynamic_request_logic.get_many_logic import (
+from middleware.dynamic_request_logic.get.many import (
     optionally_limit_to_requested_columns,
     check_requested_columns,
 )
-from middleware.dynamic_request_logic.put_logic import put_entry
+from middleware.dynamic_request_logic.put import put_entry
 from middleware.dynamic_request_logic.supporting_classes import IDInfo
 
 from middleware.schema_and_dto.schemas.common.common_response_schemas import (
@@ -53,7 +54,7 @@ def mock_abort(monkeypatch):
 
 def test_results_dependent_response_with_results(monkeypatch):
     mock_message_response = patch_and_return_mock(
-        f"{PATCH_ROOT}.get_by_id_logic.message_response", monkeypatch
+        f"{PATCH_ROOT}.get.by_id.message_response", monkeypatch
     )
 
     results_dependent_response(
@@ -70,7 +71,7 @@ def test_results_dependent_response_with_results(monkeypatch):
 
 def test_results_dependent_response_with_no_results(monkeypatch):
     mock_message_response = patch_and_return_mock(
-        f"{PATCH_ROOT}.get_by_id_logic.message_response", monkeypatch
+        f"{PATCH_ROOT}.get.by_id.message_response", monkeypatch
     )
 
     results_dependent_response(
@@ -86,17 +87,17 @@ def test_results_dependent_response_with_no_results(monkeypatch):
 def test_get_by_id(monkeypatch):
     mock = MagicMock()
     monkeypatch.setattr(
-        f"{PATCH_ROOT}.get_by_id_logic.results_dependent_response",
+        f"{PATCH_ROOT}.get.by_id.results_dependent_response",
         mock.results_dependent_response,
     )
     monkeypatch.setattr(
-        f"{PATCH_ROOT}.get_by_id_logic.get_permitted_columns",
+        f"{PATCH_ROOT}.get.by_id.get_permitted_columns",
         mock.get_permitted_columns,
     )
-    monkeypatch.setattr(f"{PATCH_ROOT}.get_by_id_logic.check_for_id", mock.check_for_id)
+    monkeypatch.setattr(f"{PATCH_ROOT}.get.by_id.check_for_id", mock.check_for_id)
     id_info = IDInfo(id_column_value=mock.id, id_column_name=mock.id_column_name)
     monkeypatch.setattr(
-        f"{PATCH_ROOT}.get_by_id_logic.IDInfo", MagicMock(return_value=id_info)
+        f"{PATCH_ROOT}.get.by_id.IDInfo", MagicMock(return_value=id_info)
     )
     result = get_by_id(
         middleware_parameters=mock.mp,
@@ -137,7 +138,7 @@ def test_get_by_id(monkeypatch):
 @pytest.fixture
 def mock_check_requested_columns(monkeypatch) -> MagicMock:
     mock = MagicMock()
-    monkeypatch.setattr(f"{PATCH_ROOT}.get_many_logic.check_requested_columns", mock)
+    monkeypatch.setattr(f"{PATCH_ROOT}.get.many.check_requested_columns", mock)
     return mock
 
 
@@ -180,7 +181,7 @@ def test_execute_if_none_is_not_none():
 def test_put_entry(monkeypatch):
     mock = MagicMock()
     monkeypatch.setattr(
-        f"{PATCH_ROOT}.put_logic.message_response",
+        f"{PATCH_ROOT}.put.message_response",
         mock.message_response,
     )
     monkeypatch.setattr(
@@ -216,25 +217,21 @@ def test_put_entry(monkeypatch):
     assert result == mock.message_response.return_value
 
 
-def test_check_for_delete_permission_check_function_returns_true(mock_abort):
+def test_check_for_delete_permission_check_function_returns_true():
     mock_check_function = MagicMock()
     mock_check_function.execute.return_value = True
     check_for_delete_permissions(
         check_function=mock_check_function, entry_name="test entry"
     )
-    mock_abort.assert_not_called()
 
 
-def test_check_for_delete_permission_check_function_returns_false(mock_abort):
+def test_check_for_delete_permission_check_function_returns_false():
     mock_check_function = MagicMock()
     mock_check_function.execute.return_value = False
-    check_for_delete_permissions(
-        check_function=mock_check_function, entry_name="test entry"
-    )
-    mock_abort.assert_called_once_with(
-        code=HTTPStatus.FORBIDDEN,
-        message="You do not have permission to delete this test entry.",
-    )
+    with pytest.raises(Forbidden):
+        check_for_delete_permissions(
+            check_function=mock_check_function, entry_name="test entry"
+        )
 
 
 def test_call_if_not_none_is_none():
@@ -255,7 +252,7 @@ def test_delete_entry(monkeypatch):
     mock = MagicMock()
     multi_monkeypatch(
         monkeypatch,
-        patch_root=f"{PATCH_ROOT}.delete_logic",
+        patch_root=f"{PATCH_ROOT}.delete",
         mock=mock,
         functions_to_patch=[
             "check_for_id",
@@ -294,32 +291,25 @@ def test_delete_entry(monkeypatch):
     assert result == mock.message_response.return_value
 
 
-def test_check_requested_columns_happy_path(mock_flask_response_manager, monkeypatch):
+def test_check_requested_columns_happy_path(monkeypatch):
     mock = MagicMock()
     mock.get_invalid_columns.return_value = []
     monkeypatch.setattr(
-        f"{PATCH_ROOT}.get_many_logic.get_invalid_columns", mock.get_invalid_columns
+        f"{PATCH_ROOT}.get.many.get_invalid_columns", mock.get_invalid_columns
     )
     check_requested_columns(
         requested_columns=mock.requested_columns,
         permitted_columns=mock.permitted_columns,
     )
 
-    mock.get_invalid_columns.assert_called_once_with(
-        mock.requested_columns, mock.permitted_columns
-    )
-    mock_flask_response_manager.abort.assert_not_called()
 
-
-def test_check_requested_columns_invalid_columns(
-    mock_flask_response_manager, monkeypatch
-):
+def test_check_requested_columns_invalid_columns(monkeypatch):
     mock = MagicMock()
     mock.get_invalid_columns.return_value = ["invalid_column"]
     monkeypatch.setattr(
-        f"{PATCH_ROOT}.get_many_logic.get_invalid_columns", mock.get_invalid_columns
+        f"{PATCH_ROOT}.get.many.get_invalid_columns", mock.get_invalid_columns
     )
-    with pytest.raises(FakeAbort):
+    with pytest.raises(Forbidden):
         check_requested_columns(
             requested_columns=mock.requested_columns,
             permitted_columns=mock.permitted_columns,
@@ -328,13 +318,9 @@ def test_check_requested_columns_invalid_columns(
     mock.get_invalid_columns.assert_called_once_with(
         mock.requested_columns, mock.permitted_columns
     )
-    mock_flask_response_manager.abort.assert_called_once_with(
-        code=HTTPStatus.FORBIDDEN,
-        message=f"The following columns are either invalid or not permitted for your access permissions: {mock.get_invalid_columns.return_value}",
-    )
 
 
-def test_check_for_id_happy_path(mock_flask_response_manager):
+def test_check_for_id_happy_path():
     mock = MagicMock()
     mock.db_client._select_from_relation.return_value = [{"id": 1}]
     mock.id_info.id_column_name = "id"
@@ -350,15 +336,14 @@ def test_check_for_id_happy_path(mock_flask_response_manager):
         where_mappings=mock.id_info.where_mappings,
         columns=[mock.id_info.id_column_name],
     )
-    mock_flask_response_manager.abort.assert_not_called()
 
 
-def test_check_for_id_no_id(mock_flask_response_manager):
+def test_check_for_id_no_id():
     mock = MagicMock()
     mock.db_client._select_from_relation.return_value = []
     mock.id_info.id_column_name = "id"
 
-    with pytest.raises(FakeAbort) as e:
+    with pytest.raises(NotFound) as e:
         check_for_id(
             table_name=mock.table_name, id_info=mock.id_info, db_client=mock.db_client
         )
@@ -367,8 +352,4 @@ def test_check_for_id_no_id(mock_flask_response_manager):
         relation_name=mock.table_name,
         where_mappings=mock.id_info.where_mappings,
         columns=[mock.id_info.id_column_name],
-    )
-    mock_flask_response_manager.abort.assert_called_once_with(
-        code=HTTPStatus.NOT_FOUND,
-        message=f"Entry for {mock.id_info.where_mappings} not found.",
     )

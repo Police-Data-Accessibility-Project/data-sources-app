@@ -1,18 +1,17 @@
 from dataclasses import dataclass
-from http import HTTPStatus
 from io import BytesIO
 
-from flask import Response
+from flask import Response, make_response
 from marshmallow import Schema, ValidationError
 from werkzeug.datastructures import FileStorage
+from werkzeug.exceptions import BadRequest, UnsupportedMediaType
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from middleware.dynamic_request_logic.supporting_classes import (
     PutPostRequestInfo,
     PostPutHandler,
     BulkPostResponse,
 )
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.primary_resource_logic.agencies import (
     AgencyPostRequestInfo,
     AgencyPostHandler,
@@ -56,16 +55,12 @@ def _get_raw_rows(file: FileStorage):
     try:
         return read_from_csv(file)
     except Exception as e:
-        FlaskResponseManager.abort(
-            code=HTTPStatus.BAD_REQUEST, message=f"Error reading csv file: {e}"
-        )
+        raise BadRequest(f"Error reading csv file: {e}")
 
 
 def _abort_if_csv(file):
     if file.filename.split(".")[-1] != "csv":
-        FlaskResponseManager.abort(
-            code=HTTPStatus.UNSUPPORTED_MEDIA_TYPE, message="File must be of type csv"
-        )
+        raise UnsupportedMediaType("File must be of type csv")
 
 
 class BulkRequestManager:
@@ -236,21 +231,19 @@ def manage_agencies_response(responses: list[BulkPostResponse]) -> Response:
         else:
             created_ids.append(response.entry_id)
     if not created_ids:
-        return FlaskResponseManager.make_response(
-            status_code=HTTPStatus.OK,
-            data={
+        return make_response(
+            {
                 "message": "No agencies were created from the provided csv file.",
                 "errors": error_dict,
                 "ids": created_ids,
-            },
+            }
         )
-    return FlaskResponseManager.make_response(
-        status_code=HTTPStatus.OK,
-        data={
+    return make_response(
+        {
             "message": f"At least some agencies created successfully.",
             "errors": error_dict,
             "ids": created_ids,
-        },
+        }
     )
 
 
@@ -259,12 +252,11 @@ def manage_response(
 ):
     errors = brm.get_error_dict()
     if brm.all_requests_errored_out():
-        return FlaskResponseManager.make_response(
-            status_code=HTTPStatus.OK,
-            data={
+        return make_response(
+            {
                 "message": f"No {resource_name} were {verb} from the provided csv file.",
                 "errors": errors,
-            },
+            }
         )
 
     if include_ids:
@@ -274,13 +266,12 @@ def manage_response(
     else:
         kwargs = {"ids": []}
 
-    return FlaskResponseManager.make_response(
-        status_code=HTTPStatus.OK,
-        data={
+    return make_response(
+        {
             "message": f"At least some {resource_name} created successfully.",
             "errors": errors,
             **kwargs,
-        },
+        }
     )
 
 

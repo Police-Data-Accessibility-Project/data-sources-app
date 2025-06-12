@@ -7,8 +7,8 @@ from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 from jwt import DecodeError, ExpiredSignatureError
 
-from middleware.SchedulerManager import SchedulerManager
-from middleware.SimpleJWT import SimpleJWT
+from middleware.scheduled_tasks.manager import SchedulerManager
+from middleware.security.jwt.core import SimpleJWT
 from middleware.scheduled_tasks.check_database_health import check_database_health
 from middleware.util.env import get_env_variable
 from endpoints.instantiations.admin import namespace_admin
@@ -37,7 +37,7 @@ from endpoints.instantiations.typeahead_suggestions import (
 from flask_restx import Api
 
 from config import config, oauth, limiter, jwt
-from middleware.initialize_psycopg_connection import initialize_psycopg_connection
+from db.helpers_.psycopg import initialize_psycopg_connection
 from endpoints.instantiations.agencies import namespace_agencies
 from endpoints.instantiations.api_key import namespace_api_key
 from endpoints.instantiations.archives import namespace_archives

@@ -1,21 +1,20 @@
-from flask import Response, request
+from flask import Response, request, make_response
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.db_client_dataclasses import OrderByParameters
 from db.subquery_logic import SubqueryParameterManager
-from middleware.access_logic import AccessInfoPrimary
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.common_response_formatting import (
     created_id_response,
     message_response,
 )
-from middleware.dynamic_request_logic.delete_logic import delete_entry
-from middleware.dynamic_request_logic.post_logic import PostHandler
+from middleware.dynamic_request_logic.delete import delete_entry
+from middleware.dynamic_request_logic.post import PostHandler
 from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,
     PutPostRequestInfo,
 )
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto.schemas.agencies.put import AgenciesPutSchema
 from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
 from middleware.schema_and_dto.dtos.agencies.get_many import AgenciesGetManyDTO
@@ -47,8 +46,8 @@ def get_agencies(
         approval_status=dto.approval_status,
     )
 
-    return FlaskResponseManager.make_response(
-        data={
+    return make_response(
+        {
             "metadata": {"count": len(results)},
             "message": "Successfully retrieved agencies",
             "data": results,

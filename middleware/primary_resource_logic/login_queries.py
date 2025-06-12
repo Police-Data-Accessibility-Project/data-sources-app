@@ -4,20 +4,16 @@ from typing import Optional
 
 from flask import Response, make_response, jsonify
 from flask_jwt_extended import (
-    create_access_token,
     create_refresh_token,
-    decode_token,
 )
 from werkzeug.security import check_password_hash
 
-from db.client import DatabaseClient
-from middleware.SimpleJWT import JWTPurpose, SimpleJWT
-from middleware.access_logic import AccessInfoPrimary, RefreshAccessInfo
+from db.client.core import DatabaseClient
+from middleware.security.jwt.core import SimpleJWT
+from middleware.security.jwt.enums import JWTPurpose
+from middleware.security.access_info.refresh import RefreshAccessInfo
 from middleware.exceptions import UserNotFoundError
 from middleware.primary_resource_logic.user_queries import UserRequestDTO
-from middleware.schema_and_dto.dtos.refresh_session import (
-    RefreshSessionRequestDTO,
-)
 
 
 class JWTAccessRefreshTokens:

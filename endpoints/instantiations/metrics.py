@@ -3,8 +3,8 @@ from flask import Response
 from endpoints.schema_config.instantiations.metrics.followed_searches.breakdown import (
     MetricsFollowedSearchesBreakdownGetEndpointSchemaConfig,
 )
-from middleware.access_logic import AccessInfoPrimary
-from middleware.authentication_info import API_OR_JWT_AUTH_INFO
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.info.instantiations import API_OR_JWT_AUTH_INFO
 from middleware.decorators.decorators import endpoint_info
 from middleware.primary_resource_logic.metrics import (
     get_metrics,

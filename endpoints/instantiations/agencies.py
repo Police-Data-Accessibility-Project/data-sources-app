@@ -1,7 +1,7 @@
 from flask import Response
 
 from config import limiter
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from endpoints.schema_config.instantiations.agencies.by_id.get import (
     AgenciesByIDGetEndpointSchemaConfig,
 )
@@ -11,10 +11,11 @@ from endpoints.schema_config.instantiations.agencies.get_many import (
 from endpoints.schema_config.instantiations.agencies.post import (
     AgenciesPostEndpointSchemaConfig,
 )
-from middleware.access_logic import (
-    AccessInfoPrimary,
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.info.instantiations import (
+    WRITE_ONLY_AUTH_INFO,
+    API_OR_JWT_AUTH_INFO,
 )
-from middleware.authentication_info import WRITE_ONLY_AUTH_INFO, API_OR_JWT_AUTH_INFO
 from middleware.column_permission_logic import create_column_permissions_string_table
 from middleware.decorators.decorators import (
     endpoint_info,

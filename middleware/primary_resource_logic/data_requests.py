@@ -1,9 +1,9 @@
-from http import HTTPStatus
 from typing import Optional
 
 from flask import Response
+from werkzeug.exceptions import Forbidden
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.db_client_dataclasses import WhereMapping, OrderByParameters
 from db.enums import (
     ColumnPermissionEnum,
@@ -11,7 +11,7 @@ from db.enums import (
     RequestStatus,
 )
 from db.subquery_logic import SubqueryParameterManager, SubqueryParameters
-from middleware.access_logic import AccessInfoPrimary
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.column_permission_logic import (
     get_permitted_columns,
     RelationRoleParameters,
@@ -23,21 +23,20 @@ from middleware.common_response_formatting import (
 from middleware.custom_dataclasses import (
     DeferredFunction,
 )
-from middleware.dynamic_request_logic.delete_logic import delete_entry
-from middleware.dynamic_request_logic.get_by_id_logic import get_by_id
-from middleware.dynamic_request_logic.get_many_logic import get_many
-from middleware.dynamic_request_logic.get_related_resource_logic import (
+from middleware.dynamic_request_logic.delete import delete_entry
+from middleware.dynamic_request_logic.get.by_id import get_by_id
+from middleware.dynamic_request_logic.get.many import get_many
+from middleware.dynamic_request_logic.get.related_resource import (
     get_related_resource,
     GetRelatedResourcesParameters,
 )
-from middleware.dynamic_request_logic.post_logic import PostLogic
-from middleware.dynamic_request_logic.put_logic import put_entry
+from middleware.dynamic_request_logic.post import PostLogic
+from middleware.dynamic_request_logic.put import put_entry
 from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,
 )
 from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto.dtos.common.base import (
     GetManyBaseDTO,
     GetByIDBaseDTO,
@@ -366,10 +365,7 @@ def get_data_request_related_locations(
 
 def check_has_admin_or_owner_role(relation_role: RelationRoleEnum):
     if relation_role not in [RelationRoleEnum.OWNER, RelationRoleEnum.ADMIN]:
-        FlaskResponseManager.abort(
-            code=HTTPStatus.FORBIDDEN,
-            message="User does not have permission to perform this action.",
-        )
+        raise Forbidden("User does not have permission to perform this action.")
 
 
 class CreateDataRequestRelatedSourceLogic(PostLogic):
@@ -488,10 +484,8 @@ def withdraw_data_request_wrapper(
     if not is_creator_or_admin(
         access_info=access_info, data_request_id=data_request_id, db_client=db_client
     ):
-        FlaskResponseManager.abort(
-            code=HTTPStatus.FORBIDDEN,
-            message="User does not have permission to perform this action.",
-        )
+        raise Forbidden("User does not have permission to perform this action.")
+
     db_client.update_data_request(
         entry_id=data_request_id,
         column_edit_mappings={"request_status": RequestStatus.REQUEST_WITHDRAWN.value},

@@ -2,25 +2,18 @@ from datetime import datetime, timezone, timedelta
 
 from flask import Response, redirect
 
-import jwt
-from db.client import DatabaseClient
-from db.enums import ExternalAccountTypeEnum
-from middleware.SimpleJWT import SimpleJWT, JWTPurpose
-from middleware.common_response_formatting import message_response
+from db.client.core import DatabaseClient
+from middleware.security.jwt.core import SimpleJWT
+from middleware.security.jwt.enums import JWTPurpose
 from middleware.exceptions import UserNotFoundError
-from middleware.flask_response_manager import FlaskResponseManager
-from middleware.primary_resource_logic.login_queries import (
-    unauthorized_response,
-    login_response,
-)
-from middleware.third_party_interaction_logic.callback_flask_sessions_logic import (
+from middleware.third_party_interaction_logic.callback.flask_sessions import (
     get_callback_params,
     get_callback_function,
 )
 from middleware.custom_dataclasses import (
     FlaskSessionCallbackInfo,
 )
-from middleware.third_party_interaction_logic.callback_oauth_logic import (
+from middleware.third_party_interaction_logic.callback.oauth import (
     get_github_oauth_access_token,
 )
 from tests.helper_scripts.helper_functions_simple import add_query_params

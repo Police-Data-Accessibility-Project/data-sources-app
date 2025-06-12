@@ -4,8 +4,8 @@ from config import limiter
 from endpoints.schema_config.instantiations.auth.github.link import (
     AuthGithubLinkEndpointSchemaConfig,
 )
-from middleware.access_logic import AccessInfoPrimary
-from middleware.authentication_info import NO_AUTH_INFO
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.info.instantiations import NO_AUTH_INFO
 from middleware.decorators.decorators import endpoint_info
 
 from middleware.primary_resource_logic.github_oauth import (

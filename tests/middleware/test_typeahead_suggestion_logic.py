@@ -1,7 +1,4 @@
-from http import HTTPStatus
 from unittest.mock import MagicMock
-
-from db.client import DatabaseClient
 
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
