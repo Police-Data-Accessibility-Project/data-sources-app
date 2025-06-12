@@ -4,7 +4,7 @@ from flask_jwt_extended import decode_token
 from jwt import ExpiredSignatureError
 from werkzeug.exceptions import Forbidden, Unauthorized, BadRequest
 
-from db.helpers_.helpers import get_db_client
+from db.client.core import DatabaseClient
 from middleware.enums import PermissionsEnum
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.access_info.refresh import RefreshAccessInfo
@@ -25,7 +25,7 @@ def check_permissions_with_access_info(
 
 def get_user_email_from_api_key(token: str) -> Optional[str]:
     api_key = ApiKey(raw_key=token)
-    db_client = get_db_client()
+    db_client = DatabaseClient()
     user_identifiers = db_client.get_user_by_api_key(api_key.key_hash)
     if user_identifiers is None:
         return None
