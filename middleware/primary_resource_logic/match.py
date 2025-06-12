@@ -3,9 +3,8 @@ from typing import Optional
 
 from flask import Response, make_response
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto.dtos.match.response import (
     AgencyMatchResponseOuterDTO,
     AgencyMatchResponseInnerDTO,

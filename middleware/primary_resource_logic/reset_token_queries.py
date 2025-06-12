@@ -6,14 +6,13 @@ from werkzeug.exceptions import BadRequest, Unauthorized
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from middleware.security.jwt.core import SimpleJWT
 from middleware.security.jwt.enums import JWTPurpose
 from middleware.security.access_info.password_reset import PasswordResetTokenAccessInfo
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.common_response_formatting import message_response
 from middleware.exceptions import UserNotFoundError
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.primary_resource_logic.api_key import generate_token
 from middleware.primary_resource_logic.user_queries import user_check_email
 from middleware.schema_and_dto.dtos.reset_password.request import (

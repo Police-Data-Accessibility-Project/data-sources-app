@@ -1,4 +1,4 @@
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.enums import ApprovalStatus
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.common_response_formatting import created_id_response

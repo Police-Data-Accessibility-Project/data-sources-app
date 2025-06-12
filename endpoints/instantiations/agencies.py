@@ -1,7 +1,7 @@
 from flask import Response
 
 from config import limiter
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from endpoints.schema_config.instantiations.agencies.by_id.get import (
     AgenciesByIDGetEndpointSchemaConfig,
 )

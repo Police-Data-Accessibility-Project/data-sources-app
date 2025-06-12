@@ -4,9 +4,10 @@ from enum import Enum
 from functools import wraps, partialmethod
 from operator import and_, or_
 from typing import Optional, Any, List, Callable, Union, Type
-from psycopg import connection as PgConnection
+
 import psycopg
 import sqlalchemy.exc
+from psycopg import connection as PgConnection
 from psycopg import sql, Cursor
 from psycopg.rows import dict_row, tuple_row
 from sqlalchemy import (
@@ -36,6 +37,7 @@ from db.DTOs import (
     UsersWithPermissions,
     DataRequestInfoForGithub,
 )
+from db.client.helpers import initialize_sqlalchemy_session
 from db.constants import (
     PAGE_SIZE,
     GET_METRICS_FOLLOWED_SEARCHES_BREAKDOWN_SORTABLE_COLUMNS,
@@ -44,15 +46,6 @@ from db.db_client_dataclasses import (
     OrderByParameters,
     WhereMapping,
 )
-from db.exceptions import LocationDoesNotExistError
-from db.queries.search.follow.get import GetUserFollowedSearchesQueryBuilder
-from db.queries.search.follow.post import CreateFollowQueryBuilder
-from db.queries.search.follow.delete import DeleteFollowQueryBuilder
-from db.queries.user_profile.get_user_recent_searches import (
-    GetUserRecentSearchesQueryBuilder,
-)
-from db.result_formatter import ResultFormatter
-from db.subquery_logic import SubqueryParameters
 from db.dynamic_query_constructor import DynamicQueryConstructor
 from db.enums import (
     ExternalAccountTypeEnum,
@@ -62,43 +55,41 @@ from db.enums import (
     LocationType,
     ApprovalStatus,
 )
-from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
-from middleware.custom_dataclasses import EventInfo, EventBatch
-from middleware.exceptions import (
-    UserNotFoundError,
-    DuplicateUserError,
+from db.exceptions import LocationDoesNotExistError
+from db.helpers_.result_formatter import ResultFormatter
+from db.helpers_.psycopg import initialize_psycopg_connection
+from db.models.base import Base
+from db.models.implementations.core.agency.core import Agency
+from db.models.implementations.core.data_request.core import DataRequest
+from db.models.implementations.core.data_request.expanded import DataRequestExpanded
+from db.models.implementations.core.data_request.github_issue_info import (
+    DataRequestsGithubIssueInfo,
 )
-from db.models.implementations.core.notification.queue.data_source import (
-    DataSourceUserNotificationQueue,
-)
-from db.models.implementations.core.notification.queue.data_request import (
-    DataRequestUserNotificationQueue,
+from db.models.implementations.core.data_source.core import DataSource
+from db.models.implementations.core.data_source.expanded import DataSourceExpanded
+from db.models.implementations.core.distinct_source_url import DistinctSourceURL
+from db.models.implementations.core.external_account import ExternalAccount
+from db.models.implementations.core.location.core import Location
+from db.models.implementations.core.location.dependent import DependentLocation
+from db.models.implementations.core.location.expanded import LocationExpanded
+from db.models.implementations.core.log.notification import NotificationLog
+from db.models.implementations.core.log.table_count import TableCountLog
+from db.models.implementations.core.notification.pending.data_request import (
+    DataRequestPendingEventNotification,
 )
 from db.models.implementations.core.notification.pending.data_source import (
     DataSourcePendingEventNotification,
 )
-from db.models.implementations.core.notification.pending.data_request import (
-    DataRequestPendingEventNotification,
+from db.models.implementations.core.notification.queue.data_request import (
+    DataRequestUserNotificationQueue,
+)
+from db.models.implementations.core.notification.queue.data_source import (
+    DataSourceUserNotificationQueue,
 )
 from db.models.implementations.core.recent_search.core import RecentSearch
-from db.models.implementations.core.distinct_source_url import DistinctSourceURL
-from db.models.implementations.core.log.notification import NotificationLog
-from db.models.implementations.core.location.dependent import DependentLocation
-from db.models.implementations.core.user.core import User
-from db.models.implementations.core.record.type import RecordType
 from db.models.implementations.core.record.category import RecordCategory
-from db.models.implementations.core.data_request.github_issue_info import (
-    DataRequestsGithubIssueInfo,
-)
-from db.models.implementations.core.data_source.expanded import DataSourceExpanded
-from db.models.implementations.core.data_source.core import DataSource
-from db.models.implementations.core.data_request.expanded import DataRequestExpanded
-from db.models.implementations.core.data_request.core import DataRequest
-from db.models.implementations.core.external_account import ExternalAccount
-from db.models.implementations.core.location.expanded import LocationExpanded
-from db.models.implementations.core.location.core import Location
-from db.models.implementations.core.log.table_count import TableCountLog
-from db.models.implementations.core.agency.core import Agency
+from db.models.implementations.core.record.type import RecordType
+from db.models.implementations.core.user.core import User
 from db.models.implementations.link import (
     LinkAgencyDataSource,
     LinkAgencyLocation,
@@ -108,11 +99,18 @@ from db.models.implementations.link import (
     LinkRecentSearchRecordTypes,
     LinkLocationDataSourceView,
 )
-from db.models.base import Base
 from db.models.table_reference import (
     SQL_ALCHEMY_TABLE_REFERENCE,
     convert_to_column_reference,
 )
+from db.queries.search.follow.delete import DeleteFollowQueryBuilder
+from db.queries.search.follow.get import GetUserFollowedSearchesQueryBuilder
+from db.queries.search.follow.post import CreateFollowQueryBuilder
+from db.queries.user_profile.get_user_recent_searches import (
+    GetUserRecentSearchesQueryBuilder,
+)
+from db.subquery_logic import SubqueryParameters
+from middleware.custom_dataclasses import EventInfo, EventBatch
 from middleware.enums import (
     PermissionsEnum,
     Relations,
@@ -120,8 +118,10 @@ from middleware.enums import (
     RecordTypes,
     DataSourceCreationResponse,
 )
-from db.initialize_psycopg_connection import initialize_psycopg_connection
-from db.initialize_sqlalchemy_session import initialize_sqlalchemy_session
+from middleware.exceptions import (
+    UserNotFoundError,
+    DuplicateUserError,
+)
 from middleware.miscellaneous.table_count_logic import (
     TableCountReference,
     TableCountReferenceManager,
@@ -135,12 +135,13 @@ from middleware.schema_and_dto.dtos.match.response import (
 from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
-from middleware.schema_and_dto.dtos.source_collector.post.response import (
-    SourceCollectorPostResponseInnerDTO,
-)
 from middleware.schema_and_dto.dtos.source_collector.post.request import (
     SourceCollectorPostRequestInnerDTO,
 )
+from middleware.schema_and_dto.dtos.source_collector.post.response import (
+    SourceCollectorPostResponseInnerDTO,
+)
+from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
 from middleware.util.env import get_env_variable
 from utilities.enums import RecordCategories
 

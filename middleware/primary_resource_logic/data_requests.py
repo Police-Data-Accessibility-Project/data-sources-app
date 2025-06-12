@@ -1,10 +1,9 @@
-from http import HTTPStatus
 from typing import Optional
 
 from flask import Response
 from werkzeug.exceptions import Forbidden
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.db_client_dataclasses import WhereMapping, OrderByParameters
 from db.enums import (
     ColumnPermissionEnum,
@@ -38,7 +37,6 @@ from middleware.dynamic_request_logic.supporting_classes import (
     IDInfo,
 )
 from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto.dtos.common.base import (
     GetManyBaseDTO,
     GetByIDBaseDTO,

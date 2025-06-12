@@ -5,7 +5,7 @@ from typing import Optional, Union, Any
 from flask import Response
 from pydantic import BaseModel
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.enums import RelationRoleEnum
 from db.subquery_logic import SubqueryParameters
 from middleware.security.access_info.primary import AccessInfoPrimary

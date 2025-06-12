@@ -1,6 +1,6 @@
 from typing import Optional
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from middleware.enums import PermissionsEnum
 from middleware.security.access_info.base import AccessInfoBase
 

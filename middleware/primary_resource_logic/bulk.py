@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from http import HTTPStatus
 from io import BytesIO
 
 from flask import Response, make_response
@@ -7,13 +6,12 @@ from marshmallow import Schema, ValidationError
 from werkzeug.datastructures import FileStorage
 from werkzeug.exceptions import BadRequest, UnsupportedMediaType
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from middleware.dynamic_request_logic.supporting_classes import (
     PutPostRequestInfo,
     PostPutHandler,
     BulkPostResponse,
 )
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.primary_resource_logic.agencies import (
     AgencyPostRequestInfo,
     AgencyPostHandler,

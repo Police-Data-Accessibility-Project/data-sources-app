@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 from flask import Response, make_response
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.enums import ColumnPermissionEnum
 from db.exceptions import LocationDoesNotExistError
 from middleware.security.access_info.primary import AccessInfoPrimary
@@ -12,7 +12,6 @@ from middleware.common_response_formatting import (
     multiple_results_response,
 )
 from middleware.enums import Relations
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.primary_resource_logic.data_requests import (
     get_data_requests_subquery_params,
 )

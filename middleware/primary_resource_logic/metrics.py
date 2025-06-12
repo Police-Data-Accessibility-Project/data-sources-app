@@ -1,7 +1,6 @@
 from flask import make_response
 
-from db.client import DatabaseClient
-from middleware.flask_response_manager import FlaskResponseManager
+from db.client.core import DatabaseClient
 from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )

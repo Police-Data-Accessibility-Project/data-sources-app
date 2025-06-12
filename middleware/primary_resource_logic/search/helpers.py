@@ -7,12 +7,11 @@ from flask import Response, make_response, send_file
 from pydantic import BaseModel
 from werkzeug.exceptions import BadRequest
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.dynamic_request_logic.post import PostLogic
 from middleware.enums import JurisdictionSimplified, Relations, OutputFormatEnum
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto.dtos.search.request import SearchRequestsDTO
 from middleware.common_response_formatting import message_response
 from middleware.util.datetime import get_datetime_now

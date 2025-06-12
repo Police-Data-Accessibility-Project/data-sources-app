@@ -1,7 +1,7 @@
 from flask import Response
 from werkzeug.exceptions import BadRequest
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.models.exceptions import LocationNotFound
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.common_response_formatting import message_response

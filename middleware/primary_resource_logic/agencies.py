@@ -1,6 +1,6 @@
 from flask import Response, request, make_response
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.db_client_dataclasses import OrderByParameters
 from db.subquery_logic import SubqueryParameterManager
 from middleware.security.access_info.primary import AccessInfoPrimary
@@ -15,7 +15,6 @@ from middleware.dynamic_request_logic.supporting_classes import (
     IDInfo,
     PutPostRequestInfo,
 )
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto.schemas.agencies.put import AgenciesPutSchema
 from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
 from middleware.schema_and_dto.dtos.agencies.get_many import AgenciesGetManyDTO

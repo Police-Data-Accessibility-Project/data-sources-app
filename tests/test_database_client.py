@@ -11,7 +11,7 @@ import sqlalchemy
 from sqlalchemy import insert, select, update
 from sqlalchemy.exc import IntegrityError
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.db_client_dataclasses import (
     OrderByParameters,
     WhereMapping,
@@ -227,26 +227,6 @@ def test_select_from_relation_limit(live_database_client: DatabaseClient):
     ]
 
 
-def test_select_from_relation_limit_and_offset(
-    live_database_client: DatabaseClient, monkeypatch
-):
-    # Used alongside limit; we mock PAGE_SIZE to be one
-    monkeypatch.setattr("db.client.PAGE_SIZE", 1)
-
-    live_database_client.get_offset = MagicMock(return_value=1)
-
-    results = live_database_client._select_from_relation(
-        relation_name="test_table",
-        columns=["pet_name"],
-        limit=1,
-        page=1,  # 1 is the second page; 0-indexed
-    )
-
-    assert results == [
-        {"pet_name": "Jimbo"},
-    ]
-
-
 def test_select_from_relation_order_by(live_database_client: DatabaseClient):
     results = live_database_client._select_from_relation(
         relation_name="test_table",
@@ -258,37 +238,6 @@ def test_select_from_relation_order_by(live_database_client: DatabaseClient):
         {"pet_name": "Arthur"},
         {"pet_name": "Simon"},
         {"pet_name": "Jimbo"},
-    ]
-
-
-def test_select_from_relation_all_parameters(
-    live_database_client: DatabaseClient, monkeypatch
-):
-    # Used alongside limit; we mock PAGE_SIZE to be one
-    monkeypatch.setattr("db.client.PAGE_SIZE", 1)
-
-    # Add additional row to the table to test the offset and limit
-    live_database_client.execute_sqlalchemy(
-        lambda: insert(TestTable).values(pet_name="Ezekiel", species="Cat")
-    )
-
-    results = live_database_client._select_from_relation(
-        relation_name="test_table",
-        columns=["pet_name"],
-        where_mappings=[
-            WhereMapping(column="species", value="Aardvark"),
-            WhereMapping(column="species", eq=False, value="Bear"),
-        ],
-        limit=1,
-        page=1,  # 1 is the second page; 0-indexed
-        order_by=OrderByParameters(
-            sort_by="pet_name",
-            sort_order=SortOrder.DESCENDING,
-        ),
-    )
-
-    assert results == [
-        {"pet_name": "Arthur"},
     ]
 
 

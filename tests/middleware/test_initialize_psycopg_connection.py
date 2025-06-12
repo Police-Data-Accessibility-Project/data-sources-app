@@ -1,5 +1,5 @@
 from psycopg import Connection as PgConnection
-from db.initialize_psycopg_connection import (
+from db.helpers_.psycopg import (
     initialize_psycopg_connection,
 )
 

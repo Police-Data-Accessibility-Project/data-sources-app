@@ -2,7 +2,7 @@ from http import HTTPStatus
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from flask_restx import abort
 
-from db.helper_functions import get_db_client
+from db.helpers_.helpers import get_db_client
 from middleware.enums import PermissionsEnum
 from middleware.primary_resource_logic.permissions import PermissionsManager
 

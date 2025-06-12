@@ -1,12 +1,10 @@
-from http import HTTPStatus
 from typing import Optional
 
 from flask_jwt_extended import decode_token
-from flask_restx import abort
 from jwt import ExpiredSignatureError
 from werkzeug.exceptions import Forbidden, Unauthorized, BadRequest
 
-from db.helper_functions import get_db_client
+from db.helpers_.helpers import get_db_client
 from middleware.enums import PermissionsEnum
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.access_info.refresh import RefreshAccessInfo
@@ -38,10 +36,7 @@ def decode_jwt_with_purpose(token: str, purpose: JWTPurpose):
     try:
         return SimpleJWT.decode(token=token, expected_purpose=purpose)
     except ExpiredSignatureError:
-        abort(
-            code=HTTPStatus.UNAUTHORIZED,
-            message="Token is expired. Please request a new token.",
-        )
+        raise Unauthorized("Token is expired. Please request a new token.")
 
 
 def validate_refresh_token(token: str, **kwargs) -> Optional[RefreshAccessInfo]:

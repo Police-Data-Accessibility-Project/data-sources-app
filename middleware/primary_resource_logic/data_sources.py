@@ -1,14 +1,13 @@
-from http import HTTPStatus
 from typing import List, Optional
 
 from flask import make_response, Response
 from pydantic import BaseModel
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.db_client_dataclasses import OrderByParameters
 from db.subquery_logic import SubqueryParameterManager
 from db.enums import ApprovalStatus, RelationRoleEnum, ColumnPermissionEnum
-from db.result_formatter import ResultFormatter
+from db.helpers_.result_formatter import ResultFormatter
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.column_permission_logic import get_permitted_columns
 from middleware.dynamic_request_logic.delete import delete_entry
@@ -29,7 +28,6 @@ from middleware.dynamic_request_logic.supporting_classes import (
 )
 
 from middleware.enums import Relations, PermissionsEnum
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto.dtos.data_requests.by_id.source import (
     RelatedSourceByIDDTO,
 )

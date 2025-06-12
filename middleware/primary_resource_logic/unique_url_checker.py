@@ -2,9 +2,8 @@ from flask import Response, make_response
 from marshmallow import Schema, fields
 from pydantic import BaseModel
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.enums import ApprovalStatus
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.util.url import normalize_url
 from utilities.enums import SourceMappingEnum
 

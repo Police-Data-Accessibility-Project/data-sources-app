@@ -2,7 +2,7 @@ from datetime import datetime, timezone, timedelta
 
 from flask import Response, redirect
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from middleware.security.jwt.core import SimpleJWT
 from middleware.security.jwt.enums import JWTPurpose
 from middleware.exceptions import UserNotFoundError

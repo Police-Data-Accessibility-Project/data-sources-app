@@ -37,7 +37,7 @@ from endpoints.instantiations.typeahead_suggestions import (
 from flask_restx import Api
 
 from config import config, oauth, limiter, jwt
-from db.initialize_psycopg_connection import initialize_psycopg_connection
+from db.helpers_.psycopg import initialize_psycopg_connection
 from endpoints.instantiations.agencies import namespace_agencies
 from endpoints.instantiations.api_key import namespace_api_key
 from endpoints.instantiations.archives import namespace_archives

@@ -8,7 +8,7 @@ from flask_jwt_extended import (
 )
 from werkzeug.security import check_password_hash
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from middleware.security.jwt.core import SimpleJWT
 from middleware.security.jwt.enums import JWTPurpose
 from middleware.security.access_info.refresh import RefreshAccessInfo

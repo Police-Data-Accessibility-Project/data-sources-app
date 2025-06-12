@@ -4,8 +4,8 @@ from http import HTTPStatus
 from flask import Response, make_response
 from flask_restx import abort
 
-from db.client import DatabaseClient
-from db.helper_functions import get_db_client
+from db.client.core import DatabaseClient
+from db.helpers_.helpers import get_db_client
 from middleware.security.api_key.helpers import get_token_from_request_header
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.method_config.enums import AuthScheme

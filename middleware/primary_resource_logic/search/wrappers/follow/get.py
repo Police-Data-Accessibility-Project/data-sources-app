@@ -1,8 +1,7 @@
 from flask import Response, make_response
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from middleware.security.access_info.primary import AccessInfoPrimary
-from middleware.flask_response_manager import FlaskResponseManager
 
 
 def get_followed_searches(

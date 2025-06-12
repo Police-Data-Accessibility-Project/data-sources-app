@@ -3,7 +3,7 @@ from typing import Callable
 from flask import Response
 
 from config import limiter
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.info.instantiations import NO_AUTH_INFO
 from middleware.decorators.decorators import endpoint_info

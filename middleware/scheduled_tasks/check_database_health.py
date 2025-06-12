@@ -1,4 +1,4 @@
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from middleware.miscellaneous.table_count_logic import TableCountReferenceManager
 from middleware.third_party_interaction_logic.discord import DiscordPoster
 

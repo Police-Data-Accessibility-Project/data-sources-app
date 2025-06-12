@@ -8,7 +8,7 @@ from typing import Optional
 from flask import Response
 
 from db.DTOs import DataRequestInfoForGithub
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.enums import RequestStatus
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.common_response_formatting import message_response

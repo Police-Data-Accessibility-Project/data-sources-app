@@ -1,15 +1,12 @@
-from http import HTTPStatus
-
 from flask import make_response
 from werkzeug.exceptions import Forbidden
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
 from db.enums import RelationRoleEnum
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.common_response_formatting import format_list_response
 from middleware.enums import PermissionsEnum
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.primary_resource_logic.data_requests import (
     get_data_requests_with_permitted_columns,
 )
@@ -76,4 +73,4 @@ def get_user_by_id_wrapper(
     }
     json_body = {"data": data}
 
-    return FlaskResponseManager.make_response(data=json_body)
+    return make_response(json_body)

@@ -1,17 +1,13 @@
-from dataclasses import dataclass
 from http import HTTPStatus
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any
 
-import psycopg
 from flask import make_response
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from middleware.schema_and_dto.dtos.archives import (
     ArchivesGetRequestDTO,
 )
 from utilities.common import convert_dates_to_strings
-from psycopg import connection as PgConnection
-
 
 ARCHIVES_GET_COLUMNS = [
     "id",

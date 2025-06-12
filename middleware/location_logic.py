@@ -1,6 +1,6 @@
 from typing import Union
 
-from db.client import DatabaseClient
+from db.client.core import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
 from db.enums import LocationType
 from middleware.enums import Relations
