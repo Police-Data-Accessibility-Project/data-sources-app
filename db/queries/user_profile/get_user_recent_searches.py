@@ -15,8 +15,8 @@ from db.queries.builder import QueryBuilderBase
 
 class GetUserRecentSearchesQueryBuilder(QueryBuilderBase):
 
-    def __init__(self, user_id: int, session: Session):
-        super().__init__(session)
+    def __init__(self, user_id: int):
+        super().__init__()
         self.user_id = user_id
 
         # Labels

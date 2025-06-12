@@ -109,6 +109,8 @@ from db.models.table_reference import (
     SQL_ALCHEMY_TABLE_REFERENCE,
     convert_to_column_reference,
 )
+from db.queries.builder import QueryBuilderBase
+from db.queries.notifications.post import NotificationsPostQueryBuilder
 from db.queries.search.follow.delete import DeleteFollowQueryBuilder
 from db.queries.search.follow.get import GetUserFollowedSearchesQueryBuilder
 from db.queries.search.follow.post import CreateFollowQueryBuilder
@@ -976,7 +978,6 @@ class DatabaseClient:
         column_to_return="id",
     )
 
-    @session_manager
     def create_followed_search(
         self,
         user_id: int,
@@ -989,9 +990,8 @@ class DatabaseClient:
             location_id=location_id,
             record_types=record_types,
             record_categories=record_categories,
-            session=self.session,
         )
-        builder.run()
+        return self.run_query_builder(builder)
 
     def create_county(self, name: str, fips: str, state_id: int) -> int:
         """
@@ -1327,6 +1327,10 @@ class DatabaseClient:
         _select_from_relation, relation_name=Relations.RELATED_SOURCES.value
     )
 
+    @session_manager
+    def run_query_builder(self, query_builder: QueryBuilderBase):
+        return query_builder.build(self.session)
+
     def _select_single_entry_from_relation(
         self,
         relation_name: str,
@@ -1430,7 +1434,6 @@ class DatabaseClient:
         _delete_from_table, table_name=Relations.LINK_LOCATIONS_DATA_REQUESTS.value
     )
 
-    @session_manager
     def delete_followed_search(
         self,
         user_id: int,
@@ -1443,9 +1446,8 @@ class DatabaseClient:
             location_id=location_id,
             record_types=record_types,
             record_categories=record_categories,
-            session=self.session,
         )
-        builder.run()
+        return self.run_query_builder(builder)
 
     delete_data_source_agency_relation = partialmethod(
         _delete_from_table, table_name=Relations.LINK_AGENCIES_DATA_SOURCES.value
@@ -1585,12 +1587,10 @@ class DatabaseClient:
             column_references.append(column_reference)
         return column_references
 
-    @session_manager
     def get_user_followed_searches(self, user_id: int) -> dict[str, Any]:
-        builder = GetUserFollowedSearchesQueryBuilder(
-            session=self.session, user_id=user_id
+        return self.run_query_builder(
+            GetUserFollowedSearchesQueryBuilder(user_id=user_id)
         )
-        return builder.run()
 
     DataRequestIssueInfo = namedtuple(
         "DataRequestIssueInfo",
@@ -1729,65 +1729,8 @@ class DatabaseClient:
         )
         return self.session.execute(query).one()[0]
 
-    @session_manager
     def get_next_user_event_batch(self) -> Optional[EventBatch]:
-        """
-        Get next user
-
-        """
-        query = (
-            select(User)
-            .where(
-                or_(
-                    exists(
-                        select(DataSourceUserNotificationQueue.id).where(
-                            and_(
-                                DataSourceUserNotificationQueue.user_id == User.id,
-                                DataSourceUserNotificationQueue.sent_at.is_(None),
-                            )
-                        )
-                    ),
-                    exists(
-                        select(DataRequestUserNotificationQueue.id).where(
-                            and_(
-                                DataRequestUserNotificationQueue.user_id == User.id,
-                                DataRequestUserNotificationQueue.sent_at.is_(None),
-                            )
-                        )
-                    ),
-                )
-            )
-            .options(
-                selectinload(User.data_request_events),
-                selectinload(User.data_source_events),
-            )
-            .limit(1)
-        )
-
-        raw_results = self.session.execute(query).first()
-        if raw_results is None:
-            return None
-        user = raw_results[0]
-        event_infos = []
-        for event in user.data_request_events:
-            event_info = EventInfo(
-                event_id=event.id,
-                event_type=EventType(event.event_type),
-                entity_id=event.data_request.id,
-                entity_type=EntityType.DATA_REQUEST,
-                entity_name=event.data_request.title,
-            )
-            event_infos.append(event_info)
-        for event in user.data_source_events:
-            event_info = EventInfo(
-                event_id=event.id,
-                event_type=EventType(event.event_type),
-                entity_id=event.data_source.id,
-                entity_type=EntityType.DATA_SOURCE,
-                entity_name=event.data_source.name,
-            )
-            event_infos.append(event_info)
-        return EventBatch(user_id=user.id, user_email=user.email, events=event_infos)
+        return self.run_query_builder(NotificationsPostQueryBuilder())
 
     @session_manager
     def mark_user_events_as_sent(self, user_id: int):
@@ -1857,10 +1800,8 @@ class DatabaseClient:
             )
             self.session.execute(query)
 
-    @session_manager
     def get_user_recent_searches(self, user_id: int):
-        builder = GetUserRecentSearchesQueryBuilder(user_id, self.session)
-        return builder.run()
+        return self.run_query_builder(GetUserRecentSearchesQueryBuilder(user_id))
 
     def get_record_type_id_by_name(self, record_type_name: str):
         return self._select_single_entry_from_relation(

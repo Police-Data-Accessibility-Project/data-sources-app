@@ -14,8 +14,8 @@ from db.queries.builder import QueryBuilderBase
 
 class GetUserFollowedSearchesQueryBuilder(QueryBuilderBase):
 
-    def __init__(self, session: Session, user_id: int):
-        super().__init__(session)
+    def __init__(self, user_id: int):
+        super().__init__()
         self.user_id = user_id
 
     def location_selectin_loads(self):
