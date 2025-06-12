@@ -1,15 +1,13 @@
 import datetime
-import re
 import json
+import re
 from enum import Enum
-from http import HTTPStatus
 from typing import Type, Union
 
 from alembic import command
 from alembic.config import Config
-
-from flask_restx import abort
 from sqlalchemy import text
+from werkzeug.exceptions import BadRequest
 
 from middleware.util.env import get_env_variable
 
@@ -86,9 +84,8 @@ def get_valid_enum_value(enum_type: Type[Enum], value: str) -> Enum:
     try:
         return match_string_to_enum(value, enum_type)
     except ValueError:
-        abort(
-            code=HTTPStatus.BAD_REQUEST,
-            message=f"Invalid {enum_type.__name__} '{value}'. Must be one of the following: {[item.value for item in enum_type]}",
+        raise BadRequest(
+            f"Invalid {enum_type.__name__} '{value}'. Must be one of the following: {[item.value for item in enum_type]}"
         )
 
 

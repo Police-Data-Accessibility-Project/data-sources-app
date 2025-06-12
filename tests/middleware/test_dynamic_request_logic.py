@@ -1,4 +1,3 @@
-from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
@@ -21,12 +20,10 @@ from middleware.dynamic_request_logic.get.many import (
 )
 from middleware.dynamic_request_logic.put import put_entry
 from middleware.dynamic_request_logic.supporting_classes import IDInfo
-
 from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     EntryDataResponseSchema,
 )
 from middleware.util.dynamic import call_if_not_none, execute_if_not_none
-from tests.conftest import FakeAbort, mock_flask_response_manager
 from tests.helper_scripts.common_mocks_and_patches import (
     patch_and_return_mock,
     multi_monkeypatch,

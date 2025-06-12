@@ -41,7 +41,6 @@ class GetAccessInfoFromJWTOrAPIKeyMocks(DynamicMagicMock):
     get_jwt_identity: MagicMock
     AccessInfo: MagicMock
     get_user_permissions: MagicMock
-    abort: MagicMock
 
 
 @pytest.fixture
@@ -52,7 +51,7 @@ def get_access_info_mocks():
 
 
 @pytest.mark.parametrize(
-    "access_info, permissions, permission_denied_abort_called",
+    "access_info, permissions, raises_forbidden",
     (
         (
             AccessInfoPrimary(
@@ -80,10 +79,10 @@ def get_access_info_mocks():
     ),
 )
 def test_check_permissions_with_access_info(
-    access_info, permissions, permission_denied_abort_called, monkeypatch
+    access_info, permissions, raises_forbidden, monkeypatch
 ):
 
-    if permission_denied_abort_called:
+    if raises_forbidden:
         with pytest.raises(Forbidden):
             check_permissions_with_access_info(access_info, permissions)
     else:

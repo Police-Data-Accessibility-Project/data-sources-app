@@ -4,6 +4,7 @@ from flask import Response, make_response
 from flask_restx import abort
 from marshmallow import Schema, fields
 from pydantic import BaseModel
+from werkzeug.exceptions import BadRequest
 
 from db.client.core import DatabaseClient
 from middleware.common_response_formatting import message_response
@@ -70,8 +71,7 @@ class PermissionsManager:
         try:
             user_info = db_client.get_user_info(user_email)
         except UserNotFoundError:
-            abort(HTTPStatus.BAD_REQUEST, "User not found")
-            return
+            raise BadRequest("User not found.")
         self.db_client = db_client
         self.user_email = user_email
         self.user_id = user_info.id

@@ -16,6 +16,7 @@ from http import HTTPStatus
 
 from flask import request
 from flask_restx import fields, abort
+from werkzeug.exceptions import Unauthorized, InternalServerError
 
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.enums import PermissionsEnum, AccessTypeEnum
@@ -55,11 +56,10 @@ def check_dev_password(dev_password: str) -> bool:
     try:
         expected_dev_password = get_env_variable("DEVELOPMENT_PASSWORD")
         if dev_password != expected_dev_password:
-            abort(HTTPStatus.UNAUTHORIZED, message="Incorrect development password.")
+            raise Unauthorized("Incorrect development password.")
     except ValueError:
-        abort(
-            HTTPStatus.INTERNAL_SERVER_ERROR,
-            message="Server DEVELOPMENT_PASSWORD not set. Please set the DEVELOPMENT_PASSWORD as an environment variable.",
+        raise InternalServerError(
+            "Server DEVELOPMENT_PASSWORD not set. Please set the DEVELOPMENT_PASSWORD as an environment variable."
         )
 
 

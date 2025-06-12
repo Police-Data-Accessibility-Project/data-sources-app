@@ -1,16 +1,14 @@
 from http import HTTPStatus
-
-import pytest
 from unittest.mock import MagicMock
 
+import pytest
 from werkzeug.exceptions import Forbidden
 
+from middleware.decorators.api_key_required import api_key_required
 from middleware.security.helpers import (
     check_permissions,
 )
-from middleware.decorators.api_key_required import api_key_required
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
-from tests.helper_scripts.common_mocks_and_patches import patch_abort
 
 PATCH_ROOT = "middleware.security.helpers"
 
@@ -27,17 +25,11 @@ def dummy_route():
 DUMMY_AUTHORIZATION = {"Authorization": "Basic valid_api_key"}
 
 
-@pytest.fixture
-def mock_abort(monkeypatch) -> MagicMock:
-    return patch_abort(monkeypatch, path=PATCH_ROOT)
-
-
 class CheckPermissionsMocks(DynamicMagicMock):
     get_jwt_identity: MagicMock
     verify_jwt_in_request: MagicMock
     DatabaseClient: MagicMock
     PermissionsManager: MagicMock
-    abort: MagicMock
 
 
 @pytest.fixture
@@ -70,7 +62,6 @@ def test_check_permissions_happy_path(check_permissions_mocks):
     check_permissions(mock.permission)
 
     assert_pre_conditional_check_permission_mocks(mock)
-    mock.abort.assert_not_called()
 
 
 def test_check_permissions_user_does_not_have_permission(check_permissions_mocks):

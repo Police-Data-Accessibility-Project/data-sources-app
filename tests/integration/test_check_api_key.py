@@ -8,35 +8,24 @@ decorators that call `check_api_key` do not currently
 test the different possible outcomes of `check_api_key`
 """
 
-from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
+from werkzeug.exceptions import Unauthorized
 
-from middleware.exceptions import (
-    InvalidAuthorizationHeaderException,
-    InvalidAPIKeyException,
-)
 from middleware.primary_resource_logic.api_key import (
-    INVALID_API_KEY_MESSAGE,
     check_api_key,
 )
+from tests.conftest import test_data_creator_flask
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_mocks_and_patches import (
     patch_request_headers,
-    patch_abort,
 )
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from tests.conftest import test_data_creator_flask, monkeysession
 
 PATCH_API_KEY_ROOT = "middleware.primary_resource_logic.api_key"
-
-
-@pytest.fixture
-def mock_abort(monkeypatch) -> MagicMock:
-    return patch_abort(monkeypatch, path=PATCH_API_KEY_ROOT)
 
 
 PATCH_REQUESTS_ROOT = "middleware.security.access_logic"
@@ -64,7 +53,7 @@ def test_check_api_key_happy_path(
 
 
 #
-def test_check_api_key_api_key_not_associated_with_user(monkeypatch, mock_abort):
+def test_check_api_key_api_key_not_associated_with_user(monkeypatch):
 
     patch_request_headers(
         monkeypatch,
@@ -72,8 +61,8 @@ def test_check_api_key_api_key_not_associated_with_user(monkeypatch, mock_abort)
         request_headers={"Authorization": "Basic invalid_api_key"},
     )
 
-    check_api_key()
-    mock_abort.assert_called_once_with(HTTPStatus.UNAUTHORIZED, "Invalid API Key")
+    with pytest.raises(Unauthorized):
+        check_api_key()
 
 
 class CheckApiKeyMocks(DynamicMagicMock):

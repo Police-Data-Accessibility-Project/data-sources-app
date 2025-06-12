@@ -11,7 +11,6 @@ from sqlalchemy import create_engine
 
 from config import limiter
 from db.client.core import DatabaseClient
-from tests.helper_scripts.common_mocks_and_patches import patch_and_return_mock
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
 )
@@ -94,30 +93,6 @@ def bypass_jwt_required(monkeypatch):
 
 
 @pytest.fixture
-def bypass_authentication_required(monkeypatch):
-    """
-    A fixture to bypass the authentication required decorator for testing
-    :param monkeypatch:
-    :return:
-    """
-    access_info_mock = MagicMock()
-    monkeypatch.setattr(
-        "middleware.decorators.get_authentication",
-        lambda a, b, no_auth: access_info_mock,
-    )
-    return access_info_mock
-
-
-@pytest.fixture
-def mock_database_client(monkeypatch):
-    mock = patch_and_return_mock(
-        f"resources.PsycopgResource.DatabaseClient", monkeypatch
-    )
-    mock.return_value = MagicMock()
-    return mock.return_value
-
-
-@pytest.fixture
 def live_database_client() -> DatabaseClient:
     """
     Returns a database client with a live connection to the database
@@ -150,27 +125,6 @@ def test_table_data(live_database_client: DatabaseClient):
     ('Simon', 'Bear');
     """
     )
-
-
-class FakeAbort(Exception):
-    pass
-
-
-@pytest.fixture
-def mock_flask_response_manager(monkeypatch):
-    """
-    Mock the flask-native functions embedded within the FlaskResponseManager
-    :param monkeypatch:
-    :return:
-    """
-    mock = MagicMock()
-    monkeypatch.setattr(
-        "middleware.flask_response_manager.make_response", mock.make_response
-    )
-    monkeypatch.setattr("middleware.flask_response_manager.abort", mock.abort)
-    # Create a fake abort exception to use in tests
-    mock.abort.side_effect = FakeAbort
-    return mock
 
 
 @pytest.fixture

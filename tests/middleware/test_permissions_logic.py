@@ -1,10 +1,12 @@
-import pytest
-from unittest.mock import MagicMock, patch, call
 from http import HTTPStatus
-from flask import Response
+from unittest.mock import MagicMock, patch, call
 
-from middleware.exceptions import UserNotFoundError
+import pytest
+from flask import Response
+from werkzeug.exceptions import BadRequest
+
 from middleware.enums import PermissionsEnum, PermissionsActionEnum
+from middleware.exceptions import UserNotFoundError
 from middleware.primary_resource_logic.permissions import (
     PermissionsManager,
     manage_user_permissions,
@@ -18,7 +20,6 @@ PATCH_ROOT = "middleware.primary_resource_logic.permissions"
 class PermissionsManagerMocks(DynamicMagicMock):
     make_response: MagicMock
     message_response: MagicMock
-    abort: MagicMock
 
 
 @pytest.fixture
@@ -34,9 +35,9 @@ def mock():
 
 def test_permissions_manager_init_user_not_found(mock):
     mock.db_client.get_user_info.side_effect = UserNotFoundError("User not found")
-    PermissionsManager(mock.db_client, mock.user_email)
+    with pytest.raises(BadRequest):
+        PermissionsManager(mock.db_client, mock.user_email)
     mock.db_client.get_user_info.assert_called_once_with(mock.user_email)
-    mock.abort.assert_called_once_with(HTTPStatus.BAD_REQUEST, "User not found")
     mock.db_client.get_user_permissions.assert_not_called()
 
 

@@ -2,14 +2,12 @@ import uuid
 from http import HTTPStatus
 
 from flask import Response, make_response
-from flask_restx import abort
 from jwt import ExpiredSignatureError
 from pydantic import BaseModel
+from werkzeug.exceptions import Unauthorized
 
 from db.client.core import DatabaseClient
 from db.enums import ExternalAccountTypeEnum
-from middleware.security.jwt.core import SimpleJWT
-from middleware.security.jwt.enums import JWTPurpose
 from middleware.common_response_formatting import message_response
 from middleware.custom_dataclasses import GithubUserInfo
 from middleware.exceptions import UserNotFoundError
@@ -19,6 +17,8 @@ from middleware.primary_resource_logic.user_queries import (
     UserRequestDTO,
 )
 from middleware.schema_and_dto.dtos.github.login import LoginWithGithubRequestDTO
+from middleware.security.jwt.core import SimpleJWT
+from middleware.security.jwt.enums import JWTPurpose
 from middleware.third_party_interaction_logic.callback.oauth import (
     get_github_user_id,
     get_github_user_email,
@@ -109,7 +109,7 @@ def get_github_user_info(access_token: str) -> GithubUserInfo:
             access_token, expected_purpose=JWTPurpose.GITHUB_ACCESS_TOKEN
         )
     except ExpiredSignatureError:
-        abort(HTTPStatus.UNAUTHORIZED, "Access token has expired.")
+        raise Unauthorized("Access token has expired.")
     gh_access_token = simple_jwt.sub
     return GithubUserInfo(
         user_id=get_github_user_id(gh_access_token),
