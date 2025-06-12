@@ -3,7 +3,6 @@ from typing import Optional
 
 from marshmallow import Schema
 
-from endpoints.schema_config.enums import SchemaConfigs
 from endpoints.schema_config.instantiations.search.follow.delete import (
     SearchFollowDeleteEndpointSchemaConfig,
 )

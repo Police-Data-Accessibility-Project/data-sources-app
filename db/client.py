@@ -1727,6 +1727,15 @@ class DatabaseClient:
             self.session.add(queue)
 
     @session_manager
+    def get_national_location_id(self):
+        query = self.session.query(Location.id).where(
+            Location.state_id.is_(None),
+            Location.county_id.is_(None),
+            Location.locality_id.is_(None),
+        )
+        return self.session.execute(query).one()[0]
+
+    @session_manager
     def get_next_user_event_batch(self) -> Optional[EventBatch]:
         """
         Get next user

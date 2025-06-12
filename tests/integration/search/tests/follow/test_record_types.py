@@ -1,8 +1,5 @@
-from typing import Optional
-
 from db.models.implementations.link import LinkFollowRecordType
 from middleware.enums import RecordTypes
-from tests.helper_scripts.constants import SEARCH_FOLLOW_BASE_ENDPOINT
 from tests.integration.search.constants import TEST_STATE, TEST_COUNTY, TEST_LOCALITY
 from tests.integration.search.search_test_setup import SearchTestSetup
 from utilities.enums import RecordCategories

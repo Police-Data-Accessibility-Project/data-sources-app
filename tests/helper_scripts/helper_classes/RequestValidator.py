@@ -125,6 +125,9 @@ from endpoints.schema_config.instantiations.search.follow.delete import (
 from endpoints.schema_config.instantiations.search.follow.get import (
     SearchFollowGetEndpointSchemaConfig,
 )
+from endpoints.schema_config.instantiations.search.follow.national import (
+    SearchFollowNationalEndpointSchemaConfig,
+)
 from endpoints.schema_config.instantiations.search.follow.post import (
     SearchFollowPostEndpointSchemaConfig,
 )
@@ -492,12 +495,15 @@ class RequestValidator:
     @staticmethod
     def _get_search_query_params(
         record_categories: Optional[list[RecordCategories]],
-        location_id: int,
+        location_id: Optional[int] = None,
         record_types: Optional[list[RecordTypes]] = None,
     ):
-        query_params = {
-            "location_id": location_id,
-        }
+        if location_id is not None:
+            query_params = {
+                "location_id": location_id,
+            }
+        else:
+            query_params = {}
         if record_categories is not None:
             query_params["record_categories"] = ",".join(
                 [rc.value for rc in record_categories]
@@ -537,6 +543,50 @@ class RequestValidator:
                     **kwargs,
                 }
             },
+        )
+
+    def follow_national_search(
+        self,
+        headers: dict,
+        record_categories: Optional[list[RecordCategories]] = None,
+        record_types: Optional[list[RecordTypes]] = None,
+        expected_json_content: Optional[dict] = None,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+    ):
+        query_params = self._get_search_query_params(
+            record_categories=record_categories,
+            record_types=record_types,
+        )
+
+        return self.post(
+            endpoint="/api/search/follow/national",
+            headers=headers,
+            expected_json_content=expected_json_content,
+            expected_response_status=expected_response_status,
+            expected_schema=SearchFollowNationalEndpointSchemaConfig.primary_output_schema,
+            query_parameters=query_params,
+        )
+
+    def unfollow_national_search(
+        self,
+        headers: dict,
+        record_categories: Optional[list[RecordCategories]] = None,
+        record_types: Optional[list[RecordTypes]] = None,
+        expected_json_content: Optional[dict] = None,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+    ):
+        query_params = self._get_search_query_params(
+            record_categories=record_categories,
+            record_types=record_types,
+        )
+
+        return self.delete(
+            endpoint="/api/search/follow/national",
+            headers=headers,
+            expected_json_content=expected_json_content,
+            expected_response_status=expected_response_status,
+            expected_schema=SearchFollowNationalEndpointSchemaConfig.primary_output_schema,
+            query_parameters=query_params,
         )
 
     def follow_search(
