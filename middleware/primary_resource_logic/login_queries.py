@@ -6,6 +6,7 @@ from flask import Response, make_response, jsonify
 from flask_jwt_extended import (
     create_refresh_token,
 )
+from werkzeug.exceptions import Unauthorized
 from werkzeug.security import check_password_hash
 
 from db.client.core import DatabaseClient
@@ -64,13 +65,13 @@ def try_logging_in(db_client: DatabaseClient, dto: UserRequestDTO) -> Response:
     user_info = get_user_info(db_client, dto)
     if user_info is None:
         if db_client.pending_user_exists(dto.email):
-            return unauthorized_response("Email not verified.")
-        return unauthorized_response(INVALID_MESSAGE)
+            raise Unauthorized("Email not verified.")
+        raise Unauthorized(INVALID_MESSAGE)
     valid_password_hash = check_password_hash(
         pwhash=user_info.password_digest, password=dto.password
     )
     if not valid_password_hash:
-        return unauthorized_response(INVALID_MESSAGE)
+        raise Unauthorized(INVALID_MESSAGE)
     return login_response(user_info)
 
 
@@ -79,15 +80,6 @@ def get_user_info(db_client, dto) -> Optional[DatabaseClient.UserInfo]:
         return db_client.get_user_info(dto.email)
     except UserNotFoundError:
         return None
-
-
-def unauthorized_response(msg: str = "Unauthorized") -> Response:
-    """
-    Creates a response object for an unauthorized request.
-
-    :return: A response object with a message and status code.
-    """
-    return make_response({"message": msg}, HTTPStatus.UNAUTHORIZED)
 
 
 def login_response(
