@@ -1,6 +1,8 @@
 from http import HTTPStatus
 from typing import Optional
 
+from werkzeug.exceptions import Forbidden
+
 from middleware.common_response_formatting import message_response
 from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.common_functions import check_for_id
@@ -14,10 +16,7 @@ from middleware.util.dynamic import call_if_not_none
 
 def check_for_delete_permissions(check_function: DeferredFunction, entry_name: str):
     if not check_function.execute():
-        FlaskResponseManager.abort(
-            code=HTTPStatus.FORBIDDEN,
-            message=f"You do not have permission to delete this {entry_name}.",
-        )
+        raise Forbidden(f"You do not have permission to delete this {entry_name}.")
 
 
 def delete_entry(

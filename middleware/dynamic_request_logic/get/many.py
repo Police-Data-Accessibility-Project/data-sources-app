@@ -2,6 +2,7 @@ from http import HTTPStatus
 from typing import Optional
 
 from flask import Response
+from werkzeug.exceptions import Forbidden
 
 from db.enums import ColumnPermissionEnum, RelationRoleEnum
 from db.subquery_logic import SubqueryParameters
@@ -92,7 +93,7 @@ def check_requested_columns(requested_columns: list[str], permitted_columns: lis
     """
     invalid_columns = get_invalid_columns(requested_columns, permitted_columns)
     if len(invalid_columns) > 0:
-        FlaskResponseManager.abort(
-            code=HTTPStatus.FORBIDDEN,
-            message=f"The following columns are either invalid or not permitted for your access permissions: {invalid_columns}",
+        raise Forbidden(
+            f"The following columns are either invalid or not permitted "
+            f"for your access permissions: {invalid_columns}"
         )

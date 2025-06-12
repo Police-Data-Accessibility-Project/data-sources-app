@@ -2,6 +2,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
+from werkzeug.exceptions import Forbidden, NotFound
 
 from db.db_client_dataclasses import WhereMapping
 from db.enums import ColumnPermissionEnum
@@ -228,13 +229,10 @@ def test_check_for_delete_permission_check_function_returns_true(mock_abort):
 def test_check_for_delete_permission_check_function_returns_false(mock_abort):
     mock_check_function = MagicMock()
     mock_check_function.execute.return_value = False
-    check_for_delete_permissions(
-        check_function=mock_check_function, entry_name="test entry"
-    )
-    mock_abort.assert_called_once_with(
-        code=HTTPStatus.FORBIDDEN,
-        message="You do not have permission to delete this test entry.",
-    )
+    with pytest.raises(Forbidden):
+        check_for_delete_permissions(
+            check_function=mock_check_function, entry_name="test entry"
+        )
 
 
 def test_call_if_not_none_is_none():
@@ -308,7 +306,6 @@ def test_check_requested_columns_happy_path(mock_flask_response_manager, monkeyp
     mock.get_invalid_columns.assert_called_once_with(
         mock.requested_columns, mock.permitted_columns
     )
-    mock_flask_response_manager.abort.assert_not_called()
 
 
 def test_check_requested_columns_invalid_columns(
@@ -319,7 +316,7 @@ def test_check_requested_columns_invalid_columns(
     monkeypatch.setattr(
         f"{PATCH_ROOT}.get.many.get_invalid_columns", mock.get_invalid_columns
     )
-    with pytest.raises(FakeAbort):
+    with pytest.raises(Forbidden):
         check_requested_columns(
             requested_columns=mock.requested_columns,
             permitted_columns=mock.permitted_columns,
@@ -327,10 +324,6 @@ def test_check_requested_columns_invalid_columns(
 
     mock.get_invalid_columns.assert_called_once_with(
         mock.requested_columns, mock.permitted_columns
-    )
-    mock_flask_response_manager.abort.assert_called_once_with(
-        code=HTTPStatus.FORBIDDEN,
-        message=f"The following columns are either invalid or not permitted for your access permissions: {mock.get_invalid_columns.return_value}",
     )
 
 
@@ -350,7 +343,6 @@ def test_check_for_id_happy_path(mock_flask_response_manager):
         where_mappings=mock.id_info.where_mappings,
         columns=[mock.id_info.id_column_name],
     )
-    mock_flask_response_manager.abort.assert_not_called()
 
 
 def test_check_for_id_no_id(mock_flask_response_manager):
@@ -358,7 +350,7 @@ def test_check_for_id_no_id(mock_flask_response_manager):
     mock.db_client._select_from_relation.return_value = []
     mock.id_info.id_column_name = "id"
 
-    with pytest.raises(FakeAbort) as e:
+    with pytest.raises(NotFound) as e:
         check_for_id(
             table_name=mock.table_name, id_info=mock.id_info, db_client=mock.db_client
         )
@@ -367,8 +359,4 @@ def test_check_for_id_no_id(mock_flask_response_manager):
         relation_name=mock.table_name,
         where_mappings=mock.id_info.where_mappings,
         columns=[mock.id_info.id_column_name],
-    )
-    mock_flask_response_manager.abort.assert_called_once_with(
-        code=HTTPStatus.NOT_FOUND,
-        message=f"Entry for {mock.id_info.where_mappings} not found.",
     )

@@ -4,7 +4,7 @@ from typing import Union, Optional
 
 import jwt
 from jwt import InvalidSignatureError
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, Unauthorized
 
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.security.jwt.constants import ALGORITHM
@@ -47,7 +47,7 @@ class SimpleJWT:
                 jwt=token, key=get_secret_key(decoded_purpose), algorithms=[ALGORITHM]
             )
         except InvalidSignatureError as e:
-            FlaskResponseManager.abort(code=HTTPStatus.UNAUTHORIZED, message=str(e))
+            raise Unauthorized(str(e))
 
         sub = payload["sub"]
         del payload["sub"]

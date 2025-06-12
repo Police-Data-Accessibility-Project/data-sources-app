@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 
 import pytest
+from werkzeug.exceptions import Forbidden
 
 from middleware.security.access_logic import (
     get_authorization_header_from_request,
@@ -82,14 +83,8 @@ def test_check_permissions_with_access_info(
     access_info, permissions, permission_denied_abort_called, monkeypatch
 ):
 
-    mock_permission_denied_abort = MagicMock()
-    monkeypatch.setattr(
-        "middleware.flask_response_manager.FlaskResponseManager.permission_denied_abort",
-        mock_permission_denied_abort,
-    )
-    check_permissions_with_access_info(access_info, permissions)
-
     if permission_denied_abort_called:
-        mock_permission_denied_abort.assert_called_once()
+        with pytest.raises(Forbidden):
+            check_permissions_with_access_info(access_info, permissions)
     else:
-        mock_permission_denied_abort.assert_not_called()
+        check_permissions_with_access_info(access_info, permissions)

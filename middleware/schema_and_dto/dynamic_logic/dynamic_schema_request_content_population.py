@@ -5,6 +5,7 @@ from typing import Type
 import marshmallow
 from flask import request
 from pydantic import BaseModel
+from werkzeug.exceptions import BadRequest
 
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.schema_and_dto.types import SchemaTypes, DTOTypes
@@ -73,7 +74,7 @@ def validate_data(data, schema_obj):
     try:
         intermediate_data = schema_obj.load(data)
     except Exception as e:
-        FlaskResponseManager.abort(code=HTTPStatus.BAD_REQUEST, message=str(e))
+        raise BadRequest(str(e))
     return intermediate_data
 
 

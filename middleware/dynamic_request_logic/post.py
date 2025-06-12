@@ -4,6 +4,7 @@ from typing import Optional, Type, Any
 import psycopg.errors
 import sqlalchemy
 from flask import Response
+from werkzeug.exceptions import Conflict, BadRequest, InternalServerError
 
 from middleware.column_permission_logic import (
     RelationRoleParameters,
@@ -57,20 +58,10 @@ class PostLogic(PutPostBase):
             )
         except sqlalchemy.exc.IntegrityError as e:
             if e.orig.sqlstate == "23505":
-                FlaskResponseManager.abort(
-                    code=HTTPStatus.CONFLICT,
-                    message=f"{self.mp.entry_name} already exists.",
-                )
-            elif e.orig.sqlstate == "23503":
-                FlaskResponseManager.abort(
-                    code=HTTPStatus.BAD_REQUEST,
-                    message=f"{self.mp.entry_name} not found.",
-                )
-            else:
-                FlaskResponseManager.abort(
-                    code=HTTPStatus.INTERNAL_SERVER_ERROR,
-                    message=f"Error creating {self.mp.entry_name}.",
-                )
+                raise Conflict(f"{self.mp.entry_name} already exists.")
+            if e.orig.sqlstate == "23503":
+                raise BadRequest(f"{self.mp.entry_name} not found.")
+            raise InternalServerError(f"Error creating {self.mp.entry_name}.")
 
     def make_response(self) -> Response:
         return created_id_response(
@@ -85,9 +76,8 @@ def post_entry_with_handler(
     request = PutPostRequestInfo(entry=dict(dto), dto=dto)
     handler.mass_execute([request])
     if request.error_message is not None:
-        FlaskResponseManager.abort(
-            code=HTTPStatus.BAD_REQUEST, message=request.error_message
-        )
+        raise BadRequest(request.error_message)
+
     return created_id_response(
         new_id=str(request.entry_id), message=f"{handler.mp.entry_name} created."
     )
@@ -125,7 +115,4 @@ def try_to_add_entry(middleware_parameters: MiddlewareParameters, entry: dict) -
             middleware_parameters.db_client, column_value_mappings=entry
         )
     except psycopg.errors.UniqueViolation:
-        FlaskResponseManager.abort(
-            code=HTTPStatus.CONFLICT,
-            message=f"{middleware_parameters.entry_name} ({entry}) already exists.",
-        )
+        raise Conflict(f"{middleware_parameters.entry_name} ({entry}) already exists.")

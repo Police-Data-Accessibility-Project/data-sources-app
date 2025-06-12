@@ -4,11 +4,10 @@ from typing import Optional
 from flask_jwt_extended import decode_token
 from flask_restx import abort
 from jwt import ExpiredSignatureError
-from werkzeug.exceptions import Forbidden
+from werkzeug.exceptions import Forbidden, Unauthorized, BadRequest
 
 from db.helper_functions import get_db_client
 from middleware.enums import PermissionsEnum
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.access_info.refresh import RefreshAccessInfo
 from middleware.security.api_key.core import ApiKey
@@ -49,15 +48,13 @@ def validate_refresh_token(token: str, **kwargs) -> Optional[RefreshAccessInfo]:
     try:
         decode_token(token)
     except ExpiredSignatureError:
-        FlaskResponseManager.abort(
-            code=HTTPStatus.UNAUTHORIZED, message="Refresh token has expired"
-        )
+        raise Unauthorized("Refresh token has expired")
+
     decoded_refresh_token = decode_token(token)
     token_type: str = decoded_refresh_token["type"]
     # The below is flagged as a false positive through bandit security linting, misidentifying it as a password
     if token_type != "refresh":  # nosec
-        FlaskResponseManager.abort(
-            code=HTTPStatus.BAD_REQUEST, message="Invalid refresh token"
-        )
+        raise BadRequest("Invalid refresh token")
+
     decoded_email = decoded_refresh_token["email"]
     return RefreshAccessInfo(user_email=decoded_email)

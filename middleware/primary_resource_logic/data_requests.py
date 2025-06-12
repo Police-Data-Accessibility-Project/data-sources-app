@@ -2,6 +2,7 @@ from http import HTTPStatus
 from typing import Optional
 
 from flask import Response
+from werkzeug.exceptions import Forbidden
 
 from db.client import DatabaseClient
 from db.db_client_dataclasses import WhereMapping, OrderByParameters
@@ -366,10 +367,7 @@ def get_data_request_related_locations(
 
 def check_has_admin_or_owner_role(relation_role: RelationRoleEnum):
     if relation_role not in [RelationRoleEnum.OWNER, RelationRoleEnum.ADMIN]:
-        FlaskResponseManager.abort(
-            code=HTTPStatus.FORBIDDEN,
-            message="User does not have permission to perform this action.",
-        )
+        raise Forbidden("User does not have permission to perform this action.")
 
 
 class CreateDataRequestRelatedSourceLogic(PostLogic):
@@ -488,10 +486,8 @@ def withdraw_data_request_wrapper(
     if not is_creator_or_admin(
         access_info=access_info, data_request_id=data_request_id, db_client=db_client
     ):
-        FlaskResponseManager.abort(
-            code=HTTPStatus.FORBIDDEN,
-            message="User does not have permission to perform this action.",
-        )
+        raise Forbidden("User does not have permission to perform this action.")
+
     db_client.update_data_request(
         entry_id=data_request_id,
         column_edit_mappings={"request_status": RequestStatus.REQUEST_WITHDRAWN.value},

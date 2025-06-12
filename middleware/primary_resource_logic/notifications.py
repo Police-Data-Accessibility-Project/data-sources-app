@@ -3,6 +3,7 @@ from http import HTTPStatus
 
 from flask import Response
 from pydantic import BaseModel
+from werkzeug.exceptions import InternalServerError
 
 from db.client import DatabaseClient
 from db.enums import EventType
@@ -231,10 +232,11 @@ def send_notifications(
             count += 1
             next_event_batch = db_client.get_next_user_event_batch()
         except Exception as e:
-            FlaskResponseManager.abort(
-                message=f"Error sending notification for event batch for user {next_event_batch.user_id}: {e}. Sent {count} batches prior to this error.",
-                code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            raise InternalServerError(
+                f"Error sending notification for event batch for user {next_event_batch.user_id}: "
+                f"{e}. Sent {count} batches prior to this error."
             )
+
     db_client.add_to_notification_log(user_count=count)
     return FlaskResponseManager.make_response(
         data={"message": "Notifications sent successfully.", "count": count}

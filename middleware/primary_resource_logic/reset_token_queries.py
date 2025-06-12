@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 from http import HTTPStatus
 
 from flask import Response, make_response
+from werkzeug.exceptions import BadRequest, Unauthorized
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -89,9 +90,7 @@ def reset_password(
 
 def validate_user_ids_match(user_id: int, token_user_id: int):
     if user_id != token_user_id:
-        FlaskResponseManager.abort(
-            code=HTTPStatus.BAD_REQUEST, message="Invalid token."
-        )
+        raise BadRequest("Invalid token.")
 
 
 def change_password_wrapper(
@@ -106,9 +105,7 @@ def change_password_wrapper(
     db_password_digest = db_client.get_password_digest(user_id=user_id)
     matches = check_password_hash(pwhash=db_password_digest, password=dto.old_password)
     if not matches:
-        FlaskResponseManager.abort(
-            code=HTTPStatus.UNAUTHORIZED, message="Incorrect existing password."
-        )
+        raise Unauthorized("Incorrect existing password.")
     set_user_password(db_client=db_client, user_id=user_id, password=dto.new_password)
     return message_response(
         message="Successfully updated password.",
@@ -139,13 +136,11 @@ def reset_token_validation(db_client: DatabaseClient, token):
 def validate_token(db_client: DatabaseClient, token) -> int:
     token_data = db_client.get_reset_token_info(token)
     if token_data is None:
-        FlaskResponseManager.abort(
-            message="Token not found.", code=HTTPStatus.BAD_REQUEST
-        )
+        raise BadRequest("Token not found.")
+
     user_id = token_data.user_id
     if token_is_expired(token_create_date=token_data.create_date):
         db_client.delete_reset_token(user_id, token)
-        FlaskResponseManager.abort(
-            message="Token is expired.", code=HTTPStatus.BAD_REQUEST
-        )
+        raise BadRequest("Token is expired.")
+
     return user_id

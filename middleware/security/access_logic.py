@@ -1,8 +1,5 @@
-from http import HTTPStatus
-
 from flask import request
-
-from middleware.flask_response_manager import FlaskResponseManager
+from werkzeug.exceptions import BadRequest
 
 
 def get_authorization_header_from_request() -> str:
@@ -10,6 +7,4 @@ def get_authorization_header_from_request() -> str:
     try:
         return headers["Authorization"]
     except (KeyError, TypeError):
-        FlaskResponseManager.abort(
-            code=HTTPStatus.BAD_REQUEST, message="Authorization header missing"
-        )
+        raise BadRequest("Authorization header missing")

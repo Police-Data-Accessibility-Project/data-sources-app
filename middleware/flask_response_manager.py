@@ -10,6 +10,7 @@ from typing import Optional, Type
 from flask import make_response, Response, redirect
 from flask_restx import abort
 from marshmallow import Schema, ValidationError
+from werkzeug.exceptions import InternalServerError
 
 
 class FlaskResponseManager:
@@ -30,11 +31,4 @@ class FlaskResponseManager:
         try:
             validation_schema().load(data)
         except ValidationError as e:
-            abort(
-                code=HTTPStatus.INTERNAL_SERVER_ERROR,
-                message=f"Error validating response schema: {e}",
-            )
-
-    @classmethod
-    def abort(cls, code: int, message: str) -> Response:
-        abort(code=code, message=message)
+            raise InternalServerError(f"Error validating response schema: {e}")

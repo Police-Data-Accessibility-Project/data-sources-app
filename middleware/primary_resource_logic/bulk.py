@@ -5,6 +5,7 @@ from io import BytesIO
 from flask import Response
 from marshmallow import Schema, ValidationError
 from werkzeug.datastructures import FileStorage
+from werkzeug.exceptions import BadRequest, UnsupportedMediaType
 
 from db.client import DatabaseClient
 from middleware.dynamic_request_logic.supporting_classes import (
@@ -56,16 +57,12 @@ def _get_raw_rows(file: FileStorage):
     try:
         return read_from_csv(file)
     except Exception as e:
-        FlaskResponseManager.abort(
-            code=HTTPStatus.BAD_REQUEST, message=f"Error reading csv file: {e}"
-        )
+        raise BadRequest(f"Error reading csv file: {e}")
 
 
 def _abort_if_csv(file):
     if file.filename.split(".")[-1] != "csv":
-        FlaskResponseManager.abort(
-            code=HTTPStatus.UNSUPPORTED_MEDIA_TYPE, message="File must be of type csv"
-        )
+        raise UnsupportedMediaType("File must be of type csv")
 
 
 class BulkRequestManager:

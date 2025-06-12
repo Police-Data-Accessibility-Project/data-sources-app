@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 from flask_jwt_extended.exceptions import NoAuthorizationError
+from werkzeug.exceptions import BadRequest
 
 from middleware.flask_response_manager import FlaskResponseManager
 from middleware.security.jwt.helpers import get_jwt_access_info_with_permissions
@@ -16,9 +17,7 @@ class JWTService:
             verify_jwt_in_request()
             return get_jwt_identity()
         except NoAuthorizationError:
-            FlaskResponseManager.abort(
-                HTTPStatus.BAD_REQUEST, message="Token is missing"
-            )
+            raise BadRequest("Token is missing")
         except Exception as e:
             return None
 
