@@ -3,6 +3,8 @@ from typing import Optional
 
 from marshmallow import Schema
 
+from db.enums import LocationType
+from db.helpers_.result_formatting import get_display_name
 from endpoints.schema_config.instantiations.search.follow.delete import (
     SearchFollowDeleteEndpointSchemaConfig,
 )
@@ -91,8 +93,14 @@ def test_search_follow(search_test_setup: SearchTestSetup):
                 "state_name": TEST_STATE,
                 "county_name": TEST_COUNTY,
                 "locality_name": TEST_LOCALITY,
+                "display_name": get_display_name(
+                    location_type=LocationType.LOCALITY,
+                    state_name=TEST_STATE,
+                    county_name=TEST_COUNTY,
+                    locality_name=TEST_LOCALITY,
+                ),
                 "location_id": sts.location_id,
-                "record_categories": {
+                "subscriptions_by_category": {
                     RecordCategories.POLICE.value: [
                         RecordTypes.ACCIDENT_REPORTS.value,
                         RecordTypes.ARREST_RECORDS.value,

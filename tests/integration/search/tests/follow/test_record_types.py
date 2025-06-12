@@ -1,3 +1,5 @@
+from db.enums import LocationType
+from db.helpers_.result_formatting import get_display_name
 from db.models.implementations.link import LinkFollowRecordType
 from middleware.enums import RecordTypes
 from tests.integration.search.constants import TEST_STATE, TEST_COUNTY, TEST_LOCALITY
@@ -24,8 +26,14 @@ def test_search_record_types(search_test_setup: SearchTestSetup):
                         "state_name": TEST_STATE,
                         "county_name": TEST_COUNTY,
                         "locality_name": TEST_LOCALITY,
+                        "display_name": get_display_name(
+                            location_type=LocationType.LOCALITY,
+                            state_name=TEST_STATE,
+                            county_name=TEST_COUNTY,
+                            locality_name=TEST_LOCALITY,
+                        ),
                         "location_id": sts.location_id,
-                        "record_categories": expected_record_categories_dict,
+                        "subscriptions_by_category": expected_record_categories_dict,
                     }
                 ],
                 "message": "Followed searches found.",

@@ -9,7 +9,12 @@ from middleware.schema_and_dto.util import get_json_metadata
 class FollowSearchResponseSchema(Schema):
     state_name = fields.Str(
         required=True,
+        allow_none=True,
         metadata=get_json_metadata("The state of the search."),
+    )
+    display_name = fields.Str(
+        required=True,
+        metadata=get_json_metadata("The display name of the search."),
     )
     county_name = fields.Str(
         required=False,
@@ -29,7 +34,7 @@ class FollowSearchResponseSchema(Schema):
         required=True,
         metadata=get_json_metadata("The location ID of the search."),
     )
-    record_categories = fields.Dict(
+    subscriptions_by_category = fields.Dict(
         required=True,
         metadata=get_json_metadata("The record categories of the search."),
     )

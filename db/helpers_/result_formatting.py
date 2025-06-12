@@ -211,3 +211,21 @@ def tuples_to_column_value_dict(columns: list[str], tuples: list[tuple]) -> list
     for zipped_result in zipped_results:
         formatted_results.append(format_arrays(zipped_result))
     return formatted_results
+
+
+def get_display_name(
+    location_type: LocationType,
+    state_name: Optional[str],
+    county_name: Optional[str],
+    locality_name: Optional[str],
+) -> str:
+    match location_type:
+        case LocationType.STATE:
+            return state_name
+        case LocationType.COUNTY:
+            return f"{county_name}, {state_name}"
+        case LocationType.LOCALITY:
+            return f"{locality_name}, {county_name}, {state_name}"
+        case LocationType.NATIONAL:
+            return "United States - All"
+    raise ValueError(f"Invalid location type: {location_type}")

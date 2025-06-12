@@ -557,14 +557,17 @@ class RequestValidator:
             record_categories=record_categories,
             record_types=record_types,
         )
+        endpoint = add_query_params(
+            url="/api/search/follow/national",
+            params=query_params,
+        )
 
         return self.post(
-            endpoint="/api/search/follow/national",
+            endpoint=endpoint,
             headers=headers,
             expected_json_content=expected_json_content,
             expected_response_status=expected_response_status,
             expected_schema=SearchFollowNationalEndpointSchemaConfig.primary_output_schema,
-            query_parameters=query_params,
         )
 
     def unfollow_national_search(
@@ -579,14 +582,17 @@ class RequestValidator:
             record_categories=record_categories,
             record_types=record_types,
         )
+        endpoint = add_query_params(
+            url="/api/search/follow/national",
+            params=query_params,
+        )
 
         return self.delete(
-            endpoint="/api/search/follow/national",
+            endpoint=endpoint,
             headers=headers,
             expected_json_content=expected_json_content,
             expected_response_status=expected_response_status,
             expected_schema=SearchFollowNationalEndpointSchemaConfig.primary_output_schema,
-            query_parameters=query_params,
         )
 
     def follow_search(
