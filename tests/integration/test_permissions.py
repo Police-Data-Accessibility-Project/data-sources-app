@@ -12,7 +12,7 @@ from tests.conftest import (
 
 def test_permissions(
     test_data_creator_flask: TestDataCreatorFlask,
-    bypass_api_key_required,
+    # bypass_api_key_required,
 ):
     """
     Test the retrieval, addition, and removal of user permissions

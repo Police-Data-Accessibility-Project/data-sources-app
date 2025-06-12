@@ -17,7 +17,7 @@ from middleware.exceptions import (
     InvalidAuthorizationHeaderException,
     InvalidAPIKeyException,
 )
-from middleware.primary_resource_logic.api_key_logic import (
+from middleware.primary_resource_logic.api_key import (
     INVALID_API_KEY_MESSAGE,
     check_api_key,
 )
@@ -31,7 +31,7 @@ from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
 )
 from tests.conftest import test_data_creator_flask, monkeysession
 
-PATCH_API_KEY_ROOT = "middleware.primary_resource_logic.api_key_logic"
+PATCH_API_KEY_ROOT = "middleware.primary_resource_logic.api_key"
 
 
 @pytest.fixture
@@ -39,7 +39,7 @@ def mock_abort(monkeypatch) -> MagicMock:
     return patch_abort(monkeypatch, path=PATCH_API_KEY_ROOT)
 
 
-PATCH_REQUESTS_ROOT = "middleware.access_logic"
+PATCH_REQUESTS_ROOT = "middleware.security.access_logic"
 
 
 def test_check_api_key_happy_path(

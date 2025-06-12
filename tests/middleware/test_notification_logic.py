@@ -3,14 +3,14 @@ from unittest import mock
 
 import pytest
 
-from database_client.enums import EventType, EntityType
+from db.enums import EventType, EntityType
 from middleware.custom_dataclasses import EventBatch, EventInfo
-from middleware.primary_resource_logic.notifications_logic import (
+from middleware.primary_resource_logic.notifications import (
     format_and_send_notifications,
 )
 from tests.helper_scripts.common_mocks_and_patches import patch_and_return_mock
 
-PATCH_ROOT = "middleware.primary_resource_logic.notifications_logic"
+PATCH_ROOT = "middleware.primary_resource_logic.notifications"
 
 
 def remove_all_whitespaces(s: str):

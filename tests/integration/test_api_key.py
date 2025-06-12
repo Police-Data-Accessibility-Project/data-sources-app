@@ -2,20 +2,16 @@
 
 from http import HTTPStatus
 
-from middleware.api_key import ApiKey
-from resources.ApiKeyResource import API_KEY_ROUTE
-from resources.endpoint_schema_config import SchemaConfigs
+from endpoints.schema_config.instantiations.api_key import (
+    ApiKeyPostEndpointSchemaConfig,
+)
+from middleware.security.api_key.core import ApiKey
+from endpoints.instantiations.api_key import API_KEY_ROUTE
 from tests.conftest import (
-    dev_db_client,
-    flask_client_with_db,
     test_data_creator_flask,
-    monkeysession,
 )
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
-)
-from tests.helper_scripts.helper_functions_complex import (
-    create_test_user_db_client,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
@@ -33,7 +29,7 @@ def test_api_key_post(test_data_creator_flask: TestDataCreatorFlask):
         http_method="post",
         endpoint=f"/auth{API_KEY_ROUTE}",
         headers=tus.jwt_authorization_header,
-        expected_schema=SchemaConfigs.API_KEY_POST.value.primary_output_schema,
+        expected_schema=ApiKeyPostEndpointSchemaConfig.primary_output_schema,
     )
 
     # Check that API key aligned with user

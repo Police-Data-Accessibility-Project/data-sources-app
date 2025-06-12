@@ -11,7 +11,7 @@ from alembic.config import Config
 from flask_restx import abort
 from sqlalchemy import text
 
-from middleware.util import get_env_variable
+from middleware.util.env import get_env_variable
 
 
 def convert_dates_to_strings(data_dict: dict) -> dict:

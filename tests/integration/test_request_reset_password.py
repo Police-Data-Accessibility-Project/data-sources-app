@@ -1,12 +1,12 @@
 """Integration tests for /request-reset-password endpoint."""
 
-from database_client.database_client import DatabaseClient
-from middleware.SimpleJWT import SimpleJWT, JWTPurpose
-from resources.endpoint_schema_config import SchemaConfigs
+from db.client.core import DatabaseClient
+from middleware.security.jwt.core import SimpleJWT
+from middleware.security.jwt.enums import JWTPurpose
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from tests.conftest import test_data_creator_flask, monkeysession
+from tests.conftest import test_data_creator_flask
 
 
 def test_request_reset_password_post(

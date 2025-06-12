@@ -46,7 +46,7 @@ def create_namespace(
     namespace_attributes: AppNamespaces = AppNamespaces.DEFAULT,
 ) -> Namespace:
     """
-    Create a namespace to be used with Flask_restx resources.
+    Create a namespace to be used with Flask_restx endpoints.
     Each namespace can contain the route definitions and other documentation about the resource
     which can then be imported into the API in the create_app function.
     :return:

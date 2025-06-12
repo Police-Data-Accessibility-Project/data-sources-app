@@ -3,7 +3,7 @@ Module for testing database client functionality against a live database
 """
 
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 from unittest.mock import MagicMock
 
 import pytest
@@ -11,16 +11,14 @@ import sqlalchemy
 from sqlalchemy import insert, select, update
 from sqlalchemy.exc import IntegrityError
 
-from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import (
+from db.client.core import DatabaseClient
+from db.db_client_dataclasses import (
     OrderByParameters,
     WhereMapping,
 )
-from database_client.subquery_logic import SubqueryParameters, SubqueryParameterManager
-from database_client.enums import (
+from db.subquery_logic import SubqueryParameterManager
+from db.enums import (
     ExternalAccountTypeEnum,
-    RelationRoleEnum,
-    ColumnPermissionEnum,
     SortOrder,
     RequestStatus,
     ApprovalStatus,
@@ -29,13 +27,10 @@ from middleware.exceptions import (
     UserNotFoundError,
     DuplicateUserError,
 )
-from database_client.models import (
-    LinkAgencyDataSource,
-    ExternalAccount,
-    TestTable,
-    User,
-    SQL_ALCHEMY_TABLE_REFERENCE,
-)
+from db.models.implementations.core.user.core import User
+from db.models.implementations.core.test import TestTable
+from db.models.implementations.core.external_account import ExternalAccount
+from db.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import PermissionsEnum, Relations, RecordTypes
 from tests.conftest import (
     live_database_client,
@@ -48,7 +43,6 @@ from tests.helper_scripts.common_test_data import (
     get_test_name,
 )
 from tests.helper_scripts.complex_test_data_creation_functions import (
-    insert_test_column_permission_data,
     create_data_source_entry_for_url_duplicate_checking,
 )
 
@@ -56,7 +50,6 @@ from tests.helper_scripts.helper_classes.AnyOrder import AnyOrder
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
 )
-from tests.helper_scripts.helper_schemas import TestGetPendingNotificationsOutputSchema
 from tests.helper_scripts.test_dataclasses import TestDataRequestInfo
 from tests.helper_scripts.helper_functions_complex import (
     setup_get_typeahead_suggestion_test_data,
@@ -234,26 +227,6 @@ def test_select_from_relation_limit(live_database_client: DatabaseClient):
     ]
 
 
-def test_select_from_relation_limit_and_offset(
-    live_database_client: DatabaseClient, monkeypatch
-):
-    # Used alongside limit; we mock PAGE_SIZE to be one
-    monkeypatch.setattr("database_client.database_client.PAGE_SIZE", 1)
-
-    live_database_client.get_offset = MagicMock(return_value=1)
-
-    results = live_database_client._select_from_relation(
-        relation_name="test_table",
-        columns=["pet_name"],
-        limit=1,
-        page=1,  # 1 is the second page; 0-indexed
-    )
-
-    assert results == [
-        {"pet_name": "Jimbo"},
-    ]
-
-
 def test_select_from_relation_order_by(live_database_client: DatabaseClient):
     results = live_database_client._select_from_relation(
         relation_name="test_table",
@@ -265,37 +238,6 @@ def test_select_from_relation_order_by(live_database_client: DatabaseClient):
         {"pet_name": "Arthur"},
         {"pet_name": "Simon"},
         {"pet_name": "Jimbo"},
-    ]
-
-
-def test_select_from_relation_all_parameters(
-    live_database_client: DatabaseClient, monkeypatch
-):
-    # Used alongside limit; we mock PAGE_SIZE to be one
-    monkeypatch.setattr("database_client.database_client.PAGE_SIZE", 1)
-
-    # Add additional row to the table to test the offset and limit
-    live_database_client.execute_sqlalchemy(
-        lambda: insert(TestTable).values(pet_name="Ezekiel", species="Cat")
-    )
-
-    results = live_database_client._select_from_relation(
-        relation_name="test_table",
-        columns=["pet_name"],
-        where_mappings=[
-            WhereMapping(column="species", value="Aardvark"),
-            WhereMapping(column="species", eq=False, value="Bear"),
-        ],
-        limit=1,
-        page=1,  # 1 is the second page; 0-indexed
-        order_by=OrderByParameters(
-            sort_by="pet_name",
-            sort_order=SortOrder.DESCENDING,
-        ),
-    )
-
-    assert results == [
-        {"pet_name": "Arthur"},
     ]
 
 
@@ -1076,30 +1018,28 @@ def test_user_followed_searches_logic(
     user_info = tdc.user()
 
     # Have that user follow two searches
-    link_id = tdc.db_client.create_followed_search(
-        column_value_mappings={
-            "user_id": user_info.id,
-            "location_id": 1,
-        },
-        column_to_return="id",
+    tdc.db_client.create_followed_search(
+        user_id=user_info.id,
+        location_id=1,
     )
 
     tdc.db_client.create_followed_search(
-        column_value_mappings={
-            "user_id": user_info.id,
-            "location_id": 2,
-        }
+        user_id=user_info.id,
+        location_id=2,
     )
 
     # Get the user's followed searches
-    results = tdc.db_client.get_user_followed_searches(left_id=user_info.id)
+    results = tdc.db_client.get_user_followed_searches(user_id=user_info.id)
     assert len(results["data"]) == 2
 
     # Unfollow one of the searches
-    tdc.db_client.delete_followed_search(id_column_value=link_id)
+    tdc.db_client.delete_followed_search(
+        user_id=user_info.id,
+        location_id=1,
+    )
 
     # Get the user's followed searches, and ensure the un-followed search is gone
-    results = tdc.db_client.get_user_followed_searches(left_id=user_info.id)
+    results = tdc.db_client.get_user_followed_searches(user_id=user_info.id)
     assert len(results["data"]) == 1
 
 

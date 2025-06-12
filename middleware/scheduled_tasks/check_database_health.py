@@ -1,6 +1,6 @@
-from database_client.database_client import DatabaseClient
-from middleware.miscellaneous_logic.table_count_logic import TableCountReferenceManager
-from middleware.third_party_interaction_logic.DiscordNotifier import DiscordPoster
+from db.client.core import DatabaseClient
+from middleware.miscellaneous.table_count_logic import TableCountReferenceManager
+from middleware.third_party_interaction_logic.discord import DiscordPoster
 
 TABLES_TO_CHECK = [
     "agencies",

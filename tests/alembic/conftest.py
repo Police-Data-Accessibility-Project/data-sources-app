@@ -4,7 +4,6 @@ from sqlalchemy import create_engine, inspect, MetaData
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 from utilities.common import get_alembic_conn_string
-from middleware.util import get_env_variable
 from tests.alembic.AlembicRunner import AlembicRunner
 
 

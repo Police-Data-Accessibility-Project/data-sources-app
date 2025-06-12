@@ -1,10 +1,10 @@
 import datetime
 
-from database_client.enums import SortOrder
-from middleware.schema_and_dto_logic.primary_resource_dtos.metrics_dtos import (
+from db.enums import SortOrder
+from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
-from middleware.util import get_env_variable
+from middleware.util.env import get_env_variable
 from tests.helper_scripts.helper_classes.MultiAgencySetup import MultiAgencySetup
 from tests.helper_scripts.helper_classes.MultiDataSourceSetup import (
     MultiDataSourceSetup,

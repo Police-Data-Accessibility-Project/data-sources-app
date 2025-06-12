@@ -1,12 +1,16 @@
 from datetime import datetime, timezone, timedelta
 from http import HTTPStatus
 
-from tests.conftest import test_data_creator_flask, monkeysession
-from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
+from tests.conftest import test_data_creator_flask
+from middleware.schema_and_dto.schemas.common.common_response_schemas import (
+    MessageSchema,
+)
 from tests.helper_scripts.common_test_data import get_test_email
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
+
+PATCH_ROOT = "middleware.primary_resource_logic.signup"
 
 
 def test_signup_post(test_data_creator_flask: TestDataCreatorFlask, mocker):
@@ -113,7 +117,7 @@ def test_signup_post_validation_token_expires(
     email = get_test_email()
     # Manipulate expiry to be in the past
     mocker.patch(
-        "middleware.primary_resource_logic.signup_logic.get_validation_expiry",
+        f"{PATCH_ROOT}.get_validation_expiry",
         return_value=0,
     )
 
@@ -135,7 +139,7 @@ def test_signup_post_validation_token_expires(
 
     # Reset expiry to be in the future
     mocker.patch(
-        "middleware.primary_resource_logic.signup_logic.get_validation_expiry",
+        f"{PATCH_ROOT}.get_validation_expiry",
         return_value=(datetime.now(tz=timezone.utc) + timedelta(days=1)).timestamp(),
     )
 

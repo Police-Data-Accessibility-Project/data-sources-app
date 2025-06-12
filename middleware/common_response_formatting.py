@@ -4,11 +4,9 @@ from typing import Type, Optional
 from flask import Response, make_response
 from marshmallow import Schema
 
-from middleware.constants import DATA_KEY
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.common_response_schemas import (
+from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     IDAndMessageSchema,
-    GetManyResponseSchema,
 )
 
 
@@ -25,10 +23,7 @@ def multiple_results_response(data: list, message: str = "") -> Response:
     Returns:
         dict: A dictionary with the count and data keys.
     """
-    return FlaskResponseManager.make_response(
-        format_list_response(data=data, message=message),
-        HTTPStatus.OK,
-    )
+    return make_response(format_list_response(data=data, message=message))
 
 
 def created_id_response(new_id: str, message: str = "") -> Response:
