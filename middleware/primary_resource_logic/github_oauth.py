@@ -1,5 +1,4 @@
 import uuid
-from dataclasses import dataclass
 from http import HTTPStatus
 
 from flask import Response, make_response
@@ -9,7 +8,8 @@ from pydantic import BaseModel
 
 from db.client import DatabaseClient
 from db.enums import ExternalAccountTypeEnum
-from middleware.SimpleJWT import SimpleJWT, JWTPurpose
+from middleware.jwt.core import SimpleJWT
+from middleware.jwt.enums import JWTPurpose
 from middleware.common_response_formatting import message_response
 from middleware.custom_dataclasses import GithubUserInfo
 from middleware.exceptions import UserNotFoundError
@@ -19,7 +19,7 @@ from middleware.primary_resource_logic.user_queries import (
     UserRequestDTO,
 )
 from middleware.schema_and_dto.dtos.github.login import LoginWithGithubRequestDTO
-from middleware.third_party_interaction_logic.callback_oauth_logic import (
+from middleware.third_party_interaction_logic.callback.oauth import (
     get_github_user_id,
     get_github_user_email,
 )

@@ -1,10 +1,14 @@
 from db.enums import RequestStatus
 from middleware.enums import RecordTypes
-from middleware.third_party_interaction_logic.github_issue_api_logic import (
-    get_github_issue_project_statuses,
-    GithubIssueManager,
-    get_issue_project_statii_and_labels,
+from middleware.third_party_interaction_logic.github.label_manager import (
     GithubLabelManager,
+)
+from middleware.third_party_interaction_logic.github.issue_manager import (
+    GithubIssueManager,
+)
+from middleware.third_party_interaction_logic.github.helpers import (
+    get_issue_project_statii_and_labels,
+    get_github_issue_project_statuses,
 )
 
 

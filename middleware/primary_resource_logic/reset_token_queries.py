@@ -6,7 +6,8 @@ from flask import Response, make_response
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from db.client import DatabaseClient
-from middleware.SimpleJWT import SimpleJWT, JWTPurpose
+from middleware.jwt.core import SimpleJWT
+from middleware.jwt.enums import JWTPurpose
 from middleware.access_logic import PasswordResetTokenAccessInfo, AccessInfoPrimary
 from middleware.common_response_formatting import message_response
 from middleware.exceptions import UserNotFoundError

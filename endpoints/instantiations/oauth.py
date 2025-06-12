@@ -8,10 +8,10 @@ from middleware.authentication_info import NO_AUTH_INFO
 from middleware.decorators.decorators import endpoint_info
 from middleware.enums import CallbackFunctionsEnum
 from middleware.schema_and_dto.dtos.github.oauth import GithubOAuthRequestDTO
-from middleware.third_party_interaction_logic.callback_flask_sessions_logic import (
+from middleware.third_party_interaction_logic.callback.flask_sessions import (
     setup_callback_session,
 )
-from middleware.third_party_interaction_logic.callback_oauth_logic import (
+from middleware.third_party_interaction_logic.callback.oauth import (
     redirect_to_github_authorization,
 )
 from endpoints.psycopg_resource import PsycopgResource

@@ -1,4 +1,4 @@
-from middleware.third_party_interaction_logic.mailgun_logic import send_via_mailgun
+from middleware.third_party_interaction_logic.mailgun import send_via_mailgun
 from middleware.util.env import get_env_variable
 
 html_text = """

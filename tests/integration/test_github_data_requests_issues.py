@@ -8,9 +8,11 @@ from db.models.implementations.core.data_request.github_issue_info import (
 )
 from db.models.implementations.core.data_request.core import DataRequest
 from middleware.enums import PermissionsEnum, RecordTypes
-from middleware.third_party_interaction_logic.github_issue_api_logic import (
-    GithubIssueInfo,
+from middleware.third_party_interaction_logic.github.issue_info import GithubIssueInfo
+from middleware.third_party_interaction_logic.github.issue_project_info.core import (
     GithubIssueProjectInfo,
+)
+from middleware.third_party_interaction_logic.github.issue_project_info.model import (
     GIPIInfo,
 )
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (

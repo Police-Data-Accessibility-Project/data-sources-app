@@ -1,5 +1,4 @@
 import datetime
-from enum import Enum, auto
 from http import HTTPStatus
 from typing import Union, Optional
 
@@ -7,30 +6,9 @@ import jwt
 from jwt import InvalidSignatureError
 
 from middleware.flask_response_manager import FlaskResponseManager
-from middleware.util.env import get_env_variable
-
-ALGORITHM = "HS256"
-
-
-class JWTPurpose(Enum):
-    PASSWORD_RESET = auto()
-    VALIDATE_EMAIL = auto()
-    GITHUB_ACCESS_TOKEN = auto()
-    STANDARD_ACCESS_TOKEN = auto()
-    REFRESH_TOKEN = auto()
-
-
-def get_secret_key(purpose: JWTPurpose):
-    if purpose == JWTPurpose.PASSWORD_RESET:
-        return get_env_variable("RESET_PASSWORD_SECRET_KEY")
-    elif purpose == JWTPurpose.GITHUB_ACCESS_TOKEN:
-        return get_env_variable("JWT_SECRET_KEY")
-    elif purpose == JWTPurpose.VALIDATE_EMAIL:
-        return get_env_variable("VALIDATE_EMAIL_SECRET_KEY")
-    elif purpose == JWTPurpose.STANDARD_ACCESS_TOKEN:
-        return get_env_variable("JWT_SECRET_KEY")
-    else:
-        raise Exception(f"Invalid JWT Purpose: {purpose}")
+from middleware.jwt.constants import ALGORITHM
+from middleware.jwt.enums import JWTPurpose
+from middleware.jwt.helpers import get_secret_key
 
 
 class SimpleJWT:
