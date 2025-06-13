@@ -123,6 +123,12 @@ from db.models.table_reference import (
     convert_to_column_reference,
 )
 from db.queries.builder import QueryBuilderBase
+from db.queries.map.counties import GET_MAP_COUNTIES_QUERY
+from db.queries.map.data_source_count import GET_DATA_SOURCE_COUNT_BY_LOCATION_TYPE_QUERY
+from db.queries.map.data_sources import GET_DATA_SOURCES_FOR_MAP_QUERY
+from db.queries.map.localities import GET_MAP_LOCALITIES_QUERY
+from db.queries.map.states import GET_MAP_STATES_QUERY
+from db.queries.metrics.get import GET_METRICS_QUERY
 from db.queries.notifications.post import NotificationsPostQueryBuilder
 from db.queries.search.follow.delete import DeleteFollowQueryBuilder
 from db.queries.search.follow.get import GetUserFollowedSearchesQueryBuilder
@@ -447,32 +453,9 @@ class DatabaseClient:
 
         :return: A list of MapInfo namedtuples, each containing details of a data source.
         """
-        sql_query = """
-            SELECT
-                DATA_SOURCES.id AS DATA_SOURCE_ID,
-                LE.ID as LOCATION_ID,
-                DATA_SOURCES.NAME,
-                AGENCIES.ID AS AGENCY_ID,
-                AGENCIES.NAME AS AGENCY_NAME,
-                LE.STATE_ISO,
-                LE.LOCALITY_NAME AS MUNICIPALITY,
-                LE.COUNTY_NAME,
-                RT.NAME RECORD_TYPE,
-                AGENCIES.LAT,
-                AGENCIES.LNG
-            FROM
-                LINK_AGENCIES_DATA_SOURCES AS AGENCY_SOURCE_LINK
-                INNER JOIN DATA_SOURCES ON AGENCY_SOURCE_LINK.DATA_SOURCE_ID = DATA_SOURCES.ID
-                INNER JOIN AGENCIES ON AGENCY_SOURCE_LINK.AGENCY_ID = AGENCIES.ID
-                INNER JOIN LINK_AGENCIES_LOCATIONS LAL ON AGENCIES.ID = LAL.AGENCY_ID
-                LEFT JOIN LOCATIONS_EXPANDED LE ON LAL.LOCATION_ID = LE.ID
-                INNER JOIN RECORD_TYPES RT ON RT.ID = DATA_SOURCES.RECORD_TYPE_ID
-            WHERE
-                DATA_SOURCES.APPROVAL_STATUS = 'approved'
-                AND LAT is not null
-				AND LNG is not null
-        """
-        self.cursor.execute(cast(LiteralString, sql_query))
+        self.cursor.execute(
+            cast(LiteralString, GET_DATA_SOURCES_FOR_MAP_QUERY)
+        )
         results = self.cursor.fetchall()
 
         return [self.MapInfo(*result) for result in results]
@@ -1287,7 +1270,7 @@ class DatabaseClient:
             query.options(*load_options).order_by(order_by_clause).limit(limit)
         ).offset(self.get_offset(page))
 
-        results: list[DataSourceExpanded] = (
+        results: Sequence[DataSourceExpanded] = (
             session.execute(query).scalars(DataSource).all()
         )
         final_results = []
@@ -1467,33 +1450,6 @@ class DatabaseClient:
     delete_data_source_agency_relation = partialmethod(
         _delete_from_table, table_name=Relations.LINK_AGENCIES_DATA_SOURCES.value
     )
-
-    def get_agencies_without_homepage_urls(self) -> list[dict]:
-        return self.execute_raw_sql(
-            """
-            SELECT
-                SUBMITTED_NAME,
-                JURISDICTION_TYPE,
-                STATE_ISO,
-                LOCALITY_NAME as MUNICIPALITY,
-                COUNTY_NAME,
-                ID,
-                ZIP_CODE,
-                NO_WEB_PRESENCE -- Relevant
-            FROM
-                PUBLIC.AGENCIES_EXPANDED 
-                INNER JOIN NUM_DATA_SOURCES_PER_AGENCY num ON num.agency_uid = AGENCIES_EXPANDED.id 
-            WHERE 
-                approved = true
-                AND homepage_url is null
-                AND NOT EXISTS (
-                    SELECT 1 FROM PUBLIC.AGENCY_URL_SEARCH_CACHE
-                    WHERE PUBLIC.AGENCIES_EXPANDED.id = PUBLIC.AGENCY_URL_SEARCH_CACHE.agency_id
-                )
-            ORDER BY NUM.DATA_SOURCE_COUNT DESC
-            LIMIT 100 -- Limiting to 100 in acknowledgment of the search engine quota
-        """
-        )
 
     @cursor_manager()
     def check_for_url_duplicates(self, url: str) -> list[dict]:
@@ -1994,47 +1950,7 @@ class DatabaseClient:
         return dto_results
 
     def get_metrics(self):
-        result = self.execute_raw_sql(
-            """
-            SELECT
-                COUNT(*),
-                'source_count' "Count Type"
-            FROM
-                DATA_SOURCES
-            UNION
-            SELECT
-                COUNT(DISTINCT (AGENCY_ID)),
-                'agency_count' "Count Type"
-            FROM
-                link_agencies_data_sources
-            UNION
-            SELECT
-                COUNT(DISTINCT L.ID),
-                'state_count' "Count Type"
-            FROM
-                LINK_AGENCIES_DATA_SOURCES LINK
-                INNER JOIN AGENCIES A ON A.ID = LINK.AGENCY_ID
-                LEFT JOIN LINK_AGENCIES_LOCATIONS LAL on A.ID = LAL.AGENCY_ID
-                JOIN DEPENDENT_LOCATIONS DL ON LAL.LOCATION_ID = DL.DEPENDENT_LOCATION_ID
-                JOIN LOCATIONS L ON L.ID = LAL.LOCATION_ID
-                OR L.ID = DL.PARENT_LOCATION_ID
-            WHERE
-                L.TYPE = 'State'
-            UNION
-            SELECT
-                COUNT(DISTINCT L.ID),
-                'county_count' "Count Type"
-            FROM
-                LINK_AGENCIES_DATA_SOURCES LINK
-                INNER JOIN AGENCIES A ON A.ID = LINK.AGENCY_ID
-                LEFT JOIN LINK_AGENCIES_LOCATIONS LAL on A.ID = LAL.AGENCY_ID
-                JOIN DEPENDENT_LOCATIONS DL ON LAL.LOCATION_ID = DL.DEPENDENT_LOCATION_ID
-                JOIN LOCATIONS L ON L.ID = LAL.LOCATION_ID
-                OR L.ID = DL.PARENT_LOCATION_ID
-            WHERE
-                L.TYPE = 'County'
-	"""
-        )
+        result = self.execute_raw_sql(GET_METRICS_QUERY)
         d = {}
         for row in result:
             d[row["Count Type"]] = row["count"]
@@ -2183,62 +2099,16 @@ class DatabaseClient:
         )
 
     def get_map_localities(self):
-        return self.execute_raw_sql(
-            """
-            SELECT 
-                location_id,
-                LOCALITY_NAME as name,
-                county_name,
-                JSON_BUILD_OBJECT(
-                    'lat', lat,
-                    'lng', lng
-                ) AS coordinates,
-                county_fips,
-                state_iso,
-                DATA_SOURCE_COUNT as source_count
-            FROM
-                PUBLIC.MAP_LOCALITIES
-            """
-        )
+        return self.execute_raw_sql(GET_MAP_LOCALITIES_QUERY)
 
     def get_map_counties(self):
-        return self.execute_raw_sql(
-            """
-            SELECT 
-                location_id,
-                county_name as name,
-                state_iso,
-                fips,
-                DATA_SOURCE_COUNT as source_count
-            FROM
-                PUBLIC.MAP_COUNTIES
-            """
-        )
+        return self.execute_raw_sql(GET_MAP_COUNTIES_QUERY)
 
     def get_map_states(self):
-        return self.execute_raw_sql(
-            """
-            SELECT 
-                location_id,
-                STATE_NAME as name,
-                state_iso,
-                DATA_SOURCE_COUNT as source_count
-            FROM
-                PUBLIC.MAP_STATES
-            """
-        )
+        return self.execute_raw_sql(GET_MAP_STATES_QUERY)
 
     def get_data_source_count_by_location_type(self):
-        return self.execute_raw_sql(
-            """
-            SELECT 
-                localities,
-                counties,
-                states
-            FROM
-                PUBLIC.TOTAL_DATA_SOURCES_BY_LOCATION_TYPE
-            """
-        )[0]
+        return self.execute_raw_sql(GET_DATA_SOURCE_COUNT_BY_LOCATION_TYPE_QUERY)[0]
 
     @session_manager
     def get_many_locations(

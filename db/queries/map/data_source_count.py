@@ -1,0 +1,10 @@
+
+
+GET_DATA_SOURCE_COUNT_BY_LOCATION_TYPE_QUERY = """
+SELECT 
+    localities,
+    counties,
+    states
+FROM
+    PUBLIC.TOTAL_DATA_SOURCES_BY_LOCATION_TYPE
+"""
