@@ -2,8 +2,18 @@ from collections import namedtuple
 from datetime import datetime
 from enum import Enum
 from functools import wraps, partialmethod
-from operator import and_, or_
-from typing import Optional, Any, List, Callable, Union, Type
+from operator import and_
+from typing import (
+    Optional,
+    Any,
+    List,
+    Callable,
+    Union,
+    Type,
+    cast,
+    LiteralString,
+    Sequence,
+)
 
 import psycopg
 import sqlalchemy.exc
@@ -19,13 +29,12 @@ from sqlalchemy import (
     func,
     desc,
     asc,
-    exists,
     union_all,
     case,
     text,
+    RowMapping,
 )
 from sqlalchemy.orm import (
-    aliased,
     load_only,
     selectinload,
     Session,
@@ -50,10 +59,9 @@ from db.dynamic_query_constructor import DynamicQueryConstructor
 from db.enums import (
     ExternalAccountTypeEnum,
     RequestStatus,
-    EntityType,
-    EventType,
     LocationType,
     ApprovalStatus,
+    UpdateFrequency,
 )
 from db.exceptions import LocationDoesNotExistError
 from db.helpers_.psycopg import initialize_psycopg_connection
@@ -123,7 +131,7 @@ from db.queries.user_profile.get_user_recent_searches import (
     GetUserRecentSearchesQueryBuilder,
 )
 from db.subquery_logic import SubqueryParameters
-from middleware.custom_dataclasses import EventInfo, EventBatch
+from middleware.custom_dataclasses import EventBatch
 from middleware.enums import (
     PermissionsEnum,
     Relations,
@@ -172,6 +180,42 @@ DATA_SOURCES_MAP_COLUMN = [
 ]
 
 
+def session_manager(method):
+    @wraps(method)
+    def wrapper(self: "DatabaseClient", *args, **kwargs):
+        self.session = self.session_maker()
+        try:
+            result = method(self, *args, **kwargs)
+            self.session.flush()
+            self.session.commit()
+            return result
+        except Exception as e:
+            self.session.rollback()
+            raise e
+        finally:
+            self.session.close()
+            self.session = None
+
+    return wrapper
+
+
+def session_manager_v2(method):
+    @wraps(method)
+    def wrapper(self: "DatabaseClient", *args, **kwargs):
+        session = self.session_maker()
+        try:
+            result = method(self, session, *args, **kwargs)
+            session.commit()
+            return result
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()  # Ensures the session is cleaned up
+
+    return wrapper
+
+
 class DatabaseClient:
 
     def __init__(self):
@@ -214,38 +258,21 @@ class DatabaseClient:
 
         return decorator
 
-    def session_manager(method):
-        @wraps(method)
-        def wrapper(self, *args, **kwargs):
-            self.session = self.session_maker()
-            try:
-                result = method(self, *args, **kwargs)
-                self.session.flush()
-                self.session.commit()
-                return result
-            except Exception as e:
-                self.session.rollback()
-                raise e
-            finally:
-                self.session.close()
-                self.session = None
-
-        return wrapper
-
     @cursor_manager()
     def execute_raw_sql(
-        self, query: str, vars: Optional[tuple] = None, execute_many: bool = False
+        self, query: str, vars_: Optional[tuple] = None, execute_many: bool = False
     ) -> Optional[list[dict[Any, ...]]]:
         """Executes an SQL query passed to the function.
 
         :param query: The SQL query to execute.
-        :param vars: A tuple of variables to replace placeholders in the SQL query, defaults to None
+        :param vars_: A tuple of variables to replace placeholders in the SQL query, defaults to None
+        :param execute_many: Whether to execute the query with executemany, defaults to False
         :return: A list of dicts, or None if there are no results.
         """
         if execute_many:
-            self.cursor.executemany(query, vars)
+            self.cursor.executemany(cast(LiteralString, query), vars_)
         else:
-            self.cursor.execute(query, vars)
+            self.cursor.execute(cast(LiteralString, query), vars_)
         try:
             results = self.cursor.fetchall()
         except psycopg.ProgrammingError:
@@ -255,50 +282,52 @@ class DatabaseClient:
             return None
         return results
 
-    @session_manager
-    def scalar(self, query: Select):
-        return self.session.execute(query).scalar()
+    @session_manager_v2
+    def scalar(self, session: Session, query: Select):
+        return session.execute(query).scalar()
 
-    @session_manager
-    def scalars(self, query: Select):
-        return self.session.execute(query).scalars().all()
+    @session_manager_v2
+    def scalars(self, session: Session, query: Select):
+        return session.execute(query).scalars().all()
 
-    @session_manager
-    def one(self, query: Select):
-        return self.session.execute(query).one()
+    @session_manager_v2
+    def one(self, session: Session, query: Select):
+        return session.execute(query).one()
 
-    @session_manager
-    def execute_sqlalchemy(self, query: Callable):
-        results = self.session.execute(query())
+    @session_manager_v2
+    def execute_sqlalchemy(self, session: Session, query: Callable):
+        results = session.execute(query())
         return results
 
-    @session_manager
-    def all(self, stmt: Select):
-        return self.session.execute(stmt).all()
+    @session_manager_v2
+    def all(self, session: Session, stmt: Select):
+        return session.execute(stmt).all()
 
-    @session_manager
-    def execute(self, stmt):
-        self.session.execute(stmt)
+    @session_manager_v2
+    def execute(self, session: Session, stmt):
+        session.execute(stmt)
 
-    @session_manager
-    def add(self, model):
-        self.session.add(model)
+    @session_manager_v2
+    def add(self, session: Session, model):
+        session.add(model)
 
-    @session_manager
-    def mapping(self, query: Select):
-        return self.session.execute(query).mappings().first()
+    @session_manager_v2
+    def mapping(self, session: Session, query: Select):
+        return session.execute(query).mappings().first()
 
-    @session_manager
-    def mappings(self, query: Select):
-        return self.session.execute(query).mappings().all()
+    @session_manager_v2
+    def mappings(self, session: Session, query: Select) -> Sequence[RowMapping]:
+        return session.execute(query).mappings().all()
 
-    @session_manager
-    def create_new_user(self, email: str, password_digest: str) -> Optional[int]:
+    @session_manager_v2
+    def create_new_user(
+        self, session: Session, email: str, password_digest: str
+    ) -> Optional[int]:
         """Adds a new user to the database."""
         try:
             user = User(email=email, password_digest=password_digest)
-            self.session.add(user)
-            self.session.flush()
+            session.add(user)
+            session.flush()
             return user.id
         except sqlalchemy.exc.IntegrityError:
             raise DuplicateUserError
@@ -353,8 +382,9 @@ class DatabaseClient:
         """
         Inserts a new reset token into the database for a specified email.
 
-        :param email: The email to associate with the reset token.
+        :param user_id: The user_id to associate with the reset token.
         :param token: The reset token to add.
+
         """
         self.add(ResetToken(user_id=user_id, token=token))
 
@@ -362,7 +392,7 @@ class DatabaseClient:
         """
         Deletes a reset token from the database for a specified email.
 
-        :param email: The email associated with the reset token to delete.
+        :param user_id: The user_id associated with the reset token to delete.
         :param token: The reset token to delete.
         """
         query = delete(ResetToken).where(
@@ -442,7 +472,7 @@ class DatabaseClient:
                 AND LAT is not null
 				AND LNG is not null
         """
-        self.cursor.execute(sql_query)
+        self.cursor.execute(cast(LiteralString, sql_query))
         results = self.cursor.fetchall()
 
         return [self.MapInfo(*result) for result in results]
@@ -471,7 +501,7 @@ class DatabaseClient:
     @cursor_manager()
     def get_data_sources_to_archive(
         self,
-        update_frequency: Optional[str] = None,
+        update_frequency: Optional[UpdateFrequency] = None,
         last_archived_before: Optional[datetime] = None,
         page: int = 1,
     ) -> list[ArchiveInfo]:
@@ -518,7 +548,7 @@ class DatabaseClient:
 
         sql_query += f" LIMIT {PAGE_SIZE} OFFSET {self.get_offset(page)}"
 
-        self.cursor.execute(sql_query)
+        self.cursor.execute(cast(LiteralString, sql_query))
         data_sources = self.cursor.fetchall()
 
         results = [
@@ -534,16 +564,16 @@ class DatabaseClient:
 
         return results
 
-    def update_url_status_to_broken(self, id: str, broken_as_of: str) -> None:
+    def update_url_status_to_broken(self, id_: str, broken_as_of: str) -> None:
         """
         Updates the data_sources table setting the url_status to 'broken' for a given id.
 
-        :param id: The id of the data source.
+        :param id_: The id of the data source.
         :param broken_as_of: The date when the source was identified as broken.
         """
         query = (
             update(DataSource)
-            .where(DataSource.id == id)
+            .where(DataSource.id == id_)
             .values(url_status="broken", broken_source_url_as_of=broken_as_of)
         )
         self.execute(query)
@@ -621,7 +651,7 @@ class DatabaseClient:
         )
 
     @cursor_manager()
-    def get_typeahead_locations(self, search_term: str) -> dict:
+    def get_typeahead_locations(self, search_term: str) -> list[dict]:
         """
         Returns a list of data sources that match the search query.
 
@@ -645,7 +675,7 @@ class DatabaseClient:
         return self.cursor.fetchall()
 
     @cursor_manager()
-    def get_typeahead_agencies(self, search_term: str) -> dict:
+    def get_typeahead_agencies(self, search_term: str) -> list[dict]:
         """
         Returns a list of data sources that match the search query.
 
@@ -666,13 +696,7 @@ class DatabaseClient:
         record_types: Optional[list[RecordTypes]] = None,
     ) -> List[dict]:
         """
-        Searches for data sources in the database.
-
-        :param state: The state to search for data sources in.
-        :param record_categories: The types of data sources to search for. If None, all data sources will be searched for.
-        :param county: The county to search for data sources in. If None, all data sources will be searched for.
-        :param locality: The locality to search for data sources in. If None, all data sources will be searched for.
-        :return: A list of dictionaries.
+        Search for data sources in the database.
         """
         check_for_mutually_exclusive_arguments(record_categories, record_types)
 
@@ -761,7 +785,7 @@ class DatabaseClient:
         """
         Adds a permission to a user.
 
-        :param user_email: The email of the user.
+        :param user_id: The ID of the user.
         :param permission: The permission to add.
         """
         query = sql.SQL(

@@ -18,10 +18,10 @@ from middleware.enums import Relations
 class LinkAgencyDataSource(StandardBase):
     __tablename__ = Relations.LINK_AGENCIES_DATA_SOURCES.value
 
-    data_source_id: Mapped[str] = mapped_column(
+    data_source_id: Mapped[int] = mapped_column(
         ForeignKey("public.data_sources.id"), primary_key=True
     )
-    agency_id: Mapped[str] = mapped_column(
+    agency_id: Mapped[int] = mapped_column(
         ForeignKey("public.agencies.id"), primary_key=True
     )
 
