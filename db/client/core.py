@@ -833,9 +833,10 @@ class DatabaseClient:
         results = self.cursor.fetchall()
         return [PermissionsEnum(row["permission_name"]) for row in results]
 
-    @session_manager
+    @session_manager_v2
     def _update_entry_in_table(
         self,
+        session: Session,
         table_name: str,
         entry_id: Any,
         column_edit_mappings: dict[str, Any],
@@ -853,7 +854,7 @@ class DatabaseClient:
         column = getattr(table, id_column_name)
         query_where = query_base.where(column == entry_id)
         query_values = query_where.values(**column_edit_mappings)
-        self.session.execute(query_values)
+        session.execute(query_values)
 
     update_data_source = partialmethod(
         _update_entry_in_table, table_name="data_sources", id_column_name="id"
@@ -882,9 +883,10 @@ class DatabaseClient:
             for key, value in d.items()
         }
 
-    @session_manager
+    @session_manager_v2
     def _create_entry_in_table(
         self,
+        session: Session,
         table_name: str,
         column_value_mappings: dict[str, str],
         column_to_return: Optional[str] = None,
@@ -904,7 +906,7 @@ class DatabaseClient:
         if column_to_return is not None:
             column = getattr(table, column_to_return)
             statement = statement.returning(column)
-        result = self.session.execute(statement)
+        result = session.execute(statement)
 
         if column_to_return is not None:
             return result.fetchone()[0]
@@ -914,9 +916,10 @@ class DatabaseClient:
         _create_entry_in_table, table_name="data_requests", column_to_return="id"
     )
 
-    @session_manager
+    @session_manager_v2
     def create_agency(
         self,
+        session: Session,
         dto: AgenciesPostDTO,
         user_id: Optional[int] = None,
     ):
@@ -938,23 +941,28 @@ class DatabaseClient:
             submitter_contact=agency_info.submitter_contact,
             creator_user_id=user_id,
         )
-        self.session.add(agency)
+        session.add(agency)
 
         # Flush to get agency id
-        self.session.flush()
+        session.flush()
 
         # Link to Locations
         if dto.location_ids is not None:
             for location_id in dto.location_ids:
                 lal = LinkAgencyLocation(location_id=location_id, agency_id=agency.id)
-                self.session.add(lal)
+                session.add(lal)
 
         return agency.id
 
-    @session_manager
-    def add_location_to_agency(self, location_id: int, agency_id: int):
+    @session_manager_v2
+    def add_location_to_agency(
+        self,
+        session: Session,
+        location_id: int,
+        agency_id: int
+    ):
         lal = LinkAgencyLocation(location_id=location_id, agency_id=agency_id)
-        self.session.add(lal)
+        session.add(lal)
 
     def remove_location_from_agency(self, location_id: int, agency_id: int):
         query = delete(LinkAgencyLocation).where(
@@ -1025,9 +1033,10 @@ class DatabaseClient:
             column_to_return="id",
         )
 
-    @session_manager
+    @session_manager_v2
     def _select_from_relation(
         self,
+        session: Session,
         relation_name: str,
         columns: list[str],
         where_mappings: Optional[Union[list[WhereMapping], dict]] = [True],
@@ -1061,9 +1070,9 @@ class DatabaseClient:
             alias_mappings,
         )
         if apply_uniqueness_constraints:
-            raw_results = self.session.execute(query()).mappings().unique().all()
+            raw_results = session.execute(query()).mappings().unique().all()
         else:
-            raw_results = self.session.execute(query()).mappings().all()
+            raw_results = session.execute(query()).mappings().all()
         results = self._process_results(
             build_metadata=build_metadata,
             raw_results=raw_results,
@@ -1179,9 +1188,10 @@ class DatabaseClient:
 
         return final_results
 
-    @session_manager
+    @session_manager_v2
     def get_agencies(
         self,
+        session: Session,
         order_by: Optional[OrderByParameters] = None,
         page: Optional[int] = 1,
         limit: Optional[int] = PAGE_SIZE,
@@ -1213,7 +1223,7 @@ class DatabaseClient:
             .offset(self.get_offset(page))
         )
 
-        results: list[Agency] = self.session.execute(query).scalars(Agency).all()
+        results: list[Agency] = session.execute(query).scalars(Agency).all()
         final_results = []
         for result in results:
             agency_dictionary = agency_to_get_agencies_output(
@@ -1223,9 +1233,10 @@ class DatabaseClient:
 
         return final_results
 
-    @session_manager
+    @session_manager_v2
     def get_agency_by_id(
         self,
+        session: Session,
         agency_id: int,
     ):
         # TODO: QueryBuilder
@@ -1233,16 +1244,17 @@ class DatabaseClient:
 
         query = select(Agency).options(*load_options).where(Agency.id == agency_id)
 
-        result: Agency = self.session.execute(query).scalars(Agency).first()
+        result: Agency = session.execute(query).scalars(Agency).first()
         agency_dictionary = agency_to_get_agencies_output(
             result,
         )
 
         return agency_dictionary
 
-    @session_manager
+    @session_manager_v2
     def get_data_sources(
         self,
+        session: Session,
         data_sources_columns: list[str],
         data_requests_columns: list[str],
         order_by: Optional[OrderByParameters] = None,
@@ -1276,7 +1288,7 @@ class DatabaseClient:
         ).offset(self.get_offset(page))
 
         results: list[DataSourceExpanded] = (
-            self.session.execute(query).scalars(DataSource).all()
+            session.execute(query).scalars(DataSource).all()
         )
         final_results = []
         for result in results:
@@ -1289,9 +1301,10 @@ class DatabaseClient:
 
         return final_results
 
-    @session_manager
+    @session_manager_v2
     def get_data_source_related_agencies(
         self,
+        session: Session,
         data_source_id: int,
     ) -> Optional[list[dict]]:
         query = (
@@ -1303,7 +1316,7 @@ class DatabaseClient:
         )
 
         result: DataSourceExpanded = (
-            self.session.execute(query).scalars(DataSourceExpanded).first()
+            session.execute(query).scalars(DataSourceExpanded).first()
         )
         if result is None:
             return None
@@ -1315,9 +1328,10 @@ class DatabaseClient:
 
         return agency_dicts
 
-    @session_manager
+    @session_manager_v2
     def get_data_source_by_id(
         self,
+        session: Session,
         data_source_id: int,
         data_sources_columns: list[str],
         data_requests_columns: list[str],
@@ -1335,7 +1349,7 @@ class DatabaseClient:
         )
 
         result: DataSourceExpanded = (
-            self.session.execute(query).scalars(DataSourceExpanded).first()
+            session.execute(query).scalars(DataSourceExpanded).first()
         )
         if result is None:
             return None
@@ -1348,9 +1362,9 @@ class DatabaseClient:
 
         return data_source_dictionary
 
-    @session_manager
-    def run_query_builder(self, query_builder: QueryBuilderBase):
-        return query_builder.build(self.session)
+    @session_manager_v2
+    def run_query_builder(self, session: Session, query_builder: QueryBuilderBase):
+        return query_builder.build(session)
 
     def _select_single_entry_from_relation(
         self,
@@ -1405,10 +1419,10 @@ class DatabaseClient:
         result = self.scalar(query)
         return result is not None
 
-    # @cursor_manager()
-    @session_manager
+    @session_manager_v2
     def _delete_from_table(
         self,
+        session: Session,
         table_name: str,
         id_column_value: str | int,
         id_column_name: str = "id",
@@ -1419,7 +1433,7 @@ class DatabaseClient:
         table = SQL_ALCHEMY_TABLE_REFERENCE[table_name]
         column = getattr(table, id_column_name)
         query = delete(table).where(column == id_column_value)
-        self.session.execute(query)
+        session.execute(query)
 
     delete_data_request = partialmethod(_delete_from_table, table_name="data_requests")
 
@@ -1610,8 +1624,8 @@ class DatabaseClient:
             for result in results
         ]
 
-    @session_manager
-    def optionally_update_user_notification_queue(self):
+    @session_manager_v2
+    def optionally_update_user_notification_queue(self, session: Session):
         """
         Clears and repopulates the user notification queue with new notifications
         :return:
@@ -1648,14 +1662,14 @@ class DatabaseClient:
             )
         )
 
-        raw_results = self.session.execute(data_request_query).mappings().all()
+        raw_results = session.execute(data_request_query).mappings().all()
         for result in raw_results:
             queue = DataRequestUserNotificationQueue(
                 user_id=result["user_id"],
                 event_id=result["event_id"],
             )
-            self.session.add(queue)
-        self.session.flush()
+            session.add(queue)
+        session.flush()
 
         data_source_query = (
             select(
@@ -1688,13 +1702,13 @@ class DatabaseClient:
             )
         )
 
-        raw_results = self.session.execute(data_source_query).mappings().all()
+        raw_results = session.execute(data_source_query).mappings().all()
         for result in raw_results:
             queue = DataSourceUserNotificationQueue(
                 user_id=result["user_id"],
                 event_id=result["event_id"],
             )
-            self.session.add(queue)
+            session.add(queue)
 
     def get_national_location_id(self) -> int:
         query = select(Location.id).where(

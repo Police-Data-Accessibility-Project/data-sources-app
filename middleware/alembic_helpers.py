@@ -131,3 +131,12 @@ def record_type_id_column():
         sa.ForeignKey("record_types.id", ondelete="CASCADE"),
         nullable=False,
     )
+
+def updated_at_column():
+    return sa.Column(
+        "updated_at",
+        sa.DateTime,
+        server_default=sa.func.now(),
+        server_onupdate=sa.func.now(),
+        nullable=False,
+    )
