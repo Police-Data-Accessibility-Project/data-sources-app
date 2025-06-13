@@ -110,7 +110,7 @@ def send_search_results(search_results: list[dict], output_format: OutputFormatE
 
 def send_as_json(search_results):
     formatted_search_results = format_search_results(search_results)
-    return make_response(formatted_search_results, HTTPStatus.OK)
+    return make_response(formatted_search_results)
 
 
 def send_as_csv(search_results):

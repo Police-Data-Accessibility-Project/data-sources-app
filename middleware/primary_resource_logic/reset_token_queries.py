@@ -82,7 +82,7 @@ def reset_password(
     validate_user_ids_match(access_info.user_id, user_id)
 
     set_user_password(db_client=db_client, user_id=user_id, password=dto.password)
-    return make_response({"message": "Successfully updated password"})
+    return message_response("Successfully updated password")
 
 
 def validate_user_ids_match(user_id: int, token_user_id: int):
@@ -116,10 +116,6 @@ def set_user_password(db_client: DatabaseClient, user_id: int, password: str):
     )
 
 
-def invalid_token_response():
-    return make_response({"message": "Token is invalid"}, HTTPStatus.BAD_REQUEST)
-
-
 def token_is_expired(token_create_date):
     token_expired = (datetime.utcnow() - token_create_date).total_seconds() > 900
     return token_expired
@@ -127,7 +123,7 @@ def token_is_expired(token_create_date):
 
 def reset_token_validation(db_client: DatabaseClient, token):
     validate_token(db_client, token)
-    return make_response({"message": "Token is valid"}, HTTPStatus.OK)
+    return message_response("Token is valid")
 
 
 def validate_token(db_client: DatabaseClient, token) -> int:

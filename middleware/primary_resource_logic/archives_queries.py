@@ -62,4 +62,4 @@ def update_archives_data(
 
     db_client.update_last_cached(data_id, last_cached)
 
-    return make_response({"status": "success"}, HTTPStatus.OK)
+    return make_response({"status": "success"})

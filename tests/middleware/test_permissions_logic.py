@@ -44,9 +44,7 @@ def test_permissions_manager_init_user_not_found(mock):
 def test_get_user_permissions(mock):
     pm = PermissionsManager(mock.db_client, mock.user_email)
     pm.get_user_permissions()
-    mock.make_response.assert_called_with(
-        [PermissionsEnum.READ_ALL_USER_INFO.value], HTTPStatus.OK
-    )
+    mock.make_response.assert_called_with([PermissionsEnum.READ_ALL_USER_INFO.value])
 
 
 def test_add_user_permission_conflict(mock):

@@ -8,6 +8,7 @@ from werkzeug.exceptions import Unauthorized, BadRequest
 
 from db.client.core import DatabaseClient
 from db.enums import ExternalAccountTypeEnum
+from middleware.common_response_formatting import message_response
 from middleware.custom_dataclasses import GithubUserInfo
 from middleware.exceptions import UserNotFoundError
 from middleware.primary_resource_logic.login_queries import login_response
@@ -77,9 +78,7 @@ def link_github_account_request(
         github_user_info=github_user_info,
         pdap_account_email=pdap_account_email,
     )
-    return make_response(
-        {"message": "Successfully linked Github account"}, HTTPStatus.OK
-    )
+    return message_response("Successfully linked Github account")
 
 
 def link_github_account(

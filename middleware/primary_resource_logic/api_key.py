@@ -39,8 +39,7 @@ def create_api_key_for_user(
 
     api_key = ApiKey()
     db_client.update_user_api_key(user_id=user_id, api_key=api_key.key_hash)
-    payload = {"api_key": api_key.raw_key}
-    return make_response(payload, HTTPStatus.OK)
+    return make_response({"api_key": api_key.raw_key})
 
 
 def api_key_is_associated_with_user(db_client: DatabaseClient, raw_key: str) -> bool:

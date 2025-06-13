@@ -81,7 +81,7 @@ class PermissionsManager:
 
     def get_user_permissions(self) -> Response:
         permissions_list = [permission.value for permission in self.permissions]
-        return make_response(permissions_list, HTTPStatus.OK)
+        return make_response(permissions_list)
 
     def add_user_permission(self, permission: PermissionsEnum) -> Response:
         if permission in self.permissions:
