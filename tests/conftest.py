@@ -70,16 +70,6 @@ def flask_client_with_db(monkeypatch):
 
 
 @pytest.fixture
-def bypass_api_key_required(monkeypatch):
-    """
-    A fixture to bypass the api_key required decorator for testing
-    :param monkeypatch:
-    :return:
-    """
-    monkeypatch.setattr("middleware.decorators.check_api_key", lambda: None)
-
-
-@pytest.fixture
 def bypass_jwt_required(monkeypatch):
     """
     A fixture to bypass the jwt required decorator for testing
@@ -142,8 +132,8 @@ def test_data_creator_db_client() -> TestDataCreatorDBClient:
     yield TestDataCreatorDBClient()
 
 
-@pytest.fixture(scope="function")
-def test_data_creator_flask(monkeysession) -> TestDataCreatorFlask:
+@pytest.fixture(scope="session")
+def flask_client(monkeysession):
     from app import create_app
 
     mock_get_flask_app_secret_key = MagicMock(return_value="test")
@@ -159,10 +149,15 @@ def test_data_creator_flask(monkeysession) -> TestDataCreatorFlask:
     # Disable rate limiting for tests
     limiter.enabled = False
     with app.test_client() as client:
-        tdc = TestDataCreatorFlask(client)
-        tdc.clear_test_data()
-        yield tdc
+        yield client
     limiter.enabled = True
+
+
+@pytest.fixture(scope="function")
+def test_data_creator_flask(flask_client) -> TestDataCreatorFlask:
+    tdc = TestDataCreatorFlask(flask_client)
+    tdc.clear_test_data()
+    yield tdc
 
 
 @pytest.fixture(scope="session")

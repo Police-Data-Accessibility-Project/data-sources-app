@@ -823,48 +823,6 @@ def test_user_is_creator_of_data_request(live_database_client):
 #     assert new_result["airtable_uid"] != airtable_uid
 
 
-def test_get_related_data_sources(
-    test_data_creator_db_client: TestDataCreatorDBClient, live_database_client
-):
-    tdc = test_data_creator_db_client
-
-    # Create two data sources
-    source_column_value_mappings = []
-    source_ids = []
-    for i in range(2):
-        data_source_info = tdc.data_source()
-        source_column_value_mapping = {
-            "id": data_source_info.id,
-            "name": data_source_info.name,
-        }
-        source_id = data_source_info.id
-        source_column_value_mappings.append(source_column_value_mapping)
-        source_ids.append(source_id)
-
-    # Create a request
-    data_request_info = tdc.data_request()
-    request_id = data_request_info.id
-    submission_notes = data_request_info.submission_notes
-
-    # Associate them in the link table
-    for source_id in source_ids:
-        live_database_client.create_request_source_relation(
-            column_value_mappings={
-                "request_id": request_id,
-                "data_source_id": source_id,
-            }
-        )
-
-    results = live_database_client.get_related_data_sources(data_request_id=request_id)
-
-    assert len(results) == 2
-
-    for result in results:
-        assert result["name"] in [
-            source["name"] for source in source_column_value_mappings
-        ]
-
-
 def test_create_request_source_relation(
     test_data_creator_db_client: TestDataCreatorDBClient, live_database_client
 ):

@@ -19,8 +19,8 @@ def initialize_sqlalchemy_session() -> sessionmaker[Session]:
         do_database_url = "postgresql+psycopg" + do_database_url[10:]
 
         engine = create_engine(do_database_url, pool_pre_ping=True)
-        session = sessionmaker(bind=engine)
-        return session
+        sm = sessionmaker(bind=engine)
+        return sm
 
     except sqlalchemy.exc.SQLAlchemyError as e:
         raise DatabaseInitializationError(e) from e

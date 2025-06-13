@@ -1361,22 +1361,6 @@ class DatabaseClient:
             return None
         return result["id"]
 
-    def get_related_data_sources(self, data_request_id: int) -> List[dict]:
-        """
-        Get data sources related to the request id
-        :param data_request_id:
-        :return:
-        """
-        query = sql.SQL(
-            """
-            SELECT ds.id, ds.name
-            FROM link_data_sources_data_requests link
-            INNER JOIN data_sources ds on link.data_source_id = ds.id
-            WHERE link.request_id = {request_id}
-        """
-        ).format(request_id=sql.Literal(data_request_id))
-        return self.execute_composed_sql(query, return_results=True)
-
     def get_data_requests_for_creator(
         self, creator_user_id: str, columns: List[str]
     ) -> List[str]:
@@ -1445,12 +1429,6 @@ class DatabaseClient:
     delete_data_source_agency_relation = partialmethod(
         _delete_from_table, table_name=Relations.LINK_AGENCIES_DATA_SOURCES.value
     )
-
-    @cursor_manager()
-    def execute_composed_sql(self, query: sql.Composed, return_results: bool = False):
-        self.cursor.execute(query)
-        if return_results:
-            return self.cursor.fetchall()
 
     def get_agencies_without_homepage_urls(self) -> list[dict]:
         return self.execute_raw_sql(
