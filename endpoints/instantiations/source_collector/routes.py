@@ -1,20 +1,20 @@
+from endpoints._helpers.response_info import ResponseInfo
+from endpoints.psycopg_resource import PsycopgResource
+from endpoints.schema_config.enums import SchemaConfigs
 from endpoints.schema_config.instantiations.source_collector.data_sources import (
     SourceCollectorDataSourcesPostEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.source_collector.duplicates import (
     SourceCollectorDuplicatesPostEndpointSchemaConfig,
 )
-from middleware.security.access_info.primary import AccessInfoPrimary
-from middleware.security.auth.info.base import AuthenticationInfo
 from middleware.decorators.decorators import endpoint_info
 from middleware.enums import AccessTypeEnum, PermissionsEnum
 from middleware.primary_resource_logic.source_collector import (
     add_data_sources_from_source_collector,
     check_for_duplicate_urls,
 )
-from endpoints.psycopg_resource import PsycopgResource
-from endpoints.schema_config.enums import SchemaConfigs
-from endpoints._helpers.response_info import ResponseInfo
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.info.base import AuthenticationInfo
 from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_source_collector = create_namespace(AppNamespaces.SOURCE_COLLECTOR)
