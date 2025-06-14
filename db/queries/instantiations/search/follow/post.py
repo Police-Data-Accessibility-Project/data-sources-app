@@ -7,7 +7,7 @@ from db.models.implementations.link import (
     LinkUserFollowedLocation,
     LinkFollowRecordType,
 )
-from db.queries.search.follow.base import FollowBaseQueryBuilder
+from db.queries.instantiations.search.follow.base import FollowBaseQueryBuilder
 
 
 class CreateFollowQueryBuilder(FollowBaseQueryBuilder):

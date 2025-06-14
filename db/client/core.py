@@ -17,8 +17,8 @@ from typing import (
 
 import psycopg
 import sqlalchemy.exc
-from psycopg import connection as PgConnection
-from psycopg import sql, Cursor
+from psycopg import connection as PgConnection, sql
+from psycopg import Cursor
 from psycopg.rows import dict_row, tuple_row
 from sqlalchemy import (
     select,
@@ -103,12 +103,14 @@ from db.models.implementations.core.notification.queue.data_request import (
 from db.models.implementations.core.notification.queue.data_source import (
     DataSourceUserNotificationQueue,
 )
+from db.models.implementations.core.permission import Permission
 from db.models.implementations.core.recent_search.core import RecentSearch
 from db.models.implementations.core.record.category import RecordCategory
 from db.models.implementations.core.record.type import RecordType
 from db.models.implementations.core.reset_token import ResetToken
 from db.models.implementations.core.user.core import User
 from db.models.implementations.core.user.pending import PendingUser
+from db.models.implementations.core.user.permission import UserPermission
 from db.models.implementations.link import (
     LinkAgencyDataSource,
     LinkAgencyLocation,
@@ -123,19 +125,26 @@ from db.models.table_reference import (
     convert_to_column_reference,
 )
 from db.queries.builder import QueryBuilderBase
-from db.queries.map.counties import GET_MAP_COUNTIES_QUERY
-from db.queries.map.data_source_count import GET_DATA_SOURCE_COUNT_BY_LOCATION_TYPE_QUERY
-from db.queries.map.data_sources import GET_DATA_SOURCES_FOR_MAP_QUERY
-from db.queries.map.localities import GET_MAP_LOCALITIES_QUERY
-from db.queries.map.states import GET_MAP_STATES_QUERY
-from db.queries.metrics.get import GET_METRICS_QUERY
-from db.queries.notifications.post import NotificationsPostQueryBuilder
-from db.queries.search.follow.delete import DeleteFollowQueryBuilder
-from db.queries.search.follow.get import GetUserFollowedSearchesQueryBuilder
-from db.queries.search.follow.post import CreateFollowQueryBuilder
-from db.queries.user_profile.get_user_recent_searches import (
+from db.queries.instantiations.agencies.get import GetAgenciesQueryBuilder
+from db.queries.instantiations.map.counties import GET_MAP_COUNTIES_QUERY
+from db.queries.instantiations.map.data_source_count import (
+    GET_DATA_SOURCE_COUNT_BY_LOCATION_TYPE_QUERY,
+)
+from db.queries.instantiations.map.data_sources import GET_DATA_SOURCES_FOR_MAP_QUERY
+from db.queries.instantiations.map.localities import GET_MAP_LOCALITIES_QUERY
+from db.queries.instantiations.map.states import GET_MAP_STATES_QUERY
+from db.queries.instantiations.metrics.get import GET_METRICS_QUERY
+from db.queries.instantiations.notifications.post import NotificationsPostQueryBuilder
+from db.queries.instantiations.search.follow.delete import DeleteFollowQueryBuilder
+from db.queries.instantiations.search.follow.get import (
+    GetUserFollowedSearchesQueryBuilder,
+)
+from db.queries.instantiations.search.follow.post import CreateFollowQueryBuilder
+from db.queries.instantiations.user_profile.get_user_recent_searches import (
     GetUserRecentSearchesQueryBuilder,
 )
+
+from db.queries.models.get_params import GetParams
 from db.subquery_logic import SubqueryParameters
 from middleware.custom_dataclasses import EventBatch
 from middleware.enums import (
@@ -453,9 +462,7 @@ class DatabaseClient:
 
         :return: A list of MapInfo namedtuples, each containing details of a data source.
         """
-        self.cursor.execute(
-            cast(LiteralString, GET_DATA_SOURCES_FOR_MAP_QUERY)
-        )
+        self.cursor.execute(cast(LiteralString, GET_DATA_SOURCES_FOR_MAP_QUERY))
         results = self.cursor.fetchall()
 
         return [self.MapInfo(*result) for result in results]
@@ -763,7 +770,6 @@ class DatabaseClient:
             )
         return tcr
 
-    @cursor_manager()
     def add_user_permission(self, user_id: str or int, permission: PermissionsEnum):
         """
         Adds a permission to a user.
@@ -771,49 +777,36 @@ class DatabaseClient:
         :param user_id: The ID of the user.
         :param permission: The permission to add.
         """
-        query = sql.SQL(
-            """
-            INSERT INTO user_permissions (user_id, permission_id) 
-            VALUES (
-                {id}, 
-                (SELECT id FROM permissions WHERE permission_name = {permission})
-            );
-        """
-        ).format(
-            id=sql.Literal(user_id),
-            permission=sql.Literal(permission.value),
+        permission_id_subquery = (
+            select(Permission.id)
+            .where(Permission.permission_name == permission.value)
+            .scalar_subquery()
         )
-        self.cursor.execute(query)
+        up = UserPermission(
+            user_id=user_id, permission_id=cast(int, permission_id_subquery)
+        )
+        self.add(up)
 
-    @cursor_manager()
     def remove_user_permission(self, user_id: str, permission: PermissionsEnum):
-        query = sql.SQL(
-            """
-            DELETE FROM user_permissions
-            WHERE user_id = {user_id}
-            AND permission_id = (SELECT id FROM permissions WHERE permission_name = {permission});
-        """
-        ).format(
-            user_id=sql.Literal(user_id),
-            permission=sql.Literal(permission.value),
+        query = delete(UserPermission).where(
+            UserPermission.user_id == user_id,
+            UserPermission.permission_id
+            == (
+                select(Permission.id).where(
+                    Permission.permission_name == permission.value
+                )
+            ),
         )
-        self.cursor.execute(query)
+        self.execute(query)
 
-    @cursor_manager()
     def get_user_permissions(self, user_id: int) -> List[PermissionsEnum]:
-        query = sql.SQL(
-            """
-            SELECT p.permission_name
-            FROM 
-            user_permissions up
-            INNER JOIN permissions p on up.permission_id = p.id
-            where up.user_id = {user_id}
-        """
-        ).format(
-            user_id=sql.Literal(user_id),
+        query = (
+            select(Permission.permission_name)
+            .select_from(UserPermission)
+            .join(Permission, UserPermission.permission_id == Permission.id)
+            .where(UserPermission.user_id == user_id)
         )
-        self.cursor.execute(query)
-        results = self.cursor.fetchall()
+        results = self.mappings(query)
         return [PermissionsEnum(row["permission_name"]) for row in results]
 
     @session_manager_v2
@@ -939,10 +932,7 @@ class DatabaseClient:
 
     @session_manager_v2
     def add_location_to_agency(
-        self,
-        session: Session,
-        location_id: int,
-        agency_id: int
+        self, session: Session, location_id: int, agency_id: int
     ):
         lal = LinkAgencyLocation(location_id=location_id, agency_id=agency_id)
         session.add(lal)
@@ -1171,50 +1161,25 @@ class DatabaseClient:
 
         return final_results
 
-    @session_manager_v2
     def get_agencies(
         self,
-        session: Session,
         order_by: Optional[OrderByParameters] = None,
         page: Optional[int] = 1,
         limit: Optional[int] = PAGE_SIZE,
         requested_columns: Optional[list[str]] = None,
         approval_status: Optional[ApprovalStatus] = None,
     ):
-        # TODO: QueryBuilder
-
-        order_by_clause = DynamicQueryConstructor.get_sql_alchemy_order_by_clause(
+        params = GetParams(
             order_by=order_by,
-            relation=Relations.AGENCIES.value,
-            default=asc(Agency.id),
+            page=page,
+            limit=limit,
+            requested_columns=requested_columns,
         )
-
-        load_options = DynamicQueryConstructor.agencies_get_load_options(
-            requested_columns=requested_columns
+        builder = GetAgenciesQueryBuilder(
+            params=params,
+            approval_status=approval_status,
         )
-
-        # TODO: This format can be extracted to a function (see get_data_sources)
-        query = select(Agency)
-
-        if approval_status is not None:
-            query = query.where(Agency.approval_status == approval_status.value)
-
-        query = (
-            query.options(*load_options)
-            .order_by(order_by_clause)
-            .limit(limit)
-            .offset(self.get_offset(page))
-        )
-
-        results: list[Agency] = session.execute(query).scalars(Agency).all()
-        final_results = []
-        for result in results:
-            agency_dictionary = agency_to_get_agencies_output(
-                result, requested_columns=requested_columns
-            )
-            final_results.append(agency_dictionary)
-
-        return final_results
+        return self.run_query_builder(builder)
 
     @session_manager_v2
     def get_agency_by_id(

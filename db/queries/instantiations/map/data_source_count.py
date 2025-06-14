@@ -1,5 +1,3 @@
-
-
 GET_DATA_SOURCE_COUNT_BY_LOCATION_TYPE_QUERY = """
 SELECT 
     localities,

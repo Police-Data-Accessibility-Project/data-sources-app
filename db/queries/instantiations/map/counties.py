@@ -1,5 +1,3 @@
-
-
 GET_MAP_COUNTIES_QUERY = """
 SELECT 
     location_id,

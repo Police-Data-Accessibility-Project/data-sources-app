@@ -1,5 +1,4 @@
-
-GET_METRICS_QUERY =             """
+GET_METRICS_QUERY = """
             SELECT
                 COUNT(*),
                 'source_count' "Count Type"

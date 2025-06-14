@@ -1,5 +1,3 @@
-
-
 GET_DATA_SOURCES_FOR_MAP_QUERY = """
             SELECT
                 DATA_SOURCES.id AS DATA_SOURCE_ID,

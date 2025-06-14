@@ -1,4 +1,3 @@
-
 GET_MAP_STATES_QUERY = """
             SELECT 
                 location_id,

@@ -1,5 +1,3 @@
-
-
 GET_MAP_LOCALITIES_QUERY = """
 SELECT 
     location_id,
