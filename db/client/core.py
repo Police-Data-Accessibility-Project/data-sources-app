@@ -32,7 +32,7 @@ from sqlalchemy import (
     union_all,
     case,
     text,
-    RowMapping,
+    RowMapping, or_,
 )
 from sqlalchemy.orm import (
     load_only,
@@ -61,9 +61,10 @@ from db.enums import (
     RequestStatus,
     LocationType,
     ApprovalStatus,
-    UpdateFrequency,
+    UpdateFrequency, URLStatus,
 )
 from db.exceptions import LocationDoesNotExistError
+from db.helpers import get_offset
 from db.helpers_.psycopg import initialize_psycopg_connection
 from db.helpers_.result_formatting import (
     get_expanded_display_name,
@@ -488,7 +489,6 @@ class DatabaseClient:
         ["id", "url", "update_frequency", "last_cached", "broken_url_as_of"],
     )
 
-    @cursor_manager()
     def get_data_sources_to_archive(
         self,
         update_frequency: Optional[UpdateFrequency] = None,
@@ -509,37 +509,46 @@ class DatabaseClient:
 
         :return: A list of ArchiveInfo namedtuples, each containing archive details of a data source.
         """
-        sql_query = """
-        SELECT
-            data_sources.id,
-            source_url,
-            update_frequency,
-            last_cached,
-            broken_source_url_as_of
-        FROM
-            data_sources
-        INNER JOIN
-            data_sources_archive_info
-        ON
-            data_sources.id = data_sources_archive_info.data_source_id
-        WHERE 
-            approval_status = 'approved' AND (
-                last_cached IS NULL 
-                OR update_frequency IS NOT NULL
+        def get_where_queries():
+            clauses = [
+                DataSource.approval_status == ApprovalStatus.APPROVED.value,
+                or_(
+                    DataSourceArchiveInfo.last_cached.is_(None),
+                    DataSourceArchiveInfo.update_frequency.isnot(None),
+                ),
+                DataSource.url_status != URLStatus.BROKEN.value,
+                DataSource.source_url.isnot(None),
+            ]
+            if update_frequency is not None:
+                clauses.append(
+                    DataSourceArchiveInfo.update_frequency == update_frequency.value
+                )
+            if last_archived_before is not None:
+                clauses.append(
+                    DataSourceArchiveInfo.last_cached < last_archived_before
+                )
+            return clauses
+
+        query = (
+            select(
+                DataSource.id,
+                DataSource.source_url,
+                DataSourceArchiveInfo.update_frequency,
+                DataSourceArchiveInfo.last_cached,
+                DataSource.broken_source_url_as_of,
             )
-            AND url_status <> 'broken' 
-            AND source_url IS NOT NULL
-        """
+            .select_from(DataSource)
+            .join(
+                DataSourceArchiveInfo,
+                DataSource.id == DataSourceArchiveInfo.data_source_id,
+            )
+            .where(
+                *get_where_queries()
+            )
+            .limit(PAGE_SIZE).offset(get_offset(page))
+        )
 
-        if update_frequency is not None:
-            sql_query += f" AND update_frequency = '{update_frequency.value}'"
-        if last_archived_before is not None:
-            sql_query += f" AND last_cached < '{last_archived_before}'"
-
-        sql_query += f" LIMIT {PAGE_SIZE} OFFSET {self.get_offset(page)}"
-
-        self.cursor.execute(cast(LiteralString, sql_query))
-        data_sources = self.cursor.fetchall()
+        data_sources = self.mappings(query)
 
         results = [
             self.ArchiveInfo(
