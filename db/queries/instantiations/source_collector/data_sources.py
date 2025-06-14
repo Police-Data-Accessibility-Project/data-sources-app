@@ -5,12 +5,12 @@ from db.models.implementations import LinkAgencyDataSource
 from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.record.type import RecordType
 from db.queries.builder import QueryBuilderBase
-from middleware.enums import DataSourceCreationResponse
-from middleware.schema_and_dto.dtos.source_collector.data_sources.post.request import (
-    SourceCollectorPostRequestInnerDTO,
-)
-from middleware.schema_and_dto.dtos.source_collector.data_sources.post.response import (
+from endpoints.instantiations.source_collector.dtos.data_sources.post.response import (
     SourceCollectorPostResponseInnerDTO,
+)
+from middleware.enums import DataSourceCreationResponse
+from endpoints.instantiations.source_collector.dtos.data_sources.post.request import (
+    SourceCollectorPostRequestInnerDTO,
 )
 
 

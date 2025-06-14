@@ -7,6 +7,7 @@ from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 from jwt import DecodeError, ExpiredSignatureError
 
+from endpoints.instantiations.source_collector.routes import namespace_source_collector
 from middleware.scheduled_tasks.manager import SchedulerManager
 from middleware.security.jwt.core import SimpleJWT
 from middleware.scheduled_tasks.check_database_health import check_database_health
@@ -30,7 +31,6 @@ from endpoints.instantiations.permissions import namespace_permissions
 from endpoints.instantiations.proposals import namespace_proposals
 from endpoints.instantiations.search import namespace_search
 from endpoints.instantiations.signup import namespace_signup
-from endpoints.instantiations.source_collector import namespace_source_collector
 from endpoints.instantiations.typeahead_suggestions import (
     namespace_typeahead_suggestions,
 )

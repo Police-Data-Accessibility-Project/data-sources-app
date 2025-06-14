@@ -1,10 +1,10 @@
 from flask import make_response
 
 from db.client.core import DatabaseClient
-from middleware.schema_and_dto.dtos.source_collector.data_sources.duplicates import (
+from endpoints.instantiations.source_collector.dtos.data_sources.duplicates import (
     SourceCollectorDuplicatesPostRequestDTO,
 )
-from middleware.schema_and_dto.dtos.source_collector.data_sources.post.request import (
+from endpoints.instantiations.source_collector.dtos.data_sources.post.request import (
     SourceCollectorPostRequestDTO,
 )
 from middleware.util.url import normalize_url

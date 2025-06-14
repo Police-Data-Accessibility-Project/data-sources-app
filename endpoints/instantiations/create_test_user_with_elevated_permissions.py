@@ -18,6 +18,7 @@ from flask import request
 from flask_restx import fields, abort
 from werkzeug.exceptions import Unauthorized, InternalServerError
 
+from db.client.context_manager import setup_database_client
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from middleware.primary_resource_logic.api_key import create_api_key_for_user
@@ -92,7 +93,7 @@ class CreateTestUserWithElevatedPermissions(PsycopgResource):
             email=auto_user_email,
             password=auto_user_password,
         )
-        with self.setup_database_client() as db_client:
+        with setup_database_client() as db_client:
             user_post_results(db_client=db_client, dto=dto)
             for permission in [
                 PermissionsEnum.READ_ALL_USER_INFO,

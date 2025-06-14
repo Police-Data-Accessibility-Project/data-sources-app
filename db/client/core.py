@@ -157,6 +157,9 @@ from db.queries.instantiations.util.select_from_relation import (
 )
 from db.queries.models.get_params import GetParams
 from db.subquery_logic import SubqueryParameters
+from endpoints.instantiations.source_collector.dtos.data_sources.post.response import (
+    SourceCollectorPostResponseInnerDTO,
+)
 from middleware.custom_dataclasses import EventBatch
 from middleware.enums import (
     PermissionsEnum,
@@ -179,11 +182,8 @@ from middleware.schema_and_dto.dtos.match.response import (
 from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
-from middleware.schema_and_dto.dtos.source_collector.data_sources.post.request import (
+from endpoints.instantiations.source_collector.dtos.data_sources.post.request import (
     SourceCollectorPostRequestInnerDTO,
-)
-from middleware.schema_and_dto.dtos.source_collector.data_sources.post.response import (
-    SourceCollectorPostResponseInnerDTO,
 )
 
 from middleware.util.argument_checking import check_for_mutually_exclusive_arguments

@@ -1,11 +1,11 @@
 from endpoints.schema_config.config.core import EndpointSchemaConfig
-from middleware.schema_and_dto.dtos.source_collector.data_sources.duplicates import (
+from endpoints.instantiations.source_collector.dtos.data_sources.duplicates import (
     SourceCollectorDuplicatesPostRequestDTO,
 )
-from middleware.schema_and_dto.schemas.source_collector.duplicate.request import (
+from endpoints.instantiations.source_collector.schemas.duplicate.request import (
     SourceCollectorDuplicatesPostRequestSchema,
 )
-from middleware.schema_and_dto.schemas.source_collector.duplicate.response import (
+from endpoints.instantiations.source_collector.schemas.duplicate.response import (
     SourceCollectorDuplicatePostResponseSchema,
 )
 
