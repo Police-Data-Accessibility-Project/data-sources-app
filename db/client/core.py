@@ -1,6 +1,5 @@
 from collections import namedtuple
 from datetime import datetime
-from enum import Enum
 from functools import partialmethod
 from operator import and_
 from typing import (
@@ -140,8 +139,10 @@ from db.queries.instantiations.search.follow.post import CreateFollowQueryBuilde
 from db.queries.instantiations.user_profile.get_user_recent_searches import (
     GetUserRecentSearchesQueryBuilder,
 )
+from db.queries.instantiations.util.create_entry_in_table import CreateEntryInTableQueryBuilder
 from db.queries.instantiations.util.get_columns_for_relation import get_columns_for_relation_query
 from db.queries.instantiations.util.refresh_all_materialized_views import REFRESH_ALL_MATERIALIZED_VIEWS_QUERIES
+from db.queries.instantiations.util.select_from_relation import SelectFromRelationQueryBuilder
 from db.queries.models.get_params import GetParams
 from db.subquery_logic import SubqueryParameters
 from middleware.custom_dataclasses import EventBatch
@@ -753,47 +754,18 @@ class DatabaseClient:
         id_column_name="id",
     )
 
-    @staticmethod
-    def update_dictionary_enum_values(d: dict):
-        """
-        Update a dictionary's values such that any which are enums are converted to the enum value
-        Only works for flat, one-level dictionaries
-        :param d:
-        :return:
-        """
-        return {
-            key: (value.value if isinstance(value, Enum) else value)
-            for key, value in d.items()
-        }
-
-    @session_manager_v2
     def _create_entry_in_table(
         self,
-        session: Session,
         table_name: str,
         column_value_mappings: dict[str, str],
         column_to_return: Optional[str] = None,
     ) -> Optional[Any]:
-        """
-        Creates a new entry in a table in the database, using the provided column value mappings
-
-        :param table_name: The name of the table to create an entry in.
-        :param column_value_mappings: A dictionary mapping column names to their new values.
-        """
-        column_value_mappings = self.update_dictionary_enum_values(
-            column_value_mappings
+        builder = CreateEntryInTableQueryBuilder(
+            table_name=table_name,
+            column_value_mappings=column_value_mappings,
+            column_to_return=column_to_return,
         )
-        table = SQL_ALCHEMY_TABLE_REFERENCE[table_name]
-        statement = insert(table.__table__).values(**column_value_mappings)
-
-        if column_to_return is not None:
-            column = getattr(table, column_to_return)
-            statement = statement.returning(column)
-        result = session.execute(statement)
-
-        if column_to_return is not None:
-            return result.fetchone()[0]
-        return None
+        return self.run_query_builder(builder)
 
     create_data_request = partialmethod(
         _create_entry_in_table, table_name="data_requests", column_to_return="id"
@@ -913,10 +885,8 @@ class DatabaseClient:
             column_to_return="id",
         )
 
-    @session_manager_v2
     def _select_from_relation(
         self,
-        session: Session,
         relation_name: str,
         columns: list[str],
         where_mappings: Optional[Union[list[WhereMapping], dict]] = [True],
@@ -928,110 +898,20 @@ class DatabaseClient:
         alias_mappings: Optional[dict[str, str]] = None,
         apply_uniqueness_constraints: Optional[bool] = True,
     ) -> list[dict]:
-        """
-        Selects a single relation from the database
-        """
-        limit = min(limit, 100)
-        where_mappings = self._create_where_mappings_instance_if_dictionary(
-            where_mappings
-        )
-        offset = get_offset(page)
-        column_references = convert_to_column_reference(
-            columns=columns, relation=relation_name
-        )
-        query = DynamicQueryConstructor.create_selection_query(
-            relation_name,
-            column_references,
-            where_mappings,
-            limit,
-            offset,
-            order_by,
-            subquery_parameters,
-            alias_mappings,
-        )
-        if apply_uniqueness_constraints:
-            raw_results = session.execute(query()).mappings().unique().all()
-        else:
-            raw_results = session.execute(query()).mappings().all()
-        results = self._process_results(
-            build_metadata=build_metadata,
-            raw_results=raw_results,
+        builder = SelectFromRelationQueryBuilder(
             relation_name=relation_name,
+            columns=columns,
+            where_mappings=where_mappings,
+            limit=limit,
+            page=page,
+            order_by=order_by,
             subquery_parameters=subquery_parameters,
+            build_metadata=build_metadata,
+            alias_mappings=alias_mappings,
+            apply_uniqueness_constraints=apply_uniqueness_constraints,
         )
+        return self.run_query_builder(builder)
 
-        return results
-
-    def _process_results(
-        self,
-        build_metadata: bool,
-        raw_results: Sequence[RowMapping],
-        relation_name: str,
-        subquery_parameters: Optional[list[SubqueryParameters]],
-    ):
-        table_key = self._build_table_key_if_results(raw_results)
-        results = self._dictify_results(raw_results, subquery_parameters, table_key)
-        results = self._optionally_build_metadata(
-            build_metadata, relation_name, results, subquery_parameters
-        )
-        return results
-
-    @staticmethod
-    def _create_where_mappings_instance_if_dictionary(where_mappings):
-        if isinstance(where_mappings, dict):
-            where_mappings = WhereMapping.from_dict(where_mappings)
-        return where_mappings
-
-    @staticmethod
-    def _optionally_build_metadata(
-        build_metadata: bool, relation_name, results, subquery_parameters
-    ):
-        if build_metadata is True:
-            results = format_with_metadata(
-                results,
-                relation_name,
-                subquery_parameters,
-            )
-        return results
-
-    def _dictify_results(
-        self,
-        raw_results: Sequence[RowMapping],
-        subquery_parameters: Optional[list[SubqueryParameters]],
-        table_key: str,
-    ):
-        if subquery_parameters and table_key:
-            # Calls models.Base.to_dict() method
-            results = []
-            for result in raw_results:
-                val: dict = result[table_key].to_dict(subquery_parameters)
-                self._alias_subqueries(subquery_parameters, val)
-                results.append(val)
-        else:
-            results = [dict(result) for result in raw_results]
-        return results
-
-    @staticmethod
-    def _alias_subqueries(subquery_parameters, val: dict):
-        for sp in subquery_parameters:
-            if sp.alias_mappings is None:
-                continue
-            for entry in val[sp.linking_column]:
-                keys = list(entry.keys())
-                for key in keys:
-                    if key in sp.alias_mappings:
-                        alias = sp.alias_mappings[key]
-                        entry[alias] = entry[key]
-                        del entry[key]
-
-    @staticmethod
-    def _build_table_key_if_results(
-        raw_results: Sequence[RowMapping]
-    ) -> str:
-        table_key = ""
-        if len(raw_results) > 0:
-            table_key = [key for key in raw_results[0].keys()][0]
-        return table_key
 
     get_data_requests = partialmethod(
         _select_from_relation, relation_name=Relations.DATA_REQUESTS_EXPANDED.value
