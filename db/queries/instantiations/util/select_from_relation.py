@@ -76,15 +76,10 @@ class SelectFromRelationQueryBuilder(QueryBuilderBase):
     ):
         table_key = self._build_table_key_if_results(raw_results)
         results = self._dictify_results(
-            raw_results,
-            self.subquery_parameters,
-            table_key
+            raw_results, self.subquery_parameters, table_key
         )
         results = self._optionally_build_metadata(
-            self.build_metadata,
-            self.relation_name,
-            results,
-            self.subquery_parameters
+            self.build_metadata, self.relation_name, results, self.subquery_parameters
         )
         return results
 
@@ -137,9 +132,7 @@ class SelectFromRelationQueryBuilder(QueryBuilderBase):
                         del entry[key]
 
     @staticmethod
-    def _build_table_key_if_results(
-        raw_results: Sequence[RowMapping]
-    ) -> str:
+    def _build_table_key_if_results(raw_results: Sequence[RowMapping]) -> str:
         table_key = ""
         if len(raw_results) > 0:
             table_key = [key for key in raw_results[0].keys()][0]

@@ -27,7 +27,8 @@ from sqlalchemy import (
     Select,
     func,
     desc,
-    RowMapping, or_,
+    RowMapping,
+    or_,
 )
 from sqlalchemy.orm import (
     load_only,
@@ -55,7 +56,8 @@ from db.enums import (
     RequestStatus,
     LocationType,
     ApprovalStatus,
-    UpdateFrequency, URLStatus,
+    UpdateFrequency,
+    URLStatus,
 )
 from db.exceptions import LocationDoesNotExistError
 from db.helpers import get_offset
@@ -119,7 +121,9 @@ from db.models.table_reference import (
 )
 from db.queries.builder import QueryBuilderBase
 from db.queries.instantiations.agencies.get import GetAgenciesQueryBuilder
-from db.queries.instantiations.data_sources.get_data_sources import GetDataSourcesQueryBuilder
+from db.queries.instantiations.data_sources.get_data_sources import (
+    GetDataSourcesQueryBuilder,
+)
 from db.queries.instantiations.map.counties import GET_MAP_COUNTIES_QUERY
 from db.queries.instantiations.map.data_source_count import (
     GET_DATA_SOURCE_COUNT_BY_LOCATION_TYPE_QUERY,
@@ -127,8 +131,9 @@ from db.queries.instantiations.map.data_source_count import (
 from db.queries.instantiations.map.data_sources import GET_DATA_SOURCES_FOR_MAP_QUERY
 from db.queries.instantiations.map.localities import GET_MAP_LOCALITIES_QUERY
 from db.queries.instantiations.map.states import GET_MAP_STATES_QUERY
-from db.queries.instantiations.metrics.followed_searches.breakdown import \
-    GetMetricsFollowedSearchesBreakdownQueryBuilder
+from db.queries.instantiations.metrics.followed_searches.breakdown import (
+    GetMetricsFollowedSearchesBreakdownQueryBuilder,
+)
 from db.queries.instantiations.metrics.get import GET_METRICS_QUERY
 from db.queries.instantiations.notifications.post import NotificationsPostQueryBuilder
 from db.queries.instantiations.search.follow.delete import DeleteFollowQueryBuilder
@@ -139,10 +144,18 @@ from db.queries.instantiations.search.follow.post import CreateFollowQueryBuilde
 from db.queries.instantiations.user_profile.get_user_recent_searches import (
     GetUserRecentSearchesQueryBuilder,
 )
-from db.queries.instantiations.util.create_entry_in_table import CreateEntryInTableQueryBuilder
-from db.queries.instantiations.util.get_columns_for_relation import get_columns_for_relation_query
-from db.queries.instantiations.util.refresh_all_materialized_views import REFRESH_ALL_MATERIALIZED_VIEWS_QUERIES
-from db.queries.instantiations.util.select_from_relation import SelectFromRelationQueryBuilder
+from db.queries.instantiations.util.create_entry_in_table import (
+    CreateEntryInTableQueryBuilder,
+)
+from db.queries.instantiations.util.get_columns_for_relation import (
+    get_columns_for_relation_query,
+)
+from db.queries.instantiations.util.refresh_all_materialized_views import (
+    REFRESH_ALL_MATERIALIZED_VIEWS_QUERIES,
+)
+from db.queries.instantiations.util.select_from_relation import (
+    SelectFromRelationQueryBuilder,
+)
 from db.queries.models.get_params import GetParams
 from db.subquery_logic import SubqueryParameters
 from middleware.custom_dataclasses import EventBatch
@@ -407,6 +420,7 @@ class DatabaseClient:
 
         :return: A list of ArchiveInfo named tuples, each containing archive details of a data source.
         """
+
         def get_where_queries():
             clauses = [
                 DataSource.approval_status == ApprovalStatus.APPROVED.value,
@@ -422,9 +436,7 @@ class DatabaseClient:
                     DataSourceArchiveInfo.update_frequency == update_frequency.value
                 )
             if last_archived_before is not None:
-                clauses.append(
-                    DataSourceArchiveInfo.last_cached < last_archived_before
-                )
+                clauses.append(DataSourceArchiveInfo.last_cached < last_archived_before)
             return clauses
 
         query = (
@@ -440,10 +452,9 @@ class DatabaseClient:
                 DataSourceArchiveInfo,
                 DataSource.id == DataSourceArchiveInfo.data_source_id,
             )
-            .where(
-                *get_where_queries()
-            )
-            .limit(PAGE_SIZE).offset(get_offset(page))
+            .where(*get_where_queries())
+            .limit(PAGE_SIZE)
+            .offset(get_offset(page))
         )
 
         data_sources = self.mappings(query)
@@ -912,7 +923,6 @@ class DatabaseClient:
         )
         return self.run_query_builder(builder)
 
-
     get_data_requests = partialmethod(
         _select_from_relation, relation_name=Relations.DATA_REQUESTS_EXPANDED.value
     )
@@ -1186,9 +1196,7 @@ class DatabaseClient:
 
     def get_columns_for_relation(self, relation: Relations) -> list[dict]:
         """Get columns for a given relation."""
-        results = self.execute_raw_sql(
-            get_columns_for_relation_query(relation)
-        )
+        results = self.execute_raw_sql(get_columns_for_relation_query(relation))
         return [row["column_name"] for row in results]
 
     def get_county_id(self, county_name: str, state_id: int) -> int:
@@ -1899,11 +1907,8 @@ class DatabaseClient:
     def get_metrics_followed_searches_breakdown(
         self, dto: MetricsFollowedSearchesBreakdownRequestDTO
     ):
-        builder = GetMetricsFollowedSearchesBreakdownQueryBuilder(
-            dto=dto
-        )
+        builder = GetMetricsFollowedSearchesBreakdownQueryBuilder(dto=dto)
         return self.run_query_builder(builder)
-
 
     def get_metrics_followed_searches_aggregate(self):
         # TODO: QueryBuilder
@@ -1930,10 +1935,7 @@ class DatabaseClient:
             "last_notification_date": result.last_notification.strftime("%Y-%m-%d"),
         }
 
-    def get_duplicate_urls_bulk(
-        self,
-        urls: List[str]
-    ) -> Sequence:
+    def get_duplicate_urls_bulk(self, urls: List[str]) -> Sequence:
         """Return all URLs that already exist in the database."""
         stmt = select(DistinctSourceURL.original_url).where(
             DistinctSourceURL.base_url.in_(urls)

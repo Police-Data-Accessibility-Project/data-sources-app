@@ -19,6 +19,7 @@ def update_dictionary_enum_values(d: dict):
         for key, value in d.items()
     }
 
+
 class CreateEntryInTableQueryBuilder(QueryBuilderBase):
     """
     Creates a new entry in a table in the database, using the provided column value mappings
