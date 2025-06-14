@@ -31,7 +31,6 @@ from sqlalchemy import (
     or_,
 )
 from sqlalchemy.orm import (
-    load_only,
     selectinload,
     Session,
 )
@@ -66,7 +65,6 @@ from db.helpers_.result_formatting import (
     get_expanded_display_name,
     data_source_to_get_data_sources_output,
     agency_to_data_sources_get_related_agencies_output,
-    agency_to_get_agencies_output,
 )
 from db.models.base import Base
 from db.models.implementations.core.agency.core import Agency
@@ -86,12 +84,6 @@ from db.models.implementations.core.location.expanded import LocationExpanded
 from db.models.implementations.core.log.change import ChangeLog
 from db.models.implementations.core.log.notification import NotificationLog
 from db.models.implementations.core.log.table_count import TableCountLog
-from db.models.implementations.core.notification.pending.data_request import (
-    DataRequestPendingEventNotification,
-)
-from db.models.implementations.core.notification.pending.data_source import (
-    DataSourcePendingEventNotification,
-)
 from db.models.implementations.core.notification.queue.data_request import (
     DataRequestUserNotificationQueue,
 )
@@ -99,7 +91,6 @@ from db.models.implementations.core.notification.queue.data_source import (
     DataSourceUserNotificationQueue,
 )
 from db.models.implementations.core.permission import Permission
-from db.models.implementations.core.recent_search.core import RecentSearch
 from db.models.implementations.core.record.category import RecordCategory
 from db.models.implementations.core.record.type import RecordType
 from db.models.implementations.core.reset_token import ResetToken
@@ -107,10 +98,8 @@ from db.models.implementations.core.user.core import User
 from db.models.implementations.core.user.pending import PendingUser
 from db.models.implementations.core.user.permission import UserPermission
 from db.models.implementations.link import (
-    LinkAgencyDataSource,
     LinkAgencyLocation,
     LinkUserFollowedLocation,
-    LinkLocationDataRequest,
     LinkRecentSearchRecordCategories,
     LinkRecentSearchRecordTypes,
 )
@@ -137,12 +126,18 @@ from db.queries.instantiations.metrics.followed_searches.breakdown import (
 )
 from db.queries.instantiations.metrics.get import GET_METRICS_QUERY
 from db.queries.instantiations.notifications.post import NotificationsPostQueryBuilder
-from db.queries.instantiations.notifications.update_queue import OptionallyUpdateUserNotificationQueueQueryBuilder
+from db.queries.instantiations.notifications.update_queue import (
+    OptionallyUpdateUserNotificationQueueQueryBuilder,
+)
 from db.queries.instantiations.search.follow.delete import DeleteFollowQueryBuilder
 from db.queries.instantiations.search.follow.get import (
     GetUserFollowedSearchesQueryBuilder,
 )
 from db.queries.instantiations.search.follow.post import CreateFollowQueryBuilder
+from db.queries.instantiations.search.record import CreateSearchRecordQueryBuilder
+from db.queries.instantiations.source_collector.data_sources import (
+    AddDataSourcesFromSourceCollectorQueryBuilder,
+)
 from db.queries.instantiations.user_profile.get_user_recent_searches import (
     GetUserRecentSearchesQueryBuilder,
 )
@@ -164,9 +159,7 @@ from middleware.custom_dataclasses import EventBatch
 from middleware.enums import (
     PermissionsEnum,
     Relations,
-    AgencyType,
     RecordTypes,
-    DataSourceCreationResponse,
 )
 from middleware.exceptions import (
     UserNotFoundError,
@@ -180,7 +173,6 @@ from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
 from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
 from middleware.schema_and_dto.dtos.match.response import (
     AgencyMatchResponseInnerDTO,
-    AgencyMatchResponseLocationDTO,
 )
 from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
@@ -1316,7 +1308,6 @@ class DatabaseClient:
                     {queue.sent_at: datetime.now()}
                 )
 
-    @session_manager
     def create_search_record(
         self,
         user_id: int,
@@ -1326,26 +1317,13 @@ class DatabaseClient:
         ] = None,
         record_types: Optional[Union[list[RecordTypes], RecordTypes]] = None,
     ):
-        # TODO: Query Builder
-        if isinstance(record_categories, RecordCategories):
-            record_categories = [record_categories]
-
-        with self.session.begin():
-            # Insert into recent_search table and get recent_search_id
-            query = (
-                insert(RecentSearch)
-                .values({"user_id": user_id, "location_id": location_id})
-                .returning(RecentSearch.id)
-            )
-            result = self.session.execute(query)
-            recent_search_id = result.fetchone()[0]
-
-            if record_categories is not None:
-                self.insert_record_category_search_records(
-                    recent_search_id, record_categories
-                )
-            if record_types is not None:
-                self.insert_record_type_search_records(recent_search_id, record_types)
+        builder = CreateSearchRecordQueryBuilder(
+            user_id=user_id,
+            location_id=location_id,
+            record_categories=record_categories,
+            record_types=record_types,
+        )
+        return self.run_query_builder(builder)
 
     def insert_record_type_search_records(self, recent_search_id, record_types):
         # For all record types, insert into link table
@@ -1520,10 +1498,7 @@ class DatabaseClient:
         name: str,
         location_id: Optional[int] = None,
     ) -> List[AgencyMatchResponseInnerDTO]:
-        builder = GetSimilarAgenciesQueryBuilder(
-            name=name,
-            location_id=location_id
-        )
+        builder = GetSimilarAgenciesQueryBuilder(name=name, location_id=location_id)
         return self.run_query_builder(builder)
 
     def get_metrics(self):
@@ -1584,67 +1559,11 @@ class DatabaseClient:
 
         return [to_dict(result) for result in results]
 
-    @staticmethod
-    def get_record_type_cache(session: Session) -> dict[str, int]:
-        d = {}
-        for record_type in session.query(RecordType).all():
-            d[record_type.name] = record_type.id
-        return d
-
-    @session_manager
     def add_data_sources_from_source_collector(
         self, data_sources: list[SourceCollectorPostRequestInnerDTO]
     ) -> list[SourceCollectorPostResponseInnerDTO]:
-        record_type_cache = self.get_record_type_cache(self.session)
-        results: list[SourceCollectorPostResponseInnerDTO] = []
-
-        for data_source in data_sources:
-            self.session.begin_nested()  # Starts a savepoint
-            try:
-                data_source_db = DataSource(
-                    name=data_source.name,
-                    description=data_source.description,
-                    approval_status=ApprovalStatus.APPROVED.value,
-                    source_url=data_source.source_url,
-                    record_type_id=record_type_cache[data_source.record_type.value],
-                    record_formats=data_source.record_formats,
-                    data_portal_type=data_source.data_portal_type,
-                    last_approval_editor=data_source.last_approval_editor,
-                    supplying_entity=data_source.supplying_entity,
-                    submission_notes="Auto-submitted from Source Collector",
-                )
-                self.session.add(data_source_db)
-                self.session.flush()  # Execute the insert immediately
-                for agency_id in data_source.agency_ids:
-                    link = LinkAgencyDataSource(
-                        data_source_id=data_source_db.id, agency_id=agency_id
-                    )
-                    self.session.add(link)
-
-                self.session.flush()  # Execute the insert immediately
-
-                # Success! Add to results
-                dto = SourceCollectorPostResponseInnerDTO(
-                    url=data_source.source_url,
-                    status=DataSourceCreationResponse.SUCCESS,
-                    data_source_id=data_source_db.id,
-                )
-                results.append(dto)
-
-            except sqlalchemy.exc.IntegrityError as e:
-                self.session.rollback()  # Roll back to the savepoint
-                # Failure! Add to results
-                dto = SourceCollectorPostResponseInnerDTO(
-                    url=data_source.source_url,
-                    status=DataSourceCreationResponse.FAILURE,
-                    data_source_id=None,
-                    error=str(e),
-                )
-                results.append(dto)
-            else:
-                self.session.commit()  # Release the savepoint
-
-        return results
+        builder = AddDataSourcesFromSourceCollectorQueryBuilder(data_sources)
+        return self.run_query_builder(builder)
 
     @session_manager
     def update_location_by_id(self, location_id: int, dto: LocationPutDTO):
@@ -1688,7 +1607,6 @@ class DatabaseClient:
             type_=type_,
         )
         return self.run_query_builder(builder)
-
 
     @session_manager
     def add_to_notification_log(
