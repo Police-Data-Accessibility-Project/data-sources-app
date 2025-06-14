@@ -67,7 +67,6 @@ from db.helpers_.result_formatting import (
     data_source_to_get_data_sources_output,
     agency_to_data_sources_get_related_agencies_output,
     agency_to_get_agencies_output,
-    format_with_metadata,
 )
 from db.models.base import Base
 from db.models.implementations.core.agency.core import Agency
@@ -117,13 +116,14 @@ from db.models.implementations.link import (
 )
 from db.models.table_reference import (
     SQL_ALCHEMY_TABLE_REFERENCE,
-    convert_to_column_reference,
 )
 from db.queries.builder import QueryBuilderBase
-from db.queries.instantiations.agencies.get import GetAgenciesQueryBuilder
+from db.queries.instantiations.agencies.get_.by_id import GetAgencyByIDQueryBuilder
+from db.queries.instantiations.agencies.get_.many import GetAgenciesQueryBuilder
 from db.queries.instantiations.data_sources.get_data_sources import (
     GetDataSourcesQueryBuilder,
 )
+from db.queries.instantiations.locations.get.many import GetManyLocationsQueryBuilder
 from db.queries.instantiations.map.counties import GET_MAP_COUNTIES_QUERY
 from db.queries.instantiations.map.data_source_count import (
     GET_DATA_SOURCE_COUNT_BY_LOCATION_TYPE_QUERY,
@@ -136,6 +136,7 @@ from db.queries.instantiations.metrics.followed_searches.breakdown import (
 )
 from db.queries.instantiations.metrics.get import GET_METRICS_QUERY
 from db.queries.instantiations.notifications.post import NotificationsPostQueryBuilder
+from db.queries.instantiations.notifications.update_queue import OptionallyUpdateUserNotificationQueueQueryBuilder
 from db.queries.instantiations.search.follow.delete import DeleteFollowQueryBuilder
 from db.queries.instantiations.search.follow.get import (
     GetUserFollowedSearchesQueryBuilder,
@@ -984,23 +985,12 @@ class DatabaseClient:
         )
         return self.run_query_builder(builder)
 
-    @session_manager_v2
     def get_agency_by_id(
         self,
-        session: Session,
         agency_id: int,
     ):
-        # TODO: QueryBuilder
-        load_options = DynamicQueryConstructor.agencies_get_load_options()
-
-        query = select(Agency).options(*load_options).where(Agency.id == agency_id)
-
-        result: Agency = session.execute(query).scalars(Agency).first()
-        agency_dictionary = agency_to_get_agencies_output(
-            result,
-        )
-
-        return agency_dictionary
+        builder = GetAgencyByIDQueryBuilder(agency_id)
+        return self.run_query_builder(builder)
 
     def get_data_sources(
         self,
@@ -1212,13 +1202,7 @@ class DatabaseClient:
         column_value_mappings: dict[str, str],
         column_to_return: str = "id",
     ):
-        """
-        Create a value and return the id if it doesn't exist; if it does, return the id for it
-        :param table_name:
-        :param column_value_mappings:
-        :param column_to_return:
-        :return:
-        """
+        """Create a value and return the id if it doesn't exist; if it does, return the id for it."""
         try:
             return self._create_entry_in_table(
                 table_name=table_name,
@@ -1304,88 +1288,9 @@ class DatabaseClient:
             for result in results
         ]
 
-    @session_manager_v2
-    def optionally_update_user_notification_queue(self, session: Session):
-        """Clear and repopulates the user notification queue with new notifications."""
-        # TODO: QueryBuilder
-        # Get all data requests associated with the user's location that have a corresponding event
-        # (and that event is not already in user_notification_queue for that user)
-        data_request_query = (
-            select(
-                DataRequestPendingEventNotification.id.label("event_id"),
-                User.id.label("user_id"),
-            )
-            .join(
-                DataRequest,
-                DataRequest.id == DataRequestPendingEventNotification.data_request_id,
-            )
-            .join(
-                LinkLocationDataRequest,
-                LinkLocationDataRequest.data_request_id == DataRequest.id,
-            )
-            .join(Location, Location.id == LinkLocationDataRequest.location_id)
-            .join(
-                LinkUserFollowedLocation,
-                LinkUserFollowedLocation.location_id == Location.id,
-            )
-            .join(User, User.id == LinkUserFollowedLocation.user_id)
-            .where(
-                # Event ID should not be in user_notification_queue for that user
-                DataRequestPendingEventNotification.id.notin_(
-                    select(DataRequestUserNotificationQueue.event_id).where(
-                        DataRequestUserNotificationQueue.user_id == User.id
-                    )
-                )
-            )
-        )
-
-        raw_results = session.execute(data_request_query).mappings().all()
-        for result in raw_results:
-            queue = DataRequestUserNotificationQueue(
-                user_id=result["user_id"],
-                event_id=result["event_id"],
-            )
-            session.add(queue)
-        session.flush()
-
-        data_source_query = (
-            select(
-                DataSourcePendingEventNotification.id.label("event_id"),
-                User.id.label("user_id"),
-            )
-            .join(
-                DataSource,
-                DataSource.id == DataSourcePendingEventNotification.data_source_id,
-            )
-            .join(
-                LinkAgencyDataSource,
-                LinkAgencyDataSource.data_source_id == DataSource.id,
-            )
-            .join(Agency, Agency.id == LinkAgencyDataSource.agency_id)
-            .join(LinkAgencyLocation, LinkAgencyLocation.agency_id == Agency.id)
-            .join(Location, Location.id == LinkAgencyLocation.location_id)
-            .join(
-                LinkUserFollowedLocation,
-                LinkUserFollowedLocation.location_id == Location.id,
-            )
-            .join(User, User.id == LinkUserFollowedLocation.user_id)
-            .where(
-                # Event ID should not be in user_notification_queue for that user
-                DataSourcePendingEventNotification.id.notin_(
-                    select(DataSourceUserNotificationQueue.event_id).where(
-                        DataSourceUserNotificationQueue.user_id == User.id
-                    )
-                )
-            )
-        )
-
-        raw_results = session.execute(data_source_query).mappings().all()
-        for result in raw_results:
-            queue = DataSourceUserNotificationQueue(
-                user_id=result["user_id"],
-                event_id=result["event_id"],
-            )
-            session.add(queue)
+    def optionally_update_user_notification_queue(self):
+        builder = OptionallyUpdateUserNotificationQueueQueryBuilder()
+        return self.run_query_builder(builder)
 
     def get_national_location_id(self) -> int:
         query = select(Location.id).where(
@@ -1826,70 +1731,13 @@ class DatabaseClient:
         has_coordinates: Optional[bool] = None,
         type_: Optional[LocationType] = None,
     ):
-        # TODO: QueryBuilder
-        query = select(Location)
-        if has_coordinates is not None:
-            if has_coordinates:
-                query = query.where(
-                    and_(
-                        Location.lat != None,
-                        Location.lng != None,
-                    )
-                )
-            else:
-                query = query.where(
-                    and_(
-                        Location.lat == None,
-                        Location.lng == None,
-                    )
-                )
-        if type_ is not None:
-            query = query.where(Location.type == type_.value)
+        builder = GetManyLocationsQueryBuilder(
+            page=page,
+            has_coordinates=has_coordinates,
+            type_=type_,
+        )
+        return self.run_query_builder(builder)
 
-        # Select In Load
-        for relationship in (
-            "locality",
-            "county",
-            "state",
-        ):
-            query = query.options(selectinload(getattr(Location, relationship)))
-
-        # Pagination
-        query = query.offset((page - 1) * PAGE_SIZE).limit(PAGE_SIZE)
-
-        raw_results = self.session.execute(query).scalars().all()
-        results = []
-        for raw_result in raw_results:
-            result = {
-                "location_id": raw_result.id,
-                "type": raw_result.type,
-                "state_name": (
-                    raw_result.state.state_name
-                    if raw_result.state is not None
-                    else None
-                ),
-                "state_iso": (
-                    raw_result.state.state_iso if raw_result.state is not None else None
-                ),
-                "county_name": (
-                    raw_result.county.name if raw_result.county is not None else None
-                ),
-                "locality_name": (
-                    raw_result.locality.name
-                    if raw_result.locality is not None
-                    else None
-                ),
-                "county_fips": (
-                    raw_result.county.fips if raw_result.county is not None else None
-                ),
-                "coordinates": {
-                    "lat": raw_result.lat,
-                    "lng": raw_result.lng,
-                },
-            }
-            results.append(result)
-
-        return results
 
     @session_manager
     def add_to_notification_log(
