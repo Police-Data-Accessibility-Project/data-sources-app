@@ -1,23 +1,17 @@
-"""Integration tests for /data-sources-map endpoint"""
+"""Integration tests for /map/data-sources endpoint"""
 
 from db.enums import ApprovalStatus
-from endpoints.schema_config.enums import SchemaConfigs
 from endpoints.schema_config.instantiations.data_sources.map import (
     DataSourcesMapEndpointSchemaConfig,
 )
+from tests.conftest import test_data_creator_flask
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
 
-from tests.conftest import test_data_creator_flask
-
-
-# This endpoint no longer works because of the other data source endpoint
-# It is interpreted as another data source id
-# But we have not yet decided whether to modify or remove it entirely
 def test_data_sources_map_get(test_data_creator_flask: TestDataCreatorFlask):
     """
-    Test that GET call to /data-sources-map endpoint retrieves data sources and verifies the location (latitude and longitude) of a specific source by name
+    Test that GET call to /map/data-sources endpoint retrieves data sources and verifies the location (latitude and longitude) of a specific source by name
     """
     tdcf = test_data_creator_flask
     tdc = test_data_creator_flask.tdcdb

@@ -1,7 +1,7 @@
 from collections import namedtuple
 from datetime import datetime
 from enum import Enum
-from functools import wraps, partialmethod
+from functools import partialmethod
 from operator import and_
 from typing import (
     Optional,
@@ -17,9 +17,9 @@ from typing import (
 
 import psycopg
 import sqlalchemy.exc
-from psycopg import connection as PgConnection, sql
 from psycopg import Cursor
-from psycopg.rows import dict_row, tuple_row
+from psycopg import connection as pg_connection
+from psycopg.rows import tuple_row
 from sqlalchemy import (
     select,
     delete,
@@ -28,10 +28,6 @@ from sqlalchemy import (
     Select,
     func,
     desc,
-    asc,
-    union_all,
-    case,
-    text,
     RowMapping, or_,
 )
 from sqlalchemy.orm import (
@@ -39,17 +35,16 @@ from sqlalchemy.orm import (
     selectinload,
     Session,
 )
-from werkzeug.exceptions import BadRequest
 
 from db.DTOs import (
     UserInfoNonSensitive,
     UsersWithPermissions,
     DataRequestInfoForGithub,
 )
+from db.client.decorators import session_manager, session_manager_v2, cursor_manager
 from db.client.helpers import initialize_sqlalchemy_session
 from db.constants import (
     PAGE_SIZE,
-    GET_METRICS_FOLLOWED_SEARCHES_BREAKDOWN_SORTABLE_COLUMNS,
 )
 from db.db_client_dataclasses import (
     OrderByParameters,
@@ -87,7 +82,6 @@ from db.models.implementations.core.distinct_source_url import DistinctSourceURL
 from db.models.implementations.core.external_account import ExternalAccount
 from db.models.implementations.core.location.core import Location
 from db.models.implementations.core.location.county import County
-from db.models.implementations.core.location.dependent import DependentLocation
 from db.models.implementations.core.location.expanded import LocationExpanded
 from db.models.implementations.core.log.change import ChangeLog
 from db.models.implementations.core.log.notification import NotificationLog
@@ -119,7 +113,6 @@ from db.models.implementations.link import (
     LinkLocationDataRequest,
     LinkRecentSearchRecordCategories,
     LinkRecentSearchRecordTypes,
-    LinkLocationDataSourceView,
 )
 from db.models.table_reference import (
     SQL_ALCHEMY_TABLE_REFERENCE,
@@ -127,6 +120,7 @@ from db.models.table_reference import (
 )
 from db.queries.builder import QueryBuilderBase
 from db.queries.instantiations.agencies.get import GetAgenciesQueryBuilder
+from db.queries.instantiations.data_sources.get_data_sources import GetDataSourcesQueryBuilder
 from db.queries.instantiations.map.counties import GET_MAP_COUNTIES_QUERY
 from db.queries.instantiations.map.data_source_count import (
     GET_DATA_SOURCE_COUNT_BY_LOCATION_TYPE_QUERY,
@@ -134,6 +128,8 @@ from db.queries.instantiations.map.data_source_count import (
 from db.queries.instantiations.map.data_sources import GET_DATA_SOURCES_FOR_MAP_QUERY
 from db.queries.instantiations.map.localities import GET_MAP_LOCALITIES_QUERY
 from db.queries.instantiations.map.states import GET_MAP_STATES_QUERY
+from db.queries.instantiations.metrics.followed_searches.breakdown import \
+    GetMetricsFollowedSearchesBreakdownQueryBuilder
 from db.queries.instantiations.metrics.get import GET_METRICS_QUERY
 from db.queries.instantiations.notifications.post import NotificationsPostQueryBuilder
 from db.queries.instantiations.search.follow.delete import DeleteFollowQueryBuilder
@@ -144,7 +140,8 @@ from db.queries.instantiations.search.follow.post import CreateFollowQueryBuilde
 from db.queries.instantiations.user_profile.get_user_recent_searches import (
     GetUserRecentSearchesQueryBuilder,
 )
-
+from db.queries.instantiations.util.get_columns_for_relation import get_columns_for_relation_query
+from db.queries.instantiations.util.refresh_all_materialized_views import REFRESH_ALL_MATERIALIZED_VIEWS_QUERIES
 from db.queries.models.get_params import GetParams
 from db.subquery_logic import SubqueryParameters
 from middleware.custom_dataclasses import EventBatch
@@ -179,100 +176,16 @@ from middleware.schema_and_dto.dtos.source_collector.post.response import (
     SourceCollectorPostResponseInnerDTO,
 )
 from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
-from middleware.util.env import get_env_variable
 from utilities.enums import RecordCategories
-
-DATA_SOURCES_MAP_COLUMN = [
-    "data_source_id",
-    "name",
-    "agency_id",
-    "agency_name",
-    "state_iso",
-    "municipality",
-    "county_name",
-    "record_type",
-    "lat",
-    "lng",
-]
-
-
-def session_manager(method):
-    @wraps(method)
-    def wrapper(self: "DatabaseClient", *args, **kwargs):
-        self.session = self.session_maker()
-        try:
-            result = method(self, *args, **kwargs)
-            self.session.flush()
-            self.session.commit()
-            return result
-        except Exception as e:
-            self.session.rollback()
-            raise e
-        finally:
-            self.session.close()
-            self.session = None
-
-    return wrapper
-
-
-def session_manager_v2(method):
-    @wraps(method)
-    def wrapper(self: "DatabaseClient", *args, **kwargs):
-        session = self.session_maker()
-        try:
-            result = method(self, session, *args, **kwargs)
-            session.commit()
-            return result
-        except Exception as e:
-            session.rollback()
-            raise e
-        finally:
-            session.close()  # Ensures the session is cleaned up
-
-    return wrapper
 
 
 class DatabaseClient:
 
     def __init__(self):
-        self.connection: PgConnection = initialize_psycopg_connection()
+        self.connection: pg_connection = initialize_psycopg_connection()
         self.session_maker = initialize_sqlalchemy_session()
         self.session = None
         self.cursor: Optional[Cursor] = None
-
-    def cursor_manager(row_factory=dict_row):
-        """Decorator method for managing a cursor object.
-        The cursor is closed after the method concludes its execution.
-
-        :param row_factory: Row factory for the cursor, defaults to dict_row
-        """
-
-        def decorator(method):
-            @wraps(method)
-            def wrapper(self, *args, **kwargs):
-                # Open a new cursor
-                # If connection is closed, reopen
-                if self.connection.closed != 0:
-                    self.connection = initialize_psycopg_connection()
-                self.cursor = self.connection.cursor(row_factory=row_factory)
-                try:
-                    # Execute the method
-                    result = method(self, *args, **kwargs)
-                    # Commit the transaction if no exception occurs
-                    self.connection.commit()
-                    return result
-                except Exception as e:
-                    # Rollback in case of an error
-                    self.connection.rollback()
-                    raise e
-                finally:
-                    # Close the cursor
-                    self.cursor.close()
-                    self.cursor = None
-
-            return wrapper
-
-        return decorator
 
     @cursor_manager()
     def execute_raw_sql(
@@ -461,28 +374,12 @@ class DatabaseClient:
         """
         Returns a list of data sources with relevant info for the map from the database.
 
-        :return: A list of MapInfo namedtuples, each containing details of a data source.
+        :return: A list of MapInfo named tuples, each containing details of a data source.
         """
         self.cursor.execute(cast(LiteralString, GET_DATA_SOURCES_FOR_MAP_QUERY))
         results = self.cursor.fetchall()
 
         return [self.MapInfo(*result) for result in results]
-
-    @staticmethod
-    def get_offset(page: int) -> Optional[int]:
-        """
-        Calculates the offset value for pagination based on the given page number.
-        Args:
-            page (int): The page number for which the offset is to be calculated. Starts at 0.
-        Returns:
-            int: The calculated offset value.
-        Example:
-            >>> get_offset(3)
-            2000
-        """
-        if page is None:
-            return None
-        return (page - 1) * PAGE_SIZE
 
     ArchiveInfo = namedtuple(
         "ArchiveInfo",
@@ -507,7 +404,7 @@ class DatabaseClient:
         AND the source url is not broken
         AND the source url is not null.
 
-        :return: A list of ArchiveInfo namedtuples, each containing archive details of a data source.
+        :return: A list of ArchiveInfo named tuples, each containing archive details of a data source.
         """
         def get_where_queries():
             clauses = [
@@ -856,7 +753,8 @@ class DatabaseClient:
         id_column_name="id",
     )
 
-    def update_dictionary_enum_values(self, d: dict):
+    @staticmethod
+    def update_dictionary_enum_values(d: dict):
         """
         Update a dictionary's values such that any which are enums are converted to the enum value
         Only works for flat, one-level dictionaries
@@ -1037,7 +935,7 @@ class DatabaseClient:
         where_mappings = self._create_where_mappings_instance_if_dictionary(
             where_mappings
         )
-        offset = self.get_offset(page)
+        offset = get_offset(page)
         column_references = convert_to_column_reference(
             columns=columns, relation=relation_name
         )
@@ -1067,7 +965,7 @@ class DatabaseClient:
     def _process_results(
         self,
         build_metadata: bool,
-        raw_results: list,
+        raw_results: Sequence[RowMapping],
         relation_name: str,
         subquery_parameters: Optional[list[SubqueryParameters]],
     ):
@@ -1078,13 +976,15 @@ class DatabaseClient:
         )
         return results
 
-    def _create_where_mappings_instance_if_dictionary(self, where_mappings):
+    @staticmethod
+    def _create_where_mappings_instance_if_dictionary(where_mappings):
         if isinstance(where_mappings, dict):
             where_mappings = WhereMapping.from_dict(where_mappings)
         return where_mappings
 
+    @staticmethod
     def _optionally_build_metadata(
-        self, build_metadata: bool, relation_name, results, subquery_parameters
+        build_metadata: bool, relation_name, results, subquery_parameters
     ):
         if build_metadata is True:
             results = format_with_metadata(
@@ -1096,7 +996,7 @@ class DatabaseClient:
 
     def _dictify_results(
         self,
-        raw_results: list,
+        raw_results: Sequence[RowMapping],
         subquery_parameters: Optional[list[SubqueryParameters]],
         table_key: str,
     ):
@@ -1111,7 +1011,8 @@ class DatabaseClient:
             results = [dict(result) for result in raw_results]
         return results
 
-    def _alias_subqueries(self, subquery_parameters, val: dict):
+    @staticmethod
+    def _alias_subqueries(subquery_parameters, val: dict):
         for sp in subquery_parameters:
             if sp.alias_mappings is None:
                 continue
@@ -1123,7 +1024,10 @@ class DatabaseClient:
                         entry[alias] = entry[key]
                         del entry[key]
 
-    def _build_table_key_if_results(self, raw_results: list) -> str:
+    @staticmethod
+    def _build_table_key_if_results(
+        raw_results: Sequence[RowMapping]
+    ) -> str:
         table_key = ""
         if len(raw_results) > 0:
             table_key = [key for key in raw_results[0].keys()][0]
@@ -1208,10 +1112,8 @@ class DatabaseClient:
 
         return agency_dictionary
 
-    @session_manager_v2
     def get_data_sources(
         self,
-        session: Session,
         data_sources_columns: list[str],
         data_requests_columns: list[str],
         order_by: Optional[OrderByParameters] = None,
@@ -1219,44 +1121,15 @@ class DatabaseClient:
         limit: Optional[int] = PAGE_SIZE,
         approval_status: Optional[ApprovalStatus] = None,
     ):
-        # TODO: QueryBuilder
-
-        order_by_clause = DynamicQueryConstructor.get_sql_alchemy_order_by_clause(
-            order_by=order_by,
-            relation=Relations.DATA_SOURCES.value,
-            default=asc(DataSourceExpanded.id),
-        )
-
-        load_options = DynamicQueryConstructor.data_sources_get_load_options(
-            data_requests_columns=data_requests_columns,
+        builder = GetDataSourcesQueryBuilder(
             data_sources_columns=data_sources_columns,
+            data_requests_columns=data_requests_columns,
+            order_by=order_by,
+            page=page,
+            limit=limit,
+            approval_status=approval_status,
         )
-
-        # TODO: This format can be extracted to a function (see get_agencies)
-        query = select(DataSourceExpanded)
-
-        if approval_status is not None:
-            query = query.where(
-                DataSourceExpanded.approval_status == approval_status.value
-            )
-
-        query = (
-            query.options(*load_options).order_by(order_by_clause).limit(limit)
-        ).offset(self.get_offset(page))
-
-        results: Sequence[DataSourceExpanded] = (
-            session.execute(query).scalars(DataSource).all()
-        )
-        final_results = []
-        for result in results:
-            data_source_dictionary = data_source_to_get_data_sources_output(
-                result,
-                data_sources_columns=data_sources_columns,
-                data_requests_columns=data_requests_columns,
-            )
-            final_results.append(data_source_dictionary)
-
-        return final_results
+        return self.run_query_builder(builder)
 
     @session_manager_v2
     def get_data_source_related_agencies(
@@ -1358,7 +1231,7 @@ class DatabaseClient:
 
     def get_data_requests_for_creator(
         self, creator_user_id: str, columns: List[str]
-    ) -> List[str]:
+    ) -> Sequence[RowMapping]:
         selects = []
         for column in columns:
             sel = getattr(DataRequest, column)
@@ -1432,21 +1305,10 @@ class DatabaseClient:
         return self.cursor.fetchall()
 
     def get_columns_for_relation(self, relation: Relations) -> list[dict]:
-        """
-        Get columns for a given relation
-        :param relation:
-        :return:
-        """
+        """Get columns for a given relation."""
         results = self.execute_raw_sql(
-            """
-            SELECT column_name
-            FROM information_schema.columns
-            WHERE table_schema = 'public'
-            AND table_name = %s
-        """,
-            (relation.value,),
+            get_columns_for_relation_query(relation)
         )
-
         return [row["column_name"] for row in results]
 
     def get_county_id(self, county_name: str, state_id: int) -> int:
@@ -1556,10 +1418,7 @@ class DatabaseClient:
 
     @session_manager_v2
     def optionally_update_user_notification_queue(self, session: Session):
-        """
-        Clears and repopulates the user notification queue with new notifications
-        :return:
-        """
+        """Clear and repopulates the user notification queue with new notifications."""
         # TODO: QueryBuilder
         # Get all data requests associated with the user's location that have a corresponding event
         # (and that event is not already in user_notification_queue for that user)
@@ -1981,7 +1840,8 @@ class DatabaseClient:
 
         return [to_dict(result) for result in results]
 
-    def get_record_type_cache(self, session: Session) -> dict[str, int]:
+    @staticmethod
+    def get_record_type_cache(session: Session) -> dict[str, int]:
         d = {}
         for record_type in session.query(RecordType).all():
             d[record_type.name] = record_type.id
@@ -2057,20 +1917,7 @@ class DatabaseClient:
         self.execute_raw_sql(f"REFRESH MATERIALIZED VIEW {view_name};")
 
     def refresh_all_materialized_views(self):
-        self.execute_raw_sql(
-            """
-        DO $$
-        DECLARE
-            rec RECORD;
-        BEGIN
-            FOR rec IN SELECT schemaname, matviewname FROM pg_matviews
-            LOOP
-                EXECUTE 'REFRESH MATERIALIZED VIEW ' || quote_ident(rec.schemaname) || '.' || quote_ident(rec.matviewname);
-            END LOOP;
-        END;
-        $$;
-        """
-        )
+        self.execute_raw_sql(REFRESH_ALL_MATERIALIZED_VIEWS_QUERIES)
 
     def get_map_localities(self):
         return self.execute_raw_sql(GET_MAP_LOCALITIES_QUERY)
@@ -2169,214 +2016,14 @@ class DatabaseClient:
             item.created_at = dt
         self.session.add(item)
 
-    @session_manager
     def get_metrics_followed_searches_breakdown(
         self, dto: MetricsFollowedSearchesBreakdownRequestDTO
     ):
-        # TODO: QueryBuilder
-        sortable_columns = GET_METRICS_FOLLOWED_SEARCHES_BREAKDOWN_SORTABLE_COLUMNS
-
-        if dto.sort_by is not None:
-            if dto.sort_by not in sortable_columns:
-                raise BadRequest(
-                    description=f"Invalid sort_by value: {dto.sort_by}; must be one of {sortable_columns}",
-                )
-
-        # Get last notification time
-        last_notification_query = (
-            select(NotificationLog.created_at)
-            .order_by(NotificationLog.created_at.desc())
-            .limit(1)
-            .cte("last_notification")
+        builder = GetMetricsFollowedSearchesBreakdownQueryBuilder(
+            dto=dto
         )
+        return self.run_query_builder(builder)
 
-        last_notification = last_notification_query.c.created_at
-
-        base_search_url = (
-            f"{get_env_variable("VITE_VUE_APP_BASE_URL")}"
-            f"/search/results?location_id="
-        )
-
-        def count_distinct(field, label):
-            return func.count(func.distinct(field)).label(label)
-
-        # Dependent Location CTE
-        dlsq = union_all(
-            select(
-                Location.id.label("location_id"),
-                DependentLocation.dependent_location_id,
-            ).join(
-                DependentLocation,
-                Location.id == DependentLocation.parent_location_id,
-                isouter=True,
-            ),
-            select(
-                Location.id.label("location_id"),
-                Location.id.label("dependent_location_id"),
-            ),
-        ).cte(name="dependent_locations_cte")
-
-        def maybe_limit(column, limit_to_before_last_notification):
-            """Maybe limit to before the last notification"""
-            return (
-                column < last_notification
-                if limit_to_before_last_notification
-                else True
-            )
-
-        def follower_count_subquery():
-            link = LinkUserFollowedLocation
-            return (
-                select(
-                    link.location_id.label("location_id"),
-                    count_distinct(link.user_id, "total_count"),
-                    count_distinct(
-                        case(
-                            (link.created_at < last_notification, link.user_id),
-                        ),
-                        "old_count",
-                    ),
-                )
-                .join(dlsq, link.location_id == dlsq.c.dependent_location_id)
-                .group_by(link.location_id)
-                .cte("follow_counts")
-            )
-
-        def source_count_subquery():
-            link = LinkLocationDataSourceView
-            ds = DataSource
-            return (
-                select(
-                    dlsq.c.location_id.label("location_id"),
-                    count_distinct(ds.id, "total_count"),
-                    count_distinct(
-                        case((ds.created_at < last_notification, ds.id)),
-                        "old_count",
-                    ),
-                )
-                .join(link, link.location_id == dlsq.c.dependent_location_id)
-                .join(ds, ds.id == link.data_source_id)
-                .where(ds.approval_status == ApprovalStatus.APPROVED.value)
-                .group_by(dlsq.c.location_id)
-                .cte("source_counts")
-            )
-
-        def requests_col(request_status: RequestStatus, limit: bool, label: str):
-            dr = DataRequest
-            return count_distinct(
-                case(
-                    (
-                        and_(
-                            dr.request_status == request_status.value,
-                            maybe_limit(dr.date_status_last_changed, limit),
-                        ),
-                        dr.id,
-                    )
-                ),
-                label=f"{label}_count",
-            )
-
-        def requests_count_subquery():
-            dr = DataRequest
-            rs = RequestStatus
-            link = LinkLocationDataRequest
-            return (
-                select(
-                    dlsq.c.location_id.label("location_id"),
-                    requests_col(rs.READY_TO_START, False, "total_approved"),
-                    requests_col(rs.READY_TO_START, True, "old_approved"),
-                    requests_col(rs.COMPLETE, False, "total_complete"),
-                    requests_col(rs.COMPLETE, True, "old_complete"),
-                )
-                .join(link, link.location_id == dlsq.c.dependent_location_id)
-                .join(dr, dr.id == link.data_request_id)
-                .group_by(dlsq.c.location_id)
-                .cte("request_counts")
-            )
-
-        def get_diff_v2(attr1, attr2, attribute_name):
-            return (func.coalesce(attr1, 0) - func.coalesce(attr2, 0)).label(
-                f"{attribute_name}_change"
-            )
-
-        follows = follower_count_subquery()
-        diff_follows = get_diff_v2(
-            follows.c.total_count, follows.c.old_count, "follower"
-        )
-
-        sources = source_count_subquery()
-        diff_sources = get_diff_v2(sources.c.total_count, sources.c.old_count, "source")
-
-        requests = requests_count_subquery()
-        diff_approved_requests = get_diff_v2(
-            requests.c.total_approved_count,
-            requests.c.old_approved_count,
-            "approved_requests",
-        )
-        diff_completed_requests = get_diff_v2(
-            requests.c.total_complete_count,
-            requests.c.old_complete_count,
-            "completed_requests",
-        )
-
-        def coalesce(attr, label):
-            return func.coalesce(attr, 0).label(label)
-
-        final_query = (
-            select(
-                follows.c.location_id,
-                LocationExpanded.full_display_name.label("location_name"),
-                coalesce(follows.c.total_count, "follower_count"),
-                diff_follows,
-                coalesce(sources.c.total_count, "source_count"),
-                diff_sources,
-                coalesce(requests.c.total_approved_count, "approved_requests_count"),
-                diff_approved_requests,
-                coalesce(requests.c.total_complete_count, "completed_requests_count"),
-                diff_completed_requests,
-                func.concat(base_search_url, LocationExpanded.id).label("search_url"),
-            )
-            .select_from(follows)
-            .join(LocationExpanded, follows.c.location_id == LocationExpanded.id)
-        )
-
-        for subquery in [sources, requests]:
-            final_query = final_query.outerjoin(
-                subquery,
-                follows.c.location_id == subquery.c.location_id,
-            )
-
-        # The follower count must be nonzero
-        final_query = final_query.where(
-            follows.c.total_count > 0,
-        )
-
-        if dto.sort_by is not None:
-            final_query = final_query.order_by(
-                text(f"{dto.sort_by} {dto.sort_order.value}")
-            )
-        final_query = final_query.limit(100).offset((dto.page - 1) * 100)
-
-        raw_results = self.session.execute(final_query).all()
-
-        results = []
-        for result in raw_results:
-            d = {
-                "location_name": result.location_name,
-                "location_id": result.location_id,
-                "follower_count": result.follower_count,
-                "follower_change": result.follower_change,
-                "source_count": result.source_count,
-                "source_change": result.source_change,
-                "approved_requests_count": result.approved_requests_count,
-                "approved_requests_change": result.approved_requests_change,
-                "completed_requests_count": result.completed_requests_count,
-                "completed_requests_change": result.completed_requests_change,
-                "search_url": result.search_url,
-            }
-            results.append(d)
-
-        return results
 
     def get_metrics_followed_searches_aggregate(self):
         # TODO: QueryBuilder
@@ -2403,10 +2050,11 @@ class DatabaseClient:
             "last_notification_date": result.last_notification.strftime("%Y-%m-%d"),
         }
 
-    def get_duplicate_urls_bulk(self, urls: List[str]) -> list[str]:
-        """
-        Returns all URLs that already exist in the database
-        """
+    def get_duplicate_urls_bulk(
+        self,
+        urls: List[str]
+    ) -> Sequence:
+        """Return all URLs that already exist in the database."""
         stmt = select(DistinctSourceURL.original_url).where(
             DistinctSourceURL.base_url.in_(urls)
         )

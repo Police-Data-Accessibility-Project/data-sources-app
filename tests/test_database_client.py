@@ -16,6 +16,7 @@ from db.db_client_dataclasses import (
     OrderByParameters,
     WhereMapping,
 )
+from db.helpers import get_offset
 from db.subquery_logic import SubqueryParameterManager
 from db.enums import (
     ExternalAccountTypeEnum,
@@ -377,7 +378,7 @@ def test_get_data_sources_for_map(
 def test_get_offset():
     # Send a page number to the DatabaseClient method
     # Confirm that the correct offset is returned
-    assert DatabaseClient.get_offset(page=3) == 200
+    assert get_offset(page=3) == 200
 
 
 def test_get_data_sources_to_archive(
