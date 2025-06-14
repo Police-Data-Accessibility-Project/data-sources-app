@@ -1,5 +1,5 @@
 from endpoints.schema_config.config.core import EndpointSchemaConfig
-from middleware.schema_and_dto.dtos.source_collector.post.request import (
+from middleware.schema_and_dto.dtos.source_collector.data_sources.post.request import (
     SourceCollectorPostRequestDTO,
 )
 from middleware.schema_and_dto.schemas.source_collector.post.request import (

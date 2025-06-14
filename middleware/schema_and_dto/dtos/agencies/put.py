@@ -8,7 +8,7 @@ from middleware.schema_and_dto.dtos.agencies._helpers import (
     get_jurisdiction_type_field,
 )
 from middleware.schema_and_dto.dtos.agencies.base import AgencyInfoBaseDTO
-from middleware.schema_and_dto.dynamic_logic.pydantic_to_marshmallow.generator.models.metadata import (
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.metadata import (
     MetadataInfo,
 )
 

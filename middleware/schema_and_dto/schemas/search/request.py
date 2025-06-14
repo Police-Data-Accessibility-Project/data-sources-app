@@ -1,10 +1,7 @@
 from marshmallow import Schema, fields
 
 from middleware.enums import OutputFormatEnum
-from middleware.schema_and_dto.dtos.search.request import SearchRequestsDTO
-from middleware.schema_and_dto.dynamic_logic.pydantic_to_marshmallow.core import (
-    generate_marshmallow_schema,
-)
+
 from middleware.schema_and_dto.schemas.search._helpers import (
     RECORD_CATEGORY_METADATA,
     RECORD_TYPE_METADATA,

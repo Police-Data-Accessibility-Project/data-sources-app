@@ -19,13 +19,13 @@ from endpoints._helpers.response_info import ResponseInfo
 from endpoints.psycopg_resource import handle_exceptions
 from endpoints.schema_config.config.manager import OutputSchemaManager
 from endpoints.schema_config.enums import SchemaConfigs
+from middleware.schema_and_dto.dynamic.schema.documentation_construction import (
+    get_restx_param_documentation,
+)
 from middleware.security.auth.helpers import get_authentication
 from middleware.security.parser_determinator import ParserDeterminator
 from middleware.security.auth.info.base import AuthenticationInfo
 from middleware.enums import PermissionsEnum, AccessTypeEnum
-from middleware.schema_and_dto.dynamic_logic.dynamic_schema_documentation_construction import (
-    get_restx_param_documentation,
-)
 from middleware.schema_and_dto.non_dto_dataclasses import FlaskRestxDocInfo
 
 

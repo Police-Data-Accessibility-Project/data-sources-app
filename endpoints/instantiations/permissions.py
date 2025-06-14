@@ -2,6 +2,9 @@ from http import HTTPStatus
 
 from flask import Response, request
 
+from middleware.schema_and_dto.dynamic.schema.documentation_construction import (
+    get_restx_param_documentation,
+)
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.info.instantiations import (
     WRITE_ONLY_AUTH_INFO,
@@ -20,9 +23,6 @@ from endpoints.schema_config.enums import SchemaConfigs
 from endpoints._helpers.parser import add_jwt_header_arg
 from endpoints._helpers.response_info import ResponseInfo
 from utilities.namespace import AppNamespaces, create_namespace
-from middleware.schema_and_dto.dynamic_logic.dynamic_schema_documentation_construction import (
-    get_restx_param_documentation,
-)
 from middleware.schema_and_dto.non_dto_dataclasses import SchemaPopulateParameters
 
 namespace_permissions = create_namespace(namespace_attributes=AppNamespaces.PERMISSIONS)

@@ -4,7 +4,7 @@ from typing import Optional, Type, Dict, Any
 
 from marshmallow.fields import Field
 
-from middleware.schema_and_dto.dynamic_logic.dynamic_schema_request_content_population import (
+from middleware.schema_and_dto.dynamic.schema.request_content_population import (
     get_nested_dto_info_list,
 )
 from middleware.schema_and_dto.enums import CSVColumnCondition

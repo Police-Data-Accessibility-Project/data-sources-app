@@ -4,7 +4,7 @@ from middleware.enums import RecordTypes, PermissionsEnum
 from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )
-from middleware.schema_and_dto.dtos.source_collector.post.request import (
+from middleware.schema_and_dto.dtos.source_collector.data_sources.post.request import (
     SourceCollectorPostRequestInnerDTO,
     SourceCollectorPostRequestDTO,
 )

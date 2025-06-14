@@ -25,7 +25,6 @@ from sqlalchemy import (
     update,
     Select,
     func,
-    desc,
     RowMapping,
 )
 from sqlalchemy.orm import (
@@ -59,7 +58,6 @@ from db.exceptions import LocationDoesNotExistError
 from db.helpers_.psycopg import initialize_psycopg_connection
 from db.helpers_.result_formatting import (
     get_expanded_display_name,
-    data_source_to_get_data_sources_output,
     agency_to_data_sources_get_related_agencies_output,
 )
 from db.models.base import Base
@@ -181,12 +179,13 @@ from middleware.schema_and_dto.dtos.match.response import (
 from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
-from middleware.schema_and_dto.dtos.source_collector.post.request import (
+from middleware.schema_and_dto.dtos.source_collector.data_sources.post.request import (
     SourceCollectorPostRequestInnerDTO,
 )
-from middleware.schema_and_dto.dtos.source_collector.post.response import (
+from middleware.schema_and_dto.dtos.source_collector.data_sources.post.response import (
     SourceCollectorPostResponseInnerDTO,
 )
+
 from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
 from utilities.enums import RecordCategories
 

@@ -4,7 +4,7 @@ from pydantic import BaseModel, model_validator, Field
 from werkzeug.exceptions import BadRequest
 
 from middleware.enums import RecordTypes
-from middleware.schema_and_dto.dynamic_logic.pydantic_to_marshmallow.generator.models.metadata import (
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.metadata import (
     MetadataInfo,
 )
 from utilities.enums import RecordCategories, SourceMappingEnum

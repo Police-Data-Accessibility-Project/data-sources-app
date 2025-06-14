@@ -1,12 +1,10 @@
-from http import HTTPStatus
 from typing import Optional
 
 from flask import Response
 from werkzeug.exceptions import Forbidden
 
 from db.enums import ColumnPermissionEnum, RelationRoleEnum
-from db.subquery_logic import SubqueryParameters
-from middleware.column_permission_logic import (
+from middleware.column_permission.core import (
     RelationRoleParameters,
     get_permitted_columns,
     get_invalid_columns,

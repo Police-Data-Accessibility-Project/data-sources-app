@@ -12,7 +12,7 @@ from db.enums import (
 )
 from db.subquery_logic import SubqueryParameterManager, SubqueryParameters
 from middleware.security.access_info.primary import AccessInfoPrimary
-from middleware.column_permission_logic import (
+from middleware.column_permission.core import (
     get_permitted_columns,
     RelationRoleParameters,
 )

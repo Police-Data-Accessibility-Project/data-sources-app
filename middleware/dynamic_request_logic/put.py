@@ -2,9 +2,8 @@ from typing import Optional
 
 from flask import Response
 
-from middleware.column_permission_logic import (
+from middleware.column_permission.core import (
     RelationRoleParameters,
-    check_has_permission_to_edit_columns,
 )
 from middleware.common_response_formatting import message_response
 from middleware.custom_dataclasses import DeferredFunction

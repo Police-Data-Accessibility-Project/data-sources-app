@@ -7,14 +7,15 @@ from flask_restx import Resource
 
 from config import config
 from db.client.core import DatabaseClient
-from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
-from db.helpers_.psycopg import initialize_psycopg_connection
-from middleware.schema_and_dto.dynamic_logic.dynamic_schema_request_content_population import (
-    populate_schema_with_request_content,
-)
-from middleware.schema_and_dto.dynamic_logic.dynamic_dto_request_content_population import (
+from middleware.schema_and_dto.dynamic.dto_request_content_population import (
     populate_dto_with_request_content,
 )
+from middleware.schema_and_dto.dynamic.schema.request_content_population import (
+    populate_schema_with_request_content,
+)
+from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
+from db.helpers_.psycopg import initialize_psycopg_connection
+
 from middleware.schema_and_dto.non_dto_dataclasses import (
     SchemaPopulateParameters,
     DTOPopulateParameters,
