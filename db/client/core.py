@@ -23,7 +23,6 @@ from sqlalchemy import (
     select,
     delete,
     update,
-    insert,
     Select,
     func,
     desc,
@@ -97,8 +96,6 @@ from db.models.implementations.core.user.permission import UserPermission
 from db.models.implementations.link import (
     LinkAgencyLocation,
     LinkUserFollowedLocation,
-    LinkRecentSearchRecordCategories,
-    LinkRecentSearchRecordTypes,
 )
 from db.models.table_reference import (
     SQL_ALCHEMY_TABLE_REFERENCE,
@@ -110,10 +107,16 @@ from db.queries.instantiations.data_sources.archive import (
     GetDataSourcesToArchiveQueryBuilder,
     ArchiveInfo,
 )
-from db.queries.instantiations.data_sources.get_data_sources import (
+from db.queries.instantiations.data_sources.get.by_id import (
+    GetDataSourceByIDQueryBuilder,
+)
+from db.queries.instantiations.data_sources.get.many import (
     GetDataSourcesQueryBuilder,
 )
 from db.queries.instantiations.locations.get.many import GetManyLocationsQueryBuilder
+from db.queries.instantiations.log.most_recent_logged_table_counts import (
+    GetMostRecentLoggedTableCountsQueryBuilder,
+)
 from db.queries.instantiations.map.counties import GET_MAP_COUNTIES_QUERY
 from db.queries.instantiations.map.data_source_count import (
     GET_DATA_SOURCE_COUNT_BY_LOCATION_TYPE_QUERY,
@@ -295,7 +298,7 @@ class DatabaseClient:
 
     def get_reset_token_info(self, token: str) -> Optional[ResetTokenInfo]:
         """
-        Checks if a reset token exists in the database and retrieves the associated user data.
+        Check if reset token exists in the database and retrieves the associated user data.
 
         :param token: The reset token to check.
         :return: ResetTokenInfo if the token exists; otherwise, None.
@@ -312,22 +315,11 @@ class DatabaseClient:
         )
 
     def add_reset_token(self, user_id: int, token: str):
-        """
-        Inserts a new reset token into the database for a specified email.
-
-        :param user_id: The user_id to associate with the reset token.
-        :param token: The reset token to add.
-
-        """
+        """Inserts a new reset token into the database for a specified user."""
         self.add(ResetToken(user_id=user_id, token=token))
 
     def delete_reset_token(self, user_id: int, token: str):
-        """
-        Deletes a reset token from the database for a specified email.
-
-        :param user_id: The user_id associated with the reset token to delete.
-        :param token: The reset token to delete.
-        """
+        """Deletes a reset token from the database for a specified user id."""
         query = delete(ResetToken).where(
             ResetToken.user_id == user_id, ResetToken.token == token
         )
@@ -338,7 +330,6 @@ class DatabaseClient:
     def get_user_by_api_key(self, api_key: str) -> Optional[UserIdentifiers]:
         """
         Get user id for a given api key
-        :param api_key: The api key to check.
         :return: RoleInfo if the token exists; otherwise, None.
         """
         query = select(User.id, User.email).where(User.api_key == api_key)
@@ -348,11 +339,7 @@ class DatabaseClient:
         return self.UserIdentifiers(id=result["id"], email=result["email"])
 
     def update_user_api_key(self, api_key: str, user_id: int):
-        """
-        Update the api key for a user
-        :param api_key: The api key to check.
-        :param user_id: The user id to update.
-        """
+        """Update the api key for a user."""
         query = update(User).where(User.id == user_id).values(api_key=api_key)
         self.execute(query)
 
@@ -375,11 +362,7 @@ class DatabaseClient:
 
     @cursor_manager(row_factory=tuple_row)
     def get_data_sources_for_map(self) -> list[MapInfo]:
-        """
-        Returns a list of data sources with relevant info for the map from the database.
-
-        :return: A list of MapInfo named tuples, each containing details of a data source.
-        """
+        """Return a list of data sources with relevant info for the map."""
         self.cursor.execute(cast(LiteralString, GET_DATA_SOURCES_FOR_MAP_QUERY))
         results = self.cursor.fetchall()
 
@@ -568,31 +551,8 @@ class DatabaseClient:
 
     @session_manager
     def get_most_recent_logged_table_counts(self) -> TableCountReferenceManager:
-        # TODO: QueryBuilder
-        # Get the most recent table count for all distinct tables
-        subquery = select(
-            TableCountLog.table_name,
-            TableCountLog.count,
-            func.row_number()
-            .over(
-                partition_by=TableCountLog.table_name,
-                order_by=desc(TableCountLog.created_at),
-            )
-            .label("row_num"),
-        ).subquery()
-
-        stmt = select(subquery.c.table_name, subquery.c.count).where(
-            subquery.c.row_num == 1
-        )
-
-        results = self.session.execute(stmt).all()
-        tcr = TableCountReferenceManager()
-        for result in results:
-            tcr.add_table_count(
-                table_name=result[0],
-                count=result[1],
-            )
-        return tcr
+        """Get the most recent table count for all distinct tables"""
+        return self.run_query_builder(GetMostRecentLoggedTableCountsQueryBuilder())
 
     def add_user_permission(self, user_id: str or int, permission: PermissionsEnum):
         """Add a permission to a user."""
@@ -721,12 +681,8 @@ class DatabaseClient:
 
         return agency.id
 
-    @session_manager_v2
-    def add_location_to_agency(
-        self, session: Session, location_id: int, agency_id: int
-    ):
-        lal = LinkAgencyLocation(location_id=location_id, agency_id=agency_id)
-        session.add(lal)
+    def add_location_to_agency(self, location_id: int, agency_id: int):
+        self.add(LinkAgencyLocation(location_id=location_id, agency_id=agency_id))
 
     def remove_location_from_agency(self, location_id: int, agency_id: int):
         query = delete(LinkAgencyLocation).where(
@@ -936,39 +892,18 @@ class DatabaseClient:
 
         return agency_dicts
 
-    @session_manager_v2
     def get_data_source_by_id(
         self,
-        session: Session,
         data_source_id: int,
         data_sources_columns: list[str],
         data_requests_columns: list[str],
     ):
-        # TODO: QueryBuilder
-        load_options = DynamicQueryConstructor.data_sources_get_load_options(
+        builder = GetDataSourceByIDQueryBuilder(
+            data_source_id=data_source_id,
             data_sources_columns=data_sources_columns,
             data_requests_columns=data_requests_columns,
         )
-
-        query = (
-            select(DataSourceExpanded)
-            .options(*load_options)
-            .where(DataSourceExpanded.id == data_source_id)
-        )
-
-        result: DataSourceExpanded = (
-            session.execute(query).scalars(DataSourceExpanded).first()
-        )
-        if result is None:
-            return None
-
-        data_source_dictionary = data_source_to_get_data_sources_output(
-            result,
-            data_requests_columns=data_requests_columns,
-            data_sources_columns=data_sources_columns,
-        )
-
-        return data_source_dictionary
+        return self.run_query_builder(builder)
 
     @session_manager_v2
     def run_query_builder(self, session: Session, query_builder: QueryBuilderBase):
@@ -1035,9 +970,7 @@ class DatabaseClient:
         id_column_value: str | int,
         id_column_name: str = "id",
     ):
-        """
-        Deletes an entry from a table in the database
-        """
+        """Delete an entry from a table in the database."""
         table = SQL_ALCHEMY_TABLE_REFERENCE[table_name]
         column = getattr(table, id_column_name)
         query = delete(table).where(column == id_column_value)
