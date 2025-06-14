@@ -84,7 +84,7 @@ def link_github_account_request(
 def link_github_account(
     db_client: DatabaseClient, github_user_info: GithubUserInfo, pdap_account_email: str
 ):
-    user_info = db_client.get_user_info(email=pdap_account_email)
+    user_info = db_client.get_user_info(user_email=pdap_account_email)
     db_client.link_external_account(
         user_id=user_info.id,
         external_account_id=github_user_info.user_id,
@@ -113,7 +113,7 @@ def get_github_user_info(access_token: str) -> GithubUserInfo:
 
 def user_exists(db_client: DatabaseClient, email: str) -> bool:
     try:
-        db_client.get_user_info(email=email)
+        db_client.get_user_info(user_email=email)
         return True
     except UserNotFoundError:
         return False

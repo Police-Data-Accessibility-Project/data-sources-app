@@ -276,12 +276,7 @@ class DatabaseClient:
         return self.scalar(query)
 
     def update_user_password_digest(self, user_id: int, password_digest: str):
-        """
-        Updates the password digest for a user in the database.
-        :param user_id:
-        :param password_digest:
-        :return:
-        """
+        """Update user's password digest."""
         query = (
             update(User)
             .where(User.id == user_id)
@@ -404,27 +399,24 @@ class DatabaseClient:
         )
         return self.run_query_builder(builder)
 
-    def update_url_status_to_broken(self, id_: str, broken_as_of: str) -> None:
+    def update_url_status_to_broken(
+        self, data_source_id: str, broken_as_of: str
+    ) -> None:
         """
-        Updates the data_sources table setting the url_status to 'broken' for a given id.
+        Update a data sources' url_status to 'broken'.
 
-        :param id_: The id of the data source.
+        :param data_source_id: The id of the data source.
         :param broken_as_of: The date when the source was identified as broken.
         """
         query = (
             update(DataSource)
-            .where(DataSource.id == id_)
+            .where(DataSource.id == data_source_id)
             .values(url_status="broken", broken_source_url_as_of=broken_as_of)
         )
         self.execute(query)
 
     def update_last_cached(self, data_source_id: str, last_cached: str) -> None:
-        """
-        Updates the last_cached field in the data_sources_archive_info table for a given id.
-
-        :param data_source_id: The id of the data source.
-        :param last_cached: The last cached date to be updated.
-        """
+        """Update when a data source was last cached."""
         d = DataSourceArchiveInfo
         query = (
             update(d)
@@ -437,11 +429,11 @@ class DatabaseClient:
 
     UserInfo = namedtuple("UserInfo", ["id", "password_digest", "api_key", "email"])
 
-    def get_user_info(self, email: str) -> UserInfo:
+    def get_user_info(self, user_email: str) -> UserInfo:
         """
         Retrieves user data by email.
 
-        :param email: User's email.
+        :param user_email: User's email.
         :raise UserNotFoundError: If no user is found.
         :return: UserInfo namedtuple containing the user's information.
         """
@@ -450,10 +442,10 @@ class DatabaseClient:
             User.password_digest,
             User.api_key,
             User.email,
-        ).where(User.email == email)
+        ).where(User.email == user_email)
         result = self.mapping(query)
         if result is None:
-            raise UserNotFoundError(email)
+            raise UserNotFoundError(user_email)
 
         return self.UserInfo(
             id=result["id"],
@@ -492,12 +484,7 @@ class DatabaseClient:
 
     @cursor_manager()
     def get_typeahead_locations(self, search_term: str) -> list[dict]:
-        """
-        Returns a list of data sources that match the search query.
-
-        :param search_term: The search query.
-        :return: List of data sources that match the search query.
-        """
+        """Return a list of data sources that match the search query."""
         query = DynamicQueryConstructor.generate_like_typeahead_locations_query(
             search_term
         )
@@ -516,12 +503,7 @@ class DatabaseClient:
 
     @cursor_manager()
     def get_typeahead_agencies(self, search_term: str) -> list[dict]:
-        """
-        Returns a list of data sources that match the search query.
-
-        :param search_term: The search query.
-        :return: List of agencies that match the search query.
-        """
+        """Return a list of data sources that match the search query."""
         query = DynamicQueryConstructor.generate_new_typeahead_agencies_query(
             search_term
         )
@@ -535,9 +517,7 @@ class DatabaseClient:
         record_categories: Optional[list[RecordCategories]] = None,
         record_types: Optional[list[RecordTypes]] = None,
     ) -> List[dict]:
-        """
-        Search for data sources in the database.
-        """
+        """Search for data sources in the database."""
         check_for_mutually_exclusive_arguments(record_categories, record_types)
 
         query = DynamicQueryConstructor.create_search_query(
@@ -565,13 +545,7 @@ class DatabaseClient:
         external_account_id: str,
         external_account_type: ExternalAccountTypeEnum,
     ):
-        """
-        Links an external account to a user.
-
-        :param user_id: The ID of the user.
-        :param external_account_id: The ID of the external account.
-        :param external_account_type: The type of the external account.
-        """
+        """Links an external account to a user."""
         ea = ExternalAccount(
             user_id=int(user_id),
             account_type=external_account_type.value,
@@ -621,12 +595,7 @@ class DatabaseClient:
         return tcr
 
     def add_user_permission(self, user_id: str or int, permission: PermissionsEnum):
-        """
-        Adds a permission to a user.
-
-        :param user_id: The ID of the user.
-        :param permission: The permission to add.
-        """
+        """Add a permission to a user."""
         permission_id_subquery = (
             select(Permission.id)
             .where(Permission.permission_name == permission.value)
@@ -819,9 +788,7 @@ class DatabaseClient:
         return self.run_query_builder(builder)
 
     def create_county(self, name: str, fips: str, state_id: int) -> int:
-        """
-        Create county and return county id
-        """
+        """Create county and return county id."""
         return self._create_entry_in_table(
             table_name=Relations.COUNTIES.value,
             column_value_mappings={"name": name, "fips": fips, "state_id": state_id},

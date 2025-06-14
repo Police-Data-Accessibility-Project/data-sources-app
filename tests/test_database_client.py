@@ -434,13 +434,13 @@ def test_get_user_info(live_database_client):
     )
 
     # Fetch the user using its email with the DatabaseClient method
-    user_info = live_database_client.get_user_info(email=email)
+    user_info = live_database_client.get_user_info(user_email=email)
     # Confirm the user is retrieved successfully
     assert user_info.password_digest == password_digest
     # Attempt to fetch non-existant user
     # Assert UserNotFoundError is raised
     with pytest.raises(UserNotFoundError):
-        live_database_client.get_user_info(email="invalid_email")
+        live_database_client.get_user_info(user_email="invalid_email")
 
 
 def test_get_user_by_api_key(live_database_client: DatabaseClient):

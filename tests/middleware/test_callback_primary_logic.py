@@ -128,7 +128,9 @@ def test_link_github_account():
         pdap_account_email=mock.pdap_account_email,
     )
 
-    mock.db_client.get_user_info.assert_called_once_with(email=mock.pdap_account_email)
+    mock.db_client.get_user_info.assert_called_once_with(
+        user_email=mock.pdap_account_email
+    )
 
     mock.db_client.link_external_account.assert_called_once_with(
         user_id=mock.db_client_user_info.id,

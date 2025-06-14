@@ -57,7 +57,7 @@ def callback_outer_wrapper(db_client: DatabaseClient) -> Response:
 
 def user_exists(db_client: DatabaseClient, email: str) -> bool:
     try:
-        db_client.get_user_info(email=email)
+        db_client.get_user_info(user_email=email)
         return True
     except UserNotFoundError:
         return False
