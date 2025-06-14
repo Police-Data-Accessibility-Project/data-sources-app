@@ -131,6 +131,7 @@ from db.queries.instantiations.map.data_source_count import (
 from db.queries.instantiations.map.data_sources import GET_DATA_SOURCES_FOR_MAP_QUERY
 from db.queries.instantiations.map.localities import GET_MAP_LOCALITIES_QUERY
 from db.queries.instantiations.map.states import GET_MAP_STATES_QUERY
+from db.queries.instantiations.match.agencies import GetSimilarAgenciesQueryBuilder
 from db.queries.instantiations.metrics.followed_searches.breakdown import (
     GetMetricsFollowedSearchesBreakdownQueryBuilder,
 )
@@ -1519,61 +1520,11 @@ class DatabaseClient:
         name: str,
         location_id: Optional[int] = None,
     ) -> List[AgencyMatchResponseInnerDTO]:
-        """
-        Retrieve agencies similar to the query
-        Optionally filtering based on the location id
-        """
-        # TODO: QueryBuilder
-        query = Select(
-            Agency,
-            func.similarity(Agency.name, name),
-        ).options(
-            load_only(Agency.id, Agency.name, Agency.agency_type),
-            selectinload(Agency.locations).load_only(
-                LocationExpanded.state_name,
-                LocationExpanded.county_name,
-                LocationExpanded.locality_name,
-                LocationExpanded.type,
-            ),
+        builder = GetSimilarAgenciesQueryBuilder(
+            name=name,
+            location_id=location_id
         )
-        if location_id is not None:
-            query = query.where(
-                Agency.locations.any(LocationExpanded.id == location_id)
-            )
-        query = query.order_by(func.similarity(Agency.name, name).desc()).limit(10)
-        execute_results = self.session.execute(query).all()
-        if len(execute_results) == 0:
-            return []
-
-        def result_to_dto(agency: Agency, similarity: float):
-            locations = []
-            for location in agency.locations:
-                location_dto = AgencyMatchResponseLocationDTO(
-                    state=location.state_name,
-                    county=location.county_name,
-                    locality=location.locality_name,
-                    location_type=LocationType(location.type),
-                )
-                locations.append(location_dto)
-
-            return AgencyMatchResponseInnerDTO(
-                id=agency.id,
-                name=agency.name,
-                agency_type=AgencyType(agency.agency_type),
-                similarity=similarity,
-                locations=locations,
-            )
-
-        dto_results = []
-        for result, similarity in execute_results:
-            if similarity == 1:
-                return [
-                    result_to_dto(result, similarity),
-                ]
-            dto = result_to_dto(result, similarity)
-            dto_results.append(dto)
-
-        return dto_results
+        return self.run_query_builder(builder)
 
     def get_metrics(self):
         result = self.execute_raw_sql(GET_METRICS_QUERY)
