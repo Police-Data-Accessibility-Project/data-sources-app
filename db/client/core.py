@@ -28,7 +28,6 @@ from sqlalchemy import (
     func,
     desc,
     RowMapping,
-    or_,
 )
 from sqlalchemy.orm import (
     selectinload,
@@ -56,10 +55,8 @@ from db.enums import (
     LocationType,
     ApprovalStatus,
     UpdateFrequency,
-    URLStatus,
 )
 from db.exceptions import LocationDoesNotExistError
-from db.helpers import get_offset
 from db.helpers_.psycopg import initialize_psycopg_connection
 from db.helpers_.result_formatting import (
     get_expanded_display_name,
@@ -109,6 +106,10 @@ from db.models.table_reference import (
 from db.queries.builder import QueryBuilderBase
 from db.queries.instantiations.agencies.get_.by_id import GetAgencyByIDQueryBuilder
 from db.queries.instantiations.agencies.get_.many import GetAgenciesQueryBuilder
+from db.queries.instantiations.data_sources.archive import (
+    GetDataSourcesToArchiveQueryBuilder,
+    ArchiveInfo,
+)
 from db.queries.instantiations.data_sources.get_data_sources import (
     GetDataSourcesQueryBuilder,
 )
@@ -389,82 +390,19 @@ class DatabaseClient:
 
         return [self.MapInfo(*result) for result in results]
 
-    ArchiveInfo = namedtuple(
-        "ArchiveInfo",
-        ["id", "url", "update_frequency", "last_cached", "broken_url_as_of"],
-    )
-
     def get_data_sources_to_archive(
         self,
         update_frequency: Optional[UpdateFrequency] = None,
         last_archived_before: Optional[datetime] = None,
         page: int = 1,
     ) -> list[ArchiveInfo]:
-        """
-        Pulls data sources to be archived by the automatic archives script.
-
-        A data source is selected for archival if:
-        The data source has been approved
-        AND (
-            the data source has not been archived previously
-            OR the data source is updated regularly
+        """Pulls data sources to be archived by the automatic archives script."""
+        builder = GetDataSourcesToArchiveQueryBuilder(
+            update_frequency=update_frequency,
+            last_archived_before=last_archived_before,
+            page=page,
         )
-        AND the source url is not broken
-        AND the source url is not null.
-
-        :return: A list of ArchiveInfo named tuples, each containing archive details of a data source.
-        """
-
-        def get_where_queries():
-            clauses = [
-                DataSource.approval_status == ApprovalStatus.APPROVED.value,
-                or_(
-                    DataSourceArchiveInfo.last_cached.is_(None),
-                    DataSourceArchiveInfo.update_frequency.isnot(None),
-                ),
-                DataSource.url_status != URLStatus.BROKEN.value,
-                DataSource.source_url.isnot(None),
-            ]
-            if update_frequency is not None:
-                clauses.append(
-                    DataSourceArchiveInfo.update_frequency == update_frequency.value
-                )
-            if last_archived_before is not None:
-                clauses.append(DataSourceArchiveInfo.last_cached < last_archived_before)
-            return clauses
-
-        query = (
-            select(
-                DataSource.id,
-                DataSource.source_url,
-                DataSourceArchiveInfo.update_frequency,
-                DataSourceArchiveInfo.last_cached,
-                DataSource.broken_source_url_as_of,
-            )
-            .select_from(DataSource)
-            .join(
-                DataSourceArchiveInfo,
-                DataSource.id == DataSourceArchiveInfo.data_source_id,
-            )
-            .where(*get_where_queries())
-            .limit(PAGE_SIZE)
-            .offset(get_offset(page))
-        )
-
-        data_sources = self.mappings(query)
-
-        results = [
-            self.ArchiveInfo(
-                id=row["id"],
-                url=row["source_url"],
-                update_frequency=row["update_frequency"],
-                last_cached=row["last_cached"],
-                broken_url_as_of=row["broken_source_url_as_of"],
-            )
-            for row in data_sources
-        ]
-
-        return results
+        return self.run_query_builder(builder)
 
     def update_url_status_to_broken(self, id_: str, broken_as_of: str) -> None:
         """
@@ -1325,32 +1263,6 @@ class DatabaseClient:
         )
         return self.run_query_builder(builder)
 
-    def insert_record_type_search_records(self, recent_search_id, record_types):
-        # For all record types, insert into link table
-        for record_type in record_types:
-            query = select(RecordType).filter(RecordType.name == record_type.value)
-            rt_id = self.session.execute(query).fetchone()[0].id
-
-            query = insert(LinkRecentSearchRecordTypes).values(
-                {"recent_search_id": recent_search_id, "record_type_id": rt_id}
-            )
-            self.session.execute(query)
-
-    def insert_record_category_search_records(
-        self, recent_search_id, record_categories
-    ):
-        # For all record types, insert into link table
-        for record_type in record_categories:
-            query = select(RecordCategory).filter(
-                RecordCategory.name == record_type.value
-            )
-            rc_id = self.session.execute(query).fetchone()[0].id
-
-            query = insert(LinkRecentSearchRecordCategories).values(
-                {"recent_search_id": recent_search_id, "record_category_id": rc_id}
-            )
-            self.session.execute(query)
-
     def get_user_recent_searches(self, user_id: int):
         return self.run_query_builder(GetUserRecentSearchesQueryBuilder(user_id))
 
@@ -1492,7 +1404,6 @@ class DatabaseClient:
             "display_name": get_expanded_display_name(result),
         }
 
-    @session_manager
     def get_similar_agencies(
         self,
         name: str,
