@@ -9,7 +9,7 @@ from flask import Response
 
 from db.enums import ColumnPermissionEnum
 from db.db_client_dataclasses import WhereMapping
-from middleware.column_permission_logic import (
+from middleware.column_permission.core import (
     get_permitted_columns,
     RelationRoleParameters,
 )
@@ -23,9 +23,6 @@ from middleware.dynamic_request_logic.common_functions import (
 from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,
-)
-from middleware.schema_and_dto.schemas.common.common_response_schemas import (
-    EntryDataResponseSchema,
 )
 
 
@@ -43,7 +40,6 @@ def results_dependent_response(entry_name: str, results):
     return message_response(
         message=f"{entry_name} found",
         data=results[0],
-        validation_schema=EntryDataResponseSchema,
     )
 
 

@@ -1,10 +1,12 @@
-import pytest
-from unittest.mock import MagicMock, patch, call
 from http import HTTPStatus
-from flask import Response
+from unittest.mock import MagicMock, patch, call
 
-from middleware.exceptions import UserNotFoundError
+import pytest
+from flask import Response
+from werkzeug.exceptions import BadRequest, Conflict
+
 from middleware.enums import PermissionsEnum, PermissionsActionEnum
+from middleware.exceptions import UserNotFoundError
 from middleware.primary_resource_logic.permissions import (
     PermissionsManager,
     manage_user_permissions,
@@ -18,7 +20,6 @@ PATCH_ROOT = "middleware.primary_resource_logic.permissions"
 class PermissionsManagerMocks(DynamicMagicMock):
     make_response: MagicMock
     message_response: MagicMock
-    abort: MagicMock
 
 
 @pytest.fixture
@@ -34,40 +35,30 @@ def mock():
 
 def test_permissions_manager_init_user_not_found(mock):
     mock.db_client.get_user_info.side_effect = UserNotFoundError("User not found")
-    PermissionsManager(mock.db_client, mock.user_email)
+    with pytest.raises(BadRequest):
+        PermissionsManager(mock.db_client, mock.user_email)
     mock.db_client.get_user_info.assert_called_once_with(mock.user_email)
-    mock.abort.assert_called_once_with(HTTPStatus.BAD_REQUEST, "User not found")
     mock.db_client.get_user_permissions.assert_not_called()
 
 
 def test_get_user_permissions(mock):
     pm = PermissionsManager(mock.db_client, mock.user_email)
     pm.get_user_permissions()
-    mock.make_response.assert_called_with(
-        [PermissionsEnum.READ_ALL_USER_INFO.value], HTTPStatus.OK
-    )
+    mock.make_response.assert_called_with([PermissionsEnum.READ_ALL_USER_INFO.value])
 
 
 def test_add_user_permission_conflict(mock):
     pm = PermissionsManager(mock.db_client, mock.user_email)
 
-    pm.add_user_permission(PermissionsEnum.READ_ALL_USER_INFO)
-
-    mock.message_response.assert_called_with(
-        f"Permission {PermissionsEnum.READ_ALL_USER_INFO.value} already exists for user",
-        HTTPStatus.CONFLICT,
-    )
+    with pytest.raises(Conflict):
+        pm.add_user_permission(PermissionsEnum.READ_ALL_USER_INFO)
 
 
 def test_remove_user_permission_not_found(mock):
     pm = PermissionsManager(mock.db_client, mock.user_email)
 
-    pm.remove_user_permission(PermissionsEnum.DB_WRITE)
-
-    mock.message_response.assert_called_with(
-        f"Permission {PermissionsEnum.DB_WRITE.value} does not exist for user. Cannot remove.",
-        HTTPStatus.CONFLICT,
-    )
+    with pytest.raises(Conflict):
+        pm.remove_user_permission(PermissionsEnum.DB_WRITE)
 
 
 @pytest.fixture

@@ -1,3 +1,4 @@
+import datetime
 from typing import Optional
 
 from sqlalchemy import func, ForeignKey
@@ -37,8 +38,14 @@ class CountSubqueryMetadata:
 
 
 class CreatedAtMixin:
-    created_at: Mapped[timestamp] = mapped_column(
+    created_at: Mapped[datetime.datetime] = mapped_column(
         server_default=func.current_timestamp()
+    )
+
+
+class UpdatedAtMixin:
+    updated_at: Mapped[timestamp] = mapped_column(
+        server_default=func.current_timestamp(), onupdate=func.current_timestamp()
     )
 
 

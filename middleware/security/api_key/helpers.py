@@ -1,7 +1,6 @@
 from werkzeug.exceptions import BadRequest
 
 from middleware.exceptions import InvalidAPIKeyException
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.security.access_logic import get_authorization_header_from_request
 from middleware.security.auth.method_config.enums import AuthScheme
 

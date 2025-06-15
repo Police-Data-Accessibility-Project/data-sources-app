@@ -1,11 +1,8 @@
-from http import HTTPStatus
 from typing import Optional
 
-from flask_restx import abort
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, Unauthorized
 
 from middleware.enums import AccessTypeEnum, PermissionsEnum
-from middleware.flask_response_manager import FlaskResponseManager
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.header.helpers import get_header_auth_info
 from middleware.security.auth.method_config.core import AuthMethodConfig
@@ -48,10 +45,7 @@ def get_authentication(
         if access_info:
             return access_info
 
-    abort(
-        code=HTTPStatus.UNAUTHORIZED,
-        message=get_authentication_error_message(allowed_access_methods),
-    )
+    raise Unauthorized(get_authentication_error_message(allowed_access_methods))
 
 
 def check_if_valid_auth_scheme(

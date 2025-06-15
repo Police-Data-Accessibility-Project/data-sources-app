@@ -1,9 +1,10 @@
 from marshmallow import Schema, fields
 
 from middleware.enums import AgencyType
-from middleware.schema_and_dto.dynamic_logic.dynamic_csv_to_schema_conversion_logic import (
+from middleware.schema_and_dto.dynamic.csv_to_schema.core import (
     generate_flat_csv_schema,
 )
+
 from middleware.schema_and_dto.schemas.agencies.helpers import (
     get_name_field,
     get_jurisdiction_type_field,

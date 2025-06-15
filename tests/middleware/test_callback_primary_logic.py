@@ -89,7 +89,7 @@ def setup_callback_inner_wrapper_mocks():
 
 class LinkGithubAccountRequestMocks(DynamicMagicMock):
     link_github_account: MagicMock
-    make_response: MagicMock
+    message_response: MagicMock
 
 
 def test_link_github_account_request():
@@ -109,9 +109,7 @@ def test_link_github_account_request():
         github_user_info=mock.github_user_info,
         pdap_account_email=mock.pdap_account_email,
     )
-    mock.make_response.assert_called_once_with(
-        {"message": "Successfully linked Github account"}, HTTPStatus.OK
-    )
+    mock.message_response.assert_called_once_with("Successfully linked Github account")
 
 
 class LinkGithubAccountMocks(DynamicMagicMock):
@@ -130,7 +128,9 @@ def test_link_github_account():
         pdap_account_email=mock.pdap_account_email,
     )
 
-    mock.db_client.get_user_info.assert_called_once_with(email=mock.pdap_account_email)
+    mock.db_client.get_user_info.assert_called_once_with(
+        user_email=mock.pdap_account_email
+    )
 
     mock.db_client.link_external_account.assert_called_once_with(
         user_id=mock.db_client_user_info.id,

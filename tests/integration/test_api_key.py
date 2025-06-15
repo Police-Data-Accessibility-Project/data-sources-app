@@ -6,7 +6,7 @@ from endpoints.schema_config.instantiations.api_key import (
     ApiKeyPostEndpointSchemaConfig,
 )
 from middleware.security.api_key.core import ApiKey
-from endpoints.instantiations.api_key import API_KEY_ROUTE
+from endpoints.instantiations.auth_.routes import API_KEY_ROUTE
 from tests.conftest import (
     test_data_creator_flask,
 )

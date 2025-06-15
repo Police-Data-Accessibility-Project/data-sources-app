@@ -1,6 +1,7 @@
 from marshmallow import Schema, fields, validate
 
 from db.enums import UpdateFrequency
+from middleware.constants import DATE_FORMAT
 from utilities.enums import SourceMappingEnum
 
 
@@ -28,5 +29,5 @@ class ArchivesGetRequestSchema(Schema):
             "source": SourceMappingEnum.QUERY_ARGS,
             "description": "The date before which the url was archived (non-inclusive). Example: 2020-07-10",
         },
-        format="%Y-%m-%d",
+        format=DATE_FORMAT,
     )

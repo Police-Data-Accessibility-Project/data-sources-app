@@ -9,7 +9,7 @@ from db.subquery_logic import SubqueryParameterManager
 from db.enums import ApprovalStatus, RelationRoleEnum, ColumnPermissionEnum
 from db.helpers_.result_formatting import zip_get_datas_sources_for_map_results
 from middleware.security.access_info.primary import AccessInfoPrimary
-from middleware.column_permission_logic import get_permitted_columns
+from middleware.column_permission.core import get_permitted_columns
 from middleware.dynamic_request_logic.delete import delete_entry
 from middleware.dynamic_request_logic.get.many import (
     optionally_limit_to_requested_columns,

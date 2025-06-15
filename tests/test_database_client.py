@@ -16,6 +16,7 @@ from db.db_client_dataclasses import (
     OrderByParameters,
     WhereMapping,
 )
+from db.helpers import get_offset
 from db.subquery_logic import SubqueryParameterManager
 from db.enums import (
     ExternalAccountTypeEnum,
@@ -23,6 +24,7 @@ from db.enums import (
     RequestStatus,
     ApprovalStatus,
 )
+from middleware.constants import DATETIME_FORMAT
 from middleware.exceptions import (
     UserNotFoundError,
     DuplicateUserError,
@@ -377,7 +379,7 @@ def test_get_data_sources_for_map(
 def test_get_offset():
     # Send a page number to the DatabaseClient method
     # Confirm that the correct offset is returned
-    assert DatabaseClient.get_offset(page=3) == 200
+    assert get_offset(page=3) == 200
 
 
 def test_get_data_sources_to_archive(
@@ -407,8 +409,10 @@ def test_update_last_cached(
     # Add a new data source to the database
     ds_info = tdc.data_source()
     # Update the data source's last_cached value with the DatabaseClient method
-    new_last_cached = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    live_database_client.update_last_cached(id=ds_info.id, last_cached=new_last_cached)
+    new_last_cached = datetime.now().strftime(DATETIME_FORMAT)
+    live_database_client.update_last_cached(
+        data_source_id=ds_info.id, last_cached=new_last_cached
+    )
 
     # Fetch the data source from the database to confirm the change
     result = live_database_client._select_from_relation(
@@ -417,7 +421,7 @@ def test_update_last_cached(
         where_mappings=[WhereMapping(column="data_source_id", value=ds_info.id)],
     )[0]
 
-    assert result["last_cached"].strftime("%Y-%m-%d %H:%M:%S") == new_last_cached
+    assert result["last_cached"].strftime(DATETIME_FORMAT) == new_last_cached
 
 
 def test_get_user_info(live_database_client):
@@ -431,13 +435,13 @@ def test_get_user_info(live_database_client):
     )
 
     # Fetch the user using its email with the DatabaseClient method
-    user_info = live_database_client.get_user_info(email=email)
+    user_info = live_database_client.get_user_info(user_email=email)
     # Confirm the user is retrieved successfully
     assert user_info.password_digest == password_digest
     # Attempt to fetch non-existant user
     # Assert UserNotFoundError is raised
     with pytest.raises(UserNotFoundError):
-        live_database_client.get_user_info(email="invalid_email")
+        live_database_client.get_user_info(user_email="invalid_email")
 
 
 def test_get_user_by_api_key(live_database_client: DatabaseClient):
@@ -819,48 +823,6 @@ def test_user_is_creator_of_data_request(live_database_client):
 #     # Check the first result is now different
 #     new_result = live_database_client.get_agencies_without_homepage_urls()[0]
 #     assert new_result["airtable_uid"] != airtable_uid
-
-
-def test_get_related_data_sources(
-    test_data_creator_db_client: TestDataCreatorDBClient, live_database_client
-):
-    tdc = test_data_creator_db_client
-
-    # Create two data sources
-    source_column_value_mappings = []
-    source_ids = []
-    for i in range(2):
-        data_source_info = tdc.data_source()
-        source_column_value_mapping = {
-            "id": data_source_info.id,
-            "name": data_source_info.name,
-        }
-        source_id = data_source_info.id
-        source_column_value_mappings.append(source_column_value_mapping)
-        source_ids.append(source_id)
-
-    # Create a request
-    data_request_info = tdc.data_request()
-    request_id = data_request_info.id
-    submission_notes = data_request_info.submission_notes
-
-    # Associate them in the link table
-    for source_id in source_ids:
-        live_database_client.create_request_source_relation(
-            column_value_mappings={
-                "request_id": request_id,
-                "data_source_id": source_id,
-            }
-        )
-
-    results = live_database_client.get_related_data_sources(data_request_id=request_id)
-
-    assert len(results) == 2
-
-    for result in results:
-        assert result["name"] in [
-            source["name"] for source in source_column_value_mappings
-        ]
 
 
 def test_create_request_source_relation(

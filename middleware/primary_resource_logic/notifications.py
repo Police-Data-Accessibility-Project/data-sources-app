@@ -213,13 +213,7 @@ def format_and_send_notifications(
 def send_notifications(
     db_client: DatabaseClient, access_info: AccessInfoPrimary
 ) -> Response:
-    """
-    Sends notifications to all users.
-
-    :param db_client: The database client.
-    :param access_info: The access info.
-    :return: The response.
-    """
+    """Sends notifications to all users."""
     db_client.optionally_update_user_notification_queue()
     next_event_batch = db_client.get_next_user_event_batch()
     count = 0

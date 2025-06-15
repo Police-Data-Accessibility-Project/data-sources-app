@@ -13,8 +13,8 @@ class User(StandardBase, CreatedAtMixin):
     __tablename__ = Relations.USERS.value
 
     updated_at: Mapped[Optional[timestamp_tz]]
-    email: Mapped[text] = mapped_column(unique=True)
-    password_digest: Mapped[Optional[text]]
+    email: Mapped[str] = mapped_column(unique=True)
+    password_digest: Mapped[Optional[str]]
     api_key: Mapped[Optional[str]] = mapped_column(
         server_default=text_func("generate_api_key()")
     )

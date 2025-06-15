@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 from db.enums import ApprovalStatus
 from middleware.enums import AgencyType
-from middleware.schema_and_dto.dynamic_logic.pydantic_to_marshmallow.generator.models.metadata import (
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.metadata import (
     MetadataInfo,
 )
 

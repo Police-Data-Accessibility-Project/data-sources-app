@@ -19,12 +19,7 @@ from middleware.primary_resource_logic.agencies import (
 from middleware.primary_resource_logic.data_sources import (
     DataSourcesPostHandler,
 )
-from middleware.schema_and_dto.dynamic_logic.dynamic_csv_to_schema_conversion_logic import (
-    SchemaUnflattener,
-)
-from middleware.schema_and_dto.dynamic_logic.dynamic_schema_request_content_population import (
-    setup_dto_class,
-)
+
 from middleware.schema_and_dto.dtos.agencies.post import (
     AgencyInfoPostDTO,
     AgenciesPostDTO,
@@ -32,6 +27,12 @@ from middleware.schema_and_dto.dtos.agencies.post import (
 
 from middleware.schema_and_dto.dtos.bulk import (
     BulkRequestDTO,
+)
+from middleware.schema_and_dto.dynamic.csv_to_schema.schema_unflattener.core import (
+    SchemaUnflattener,
+)
+from middleware.schema_and_dto.dynamic.schema.request_content_population import (
+    setup_dto_class,
 )
 
 from middleware.util.csv import read_from_csv

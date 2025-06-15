@@ -1,4 +1,3 @@
-from http import HTTPStatus
 from typing import Optional, Type, Any
 
 import psycopg.errors
@@ -6,7 +5,7 @@ import sqlalchemy
 from flask import Response
 from werkzeug.exceptions import Conflict, BadRequest, InternalServerError
 
-from middleware.column_permission_logic import (
+from middleware.column_permission.core import (
     RelationRoleParameters,
 )
 from middleware.common_response_formatting import created_id_response
@@ -17,7 +16,6 @@ from middleware.dynamic_request_logic.supporting_classes import (
     PostPutHandler,
     PutPostRequestInfo,
 )
-from middleware.flask_response_manager import FlaskResponseManager
 
 
 class PostHandler(PostPutHandler):

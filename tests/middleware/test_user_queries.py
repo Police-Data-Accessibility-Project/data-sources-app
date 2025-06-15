@@ -1,7 +1,7 @@
-from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
+from werkzeug.exceptions import Conflict, Unauthorized
 
 from db.client.core import DatabaseClient
 from middleware.exceptions import UserNotFoundError, DuplicateUserError
@@ -39,9 +39,7 @@ def test_user_post_query(test_user_post_query_mocks):
     mock.db_client.create_new_user.assert_called_once_with(
         mock.dto.email, mock.password_digest
     )
-    mock.message_response.assert_called_once_with(
-        status_code=HTTPStatus.OK, message="Successfully added user."
-    )
+    mock.message_response.assert_called_once_with("Successfully added user.")
 
 
 @pytest.mark.parametrize(
@@ -66,7 +64,6 @@ def test_user_check_email(user_id, expected_exception) -> None:
 
 class TryLoggingInMocks(DynamicMagicMock):
     check_password_hash: MagicMock
-    unauthorized_response: MagicMock
     login_response: MagicMock
 
 
@@ -102,7 +99,6 @@ def test_try_logging_in_successful():
 
     # Assert
     assert_try_logging_in_preconditions(mock)
-    mock.unauthorized_response.assert_not_called()
     mock.login_response.assert_called_with(mock.user_info)
 
 
@@ -110,22 +106,19 @@ def test_try_logging_in_unsuccessful():
     mock = setup_try_logging_in_mocks(check_password_hash_return_value=False)
 
     # Call function
-    try_logging_in(mock.db_client, mock.dto)
+    with pytest.raises(Unauthorized):
+        try_logging_in(mock.db_client, mock.dto)
 
     # Assert
     assert_try_logging_in_preconditions(mock)
-    mock.unauthorized_response.assert_called_once()
     mock.login_response.assert_not_called()
 
 
 def test_user_post_results_duplicate_user_error(test_user_post_query_mocks):
     mock = test_user_post_query_mocks
     mock.db_client.create_new_user.side_effect = DuplicateUserError
-    user_post_results(mock.db_client, mock.dto)
+    with pytest.raises(Conflict):
+        user_post_results(mock.db_client, mock.dto)
     mock.db_client.create_new_user.assert_called_once_with(
         mock.dto.email, mock.generate_password_hash.return_value
-    )
-    mock.message_response.assert_called_once_with(
-        message=f"User with email {mock.dto.email} already exists.",
-        status_code=HTTPStatus.CONFLICT,
     )

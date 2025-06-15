@@ -1,9 +1,9 @@
 from http import HTTPStatus
 
 from flask import Response, make_response
-from flask_restx import abort
 from marshmallow import Schema, fields
 from pydantic import BaseModel
+from werkzeug.exceptions import BadRequest, Conflict
 
 from db.client.core import DatabaseClient
 from middleware.common_response_formatting import message_response
@@ -70,8 +70,7 @@ class PermissionsManager:
         try:
             user_info = db_client.get_user_info(user_email)
         except UserNotFoundError:
-            abort(HTTPStatus.BAD_REQUEST, "User not found")
-            return
+            raise BadRequest("User not found.")
         self.db_client = db_client
         self.user_email = user_email
         self.user_id = user_info.id
@@ -82,24 +81,21 @@ class PermissionsManager:
 
     def get_user_permissions(self) -> Response:
         permissions_list = [permission.value for permission in self.permissions]
-        return make_response(permissions_list, HTTPStatus.OK)
+        return make_response(permissions_list)
 
     def add_user_permission(self, permission: PermissionsEnum) -> Response:
         if permission in self.permissions:
-            return message_response(
-                f"Permission {permission.value} already exists for user",
-                HTTPStatus.CONFLICT,
-            )
+            raise Conflict(f"Permission {permission.value} already exists for user")
 
         self.db_client.add_user_permission(self.user_id, permission)
         return message_response("Permission added")
 
     def remove_user_permission(self, permission: PermissionsEnum) -> Response:
         if permission not in self.permissions:
-            return message_response(
-                f"Permission {permission.value} does not exist for user. Cannot remove.",
-                HTTPStatus.CONFLICT,
+            raise Conflict(
+                f"Permission {permission.value} does not exist for user. Cannot remove."
             )
+
         self.db_client.remove_user_permission(self.user_id, permission)
         return message_response("Permission removed")
 

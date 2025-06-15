@@ -3,7 +3,7 @@ from typing import Optional
 from sqlalchemy import false, func, Column, String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from db.models.mixins import CountMetadata
+from db.models.mixins import CountMetadata, UpdatedAtMixin
 from db.models.templates.standard import StandardBase
 from db.models.types import (
     JurisdictionTypeLiteral,
@@ -14,7 +14,7 @@ from db.models.types import (
 from middleware.enums import Relations
 
 
-class Agency(StandardBase, CountMetadata):
+class Agency(StandardBase, CountMetadata, UpdatedAtMixin):
     __tablename__ = Relations.AGENCIES.value
 
     name: Mapped[str]

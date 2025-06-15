@@ -6,15 +6,17 @@ from flask import Response
 from flask_restx import Resource
 
 from config import config
+from db.client.context_manager import setup_database_client
 from db.client.core import DatabaseClient
-from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
-from db.helpers_.psycopg import initialize_psycopg_connection
-from middleware.schema_and_dto.dynamic_logic.dynamic_schema_request_content_population import (
-    populate_schema_with_request_content,
-)
-from middleware.schema_and_dto.dynamic_logic.dynamic_dto_request_content_population import (
+from middleware.schema_and_dto.dynamic.dto_request_content_population import (
     populate_dto_with_request_content,
 )
+from middleware.schema_and_dto.dynamic.schema.request_content_population import (
+    populate_schema_with_request_content,
+)
+from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
+from db.helpers_.psycopg import initialize_psycopg_connection
+
 from middleware.schema_and_dto.non_dto_dataclasses import (
     SchemaPopulateParameters,
     DTOPopulateParameters,
@@ -95,20 +97,6 @@ class PsycopgResource(Resource):
             config.connection = initialize_psycopg_connection()
         return config.connection
 
-    @contextmanager
-    def setup_database_client(self) -> DatabaseClient:
-        """
-        A context manager to setup a database client.
-
-        Yields:
-        - The database client.
-        """
-        db_client = DatabaseClient()
-        try:
-            yield db_client
-        except Exception as e:
-            raise e
-
     def run_endpoint(
         self,
         wrapper_function: Callable[..., Any],
@@ -122,7 +110,7 @@ class PsycopgResource(Resource):
         )
 
         if dto_populate_parameters is None and schema_populate_parameters is None:
-            with self.setup_database_client() as db_client:
+            with setup_database_client() as db_client:
                 return wrapper_function(db_client, **wrapper_kwargs)
 
         if dto_populate_parameters is not None:
@@ -139,7 +127,7 @@ class PsycopgResource(Resource):
                 dto_class=schema_populate_parameters.dto_class,
                 load_file=schema_populate_parameters.load_file,
             )
-        with self.setup_database_client() as db_client:
+        with setup_database_client() as db_client:
             response = wrapper_function(db_client, dto=dto, **wrapper_kwargs)
 
         return response

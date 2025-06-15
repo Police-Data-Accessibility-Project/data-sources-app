@@ -1,5 +1,8 @@
 from enum import Enum
 
+from endpoints.instantiations.source_collector.sync.schema_config import (
+    SourceCollectorSyncAgenciesSchemaConfig,
+)
 from endpoints.schema_config.config.core import EndpointSchemaConfig
 from endpoints.schema_config.instantiations.admin.users.by_id.delete import (
     AdminUsersByIDDeleteEndpointSchemaConfig,
@@ -412,3 +415,4 @@ class SchemaConfigs(Enum):
     )
 
     SOURCE_COLLECTOR_DUPLICATES_POST = SourceCollectorDuplicatesPostEndpointSchemaConfig
+    SOURCE_COLLECTOR_SYNC_AGENCIES = SourceCollectorSyncAgenciesSchemaConfig

@@ -1,4 +1,4 @@
-# middleware/primary_resource_logic/admin.py
+# middleware/primary_resource_logic/routes.py
 from flask import Response, make_response
 from werkzeug.security import generate_password_hash
 

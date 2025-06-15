@@ -1,7 +1,4 @@
-from http import HTTPStatus
-
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
-from flask_restx import abort
 from werkzeug.exceptions import Forbidden
 
 from db.client.core import DatabaseClient

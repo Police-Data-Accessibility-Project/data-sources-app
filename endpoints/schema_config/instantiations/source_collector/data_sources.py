@@ -1,12 +1,12 @@
-from endpoints.schema_config.config.core import EndpointSchemaConfig
-from middleware.schema_and_dto.dtos.source_collector.post.request import (
-    SourceCollectorPostRequestDTO,
-)
-from middleware.schema_and_dto.schemas.source_collector.post.request import (
+from endpoints.instantiations.source_collector.data_sources.post.schemas.request import (
     SourceCollectorPostRequestSchema,
 )
-from middleware.schema_and_dto.schemas.source_collector.post.response import (
+from endpoints.instantiations.source_collector.data_sources.post.schemas.response import (
     SourceCollectorPostResponseSchema,
+)
+from endpoints.schema_config.config.core import EndpointSchemaConfig
+from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
+    SourceCollectorPostRequestDTO,
 )
 
 SourceCollectorDataSourcesPostEndpointSchemaConfig = EndpointSchemaConfig(

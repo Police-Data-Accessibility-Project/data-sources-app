@@ -20,4 +20,4 @@ def unfollow_national_wrapper(
         record_categories=dto.record_categories,
     )
 
-    return message_response(message="Unfollowed national search.")
+    return message_response("Unfollowed national search.")

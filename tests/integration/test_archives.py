@@ -106,7 +106,7 @@ def test_archives_put(
         INNER JOIN data_sources_archive_info ON data_sources.id = data_sources_archive_info.data_source_id 
         WHERE data_sources.id = %s
         """,
-        vars=(int(data_source_id),),
+        vars_=(int(data_source_id),),
     )
     assert row[0]["last_cached"] == last_cached
     assert row[0]["broken_source_url_as_of"] is None

@@ -42,7 +42,7 @@ def test_rate_limiter_explicit_limit(
     """
 
     monkeypatch.setattr(
-        f"endpoints.instantiations.login.try_logging_in",
+        f"endpoints.instantiations.auth_.login.try_logging_in",
         MagicMock(return_value=TEST_RESPONSE),
     )
 

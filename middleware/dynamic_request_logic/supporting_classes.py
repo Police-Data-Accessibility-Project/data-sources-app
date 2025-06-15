@@ -9,7 +9,7 @@ from db.client.core import DatabaseClient
 from db.enums import RelationRoleEnum
 from db.subquery_logic import SubqueryParameters
 from middleware.security.access_info.primary import AccessInfoPrimary
-from middleware.column_permission_logic import (
+from middleware.column_permission.core import (
     RelationRoleParameters,
     check_has_permission_to_edit_columns,
 )

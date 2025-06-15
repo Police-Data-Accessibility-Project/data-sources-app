@@ -1,9 +1,9 @@
 from db.client.core import DatabaseClient
-from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.common_response_formatting import message_response
 from middleware.schema_and_dto.dtos.search.national import (
     SearchFollowNationalRequestDTO,
 )
+from middleware.security.access_info.primary import AccessInfoPrimary
 
 
 def follow_national_wrapper(
@@ -19,4 +19,4 @@ def follow_national_wrapper(
         record_categories=dto.record_categories,
     )
 
-    return message_response(message="Followed national search.")
+    return message_response("Followed national search.")

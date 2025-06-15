@@ -3,7 +3,7 @@ import uuid
 from http import HTTPStatus
 
 from flask import Response, make_response
-from flask_restx import abort
+from werkzeug.exceptions import Unauthorized
 
 from db.client.core import DatabaseClient
 from middleware.exceptions import (
@@ -39,8 +39,7 @@ def create_api_key_for_user(
 
     api_key = ApiKey()
     db_client.update_user_api_key(user_id=user_id, api_key=api_key.key_hash)
-    payload = {"api_key": api_key.raw_key}
-    return make_response(payload, HTTPStatus.OK)
+    return make_response({"api_key": api_key.raw_key})
 
 
 def api_key_is_associated_with_user(db_client: DatabaseClient, raw_key: str) -> bool:
@@ -52,7 +51,7 @@ def api_key_is_associated_with_user(db_client: DatabaseClient, raw_key: str) -> 
 def check_api_key_associated_with_user(db_client: DatabaseClient, raw_key: str) -> None:
     is_associated_with_user = api_key_is_associated_with_user(db_client, raw_key)
     if not is_associated_with_user:
-        abort(HTTPStatus.UNAUTHORIZED, "Invalid API Key")
+        raise Unauthorized("Invalid API Key")
 
 
 INVALID_API_KEY_MESSAGE = "Please provide an API key in the request header in the 'Authorization' key with the format 'Basic <api_key>'"
@@ -64,4 +63,4 @@ def check_api_key() -> None:
         db_client = DatabaseClient()
         check_api_key_associated_with_user(db_client, api_key)
     except (InvalidAPIKeyException, InvalidAuthorizationHeaderException):
-        abort(code=HTTPStatus.UNAUTHORIZED, message=INVALID_API_KEY_MESSAGE)
+        raise Unauthorized(INVALID_API_KEY_MESSAGE)

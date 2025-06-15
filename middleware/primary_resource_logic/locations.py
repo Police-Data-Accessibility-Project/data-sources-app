@@ -1,12 +1,10 @@
-from http import HTTPStatus
-
 from flask import Response, make_response
+from werkzeug.exceptions import BadRequest
 
 from db.client.core import DatabaseClient
 from db.enums import ColumnPermissionEnum
 from db.exceptions import LocationDoesNotExistError
-from middleware.security.access_info.primary import AccessInfoPrimary
-from middleware.column_permission_logic import get_permitted_columns, get_relation_role
+from middleware.column_permission.core import get_permitted_columns, get_relation_role
 from middleware.common_response_formatting import (
     message_response,
     multiple_results_response,
@@ -15,18 +13,16 @@ from middleware.enums import Relations
 from middleware.primary_resource_logic.data_requests import (
     get_data_requests_subquery_params,
 )
-
 from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
 from middleware.schema_and_dto.dtos.locations.get import LocationsGetRequestDTO
 from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
+from middleware.security.access_info.primary import AccessInfoPrimary
 
 
 def get_location_by_id_wrapper(db_client: DatabaseClient, location_id: int) -> Response:
     result = db_client.get_location_by_id(location_id=location_id)
     if result is None:
-        return message_response(
-            message="Location not found.", status_code=HTTPStatus.BAD_REQUEST
-        )
+        raise BadRequest("Location not found.")
     return make_response(result)
 
 
@@ -50,9 +46,7 @@ def update_location_by_id_wrapper(
     try:
         db_client.update_location_by_id(location_id=int(location_id), dto=dto)
     except LocationDoesNotExistError:
-        return message_response(
-            message="Location not found.", status_code=HTTPStatus.BAD_REQUEST
-        )
+        raise BadRequest("Location not found.")
     return message_response("Successfully updated location.")
 
 
@@ -75,10 +69,8 @@ def get_locations_related_data_requests_wrapper(
         subquery_parameters=get_data_requests_subquery_params(),
     )
     if results is None:
-        return message_response(
-            message="Location not found or no data requests found.",
-            status_code=HTTPStatus.BAD_REQUEST,
-        )
+        raise BadRequest("Location not found or no data requests found.")
+
     return multiple_results_response(message="Data requests found.", data=results)
 
 

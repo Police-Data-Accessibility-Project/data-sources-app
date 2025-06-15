@@ -5,14 +5,14 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from db.models.mixins import UserIDMixin
 from db.models.templates.standard import StandardBase
-from db.models.types import text, timestamp
+from db.models.types import timestamp
 from middleware.enums import Relations
 
 
 class ResetToken(StandardBase, UserIDMixin):
     __tablename__ = Relations.RESET_TOKENS.value
 
-    token: Mapped[Optional[text]]
+    token: Mapped[Optional[str]]
     create_date: Mapped[timestamp] = mapped_column(
         server_default=func.current_timestamp()
     )
