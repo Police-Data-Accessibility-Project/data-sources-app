@@ -24,6 +24,7 @@ from db.enums import (
     RequestStatus,
     ApprovalStatus,
 )
+from middleware.constants import DATETIME_FORMAT
 from middleware.exceptions import (
     UserNotFoundError,
     DuplicateUserError,
@@ -408,7 +409,7 @@ def test_update_last_cached(
     # Add a new data source to the database
     ds_info = tdc.data_source()
     # Update the data source's last_cached value with the DatabaseClient method
-    new_last_cached = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    new_last_cached = datetime.now().strftime(DATETIME_FORMAT)
     live_database_client.update_last_cached(
         data_source_id=ds_info.id, last_cached=new_last_cached
     )
@@ -420,7 +421,7 @@ def test_update_last_cached(
         where_mappings=[WhereMapping(column="data_source_id", value=ds_info.id)],
     )[0]
 
-    assert result["last_cached"].strftime("%Y-%m-%d %H:%M:%S") == new_last_cached
+    assert result["last_cached"].strftime(DATETIME_FORMAT) == new_last_cached
 
 
 def test_get_user_info(live_database_client):

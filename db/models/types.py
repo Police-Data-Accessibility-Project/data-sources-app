@@ -1,6 +1,6 @@
 from typing import Literal
 
-from sqlalchemy import Text, func, String
+from sqlalchemy import Text, func, String, Enum
 from sqlalchemy.dialects.postgresql import TIMESTAMP, DATERANGE
 from sqlalchemy.orm import mapped_column
 from typing_extensions import Annotated
@@ -8,6 +8,7 @@ from typing_extensions import Annotated
 from sqlalchemy.dialects import postgresql
 
 from db.enums import LocationType
+from middleware.enums import JurisdictionType
 
 ExternalAccountTypeLiteral = Literal["github"]
 RecordTypeLiteral = Literal[
@@ -63,6 +64,10 @@ OperationTypeLiteral = Literal["UPDATE", "DELETE", "INSERT"]
 JurisdictionTypeLiteral = Literal[
     "federal", "state", "county", "local", "port", "tribal", "transit", "school"
 ]
+JurisdictionTypeEnum = Enum(
+    JurisdictionType,
+    name="jurisdiction_type",
+)
 ApprovalStatusLiteral = Literal[
     "rejected", "approved", "needs identification", "pending"
 ]

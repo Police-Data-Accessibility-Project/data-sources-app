@@ -18,6 +18,12 @@ from db.enums import (
     ApprovalStatus,
     UpdateFrequency,
 )
+from endpoints.instantiations.source_collector.sync.dtos.request import (
+    SourceCollectorSyncAgenciesRequestDTO,
+)
+from endpoints.instantiations.source_collector.sync.schema_config import (
+    SourceCollectorSyncAgenciesSchemaConfig,
+)
 from endpoints.schema_config.instantiations.admin.users.by_id.delete import (
     AdminUsersByIDDeleteEndpointSchemaConfig,
 )
@@ -149,6 +155,7 @@ from endpoints.schema_config.instantiations.user.profile.data_requests import (
 from endpoints.schema_config.instantiations.user.profile.get import (
     UserProfileGetEndpointSchemaConfig,
 )
+from middleware.constants import DATE_FORMAT
 from middleware.enums import OutputFormatEnum, RecordTypes
 from middleware.schema_and_dto.dtos.locations.get import LocationsGetRequestDTO
 from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
@@ -451,7 +458,7 @@ class RequestValidator:
     ):
         endpoint_base = "/archives"
         if last_archived_before is not None:
-            last_archived_before = last_archived_before.strftime("%Y-%m-%d")
+            last_archived_before = last_archived_before.strftime(DATE_FORMAT)
 
         params = {}
         d = {
@@ -1191,4 +1198,14 @@ class RequestValidator:
             headers=headers,
             json={"urls": urls},
             expected_schema=SourceCollectorDuplicatesPostEndpointSchemaConfig.primary_output_schema,
+        )
+
+    def get_agencies_for_sync(
+        self, headers: dict, dto: SourceCollectorSyncAgenciesRequestDTO
+    ):
+        return self.get(
+            endpoint="/api/source-collector/agencies/sync",
+            headers=headers,
+            query_parameters=dto.model_dump(mode="json"),
+            expected_schema=SourceCollectorSyncAgenciesSchemaConfig.primary_output_schema,
         )

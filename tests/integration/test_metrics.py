@@ -1,6 +1,7 @@
 import datetime
 
 from db.enums import SortOrder
+from middleware.constants import DATE_FORMAT
 from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
@@ -212,5 +213,5 @@ def test_metrics_followed_searches_aggregate(test_data_creator_flask):
     assert data["total_followers"] == 3
     assert data["total_followed_searches"] == 6
     assert data["last_notification_date"] == last_notification_datetime.strftime(
-        "%Y-%m-%d"
+        DATE_FORMAT
     )

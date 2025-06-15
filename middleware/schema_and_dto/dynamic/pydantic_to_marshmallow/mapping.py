@@ -8,4 +8,5 @@ TYPE_MAPPING = {
     bool: fields.Boolean,
     float: fields.Float,
     datetime.date: fields.Date,
+    datetime.datetime: fields.DateTime,
 }

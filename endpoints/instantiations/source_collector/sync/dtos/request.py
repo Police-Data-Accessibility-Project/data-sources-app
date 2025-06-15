@@ -1,4 +1,5 @@
 import datetime
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -16,7 +17,7 @@ class SourceCollectorSyncAgenciesRequestDTO(BaseModel):
             required=False, source=SourceMappingEnum.QUERY_ARGS
         ),
     )
-    updated_at: datetime.date = Field(
+    updated_at: Optional[datetime.date] = Field(
         default=None,
         description="The date to filter by",
         json_schema_extra=MetadataInfo(

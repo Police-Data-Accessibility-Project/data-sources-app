@@ -140,6 +140,9 @@ from db.queries.instantiations.search.record import CreateSearchRecordQueryBuild
 from db.queries.instantiations.source_collector.data_sources import (
     AddDataSourcesFromSourceCollectorQueryBuilder,
 )
+from db.queries.instantiations.source_collector.sync import (
+    SourceCollectorSyncAgenciesQueryBuilder,
+)
 from db.queries.instantiations.user_profile.get_user_recent_searches import (
     GetUserRecentSearchesQueryBuilder,
 )
@@ -160,6 +163,10 @@ from db.subquery_logic import SubqueryParameters
 from endpoints.instantiations.source_collector.data_sources.post.dtos.response import (
     SourceCollectorPostResponseInnerDTO,
 )
+from endpoints.instantiations.source_collector.sync.dtos.request import (
+    SourceCollectorSyncAgenciesRequestDTO,
+)
+from middleware.constants import DATE_FORMAT
 from middleware.custom_dataclasses import EventBatch
 from middleware.enums import (
     PermissionsEnum,
@@ -250,6 +257,16 @@ class DatabaseClient:
     @session_manager_v2
     def add(self, session: Session, model):
         session.add(model)
+
+    @session_manager_v2
+    def add_many(
+        self, session: Session, models, return_ids: bool = False
+    ) -> Optional[List[int]]:
+        session.add_all(models)
+        if return_ids:
+            session.flush()
+            return [model.id for model in models]
+        return None
 
     @session_manager_v2
     def mapping(self, session: Session, query: Select):
@@ -1459,7 +1476,7 @@ class DatabaseClient:
         return {
             "total_followers": result.total_followers,
             "total_followed_searches": result.location_count,
-            "last_notification_date": result.last_notification.strftime("%Y-%m-%d"),
+            "last_notification_date": result.last_notification.strftime(DATE_FORMAT),
         }
 
     def get_duplicate_urls_bulk(self, urls: List[str]) -> Sequence:
@@ -1469,3 +1486,10 @@ class DatabaseClient:
         )
         existing_urls = self.scalars(stmt)
         return existing_urls
+
+    def get_agencies_for_sync(
+        self, dto: SourceCollectorSyncAgenciesRequestDTO
+    ) -> dict[str, list[dict]]:
+        """Get agencies for source collector sync."""
+        builder = SourceCollectorSyncAgenciesQueryBuilder(dto=dto)
+        return self.run_query_builder(builder)

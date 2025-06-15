@@ -10,7 +10,7 @@ from endpoints.instantiations.source_collector.sync.schemas.response import (
 from endpoints.schema_config.config.core import EndpointSchemaConfig
 
 SourceCollectorSyncAgenciesSchemaConfig = EndpointSchemaConfig(
-    input_schema=SourceCollectorSyncAgenciesRequestSchema,
+    input_schema=SourceCollectorSyncAgenciesRequestSchema(),
     input_dto_class=SourceCollectorSyncAgenciesRequestDTO,
-    primary_output_schema=SourceCollectorSyncAgenciesResponseSchema,
+    primary_output_schema=SourceCollectorSyncAgenciesResponseSchema(),
 )

@@ -1,4 +1,13 @@
 from endpoints._helpers.response_info import ResponseInfo
+from endpoints.instantiations.source_collector.data_sources.duplicates.wrapper import (
+    check_for_duplicate_urls,
+)
+from endpoints.instantiations.source_collector.data_sources.post.wrapper import (
+    add_data_sources_from_source_collector,
+)
+from endpoints.instantiations.source_collector.sync.middleware.wrapper import (
+    get_agencies_for_sync,
+)
 from endpoints.instantiations.source_collector.sync.schema_config import (
     SourceCollectorSyncAgenciesSchemaConfig,
 )
@@ -12,12 +21,6 @@ from endpoints.schema_config.instantiations.source_collector.duplicates import (
 )
 from middleware.decorators.endpoint_info import endpoint_info
 from middleware.enums import AccessTypeEnum, PermissionsEnum
-from endpoints.instantiations.source_collector.data_sources.duplicates.wrapper import (
-    check_for_duplicate_urls,
-)
-from endpoints.instantiations.source_collector.data_sources.post.wrapper import (
-    add_data_sources_from_source_collector,
-)
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.info.base import AuthenticationInfo
 from utilities.namespace import create_namespace, AppNamespaces
@@ -69,7 +72,7 @@ class SourceCollectorDataSourcesDuplicates(PsycopgResource):
         )
 
 
-@namespace_source_collector.route("/agencies/sync", methods=["POST"])
+@namespace_source_collector.route("/agencies/sync", methods=["GET"])
 class SourceCollectorSyncAgencies(PsycopgResource):
 
     @endpoint_info(
@@ -84,5 +87,8 @@ class SourceCollectorSyncAgencies(PsycopgResource):
         ),
         description="Syncs agencies.",
     )
-    def post(self, access_info: AccessInfoPrimary):
-        raise NotImplementedError
+    def get(self, access_info: AccessInfoPrimary):
+        return self.run_endpoint(
+            wrapper_function=get_agencies_for_sync,
+            schema_populate_parameters=SourceCollectorSyncAgenciesSchemaConfig.get_schema_populate_parameters(),
+        )

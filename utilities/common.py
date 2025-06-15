@@ -9,6 +9,7 @@ from alembic.config import Config
 from sqlalchemy import text
 from werkzeug.exceptions import BadRequest
 
+from middleware.constants import DATETIME_FORMAT, DATE_FORMAT
 from middleware.util.env import get_env_variable
 
 
@@ -16,9 +17,9 @@ def convert_dates_to_strings(data_dict: dict) -> dict:
     for key, value in data_dict.items():
         if isinstance(value, datetime.date):
             if key == "last_cached":
-                data_dict[key] = value.strftime("%Y-%m-%d %H:%M:%S")
+                data_dict[key] = value.strftime(DATETIME_FORMAT)
             else:
-                data_dict[key] = value.strftime("%Y-%m-%d")
+                data_dict[key] = value.strftime(DATE_FORMAT)
     return data_dict
 
 
