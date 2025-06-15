@@ -8,16 +8,15 @@ from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.location.expanded import LocationExpanded
 from db.queries.builder import QueryBuilderBase
 from middleware.enums import AgencyType
-from middleware.schema_and_dto.dtos.match.response import AgencyMatchResponseLocationDTO, AgencyMatchResponseInnerDTO
+from middleware.schema_and_dto.dtos.match.response import (
+    AgencyMatchResponseLocationDTO,
+    AgencyMatchResponseInnerDTO,
+)
 
 
 class GetSimilarAgenciesQueryBuilder(QueryBuilderBase):
 
-    def __init__(
-        self,
-        name: str,
-        location_id: Optional[int] = None
-    ):
+    def __init__(self, name: str, location_id: Optional[int] = None):
         super().__init__()
         self.name = name
         self.location_id = location_id
@@ -44,12 +43,7 @@ class GetSimilarAgenciesQueryBuilder(QueryBuilderBase):
             query = query.where(
                 Agency.locations.any(LocationExpanded.id == self.location_id)
             )
-        query = query.order_by(
-            func.similarity(
-                Agency.name,
-                self.name
-            ).desc()
-        ).limit(10)
+        query = query.order_by(func.similarity(Agency.name, self.name).desc()).limit(10)
         execute_results = self.session.execute(query).all()
         if len(execute_results) == 0:
             return []

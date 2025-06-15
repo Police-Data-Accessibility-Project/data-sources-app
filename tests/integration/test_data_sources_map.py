@@ -9,6 +9,7 @@ from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
 
+
 def test_data_sources_map_get(test_data_creator_flask: TestDataCreatorFlask):
     """
     Test that GET call to /map/data-sources endpoint retrieves data sources and verifies the location (latitude and longitude) of a specific source by name

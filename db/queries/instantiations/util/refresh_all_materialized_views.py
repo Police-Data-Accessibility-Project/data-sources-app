@@ -1,6 +1,4 @@
-
-
-REFRESH_ALL_MATERIALIZED_VIEWS_QUERIES =             """
+REFRESH_ALL_MATERIALIZED_VIEWS_QUERIES = """
         DO $$
         DECLARE
             rec RECORD;

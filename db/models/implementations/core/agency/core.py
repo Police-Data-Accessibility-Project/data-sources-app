@@ -14,11 +14,7 @@ from db.models.types import (
 from middleware.enums import Relations
 
 
-class Agency(
-    StandardBase,
-    CountMetadata,
-    UpdatedAtMixin
-):
+class Agency(StandardBase, CountMetadata, UpdatedAtMixin):
     __tablename__ = Relations.AGENCIES.value
 
     name: Mapped[str]

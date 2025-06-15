@@ -42,10 +42,10 @@ class CreatedAtMixin:
         server_default=func.current_timestamp()
     )
 
+
 class UpdatedAtMixin:
     updated_at: Mapped[timestamp] = mapped_column(
-        server_default=func.current_timestamp(),
-        onupdate=func.current_timestamp()
+        server_default=func.current_timestamp(), onupdate=func.current_timestamp()
     )
 
 

@@ -2,16 +2,28 @@ from typing import Any
 
 from sqlalchemy import select
 
-from db.models.implementations import LinkLocationDataRequest, LinkUserFollowedLocation, LinkAgencyDataSource, \
-    LinkAgencyLocation
+from db.models.implementations import (
+    LinkLocationDataRequest,
+    LinkUserFollowedLocation,
+    LinkAgencyDataSource,
+    LinkAgencyLocation,
+)
 from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.data_request.core import DataRequest
 from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.location.core import Location
-from db.models.implementations.core.notification.pending.data_request import DataRequestPendingEventNotification
-from db.models.implementations.core.notification.pending.data_source import DataSourcePendingEventNotification
-from db.models.implementations.core.notification.queue.data_request import DataRequestUserNotificationQueue
-from db.models.implementations.core.notification.queue.data_source import DataSourceUserNotificationQueue
+from db.models.implementations.core.notification.pending.data_request import (
+    DataRequestPendingEventNotification,
+)
+from db.models.implementations.core.notification.pending.data_source import (
+    DataSourcePendingEventNotification,
+)
+from db.models.implementations.core.notification.queue.data_request import (
+    DataRequestUserNotificationQueue,
+)
+from db.models.implementations.core.notification.queue.data_source import (
+    DataSourceUserNotificationQueue,
+)
 from db.models.implementations.core.user.core import User
 from db.queries.builder import QueryBuilderBase
 

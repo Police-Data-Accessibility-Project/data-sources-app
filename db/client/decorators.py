@@ -1,6 +1,7 @@
 """
 Decorators used exclusively by the Database Client
 """
+
 from functools import wraps
 
 from psycopg.rows import RowFactory, dict_row

@@ -5,7 +5,11 @@ from werkzeug.exceptions import BadRequest
 
 from db.constants import GET_METRICS_FOLLOWED_SEARCHES_BREAKDOWN_SORTABLE_COLUMNS
 from db.enums import ApprovalStatus, RequestStatus
-from db.models.implementations import LinkUserFollowedLocation, LinkLocationDataSourceView, LinkLocationDataRequest
+from db.models.implementations import (
+    LinkUserFollowedLocation,
+    LinkLocationDataSourceView,
+    LinkLocationDataRequest,
+)
 from db.models.implementations.core.data_request.core import DataRequest
 from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.location.core import Location
@@ -13,16 +17,15 @@ from db.models.implementations.core.location.dependent import DependentLocation
 from db.models.implementations.core.location.expanded import LocationExpanded
 from db.models.implementations.core.log.notification import NotificationLog
 from db.queries.builder import QueryBuilderBase
-from middleware.schema_and_dto.dtos.metrics import MetricsFollowedSearchesBreakdownRequestDTO
+from middleware.schema_and_dto.dtos.metrics import (
+    MetricsFollowedSearchesBreakdownRequestDTO,
+)
 from middleware.util.env import get_env_variable
 
 
 class GetMetricsFollowedSearchesBreakdownQueryBuilder(QueryBuilderBase):
 
-    def __init__(
-        self,
-        dto: MetricsFollowedSearchesBreakdownRequestDTO
-    ):
+    def __init__(self, dto: MetricsFollowedSearchesBreakdownRequestDTO):
         super().__init__()
         self.dto = dto
 

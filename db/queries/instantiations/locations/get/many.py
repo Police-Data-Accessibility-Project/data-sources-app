@@ -52,8 +52,7 @@ class GetManyLocationsQueryBuilder(QueryBuilderBase):
             query = query.options(selectinload(getattr(Location, relationship)))
 
         # Pagination
-        query = query.offset(
-            (self.page - 1) * PAGE_SIZE).limit(PAGE_SIZE)
+        query = query.offset((self.page - 1) * PAGE_SIZE).limit(PAGE_SIZE)
 
         raw_results = self.session.execute(query).scalars().all()
         results = []

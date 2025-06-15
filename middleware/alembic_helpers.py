@@ -132,6 +132,7 @@ def record_type_id_column():
         nullable=False,
     )
 
+
 def updated_at_column():
     return sa.Column(
         "updated_at",
