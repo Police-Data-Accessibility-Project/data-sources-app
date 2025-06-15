@@ -6,7 +6,7 @@ from endpoints.schema_config.instantiations.checker import (
 )
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.info.instantiations import NO_AUTH_INFO
-from middleware.decorators.decorators import endpoint_info
+from middleware.decorators.endpoint_info import endpoint_info
 from middleware.primary_resource_logic.unique_url_checker import (
     unique_url_checker_wrapper,
 )

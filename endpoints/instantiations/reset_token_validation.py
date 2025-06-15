@@ -2,7 +2,7 @@ from flask import Response
 
 from middleware.security.access_info.password_reset import PasswordResetTokenAccessInfo
 from middleware.security.auth.info.instantiations import RESET_PASSWORD_AUTH_INFO
-from middleware.decorators.decorators import endpoint_info
+from middleware.decorators.endpoint_info import endpoint_info
 from middleware.primary_resource_logic.reset_token_queries import (
     reset_token_validation,
 )

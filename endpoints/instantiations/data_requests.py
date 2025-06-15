@@ -49,7 +49,7 @@ from middleware.primary_resource_logic.data_requests import (
 )
 from middleware.schema_and_dto.schemas.common.base import GetByIDBaseSchema
 from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
-from middleware.decorators.decorators import (
+from middleware.decorators.endpoint_info import (
     endpoint_info,
 )
 from middleware.schema_and_dto.non_dto_dataclasses import SchemaPopulateParameters

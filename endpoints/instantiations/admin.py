@@ -14,7 +14,7 @@ from middleware.security.auth.info.instantiations import (
     READ_USER_AUTH_INFO,
     WRITE_USER_AUTH_INFO,
 )
-from middleware.decorators.decorators import (
+from middleware.decorators.endpoint_info import (
     endpoint_info,
 )
 from middleware.primary_resource_logic.admin import (

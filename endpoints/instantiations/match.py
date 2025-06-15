@@ -3,7 +3,7 @@ from flask import Response
 from endpoints.schema_config.instantiations.match import MatchAgencyEndpointSchemaConfig
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.info.instantiations import STANDARD_JWT_AUTH_INFO
-from middleware.decorators.decorators import endpoint_info
+from middleware.decorators.endpoint_info import endpoint_info
 from middleware.primary_resource_logic.match import (
     match_agency_wrapper,
 )

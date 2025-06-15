@@ -31,7 +31,7 @@ from middleware.schema_and_dto.schemas.data_sources.base import (
     EntryCreateUpdateRequestDTO,
 )
 from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
-from middleware.decorators.decorators import (
+from middleware.decorators.endpoint_info import (
     endpoint_info,
 )
 from middleware.primary_resource_logic.data_sources import (

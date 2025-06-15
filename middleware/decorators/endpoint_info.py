@@ -19,44 +19,14 @@ from endpoints._helpers.response_info import ResponseInfo
 from endpoints.psycopg_resource import handle_exceptions
 from endpoints.schema_config.config.manager import OutputSchemaManager
 from endpoints.schema_config.enums import SchemaConfigs
+from middleware.decorators.authentication_required import authentication_required
 from middleware.schema_and_dto.dynamic.schema.documentation_construction import (
     get_restx_param_documentation,
 )
-from middleware.security.auth.helpers import get_authentication
 from middleware.security.parser_determinator import ParserDeterminator
 from middleware.security.auth.info.base import AuthenticationInfo
-from middleware.enums import PermissionsEnum, AccessTypeEnum
+from middleware.enums import AccessTypeEnum
 from middleware.schema_and_dto.non_dto_dataclasses import FlaskRestxDocInfo
-
-
-def authentication_required(
-    allowed_access_methods: list[AccessTypeEnum],
-    restrict_to_permissions: Optional[list[PermissionsEnum]] = None,
-    no_auth: bool = False,
-):
-    """
-    Checks if the user has access to the resource,
-     and provides access info to the inner function
-
-    Resource methods using this must include `access_info` in their kwargs.
-
-    :param allowed_access_methods:
-    :param restrict_to_permissions: Automatically abort if the user does not have the requisite permissions
-    :return:
-    """
-
-    def decorator(func: Callable):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            kwargs["access_info"] = get_authentication(
-                allowed_access_methods, restrict_to_permissions, no_auth=no_auth
-            )
-
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
 
 
 def endpoint_info(
@@ -65,15 +35,13 @@ def endpoint_info(
     schema_config: SchemaConfigs,
     response_info: ResponseInfo,
     description: str = "",
-    **additional_doc_kwargs,
 ):
     """
     A more sophisticated form of `endpoint_info`, with more robust
     schema and response definition.
-    Designed to eventually replace all instances of endpoint_info
     """
 
-    doc_kwargs = {"description": description, **additional_doc_kwargs}
+    doc_kwargs = {"description": description}
     if auth_info.requires_admin_permissions():
         doc_kwargs["description"] = (
             "**Requires admin permissions.**\n" + doc_kwargs["description"]

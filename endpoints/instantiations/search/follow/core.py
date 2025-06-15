@@ -13,7 +13,7 @@ from middleware.security.auth.info.instantiations import (
     API_OR_JWT_AUTH_INFO,
     STANDARD_JWT_AUTH_INFO,
 )
-from middleware.decorators.decorators import endpoint_info
+from middleware.decorators.endpoint_info import endpoint_info
 from middleware.primary_resource_logic.search.wrappers.follow.get import (
     get_followed_searches,
 )

@@ -9,7 +9,7 @@ from endpoints.schema_config.instantiations.search.federal import (
 )
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.info.instantiations import API_OR_JWT_AUTH_INFO
-from middleware.decorators.decorators import endpoint_info
+from middleware.decorators.endpoint_info import endpoint_info
 from middleware.primary_resource_logic.search.wrappers.federal import (
     federal_search_wrapper,
 )

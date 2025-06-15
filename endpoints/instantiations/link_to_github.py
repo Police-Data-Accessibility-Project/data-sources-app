@@ -6,7 +6,7 @@ from endpoints.schema_config.instantiations.auth.github.link import (
 )
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.info.instantiations import NO_AUTH_INFO
-from middleware.decorators.decorators import endpoint_info
+from middleware.decorators.endpoint_info import endpoint_info
 
 from middleware.primary_resource_logic.github_oauth import (
     link_github_account_request_wrapper,

@@ -10,7 +10,7 @@ from middleware.security.auth.info.instantiations import (
     WRITE_ONLY_AUTH_INFO,
 )
 from middleware.security.auth.info.base import AuthenticationInfo
-from middleware.decorators.decorators import endpoint_info
+from middleware.decorators.endpoint_info import endpoint_info
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from middleware.primary_resource_logic.permissions import (
     manage_user_permissions,

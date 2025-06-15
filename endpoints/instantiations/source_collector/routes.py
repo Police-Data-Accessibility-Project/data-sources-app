@@ -10,7 +10,7 @@ from endpoints.schema_config.instantiations.source_collector.data_sources import
 from endpoints.schema_config.instantiations.source_collector.duplicates import (
     SourceCollectorDuplicatesPostEndpointSchemaConfig,
 )
-from middleware.decorators.decorators import endpoint_info
+from middleware.decorators.endpoint_info import endpoint_info
 from middleware.enums import AccessTypeEnum, PermissionsEnum
 from endpoints.instantiations.source_collector.data_sources.duplicates.wrapper import (
     check_for_duplicate_urls,

@@ -17,7 +17,7 @@ from middleware.security.auth.info.instantiations import (
     API_OR_JWT_AUTH_INFO,
 )
 from middleware.column_permission.core import create_column_permissions_string_table
-from middleware.decorators.decorators import (
+from middleware.decorators.endpoint_info import (
     endpoint_info,
 )
 from middleware.enums import Relations

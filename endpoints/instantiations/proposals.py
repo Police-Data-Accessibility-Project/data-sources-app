@@ -3,7 +3,7 @@ from endpoints.schema_config.instantiations.proposal_agencies import (
 )
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.info.instantiations import STANDARD_JWT_AUTH_INFO
-from middleware.decorators.decorators import endpoint_info
+from middleware.decorators.endpoint_info import endpoint_info
 from middleware.primary_resource_logic.proposals import propose_agency
 from endpoints.psycopg_resource import PsycopgResource
 from endpoints.schema_config.enums import SchemaConfigs
@@ -18,7 +18,6 @@ class ProposalsAgencies(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_proposals,
-        endpoint_description="Submit a proposal for an agency",
         auth_info=STANDARD_JWT_AUTH_INFO,
         schema_config=SchemaConfigs.PROPOSAL_AGENCIES_POST,
         response_info=ResponseInfo(success_message="Proposal successfully submitted."),

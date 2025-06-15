@@ -4,7 +4,7 @@ from config import limiter
 from endpoints.schema_config.instantiations.auth.login import LoginEndpointSchemaConfig
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.info.instantiations import NO_AUTH_INFO
-from middleware.decorators.decorators import endpoint_info
+from middleware.decorators.endpoint_info import endpoint_info
 from middleware.primary_resource_logic.login_queries import try_logging_in
 from endpoints.schema_config.enums import SchemaConfigs
 from endpoints._helpers.response_info import ResponseInfo

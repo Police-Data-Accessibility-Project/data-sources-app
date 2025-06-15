@@ -16,7 +16,7 @@ from middleware.security.auth.info.instantiations import (
     API_OR_JWT_AUTH_INFO,
     WRITE_ONLY_AUTH_INFO,
 )
-from middleware.decorators.decorators import endpoint_info
+from middleware.decorators.endpoint_info import endpoint_info
 from middleware.primary_resource_logic.locations import (
     get_location_by_id_wrapper,
     get_locations_related_data_requests_wrapper,

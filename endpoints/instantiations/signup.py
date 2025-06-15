@@ -12,7 +12,7 @@ from middleware.security.auth.info.instantiations import (
     NO_AUTH_INFO,
     VALIDATE_EMAIL_AUTH_INFO,
 )
-from middleware.decorators.decorators import endpoint_info
+from middleware.decorators.endpoint_info import endpoint_info
 from middleware.primary_resource_logic.signup import (
     resend_validation_email_wrapper,
     signup_wrapper,
