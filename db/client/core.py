@@ -157,7 +157,7 @@ from db.queries.instantiations.util.select_from_relation import (
 )
 from db.queries.models.get_params import GetParams
 from db.subquery_logic import SubqueryParameters
-from endpoints.instantiations.source_collector.dtos.data_sources.post.response import (
+from endpoints.instantiations.source_collector.data_sources.post.dtos.response import (
     SourceCollectorPostResponseInnerDTO,
 )
 from middleware.custom_dataclasses import EventBatch
@@ -182,7 +182,7 @@ from middleware.schema_and_dto.dtos.match.response import (
 from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
-from endpoints.instantiations.source_collector.dtos.data_sources.post.request import (
+from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
     SourceCollectorPostRequestInnerDTO,
 )
 

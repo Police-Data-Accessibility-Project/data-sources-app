@@ -1,4 +1,7 @@
 from endpoints._helpers.response_info import ResponseInfo
+from endpoints.instantiations.source_collector.sync.schema_config import (
+    SourceCollectorSyncAgenciesSchemaConfig,
+)
 from endpoints.psycopg_resource import PsycopgResource
 from endpoints.schema_config.enums import SchemaConfigs
 from endpoints.schema_config.instantiations.source_collector.data_sources import (
@@ -9,9 +12,11 @@ from endpoints.schema_config.instantiations.source_collector.duplicates import (
 )
 from middleware.decorators.decorators import endpoint_info
 from middleware.enums import AccessTypeEnum, PermissionsEnum
-from middleware.primary_resource_logic.source_collector import (
-    add_data_sources_from_source_collector,
+from endpoints.instantiations.source_collector.data_sources.duplicates.wrapper import (
     check_for_duplicate_urls,
+)
+from endpoints.instantiations.source_collector.data_sources.post.wrapper import (
+    add_data_sources_from_source_collector,
 )
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.info.base import AuthenticationInfo
@@ -62,3 +67,22 @@ class SourceCollectorDataSourcesDuplicates(PsycopgResource):
             wrapper_function=check_for_duplicate_urls,
             schema_populate_parameters=SourceCollectorDuplicatesPostEndpointSchemaConfig.get_schema_populate_parameters(),
         )
+
+
+@namespace_source_collector.route("/agencies/sync", methods=["POST"])
+class SourceCollectorSyncAgencies(PsycopgResource):
+
+    @endpoint_info(
+        namespace=namespace_source_collector,
+        auth_info=AuthenticationInfo(
+            allowed_access_methods=[AccessTypeEnum.JWT],
+            restrict_to_permissions=[PermissionsEnum.SOURCE_COLLECTOR_DATA_SOURCES],
+        ),
+        schema_config=SchemaConfigs.SOURCE_COLLECTOR_SYNC_AGENCIES,
+        response_info=ResponseInfo(
+            success_message="Successfully returns agencies to sync"
+        ),
+        description="Syncs agencies.",
+    )
+    def post(self, access_info: AccessInfoPrimary):
+        raise NotImplementedError

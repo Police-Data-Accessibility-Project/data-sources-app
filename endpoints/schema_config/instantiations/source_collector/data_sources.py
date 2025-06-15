@@ -1,11 +1,11 @@
-from endpoints.instantiations.source_collector.schemas.post.request import (
+from endpoints.instantiations.source_collector.data_sources.post.schemas.request import (
     SourceCollectorPostRequestSchema,
 )
-from endpoints.instantiations.source_collector.schemas.post.response import (
+from endpoints.instantiations.source_collector.data_sources.post.schemas.response import (
     SourceCollectorPostResponseSchema,
 )
 from endpoints.schema_config.config.core import EndpointSchemaConfig
-from endpoints.instantiations.source_collector.dtos.data_sources.post.request import (
+from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
     SourceCollectorPostRequestDTO,
 )
 

@@ -1,6 +1,6 @@
 from marshmallow import fields, validate
 
-from endpoints.instantiations.source_collector.dtos.data_sources.post.response import (
+from endpoints.instantiations.source_collector.data_sources.post.dtos.response import (
     SourceCollectorPostResponseInnerDTO,
 )
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import (

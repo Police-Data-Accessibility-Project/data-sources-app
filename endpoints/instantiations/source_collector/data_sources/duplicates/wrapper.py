@@ -1,26 +1,10 @@
 from flask import make_response
 
 from db.client.core import DatabaseClient
-from endpoints.instantiations.source_collector.dtos.data_sources.duplicates import (
+from endpoints.instantiations.source_collector.data_sources.duplicates.dto import (
     SourceCollectorDuplicatesPostRequestDTO,
 )
-from endpoints.instantiations.source_collector.dtos.data_sources.post.request import (
-    SourceCollectorPostRequestDTO,
-)
 from middleware.util.url import normalize_url
-
-
-def add_data_sources_from_source_collector(
-    db_client: DatabaseClient, dto: SourceCollectorPostRequestDTO
-):
-    results = db_client.add_data_sources_from_source_collector(dto.data_sources)
-
-    return make_response(
-        {
-            "message": "Successfully processed data sources",
-            "data_sources": [result.model_dump(mode="json") for result in results],
-        }
-    )
 
 
 def check_for_duplicate_urls(

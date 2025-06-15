@@ -1,3 +1,5 @@
+import datetime
+
 from marshmallow import fields
 
 TYPE_MAPPING = {
@@ -5,4 +7,5 @@ TYPE_MAPPING = {
     int: fields.Integer,
     bool: fields.Boolean,
     float: fields.Float,
+    datetime.date: fields.Date,
 }
