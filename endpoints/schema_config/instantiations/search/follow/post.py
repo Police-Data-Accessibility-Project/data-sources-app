@@ -1,0 +1,3 @@
+from endpoints.schema_config.helpers import SEARCH_FOLLOW_UPDATE
+
+SearchFollowPostEndpointSchemaConfig = SEARCH_FOLLOW_UPDATE

@@ -1,5 +1,6 @@
 from http import HTTPStatus
 from typing import Optional, Type, Union, Literal, TextIO
+from deepdiff import DeepDiff
 
 from flask.testing import FlaskClient
 from marshmallow import Schema
@@ -67,9 +68,10 @@ def run_and_validate_request(
         try:
             assert response.json == expected_json_content
         except AssertionError:
-            raise AssertionError(
-                f"Expected {expected_json_content} but got {response.json}"
+            diff = DeepDiff(
+                expected_json_content, response.json, ignore_order=True, verbose_level=1
             )
+            raise AssertionError(f"Response JSON Content Mismatch: \n{diff.pretty()}")
 
     if expected_schema is not None:
         if not isinstance(expected_schema, Schema):

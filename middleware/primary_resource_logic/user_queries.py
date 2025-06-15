@@ -1,11 +1,10 @@
-from http import HTTPStatus
-
 from flask import Response
 from marshmallow import Schema, fields
 from pydantic import BaseModel
+from werkzeug.exceptions import Conflict
 from werkzeug.security import generate_password_hash
 
-from database_client.database_client import DatabaseClient
+from db.client.core import DatabaseClient
 from middleware.common_response_formatting import message_response
 from middleware.exceptions import UserNotFoundError, DuplicateUserError
 from utilities.enums import SourceMappingEnum
@@ -59,11 +58,8 @@ def user_post_results(db_client: DatabaseClient, dto: UserRequestDTO) -> Respons
     try:
         db_client.create_new_user(dto.email, password_digest)
     except DuplicateUserError:
-        return message_response(
-            status_code=HTTPStatus.CONFLICT,
-            message=f"User with email {dto.email} already exists.",
+        raise Conflict(
+            f"User with email {dto.email} already exists.",
         )
-    return message_response(
-        message="Successfully added user.",
-        status_code=HTTPStatus.OK,
-    )
+
+    return message_response("Successfully added user.")

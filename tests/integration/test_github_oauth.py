@@ -4,10 +4,18 @@ from http import HTTPStatus
 
 from flask.testing import FlaskClient
 
-from tests.conftest import test_data_creator_flask, monkeysession
-from middleware.SimpleJWT import SimpleJWT, JWTPurpose
-from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
-from resources.endpoint_schema_config import SchemaConfigs
+from endpoints.schema_config.instantiations.auth.github.link import (
+    AuthGithubLinkEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.auth.github.login import (
+    AuthGithubLoginEndpointSchemaConfig,
+)
+from tests.conftest import test_data_creator_flask
+from middleware.security.jwt.core import SimpleJWT
+from middleware.security.jwt.enums import JWTPurpose
+from middleware.schema_and_dto.schemas.common.common_response_schemas import (
+    MessageSchema,
+)
 from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,
     get_test_name,
@@ -24,7 +32,7 @@ from tests.helper_scripts.constants import (
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
-GITHUB_OATH_LOGIC_PATCH_ROOT = "middleware.primary_resource_logic.github_oauth_logic"
+GITHUB_OATH_LOGIC_PATCH_ROOT = "middleware.primary_resource_logic.github_oauth"
 
 
 def login_with_github(client: FlaskClient, access_token: str) -> str:
@@ -32,7 +40,7 @@ def login_with_github(client: FlaskClient, access_token: str) -> str:
         flask_client=client,
         http_method="post",
         endpoint=GITHUB_OAUTH_LOGIN_ENDPOINT,
-        expected_schema=SchemaConfigs.AUTH_GITHUB_LOGIN.value.primary_output_schema,
+        expected_schema=AuthGithubLoginEndpointSchemaConfig.primary_output_schema,
         json={"gh_access_token": access_token},
     )
     return data["access_token"]
@@ -84,7 +92,7 @@ def test_link_to_github_oauth(
         flask_client=tdc.flask_client,
         http_method="post",
         endpoint=GITHUB_OAUTH_LINK_ENDPOINT,
-        expected_schema=SchemaConfigs.AUTH_GITHUB_LINK.value.primary_output_schema,
+        expected_schema=AuthGithubLinkEndpointSchemaConfig.primary_output_schema,
         json={"user_email": tus.user_info.email, "gh_access_token": access_token},
     )
 
@@ -107,7 +115,7 @@ def test_link_to_github_oauth_user_email_not_in_db(
         flask_client=tdc.flask_client,
         http_method="post",
         endpoint=GITHUB_OAUTH_LINK_ENDPOINT,
-        expected_schema=SchemaConfigs.AUTH_GITHUB_LINK.value.primary_output_schema,
+        expected_schema=AuthGithubLinkEndpointSchemaConfig.primary_output_schema,
         expected_response_status=HTTPStatus.BAD_REQUEST,
         json={
             "user_email": get_test_name(),  # Create email guaranteed to not exist in database
@@ -134,7 +142,7 @@ def test_link_to_github_oauth_user_and_github_email_not_match(
         flask_client=tdc.flask_client,
         http_method="post",
         endpoint=GITHUB_OAUTH_LINK_ENDPOINT,
-        expected_schema=SchemaConfigs.AUTH_GITHUB_LINK.value.primary_output_schema,
+        expected_schema=AuthGithubLinkEndpointSchemaConfig.primary_output_schema,
         expected_response_status=HTTPStatus.BAD_REQUEST,
         json={
             "user_email": tus.user_info.email,

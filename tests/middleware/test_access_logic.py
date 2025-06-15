@@ -1,13 +1,16 @@
 from unittest.mock import MagicMock
 
 import pytest
+from werkzeug.exceptions import Forbidden
 
-from middleware.access_logic import (
+from middleware.security.access_logic import (
     get_authorization_header_from_request,
-    get_key_from_authorization_header,
-    AccessInfoPrimary,
+)
+from middleware.security.api_key.helpers import get_key_from_authorization_header
+from middleware.security.auth.method_config.helpers import (
     check_permissions_with_access_info,
 )
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_mocks_and_patches import (
@@ -18,7 +21,7 @@ from tests.helper_scripts.common_mocks_and_patches import (
 def test_get_authorization_header_from_request_happy_path(monkeypatch):
     patch_request_headers(
         monkeypatch,
-        path="middleware.access_logic",
+        path="middleware.security.access_logic",
         request_headers={"Authorization": "Basic api_key"},
     )
     assert "Basic api_key" == get_authorization_header_from_request()
@@ -38,7 +41,6 @@ class GetAccessInfoFromJWTOrAPIKeyMocks(DynamicMagicMock):
     get_jwt_identity: MagicMock
     AccessInfo: MagicMock
     get_user_permissions: MagicMock
-    abort: MagicMock
 
 
 @pytest.fixture
@@ -49,7 +51,7 @@ def get_access_info_mocks():
 
 
 @pytest.mark.parametrize(
-    "access_info, permissions, permission_denied_abort_called",
+    "access_info, permissions, raises_forbidden",
     (
         (
             AccessInfoPrimary(
@@ -77,17 +79,11 @@ def get_access_info_mocks():
     ),
 )
 def test_check_permissions_with_access_info(
-    access_info, permissions, permission_denied_abort_called, monkeypatch
+    access_info, permissions, raises_forbidden, monkeypatch
 ):
 
-    mock_permission_denied_abort = MagicMock()
-    monkeypatch.setattr(
-        "middleware.access_logic.FlaskResponseManager.permission_denied_abort",
-        mock_permission_denied_abort,
-    )
-    check_permissions_with_access_info(access_info, permissions)
-
-    if permission_denied_abort_called:
-        mock_permission_denied_abort.assert_called_once()
+    if raises_forbidden:
+        with pytest.raises(Forbidden):
+            check_permissions_with_access_info(access_info, permissions)
     else:
-        mock_permission_denied_abort.assert_not_called()
+        check_permissions_with_access_info(access_info, permissions)

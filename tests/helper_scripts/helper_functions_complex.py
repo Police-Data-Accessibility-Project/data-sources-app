@@ -9,25 +9,22 @@ import sqlalchemy
 from flask.testing import FlaskClient
 from werkzeug.security import generate_password_hash
 
-from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import ApprovalStatus
+from db.client.core import DatabaseClient
+from db.db_client_dataclasses import WhereMapping
+from db.enums import ApprovalStatus
 from middleware.enums import (
     PermissionsEnum,
     Relations,
     JurisdictionType,
     AgencyType,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
-    AgenciesPostDTO,
+from middleware.schema_and_dto.dtos.agencies.post import (
     AgencyInfoPostDTO,
+    AgenciesPostDTO,
 )
-from resources.ApiKeyResource import API_KEY_ROUTE
+from endpoints.instantiations.auth_.routes import API_KEY_ROUTE
 from tests.helper_scripts.common_test_data import get_test_name, get_test_email
 from tests.helper_scripts.helper_classes.RequestValidator import RequestValidator
-from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
-    TestDataCreatorDBClient,
-)
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_classes.UserInfo import UserInfo
 from tests.helper_scripts.helper_functions_simple import get_authorization_header

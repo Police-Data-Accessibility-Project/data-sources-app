@@ -1,7 +1,7 @@
 from datetime import datetime, timezone, timedelta
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
-from middleware.util import stringify_lists
+from middleware.util.type_conversion import stringify_lists
 
 """
 `Simple` in this case refers to helper functions 

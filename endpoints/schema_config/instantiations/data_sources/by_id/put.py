@@ -1,0 +1,7 @@
+from endpoints.schema_config.helpers import get_put_resource_endpoint_schema_config
+from middleware.schema_and_dto.schemas.data_sources.base import EntryDataRequestSchema
+from middleware.schema_and_dto.schemas.data_sources.put import DataSourcesPutSchema
+
+DataSourcesByIDPutEndpointSchemaConfig = get_put_resource_endpoint_schema_config(
+    input_schema=DataSourcesPutSchema(), input_dto_class=EntryDataRequestSchema
+)
