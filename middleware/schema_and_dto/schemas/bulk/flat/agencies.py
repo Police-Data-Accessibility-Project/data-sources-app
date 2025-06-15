@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields
 
 from middleware.enums import AgencyType
-from middleware.schema_and_dto.dynamic.csv_to_schema_conversion import (
+from middleware.schema_and_dto.dynamic.csv_to_schema.core import (
     generate_flat_csv_schema,
 )
 
