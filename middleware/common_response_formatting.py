@@ -6,7 +6,7 @@ def format_list_response(data: dict, message: str = "") -> dict:
     return data
 
 
-def multiple_results_response(data: list, message: str = "") -> Response:
+def multiple_results_response(data: list[dict], message: str = "") -> Response:
     """
     Format a list of dictionaries into a dictionary with the count and data keys.
     Args:
