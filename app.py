@@ -13,52 +13,56 @@ from middleware.scheduled_tasks.manager import SchedulerManager
 from middleware.security.jwt.core import SimpleJWT
 from middleware.scheduled_tasks.check_database_health import check_database_health
 from middleware.util.env import get_env_variable
-from endpoints.instantiations.admin import namespace_admin
-from endpoints.instantiations.batch import namespace_bulk
-from endpoints.instantiations.callback import namespace_auth
-from endpoints.instantiations.contact import namespace_contact
-from endpoints.instantiations.data_requests import namespace_data_requests
-from endpoints.instantiations.github_data_requests import namespace_github
-from endpoints.instantiations.link_to_github import namespace_link_to_github
-from endpoints.instantiations.locations import namespace_locations
-from endpoints.instantiations.login_with_github import namespace_login_with_github
-from endpoints.instantiations.map import namespace_map
-from endpoints.instantiations.match import namespace_match
-from endpoints.instantiations.metadata import namespace_metadata
-from endpoints.instantiations.metrics import namespace_metrics
-from endpoints.instantiations.notifications import namespace_notifications
-from endpoints.instantiations.oauth import namespace_oauth
-from endpoints.instantiations.permissions import namespace_permissions
-from endpoints.instantiations.proposals import namespace_proposals
-from endpoints.instantiations.signup import namespace_signup
-from endpoints.instantiations.typeahead_suggestions import (
+from endpoints.instantiations.admin_.routes import namespace_admin
+from endpoints.instantiations.batch_.batch import namespace_bulk
+from endpoints.instantiations.auth_.callback import namespace_auth
+from endpoints.instantiations.contact_.route import namespace_contact
+from endpoints.instantiations.data_requests_.data_requests import (
+    namespace_data_requests,
+)
+from endpoints.instantiations.github_.route import namespace_github
+from endpoints.instantiations.oauth_.link_to_github import namespace_link_to_github
+from endpoints.instantiations.locations_.locations import namespace_locations
+from endpoints.instantiations.oauth_.login_with_github import (
+    namespace_login_with_github,
+)
+from endpoints.instantiations.map_.map import namespace_map
+from endpoints.instantiations.match_.route import namespace_match
+from endpoints.instantiations.metadata_.route import namespace_metadata
+from endpoints.instantiations.metrics_.metrics import namespace_metrics
+from endpoints.instantiations.notifications_.route import namespace_notifications
+from endpoints.instantiations.oauth_.oauth import namespace_oauth
+from endpoints.instantiations.permissions_.routes import namespace_permissions
+from endpoints.instantiations.proposals_.routes import namespace_proposals
+from endpoints.instantiations.auth_.signup import namespace_signup
+from endpoints.instantiations.typeahead_.routes import (
     namespace_typeahead_suggestions,
 )
 from flask_restx import Api
 
 from config import config, oauth, limiter, jwt
 from db.helpers_.psycopg import initialize_psycopg_connection
-from endpoints.instantiations.agencies import namespace_agencies
-from endpoints.instantiations.api_key import namespace_api_key
-from endpoints.instantiations.archives import namespace_archives
-from endpoints.instantiations.data_sources import namespace_data_source
-from endpoints.instantiations.login import namespace_login
-from endpoints.instantiations.refresh_session import namespace_refresh_session
-from endpoints.instantiations.request_reset_password import (
+from endpoints.instantiations.agencies_.routes import namespace_agencies
+from endpoints.instantiations.auth_.routes import namespace_auth
+from endpoints.instantiations.archives_.route import namespace_archives
+from endpoints.instantiations.data_sources_.data_sources import namespace_data_source
+from endpoints.instantiations.auth_.login import namespace_login
+from endpoints.instantiations.auth_.refresh_session import namespace_refresh_session
+from endpoints.instantiations.auth_.request_reset_password import (
     namespace_request_reset_password,
 )
-from endpoints.instantiations.reset_password import namespace_reset_password
-from endpoints.instantiations.reset_token_validation import (
+from endpoints.instantiations.auth_.reset_password import namespace_reset_password
+from endpoints.instantiations.auth_.reset_token_validation import (
     namespace_reset_token_validation,
 )
-from endpoints.instantiations.unique_url_checker import namespace_url_checker
-from endpoints.instantiations.create_test_user_with_elevated_permissions import (
+from endpoints.instantiations.check_.route import namespace_url_checker
+from endpoints.instantiations.dev_.route import (
     namespace_create_test_user,
 )
-from endpoints.instantiations.user_profile import namespace_user
+from endpoints.instantiations.user.routes import namespace_user
 
 NAMESPACES = [
-    namespace_api_key,
+    namespace_auth,
     namespace_request_reset_password,
     namespace_oauth,
     namespace_reset_token_validation,

@@ -22,7 +22,7 @@ from middleware.schema_and_dto.dtos.agencies.post import (
     AgencyInfoPostDTO,
     AgenciesPostDTO,
 )
-from endpoints.instantiations.api_key import API_KEY_ROUTE
+from endpoints.instantiations.auth_.routes import API_KEY_ROUTE
 from tests.helper_scripts.common_test_data import get_test_name, get_test_email
 from tests.helper_scripts.helper_classes.RequestValidator import RequestValidator
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
