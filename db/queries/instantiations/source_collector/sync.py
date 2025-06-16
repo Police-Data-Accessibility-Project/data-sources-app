@@ -28,6 +28,7 @@ class SourceCollectorSyncAgenciesQueryBuilder(QueryBuilderBase):
         query = (
             select(
                 Agency.id.label("agency_id"),
+                Agency.name.label("display_name"),
                 Location.type.label("location_type"),
                 USState.state_name.label("state_name"),
                 County.name.label("county_name"),
@@ -78,12 +79,7 @@ class SourceCollectorSyncAgenciesQueryBuilder(QueryBuilderBase):
             results.append(
                 {
                     "agency_id": mapping.agency_id,
-                    "display_name": get_display_name(
-                        location_type=LocationType(mapping.location_type),
-                        state_name=mapping.state_name,
-                        county_name=mapping.county_name,
-                        locality_name=mapping.locality_name,
-                    ),
+                    "display_name": mapping.display_name,
                     "state_name": mapping.state_name,
                     "county_name": mapping.county_name,
                     "locality_name": mapping.locality_name,

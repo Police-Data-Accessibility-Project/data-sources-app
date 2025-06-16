@@ -75,6 +75,10 @@ def test_source_collector_sync_agencies(
     last_agency = results["agencies"][0]
     assert last_agency["agency_id"] == agency_ids[-2]
 
+    for i in range(1000):
+        result_idx = 1000 - i - 1
+        assert results["agencies"][result_idx]["display_name"] == f"Test Agency {i}"
+
     # Check pagination
     results_pagination = rv.get_agencies_for_sync(
         headers=tdc.get_admin_tus().jwt_authorization_header,
