@@ -15,7 +15,7 @@ from middleware.scheduled_tasks.check_database_health import check_database_heal
 from middleware.util.env import get_env_variable
 from endpoints.instantiations.admin_.routes import namespace_admin
 from endpoints.instantiations.batch_.batch import namespace_bulk
-from endpoints.instantiations.auth_.callback import namespace_auth
+from endpoints.instantiations.auth_.callback import namespace_callback
 from endpoints.instantiations.contact_.route import namespace_contact
 from endpoints.instantiations.data_requests_.data_requests import (
     namespace_data_requests,
@@ -62,7 +62,7 @@ from endpoints.instantiations.dev_.route import (
 from endpoints.instantiations.user.routes import namespace_user
 
 NAMESPACES = [
-    namespace_auth,
+    namespace_callback,
     namespace_request_reset_password,
     namespace_oauth,
     namespace_reset_token_validation,
