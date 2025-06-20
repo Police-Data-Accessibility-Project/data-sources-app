@@ -1,4 +1,3 @@
-from contextlib import contextmanager
 import functools
 from typing import Callable, Any, Union, Tuple, Dict, Optional
 
@@ -7,20 +6,18 @@ from flask_restx import Resource
 
 from config import config
 from db.client.context_manager import setup_database_client
-from db.client.core import DatabaseClient
+from db.helpers_.psycopg import initialize_psycopg_connection
 from middleware.schema_and_dto.dynamic.dto_request_content_population import (
     populate_dto_with_request_content,
 )
 from middleware.schema_and_dto.dynamic.schema.request_content_population import (
     populate_schema_with_request_content,
 )
-from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
-from db.helpers_.psycopg import initialize_psycopg_connection
-
 from middleware.schema_and_dto.non_dto_dataclasses import (
     SchemaPopulateParameters,
     DTOPopulateParameters,
 )
+from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
 
 
 def handle_exceptions(
@@ -114,13 +111,7 @@ class PsycopgResource(Resource):
                 return wrapper_function(db_client, **wrapper_kwargs)
 
         if dto_populate_parameters is not None:
-            dto = populate_dto_with_request_content(
-                dto_class=dto_populate_parameters.dto_class,
-                source=dto_populate_parameters.source,
-                attribute_source_mapping=dto_populate_parameters.attribute_source_mapping,
-                transformation_functions=dto_populate_parameters.transformation_functions,
-                validation_schema=dto_populate_parameters.validation_schema,
-            )
+            dto = populate_dto_with_request_content(dto_populate_parameters)
         elif schema_populate_parameters is not None:
             dto = populate_schema_with_request_content(
                 schema=schema_populate_parameters.schema,

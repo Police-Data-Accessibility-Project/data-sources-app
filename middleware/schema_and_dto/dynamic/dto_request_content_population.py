@@ -1,5 +1,6 @@
 from typing import Type, Optional, Callable, Any
 
+from middleware.schema_and_dto.non_dto_dataclasses import DTOPopulateParameters
 from middleware.util.argument_checking import (
     check_for_mutually_exclusive_arguments,
     check_for_either_or_argument,
@@ -11,11 +12,7 @@ from utilities.enums import SourceMappingEnum
 
 
 def populate_dto_with_request_content(
-    dto_class: Type[DTOTypes],
-    transformation_functions: Optional[dict[str, Callable]] = None,
-    source: SourceMappingEnum = None,
-    attribute_source_mapping: Optional[dict[str, SourceMappingEnum]] = None,
-    validation_schema: Optional[ValidationSchema] = None,
+    populate_parameters: DTOPopulateParameters,
 ) -> DTOTypes:
     """
     Populate dto with data from the request
@@ -28,6 +25,12 @@ def populate_dto_with_request_content(
     :validation_schema: A schema used to validate the input is in the expected form.
     :return: The instantiated object populated with data from the request
     """
+    dto_class = populate_parameters.dto_class
+    transformation_functions = populate_parameters.transformation_functions
+    source = populate_parameters.source
+    attribute_source_mapping = populate_parameters.attribute_source_mapping
+    validation_schema = populate_parameters.validation_schema
+
     # Instantiate object
     check_for_mutually_exclusive_arguments(source, attribute_source_mapping)
     check_for_either_or_argument(source, attribute_source_mapping)
