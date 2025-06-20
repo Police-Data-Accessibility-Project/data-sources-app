@@ -3,6 +3,11 @@ from http import HTTPStatus
 from endpoints.schema_config.instantiations.auth.github.oauth import (
     AuthGitHubOAuthEndpointSchemaConfig,
 )
+from middleware.schema_and_dto.dynamic.dto_request_content_population import (
+    populate_dto_with_request_content,
+)
+from middleware.schema_and_dto.non_dto_dataclasses import DTOPopulateParameters
+from middleware.schema_and_dto.schemas.auth.github.oauth import GithubOAuthRequestSchema
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.info.instantiations import NO_AUTH_INFO
 from middleware.decorators.endpoint_info import endpoint_info
@@ -17,6 +22,7 @@ from middleware.third_party_interaction_logic.callback.oauth import (
 from endpoints.psycopg_resource import PsycopgResource
 from endpoints.schema_config.enums import SchemaConfigs
 from endpoints._helpers.response_info import ResponseInfo
+from utilities.enums import SourceMappingEnum
 from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_oauth = create_namespace(AppNamespaces.OAUTH)
@@ -38,8 +44,14 @@ class GithubOAuth(PsycopgResource):
         description="Directs user to OAuth page for App.",
     )
     def get(self, access_info: AccessInfoPrimary):
-        dto: GithubOAuthRequestDTO = (
-            AuthGitHubOAuthEndpointSchemaConfig.populate_schema_with_request_content()
+        dto_populate_parameters = DTOPopulateParameters(
+            dto_class=GithubOAuthRequestDTO,
+            source=SourceMappingEnum.QUERY_ARGS,
+            validation_schema=GithubOAuthRequestSchema,
+        )
+
+        dto: GithubOAuthRequestDTO = populate_dto_with_request_content(
+            dto_populate_parameters
         )
         setup_callback_session(
             callback_functions_enum=CallbackFunctionsEnum.LOGIN_WITH_GITHUB,

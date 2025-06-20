@@ -20,6 +20,7 @@ from middleware.schema_and_dto.dynamic.schema.request_content_population import 
     InvalidSourceMappingError,
     populate_schema_with_request_content,
 )
+from middleware.schema_and_dto.non_dto_dataclasses import DTOPopulateParameters
 from tests.helper_scripts.common_mocks_and_patches import patch_request_args_get
 
 from middleware.schema_and_dto.exceptions import AttributeNotInClassError
@@ -70,9 +71,11 @@ def test_populate_dto_with_request_content_happy_path(
 ):
 
     dto = populate_dto_with_request_content(
-        SimpleDTO,
-        transformation_functions={"transformed_array": transform_array},
-        source=source_mapping_enum,
+        DTOPopulateParameters(
+            dto_class=SimpleDTO,
+            transformation_functions={"transformed_array": transform_array},
+            source=source_mapping_enum,
+        )
     )
     assert dto.simple_string == "spam"
     assert dto.optional_int is None
@@ -88,9 +91,13 @@ def test_populate_dto_with_request_transformation_function_not_in_attributes(
     """
     with pytest.raises(AttributeNotInClassError):
         dto = populate_dto_with_request_content(
-            SimpleDTO,
-            transformation_functions={"non_existent_attribute": lambda value: value},
-            source=SourceMappingEnum.QUERY_ARGS,
+            DTOPopulateParameters(
+                dto_class=SimpleDTO,
+                transformation_functions={
+                    "non_existent_attribute": lambda value: value
+                },
+                source=SourceMappingEnum.QUERY_ARGS,
+            )
         )
 
 
@@ -98,8 +105,7 @@ def test_populate_dto_with_request_no_transformation_functions(
     patched_request_args_get,
 ):
     dto = populate_dto_with_request_content(
-        SimpleDTO,
-        source=SourceMappingEnum.QUERY_ARGS,
+        DTOPopulateParameters(dto_class=SimpleDTO, source=SourceMappingEnum.QUERY_ARGS)
     )
     assert dto.simple_string == "spam"
     assert dto.optional_int is None
@@ -111,9 +117,11 @@ def test_populate_dto_with_request_source_mapping_and_source_arguments(
 ):
     with pytest.raises(MutuallyExclusiveArgumentError):
         dto = populate_dto_with_request_content(
-            SimpleDTO,
-            source=SourceMappingEnum.QUERY_ARGS,
-            attribute_source_mapping={"simple_string": SourceMappingEnum.FORM},
+            DTOPopulateParameters(
+                dto_class=SimpleDTO,
+                source=SourceMappingEnum.QUERY_ARGS,
+                attribute_source_mapping={"simple_string": SourceMappingEnum.FORM},
+            )
         )
 
 
@@ -121,7 +129,9 @@ def test_populate_dto_with_request_no_source_argument(
     patched_request_args_get,
 ):
     with pytest.raises(MissingRequiredArgumentError):
-        dto = populate_dto_with_request_content(SimpleDTO)
+        dto = populate_dto_with_request_content(
+            DTOPopulateParameters(dto_class=SimpleDTO)
+        )
 
 
 def test_populate_dto_with_request_source_mapping_happy_path(
@@ -132,12 +142,14 @@ def test_populate_dto_with_request_source_mapping_happy_path(
     mock_request.form.get = MagicMock(return_value=2)
     mock_request.json.get = MagicMock(return_value=3)
     dto = populate_dto_with_request_content(
-        SimpleDTO,
-        attribute_source_mapping={
-            "simple_string": SourceMappingEnum.QUERY_ARGS,
-            "optional_int": SourceMappingEnum.FORM,
-            "transformed_array": SourceMappingEnum.JSON,
-        },
+        DTOPopulateParameters(
+            dto_class=SimpleDTO,
+            attribute_source_mapping={
+                "simple_string": SourceMappingEnum.QUERY_ARGS,
+                "optional_int": SourceMappingEnum.FORM,
+                "transformed_array": SourceMappingEnum.JSON,
+            },
+        )
     )
     mock_request.json.get.assert_called_once_with("transformed_array")
     mock_request.form.get.assert_called_once_with("optional_int")
