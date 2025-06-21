@@ -34,4 +34,5 @@ jobs:
         uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
-      - run: uv run basedpyright --level error
+      - run: uv add basedpyright
+      - run: basedpyright --level error
