@@ -13,7 +13,7 @@ from middleware.security.jwt.helpers import get_secret_key
 class SimpleJWT:
 
     def __init__(
-        self, sub: Union[str, dict], exp: float, purpose: JWTPurpose, **other_claims
+        self, sub: str | dict, exp: float, purpose: JWTPurpose, **other_claims
     ):
         self.sub = sub
         self.exp = exp

@@ -205,3 +205,5 @@ class GithubIssueManager:
         for node in nodes:
             if node["name"] == "Status":
                 return node
+
+        raise ValueError("Status field not found")

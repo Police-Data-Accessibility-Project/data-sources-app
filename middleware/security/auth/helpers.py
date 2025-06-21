@@ -31,7 +31,7 @@ def get_authentication(
     check_if_valid_auth_scheme(hai.auth_scheme, allowed_access_methods)
 
     for access_method in allowed_access_methods:
-        amc: AuthMethodConfig = AUTH_METHODS_MAP.get(access_method)
+        amc: AuthMethodConfig | None = AUTH_METHODS_MAP.get(access_method)
         if amc is None:
             continue
 
@@ -45,14 +45,20 @@ def get_authentication(
         if access_info:
             return access_info
 
-    raise Unauthorized(get_authentication_error_message(allowed_access_methods))
+    raise Unauthorized(
+        f"Please provide a valid form of one of the following: "
+        f"{[access_method.value 
+            for access_method in allowed_access_methods]}"
+    )
 
 
 def check_if_valid_auth_scheme(
     auth_scheme: AuthScheme, allowed_access_methods: list[AccessTypeEnum]
 ):
     for access_method in allowed_access_methods:
-        amc: AuthMethodConfig = AUTH_METHODS_MAP.get(access_method)
+        amc: AuthMethodConfig | None = AUTH_METHODS_MAP.get(access_method)
+        if amc is None:
+            raise BadRequest("Invalid Auth Scheme for endpoint")
         if auth_scheme == amc.scheme:
             return
 
@@ -62,7 +68,7 @@ def check_if_valid_auth_scheme(
 def try_authentication(
     allowed_access_methods: list[AccessTypeEnum],
     access_type: AccessTypeEnum,
-    handler: callable,
+    handler: callable,  # pyright: ignore[reportGeneralTypeIssues]
     **kwargs,
 ):
     """
@@ -76,11 +82,3 @@ def try_authentication(
     if access_type in allowed_access_methods:
         return handler(**kwargs)
     return None
-
-
-def get_authentication_error_message(
-    allowed_access_methods: list[AccessTypeEnum],
-) -> str:
-    f"""
-    Please provide a valid form of one of the following: {[access_method.value for access_method in allowed_access_methods]} 
-    """

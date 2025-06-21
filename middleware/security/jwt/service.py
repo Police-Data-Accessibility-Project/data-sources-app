@@ -26,6 +26,8 @@ class JWTService:
             )
         except Exception:
             return None
+        if isinstance(simple_jwt.sub, dict):
+            raise BadRequest("Sub is not a valid string.")
         return get_jwt_access_info_with_permissions(
             user_email=simple_jwt.other_claims["user_email"],
             user_id=int(simple_jwt.sub),

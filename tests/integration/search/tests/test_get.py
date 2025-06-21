@@ -61,6 +61,7 @@ def test_search_get(search_test_setup: SearchTestSetup):
         "record_categories": [RecordCategories.POLICE.value],
     }
 
+    # Search in CSV
     csv_data = search(record_format=OutputFormatEnum.CSV)
 
     results = read_from_csv(csv_data)

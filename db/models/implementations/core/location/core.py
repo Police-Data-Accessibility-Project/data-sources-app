@@ -1,3 +1,4 @@
+# pyright: reportUninitializedInstanceVariable=false
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 

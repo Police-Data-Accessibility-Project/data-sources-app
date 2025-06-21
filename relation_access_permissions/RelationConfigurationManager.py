@@ -115,39 +115,3 @@ class RelationConfigurationManager:
             self.relation_configurations[relation_name] = RelationConfiguration(
                 relation_name=relation_name, columns=relation_columns
             )
-
-    def get_relation_configuration(self, relation_name: str) -> RelationConfiguration:
-        return self.relation_configurations[relation_name]
-
-    def relation_configuration_exists(self, relation_name):
-        return relation_name in self.relation_configurations
-
-    def make_relation_configuration(self, relation_name: str, columns: list[str]):
-        relation_columns = []
-        for column in columns:
-            relation_column = RelationColumn(column_name=column, access_permissions={})
-            relation_columns.append(relation_column)
-
-        self.relation_configurations[relation_name] = RelationConfiguration(
-            relation_name=relation_name, columns=relation_columns
-        )
-
-    def write_relation_configuration_csv(self, relation_name: str):
-        relation_configuration = self.relation_configurations[relation_name]
-        roles = relation_configuration.get_all_roles()
-        df = pd.DataFrame(columns=["column_name"] + roles)
-        new_rows = []
-        for column in self.relation_configurations[relation_name].columns.values():
-            new_row = {"column_name": column.column_name}
-            for role in roles:
-                new_row[role] = column.access_permissions.get(
-                    role, AccessPermission.NONE
-                ).value
-            new_rows.append(new_row)
-        df_extended = pd.DataFrame(columns=["column_name"] + roles, data=new_rows)
-        out_df = pd.concat([df, df_extended], ignore_index=True)
-
-        out_df.to_csv(
-            get_full_path(f"{RELATION_CONFIGURATIONS_DIR}/{relation_name}.csv"),
-            index=False,
-        )

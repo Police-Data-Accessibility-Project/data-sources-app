@@ -2,10 +2,10 @@ from http import HTTPStatus
 from typing import Optional, Type
 
 from marshmallow import Schema
+from pydantic import BaseModel
 
 from endpoints.schema_config.config.manager import OutputSchemaManager
 from middleware.schema_and_dto.non_dto_dataclasses import SchemaPopulateParameters
-from middleware.schema_and_dto.types import DTOTypes
 
 
 class EndpointSchemaConfig:
@@ -13,7 +13,7 @@ class EndpointSchemaConfig:
         self,
         input_schema: Optional[Schema] = None,
         primary_output_schema: Optional[Schema] = None,
-        input_dto_class: Optional[Type[DTOTypes]] = None,
+        input_dto_class: Optional[Type[BaseModel]] = None,
         additional_output_schemas: Optional[dict[HTTPStatus, Schema]] = None,
     ):
         """

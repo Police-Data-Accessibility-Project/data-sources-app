@@ -18,6 +18,8 @@ def check_permissions_with_access_info(
 ) -> None:
     if access_info is None:
         raise Forbidden("You do not have permission to access this endpoint")
+    if access_info.permissions is None:
+        raise Forbidden("You do not have permission to access this endpoint")
     for permission in permissions:
         if permission not in access_info.permissions:
             raise Forbidden("You do not have permission to access this endpoint")

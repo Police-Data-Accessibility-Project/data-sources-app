@@ -38,7 +38,7 @@ class FollowBaseQueryBuilder(QueryBuilderBase):
         )
 
     def build(self, session: Session) -> Any:
-        self.session = session
+        self._session = session
         self.setup()
         return self.run()
 

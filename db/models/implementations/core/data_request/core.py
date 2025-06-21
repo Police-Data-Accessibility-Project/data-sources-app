@@ -1,3 +1,4 @@
+# pyright: reportUninitializedInstanceVariable=false
 from typing import Optional, get_args
 
 from sqlalchemy import Enum

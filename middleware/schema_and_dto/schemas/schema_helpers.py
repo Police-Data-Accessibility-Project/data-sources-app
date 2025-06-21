@@ -47,7 +47,9 @@ def create_get_many_schema(
     return GetManySchema
 
 
-def create_get_by_id_schema(data_schema: Schema, description: str) -> Type[Schema]:
+def create_get_by_id_schema(
+    data_schema: type[Schema], description: str
+) -> Type[Schema]:
     class GetByIDSchema(MessageSchema):
         data = fields.Nested(
             data_schema,

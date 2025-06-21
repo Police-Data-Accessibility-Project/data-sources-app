@@ -7,13 +7,17 @@ from utilities.enums import RecordCategories, SourceMappingEnum, ParserLocation
 
 def transform_record_categories(value: str) -> Optional[list[RecordCategories]]:
     if value is not None:
-        return get_enums_from_string(RecordCategories, value, case_insensitive=True)
+        return get_enums_from_string(  # pyright: ignore[reportReturnType]
+            RecordCategories, value, case_insensitive=True
+        )
     return None
 
 
 def transform_record_types(value: str) -> Optional[list[RecordTypes]]:
     if value is not None:
-        return get_enums_from_string(RecordTypes, value, case_insensitive=True)
+        return get_enums_from_string(  # pyright: ignore[reportReturnType]
+            RecordTypes, value, case_insensitive=True
+        )
     return None
 
 

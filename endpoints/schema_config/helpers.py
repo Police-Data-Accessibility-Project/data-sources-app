@@ -1,6 +1,7 @@
 from typing import Type, Optional
 
 from marshmallow import Schema
+from pydantic import BaseModel
 
 from endpoints.schema_config.config.core import EndpointSchemaConfig
 from middleware.primary_resource_logic.user_queries import (
@@ -23,12 +24,11 @@ from middleware.schema_and_dto.schemas.data_sources.related_agency.by_id import 
 )
 from middleware.schema_and_dto.schemas.search.request import SearchRequestSchema
 from middleware.schema_and_dto.schemas.typeahead.request import TypeaheadQuerySchema
-from middleware.schema_and_dto.types import DTOTypes
 
 
 def get_post_resource_endpoint_schema_config(
     input_schema: Schema,
-    input_dto_class: Type[DTOTypes],
+    input_dto_class: Type[BaseModel],
 ) -> EndpointSchemaConfig:
     return EndpointSchemaConfig(
         input_schema=input_schema,
@@ -39,7 +39,7 @@ def get_post_resource_endpoint_schema_config(
 
 def get_put_resource_endpoint_schema_config(
     input_schema: Schema,
-    input_dto_class: Optional[Type[DTOTypes]] = None,
+    input_dto_class: Optional[Type[BaseModel]] = None,
 ) -> EndpointSchemaConfig:
     return schema_config_with_message_output(
         input_schema=input_schema,
@@ -79,7 +79,7 @@ def get_user_request_endpoint_schema_config(
 
 def schema_config_with_message_output(
     input_schema: Optional[Schema] = None,
-    input_dto_class: Optional[Type[DTOTypes]] = None,
+    input_dto_class: Optional[Type[BaseModel]] = None,
 ):
     return EndpointSchemaConfig(
         input_schema=input_schema,

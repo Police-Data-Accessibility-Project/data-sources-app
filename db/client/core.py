@@ -17,7 +17,7 @@ from typing import (
 import psycopg
 import sqlalchemy.exc
 from psycopg import Cursor
-from psycopg import connection as pg_connection
+from psycopg.connection import Connection as pg_connection
 from psycopg.rows import tuple_row
 from sqlalchemy import (
     select,

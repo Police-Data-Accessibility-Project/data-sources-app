@@ -1,4 +1,5 @@
 from db.enums import RequestStatus
+from middleware.enums import RecordTypes
 from middleware.third_party_interaction_logic.github.issue_project_info.model import (
     GIPIInfo,
 )
@@ -32,7 +33,7 @@ class GithubIssueProjectInfo:
         except KeyError:
             raise ValueError(f"Unknown issue number {issue_number}")
 
-    def get_labels(self, issue_number: int) -> list[str]:
+    def get_labels(self, issue_number: int) -> list[RecordTypes]:
         try:
             gipi_info = self.issue_number_to_info[issue_number]
             return gipi_info.record_types

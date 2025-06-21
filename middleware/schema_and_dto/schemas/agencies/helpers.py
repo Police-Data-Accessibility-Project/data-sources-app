@@ -32,7 +32,7 @@ def get_jurisdiction_type_field(required: bool) -> fields.Enum:
 
 
 def get_agency_info_field(
-    schema: type[AgencyInfoBaseSchema],
+    schema: type[AgencyInfoBaseSchema],  # pyright: ignore[reportInvalidTypeForm]
     nested_dto_class: type[Union[AgencyInfoPutDTO, AgencyInfoPostDTO]],
 ) -> fields.Nested:
     return fields.Nested(

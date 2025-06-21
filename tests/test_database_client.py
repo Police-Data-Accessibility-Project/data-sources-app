@@ -1005,26 +1005,6 @@ def test_user_followed_searches_logic(
     assert len(results["data"]) == 1
 
 
-def test_get_notifications_no_results(live_database_client):
-    """
-    Tests that `get_notifications` returns an empty list when there are no notifications
-    :param live_database_client:
-    :return:
-    """
-
-
-def get_user_notification_queue(db_client: DatabaseClient):
-    return db_client._select_from_relation(
-        relation_name=Relations.USER_NOTIFICATION_QUEUE.value,
-        columns=[
-            "id",
-            "user_id",
-            "pen_id",
-            "sent_at",
-        ],
-    )
-
-
 def test_get_next_user_events_and_mark_user_events_as_sent(test_data_creator_db_client):
     tdc = test_data_creator_db_client
     tdc.clear_test_data()

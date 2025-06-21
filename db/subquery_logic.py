@@ -47,7 +47,7 @@ class SubqueryParameterManager:
     def get_subquery_params(
         relation: Relations,
         linking_column: str,
-        columns: list[str] = None,
+        columns: Optional[list[str]] = None,
         alias_mappings: Optional[dict[str, str]] = None,
     ) -> SubqueryParameters:
         return SubqueryParameters(

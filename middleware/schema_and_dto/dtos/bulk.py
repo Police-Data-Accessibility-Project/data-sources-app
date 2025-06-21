@@ -6,8 +6,11 @@ from pydantic import BaseModel
 from werkzeug.datastructures import FileStorage
 
 
-@dataclass
-class BulkRequestDTO:
+class BulkRequestDTO(BaseModel):
+
+    class Config:
+        arbitrary_types_allowed = True
+
     file: FileStorage
     csv_schema: Schema
     inner_dto_class: Any

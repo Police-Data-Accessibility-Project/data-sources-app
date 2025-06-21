@@ -12,12 +12,10 @@ def bytes_to_text_iter(file: BytesIO | FileStorage) -> Generator[str, Any, None]
     return (line.decode("utf-8") for line in file)
 
 
-def read_from_csv(file: str | FileStorage | bytes) -> list[dict[str, Any]]:
+def read_from_csv(file: FileStorage | bytes) -> list[dict[str, Any]]:
     if isinstance(file, FileStorage):
-        file = bytes_to_text_iter(file)
-    elif isinstance(file, str):
-        file = open(file, "r", newline="", encoding="utf-8")
+        file = bytes_to_text_iter(file)  # pyright: ignore[reportAssignmentType]
     elif isinstance(file, bytes):
         content = file.decode("utf-8")
-        file = StringIO(content)
-    return list(csv.DictReader(file))
+        file = StringIO(content)  # pyright: ignore[reportAssignmentType]
+    return list(csv.DictReader(file))  # pyright: ignore[reportArgumentType]

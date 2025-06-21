@@ -9,10 +9,16 @@ from sqlalchemy.sql.compiler import SQLCompiler
 class QueryBuilderBase(ABC):
 
     def __init__(self):
-        self.session: Optional[Session] = None
+        self._session: Optional[Session] = None
+
+    @property
+    def session(self) -> Session:
+        if self._session is None:
+            raise RuntimeError("Session is not initialized")
+        return self._session
 
     def build(self, session: Session) -> Any:
-        self.session = session
+        self._session = session
         return self.run()
 
     @abstractmethod

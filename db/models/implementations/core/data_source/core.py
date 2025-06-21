@@ -1,3 +1,4 @@
+# pyright: reportUninitializedInstanceVariable=false
 from datetime import date
 from typing import Optional, get_args
 
