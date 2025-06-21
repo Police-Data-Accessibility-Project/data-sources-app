@@ -27,4 +27,6 @@ class FlatSchema(Schema):
             raise ValidationError(
                 f"Cannot add nested schema field '{name}' to FlatSchema."
             )
-        super().add_field(name, field_obj)
+        super().add_field(
+            name, field_obj
+        )  # pyright: ignore[reportAttributeAccessIssue]

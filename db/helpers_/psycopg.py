@@ -1,5 +1,5 @@
 import psycopg
-from psycopg import connection as PgConnection
+from psycopg.connection import Connection as PgConnection
 
 from db.exceptions import DatabaseInitializationError
 from middleware.util.env import get_env_variable
@@ -7,6 +7,9 @@ from middleware.util.env import get_env_variable
 
 class DatabaseConnectionSingleton:
     _instance = None
+
+    def __init__(self):
+        self._connection = None
 
     def __new__(cls):
         if not cls._instance:

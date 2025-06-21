@@ -9,9 +9,9 @@ from typing import (
     Callable,
     Union,
     Type,
-    cast,
     LiteralString,
     Sequence,
+    cast,
 )
 
 import psycopg
@@ -19,14 +19,7 @@ import sqlalchemy.exc
 from psycopg import Cursor
 from psycopg.connection import Connection as pg_connection
 from psycopg.rows import tuple_row
-from sqlalchemy import (
-    select,
-    delete,
-    update,
-    Select,
-    func,
-    RowMapping,
-)
+from sqlalchemy import select, delete, update, Select, func, RowMapping
 from sqlalchemy.orm import (
     selectinload,
     Session,
@@ -202,7 +195,7 @@ class DatabaseClient:
     def __init__(self):
         self.connection: pg_connection = initialize_psycopg_connection()
         self.session_maker = initialize_sqlalchemy_session()
-        self.session = None
+        self.session: Optional[Session] = None
         self.cursor: Optional[Cursor] = None
 
     @cursor_manager()
@@ -555,7 +548,11 @@ class DatabaseClient:
     @session_manager
     def get_table_count(self, table_name: str) -> int:
         table = SQL_ALCHEMY_TABLE_REFERENCE[table_name]
-        count = self.session.query(func.count(table.id)).scalar()
+        if not hasattr(table, "id"):
+            raise ValueError(f"Table {table_name} does not have an id column")
+        count = self.session.query(
+            func.count(table.id)  # pyright: ignore[reportAttributeAccessIssue]
+        ).scalar()
         return count
 
     @session_manager
@@ -578,7 +575,10 @@ class DatabaseClient:
             .scalar_subquery()
         )
         up = UserPermission(
-            user_id=user_id, permission_id=cast(int, permission_id_subquery)
+            user_id=user_id,
+            permission_id=cast(
+                int, permission_id_subquery
+            ),  # pyright: ignore[reportInvalidCast]
         )
         self.add(up)
 
@@ -1394,6 +1394,8 @@ class DatabaseClient:
 
     @session_manager
     def update_location_by_id(self, location_id: int, dto: LocationPutDTO):
+        if dto.latitude is None or dto.longitude is None:
+            raise ValueError("latitude and longitude are required")
         try:
             location = (
                 self.session.query(Location).filter(Location.id == location_id).one()

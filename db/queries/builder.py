@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Any, Optional
 
-from flask_sqlalchemy.session import Session
 from sqlalchemy import Executable, Result, Select
+from sqlalchemy.orm import Session
 from sqlalchemy.sql.compiler import SQLCompiler
 
 

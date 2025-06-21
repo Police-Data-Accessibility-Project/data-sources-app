@@ -29,8 +29,8 @@ def get_github_user_email(token: str) -> str:
     auth = Auth.Token(token)
     g = Github(auth=auth)
     email_datas = (
-        g.get_user().get_emails()
-    )  # pyright: ignore[reportOptionalMemberAccess, reportAttributeAccessIssue]
+        g.get_user().get_emails()  # pyright: ignore[reportAttributeAccessIssue]
+    )
     for email_data in email_datas:
         if email_data.primary is True:
             return email_data.email

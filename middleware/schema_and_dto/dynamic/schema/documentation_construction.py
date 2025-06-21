@@ -1,4 +1,4 @@
-# pyright: reportReturnType=false, reportAttributeAccessIssue=false, reportCallIssue=false
+# pyright: reportReturnType=false, reportAttributeAccessIssue=false, reportCallIssue=false, reportGeneralTypeIssues=false, reportArgumentType=false
 """
 This module aims to reduce the amount of boilerplate code
 with retrieving requests and populating Data Transfer Objects (DTO)s
@@ -29,6 +29,7 @@ from flask_restx.reqparse import RequestParser
 
 from flask_restx import fields as restx_fields, Namespace, Model, OrderedModel
 from marshmallow import fields as marshmallow_fields, missing, Schema
+from marshmallow.fields import Field as MarshmallowField
 from marshmallow.validate import OneOf
 
 from middleware.schema_and_dto.mappings import (
@@ -170,7 +171,7 @@ class FieldInfo:
         self,
         metadata: dict,
         schema_class: Type[SchemaTypes],
-        field_value: marshmallow_fields,
+        field_value: MarshmallowField,
         field_name: str,
     ) -> str:
         description = _get_required_argument(

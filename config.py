@@ -6,10 +6,11 @@ from flask_limiter.util import get_remote_address
 from flask_jwt_extended import JWTManager
 
 from middleware.util.env import get_env_variable
+from psycopg.connection import Connection as PgConnection
 
 
 class Config:
-    connection = None
+    connection: PgConnection = None
 
 
 config = Config()

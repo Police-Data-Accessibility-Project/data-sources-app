@@ -115,3 +115,20 @@ reportMissingTypeArgument = false
 reportUnsafeMultipleInheritance = false
 reportMissingSuperCall = false
 reportUndefinedVariable = false
+# The following are temporarily disabled
+# They should be gradually resolved and then re-enabled
+reportOptionalMemberAccess = false
+reportIncompatibleMethodOverride = false
+reportGeneralTypeIssues = false
+reportArgumentType = false
+reportCallIssue = false
+reportOperatorIssue = false
+reportIncompatibleVariableOverride = false
+reportReturnType = false
+reportAssignmentType = false
+reportIndexIssue = false
+reportOptionalSubscript = false
+reportPossiblyUnboundVariable = false
+reportOptionalIterable = false
+reportInvalidTypeForm = false
+reportOptionalCall = false

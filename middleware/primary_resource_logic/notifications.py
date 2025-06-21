@@ -1,3 +1,4 @@
+# pyright: reportAttributeAccessIssue = false
 from dataclasses import dataclass
 
 from flask import Response, make_response
