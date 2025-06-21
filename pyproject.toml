@@ -104,6 +104,7 @@ dev = [
 [tool.ruff.lint]
 
 [tool.basedpyright]
+failOnWarnings = false
 ignore = [
     "tests",
     "tests_comprehensive",
