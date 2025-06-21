@@ -7,7 +7,6 @@ import uuid
 from middleware.security.jwt.core import SimpleJWT
 from middleware.security.jwt.enums import JWTPurpose
 from middleware.enums import Relations
-from tests.conftest import dev_db_client, test_data_creator_flask
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )

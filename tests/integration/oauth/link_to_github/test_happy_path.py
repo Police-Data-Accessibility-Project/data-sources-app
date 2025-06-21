@@ -21,7 +21,7 @@ def test_link_to_github_oauth(
     )
 
     # Call endpoint with mock access token
-    data = run_and_validate_request(
+    run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="post",
         endpoint=GITHUB_OAUTH_LINK_ENDPOINT,

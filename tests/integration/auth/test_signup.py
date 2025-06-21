@@ -4,7 +4,6 @@ from http import HTTPStatus
 from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )
-from tests.conftest import test_data_creator_flask
 from tests.helper_scripts.common_test_data import get_test_email
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
@@ -100,8 +99,8 @@ def test_signup_post_user_exists_is_not_verified(
         mocker=mocker,
         expected_response_status=HTTPStatus.CONFLICT,
         expected_json_content={
-            "message": f"User with email has already signed up. "
-            f"Please validate your email or request a new validation email."
+            "message": "User with email has already signed up. "
+            "Please validate your email or request a new validation email."
         },
     )
 

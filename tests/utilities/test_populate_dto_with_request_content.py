@@ -90,7 +90,7 @@ def test_populate_dto_with_request_transformation_function_not_in_attributes(
     :return:
     """
     with pytest.raises(AttributeNotInClassError):
-        dto = populate_dto_with_request_content(
+        populate_dto_with_request_content(
             DTOPopulateParameters(
                 dto_class=SimpleDTO,
                 transformation_functions={
@@ -116,7 +116,7 @@ def test_populate_dto_with_request_source_mapping_and_source_arguments(
     patched_request_args_get,
 ):
     with pytest.raises(MutuallyExclusiveArgumentError):
-        dto = populate_dto_with_request_content(
+        populate_dto_with_request_content(
             DTOPopulateParameters(
                 dto_class=SimpleDTO,
                 source=SourceMappingEnum.QUERY_ARGS,
@@ -129,9 +129,7 @@ def test_populate_dto_with_request_no_source_argument(
     patched_request_args_get,
 ):
     with pytest.raises(MissingRequiredArgumentError):
-        dto = populate_dto_with_request_content(
-            DTOPopulateParameters(dto_class=SimpleDTO)
-        )
+        populate_dto_with_request_content(DTOPopulateParameters(dto_class=SimpleDTO))
 
 
 def test_populate_dto_with_request_source_mapping_happy_path(
@@ -304,7 +302,7 @@ def test_populate_nested_schema_with_request_content_non_json_source_provided(
 def test_populate_nested_schema_with_request_content(
     monkeypatch,
 ):
-    mock = patch_request_args_get(
+    patch_request_args_get(
         monkeypatch,
         ROUTE_TO_PATCH,
         {

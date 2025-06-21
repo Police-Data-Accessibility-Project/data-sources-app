@@ -15,7 +15,6 @@ from endpoints.schema_config.instantiations.notifications import (
     NotificationsPostEndpointSchemaConfig,
 )
 from middleware.custom_dataclasses import EventInfo, EventBatch
-from endpoints.schema_config.enums import SchemaConfigs
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
@@ -24,7 +23,6 @@ from tests.helper_scripts.helper_classes.AnyOrder import AnyOrder
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
 )
-from tests.conftest import test_data_creator_flask
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 

@@ -1,10 +1,8 @@
-from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
 
 from config import limiter
-from tests.conftest import client_with_mock_db, bypass_jwt_required
 from tests.helper_scripts.constants import TEST_RESPONSE
 from tests.helper_scripts.common_asserts import assert_response_status
 
@@ -42,7 +40,7 @@ def test_rate_limiter_explicit_limit(
     """
 
     monkeypatch.setattr(
-        f"endpoints.instantiations.auth_.login.try_logging_in",
+        "endpoints.instantiations.auth_.login.try_logging_in",
         MagicMock(return_value=TEST_RESPONSE),
     )
 

@@ -22,7 +22,6 @@ from middleware.schema_and_dto.schemas.agencies.info.put import (
 from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )
-from endpoints.schema_config.enums import SchemaConfigs
 
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
@@ -38,8 +37,6 @@ from tests.helper_scripts.common_asserts import (
     assert_contains_key_value_pairs,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-
-from tests.conftest import test_data_creator_flask
 
 
 def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):

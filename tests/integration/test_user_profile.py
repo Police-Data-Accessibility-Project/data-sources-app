@@ -9,7 +9,6 @@ from tests.helper_scripts.complex_test_data_creation_functions import (
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from tests.conftest import test_data_creator_flask
 
 
 def test_user_profile_data_requests(test_data_creator_flask: TestDataCreatorFlask):
@@ -123,7 +122,7 @@ def test_user_profile_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     # Test that other non-admin users cannot get this user's information
 
     tus_2 = tdc.standard_user()
-    json_response_2 = tdc.request_validator.get_user_by_id(
+    tdc.request_validator.get_user_by_id(
         headers=tus_2.jwt_authorization_header,
         user_id=tus.user_info.user_id,
         expected_response_status=HTTPStatus.FORBIDDEN,

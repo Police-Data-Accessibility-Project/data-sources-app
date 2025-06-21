@@ -1,4 +1,3 @@
-from tests.conftest import test_data_creator_flask
 from tests.helper_scripts.common_test_data import (
     get_test_name,
 )

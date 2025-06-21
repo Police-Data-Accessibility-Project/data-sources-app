@@ -9,7 +9,6 @@ from middleware.enums import Relations
 from middleware.schema_and_dto.schemas.data_requests.base import (
     DataRequestsSchema,
 )
-from tests.conftest import live_database_client
 
 
 def assert_relation_columns_and_schema_fields_aligned(

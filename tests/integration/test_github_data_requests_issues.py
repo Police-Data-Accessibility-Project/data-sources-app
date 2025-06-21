@@ -19,10 +19,6 @@ from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
 from tests.helper_scripts.helper_functions_complex import create_test_user_setup
-from tests.conftest import (
-    clear_data_requests,
-    test_data_creator_flask,
-)
 from tests.integration.test_check_database_health import wipe_database
 
 PATCH_ROOT = "middleware.primary_resource_logic.github_issue_app"

@@ -1,8 +1,5 @@
 from typing import Union, Dict, List, Optional
 
-from tests.conftest import (
-    test_data_creator_flask,
-)
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )

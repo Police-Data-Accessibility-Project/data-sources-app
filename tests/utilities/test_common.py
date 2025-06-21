@@ -1,6 +1,4 @@
 from enum import Enum
-from http import HTTPStatus
-from unittest.mock import MagicMock
 
 import pytest
 from datetime import date

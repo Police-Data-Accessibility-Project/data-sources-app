@@ -42,8 +42,6 @@ from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
-from tests.conftest import test_data_creator_flask
-
 
 def test_data_requests_get(
     test_data_creator_flask: TestDataCreatorFlask,
@@ -335,7 +333,7 @@ def test_data_requests_by_id_put(
             expected_response_status=expected_response_status,
         )
 
-    json_data = put(
+    put(
         header=standard_tus.jwt_authorization_header,
         json={
             "entry_data": {
@@ -398,7 +396,7 @@ def test_data_requests_by_id_delete(test_data_creator_flask):
     data_request_id = int(tdr.id)
 
     # Owner should be able to delete their own request
-    json_data = run_and_validate_request(
+    run_and_validate_request(
         flask_client=flask_client,
         http_method="delete",
         endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(data_request_id=data_request_id),
