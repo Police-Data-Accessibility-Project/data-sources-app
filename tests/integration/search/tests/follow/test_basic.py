@@ -175,7 +175,7 @@ def test_search_follow(search_test_setup: SearchTestSetup):
         tdc.request_validator.follow_search(
             headers=tus_1.jwt_authorization_header,
             expected_json_content={"message": message},
-            **location_to_follow
+            **location_to_follow,
         )
 
     follow_extant_location()
