@@ -29,5 +29,9 @@ jobs:
       - name: Set up Python environment
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-      - run: basedpyright
+          python-version: "3.12.8"
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv run basedpyright
