@@ -35,4 +35,4 @@ jobs:
         with:
           enable-cache: true
       - run: uv pip install basedpyright --system
-      - run: basedpyright --level error
+      - run: basedpyright
