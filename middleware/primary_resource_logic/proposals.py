@@ -12,5 +12,5 @@ def propose_agency(
     agency_id = db_client.create_agency(dto, user_id=access_info.user_id)
 
     return created_id_response(
-        new_id=str(agency_id), message=f"Agency proposal created."
+        new_id=str(agency_id), message="Agency proposal created."
     )

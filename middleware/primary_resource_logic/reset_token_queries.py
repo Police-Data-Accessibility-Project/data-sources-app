@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta, timezone
-from http import HTTPStatus
 
-from flask import Response, make_response
+from flask import Response
 from werkzeug.exceptions import BadRequest, Unauthorized
 
 from werkzeug.security import generate_password_hash, check_password_hash

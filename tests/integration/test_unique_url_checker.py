@@ -8,7 +8,6 @@ from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-from tests.conftest import test_data_creator_flask, monkeysession
 
 
 def test_unique_url_checker(test_data_creator_flask: TestDataCreatorFlask):

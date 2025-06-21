@@ -1,8 +1,5 @@
 from http import HTTPStatus
 
-from endpoints.schema_config.instantiations.auth.github.oauth import (
-    AuthGitHubOAuthEndpointSchemaConfig,
-)
 from middleware.schema_and_dto.dynamic.dto_request_content_population import (
     populate_dto_with_request_content,
 )

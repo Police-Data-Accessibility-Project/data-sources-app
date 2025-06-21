@@ -1,5 +1,3 @@
-from http import HTTPStatus
-
 from flask import Response, make_response
 from marshmallow import Schema, fields
 from pydantic import BaseModel

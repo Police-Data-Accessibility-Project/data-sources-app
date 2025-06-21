@@ -7,9 +7,6 @@ from endpoints.schema_config.config.core import EndpointSchemaConfig
 from endpoints.schema_config.instantiations.admin.users.by_id.delete import (
     AdminUsersByIDDeleteEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.admin.users.by_id.get import (
-    AdminUsersByIDGetEndpointSchemaConfig,
-)
 from endpoints.schema_config.instantiations.admin.users.by_id.put import (
     AdminUsersByIDPutEndpointSchemaConfig,
 )
@@ -107,9 +104,6 @@ from endpoints.schema_config.instantiations.data_requests.related_locations.get 
 from endpoints.schema_config.instantiations.data_requests.related_locations.post import (
     DataRequestsRelatedLocationsPostEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.data_requests.related_sources.delete import (
-    DataRequestsRelatedSourcesDeleteEndpointSchemaConfig,
-)
 from endpoints.schema_config.instantiations.data_requests.related_sources.get import (
     DataRequestsRelatedSourcesGetEndpointSchemaConfig,
 )
@@ -145,9 +139,6 @@ from endpoints.schema_config.instantiations.data_sources.map import (
 )
 from endpoints.schema_config.instantiations.data_sources.post import (
     DataSourcesPostEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.github.issues import (
-    GitHubDataRequestsIssuesPostEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.github.synchronize import (
     GitHubDataRequestsSynchronizePostEndpointSchemaConfig,
@@ -242,9 +233,6 @@ from endpoints.schema_config.instantiations.user.profile.recent_searches import 
 )
 from endpoints.schema_config.instantiations.user.put import UserPutEndpointSchemaConfig
 from middleware.schema_and_dto.schemas.auth.login import LoginResponseSchema
-from middleware.schema_and_dto.schemas.search.follow import (
-    GetUserFollowedSearchesSchema,
-)
 
 
 class SchemaConfigs(Enum):

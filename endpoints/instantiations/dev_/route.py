@@ -15,7 +15,7 @@ import uuid
 from http import HTTPStatus
 
 from flask import request
-from flask_restx import fields, abort
+from flask_restx import fields
 from werkzeug.exceptions import Unauthorized, InternalServerError
 
 from db.client.context_manager import setup_database_client

@@ -127,7 +127,7 @@ def create_data_request_wrapper(
         )
 
     # Return data request id
-    return created_id_response(new_id=str(dr_id), message=f"Data request created.")
+    return created_id_response(new_id=str(dr_id), message="Data request created.")
 
 
 def get_data_requests_wrapper(

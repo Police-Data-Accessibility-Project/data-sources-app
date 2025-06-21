@@ -10,7 +10,7 @@ from db.enums import EventType
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.custom_dataclasses import EventInfo, EventBatch
 import dominate
-from dominate.tags import *
+from dominate.tags import p, h1, div, ul, li, br, a
 
 from middleware.third_party_interaction_logic.mailgun import send_via_mailgun
 from middleware.util.env import get_env_variable

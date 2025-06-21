@@ -41,9 +41,7 @@ def mock_get_permitted_columns(monkeypatch):
 
 @pytest.fixture
 def mock_abort(monkeypatch):
-    return patch_and_return_mock(
-        f"middleware.flask_response_manager.abort", monkeypatch
-    )
+    return patch_and_return_mock("middleware.flask_response_manager.abort", monkeypatch)
 
 
 def test_results_dependent_response_with_results(monkeypatch):
@@ -336,7 +334,7 @@ def test_check_for_id_no_id():
     mock.db_client._select_from_relation.return_value = []
     mock.id_info.id_column_name = "id"
 
-    with pytest.raises(NotFound) as e:
+    with pytest.raises(NotFound):
         check_for_id(
             table_name=mock.table_name, id_info=mock.id_info, db_client=mock.db_client
         )

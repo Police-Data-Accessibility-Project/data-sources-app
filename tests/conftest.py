@@ -181,7 +181,7 @@ def setup_database():
     alembic_cfg.set_main_option("sqlalchemy.url", conn_string)
     try:
         command.upgrade(alembic_cfg, "head")
-    except Exception as e:
+    except Exception:
         # Downgrade to base and try again
         downgrade_to_base(alembic_cfg, engine)
         connection = alembic_cfg.attributes["connection"]

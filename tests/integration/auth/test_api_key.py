@@ -7,9 +7,6 @@ from endpoints.schema_config.instantiations.api_key import (
 )
 from middleware.security.api_key.core import ApiKey
 from endpoints.instantiations.auth_.routes import API_KEY_ROUTE
-from tests.conftest import (
-    test_data_creator_flask,
-)
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
@@ -50,7 +47,7 @@ def test_api_key_not_found(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
 
     # We will use the `/agencies` `GET` endpoint as an example
-    response_json = run_and_validate_request(
+    run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="get",
         endpoint="/agencies",

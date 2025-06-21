@@ -1,6 +1,5 @@
 import logging
 
-from sqlalchemy import CursorResult
 
 from tests.alembic.AlembicRunner import AlembicRunner
 

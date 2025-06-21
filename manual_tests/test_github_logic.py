@@ -21,7 +21,7 @@ def test_get_github_issue_project_statuses():
 
 
 def test_github_issue_manager():
-    gim = GithubIssueManager()
+    GithubIssueManager()
     pass
 
 
@@ -40,5 +40,5 @@ def test_get_issue_project_statii_and_labels():
 
 
 def test_github_label_manager():
-    glm = GithubLabelManager()
+    GithubLabelManager()
     pass

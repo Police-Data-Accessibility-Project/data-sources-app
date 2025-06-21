@@ -1,5 +1,5 @@
 import datetime
-from typing import Union, Optional
+from typing import Optional
 
 import jwt
 from jwt import InvalidSignatureError

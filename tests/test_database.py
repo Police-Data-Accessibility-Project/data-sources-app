@@ -15,7 +15,6 @@ from db.db_client_dataclasses import WhereMapping
 from db.enums import ApprovalStatus, URLStatus
 from db.models.implementations.core.recent_search.core import RecentSearch
 from middleware.enums import Relations, OperationType
-from tests.conftest import live_database_client, test_data_creator_db_client
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.MultiLocationSetup import MultiLocationSetup
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
@@ -118,8 +117,8 @@ def test_locations(
     )
     assert len(results) == 3
 
-    def any_match(l: list[dict], d: dict):
-        for r in l:
+    def any_match(list_: list[dict], d: dict):
+        for r in list_:
             if r == d:
                 return True
         return False

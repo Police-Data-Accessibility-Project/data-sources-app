@@ -6,7 +6,6 @@ import pytest
 
 from marshmallow import Schema
 
-from tests.conftest import test_data_creator_flask
 from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )
@@ -18,7 +17,6 @@ from middleware.schema_and_dto.schemas.bulk.flat.agencies import (
     AgenciesPostRequestFlatSchema,
 )
 from middleware.util.type_conversion import stringify_lists
-from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.RequestValidator import RequestValidator
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,
@@ -75,7 +73,6 @@ def data_sources_post_runner(test_data_creator_flask: TestDataCreatorFlask):
 
 
 def generate_agencies_locality_data():
-    locality_name = get_test_name()
     return {
         "location_id": "1",
     }

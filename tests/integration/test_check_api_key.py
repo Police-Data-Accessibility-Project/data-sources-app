@@ -16,7 +16,6 @@ from werkzeug.exceptions import Unauthorized
 from middleware.primary_resource_logic.api_key import (
     check_api_key,
 )
-from tests.conftest import test_data_creator_flask
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_mocks_and_patches import (
     patch_request_headers,

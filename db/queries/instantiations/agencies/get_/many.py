@@ -2,8 +2,6 @@ from typing import Any, Optional, Sequence
 
 from sqlalchemy import asc, select
 
-from db.constants import PAGE_SIZE
-from db.db_client_dataclasses import OrderByParameters
 from db.dynamic_query_constructor import DynamicQueryConstructor
 from db.enums import ApprovalStatus
 from db.helpers import get_offset

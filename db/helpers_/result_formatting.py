@@ -3,7 +3,6 @@ Formats results for specific database queries
 Coupled with the DatabaseClient class, whose outputs are formatted here
 """
 
-from collections import namedtuple
 from typing import Any, Optional
 
 from sqlalchemy.ext.hybrid import hybrid_method

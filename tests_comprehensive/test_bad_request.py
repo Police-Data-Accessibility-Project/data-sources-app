@@ -8,7 +8,6 @@ from http import HTTPStatus
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from tests.conftest import test_data_creator_flask, monkeysession
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from tests_comprehensive.helper_scripts.SpecManager import SpecManager
 
@@ -115,7 +114,7 @@ def test_bad_request_api_key_not_allowed(test_data_creator_flask: TestDataCreato
             continue
 
         print(f"Testing method {method_info}.")
-        response = run_and_validate_request(
+        run_and_validate_request(
             flask_client=tdc.flask_client,
             http_method=method_info.method.value,
             endpoint=method_info.pathname(),

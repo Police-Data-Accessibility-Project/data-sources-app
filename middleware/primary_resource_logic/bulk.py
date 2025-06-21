@@ -241,7 +241,7 @@ def manage_agencies_response(responses: list[BulkPostResponse]) -> Response:
         )
     return make_response(
         {
-            "message": f"At least some agencies created successfully.",
+            "message": "At least some agencies created successfully.",
             "errors": error_dict,
             "ids": created_ids,
         }

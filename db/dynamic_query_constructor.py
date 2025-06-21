@@ -426,7 +426,7 @@ class DynamicQueryConstructor:
                 columns, alias_mappings
             )
 
-        base_query = (
+        base_query = (  # noqa: E731
             lambda: select(*primary_relation_columns)
             .options(*load_options)
             .where(*where_mappings)

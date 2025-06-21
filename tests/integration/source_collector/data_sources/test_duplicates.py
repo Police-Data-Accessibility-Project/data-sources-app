@@ -21,6 +21,6 @@ def test_source_collector_duplicates(test_data_creator_flask: TestDataCreatorFla
     )
     assert len(data["results"]) == 100
     for url in new_urls:
-        assert data["results"][url] == False
+        assert not data["results"][url]
     for url in extant_urls:
-        assert data["results"][url] == True
+        assert data["results"][url]

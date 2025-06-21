@@ -807,7 +807,7 @@ class DatabaseClient:
             .where(
                 and_(
                     DataRequest.request_status == RequestStatus.READY_TO_START.value,
-                    DataRequestsGithubIssueInfo.id == None,
+                    DataRequestsGithubIssueInfo.id.is_(None),
                 )
             )
             .outerjoin(DataRequestsGithubIssueInfo)
@@ -1119,7 +1119,7 @@ class DatabaseClient:
             dre.record_types_required,
         ).where(
             dre.request_status != RequestStatus.ARCHIVED.value,
-            dre.github_issue_url != None,
+            dre.github_issue_url.isnot(None),
         )
 
         results = self.mappings(query)

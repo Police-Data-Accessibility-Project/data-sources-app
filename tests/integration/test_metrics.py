@@ -15,7 +15,6 @@ from tests.helper_scripts.helper_classes.MultiRequestSetup import MultiRequestSe
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from tests.conftest import test_data_creator_flask
 
 
 def test_metrics(test_data_creator_flask: TestDataCreatorFlask):
@@ -205,7 +204,7 @@ def test_metrics_followed_searches_aggregate(test_data_creator_flask):
     tdc.clear_test_data()
     last_notification_datetime = tdc.tdcdb.notification_log()
 
-    mfs = MultiFollowSetup.setup(tdc)
+    MultiFollowSetup.setup(tdc)
 
     data = tdc.request_validator.get_metrics_followed_searches_aggregate(
         headers=tdc.get_admin_tus().jwt_authorization_header,

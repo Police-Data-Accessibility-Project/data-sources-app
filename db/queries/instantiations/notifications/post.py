@@ -1,7 +1,7 @@
-from typing import Any, Optional
+from typing import Optional
 
 from sqlalchemy import select, or_, exists, and_
-from sqlalchemy.orm import selectinload, Session
+from sqlalchemy.orm import selectinload
 
 from db.enums import EventType, EntityType
 from db.models.implementations.core.notification.queue.data_request import (

@@ -16,7 +16,7 @@ from typing import Optional, Annotated
 import docker
 from docker.errors import APIError, NotFound
 from docker.models.containers import Container
-from pydantic import BaseModel, model_validator, AfterValidator
+from pydantic import BaseModel, AfterValidator
 
 
 def is_absolute_path(path: str) -> str:

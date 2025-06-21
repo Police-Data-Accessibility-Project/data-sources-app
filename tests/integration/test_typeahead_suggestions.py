@@ -9,7 +9,6 @@ from tests.helper_scripts.helper_functions_complex import (
     setup_get_typeahead_suggestion_test_data,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-from tests.conftest import flask_client_with_db, test_data_creator_flask
 
 
 def test_typeahead_locations(flask_client_with_db):
@@ -88,8 +87,8 @@ def test_typeahead_locations_cleveland(test_data_creator_flask: TestDataCreatorF
         ["GA", "White"],
     ]
     for state_name, county_name in clevelands:
-        county_id = tdc.tdcdb.county(state_iso=state_name, county_name=county_name)
-        location_id = tdc.locality(
+        tdc.tdcdb.county(state_iso=state_name, county_name=county_name)
+        tdc.locality(
             locality_name="Cleveland", county_name=county_name, state_iso=state_name
         )
     tdc.refresh_typeahead_locations()
@@ -115,7 +114,7 @@ def test_typeahead_agencies_approved(test_data_creator_flask: TestDataCreatorFla
     """
     tdc = test_data_creator_flask
     tdc.clear_test_data()
-    location_id = tdc.locality(locality_name="Qzy")
+    tdc.locality(locality_name="Qzy")
     agency_id = tdc.agency(agency_name="Qzy").id
     tdc.refresh_typeahead_agencies()
 
@@ -136,7 +135,7 @@ def test_typeahead_agencies_not_approved(test_data_creator_flask: TestDataCreato
     """
     tdc = test_data_creator_flask
     tdc.clear_test_data()
-    location_id = tdc.locality(locality_name="Hky")
+    tdc.locality(locality_name="Hky")
     agency_id = tdc.agency(agency_name="Hky", approval_status=ApprovalStatus.PENDING).id
     tdc.refresh_typeahead_agencies()
 

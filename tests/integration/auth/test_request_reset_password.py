@@ -6,7 +6,6 @@ from middleware.security.jwt.enums import JWTPurpose
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from tests.conftest import test_data_creator_flask
 
 
 def test_request_reset_password_post(
@@ -50,6 +49,6 @@ def test_request_password_reset_invalid_email(
 ):
     tdc = test_data_creator_flask
 
-    token = tdc.request_validator.request_reset_password(
+    tdc.request_validator.request_reset_password(
         email="email_does_not_exist", mocker=mocker, expect_call=False
     )

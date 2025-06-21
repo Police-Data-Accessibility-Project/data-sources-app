@@ -4,7 +4,6 @@ from typing import Any
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from tests.conftest import test_data_creator_flask, monkeysession
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from tests_comprehensive.helper_scripts.SpecManager import SpecManager
 

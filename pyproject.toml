@@ -102,6 +102,10 @@ dev = [
 ]
 
 [tool.ruff.lint]
+# F821: Undefined names
+# F403: from module import *
+# E721: Use `is` and `is not` for type comparisons
+ignore=["F821", "F403", "E721"]
 
 [tool.basedpyright]
 failOnWarnings = false

@@ -1,7 +1,6 @@
 import sqlalchemy
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session as SQLAlchemySession, sessionmaker, Session
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 
 from db.exceptions import DatabaseInitializationError
 from middleware.util.env import get_env_variable

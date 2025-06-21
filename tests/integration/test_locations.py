@@ -8,7 +8,6 @@ from db.enums import LocationType
 from db.models.implementations.core.location.core import Location
 from middleware.schema_and_dto.dtos.locations.get import LocationsGetRequestDTO
 from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
-from tests.conftest import test_data_creator_flask
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.MultiLocationSetup import MultiLocationSetup
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
@@ -46,7 +45,7 @@ def test_locations_get_by_id(locations_test_setup: LocationsTestSetup):
     tdc = lts.tdc
 
     # Get location, confirm information matches
-    data = tdc.request_validator.get_location_by_id(
+    tdc.request_validator.get_location_by_id(
         location_id=lts.location_info["location_id"],
         headers=tdc.get_admin_tus().api_authorization_header,
         expected_json_content=lts.location_info,
@@ -59,8 +58,8 @@ def test_locations_related_data_requests(locations_test_setup: LocationsTestSetu
     location_id = lts.location_info["location_id"]
 
     # Add two data requests to location
-    dr_1 = tdc.data_request(location_ids=[location_id]).id
-    dr_2 = tdc.data_request(location_ids=[location_id]).id
+    tdc.data_request(location_ids=[location_id])
+    tdc.data_request(location_ids=[location_id])
 
     # Get data requests
     tus = tdc.standard_user()
@@ -116,9 +115,9 @@ def test_locations_update(locations_test_setup: LocationsTestSetup):
     locations = tdc.db_client.get_all(Location)
     # Find location matching id
     location = None
-    for l in locations:
-        if l["id"] == location_id:
-            location = l
+    for loc in locations:
+        if loc["id"] == location_id:
+            location = loc
             break
     assert location is not None
     assert location["lat"] == dto.latitude
@@ -145,9 +144,9 @@ def test_map_locations(test_data_creator_flask: TestDataCreatorFlask):
     assert len(localities) == 1
 
     # Validate there are no data sources
-    def no_data_sources(l: list[dict]):
-        for l in l:
-            assert l["source_count"] == 0
+    def no_data_sources(list_: list[dict]):
+        for loc in list_:
+            assert loc["source_count"] == 0
 
     no_data_sources(states)
     no_data_sources(counties)
@@ -238,7 +237,7 @@ def test_get_many_locations(test_data_creator_flask: TestDataCreatorFlask):
     assert len(data) == 8
 
     # Set Up Locations
-    mls = MultiLocationSetup(tdc.tdcdb)
+    MultiLocationSetup(tdc.tdcdb)
 
     # Run get many locations with data
     data = get_many_locations()

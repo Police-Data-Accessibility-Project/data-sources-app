@@ -1,9 +1,9 @@
 from typing import Type, Optional, Callable, Any
 
-from flask_restx import Model, OrderedModel
+from flask_restx import OrderedModel
 from flask_restx.reqparse import RequestParser
 from marshmallow import Schema
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 from dataclasses import dataclass
 
 from utilities.enums import SourceMappingEnum

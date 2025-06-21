@@ -2,7 +2,6 @@ import pytest
 from unittest.mock import patch
 
 from middleware.webhook_logic import post_to_webhook
-from middleware.webhook_logic import send_password_reset_link
 
 
 @pytest.fixture

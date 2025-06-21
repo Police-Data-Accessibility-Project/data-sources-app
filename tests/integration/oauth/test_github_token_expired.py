@@ -32,7 +32,7 @@ def test_github_oauth_token_expired(
     )
     encoded_jwt = simple_jwt.encode()
 
-    data = run_and_validate_request(
+    run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="post",
         endpoint=GITHUB_OAUTH_LINK_ENDPOINT,
@@ -45,7 +45,7 @@ def test_github_oauth_token_expired(
         },
     )
 
-    data = run_and_validate_request(
+    run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="post",
         endpoint=GITHUB_OAUTH_LOGIN_ENDPOINT,

@@ -135,13 +135,6 @@ def get_sample_agency_post_parameters(
     Obtains information to be passed to an `/agencies` POST request
     """
 
-    if location_info is None:
-        location_id = {
-            "type": "Locality",
-            "state_iso": "PA",
-            "county_fips": "42003",
-            "locality_name": locality_name,
-        }
     return {
         "agency_info": generate_test_data_from_schema(
             schema=AgencyInfoPostSchema(),

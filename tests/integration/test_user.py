@@ -7,7 +7,6 @@ import uuid
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from tests.conftest import test_data_creator_flask, monkeysession
 
 
 def test_update_password(
@@ -47,7 +46,7 @@ def test_update_password(
     )
 
     # Try to update password with correct old password and succeed
-    response = update_password(
+    update_password(
         old_password=tus.user_info.password,
     )
 
