@@ -20,7 +20,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    l = [
+    list_ = [
         [
             206,
             "https://github.com/Police-Data-Accessibility-Project/data-requests/issues/97",
@@ -37,7 +37,7 @@ def upgrade() -> None:
             98,
         ],
     ]
-    for old_issue_number, new_issue_url, new_issue_number in l:
+    for old_issue_number, new_issue_url, new_issue_number in list_:
         op.execute(
             sa.text(
                 """

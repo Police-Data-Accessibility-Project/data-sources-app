@@ -9,7 +9,6 @@ Create Date: 2025-06-06 09:09:53.140499
 from typing import Sequence, Union
 
 from alembic import op
-import sqlalchemy as sa
 
 from middleware.alembic_helpers import switch_enum_type
 

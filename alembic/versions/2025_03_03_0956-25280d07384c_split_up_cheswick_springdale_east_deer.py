@@ -10,8 +10,6 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-from psycopg.errors import UniqueViolation
-from sqlalchemy.exc import IntegrityError
 
 # revision identifiers, used by Alembic.
 revision: str = "25280d07384c"

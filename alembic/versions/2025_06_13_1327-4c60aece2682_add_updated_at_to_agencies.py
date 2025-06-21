@@ -9,7 +9,6 @@ Create Date: 2025-06-13 13:27:39.750600
 from typing import Sequence, Union
 
 from alembic import op
-import sqlalchemy as sa
 
 from middleware.alembic_helpers import updated_at_column
 
