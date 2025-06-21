@@ -29,15 +29,15 @@ class GetManyLocationsQueryBuilder(QueryBuilderBase):
             if self.has_coordinates:
                 query = query.where(
                     and_(
-                        Location.lat != None,
-                        Location.lng != None,
+                        Location.lat.isnot(None),
+                        Location.lng.isnot(None),
                     )
                 )
             else:
                 query = query.where(
                     and_(
-                        Location.lat == None,
-                        Location.lng == None,
+                        Location.lat.is_(None),
+                        Location.lng.is_(None),
                     )
                 )
         if self.type_ is not None:

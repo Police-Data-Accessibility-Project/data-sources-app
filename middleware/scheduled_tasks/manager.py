@@ -17,7 +17,10 @@ class SchedulerManager:
 
     def add_materialized_view_scheduled_job(self, view_name: str, hour_delay: int):
         current_time = datetime.now()
-        func = lambda: self.dbc.refresh_materialized_view(view_name)
+
+        def func():
+            return self.dbc.refresh_materialized_view(view_name)
+
         self.add_job(
             job_id=f"refresh_materialized_view_{view_name}",
             func=func,

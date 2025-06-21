@@ -334,7 +334,7 @@ def test_check_for_id_no_id():
     mock.db_client._select_from_relation.return_value = []
     mock.id_info.id_column_name = "id"
 
-    with pytest.raises(NotFound) as e:
+    with pytest.raises(NotFound):
         check_for_id(
             table_name=mock.table_name, id_info=mock.id_info, db_client=mock.db_client
         )

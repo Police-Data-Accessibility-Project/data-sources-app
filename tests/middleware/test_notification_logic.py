@@ -270,7 +270,7 @@ def test_format_and_send_notifications_error_no_events(
         user_id=20, user_email="fancyfrank@frankfurters.com", events=[]
     )
 
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError):
         format_and_send_notifications(event_batch=test_event_batch)
 
     mock_send_via_mailgun.assert_not_called()
