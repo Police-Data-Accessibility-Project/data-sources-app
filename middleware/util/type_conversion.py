@@ -46,10 +46,10 @@ def dataclass_to_filtered_dict(instance: Any) -> Dict[str, Any]:
     return results
 
 
-def stringify_list_of_ints(l: list[int]) -> list[str]:
+def stringify_list_of_ints(list_: list[int]) -> list[str]:
     new_list = []
-    for i in range(len(l)):
-        new_list.append(str(l[i]))
+    for i in range(len(list_)):
+        new_list.append(str(list_[i]))
     return new_list
 
 
