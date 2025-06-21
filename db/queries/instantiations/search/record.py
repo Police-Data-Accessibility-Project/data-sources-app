@@ -43,7 +43,7 @@ class CreateSearchRecordQueryBuilder(QueryBuilderBase):
                 .returning(RecentSearch.id)
             )
             result = self.session.execute(query)
-            recent_search_id = result.fetchone()[0]
+            recent_search_id = result.one()[0]
 
             if self.record_categories is not None:
                 self.insert_record_category_search_records(

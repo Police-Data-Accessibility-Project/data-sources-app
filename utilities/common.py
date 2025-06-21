@@ -2,7 +2,7 @@ import datetime
 import json
 import re
 from enum import Enum
-from typing import Type, Union
+from typing import Type, Union, Any
 
 from alembic import command
 from alembic.config import Config
@@ -13,7 +13,7 @@ from middleware.constants import DATETIME_FORMAT, DATE_FORMAT
 from middleware.util.env import get_env_variable
 
 
-def convert_dates_to_strings(data_dict: dict) -> dict:
+def convert_dates_to_strings(data_dict: dict[str, Any]) -> dict:
     for key, value in data_dict.items():
         if isinstance(value, datetime.date):
             if key == "last_cached":
@@ -23,7 +23,7 @@ def convert_dates_to_strings(data_dict: dict) -> dict:
     return data_dict
 
 
-def format_arrays(data_dict):
+def format_arrays(data_dict: dict[str, Any]):
     for key, value in data_dict.items():
         if value is not None and type(value) is str:
             if re.search(r"\"?\[ ?\".*\"\ ?]\"?", value, re.DOTALL):

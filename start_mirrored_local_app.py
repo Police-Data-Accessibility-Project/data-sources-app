@@ -12,15 +12,11 @@ import sys
 import time
 from pathlib import Path
 from typing import Optional, Annotated
-import uvicorn
 
 import docker
 from docker.errors import APIError, NotFound
 from docker.models.containers import Container
 from pydantic import BaseModel, model_validator, AfterValidator
-
-from apply_migrations import apply_migrations
-from util.helper_functions import get_from_env
 
 
 def is_absolute_path(path: str) -> str:

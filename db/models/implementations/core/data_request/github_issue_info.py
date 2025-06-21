@@ -1,3 +1,4 @@
+# pyright: reportUninitializedInstanceVariable=false
 from sqlalchemy.orm import Mapped
 
 from db.models.mixins import DataRequestIDMixin

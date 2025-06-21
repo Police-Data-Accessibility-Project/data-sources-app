@@ -22,6 +22,5 @@ RestxFields = Union[
     restx_fields.Nested,
     RestxModelPlaceholder,
 ]
-DTOTypes = TypeVar("DTOTypes")
 SchemaTypes = TypeVar("SchemaTypes", bound=Schema)
 ValidationSchema = TypeVar("ValidationSchema", bound=Schema)

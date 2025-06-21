@@ -74,6 +74,8 @@ def generate_issues_and_project_get_graphql_query():
 def convert_graph_ql_result_to_issue_info(result: dict):
     gipi = GithubIssueProjectInfo()
     data = result.get("data")
+    if data is None:
+        raise ValueError("No data in result")
     organization = data.get("organization")
     project_v2 = organization.get("projectV2")
     items = project_v2.get("items")

@@ -33,7 +33,7 @@ class JWTAccessRefreshTokens:
             sub=identity,
             exp=self.get_expiry(),
             purpose=JWTPurpose.STANDARD_ACCESS_TOKEN,
-            **other_claims
+            **other_claims,
         )
 
         # Expiration of access token and refresh

@@ -196,7 +196,7 @@ def create_app() -> Flask:
     scheduler.add_materialized_view_scheduled_job("map_counties", 5)
     scheduler.add_materialized_view_scheduled_job("map_localities", 6)
     # Store scheduler in the app context to manage it later
-    app.scheduler = scheduler
+    app.scheduler = scheduler  # pyright: ignore[reportAttributeAccessIssue]
 
     return app
 

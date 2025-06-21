@@ -65,7 +65,10 @@ def test_admin_user_get_all(test_data_creator_flask: TestDataCreatorFlask):
 
     for i in range(3):
         assert "newuser" in data[i]["email"]
-        assert data[i]["permissions"] == ["read_all_user_info", "db_write"]
+        assert data[i]["permissions"] in (
+            ["read_all_user_info", "db_write"],
+            ["db_write", "read_all_user_info"],
+        )
 
 
 def test_admin_user_update(test_data_creator_flask: TestDataCreatorFlask):

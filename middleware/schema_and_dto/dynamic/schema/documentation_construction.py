@@ -1,3 +1,4 @@
+# pyright: reportReturnType=false, reportAttributeAccessIssue=false, reportCallIssue=false, reportGeneralTypeIssues=false, reportArgumentType=false
 """
 This module aims to reduce the amount of boilerplate code
 with retrieving requests and populating Data Transfer Objects (DTO)s
@@ -26,8 +27,9 @@ from typing import Optional, Type
 
 from flask_restx.reqparse import RequestParser
 
-from flask_restx import fields as restx_fields, Namespace, Model
-from marshmallow import fields as marshmallow_fields, missing
+from flask_restx import fields as restx_fields, Namespace, Model, OrderedModel
+from marshmallow import fields as marshmallow_fields, missing, Schema
+from marshmallow.fields import Field as MarshmallowField
 from marshmallow.validate import OneOf
 
 from middleware.schema_and_dto.mappings import (
@@ -169,7 +171,7 @@ class FieldInfo:
         self,
         metadata: dict,
         schema_class: Type[SchemaTypes],
-        field_value: marshmallow_fields,
+        field_value: MarshmallowField,
         field_name: str,
     ) -> str:
         description = _get_required_argument(
@@ -256,7 +258,9 @@ class RestxModelBuilder(RestxBuilder):
 
     def _build_list_field(self, fi: FieldInfo):
         # Get interior field of Marshmallow List
-        inner_field = fi.marshmallow_field_value.inner
+        inner_field = (
+            fi.marshmallow_field_value.inner
+        )  # pyright: ignore[reportAttributeAccessIssue]
 
         inner_field_info = FieldInfo(
             field_name=inner_field.name,
@@ -290,13 +294,15 @@ class RestxModelBuilder(RestxBuilder):
                 attribute=fi.field_name,
             )
 
-    def build_model(self) -> Optional[Model]:
+    def build_model(self) -> Optional[OrderedModel]:
         if self.model_dict == {}:
             return None
         return self.namespace.model(self.model_name, self.model_dict)
 
     def _build_nested_field_as_model(self, fi: FieldInfo):
-        sub_schema = fi.marshmallow_field_value.schema
+        sub_schema = (
+            fi.marshmallow_field_value.schema
+        )  # pyright: ignore[reportAttributeAccessIssue]
         sorter = MarshmallowFieldSorter(sub_schema)
         self._raise_if_nonzero_parser_fields(fi, sorter)
         fields = MarshmallowFieldSorter(sub_schema).model_fields
@@ -334,12 +340,12 @@ class MarshmallowFieldSorter:
     Sorts Marshmallow fields into either a list of parser fields and a list of model fields
     """
 
-    def __init__(self, schema: SchemaTypes):
+    def __init__(self, schema: Schema | type[Schema]):
         self.parser_fields = []
         self.model_fields = []
         self.sort_fields(schema)
 
-    def sort_fields(self, schema: SchemaTypes):
+    def sort_fields(self, schema: Schema | type[Schema]):
         if hasattr(schema, "dump_fields"):
             fields = schema.dump_fields
         else:
@@ -364,7 +370,7 @@ class RestxParamDocumentationBuilder:
     def __init__(
         self,
         namespace: Namespace,
-        schema: SchemaTypes,
+        schema: Schema | type[Schema],
         model_name: Optional[str] = None,
     ):
         model_name = model_name or schema.__class__.__name__
@@ -390,7 +396,7 @@ class RestxParamDocumentationBuilder:
 
 def get_restx_param_documentation(
     namespace: Namespace,
-    schema: SchemaTypes,
+    schema: type[Schema],
     model_name: Optional[str] = None,
 ) -> FlaskRestxDocInfo:
     """

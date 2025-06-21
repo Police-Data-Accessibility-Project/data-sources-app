@@ -40,8 +40,10 @@ def password_reset_handler(
     decoded_jwt = decode_jwt_with_purpose(
         token=token, purpose=JWTPurpose.PASSWORD_RESET
     )
+    if isinstance(decoded_jwt.sub, str):
+        raise ValueError("Sub is not a valid dictionary.")
     return PasswordResetTokenAccessInfo(
-        user_id=decoded_jwt.sub["user_id"],
+        user_id=int(decoded_jwt.sub["user_id"]),
         user_email=decoded_jwt.sub["user_email"],
         reset_token=decoded_jwt.sub["token"],
     )
@@ -53,6 +55,8 @@ def validate_email_handler(
     decoded_jwt = decode_jwt_with_purpose(
         token=token, purpose=JWTPurpose.VALIDATE_EMAIL
     )
+    if isinstance(decoded_jwt.sub, str):
+        raise ValueError("Sub is not a valid dictionary.")
     return ValidateEmailTokenAccessInfo(
         validate_email_token=decoded_jwt.sub["token"],
     )

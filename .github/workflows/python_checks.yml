@@ -20,3 +20,20 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           flake8_args: --ignore E501,W291  # Does not check for max line exceed or trailing whitespace
           level: warning
+  based-pyright:
+    runs-on: ubuntu-latest
+    name: Pyright Lint
+    steps:
+      - name: Check out source repository
+        uses: actions/checkout@v4
+      - name: Set up Python environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.8"
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
+      - run: uv run basedpyright --level error --outputjson

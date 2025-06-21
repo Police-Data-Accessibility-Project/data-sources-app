@@ -1,3 +1,5 @@
+# pyright: reportAttributeAccessIssue=false
+
 import functools
 from typing import Callable, Any, Union, Tuple, Dict, Optional
 

@@ -26,7 +26,7 @@ def dataclass_to_filtered_dict(instance: Any) -> Dict[str, Any]:
     :return:
     """
     if is_dataclass(instance):
-        d = asdict(instance)
+        d = asdict(instance)  # pyright: ignore[reportArgumentType]
     elif isinstance(instance, BaseModel):
         d = dict(instance)
     else:
@@ -46,10 +46,11 @@ def dataclass_to_filtered_dict(instance: Any) -> Dict[str, Any]:
     return results
 
 
-def stringify_list_of_ints(l: list[int]):
+def stringify_list_of_ints(l: list[int]) -> list[str]:
+    new_list = []
     for i in range(len(l)):
-        l[i] = str(l[i])
-    return l
+        new_list.append(str(l[i]))
+    return new_list
 
 
 def stringify_lists(d: dict):

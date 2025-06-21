@@ -1,4 +1,5 @@
 [project]
+requires-python = ">= 3.12"
 name="data_sources_app"
 version="7.0.4"
 dependencies = [
@@ -91,6 +92,7 @@ major_version_zero = false
 
 [dependency-groups]
 dev = [
+    "basedpyright>=1.29.4",
     "black>=25.1.0",
     "deepdiff>=8.5.0",
     "docker>=7.1.0",
@@ -100,3 +102,34 @@ dev = [
 ]
 
 [tool.ruff.lint]
+
+[tool.basedpyright]
+failOnWarnings = false
+ignore = [
+    "tests",
+    "tests_comprehensive",
+    "start_mirrored_local_app.py",
+    "relation_access_permissions",
+    "alembic",
+]
+reportMissingTypeArgument = false
+reportUnsafeMultipleInheritance = false
+reportMissingSuperCall = false
+reportUndefinedVariable = false
+# The following are temporarily disabled
+# They should be gradually resolved and then re-enabled
+reportOptionalMemberAccess = false
+reportIncompatibleMethodOverride = false
+reportGeneralTypeIssues = false
+reportArgumentType = false
+reportCallIssue = false
+reportOperatorIssue = false
+reportIncompatibleVariableOverride = false
+reportReturnType = false
+reportAssignmentType = false
+reportIndexIssue = false
+reportOptionalSubscript = false
+reportPossiblyUnboundVariable = false
+reportOptionalIterable = false
+reportInvalidTypeForm = false
+reportOptionalCall = false

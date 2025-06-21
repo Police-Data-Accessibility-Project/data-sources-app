@@ -31,7 +31,7 @@ def _get_source_getting_function(source: SourceMappingEnum) -> Callable:
         SourceMappingEnum.JSON: lambda key: (
             request.json.get(key) if request.json else None
         ),
-        SourceMappingEnum.PATH: request.view_args.get,
+        SourceMappingEnum.PATH: request.view_args.get,  # pyright: ignore[reportOptionalMemberAccess]
         SourceMappingEnum.FILE: request.files.get,
     }
     return source_mapping[source]

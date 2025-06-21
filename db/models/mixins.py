@@ -53,7 +53,7 @@ class UserIDMixin:
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
 
     @declared_attr
-    def user(cls) -> Mapped["User"]:
+    def user(cls: type["UserIDMixin"]) -> Mapped["User"]:
         return relationship(
             "User",
             primaryjoin=f"foreign({cls.__name__}.user_id) == User.id",
@@ -65,7 +65,7 @@ class LocationIDMixin:
     location_id: Mapped[int] = mapped_column(ForeignKey("public.locations.id"))
 
     @declared_attr
-    def location(cls) -> Mapped["Location"]:
+    def location(cls: type["LocationIDMixin"]) -> Mapped["Location"]:
         return relationship(
             "Location",
             primaryjoin=f"foreign({cls.__name__}.location_id) == Location.id",
@@ -77,7 +77,7 @@ class DataRequestIDMixin:
     data_request_id: Mapped[int] = mapped_column(ForeignKey("public.data_requests.id"))
 
     @declared_attr
-    def data_request(cls) -> Mapped["DataRequest"]:
+    def data_request(cls: type["DataRequestIDMixin"]) -> Mapped["DataRequest"]:
         return relationship(
             "DataRequest",
             primaryjoin=f"foreign({cls.__name__}.data_request_id) == DataRequest.id",
@@ -89,7 +89,7 @@ class DataSourceIDMixin:
     data_source_id: Mapped[int] = mapped_column(ForeignKey("public.data_sources.id"))
 
     @declared_attr
-    def data_source(cls) -> Mapped["DataSource"]:
+    def data_source(cls: type["DataSourceIDMixin"]) -> Mapped["DataSource"]:
         return relationship(
             "DataSource",
             primaryjoin=f"foreign({cls.__name__}.data_source_id) == DataSource.id",
@@ -101,7 +101,7 @@ class RecordTypeIDMixin:
     record_type_id: Mapped[int] = mapped_column(ForeignKey("public.record_types.id"))
 
     @declared_attr
-    def record_type(cls) -> Mapped["RecordType"]:
+    def record_type(cls: type["RecordTypeIDMixin"]) -> Mapped["RecordType"]:
         return relationship(
             "RecordType",
             primaryjoin=f"foreign({cls.__name__}.record_type_id) == RecordType.id",

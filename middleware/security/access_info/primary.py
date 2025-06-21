@@ -12,7 +12,7 @@ class AccessInfoPrimary(AccessInfoBase):
 
     user_email: str
     user_id: Optional[int] = None
-    permissions: list[PermissionsEnum] = None
+    permissions: Optional[list[PermissionsEnum]] = None
 
     def get_user_id(self) -> Optional[int]:
         if self.user_id is None:

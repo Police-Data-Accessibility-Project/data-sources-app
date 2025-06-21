@@ -1,19 +1,11 @@
 from csv import DictWriter
-from http import HTTPStatus
 from io import BytesIO, StringIO
 from typing import Optional
 
-from flask import Response, make_response, send_file
-from pydantic import BaseModel
+from flask import make_response, send_file
 from werkzeug.exceptions import BadRequest
 
-from db.client.core import DatabaseClient
-from db.db_client_dataclasses import WhereMapping
-from middleware.security.access_info.primary import AccessInfoPrimary
-from middleware.dynamic_request_logic.post import PostLogic
-from middleware.enums import JurisdictionSimplified, Relations, OutputFormatEnum
-from middleware.schema_and_dto.dtos.search.request import SearchRequestsDTO
-from middleware.common_response_formatting import message_response
+from middleware.enums import JurisdictionSimplified, OutputFormatEnum
 from middleware.util.datetime import get_datetime_now
 from utilities.enums import RecordCategories
 
@@ -131,79 +123,3 @@ def get_explicit_record_categories(
             raise BadRequest("ALL cannot be provided with other record categories.")
         return [rc for rc in RecordCategories if rc != RecordCategories.ALL]
     return record_categories
-
-
-def try_getting_location_id_and_raise_error_if_not_found(
-    db_client: DatabaseClient,
-    dto: SearchRequestsDTO,
-) -> int:
-    where_mappings = WhereMapping.from_dict(
-        {
-            "state_name": dto.state,
-            "county_name": dto.county,
-            "locality_name": dto.locality,
-        }
-    )
-
-    location_id = db_client.get_location_id(
-        where_mappings=where_mappings,
-    )
-    if not location_id:
-        raise BadRequest("Location not found.")
-
-    return location_id
-
-
-def get_user_followed_search_link(
-    db_client: DatabaseClient,
-    access_info: AccessInfoPrimary,
-    location_id: int,
-) -> Optional[int]:
-    result = db_client._select_single_entry_from_relation(
-        relation_name=Relations.LINK_USER_FOLLOWED_LOCATION.value,
-        where_mappings={
-            "user_id": access_info.get_user_id(),
-            "location_id": location_id,
-        },
-        columns=["id"],
-    )
-    if result is None:
-        return None
-    return result["id"]
-
-
-class FollowedSearchPostLogic(PostLogic):
-    def make_response(self) -> Response:
-        return message_response(f"Location followed.")
-
-
-def get_link_id_and_raise_error_if_not_found(
-    db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: SearchRequestsDTO
-):
-    location_id = try_getting_location_id_and_raise_error_if_not_found(
-        db_client=db_client,
-        dto=dto,
-    )
-    return get_user_followed_search_link(
-        db_client=db_client,
-        access_info=access_info,
-        location_id=location_id,
-    )
-
-
-def get_location_link_and_raise_error_if_not_found(
-    db_client: DatabaseClient,
-    access_info: AccessInfoPrimary,
-    dto: SearchRequestsDTO,
-):
-    link_id = get_user_followed_search_link(
-        db_client=db_client,
-        access_info=access_info,
-        location_id=dto.location_id,
-    )
-    return LocationLink(link_id=link_id, location_id=dto.location_id)
-
-
-class LocationLink(BaseModel):
-    link_id: Optional[int]
-    location_id: int

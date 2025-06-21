@@ -8,7 +8,7 @@ from werkzeug.exceptions import BadRequest
 from middleware.schema_and_dto.dtos.bulk import (
     BulkRequestDTO,
 )
-from middleware.schema_and_dto.types import SchemaTypes, DTOTypes
+from middleware.schema_and_dto.types import SchemaTypes
 from middleware.schema_and_dto.util import (
     _get_required_argument,
     _get_source_getting_function,
@@ -27,8 +27,8 @@ class SourceDataInfo(BaseModel):
 
 
 def populate_schema_with_request_content(
-    schema: SchemaTypes, dto_class: Type[DTOTypes], load_file: bool = False
-) -> DTOTypes:
+    schema: SchemaTypes, dto_class: Type[BaseModel], load_file: bool = False
+) -> BaseModel:
     """
     Populates a marshmallow schema with request content, given custom arguments in the schema fields
     Custom arguments include:
@@ -41,7 +41,9 @@ def populate_schema_with_request_content(
     # Get all declared fields from the schema
     if load_file:
         return BulkRequestDTO(
-            file=request.files.get("file"), csv_schema=schema, inner_dto_class=dto_class
+            file=request.files.get("file"),  # pyright: ignore[reportArgumentType]
+            csv_schema=schema,
+            inner_dto_class=dto_class,
         )
     fields = schema.fields
     source_data_info = get_source_data_info_from_sources(schema)
@@ -56,7 +58,7 @@ def populate_schema_with_request_content(
 
 
 def setup_dto_class(
-    data: dict, dto_class: Type[DTOTypes], nested_dto_info_list: list[NestedDTOInfo]
+    data: dict, dto_class: Type[BaseModel], nested_dto_info_list: list[NestedDTOInfo]
 ):
     for nested_dto_info in nested_dto_info_list:
         if nested_dto_info.key in data:
@@ -67,7 +69,7 @@ def setup_dto_class(
     return dto_class(**data)
 
 
-def validate_data(data, schema_obj):
+def validate_data(data, schema_obj) -> dict:
     try:
         intermediate_data = schema_obj.load(data)
     except Exception as e:
@@ -145,8 +147,10 @@ def _apply_transformation_functions_to_dict(fields: dict, intermediate_data: dic
 
         # if transformation functions, apply them
         metadata = field_value.metadata
-        transformation_function: callable = metadata.get(
-            "transformation_function", None
+        transformation_function: callable = (
+            metadata.get(  # pyright: ignore[reportGeneralTypeIssues]
+                "transformation_function", None
+            )
         )
         if transformation_function is not None and field_name in intermediate_data:
             intermediate_data[field_name] = transformation_function(

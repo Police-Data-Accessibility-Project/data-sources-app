@@ -1,19 +1,20 @@
 from typing import Type, Optional, Callable, Any
 
+from pydantic import BaseModel
+
 from middleware.schema_and_dto.non_dto_dataclasses import DTOPopulateParameters
 from middleware.util.argument_checking import (
     check_for_mutually_exclusive_arguments,
     check_for_either_or_argument,
 )
 from middleware.schema_and_dto.exceptions import AttributeNotInClassError
-from middleware.schema_and_dto.types import DTOTypes, ValidationSchema
 from middleware.schema_and_dto.util import _get_source_getting_function
 from utilities.enums import SourceMappingEnum
 
 
 def populate_dto_with_request_content(
     populate_parameters: DTOPopulateParameters,
-) -> DTOTypes:
+) -> BaseModel:
     """
     Populate dto with data from the request
     Will call `request.args.get` for each attribute
@@ -60,7 +61,7 @@ def _get_values(attribute_source_mapping, dto_class, source):
 
 
 def _apply_transformation_functions(
-    instantiated_object: DTOTypes,
+    instantiated_object: BaseModel,
     transformation_functions: Optional[dict[str, Callable]] = None,
 ) -> None:
     """
@@ -85,7 +86,7 @@ def _apply_transformation_functions(
 
 
 def _get_class_attribute_values_from_request(
-    object_class: Type[DTOTypes],
+    object_class: Type[BaseModel],
     source: SourceMappingEnum = SourceMappingEnum.QUERY_ARGS,
 ) -> dict[str, Any]:
     """
@@ -102,7 +103,7 @@ def _get_class_attribute_values_from_request(
 
 
 def _get_class_attribute_values_from_request_source_mapping(
-    object_class: Type[DTOTypes], source_mapping: dict[str, SourceMappingEnum]
+    object_class: Type[BaseModel], source_mapping: dict[str, SourceMappingEnum]
 ) -> dict[str, Any]:
     """
     Apply multiple getters on all defined class attributes,

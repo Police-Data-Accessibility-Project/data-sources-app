@@ -52,7 +52,7 @@ dev_password_model = namespace_create_test_user.model(
 )
 
 
-def check_dev_password(dev_password: str) -> bool:
+def check_dev_password(dev_password: str):
 
     try:
         expected_dev_password = get_env_variable("DEVELOPMENT_PASSWORD")
