@@ -4,11 +4,10 @@ Module for testing database client functionality against a live database
 
 import uuid
 from datetime import datetime
-from unittest.mock import MagicMock
 
 import pytest
 import sqlalchemy
-from sqlalchemy import insert, select, update
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 
 from db.client.core import DatabaseClient
@@ -30,16 +29,9 @@ from middleware.exceptions import (
     DuplicateUserError,
 )
 from db.models.implementations.core.user.core import User
-from db.models.implementations.core.test import TestTable
 from db.models.implementations.core.external_account import ExternalAccount
 from db.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import PermissionsEnum, Relations, RecordTypes
-from tests.conftest import (
-    live_database_client,
-    test_table_data,
-    clear_data_requests,
-    test_data_creator_db_client,
-)
 from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,
     get_test_name,
@@ -955,9 +947,7 @@ def test_get_unarchived_data_requests_with_issues(
     dr_info_active = create_data_request_with_issue_and_request_status(
         RequestStatus.ACTIVE
     )
-    dr_info_archived = create_data_request_with_issue_and_request_status(
-        RequestStatus.ARCHIVED
-    )
+    create_data_request_with_issue_and_request_status(RequestStatus.ARCHIVED)
 
     results = tdc.db_client.get_unarchived_data_requests_with_issues()
 

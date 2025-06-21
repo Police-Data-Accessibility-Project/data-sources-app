@@ -1,4 +1,3 @@
-from http import HTTPStatus
 from typing import Optional
 from unittest.mock import MagicMock
 
@@ -12,12 +11,9 @@ from middleware.primary_resource_logic.callback import (
 from middleware.primary_resource_logic.github_oauth import (
     link_github_account_request,
     link_github_account,
-    get_github_user_info,
 )
 from middleware.custom_dataclasses import (
     FlaskSessionCallbackInfo,
-    OAuthCallbackInfo,
-    GithubUserInfo,
 )
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 

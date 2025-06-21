@@ -1,6 +1,5 @@
 from typing import Any
 
-from requests import Session
 from sqlalchemy import select, Select
 from sqlalchemy.orm import selectinload
 

@@ -1,7 +1,6 @@
 from typing import Optional
 
 from db.enums import LocationType
-from endpoints.schema_config.enums import SchemaConfigs
 from endpoints.schema_config.instantiations.user.profile.recent_searches import (
     UserProfileRecentSearchesEndpointSchemaConfig,
 )

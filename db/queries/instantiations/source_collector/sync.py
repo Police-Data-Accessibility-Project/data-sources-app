@@ -2,8 +2,7 @@ from typing import Any
 
 from sqlalchemy import select
 
-from db.enums import LocationType, ApprovalStatus
-from db.helpers_.result_formatting import get_display_name
+from db.enums import ApprovalStatus
 from db.models.implementations import LinkAgencyLocation
 from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.location.core import Location

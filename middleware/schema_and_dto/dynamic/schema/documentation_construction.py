@@ -27,7 +27,7 @@ from typing import Optional, Type
 
 from flask_restx.reqparse import RequestParser
 
-from flask_restx import fields as restx_fields, Namespace, Model, OrderedModel
+from flask_restx import fields as restx_fields, Namespace, OrderedModel
 from marshmallow import fields as marshmallow_fields, missing, Schema
 from marshmallow.fields import Field as MarshmallowField
 from marshmallow.validate import OneOf

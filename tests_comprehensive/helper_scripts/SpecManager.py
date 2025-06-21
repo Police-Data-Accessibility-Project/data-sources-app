@@ -1,6 +1,6 @@
 from enum import Enum
 from http import HTTPStatus
-from typing import Optional, Any, Generator
+from typing import Any, Generator
 
 from pydantic import BaseModel
 

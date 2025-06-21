@@ -2,8 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from db.db_client_dataclasses import WhereMapping
-from db.enums import LocationType, RequestUrgency
+from db.enums import RequestUrgency
 
 
 class RequestInfoPostDTO(BaseModel):

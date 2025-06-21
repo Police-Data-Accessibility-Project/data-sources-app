@@ -15,7 +15,7 @@ class JWTService:
             return get_jwt_identity()
         except NoAuthorizationError:
             raise BadRequest("Token is missing")
-        except Exception as e:
+        except Exception:
             return None
 
     @staticmethod

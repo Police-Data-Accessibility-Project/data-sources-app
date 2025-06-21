@@ -1,7 +1,6 @@
 import uuid
-from http import HTTPStatus
 
-from flask import Response, make_response
+from flask import Response
 from jwt import ExpiredSignatureError
 from pydantic import BaseModel
 from werkzeug.exceptions import Unauthorized, BadRequest

@@ -1,6 +1,5 @@
 import hashlib
 import uuid
-from http import HTTPStatus
 
 from flask import Response, make_response
 from werkzeug.exceptions import Unauthorized

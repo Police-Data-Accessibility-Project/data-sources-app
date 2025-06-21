@@ -41,9 +41,7 @@ def mock_get_permitted_columns(monkeypatch):
 
 @pytest.fixture
 def mock_abort(monkeypatch):
-    return patch_and_return_mock(
-        f"middleware.flask_response_manager.abort", monkeypatch
-    )
+    return patch_and_return_mock("middleware.flask_response_manager.abort", monkeypatch)
 
 
 def test_results_dependent_response_with_results(monkeypatch):
