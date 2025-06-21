@@ -5,7 +5,6 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from db.models.mixins import CreatedAtMixin
 from db.models.templates.standard import StandardBase
-from db.models.types import text
 from middleware.enums import Relations
 
 

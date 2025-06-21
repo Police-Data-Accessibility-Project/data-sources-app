@@ -1,4 +1,4 @@
-from typing import Optional, Any, List
+from typing import Optional, List
 
 from sqlalchemy import Select, func
 from sqlalchemy.orm import load_only, selectinload

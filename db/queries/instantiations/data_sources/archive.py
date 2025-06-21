@@ -1,6 +1,6 @@
 from collections import namedtuple
 from datetime import datetime
-from typing import Optional, Any
+from typing import Optional
 
 from sqlalchemy import or_, select
 

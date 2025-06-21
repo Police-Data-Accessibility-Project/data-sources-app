@@ -40,7 +40,7 @@ def alembic_runner(connection, alembic_config) -> AlembicRunner:
     )
     try:
         runner.downgrade("base")
-    except Exception as e:
+    except Exception:
         runner.reset_schema()
         runner.stamp("base")
     yield runner

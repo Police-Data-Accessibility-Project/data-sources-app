@@ -91,8 +91,8 @@ def signup_wrapper(
 
     if db_client.pending_user_exists(email=dto.email):
         raise Conflict(
-            f"User with email has already signed up. "
-            f"Please validate your email or request a new validation email."
+            "User with email has already signed up. "
+            "Please validate your email or request a new validation email."
         )
 
     jwt_token = setup_pending_user(db_client, dto)

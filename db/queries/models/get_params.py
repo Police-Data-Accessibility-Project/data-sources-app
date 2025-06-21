@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 from db.constants import PAGE_SIZE
 from db.db_client_dataclasses import OrderByParameters
-from db.enums import ApprovalStatus
 
 
 class GetParams(BaseModel):

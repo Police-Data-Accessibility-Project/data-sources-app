@@ -113,7 +113,7 @@ def create_agency(
 
     agency_id = db_client.create_agency(dto, user_id=access_info.user_id)
 
-    return created_id_response(new_id=str(agency_id), message=f"Agency created.")
+    return created_id_response(new_id=str(agency_id), message="Agency created.")
 
 
 AGENCY_PUT_MIDDLEWARE_PARAMETERS = MiddlewareParameters(
@@ -136,7 +136,7 @@ def update_agency(
         column_edit_mappings=entry_data,
     )
 
-    return message_response(message=f"Agency updated.")
+    return message_response(message="Agency updated.")
 
 
 def delete_agency(
@@ -157,11 +157,11 @@ def add_agency_related_location(
     db_client: DatabaseClient, agency_id: int, location_id: int
 ) -> Response:
     db_client.add_location_to_agency(agency_id=agency_id, location_id=location_id)
-    return message_response(message=f"Location added to agency.")
+    return message_response(message="Location added to agency.")
 
 
 def remove_agency_related_location(
     db_client: DatabaseClient, agency_id: int, location_id: int
 ) -> Response:
     db_client.remove_location_from_agency(agency_id=agency_id, location_id=location_id)
-    return message_response(message=f"Location removed from agency.")
+    return message_response(message="Location removed from agency.")

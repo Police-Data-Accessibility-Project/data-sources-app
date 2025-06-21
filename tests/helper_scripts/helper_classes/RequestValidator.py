@@ -309,7 +309,7 @@ class RequestValidator:
         mock = mocker.patch(
             "middleware.primary_resource_logic.reset_token_queries.send_password_reset_link"
         )
-        response = self.post(
+        self.post(
             endpoint="/api/auth/request-reset-password",
             json={"email": email},
             expected_response_status=expected_response_status,
@@ -861,7 +861,7 @@ class RequestValidator:
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
         return self.post(
-            endpoint=f"/api/user/update-password",
+            endpoint="/api/user/update-password",
             headers=headers,
             json={"old_password": old_password, "new_password": new_password},
             expected_response_status=expected_response_status,
@@ -1004,7 +1004,7 @@ class RequestValidator:
         headers: dict,
     ):
         return self.get(
-            endpoint=f"/api/metrics",
+            endpoint="/api/metrics",
             headers=headers,
             expected_schema=MetricsGetEndpointSchemaConfig.primary_output_schema,
         )
