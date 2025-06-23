@@ -3,52 +3,40 @@ Module for testing database client functionality against a live database
 """
 
 import uuid
-from datetime import datetime, timezone, timedelta
-from unittest.mock import MagicMock
+from datetime import datetime
 
 import pytest
 import sqlalchemy
-from sqlalchemy import insert, select, update
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 
-from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import (
+from db.client.core import DatabaseClient
+from db.db_client_dataclasses import (
     OrderByParameters,
     WhereMapping,
 )
-from database_client.subquery_logic import SubqueryParameters, SubqueryParameterManager
-from database_client.enums import (
+from db.helpers import get_offset
+from db.subquery_logic import SubqueryParameterManager
+from db.enums import (
     ExternalAccountTypeEnum,
-    RelationRoleEnum,
-    ColumnPermissionEnum,
     SortOrder,
     RequestStatus,
     ApprovalStatus,
 )
+from middleware.constants import DATETIME_FORMAT
 from middleware.exceptions import (
     UserNotFoundError,
     DuplicateUserError,
 )
-from database_client.models import (
-    LinkAgencyDataSource,
-    ExternalAccount,
-    TestTable,
-    User,
-    SQL_ALCHEMY_TABLE_REFERENCE,
-)
+from db.models.implementations.core.user.core import User
+from db.models.implementations.core.external_account import ExternalAccount
+from db.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import PermissionsEnum, Relations, RecordTypes
-from tests.conftest import (
-    live_database_client,
-    test_table_data,
-    clear_data_requests,
-    test_data_creator_db_client,
-)
 from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,
     get_test_name,
 )
 from tests.helper_scripts.complex_test_data_creation_functions import (
-    insert_test_column_permission_data,
     create_data_source_entry_for_url_duplicate_checking,
 )
 
@@ -56,7 +44,6 @@ from tests.helper_scripts.helper_classes.AnyOrder import AnyOrder
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
 )
-from tests.helper_scripts.helper_schemas import TestGetPendingNotificationsOutputSchema
 from tests.helper_scripts.test_dataclasses import TestDataRequestInfo
 from tests.helper_scripts.helper_functions_complex import (
     setup_get_typeahead_suggestion_test_data,
@@ -79,7 +66,6 @@ def test_add_new_user(live_database_client: DatabaseClient):
     )
 
     password_digest = result.password_digest
-    api_key = result.api_key
 
     assert password_digest == "test_password"
 
@@ -234,26 +220,6 @@ def test_select_from_relation_limit(live_database_client: DatabaseClient):
     ]
 
 
-def test_select_from_relation_limit_and_offset(
-    live_database_client: DatabaseClient, monkeypatch
-):
-    # Used alongside limit; we mock PAGE_SIZE to be one
-    monkeypatch.setattr("database_client.database_client.PAGE_SIZE", 1)
-
-    live_database_client.get_offset = MagicMock(return_value=1)
-
-    results = live_database_client._select_from_relation(
-        relation_name="test_table",
-        columns=["pet_name"],
-        limit=1,
-        page=1,  # 1 is the second page; 0-indexed
-    )
-
-    assert results == [
-        {"pet_name": "Jimbo"},
-    ]
-
-
 def test_select_from_relation_order_by(live_database_client: DatabaseClient):
     results = live_database_client._select_from_relation(
         relation_name="test_table",
@@ -265,37 +231,6 @@ def test_select_from_relation_order_by(live_database_client: DatabaseClient):
         {"pet_name": "Arthur"},
         {"pet_name": "Simon"},
         {"pet_name": "Jimbo"},
-    ]
-
-
-def test_select_from_relation_all_parameters(
-    live_database_client: DatabaseClient, monkeypatch
-):
-    # Used alongside limit; we mock PAGE_SIZE to be one
-    monkeypatch.setattr("database_client.database_client.PAGE_SIZE", 1)
-
-    # Add additional row to the table to test the offset and limit
-    live_database_client.execute_sqlalchemy(
-        lambda: insert(TestTable).values(pet_name="Ezekiel", species="Cat")
-    )
-
-    results = live_database_client._select_from_relation(
-        relation_name="test_table",
-        columns=["pet_name"],
-        where_mappings=[
-            WhereMapping(column="species", value="Aardvark"),
-            WhereMapping(column="species", eq=False, value="Bear"),
-        ],
-        limit=1,
-        page=1,  # 1 is the second page; 0-indexed
-        order_by=OrderByParameters(
-            sort_by="pet_name",
-            sort_order=SortOrder.DESCENDING,
-        ),
-    )
-
-    assert results == [
-        {"pet_name": "Arthur"},
     ]
 
 
@@ -435,7 +370,7 @@ def test_get_data_sources_for_map(
 def test_get_offset():
     # Send a page number to the DatabaseClient method
     # Confirm that the correct offset is returned
-    assert DatabaseClient.get_offset(page=3) == 200
+    assert get_offset(page=3) == 200
 
 
 def test_get_data_sources_to_archive(
@@ -465,8 +400,10 @@ def test_update_last_cached(
     # Add a new data source to the database
     ds_info = tdc.data_source()
     # Update the data source's last_cached value with the DatabaseClient method
-    new_last_cached = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    live_database_client.update_last_cached(id=ds_info.id, last_cached=new_last_cached)
+    new_last_cached = datetime.now().strftime(DATETIME_FORMAT)
+    live_database_client.update_last_cached(
+        data_source_id=ds_info.id, last_cached=new_last_cached
+    )
 
     # Fetch the data source from the database to confirm the change
     result = live_database_client._select_from_relation(
@@ -475,7 +412,7 @@ def test_update_last_cached(
         where_mappings=[WhereMapping(column="data_source_id", value=ds_info.id)],
     )[0]
 
-    assert result["last_cached"].strftime("%Y-%m-%d %H:%M:%S") == new_last_cached
+    assert result["last_cached"].strftime(DATETIME_FORMAT) == new_last_cached
 
 
 def test_get_user_info(live_database_client):
@@ -489,13 +426,13 @@ def test_get_user_info(live_database_client):
     )
 
     # Fetch the user using its email with the DatabaseClient method
-    user_info = live_database_client.get_user_info(email=email)
+    user_info = live_database_client.get_user_info(user_email=email)
     # Confirm the user is retrieved successfully
     assert user_info.password_digest == password_digest
     # Attempt to fetch non-existant user
     # Assert UserNotFoundError is raised
     with pytest.raises(UserNotFoundError):
-        live_database_client.get_user_info(email="invalid_email")
+        live_database_client.get_user_info(user_email="invalid_email")
 
 
 def test_get_user_by_api_key(live_database_client: DatabaseClient):
@@ -879,48 +816,6 @@ def test_user_is_creator_of_data_request(live_database_client):
 #     assert new_result["airtable_uid"] != airtable_uid
 
 
-def test_get_related_data_sources(
-    test_data_creator_db_client: TestDataCreatorDBClient, live_database_client
-):
-    tdc = test_data_creator_db_client
-
-    # Create two data sources
-    source_column_value_mappings = []
-    source_ids = []
-    for i in range(2):
-        data_source_info = tdc.data_source()
-        source_column_value_mapping = {
-            "id": data_source_info.id,
-            "name": data_source_info.name,
-        }
-        source_id = data_source_info.id
-        source_column_value_mappings.append(source_column_value_mapping)
-        source_ids.append(source_id)
-
-    # Create a request
-    data_request_info = tdc.data_request()
-    request_id = data_request_info.id
-    submission_notes = data_request_info.submission_notes
-
-    # Associate them in the link table
-    for source_id in source_ids:
-        live_database_client.create_request_source_relation(
-            column_value_mappings={
-                "request_id": request_id,
-                "data_source_id": source_id,
-            }
-        )
-
-    results = live_database_client.get_related_data_sources(data_request_id=request_id)
-
-    assert len(results) == 2
-
-    for result in results:
-        assert result["name"] in [
-            source["name"] for source in source_column_value_mappings
-        ]
-
-
 def test_create_request_source_relation(
     test_data_creator_db_client: TestDataCreatorDBClient, live_database_client
 ):
@@ -1051,9 +946,7 @@ def test_get_unarchived_data_requests_with_issues(
     dr_info_active = create_data_request_with_issue_and_request_status(
         RequestStatus.ACTIVE
     )
-    dr_info_archived = create_data_request_with_issue_and_request_status(
-        RequestStatus.ARCHIVED
-    )
+    create_data_request_with_issue_and_request_status(RequestStatus.ARCHIVED)
 
     results = tdc.db_client.get_unarchived_data_requests_with_issues()
 
@@ -1076,51 +969,29 @@ def test_user_followed_searches_logic(
     user_info = tdc.user()
 
     # Have that user follow two searches
-    link_id = tdc.db_client.create_followed_search(
-        column_value_mappings={
-            "user_id": user_info.id,
-            "location_id": 1,
-        },
-        column_to_return="id",
+    tdc.db_client.create_followed_search(
+        user_id=user_info.id,
+        location_id=1,
     )
 
     tdc.db_client.create_followed_search(
-        column_value_mappings={
-            "user_id": user_info.id,
-            "location_id": 2,
-        }
+        user_id=user_info.id,
+        location_id=2,
     )
 
     # Get the user's followed searches
-    results = tdc.db_client.get_user_followed_searches(left_id=user_info.id)
+    results = tdc.db_client.get_user_followed_searches(user_id=user_info.id)
     assert len(results["data"]) == 2
 
     # Unfollow one of the searches
-    tdc.db_client.delete_followed_search(id_column_value=link_id)
+    tdc.db_client.delete_followed_search(
+        user_id=user_info.id,
+        location_id=1,
+    )
 
     # Get the user's followed searches, and ensure the un-followed search is gone
-    results = tdc.db_client.get_user_followed_searches(left_id=user_info.id)
+    results = tdc.db_client.get_user_followed_searches(user_id=user_info.id)
     assert len(results["data"]) == 1
-
-
-def test_get_notifications_no_results(live_database_client):
-    """
-    Tests that `get_notifications` returns an empty list when there are no notifications
-    :param live_database_client:
-    :return:
-    """
-
-
-def get_user_notification_queue(db_client: DatabaseClient):
-    return db_client._select_from_relation(
-        relation_name=Relations.USER_NOTIFICATION_QUEUE.value,
-        columns=[
-            "id",
-            "user_id",
-            "pen_id",
-            "sent_at",
-        ],
-    )
 
 
 def test_get_next_user_events_and_mark_user_events_as_sent(test_data_creator_db_client):

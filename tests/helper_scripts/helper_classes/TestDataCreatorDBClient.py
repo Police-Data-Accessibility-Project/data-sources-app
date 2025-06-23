@@ -5,22 +5,24 @@ from typing import Optional
 from sqlalchemy import delete, select, and_
 from sqlalchemy.exc import IntegrityError
 
-from database_client.database_client import DatabaseClient
-from database_client.enums import (
+from db.client.core import DatabaseClient
+from db.enums import (
     ApprovalStatus,
     RequestStatus,
     EventType,
     ExternalAccountTypeEnum,
 )
-from database_client.models import (
-    SQL_ALCHEMY_TABLE_REFERENCE,
-    DataRequestUserNotificationQueue,
+from db.models.implementations.core.notification.queue.data_source import (
     DataSourceUserNotificationQueue,
 )
+from db.models.implementations.core.notification.queue.data_request import (
+    DataRequestUserNotificationQueue,
+)
+from db.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import JurisdictionType, Relations, AgencyType
-from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
-    AgenciesPostDTO,
+from middleware.schema_and_dto.dtos.agencies.post import (
     AgencyInfoPostDTO,
+    AgenciesPostDTO,
 )
 from tests.helper_scripts.common_endpoint_calls import CreatedDataSource
 from tests.helper_scripts.common_test_data import (
@@ -296,9 +298,7 @@ class TestDataCreatorDBClient:
         )
 
     def user_follow_location(self, user_id: int, location_id: int):
-        self.db_client.create_followed_search(
-            column_value_mappings={"user_id": user_id, "location_id": location_id}
-        )
+        self.db_client.create_followed_search(user_id=user_id, location_id=location_id)
 
     def link_data_request_to_data_source(
         self, data_request_id: int, data_source_id: str

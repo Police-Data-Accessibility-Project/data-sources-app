@@ -2,13 +2,11 @@
 Functions commonly used in testing and asserting results
 """
 
-from http import HTTPStatus
-
 from flask import Response
 from flask_jwt_extended import decode_token
 
-from database_client.constants import PAGE_SIZE
-from database_client.database_client import DatabaseClient
+from db.constants import PAGE_SIZE
+from db.client.core import DatabaseClient
 from tests.helper_scripts.constants import TEST_RESPONSE
 
 

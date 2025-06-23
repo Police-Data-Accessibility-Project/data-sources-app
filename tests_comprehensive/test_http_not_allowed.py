@@ -1,9 +1,9 @@
 from http import HTTPStatus
+from typing import Any
 
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from tests.conftest import test_data_creator_flask, monkeysession
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from tests_comprehensive.helper_scripts.SpecManager import SpecManager
 
@@ -13,7 +13,7 @@ ALL_METHODS = ["get", "post", "put", "delete", "patch"]
 def test_http_not_allowed(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
 
-    spec: dict = tdc.request_validator.get_api_spec()
+    spec: dict[str, Any] = tdc.request_validator.get_api_spec()
     sm = SpecManager(spec)
     for path_info in sm.get_paths():
         for method in path_info.get_disallowed_methods():

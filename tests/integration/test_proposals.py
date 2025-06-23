@@ -1,10 +1,8 @@
 from http import HTTPStatus
-from http.client import HTTPException
 
-import pytest
-
-from database_client.enums import ApprovalStatus
-from database_client.models import Agency, LinkAgencyLocation
+from db.enums import ApprovalStatus
+from db.models.implementations.core.agency.core import Agency
+from db.models.implementations.link import LinkAgencyLocation
 from middleware.enums import JurisdictionType, AgencyType
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,

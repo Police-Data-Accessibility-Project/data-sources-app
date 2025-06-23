@@ -1,10 +1,11 @@
 import datetime
 
-from database_client.enums import SortOrder
-from middleware.schema_and_dto_logic.primary_resource_dtos.metrics_dtos import (
+from db.enums import SortOrder
+from middleware.constants import DATE_FORMAT
+from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
-from middleware.util import get_env_variable
+from middleware.util.env import get_env_variable
 from tests.helper_scripts.helper_classes.MultiAgencySetup import MultiAgencySetup
 from tests.helper_scripts.helper_classes.MultiDataSourceSetup import (
     MultiDataSourceSetup,
@@ -14,7 +15,6 @@ from tests.helper_scripts.helper_classes.MultiRequestSetup import MultiRequestSe
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from tests.conftest import test_data_creator_flask
 
 
 def test_metrics(test_data_creator_flask: TestDataCreatorFlask):
@@ -204,7 +204,7 @@ def test_metrics_followed_searches_aggregate(test_data_creator_flask):
     tdc.clear_test_data()
     last_notification_datetime = tdc.tdcdb.notification_log()
 
-    mfs = MultiFollowSetup.setup(tdc)
+    MultiFollowSetup.setup(tdc)
 
     data = tdc.request_validator.get_metrics_followed_searches_aggregate(
         headers=tdc.get_admin_tus().jwt_authorization_header,
@@ -212,5 +212,5 @@ def test_metrics_followed_searches_aggregate(test_data_creator_flask):
     assert data["total_followers"] == 3
     assert data["total_followed_searches"] == 6
     assert data["last_notification_date"] == last_notification_datetime.strftime(
-        "%Y-%m-%d"
+        DATE_FORMAT
     )

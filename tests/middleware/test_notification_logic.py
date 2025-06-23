@@ -3,14 +3,14 @@ from unittest import mock
 
 import pytest
 
-from database_client.enums import EventType, EntityType
+from db.enums import EventType, EntityType
 from middleware.custom_dataclasses import EventBatch, EventInfo
-from middleware.primary_resource_logic.notifications_logic import (
+from middleware.primary_resource_logic.notifications import (
     format_and_send_notifications,
 )
 from tests.helper_scripts.common_mocks_and_patches import patch_and_return_mock
 
-PATCH_ROOT = "middleware.primary_resource_logic.notifications_logic"
+PATCH_ROOT = "middleware.primary_resource_logic.notifications"
 
 
 def remove_all_whitespaces(s: str):
@@ -270,7 +270,7 @@ def test_format_and_send_notifications_error_no_events(
         user_id=20, user_email="fancyfrank@frankfurters.com", events=[]
     )
 
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError):
         format_and_send_notifications(event_batch=test_event_batch)
 
     mock_send_via_mailgun.assert_not_called()

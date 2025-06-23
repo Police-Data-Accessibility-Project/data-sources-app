@@ -1,9 +1,9 @@
-from database_client.enums import EventType, EntityType
+from db.enums import EventType, EntityType
 from middleware.custom_dataclasses import EventBatch, EventInfo
-from middleware.primary_resource_logic.notifications_logic import (
+from middleware.primary_resource_logic.notifications import (
     format_and_send_notifications,
 )
-from middleware.util import get_env_variable
+from middleware.util.env import get_env_variable
 
 
 def test_notifications_email():

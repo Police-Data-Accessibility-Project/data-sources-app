@@ -1,44 +1,27 @@
 from http import HTTPStatus
-from typing import Optional
-from unittest.mock import MagicMock
 
-from marshmallow import Schema
 from pydantic import BaseModel
 
-from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import RequestStatus
-from database_client.models import DataRequest, DataRequestsGithubIssueInfo
-from middleware.enums import Relations, PermissionsEnum, RecordTypes
-from middleware.schema_and_dto_logic.common_response_schemas import MessageSchema
-from middleware.third_party_interaction_logic.github_issue_api_logic import (
-    GithubIssueInfo,
-    GithubIssueProjectInfo,
-    GIPIInfo,
+from db.enums import RequestStatus
+from db.models.implementations.core.data_request.github_issue_info import (
+    DataRequestsGithubIssueInfo,
 )
-from resources.endpoint_schema_config import SchemaConfigs
-from tests.helper_scripts.common_test_data import (
-    get_random_number_for_testing,
+from db.models.implementations.core.data_request.core import DataRequest
+from middleware.enums import PermissionsEnum, RecordTypes
+from middleware.third_party_interaction_logic.github.issue_info import GithubIssueInfo
+from middleware.third_party_interaction_logic.github.issue_project_info.core import (
+    GithubIssueProjectInfo,
+)
+from middleware.third_party_interaction_logic.github.issue_project_info.model import (
+    GIPIInfo,
 )
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.constants import (
-    GITHUB_DATA_REQUESTS_ISSUES_ENDPOINT,
-    DATA_REQUESTS_BY_ID_ENDPOINT,
-    GITHUB_DATA_REQUESTS_SYNCHRONIZE,
-)
-from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_functions_complex import create_test_user_setup
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-from tests.conftest import (
-    clear_data_requests,
-    dev_db_client,
-    test_data_creator_flask,
-    monkeysession,
-)
 from tests.integration.test_check_database_health import wipe_database
 
-PATCH_ROOT = "middleware.primary_resource_logic.github_issue_app_logic"
+PATCH_ROOT = "middleware.primary_resource_logic.github_issue_app"
 
 
 class SynchronizeTestInfo(BaseModel):

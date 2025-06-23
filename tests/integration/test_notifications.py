@@ -1,17 +1,20 @@
-import time
 from http import HTTPStatus
 from unittest.mock import MagicMock, call, ANY
 
 import pytest
 
-from database_client.enums import EventType, EntityType
-from database_client.models import (
-    DataRequestUserNotificationQueue,
+from db.enums import EventType, EntityType
+from db.models.implementations.core.notification.queue.data_source import (
     DataSourceUserNotificationQueue,
-    NotificationLog,
+)
+from db.models.implementations.core.notification.queue.data_request import (
+    DataRequestUserNotificationQueue,
+)
+from db.models.implementations.core.log.notification import NotificationLog
+from endpoints.schema_config.instantiations.notifications import (
+    NotificationsPostEndpointSchemaConfig,
 )
 from middleware.custom_dataclasses import EventInfo, EventBatch
-from resources.endpoint_schema_config import SchemaConfigs
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,
 )
@@ -20,12 +23,11 @@ from tests.helper_scripts.helper_classes.AnyOrder import AnyOrder
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
 )
-from tests.conftest import test_data_creator_flask, monkeysession
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
 
-PATCH_ROOT = "middleware.primary_resource_logic.notifications_logic"
+PATCH_ROOT = "middleware.primary_resource_logic.notifications"
 
 
 @pytest.fixture
@@ -77,7 +79,7 @@ def test_notifications_followed_searches(
             "message": "Notifications sent successfully.",
             "count": 2,
         },
-        expected_schema=SchemaConfigs.NOTIFICATIONS_POST.value.primary_output_schema,
+        expected_schema=NotificationsPostEndpointSchemaConfig.primary_output_schema,
     )
     mock_format_and_send_notifications.assert_has_calls(
         any_order=True,

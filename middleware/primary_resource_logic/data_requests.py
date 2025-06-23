@@ -1,59 +1,63 @@
-from http import HTTPStatus
 from typing import Optional
 
 from flask import Response
+from werkzeug.exceptions import Forbidden
 
-from database_client.db_client_dataclasses import WhereMapping, OrderByParameters
-from database_client.database_client import DatabaseClient
-from database_client.enums import (
+from db.client.core import DatabaseClient
+from db.db_client_dataclasses import WhereMapping, OrderByParameters
+from db.enums import (
     ColumnPermissionEnum,
     RelationRoleEnum,
     RequestStatus,
 )
-from database_client.subquery_logic import SubqueryParameterManager, SubqueryParameters
-from middleware.access_logic import AccessInfoPrimary
-from middleware.column_permission_logic import (
+from db.subquery_logic import SubqueryParameterManager, SubqueryParameters
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.column_permission.core import (
     get_permitted_columns,
     RelationRoleParameters,
 )
-from middleware.custom_dataclasses import (
-    DeferredFunction,
-)
-from middleware.dynamic_request_logic.delete_logic import delete_entry
-from middleware.dynamic_request_logic.get_by_id_logic import get_by_id
-from middleware.dynamic_request_logic.get_many_logic import get_many
-from middleware.dynamic_request_logic.get_related_resource_logic import (
-    get_related_resource,
-    GetRelatedResourcesParameters,
-)
-from middleware.dynamic_request_logic.post_logic import PostLogic
-from middleware.dynamic_request_logic.put_logic import put_entry
-from middleware.dynamic_request_logic.supporting_classes import (
-    MiddlewareParameters,
-    IDInfo,
-)
-from middleware.flask_response_manager import FlaskResponseManager
-from middleware.location_logic import InvalidLocationError
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    GetByIDBaseDTO,
-    GetManyBaseDTO,
-)
-from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
-
 from middleware.common_response_formatting import (
     message_response,
     created_id_response,
 )
-from middleware.schema_and_dto_logic.primary_resource_dtos.data_requests_dtos import (
+from middleware.custom_dataclasses import (
+    DeferredFunction,
+)
+from middleware.dynamic_request_logic.delete import delete_entry
+from middleware.dynamic_request_logic.get.by_id import get_by_id
+from middleware.dynamic_request_logic.get.many import get_many
+from middleware.dynamic_request_logic.get.related_resource import (
+    get_related_resource,
+    GetRelatedResourcesParameters,
+)
+from middleware.dynamic_request_logic.post import PostLogic
+from middleware.dynamic_request_logic.put import put_entry
+from middleware.dynamic_request_logic.supporting_classes import (
+    MiddlewareParameters,
+    IDInfo,
+)
+from middleware.enums import AccessTypeEnum, PermissionsEnum, Relations
+from middleware.schema_and_dto.dtos.common.base import (
+    GetManyBaseDTO,
+    GetByIDBaseDTO,
+)
+from middleware.schema_and_dto.dtos.data_requests.by_id.locations import (
+    RelatedLocationsByIDDTO,
+)
+from middleware.schema_and_dto.dtos.data_requests.by_id.source import (
+    RelatedSourceByIDDTO,
+)
+from middleware.schema_and_dto.dtos.data_requests.post import (
+    DataRequestsPostDTO,
+)
+from middleware.schema_and_dto.dtos.data_requests.get_many import (
     GetManyDataRequestsRequestsDTO,
+)
+from middleware.schema_and_dto.dtos.data_requests.put import (
     DataRequestsPutDTO,
     DataRequestsPutOuterDTO,
-    RelatedSourceByIDDTO,
-    RelatedLocationsByIDDTO,
-    DataRequestsPostDTO,
-    DataRequestLocationInfoPostDTO,
 )
-from middleware.util import dataclass_to_filtered_dict
+from middleware.util.type_conversion import dataclass_to_filtered_dict
 
 RELATION = Relations.DATA_REQUESTS.value
 RELATED_SOURCES_RELATION = Relations.RELATED_SOURCES.value
@@ -64,31 +68,6 @@ def get_data_requests_subquery_params() -> list[SubqueryParameters]:
         SubqueryParameterManager.data_sources(),
         SubqueryParameterManager.locations(),
     ]
-
-
-def get_location_id_for_data_requests(
-    db_client: DatabaseClient, location_info: DataRequestLocationInfoPostDTO
-) -> int:
-    """
-    Get the location id for the data request
-    :param db_client:
-    :param location_info:
-    :return:
-    """
-    # Rename keys to match where mappings
-    revised_location_info = {
-        "type": location_info.type,
-        "state_name": location_info.state_name,
-        "county_name": location_info.county_name,
-        "locality_name": location_info.locality_name,
-    }
-
-    location_id = db_client.get_location_id(
-        where_mappings=WhereMapping.from_dict(revised_location_info)
-    )
-    if location_id is None:
-        raise InvalidLocationError()
-    return location_id
 
 
 def get_data_requests_relation_role(
@@ -148,26 +127,7 @@ def create_data_request_wrapper(
         )
 
     # Return data request id
-    return created_id_response(new_id=str(dr_id), message=f"Data request created.")
-
-
-def _get_location_ids(db_client, dto: DataRequestsPostDTO):
-    location_ids = []
-    if dto.location_ids is None:
-        return location_ids
-    for location_info in dto.location_ids:
-        try:
-            location_id = get_location_id_for_data_requests(
-                db_client=db_client, location_info=location_info
-            )
-        except InvalidLocationError:
-            FlaskResponseManager.abort(
-                code=HTTPStatus.BAD_REQUEST,
-                message=f"Invalid location: {location_info}",
-            )
-
-        location_ids.append(location_id)
-    return location_ids
+    return created_id_response(new_id=str(dr_id), message="Data request created.")
 
 
 def get_data_requests_wrapper(
@@ -405,10 +365,7 @@ def get_data_request_related_locations(
 
 def check_has_admin_or_owner_role(relation_role: RelationRoleEnum):
     if relation_role not in [RelationRoleEnum.OWNER, RelationRoleEnum.ADMIN]:
-        FlaskResponseManager.abort(
-            code=HTTPStatus.FORBIDDEN,
-            message="User does not have permission to perform this action.",
-        )
+        raise Forbidden("User does not have permission to perform this action.")
 
 
 class CreateDataRequestRelatedSourceLogic(PostLogic):
@@ -527,10 +484,8 @@ def withdraw_data_request_wrapper(
     if not is_creator_or_admin(
         access_info=access_info, data_request_id=data_request_id, db_client=db_client
     ):
-        FlaskResponseManager.abort(
-            code=HTTPStatus.FORBIDDEN,
-            message="User does not have permission to perform this action.",
-        )
+        raise Forbidden("User does not have permission to perform this action.")
+
     db_client.update_data_request(
         entry_id=data_request_id,
         column_edit_mappings={"request_status": RequestStatus.REQUEST_WITHDRAWN.value},

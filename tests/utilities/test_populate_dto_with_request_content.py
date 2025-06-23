@@ -9,19 +9,21 @@ from flask_restx.reqparse import RequestParser
 from marshmallow import Schema, fields, validate, ValidationError
 from pydantic import BaseModel
 
-from tests.helper_scripts.common_mocks_and_patches import patch_request_args_get
-from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_documentation_construction import (
-    get_restx_param_documentation,
-)
-from middleware.schema_and_dto_logic.dynamic_logic.dynamic_schema_request_content_population import (
-    populate_schema_with_request_content,
-    InvalidSourceMappingError,
-)
-from middleware.schema_and_dto_logic.dynamic_logic.dynamic_dto_request_content_population import (
+from middleware.schema_and_dto.dynamic.dto_request_content_population import (
     populate_dto_with_request_content,
     _optionally_check_against_schema,
 )
-from middleware.schema_and_dto_logic.custom_exceptions import AttributeNotInClassError
+from middleware.schema_and_dto.dynamic.schema.documentation_construction import (
+    get_restx_param_documentation,
+)
+from middleware.schema_and_dto.dynamic.schema.request_content_population import (
+    InvalidSourceMappingError,
+    populate_schema_with_request_content,
+)
+from middleware.schema_and_dto.non_dto_dataclasses import DTOPopulateParameters
+from tests.helper_scripts.common_mocks_and_patches import patch_request_args_get
+
+from middleware.schema_and_dto.exceptions import AttributeNotInClassError
 from utilities.enums import SourceMappingEnum
 from utilities.argument_checking_logic import (
     MutuallyExclusiveArgumentError,
@@ -48,7 +50,7 @@ SAMPLE_REQUEST_ARGS = {
     "transformed_array": "hello,world",
 }
 
-ROUTE_TO_PATCH = "middleware.schema_and_dto_logic.util"
+ROUTE_TO_PATCH = "middleware.schema_and_dto.util"
 
 
 @pytest.fixture
@@ -69,9 +71,11 @@ def test_populate_dto_with_request_content_happy_path(
 ):
 
     dto = populate_dto_with_request_content(
-        SimpleDTO,
-        transformation_functions={"transformed_array": transform_array},
-        source=source_mapping_enum,
+        DTOPopulateParameters(
+            dto_class=SimpleDTO,
+            transformation_functions={"transformed_array": transform_array},
+            source=source_mapping_enum,
+        )
     )
     assert dto.simple_string == "spam"
     assert dto.optional_int is None
@@ -86,10 +90,14 @@ def test_populate_dto_with_request_transformation_function_not_in_attributes(
     :return:
     """
     with pytest.raises(AttributeNotInClassError):
-        dto = populate_dto_with_request_content(
-            SimpleDTO,
-            transformation_functions={"non_existent_attribute": lambda value: value},
-            source=SourceMappingEnum.QUERY_ARGS,
+        populate_dto_with_request_content(
+            DTOPopulateParameters(
+                dto_class=SimpleDTO,
+                transformation_functions={
+                    "non_existent_attribute": lambda value: value
+                },
+                source=SourceMappingEnum.QUERY_ARGS,
+            )
         )
 
 
@@ -97,8 +105,7 @@ def test_populate_dto_with_request_no_transformation_functions(
     patched_request_args_get,
 ):
     dto = populate_dto_with_request_content(
-        SimpleDTO,
-        source=SourceMappingEnum.QUERY_ARGS,
+        DTOPopulateParameters(dto_class=SimpleDTO, source=SourceMappingEnum.QUERY_ARGS)
     )
     assert dto.simple_string == "spam"
     assert dto.optional_int is None
@@ -109,10 +116,12 @@ def test_populate_dto_with_request_source_mapping_and_source_arguments(
     patched_request_args_get,
 ):
     with pytest.raises(MutuallyExclusiveArgumentError):
-        dto = populate_dto_with_request_content(
-            SimpleDTO,
-            source=SourceMappingEnum.QUERY_ARGS,
-            attribute_source_mapping={"simple_string": SourceMappingEnum.FORM},
+        populate_dto_with_request_content(
+            DTOPopulateParameters(
+                dto_class=SimpleDTO,
+                source=SourceMappingEnum.QUERY_ARGS,
+                attribute_source_mapping={"simple_string": SourceMappingEnum.FORM},
+            )
         )
 
 
@@ -120,7 +129,7 @@ def test_populate_dto_with_request_no_source_argument(
     patched_request_args_get,
 ):
     with pytest.raises(MissingRequiredArgumentError):
-        dto = populate_dto_with_request_content(SimpleDTO)
+        populate_dto_with_request_content(DTOPopulateParameters(dto_class=SimpleDTO))
 
 
 def test_populate_dto_with_request_source_mapping_happy_path(
@@ -131,12 +140,14 @@ def test_populate_dto_with_request_source_mapping_happy_path(
     mock_request.form.get = MagicMock(return_value=2)
     mock_request.json.get = MagicMock(return_value=3)
     dto = populate_dto_with_request_content(
-        SimpleDTO,
-        attribute_source_mapping={
-            "simple_string": SourceMappingEnum.QUERY_ARGS,
-            "optional_int": SourceMappingEnum.FORM,
-            "transformed_array": SourceMappingEnum.JSON,
-        },
+        DTOPopulateParameters(
+            dto_class=SimpleDTO,
+            attribute_source_mapping={
+                "simple_string": SourceMappingEnum.QUERY_ARGS,
+                "optional_int": SourceMappingEnum.FORM,
+                "transformed_array": SourceMappingEnum.JSON,
+            },
+        )
     )
     mock_request.json.get.assert_called_once_with("transformed_array")
     mock_request.form.get.assert_called_once_with("optional_int")
@@ -291,7 +302,7 @@ def test_populate_nested_schema_with_request_content_non_json_source_provided(
 def test_populate_nested_schema_with_request_content(
     monkeypatch,
 ):
-    mock = patch_request_args_get(
+    patch_request_args_get(
         monkeypatch,
         ROUTE_TO_PATCH,
         {

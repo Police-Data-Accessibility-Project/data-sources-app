@@ -94,6 +94,7 @@ class Relations(Enum):
     TABLE_COUNT_LOG = "table_count_log"
     CHANGE_LOG = "change_log"
     LINK_AGENCIES_LOCATIONS = "link_agencies_locations"
+    LINK_FOLLOW_RECORD_TYPES = "link_follow_record_types"
     DATA_REQUESTS_PENDING_EVENT_NOTIFICATIONS = (
         "data_request_pending_event_notification"
     )
@@ -105,6 +106,7 @@ class Relations(Enum):
     MAP_LOCALITIES = "map_localities"
     NOTIFICATION_LOG = "notification_log"
     LINK_LOCATIONS_DATA_SOURCES_VIEW = "link_locations_data_sources_view"
+    DISTINCT_SOURCE_URLS = "distinct_source_urls"
 
 
 class OperationType(Enum):

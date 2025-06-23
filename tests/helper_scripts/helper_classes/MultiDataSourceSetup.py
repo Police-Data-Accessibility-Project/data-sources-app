@@ -1,4 +1,4 @@
-from database_client.enums import ApprovalStatus
+from db.enums import ApprovalStatus
 from tests.helper_scripts.helper_classes.MultiAgencySetup import MultiAgencySetup
 from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
     TestDataCreatorFlask,

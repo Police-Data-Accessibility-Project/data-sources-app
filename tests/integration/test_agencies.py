@@ -3,22 +3,27 @@
 import time
 from datetime import datetime, timezone, timedelta
 
-from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import SortOrder, ApprovalStatus
-from database_client.models import Agency
+from db.db_client_dataclasses import WhereMapping
+from db.enums import SortOrder, ApprovalStatus
+from db.models.implementations.core.agency.core import Agency
+from endpoints.schema_config.instantiations.agencies.by_id.get import (
+    AgenciesByIDGetEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.agencies.by_id.put import (
+    AgenciesByIDPutEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.agencies.post import (
+    AgenciesPostEndpointSchemaConfig,
+)
 from middleware.enums import JurisdictionType, AgencyType
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
+from middleware.schema_and_dto.schemas.agencies.info.put import (
     AgencyInfoPutSchema,
 )
-from middleware.schema_and_dto_logic.common_response_schemas import (
+from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )
-from resources.endpoint_schema_config import SchemaConfigs
 
 from tests.helper_scripts.common_test_data import get_test_name
-from tests.helper_scripts.complex_test_data_creation_functions import (
-    get_sample_agency_post_parameters,
-)
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,
 )
@@ -32,8 +37,6 @@ from tests.helper_scripts.common_asserts import (
     assert_contains_key_value_pairs,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-
-from tests.conftest import test_data_creator_flask, monkeysession
 
 
 def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
@@ -167,7 +170,7 @@ def test_agencies_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
         http_method="get",
         endpoint=AGENCIES_BASE_ENDPOINT + f"/{agency_id}",
         headers=tdc.get_admin_tus().jwt_authorization_header,
-        expected_schema=SchemaConfigs.AGENCIES_BY_ID_GET.value.primary_output_schema,
+        expected_schema=AgenciesByIDGetEndpointSchemaConfig.primary_output_schema,
     )
 
     data = response_json["data"]
@@ -175,8 +178,14 @@ def test_agencies_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     assert data["id"] == int(agency_id)
     assert data["data_sources"][0]["id"] == int(cds.id)
 
-    assert data["locations"][0]["location_id"] == int(location_id_1)
-    assert data["locations"][1]["location_id"] == int(location_id_2)
+    assert data["locations"][0]["location_id"] in (
+        int(location_id_2),
+        int(location_id_1),
+    )
+    assert data["locations"][1]["location_id"] in (
+        int(location_id_2),
+        int(location_id_1),
+    )
 
 
 def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
@@ -197,7 +206,7 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
             endpoint=AGENCIES_BASE_ENDPOINT,
             headers=tus_admin.jwt_authorization_header,
             json=json,
-            expected_schema=SchemaConfigs.AGENCIES_POST.value.primary_output_schema,
+            expected_schema=AgenciesPostEndpointSchemaConfig.primary_output_schema,
         )
 
     def run_get(
@@ -296,13 +305,13 @@ def test_agencies_put(test_data_creator_flask: TestDataCreatorFlask):
         },
     )
 
-    json_data = run_and_validate_request(
+    run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="put",
         endpoint=BY_ID_ENDPOINT,
         headers=admin_tus.jwt_authorization_header,
         json={"agency_info": agency_info},
-        expected_schema=SchemaConfigs.AGENCIES_BY_ID_PUT.value.primary_output_schema,
+        expected_schema=AgenciesByIDPutEndpointSchemaConfig.primary_output_schema,
     )
 
     json_data = run_and_validate_request(

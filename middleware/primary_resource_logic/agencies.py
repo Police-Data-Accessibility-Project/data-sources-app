@@ -1,35 +1,24 @@
-from dataclasses import asdict
+from flask import Response, request, make_response
 
-from flask import Response, request
-
-from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import OrderByParameters
-from database_client.subquery_logic import SubqueryParameterManager
-from middleware.access_logic import AccessInfoPrimary
+from db.client.core import DatabaseClient
+from db.db_client_dataclasses import OrderByParameters
+from db.subquery_logic import SubqueryParameterManager
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.common_response_formatting import (
     created_id_response,
     message_response,
-    multiple_results_response,
 )
-from middleware.dynamic_request_logic.delete_logic import delete_entry
-from middleware.dynamic_request_logic.post_logic import post_entry, PostHandler
+from middleware.dynamic_request_logic.delete import delete_entry
+from middleware.dynamic_request_logic.post import PostHandler
 from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,
     PutPostRequestInfo,
 )
-from middleware.flask_response_manager import FlaskResponseManager
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
-    AgenciesPutSchema,
-)
-from middleware.schema_and_dto_logic.primary_resource_dtos.agencies_dtos import (
-    AgenciesPostDTO,
-    AgenciesGetManyDTO,
-)
-from middleware.schema_and_dto_logic.common_schemas_and_dtos import (
-    GetManyBaseDTO,
-    GetByIDBaseDTO,
-)
+from middleware.schema_and_dto.schemas.agencies.put import AgenciesPutSchema
+from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
+from middleware.schema_and_dto.dtos.agencies.get_many import AgenciesGetManyDTO
+from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
 from middleware.enums import Relations
 
 SUBQUERY_PARAMS = [SubqueryParameterManager.data_sources()]
@@ -57,8 +46,8 @@ def get_agencies(
         approval_status=dto.approval_status,
     )
 
-    return FlaskResponseManager.make_response(
-        data={
+    return make_response(
+        {
             "metadata": {"count": len(results)},
             "message": "Successfully retrieved agencies",
             "data": results,
@@ -124,7 +113,7 @@ def create_agency(
 
     agency_id = db_client.create_agency(dto, user_id=access_info.user_id)
 
-    return created_id_response(new_id=str(agency_id), message=f"Agency created.")
+    return created_id_response(new_id=str(agency_id), message="Agency created.")
 
 
 AGENCY_PUT_MIDDLEWARE_PARAMETERS = MiddlewareParameters(
@@ -147,7 +136,7 @@ def update_agency(
         column_edit_mappings=entry_data,
     )
 
-    return message_response(message=f"Agency updated.")
+    return message_response(message="Agency updated.")
 
 
 def delete_agency(
@@ -168,11 +157,11 @@ def add_agency_related_location(
     db_client: DatabaseClient, agency_id: int, location_id: int
 ) -> Response:
     db_client.add_location_to_agency(agency_id=agency_id, location_id=location_id)
-    return message_response(message=f"Location added to agency.")
+    return message_response(message="Location added to agency.")
 
 
 def remove_agency_related_location(
     db_client: DatabaseClient, agency_id: int, location_id: int
 ) -> Response:
     db_client.remove_location_from_agency(agency_id=agency_id, location_id=location_id)
-    return message_response(message=f"Location removed from agency.")
+    return message_response(message="Location removed from agency.")

@@ -1,6 +1,6 @@
 from enum import Enum
 from http import HTTPStatus
-from typing import Optional
+from typing import Any, Generator
 
 from pydantic import BaseModel
 
@@ -69,7 +69,7 @@ class PathInfo(BaseModel):
     route_name: str
     content: dict
 
-    def get_allowed_method_info(self) -> list[MethodInfo]:
+    def get_allowed_method_info(self) -> Generator[MethodInfo, Any, None]:
         for key, value in self.content.items():
             if key not in ALL_METHODS_STR:
                 continue
@@ -77,14 +77,14 @@ class PathInfo(BaseModel):
             content = value
             yield MethodInfo(method=method, content=content, parent_path=self)
 
-    def get_allowed_methods(self) -> list[HTTPMethod]:
+    def get_allowed_methods(self) -> Generator[HTTPMethod, Any, None]:
         for key, value in self.content.items():
             if key not in ALL_METHODS_STR:
                 continue
             method = HTTPMethod(key)
             yield method
 
-    def get_disallowed_methods(self) -> list[HTTPMethod]:
+    def get_disallowed_methods(self) -> Generator[HTTPMethod, Any, None]:
         allowed_methods = list(self.get_allowed_methods())
         for method in ALL_METHODS_ENUM:
             if method not in allowed_methods:
@@ -102,19 +102,21 @@ class SpecManager:
 
     def get_methods_with_response(
         self, response_status: HTTPStatus
-    ) -> list[MethodInfo]:
+    ) -> Generator[MethodInfo, Any, None]:
         for path_info in self.get_paths():
             for method_info in path_info.get_allowed_method_info():
                 if method_info.has_response(response_status):
                     yield method_info
 
-    def get_methods_with_any_header(self) -> list[MethodInfo]:
+    def get_methods_with_any_header(self) -> Generator[MethodInfo, Any, None]:
         for path_info in self.get_paths():
             for method_info in path_info.get_allowed_method_info():
                 if method_info.has_any_authorization_header():
                     yield method_info
 
-    def get_methods_with_specific_header(self, header_name: str) -> list[MethodInfo]:
+    def get_methods_with_specific_header(
+        self, header_name: str
+    ) -> Generator[MethodInfo, Any, None]:
         for path_info in self.get_paths():
             for method_info in path_info.get_allowed_method_info():
                 if method_info.has_authorization_header(header_name):

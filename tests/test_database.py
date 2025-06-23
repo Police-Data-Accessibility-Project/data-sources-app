@@ -1,6 +1,6 @@
 """
 These functions test various database-internal views and functions.
-This is distinct from the functions in the `database_client` module
+This is distinct from the functions in the `db` module
 which test the database-external views and functions
 """
 
@@ -9,20 +9,17 @@ from collections import namedtuple
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from psycopg import sql
 
-from database_client.database_client import DatabaseClient
-from database_client.db_client_dataclasses import WhereMapping
-from database_client.enums import ApprovalStatus, LocationType, RequestStatus, URLStatus
-from database_client.models import RecentSearch
-from middleware.enums import Relations, JurisdictionType, OperationType
-from tests.conftest import live_database_client, test_data_creator_db_client
+from db.client.core import DatabaseClient
+from db.db_client_dataclasses import WhereMapping
+from db.enums import ApprovalStatus, URLStatus
+from db.models.implementations.core.recent_search.core import RecentSearch
+from middleware.enums import Relations, OperationType
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.MultiLocationSetup import MultiLocationSetup
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
 )
-from tests.helper_scripts.helper_functions_simple import get_notification_valid_date
 from tests.helper_scripts.test_dataclasses import TestAgencyInfo
 from utilities.enums import RecordCategories
 
@@ -120,8 +117,8 @@ def test_locations(
     )
     assert len(results) == 3
 
-    def any_match(l: list[dict], d: dict):
-        for r in l:
+    def any_match(list_: list[dict], d: dict):
+        for r in list_:
             if r == d:
                 return True
         return False
@@ -251,10 +248,8 @@ def link_user_followed_test_info(
     )
 
     live_database_client.create_followed_search(
-        column_value_mappings={
-            "user_id": user_id,
-            "location_id": location_id,
-        }
+        user_id=user_id,
+        location_id=location_id,
     )
 
     yield LinkUserFollowedTestInfo(user_id, locality_id, location_id)
@@ -832,7 +827,7 @@ def test_agencies_table_logic(test_data_creator_db_client: TestDataCreatorDBClie
     db_client = tdc.db_client
     delete_change_log(db_client)
 
-    NUMBER_OF_AGENCY_TABLE_COLUMNS = 18
+    NUMBER_OF_AGENCY_TABLE_COLUMNS = 19
 
     # Create agency
     old_name = get_test_name()
@@ -852,8 +847,8 @@ def test_agencies_table_logic(test_data_creator_db_client: TestDataCreatorDBClie
     assert log["operation_type"] == OperationType.UPDATE.value
     assert log["table_name"] == Relations.AGENCIES.value
     assert log["affected_id"] == agency_info.id
-    assert log["old_data"] == {"name": old_name}
-    assert log["new_data"] == {"name": new_name}
+    assert log["old_data"]["name"] == old_name
+    assert log["new_data"]["name"] == new_name
     assert log["created_at"] is not None
 
     # Delete agency

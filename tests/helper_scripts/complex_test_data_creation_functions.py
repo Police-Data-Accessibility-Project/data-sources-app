@@ -4,22 +4,21 @@ from typing import Optional
 import psycopg
 from flask.testing import FlaskClient
 
-from database_client.database_client import DatabaseClient
-from database_client.enums import RequestUrgency
+from db.client.core import DatabaseClient
+from db.enums import RequestUrgency
 from middleware.enums import JurisdictionType, AgencyType
-from middleware.schema_and_dto_logic.primary_resource_schemas.agencies_advanced_schemas import (
+from middleware.schema_and_dto.schemas.agencies.info.post import (
     AgencyInfoPostSchema,
 )
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.constants import (
     DATA_REQUESTS_BASE_ENDPOINT,
-    AGENCIES_BASE_ENDPOINT,
 )
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-from tests.helper_scripts.test_dataclasses import TestDataRequestInfo, TestAgencyInfo
+from tests.helper_scripts.test_dataclasses import TestDataRequestInfo
 
 
 def insert_test_column_permission_data(db_client: DatabaseClient):
@@ -136,13 +135,6 @@ def get_sample_agency_post_parameters(
     Obtains information to be passed to an `/agencies` POST request
     """
 
-    if location_info is None:
-        location_id = {
-            "type": "Locality",
-            "state_iso": "PA",
-            "county_fips": "42003",
-            "locality_name": locality_name,
-        }
     return {
         "agency_info": generate_test_data_from_schema(
             schema=AgencyInfoPostSchema(),

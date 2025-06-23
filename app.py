@@ -7,53 +7,62 @@ from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 from jwt import DecodeError, ExpiredSignatureError
 
-from database_client.database_client import DatabaseClient
-from middleware.SchedulerManager import SchedulerManager
-from middleware.SimpleJWT import SimpleJWT
+from endpoints.instantiations.search.routes import namespace_search
+from endpoints.instantiations.source_collector.routes import namespace_source_collector
+from middleware.scheduled_tasks.manager import SchedulerManager
+from middleware.security.jwt.core import SimpleJWT
 from middleware.scheduled_tasks.check_database_health import check_database_health
-from middleware.util import get_env_variable
-from resources.Admin import namespace_admin
-from resources.Batch import namespace_bulk
-from resources.Callback import namespace_auth
-from resources.Contact import namespace_contact
-from resources.DataRequests import namespace_data_requests
-from resources.GithubDataRequests import namespace_github
-from resources.LinkToGithub import namespace_link_to_github
-from resources.Locations import namespace_locations
-from resources.LoginWithGithub import namespace_login_with_github
-from resources.Map import namespace_map
-from resources.Match import namespace_match
-from resources.Metadata import namespace_metadata
-from resources.Metrics import namespace_metrics
-from resources.Notifications import namespace_notifications
-from resources.OAuth import namespace_oauth
-from resources.Permissions import namespace_permissions
-from resources.Proposals import namespace_proposals
-from resources.Search import namespace_search
-from resources.Signup import namespace_signup
-from resources.SourceCollector import namespace_source_collector
-from resources.TypeaheadSuggestions import (
+from middleware.util.env import get_env_variable
+from endpoints.instantiations.admin_.routes import namespace_admin
+from endpoints.instantiations.batch_.batch import namespace_bulk
+from endpoints.instantiations.auth_.callback import namespace_callback
+from endpoints.instantiations.contact_.route import namespace_contact
+from endpoints.instantiations.data_requests_.data_requests import (
+    namespace_data_requests,
+)
+from endpoints.instantiations.github_.route import namespace_github
+from endpoints.instantiations.oauth_.link_to_github import namespace_link_to_github
+from endpoints.instantiations.locations_.locations import namespace_locations
+from endpoints.instantiations.oauth_.login_with_github import (
+    namespace_login_with_github,
+)
+from endpoints.instantiations.map_.map import namespace_map
+from endpoints.instantiations.match_.route import namespace_match
+from endpoints.instantiations.metadata_.route import namespace_metadata
+from endpoints.instantiations.metrics_.metrics import namespace_metrics
+from endpoints.instantiations.notifications_.route import namespace_notifications
+from endpoints.instantiations.oauth_.oauth import namespace_oauth
+from endpoints.instantiations.permissions_.routes import namespace_permissions
+from endpoints.instantiations.proposals_.routes import namespace_proposals
+from endpoints.instantiations.auth_.signup import namespace_signup
+from endpoints.instantiations.typeahead_.routes import (
     namespace_typeahead_suggestions,
 )
 from flask_restx import Api
 
 from config import config, oauth, limiter, jwt
-from middleware.initialize_psycopg_connection import initialize_psycopg_connection
-from resources.Agencies import namespace_agencies
-from resources.ApiKeyResource import namespace_api_key
-from resources.Archives import namespace_archives
-from resources.DataSources import namespace_data_source
-from resources.Login import namespace_login
-from resources.RefreshSession import namespace_refresh_session
-from resources.RequestResetPassword import namespace_request_reset_password
-from resources.ResetPassword import namespace_reset_password
-from resources.ResetTokenValidation import namespace_reset_token_validation
-from resources.UniqueURLChecker import namespace_url_checker
-from resources.CreateTestUserWithElevatedPermissions import namespace_create_test_user
-from resources.UserProfile import namespace_user
+from db.helpers_.psycopg import initialize_psycopg_connection
+from endpoints.instantiations.agencies_.routes import namespace_agencies
+from endpoints.instantiations.auth_.routes import namespace_auth
+from endpoints.instantiations.archives_.route import namespace_archives
+from endpoints.instantiations.data_sources_.data_sources import namespace_data_source
+from endpoints.instantiations.auth_.login import namespace_login
+from endpoints.instantiations.auth_.refresh_session import namespace_refresh_session
+from endpoints.instantiations.auth_.request_reset_password import (
+    namespace_request_reset_password,
+)
+from endpoints.instantiations.auth_.reset_password import namespace_reset_password
+from endpoints.instantiations.auth_.reset_token_validation import (
+    namespace_reset_token_validation,
+)
+from endpoints.instantiations.check_.route import namespace_url_checker
+from endpoints.instantiations.dev_.route import (
+    namespace_create_test_user,
+)
+from endpoints.instantiations.user.routes import namespace_user
 
 NAMESPACES = [
-    namespace_api_key,
+    namespace_callback,
     namespace_request_reset_password,
     namespace_oauth,
     namespace_reset_token_validation,
@@ -187,7 +196,7 @@ def create_app() -> Flask:
     scheduler.add_materialized_view_scheduled_job("map_counties", 5)
     scheduler.add_materialized_view_scheduled_job("map_localities", 6)
     # Store scheduler in the app context to manage it later
-    app.scheduler = scheduler
+    app.scheduler = scheduler  # pyright: ignore[reportAttributeAccessIssue]
 
     return app
 

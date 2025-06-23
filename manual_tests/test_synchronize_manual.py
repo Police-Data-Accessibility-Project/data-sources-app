@@ -1,8 +1,8 @@
-from database_client.database_client import DatabaseClient
-from middleware.primary_resource_logic.github_issue_app_logic import (
+from db.client.core import DatabaseClient
+from middleware.primary_resource_logic.github_issue_app import (
     synchronize_github_issues_with_data_requests,
 )
-from middleware.util import get_env_variable
+from middleware.util.env import get_env_variable
 
 
 def test_synchronize_manual(monkeypatch):

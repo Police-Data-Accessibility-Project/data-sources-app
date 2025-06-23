@@ -10,8 +10,7 @@ from alembic.config import Config
 from sqlalchemy import create_engine
 
 from config import limiter
-from database_client.database_client import DatabaseClient
-from tests.helper_scripts.common_mocks_and_patches import patch_and_return_mock
+from db.client.core import DatabaseClient
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
 )
@@ -71,16 +70,6 @@ def flask_client_with_db(monkeypatch):
 
 
 @pytest.fixture
-def bypass_api_key_required(monkeypatch):
-    """
-    A fixture to bypass the api_key required decorator for testing
-    :param monkeypatch:
-    :return:
-    """
-    monkeypatch.setattr("middleware.decorators.check_api_key", lambda: None)
-
-
-@pytest.fixture
 def bypass_jwt_required(monkeypatch):
     """
     A fixture to bypass the jwt required decorator for testing
@@ -91,30 +80,6 @@ def bypass_jwt_required(monkeypatch):
         "flask_jwt_extended.view_decorators.verify_jwt_in_request",
         lambda a, b, c, d, e, f: None,
     )
-
-
-@pytest.fixture
-def bypass_authentication_required(monkeypatch):
-    """
-    A fixture to bypass the authentication required decorator for testing
-    :param monkeypatch:
-    :return:
-    """
-    access_info_mock = MagicMock()
-    monkeypatch.setattr(
-        "middleware.decorators.get_authentication",
-        lambda a, b, no_auth: access_info_mock,
-    )
-    return access_info_mock
-
-
-@pytest.fixture
-def mock_database_client(monkeypatch):
-    mock = patch_and_return_mock(
-        f"resources.PsycopgResource.DatabaseClient", monkeypatch
-    )
-    mock.return_value = MagicMock()
-    return mock.return_value
 
 
 @pytest.fixture
@@ -152,27 +117,6 @@ def test_table_data(live_database_client: DatabaseClient):
     )
 
 
-class FakeAbort(Exception):
-    pass
-
-
-@pytest.fixture
-def mock_flask_response_manager(monkeypatch):
-    """
-    Mock the flask-native functions embedded within the FlaskResponseManager
-    :param monkeypatch:
-    :return:
-    """
-    mock = MagicMock()
-    monkeypatch.setattr(
-        "middleware.flask_response_manager.make_response", mock.make_response
-    )
-    monkeypatch.setattr("middleware.flask_response_manager.abort", mock.abort)
-    # Create a fake abort exception to use in tests
-    mock.abort.side_effect = FakeAbort
-    return mock
-
-
 @pytest.fixture
 def clear_data_requests(dev_db_client: DatabaseClient):
     """
@@ -188,8 +132,8 @@ def test_data_creator_db_client() -> TestDataCreatorDBClient:
     yield TestDataCreatorDBClient()
 
 
-@pytest.fixture(scope="function")
-def test_data_creator_flask(monkeysession) -> TestDataCreatorFlask:
+@pytest.fixture(scope="session")
+def flask_client(monkeysession):
     from app import create_app
 
     mock_get_flask_app_secret_key = MagicMock(return_value="test")
@@ -205,10 +149,15 @@ def test_data_creator_flask(monkeysession) -> TestDataCreatorFlask:
     # Disable rate limiting for tests
     limiter.enabled = False
     with app.test_client() as client:
-        tdc = TestDataCreatorFlask(client)
-        tdc.clear_test_data()
-        yield tdc
+        yield client
     limiter.enabled = True
+
+
+@pytest.fixture(scope="function")
+def test_data_creator_flask(flask_client) -> TestDataCreatorFlask:
+    tdc = TestDataCreatorFlask(flask_client)
+    tdc.clear_test_data()
+    yield tdc
 
 
 @pytest.fixture(scope="session")
@@ -232,7 +181,7 @@ def setup_database():
     alembic_cfg.set_main_option("sqlalchemy.url", conn_string)
     try:
         command.upgrade(alembic_cfg, "head")
-    except Exception as e:
+    except Exception:
         # Downgrade to base and try again
         downgrade_to_base(alembic_cfg, engine)
         connection = alembic_cfg.attributes["connection"]

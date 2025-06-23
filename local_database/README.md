@@ -4,7 +4,7 @@
 From inside this directory, run:
 
 ```python
-py setup_local_database.py
+py setup.py
 ```
 
 If dumping, ensure a `.env` file is created in the `DataDumper` directory with the environment variables as described in that directory's `ENV.md` file.

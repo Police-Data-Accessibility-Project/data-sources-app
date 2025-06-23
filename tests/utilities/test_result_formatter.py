@@ -1,7 +1,8 @@
 from sqlalchemy.orm.collections import InstrumentedList
 
-from database_client.models import DataSourceExpanded, Agency
-from database_client.result_formatter import ResultFormatter
+from db.models.implementations.core.data_source.expanded import DataSourceExpanded
+from db.models.implementations.core.agency.core import Agency
+from db.helpers_.result_formatting import data_source_to_get_data_sources_output
 
 
 def test_data_source_to_get_data_sources_output_no_agencies():
@@ -16,7 +17,7 @@ def test_data_source_to_get_data_sources_output_no_agencies():
     )
     data_source.agencies = InstrumentedList([agency])
 
-    result = ResultFormatter.data_source_to_get_data_sources_output(
+    result = data_source_to_get_data_sources_output(
         data_source=data_source,
         data_sources_columns=["name"],
     )

@@ -3,8 +3,8 @@ class AnyOrder:
     A helper object that compares equal to two arrays in any order
     """
 
-    def __init__(self, l: list):
-        self.l = l
+    def __init__(self, list_: list):
+        self.l = list_
 
     def __eq__(self, other: list) -> bool:
         return all(item in other for item in self.l)

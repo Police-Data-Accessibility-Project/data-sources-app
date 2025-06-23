@@ -1,7 +1,6 @@
-import os
 import pytest
-from unittest.mock import patch, MagicMock
-from middleware.util import get_env_variable
+from unittest.mock import MagicMock
+from middleware.util.env import get_env_variable
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
 
@@ -32,7 +31,7 @@ def test_get_env_variable(
     expected_exception,
 ):
     mock = GetEnvVariableMocks(
-        patch_root="middleware.util",
+        patch_root="middleware.util.env",
         return_values={
             "get_env_variable": os_getenv,
             "dotenv_values": dotenv_values,

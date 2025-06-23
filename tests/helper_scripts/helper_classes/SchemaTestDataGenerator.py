@@ -1,10 +1,10 @@
-import uuid
 from datetime import datetime
 from typing import Optional
 
 from marshmallow import Schema, fields
 from marshmallow.fields import Field
 
+from middleware.constants import DATE_FORMAT
 from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,
     get_random_boolean,
@@ -38,7 +38,7 @@ class SchemaTestDataGenerator:
         elif isinstance(field, fields.Enum):
             return get_random_possible_enum_value(field.enum)
         elif isinstance(field, fields.Date):
-            return datetime.now().strftime("%Y-%m-%d")
+            return datetime.now().strftime(DATE_FORMAT)
         elif isinstance(field, fields.List):
             inner_field = field.inner
             return [self.generate_test_data(inner_field) for _ in range(5)]

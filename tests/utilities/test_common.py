@@ -1,9 +1,10 @@
 from enum import Enum
-from http import HTTPStatus
-from unittest.mock import MagicMock
 
 import pytest
 from datetime import date
+
+from werkzeug.exceptions import BadRequest
+
 from utilities.common import (
     convert_dates_to_strings,
     get_enums_from_string,
@@ -103,10 +104,5 @@ def test_valid_enum_value_success():
 
 
 def test_valid_enum_value_failure(monkeypatch):
-    mock_abort = MagicMock()
-    monkeypatch.setattr("utilities.common.abort", mock_abort)
-    get_valid_enum_value(TestEnum, "delta")
-    mock_abort.assert_called_with(
-        code=HTTPStatus.BAD_REQUEST,
-        message="Invalid TestEnum 'delta'. Must be one of the following: ['alpha', 'beta', 'gamma']",
-    )
+    with pytest.raises(BadRequest):
+        get_valid_enum_value(TestEnum, "delta")

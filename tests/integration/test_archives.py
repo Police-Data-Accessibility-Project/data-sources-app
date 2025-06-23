@@ -1,9 +1,8 @@
 """Integration tests for /archives endpoint"""
 
 import datetime
-import json
 
-from database_client.enums import ApprovalStatus
+from db.enums import ApprovalStatus
 from middleware.enums import Relations
 from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
     TestDataCreatorDBClient,
@@ -13,7 +12,6 @@ from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
 )
 
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-from tests.conftest import test_data_creator_flask, monkeysession
 from tests.integration.test_check_database_health import wipe_database
 
 ENDPOINT = "/api/archives"
@@ -106,7 +104,7 @@ def test_archives_put(
         INNER JOIN data_sources_archive_info ON data_sources.id = data_sources_archive_info.data_source_id 
         WHERE data_sources.id = %s
         """,
-        vars=(int(data_source_id),),
+        vars_=(int(data_source_id),),
     )
     assert row[0]["last_cached"] == last_cached
     assert row[0]["broken_source_url_as_of"] is None

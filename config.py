@@ -1,17 +1,16 @@
 # Global configuration
-import os
-from uuid import uuid4
 
 from authlib.integrations.flask_client import OAuth
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_jwt_extended import JWTManager
 
-from middleware.util import get_env_variable
+from middleware.util.env import get_env_variable
+from psycopg.connection import Connection as PgConnection
 
 
 class Config:
-    connection = None
+    connection: PgConnection = None
 
 
 config = Config()

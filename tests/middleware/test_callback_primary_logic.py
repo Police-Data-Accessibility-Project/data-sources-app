@@ -1,28 +1,24 @@
-from http import HTTPStatus
 from typing import Optional
 from unittest.mock import MagicMock
 
 import pytest
 from flask import Response
 
-from database_client.enums import ExternalAccountTypeEnum
-from middleware.primary_resource_logic.callback_primary_logic import (
+from db.enums import ExternalAccountTypeEnum
+from middleware.primary_resource_logic.callback import (
     get_flask_session_callback_info,
 )
-from middleware.primary_resource_logic.github_oauth_logic import (
+from middleware.primary_resource_logic.github_oauth import (
     link_github_account_request,
     link_github_account,
-    get_github_user_info,
 )
 from middleware.custom_dataclasses import (
     FlaskSessionCallbackInfo,
-    OAuthCallbackInfo,
-    GithubUserInfo,
 )
 from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 
-PATCH_PREFIX = "middleware.primary_resource_logic.callback_primary_logic"
-GITHUB_OAUTH_PREFIX = "middleware.primary_resource_logic.github_oauth_logic"
+PATCH_PREFIX = "middleware.primary_resource_logic.callback"
+GITHUB_OAUTH_PREFIX = "middleware.primary_resource_logic.github_oauth"
 
 
 class GetFlaskSessionCallbackInfoMocks(DynamicMagicMock):
@@ -89,7 +85,7 @@ def setup_callback_inner_wrapper_mocks():
 
 class LinkGithubAccountRequestMocks(DynamicMagicMock):
     link_github_account: MagicMock
-    make_response: MagicMock
+    message_response: MagicMock
 
 
 def test_link_github_account_request():
@@ -109,9 +105,7 @@ def test_link_github_account_request():
         github_user_info=mock.github_user_info,
         pdap_account_email=mock.pdap_account_email,
     )
-    mock.make_response.assert_called_once_with(
-        {"message": "Successfully linked Github account"}, HTTPStatus.OK
-    )
+    mock.message_response.assert_called_once_with("Successfully linked Github account")
 
 
 class LinkGithubAccountMocks(DynamicMagicMock):
@@ -130,7 +124,9 @@ def test_link_github_account():
         pdap_account_email=mock.pdap_account_email,
     )
 
-    mock.db_client.get_user_info.assert_called_once_with(email=mock.pdap_account_email)
+    mock.db_client.get_user_info.assert_called_once_with(
+        user_email=mock.pdap_account_email
+    )
 
     mock.db_client.link_external_account.assert_called_once_with(
         user_id=mock.db_client_user_info.id,
