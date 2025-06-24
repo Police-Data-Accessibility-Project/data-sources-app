@@ -1,7 +1,10 @@
 from flask import Response
 
 from db.client.core import DatabaseClient
-from middleware.dynamic_request_logic.get.related_resource import get_related_resource, GetRelatedResourcesParameters
+from middleware.dynamic_request_logic.get.related_resource import (
+    get_related_resource,
+    GetRelatedResourcesParameters,
+)
 from middleware.enums import Relations
 from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
 

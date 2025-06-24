@@ -3,10 +3,15 @@ from middleware.column_permission.core import RelationRoleParameters
 from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.supporting_classes import MiddlewareParameters
 from middleware.enums import Relations
-from middleware.primary_resource_logic.data_requests_.related.related_locations._helpers import \
-    CreateDataRequestRelatedLocationLogic
-from middleware.primary_resource_logic.data_requests_.helpers import get_data_requests_relation_role
-from middleware.schema_and_dto.dtos.data_requests.by_id.locations import RelatedLocationsByIDDTO
+from middleware.primary_resource_logic.data_requests_.related.related_locations._helpers import (
+    CreateDataRequestRelatedLocationLogic,
+)
+from middleware.primary_resource_logic.data_requests_.helpers import (
+    get_data_requests_relation_role,
+)
+from middleware.schema_and_dto.dtos.data_requests.by_id.locations import (
+    RelatedLocationsByIDDTO,
+)
 from middleware.security.access_info.primary import AccessInfoPrimary
 
 

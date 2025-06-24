@@ -5,8 +5,13 @@ from middleware.dynamic_request_logic.put import put_entry
 from middleware.dynamic_request_logic.supporting_classes import MiddlewareParameters
 from middleware.enums import Relations
 from middleware.primary_resource_logic.data_requests_.constants import RELATION
-from middleware.primary_resource_logic.data_requests_.helpers import get_data_requests_relation_role
-from middleware.schema_and_dto.dtos.data_requests.put import DataRequestsPutDTO, DataRequestsPutOuterDTO
+from middleware.primary_resource_logic.data_requests_.helpers import (
+    get_data_requests_relation_role,
+)
+from middleware.schema_and_dto.dtos.data_requests.put import (
+    DataRequestsPutDTO,
+    DataRequestsPutOuterDTO,
+)
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.util.type_conversion import dataclass_to_filtered_dict
 

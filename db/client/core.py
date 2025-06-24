@@ -94,6 +94,7 @@ from db.models.table_reference import (
 from db.queries.builder import QueryBuilderBase
 from db.queries.instantiations.agencies.get_.by_id import GetAgencyByIDQueryBuilder
 from db.queries.instantiations.agencies.get_.many import GetAgenciesQueryBuilder
+from db.queries.instantiations.data_requests.post import DataRequestsPostQueryBuilder
 from db.queries.instantiations.data_sources.archive import (
     GetDataSourcesToArchiveQueryBuilder,
     ArchiveInfo,
@@ -178,6 +179,7 @@ from middleware.miscellaneous.table_count_logic import (
     TableCountReferenceManager,
 )
 from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
+from middleware.schema_and_dto.dtos.data_requests.post import DataRequestsPostDTO
 from middleware.schema_and_dto.dtos.data_sources.post import DataSourcesPostDTO
 from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
 from middleware.schema_and_dto.dtos.match.response import (
@@ -662,6 +664,16 @@ class DatabaseClient:
     create_data_request = partialmethod(
         _create_entry_in_table, table_name="data_requests", column_to_return="id"
     )
+    def create_data_request_v2(
+        self,
+        dto: DataRequestsPostDTO,
+        user_id: int,
+    ):
+        builder = DataRequestsPostQueryBuilder(
+            dto=dto,
+            user_id=user_id,
+        )
+        return self.run_query_builder(builder)
 
     @session_manager_v2
     def create_agency(
@@ -1201,19 +1213,6 @@ class DatabaseClient:
         )
         raw_results = self.mappings(query)
         return {row["account_type"]: row["account_identifier"] for row in raw_results}
-
-    def get_user_info_by_id(self, user_id: int) -> UserInfoNonSensitive:
-        result = self.mapping(
-            select(User.email, User.created_at, User.updated_at).where(
-                User.id == user_id
-            )
-        )
-        return UserInfoNonSensitive(
-            user_id=user_id,
-            email=result["email"],
-            created_at=result["created_at"],
-            updated_at=result["updated_at"],
-        )
 
     def get_change_logs_for_table(self, table: Relations):
         query = select(

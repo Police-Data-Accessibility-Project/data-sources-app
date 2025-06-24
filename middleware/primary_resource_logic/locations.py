@@ -10,7 +10,9 @@ from middleware.common_response_formatting import (
     multiple_results_response,
 )
 from middleware.enums import Relations
-from middleware.primary_resource_logic.data_requests_.helpers import get_data_requests_subquery_params
+from middleware.primary_resource_logic.data_requests_.helpers import (
+    get_data_requests_subquery_params,
+)
 from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
 from middleware.schema_and_dto.dtos.locations.get import LocationsGetRequestDTO
 from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO

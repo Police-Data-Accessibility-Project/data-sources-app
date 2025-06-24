@@ -6,8 +6,10 @@ from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.get.by_id import get_by_id
 from middleware.dynamic_request_logic.supporting_classes import MiddlewareParameters
 from middleware.enums import Relations
-from middleware.primary_resource_logic.data_requests_.helpers import get_data_requests_subquery_params, \
-    get_data_requests_relation_role
+from middleware.primary_resource_logic.data_requests_.helpers import (
+    get_data_requests_subquery_params,
+    get_data_requests_relation_role,
+)
 from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
 from middleware.security.access_info.primary import AccessInfoPrimary
 

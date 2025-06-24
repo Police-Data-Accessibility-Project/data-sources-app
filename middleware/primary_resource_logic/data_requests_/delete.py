@@ -3,7 +3,10 @@ from flask import Response
 from db.client.core import DatabaseClient
 from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.delete import delete_entry
-from middleware.dynamic_request_logic.supporting_classes import MiddlewareParameters, IDInfo
+from middleware.dynamic_request_logic.supporting_classes import (
+    MiddlewareParameters,
+    IDInfo,
+)
 from middleware.primary_resource_logic.data_requests_.constants import RELATION
 from middleware.primary_resource_logic.data_requests_.helpers import is_creator_or_admin
 from middleware.security.access_info.primary import AccessInfoPrimary

@@ -32,25 +32,25 @@ class DataRequest(
         "locations": make_get_iter_model_list_of_dict("locations"),
     }
 
-    submission_notes: Mapped[Optional[text]]
+    submission_notes: Mapped[Optional[str]]
     request_status: Mapped[RequestStatusLiteral] = mapped_column(
         server_default="Intake"
     )
-    archive_reason: Mapped[Optional[text]]
+    archive_reason: Mapped[Optional[str]]
     date_created: Mapped[timestamp_tz]
     date_status_last_changed: Mapped[Optional[timestamp_tz]]
     creator_user_id: Mapped[Optional[int]]
-    internal_notes: Mapped[Optional[text]]
+    internal_notes: Mapped[Optional[str]]
     record_types_required: Mapped[Optional[ARRAY[RecordTypeLiteral]]] = mapped_column(
         ARRAY(Enum(*get_args(RecordTypeLiteral), name="record_type"), as_tuple=True)
     )
-    pdap_response: Mapped[Optional[text]]
+    pdap_response: Mapped[Optional[str]]
     coverage_range: Mapped[Optional[str]]
-    data_requirements: Mapped[Optional[text]]
+    data_requirements: Mapped[Optional[str]]
     request_urgency: Mapped[RequestUrgencyLiteral] = mapped_column(
         server_default="Indefinite/Unknown"
     )
-    title: Mapped[text]
+    title: Mapped[str]
 
     # TODO: Is there a way to generalize the below logic?
     locations: Mapped[list["LocationExpanded"]] = relationship(

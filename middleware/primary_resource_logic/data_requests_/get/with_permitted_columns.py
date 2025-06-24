@@ -5,7 +5,9 @@ from db.enums import (
     ColumnPermissionEnum,
 )
 from middleware.primary_resource_logic.data_requests_.constants import RELATION
-from middleware.primary_resource_logic.data_requests_.helpers import get_data_requests_subquery_params
+from middleware.primary_resource_logic.data_requests_.helpers import (
+    get_data_requests_subquery_params,
+)
 from middleware.column_permission.core import (
     get_permitted_columns,
 )
@@ -36,5 +38,3 @@ def get_data_requests_with_permitted_columns(
         limit=dto.limit,
     )
     return data_requests
-
-

@@ -1,10 +1,17 @@
 from db.client.core import DatabaseClient
 from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.delete import delete_entry
-from middleware.dynamic_request_logic.supporting_classes import MiddlewareParameters, IDInfo
-from middleware.primary_resource_logic.data_requests_.constants import RELATED_SOURCES_RELATION
+from middleware.dynamic_request_logic.supporting_classes import (
+    MiddlewareParameters,
+    IDInfo,
+)
+from middleware.primary_resource_logic.data_requests_.constants import (
+    RELATED_SOURCES_RELATION,
+)
 from middleware.primary_resource_logic.data_requests_.helpers import is_creator_or_admin
-from middleware.schema_and_dto.dtos.data_requests.by_id.source import RelatedSourceByIDDTO
+from middleware.schema_and_dto.dtos.data_requests.by_id.source import (
+    RelatedSourceByIDDTO,
+)
 from middleware.security.access_info.primary import AccessInfoPrimary
 
 
