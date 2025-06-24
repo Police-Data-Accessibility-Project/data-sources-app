@@ -9,6 +9,10 @@ def get_enum_values(en: type[Enum]) -> list[str]:
     return [e.value for e in en]
 
 
+def enum_list_to_values(en: list[Enum]) -> list[str]:
+    return [e.value for e in en]
+
+
 def dict_enums_to_values(d: dict[str, Any]) -> dict[str, Any]:
     """
     Convert enums within a dictionary to their values.

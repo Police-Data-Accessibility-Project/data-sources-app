@@ -9,7 +9,7 @@ from sqlalchemy.sql.compiler import SQLCompiler
 class QueryBuilderBase(ABC):
 
     def __init__(self):
-        self._session: Optional[Session] = None
+        self._session: Session | None = None
 
     @property
     def session(self) -> Session:
@@ -27,5 +27,6 @@ class QueryBuilderBase(ABC):
     def execute(self, query: Executable) -> Result:
         return self.session.execute(query)
 
-    def compile(self, query: Select) -> SQLCompiler:
+    @staticmethod
+    def compile(query: Select) -> SQLCompiler:
         return query.compile(compile_kwargs={"literal_binds": True})

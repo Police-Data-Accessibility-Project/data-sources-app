@@ -104,6 +104,9 @@ from db.queries.instantiations.data_sources.get.by_id import (
 from db.queries.instantiations.data_sources.get.many import (
     GetDataSourcesQueryBuilder,
 )
+from db.queries.instantiations.data_sources.post.single import (
+    DataSourcesPostSingleQueryBuilder,
+)
 from db.queries.instantiations.locations.get.many import GetManyLocationsQueryBuilder
 from db.queries.instantiations.log.most_recent_logged_table_counts import (
     GetMostRecentLoggedTableCountsQueryBuilder,
@@ -175,6 +178,7 @@ from middleware.miscellaneous.table_count_logic import (
     TableCountReferenceManager,
 )
 from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
+from middleware.schema_and_dto.dtos.data_sources.post import DataSourcesPostDTO
 from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
 from middleware.schema_and_dto.dtos.match.response import (
     AgencyMatchResponseInnerDTO,
@@ -727,11 +731,15 @@ class DatabaseClient:
         column_to_return="id",
     )
 
-    add_new_data_source = partialmethod(
+    add_data_source = partialmethod(
         _create_entry_in_table,
         table_name="data_sources",
         column_to_return="id",
     )
+
+    def add_data_source_v2(self, dto: DataSourcesPostDTO) -> int:
+        builder = DataSourcesPostSingleQueryBuilder(dto)
+        return self.run_query_builder(builder)
 
     create_data_request_github_info = partialmethod(
         _create_entry_in_table,
@@ -866,10 +874,10 @@ class DatabaseClient:
         self,
         data_sources_columns: list[str],
         data_requests_columns: list[str],
-        order_by: Optional[OrderByParameters] = None,
-        page: Optional[int] = 1,
-        limit: Optional[int] = PAGE_SIZE,
-        approval_status: Optional[ApprovalStatus] = None,
+        order_by: OrderByParameters | None = None,
+        page: int | None = 1,
+        limit: int | None = PAGE_SIZE,
+        approval_status: ApprovalStatus | None = None,
     ):
         builder = GetDataSourcesQueryBuilder(
             data_sources_columns=data_sources_columns,

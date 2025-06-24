@@ -223,7 +223,7 @@ class TestDataCreatorDBClient:
         if approval_status is not None:
             source_column_value_mapping["approval_status"] = approval_status.value
 
-        id = self.db_client.add_new_data_source(
+        id = self.db_client.add_data_source(
             column_value_mappings=source_column_value_mapping
         )
         return CreatedDataSource(id=id, name=name, url=url)

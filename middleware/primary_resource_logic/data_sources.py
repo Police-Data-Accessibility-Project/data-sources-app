@@ -249,7 +249,7 @@ class DataSourcesPostLogic(PostLogic):
 DATA_SOURCES_POST_MIDDLEWARE_PARAMETERS = MiddlewareParameters(
     entry_name="Data source",
     relation=RELATION,
-    db_client_method=DatabaseClient.add_new_data_source,
+    db_client_method=DatabaseClient.add_data_source,
 )
 
 
