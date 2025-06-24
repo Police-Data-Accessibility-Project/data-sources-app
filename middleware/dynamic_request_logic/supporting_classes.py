@@ -63,13 +63,6 @@ class PutPostRequestInfo(BaseModel):
     entry_id: Optional[int] = None
     error_message: Optional[str] = None
 
-
-class BulkPostResponse(BaseModel):
-    request_id: int = 1
-    entry_id: Optional[int] = None
-    error_message: Optional[str] = None
-
-
 class PostPutHandler(ABC):
 
     def __init__(

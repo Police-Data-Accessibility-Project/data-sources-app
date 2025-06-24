@@ -5,47 +5,15 @@ from apscheduler.triggers.interval import IntervalTrigger
 from flask import Flask
 from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
-from jwt import DecodeError, ExpiredSignatureError
-
-from endpoints.instantiations.search.routes import namespace_search
-from endpoints.instantiations.source_collector.routes import namespace_source_collector
-from middleware.scheduled_tasks.manager import SchedulerManager
-from middleware.security.jwt.core import SimpleJWT
-from middleware.scheduled_tasks.check_database_health import check_database_health
-from middleware.util.env import get_env_variable
-from endpoints.instantiations.admin_.routes import namespace_admin
-from endpoints.instantiations.batch_.batch import namespace_bulk
-from endpoints.instantiations.auth_.callback import namespace_callback
-from endpoints.instantiations.contact_.route import namespace_contact
-from endpoints.instantiations.data_requests_.data_requests import (
-    namespace_data_requests,
-)
-from endpoints.instantiations.github_.route import namespace_github
-from endpoints.instantiations.oauth_.link_to_github import namespace_link_to_github
-from endpoints.instantiations.locations_.locations import namespace_locations
-from endpoints.instantiations.oauth_.login_with_github import (
-    namespace_login_with_github,
-)
-from endpoints.instantiations.map_.map import namespace_map
-from endpoints.instantiations.match_.route import namespace_match
-from endpoints.instantiations.metadata_.route import namespace_metadata
-from endpoints.instantiations.metrics_.metrics import namespace_metrics
-from endpoints.instantiations.notifications_.route import namespace_notifications
-from endpoints.instantiations.oauth_.oauth import namespace_oauth
-from endpoints.instantiations.permissions_.routes import namespace_permissions
-from endpoints.instantiations.proposals_.routes import namespace_proposals
-from endpoints.instantiations.auth_.signup import namespace_signup
-from endpoints.instantiations.typeahead_.routes import (
-    namespace_typeahead_suggestions,
-)
 from flask_restx import Api
+from jwt import DecodeError, ExpiredSignatureError
 
 from config import config, oauth, limiter, jwt
 from db.helpers_.psycopg import initialize_psycopg_connection
+from endpoints.instantiations.admin_.routes import namespace_admin
 from endpoints.instantiations.agencies_.routes import namespace_agencies
-from endpoints.instantiations.auth_.routes import namespace_auth
 from endpoints.instantiations.archives_.route import namespace_archives
-from endpoints.instantiations.data_sources_.data_sources import namespace_data_source
+from endpoints.instantiations.auth_.callback import namespace_callback
 from endpoints.instantiations.auth_.login import namespace_login
 from endpoints.instantiations.auth_.refresh_session import namespace_refresh_session
 from endpoints.instantiations.auth_.request_reset_password import (
@@ -55,11 +23,41 @@ from endpoints.instantiations.auth_.reset_password import namespace_reset_passwo
 from endpoints.instantiations.auth_.reset_token_validation import (
     namespace_reset_token_validation,
 )
+from endpoints.instantiations.auth_.routes import namespace_auth
+from endpoints.instantiations.auth_.signup import namespace_signup
 from endpoints.instantiations.check_.route import namespace_url_checker
+from endpoints.instantiations.contact_.route import namespace_contact
+from endpoints.instantiations.data_requests_.data_requests import (
+    namespace_data_requests,
+)
+from endpoints.instantiations.data_sources_.data_sources import namespace_data_source
 from endpoints.instantiations.dev_.route import (
     namespace_create_test_user,
 )
+from endpoints.instantiations.github_.route import namespace_github
+from endpoints.instantiations.locations_.locations import namespace_locations
+from endpoints.instantiations.map_.map import namespace_map
+from endpoints.instantiations.match_.route import namespace_match
+from endpoints.instantiations.metadata_.route import namespace_metadata
+from endpoints.instantiations.metrics_.metrics import namespace_metrics
+from endpoints.instantiations.notifications_.route import namespace_notifications
+from endpoints.instantiations.oauth_.link_to_github import namespace_link_to_github
+from endpoints.instantiations.oauth_.login_with_github import (
+    namespace_login_with_github,
+)
+from endpoints.instantiations.oauth_.oauth import namespace_oauth
+from endpoints.instantiations.permissions_.routes import namespace_permissions
+from endpoints.instantiations.proposals_.routes import namespace_proposals
+from endpoints.instantiations.search.routes import namespace_search
+from endpoints.instantiations.source_collector.routes import namespace_source_collector
+from endpoints.instantiations.typeahead_.routes import (
+    namespace_typeahead_suggestions,
+)
 from endpoints.instantiations.user.routes import namespace_user
+from middleware.scheduled_tasks.check_database_health import check_database_health
+from middleware.scheduled_tasks.manager import SchedulerManager
+from middleware.security.jwt.core import SimpleJWT
+from middleware.util.env import get_env_variable
 
 NAMESPACES = [
     namespace_callback,
@@ -86,7 +84,6 @@ NAMESPACES = [
     namespace_notifications,
     namespace_map,
     namespace_signup,
-    namespace_bulk,
     namespace_match,
     namespace_locations,
     namespace_metrics,

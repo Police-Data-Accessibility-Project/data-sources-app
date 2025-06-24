@@ -1,6 +1,6 @@
 from datetime import date
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from db.enums import (
     ApprovalStatus,
@@ -16,6 +16,7 @@ from middleware.schema_and_dto.dtos._helpers import (
     default_field_required,
     default_field_not_required,
 )
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.metadata import MetadataInfo
 
 
 class DataSourceEntryBaseDTO(BaseModel):
@@ -27,8 +28,10 @@ class DataSourceEntryBaseDTO(BaseModel):
         "processed, and whether the person reading the description might want to use it. "
         "Especially important if the source is difficult to preview or categorize.",
     )
-    approval_status: ApprovalStatus | None = default_field_not_required(
-        description="The approval status of the data source. Editable only by admins.",
+    approval_status: ApprovalStatus = Field(
+        default=ApprovalStatus.PENDING,
+        description=description,
+        json_schema_extra=MetadataInfo(required=False),
     )
     source_url: str | None = default_field_not_required(
         description="The URL of the data source.",

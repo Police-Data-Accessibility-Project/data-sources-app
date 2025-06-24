@@ -49,15 +49,6 @@ from middleware.schema_and_dto.dtos.data_sources.reject import (
 from middleware.util.type_conversion import dataclass_to_filtered_dict
 
 RELATION = Relations.DATA_SOURCES.value
-SUBQUERY_PARAMS = [
-    SubqueryParameterManager.agencies(),
-    SubqueryParameterManager.data_requests(),
-]
-
-
-class DataSourceNotFoundError(Exception):
-    pass
-
 
 class DataSourcesGetManyRequestDTO(GetManyBaseDTO):
     approval_status: ApprovalStatus = ApprovalStatus.APPROVED
@@ -219,97 +210,15 @@ def optionally_swap_record_type_name_with_id(db_client, entry_data):
         entry_data["record_type_id"] = record_type_id
         del entry_data["record_type_name"]
 
-
-class DataSourcesPostLogic(PostLogic):
-    def __init__(
-        self,
-        middleware_parameters: MiddlewareParameters,
-        entry: dict,
-        agency_ids: Optional[List[int]] = None,
-    ):
-        super().__init__(
-            middleware_parameters=middleware_parameters,
-            entry=entry,
-            check_for_permission=False,
-        )
-        self.agency_ids = agency_ids
-
-    def post_database_client_method_logic(self):
-        if self.agency_ids is None:
-            return
-        for agency_id in self.agency_ids:
-            self.mp.db_client.create_data_source_agency_relation(
-                column_value_mappings={
-                    "data_source_id": self.id_val,
-                    "agency_id": agency_id,
-                }
-            )
-
-
-DATA_SOURCES_POST_MIDDLEWARE_PARAMETERS = MiddlewareParameters(
-    entry_name="Data source",
-    relation=RELATION,
-    db_client_method=DatabaseClient.add_data_source,
-)
-
-
-class DataSourcesPostRequestInfo(PutPostRequestInfo):
-    dto: DataSourcesPostDTO
-
-
-class DataSourcesPutRequestInfo(PutPostRequestInfo):
-    dto: DataSourcesPutDTO
-
-
-class DataSourcesPostHandler(PostHandler):
-
-    def __init__(self):
-        super().__init__(middleware_parameters=DATA_SOURCES_POST_MIDDLEWARE_PARAMETERS)
-
-    def pre_execute(self, request: DataSourcesPostRequestInfo):
-        request.entry = dataclass_to_filtered_dict(request.dto.entry_data)
-        optionally_swap_record_type_name_with_id(
-            db_client=self.mp.db_client, entry_data=request.entry
-        )
-
-    def post_execute(self, request: DataSourcesPostRequestInfo):
-        if request.dto.linked_agency_ids is None:
-            return
-        for agency_id in request.dto.linked_agency_ids:
-            self.mp.db_client.create_data_source_agency_relation(
-                column_value_mappings={
-                    "data_source_id": request.entry_id,
-                    "agency_id": agency_id,
-                }
-            )
-
-
-DATA_SOURCES_PUT_MIDDLEWARE_PARAMETERS = MiddlewareParameters(
-    entry_name="Data source",
-    relation=RELATION,
-    db_client_method=DatabaseClient.update_data_source,
-)
-
-
-class DataSourcesPutHandler(PutHandler):
-
-    def __init__(self):
-        super().__init__(middleware_parameters=DATA_SOURCES_PUT_MIDDLEWARE_PARAMETERS)
-
-    def pre_execute(self, request: DataSourcesPutRequestInfo):
-        request.entry = dataclass_to_filtered_dict(request.dto.entry_data)
-        optionally_swap_record_type_name_with_id(
-            db_client=self.mp.db_client, entry_data=request.entry
-        )
-
-
 def add_new_data_source_wrapper(
     db_client: DatabaseClient, dto: DataSourcesPostDTO, access_info: AccessInfoPrimary
 ) -> Response:
-    return post_entry_with_handler(
-        handler=DataSourcesPostHandler(),
-        dto=dto,
-    )
+
+    data_source_id = db_client.add_data_source_v2(dto)
+    return make_response({
+        "id": str(data_source_id),
+        "message": "Successfully added data source.",
+    })
 
 
 # region Related Resources

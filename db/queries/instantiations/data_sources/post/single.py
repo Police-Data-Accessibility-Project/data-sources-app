@@ -1,7 +1,11 @@
 from typing import override, final
 
+from sqlalchemy import select
+
+from db.helpers import enum_value_or_none
 from db.models.implementations import LinkAgencyDataSource
 from db.models.implementations.core.data_source.core import DataSource
+from db.models.implementations.core.record.type import RecordType
 from db.queries.builder import QueryBuilderBase
 from middleware.schema_and_dto.dtos.data_sources.post import (
     DataSourcesPostDTO,
@@ -20,20 +24,30 @@ class DataSourcesPostSingleQueryBuilder(QueryBuilderBase):
     @override
     def run(self) -> int:
         entry = self.dto.entry_data
-        data_source_id = self.add_data_source(entry)
+        data_source_id = self._add_data_source(entry)
         linked_agency_ids = self.dto.linked_agency_ids
         if linked_agency_ids is not None:
-            self.link_to_agencies(data_source_id, linked_agency_ids)
+            self._link_to_agencies(data_source_id, linked_agency_ids)
         return data_source_id
 
-    def link_to_agencies(self, data_source_id: int, agency_ids: list[int]):
+    def _get_record_type_id(self, record_type_name: str) -> int:
+        query = (
+            select(
+                RecordType.id
+            ).where(
+                RecordType.name == record_type_name
+            )
+        )
+        return self.session.execute(query).fetchone()[0]
+
+    def _link_to_agencies(self, data_source_id: int, agency_ids: list[int]):
         for agency_id in agency_ids:
             link = LinkAgencyDataSource(
                 data_source_id=data_source_id, agency_id=agency_id
             )
             self.session.add(link)
 
-    def add_data_source(self, entry: DataSourceEntryDataPostDTO) -> int:
+    def _add_data_source(self, entry: DataSourceEntryDataPostDTO) -> int:
         data_source = DataSource(
             name=entry.name,
             description=entry.description,
@@ -42,29 +56,30 @@ class DataSourcesPostSingleQueryBuilder(QueryBuilderBase):
             agency_supplied=entry.agency_supplied,
             supplying_entity=entry.supplying_entity,
             agency_originated=entry.agency_originated,
-            agency_aggregation=entry.agency_aggregation.value,
+            agency_aggregation=enum_value_or_none(entry.agency_aggregation),
             coverage_start=entry.coverage_start,
             coverage_end=entry.coverage_end,
-            detail_level=entry.detail_level.value,
+            detail_level=enum_value_or_none(entry.detail_level),
             access_types=enum_list_to_values(entry.access_types),
             data_portal_type=entry.data_portal_type,
             record_formats=entry.record_formats,
-            update_method=entry.update_method.value,
+            update_method=enum_value_or_none(entry.update_method),
             tags=entry.tags,
             readme_url=entry.readme_url,
             originating_entity=entry.originating_entity,
-            retention_schedule=entry.retention_schedule.value,
+            retention_schedule=enum_value_or_none(entry.retention_schedule),
             scraper_url=entry.scraper_url,
             submitter_contact_info=entry.submitter_contact_info,
             submission_notes=entry.submission_notes,
             agency_described_not_in_database=entry.agency_described_not_in_database,
             data_portal_type_other=entry.data_portal_type_other,
             access_notes=entry.access_notes,
-            url_status=entry.url_status.value,
+            url_status=enum_value_or_none(entry.url_status),
             data_source_request=entry.data_source_request,
             rejection_note=entry.rejection_note,
             last_approval_editor=entry.last_approval_editor,
             broken_source_url_as_of=entry.broken_source_url_as_of,
+            record_type_id=self._get_record_type_id(entry.record_type_name.value),
         )
         self.session.add(data_source)
 

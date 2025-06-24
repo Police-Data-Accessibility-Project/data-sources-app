@@ -9,7 +9,9 @@ def get_enum_values(en: type[Enum]) -> list[str]:
     return [e.value for e in en]
 
 
-def enum_list_to_values(en: list[Enum]) -> list[str]:
+def enum_list_to_values(en: list[Enum] | None) -> list[str]:
+    if en is None:
+        return []
     return [e.value for e in en]
 
 

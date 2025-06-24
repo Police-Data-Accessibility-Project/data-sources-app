@@ -65,12 +65,6 @@ from endpoints.schema_config.instantiations.auth.signup import (
 from endpoints.schema_config.instantiations.auth.validate_email import (
     AuthValidateEmailEndpointSchema,
 )
-from endpoints.schema_config.instantiations.bulk.agencies import (
-    BulkAgenciesPostEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.bulk.data_sources import (
-    BulkDataSourcesPostEndpointSchemaConfig,
-)
 from endpoints.schema_config.instantiations.checker import (
     UniqueURLCheckerEndpointSchemaConfig,
 )
@@ -349,11 +343,6 @@ class SchemaConfigs(Enum):
     # region Permission
     PERMISSIONS_GET = PermissionsGetEndpointSchemaConfig
     PERMISSIONS_PUT = PermissionsPutEndpointSchemaConfig
-    # endregion
-
-    # region Batch
-    BULK_DATA_SOURCES_POST = BulkDataSourcesPostEndpointSchemaConfig
-    BULK_AGENCIES_POST = BulkAgenciesPostEndpointSchemaConfig
     # endregion
     # region Match
     MATCH_AGENCY = MatchAgencyEndpointSchemaConfig

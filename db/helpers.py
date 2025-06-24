@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Optional
 
 from db.constants import PAGE_SIZE
@@ -17,3 +18,9 @@ def get_offset(page: int) -> Optional[int]:
     if page is None:
         return None
     return (page - 1) * PAGE_SIZE
+
+def enum_value_or_none(e: Enum) -> str | int | None:
+    try:
+        return e.value
+    except AttributeError:
+        return None
