@@ -31,13 +31,7 @@ class DataSourcesPostSingleQueryBuilder(QueryBuilderBase):
         return data_source_id
 
     def _get_record_type_id(self, record_type_name: str) -> int:
-        query = (
-            select(
-                RecordType.id
-            ).where(
-                RecordType.name == record_type_name
-            )
-        )
+        query = select(RecordType.id).where(RecordType.name == record_type_name)
         return self.session.execute(query).fetchone()[0]
 
     def _link_to_agencies(self, data_source_id: int, agency_ids: list[int]):

@@ -63,6 +63,7 @@ class PutPostRequestInfo(BaseModel):
     entry_id: Optional[int] = None
     error_message: Optional[str] = None
 
+
 class PostPutHandler(ABC):
 
     def __init__(

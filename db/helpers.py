@@ -19,6 +19,7 @@ def get_offset(page: int) -> Optional[int]:
         return None
     return (page - 1) * PAGE_SIZE
 
+
 def enum_value_or_none(e: Enum) -> str | int | None:
     try:
         return e.value

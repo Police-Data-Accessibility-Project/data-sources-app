@@ -50,6 +50,7 @@ from middleware.util.type_conversion import dataclass_to_filtered_dict
 
 RELATION = Relations.DATA_SOURCES.value
 
+
 class DataSourcesGetManyRequestDTO(GetManyBaseDTO):
     approval_status: ApprovalStatus = ApprovalStatus.APPROVED
     page_number: int = 1
@@ -210,15 +211,18 @@ def optionally_swap_record_type_name_with_id(db_client, entry_data):
         entry_data["record_type_id"] = record_type_id
         del entry_data["record_type_name"]
 
+
 def add_new_data_source_wrapper(
     db_client: DatabaseClient, dto: DataSourcesPostDTO, access_info: AccessInfoPrimary
 ) -> Response:
 
     data_source_id = db_client.add_data_source_v2(dto)
-    return make_response({
-        "id": str(data_source_id),
-        "message": "Successfully added data source.",
-    })
+    return make_response(
+        {
+            "id": str(data_source_id),
+            "message": "Successfully added data source.",
+        }
+    )
 
 
 # region Related Resources

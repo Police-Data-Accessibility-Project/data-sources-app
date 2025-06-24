@@ -7,7 +7,7 @@ from db.enums import RelationRoleEnum
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.common_response_formatting import format_list_response
 from middleware.enums import PermissionsEnum
-from middleware.primary_resource_logic.data_requests import (
+from middleware.primary_resource_logic.data_requests_.get.with_permitted_columns import (
     get_data_requests_with_permitted_columns,
 )
 from middleware.schema_and_dto.dtos.common.base import GetManyBaseDTO
