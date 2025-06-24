@@ -6,7 +6,9 @@ from db.enums import EventType, ApprovalStatus
 from db.helpers import enum_value_or_none
 from db.models.implementations import LinkAgencyDataSource
 from db.models.implementations.core.data_source.core import DataSource
-from db.models.implementations.core.notification.pending.data_source import DataSourcePendingEventNotification
+from db.models.implementations.core.notification.pending.data_source import (
+    DataSourcePendingEventNotification,
+)
 from db.models.implementations.core.record.type import RecordType
 from db.queries.builder_.core import QueryBuilderBase
 from middleware.schema_and_dto.dtos.data_sources.post import (
@@ -44,7 +46,6 @@ class DataSourcesPostSingleQueryBuilder(QueryBuilderBase):
             event_type=EventType.DATA_SOURCE_APPROVED.value,
         )
         self.session.add(pending_event_notification)
-
 
     def _link_to_agencies(self, data_source_id: int, agency_ids: list[int]):
         for agency_id in agency_ids:
