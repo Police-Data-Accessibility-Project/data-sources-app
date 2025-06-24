@@ -10,7 +10,7 @@ from db.helpers import get_offset
 from db.helpers_.result_formatting import data_source_to_get_data_sources_output
 from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.data_source.expanded import DataSourceExpanded
-from db.queries.builder import QueryBuilderBase
+from db.queries.builder_.core import QueryBuilderBase
 from middleware.enums import Relations
 
 

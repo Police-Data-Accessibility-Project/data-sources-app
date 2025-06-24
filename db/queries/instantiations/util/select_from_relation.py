@@ -8,7 +8,7 @@ from db.dynamic_query_constructor import DynamicQueryConstructor
 from db.helpers import get_offset
 from db.helpers_.result_formatting import format_with_metadata
 from db.models.table_reference import convert_to_column_reference
-from db.queries.builder import QueryBuilderBase
+from db.queries.builder_.core import QueryBuilderBase
 from db.subquery_logic import SubqueryParameters
 
 

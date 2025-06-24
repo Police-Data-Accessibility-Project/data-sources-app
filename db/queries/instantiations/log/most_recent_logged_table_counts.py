@@ -1,7 +1,7 @@
 from sqlalchemy import select, func, desc
 
 from db.models.implementations.core.log.table_count import TableCountLog
-from db.queries.builder import QueryBuilderBase
+from db.queries.builder_.core import QueryBuilderBase
 from middleware.miscellaneous.table_count_logic import TableCountReferenceManager
 
 

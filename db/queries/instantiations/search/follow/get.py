@@ -8,7 +8,7 @@ from db.helpers_.result_formatting import get_display_name
 from db.models.implementations.core.location.core import Location
 from db.models.implementations.core.record.type import RecordType
 from db.models.implementations.link import LinkUserFollowedLocation
-from db.queries.builder import QueryBuilderBase
+from db.queries.builder_.core import QueryBuilderBase
 
 
 class GetUserFollowedSearchesQueryBuilder(QueryBuilderBase):

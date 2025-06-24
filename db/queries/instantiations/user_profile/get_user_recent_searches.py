@@ -9,7 +9,7 @@ from db.models.implementations.core.location.us_state import USState
 from db.models.implementations.core.recent_search.core import RecentSearch
 from db.models.implementations.core.record.category import RecordCategory
 from db.models.implementations.link import LinkRecentSearchRecordCategories
-from db.queries.builder import QueryBuilderBase
+from db.queries.builder_.core import QueryBuilderBase
 
 
 class GetUserRecentSearchesQueryBuilder(QueryBuilderBase):

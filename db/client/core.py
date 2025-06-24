@@ -26,7 +26,6 @@ from sqlalchemy.orm import (
 )
 
 from db.DTOs import (
-    UserInfoNonSensitive,
     UsersWithPermissions,
     DataRequestInfoForGithub,
 )
@@ -91,7 +90,7 @@ from db.models.implementations.link import (
 from db.models.table_reference import (
     SQL_ALCHEMY_TABLE_REFERENCE,
 )
-from db.queries.builder import QueryBuilderBase
+from db.queries.builder_.core import QueryBuilderBase
 from db.queries.instantiations.agencies.get_.by_id import GetAgencyByIDQueryBuilder
 from db.queries.instantiations.agencies.get_.many import GetAgenciesQueryBuilder
 from db.queries.instantiations.data_requests.post import DataRequestsPostQueryBuilder

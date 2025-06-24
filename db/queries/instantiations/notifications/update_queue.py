@@ -25,7 +25,7 @@ from db.models.implementations.core.notification.queue.data_source import (
     DataSourceUserNotificationQueue,
 )
 from db.models.implementations.core.user.core import User
-from db.queries.builder import QueryBuilderBase
+from db.queries.builder_.core import QueryBuilderBase
 
 
 class OptionallyUpdateUserNotificationQueueQueryBuilder(QueryBuilderBase):

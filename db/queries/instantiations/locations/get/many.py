@@ -6,7 +6,7 @@ from sqlalchemy.orm import selectinload
 from db.constants import PAGE_SIZE
 from db.enums import LocationType
 from db.models.implementations.core.location.core import Location
-from db.queries.builder import QueryBuilderBase
+from db.queries.builder_.core import QueryBuilderBase
 
 
 class GetManyLocationsQueryBuilder(QueryBuilderBase):

@@ -16,7 +16,7 @@ from db.models.implementations.core.location.core import Location
 from db.models.implementations.core.location.dependent import DependentLocation
 from db.models.implementations.core.location.expanded import LocationExpanded
 from db.models.implementations.core.log.notification import NotificationLog
-from db.queries.builder import QueryBuilderBase
+from db.queries.builder_.core import QueryBuilderBase
 from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )

@@ -4,7 +4,7 @@ from db.enums import ApprovalStatus
 from db.models.implementations import LinkAgencyDataSource
 from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.record.type import RecordType
-from db.queries.builder import QueryBuilderBase
+from db.queries.builder_.core import QueryBuilderBase
 from endpoints.instantiations.source_collector.data_sources.post.dtos.response import (
     SourceCollectorPostResponseInnerDTO,
 )

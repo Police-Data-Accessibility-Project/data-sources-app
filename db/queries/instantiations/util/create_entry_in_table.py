@@ -4,7 +4,7 @@ from typing import Optional
 from sqlalchemy import insert
 
 from db.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
-from db.queries.builder import QueryBuilderBase
+from db.queries.builder_.core import QueryBuilderBase
 
 
 def update_dictionary_enum_values(d: dict):

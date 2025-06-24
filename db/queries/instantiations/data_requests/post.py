@@ -2,7 +2,7 @@ from typing import override
 
 from db.models.implementations import LinkLocationDataRequest
 from db.models.implementations.core.data_request.core import DataRequest
-from db.queries.builder import QueryBuilderBase
+from db.queries.builder_.core import QueryBuilderBase
 from middleware.schema_and_dto.dtos.data_requests.post import DataRequestsPostDTO
 
 
