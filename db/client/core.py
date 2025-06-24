@@ -108,6 +108,7 @@ from db.queries.instantiations.data_sources.get.many import (
 from db.queries.instantiations.data_sources.post.single import (
     DataSourcesPostSingleQueryBuilder,
 )
+from db.queries.instantiations.data_sources.put import DataSourcesPutQueryBuilder
 from db.queries.instantiations.locations.get.many import GetManyLocationsQueryBuilder
 from db.queries.instantiations.log.most_recent_logged_table_counts import (
     GetMostRecentLoggedTableCountsQueryBuilder,
@@ -191,6 +192,9 @@ from middleware.schema_and_dto.dtos.match.response import (
 )
 from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
+)
+from middleware.schema_and_dto.schemas.data_sources.base import (
+    EntryCreateUpdateRequestDTO,
 )
 from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
 from utilities.enums import RecordCategories
@@ -637,6 +641,21 @@ class DatabaseClient:
         _update_entry_in_table, table_name="data_sources", id_column_name="id"
     )
 
+    def update_data_source_v2(
+        self,
+        dto: EntryCreateUpdateRequestDTO,
+        data_source_id: int,
+        permissions: list[PermissionsEnum],
+        user_id: int,
+    ) -> None:
+        builder = DataSourcesPutQueryBuilder(
+            dto=dto,
+            data_source_id=data_source_id,
+            permissions=permissions,
+            user_id=user_id,
+        )
+        self.run_query_builder(builder)
+
     update_data_request = partialmethod(
         _update_entry_in_table,
         table_name="data_requests",
@@ -696,7 +715,7 @@ class DatabaseClient:
         self,
         session: Session,
         dto: AgenciesPostDTO,
-        user_id: Optional[int] = None,
+        user_id: int | None = None,
     ):
         # Create Agency Entry
         agency_info = dto.agency_info

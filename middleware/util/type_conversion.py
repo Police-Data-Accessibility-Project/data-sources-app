@@ -25,7 +25,7 @@ def dict_enums_to_values(d: dict[str, Any]) -> dict[str, Any]:
     return d
 
 
-def dataclass_to_filtered_dict(instance: Any) -> Dict[str, Any]:
+def dataclass_to_filtered_dict(instance: Any) -> dict[str, Any]:
     """
     Convert a dataclass instance to a dictionary, filtering out any None values.
     :param instance:

@@ -175,41 +175,19 @@ def delete_data_source_wrapper(
     )
 
 
-def optionally_add_last_approval_editor(
-    entry_data: dict, access_info: AccessInfoPrimary
-):
-    if "approval_status" in entry_data:
-        entry_data["last_approval_editor"] = access_info.get_user_id()
-
-
 def update_data_source_wrapper(
     db_client: DatabaseClient,
     dto: EntryCreateUpdateRequestDTO,
     access_info: AccessInfoPrimary,
     data_source_id: str,
 ) -> Response:
-    entry_data = dto.entry_data
-    optionally_swap_record_type_name_with_id(db_client, entry_data)
-    optionally_add_last_approval_editor(entry_data, access_info)
-    return put_entry(
-        middleware_parameters=MiddlewareParameters(
-            entry_name="Data source",
-            relation=RELATION,
-            db_client_method=DatabaseClient.update_data_source,
-            access_info=access_info,
-        ),
-        entry=entry_data,
-        entry_id=data_source_id,
+    db_client.update_data_source_v2(
+        dto=dto,
+        data_source_id=int(data_source_id),
+        permissions=access_info.permissions,
+        user_id=access_info.get_user_id(),
     )
-
-
-def optionally_swap_record_type_name_with_id(db_client, entry_data):
-    if "record_type_name" in entry_data:
-        record_type_id = db_client.get_record_type_id_by_name(
-            record_type_name=entry_data["record_type_name"]
-        )
-        entry_data["record_type_id"] = record_type_id
-        del entry_data["record_type_name"]
+    return message_response("Updated Data source.")
 
 
 def add_new_data_source_wrapper(
