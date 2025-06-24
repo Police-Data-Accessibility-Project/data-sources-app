@@ -7,7 +7,7 @@ from db.enums import ApprovalStatus
 from db.helpers import get_offset
 from db.helpers_.result_formatting import agency_to_get_agencies_output
 from db.models.implementations.core.agency.core import Agency
-from db.queries.builder_.core import QueryBuilderBase
+from db.queries.builder.core import QueryBuilderBase
 from db.queries.models.get_params import GetParams
 from middleware.enums import Relations
 

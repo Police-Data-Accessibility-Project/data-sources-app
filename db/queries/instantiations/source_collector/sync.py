@@ -9,7 +9,7 @@ from db.models.implementations.core.location.core import Location
 from db.models.implementations.core.location.county import County
 from db.models.implementations.core.location.locality import Locality
 from db.models.implementations.core.location.us_state import USState
-from db.queries.builder_.core import QueryBuilderBase
+from db.queries.builder.core import QueryBuilderBase
 from endpoints.instantiations.source_collector.sync.dtos.request import (
     SourceCollectorSyncAgenciesRequestDTO,
 )

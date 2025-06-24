@@ -9,7 +9,7 @@ from db.enums import UpdateFrequency, ApprovalStatus, URLStatus
 from db.helpers import get_offset
 from db.models.implementations.core.data_source.archive import DataSourceArchiveInfo
 from db.models.implementations.core.data_source.core import DataSource
-from db.queries.builder_.core import QueryBuilderBase
+from db.queries.builder.core import QueryBuilderBase
 
 ArchiveInfo = namedtuple(
     "ArchiveInfo",

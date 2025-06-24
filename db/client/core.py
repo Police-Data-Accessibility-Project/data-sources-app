@@ -90,10 +90,11 @@ from db.models.implementations.link import (
 from db.models.table_reference import (
     SQL_ALCHEMY_TABLE_REFERENCE,
 )
-from db.queries.builder_.core import QueryBuilderBase
+from db.queries.builder.core import QueryBuilderBase
 from db.queries.instantiations.agencies.get_.by_id import GetAgencyByIDQueryBuilder
 from db.queries.instantiations.agencies.get_.many import GetAgenciesQueryBuilder
 from db.queries.instantiations.data_requests.post import DataRequestsPostQueryBuilder
+from db.queries.instantiations.data_requests.put import DataRequestsPutQueryBuilder
 from db.queries.instantiations.data_sources.archive import (
     GetDataSourcesToArchiveQueryBuilder,
     ArchiveInfo,
@@ -156,6 +157,9 @@ from db.queries.instantiations.util.select_from_relation import (
 )
 from db.queries.models.get_params import GetParams
 from db.subquery_logic import SubqueryParameters
+from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
+    SourceCollectorPostRequestInnerDTO,
+)
 from endpoints.instantiations.source_collector.data_sources.post.dtos.response import (
     SourceCollectorPostResponseInnerDTO,
 )
@@ -179,6 +183,7 @@ from middleware.miscellaneous.table_count_logic import (
 )
 from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
 from middleware.schema_and_dto.dtos.data_requests.post import DataRequestsPostDTO
+from middleware.schema_and_dto.dtos.data_requests.put import DataRequestsPutDTO
 from middleware.schema_and_dto.dtos.data_sources.post import DataSourcesPostDTO
 from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
 from middleware.schema_and_dto.dtos.match.response import (
@@ -187,10 +192,6 @@ from middleware.schema_and_dto.dtos.match.response import (
 from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
-from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
-    SourceCollectorPostRequestInnerDTO,
-)
-
 from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
 from utilities.enums import RecordCategories
 
@@ -200,13 +201,13 @@ class DatabaseClient:
     def __init__(self):
         self.connection: pg_connection = initialize_psycopg_connection()
         self.session_maker = initialize_sqlalchemy_session()
-        self.session: Optional[Session] = None
-        self.cursor: Optional[Cursor] = None
+        self.session: Session | None = None
+        self.cursor: Cursor | None = None
 
     @cursor_manager()
     def execute_raw_sql(
-        self, query: str, vars_: Optional[tuple] = None, execute_many: bool = False
-    ) -> Optional[list[dict[Any, ...]]]:
+        self, query: str, vars_: tuple | None = None, execute_many: bool = False
+    ) -> list[dict[Any, ...]] | None:
         """Executes an SQL query passed to the function.
 
         :param query: The SQL query to execute.
@@ -259,7 +260,7 @@ class DatabaseClient:
     @session_manager_v2
     def add_many(
         self, session: Session, models, return_ids: bool = False
-    ) -> Optional[List[int]]:
+    ) -> list[int] | None:
         session.add_all(models)
         if return_ids:
             session.flush()
@@ -277,7 +278,7 @@ class DatabaseClient:
     @session_manager_v2
     def create_new_user(
         self, session: Session, email: str, password_digest: str
-    ) -> Optional[int]:
+    ) -> int | None:
         """Adds a new user to the database."""
         try:
             user = User(email=email, password_digest=password_digest)
@@ -287,7 +288,7 @@ class DatabaseClient:
         except sqlalchemy.exc.IntegrityError:
             raise DuplicateUserError
 
-    def get_user_id(self, email: str) -> Optional[int]:
+    def get_user_id(self, email: str) -> int | None:
         """Gets the ID of a user in the database based on their email."""
         query = select(User.id).where(User.email == email)
         return self.scalar(query)
@@ -310,7 +311,7 @@ class DatabaseClient:
 
     ResetTokenInfo = namedtuple("ResetTokenInfo", ["id", "user_id", "create_date"])
 
-    def get_reset_token_info(self, token: str) -> Optional[ResetTokenInfo]:
+    def get_reset_token_info(self, token: str) -> ResetTokenInfo | None:
         """
         Check if reset token exists in the database and retrieves the associated user data.
 
@@ -341,7 +342,7 @@ class DatabaseClient:
 
     UserIdentifiers = namedtuple("UserIdentifiers", ["id", "email"])
 
-    def get_user_by_api_key(self, api_key: str) -> Optional[UserIdentifiers]:
+    def get_user_by_api_key(self, api_key: str) -> UserIdentifiers | None:
         """
         Get user id for a given api key
         :return: RoleInfo if the token exists; otherwise, None.
@@ -384,8 +385,8 @@ class DatabaseClient:
 
     def get_data_sources_to_archive(
         self,
-        update_frequency: Optional[UpdateFrequency] = None,
-        last_archived_before: Optional[datetime] = None,
+        update_frequency: UpdateFrequency | None = None,
+        last_archived_before: datetime | None = None,
         page: int = 1,
     ) -> list[ArchiveInfo]:
         """Pulls data sources to be archived by the automatic archives script."""
@@ -511,9 +512,9 @@ class DatabaseClient:
     def search_with_location_and_record_type(
         self,
         location_id: int,
-        record_categories: Optional[list[RecordCategories]] = None,
-        record_types: Optional[list[RecordTypes]] = None,
-    ) -> List[dict]:
+        record_categories: list[RecordCategories] | None = None,
+        record_types: list[RecordTypes] | None = None,
+    ) -> list[dict]:
         """Search for data sources in the database."""
         check_for_mutually_exclusive_arguments(record_categories, record_types)
 
@@ -527,8 +528,8 @@ class DatabaseClient:
 
     @cursor_manager()
     def search_federal_records(
-        self, record_categories: Optional[list[RecordCategories]] = None, page: int = 1
-    ) -> List[dict]:
+        self, record_categories: list[RecordCategories] | None = None, page: int = 1
+    ) -> list[dict]:
         query = DynamicQueryConstructor.create_federal_search_query(
             page=page,
             record_categories=record_categories,
@@ -641,6 +642,21 @@ class DatabaseClient:
         table_name="data_requests",
     )
 
+    def update_data_request_v2(
+        self,
+        dto: DataRequestsPutDTO,
+        data_request_id: int,
+        user_id: int,
+        permissions: list[PermissionsEnum],
+    ) -> None:
+        builder = DataRequestsPutQueryBuilder(
+            dto=dto,
+            data_request_id=data_request_id,
+            user_id=user_id,
+            permissions=permissions,
+        )
+        self.run_query_builder(builder)
+
     update_agency = partialmethod(
         _update_entry_in_table,
         table_name="agencies",
@@ -668,7 +684,7 @@ class DatabaseClient:
         self,
         dto: DataRequestsPostDTO,
         user_id: int,
-    ):
+    ) -> int:
         builder = DataRequestsPostQueryBuilder(
             dto=dto,
             user_id=user_id,

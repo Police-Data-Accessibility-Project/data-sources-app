@@ -5,9 +5,7 @@ import sqlalchemy
 from flask import Response
 from werkzeug.exceptions import Conflict, BadRequest, InternalServerError
 
-from middleware.column_permission.core import (
-    RelationRoleParameters,
-)
+from middleware.column_permission.relation_role_parameters import RelationRoleParameters
 from middleware.common_response_formatting import created_id_response
 from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.supporting_classes import (

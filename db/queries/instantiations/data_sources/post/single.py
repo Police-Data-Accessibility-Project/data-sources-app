@@ -10,7 +10,11 @@ from db.models.implementations.core.notification.pending.data_source import (
     DataSourcePendingEventNotification,
 )
 from db.models.implementations.core.record.type import RecordType
-from db.queries.builder_.core import QueryBuilderBase
+from db.queries.builder.core import QueryBuilderBase
+from db.queries.builder.mixins.pending_event.data_source import (
+    DataSourcePendingEventMixin,
+)
+from db.queries.builder.mixins.record_type import RecordTypeMixin
 from middleware.schema_and_dto.dtos.data_sources.post import (
     DataSourcesPostDTO,
     DataSourceEntryDataPostDTO,
@@ -19,7 +23,9 @@ from middleware.util.type_conversion import enum_list_to_values
 
 
 @final
-class DataSourcesPostSingleQueryBuilder(QueryBuilderBase):
+class DataSourcesPostSingleQueryBuilder(
+    QueryBuilderBase, RecordTypeMixin, DataSourcePendingEventMixin
+):
 
     def __init__(self, dto: DataSourcesPostDTO):
         super().__init__()
@@ -33,19 +39,8 @@ class DataSourcesPostSingleQueryBuilder(QueryBuilderBase):
         if linked_agency_ids is not None:
             self._link_to_agencies(data_source_id, linked_agency_ids)
         if self.dto.entry_data.approval_status == ApprovalStatus.APPROVED:
-            self._add_pending_event_notifications(data_source_id)
+            self._add_pending_event_notification(data_source_id)
         return data_source_id
-
-    def _get_record_type_id(self, record_type_name: str) -> int:
-        query = select(RecordType.id).where(RecordType.name == record_type_name)
-        return self.session.execute(query).fetchone()[0]
-
-    def _add_pending_event_notifications(self, data_source_id: int) -> None:
-        pending_event_notification = DataSourcePendingEventNotification(
-            data_source_id=data_source_id,
-            event_type=EventType.DATA_SOURCE_APPROVED.value,
-        )
-        self.session.add(pending_event_notification)
 
     def _link_to_agencies(self, data_source_id: int, agency_ids: list[int]):
         for agency_id in agency_ids:

@@ -2,9 +2,7 @@ from typing import Optional
 
 from flask import Response
 
-from middleware.column_permission.core import (
-    RelationRoleParameters,
-)
+from middleware.column_permission.relation_role_parameters import RelationRoleParameters
 from middleware.common_response_formatting import message_response
 from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.supporting_classes import (
@@ -32,7 +30,7 @@ class PutLogic(PutPostBase):
         middleware_parameters: MiddlewareParameters,
         entry: dict,
         entry_id: str,
-        pre_database_client_method_with_parameters: Optional[DeferredFunction] = None,
+        pre_database_client_method_with_parameters: DeferredFunction | None = None,
         relation_role_parameters: RelationRoleParameters = RelationRoleParameters(),
     ):
         super().__init__(
@@ -56,7 +54,7 @@ def put_entry(
     middleware_parameters: MiddlewareParameters,
     entry: dict,
     entry_id: str,
-    pre_update_method_with_parameters: Optional[DeferredFunction] = None,
+    pre_update_method_with_parameters: DeferredFunction | None = None,
     relation_role_parameters: RelationRoleParameters = RelationRoleParameters(),
 ) -> Response:
 

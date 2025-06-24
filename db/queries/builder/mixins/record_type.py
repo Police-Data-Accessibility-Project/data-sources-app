@@ -1,7 +1,7 @@
 from sqlalchemy import select
 
 from db.models.implementations.core.record.type import RecordType
-from db.queries.builder_.core import QueryBuilderBase
+from db.queries.builder.core import QueryBuilderBase
 
 
 class RecordTypeMixin:

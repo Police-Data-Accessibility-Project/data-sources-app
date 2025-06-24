@@ -1,5 +1,5 @@
 from db.client.core import DatabaseClient
-from middleware.column_permission.core import RelationRoleParameters
+from middleware.column_permission.relation_role_parameters import RelationRoleParameters
 from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.supporting_classes import MiddlewareParameters
 from middleware.enums import Relations

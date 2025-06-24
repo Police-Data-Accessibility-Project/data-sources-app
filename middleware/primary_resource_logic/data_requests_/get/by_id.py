@@ -1,7 +1,7 @@
 from flask import Response
 
 from db.client.core import DatabaseClient
-from middleware.column_permission.core import RelationRoleParameters
+from middleware.column_permission.relation_role_parameters import RelationRoleParameters
 from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.get.by_id import get_by_id
 from middleware.dynamic_request_logic.supporting_classes import MiddlewareParameters

@@ -6,7 +6,7 @@ from sqlalchemy.orm import load_only, selectinload
 from db.enums import LocationType
 from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.location.expanded import LocationExpanded
-from db.queries.builder_.core import QueryBuilderBase
+from db.queries.builder.core import QueryBuilderBase
 from middleware.enums import AgencyType
 from middleware.schema_and_dto.dtos.match.response import (
     AgencyMatchResponseLocationDTO,

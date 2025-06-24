@@ -14,7 +14,11 @@ def check_has_admin_or_owner_role(relation_role: RelationRoleEnum):
         raise Forbidden("User does not have permission to perform this action.")
 
 
-def is_creator_or_admin(access_info, data_request_id, db_client):
+def is_creator_or_admin(
+    access_info: AccessInfoPrimary,
+    data_request_id: int,
+    db_client: DatabaseClient,
+):
     user_id = access_info.get_user_id()
     return (
         db_client.user_is_creator_of_data_request(
@@ -33,7 +37,7 @@ def get_data_requests_subquery_params() -> list[SubqueryParameters]:
 
 def get_data_requests_relation_role(
     db_client: DatabaseClient,
-    data_request_id: Optional[int],
+    data_request_id: int | None,
     access_info: AccessInfoPrimary,
 ) -> RelationRoleEnum:
     """
