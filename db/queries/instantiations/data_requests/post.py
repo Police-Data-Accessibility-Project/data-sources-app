@@ -27,13 +27,12 @@ class DataRequestsPostQueryBuilder(QueryBuilderBase):
         return data_request.id
 
     def _add_locations(self, dr_id: int):
-        location_ids = self.dto.location_ids if self.dto.location_ids is not None else []
+        location_ids = (
+            self.dto.location_ids if self.dto.location_ids is not None else []
+        )
         for location_id in location_ids:
             self.session.add(
-                LinkLocationDataRequest(
-                    data_request_id=dr_id,
-                    location_id=location_id
-                )
+                LinkLocationDataRequest(data_request_id=dr_id, location_id=location_id)
             )
 
     @override

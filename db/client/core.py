@@ -664,6 +664,7 @@ class DatabaseClient:
     create_data_request = partialmethod(
         _create_entry_in_table, table_name="data_requests", column_to_return="id"
     )
+
     def create_data_request_v2(
         self,
         dto: DataRequestsPostDTO,
