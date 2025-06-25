@@ -4,7 +4,7 @@ from db.enums import ApprovalStatus
 from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.link import LinkAgencyLocation
 from middleware.enums import JurisdictionType, AgencyType
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 

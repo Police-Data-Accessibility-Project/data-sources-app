@@ -13,7 +13,7 @@ class Locality(StandardBase):
         CheckConstraint("name NOT LIKE '%,%'", name="localities_name_check"),
     )
 
-    name: Mapped[Optional[Text]] = mapped_column(Text)
+    name: Mapped[Text | None] = mapped_column(Text)
     county_id: Mapped[int] = mapped_column(ForeignKey("counties.id"))
 
     # Relationships

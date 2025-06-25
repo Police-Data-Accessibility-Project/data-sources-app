@@ -2,7 +2,7 @@ from db.enums import ApprovalStatus
 from middleware.schema_and_dto.schemas.typeahead.locations import (
     TypeaheadLocationsOuterResponseSchema,
 )
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 from tests.helper_scripts.helper_functions_complex import (

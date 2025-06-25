@@ -11,5 +11,5 @@ from middleware.enums import Relations
 class TestTable(StandardBase):
     __tablename__ = Relations.TEST_TABLE.value
 
-    pet_name: Mapped[Optional[str_255]]
-    species: Mapped[Optional[str_255]]
+    pet_name: Mapped[str_255 | None]
+    species: Mapped[str_255 | None]

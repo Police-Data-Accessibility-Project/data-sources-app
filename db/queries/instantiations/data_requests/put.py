@@ -27,14 +27,30 @@ class DataRequestsPutQueryBuilder(QueryBuilderBase, DataRequestPendingEventMixin
         self,
         dto: DataRequestsPutOuterDTO,
         data_request_id: int,
-        user_id: int,
-        permissions: list[PermissionsEnum],
+        user_id: int | None = None,
+        permissions: list[PermissionsEnum] | None = None,
+        bypass_permissions: bool = False,
     ):
         super().__init__()
         self.dto = dto
         self.data_request_id = data_request_id
         self.user_id = user_id
         self.permissions = permissions
+        self.bypass_permissions = bypass_permissions
+
+    def __post_init__(self) -> None:
+        if self.bypass_permissions:
+            if self.user_id is not None:
+                raise ValueError("If bypass_permissions is True, user_id must be None")
+            if self.permissions is not None:
+                raise ValueError(
+                    "If bypass_permissions is True, permissions must be None"
+                )
+        else:
+            if self.user_id is None:
+                raise ValueError("user_id is required")
+            if self.permissions is None:
+                raise ValueError("permissions is required")
 
     @override
     def run(self) -> None:
@@ -101,6 +117,8 @@ class DataRequestsPutQueryBuilder(QueryBuilderBase, DataRequestPendingEventMixin
         _ = self.session.execute(query)
 
     def _check_permissions(self) -> None:
+        if self.bypass_permissions:
+            return
         relation_role = self._get_relation_role()
         permitted_columns = get_permitted_columns(
             relation=Relations.DATA_REQUESTS.value,

@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 from middleware.schema_and_dto.dtos.github.oauth import GithubOAuthRequestDTO
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 

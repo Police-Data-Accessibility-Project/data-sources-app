@@ -27,7 +27,7 @@ from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,
 )
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 from tests.helper_scripts.constants import AGENCIES_BASE_ENDPOINT

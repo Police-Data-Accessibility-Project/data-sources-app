@@ -4,7 +4,7 @@ from endpoints.schema_config.instantiations.data_sources.by_id.get import (
 )
 from tests.helper_scripts.common_asserts import assert_contains_key_value_pairs
 from tests.helper_scripts.constants import DATA_SOURCES_BASE_ENDPOINT
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request

@@ -13,8 +13,8 @@ class DataRequestExpanded(DataRequest):
     id = mapped_column(None, ForeignKey("public.data_requests.id"), primary_key=True)
 
     __tablename__ = Relations.DATA_REQUESTS_EXPANDED.value
-    github_issue_url: Mapped[Optional[text]]
-    github_issue_number: Mapped[Optional[int]]
+    github_issue_url: Mapped[text | None]
+    github_issue_number: Mapped[int | None]
 
     data_sources: Mapped[list["DataSourceExpanded"]] = relationship(
         argument="DataSourceExpanded",

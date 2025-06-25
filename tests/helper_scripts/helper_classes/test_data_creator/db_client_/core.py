@@ -2,7 +2,6 @@ import datetime
 import uuid
 from typing import Optional
 
-from sqlalchemy import delete, select, and_
 from sqlalchemy.exc import IntegrityError
 
 from db.client.core import DatabaseClient
@@ -12,22 +11,35 @@ from db.enums import (
     EventType,
     ExternalAccountTypeEnum,
 )
-from db.models.implementations.core.notification.queue.data_source import (
-    DataSourceUserNotificationQueue,
+from middleware.enums import (
+    JurisdictionType,
+    Relations,
+    AgencyType,
+    PermissionsEnum,
+    RecordTypes,
 )
-from db.models.implementations.core.notification.queue.data_request import (
-    DataRequestUserNotificationQueue,
-)
-from db.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
-from middleware.enums import JurisdictionType, Relations, AgencyType
 from middleware.schema_and_dto.dtos.agencies.post import (
     AgencyInfoPostDTO,
     AgenciesPostDTO,
+)
+from middleware.schema_and_dto.dtos.data_requests.put import (
+    DataRequestsPutDTO,
+    DataRequestsPutOuterDTO,
+)
+from middleware.schema_and_dto.dtos.data_sources.post import (
+    DataSourcesPostDTO,
+    DataSourceEntryDataPostDTO,
+)
+from middleware.schema_and_dto.schemas.data_sources.base import (
+    EntryCreateUpdateRequestDTO,
 )
 from tests.helper_scripts.common_endpoint_calls import CreatedDataSource
 from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,
     get_test_name,
+)
+from tests.helper_scripts.helper_classes.test_data_creator.db_client_.sqlalchemy_helper import (
+    TDCSQLAlchemyHelper,
 )
 from tests.helper_scripts.helper_functions_simple import get_notification_valid_date
 from tests.helper_scripts.test_dataclasses import (
@@ -35,69 +47,6 @@ from tests.helper_scripts.test_dataclasses import (
     TestAgencyInfo,
     TestDataRequestInfo,
 )
-
-
-class TDCSQLAlchemyHelper:
-
-    def __init__(self):
-        self.db_client = DatabaseClient()
-
-    def delete_like(
-        self,
-        table_name: str,
-        like_column_name: str,
-        like_text: str,
-    ):
-        table = SQL_ALCHEMY_TABLE_REFERENCE[table_name]
-        column = getattr(table, like_column_name)
-        query = delete(table).where(column.like(like_text))
-        self.db_client.execute_sqlalchemy(lambda: query)
-
-    def clear_table(
-        self,
-        relation: Relations,
-    ):
-        table = SQL_ALCHEMY_TABLE_REFERENCE[relation.value]
-        query = delete(table)
-        self.db_client.execute_sqlalchemy(lambda: query)
-
-    def delete_test_like(
-        self,
-        table_name: str,
-        like_column_name: str,
-    ):
-        self.delete_like(
-            table_name=table_name, like_column_name=like_column_name, like_text="%"
-        )
-
-    def get_county_id(self, county_name: str, state_iso: str = "PA") -> int:
-        state_id = self.get_state_id(state_iso=state_iso)
-        table = SQL_ALCHEMY_TABLE_REFERENCE[Relations.COUNTIES.value]
-        state_id_column = getattr(table, "state_id")
-        county_name_column = getattr(table, "name")
-        county_id_column = getattr(table, "id")
-        query = select(county_id_column).where(
-            and_(county_name_column == county_name, state_id_column == state_id)
-        )
-        result = self.db_client.execute_sqlalchemy(lambda: query)
-        return [row[0] for row in result][0]
-
-    def get_state_id(self, state_iso: str) -> int:
-        table = SQL_ALCHEMY_TABLE_REFERENCE[Relations.US_STATES.value]
-        column_name = getattr(table, "state_iso")
-        column_id = getattr(table, "id")
-        query = select(column_id).where(column_name == state_iso)
-        result = self.db_client.execute_sqlalchemy(lambda: query)
-        results = [result[0] for result in result]
-        if len(results) == 0:
-            raise Exception(f"Could not find state with iso {state_iso}")
-        return results[0]
-
-    def clear_user_notification_queue(self):
-        query_1 = delete(DataRequestUserNotificationQueue)
-        query_2 = delete(DataSourceUserNotificationQueue)
-        for query in [query_1, query_2]:
-            self.db_client.execute_sqlalchemy(lambda: query)
 
 
 class TestDataCreatorDBClient:
@@ -135,7 +84,7 @@ class TestDataCreatorDBClient:
         self,
         county_name: str,
         state_iso: str = "PA",
-        fips: Optional[str] = None,
+        fips: str | None = None,
     ) -> int:
         state_id = self.helper.get_state_id(state_iso=state_iso)
         if fips is None:
@@ -176,7 +125,7 @@ class TestDataCreatorDBClient:
     def create_valid_notification_event(
         self,
         event_type: EventType = EventType.DATA_SOURCE_APPROVED,
-        user_id: Optional[int] = None,
+        user_id: int | None = None,
     ) -> int:
         """
         Create valid notification event and return the id of the created event entity
@@ -207,26 +156,23 @@ class TestDataCreatorDBClient:
     def data_source(
         self,
         approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
-        record_type_id: int = 1,
-        **additional_column_values,
+        record_type: RecordTypes = RecordTypes.ACCIDENT_REPORTS,
+        source_url: str | None = None,
     ) -> CreatedDataSource:
-        name = self.test_name()
-        url = self.test_url()
-
-        source_column_value_mapping = {
-            "name": name,
-            "source_url": url,
-            "agency_supplied": True,
-            "record_type_id": record_type_id,
-        }
-        source_column_value_mapping.update(additional_column_values)
-        if approval_status is not None:
-            source_column_value_mapping["approval_status"] = approval_status.value
-
-        id = self.db_client.add_data_source(
-            column_value_mappings=source_column_value_mapping
+        dto = DataSourcesPostDTO(
+            entry_data=DataSourceEntryDataPostDTO(
+                name=self.test_name(),
+                source_url=source_url or self.test_url(),
+                agency_supplied=True,
+                approval_status=approval_status,
+                record_type_name=record_type,
+            )
         )
-        return CreatedDataSource(id=id, name=name, url=url)
+
+        id = self.db_client.add_data_source_v2(dto)
+        return CreatedDataSource(
+            id=id, name=dto.entry_data.name, url=dto.entry_data.source_url
+        )
 
     def link_data_request_to_location(self, data_request_id: int, location_id: int):
         self.db_client.create_request_location_relation(
@@ -250,7 +196,7 @@ class TestDataCreatorDBClient:
         )
 
     def agency(
-        self, location_id: Optional[int] = None, **additional_column_value_mappings
+        self, location_id: int | None = None, **additional_column_value_mappings
     ) -> TestAgencyInfo:
         agency_name = self.test_name()
         agency_info = AgencyInfoPostDTO(
@@ -276,8 +222,8 @@ class TestDataCreatorDBClient:
 
     def data_request(
         self,
-        user_id: Optional[int] = None,
-        request_status: Optional[RequestStatus] = RequestStatus.INTAKE,
+        user_id: int | None = None,
+        request_status: RequestStatus | None = RequestStatus.INTAKE,
         **column_value_kwargs,
     ) -> TestDataRequestInfo:
         if user_id is None:
@@ -408,11 +354,13 @@ class ValidNotificationEventCreator:
         self.tdc.link_data_source_to_agency(
             data_source_id=ds_info.id, agency_id=agency_info.id
         )
-        self.tdc.db_client.update_data_source(
-            entry_id=ds_info.id,
-            column_edit_mappings={
-                "approval_status_updated_at": self.notification_valid_date
-            },
+        self.tdc.db_client.update_data_source_v2(
+            dto=EntryCreateUpdateRequestDTO(
+                entry_data={"approval_status_updated_at": self.notification_valid_date}
+            ),
+            user_id=user_id,
+            data_source_id=ds_info.id,
+            permissions=[PermissionsEnum.DB_WRITE],
         )
         self.tdc.user_follow_location(user_id=user_id, location_id=locality_location_id)
         return ds_info.id
@@ -420,9 +368,14 @@ class ValidNotificationEventCreator:
     def _create_data_request(self, request_status: RequestStatus, user_id: int) -> int:
         dr_info = self.tdc.data_request()
         locality_location_id = self.tdc.locality()
-        self.tdc.db_client.update_data_request(
-            column_edit_mappings={"request_status": request_status.value},
-            entry_id=dr_info.id,
+        self.tdc.db_client.update_data_request_v2(
+            data_request_id=dr_info.id,
+            dto=DataRequestsPutOuterDTO(
+                entry_data=DataRequestsPutDTO(
+                    request_status=request_status,
+                )
+            ),
+            bypass_permissions=True,
         )
         self.tdc.db_client.create_request_location_relation(
             column_value_mappings={

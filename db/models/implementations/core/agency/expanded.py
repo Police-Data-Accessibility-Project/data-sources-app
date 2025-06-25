@@ -17,10 +17,10 @@ class AgencyExpanded(Agency):
 
     state_name = Column(String)  #
     locality_name = Column(String)  #
-    state_iso: Mapped[Optional[str]]
-    municipality: Mapped[Optional[str]]
-    county_fips: Mapped[Optional[str]]
-    county_name: Mapped[Optional[str]]
+    state_iso: Mapped[str | None]
+    municipality: Mapped[str | None]
+    county_fips: Mapped[str | None]
+    county_name: Mapped[str | None]
 
     # Some attributes need to be overwritten by the attributes provided by locations_expanded
     state_iso = Column(String)

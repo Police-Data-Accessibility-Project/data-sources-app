@@ -17,7 +17,7 @@ from db.models.implementations.core.recent_search.core import RecentSearch
 from middleware.enums import Relations, OperationType
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.helper_classes.MultiLocationSetup import MultiLocationSetup
-from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
+from tests.helper_scripts.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
 from tests.helper_scripts.test_dataclasses import TestAgencyInfo

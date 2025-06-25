@@ -15,7 +15,7 @@ class DataSourceExpanded(DataSource):
 
     __tablename__ = Relations.DATA_SOURCES_EXPANDED.value
 
-    record_type_name: Mapped[Optional[str]]
+    record_type_name: Mapped[str | None]
 
     agencies: Mapped[list[Agency]] = relationship(
         argument="Agency",

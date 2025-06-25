@@ -14,14 +14,14 @@ class County(StandardBase):
     __table_args__ = (UniqueConstraint("fips", name="unique_fips"),)
 
     fips: Mapped[str]
-    name: Mapped[Optional[text]]
-    lat: Mapped[Optional[float]]
-    lng: Mapped[Optional[float]]
-    population: Mapped[Optional[int]]
-    agencies: Mapped[Optional[text]]
-    airtable_county_last_modified: Mapped[Optional[text]]
-    airtable_county_created: Mapped[Optional[text]]
-    state_id: Mapped[Optional[int]] = mapped_column(ForeignKey("public.us_states.id"))
+    name: Mapped[text | None]
+    lat: Mapped[float | None]
+    lng: Mapped[float | None]
+    population: Mapped[int | None]
+    agencies: Mapped[text | None]
+    airtable_county_last_modified: Mapped[text | None]
+    airtable_county_created: Mapped[text | None]
+    state_id: Mapped[int | None] = mapped_column(ForeignKey("public.us_states.id"))
 
     # Relationships
     state = relationship("USState", back_populates="counties", uselist=False)

@@ -12,5 +12,5 @@ class PendingUser(StandardBase, CreatedAtMixin):
     __tablename__ = Relations.PENDING_USERS.value
 
     email: Mapped[str] = mapped_column(unique=True)
-    password_digest: Mapped[Optional[str]]
-    validation_token: Mapped[Optional[str]]
+    password_digest: Mapped[str | None]
+    validation_token: Mapped[str | None]

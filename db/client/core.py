@@ -3,7 +3,6 @@ from datetime import datetime
 from functools import partialmethod
 from operator import and_
 from typing import (
-    Optional,
     Any,
     List,
     Callable,
@@ -184,7 +183,7 @@ from middleware.miscellaneous.table_count_logic import (
 )
 from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
 from middleware.schema_and_dto.dtos.data_requests.post import DataRequestsPostDTO
-from middleware.schema_and_dto.dtos.data_requests.put import DataRequestsPutDTO
+from middleware.schema_and_dto.dtos.data_requests.put import DataRequestsPutOuterDTO
 from middleware.schema_and_dto.dtos.data_sources.post import DataSourcesPostDTO
 from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
 from middleware.schema_and_dto.dtos.match.response import (
@@ -663,16 +662,18 @@ class DatabaseClient:
 
     def update_data_request_v2(
         self,
-        dto: DataRequestsPutDTO,
+        dto: DataRequestsPutOuterDTO,
         data_request_id: int,
-        user_id: int,
-        permissions: list[PermissionsEnum],
+        user_id: int | None = None,
+        permissions: list[PermissionsEnum] | None = None,
+        bypass_permissions: bool = False,
     ) -> None:
         builder = DataRequestsPutQueryBuilder(
             dto=dto,
             data_request_id=data_request_id,
             user_id=user_id,
             permissions=permissions,
+            bypass_permissions=bypass_permissions,
         )
         self.run_query_builder(builder)
 
@@ -686,8 +687,8 @@ class DatabaseClient:
         self,
         table_name: str,
         column_value_mappings: dict[str, str],
-        column_to_return: Optional[str] = None,
-    ) -> Optional[Any]:
+        column_to_return: str | None = None,
+    ) -> Any | None:
         builder = CreateEntryInTableQueryBuilder(
             table_name=table_name,
             column_value_mappings=column_value_mappings,
@@ -803,8 +804,8 @@ class DatabaseClient:
         self,
         user_id: int,
         location_id: int,
-        record_types: Optional[list[RecordTypes]] = None,
-        record_categories: Optional[list[RecordCategories]] = None,
+        record_types: list[RecordTypes] | None = None,
+        record_categories: list[RecordCategories] | None = None,
     ) -> None:
         builder = CreateFollowQueryBuilder(
             user_id=user_id,
@@ -826,14 +827,14 @@ class DatabaseClient:
         self,
         relation_name: str,
         columns: list[str],
-        where_mappings: Optional[Union[list[WhereMapping], dict]] = [True],
-        limit: Optional[int] = PAGE_SIZE,
-        page: Optional[int] = None,
-        order_by: Optional[OrderByParameters] = None,
-        subquery_parameters: Optional[list[SubqueryParameters]] = [],
-        build_metadata: Optional[bool] = False,
-        alias_mappings: Optional[dict[str, str]] = None,
-        apply_uniqueness_constraints: Optional[bool] = True,
+        where_mappings: list[WhereMapping] | dict | None = [True],
+        limit: int | None = PAGE_SIZE,
+        page: int | None = None,
+        order_by: OrderByParameters | None = None,
+        subquery_parameters: list[SubqueryParameters] | None = [],
+        build_metadata: bool | None = False,
+        alias_mappings: dict[str, str] | None = None,
+        apply_uniqueness_constraints: bool | None = True,
     ) -> list[dict]:
         builder = SelectFromRelationQueryBuilder(
             relation_name=relation_name,
@@ -892,11 +893,11 @@ class DatabaseClient:
 
     def get_agencies(
         self,
-        order_by: Optional[OrderByParameters] = None,
-        page: Optional[int] = 1,
-        limit: Optional[int] = PAGE_SIZE,
-        requested_columns: Optional[list[str]] = None,
-        approval_status: Optional[ApprovalStatus] = None,
+        order_by: OrderByParameters | None = None,
+        page: int | None = 1,
+        limit: int | None = PAGE_SIZE,
+        requested_columns: list[str] | None = None,
+        approval_status: ApprovalStatus | None = None,
     ):
         params = GetParams(
             order_by=order_by,
@@ -941,7 +942,7 @@ class DatabaseClient:
         self,
         session: Session,
         data_source_id: int,
-    ) -> Optional[list[dict]]:
+    ) -> list[dict] | None:
         query = (
             select(DataSourceExpanded)
             .options(
@@ -984,8 +985,8 @@ class DatabaseClient:
         self,
         relation_name: str,
         columns: list[str],
-        where_mappings: Optional[Union[list[WhereMapping], dict]] = [True],
-        subquery_parameters: Optional[list[SubqueryParameters]] = [],
+        where_mappings: Union[list[WhereMapping], dict] | None = [True],
+        subquery_parameters: list[SubqueryParameters] | None = [],
         **kwargs,
     ) -> Any:
         results = self._select_from_relation(
@@ -1003,7 +1004,7 @@ class DatabaseClient:
 
     def get_location_id(
         self, where_mappings: Union[list[WhereMapping], dict]
-    ) -> Optional[int]:
+    ) -> int | None:
         result = self._select_single_entry_from_relation(
             relation_name=Relations.LOCATIONS_EXPANDED.value,
             columns=["id"],
@@ -1065,8 +1066,8 @@ class DatabaseClient:
         self,
         user_id: int,
         location_id: int,
-        record_types: Optional[list[RecordTypes]] = None,
-        record_categories: Optional[list[RecordCategories]] = None,
+        record_types: list[RecordTypes] | None = None,
+        record_categories: list[RecordCategories] | None = None,
     ):
         builder = DeleteFollowQueryBuilder(
             user_id=user_id,
@@ -1127,9 +1128,9 @@ class DatabaseClient:
         linked_relation: Relations,
         linked_relation_linking_column: str,
         columns_to_retrieve: list[str],
-        alias_mappings: Optional[dict[str, str]] = None,
+        alias_mappings: dict[str, str] | None = None,
         build_metadata=False,
-        subquery_parameters: Optional[list[SubqueryParameters]] = [],
+        subquery_parameters: list[SubqueryParameters] | None = [],
     ):
         # Get ids via linked table
         link_results = self._select_from_relation(
@@ -1202,7 +1203,7 @@ class DatabaseClient:
         )
         return self.scalar(query)
 
-    def get_next_user_event_batch(self) -> Optional[EventBatch]:
+    def get_next_user_event_batch(self) -> EventBatch | None:
         return self.run_query_builder(NotificationsPostQueryBuilder())
 
     @session_manager
@@ -1221,10 +1222,8 @@ class DatabaseClient:
         self,
         user_id: int,
         location_id: int,
-        record_categories: Optional[
-            Union[list[RecordCategories], RecordCategories]
-        ] = None,
-        record_types: Optional[Union[list[RecordTypes], RecordTypes]] = None,
+        record_categories: list[RecordCategories] | RecordCategories | None = None,
+        record_types: list[RecordTypes] | RecordTypes | None = None,
     ):
         builder = CreateSearchRecordQueryBuilder(
             user_id=user_id,
@@ -1326,7 +1325,7 @@ class DatabaseClient:
         )
         self.execute(query)
 
-    def get_pending_user_with_token(self, validation_token: str) -> Optional[dict]:
+    def get_pending_user_with_token(self, validation_token: str) -> dict | None:
         query = select(PendingUser.email, PendingUser.password_digest).where(
             PendingUser.validation_token == validation_token
         )
@@ -1365,7 +1364,7 @@ class DatabaseClient:
     def get_similar_agencies(
         self,
         name: str,
-        location_id: Optional[int] = None,
+        location_id: int | None = None,
     ) -> List[AgencyMatchResponseInnerDTO]:
         builder = GetSimilarAgenciesQueryBuilder(name=name, location_id=location_id)
         return self.run_query_builder(builder)
@@ -1469,8 +1468,8 @@ class DatabaseClient:
     def get_many_locations(
         self,
         page: int,
-        has_coordinates: Optional[bool] = None,
-        type_: Optional[LocationType] = None,
+        has_coordinates: bool | None = None,
+        type_: LocationType | None = None,
     ):
         builder = GetManyLocationsQueryBuilder(
             page=page,
@@ -1483,7 +1482,7 @@ class DatabaseClient:
     def add_to_notification_log(
         self,
         user_count: int,
-        dt: Optional[datetime] = None,
+        dt: datetime | None = None,
     ):
         item = NotificationLog(
             user_count=user_count,

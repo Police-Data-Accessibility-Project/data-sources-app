@@ -1,35 +1,15 @@
 """Integration tests for /data-sources endpoint"""
 
-import uuid
-from http import HTTPStatus
-
-from db.enums import (
-    AgencyAggregation,
-    DetailLevel,
-    AccessType,
-    RetentionSchedule,
-    URLStatus,
-    ApprovalStatus,
-    UpdateMethod,
-)
-from endpoints.schema_config.instantiations.data_sources.by_id.agencies.get import (
-    DataSourcesRelatedAgenciesGet,
-)
 from endpoints.schema_config.instantiations.data_sources.by_id.get import (
     DataSourcesByIDGetEndpointSchemaConfig,
 )
-from middleware.enums import RecordTypes
 
-from tests.helper_scripts.common_test_data import get_test_name
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.common_asserts import assert_contains_key_value_pairs
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 from tests.helper_scripts.constants import (
     DATA_SOURCES_BASE_ENDPOINT,
-    DATA_SOURCES_GET_RELATED_AGENCIES_ENDPOINT,
-    DATA_SOURCES_POST_DELETE_RELATED_AGENCY_ENDPOINT,
 )
 
 

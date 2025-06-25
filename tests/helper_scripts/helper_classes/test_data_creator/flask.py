@@ -24,7 +24,7 @@ from tests.helper_scripts.helper_classes.RequestValidator import RequestValidato
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,
 )
-from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
+from tests.helper_scripts.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup

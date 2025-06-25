@@ -15,6 +15,6 @@ class DataSourceArchiveInfo(Base):
     data_source_id: Mapped[str] = mapped_column(
         ForeignKey("public.data_sources.id"), primary_key=True
     )
-    update_frequency: Mapped[Optional[str]]
-    last_cached: Mapped[Optional[timestamp]]
-    next_cached: Mapped[Optional[timestamp]]
+    update_frequency: Mapped[str | None]
+    last_cached: Mapped[timestamp | None]
+    next_cached: Mapped[timestamp | None]

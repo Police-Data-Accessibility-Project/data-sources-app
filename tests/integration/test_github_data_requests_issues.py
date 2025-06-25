@@ -15,7 +15,7 @@ from middleware.third_party_interaction_logic.github.issue_project_info.core imp
 from middleware.third_party_interaction_logic.github.issue_project_info.model import (
     GIPIInfo,
 )
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 from tests.helper_scripts.helper_functions_complex import create_test_user_setup

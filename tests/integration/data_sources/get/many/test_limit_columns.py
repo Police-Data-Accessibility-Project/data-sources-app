@@ -1,15 +1,13 @@
 import urllib.parse
 
-from db.enums import ApprovalStatus
 from endpoints.schema_config.instantiations.data_sources.get_many import (
     DataSourcesGetManyEndpointSchemaConfig,
 )
 from tests.helper_scripts.constants import DATA_SOURCES_BASE_ENDPOINT
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-from tests.integration.test_check_database_health import wipe_database
 
 
 def test_data_sources_get_many_limit_columns(

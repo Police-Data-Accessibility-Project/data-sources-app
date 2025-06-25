@@ -41,7 +41,7 @@ from tests.helper_scripts.complex_test_data_creation_functions import (
 )
 
 from tests.helper_scripts.helper_classes.AnyOrder import AnyOrder
-from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
+from tests.helper_scripts.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
 from tests.helper_scripts.test_dataclasses import TestDataRequestInfo
@@ -349,9 +349,7 @@ def test_get_data_sources_for_map(
 ):
     tdc = test_data_creator_db_client
     location_id = tdc.locality()
-    ds_id = tdc.data_source(
-        approval_status=ApprovalStatus.APPROVED, record_type_id=1
-    ).id
+    ds_id = tdc.data_source(approval_status=ApprovalStatus.APPROVED).id
     a_id = tdc.agency(
         location_id=location_id,
         lat=0.0,
@@ -378,7 +376,7 @@ def test_get_data_sources_to_archive(
     live_database_client: DatabaseClient,
 ):
     data_source_id = test_data_creator_db_client.data_source(
-        approval_status=ApprovalStatus.APPROVED, source_url="http://example.com"
+        approval_status=ApprovalStatus.APPROVED
     ).id
     live_database_client._update_entry_in_table(
         table_name=Relations.DATA_SOURCES_ARCHIVE_INFO.value,
@@ -556,11 +554,8 @@ def test_search_with_location_and_record_types_real_data(
     def agency_and_data_source(
         location_id, record_type: RecordTypes = RecordTypes.LIST_OF_DATA_SOURCES
     ):
-        record_type_id = live_database_client.get_record_type_id_by_name(
-            record_type.value
-        )
         ds_id = tdc.data_source(
-            approval_status=ApprovalStatus.APPROVED, record_type_id=record_type_id
+            approval_status=ApprovalStatus.APPROVED, record_type=record_type
         ).id
         a_id = tdc.agency(location_id=location_id).id
         tdc.link_data_source_to_agency(data_source_id=ds_id, agency_id=a_id)
@@ -643,11 +638,8 @@ def test_search_with_location_and_record_types_real_data_multiple_records(
     def agency_and_data_source(
         location_id, record_type: RecordTypes = RecordTypes.LIST_OF_DATA_SOURCES
     ):
-        record_type_id = live_database_client.get_record_type_id_by_name(
-            record_type.value
-        )
         ds_id = tdc.data_source(
-            approval_status=ApprovalStatus.APPROVED, record_type_id=record_type_id
+            approval_status=ApprovalStatus.APPROVED, record_type=record_type
         ).id
         a_id = tdc.agency(location_id=location_id).id
         tdc.link_data_source_to_agency(data_source_id=ds_id, agency_id=a_id)

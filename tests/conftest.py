@@ -11,10 +11,10 @@ from sqlalchemy import create_engine
 
 from config import limiter
 from db.client.core import DatabaseClient
-from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
+from tests.helper_scripts.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 from utilities.common import get_alembic_conn_string, downgrade_to_base

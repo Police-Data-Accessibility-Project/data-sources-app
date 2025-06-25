@@ -6,7 +6,7 @@ from middleware.schema_and_dto.schemas.common.common_response_schemas import (
 from tests.helper_scripts.complex_test_data_creation_functions import (
     create_test_data_request,
 )
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 

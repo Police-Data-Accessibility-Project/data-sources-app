@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 from endpoints.instantiations.auth_.callback import Callback
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 

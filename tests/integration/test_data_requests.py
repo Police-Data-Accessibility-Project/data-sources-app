@@ -27,7 +27,7 @@ from tests.helper_scripts.common_test_data import (
 from tests.helper_scripts.complex_test_data_creation_functions import (
     create_test_data_request,
 )
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 from tests.helper_scripts.constants import (

@@ -13,13 +13,13 @@ from middleware.enums import Relations
 class User(StandardBase, CreatedAtMixin):
     __tablename__ = Relations.USERS.value
 
-    updated_at: Mapped[Optional[timestamp_tz]]
+    updated_at: Mapped[timestamp_tz | None]
     email: Mapped[str] = mapped_column(unique=True)
-    password_digest: Mapped[Optional[str]]
-    api_key: Mapped[Optional[str]] = mapped_column(
+    password_digest: Mapped[str | None]
+    api_key: Mapped[str | None] = mapped_column(
         server_default=text_func("generate_api_key()")
     )
-    role: Mapped[Optional[text]]
+    role: Mapped[text | None]
 
     # Relationships
     created_agencies = relationship(

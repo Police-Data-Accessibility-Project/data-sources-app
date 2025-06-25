@@ -4,7 +4,7 @@ from typing import Optional
 from db.constants import PAGE_SIZE
 
 
-def get_offset(page: int) -> Optional[int]:
+def get_offset(page: int) -> int | None:
     """
     Calculates the offset value for pagination based on the given page number.
     Args:

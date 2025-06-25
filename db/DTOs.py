@@ -26,5 +26,5 @@ class DataRequestInfoForGithub(BaseModel):
     title: str
     submission_notes: str
     data_requirements: str
-    locations: Optional[list[str]]
-    record_types: Optional[list[RecordTypes]]
+    locations: list[str] | None
+    record_types: list[RecordTypes] | None

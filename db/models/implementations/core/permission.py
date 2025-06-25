@@ -12,4 +12,4 @@ class Permission(StandardBase):
     __tablename__ = Relations.PERMISSIONS.value
 
     permission_name: Mapped[str_255]
-    description: Mapped[Optional[text]]
+    description: Mapped[text | None]

@@ -34,7 +34,7 @@ class DynamicQueryConstructor:
 
     @staticmethod
     def agencies_get_load_options(
-        requested_columns: Optional[list[str]] = None,
+        requested_columns: list[str] | None = None,
     ) -> list:
         load_options = [
             selectinload(Agency.data_sources).load_only(
@@ -216,7 +216,7 @@ class DynamicQueryConstructor:
 
     @staticmethod
     def create_federal_search_query(
-        record_categories: Optional[list[RecordCategories]] = None,
+        record_categories: list[RecordCategories] | None = None,
         page: int = 1,
     ) -> sql.Composed:
         base_query = sql.SQL(

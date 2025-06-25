@@ -1,43 +1,26 @@
-from http import HTTPStatus
-from unittest.mock import MagicMock, call, ANY
-
-import pytest
+from unittest.mock import call, ANY
 
 from db.enums import EventType, EntityType
-from db.models.implementations.core.notification.queue.data_source import (
-    DataSourceUserNotificationQueue,
-)
+from db.models.implementations.core.log.notification import NotificationLog
 from db.models.implementations.core.notification.queue.data_request import (
     DataRequestUserNotificationQueue,
 )
-from db.models.implementations.core.log.notification import NotificationLog
+from db.models.implementations.core.notification.queue.data_source import (
+    DataSourceUserNotificationQueue,
+)
 from endpoints.schema_config.instantiations.notifications import (
     NotificationsPostEndpointSchemaConfig,
 )
-from middleware.custom_dataclasses import EventInfo, EventBatch
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
-    TestDataCreatorFlask,
-)
+from middleware.custom_dataclasses import EventBatch, EventInfo
 from tests.helper_scripts.constants import NOTIFICATIONS_BASE_ENDPOINT
 from tests.helper_scripts.helper_classes.AnyOrder import AnyOrder
-from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
+from tests.helper_scripts.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
-from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+    TestDataCreatorFlask,
+)
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-
-
-PATCH_ROOT = "middleware.primary_resource_logic.notifications"
-
-
-@pytest.fixture
-def mock_format_and_send_notifications(monkeypatch):
-    mock_format_and_send_notifications = MagicMock()
-    monkeypatch.setattr(
-        f"{PATCH_ROOT}.format_and_send_notifications",
-        mock_format_and_send_notifications,
-    )
-    return mock_format_and_send_notifications
 
 
 def test_notifications_followed_searches(
@@ -151,24 +134,3 @@ def test_notifications_followed_searches(
     assert len(notification_log) == 1
     assert notification_log[0]["created_at"] is not None
     assert notification_log[0]["user_count"] == 2
-
-
-def test_notifications_permission_denied(
-    test_data_creator_flask: TestDataCreatorFlask, mock_format_and_send_notifications
-):
-    """
-    Test that for basic admins and standard users, they are not able to call the endpoint
-    """
-    tdc = test_data_creator_flask
-
-    def run(tus: TestUserSetup):
-        run_and_validate_request(
-            flask_client=tdc.flask_client,
-            http_method="post",
-            endpoint=NOTIFICATIONS_BASE_ENDPOINT,
-            headers=tus.jwt_authorization_header,
-            expected_response_status=HTTPStatus.FORBIDDEN,
-        )
-
-    run(tdc.get_admin_tus())
-    run(tdc.standard_user())

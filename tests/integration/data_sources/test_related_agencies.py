@@ -5,7 +5,7 @@ from tests.helper_scripts.constants import (
     DATA_SOURCES_GET_RELATED_AGENCIES_ENDPOINT,
     DATA_SOURCES_POST_DELETE_RELATED_AGENCY_ENDPOINT,
 )
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request

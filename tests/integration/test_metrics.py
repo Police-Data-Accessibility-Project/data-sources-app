@@ -12,7 +12,7 @@ from tests.helper_scripts.helper_classes.MultiDataSourceSetup import (
 )
 from tests.helper_scripts.helper_classes.MultiFollowSetup import MultiFollowSetup
 from tests.helper_scripts.helper_classes.MultiRequestSetup import MultiRequestSetup
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 
