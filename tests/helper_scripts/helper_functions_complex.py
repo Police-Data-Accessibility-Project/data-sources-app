@@ -94,7 +94,7 @@ def create_api_key(client_with_db: FlaskClient, jwt_authorization_header: dict) 
     return api_key
 
 
-def setup_get_typeahead_suggestion_test_data(cursor: Optional[psycopg.Cursor] = None):
+def setup_get_typeahead_suggestion_test_data():
     db_client = DatabaseClient()
     try:
 
