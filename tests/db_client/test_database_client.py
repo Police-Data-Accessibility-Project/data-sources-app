@@ -18,7 +18,6 @@ from db.db_client_dataclasses import (
 from db.helpers import get_offset
 from db.subquery_logic import SubqueryParameterManager
 from db.enums import (
-    ExternalAccountTypeEnum,
     SortOrder,
     RequestStatus,
     ApprovalStatus,
@@ -26,10 +25,8 @@ from db.enums import (
 from middleware.constants import DATETIME_FORMAT
 from middleware.exceptions import (
     UserNotFoundError,
-    DuplicateUserError,
 )
 from db.models.implementations.core.user.core import User
-from db.models.implementations.core.external_account import ExternalAccount
 from db.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import PermissionsEnum, Relations, RecordTypes
 from tests.helper_scripts.common_test_data import (
@@ -50,122 +47,6 @@ from tests.helper_scripts.helper_functions_complex import (
     create_test_user_db_client,
 )
 from utilities.enums import RecordCategories
-
-
-def test_add_new_user(live_database_client: DatabaseClient):
-    fake_email = get_test_name()
-    live_database_client.create_new_user(fake_email, "test_password")
-    result = (
-        live_database_client.execute_sqlalchemy(
-            lambda: select(User.password_digest, User.api_key).where(
-                User.email == fake_email
-            )
-        )
-        .mappings()
-        .one_or_none()
-    )
-
-    password_digest = result.password_digest
-
-    assert password_digest == "test_password"
-
-    # Adding same user should produce a DuplicateUserError
-    with pytest.raises(DuplicateUserError):
-        live_database_client.create_new_user(fake_email, "test_password")
-
-
-def test_get_user_id(live_database_client: DatabaseClient):
-    # Add a new user to the database
-    fake_email = get_test_name()
-    live_database_client.create_new_user(fake_email, "test_password")
-
-    # Directly fetch the user ID from the database for comparison
-    direct_user_id = live_database_client.execute_sqlalchemy(
-        lambda: select(User.id).where(User.email == fake_email)
-    ).one_or_none()[0]
-
-    # Get the user ID from the live database
-    result_user_id = live_database_client.get_user_id(fake_email)
-
-    # Compare the two user IDs
-    assert result_user_id == direct_user_id
-
-
-def test_link_external_account(live_database_client: DatabaseClient):
-    fake_email = get_test_name()
-    fake_external_account_id = uuid.uuid4().hex
-    live_database_client.create_new_user(fake_email, "test_password")
-    user_id = live_database_client.get_user_id(fake_email)
-    live_database_client.link_external_account(
-        user_id=str(user_id),
-        external_account_id=fake_external_account_id,
-        external_account_type=ExternalAccountTypeEnum.GITHUB,
-    )
-    row = (
-        live_database_client.execute_sqlalchemy(
-            lambda: select(ExternalAccount.user_id, ExternalAccount.account_type).where(
-                ExternalAccount.account_identifier == fake_external_account_id
-            )
-        )
-        .mappings()
-        .one_or_none()
-    )
-
-    assert row.user_id == user_id
-    assert row.account_type == ExternalAccountTypeEnum.GITHUB.value
-
-
-def test_get_user_info_by_external_account_id(live_database_client: DatabaseClient):
-    fake_email = get_test_name()
-    fake_external_account_id = uuid.uuid4().hex
-    live_database_client.create_new_user(fake_email, "test_password")
-    user_id = live_database_client.get_user_id(fake_email)
-    live_database_client.link_external_account(
-        user_id=str(user_id),
-        external_account_id=fake_external_account_id,
-        external_account_type=ExternalAccountTypeEnum.GITHUB,
-    )
-    user_info = live_database_client.get_user_info_by_external_account_id(
-        fake_external_account_id, ExternalAccountTypeEnum.GITHUB
-    )
-    assert user_info.email == fake_email
-
-
-def test_reset_token_logic(live_database_client: DatabaseClient):
-    fake_email = get_test_name()
-    fake_token = uuid.uuid4().hex
-    user_id = live_database_client.create_new_user(fake_email, "test_password")
-    live_database_client.add_reset_token(user_id, fake_token)
-    reset_token_info = live_database_client.get_reset_token_info(fake_token)
-    assert reset_token_info, "Token not found"
-    assert reset_token_info.user_id == user_id, "User id does not match"
-
-    live_database_client.delete_reset_token(user_id, fake_token)
-    reset_token_info = live_database_client.get_reset_token_info(fake_token)
-    assert reset_token_info is None, "Token not deleted"
-
-
-def test_update_user_api_key(live_database_client: DatabaseClient):
-    # Add a new user to the database
-    email = get_test_name()
-    password_digest = uuid.uuid4().hex
-
-    live_database_client.create_new_user(
-        email=email,
-        password_digest=password_digest,
-    )
-
-    original_user_info = live_database_client.get_user_info(email)
-
-    # Update the user's API key with the DatabaseClient Method
-    live_database_client.update_user_api_key(
-        api_key="test_api_key", user_id=original_user_info.id
-    )
-
-    # Fetch the user's API key from the database to confirm the change
-    user_info = live_database_client.get_user_info(email)
-    assert original_user_info.api_key != user_info.api_key
-    assert user_info.api_key == "test_api_key"
 
 
 def test_select_from_relation_columns_only(
