@@ -17,7 +17,11 @@ def initialize_sqlalchemy_session() -> sessionmaker[Session]:
         do_database_url = get_env_variable("DO_DATABASE_URL")
         do_database_url = "postgresql+psycopg" + do_database_url[10:]
 
-        engine = create_engine(do_database_url, pool_pre_ping=True)
+        engine = create_engine(
+            do_database_url,
+            pool_pre_ping=True,
+            pool_recycle=3600,
+        )
         sm = sessionmaker(bind=engine)
         return sm
 
