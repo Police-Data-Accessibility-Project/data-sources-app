@@ -2,6 +2,7 @@ import datetime
 import uuid
 from typing import Optional
 
+from sqlalchemy import delete
 from sqlalchemy.exc import IntegrityError
 
 from db.client.core import DatabaseClient
@@ -11,6 +12,25 @@ from db.enums import (
     EventType,
     ExternalAccountTypeEnum,
 )
+from db.models.implementations.core.agency.core import Agency
+from db.models.implementations.core.data_request.core import DataRequest
+from db.models.implementations.core.data_source.core import DataSource
+from db.models.implementations.core.location.locality import Locality
+from db.models.implementations.core.log.notification import NotificationLog
+from db.models.implementations.core.notification.pending.data_request import (
+    DataRequestPendingEventNotification,
+)
+from db.models.implementations.core.notification.pending.data_source import (
+    DataSourcePendingEventNotification,
+)
+from db.models.implementations.core.notification.queue.data_request import (
+    DataRequestUserNotificationQueue,
+)
+from db.models.implementations.core.notification.queue.data_source import (
+    DataSourceUserNotificationQueue,
+)
+from db.models.implementations.core.record.type import RecordType
+from db.models.implementations.core.user.core import User
 from middleware.enums import (
     JurisdictionType,
     Relations,
@@ -65,20 +85,20 @@ class TestDataCreatorDBClient:
         return f"TEST_{midfix}_{uuid.uuid4().hex}.com"
 
     def clear_test_data(self):
-        # Remove test data from data request
-        self.helper.clear_table(Relations.DATA_REQUESTS)
-        # Remove test data from agency
-        self.helper.clear_table(Relations.AGENCIES)
-        # Remove test data from locality
-        self.helper.clear_table(Relations.LOCALITIES)
-        # Remove test data from data source
-        self.helper.clear_table(Relations.DATA_SOURCES)
-        # Remove test data from user
-        self.helper.clear_table(Relations.USERS)
-        # Remove test data from notification log
-        self.helper.clear_table(Relations.NOTIFICATION_LOG)
-
-        self.helper.clear_user_notification_queue()
+        for model in [
+            DataRequest,
+            Agency,
+            Locality,
+            DataSource,
+            User,
+            NotificationLog,
+            DataRequestUserNotificationQueue,
+            DataSourceUserNotificationQueue,
+            DataRequestPendingEventNotification,
+            DataSourcePendingEventNotification,
+        ]:
+            query = delete(model)
+            self.db_client.execute(query)
 
     def county(
         self,
@@ -340,6 +360,64 @@ class TestDataCreatorDBClient:
         dt = datetime.datetime.now() - datetime.timedelta(weeks=4)
         self.db_client.add_to_notification_log(user_count=0, dt=dt)
         return dt
+
+
+class ValidNotificationEventCreatorV2:
+    """Creates events designed to be picked up by the notification service."""
+
+    def __init__(self, tdc: TestDataCreatorDBClient):
+        self.tdc = tdc
+        self.notification_valid_date = get_notification_valid_date()
+        self.user_id = self.tdc.user().id
+
+    def data_source_approved(self, record_type: RecordTypes, location_id: int) -> int:
+        """Create approved data source with record type and link to agency with location"""
+        agency_info = self.tdc.agency(location_id)
+        ds_info = self.tdc.data_source()
+        self.tdc.link_data_source_to_agency(
+            data_source_id=ds_info.id, agency_id=agency_info.id
+        )
+        self.tdc.db_client.update_data_source_v2(
+            dto=EntryCreateUpdateRequestDTO(
+                entry_data={
+                    "approval_status_updated_at": self.notification_valid_date,
+                    "record_type_name": record_type.value,
+                }
+            ),
+            user_id=self.user_id,
+            data_source_id=ds_info.id,
+            permissions=[PermissionsEnum.DB_WRITE],
+        )
+        return ds_info.id
+
+    def create_data_request(
+        self, request_status: RequestStatus, record_type: RecordTypes, location_id: int
+    ) -> int:
+        """Create data request of given request status and record type and link to location"""
+        dr_info = self.tdc.data_request()
+        self.tdc.db_client.update_data_request_v2(
+            data_request_id=dr_info.id,
+            dto=DataRequestsPutOuterDTO(
+                entry_data=DataRequestsPutDTO(
+                    request_status=request_status,
+                    record_types_required=[record_type],
+                )
+            ),
+            bypass_permissions=True,
+        )
+        self.tdc.db_client.create_request_location_relation(
+            column_value_mappings={
+                "data_request_id": dr_info.id,
+                "location_id": location_id,
+            }
+        )
+        self.tdc.db_client.update_data_request(
+            entry_id=dr_info.id,
+            column_edit_mappings={
+                "date_status_last_changed": self.notification_valid_date
+            },
+        )
+        return dr_info.id
 
 
 class ValidNotificationEventCreator:

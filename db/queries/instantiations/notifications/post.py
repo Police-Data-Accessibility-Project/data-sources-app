@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sqlalchemy import select, or_, exists, and_
 from sqlalchemy.orm import selectinload
 
@@ -17,7 +15,7 @@ from middleware.custom_dataclasses import EventBatch, EventInfo
 
 class NotificationsPostQueryBuilder(QueryBuilderBase):
 
-    def run(self) -> Optional[EventBatch]:
+    def run(self) -> EventBatch | None:
         query = (
             select(User)
             .where(

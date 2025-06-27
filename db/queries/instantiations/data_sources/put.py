@@ -58,7 +58,7 @@ class DataSourcesPutQueryBuilder(
         if "approval_status" in d:
             d["last_approval_editor"] = self.user_id
             approval_status = d["approval_status"]
-            if approval_status == ApprovalStatus.APPROVED:
+            if approval_status == ApprovalStatus.APPROVED.value:
                 self._add_pending_event_notification(self.data_source_id)
 
     def _handle_record_type_name(self, d: dict) -> None:

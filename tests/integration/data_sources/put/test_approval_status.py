@@ -14,10 +14,13 @@ def test_data_sources_by_id_put_approval_status(
     test_data_creator_flask: TestDataCreatorFlask,
 ):
     """
-    Test that PUT call to /data-sources-by-id/<data_source_id> endpoint successfully updates the last_approval_editor of the data source and verifies the change in the database
+    Test that PUT call to /data-sources-by-id/<data_source_id> endpoint
+     successfully updates the last_approval_editor of the data source
+     and verifies the change in the database
     """
     tdc = test_data_creator_flask
-    cdr = tdc.data_source()
+    tdc.clear_test_data()
+    cdr = tdc.tdcdb.data_source(approval_status=ApprovalStatus.PENDING)
 
     entry_data = {"approval_status": ApprovalStatus.APPROVED.value}
 

@@ -1416,7 +1416,7 @@ class DatabaseClient:
         )
 
     @session_manager
-    def get_all(self, model: Type[Base]):
+    def get_all(self, model: type[Base]):
 
         def to_dict(instance):
             return {

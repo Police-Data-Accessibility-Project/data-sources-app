@@ -27,23 +27,6 @@ class TDCSQLAlchemyHelper:
         query = delete(table).where(column.like(like_text))
         self.db_client.execute_sqlalchemy(lambda: query)
 
-    def clear_table(
-        self,
-        relation: Relations,
-    ):
-        table = SQL_ALCHEMY_TABLE_REFERENCE[relation.value]
-        query = delete(table)
-        self.db_client.execute_sqlalchemy(lambda: query)
-
-    def delete_test_like(
-        self,
-        table_name: str,
-        like_column_name: str,
-    ):
-        self.delete_like(
-            table_name=table_name, like_column_name=like_column_name, like_text="%"
-        )
-
     def get_county_id(self, county_name: str, state_iso: str = "PA") -> int:
         state_id = self.get_state_id(state_iso=state_iso)
         table = SQL_ALCHEMY_TABLE_REFERENCE[Relations.COUNTIES.value]
@@ -66,9 +49,3 @@ class TDCSQLAlchemyHelper:
         if len(results) == 0:
             raise Exception(f"Could not find state with iso {state_iso}")
         return results[0]
-
-    def clear_user_notification_queue(self):
-        query_1 = delete(DataRequestUserNotificationQueue)
-        query_2 = delete(DataSourceUserNotificationQueue)
-        for query in [query_1, query_2]:
-            self.db_client.execute_sqlalchemy(lambda: query)

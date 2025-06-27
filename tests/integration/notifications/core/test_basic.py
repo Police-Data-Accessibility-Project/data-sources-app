@@ -1,12 +1,7 @@
-from unittest.mock import call, ANY
-
-from db.enums import EventType, EntityType
 from endpoints.schema_config.instantiations.notifications import (
     NotificationsPostEndpointSchemaConfig,
 )
-from middleware.custom_dataclasses import EventBatch, EventInfo
 from tests.helper_scripts.constants import NOTIFICATIONS_BASE_ENDPOINT
-from tests.helper_scripts.helper_classes.AnyOrder import AnyOrder
 from tests.helper_scripts.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
