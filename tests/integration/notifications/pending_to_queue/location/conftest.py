@@ -6,6 +6,10 @@ from tests.integration.notifications.pending_to_queue.location.manager import (
 
 
 @pytest.fixture
-def manager(test_data_creator_db_client) -> NotificationsPendingToQueueLocationTestManager:
-    manager = NotificationsPendingToQueueLocationTestManager(test_data_creator_db_client)
+def manager(
+    test_data_creator_db_client,
+) -> NotificationsPendingToQueueLocationTestManager:
+    manager = NotificationsPendingToQueueLocationTestManager(
+        test_data_creator_db_client
+    )
     return manager

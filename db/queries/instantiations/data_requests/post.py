@@ -30,7 +30,9 @@ class DataRequestsPostQueryBuilder(
             creator_user_id=self.user_id,
             request_urgency=request_info.request_urgency.value,
             data_requirements=request_info.data_requirements,
-            record_types_required=request_info.record_types_required,
+            record_types_required=[
+                rt.value for rt in request_info.record_types_required
+            ],
             request_status=request_info.request_status.value,
         )
         self.session.add(data_request)

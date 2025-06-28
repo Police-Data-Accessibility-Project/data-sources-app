@@ -1,12 +1,12 @@
 from typing import Any, final
 
-from sqlalchemy import select, Select, Executable
+from sqlalchemy import select, Select, Executable, and_
 
 from db.models.implementations import (
     LinkLocationDataRequest,
     LinkUserFollowedLocation,
     LinkAgencyDataSource,
-    LinkAgencyLocation,
+    LinkAgencyLocation, LinkFollowRecordType,
 )
 from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.data_request.core import DataRequest
@@ -111,6 +111,18 @@ class OptionallyUpdateUserNotificationQueueQueryBuilder(QueryBuilderBase):
                 DataSourcePendingEventNotification,
                 DataSourcePendingEventNotification.data_source_id
                 == LinkAgencyDataSource.data_source_id,
+            )
+            # Follow in turn has record types associated with it
+            .join(
+                DataSource,
+                DataSource.id == DataSourcePendingEventNotification.data_source_id,
+            )
+            .join(
+                LinkFollowRecordType,
+                and_(
+                    LinkFollowRecordType.follow_id == LinkUserFollowedLocation.id,
+                    LinkFollowRecordType.record_type_id == DataSource.record_type_id
+                ),
             )
             .where(
                 # Event ID should not be in user_notification_queue for that user

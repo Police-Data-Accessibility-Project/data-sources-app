@@ -9,7 +9,8 @@ from db.enums import (
     ApprovalStatus,
     RequestStatus,
     EventType,
-    ExternalAccountTypeEnum, RequestUrgency,
+    ExternalAccountTypeEnum,
+    RequestUrgency,
 )
 from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.data_request.core import DataRequest
@@ -40,7 +41,10 @@ from middleware.schema_and_dto.dtos.agencies.post import (
     AgencyInfoPostDTO,
     AgenciesPostDTO,
 )
-from middleware.schema_and_dto.dtos.data_requests.post import DataRequestsPostDTO, RequestInfoPostDTO
+from middleware.schema_and_dto.dtos.data_requests.post import (
+    DataRequestsPostDTO,
+    RequestInfoPostDTO,
+)
 from middleware.schema_and_dto.dtos.data_requests.put import (
     DataRequestsPutDTO,
     DataRequestsPutOuterDTO,
@@ -259,20 +263,27 @@ class TestDataCreatorDBClient:
                 submission_notes=submission_notes,
                 request_status=request_status,
                 request_urgency=RequestUrgency.INDEFINITE,
-                record_types_required=record_type_as_list
+                record_types_required=record_type_as_list,
             )
         )
         data_request_id = self.db_client.create_data_request_v2(
-            dto=dto,
-            user_id=user_id
+            dto=dto, user_id=user_id
         )
         return TestDataRequestInfo(
-            id=data_request_id,
-            submission_notes=submission_notes
+            id=data_request_id, submission_notes=submission_notes
         )
 
-    def user_follow_location(self, user_id: int, location_id: int):
-        self.db_client.create_followed_search(user_id=user_id, location_id=location_id)
+    def user_follow_location(
+        self,
+        user_id: int,
+        location_id: int,
+        record_types: list[RecordTypes] | None = None,
+    ) -> None:
+        self.db_client.create_followed_search(
+            user_id=user_id,
+            location_id=location_id,
+            record_types=record_types
+        )
 
     def link_data_request_to_data_source(
         self, data_request_id: int, data_source_id: str
