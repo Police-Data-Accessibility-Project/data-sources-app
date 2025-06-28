@@ -1,5 +1,6 @@
-from tests.integration.notifications.pending_to_queue.location.manager import \
-    NotificationsPendingToQueueLocationTestManager
+from tests.integration.notifications.pending_to_queue.location.manager import (
+    NotificationsPendingToQueueLocationTestManager,
+)
 
 
 def test_notifications_pending_to_queue_record_type_direct_follow(

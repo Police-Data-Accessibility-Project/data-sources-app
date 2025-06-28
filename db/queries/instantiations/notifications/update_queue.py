@@ -6,7 +6,8 @@ from db.models.implementations import (
     LinkLocationDataRequest,
     LinkUserFollowedLocation,
     LinkAgencyDataSource,
-    LinkAgencyLocation, LinkFollowRecordType,
+    LinkAgencyLocation,
+    LinkFollowRecordType,
 )
 from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.data_request.core import DataRequest
@@ -121,7 +122,7 @@ class OptionallyUpdateUserNotificationQueueQueryBuilder(QueryBuilderBase):
                 LinkFollowRecordType,
                 and_(
                     LinkFollowRecordType.follow_id == LinkUserFollowedLocation.id,
-                    LinkFollowRecordType.record_type_id == DataSource.record_type_id
+                    LinkFollowRecordType.record_type_id == DataSource.record_type_id,
                 ),
             )
             .where(

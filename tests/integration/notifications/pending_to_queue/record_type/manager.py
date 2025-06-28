@@ -2,17 +2,28 @@ from sqlalchemy import delete, select
 from sqlalchemy.sql.functions import count
 
 from db.enums import EventType
-from db.models.implementations.core.notification.pending.data_request import DataRequestPendingEventNotification
-from db.models.implementations.core.notification.pending.data_source import DataSourcePendingEventNotification
-from db.models.implementations.core.notification.queue.data_request import DataRequestUserNotificationQueue
-from db.models.implementations.core.notification.queue.data_source import DataSourceUserNotificationQueue
+from db.models.implementations.core.notification.pending.data_request import (
+    DataRequestPendingEventNotification,
+)
+from db.models.implementations.core.notification.pending.data_source import (
+    DataSourcePendingEventNotification,
+)
+from db.models.implementations.core.notification.queue.data_request import (
+    DataRequestUserNotificationQueue,
+)
+from db.models.implementations.core.notification.queue.data_source import (
+    DataSourceUserNotificationQueue,
+)
 from middleware.enums import RecordTypes
 from tests.helper_scripts.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
-from tests.integration.notifications.pending_to_queue._helpers.checker_.data_requests import \
-    DataRequestsEventQueueChecker
-from tests.integration.notifications.pending_to_queue._helpers.checker_.data_sources import DataSourcesEventQueueChecker
+from tests.integration.notifications.pending_to_queue._helpers.checker_.data_requests import (
+    DataRequestsEventQueueChecker,
+)
+from tests.integration.notifications.pending_to_queue._helpers.checker_.data_sources import (
+    DataSourcesEventQueueChecker,
+)
 
 
 class NotificationsPendingToQueueRecordTypeTestManager:
@@ -43,16 +54,10 @@ class NotificationsPendingToQueueRecordTypeTestManager:
         self.ds_checker: DataSourcesEventQueueChecker | None = None
 
     def get_data_request_ids(self) -> list[int]:
-        return [
-            self.data_request_accident_id,
-            self.data_request_court_id
-        ]
+        return [self.data_request_accident_id, self.data_request_court_id]
 
     def get_data_source_ids(self) -> list[int]:
-        return [
-            self.data_source_accident_id,
-            self.data_source_court_id
-        ]
+        return [self.data_source_accident_id, self.data_source_court_id]
 
     def _clear_pending_tables(self):
         for model in [
@@ -144,7 +149,6 @@ class NotificationsPendingToQueueRecordTypeTestManager:
             event_type=EventType.DATA_SOURCE_APPROVED,
         )
 
-
     def setup(self, follow_location_id: int, entity_location_id: int) -> None:
         self._setup_user_follows(location_id=follow_location_id)
         self._setup_entity_location(location_id=entity_location_id)
@@ -152,7 +156,6 @@ class NotificationsPendingToQueueRecordTypeTestManager:
         self.db_client.optionally_update_user_notification_queue()
         self.dr_checker = DataRequestsEventQueueChecker(self.db_client)
         self.ds_checker = DataSourcesEventQueueChecker(self.db_client)
-
 
     def run(self, follow_location_id: int, entity_location_id: int):
         self.setup(
@@ -162,10 +165,7 @@ class NotificationsPendingToQueueRecordTypeTestManager:
 
     def check_results(self):
         self._check_results_for_users()
-        self.check_expected_queue_count(
-            dr_count_expected=8,
-            ds_count_expected=3
-        )
+        self.check_expected_queue_count(dr_count_expected=8, ds_count_expected=3)
 
     def check_expected_queue_count(
         self, dr_count_expected: int, ds_count_expected: int

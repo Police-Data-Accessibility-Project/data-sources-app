@@ -280,9 +280,7 @@ class TestDataCreatorDBClient:
         record_types: list[RecordTypes] | None = None,
     ) -> None:
         self.db_client.create_followed_search(
-            user_id=user_id,
-            location_id=location_id,
-            record_types=record_types
+            user_id=user_id, location_id=location_id, record_types=record_types
         )
 
     def link_data_request_to_data_source(
