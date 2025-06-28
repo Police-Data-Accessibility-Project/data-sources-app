@@ -11,6 +11,7 @@ from typing import (
     LiteralString,
     Sequence,
     cast,
+    final,
 )
 
 import psycopg
@@ -18,11 +19,12 @@ import sqlalchemy.exc
 from psycopg import Cursor
 from psycopg.connection import Connection as pg_connection
 from psycopg.rows import tuple_row
-from sqlalchemy import select, delete, update, Select, func, RowMapping
+from sqlalchemy import select, delete, update, Select, func, RowMapping, Executable
 from sqlalchemy.orm import (
     selectinload,
     Session,
 )
+from sqlalchemy.sql.compiler import SQLCompiler
 
 from db.DTOs import (
     UsersWithPermissions,
@@ -199,6 +201,7 @@ from middleware.util.argument_checking import check_for_mutually_exclusive_argum
 from utilities.enums import RecordCategories
 
 
+@final
 class DatabaseClient:
 
     def __init__(self):
@@ -221,7 +224,7 @@ class DatabaseClient:
         if execute_many:
             self.cursor.executemany(cast(LiteralString, query), vars_)
         else:
-            self.cursor.execute(cast(LiteralString, query), vars_)
+            _ = self.cursor.execute(cast(LiteralString, query), vars_)
         try:
             results = self.cursor.fetchall()
         except psycopg.ProgrammingError:
@@ -230,6 +233,10 @@ class DatabaseClient:
         if len(results) == 0:
             return None
         return results
+
+    @staticmethod
+    def compile(query: Select) -> SQLCompiler:
+        return query.compile(compile_kwargs={"literal_binds": True})
 
     @session_manager_v2
     def scalar(self, session: Session, query: Select):
@@ -249,33 +256,35 @@ class DatabaseClient:
         return results
 
     @session_manager_v2
-    def all(self, session: Session, stmt: Select):
+    def all(self, session: Session, stmt: Executable):
         return session.execute(stmt).all()
 
     @session_manager_v2
-    def execute(self, session: Session, stmt):
+    def execute(self, session: Session, stmt: Executable):
         session.execute(stmt)
 
     @session_manager_v2
-    def add(self, session: Session, model):
+    def add(self, session: Session, model: Base):
         session.add(model)
 
     @session_manager_v2
     def add_many(
-        self, session: Session, models, return_ids: bool = False
+        self, session: Session, models: list[Base], return_ids: bool = False
     ) -> list[int] | None:
         session.add_all(models)
         if return_ids:
+            if not hasattr(models[0], "id"):
+                raise AttributeError("Models must have an id attribute")
             session.flush()
             return [model.id for model in models]
         return None
 
     @session_manager_v2
-    def mapping(self, session: Session, query: Select):
+    def mapping(self, session: Session, query: Executable) -> RowMapping | None:
         return session.execute(query).mappings().first()
 
     @session_manager_v2
-    def mappings(self, session: Session, query: Select) -> Sequence[RowMapping]:
+    def mappings(self, session: Session, query: Executable) -> Sequence[RowMapping]:
         return session.execute(query).mappings().all()
 
     @session_manager_v2

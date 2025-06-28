@@ -1,5 +1,3 @@
-from _pytest import monkeypatch
-
 from db.enums import RequestStatus
 from db.models.implementations.core.data_request.core import DataRequest
 from db.models.implementations.core.data_request.github_issue_info import (

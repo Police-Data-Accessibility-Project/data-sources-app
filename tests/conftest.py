@@ -1,5 +1,6 @@
 import logging
 from collections import namedtuple
+from typing import Any, Generator
 from unittest.mock import MagicMock
 
 import dotenv
@@ -13,6 +14,7 @@ from sqlalchemy.exc import IntegrityError as IntegrityErrorSA
 
 from config import limiter
 from db.client.core import DatabaseClient
+from db.enums import LocationType
 from db.models.implementations.core.location.core import Location
 from db.models.implementations.core.location.county import County
 from db.models.implementations.core.location.locality import Locality
@@ -31,7 +33,7 @@ dotenv.load_dotenv()
 
 
 @pytest.fixture
-def dev_db_client() -> DatabaseClient:
+def dev_db_client() -> Generator[DatabaseClient, Any, None]:
     db_client = DatabaseClient()
     yield db_client
 
@@ -40,12 +42,8 @@ ClientWithMockDB = namedtuple("ClientWithMockDB", ["client", "mock_db"])
 
 
 @pytest.fixture
-def client_with_mock_db(mocker, monkeypatch) -> ClientWithMockDB:
-    """
-    Create a client with a mocked database connection
-    :param mocker:
-    :return:
-    """
+def client_with_mock_db(mocker, monkeypatch) -> Generator[ClientWithMockDB, Any, None]:
+    """Create a client with a mocked database connection"""
     from app import create_app
 
     mock_db = mocker.MagicMock()
@@ -59,10 +57,7 @@ def client_with_mock_db(mocker, monkeypatch) -> ClientWithMockDB:
 
 @pytest.fixture()
 def flask_client_with_db(monkeypatch):
-    """
-    Creates a client with database connection
-    :return:
-    """
+    """Creates a client with database connection"""
     from app import create_app
 
     mock_get_flask_app_secret_key = MagicMock(return_value="test")
@@ -78,11 +73,7 @@ def flask_client_with_db(monkeypatch):
 
 @pytest.fixture
 def bypass_jwt_required(monkeypatch):
-    """
-    A fixture to bypass the jwt required decorator for testing
-    :param monkeypatch:
-    :return:
-    """
+    """A fixture to bypass the jwt required decorator for testing"""
     monkeypatch.setattr(
         "flask_jwt_extended.view_decorators.verify_jwt_in_request",
         lambda a, b, c, d, e, f: None,
@@ -90,23 +81,15 @@ def bypass_jwt_required(monkeypatch):
 
 
 @pytest.fixture
-def live_database_client() -> DatabaseClient:
-    """
-    Returns a database client with a live connection to the database
-    :return:
-    """
+def live_database_client() -> Generator[DatabaseClient, Any, None]:
+    """Returns a database client with a live connection to the database"""
     db_client = DatabaseClient()
     yield db_client
 
 
 @pytest.fixture
 def test_table_data(live_database_client: DatabaseClient):
-    """
-    Removes existing test table data and generates test data for the test table
-    Generates test data for the test table
-    :param dev_db_client:
-    :return:
-    """
+    """Removes existing test table data and generates test data for the test table."""
 
     live_database_client.execute_raw_sql(
         """
@@ -126,16 +109,12 @@ def test_table_data(live_database_client: DatabaseClient):
 
 @pytest.fixture
 def clear_data_requests(dev_db_client: DatabaseClient):
-    """
-    Clear `data_requests` and associated tables
-    :param dev_db_client:
-    :return:
-    """
+    """Clear `data_requests` and associated tables"""
     dev_db_client.execute_raw_sql("DELETE FROM DATA_REQUESTS;")
 
 
 @pytest.fixture(scope="session")
-def test_data_creator_db_client() -> TestDataCreatorDBClient:
+def test_data_creator_db_client() -> Generator[TestDataCreatorDBClient, Any, None]:
     yield TestDataCreatorDBClient()
 
 
@@ -205,7 +184,10 @@ def setup_database():
 def pennsylvania_id(live_database_client):
     query = (
         select(Location.id)
-        .where(USState.state_name == "Pennsylvania")
+        .where(
+            USState.state_name == "Pennsylvania",
+            Location.type == LocationType.STATE.value,
+        )
         .join(USState, Location.state_id == USState.id)
     )
     return live_database_client.scalar(query)
@@ -222,10 +204,12 @@ def california_id(live_database_client):
 
 
 @pytest.fixture
-def allegheny_id(live_database_client):
+def allegheny_id(live_database_client, pennsylvania_id):
     query = (
         select(Location.id)
-        .where(County.name == "Allegheny")
+        .where(
+            County.name == "Allegheny",
+        )
         .join(County, Location.county_id == County.id)
     )
     return live_database_client.scalar(query)
@@ -249,4 +233,10 @@ def pittsburgh_id(live_database_client):
         .where(Locality.name == "Pittsburgh")
         .join(Locality, Location.locality_id == Locality.id)
     )
+    return live_database_client.scalar(query)
+
+
+@pytest.fixture
+def national_id(live_database_client):
+    query = select(Location.id).where(Location.type == LocationType.NATIONAL.value)
     return live_database_client.scalar(query)

@@ -1,6 +1,11 @@
-"""
-An 'indirect' follow in this case refers to a location that is subordinate to
-a location the user is following.
+from tests.integration.notifications.pending_to_queue.manager import (
+    NotificationsPendingToQueueTestManager,
+)
 
-e.g., a county in a state the user is following.
-"""
+
+def test_notifications_pending_to_queue_indirect_follow_national_state(
+    manager: NotificationsPendingToQueueTestManager,
+    national_id,
+    pennsylvania_id,
+):
+    manager.run(follow_location_id=national_id, entity_location_id=pennsylvania_id)
