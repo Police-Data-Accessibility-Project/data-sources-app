@@ -35,7 +35,7 @@ from tests.integration.notifications.pending_to_queue._helpers.checker_.data_sou
 )
 
 
-class NotificationsPendingToQueueTestManager:
+class NotificationsPendingToQueueLocationTestManager:
 
     def __init__(self, tdc: TestDataCreatorDBClient):
         self.tdc = tdc

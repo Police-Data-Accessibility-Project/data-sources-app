@@ -1,6 +1,5 @@
 import datetime
 import uuid
-from typing import Optional
 
 from sqlalchemy import delete
 from sqlalchemy.exc import IntegrityError
@@ -10,7 +9,7 @@ from db.enums import (
     ApprovalStatus,
     RequestStatus,
     EventType,
-    ExternalAccountTypeEnum,
+    ExternalAccountTypeEnum, RequestUrgency,
 )
 from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.data_request.core import DataRequest
@@ -29,7 +28,6 @@ from db.models.implementations.core.notification.queue.data_request import (
 from db.models.implementations.core.notification.queue.data_source import (
     DataSourceUserNotificationQueue,
 )
-from db.models.implementations.core.record.type import RecordType
 from db.models.implementations.core.user.core import User
 from middleware.enums import (
     JurisdictionType,
@@ -42,6 +40,7 @@ from middleware.schema_and_dto.dtos.agencies.post import (
     AgencyInfoPostDTO,
     AgenciesPostDTO,
 )
+from middleware.schema_and_dto.dtos.data_requests.post import DataRequestsPostDTO, RequestInfoPostDTO
 from middleware.schema_and_dto.dtos.data_requests.put import (
     DataRequestsPutDTO,
     DataRequestsPutOuterDTO,
@@ -244,23 +243,32 @@ class TestDataCreatorDBClient:
         self,
         user_id: int | None = None,
         request_status: RequestStatus | None = RequestStatus.INTAKE,
-        **column_value_kwargs,
+        record_type: RecordTypes | None = None,
     ) -> TestDataRequestInfo:
+        if record_type is None:
+            record_type_as_list = []
+        else:
+            record_type_as_list = [record_type]
         if user_id is None:
             user_id = self.user().id
 
         submission_notes = self.test_name()
-        data_request_id = self.db_client.create_data_request(
-            column_value_mappings={
-                "submission_notes": submission_notes,
-                "title": get_test_name(),
-                "creator_user_id": user_id,
-                "request_status": request_status.value,
-                **column_value_kwargs,
-            }
+        dto = DataRequestsPostDTO(
+            request_info=RequestInfoPostDTO(
+                title=get_test_name(),
+                submission_notes=submission_notes,
+                request_status=request_status,
+                request_urgency=RequestUrgency.INDEFINITE,
+                record_types_required=record_type_as_list
+            )
+        )
+        data_request_id = self.db_client.create_data_request_v2(
+            dto=dto,
+            user_id=user_id
         )
         return TestDataRequestInfo(
-            id=data_request_id, submission_notes=submission_notes
+            id=data_request_id,
+            submission_notes=submission_notes
         )
 
     def user_follow_location(self, user_id: int, location_id: int):

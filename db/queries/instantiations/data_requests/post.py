@@ -22,12 +22,16 @@ class DataRequestsPostQueryBuilder(
 
     def _add_data_request(self) -> int:
         request_info = self.dto.request_info
+        if request_info.record_types_required is None:
+            request_info.record_types_required = []
         data_request = DataRequest(
             title=request_info.title,
             submission_notes=request_info.submission_notes,
             creator_user_id=self.user_id,
             request_urgency=request_info.request_urgency.value,
             data_requirements=request_info.data_requirements,
+            record_types_required=request_info.record_types_required,
+            request_status=request_info.request_status.value,
         )
         self.session.add(data_request)
         self.session.flush()

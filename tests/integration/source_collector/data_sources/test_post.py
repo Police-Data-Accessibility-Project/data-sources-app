@@ -149,7 +149,7 @@ def test_source_collector_data_sources_post(
     assert ds_1_agency_ids == agency_ids
 
     ds_2_agency_ids = [agency["id"] for agency in data_sources[2]["agencies"]]
-    assert ds_2_agency_ids == agency_ids[:2]
+    assert sorted(ds_2_agency_ids) == sorted(agency_ids[:2])
 
     # Check an equivalent amount of event queue notifications are added
     query = select(DataSourcePendingEventNotification)

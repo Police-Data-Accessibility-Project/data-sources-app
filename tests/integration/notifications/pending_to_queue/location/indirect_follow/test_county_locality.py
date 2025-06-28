@@ -1,10 +1,10 @@
-from tests.integration.notifications.pending_to_queue.manager import (
-    NotificationsPendingToQueueTestManager,
+from tests.integration.notifications.pending_to_queue.location.manager import (
+    NotificationsPendingToQueueLocationTestManager,
 )
 
 
 def test_notifications_pending_to_queue_indirect_follow_county_locality(
-    manager: NotificationsPendingToQueueTestManager,
+    manager: NotificationsPendingToQueueLocationTestManager,
     allegheny_id,
     pittsburgh_id,
 ):
