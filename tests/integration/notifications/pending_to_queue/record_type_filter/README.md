@@ -1,0 +1,1 @@
+In the case of data sources, pending notifications should be filtered based on the record type of the data source, and the record types the user is subscribed to.
