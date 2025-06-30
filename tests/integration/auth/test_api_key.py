@@ -34,9 +34,9 @@ def test_api_key_post(test_data_creator_flask: TestDataCreatorFlask):
     api_key_raw = response_json.get("api_key")
     api_key = ApiKey(raw_key=api_key_raw)
 
-    assert (
-        new_user_info.api_key == api_key.key_hash
-    ), "API key returned not aligned with user API key in database"
+    assert new_user_info.api_key == api_key.key_hash, (
+        "API key returned not aligned with user API key in database"
+    )
 
 
 def test_api_key_not_found(test_data_creator_flask: TestDataCreatorFlask):

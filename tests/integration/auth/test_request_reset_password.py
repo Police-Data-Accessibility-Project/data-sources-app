@@ -34,14 +34,14 @@ def test_request_reset_password_post(
     """,
         (decoded_token.sub["token"],),
     )
-    assert (
-        len(rows) == 1
-    ), "Only one row should have a reset token associated with this email"
+    assert len(rows) == 1, (
+        "Only one row should have a reset token associated with this email"
+    )
 
     user_id = rows[0]["user_id"]
-    assert (
-        user_id == user_info.user_id
-    ), "Email associated with reset token should match the user's email"
+    assert user_id == user_info.user_id, (
+        "Email associated with reset token should match the user's email"
+    )
 
 
 def test_request_password_reset_invalid_email(

@@ -497,9 +497,9 @@ def test_search_with_location_and_record_types_real_data_multiple_records(
         results = live_database_client.search_with_location_and_record_type(
             location_id=pa_location_id, record_categories=record_categories
         )
-        assert (
-            len(results) > last_count
-        ), f"{record_category} failed (total record_categories: {len(record_categories)})"
+        assert len(results) > last_count, (
+            f"{record_category} failed (total record_categories: {len(record_categories)})"
+        )
         last_count = len(results)
 
     # Finally, check that all record_types is equivalent to no record types in terms of number of results

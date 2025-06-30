@@ -47,6 +47,6 @@ def assert_is_test_response(response):
 
 
 def assert_response_status(response: Response, status_code):
-    assert (
-        response.status_code == status_code
-    ), f"{response.request.base_url}: Expected status code {status_code}, got {response.status_code}: {response.text}"
+    assert response.status_code == status_code, (
+        f"{response.request.base_url}: Expected status code {status_code}, got {response.status_code}: {response.text}"
+    )

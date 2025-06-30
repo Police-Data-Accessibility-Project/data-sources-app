@@ -138,10 +138,8 @@ def _apply_transformation_functions_to_dict(fields: dict, intermediate_data: dic
     for field_name, field_value in fields.items():
         # if transformation functions, apply them
         metadata = field_value.metadata
-        transformation_function: callable = (
-            metadata.get(  # pyright: ignore[reportGeneralTypeIssues]
-                "transformation_function", None
-            )
+        transformation_function: callable = metadata.get(  # pyright: ignore[reportGeneralTypeIssues]
+            "transformation_function", None
         )
         if transformation_function is not None and field_name in intermediate_data:
             intermediate_data[field_name] = transformation_function(

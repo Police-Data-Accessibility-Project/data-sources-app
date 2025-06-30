@@ -86,9 +86,9 @@ def create_api_key(client_with_db: FlaskClient, jwt_authorization_header: dict) 
     response = client_with_db.post(
         f"/auth{API_KEY_ROUTE}", headers=jwt_authorization_header
     )
-    assert (
-        response.status_code == HTTPStatus.OK.value
-    ), "API key creation not successful"
+    assert response.status_code == HTTPStatus.OK.value, (
+        "API key creation not successful"
+    )
     api_key = response.json.get("api_key")
     return api_key
 

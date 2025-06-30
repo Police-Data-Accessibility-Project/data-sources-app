@@ -279,8 +279,8 @@ class DatabaseClient:
                 raise AttributeError("Models must have an id attribute")
             session.flush()
             return [
-                model.id
-                for model in models  # pyright: ignore [reportAttributeAccessIssue]
+                model.id  # pyright: ignore [reportAttributeAccessIssue]
+                for model in models
             ]
         return None
 
@@ -599,9 +599,7 @@ class DatabaseClient:
         )
         up = UserPermission(
             user_id=user_id,
-            permission_id=cast(
-                int, permission_id_subquery
-            ),  # pyright: ignore[reportInvalidCast]
+            permission_id=cast(int, permission_id_subquery),  # pyright: ignore[reportInvalidCast]
         )
         self.add(up)
 

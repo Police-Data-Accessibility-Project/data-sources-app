@@ -35,7 +35,7 @@ class EventToPendingDataSourcesSourceCollectorTestManager:
         data_source_ids = self._get_data_source_ids()
         queue_entity_ids = self._get_queue_entity_ids()
 
-        assert set(data_source_ids) == set(
-            queue_entity_ids
-        ), f"Data source/queue entity ids do not match: {data_source_ids} != {queue_entity_ids}"
+        assert set(data_source_ids) == set(queue_entity_ids), (
+            f"Data source/queue entity ids do not match: {data_source_ids} != {queue_entity_ids}"
+        )
         assert len(queue_entity_ids) == length

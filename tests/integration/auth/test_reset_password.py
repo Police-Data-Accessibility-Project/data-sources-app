@@ -65,9 +65,9 @@ def test_reset_password_post(
     )
 
     new_password_digest = dev_db_client.get_user_info(user_info.email).password_digest
-    assert (
-        new_password_digest != old_password_digest
-    ), "Old and new password digests should be distinct"
+    assert new_password_digest != old_password_digest, (
+        "Old and new password digests should be distinct"
+    )
 
     # User should not be able to log in with the old password
     login(password=user_info.password, expected_response_status=HTTPStatus.UNAUTHORIZED)

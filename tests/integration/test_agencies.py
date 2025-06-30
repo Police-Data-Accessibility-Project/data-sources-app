@@ -232,9 +232,9 @@ def test_agencies_post(test_data_creator_flask: TestDataCreatorFlask):
 
     agency_created = json_data["data"]["agency_created"]
     last_modified = json_data["data"]["airtable_agency_last_modified"]
-    assert (
-        agency_created == last_modified
-    ), "Agency created should be equal to last modified"
+    assert agency_created == last_modified, (
+        "Agency created should be equal to last modified"
+    )
     assert (
         # Within one minute to account for minor database/app discrepancies
         datetime.fromisoformat(agency_created) + timedelta(minutes=1)

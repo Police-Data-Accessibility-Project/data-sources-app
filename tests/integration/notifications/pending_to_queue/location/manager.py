@@ -131,9 +131,9 @@ class NotificationsPendingToQueueLocationTestManager:
         ds_query = select(count(DataSourceUserNotificationQueue.id))
         dr_count_actual = self.db_client.scalar(dr_query)
         ds_count_actual = self.db_client.scalar(ds_query)
-        assert (
-            dr_count_actual == dr_count_expected
-        ), f"Expected {dr_count_expected} but got {dr_count_actual}"
-        assert (
-            ds_count_actual == ds_count_expected
-        ), f"Expected {ds_count_expected} but got {ds_count_actual}"
+        assert dr_count_actual == dr_count_expected, (
+            f"Expected {dr_count_expected} but got {dr_count_actual}"
+        )
+        assert ds_count_actual == ds_count_expected, (
+            f"Expected {ds_count_expected} but got {ds_count_actual}"
+        )
