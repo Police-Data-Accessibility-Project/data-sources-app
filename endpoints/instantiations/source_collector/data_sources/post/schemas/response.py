@@ -4,7 +4,7 @@ from endpoints.instantiations.source_collector.data_sources.post.dtos.response i
     SourceCollectorPostResponseInnerDTO,
 )
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import (
-    generate_marshmallow_schema,
+    pydantic_to_marshmallow,
 )
 from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
@@ -13,7 +13,7 @@ from middleware.schema_and_dto.schemas.common.common_response_schemas import (
 
 from middleware.schema_and_dto.util import get_json_metadata
 
-SourceCollectorPostResponseInnerSchema = generate_marshmallow_schema(
+SourceCollectorPostResponseInnerSchema = pydantic_to_marshmallow(
     SourceCollectorPostResponseInnerDTO
 )
 

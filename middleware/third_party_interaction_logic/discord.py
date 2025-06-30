@@ -4,7 +4,6 @@ from middleware.util.env import get_env_variable
 
 
 class DiscordPoster:
-
     def __init__(self):
         self.webhook_url = get_env_variable("WEBHOOK_URL")
 

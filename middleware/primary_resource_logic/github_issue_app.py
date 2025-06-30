@@ -6,11 +6,15 @@ from typing import Optional
 
 from flask import Response
 
-from db.DTOs import DataRequestInfoForGithub
+from db.dtos.data_request_info_for_github import DataRequestInfoForGithub
 from db.client.core import DatabaseClient
 from db.enums import RequestStatus
 from middleware.common_response_formatting import message_response
 from middleware.enums import RecordTypes
+from middleware.schema_and_dto.dtos.data_requests.put import (
+    DataRequestsPutDTO,
+    DataRequestsPutOuterDTO,
+)
 from middleware.schema_and_dto.dtos.github.issue import GithubIssueURLInfosDTO
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.third_party_interaction_logic.github.helpers import (
@@ -111,7 +115,7 @@ def record_types_match(
 
 
 def synchronize_github_issues_with_data_requests(
-    db_client: DatabaseClient, access_info: Optional[AccessInfoPrimary]
+    db_client: DatabaseClient, access_info: AccessInfoPrimary | None
 ) -> Response:
     """
     Synchronizes github issues with data requests
@@ -142,12 +146,15 @@ def synchronize_github_issues_with_data_requests(
         ):
             continue
 
-        db_client.update_data_request(
-            entry_id=dri.data_request_id,
-            column_edit_mappings={
-                "request_status": request_status.value,
-                "record_types_required": gipi_info.record_types_as_list_of_strings(),
-            },
+        db_client.update_data_request_v2(
+            data_request_id=int(dri.data_request_id),
+            dto=DataRequestsPutOuterDTO(
+                entry_data=DataRequestsPutDTO(
+                    request_status=request_status,
+                    record_types_required=gipi_info.record_types,
+                )
+            ),
+            bypass_permissions=True,
         )
 
         requests_updated += 1

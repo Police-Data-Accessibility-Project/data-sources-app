@@ -8,7 +8,6 @@ from db.client.core import DatabaseClient
 
 
 class SchedulerManager:
-
     def __init__(self, app):
         self.scheduler = BackgroundScheduler()
         self.app = app

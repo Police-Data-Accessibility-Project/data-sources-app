@@ -11,7 +11,7 @@ from tests.helper_scripts.constants import (
     GITHUB_OAUTH_LINK_ENDPOINT,
     GITHUB_OAUTH_LOGIN_ENDPOINT,
 )
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request

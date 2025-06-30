@@ -172,7 +172,6 @@ class SearchFollow(PsycopgResource):
 
 @namespace_search.route("/follow/national")
 class SearchFollowNational(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_search,
         auth_info=STANDARD_JWT_AUTH_INFO,

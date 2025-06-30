@@ -2,7 +2,7 @@
 from flask import Response, make_response
 from werkzeug.security import generate_password_hash
 
-from db.DTOs import UsersWithPermissions
+from db.dtos.user_with_permissions import UsersWithPermissions
 from db.client.core import DatabaseClient
 from middleware.common_response_formatting import created_id_response, message_response
 from middleware.schema_and_dto.dtos.admin.post import AdminUserPostDTO

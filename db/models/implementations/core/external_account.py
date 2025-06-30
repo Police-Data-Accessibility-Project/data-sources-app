@@ -1,5 +1,4 @@
 # pyright: reportUninitializedInstanceVariable=false
-from typing import Optional
 
 from sqlalchemy import func
 from sqlalchemy.orm import Mapped, mapped_column
@@ -15,4 +14,4 @@ class ExternalAccount(Base, UserIDMixin):
     row_id: Mapped[int] = mapped_column(primary_key=True)
     account_type: Mapped[ExternalAccountTypeLiteral]
     account_identifier: Mapped[str_255]
-    linked_at: Mapped[Optional[timestamp]] = mapped_column(server_default=func.now())
+    linked_at: Mapped[timestamp | None] = mapped_column(server_default=func.now())

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Optional, Union, Any
+from typing import Any
 
 from flask import Response
 from pydantic import BaseModel
@@ -10,9 +10,9 @@ from db.enums import RelationRoleEnum
 from db.subquery_logic import SubqueryParameters
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.column_permission.core import (
-    RelationRoleParameters,
     check_has_permission_to_edit_columns,
 )
+from middleware.column_permission.relation_role_parameters import RelationRoleParameters
 from middleware.custom_dataclasses import DeferredFunction
 from middleware.util.dynamic import execute_if_not_none
 
@@ -25,7 +25,7 @@ class MiddlewareParameters:
 
     relation: str
     db_client_method: callable
-    access_info: Optional[AccessInfoPrimary] = None
+    access_info: AccessInfoPrimary | None = None
     db_client: DatabaseClient = DatabaseClient()
     # Additional arguments for the Database Client method beyond those provided in the given method
     db_client_additional_args: dict = field(default_factory=dict)
@@ -34,12 +34,11 @@ class MiddlewareParameters:
 
 
 class IDInfo:
-
     def __init__(
         self,
         id_column_name: str = "id",
-        id_column_value: Optional[Union[str, int]] = None,
-        additional_where_mappings: Optional[dict] = None,
+        id_column_value: str | int | None = None,
+        additional_where_mappings: dict | None = None,
     ):
         self.id_column_name = id_column_name
         self.where_mappings = additional_where_mappings or {}
@@ -59,19 +58,12 @@ class PutPostRequestInfo(BaseModel):
 
     request_id: int = 1
     entry: dict
-    dto: Optional[Any] = None
-    entry_id: Optional[int] = None
-    error_message: Optional[str] = None
-
-
-class BulkPostResponse(BaseModel):
-    request_id: int = 1
-    entry_id: Optional[int] = None
-    error_message: Optional[str] = None
+    dto: Any | None = None
+    entry_id: int | None = None
+    error_message: str | None = None
 
 
 class PostPutHandler(ABC):
-
     def __init__(
         self,
         middleware_parameters: MiddlewareParameters,
@@ -106,13 +98,12 @@ class PostPutHandler(ABC):
 
 
 class PutPostBase(ABC):
-
     def __init__(
         self,
         middleware_parameters: MiddlewareParameters,
         entry: dict,
         relation_role_parameters: RelationRoleParameters = RelationRoleParameters(),
-        pre_database_client_method_with_parameters: Optional[DeferredFunction] = None,
+        pre_database_client_method_with_parameters: DeferredFunction | None = None,
         check_for_permission: bool = True,
     ):
         self.mp = middleware_parameters

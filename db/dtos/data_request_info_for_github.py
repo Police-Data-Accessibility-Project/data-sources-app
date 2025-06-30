@@ -1,0 +1,16 @@
+from pydantic import BaseModel
+
+from middleware.enums import RecordTypes
+
+
+class DataRequestInfoForGithub(BaseModel):
+    """
+    Data Request Info to be used in the creation of GitHub Issues
+    """
+
+    id: int
+    title: str
+    submission_notes: str
+    data_requirements: str
+    locations: list[str] | None
+    record_types: list[RecordTypes] | None

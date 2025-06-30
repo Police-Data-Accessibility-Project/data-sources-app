@@ -85,9 +85,7 @@ def upgrade() -> None:
         ON public.{table_name}
         FOR EACH ROW
         EXECUTE FUNCTION public.log_table_changes();
-        """.format(
-                table_name=table_name
-            )
+        """.format(table_name=table_name)
         )
 
     for table in [
@@ -180,9 +178,7 @@ def downgrade() -> None:
         ON public.{table_name}
         FOR EACH ROW
         EXECUTE FUNCTION public.log_table_changes();
-        """.format(
-                table_name=table_name
-            )
+        """.format(table_name=table_name)
         )
 
     for table in [

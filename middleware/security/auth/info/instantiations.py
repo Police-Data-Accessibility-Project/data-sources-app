@@ -12,6 +12,10 @@ ARCHIVE_WRITE_AUTH_INFO = AuthenticationInfo(
 STANDARD_JWT_AUTH_INFO = AuthenticationInfo(
     allowed_access_methods=[AccessTypeEnum.JWT],
 )
+NOTIFICATIONS_AUTH_INFO = AuthenticationInfo(
+    allowed_access_methods=[AccessTypeEnum.JWT],
+    restrict_to_permissions=[PermissionsEnum.NOTIFICATIONS],
+)
 API_OR_JWT_AUTH_INFO = AuthenticationInfo(
     allowed_access_methods=[AccessTypeEnum.API_KEY, AccessTypeEnum.JWT],
 )

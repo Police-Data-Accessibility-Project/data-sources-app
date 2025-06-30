@@ -21,7 +21,6 @@ namespace_metrics = create_namespace(AppNamespaces.METRICS)
 
 @namespace_metrics.route("")
 class Metrics(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_metrics,
         auth_info=API_OR_JWT_AUTH_INFO,
@@ -39,7 +38,6 @@ class Metrics(PsycopgResource):
 
 @namespace_metrics.route("/followed-searches/breakdown")
 class MetricsFollowedSearchesBreakdown(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_metrics,
         auth_info=API_OR_JWT_AUTH_INFO,
@@ -58,7 +56,6 @@ class MetricsFollowedSearchesBreakdown(PsycopgResource):
 
 @namespace_metrics.route("/followed-searches/aggregate")
 class MetricsFollowedSearchesAggregate(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_metrics,
         auth_info=API_OR_JWT_AUTH_INFO,

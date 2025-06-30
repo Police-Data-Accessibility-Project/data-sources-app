@@ -4,7 +4,10 @@ from db.enums import ApprovalStatus
 from db.models.implementations import LinkAgencyDataSource
 from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.record.type import RecordType
-from db.queries.builder import QueryBuilderBase
+from db.queries.builder.core import QueryBuilderBase
+from db.queries.builder.mixins.pending_event.data_source import (
+    DataSourcePendingEventMixin,
+)
 from endpoints.instantiations.source_collector.data_sources.post.dtos.response import (
     SourceCollectorPostResponseInnerDTO,
 )
@@ -15,8 +18,10 @@ from endpoints.instantiations.source_collector.data_sources.post.dtos.request im
 )
 
 
-class AddDataSourcesFromSourceCollectorQueryBuilder(QueryBuilderBase):
-
+class AddDataSourcesFromSourceCollectorQueryBuilder(
+    QueryBuilderBase,
+    DataSourcePendingEventMixin,
+):
     def __init__(self, data_sources: list[SourceCollectorPostRequestInnerDTO]):
         super().__init__()
         self.data_sources = data_sources
@@ -48,6 +53,7 @@ class AddDataSourcesFromSourceCollectorQueryBuilder(QueryBuilderBase):
                 )
                 self.session.add(data_source_db)
                 self.session.flush()  # Execute the insert immediately
+                self._add_pending_event_notification(data_source_db.id)
                 for agency_id in data_source.agency_ids:
                     link = LinkAgencyDataSource(
                         data_source_id=data_source_db.id, agency_id=agency_id

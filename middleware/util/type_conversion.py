@@ -1,11 +1,17 @@
 from dataclasses import is_dataclass, asdict
 from enum import Enum
-from typing import Any, Dict
+from typing import Any
 
 from pydantic import BaseModel
 
 
 def get_enum_values(en: type[Enum]) -> list[str]:
+    return [e.value for e in en]
+
+
+def enum_list_to_values(en: list[Enum] | None) -> list[str]:
+    if en is None:
+        return []
     return [e.value for e in en]
 
 
@@ -19,7 +25,7 @@ def dict_enums_to_values(d: dict[str, Any]) -> dict[str, Any]:
     return d
 
 
-def dataclass_to_filtered_dict(instance: Any) -> Dict[str, Any]:
+def dataclass_to_filtered_dict(instance: Any) -> dict[str, Any]:
     """
     Convert a dataclass instance to a dictionary, filtering out any None values.
     :param instance:

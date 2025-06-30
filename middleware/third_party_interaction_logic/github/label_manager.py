@@ -6,7 +6,6 @@ from middleware.third_party_interaction_logic.github.helpers import make_graph_q
 
 
 class GithubLabelManager:
-
     def __init__(self):
         self.label_name_to_id = self.get_labels()
 

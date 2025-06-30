@@ -32,7 +32,6 @@ def get_agency_match_message(status: AgencyMatchStatus):
 
 
 class AgencyMatchResponse:
-
     def __init__(
         self,
         status: AgencyMatchStatus,
@@ -66,7 +65,6 @@ def match_agency_wrapper(db_client: DatabaseClient, dto: AgencyMatchResponseOute
 def try_matching_agency(
     db_client: DatabaseClient, dto: AgencyMatchRequestDTO
 ) -> AgencyMatchResponse:
-
     location_id: Optional[int] = _get_location_id(db_client, dto)
     if location_id is None and dto.has_location_data():
         return _no_match_response()

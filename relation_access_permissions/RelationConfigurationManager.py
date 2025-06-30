@@ -76,7 +76,6 @@ class RelationConfiguration:
 
 
 class RelationConfigurationManager:
-
     def __init__(self):
         self.relation_configurations = {}
         self.load_relation_configuration_csvs()

@@ -1,6 +1,6 @@
 from middleware.schema_and_dto.dtos.reset_password.reset import ResetPasswordDTO
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import (
-    generate_marshmallow_schema,
+    pydantic_to_marshmallow,
 )
 
-ResetPasswordSchema = generate_marshmallow_schema(ResetPasswordDTO)
+ResetPasswordSchema = pydantic_to_marshmallow(ResetPasswordDTO)

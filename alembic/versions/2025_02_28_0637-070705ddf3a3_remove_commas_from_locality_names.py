@@ -35,9 +35,7 @@ def address_duplicate(
         """
     DELETE FROM LOCALITIES
     WHERE ID = {duplicate_locality_id}
-    """.format(
-            duplicate_locality_id=duplicate_locality_id
-        )
+    """.format(duplicate_locality_id=duplicate_locality_id)
     )
 
 

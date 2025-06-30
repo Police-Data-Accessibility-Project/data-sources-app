@@ -1,5 +1,4 @@
 class ProjectStatusManager:
-
     def __init__(self, options: dict):
         self.d = {}
         for option in options:

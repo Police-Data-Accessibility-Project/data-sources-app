@@ -1,7 +1,7 @@
 from db.db_client_dataclasses import WhereMapping
 from db.enums import LocationType
 from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
-from tests.helper_scripts.helper_classes.TestDataCreatorDBClient import (
+from tests.helper_scripts.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
 

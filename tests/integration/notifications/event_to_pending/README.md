@@ -1,0 +1,1 @@
+This section tests that the proper events populate the notifications queue 

@@ -47,8 +47,7 @@ def get_authentication(
 
     raise Unauthorized(
         f"Please provide a valid form of one of the following: "
-        f"{[access_method.value 
-            for access_method in allowed_access_methods]}"
+        f"{[access_method.value for access_method in allowed_access_methods]}"
     )
 
 

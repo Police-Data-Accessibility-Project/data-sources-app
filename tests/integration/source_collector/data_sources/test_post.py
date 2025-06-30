@@ -1,5 +1,10 @@
 from http import HTTPStatus
 
+from sqlalchemy import select
+
+from db.models.implementations.core.notification.pending.data_source import (
+    DataSourcePendingEventNotification,
+)
 from middleware.enums import RecordTypes, PermissionsEnum
 from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
@@ -8,7 +13,7 @@ from endpoints.instantiations.source_collector.data_sources.post.dtos.request im
     SourceCollectorPostRequestInnerDTO,
     SourceCollectorPostRequestDTO,
 )
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 
@@ -144,4 +149,9 @@ def test_source_collector_data_sources_post(
     assert ds_1_agency_ids == agency_ids
 
     ds_2_agency_ids = [agency["id"] for agency in data_sources[2]["agencies"]]
-    assert ds_2_agency_ids == agency_ids[:2]
+    assert sorted(ds_2_agency_ids) == sorted(agency_ids[:2])
+
+    # Check an equivalent amount of event queue notifications are added
+    query = select(DataSourcePendingEventNotification)
+    results = tdc.db_client.scalars(query)
+    assert len(results) == 3

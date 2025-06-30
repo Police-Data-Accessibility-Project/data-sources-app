@@ -1,6 +1,4 @@
 # pyright: reportUninitializedInstanceVariable=false
-from typing import Optional
-
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -16,7 +14,7 @@ class DataRequestUserNotificationQueue(StandardBase, UserIDMixin):
     event_id: Mapped[int] = mapped_column(
         ForeignKey("public.data_request_pending_event_notification.id")
     )
-    sent_at: Mapped[Optional[timestamp]]
+    sent_at: Mapped[timestamp | None]
 
     # Relationships
     pending_event_notification = relationship(

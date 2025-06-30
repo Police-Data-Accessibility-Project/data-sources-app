@@ -5,7 +5,7 @@ from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )
 from tests.helper_scripts.common_test_data import get_test_email
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 

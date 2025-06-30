@@ -1,5 +1,5 @@
 # pyright: reportUninitializedInstanceVariable=false
-from typing import Optional, get_args
+from typing import get_args
 
 from sqlalchemy import Enum
 from sqlalchemy.dialects.postgresql import ARRAY
@@ -13,7 +13,6 @@ from db.models.mixins import (
 )
 from db.models.templates.standard import StandardBase
 from db.models.types import (
-    text,
     RequestStatusLiteral,
     timestamp_tz,
     RecordTypeLiteral,
@@ -32,25 +31,25 @@ class DataRequest(
         "locations": make_get_iter_model_list_of_dict("locations"),
     }
 
-    submission_notes: Mapped[Optional[text]]
+    submission_notes: Mapped[str | None]
     request_status: Mapped[RequestStatusLiteral] = mapped_column(
         server_default="Intake"
     )
-    archive_reason: Mapped[Optional[text]]
+    archive_reason: Mapped[str | None]
     date_created: Mapped[timestamp_tz]
-    date_status_last_changed: Mapped[Optional[timestamp_tz]]
-    creator_user_id: Mapped[Optional[int]]
-    internal_notes: Mapped[Optional[text]]
-    record_types_required: Mapped[Optional[ARRAY[RecordTypeLiteral]]] = mapped_column(
+    date_status_last_changed: Mapped[timestamp_tz | None]
+    creator_user_id: Mapped[int | None]
+    internal_notes: Mapped[str | None]
+    record_types_required: Mapped[ARRAY[RecordTypeLiteral] | None] = mapped_column(
         ARRAY(Enum(*get_args(RecordTypeLiteral), name="record_type"), as_tuple=True)
     )
-    pdap_response: Mapped[Optional[text]]
-    coverage_range: Mapped[Optional[str]]
-    data_requirements: Mapped[Optional[text]]
+    pdap_response: Mapped[str | None]
+    coverage_range: Mapped[str | None]
+    data_requirements: Mapped[str | None]
     request_urgency: Mapped[RequestUrgencyLiteral] = mapped_column(
         server_default="Indefinite/Unknown"
     )
-    title: Mapped[text]
+    title: Mapped[str]
 
     # TODO: Is there a way to generalize the below logic?
     locations: Mapped[list["LocationExpanded"]] = relationship(

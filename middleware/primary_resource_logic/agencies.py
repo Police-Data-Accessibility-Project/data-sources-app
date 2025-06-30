@@ -58,7 +58,6 @@ def get_agencies(
 def get_agency_by_id(
     db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: GetByIDBaseDTO
 ) -> Response:
-
     result = db_client.get_agency_by_id(int(dto.resource_id))
 
     if result is None:
@@ -86,7 +85,6 @@ class AgencyPostRequestInfo(PutPostRequestInfo):
 
 
 class AgencyPostHandler(PostHandler):
-
     def __init__(self):
         super().__init__(middleware_parameters=AGENCY_POST_MIDDLEWARE_PARAMETERS)
 
@@ -110,7 +108,6 @@ def create_agency(
     dto: AgenciesPostDTO,
     access_info: AccessInfoPrimary,
 ) -> Response:
-
     agency_id = db_client.create_agency(dto, user_id=access_info.user_id)
 
     return created_id_response(new_id=str(agency_id), message="Agency created.")

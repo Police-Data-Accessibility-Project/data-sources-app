@@ -55,7 +55,6 @@ def get_signup_html(signup_link: str):
 
 
 def send_signup_link(email: str, token: str):
-
     signup_link = get_signup_link(token=token)
 
     text = get_signup_text(signup_link=signup_link)
@@ -108,7 +107,6 @@ def signup_wrapper(
 def validate_email_wrapper(
     db_client: DatabaseClient, access_info: ValidateEmailTokenAccessInfo
 ):
-
     pending_user_info = db_client.get_pending_user_with_token(
         validation_token=access_info.validate_email_token
     )
@@ -160,7 +158,6 @@ def resend_validation_email_wrapper(
     db_client: DatabaseClient,
     dto: EmailOnlyDTO,
 ):
-
     email = dto.email
     if not db_client.pending_user_exists(email=email):
         raise BadRequest("Email provided not associated with any pending user.")

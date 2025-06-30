@@ -53,7 +53,6 @@ dev_password_model = namespace_create_test_user.model(
 
 
 def check_dev_password(dev_password: str):
-
     try:
         expected_dev_password = get_env_variable("DEVELOPMENT_PASSWORD")
         if dev_password != expected_dev_password:
@@ -66,7 +65,6 @@ def check_dev_password(dev_password: str):
 
 @namespace_create_test_user.route("/create-test-user-with-elevated-permissions")
 class CreateTestUserWithElevatedPermissions(PsycopgResource):
-
     @namespace_create_test_user.response(HTTPStatus.OK, "Success", yolo_model)
     @namespace_create_test_user.response(
         HTTPStatus.INTERNAL_SERVER_ERROR,

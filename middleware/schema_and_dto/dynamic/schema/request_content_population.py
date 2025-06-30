@@ -1,13 +1,9 @@
 from typing import Type
 
 import marshmallow
-from flask import request
 from pydantic import BaseModel
 from werkzeug.exceptions import BadRequest
 
-from middleware.schema_and_dto.dtos.bulk import (
-    BulkRequestDTO,
-)
 from middleware.schema_and_dto.types import SchemaTypes
 from middleware.schema_and_dto.util import (
     _get_required_argument,
@@ -40,11 +36,7 @@ def populate_schema_with_request_content(
     """
     # Get all declared fields from the schema
     if load_file:
-        return BulkRequestDTO(
-            file=request.files.get("file"),  # pyright: ignore[reportArgumentType]
-            csv_schema=schema,
-            inner_dto_class=dto_class,
-        )
+        raise NotImplementedError("Load file logic has been removed")
     fields = schema.fields
     source_data_info = get_source_data_info_from_sources(schema)
     intermediate_data = validate_data(source_data_info.data, schema)
@@ -144,13 +136,10 @@ def _apply_transformation_functions_to_dict(fields: dict, intermediate_data: dic
     :return:
     """
     for field_name, field_value in fields.items():
-
         # if transformation functions, apply them
         metadata = field_value.metadata
-        transformation_function: callable = (
-            metadata.get(  # pyright: ignore[reportGeneralTypeIssues]
-                "transformation_function", None
-            )
+        transformation_function: callable = metadata.get(  # pyright: ignore[reportGeneralTypeIssues]
+            "transformation_function", None
         )
         if transformation_function is not None and field_name in intermediate_data:
             intermediate_data[field_name] = transformation_function(

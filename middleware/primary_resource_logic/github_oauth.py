@@ -121,7 +121,6 @@ def user_exists(db_client: DatabaseClient, email: str) -> bool:
 def login_with_github_wrapper(
     db_client: DatabaseClient, dto: LoginWithGithubRequestDTO
 ):
-
     github_user_info = get_github_user_info(access_token=dto.gh_access_token)
     return try_logging_in_with_github_id(
         db_client=db_client, github_user_info=github_user_info

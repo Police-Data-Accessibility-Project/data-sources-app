@@ -9,7 +9,7 @@ from db.models.implementations.core.location.core import Location
 from db.models.implementations.core.location.county import County
 from db.models.implementations.core.location.locality import Locality
 from db.models.implementations.core.location.us_state import USState
-from db.queries.builder import QueryBuilderBase
+from db.queries.builder.core import QueryBuilderBase
 from endpoints.instantiations.source_collector.sync.dtos.request import (
     SourceCollectorSyncAgenciesRequestDTO,
 )
@@ -17,7 +17,6 @@ from middleware.constants import DATETIME_FORMAT
 
 
 class SourceCollectorSyncAgenciesQueryBuilder(QueryBuilderBase):
-
     def __init__(self, dto: SourceCollectorSyncAgenciesRequestDTO):
         super().__init__()
         self.updated_at = dto.updated_at

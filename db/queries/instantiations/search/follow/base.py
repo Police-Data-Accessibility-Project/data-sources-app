@@ -5,13 +5,12 @@ from sqlalchemy.orm import Session
 
 from db.models.implementations.core.record.category import RecordCategory
 from db.models.implementations.core.record.type import RecordType
-from db.queries.builder import QueryBuilderBase
+from db.queries.builder.core import QueryBuilderBase
 from middleware.enums import RecordTypes
 from utilities.enums import RecordCategories
 
 
 class FollowBaseQueryBuilder(QueryBuilderBase):
-
     def __init__(
         self,
         location_id: int,

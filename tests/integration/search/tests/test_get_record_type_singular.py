@@ -11,10 +11,10 @@ def test_search_get_record_type_singular(search_test_setup: SearchTestSetup):
     tus = sts.tus
 
     tdcdb = tdc.tdcdb
-
+    record_types = list(RecordTypes)
     for i in range(2):
         tdcdb.link_data_source_to_agency(
-            data_source_id=tdcdb.data_source(record_type_id=i + 1).id,
+            data_source_id=tdcdb.data_source(record_type=record_types[i]).id,
             agency_id=tdcdb.agency(location_id=sts.location_id).id,
         )
 

@@ -5,7 +5,6 @@ from marshmallow import Schema
 
 
 class TestCSVCreator:
-
     def __init__(self, schema: Schema):
         self.fields = schema.fields
 

@@ -2,16 +2,13 @@ from collections import namedtuple
 from datetime import datetime
 from functools import partialmethod
 from operator import and_
+from collections.abc import Sequence
 from typing import (
-    Optional,
     Any,
-    List,
     Callable,
-    Union,
-    Type,
     LiteralString,
-    Sequence,
     cast,
+    final,
 )
 
 import psycopg
@@ -19,17 +16,17 @@ import sqlalchemy.exc
 from psycopg import Cursor
 from psycopg.connection import Connection as pg_connection
 from psycopg.rows import tuple_row
-from sqlalchemy import select, delete, update, Select, func, RowMapping
+from sqlalchemy import select, delete, update, Select, func, RowMapping, Executable
 from sqlalchemy.orm import (
     selectinload,
     Session,
 )
+from sqlalchemy.sql.compiler import SQLCompiler
 
-from db.DTOs import (
-    UserInfoNonSensitive,
-    UsersWithPermissions,
+from db.dtos.data_request_info_for_github import (
     DataRequestInfoForGithub,
 )
+from db.dtos.user_with_permissions import UsersWithPermissions
 from db.client.decorators import session_manager, session_manager_v2, cursor_manager
 from db.client.helpers import initialize_sqlalchemy_session
 from db.constants import (
@@ -91,9 +88,11 @@ from db.models.implementations.link import (
 from db.models.table_reference import (
     SQL_ALCHEMY_TABLE_REFERENCE,
 )
-from db.queries.builder import QueryBuilderBase
+from db.queries.builder.core import QueryBuilderBase
 from db.queries.instantiations.agencies.get_.by_id import GetAgencyByIDQueryBuilder
 from db.queries.instantiations.agencies.get_.many import GetAgenciesQueryBuilder
+from db.queries.instantiations.data_requests.post import DataRequestsPostQueryBuilder
+from db.queries.instantiations.data_requests.put import DataRequestsPutQueryBuilder
 from db.queries.instantiations.data_sources.archive import (
     GetDataSourcesToArchiveQueryBuilder,
     ArchiveInfo,
@@ -104,6 +103,10 @@ from db.queries.instantiations.data_sources.get.by_id import (
 from db.queries.instantiations.data_sources.get.many import (
     GetDataSourcesQueryBuilder,
 )
+from db.queries.instantiations.data_sources.post.single import (
+    DataSourcesPostSingleQueryBuilder,
+)
+from db.queries.instantiations.data_sources.put import DataSourcesPutQueryBuilder
 from db.queries.instantiations.locations.get.many import GetManyLocationsQueryBuilder
 from db.queries.instantiations.log.most_recent_logged_table_counts import (
     GetMostRecentLoggedTableCountsQueryBuilder,
@@ -121,6 +124,9 @@ from db.queries.instantiations.metrics.followed_searches.breakdown import (
 )
 from db.queries.instantiations.metrics.get import GET_METRICS_QUERY
 from db.queries.instantiations.notifications.post import NotificationsPostQueryBuilder
+from db.queries.instantiations.notifications.preview import (
+    NotificationsPreviewQueryBuilder,
+)
 from db.queries.instantiations.notifications.update_queue import (
     OptionallyUpdateUserNotificationQueueQueryBuilder,
 )
@@ -153,6 +159,9 @@ from db.queries.instantiations.util.select_from_relation import (
 )
 from db.queries.models.get_params import GetParams
 from db.subquery_logic import SubqueryParameters
+from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
+    SourceCollectorPostRequestInnerDTO,
+)
 from endpoints.instantiations.source_collector.data_sources.post.dtos.response import (
     SourceCollectorPostResponseInnerDTO,
 )
@@ -160,7 +169,7 @@ from endpoints.instantiations.source_collector.sync.dtos.request import (
     SourceCollectorSyncAgenciesRequestDTO,
 )
 from middleware.constants import DATE_FORMAT
-from middleware.custom_dataclasses import EventBatch
+from db.dtos.event_batch import EventBatch
 from middleware.enums import (
     PermissionsEnum,
     Relations,
@@ -175,6 +184,9 @@ from middleware.miscellaneous.table_count_logic import (
     TableCountReferenceManager,
 )
 from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
+from middleware.schema_and_dto.dtos.data_requests.post import DataRequestsPostDTO
+from middleware.schema_and_dto.dtos.data_requests.put import DataRequestsPutOuterDTO
+from middleware.schema_and_dto.dtos.data_sources.post import DataSourcesPostDTO
 from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
 from middleware.schema_and_dto.dtos.match.response import (
     AgencyMatchResponseInnerDTO,
@@ -182,26 +194,28 @@ from middleware.schema_and_dto.dtos.match.response import (
 from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
-from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
-    SourceCollectorPostRequestInnerDTO,
+from middleware.schema_and_dto.dtos.notifications.preview import (
+    NotificationsPreviewOutput,
 )
-
+from middleware.schema_and_dto.schemas.data_sources.base import (
+    EntryCreateUpdateRequestDTO,
+)
 from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
 from utilities.enums import RecordCategories
 
 
+@final
 class DatabaseClient:
-
     def __init__(self):
         self.connection: pg_connection = initialize_psycopg_connection()
         self.session_maker = initialize_sqlalchemy_session()
-        self.session: Optional[Session] = None
-        self.cursor: Optional[Cursor] = None
+        self.session: Session | None = None
+        self.cursor: Cursor | None = None
 
     @cursor_manager()
     def execute_raw_sql(
-        self, query: str, vars_: Optional[tuple] = None, execute_many: bool = False
-    ) -> Optional[list[dict[Any, ...]]]:
+        self, query: str, vars_: tuple | None = None, execute_many: bool = False
+    ) -> list[dict[Any, ...]] | None:
         """Executes an SQL query passed to the function.
 
         :param query: The SQL query to execute.
@@ -212,7 +226,7 @@ class DatabaseClient:
         if execute_many:
             self.cursor.executemany(cast(LiteralString, query), vars_)
         else:
-            self.cursor.execute(cast(LiteralString, query), vars_)
+            _ = self.cursor.execute(cast(LiteralString, query), vars_)
         try:
             results = self.cursor.fetchall()
         except psycopg.ProgrammingError:
@@ -221,6 +235,10 @@ class DatabaseClient:
         if len(results) == 0:
             return None
         return results
+
+    @staticmethod
+    def compile(query: Select) -> SQLCompiler:
+        return query.compile(compile_kwargs={"literal_binds": True})
 
     @session_manager_v2
     def scalar(self, session: Session, query: Select):
@@ -240,39 +258,44 @@ class DatabaseClient:
         return results
 
     @session_manager_v2
-    def all(self, session: Session, stmt: Select):
+    def all(self, session: Session, stmt: Executable):
         return session.execute(stmt).all()
 
     @session_manager_v2
-    def execute(self, session: Session, stmt):
+    def execute(self, session: Session, stmt: Executable):
         session.execute(stmt)
 
     @session_manager_v2
-    def add(self, session: Session, model):
+    def add(self, session: Session, model: Base):
         session.add(model)
 
     @session_manager_v2
     def add_many(
-        self, session: Session, models, return_ids: bool = False
-    ) -> Optional[List[int]]:
+        self, session: Session, models: list[Base], return_ids: bool = False
+    ) -> list[int] | None:
         session.add_all(models)
         if return_ids:
+            if not hasattr(models[0], "id"):
+                raise AttributeError("Models must have an id attribute")
             session.flush()
-            return [model.id for model in models]
+            return [
+                model.id  # pyright: ignore [reportAttributeAccessIssue]
+                for model in models
+            ]
         return None
 
     @session_manager_v2
-    def mapping(self, session: Session, query: Select):
+    def mapping(self, session: Session, query: Executable) -> RowMapping | None:
         return session.execute(query).mappings().first()
 
     @session_manager_v2
-    def mappings(self, session: Session, query: Select) -> Sequence[RowMapping]:
+    def mappings(self, session: Session, query: Executable) -> Sequence[RowMapping]:
         return session.execute(query).mappings().all()
 
     @session_manager_v2
     def create_new_user(
         self, session: Session, email: str, password_digest: str
-    ) -> Optional[int]:
+    ) -> int | None:
         """Adds a new user to the database."""
         try:
             user = User(email=email, password_digest=password_digest)
@@ -282,7 +305,7 @@ class DatabaseClient:
         except sqlalchemy.exc.IntegrityError:
             raise DuplicateUserError
 
-    def get_user_id(self, email: str) -> Optional[int]:
+    def get_user_id(self, email: str) -> int | None:
         """Gets the ID of a user in the database based on their email."""
         query = select(User.id).where(User.email == email)
         return self.scalar(query)
@@ -305,7 +328,7 @@ class DatabaseClient:
 
     ResetTokenInfo = namedtuple("ResetTokenInfo", ["id", "user_id", "create_date"])
 
-    def get_reset_token_info(self, token: str) -> Optional[ResetTokenInfo]:
+    def get_reset_token_info(self, token: str) -> ResetTokenInfo | None:
         """
         Check if reset token exists in the database and retrieves the associated user data.
 
@@ -336,7 +359,7 @@ class DatabaseClient:
 
     UserIdentifiers = namedtuple("UserIdentifiers", ["id", "email"])
 
-    def get_user_by_api_key(self, api_key: str) -> Optional[UserIdentifiers]:
+    def get_user_by_api_key(self, api_key: str) -> UserIdentifiers | None:
         """
         Get user id for a given api key
         :return: RoleInfo if the token exists; otherwise, None.
@@ -379,8 +402,8 @@ class DatabaseClient:
 
     def get_data_sources_to_archive(
         self,
-        update_frequency: Optional[UpdateFrequency] = None,
-        last_archived_before: Optional[datetime] = None,
+        update_frequency: UpdateFrequency | None = None,
+        last_archived_before: datetime | None = None,
         page: int = 1,
     ) -> list[ArchiveInfo]:
         """Pulls data sources to be archived by the automatic archives script."""
@@ -506,9 +529,9 @@ class DatabaseClient:
     def search_with_location_and_record_type(
         self,
         location_id: int,
-        record_categories: Optional[list[RecordCategories]] = None,
-        record_types: Optional[list[RecordTypes]] = None,
-    ) -> List[dict]:
+        record_categories: list[RecordCategories] | None = None,
+        record_types: list[RecordTypes] | None = None,
+    ) -> list[dict]:
         """Search for data sources in the database."""
         check_for_mutually_exclusive_arguments(record_categories, record_types)
 
@@ -522,8 +545,8 @@ class DatabaseClient:
 
     @cursor_manager()
     def search_federal_records(
-        self, record_categories: Optional[list[RecordCategories]] = None, page: int = 1
-    ) -> List[dict]:
+        self, record_categories: list[RecordCategories] | None = None, page: int = 1
+    ) -> list[dict]:
         query = DynamicQueryConstructor.create_federal_search_query(
             page=page,
             record_categories=record_categories,
@@ -576,9 +599,7 @@ class DatabaseClient:
         )
         up = UserPermission(
             user_id=user_id,
-            permission_id=cast(
-                int, permission_id_subquery
-            ),  # pyright: ignore[reportInvalidCast]
+            permission_id=cast(int, permission_id_subquery),  # pyright: ignore[reportInvalidCast]
         )
         self.add(up)
 
@@ -594,7 +615,7 @@ class DatabaseClient:
         )
         self.execute(query)
 
-    def get_user_permissions(self, user_id: int) -> List[PermissionsEnum]:
+    def get_user_permissions(self, user_id: int) -> list[PermissionsEnum]:
         query = (
             select(Permission.permission_name)
             .select_from(UserPermission)
@@ -631,10 +652,42 @@ class DatabaseClient:
         _update_entry_in_table, table_name="data_sources", id_column_name="id"
     )
 
+    def update_data_source_v2(
+        self,
+        dto: EntryCreateUpdateRequestDTO,
+        data_source_id: int,
+        permissions: list[PermissionsEnum],
+        user_id: int,
+    ) -> None:
+        builder = DataSourcesPutQueryBuilder(
+            dto=dto,
+            data_source_id=data_source_id,
+            permissions=permissions,
+            user_id=user_id,
+        )
+        self.run_query_builder(builder)
+
     update_data_request = partialmethod(
         _update_entry_in_table,
         table_name="data_requests",
     )
+
+    def update_data_request_v2(
+        self,
+        dto: DataRequestsPutOuterDTO,
+        data_request_id: int,
+        user_id: int | None = None,
+        permissions: list[PermissionsEnum] | None = None,
+        bypass_permissions: bool = False,
+    ) -> None:
+        builder = DataRequestsPutQueryBuilder(
+            dto=dto,
+            data_request_id=data_request_id,
+            user_id=user_id,
+            permissions=permissions,
+            bypass_permissions=bypass_permissions,
+        )
+        self.run_query_builder(builder)
 
     update_agency = partialmethod(
         _update_entry_in_table,
@@ -646,8 +699,8 @@ class DatabaseClient:
         self,
         table_name: str,
         column_value_mappings: dict[str, str],
-        column_to_return: Optional[str] = None,
-    ) -> Optional[Any]:
+        column_to_return: str | None = None,
+    ) -> Any | None:
         builder = CreateEntryInTableQueryBuilder(
             table_name=table_name,
             column_value_mappings=column_value_mappings,
@@ -659,12 +712,23 @@ class DatabaseClient:
         _create_entry_in_table, table_name="data_requests", column_to_return="id"
     )
 
+    def create_data_request_v2(
+        self,
+        dto: DataRequestsPostDTO,
+        user_id: int,
+    ) -> int:
+        builder = DataRequestsPostQueryBuilder(
+            dto=dto,
+            user_id=user_id,
+        )
+        return self.run_query_builder(builder)
+
     @session_manager_v2
     def create_agency(
         self,
         session: Session,
         dto: AgenciesPostDTO,
-        user_id: Optional[int] = None,
+        user_id: int | None = None,
     ):
         # Create Agency Entry
         agency_info = dto.agency_info
@@ -727,11 +791,15 @@ class DatabaseClient:
         column_to_return="id",
     )
 
-    add_new_data_source = partialmethod(
+    add_data_source = partialmethod(
         _create_entry_in_table,
         table_name="data_sources",
         column_to_return="id",
     )
+
+    def add_data_source_v2(self, dto: DataSourcesPostDTO) -> int:
+        builder = DataSourcesPostSingleQueryBuilder(dto)
+        return self.run_query_builder(builder)
 
     create_data_request_github_info = partialmethod(
         _create_entry_in_table,
@@ -748,8 +816,8 @@ class DatabaseClient:
         self,
         user_id: int,
         location_id: int,
-        record_types: Optional[list[RecordTypes]] = None,
-        record_categories: Optional[list[RecordCategories]] = None,
+        record_types: list[RecordTypes] | None = None,
+        record_categories: list[RecordCategories] | None = None,
     ) -> None:
         builder = CreateFollowQueryBuilder(
             user_id=user_id,
@@ -771,14 +839,14 @@ class DatabaseClient:
         self,
         relation_name: str,
         columns: list[str],
-        where_mappings: Optional[Union[list[WhereMapping], dict]] = [True],
-        limit: Optional[int] = PAGE_SIZE,
-        page: Optional[int] = None,
-        order_by: Optional[OrderByParameters] = None,
-        subquery_parameters: Optional[list[SubqueryParameters]] = [],
-        build_metadata: Optional[bool] = False,
-        alias_mappings: Optional[dict[str, str]] = None,
-        apply_uniqueness_constraints: Optional[bool] = True,
+        where_mappings: list[WhereMapping] | dict | None = [True],
+        limit: int | None = PAGE_SIZE,
+        page: int | None = None,
+        order_by: OrderByParameters | None = None,
+        subquery_parameters: list[SubqueryParameters] | None = [],
+        build_metadata: bool | None = False,
+        alias_mappings: dict[str, str] | None = None,
+        apply_uniqueness_constraints: bool | None = True,
     ) -> list[dict]:
         builder = SelectFromRelationQueryBuilder(
             relation_name=relation_name,
@@ -837,11 +905,11 @@ class DatabaseClient:
 
     def get_agencies(
         self,
-        order_by: Optional[OrderByParameters] = None,
-        page: Optional[int] = 1,
-        limit: Optional[int] = PAGE_SIZE,
-        requested_columns: Optional[list[str]] = None,
-        approval_status: Optional[ApprovalStatus] = None,
+        order_by: OrderByParameters | None = None,
+        page: int | None = 1,
+        limit: int | None = PAGE_SIZE,
+        requested_columns: list[str] | None = None,
+        approval_status: ApprovalStatus | None = None,
     ):
         params = GetParams(
             order_by=order_by,
@@ -866,10 +934,10 @@ class DatabaseClient:
         self,
         data_sources_columns: list[str],
         data_requests_columns: list[str],
-        order_by: Optional[OrderByParameters] = None,
-        page: Optional[int] = 1,
-        limit: Optional[int] = PAGE_SIZE,
-        approval_status: Optional[ApprovalStatus] = None,
+        order_by: OrderByParameters | None = None,
+        page: int | None = 1,
+        limit: int | None = PAGE_SIZE,
+        approval_status: ApprovalStatus | None = None,
     ):
         builder = GetDataSourcesQueryBuilder(
             data_sources_columns=data_sources_columns,
@@ -886,7 +954,7 @@ class DatabaseClient:
         self,
         session: Session,
         data_source_id: int,
-    ) -> Optional[list[dict]]:
+    ) -> list[dict] | None:
         query = (
             select(DataSourceExpanded)
             .options(
@@ -922,15 +990,17 @@ class DatabaseClient:
         return self.run_query_builder(builder)
 
     @session_manager_v2
-    def run_query_builder(self, session: Session, query_builder: QueryBuilderBase):
+    def run_query_builder(
+        self, session: Session, query_builder: QueryBuilderBase
+    ) -> Any:
         return query_builder.build(session)
 
     def _select_single_entry_from_relation(
         self,
         relation_name: str,
         columns: list[str],
-        where_mappings: Optional[Union[list[WhereMapping], dict]] = [True],
-        subquery_parameters: Optional[list[SubqueryParameters]] = [],
+        where_mappings: list[WhereMapping] | dict | None = [True],
+        subquery_parameters: list[SubqueryParameters] | None = [],
         **kwargs,
     ) -> Any:
         results = self._select_from_relation(
@@ -946,9 +1016,7 @@ class DatabaseClient:
             raise RuntimeError(f"Expected 1 result but found {len(results)}")
         return results[0]
 
-    def get_location_id(
-        self, where_mappings: Union[list[WhereMapping], dict]
-    ) -> Optional[int]:
+    def get_location_id(self, where_mappings: list[WhereMapping] | dict) -> int | None:
         result = self._select_single_entry_from_relation(
             relation_name=Relations.LOCATIONS_EXPANDED.value,
             columns=["id"],
@@ -959,7 +1027,7 @@ class DatabaseClient:
         return result["id"]
 
     def get_data_requests_for_creator(
-        self, creator_user_id: str, columns: List[str]
+        self, creator_user_id: str, columns: list[str]
     ) -> Sequence[RowMapping]:
         selects = []
         for column in columns:
@@ -1010,8 +1078,8 @@ class DatabaseClient:
         self,
         user_id: int,
         location_id: int,
-        record_types: Optional[list[RecordTypes]] = None,
-        record_categories: Optional[list[RecordCategories]] = None,
+        record_types: list[RecordTypes] | None = None,
+        record_categories: list[RecordCategories] | None = None,
     ):
         builder = DeleteFollowQueryBuilder(
             user_id=user_id,
@@ -1072,9 +1140,9 @@ class DatabaseClient:
         linked_relation: Relations,
         linked_relation_linking_column: str,
         columns_to_retrieve: list[str],
-        alias_mappings: Optional[dict[str, str]] = None,
+        alias_mappings: dict[str, str] | None = None,
         build_metadata=False,
-        subquery_parameters: Optional[list[SubqueryParameters]] = [],
+        subquery_parameters: list[SubqueryParameters] | None = [],
     ):
         # Get ids via linked table
         link_results = self._select_from_relation(
@@ -1147,12 +1215,14 @@ class DatabaseClient:
         )
         return self.scalar(query)
 
-    def get_next_user_event_batch(self) -> Optional[EventBatch]:
+    def get_next_user_event_batch(self) -> EventBatch | None:
         return self.run_query_builder(NotificationsPostQueryBuilder())
+
+    def preview_notifications(self) -> NotificationsPreviewOutput:
+        return self.run_query_builder(NotificationsPreviewQueryBuilder())
 
     @session_manager
     def mark_user_events_as_sent(self, user_id: int):
-
         with self.session.begin():
             for queue in (
                 DataRequestUserNotificationQueue,
@@ -1166,10 +1236,8 @@ class DatabaseClient:
         self,
         user_id: int,
         location_id: int,
-        record_categories: Optional[
-            Union[list[RecordCategories], RecordCategories]
-        ] = None,
-        record_types: Optional[Union[list[RecordTypes], RecordTypes]] = None,
+        record_categories: list[RecordCategories] | RecordCategories | None = None,
+        record_types: list[RecordTypes] | RecordTypes | None = None,
     ):
         builder = CreateSearchRecordQueryBuilder(
             user_id=user_id,
@@ -1194,19 +1262,6 @@ class DatabaseClient:
         raw_results = self.mappings(query)
         return {row["account_type"]: row["account_identifier"] for row in raw_results}
 
-    def get_user_info_by_id(self, user_id: int) -> UserInfoNonSensitive:
-        result = self.mapping(
-            select(User.email, User.created_at, User.updated_at).where(
-                User.id == user_id
-            )
-        )
-        return UserInfoNonSensitive(
-            user_id=user_id,
-            email=result["email"],
-            created_at=result["created_at"],
-            updated_at=result["updated_at"],
-        )
-
     def get_change_logs_for_table(self, table: Relations):
         query = select(
             ChangeLog.id,
@@ -1220,7 +1275,7 @@ class DatabaseClient:
         return self.mappings(query)
 
     @session_manager
-    def get_users(self, page: int) -> List[UsersWithPermissions]:
+    def get_users(self, page: int) -> list[UsersWithPermissions]:
         # TODO: QueryBuilder
         raw_results = self.session.execute(
             select(User)
@@ -1284,7 +1339,7 @@ class DatabaseClient:
         )
         self.execute(query)
 
-    def get_pending_user_with_token(self, validation_token: str) -> Optional[dict]:
+    def get_pending_user_with_token(self, validation_token: str) -> dict | None:
         query = select(PendingUser.email, PendingUser.password_digest).where(
             PendingUser.validation_token == validation_token
         )
@@ -1323,8 +1378,8 @@ class DatabaseClient:
     def get_similar_agencies(
         self,
         name: str,
-        location_id: Optional[int] = None,
-    ) -> List[AgencyMatchResponseInnerDTO]:
+        location_id: int | None = None,
+    ) -> list[AgencyMatchResponseInnerDTO]:
         builder = GetSimilarAgenciesQueryBuilder(name=name, location_id=location_id)
         return self.run_query_builder(builder)
 
@@ -1375,8 +1430,7 @@ class DatabaseClient:
         )
 
     @session_manager
-    def get_all(self, model: Type[Base]):
-
+    def get_all(self, model: type[Base]):
         def to_dict(instance):
             return {
                 c.name: getattr(instance, c.name) for c in instance.__table__.columns
@@ -1427,8 +1481,8 @@ class DatabaseClient:
     def get_many_locations(
         self,
         page: int,
-        has_coordinates: Optional[bool] = None,
-        type_: Optional[LocationType] = None,
+        has_coordinates: bool | None = None,
+        type_: LocationType | None = None,
     ):
         builder = GetManyLocationsQueryBuilder(
             page=page,
@@ -1441,7 +1495,7 @@ class DatabaseClient:
     def add_to_notification_log(
         self,
         user_count: int,
-        dt: Optional[datetime] = None,
+        dt: datetime | None = None,
     ):
         item = NotificationLog(
             user_count=user_count,
@@ -1481,7 +1535,7 @@ class DatabaseClient:
             "last_notification_date": result.last_notification.strftime(DATE_FORMAT),
         }
 
-    def get_duplicate_urls_bulk(self, urls: List[str]) -> Sequence:
+    def get_duplicate_urls_bulk(self, urls: list[str]) -> Sequence:
         """Return all URLs that already exist in the database."""
         stmt = select(DistinctSourceURL.original_url).where(
             DistinctSourceURL.base_url.in_(urls)

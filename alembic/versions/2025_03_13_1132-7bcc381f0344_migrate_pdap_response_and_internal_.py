@@ -51,9 +51,7 @@ def upgrade() -> None:
             UPDATE DATA_REQUESTS
             SET archive_reason = '{}'
             WHERE id = {};
-            """.format(
-                archive_reason, id
-            )
+            """.format(archive_reason, id)
         )
 
     id_and_internal_notes = [

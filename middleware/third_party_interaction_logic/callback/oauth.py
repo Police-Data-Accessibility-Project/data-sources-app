@@ -13,10 +13,8 @@ REDIRECT_ENDPOINT = "auth_callback"
 
 
 def redirect_to_github_authorization(redirect_url: Optional[str] = None):
-    return (
-        oauth.github.authorize_redirect(  # pyright: ignore[reportOptionalMemberAccess]
-            endpoint=redirect_url,
-        )
+    return oauth.github.authorize_redirect(  # pyright: ignore[reportOptionalMemberAccess]
+        endpoint=redirect_url,
     )
 
 
@@ -63,6 +61,4 @@ def get_github_oauth_access_token() -> dict:
     Gets the access token from the Github API via OAuth2
     :return: The access token
     """
-    return (
-        oauth.github.authorize_access_token()
-    )  # pyright: ignore[reportOptionalMemberAccess]
+    return oauth.github.authorize_access_token()  # pyright: ignore[reportOptionalMemberAccess]

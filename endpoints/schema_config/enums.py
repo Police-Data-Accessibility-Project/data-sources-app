@@ -65,12 +65,6 @@ from endpoints.schema_config.instantiations.auth.signup import (
 from endpoints.schema_config.instantiations.auth.validate_email import (
     AuthValidateEmailEndpointSchema,
 )
-from endpoints.schema_config.instantiations.bulk.agencies import (
-    BulkAgenciesPostEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.bulk.data_sources import (
-    BulkDataSourcesPostEndpointSchemaConfig,
-)
 from endpoints.schema_config.instantiations.checker import (
     UniqueURLCheckerEndpointSchemaConfig,
 )
@@ -168,8 +162,11 @@ from endpoints.schema_config.instantiations.metrics.followed_searches.breakdown 
 from endpoints.schema_config.instantiations.metrics.get import (
     MetricsGetEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.notifications import (
+from endpoints.schema_config.instantiations.notifications_.core import (
     NotificationsPostEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.notifications_.preview import (
+    NotificationsPreviewEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.permissions.get import (
     PermissionsGetEndpointSchemaConfig,
@@ -314,6 +311,7 @@ class SchemaConfigs(Enum):
     # endregion
     # region Notifications
     NOTIFICATIONS_POST = NotificationsPostEndpointSchemaConfig
+    NOTIFICATIONS_PREVIEW = NotificationsPreviewEndpointSchemaConfig
     # region User Profile
     USER_PUT = UserPutEndpointSchemaConfig
     USER_PROFILE_RECENT_SEARCHES = UserProfileRecentSearchesEndpointSchemaConfig
@@ -349,11 +347,6 @@ class SchemaConfigs(Enum):
     # region Permission
     PERMISSIONS_GET = PermissionsGetEndpointSchemaConfig
     PERMISSIONS_PUT = PermissionsPutEndpointSchemaConfig
-    # endregion
-
-    # region Batch
-    BULK_DATA_SOURCES_POST = BulkDataSourcesPostEndpointSchemaConfig
-    BULK_AGENCIES_POST = BulkAgenciesPostEndpointSchemaConfig
     # endregion
     # region Match
     MATCH_AGENCY = MatchAgencyEndpointSchemaConfig

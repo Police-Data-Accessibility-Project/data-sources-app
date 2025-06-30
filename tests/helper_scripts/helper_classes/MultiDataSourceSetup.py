@@ -1,12 +1,11 @@
 from db.enums import ApprovalStatus
 from tests.helper_scripts.helper_classes.MultiAgencySetup import MultiAgencySetup
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 
 
 class MultiDataSourceSetup:
-
     def __init__(self, tdc: TestDataCreatorFlask, mas: MultiAgencySetup):
         self.tdc = tdc
         self.mas = mas

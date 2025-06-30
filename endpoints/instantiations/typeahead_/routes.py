@@ -39,7 +39,6 @@ def get_typeahead_kwargs(db_client_method: Callable) -> dict:
 
 @namespace_typeahead_suggestions.route("/locations")
 class TypeaheadLocations(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_typeahead_suggestions,
         description="Get suggestions for a typeahead query",
@@ -68,7 +67,6 @@ class TypeaheadLocations(PsycopgResource):
 
 @namespace_typeahead_suggestions.route("/agencies")
 class TypeaheadAgencies(PsycopgResource):
-
     @limiter.limit("10/second")
     @endpoint_info(
         namespace=namespace_typeahead_suggestions,

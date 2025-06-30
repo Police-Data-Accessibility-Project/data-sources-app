@@ -16,7 +16,7 @@ from middleware.security.auth.info.instantiations import (
     WRITE_ONLY_AUTH_INFO,
     API_OR_JWT_AUTH_INFO,
 )
-from middleware.column_permission.core import create_column_permissions_string_table
+from middleware.column_permission.format import create_column_permissions_string_table
 from middleware.decorators.endpoint_info import (
     endpoint_info,
 )
@@ -85,7 +85,6 @@ class AgenciesByPage(PsycopgResource):
 
 @namespace_agencies.route("/<resource_id>")
 class AgenciesById(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_agencies,
         auth_info=API_OR_JWT_AUTH_INFO,

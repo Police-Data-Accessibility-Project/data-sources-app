@@ -5,7 +5,7 @@ All the tests in this file are expected to produce a BAD_REQUEST response
 import pytest
 from http import HTTPStatus
 
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request

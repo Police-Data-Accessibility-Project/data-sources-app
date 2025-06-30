@@ -28,7 +28,6 @@ from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.mapping import (
 
 
 class MarshmallowSchemaGenerator:
-
     def __init__(
         self,
         pydantic_model_cls: type[BaseModel],
@@ -56,7 +55,6 @@ class MarshmallowSchemaGenerator:
 
 
 class FieldProcessor:
-
     def __init__(self, model_field: FieldInfo):
         self.model_field = model_field
         if self.model_field.json_schema_extra is None:

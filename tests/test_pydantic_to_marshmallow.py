@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import (
-    generate_marshmallow_schema,
+    pydantic_to_marshmallow,
 )
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.metadata import (
     MetadataInfo,
@@ -59,7 +59,7 @@ class TestDTO(BaseModel):
 
 
 def test_pydantic_to_marshmallow():
-    SchemaAuto = generate_marshmallow_schema(TestDTO)
+    SchemaAuto = pydantic_to_marshmallow(TestDTO)
     schema = SchemaAuto()
 
     d = schema.load(

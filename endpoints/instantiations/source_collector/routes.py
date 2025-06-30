@@ -30,7 +30,6 @@ namespace_source_collector = create_namespace(AppNamespaces.SOURCE_COLLECTOR)
 
 @namespace_source_collector.route("/data-sources", methods=["POST"])
 class SourceCollectorDataSources(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_source_collector,
         auth_info=AuthenticationInfo(
@@ -52,7 +51,6 @@ class SourceCollectorDataSources(PsycopgResource):
 
 @namespace_source_collector.route("/data-sources/duplicates", methods=["POST"])
 class SourceCollectorDataSourcesDuplicates(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_source_collector,
         auth_info=AuthenticationInfo(
@@ -74,7 +72,6 @@ class SourceCollectorDataSourcesDuplicates(PsycopgResource):
 
 @namespace_source_collector.route("/agencies/sync", methods=["GET"])
 class SourceCollectorSyncAgencies(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_source_collector,
         auth_info=AuthenticationInfo(

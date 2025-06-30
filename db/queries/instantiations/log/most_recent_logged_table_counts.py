@@ -1,12 +1,11 @@
 from sqlalchemy import select, func, desc
 
 from db.models.implementations.core.log.table_count import TableCountLog
-from db.queries.builder import QueryBuilderBase
+from db.queries.builder.core import QueryBuilderBase
 from middleware.miscellaneous.table_count_logic import TableCountReferenceManager
 
 
 class GetMostRecentLoggedTableCountsQueryBuilder(QueryBuilderBase):
-
     def __init__(self):
         super().__init__()
 
