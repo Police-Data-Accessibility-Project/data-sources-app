@@ -1,6 +1,3 @@
-from endpoints.schema_config.instantiations.notifications_.core import (
-    NotificationsPostEndpointSchemaConfig,
-)
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.decorators.endpoint_info import endpoint_info
 from middleware.primary_resource_logic.notifications.notifications import (
@@ -20,7 +17,6 @@ namespace_notifications = create_namespace(
 
 @namespace_notifications.route("")
 class Notifications(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_notifications,
         auth_info=NOTIFICATIONS_AUTH_INFO,
@@ -59,7 +55,6 @@ class Notifications(PsycopgResource):
 
 @namespace_notifications.route("/preview")
 class NotificationsPreview(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_notifications,
         auth_info=NOTIFICATIONS_AUTH_INFO,

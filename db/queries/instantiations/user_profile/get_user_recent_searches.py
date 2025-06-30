@@ -13,7 +13,6 @@ from db.queries.builder.core import QueryBuilderBase
 
 
 class GetUserRecentSearchesQueryBuilder(QueryBuilderBase):
-
     def __init__(self, user_id: int):
         super().__init__()
         self.user_id = user_id

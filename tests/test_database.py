@@ -731,7 +731,6 @@ def test_localities_table_log_logic(
 
 
 def test_counties_table_log_logic(test_data_creator_db_client: TestDataCreatorDBClient):
-
     tdc = test_data_creator_db_client
     delete_change_log(tdc.db_client)
 
@@ -770,7 +769,6 @@ def test_counties_table_log_logic(test_data_creator_db_client: TestDataCreatorDB
 def test_locations_table_log_logic(
     test_data_creator_db_client: TestDataCreatorDBClient,
 ):
-
     tdc = test_data_creator_db_client
     db_client = tdc.db_client
     delete_change_log(db_client)

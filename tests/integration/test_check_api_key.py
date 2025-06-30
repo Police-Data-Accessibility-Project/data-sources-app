@@ -53,7 +53,6 @@ def test_check_api_key_happy_path(
 
 #
 def test_check_api_key_api_key_not_associated_with_user(monkeypatch):
-
     patch_request_headers(
         monkeypatch,
         path=PATCH_REQUESTS_ROOT,

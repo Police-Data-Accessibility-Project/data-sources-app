@@ -22,7 +22,6 @@ from middleware.schema_and_dto.dtos.data_requests.put import (
 
 @final
 class DataRequestsPutQueryBuilder(QueryBuilderBase, DataRequestPendingEventMixin):
-
     def __init__(
         self,
         dto: DataRequestsPutOuterDTO,
@@ -54,7 +53,6 @@ class DataRequestsPutQueryBuilder(QueryBuilderBase, DataRequestPendingEventMixin
 
     @override
     def run(self) -> None:
-
         self._check_permissions()
         self._update_data_request()
         if self.dto.entry_data.github_issue_url is not None:
@@ -143,7 +141,6 @@ class DataRequestsPutQueryBuilder(QueryBuilderBase, DataRequestPendingEventMixin
         return columns  # pyright: ignore [reportUnknownVariableType]
 
     def _user_is_creator(self) -> bool:
-
         query = select(DataRequest.id).where(
             DataRequest.creator_user_id == self.user_id,
             DataRequest.id == self.data_request_id,

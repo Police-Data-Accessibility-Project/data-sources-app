@@ -21,7 +21,7 @@ def post_to_webhook(msg: str):
 def send_password_reset_link(email, token):
     url = create_web_app_url("reset-password")
     url = add_query_params(url=url, params={"token": token})
-    body = f"To reset your password, click the following link: " f"\n{url}"
+    body = f"To reset your password, click the following link: \n{url}"
     send_via_mailgun(
         to_email=email,
         subject="PDAP Data Sources Reset Password",

@@ -288,7 +288,6 @@ class DynamicQueryConstructor:
         record_categories: Optional[list[RecordCategories]] = None,
         record_types: Optional[list[RecordTypes]] = None,
     ) -> sql.Composed:
-
         base_query = sql.SQL(
             """
             SELECT DISTINCT
@@ -353,7 +352,6 @@ class DynamicQueryConstructor:
             )
 
         if record_types is not None:
-
             record_type_str_list = [[record_type.value for record_type in record_types]]
             where_subclauses.append(
                 sql.SQL("record_types.name = ANY({record_types})").format(

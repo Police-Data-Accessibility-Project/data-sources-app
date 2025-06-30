@@ -18,7 +18,6 @@ from tests.helper_scripts.helper_classes.test_data_creator.flask import (
 
 
 def test_metrics(test_data_creator_flask: TestDataCreatorFlask):
-
     tdc = test_data_creator_flask
     tdc.link_data_source_to_agency(tdc.data_source().id, tdc.agency().id)
     metrics = tdc.request_validator.get_metrics(
@@ -80,7 +79,7 @@ def test_metrics_followed_searches_breakdown(
     assert len(data["results"]) == 3
 
     search_url_base = (
-        f"{get_env_variable("VITE_VUE_APP_BASE_URL")}" f"/search/results?location_id="
+        f"{get_env_variable('VITE_VUE_APP_BASE_URL')}/search/results?location_id="
     )
 
     def validate_location(

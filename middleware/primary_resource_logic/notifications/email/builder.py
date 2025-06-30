@@ -22,7 +22,6 @@ from middleware.util.env import get_env_variable
 
 
 class NotificationEmailBuilder:
-
     def __init__(self, event_batch: EventBatch):
         if len(event_batch.events) == 0:
             raise ValueError(f"No events in batch for user {event_batch.user_id}")

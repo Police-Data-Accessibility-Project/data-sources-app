@@ -15,7 +15,6 @@ from middleware.enums import Relations
 
 
 class GetDataSourcesQueryBuilder(QueryBuilderBase):
-
     def __init__(
         self,
         data_sources_columns: list[str],
@@ -34,7 +33,6 @@ class GetDataSourcesQueryBuilder(QueryBuilderBase):
         self.approval_status = approval_status
 
     def run(self) -> Any:
-
         order_by_clause = DynamicQueryConstructor.get_sql_alchemy_order_by_clause(
             order_by=self.order_by,
             relation=Relations.DATA_SOURCES.value,

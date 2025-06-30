@@ -17,7 +17,6 @@ namespace_match = create_namespace(AppNamespaces.MATCH)
 
 @namespace_match.route("/agency")
 class MatchAgencies(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_match,
         auth_info=STANDARD_JWT_AUTH_INFO,

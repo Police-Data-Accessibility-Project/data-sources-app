@@ -15,7 +15,6 @@ namespace_github = create_namespace(namespace_attributes=AppNamespaces.GITHUB)
 
 @namespace_github.route("/data-requests/synchronize")
 class GithubDataRequestsSynchronize(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_github,
         auth_info=AuthenticationInfo(

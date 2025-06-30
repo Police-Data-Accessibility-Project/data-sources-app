@@ -11,7 +11,6 @@ from db.dtos.event_info import EventInfo
 
 
 class NotificationsPostQueryBuilder(QueryBuilderBase):
-
     @override
     def run(self) -> EventBatch | None:
         query = get_user_with_events_query()

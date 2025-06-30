@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel
 
 from db.enums import RequestUrgency, RequestStatus

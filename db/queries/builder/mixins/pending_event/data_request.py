@@ -6,7 +6,6 @@ from db.queries.builder.core import QueryBuilderBase
 
 
 class DataRequestPendingEventMixin:
-
     def _add_pending_event_notification(
         self: QueryBuilderBase, data_request_id: int, event_type: EventType
     ):

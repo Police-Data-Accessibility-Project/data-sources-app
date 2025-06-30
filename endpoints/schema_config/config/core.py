@@ -1,5 +1,4 @@
 from http import HTTPStatus
-from typing import Optional, Type
 
 from marshmallow import Schema
 from pydantic import BaseModel

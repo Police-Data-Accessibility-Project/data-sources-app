@@ -1,15 +1,10 @@
 from typing import override, final
 
-from sqlalchemy import select
 
-from db.enums import EventType, ApprovalStatus
+from db.enums import ApprovalStatus
 from db.helpers import enum_value_or_none
 from db.models.implementations import LinkAgencyDataSource
 from db.models.implementations.core.data_source.core import DataSource
-from db.models.implementations.core.notification.pending.data_source import (
-    DataSourcePendingEventNotification,
-)
-from db.models.implementations.core.record.type import RecordType
 from db.queries.builder.core import QueryBuilderBase
 from db.queries.builder.mixins.pending_event.data_source import (
     DataSourcePendingEventMixin,
@@ -26,7 +21,6 @@ from middleware.util.type_conversion import enum_list_to_values
 class DataSourcesPostSingleQueryBuilder(
     QueryBuilderBase, RecordTypeMixin, DataSourcePendingEventMixin
 ):
-
     def __init__(self, dto: DataSourcesPostDTO):
         super().__init__()
         self.dto = dto

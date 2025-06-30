@@ -1,11 +1,10 @@
-from typing import List, Optional
+from typing import Optional
 
 from flask import make_response, Response
 from pydantic import BaseModel
 
 from db.client.core import DatabaseClient
 from db.db_client_dataclasses import OrderByParameters
-from db.subquery_logic import SubqueryParameterManager
 from db.enums import ApprovalStatus, RelationRoleEnum, ColumnPermissionEnum
 from db.helpers_.result_formatting import zip_get_datas_sources_for_map_results
 from middleware.security.access_info.primary import AccessInfoPrimary
@@ -17,14 +16,10 @@ from middleware.dynamic_request_logic.get.many import (
 
 from middleware.dynamic_request_logic.post import (
     PostLogic,
-    PostHandler,
-    post_entry_with_handler,
 )
-from middleware.dynamic_request_logic.put import put_entry, PutHandler
 from middleware.dynamic_request_logic.supporting_classes import (
     MiddlewareParameters,
     IDInfo,
-    PutPostRequestInfo,
 )
 
 from middleware.enums import Relations, PermissionsEnum
@@ -39,14 +34,10 @@ from middleware.schema_and_dto.dtos.common.base import (
     GetByIDBaseDTO,
 )
 from middleware.common_response_formatting import format_list_response, message_response
-from middleware.schema_and_dto.dtos.data_sources.put import (
-    DataSourcesPutDTO,
-)
 from middleware.schema_and_dto.dtos.data_sources.post import DataSourcesPostDTO
 from middleware.schema_and_dto.dtos.data_sources.reject import (
     DataSourcesRejectDTO,
 )
-from middleware.util.type_conversion import dataclass_to_filtered_dict
 
 RELATION = Relations.DATA_SOURCES.value
 
@@ -99,7 +90,6 @@ def get_data_sources_wrapper(
     access_info: AccessInfoPrimary,
     dto: DataSourcesGetManyRequestDTO,
 ) -> Response:
-
     cro: DataSourcesColumnRequestObject = get_data_sources_columns(
         access_info=access_info, requested_columns=dto.requested_columns
     )
@@ -127,7 +117,6 @@ def get_data_sources_wrapper(
 def data_source_by_id_wrapper(
     db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: GetByIDBaseDTO
 ) -> Response:
-
     cro: DataSourcesColumnRequestObject = get_data_sources_columns(
         access_info=access_info,
     )
@@ -193,7 +182,6 @@ def update_data_source_wrapper(
 def add_new_data_source_wrapper(
     db_client: DatabaseClient, dto: DataSourcesPostDTO, access_info: AccessInfoPrimary
 ) -> Response:
-
     data_source_id = db_client.add_data_source_v2(dto)
     return make_response(
         {
@@ -209,7 +197,6 @@ def add_new_data_source_wrapper(
 def get_data_source_related_agencies(
     db_client: DatabaseClient, dto: GetByIDBaseDTO
 ) -> Response:
-
     results = db_client.get_data_source_related_agencies(
         data_source_id=int(dto.resource_id)
     )
@@ -226,7 +213,6 @@ def get_data_source_related_agencies(
 
 
 class CreateDataSourceRelatedAgenciesLogic(PostLogic):
-
     def make_response(self) -> Response:
         return message_response("Agency successfully associated with data source.")
 

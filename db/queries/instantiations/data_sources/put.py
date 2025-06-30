@@ -20,7 +20,6 @@ from middleware.util.type_conversion import dict_enums_to_values
 class DataSourcesPutQueryBuilder(
     QueryBuilderBase, RecordTypeMixin, DataSourcePendingEventMixin
 ):
-
     def __init__(
         self,
         data_source_id: int,

@@ -69,7 +69,6 @@ def patched_request_args_get(monkeypatch):
 def test_populate_dto_with_request_content_happy_path(
     source_mapping_enum, patched_request_args_get
 ):
-
     dto = populate_dto_with_request_content(
         DTOPopulateParameters(
             dto_class=SimpleDTO,
@@ -327,7 +326,6 @@ def test_populate_nested_schema_with_request_content(
 
 
 def test_get_restx_param_documentation():
-
     result = get_restx_param_documentation(
         namespace=Namespace(name="test", path="/test", description="test"),
         schema=ExampleSchemaWithoutForm,

@@ -28,7 +28,6 @@ USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL = f"/api/user/{DATA_REQUESTS_PARTIAL_END
 
 @namespace_user.route("/update-password")
 class UserUpdatePassword(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_user,
         auth_info=STANDARD_JWT_AUTH_INFO,

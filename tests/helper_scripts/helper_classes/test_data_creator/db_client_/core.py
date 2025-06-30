@@ -127,7 +127,6 @@ class TestDataCreatorDBClient:
         state_iso: str = "PA",
         county_name: str = "Allegheny",
     ) -> int:
-
         # Create locality and return location id
         county_id = self.helper.get_county_id(
             county_name=county_name, state_iso=state_iso

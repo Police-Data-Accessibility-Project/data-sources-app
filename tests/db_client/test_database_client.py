@@ -516,7 +516,6 @@ def test_get_user_permissions_default(live_database_client):
 
 
 def test_add_user_permission(live_database_client):
-
     # Create test user
     test_user = create_test_user_db_client(live_database_client)
 
@@ -568,7 +567,6 @@ def test_get_data_requests_for_creator(live_database_client: DatabaseClient):
 
 
 def test_user_is_creator_of_data_request(live_database_client):
-
     test_user = create_test_user_db_client(live_database_client)
     submission_notes = uuid.uuid4().hex
 
@@ -668,7 +666,6 @@ def test_create_request_source_relation(
 
 
 def test_check_for_url_duplicates(live_database_client):
-
     create_data_source_entry_for_url_duplicate_checking(live_database_client)
 
     # Happy path
@@ -682,14 +679,12 @@ def test_check_for_url_duplicates(live_database_client):
 
 
 def test_get_columns_for_relation(live_database_client):
-
     columns = live_database_client.get_columns_for_relation(Relations.TEST_TABLE)
 
     assert columns == ["id", "pet_name", "species"]
 
 
 def test_create_or_get(live_database_client):
-
     results = live_database_client.create_or_get(
         table_name="test_table",
         column_value_mappings={"pet_name": "Schnoodles", "species": "Rat"},

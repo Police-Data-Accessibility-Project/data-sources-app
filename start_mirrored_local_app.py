@@ -328,7 +328,7 @@ def main():
                 "FLASK_APP_COOKIE_ENCRYPTION_KEY"
             ),
             "JWT_SECRET_KEY": get_from_env("JWT_SECRET_KEY"),
-            "" "MAILGUN_KEY": get_from_env("MAILGUN_KEY"),
+            "MAILGUN_KEY": get_from_env("MAILGUN_KEY"),
             "WEBHOOK_URL": get_from_env("WEBHOOK_URL"),
         },
     )

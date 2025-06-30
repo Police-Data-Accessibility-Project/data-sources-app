@@ -10,7 +10,6 @@ from tests.integration.notifications.event_to_pending.data_sources.manager impor
 
 
 class EventToPendingDataSourcesPutTestManager:
-
     def __init__(self, tdc):
         self.inner_manager = EventToPendingDataSourcesTestManager(tdc)
         self.user_id = tdc.user().id

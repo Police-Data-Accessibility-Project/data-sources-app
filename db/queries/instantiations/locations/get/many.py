@@ -10,7 +10,6 @@ from db.queries.builder.core import QueryBuilderBase
 
 
 class GetManyLocationsQueryBuilder(QueryBuilderBase):
-
     def __init__(
         self,
         page: int,

@@ -1,6 +1,3 @@
-from enum import Enum
-from typing import Optional
-
 from sqlalchemy import insert
 
 from db.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
@@ -28,7 +25,6 @@ class CreateEntryInTableQueryBuilder(QueryBuilderBase):
         self.column_to_return = column_to_return
 
     def run(self):
-
         column_value_mappings = dict_enums_to_values(self.column_value_mappings)
         table = SQL_ALCHEMY_TABLE_REFERENCE[self.table_name]
         statement = insert(table.__table__).values(**column_value_mappings)

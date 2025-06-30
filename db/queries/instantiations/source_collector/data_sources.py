@@ -22,7 +22,6 @@ class AddDataSourcesFromSourceCollectorQueryBuilder(
     QueryBuilderBase,
     DataSourcePendingEventMixin,
 ):
-
     def __init__(self, data_sources: list[SourceCollectorPostRequestInnerDTO]):
         super().__init__()
         self.data_sources = data_sources

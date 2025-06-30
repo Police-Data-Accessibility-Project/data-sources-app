@@ -27,7 +27,6 @@ from tests.integration.notifications.pending_to_queue._helpers.checker_.data_sou
 
 
 class NotificationsPendingToQueueRecordTypeTestManager:
-
     def __init__(self, tdc: TestDataCreatorDBClient):
         self.tdc = tdc
         self.tdc.clear_test_data()

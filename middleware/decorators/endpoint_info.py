@@ -109,7 +109,6 @@ def _update_responses(
     response_info: ResponseInfo,
     output_schema_manager: OutputSchemaManager,
 ):
-
     if response_info.response_dictionary is None:
         primary_output_model = _get_output_model(
             namespace=namespace,

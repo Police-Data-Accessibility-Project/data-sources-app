@@ -15,7 +15,6 @@ namespace_proposals = create_namespace(AppNamespaces.PROPOSALS)
 
 @namespace_proposals.route("/agencies", methods=["POST"])
 class ProposalsAgencies(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_proposals,
         auth_info=STANDARD_JWT_AUTH_INFO,

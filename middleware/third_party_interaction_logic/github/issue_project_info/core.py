@@ -6,7 +6,6 @@ from middleware.third_party_interaction_logic.github.issue_project_info.model im
 
 
 class GithubIssueProjectInfo:
-
     def __init__(self):
         self.issue_number_to_info: dict[int, GIPIInfo] = {}
 

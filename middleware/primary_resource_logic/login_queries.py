@@ -18,7 +18,6 @@ from middleware.primary_resource_logic.user_queries import UserRequestDTO
 
 
 class JWTAccessRefreshTokens:
-
     def __init__(self, email: str):
         db_client = DatabaseClient()
         user_id = db_client.get_user_id(email)

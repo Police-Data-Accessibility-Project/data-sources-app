@@ -1,6 +1,6 @@
 from dataclasses import is_dataclass, asdict
 from enum import Enum
-from typing import Any, Dict
+from typing import Any
 
 from pydantic import BaseModel
 

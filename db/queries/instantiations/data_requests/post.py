@@ -1,12 +1,8 @@
 from typing import override, final
 
-from db.enums import ApprovalStatus, RequestStatus
 from db.models.implementations import LinkLocationDataRequest
 from db.models.implementations.core.data_request.core import DataRequest
 from db.queries.builder.core import QueryBuilderBase
-from db.queries.builder.mixins.pending_event.data_request import (
-    DataRequestPendingEventMixin,
-)
 from middleware.schema_and_dto.dtos.data_requests.post import DataRequestsPostDTO
 
 
@@ -14,7 +10,6 @@ from middleware.schema_and_dto.dtos.data_requests.post import DataRequestsPostDT
 class DataRequestsPostQueryBuilder(
     QueryBuilderBase,
 ):
-
     def __init__(self, dto: DataRequestsPostDTO, user_id: int):
         super().__init__()
         self.dto = dto

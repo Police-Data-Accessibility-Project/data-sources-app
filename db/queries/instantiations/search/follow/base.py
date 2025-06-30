@@ -11,7 +11,6 @@ from utilities.enums import RecordCategories
 
 
 class FollowBaseQueryBuilder(QueryBuilderBase):
-
     def __init__(
         self,
         location_id: int,

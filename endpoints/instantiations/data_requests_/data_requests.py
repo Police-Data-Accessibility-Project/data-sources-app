@@ -85,7 +85,6 @@ namespace_data_requests = create_namespace(AppNamespaces.DATA_REQUESTS)
 
 @namespace_data_requests.route("/<resource_id>")
 class DataRequestsById(PsycopgResource):
-
     # TODO: More thoroughly update to endpoint_info_2
     @endpoint_info(
         namespace=namespace_data_requests,
@@ -151,7 +150,6 @@ class DataRequestsById(PsycopgResource):
 
 @namespace_data_requests.route("")
 class DataRequests(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=API_OR_JWT_AUTH_INFO,
@@ -193,7 +191,6 @@ class DataRequests(PsycopgResource):
 
 @namespace_data_requests.route("/<resource_id>/related-sources")
 class DataRequestsRelatedSources(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=API_OR_JWT_AUTH_INFO,
@@ -215,7 +212,6 @@ class DataRequestsRelatedSources(PsycopgResource):
 
 @namespace_data_requests.route("/<resource_id>/related-sources/<data_source_id>")
 class DataRequestsRelatedSourcesById(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=STANDARD_JWT_AUTH_INFO,
@@ -260,7 +256,6 @@ class DataRequestsRelatedSourcesById(PsycopgResource):
 
 @namespace_data_requests.route("/<resource_id>/withdraw")
 class DataRequestsWithdraw(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=STANDARD_JWT_AUTH_INFO,
@@ -282,7 +277,6 @@ class DataRequestsWithdraw(PsycopgResource):
 
 @namespace_data_requests.route("/<resource_id>/related-locations")
 class DataRequestsRelatedLocations(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=API_OR_JWT_AUTH_INFO,
@@ -304,7 +298,6 @@ class DataRequestsRelatedLocations(PsycopgResource):
 
 @namespace_data_requests.route("/<resource_id>/related-locations/<location_id>")
 class DataRequestsRelatedLocationsById(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=STANDARD_JWT_AUTH_INFO,

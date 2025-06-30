@@ -6,7 +6,6 @@ from db.helpers_.result_formatting import data_source_to_get_data_sources_output
 
 
 def test_data_source_to_get_data_sources_output_no_agencies():
-
     data_source = DataSourceExpanded(
         id=1,
         name="Test Data Source",

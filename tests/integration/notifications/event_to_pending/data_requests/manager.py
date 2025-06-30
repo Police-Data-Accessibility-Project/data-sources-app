@@ -14,7 +14,6 @@ from tests.helper_scripts.helper_classes.test_data_creator.db_client_.core impor
 
 
 class EventToPendingDataRequestsTestManager:
-
     def __init__(self, tdc: TestDataCreatorDBClient):
         self.tdc = tdc
         self.db_client = tdc.db_client

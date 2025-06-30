@@ -1,5 +1,4 @@
 # pyright: reportUninitializedInstanceVariable=false
-from typing import Optional
 
 from sqlalchemy import func
 from sqlalchemy.orm import Mapped, mapped_column

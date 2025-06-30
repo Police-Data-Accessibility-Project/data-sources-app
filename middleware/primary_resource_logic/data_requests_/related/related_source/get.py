@@ -8,7 +8,6 @@ from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
 
 
 def get_data_request_related_sources(db_client: DatabaseClient, dto: GetByIDBaseDTO):
-
     return get_related_resource(
         get_related_resources_parameters=GetRelatedResourcesParameters(
             dto=dto,

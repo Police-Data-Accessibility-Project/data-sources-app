@@ -2,7 +2,6 @@ from typing import override
 
 from sqlalchemy import select
 
-from db.enums import EventType
 from db.models.implementations.core.notification.pending.data_request import (
     DataRequestPendingEventNotification,
 )
@@ -18,7 +17,6 @@ from tests.integration.notifications.pending_to_queue._helpers.checker_._base im
 
 
 class DataRequestsEventQueueChecker(EventQueueCheckerBase):
-
     @override
     def _get_notification_queue_check_infos(self) -> list[CheckInfo]:
         query = select(

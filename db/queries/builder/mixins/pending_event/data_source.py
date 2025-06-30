@@ -6,7 +6,6 @@ from db.queries.builder.core import QueryBuilderBase
 
 
 class DataSourcePendingEventMixin:
-
     def _add_pending_event_notification(
         self: QueryBuilderBase, data_source_id: int
     ) -> None:

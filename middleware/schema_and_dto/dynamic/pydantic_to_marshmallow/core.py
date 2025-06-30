@@ -12,5 +12,5 @@ def pydantic_to_marshmallow(pydantic_model_cls: type[BaseModel]) -> type[Schema]
         return generator.generate_marshmallow_schema()
     except ValueError as e:
         raise ValueError(
-            f"Failed to generate marshmallow schema " f"for {pydantic_model_cls}: {e}"
+            f"Failed to generate marshmallow schema for {pydantic_model_cls}: {e}"
         )

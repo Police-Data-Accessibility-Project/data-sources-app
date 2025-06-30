@@ -1,5 +1,3 @@
-from typing import Optional
-
 from werkzeug.exceptions import Forbidden
 
 from db.client.core import DatabaseClient

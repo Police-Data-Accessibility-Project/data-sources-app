@@ -2,10 +2,8 @@
 Class based means to run and validate requests
 """
 
-from dataclasses import dataclass
 from datetime import datetime
 from http import HTTPStatus
-from io import BytesIO
 from typing import Optional, Type, Union, List
 
 from flask.testing import FlaskClient
@@ -178,7 +176,6 @@ from utilities.enums import RecordCategories
 
 
 class RequestValidator:
-
     def __init__(self, flask_client: FlaskClient):
         self.flask_client = flask_client
 

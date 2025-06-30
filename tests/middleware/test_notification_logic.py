@@ -65,7 +65,6 @@ def mock_send_via_mailgun(monkeypatch):
 def test_format_and_send_notification_all_categories(
     mock_send_via_mailgun, mock_vite_vue_app_base_url
 ):
-
     test_event_batch = EventBatch(
         user_id=20,
         user_email="fancyfrank@frankfurters.com",

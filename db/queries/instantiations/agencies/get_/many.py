@@ -13,7 +13,6 @@ from middleware.enums import Relations
 
 
 class GetAgenciesQueryBuilder(QueryBuilderBase):
-
     def __init__(
         self,
         params: GetParams,

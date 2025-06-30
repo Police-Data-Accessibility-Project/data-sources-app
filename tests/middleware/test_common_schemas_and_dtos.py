@@ -7,14 +7,12 @@ from middleware.schema_and_dto.schemas.data_sources.base import (
 
 
 def test_entry_data_request_schema_success():
-
     schema = EntryDataRequestSchema()
     schema.load({"entry_data": {"entry_name": "test entry", "data": 1}})
     # Should load successfully.
 
 
 def test_entry_data_request_schema_fail():
-
     schema = EntryDataRequestSchema()
     # Test on two-level dictionary
     with pytest.raises(ValidationError):

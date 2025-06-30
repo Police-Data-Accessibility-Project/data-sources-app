@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, call
+from unittest.mock import call
 
 from db.dtos.event_batch import EventBatch
 from tests.integration.notifications.core._helpers.call_checker.event_info_checker import (

@@ -33,7 +33,6 @@ namespace_locations = create_namespace(AppNamespaces.LOCATIONS)
 
 @namespace_locations.route("")
 class Locations(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_locations,
         description="Get all locations",
@@ -52,7 +51,6 @@ class Locations(PsycopgResource):
 
 @namespace_locations.route("/<int:location_id>")
 class LocationsByID(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_locations,
         description="Get a location by ID",
@@ -88,7 +86,6 @@ class LocationsByID(PsycopgResource):
 
 @namespace_locations.route("/<resource_id>/data-requests")
 class LocationsRelatedDataRequestsById(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_locations,
         description="Get data requests associated with a location by ID",

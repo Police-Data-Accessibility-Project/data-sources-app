@@ -11,7 +11,6 @@ from db.queries.instantiations.search.follow.base import FollowBaseQueryBuilder
 
 
 class CreateFollowQueryBuilder(FollowBaseQueryBuilder):
-
     def add_or_get_follow(self):
         query = (
             select(LinkUserFollowedLocation.id)

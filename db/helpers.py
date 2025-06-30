@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import Optional
 
 from db.constants import PAGE_SIZE
 

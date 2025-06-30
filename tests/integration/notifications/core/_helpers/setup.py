@@ -12,7 +12,6 @@ from tests.integration.notifications.core._helpers.models.user import (
 
 
 class NotificationsTestSetupManager:
-
     def __init__(self, tdc: TestDataCreatorDBClient):
         self.tdc = tdc
         self.vnec = ValidNotificationEventCreatorV2(self.tdc)

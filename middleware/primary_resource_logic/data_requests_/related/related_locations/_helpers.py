@@ -9,7 +9,6 @@ from middleware.primary_resource_logic.data_requests_.helpers import (
 
 
 class CreateDataRequestRelatedLocationLogic(PostLogic):
-
     def check_can_edit_columns(self, relation_role: RelationRoleEnum):
         check_has_admin_or_owner_role(relation_role)
 

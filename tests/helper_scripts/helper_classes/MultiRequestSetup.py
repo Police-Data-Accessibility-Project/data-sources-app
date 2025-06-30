@@ -12,7 +12,6 @@ from tests.helper_scripts.test_dataclasses import TestDataRequestInfo
 
 
 class MultiRequestSetup:
-
     def __init__(
         self,
         tdc: TestDataCreatorFlask,

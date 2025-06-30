@@ -15,7 +15,6 @@ from middleware.schema_and_dto.dtos.match.response import (
 
 
 class GetSimilarAgenciesQueryBuilder(QueryBuilderBase):
-
     def __init__(self, name: str, location_id: Optional[int] = None):
         super().__init__()
         self.name = name

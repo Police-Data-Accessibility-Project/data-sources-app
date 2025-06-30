@@ -8,7 +8,6 @@ from tests.integration.notifications.core._helpers.expected_event_info import (
 
 
 class EventInfoChecker:
-
     def __init__(self, event_infos: list[EventInfo]):
         self._entity_event_dict: dict[int, EventInfo] = {
             getattr(event_info, "event_id"): event_info for event_info in event_infos

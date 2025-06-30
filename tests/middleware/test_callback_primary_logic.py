@@ -84,7 +84,6 @@ class LinkGithubAccountRequestMocks(DynamicMagicMock):
 
 
 def test_link_github_account_request():
-
     mock = LinkGithubAccountRequestMocks(
         patch_root=GITHUB_OAUTH_PREFIX,
     )
@@ -108,7 +107,6 @@ class LinkGithubAccountMocks(DynamicMagicMock):
 
 
 def test_link_github_account():
-
     mock = LinkGithubAccountMocks(patch_root=GITHUB_OAUTH_PREFIX)
     mock.github_user_info.user_email = mock.pdap_account_email
     mock.db_client.get_user_info.return_value = mock.db_client_user_info

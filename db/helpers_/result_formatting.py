@@ -86,7 +86,6 @@ def agency_to_agency_dict(agency: Agency) -> dict[str, Any]:
 def agency_to_get_agencies_output(
     agency: Agency, requested_columns: Optional[list[str]] = None
 ) -> dict[str, Any]:
-
     if requested_columns is not None:
         d = {}
         for column in requested_columns:

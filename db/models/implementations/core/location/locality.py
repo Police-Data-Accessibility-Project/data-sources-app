@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sqlalchemy import CheckConstraint, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 

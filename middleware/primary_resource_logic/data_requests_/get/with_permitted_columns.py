@@ -23,7 +23,6 @@ def get_data_requests_with_permitted_columns(
     where_mappings: Optional[list[WhereMapping]] = [True],
     build_metadata: Optional[bool] = False,
 ) -> list[dict]:
-
     columns = get_permitted_columns(
         relation=RELATION,
         role=relation_role,

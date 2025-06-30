@@ -1,6 +1,6 @@
-from typing import Any, final
+from typing import final
 
-from sqlalchemy import select, Select, Executable, and_
+from sqlalchemy import select, Executable, and_
 
 from db.models.implementations import (
     LinkLocationDataRequest,
@@ -9,10 +9,7 @@ from db.models.implementations import (
     LinkAgencyLocation,
     LinkFollowRecordType,
 )
-from db.models.implementations.core.agency.core import Agency
-from db.models.implementations.core.data_request.core import DataRequest
 from db.models.implementations.core.data_source.core import DataSource
-from db.models.implementations.core.location.core import Location
 from db.models.implementations.core.notification.pending.data_request import (
     DataRequestPendingEventNotification,
 )
@@ -32,7 +29,6 @@ from db.queries.ctes.dependent_location import DependentLocationCTE
 
 @final
 class OptionallyUpdateUserNotificationQueueQueryBuilder(QueryBuilderBase):
-
     def __init__(self):
         super().__init__()
         self.dependent_locations = DependentLocationCTE()

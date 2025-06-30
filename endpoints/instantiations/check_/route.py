@@ -20,7 +20,6 @@ namespace_url_checker = create_namespace(namespace_attributes=AppNamespaces.CHEC
 
 @namespace_url_checker.route("/unique-url")
 class UniqueURLChecker(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_url_checker,
         description="Check if a URL is unique",

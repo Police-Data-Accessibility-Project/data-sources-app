@@ -136,7 +136,6 @@ def _apply_transformation_functions_to_dict(fields: dict, intermediate_data: dic
     :return:
     """
     for field_name, field_value in fields.items():
-
         # if transformation functions, apply them
         metadata = field_value.metadata
         transformation_function: callable = (

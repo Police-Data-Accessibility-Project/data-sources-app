@@ -7,7 +7,6 @@ from tests.helper_scripts.helper_classes.test_data_creator.flask import (
 
 
 def test_callback(monkeypatch, test_data_creator_flask: TestDataCreatorFlask):
-
     # Mock run endpoint
     mock_run_endpoint = MagicMock(return_value={})
     monkeypatch.setattr(Callback, "run_endpoint", mock_run_endpoint)

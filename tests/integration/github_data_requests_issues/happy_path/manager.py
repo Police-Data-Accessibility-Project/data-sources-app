@@ -18,7 +18,6 @@ from tests.integration.github_data_requests_issues.constants import PATCH_ROOT
 
 
 class TestSynchronizeGithubIssueHappyPathManager:
-
     def __init__(self, tdc: TestDataCreatorFlask, monkeypatch_):
         self.tdc = tdc
         self.tdc.clear_test_data()
@@ -29,7 +28,6 @@ class TestSynchronizeGithubIssueHappyPathManager:
         self.create_mock_get_github_issue_project_statuses(monkeypatch_)
 
     def create_mock_github_issue_manager(self, monkeypatch_):
-
         def increment_issue_count():
             self.mock_issue_count += 1
 
@@ -40,7 +38,6 @@ class TestSynchronizeGithubIssueHappyPathManager:
             self.mock_repo[issue_count] = gipi_info
 
         class MockGithubIssueManager:
-
             # Mock create GitHub Issue
             def create_issue_with_status(
                 self, title: str, body: str, status: RequestStatus, record_types: list
@@ -64,11 +61,9 @@ class TestSynchronizeGithubIssueHappyPathManager:
         )
 
     def create_mock_get_github_issue_project_statuses(self, monkeypatch_):
-
         def mock_get_github_issue_project_statuses(
             issue_numbers: list[int],
         ) -> GithubIssueProjectInfo:
-
             gipi = GithubIssueProjectInfo()
             for issue_number in issue_numbers:
                 gipi.add_info(issue_number, self.mock_repo[issue_number])
@@ -203,7 +198,6 @@ class TestSynchronizeGithubIssueHappyPathManager:
         self.assert_length_of_github_issue_infos(3)
 
     def check_sync_4(self):
-
         self.sync()
 
         # Confirm the presence of 4 data requests and 3 data request github info

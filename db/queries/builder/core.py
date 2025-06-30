@@ -7,7 +7,6 @@ from sqlalchemy.sql.compiler import SQLCompiler
 
 
 class QueryBuilderBase(ABC):
-
     def __init__(self):
         self._session: Session | None = None
 

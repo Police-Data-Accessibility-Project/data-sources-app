@@ -6,7 +6,6 @@ from db.models.implementations.core.notification.pending.data_source import (
 
 
 class EventToPendingDataSourcesTestManager:
-
     def __init__(self, tdc):
         self.tdc = tdc
         self.db_client = tdc.db_client

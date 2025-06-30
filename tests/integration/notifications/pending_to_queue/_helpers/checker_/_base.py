@@ -8,7 +8,6 @@ from tests.integration.notifications.pending_to_queue._helpers.check_info import
 
 
 class EventQueueCheckerBase(ABC):
-
     def __init__(self, db_client: DatabaseClient):
         self.db_client = db_client
         check_infos = self._get_notification_queue_check_infos()

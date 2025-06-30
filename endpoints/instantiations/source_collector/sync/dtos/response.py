@@ -10,7 +10,6 @@ from middleware.schema_and_dto.dtos._helpers import (
 
 
 class SourceCollectorSyncAgenciesResponseInnerDTO(BaseModel):
-
     display_name: str = default_field_required(
         description="The display name of the agency."
     )

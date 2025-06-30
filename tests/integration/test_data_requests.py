@@ -46,7 +46,6 @@ from tests.helper_scripts.run_and_validate_request import run_and_validate_reque
 def test_data_requests_get(
     test_data_creator_flask: TestDataCreatorFlask,
 ):
-
     tdc = test_data_creator_flask
     # Delete all data from the data requests table
     tdc.db_client.execute_raw_sql("""DELETE FROM data_requests""")

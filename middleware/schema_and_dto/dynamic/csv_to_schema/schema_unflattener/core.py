@@ -13,7 +13,6 @@ from middleware.schema_and_dto.dynamic.schema.request_content_population import 
 
 
 class SchemaUnflattener:
-
     def __init__(self, flat_schema_class: Type[FlatSchema]):
         self.flat_schema_class = flat_schema_class
         self.origin_schema_class = flat_schema_class.origin_schema

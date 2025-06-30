@@ -9,7 +9,6 @@ from db.queries.builder.core import QueryBuilderBase
 
 
 class GetDataSourceByIDQueryBuilder(QueryBuilderBase):
-
     def __init__(
         self,
         data_source_id: int,

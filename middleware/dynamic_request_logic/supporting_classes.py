@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Optional, Union, Any
+from typing import Any
 
 from flask import Response
 from pydantic import BaseModel
@@ -34,7 +34,6 @@ class MiddlewareParameters:
 
 
 class IDInfo:
-
     def __init__(
         self,
         id_column_name: str = "id",
@@ -65,7 +64,6 @@ class PutPostRequestInfo(BaseModel):
 
 
 class PostPutHandler(ABC):
-
     def __init__(
         self,
         middleware_parameters: MiddlewareParameters,
@@ -100,7 +98,6 @@ class PostPutHandler(ABC):
 
 
 class PutPostBase(ABC):
-
     def __init__(
         self,
         middleware_parameters: MiddlewareParameters,

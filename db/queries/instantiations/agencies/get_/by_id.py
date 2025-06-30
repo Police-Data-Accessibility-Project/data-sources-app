@@ -9,7 +9,6 @@ from db.queries.builder.core import QueryBuilderBase
 
 
 class GetAgencyByIDQueryBuilder(QueryBuilderBase):
-
     def __init__(self, agency_id: int):
         super().__init__()
         self.agency_id = agency_id

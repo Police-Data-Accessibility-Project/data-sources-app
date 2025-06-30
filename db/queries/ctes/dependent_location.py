@@ -30,7 +30,6 @@ def get_dependent_location_cte() -> CTE:
 
 @final
 class DependentLocationCTE:
-
     def __init__(self):
         self._query = union_all(
             select(

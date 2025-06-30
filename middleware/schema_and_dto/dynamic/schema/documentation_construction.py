@@ -143,7 +143,6 @@ class DescriptionBuilder:
 
 
 class FieldInfo:
-
     def __init__(
         self,
         field_name: str,
@@ -203,7 +202,6 @@ class FieldInfo:
 
 # region Restx Builders
 class RestxBuilder(ABC):
-
     def add_fields(self, fields: list[FieldInfo]):
         for field in fields:
             self.add_field(field)

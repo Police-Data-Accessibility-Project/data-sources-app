@@ -1,18 +1,11 @@
 from sqlalchemy import delete, select, and_
 
 from db.client.core import DatabaseClient
-from db.models.implementations.core.notification.queue.data_request import (
-    DataRequestUserNotificationQueue,
-)
-from db.models.implementations.core.notification.queue.data_source import (
-    DataSourceUserNotificationQueue,
-)
 from db.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import Relations
 
 
 class TDCSQLAlchemyHelper:
-
     def __init__(self):
         self.db_client = DatabaseClient()
 

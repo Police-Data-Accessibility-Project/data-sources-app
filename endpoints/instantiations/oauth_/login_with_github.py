@@ -21,7 +21,6 @@ namespace_login_with_github = create_namespace(AppNamespaces.OAUTH)
 
 @namespace_login_with_github.route("/login-with-github")
 class LoginWithGithub(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_login_with_github,
         auth_info=NO_AUTH_INFO,

@@ -1,5 +1,4 @@
 class SingularPluralWordGetter:
-
     def __init__(self, items: list):
         self.is_plural = len(items) != 1
 

@@ -15,7 +15,6 @@ from utilities.enums import RecordCategories
 
 
 class CreateSearchRecordQueryBuilder(QueryBuilderBase):
-
     def __init__(
         self,
         user_id: int,

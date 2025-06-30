@@ -16,7 +16,6 @@ from middleware.schema_and_dto.dtos.notifications.preview import (
 
 @final
 class NotificationsPreviewQueryBuilder(QueryBuilderBase):
-
     def __init__(self):
         super().__init__()
         self.total_events = 0

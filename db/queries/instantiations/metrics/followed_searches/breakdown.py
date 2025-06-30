@@ -21,7 +21,6 @@ from middleware.util.env import get_env_variable
 
 
 class GetMetricsFollowedSearchesBreakdownQueryBuilder(QueryBuilderBase):
-
     def __init__(self, dto: MetricsFollowedSearchesBreakdownRequestDTO):
         super().__init__()
         self.dto = dto
@@ -46,8 +45,7 @@ class GetMetricsFollowedSearchesBreakdownQueryBuilder(QueryBuilderBase):
         last_notification = last_notification_query.c.created_at
 
         base_search_url = (
-            f"{get_env_variable("VITE_VUE_APP_BASE_URL")}"
-            f"/search/results?location_id="
+            f"{get_env_variable('VITE_VUE_APP_BASE_URL')}/search/results?location_id="
         )
 
         def count_distinct(field, label):

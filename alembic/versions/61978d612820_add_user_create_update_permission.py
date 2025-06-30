@@ -49,7 +49,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-
     op.execute(
         """
         DELETE FROM PERMISSIONS

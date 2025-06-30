@@ -16,7 +16,6 @@ namespace_metadata = create_namespace(AppNamespaces.METADATA)
 
 @namespace_metadata.route("/record-types-and-categories", methods=["GET"])
 class RecordTypeAndCategory(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_metadata,
         auth_info=API_OR_JWT_AUTH_INFO,

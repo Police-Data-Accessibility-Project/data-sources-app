@@ -1,6 +1,6 @@
 # pyright: reportUninitializedInstanceVariable=false
 from datetime import date
-from typing import Optional, get_args
+from typing import get_args
 
 from sqlalchemy import Column, DateTime, func, String, Enum, ForeignKey
 from sqlalchemy.dialects.postgresql import ARRAY, ENUM as pgEnum

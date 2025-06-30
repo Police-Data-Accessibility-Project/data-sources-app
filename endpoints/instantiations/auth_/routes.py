@@ -65,7 +65,6 @@ class ApiKeyResource(PsycopgResource):
 
 @namespace_auth.route("/signup")
 class Signup(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_signup,
         auth_info=NO_AUTH_INFO,
@@ -88,7 +87,6 @@ class Signup(PsycopgResource):
 
 @namespace_auth.route("/validate-email")
 class ValidateEmail(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_signup,
         auth_info=VALIDATE_EMAIL_AUTH_INFO,

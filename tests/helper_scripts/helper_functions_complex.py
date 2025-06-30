@@ -4,7 +4,6 @@ from collections import namedtuple
 from typing import Optional
 from http import HTTPStatus
 
-import psycopg
 import sqlalchemy
 from flask.testing import FlaskClient
 from werkzeug.security import generate_password_hash
@@ -97,7 +96,6 @@ def create_api_key(client_with_db: FlaskClient, jwt_authorization_header: dict) 
 def setup_get_typeahead_suggestion_test_data():
     db_client = DatabaseClient()
     try:
-
         state_id = db_client.create_or_get(
             table_name=Relations.US_STATES.value,
             column_value_mappings={"state_iso": "XY", "state_name": "Xylonsylvania"},

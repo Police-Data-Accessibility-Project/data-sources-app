@@ -12,7 +12,6 @@ from tests.helper_scripts.helper_classes.test_data_creator.flask import (
 
 
 def test_user_profile_data_requests(test_data_creator_flask: TestDataCreatorFlask):
-
     tdc = test_data_creator_flask
 
     # Create test user

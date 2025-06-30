@@ -206,7 +206,6 @@ from utilities.enums import RecordCategories
 
 @final
 class DatabaseClient:
-
     def __init__(self):
         self.connection: pg_connection = initialize_psycopg_connection()
         self.session_maker = initialize_sqlalchemy_session()
@@ -1225,7 +1224,6 @@ class DatabaseClient:
 
     @session_manager
     def mark_user_events_as_sent(self, user_id: int):
-
         with self.session.begin():
             for queue in (
                 DataRequestUserNotificationQueue,
@@ -1434,7 +1432,6 @@ class DatabaseClient:
 
     @session_manager
     def get_all(self, model: type[Base]):
-
         def to_dict(instance):
             return {
                 c.name: getattr(instance, c.name) for c in instance.__table__.columns

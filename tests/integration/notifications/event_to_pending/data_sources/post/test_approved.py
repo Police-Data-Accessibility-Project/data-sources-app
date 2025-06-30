@@ -11,7 +11,6 @@ from tests.integration.notifications.event_to_pending.data_sources.manager impor
 
 
 def test_data_source_post_approved(manager: EventToPendingDataSourcesTestManager):
-
     id_ = manager.tdc.data_source(ApprovalStatus.APPROVED).id
     # Should be in queue
     assert manager.is_in_pending(id_)

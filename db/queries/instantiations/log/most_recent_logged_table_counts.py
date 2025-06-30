@@ -6,7 +6,6 @@ from middleware.miscellaneous.table_count_logic import TableCountReferenceManage
 
 
 class GetMostRecentLoggedTableCountsQueryBuilder(QueryBuilderBase):
-
     def __init__(self):
         super().__init__()
 

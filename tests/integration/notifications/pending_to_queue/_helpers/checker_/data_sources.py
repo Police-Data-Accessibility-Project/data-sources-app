@@ -17,7 +17,6 @@ from tests.integration.notifications.pending_to_queue._helpers.checker_._base im
 
 
 class DataSourcesEventQueueChecker(EventQueueCheckerBase):
-
     @override
     def _get_notification_queue_check_infos(self) -> list[CheckInfo]:
         query = select(

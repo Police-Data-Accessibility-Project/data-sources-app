@@ -85,7 +85,6 @@ class AgenciesByPage(PsycopgResource):
 
 @namespace_agencies.route("/<resource_id>")
 class AgenciesById(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_agencies,
         auth_info=API_OR_JWT_AUTH_INFO,

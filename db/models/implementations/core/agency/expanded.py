@@ -1,5 +1,4 @@
 # pyright: reportUninitializedInstanceVariable=false
-from typing import Optional
 
 from sqlalchemy import ForeignKey, Column, String
 from sqlalchemy.orm import mapped_column, Mapped
@@ -9,7 +8,6 @@ from middleware.enums import Relations
 
 
 class AgencyExpanded(Agency):
-
     __tablename__ = Relations.AGENCIES_EXPANDED.value
     id = mapped_column(None, ForeignKey("public.agencies.id"), primary_key=True)
 

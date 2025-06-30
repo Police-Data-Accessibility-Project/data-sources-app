@@ -17,7 +17,6 @@ from middleware.constants import DATETIME_FORMAT
 
 
 class SourceCollectorSyncAgenciesQueryBuilder(QueryBuilderBase):
-
     def __init__(self, dto: SourceCollectorSyncAgenciesRequestDTO):
         super().__init__()
         self.updated_at = dto.updated_at

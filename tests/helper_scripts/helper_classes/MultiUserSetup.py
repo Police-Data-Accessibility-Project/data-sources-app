@@ -4,7 +4,6 @@ from tests.helper_scripts.helper_classes.test_data_creator.flask import (
 
 
 class MultiUserSetup:
-
     def __init__(
         self,
         tdc: TestDataCreatorFlask,

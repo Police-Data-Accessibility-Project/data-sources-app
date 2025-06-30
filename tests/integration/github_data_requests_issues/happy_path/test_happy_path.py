@@ -1,24 +1,9 @@
-from db.enums import RequestStatus
-from db.models.implementations.core.data_request.core import DataRequest
-from db.models.implementations.core.data_request.github_issue_info import (
-    DataRequestsGithubIssueInfo,
-)
-from middleware.enums import RecordTypes
-from middleware.third_party_interaction_logic.github.issue_info import GithubIssueInfo
-from middleware.third_party_interaction_logic.github.issue_project_info.core import (
-    GithubIssueProjectInfo,
-)
-from middleware.third_party_interaction_logic.github.issue_project_info.model import (
-    GIPIInfo,
-)
 from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from tests.integration.github_data_requests_issues.constants import PATCH_ROOT
 from tests.integration.github_data_requests_issues.happy_path.manager import (
     TestSynchronizeGithubIssueHappyPathManager,
 )
-from tests.integration.test_check_database_health import wipe_database
 
 
 def test_synchronize_github_issue(
