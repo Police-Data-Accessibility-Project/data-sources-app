@@ -342,7 +342,8 @@ def downgrade() -> None:
     views = [
         "data_requests_expanded",
         "agencies_expanded",
-        "recent_searches_expanded" "locations_expanded",
+        "recent_searches_expanded",
+        "locations_expanded",
         "data_sources_expanded",
         "dependent_locations",
         "locations_expanded",

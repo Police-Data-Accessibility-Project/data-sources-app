@@ -125,5 +125,5 @@ Click here to view and update your followed locations: {self.url_builder.build_u
                 a("here", href=self.url_builder.build_url(PROFILE_SUBDIRECTORY)),
                 " to view and update your followed locations.",
             )
-        html_text = doc.render()
+        html_text = doc.render()  # pyright: ignore [reportAttributeAccessIssue]
         return html_text

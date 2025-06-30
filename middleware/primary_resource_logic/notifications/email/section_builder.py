@@ -22,7 +22,7 @@ class SectionBuilder:
 
         h1(self.title)
         p(self.introductory_paragraph)
-        with div().add(ul()):
+        with div().add(ul()):  # pyright: ignore [reportAttributeAccessIssue]
             for event in self.events:
                 li(a(event.entity_name, href=f"{self.url_base}/{event.entity_id}"))
         br()
