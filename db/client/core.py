@@ -279,8 +279,9 @@ class DatabaseClient:
                 raise AttributeError("Models must have an id attribute")
             session.flush()
             return [
-                model.id for model in models
-            ]  # pyright: ignore [reportAttributeAccessIssue]
+                model.id
+                for model in models  # pyright: ignore [reportAttributeAccessIssue]
+            ]
         return None
 
     @session_manager_v2
