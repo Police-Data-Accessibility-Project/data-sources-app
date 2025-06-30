@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, call
 
-from middleware.custom_dataclasses import EventBatch
+from db.dtos.event_batch import EventBatch
 from tests.integration.notifications.core._helpers.call_checker.event_info_checker import (
     EventInfoChecker,
 )
@@ -14,25 +14,22 @@ from tests.integration.notifications.core._helpers.models.user import (
 CallType = type(call)
 
 
-class FormatAndSendNotificationCallChecker:
-    """Used to check calls to"""
+class EventBatchChecker:
+    """Used to check calls to `format_and_send_notifications`"""
 
     def __init__(
         self,
-        mock: MagicMock,
+        batches: list[EventBatch],
     ):
-        self._batch_dict: dict[int, EventBatch] = self._build_call_dict(
-            mock.call_args_list
-        )
+        self._batch_dict: dict[int, EventBatch] = self._build_call_dict(batches)
 
     @staticmethod
-    def _build_call_dict(calls: list[CallType]):
+    def _build_call_dict(batches: list[EventBatch]):
         d = {}
-        for call_ in calls:
-            event_batch: EventBatch = call_.kwargs["event_batch"]
-            assert isinstance(event_batch, EventBatch)
-            user_id = event_batch.user_id
-            d[user_id] = event_batch
+        for batch in batches:
+            assert isinstance(batch, EventBatch)
+            user_id = batch.user_id
+            d[user_id] = batch
         return d
 
     def check_user(self, info: NotificationsTestUserInfo):

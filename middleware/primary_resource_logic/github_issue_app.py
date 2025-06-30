@@ -6,7 +6,7 @@ from typing import Optional
 
 from flask import Response
 
-from db.DTOs import DataRequestInfoForGithub
+from db.dtos.data_request_info_for_github import DataRequestInfoForGithub
 from db.client.core import DatabaseClient
 from db.enums import RequestStatus
 from middleware.common_response_formatting import message_response

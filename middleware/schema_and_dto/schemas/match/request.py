@@ -1,6 +1,6 @@
 from middleware.schema_and_dto.dtos.match.request import AgencyMatchRequestDTO
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import (
-    generate_marshmallow_schema,
+    pydantic_to_marshmallow,
 )
 
-AgencyMatchSchema = generate_marshmallow_schema(AgencyMatchRequestDTO)
+AgencyMatchSchema = pydantic_to_marshmallow(AgencyMatchRequestDTO)

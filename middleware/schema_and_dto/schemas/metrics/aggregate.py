@@ -1,16 +1,15 @@
-from marshmallow import Schema, fields
+from typing import final
 
-from middleware.schema_and_dto.util import get_json_metadata
+from marshmallow import Schema
+
+from middleware.schema_and_dto.schemas.helpers import int_field, date_field
 
 
+@final
 class MetricsFollowedSearchesAggregateResponseSchema(Schema):
-    total_followers = fields.Int(
-        metadata=get_json_metadata("The total number of followers")
-    )
-    total_followed_searches = fields.Int(
-        metadata=get_json_metadata("The total number of followed searches")
-    )
-    last_notification_date = fields.Date(
-        metadata=get_json_metadata("The date that notifications were sent out"),
+    total_followers = int_field("The total number of followers")
+    total_followed_searches = int_field("The total number of followed searches")
+    last_notification_date = date_field(
+        "The date that notifications were sent out",
         allow_none=True,
     )

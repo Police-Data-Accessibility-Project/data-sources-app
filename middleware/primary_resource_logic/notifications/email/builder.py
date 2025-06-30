@@ -1,92 +1,24 @@
-# pyright: reportAttributeAccessIssue = false
-from dataclasses import dataclass
-
-from flask import Response, make_response
-from pydantic import BaseModel
-from werkzeug.exceptions import InternalServerError
-
-from db.client.core import DatabaseClient
-from db.enums import EventType
-from middleware.security.access_info.primary import AccessInfoPrimary
-from middleware.custom_dataclasses import EventInfo, EventBatch
 import dominate
-from dominate.tags import p, h1, div, ul, li, br, a
+from dominate.tags import p, br, a
 
-from middleware.third_party_interaction_logic.mailgun import send_via_mailgun
+from db.enums import EventType
+from db.dtos.event_batch import EventBatch
+from middleware.primary_resource_logic.notifications.constants import (
+    DATA_SOURCE_SUBDIRECTORY,
+    DATA_REQUEST_SUBDIRECTORY,
+    PROFILE_SUBDIRECTORY,
+)
+from middleware.primary_resource_logic.notifications.email.content import (
+    NotificationEmailContent,
+)
+from middleware.primary_resource_logic.notifications.email.section_builder import (
+    SectionBuilder,
+)
+from middleware.primary_resource_logic.notifications.url_builder import URLBuilder
+from middleware.primary_resource_logic.notifications.word_getter import (
+    SingularPluralWordGetter,
+)
 from middleware.util.env import get_env_variable
-
-
-class NotificationEmailContent(BaseModel):
-    html_text: str
-    base_text: str
-
-
-DATA_REQUEST_SUBDIRECTORY = "data-request"
-DATA_SOURCE_SUBDIRECTORY = "data-source"
-PROFILE_SUBDIRECTORY = "profile"
-
-
-@dataclass
-class SectionBuilder:
-    title: str
-    introductory_paragraph: str
-    url_base: str
-    events: list[EventInfo]
-
-    def build_html_list(
-        self,
-    ):
-        """
-        Must operate within a dominate document
-        :return:
-        """
-
-        h1(self.title)
-        p(self.introductory_paragraph)
-        with div().add(ul()):
-            for event in self.events:
-                li(a(event.entity_name, href=f"{self.url_base}/{event.entity_id}"))
-        br()
-
-    def build_text_list(self) -> str:
-        bullet_entries = []
-        for event in self.events:
-            bullet_entries.append(
-                f'\t- "{event.entity_name}" at {self.url_base}/{event.entity_id}'
-            )
-        bullet_string = "\n".join(bullet_entries)
-        return f"""
-{self.title}
-{self.introductory_paragraph}
-{bullet_string}"""
-
-
-class URLBuilder:
-    """
-    Builds URLs from a domain
-    """
-
-    def __init__(self, domain: str):
-        self.domain = domain
-
-    def build_url(self, subdirectory: str) -> str:
-        return f"{self.domain}/{subdirectory}"
-
-
-class SingularPluralWordGetter:
-
-    def __init__(self, items: list):
-        self.is_plural = len(items) != 1
-
-    def get_word(self, singular: str, plural: str) -> str:
-        if self.is_plural:
-            return plural
-        return singular
-
-    def get_past_tense_to_be(self):
-        if self.is_plural:
-            return "were"
-        return "was"
 
 
 class NotificationEmailBuilder:
@@ -196,41 +128,3 @@ Click here to view and update your followed locations: {self.url_builder.build_u
             )
         html_text = doc.render()
         return html_text
-
-
-def format_and_send_notifications(
-    event_batch: EventBatch,
-):
-    neb = NotificationEmailBuilder(event_batch=event_batch)
-    email_content = neb.build_email_content()
-    send_via_mailgun(
-        to_email=event_batch.user_email,
-        subject="Updates to police data sources in locations you follow",
-        text=email_content.base_text,
-        html=email_content.html_text,
-    )
-
-
-def send_notifications(
-    db_client: DatabaseClient, access_info: AccessInfoPrimary
-) -> Response:
-    """Sends notifications to all users."""
-    db_client.optionally_update_user_notification_queue()
-    next_event_batch = db_client.get_next_user_event_batch()
-    count = 0
-    while next_event_batch is not None:
-        try:
-            format_and_send_notifications(event_batch=next_event_batch)
-            db_client.mark_user_events_as_sent(next_event_batch.user_id)
-            count += 1
-            next_event_batch = db_client.get_next_user_event_batch()
-        except Exception as e:
-            raise InternalServerError(
-                f"Error sending notification for event batch for user {next_event_batch.user_id}: "
-                f"{e}. Sent {count} batches prior to this error."
-            )
-
-    db_client.add_to_notification_log(user_count=count)
-    return make_response(
-        {"message": "Notifications sent successfully.", "count": count}
-    )

@@ -81,13 +81,13 @@ class TestDataCreatorDBClient:
         self.db_client: DatabaseClient = DatabaseClient()
         self.helper = TDCSQLAlchemyHelper()
 
-    def test_name(self, midfix: str = ""):
+    def test_name(self, midfix: str = "") -> str:
         return f"TEST_{midfix}_{uuid.uuid4().hex}"
 
-    def test_url(self, midfix: str = ""):
+    def test_url(self, midfix: str = "") -> str:
         return f"TEST_{midfix}_{uuid.uuid4().hex}.com"
 
-    def clear_test_data(self):
+    def clear_test_data(self) -> None:
         for model in [
             DataRequest,
             Agency,

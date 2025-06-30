@@ -1,11 +1,16 @@
+from endpoints.schema_config.instantiations.notifications_.core import (
+    NotificationsPostEndpointSchemaConfig,
+)
 from middleware.security.access_info.primary import AccessInfoPrimary
-from middleware.security.auth.info.base import AuthenticationInfo
 from middleware.decorators.endpoint_info import endpoint_info
-from middleware.enums import AccessTypeEnum, PermissionsEnum
-from middleware.primary_resource_logic.notifications import send_notifications
+from middleware.primary_resource_logic.notifications.notifications import (
+    send_notifications,
+    preview_notifications,
+)
 from endpoints.psycopg_resource import PsycopgResource
 from endpoints.schema_config.enums import SchemaConfigs
 from endpoints._helpers.response_info import ResponseInfo
+from middleware.security.auth.info.instantiations import NOTIFICATIONS_AUTH_INFO
 from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_notifications = create_namespace(
@@ -18,10 +23,7 @@ class Notifications(PsycopgResource):
 
     @endpoint_info(
         namespace=namespace_notifications,
-        auth_info=AuthenticationInfo(
-            allowed_access_methods=[AccessTypeEnum.JWT],
-            restrict_to_permissions=[PermissionsEnum.NOTIFICATIONS],
-        ),
+        auth_info=NOTIFICATIONS_AUTH_INFO,
         schema_config=SchemaConfigs.NOTIFICATIONS_POST,
         response_info=ResponseInfo(
             success_message="Notifications sent.",
@@ -51,5 +53,25 @@ class Notifications(PsycopgResource):
         """
         return self.run_endpoint(
             wrapper_function=send_notifications,
+            access_info=access_info,
+        )
+
+
+@namespace_notifications.route("/preview")
+class NotificationsPreview(PsycopgResource):
+
+    @endpoint_info(
+        namespace=namespace_notifications,
+        auth_info=NOTIFICATIONS_AUTH_INFO,
+        schema_config=SchemaConfigs.NOTIFICATIONS_PREVIEW,
+        response_info=ResponseInfo(
+            success_message="Preview retrieved.",
+        ),
+        description="Previews notification metrics without sending them.",
+    )
+    def get(self, access_info: AccessInfoPrimary):
+        """Previews notification metrics."""
+        return self.run_endpoint(
+            wrapper_function=preview_notifications,
             access_info=access_info,
         )

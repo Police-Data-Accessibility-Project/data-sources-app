@@ -37,10 +37,12 @@ class User(StandardBase, CreatedAtMixin):
         secondary="public.data_request_user_notification_queue",
         primaryjoin="User.id == DataRequestUserNotificationQueue.user_id",
         secondaryjoin="DataRequestUserNotificationQueue.event_id == DataRequestPendingEventNotification.id",
+        order_by="DataRequestUserNotificationQueue.id",
     )
     data_source_events = relationship(
         argument="DataSourcePendingEventNotification",
         secondary="public.data_source_user_notification_queue",
         primaryjoin="User.id == DataSourceUserNotificationQueue.user_id",
         secondaryjoin="DataSourceUserNotificationQueue.event_id == DataSourcePendingEventNotification.id",
+        order_by="DataSourceUserNotificationQueue.id",
     )

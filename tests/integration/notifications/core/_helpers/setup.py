@@ -6,9 +6,6 @@ from tests.helper_scripts.helper_classes.test_data_creator.db_client_.core impor
 from tests.integration.notifications.core._helpers.expected_event_info import (
     ExpectedEventInfo,
 )
-from tests.integration.notifications.core._helpers.models.entity_setup import (
-    EntitySetupInfo,
-)
 from tests.integration.notifications.core._helpers.models.user import (
     NotificationsTestUserInfo,
 )
@@ -19,31 +16,6 @@ class NotificationsTestSetupManager:
     def __init__(self, tdc: TestDataCreatorDBClient):
         self.tdc = tdc
         self.vnec = ValidNotificationEventCreatorV2(self.tdc)
-
-    def setup_entities(self, entity_setup_info: list[EntitySetupInfo]):
-        for entity_setup in entity_setup_info:
-            self._setup_entity(entity_setup)
-
-    def _setup_entity(self, entity_setup: EntitySetupInfo):
-        if entity_setup.event_set_info.entity_type == EntityType.DATA_REQUEST:
-            self._handle_data_request_event(entity_setup)
-        elif entity_setup.event_set_info.entity_type == EntityType.DATA_SOURCE:
-            self._handle_data_source_event(entity_setup)
-
-    def _handle_data_request_event(self, entity_setup: EntitySetupInfo):
-        """Sets up data request entity and updates entity setup info in-place."""
-        set_info = entity_setup.event_set_info
-        if set_info.has_event_type(EventType.REQUEST_READY_TO_START):
-            raise NotImplementedError
-        if set_info.has_event_type(EventType.REQUEST_COMPLETE):
-            raise NotImplementedError
-
-    def _handle_data_source_event(self, entity_setup: EntitySetupInfo) -> None:
-        """Sets up data source entity and updates entity setup info in-place."""
-        entity_setup.entity_id = self.vnec.data_source_approved(
-            record_type=entity_setup.record_type,
-            location_id=entity_setup.location_id,
-        )
 
     def _create_event(
         self, event_type: EventType, entity_type: EntityType, user_id: int

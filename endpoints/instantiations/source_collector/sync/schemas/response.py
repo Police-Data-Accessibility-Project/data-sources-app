@@ -2,9 +2,9 @@ from endpoints.instantiations.source_collector.sync.dtos.response import (
     SourceCollectorSyncAgenciesResponseOuterDTO,
 )
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import (
-    generate_marshmallow_schema,
+    pydantic_to_marshmallow,
 )
 
-SourceCollectorSyncAgenciesResponseSchema = generate_marshmallow_schema(
+SourceCollectorSyncAgenciesResponseSchema = pydantic_to_marshmallow(
     SourceCollectorSyncAgenciesResponseOuterDTO
 )

@@ -2,14 +2,11 @@ from collections import namedtuple
 from datetime import datetime
 from functools import partialmethod
 from operator import and_
+from collections.abc import Sequence
 from typing import (
     Any,
-    List,
     Callable,
-    Union,
-    Type,
     LiteralString,
-    Sequence,
     cast,
     final,
 )
@@ -26,10 +23,10 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.sql.compiler import SQLCompiler
 
-from db.DTOs import (
-    UsersWithPermissions,
+from db.dtos.data_request_info_for_github import (
     DataRequestInfoForGithub,
 )
+from db.dtos.user_with_permissions import UsersWithPermissions
 from db.client.decorators import session_manager, session_manager_v2, cursor_manager
 from db.client.helpers import initialize_sqlalchemy_session
 from db.constants import (
@@ -127,6 +124,9 @@ from db.queries.instantiations.metrics.followed_searches.breakdown import (
 )
 from db.queries.instantiations.metrics.get import GET_METRICS_QUERY
 from db.queries.instantiations.notifications.post import NotificationsPostQueryBuilder
+from db.queries.instantiations.notifications.preview import (
+    NotificationsPreviewQueryBuilder,
+)
 from db.queries.instantiations.notifications.update_queue import (
     OptionallyUpdateUserNotificationQueueQueryBuilder,
 )
@@ -169,7 +169,7 @@ from endpoints.instantiations.source_collector.sync.dtos.request import (
     SourceCollectorSyncAgenciesRequestDTO,
 )
 from middleware.constants import DATE_FORMAT
-from middleware.custom_dataclasses import EventBatch
+from db.dtos.event_batch import EventBatch
 from middleware.enums import (
     PermissionsEnum,
     Relations,
@@ -193,6 +193,9 @@ from middleware.schema_and_dto.dtos.match.response import (
 )
 from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
+)
+from middleware.schema_and_dto.dtos.notifications.preview import (
+    NotificationsPreviewOutput,
 )
 from middleware.schema_and_dto.schemas.data_sources.base import (
     EntryCreateUpdateRequestDTO,
@@ -276,7 +279,9 @@ class DatabaseClient:
             if not hasattr(models[0], "id"):
                 raise AttributeError("Models must have an id attribute")
             session.flush()
-            return [model.id for model in models]
+            return [
+                model.id for model in models
+            ]  # pyright: ignore [reportAttributeAccessIssue]
         return None
 
     @session_manager_v2
@@ -612,7 +617,7 @@ class DatabaseClient:
         )
         self.execute(query)
 
-    def get_user_permissions(self, user_id: int) -> List[PermissionsEnum]:
+    def get_user_permissions(self, user_id: int) -> list[PermissionsEnum]:
         query = (
             select(Permission.permission_name)
             .select_from(UserPermission)
@@ -987,14 +992,16 @@ class DatabaseClient:
         return self.run_query_builder(builder)
 
     @session_manager_v2
-    def run_query_builder(self, session: Session, query_builder: QueryBuilderBase):
+    def run_query_builder(
+        self, session: Session, query_builder: QueryBuilderBase
+    ) -> Any:
         return query_builder.build(session)
 
     def _select_single_entry_from_relation(
         self,
         relation_name: str,
         columns: list[str],
-        where_mappings: Union[list[WhereMapping], dict] | None = [True],
+        where_mappings: list[WhereMapping] | dict | None = [True],
         subquery_parameters: list[SubqueryParameters] | None = [],
         **kwargs,
     ) -> Any:
@@ -1011,9 +1018,7 @@ class DatabaseClient:
             raise RuntimeError(f"Expected 1 result but found {len(results)}")
         return results[0]
 
-    def get_location_id(
-        self, where_mappings: Union[list[WhereMapping], dict]
-    ) -> int | None:
+    def get_location_id(self, where_mappings: list[WhereMapping] | dict) -> int | None:
         result = self._select_single_entry_from_relation(
             relation_name=Relations.LOCATIONS_EXPANDED.value,
             columns=["id"],
@@ -1024,7 +1029,7 @@ class DatabaseClient:
         return result["id"]
 
     def get_data_requests_for_creator(
-        self, creator_user_id: str, columns: List[str]
+        self, creator_user_id: str, columns: list[str]
     ) -> Sequence[RowMapping]:
         selects = []
         for column in columns:
@@ -1215,6 +1220,9 @@ class DatabaseClient:
     def get_next_user_event_batch(self) -> EventBatch | None:
         return self.run_query_builder(NotificationsPostQueryBuilder())
 
+    def preview_notifications(self) -> NotificationsPreviewOutput:
+        return self.run_query_builder(NotificationsPreviewQueryBuilder())
+
     @session_manager
     def mark_user_events_as_sent(self, user_id: int):
 
@@ -1270,7 +1278,7 @@ class DatabaseClient:
         return self.mappings(query)
 
     @session_manager
-    def get_users(self, page: int) -> List[UsersWithPermissions]:
+    def get_users(self, page: int) -> list[UsersWithPermissions]:
         # TODO: QueryBuilder
         raw_results = self.session.execute(
             select(User)
@@ -1374,7 +1382,7 @@ class DatabaseClient:
         self,
         name: str,
         location_id: int | None = None,
-    ) -> List[AgencyMatchResponseInnerDTO]:
+    ) -> list[AgencyMatchResponseInnerDTO]:
         builder = GetSimilarAgenciesQueryBuilder(name=name, location_id=location_id)
         return self.run_query_builder(builder)
 
@@ -1531,7 +1539,7 @@ class DatabaseClient:
             "last_notification_date": result.last_notification.strftime(DATE_FORMAT),
         }
 
-    def get_duplicate_urls_bulk(self, urls: List[str]) -> Sequence:
+    def get_duplicate_urls_bulk(self, urls: list[str]) -> Sequence:
         """Return all URLs that already exist in the database."""
         stmt = select(DistinctSourceURL.original_url).where(
             DistinctSourceURL.base_url.in_(urls)

@@ -162,8 +162,11 @@ from endpoints.schema_config.instantiations.metrics.followed_searches.breakdown 
 from endpoints.schema_config.instantiations.metrics.get import (
     MetricsGetEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.notifications import (
+from endpoints.schema_config.instantiations.notifications_.core import (
     NotificationsPostEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.notifications_.preview import (
+    NotificationsPreviewEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.permissions.get import (
     PermissionsGetEndpointSchemaConfig,
@@ -308,6 +311,7 @@ class SchemaConfigs(Enum):
     # endregion
     # region Notifications
     NOTIFICATIONS_POST = NotificationsPostEndpointSchemaConfig
+    NOTIFICATIONS_PREVIEW = NotificationsPreviewEndpointSchemaConfig
     # region User Profile
     USER_PUT = UserPutEndpointSchemaConfig
     USER_PROFILE_RECENT_SEARCHES = UserProfileRecentSearchesEndpointSchemaConfig

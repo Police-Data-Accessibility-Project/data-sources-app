@@ -1,6 +1,6 @@
 from middleware.schema_and_dto.dtos.agencies.post import AgencyInfoPostDTO
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import (
-    generate_marshmallow_schema,
+    pydantic_to_marshmallow,
 )
 
-AgencyInfoPostSchema = generate_marshmallow_schema(AgencyInfoPostDTO)
+AgencyInfoPostSchema = pydantic_to_marshmallow(AgencyInfoPostDTO)

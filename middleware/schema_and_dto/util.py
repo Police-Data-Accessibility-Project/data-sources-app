@@ -37,7 +37,7 @@ def _get_source_getting_function(source: SourceMappingEnum) -> Callable:
     return source_mapping[source]
 
 
-def get_json_metadata(description: str, **kwargs) -> dict:
+def get_json_metadata(description: str, **kwargs: dict) -> dict[str, Any]:
     return {
         "description": description,
         "source": SourceMappingEnum.JSON,

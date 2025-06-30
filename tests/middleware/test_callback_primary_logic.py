@@ -45,11 +45,6 @@ def test_get_flask_session_callback_info():
     assert result.callback_functions_enum == mock.get_callback_function.return_value
 
 
-class GetOauthCallbackInfoMocks(DynamicMagicMock):
-    get_github_user_info: MagicMock
-    get_github_oauth_access_token: MagicMock
-
-
 class CallbackInnerWrapperMocks(DynamicMagicMock):
     try_logging_in_with_github_id: MagicMock
     create_user_with_github: MagicMock
