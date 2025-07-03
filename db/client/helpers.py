@@ -20,6 +20,8 @@ def initialize_sqlalchemy_session() -> sessionmaker[Session]:
         engine = create_engine(
             do_database_url,
             pool_pre_ping=True,
+            pool_size=5,
+            max_overflow=5,
             pool_recycle=3600,
         )
         sm = sessionmaker(bind=engine)
