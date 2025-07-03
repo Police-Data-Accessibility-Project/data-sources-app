@@ -7,7 +7,6 @@ from db.db_client_dataclasses import OrderByParameters
 
 
 class GetParams(BaseModel):
-
     class Config:
         arbitrary_types_allowed = True
 

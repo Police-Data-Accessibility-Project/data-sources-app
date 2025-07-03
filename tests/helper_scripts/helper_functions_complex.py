@@ -4,7 +4,6 @@ from collections import namedtuple
 from typing import Optional
 from http import HTTPStatus
 
-import psycopg
 import sqlalchemy
 from flask.testing import FlaskClient
 from werkzeug.security import generate_password_hash
@@ -87,17 +86,16 @@ def create_api_key(client_with_db: FlaskClient, jwt_authorization_header: dict) 
     response = client_with_db.post(
         f"/auth{API_KEY_ROUTE}", headers=jwt_authorization_header
     )
-    assert (
-        response.status_code == HTTPStatus.OK.value
-    ), "API key creation not successful"
+    assert response.status_code == HTTPStatus.OK.value, (
+        "API key creation not successful"
+    )
     api_key = response.json.get("api_key")
     return api_key
 
 
-def setup_get_typeahead_suggestion_test_data(cursor: Optional[psycopg.Cursor] = None):
+def setup_get_typeahead_suggestion_test_data():
     db_client = DatabaseClient()
     try:
-
         state_id = db_client.create_or_get(
             table_name=Relations.US_STATES.value,
             column_value_mappings={"state_iso": "XY", "state_name": "Xylonsylvania"},

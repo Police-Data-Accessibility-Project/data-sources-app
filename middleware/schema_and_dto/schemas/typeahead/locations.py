@@ -35,7 +35,6 @@ class TypeaheadLocationsResponseSchema(TypeaheadBaseResponseSchema):
 
 
 class TypeaheadLocationsOuterResponseSchema(Schema):
-
     suggestions = fields.List(
         cls_or_instance=fields.Nested(
             nested=TypeaheadLocationsResponseSchema(exclude=["state_iso"]),

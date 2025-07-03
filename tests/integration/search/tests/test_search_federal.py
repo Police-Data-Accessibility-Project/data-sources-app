@@ -1,10 +1,10 @@
 from db.enums import ApprovalStatus
-from middleware.enums import JurisdictionType, AgencyType
+from middleware.enums import JurisdictionType, AgencyType, RecordTypes
 from middleware.schema_and_dto.schemas.agencies.info.post import AgencyInfoPostSchema
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,
 )
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 from utilities.enums import RecordCategories
@@ -33,10 +33,11 @@ def test_search_federal(test_data_creator_flask: TestDataCreatorFlask):
         agency_ids.append(a_id)
 
     # Link 2 approved data sources to each federal agency
+    record_types = list(RecordTypes)
     for i in range(2):
         for j in range(2):
             d_id = tdc.tdcdb.data_source(
-                approval_status=ApprovalStatus.APPROVED, record_type_id=j + 1
+                approval_status=ApprovalStatus.APPROVED, record_type=record_types[j]
             ).id
             tdc.link_data_source_to_agency(
                 data_source_id=d_id,

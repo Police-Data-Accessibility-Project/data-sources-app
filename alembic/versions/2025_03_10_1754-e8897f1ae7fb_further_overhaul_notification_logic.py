@@ -25,7 +25,6 @@ data_source_event_enum = sa.Enum("Data Source Approved", name="event_type_data_s
 
 
 def upgrade() -> None:
-
     op.drop_table("link_data_request_pending_event_notifications")
     op.drop_table("link_data_source_pending_event_notification")
     op.drop_table("user_notification_queue")
@@ -197,7 +196,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-
     op.create_table(
         "pending_event_notifications",
         sa.Column("id", sa.Integer(), nullable=False, primary_key=True),

@@ -17,7 +17,6 @@ namespace_reset_token_validation = create_namespace(AppNamespaces.AUTH)
 
 @namespace_reset_token_validation.route("/reset-token-validation")
 class ResetTokenValidation(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_reset_token_validation,
         auth_info=RESET_PASSWORD_AUTH_INFO,

@@ -2,7 +2,7 @@
 
 from http import HTTPStatus
 
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 from tests.helper_scripts.helper_functions_complex import (
@@ -39,13 +39,13 @@ def test_refresh_session_post(test_data_creator_flask: TestDataCreatorFlask):
     new_access_token = response_json.get("access_token")
     new_refresh_token = response_json.get("refresh_token")
 
-    assert (
-        jwt_tokens.access_token != new_access_token
-    ), "New and old access tokens should be different"
+    assert jwt_tokens.access_token != new_access_token, (
+        "New and old access tokens should be different"
+    )
 
-    assert (
-        jwt_tokens.refresh_token != new_refresh_token
-    ), "New and old refresh tokens should be different"
+    assert jwt_tokens.refresh_token != new_refresh_token, (
+        "New and old refresh tokens should be different"
+    )
 
     # Test that the new session tokens work on a secure endpoint
     run_and_validate_request(

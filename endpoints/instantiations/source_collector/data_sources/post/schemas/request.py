@@ -1,6 +1,7 @@
 from marshmallow import Schema, fields
 
 from middleware.enums import RecordTypes
+from middleware.schema_and_dto.schemas.helpers import enum_field
 from middleware.schema_and_dto.util import get_json_metadata
 
 
@@ -14,13 +15,10 @@ class SourceCollectorPostRequestInnerSchema(Schema):
     source_url = fields.String(
         metadata=get_json_metadata("The URL of the data source"), required=True
     )
-    record_type = fields.Enum(
-        enum=RecordTypes,
-        by_value=fields.Str,
-        allow_none=True,
-        metadata=get_json_metadata(
-            "The record type of the data source.",
-        ),
+    record_type = enum_field(
+        RecordTypes,
+        allow_none=False,
+        description="The record type of the data source.",
     )
     record_formats = fields.List(
         fields.String(

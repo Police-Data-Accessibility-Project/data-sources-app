@@ -3,7 +3,6 @@ import tempfile
 
 
 class SimpleTempFile:
-
     def __init__(self, suffix: str = ".csv"):
         self.suffix = suffix
         self.temp_file = None

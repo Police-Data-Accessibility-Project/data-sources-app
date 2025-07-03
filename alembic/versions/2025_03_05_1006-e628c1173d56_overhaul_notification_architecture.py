@@ -20,7 +20,6 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-
     # Remove `user_pending_notifications` view
     op.execute("DROP VIEW IF EXISTS user_pending_notifications")
 
@@ -382,7 +381,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-
     # Drop unique constraint user_notification_queue_user_id_pen_id_key
     op.drop_constraint(
         "user_notification_queue_user_id_pen_id_key",

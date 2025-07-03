@@ -1,6 +1,4 @@
-from typing import Any
-
-from sqlalchemy import func, select, union_all, case, and_, text
+from sqlalchemy import func, select, case, and_, text
 from werkzeug.exceptions import BadRequest
 
 from db.constants import GET_METRICS_FOLLOWED_SEARCHES_BREAKDOWN_SORTABLE_COLUMNS
@@ -12,11 +10,10 @@ from db.models.implementations import (
 )
 from db.models.implementations.core.data_request.core import DataRequest
 from db.models.implementations.core.data_source.core import DataSource
-from db.models.implementations.core.location.core import Location
-from db.models.implementations.core.location.dependent import DependentLocation
 from db.models.implementations.core.location.expanded import LocationExpanded
 from db.models.implementations.core.log.notification import NotificationLog
-from db.queries.builder import QueryBuilderBase
+from db.queries.builder.core import QueryBuilderBase
+from db.queries.ctes.dependent_location import DependentLocationCTE
 from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
@@ -24,12 +21,11 @@ from middleware.util.env import get_env_variable
 
 
 class GetMetricsFollowedSearchesBreakdownQueryBuilder(QueryBuilderBase):
-
     def __init__(self, dto: MetricsFollowedSearchesBreakdownRequestDTO):
         super().__init__()
         self.dto = dto
 
-    def run(self) -> Any:
+    def run(self) -> list[dict[str, str | int | None | float]]:
         sortable_columns = GET_METRICS_FOLLOWED_SEARCHES_BREAKDOWN_SORTABLE_COLUMNS
 
         if self.dto.sort_by is not None:
@@ -49,28 +45,14 @@ class GetMetricsFollowedSearchesBreakdownQueryBuilder(QueryBuilderBase):
         last_notification = last_notification_query.c.created_at
 
         base_search_url = (
-            f"{get_env_variable("VITE_VUE_APP_BASE_URL")}"
-            f"/search/results?location_id="
+            f"{get_env_variable('VITE_VUE_APP_BASE_URL')}/search/results?location_id="
         )
 
         def count_distinct(field, label):
             return func.count(func.distinct(field)).label(label)
 
         # Dependent Location CTE
-        dlsq = union_all(
-            select(
-                Location.id.label("location_id"),
-                DependentLocation.dependent_location_id,
-            ).join(
-                DependentLocation,
-                Location.id == DependentLocation.parent_location_id,
-                isouter=True,
-            ),
-            select(
-                Location.id.label("location_id"),
-                Location.id.label("dependent_location_id"),
-            ),
-        ).cte(name="dependent_locations_cte")
+        dlsq = DependentLocationCTE()
 
         def maybe_limit(column, limit_to_before_last_notification):
             """Maybe limit to before the last notification"""
@@ -93,7 +75,7 @@ class GetMetricsFollowedSearchesBreakdownQueryBuilder(QueryBuilderBase):
                         "old_count",
                     ),
                 )
-                .join(dlsq, link.location_id == dlsq.c.dependent_location_id)
+                .join(dlsq.query, link.location_id == dlsq.dependent_location_id)
                 .group_by(link.location_id)
                 .cte("follow_counts")
             )
@@ -103,17 +85,17 @@ class GetMetricsFollowedSearchesBreakdownQueryBuilder(QueryBuilderBase):
             ds = DataSource
             return (
                 select(
-                    dlsq.c.location_id.label("location_id"),
+                    dlsq.location_id.label("location_id"),
                     count_distinct(ds.id, "total_count"),
                     count_distinct(
                         case((ds.created_at < last_notification, ds.id)),
                         "old_count",
                     ),
                 )
-                .join(link, link.location_id == dlsq.c.dependent_location_id)
+                .join(link, link.location_id == dlsq.dependent_location_id)
                 .join(ds, ds.id == link.data_source_id)
                 .where(ds.approval_status == ApprovalStatus.APPROVED.value)
-                .group_by(dlsq.c.location_id)
+                .group_by(dlsq.location_id)
                 .cte("source_counts")
             )
 
@@ -138,15 +120,15 @@ class GetMetricsFollowedSearchesBreakdownQueryBuilder(QueryBuilderBase):
             link = LinkLocationDataRequest
             return (
                 select(
-                    dlsq.c.location_id.label("location_id"),
+                    dlsq.location_id,
                     requests_col(rs.READY_TO_START, False, "total_approved"),
                     requests_col(rs.READY_TO_START, True, "old_approved"),
                     requests_col(rs.COMPLETE, False, "total_complete"),
                     requests_col(rs.COMPLETE, True, "old_complete"),
                 )
-                .join(link, link.location_id == dlsq.c.dependent_location_id)
+                .join(link, link.location_id == dlsq.dependent_location_id)
                 .join(dr, dr.id == link.data_request_id)
-                .group_by(dlsq.c.location_id)
+                .group_by(dlsq.location_id)
                 .cte("request_counts")
             )
 

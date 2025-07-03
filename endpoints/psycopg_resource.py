@@ -103,7 +103,6 @@ class PsycopgResource(Resource):
         schema_populate_parameters: Optional[SchemaPopulateParameters] = None,
         **wrapper_kwargs: Any,
     ) -> Response:
-
         check_for_mutually_exclusive_arguments(
             schema_populate_parameters, dto_populate_parameters
         )

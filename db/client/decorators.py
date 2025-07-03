@@ -28,7 +28,7 @@ def session_manager(method):
     return wrapper
 
 
-def session_manager_v2(method) -> callable:
+def session_manager_v2(method: callable) -> callable:
     @wraps(method)
     def wrapper(self: "DatabaseClient", *args, **kwargs):
         session = self.session_maker()

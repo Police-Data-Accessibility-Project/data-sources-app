@@ -11,8 +11,8 @@ from db.enums import ColumnPermissionEnum
 from db.db_client_dataclasses import WhereMapping
 from middleware.column_permission.core import (
     get_permitted_columns,
-    RelationRoleParameters,
 )
+from middleware.column_permission.relation_role_parameters import RelationRoleParameters
 from middleware.common_response_formatting import (
     message_response,
 )

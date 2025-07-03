@@ -1,10 +1,6 @@
-from typing import Optional
-
 from flask import Response
 
-from middleware.column_permission.core import (
-    RelationRoleParameters,
-)
+from middleware.column_permission.relation_role_parameters import RelationRoleParameters
 from middleware.common_response_formatting import message_response
 from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.supporting_classes import (
@@ -16,7 +12,6 @@ from middleware.dynamic_request_logic.supporting_classes import (
 
 
 class PutHandler(PostPutHandler):
-
     def call_database_client_method(self, request: PutPostRequestInfo):
         self.mp.db_client_method(
             self.mp.db_client,
@@ -26,13 +21,12 @@ class PutHandler(PostPutHandler):
 
 
 class PutLogic(PutPostBase):
-
     def __init__(
         self,
         middleware_parameters: MiddlewareParameters,
         entry: dict,
         entry_id: str,
-        pre_database_client_method_with_parameters: Optional[DeferredFunction] = None,
+        pre_database_client_method_with_parameters: DeferredFunction | None = None,
         relation_role_parameters: RelationRoleParameters = RelationRoleParameters(),
     ):
         super().__init__(
@@ -56,10 +50,9 @@ def put_entry(
     middleware_parameters: MiddlewareParameters,
     entry: dict,
     entry_id: str,
-    pre_update_method_with_parameters: Optional[DeferredFunction] = None,
+    pre_update_method_with_parameters: DeferredFunction | None = None,
     relation_role_parameters: RelationRoleParameters = RelationRoleParameters(),
 ) -> Response:
-
     put_logic = PutLogic(
         middleware_parameters=middleware_parameters,
         entry=entry,

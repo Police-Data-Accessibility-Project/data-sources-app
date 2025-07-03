@@ -4,7 +4,7 @@ from middleware.primary_resource_logic.unique_url_checker import (
 from tests.helper_scripts.complex_test_data_creation_functions import (
     create_data_source_entry_for_url_duplicate_checking,
 )
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request

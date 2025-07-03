@@ -27,7 +27,6 @@ namespace_oauth = create_namespace(AppNamespaces.OAUTH)
 
 @namespace_oauth.route("/github")
 class GithubOAuth(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_oauth,
         auth_info=NO_AUTH_INFO,

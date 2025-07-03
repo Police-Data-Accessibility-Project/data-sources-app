@@ -1,5 +1,3 @@
-from typing import Optional
-
 from db.client.core import DatabaseClient
 from middleware.enums import PermissionsEnum
 from middleware.security.access_info.base import AccessInfoBase
@@ -11,10 +9,10 @@ class AccessInfoPrimary(AccessInfoBase):
     """
 
     user_email: str
-    user_id: Optional[int] = None
-    permissions: Optional[list[PermissionsEnum]] = None
+    user_id: int | None = None
+    permissions: list[PermissionsEnum] | None = None
 
-    def get_user_id(self) -> Optional[int]:
+    def get_user_id(self) -> int | None:
         if self.user_id is None:
             self.user_id = DatabaseClient().get_user_id(email=self.user_email)
         return self.user_id

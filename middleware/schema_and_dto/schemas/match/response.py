@@ -33,7 +33,6 @@ class MatchAgenciesResultSchema(Schema):
 
 
 class MatchAgencyResponseSchema(MessageSchema):
-
     status = fields.Enum(
         enum=AgencyMatchStatus,
         by_value=fields.Str,

@@ -22,7 +22,6 @@ namespace_link_to_github = create_namespace(AppNamespaces.OAUTH)
 
 @namespace_link_to_github.route("/link-to-github")
 class LinkToGithub(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_link_to_github,
         auth_info=NO_AUTH_INFO,

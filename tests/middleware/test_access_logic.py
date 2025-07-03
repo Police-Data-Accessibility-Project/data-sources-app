@@ -81,7 +81,6 @@ def get_access_info_mocks():
 def test_check_permissions_with_access_info(
     access_info, permissions, raises_forbidden, monkeypatch
 ):
-
     if raises_forbidden:
         with pytest.raises(Forbidden):
             check_permissions_with_access_info(access_info, permissions)

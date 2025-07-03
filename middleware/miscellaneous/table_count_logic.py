@@ -1,5 +1,4 @@
 class TableCountReference:
-
     def __init__(self, table, count, modified=False):
         self.table = table
         self.count = count
@@ -17,7 +16,6 @@ class TableCountReference:
 
 
 class TableCountReferenceManager:
-
     def __init__(self):
         self.d: dict[str, TableCountReference] = {}
 

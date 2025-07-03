@@ -18,7 +18,6 @@ from middleware.third_party_interaction_logic.github.helpers import make_graph_q
 
 
 class GithubIssueManager:
-
     def __init__(self):
         self.project_id = self.get_project_id()
         self.repo_id = self.get_repository_id()

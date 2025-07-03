@@ -92,7 +92,6 @@ class PathInfo(BaseModel):
 
 
 class SpecManager:
-
     def __init__(self, spec: dict):
         self.spec = spec
 

@@ -204,7 +204,6 @@ class DataSources(PsycopgResource):
 
 @namespace_data_source.route("/<resource_id>/related-agencies")
 class DataSourcesRelatedAgencies(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_data_source,
         auth_info=API_OR_JWT_AUTH_INFO,
@@ -227,7 +226,6 @@ class DataSourcesRelatedAgencies(PsycopgResource):
 
 @namespace_data_source.route("/<resource_id>/related-agencies/<agency_id>")
 class DataSourcesRelatedAgenciesById(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_data_source,
         auth_info=WRITE_ONLY_AUTH_INFO,

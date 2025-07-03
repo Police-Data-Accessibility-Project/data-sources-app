@@ -141,7 +141,6 @@ UNION ALL
 
 
 def downgrade() -> None:
-
     # Add agencies location ids to agencies table
     op.add_column("agencies", sa.Column("location_id", sa.Integer(), nullable=True))
     op.execute(

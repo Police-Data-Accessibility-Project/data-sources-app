@@ -1,0 +1,1 @@
+This tests that events in the notification queue are sent out properly.

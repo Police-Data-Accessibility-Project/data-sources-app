@@ -10,12 +10,11 @@ from db.helpers import get_offset
 from db.helpers_.result_formatting import data_source_to_get_data_sources_output
 from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.data_source.expanded import DataSourceExpanded
-from db.queries.builder import QueryBuilderBase
+from db.queries.builder.core import QueryBuilderBase
 from middleware.enums import Relations
 
 
 class GetDataSourcesQueryBuilder(QueryBuilderBase):
-
     def __init__(
         self,
         data_sources_columns: list[str],
@@ -34,7 +33,6 @@ class GetDataSourcesQueryBuilder(QueryBuilderBase):
         self.approval_status = approval_status
 
     def run(self) -> Any:
-
         order_by_clause = DynamicQueryConstructor.get_sql_alchemy_order_by_clause(
             order_by=self.order_by,
             relation=Relations.DATA_SOURCES.value,

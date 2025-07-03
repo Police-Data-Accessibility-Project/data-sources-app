@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel
 
 from db.enums import RequestUrgency, RequestStatus
@@ -7,18 +5,18 @@ from middleware.enums import RecordTypes
 
 
 class DataRequestsPutDTO(BaseModel):
-    title: Optional[str] = None
-    submission_notes: Optional[str] = None
-    request_urgency: Optional[RequestUrgency] = None
-    coverage_range: Optional[str] = None
-    data_requirements: Optional[str] = None
-    request_status: Optional[RequestStatus] = None
-    archive_reason: Optional[str] = None
-    github_issue_url: Optional[str] = None
-    github_issue_number: Optional[int] = None
-    internal_notes: Optional[str] = None
-    record_types_required: Optional[list[RecordTypes]] = None
-    pdap_response: Optional[str] = None
+    title: str | None = None
+    submission_notes: str | None = None
+    request_urgency: RequestUrgency | None = None
+    coverage_range: str | None = None
+    data_requirements: str | None = None
+    request_status: RequestStatus | None = None
+    archive_reason: str | None = None
+    github_issue_url: str | None = None
+    github_issue_number: str | int | None = None
+    internal_notes: str | None = None
+    record_types_required: list[RecordTypes] | None = None
+    pdap_response: str | None = None
 
 
 class DataRequestsPutOuterDTO(BaseModel):

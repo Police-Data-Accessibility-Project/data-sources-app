@@ -5,10 +5,8 @@ import pytest
 
 from db.enums import RelationRoleEnum
 from middleware.security.access_info.primary import AccessInfoPrimary
-from middleware.column_permission.core import (
-    get_relation_role,
-    RelationRoleParameters,
-)
+from middleware.security.access_info.helpers import get_relation_role
+from middleware.column_permission.relation_role_parameters import RelationRoleParameters
 from middleware.custom_dataclasses import DeferredFunction
 from middleware.enums import PermissionsEnum, AccessTypeEnum
 
@@ -42,7 +40,9 @@ def test_get_relation_role(
 @pytest.fixture
 def mock_relation_role_function_with_params(monkeypatch):
     mock = MagicMock(spec=DeferredFunction)
-    monkeypatch.setattr("middleware.column_permission.core.get_relation_role", mock)
+    monkeypatch.setattr(
+        "middleware.security.access_info.helpers.get_relation_role", mock
+    )
     return mock
 
 

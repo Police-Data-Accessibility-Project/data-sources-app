@@ -1,5 +1,4 @@
 # pyright: reportUninitializedInstanceVariable=false
-from typing import Optional
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -15,7 +14,7 @@ class RecordType(StandardBase):
 
     name: Mapped[str_255]
     category_id: Mapped[int] = mapped_column(ForeignKey("public.record_categories.id"))
-    description: Mapped[Optional[text]]
+    description: Mapped[text | None]
 
     # Relationships
     record_category: Mapped[RecordCategory] = relationship(

@@ -4,7 +4,7 @@ from db.enums import ApprovalStatus
 from endpoints.schema_config.instantiations.data_sources.map import (
     DataSourcesMapEndpointSchemaConfig,
 )
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 
@@ -17,9 +17,7 @@ def test_data_sources_map_get(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask.tdcdb
     tus = tdcf.standard_user()
     location_id = tdc.locality()
-    ds_id = tdc.data_source(
-        approval_status=ApprovalStatus.APPROVED, record_type_id=1
-    ).id
+    ds_id = tdc.data_source(approval_status=ApprovalStatus.APPROVED).id
     a_id = tdc.agency(
         location_id=location_id,
         lat=0.0,

@@ -8,7 +8,6 @@ from db.queries.instantiations.search.follow.base import FollowBaseQueryBuilder
 
 
 class DeleteFollowQueryBuilder(FollowBaseQueryBuilder):
-
     def remove_follow_if_exists(self):
         query = delete(LinkUserFollowedLocation).where(
             LinkUserFollowedLocation.location_id == self.location_id,

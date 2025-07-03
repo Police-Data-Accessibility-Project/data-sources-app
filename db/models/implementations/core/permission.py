@@ -1,5 +1,4 @@
 # pyright: reportUninitializedInstanceVariable=false
-from typing import Optional
 
 from sqlalchemy.orm import Mapped
 
@@ -12,4 +11,4 @@ class Permission(StandardBase):
     __tablename__ = Relations.PERMISSIONS.value
 
     permission_name: Mapped[str_255]
-    description: Mapped[Optional[text]]
+    description: Mapped[text | None]

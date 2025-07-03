@@ -7,7 +7,7 @@ from endpoints.schema_config.instantiations.api_key import (
 )
 from middleware.security.api_key.core import ApiKey
 from endpoints.instantiations.auth_.routes import API_KEY_ROUTE
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
@@ -34,9 +34,9 @@ def test_api_key_post(test_data_creator_flask: TestDataCreatorFlask):
     api_key_raw = response_json.get("api_key")
     api_key = ApiKey(raw_key=api_key_raw)
 
-    assert (
-        new_user_info.api_key == api_key.key_hash
-    ), "API key returned not aligned with user API key in database"
+    assert new_user_info.api_key == api_key.key_hash, (
+        "API key returned not aligned with user API key in database"
+    )
 
 
 def test_api_key_not_found(test_data_creator_flask: TestDataCreatorFlask):

@@ -45,11 +45,6 @@ def test_get_flask_session_callback_info():
     assert result.callback_functions_enum == mock.get_callback_function.return_value
 
 
-class GetOauthCallbackInfoMocks(DynamicMagicMock):
-    get_github_user_info: MagicMock
-    get_github_oauth_access_token: MagicMock
-
-
 class CallbackInnerWrapperMocks(DynamicMagicMock):
     try_logging_in_with_github_id: MagicMock
     create_user_with_github: MagicMock
@@ -89,7 +84,6 @@ class LinkGithubAccountRequestMocks(DynamicMagicMock):
 
 
 def test_link_github_account_request():
-
     mock = LinkGithubAccountRequestMocks(
         patch_root=GITHUB_OAUTH_PREFIX,
     )
@@ -113,7 +107,6 @@ class LinkGithubAccountMocks(DynamicMagicMock):
 
 
 def test_link_github_account():
-
     mock = LinkGithubAccountMocks(patch_root=GITHUB_OAUTH_PREFIX)
     mock.github_user_info.user_email = mock.pdap_account_email
     mock.db_client.get_user_info.return_value = mock.db_client_user_info

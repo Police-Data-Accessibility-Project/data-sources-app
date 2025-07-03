@@ -5,10 +5,10 @@ from werkzeug.exceptions import Forbidden
 
 from db.enums import ColumnPermissionEnum, RelationRoleEnum
 from middleware.column_permission.core import (
-    RelationRoleParameters,
     get_permitted_columns,
     get_invalid_columns,
 )
+from middleware.column_permission.relation_role_parameters import RelationRoleParameters
 from middleware.common_response_formatting import multiple_results_response
 from middleware.dynamic_request_logic.common_functions import (
     optionally_get_permitted_columns_to_subquery_parameters_,

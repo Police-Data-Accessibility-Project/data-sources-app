@@ -1,6 +1,7 @@
 import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.pool import NullPool
 
 from db.exceptions import DatabaseInitializationError
 from middleware.util.env import get_env_variable
@@ -19,8 +20,7 @@ def initialize_sqlalchemy_session() -> sessionmaker[Session]:
 
         engine = create_engine(
             do_database_url,
-            pool_pre_ping=True,
-            pool_recycle=3600,
+            poolclass=NullPool,
         )
         sm = sessionmaker(bind=engine)
         return sm

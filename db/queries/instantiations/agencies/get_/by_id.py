@@ -5,11 +5,10 @@ from sqlalchemy import select
 from db.dynamic_query_constructor import DynamicQueryConstructor
 from db.helpers_.result_formatting import agency_to_get_agencies_output
 from db.models.implementations.core.agency.core import Agency
-from db.queries.builder import QueryBuilderBase
+from db.queries.builder.core import QueryBuilderBase
 
 
 class GetAgencyByIDQueryBuilder(QueryBuilderBase):
-
     def __init__(self, agency_id: int):
         super().__init__()
         self.agency_id = agency_id

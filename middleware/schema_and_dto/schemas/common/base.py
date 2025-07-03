@@ -1,6 +1,6 @@
 from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import (
-    generate_marshmallow_schema,
+    pydantic_to_marshmallow,
 )
 
-GetByIDBaseSchema = generate_marshmallow_schema(GetByIDBaseDTO)
+GetByIDBaseSchema = pydantic_to_marshmallow(GetByIDBaseDTO)

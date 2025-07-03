@@ -28,23 +28,45 @@ from endpoints.schema_config.instantiations.data_requests.related_sources.get im
 from endpoints.schema_config.instantiations.data_requests.related_sources.post import (
     DataRequestsRelatedSourcesPost,
 )
+from middleware.primary_resource_logic.data_requests_.related.related_locations.get import (
+    get_data_request_related_locations,
+)
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.info.instantiations import (
     STANDARD_JWT_AUTH_INFO,
     API_OR_JWT_AUTH_INFO,
 )
-from middleware.primary_resource_logic.data_requests import (
-    create_data_request_wrapper,
-    get_data_requests_wrapper,
-    delete_data_request_wrapper,
-    update_data_request_wrapper,
-    get_data_request_by_id_wrapper,
+from middleware.primary_resource_logic.data_requests_.related.related_source.delete import (
     delete_data_request_related_source,
-    get_data_request_related_sources,
+)
+from middleware.primary_resource_logic.data_requests_.related.related_source.post import (
     create_data_request_related_source,
-    get_data_request_related_locations,
+)
+from middleware.primary_resource_logic.data_requests_.related.related_source.get import (
+    get_data_request_related_sources,
+)
+from middleware.primary_resource_logic.data_requests_.get.by_id import (
+    get_data_request_by_id_wrapper,
+)
+from middleware.primary_resource_logic.data_requests_.get.many import (
+    get_data_requests_wrapper,
+)
+from middleware.primary_resource_logic.data_requests_.post import (
+    create_data_request_wrapper,
+)
+from middleware.primary_resource_logic.data_requests_.delete import (
+    delete_data_request_wrapper,
+)
+from middleware.primary_resource_logic.data_requests_.put import (
+    update_data_request_wrapper,
+)
+from middleware.primary_resource_logic.data_requests_.related.related_locations.create import (
     create_data_request_related_location,
+)
+from middleware.primary_resource_logic.data_requests_.related.related_locations.delete import (
     delete_data_request_related_location,
+)
+from middleware.primary_resource_logic.data_requests_.withdraw import (
     withdraw_data_request_wrapper,
 )
 from middleware.schema_and_dto.schemas.common.base import GetByIDBaseSchema
@@ -63,7 +85,6 @@ namespace_data_requests = create_namespace(AppNamespaces.DATA_REQUESTS)
 
 @namespace_data_requests.route("/<resource_id>")
 class DataRequestsById(PsycopgResource):
-
     # TODO: More thoroughly update to endpoint_info_2
     @endpoint_info(
         namespace=namespace_data_requests,
@@ -129,7 +150,6 @@ class DataRequestsById(PsycopgResource):
 
 @namespace_data_requests.route("")
 class DataRequests(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=API_OR_JWT_AUTH_INFO,
@@ -171,7 +191,6 @@ class DataRequests(PsycopgResource):
 
 @namespace_data_requests.route("/<resource_id>/related-sources")
 class DataRequestsRelatedSources(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=API_OR_JWT_AUTH_INFO,
@@ -193,7 +212,6 @@ class DataRequestsRelatedSources(PsycopgResource):
 
 @namespace_data_requests.route("/<resource_id>/related-sources/<data_source_id>")
 class DataRequestsRelatedSourcesById(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=STANDARD_JWT_AUTH_INFO,
@@ -238,7 +256,6 @@ class DataRequestsRelatedSourcesById(PsycopgResource):
 
 @namespace_data_requests.route("/<resource_id>/withdraw")
 class DataRequestsWithdraw(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=STANDARD_JWT_AUTH_INFO,
@@ -260,7 +277,6 @@ class DataRequestsWithdraw(PsycopgResource):
 
 @namespace_data_requests.route("/<resource_id>/related-locations")
 class DataRequestsRelatedLocations(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=API_OR_JWT_AUTH_INFO,
@@ -282,7 +298,6 @@ class DataRequestsRelatedLocations(PsycopgResource):
 
 @namespace_data_requests.route("/<resource_id>/related-locations/<location_id>")
 class DataRequestsRelatedLocationsById(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_data_requests,
         auth_info=STANDARD_JWT_AUTH_INFO,

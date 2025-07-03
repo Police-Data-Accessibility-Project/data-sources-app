@@ -38,7 +38,6 @@ namespace_admin = create_namespace(
 
 @namespace_admin.route("/users", methods=["GET", "POST"])
 class AdminUsersByPage(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_admin,
         auth_info=READ_USER_AUTH_INFO,
@@ -79,7 +78,6 @@ class AdminUsersByPage(PsycopgResource):
 
 @namespace_admin.route("/users/<resource_id>", methods=["GET", "PUT", "DELETE"])
 class AdminUsersByID(PsycopgResource):
-
     @endpoint_info(
         namespace=namespace_admin,
         auth_info=WRITE_USER_AUTH_INFO,

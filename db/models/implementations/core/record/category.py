@@ -1,5 +1,4 @@
 # pyright: reportUninitializedInstanceVariable=false
-from typing import Optional
 
 from sqlalchemy.orm import Mapped, relationship
 
@@ -13,7 +12,7 @@ class RecordCategory(StandardBase):
 
     # TODO: Update so that names reference literals
     name: Mapped[str_255]
-    description: Mapped[Optional[text]]
+    description: Mapped[text | None]
 
     # Relationships
     record_types: Mapped[list["RecordType"]] = relationship(

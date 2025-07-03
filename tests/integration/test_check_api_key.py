@@ -20,7 +20,7 @@ from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
 from tests.helper_scripts.common_mocks_and_patches import (
     patch_request_headers,
 )
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 
@@ -53,7 +53,6 @@ def test_check_api_key_happy_path(
 
 #
 def test_check_api_key_api_key_not_associated_with_user(monkeypatch):
-
     patch_request_headers(
         monkeypatch,
         path=PATCH_REQUESTS_ROOT,

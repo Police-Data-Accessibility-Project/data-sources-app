@@ -5,7 +5,6 @@ from middleware.schema_and_dto.enums import CSVColumnCondition
 
 @dataclass
 class FieldPathValueMapping:
-
     def __init__(
         self,
         field_path,

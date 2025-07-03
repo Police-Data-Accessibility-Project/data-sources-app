@@ -1,6 +1,7 @@
 from db.enums import EventType, EntityType
-from middleware.custom_dataclasses import EventBatch, EventInfo
-from middleware.primary_resource_logic.notifications import (
+from db.dtos.event_batch import EventBatch
+from db.dtos.event_info import EventInfo
+from middleware.primary_resource_logic.notifications.notifications import (
     format_and_send_notifications,
 )
 from middleware.util.env import get_env_variable

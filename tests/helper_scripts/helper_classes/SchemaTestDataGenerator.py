@@ -14,7 +14,6 @@ from tests.helper_scripts.common_test_data import (
 
 
 class SchemaTestDataGenerator:
-
     def __init__(self, schema: Schema):
         self.schema = schema
         self.fields = schema.fields

@@ -1,0 +1,3 @@
+DATA_REQUEST_SUBDIRECTORY = "data-request"
+DATA_SOURCE_SUBDIRECTORY = "data-source"
+PROFILE_SUBDIRECTORY = "profile"

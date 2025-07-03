@@ -4,7 +4,7 @@ from http import HTTPStatus
 import uuid
 
 
-from tests.helper_scripts.helper_classes.TestDataCreatorFlask import (
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 
@@ -52,9 +52,9 @@ def test_update_password(
 
     new_password_hash = tdc.db_client.get_password_digest(tus.user_info.user_id)
 
-    assert (
-        new_password != new_password_hash
-    ), "Password and password hash should be distinct after password update"
-    assert (
-        new_password_hash != old_password_hash
-    ), "Password hashes should be different on update"
+    assert new_password != new_password_hash, (
+        "Password and password hash should be distinct after password update"
+    )
+    assert new_password_hash != old_password_hash, (
+        "Password hashes should be different on update"
+    )

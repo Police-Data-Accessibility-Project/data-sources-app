@@ -2,7 +2,7 @@ from middleware.schema_and_dto.dtos.contact import (
     ContactFormPostDTO,
 )
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import (
-    generate_marshmallow_schema,
+    pydantic_to_marshmallow,
 )
 
-ContactFormPostSchema = generate_marshmallow_schema(ContactFormPostDTO)
+ContactFormPostSchema = pydantic_to_marshmallow(ContactFormPostDTO)

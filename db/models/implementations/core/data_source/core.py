@@ -1,6 +1,6 @@
 # pyright: reportUninitializedInstanceVariable=false
 from datetime import date
-from typing import Optional, get_args
+from typing import get_args
 
 from sqlalchemy import Column, DateTime, func, String, Enum, ForeignKey
 from sqlalchemy.dialects.postgresql import ARRAY, ENUM as pgEnum
@@ -38,45 +38,45 @@ class DataSource(
     }
 
     name: Mapped[str]
-    description: Mapped[Optional[str]]
-    source_url: Mapped[Optional[str]]
-    agency_supplied: Mapped[Optional[bool]]
-    supplying_entity: Mapped[Optional[str]]
-    agency_originated: Mapped[Optional[bool]]
-    agency_aggregation: Mapped[Optional[AgencyAggregationLiteral]]
-    coverage_start: Mapped[Optional[date]]
-    coverage_end: Mapped[Optional[date]]
-    updated_at: Mapped[Optional[date]] = Column(DateTime, default=func.now())
-    detail_level: Mapped[Optional[DetailLevelLiteral]]
+    description: Mapped[str | None]
+    source_url: Mapped[str | None]
+    agency_supplied: Mapped[bool | None]
+    supplying_entity: Mapped[str | None]
+    agency_originated: Mapped[bool | None]
+    agency_aggregation: Mapped[AgencyAggregationLiteral | None]
+    coverage_start: Mapped[date | None]
+    coverage_end: Mapped[date | None]
+    updated_at: Mapped[date | None] = Column(DateTime, default=func.now())
+    detail_level: Mapped[DetailLevelLiteral | None]
     # Note: Below is an array of enums in Postgres but this is cumbersome to convey in SQLAlchemy terms
     access_types = Column(
         ARRAY(pgEnum(*[e.value for e in AccessType], name="access_type"))
     )
-    data_portal_type: Mapped[Optional[str]]
+    data_portal_type: Mapped[str | None]
     record_formats = Column(ARRAY(String))
-    update_method: Mapped[Optional[UpdateMethodLiteral]]
+    update_method: Mapped[UpdateMethodLiteral | None]
     tags = Column(ARRAY(String))
-    readme_url: Mapped[Optional[str]]
-    originating_entity: Mapped[Optional[str]]
-    retention_schedule: Mapped[Optional[RetentionScheduleLiteral]]
-    scraper_url: Mapped[Optional[str]]
-    submission_notes: Mapped[Optional[str]]
-    rejection_note: Mapped[Optional[str]]
-    last_approval_editor: Mapped[Optional[int]]
-    submitter_contact_info: Mapped[Optional[str]]
-    agency_described_not_in_database: Mapped[Optional[str]]
-    data_portal_type_other: Mapped[Optional[str]]
-    data_source_request: Mapped[Optional[str]]
-    broken_source_url_as_of: Mapped[Optional[date]]
-    access_notes: Mapped[Optional[text]]
+    readme_url: Mapped[str | None]
+    originating_entity: Mapped[str | None]
+    retention_schedule: Mapped[RetentionScheduleLiteral | None]
+    scraper_url: Mapped[str | None]
+    submission_notes: Mapped[str | None]
+    rejection_note: Mapped[str | None]
+    last_approval_editor: Mapped[int | None]
+    submitter_contact_info: Mapped[str | None]
+    agency_described_not_in_database: Mapped[str | None]
+    data_portal_type_other: Mapped[str | None]
+    data_source_request: Mapped[str | None]
+    broken_source_url_as_of: Mapped[date | None]
+    access_notes: Mapped[text | None]
     url_status: Mapped[URLStatusLiteral] = Column(
         Enum(*get_args(URLStatusLiteral), name="url_status"), server_default="ok"
     )
     approval_status: Mapped[ApprovalStatusLiteral]
-    record_type_id: Mapped[Optional[int]] = mapped_column(
+    record_type_id: Mapped[int | None] = mapped_column(
         ForeignKey("public.record_types.id")
     )
-    approval_status_updated_at: Mapped[Optional[timestamp_tz]]
+    approval_status_updated_at: Mapped[timestamp_tz | None]
 
     # Relationships
     locations: Mapped[list[Location]] = relationship(

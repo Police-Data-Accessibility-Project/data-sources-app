@@ -1,56 +1,24 @@
-from typing import Optional
-
-from sqlalchemy import select, or_, exists, and_
-from sqlalchemy.orm import selectinload
+from typing import override
 
 from db.enums import EventType, EntityType
-from db.models.implementations.core.notification.queue.data_request import (
-    DataRequestUserNotificationQueue,
-)
-from db.models.implementations.core.notification.queue.data_source import (
-    DataSourceUserNotificationQueue,
-)
 from db.models.implementations.core.user.core import User
-from db.queries.builder import QueryBuilderBase
-from middleware.custom_dataclasses import EventBatch, EventInfo
+from db.queries.builder.core import QueryBuilderBase
+from db.queries.instantiations.notifications.queries.user_with_events import (
+    get_user_with_events_query,
+)
+from db.dtos.event_batch import EventBatch
+from db.dtos.event_info import EventInfo
 
 
 class NotificationsPostQueryBuilder(QueryBuilderBase):
-
-    def run(self) -> Optional[EventBatch]:
-        query = (
-            select(User)
-            .where(
-                or_(
-                    exists(
-                        select(DataSourceUserNotificationQueue.id).where(
-                            and_(
-                                DataSourceUserNotificationQueue.user_id == User.id,
-                                DataSourceUserNotificationQueue.sent_at.is_(None),
-                            )
-                        )
-                    ),
-                    exists(
-                        select(DataRequestUserNotificationQueue.id).where(
-                            and_(
-                                DataRequestUserNotificationQueue.user_id == User.id,
-                                DataRequestUserNotificationQueue.sent_at.is_(None),
-                            )
-                        )
-                    ),
-                )
-            )
-            .options(
-                selectinload(User.data_request_events),
-                selectinload(User.data_source_events),
-            )
-            .limit(1)
-        )
-
+    @override
+    def run(self) -> EventBatch | None:
+        query = get_user_with_events_query()
+        query = query.limit(1)
         raw_results = self.session.execute(query).first()
         if raw_results is None:
             return None
-        user = raw_results[0]
+        user: User = raw_results[0]
         event_infos = []
         for event in user.data_request_events:
             event_info = EventInfo(

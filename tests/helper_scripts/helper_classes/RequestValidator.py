@@ -2,10 +2,8 @@
 Class based means to run and validate requests
 """
 
-from dataclasses import dataclass
 from datetime import datetime
 from http import HTTPStatus
-from io import BytesIO
 from typing import Optional, Type, Union, List
 
 from flask.testing import FlaskClient
@@ -17,6 +15,9 @@ from db.enums import (
     RequestStatus,
     ApprovalStatus,
     UpdateFrequency,
+)
+from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
+    SourceCollectorPostRequestDTO,
 )
 from endpoints.instantiations.source_collector.sync.dtos.request import (
     SourceCollectorSyncAgenciesRequestDTO,
@@ -54,12 +55,6 @@ from endpoints.schema_config.instantiations.auth.signup import (
 )
 from endpoints.schema_config.instantiations.auth.validate_email import (
     AuthValidateEmailEndpointSchema,
-)
-from endpoints.schema_config.instantiations.bulk.agencies import (
-    BulkAgenciesPostEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.bulk.data_sources import (
-    BulkDataSourcesPostEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.data_requests.by_id.get import (
     DataRequestsByIDGetEndpointSchemaConfig,
@@ -162,9 +157,6 @@ from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
 from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
-from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
-    SourceCollectorPostRequestDTO,
-)
 from middleware.util.dict import update_if_not_none
 from tests.helper_scripts.common_test_data import get_test_name
 from tests.helper_scripts.constants import (
@@ -184,7 +176,6 @@ from utilities.enums import RecordCategories
 
 
 class RequestValidator:
-
     def __init__(self, flask_client: FlaskClient):
         self.flask_client = flask_client
 
@@ -872,38 +863,6 @@ class RequestValidator:
     ):
         return self.get(
             endpoint="/api/swagger.json",
-        )
-
-    @dataclass
-    class BulkOperationParams:
-        file: BytesIO
-        headers: dict
-        expected_response_status: HTTPStatus = HTTPStatus.OK
-
-    def insert_agencies_bulk(
-        self,
-        bop: BulkOperationParams,
-        expected_schema=BulkAgenciesPostEndpointSchemaConfig.primary_output_schema,
-    ):
-        return self.post(
-            endpoint="/api/bulk/agencies",
-            headers=bop.headers,
-            file=bop.file,
-            expected_schema=expected_schema,
-            expected_response_status=bop.expected_response_status,
-        )
-
-    def insert_data_sources_bulk(
-        self,
-        bop: BulkOperationParams,
-        expected_schema=BulkDataSourcesPostEndpointSchemaConfig.primary_output_schema,
-    ):
-        return self.post(
-            endpoint="/api/bulk/data-sources",
-            headers=bop.headers,
-            file=bop.file,
-            expected_schema=expected_schema,
-            expected_response_status=bop.expected_response_status,
         )
 
     def get_data_sources(

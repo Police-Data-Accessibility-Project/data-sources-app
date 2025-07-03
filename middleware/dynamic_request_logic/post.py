@@ -5,9 +5,7 @@ import sqlalchemy
 from flask import Response
 from werkzeug.exceptions import Conflict, BadRequest, InternalServerError
 
-from middleware.column_permission.core import (
-    RelationRoleParameters,
-)
+from middleware.column_permission.relation_role_parameters import RelationRoleParameters
 from middleware.common_response_formatting import created_id_response
 from middleware.custom_dataclasses import DeferredFunction
 from middleware.dynamic_request_logic.supporting_classes import (
@@ -19,7 +17,6 @@ from middleware.dynamic_request_logic.supporting_classes import (
 
 
 class PostHandler(PostPutHandler):
-
     def call_database_client_method(self, request: PutPostRequestInfo):
         """
         Runs the database client method
@@ -31,7 +28,6 @@ class PostHandler(PostPutHandler):
 
 
 class PostLogic(PutPostBase):
-
     def __init__(
         self,
         middleware_parameters: MiddlewareParameters,
@@ -90,7 +86,6 @@ def post_entry(
     check_for_permission: bool = True,
     make_response: bool = True,
 ) -> Response:
-
     post_logic = post_logic_class(
         middleware_parameters=middleware_parameters,
         entry=entry,
