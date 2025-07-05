@@ -75,7 +75,7 @@ class DataSourcesPostSingleQueryBuilder(
             rejection_note=entry.rejection_note,
             last_approval_editor=entry.last_approval_editor,
             broken_source_url_as_of=entry.broken_source_url_as_of,
-            record_type_id=self._get_record_type_id(entry.record_type_name.value),
+            record_type_id=self._get_record_type_id(entry.record_type_name.value) if entry.record_type_name is not None else None,
         )
         self.session.add(data_source)
 

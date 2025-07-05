@@ -2,6 +2,8 @@ from typing import Optional
 
 from flask import make_response, Response
 from pydantic import BaseModel
+from sqlalchemy.exc import IntegrityError
+from werkzeug.exceptions import BadRequest
 
 from db.client.core import DatabaseClient
 from db.db_client_dataclasses import OrderByParameters
@@ -170,12 +172,18 @@ def update_data_source_wrapper(
     access_info: AccessInfoPrimary,
     data_source_id: str,
 ) -> Response:
-    db_client.update_data_source_v2(
-        dto=dto,
-        data_source_id=int(data_source_id),
-        permissions=access_info.permissions,
-        user_id=access_info.get_user_id(),
-    )
+    try:
+        db_client.update_data_source_v2(
+            dto=dto,
+            data_source_id=int(data_source_id),
+            permissions=access_info.permissions,
+            user_id=access_info.get_user_id(),
+        )
+    except IntegrityError as e:
+        if "check_for_approval_status_and_record_type_id" in str(e):
+            raise BadRequest(
+                "Record type is required for approval."
+            )
     return message_response("Updated Data source.")
 
 
