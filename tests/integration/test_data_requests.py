@@ -18,6 +18,7 @@ from endpoints.schema_config.instantiations.data_requests.related_sources.get im
 )
 from middleware.constants import DATA_KEY
 from middleware.enums import RecordTypes
+from middleware.third_party_interaction_logic.mailgun_.constants import OPERATIONS_EMAIL
 from middleware.util.type_conversion import get_enum_values
 from endpoints.schema_config.enums import SchemaConfigs
 from tests.helper_scripts.common_test_data import (
@@ -141,6 +142,7 @@ def test_data_requests_get(
 
 def test_data_requests_post(
     test_data_creator_flask: TestDataCreatorFlask,
+    mock_send_via_mailgun
 ):
     tdc = test_data_creator_flask
     standard_tus = tdc.standard_user()
@@ -191,6 +193,11 @@ def test_data_requests_post(
     }
 
     json_data = post_data_request(json_request)
+    mock_send_via_mailgun.assert_called_once_with(
+        to_email=OPERATIONS_EMAIL,
+        subject=f"New data request submitted: {json_request['request_info']['title']}",
+        text=f"Submission notes: \n\n{json_request['request_info']['submission_notes']}",
+    )
 
     # Test that data request was created and can now be retrieved
     json_data = get_data_request(json_data["id"])
