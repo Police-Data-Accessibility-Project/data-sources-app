@@ -1,3 +1,5 @@
+from typing import Any
+
 from flask import Response, make_response
 
 
@@ -21,7 +23,7 @@ def created_id_response(new_id: str, message: str = "") -> Response:
     return message_response(message=message, id=new_id)
 
 
-def message_response(message: str, **kwargs) -> Response:
+def message_response(message: str, **kwargs: dict[str, Any]) -> Response:
     """Format response with standardized message format.
     :param message:
     :param kwargs:

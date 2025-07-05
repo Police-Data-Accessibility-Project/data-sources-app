@@ -10,7 +10,7 @@ from middleware.primary_resource_logic.notifications.email.builder import (
 from middleware.security.access_info.primary import AccessInfoPrimary
 from db.dtos.event_batch import EventBatch
 
-from middleware.third_party_interaction_logic.mailgun import send_via_mailgun
+from middleware.third_party_interaction_logic.mailgun_.send import send_via_mailgun
 
 
 def format_and_send_notifications(
