@@ -183,9 +183,7 @@ def update_data_source_wrapper(
         )
     except IntegrityError as e:
         if "check_for_approval_status_and_record_type_id" in str(e):
-            raise BadRequest(
-                "Record type is required for approval."
-            )
+            raise BadRequest("Record type is required for approval.")
     return message_response("Updated Data source.")
 
 

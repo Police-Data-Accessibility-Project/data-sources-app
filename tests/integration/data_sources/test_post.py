@@ -1,4 +1,3 @@
-from optparse import OptionError
 
 from endpoints.schema_config.instantiations.data_sources.by_id.get import (
     DataSourcesByIDGetEndpointSchemaConfig,
@@ -22,8 +21,7 @@ from tests.helper_scripts.run_and_validate_request import run_and_validate_reque
 
 
 def test_data_sources_post(
-    test_data_creator_flask: TestDataCreatorFlask,
-    mock_send_via_mailgun
+    test_data_creator_flask: TestDataCreatorFlask, mock_send_via_mailgun
 ):
     """
     Test that POST call to /data-sources endpoint successfully creates a new data source with a unique name and verifies its existence in the database

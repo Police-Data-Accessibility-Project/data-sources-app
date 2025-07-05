@@ -1,6 +1,9 @@
 import requests
 
-from middleware.third_party_interaction_logic.mailgun_.constants import MAILGUN_URL, FROM_EMAIL
+from middleware.third_party_interaction_logic.mailgun_.constants import (
+    MAILGUN_URL,
+    FROM_EMAIL,
+)
 from middleware.util.env import get_env_variable
 
 
@@ -33,13 +36,7 @@ def send_via_mailgun(
         data["bcc"] = bcc
 
     r = requests.post(
-        MAILGUN_URL,
-        auth=(
-            "api",
-            get_env_variable("MAILGUN_KEY")
-        ),
-        data=data,
-        timeout=5
+        MAILGUN_URL, auth=("api", get_env_variable("MAILGUN_KEY")), data=data, timeout=5
     )
 
     r.raise_for_status()

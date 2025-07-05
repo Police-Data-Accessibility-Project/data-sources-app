@@ -68,7 +68,6 @@ def test_data_sources_by_id_put(test_data_creator_flask: TestDataCreatorFlask):
         entry_data=entry_data,
     )
 
-
     response_json = run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="get",

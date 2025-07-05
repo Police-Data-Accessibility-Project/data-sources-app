@@ -141,8 +141,7 @@ def test_data_requests_get(
 
 
 def test_data_requests_post(
-    test_data_creator_flask: TestDataCreatorFlask,
-    mock_send_via_mailgun
+    test_data_creator_flask: TestDataCreatorFlask, mock_send_via_mailgun
 ):
     tdc = test_data_creator_flask
     standard_tus = tdc.standard_user()

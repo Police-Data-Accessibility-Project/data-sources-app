@@ -250,7 +250,7 @@ def mock_send_via_mailgun(monkeypatch) -> Generator[MagicMock, Any, None]:
         "middleware.primary_resource_logic.data_requests_.post",
         "middleware.primary_resource_logic.data_sources",
         "middleware.primary_resource_logic.notifications.notifications",
-        "middleware.primary_resource_logic.signup"
+        "middleware.primary_resource_logic.signup",
     ]
 
     mock_send_via_mailgun = MagicMock()
@@ -259,10 +259,3 @@ def mock_send_via_mailgun(monkeypatch) -> Generator[MagicMock, Any, None]:
         monkeypatch.setattr(f"{path}.send_via_mailgun", mock_send_via_mailgun)
 
     yield mock_send_via_mailgun
-
-
-
-
-
-
-
