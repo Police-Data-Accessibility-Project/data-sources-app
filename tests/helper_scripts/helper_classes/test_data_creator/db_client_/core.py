@@ -178,7 +178,7 @@ class TestDataCreatorDBClient:
     def data_source(
         self,
         approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
-        record_type: RecordTypes = RecordTypes.ACCIDENT_REPORTS,
+        record_type: RecordTypes | None = RecordTypes.ACCIDENT_REPORTS,
         source_url: str | None = None,
     ) -> CreatedDataSource:
         dto = DataSourcesPostDTO(

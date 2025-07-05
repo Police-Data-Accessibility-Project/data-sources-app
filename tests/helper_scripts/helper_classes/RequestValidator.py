@@ -165,6 +165,7 @@ from tests.helper_scripts.constants import (
     DATA_REQUESTS_POST_DELETE_RELATED_LOCATIONS_ENDPOINT,
     DATA_SOURCES_BASE_ENDPOINT,
 )
+from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_functions_simple import (
     get_authorization_header,
     add_query_params,
@@ -891,6 +892,22 @@ class RequestValidator:
             query_parameters=query_params,
             headers=headers,
             expected_schema=DataSourcesGetManyEndpointSchemaConfig.primary_output_schema,
+        )
+
+    def update_data_source(
+        self,
+        tus: TestUserSetup,
+        data_source_id: int,
+        entry_data: dict,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_json_content: Optional[dict] = None,
+    ):
+        return self.put(
+            endpoint=f"/api/data-sources/{data_source_id}",
+            headers=tus.jwt_authorization_header,
+            json={"entry_data": entry_data},
+            expected_response_status=expected_response_status,
+            expected_json_content=expected_json_content,
         )
 
     def get_agency_by_id(self, headers: dict, id: int):
