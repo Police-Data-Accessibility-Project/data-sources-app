@@ -3,6 +3,7 @@ from enum import Enum
 from endpoints.instantiations.source_collector.sync.schema_config import (
     SourceCollectorSyncAgenciesSchemaConfig,
 )
+from endpoints.instantiations.user.by_id.patch.endpoint_schema_config import UserPatchEndpointSchemaConfig
 from endpoints.schema_config.config.core import EndpointSchemaConfig
 from endpoints.schema_config.instantiations.admin.users.by_id.delete import (
     AdminUsersByIDDeleteEndpointSchemaConfig,
@@ -314,6 +315,7 @@ class SchemaConfigs(Enum):
     NOTIFICATIONS_PREVIEW = NotificationsPreviewEndpointSchemaConfig
     # region User Profile
     USER_PUT = UserPutEndpointSchemaConfig
+    USER_PATCH = UserPatchEndpointSchemaConfig
     USER_PROFILE_RECENT_SEARCHES = UserProfileRecentSearchesEndpointSchemaConfig
     USER_PROFILE_GET = UserProfileGetEndpointSchemaConfig
     USER_PROFILE_DATA_REQUESTS_GET = UserProfileDataRequestsGetEndpointSchemaConfig

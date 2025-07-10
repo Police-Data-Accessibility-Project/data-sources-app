@@ -1,5 +1,7 @@
 from flask import Response
 
+from endpoints.instantiations.user.by_id.patch.endpoint_schema_config import UserPatchEndpointSchemaConfig
+from endpoints.instantiations.user.by_id.patch.middleware import patch_user
 from endpoints.schema_config.instantiations.user.put import UserPutEndpointSchemaConfig
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.info.instantiations import STANDARD_JWT_AUTH_INFO
@@ -10,8 +12,8 @@ from middleware.primary_resource_logic.reset_token_queries import (
 from middleware.primary_resource_logic.user_profile import (
     get_owner_data_requests_wrapper,
     get_user_recent_searches,
-    get_user_by_id_wrapper,
 )
+from endpoints.instantiations.user.by_id.get.middleware import get_user_by_id_wrapper
 from middleware.schema_and_dto.populate_parameters import (
     GET_MANY_SCHEMA_POPULATE_PARAMETERS,
 )
@@ -69,6 +71,22 @@ class UserByID(PsycopgResource):
             wrapper_function=get_user_by_id_wrapper,
             user_id=int(user_id),
             access_info=access_info,
+        )
+
+    @endpoint_info(
+        namespace=namespace_user,
+        auth_info=STANDARD_JWT_AUTH_INFO,
+        schema_config=SchemaConfigs.USER_PATCH,
+        response_info=ResponseInfo(
+            success_message="Updates user information.",
+        ),
+    )
+    def patch(self, user_id: int, access_info: AccessInfoPrimary) -> Response:
+        return self.run_endpoint(
+            wrapper_function=patch_user,
+            user_id=int(user_id),
+            access_info=access_info,
+            schema_populate_parameters=UserPatchEndpointSchemaConfig.get_schema_populate_parameters(),
         )
 
 

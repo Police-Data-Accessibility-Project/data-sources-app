@@ -260,6 +260,26 @@ class RequestValidator:
             **request_kwargs,
         )
 
+    def patch(
+        self,
+        endpoint: str,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_json_content: Optional[dict] = None,
+        expected_schema: Optional[Union[Type[Schema], Schema]] = None,
+        query_parameters: Optional[dict] = None,
+        **request_kwargs,
+    ):
+        return run_and_validate_request(
+            flask_client=self.flask_client,
+            http_method="patch",
+            endpoint=endpoint,
+            expected_response_status=expected_response_status,
+            expected_json_content=expected_json_content,
+            expected_schema=expected_schema,
+            query_parameters=query_parameters,
+            **request_kwargs,
+        )
+
     # Below are shorthands for common requests
 
     def login(

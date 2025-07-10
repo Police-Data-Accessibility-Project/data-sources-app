@@ -142,7 +142,7 @@ from db.queries.instantiations.source_collector.data_sources import (
 from db.queries.instantiations.source_collector.sync import (
     SourceCollectorSyncAgenciesQueryBuilder,
 )
-from db.queries.instantiations.user_profile.get_user_recent_searches import (
+from db.queries.instantiations.user.get_user_recent_searches import (
     GetUserRecentSearchesQueryBuilder,
 )
 from db.queries.instantiations.util.create_entry_in_table import (
@@ -168,6 +168,8 @@ from endpoints.instantiations.source_collector.data_sources.post.dtos.response i
 from endpoints.instantiations.source_collector.sync.dtos.request import (
     SourceCollectorSyncAgenciesRequestDTO,
 )
+from endpoints.instantiations.user.by_id.patch.dto import UserPatchDTO
+from endpoints.instantiations.user.by_id.patch.query import UserPatchQueryBuilder
 from middleware.constants import DATE_FORMAT
 from db.dtos.event_batch import EventBatch
 from middleware.enums import (
@@ -1549,3 +1551,7 @@ class DatabaseClient:
         """Get agencies for source collector sync."""
         builder = SourceCollectorSyncAgenciesQueryBuilder(dto=dto)
         return self.run_query_builder(builder)
+
+    def patch_user(self, user_id: int, dto: UserPatchDTO) -> None:
+        builder = UserPatchQueryBuilder(dto=dto, user_id=user_id)
+        self.run_query_builder(builder)
