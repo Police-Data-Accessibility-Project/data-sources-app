@@ -9,4 +9,5 @@ TYPE_MAPPING = {
     float: fields.Float,
     datetime.date: fields.Date,
     datetime.datetime: fields.DateTime,
+    dict: fields.Dict,
 }
