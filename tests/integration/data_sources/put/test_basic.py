@@ -62,12 +62,10 @@ def test_data_sources_by_id_put(test_data_creator_flask: TestDataCreatorFlask):
         "record_type_name": RecordTypes.ARREST_RECORDS.value,
     }
 
-    run_and_validate_request(
-        flask_client=tdc.flask_client,
-        http_method="put",
-        endpoint=f"/api/data-sources/{cdr.id}",
-        headers=tdc.get_admin_tus().jwt_authorization_header,
-        json={"entry_data": entry_data},
+    tdc.request_validator.update_data_source(
+        tus=tdc.get_admin_tus(),
+        data_source_id=cdr.id,
+        entry_data=entry_data,
     )
 
     response_json = run_and_validate_request(
