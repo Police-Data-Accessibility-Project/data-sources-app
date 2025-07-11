@@ -1,0 +1,4 @@
+from endpoints.instantiations.data_requests_._shared.dtos.base import DataRequestsBaseDTO
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import pydantic_to_marshmallow
+
+DataRequestsSchema = pydantic_to_marshmallow(DataRequestsBaseDTO)

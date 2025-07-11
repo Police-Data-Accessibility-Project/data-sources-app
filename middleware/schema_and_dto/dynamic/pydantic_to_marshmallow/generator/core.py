@@ -1,19 +1,18 @@
 from enum import Enum
 from typing import cast, get_origin, get_args, Any
 
-from annotated_types import MinLen, MaxLen
-from marshmallow import Schema, validate
+from marshmallow import Schema
 from marshmallow.fields import (
     Field,
     List as MarshmallowList,
-    Enum as MarshmallowEnum,
     Nested,
 )
-from marshmallow.validate import Validator
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 from pydantic_core import PydanticUndefinedType
 
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.convert import convert_validators, convert_enum, \
+    convert_to_marshmallow_class
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.exceptions import GetMarshmallowFieldException
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.helpers import (
     is_optional,
@@ -26,7 +25,7 @@ from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.
     MetadataInfo,
 )
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.mapping import (
-    TYPE_MAPPING,
+    TYPE_MAPPING, _is_mapped_type,
 )
 
 
@@ -96,7 +95,7 @@ class FieldProcessor:
             required=self.metadata_info.required,
             allow_none=allow_none,
             metadata=self.prepare_metadata(),
-            validate=self.get_validator(self.model_field),
+            validate=convert_validators(self.model_field),
             **marshmallow_field_info.field_kwargs,
         )
 
@@ -108,24 +107,16 @@ class FieldProcessor:
             metadata_["description"] = self.model_field.description
         return metadata_
 
-    def _is_mapped_type(self, inner_type: type) -> bool:
-        available_types = list(TYPE_MAPPING.keys())
-        if get_origin(inner_type) in available_types:
-            return True
-        if inner_type in available_types:
-            return True
-        return False
-
     def get_marshmallow_field_cls(self, field_type: type) -> MarshmallowFieldInfo:
         try:
             inner_type = extract_inner_type(field_type)
-            if self._is_mapped_type(inner_type):
-                marshmallow_field_cls = self.get_marshmallow_class(inner_type)
+            if _is_mapped_type(inner_type):
+                marshmallow_field_cls = convert_to_marshmallow_class(inner_type)
                 return MarshmallowFieldInfo(field=marshmallow_field_cls)
             if get_origin(inner_type) is list:
                 return self.get_list_field(inner_type)
             if issubclass(inner_type, Enum):
-                return self.get_enum_field(inner_type)
+                return convert_enum(inner_type)
             if issubclass(inner_type, BaseModel):
                 return self.get_nested_field(inner_type)
             raise GetMarshmallowFieldException(
@@ -134,15 +125,6 @@ class FieldProcessor:
 
         except Exception as e:
             raise GetMarshmallowFieldException(f"Error processing field {field_type}: {e}") from e
-
-    @staticmethod
-    def get_marshmallow_class(inner_type: Any) -> type[Field]:
-        if get_origin(inner_type) is dict:
-            inner_type = dict
-        marshmallow_field_cls = TYPE_MAPPING.get(inner_type)
-        if marshmallow_field_cls is None:
-            raise ValueError(f"Unsupported field type: {inner_type}")
-        return marshmallow_field_cls
 
     def get_list_field(self, inner_type: list[Any]) -> MarshmallowFieldInfo:
         type_arg = get_args(inner_type)[0]
@@ -168,27 +150,6 @@ class FieldProcessor:
             field=Nested,
             field_kwargs={
                 "nested": inner_schema(),
+                "nested_dto_class": inner_type,
             },
         )
-
-    @staticmethod
-    def get_enum_field(inner_type: Any) -> MarshmallowFieldInfo:
-        return MarshmallowFieldInfo(
-            field=MarshmallowEnum,
-            field_kwargs={"enum": inner_type, "by_value": True},
-        )
-
-    def get_validator(self, model_field: FieldInfo) -> Validator | None:
-        if not model_field.annotation is str:
-            return None
-        metadata = model_field.metadata
-        if len(metadata) == 0:
-            return None
-        validation_kwargs: dict[str, int] = {}
-        for metadata_item in metadata:
-            if isinstance(metadata_item, MinLen):
-                validation_kwargs["min"] = metadata_item.min_length
-            if isinstance(metadata_item, MaxLen):
-                validation_kwargs["max"] = metadata_item.max_length
-        return validate.Length(**validation_kwargs)
-

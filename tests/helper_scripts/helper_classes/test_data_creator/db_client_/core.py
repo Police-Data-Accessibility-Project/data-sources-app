@@ -41,10 +41,7 @@ from middleware.schema_and_dto.dtos.agencies.post import (
     AgencyInfoPostDTO,
     AgenciesPostDTO,
 )
-from middleware.schema_and_dto.dtos.data_requests.post import (
-    DataRequestsPostDTO,
-    RequestInfoPostDTO,
-)
+from endpoints.instantiations.data_requests_.post.dto import RequestInfoPostDTO, DataRequestsPostDTO
 from middleware.schema_and_dto.dtos.data_requests.put import (
     DataRequestsPutDTO,
     DataRequestsPutOuterDTO,

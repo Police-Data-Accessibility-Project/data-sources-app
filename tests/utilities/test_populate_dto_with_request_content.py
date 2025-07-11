@@ -13,13 +13,12 @@ from middleware.schema_and_dto.dynamic.dto_request_content_population import (
     populate_dto_with_request_content,
     _optionally_check_against_schema,
 )
-from middleware.schema_and_dto.dynamic.schema.documentation_construction import (
+from middleware.schema_and_dto.dynamic.schema.doc_construction.documentation_construction import (
     get_restx_param_documentation,
 )
-from middleware.schema_and_dto.dynamic.schema.request_content_population import (
-    InvalidSourceMappingError,
-    populate_schema_with_request_content,
-)
+from middleware.schema_and_dto.dynamic.schema.request_content_population_.core import \
+    populate_schema_with_request_content
+from middleware.schema_and_dto.dynamic.schema.request_content_population_.exceptions import InvalidSourceMappingError
 from middleware.schema_and_dto.non_dto_dataclasses import DTOPopulateParameters
 from tests.helper_scripts.common_mocks_and_patches import patch_request_args_get
 

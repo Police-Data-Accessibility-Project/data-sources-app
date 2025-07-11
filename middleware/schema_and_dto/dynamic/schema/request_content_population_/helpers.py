@@ -1,9 +1,13 @@
-from typing import Type
+from typing import Type, Any
 
 import marshmallow
+from marshmallow import Schema
 from pydantic import BaseModel
 from werkzeug.exceptions import BadRequest
 
+from middleware.schema_and_dto.dynamic.schema.request_content_population_.exceptions import InvalidSourceMappingError
+from middleware.schema_and_dto.dynamic.schema.request_content_population_.models.nested_dto import NestedDTOInfo
+from middleware.schema_and_dto.dynamic.schema.request_content_population_.models.source_data import SourceDataInfo
 from middleware.schema_and_dto.types import SchemaTypes
 from middleware.schema_and_dto.util import (
     _get_required_argument,
@@ -12,45 +16,8 @@ from middleware.schema_and_dto.util import (
 from utilities.enums import SourceMappingEnum
 
 
-class NestedDTOInfo(BaseModel):
-    key: str
-    class_: Type
-
-
-class SourceDataInfo(BaseModel):
-    data: dict
-    nested_dto_info_list: list[NestedDTOInfo]
-
-
-def populate_schema_with_request_content(
-    schema: SchemaTypes, dto_class: Type[BaseModel], load_file: bool = False
-) -> BaseModel:
-    """
-    Populates a marshmallow schema with request content, given custom arguments in the schema fields
-    Custom arguments include:
-    * source: The source in the request the data will be pulled from
-    * transformation_function (optional): A function that will be applied to the data
-    :param schema_class:
-    :param dto_class:
-    :return:
-    """
-    # Get all declared fields from the schema
-    if load_file:
-        raise NotImplementedError("Load file logic has been removed")
-    fields = schema.fields
-    source_data_info = get_source_data_info_from_sources(schema)
-    intermediate_data = validate_data(source_data_info.data, schema)
-    _apply_transformation_functions_to_dict(fields, intermediate_data)
-
-    return setup_dto_class(
-        data=intermediate_data,
-        dto_class=dto_class,
-        nested_dto_info_list=source_data_info.nested_dto_info_list,
-    )
-
-
 def setup_dto_class(
-    data: dict, dto_class: Type[BaseModel], nested_dto_info_list: list[NestedDTOInfo]
+    data: dict, dto_class: type[BaseModel], nested_dto_info_list: list[NestedDTOInfo]
 ):
     for nested_dto_info in nested_dto_info_list:
         if nested_dto_info.key in data:
@@ -61,7 +28,7 @@ def setup_dto_class(
     return dto_class(**data)
 
 
-def validate_data(data, schema_obj) -> dict:
+def validate_data(data: dict[str, Any], schema_obj: SchemaTypes) -> dict:
     try:
         intermediate_data = schema_obj.load(data)
     except Exception as e:
@@ -69,11 +36,7 @@ def validate_data(data, schema_obj) -> dict:
     return intermediate_data
 
 
-class InvalidSourceMappingError(Exception):
-    pass
-
-
-def get_nested_dto_info_list(schema: SchemaTypes) -> list[NestedDTOInfo]:
+def get_nested_dto_info_list(schema: Schema) -> list[NestedDTOInfo]:
     nested_dto_info_list = []
     for field_name, field_value in schema.fields.items():
         if not isinstance(field_value, marshmallow.fields.Nested):
@@ -89,7 +52,7 @@ def get_nested_dto_info_list(schema: SchemaTypes) -> list[NestedDTOInfo]:
     return nested_dto_info_list
 
 
-def _get_data_from_sources(schema: SchemaTypes) -> dict:
+def _get_data_from_sources(schema: Schema) -> dict[str, Any]:
     data = {}
     for field_name, field_value in schema.fields.items():
         metadata = field_value.metadata
@@ -104,7 +67,7 @@ def _get_data_from_sources(schema: SchemaTypes) -> dict:
     return data
 
 
-def get_source_data_info_from_sources(schema: SchemaTypes) -> SourceDataInfo:
+def get_source_data_info_from_sources(schema: Schema) -> SourceDataInfo:
     """
     Get data from sources specified in the schema and field metadata
     :param fields:
@@ -116,7 +79,7 @@ def get_source_data_info_from_sources(schema: SchemaTypes) -> SourceDataInfo:
     return SourceDataInfo(data=data, nested_dto_info_list=nested_dto_info_list)
 
 
-def _check_for_errors(metadata: dict, source: SourceMappingEnum):
+def _check_for_errors(metadata: dict[str, Any], source: SourceMappingEnum):
     if source != SourceMappingEnum.JSON:
         raise InvalidSourceMappingError(
             "Nested fields can only be populated from JSON sources"

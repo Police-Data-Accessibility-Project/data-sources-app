@@ -32,6 +32,8 @@ from marshmallow import fields as marshmallow_fields, missing, Schema
 from marshmallow.fields import Field as MarshmallowField
 from marshmallow.validate import OneOf
 
+from middleware.schema_and_dto.dynamic.schema.doc_construction.mappings import PARSER_SOURCE_LOCATION_MAP
+from middleware.schema_and_dto.dynamic.schema.doc_construction.types_ import PARSER_FIELDS
 from middleware.schema_and_dto.mappings import (
     MARSHMALLOW_TO_RESTX_FIELD_MAPPING,
     RESTX_FIELD_TO_NATIVE_TYPE_MAPPING,
@@ -47,18 +49,6 @@ from middleware.schema_and_dto.types import (
 from middleware.schema_and_dto.util import _get_required_argument
 from endpoints._helpers.docs import create_variable_columns_model
 from utilities.enums import SourceMappingEnum
-
-PARSER_FIELDS = [
-    SourceMappingEnum.QUERY_ARGS,
-    SourceMappingEnum.PATH,
-    SourceMappingEnum.FILE,
-]
-
-PARSER_SOURCE_LOCATION_MAP = {
-    SourceMappingEnum.QUERY_ARGS: "query",
-    SourceMappingEnum.PATH: "path",
-    SourceMappingEnum.FILE: "file",
-}
 
 
 # region Supporting Functions

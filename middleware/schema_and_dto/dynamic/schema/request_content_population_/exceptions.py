@@ -1,0 +1,2 @@
+class InvalidSourceMappingError(Exception):
+    pass
