@@ -1,7 +1,5 @@
 from endpoints.schema_config.config.core import EndpointSchemaConfig
-from middleware.schema_and_dto.schemas.user.recent_searches import (
-    GetUserRecentSearchesOuterSchema,
-)
+from endpoints.instantiations.user.by_id.get.recent_searches.schema import GetUserRecentSearchesOuterSchema
 
 UserProfileRecentSearchesEndpointSchemaConfig = EndpointSchemaConfig(
     primary_output_schema=GetUserRecentSearchesOuterSchema(exclude=["message"]),

@@ -5,7 +5,7 @@ from middleware.enums import PermissionsEnum
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import pydantic_to_marshmallow
 from endpoints.instantiations.data_requests_.get.many.schemas.response import GetManyDataRequestsResponseSchema
 from endpoints.instantiations.search._shared.schemas.follow import GetUserFollowedSearchesSchema
-from middleware.schema_and_dto.schemas.user.recent_searches import GetUserRecentSearchesOuterSchema
+from endpoints.instantiations.user.by_id.get.recent_searches.schema import GetUserRecentSearchesOuterSchema
 from middleware.schema_and_dto.util import get_json_metadata
 
 ExternalAccountsSchema = pydantic_to_marshmallow(ExternalAccountDTO)
