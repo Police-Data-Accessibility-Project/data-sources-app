@@ -1,17 +1,11 @@
 from marshmallow import fields
 
-from endpoints.instantiations.data_requests_._shared.schemas.base import (
-    DataRequestsSchema,
-)
-from middleware.schema_and_dto.schemas.locations.info.response import (
-    LocationInfoResponseSchema,
-)
-from endpoints.instantiations.data_sources_._shared.schemas.expanded import (
-    DataSourceExpandedSchema,
-)
-from middleware.schema_and_dto.util import (
-    get_json_metadata,
-)
+from endpoints.instantiations.data_requests_._shared.dtos.get import DataRequestsGetDTOBase
+from endpoints.instantiations.data_requests_._shared.schemas.base import DataRequestsSchema
+from endpoints.instantiations.data_sources_._shared.schemas.expanded import DataSourceExpandedSchema
+from endpoints.instantiations.locations_._shared.schemas.response import LocationInfoResponseSchema
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import pydantic_to_marshmallow
+from middleware.schema_and_dto.util import get_json_metadata
 
 
 class DataRequestsGetSchemaBase(DataRequestsSchema):
@@ -57,3 +51,5 @@ class DataRequestsGetSchemaBase(DataRequestsSchema):
             "The location ids associated with the data request."
         ),
     )
+
+# DataRequestsGetSchemaBase = pydantic_to_marshmallow(DataRequestsGetDTOBase)

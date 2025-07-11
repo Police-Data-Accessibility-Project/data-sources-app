@@ -8,7 +8,7 @@ from middleware.schema_and_dto.schemas.agencies.helpers import (
 from endpoints.instantiations.data_sources_._shared.schemas.expanded import (
     DataSourceExpandedSchema,
 )
-from middleware.schema_and_dto.schemas.locations.info.response import (
+from endpoints.instantiations.locations_._shared.schemas.response import (
     LocationInfoResponseSchema,
 )
 from middleware.schema_and_dto.schemas.locations._helpers import (

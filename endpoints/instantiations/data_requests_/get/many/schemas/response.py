@@ -1,9 +1,7 @@
 from middleware.schema_and_dto.schemas.schema_helpers import (
     create_get_many_schema,
 )
-from middleware.schema_and_dto.schemas.data_requests.get.base import (
-    DataRequestsGetSchemaBase,
-)
+from endpoints.instantiations.data_requests_._shared.schemas.get import DataRequestsGetSchemaBase
 
 GetManyDataRequestsResponseSchema = create_get_many_schema(
     data_list_schema=DataRequestsGetSchemaBase,

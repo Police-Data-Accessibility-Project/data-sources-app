@@ -1,4 +1,4 @@
-from pydantic import Field, BaseModel
+from pydantic import Field
 
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.metadata import (
     MetadataInfo,
@@ -19,10 +19,3 @@ def default_field_required(description: str) -> Field:
         json_schema_extra=MetadataInfo(),
     )
 
-#
-# def create_get_many_dto(
-#     data_list_dto: type[BaseModel],
-#     description: str
-# ) -> type[BaseModel]:
-#
-#     class GetManyDTO(BaseModel):
