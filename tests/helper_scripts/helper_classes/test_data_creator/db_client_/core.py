@@ -50,9 +50,7 @@ from middleware.schema_and_dto.dtos.data_sources.post import (
     DataSourcesPostDTO,
     DataSourceEntryDataPostDTO,
 )
-from middleware.schema_and_dto.schemas.data_sources.base import (
-    EntryCreateUpdateRequestDTO,
-)
+from middleware.schema_and_dto.dtos.entry_create_update_request import EntryCreateUpdateRequestDTO
 from tests.helper_scripts.common_endpoint_calls import CreatedDataSource
 from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,

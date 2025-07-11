@@ -28,9 +28,7 @@ from middleware.enums import Relations, PermissionsEnum
 from middleware.schema_and_dto.dtos.data_requests.by_id.source import (
     RelatedSourceByIDDTO,
 )
-from middleware.schema_and_dto.schemas.data_sources.base import (
-    EntryCreateUpdateRequestDTO,
-)
+from middleware.schema_and_dto.dtos.entry_create_update_request import EntryCreateUpdateRequestDTO
 from middleware.schema_and_dto.dtos.common.base import (
     GetManyBaseDTO,
     GetByIDBaseDTO,

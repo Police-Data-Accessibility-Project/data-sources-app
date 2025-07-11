@@ -199,9 +199,7 @@ from middleware.schema_and_dto.dtos.metrics import (
 from middleware.schema_and_dto.dtos.notifications.preview import (
     NotificationsPreviewOutput,
 )
-from middleware.schema_and_dto.schemas.data_sources.base import (
-    EntryCreateUpdateRequestDTO,
-)
+from middleware.schema_and_dto.dtos.entry_create_update_request import EntryCreateUpdateRequestDTO
 from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
 from utilities.enums import RecordCategories
 

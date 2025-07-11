@@ -26,10 +26,8 @@ from middleware.security.auth.info.instantiations import (
     API_OR_JWT_AUTH_INFO,
 )
 from middleware.schema_and_dto.schemas.common.base import GetByIDBaseSchema
-from middleware.schema_and_dto.schemas.data_sources.base import (
-    EntryDataRequestSchema,
-    EntryCreateUpdateRequestDTO,
-)
+from middleware.schema_and_dto.dtos.entry_create_update_request import EntryCreateUpdateRequestDTO
+from middleware.schema_and_dto.schemas.data_sources.entry_data_request import EntryDataRequestSchema
 from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
 from middleware.decorators.endpoint_info import (
     endpoint_info,

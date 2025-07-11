@@ -1,7 +1,7 @@
 from marshmallow import fields
 
 from middleware.enums import RecordTypes
-from middleware.schema_and_dto.schemas.data_sources.base import (
+from endpoints.instantiations.data_sources_._shared.schemas.base import (
     DataSourceBaseSchema,
 )
 from middleware.schema_and_dto.util import get_json_metadata
