@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields
 
-from endpoints.instantiations.search._shared.dtos.follow import FollowSearchResponseDTO
+from endpoints.instantiations.search._shared.dtos.follow import FollowSearchResponseDTO, GetUserFollowedSearchesDTO
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import pydantic_to_marshmallow
 from middleware.schema_and_dto.schemas.schema_helpers import (
     create_get_many_schema,
@@ -13,3 +13,7 @@ GetUserFollowedSearchesSchema = create_get_many_schema(
     data_list_schema=FollowSearchResponseSchema,
     description="The searches that the user follows.",
 )
+
+# GetUserFollowedSearchesSchema = pydantic_to_marshmallow(
+#     GetUserFollowedSearchesDTO
+# )

@@ -1,10 +1,10 @@
 from marshmallow import Schema, fields
 
-from endpoints.instantiations.user.by_id.get.dto import ExternalAccountDTO, UserProfileResponseSchemaInnerDTO
+from endpoints.instantiations.user.by_id.get.dto import ExternalAccountDTO
 from middleware.enums import PermissionsEnum
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import pydantic_to_marshmallow
 from endpoints.instantiations.data_requests_.get.many.schemas.response import GetManyDataRequestsResponseSchema
-from middleware.schema_and_dto.schemas.search.follow import GetUserFollowedSearchesSchema
+from endpoints.instantiations.search._shared.schemas.follow import GetUserFollowedSearchesSchema
 from middleware.schema_and_dto.schemas.user.recent_searches import GetUserRecentSearchesOuterSchema
 from middleware.schema_and_dto.util import get_json_metadata
 
