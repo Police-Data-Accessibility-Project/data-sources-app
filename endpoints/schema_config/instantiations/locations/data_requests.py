@@ -1,7 +1,7 @@
 from endpoints.schema_config.config.core import EndpointSchemaConfig
 from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
 from middleware.schema_and_dto.schemas.common.base import GetByIDBaseSchema
-from middleware.schema_and_dto.schemas.data_requests.get.many.response import (
+from endpoints.instantiations.data_requests_.get.many.schemas.response import (
     GetManyDataRequestsResponseSchema,
 )
 

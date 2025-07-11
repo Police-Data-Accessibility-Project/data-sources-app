@@ -12,8 +12,8 @@ def send_via_mailgun(
     to_email: str,
     subject: str,
     text: str,
-    html: Optional[str] = None,
-    bcc: Optional[str] = None,
+    html: str | None = None,
+    bcc: str | None = None,
 ):
     """
     Sends an email via Mailgun

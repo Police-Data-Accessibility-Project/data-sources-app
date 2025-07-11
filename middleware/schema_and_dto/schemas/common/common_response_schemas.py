@@ -5,21 +5,16 @@ and do not have DTOs associated with them.
 
 from marshmallow import Schema, fields
 
+from middleware.schema_and_dto.dtos.common_dtos import MessageDTO
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import pydantic_to_marshmallow
 from middleware.schema_and_dto.schemas.common.custom_fields import (
     EntryDataListField,
     DataField,
 )
 from utilities.enums import SourceMappingEnum
 
+MessageSchema = pydantic_to_marshmallow(MessageDTO)
 
-class MessageSchema(Schema):
-    message = fields.String(
-        required=True,
-        metadata={
-            "description": "A message returned in the response",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
 
 
 class IDAndMessageSchema(MessageSchema):

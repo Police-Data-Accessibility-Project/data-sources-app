@@ -213,9 +213,9 @@ def tuples_to_column_value_dict(columns: list[str], tuples: list[tuple]) -> list
 
 def get_display_name(
     location_type: LocationType,
-    state_name: Optional[str],
-    county_name: Optional[str],
-    locality_name: Optional[str],
+    state_name: str | None,
+    county_name: str | None,
+    locality_name: str | None,
 ) -> str:
     match location_type:
         case LocationType.STATE:
