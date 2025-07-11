@@ -4,7 +4,7 @@ from middleware.schema_and_dto.schemas.agencies.get.base import AgenciesGetSchem
 from endpoints.instantiations.data_requests_._shared.schemas.base import (
     DataRequestsSchema,
 )
-from middleware.schema_and_dto.schemas.data_sources.expanded import (
+from endpoints.instantiations.data_sources_._shared.schemas.expanded import (
     DataSourceExpandedSchema,
 )
 from middleware.schema_and_dto.util import get_json_metadata

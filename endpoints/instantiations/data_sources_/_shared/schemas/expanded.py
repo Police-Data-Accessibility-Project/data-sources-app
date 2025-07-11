@@ -4,6 +4,7 @@ from middleware.enums import RecordTypes
 from endpoints.instantiations.data_sources_._shared.schemas.base import (
     DataSourceBaseSchema,
 )
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import pydantic_to_marshmallow
 from middleware.schema_and_dto.util import get_json_metadata
 
 
@@ -16,3 +17,5 @@ class DataSourceExpandedSchema(DataSourceBaseSchema):
             "The record type of the data source.",
         ),
     )
+
+# DataSourceExpandedSchema = pydantic_to_marshmallow(DataSourceExpandedSchema)

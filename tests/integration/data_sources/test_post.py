@@ -4,7 +4,7 @@ from endpoints.schema_config.instantiations.data_sources.by_id.get import (
 from endpoints.schema_config.instantiations.data_sources.post import (
     DataSourcesPostEndpointSchemaConfig,
 )
-from middleware.schema_and_dto.schemas.data_sources.expanded import (
+from endpoints.instantiations.data_sources_._shared.schemas.expanded import (
     DataSourceExpandedSchema,
 )
 from tests.helper_scripts.common_asserts import assert_contains_key_value_pairs

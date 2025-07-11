@@ -6,7 +6,7 @@ from endpoints.instantiations.data_requests_._shared.schemas.base import (
 from middleware.schema_and_dto.schemas.locations.info.response import (
     LocationInfoResponseSchema,
 )
-from middleware.schema_and_dto.schemas.data_sources.expanded import (
+from endpoints.instantiations.data_sources_._shared.schemas.expanded import (
     DataSourceExpandedSchema,
 )
 from middleware.schema_and_dto.util import (

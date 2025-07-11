@@ -5,7 +5,7 @@ from middleware.schema_and_dto.schemas.agencies.helpers import (
     get_name_field,
     get_jurisdiction_type_field,
 )
-from middleware.schema_and_dto.schemas.data_sources.expanded import (
+from endpoints.instantiations.data_sources_._shared.schemas.expanded import (
     DataSourceExpandedSchema,
 )
 from middleware.schema_and_dto.schemas.locations.info.response import (
