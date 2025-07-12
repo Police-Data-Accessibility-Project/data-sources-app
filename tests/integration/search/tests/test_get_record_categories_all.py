@@ -1,6 +1,6 @@
 from middleware.enums import RecordTypes
 from tests.integration.search.search_test_setup import SearchTestSetup
-from utilities.enums import RecordCategories
+from utilities.enums import RecordCategoryEnum
 
 
 def test_search_get_record_categories_all(
@@ -24,19 +24,19 @@ def test_search_get_record_categories_all(
             agency_id=tdcdb.agency(location_id=sts.location_id).id,
         )
 
-    def run_search(record_categories: list[RecordCategories]) -> dict:
+    def run_search(record_categories: list[RecordCategoryEnum]) -> dict:
         return tdc.request_validator.search(
             headers=tus.api_authorization_header,
             location_id=sts.location_id,
             record_categories=record_categories if len(record_categories) > 0 else None,
         )
 
-    data_all_explicit = run_search(record_categories=[RecordCategories.ALL])
+    data_all_explicit = run_search(record_categories=[RecordCategoryEnum.ALL])
     assert data_all_explicit["count"] > 0
 
     # Check that the count is the same as if every record type is provided
     data_all_implicit = run_search(
-        record_categories=[rc for rc in RecordCategories if rc != RecordCategories.ALL]
+        record_categories=[rc for rc in RecordCategoryEnum if rc != RecordCategoryEnum.ALL]
     )
     assert data_all_implicit["count"] > 0
     assert data_all_implicit["count"] == data_all_explicit["count"]

@@ -13,24 +13,8 @@ def get_user_by_id_wrapper(
 ):
     _check_user_is_either_owner_or_admin(access_info, user_id)
 
-    # Get user info
-    email = db_client.get_user_email(user_id=user_id)  #
-    external_accounts = db_client.get_user_external_accounts(user_id=user_id)
-    recent_searches = db_client.get_user_recent_searches(user_id=user_id)
-    followed_searches = db_client.get_user_followed_searches(user_id=user_id)
-    data_requests = get_owner_data_requests(
-        db_client=db_client, dto=GetManyBaseDTO(page=1), user_id=user_id
-    )
-    permissions = db_client.get_user_permissions(user_id)
-    data = {
-        "email": email,
-        "external_accounts": external_accounts,
-        "recent_searches": recent_searches,
-        "followed_searches": followed_searches,
-        "data_requests": data_requests,
-        "permissions": [permission.value for permission in permissions],
-    }
-    json_body = {"data": data}
+    inner_dto = db_client.get_user_profile(user_id=user_id)
+    json_body = {"data": inner_dto.model_dump(mode="json")}
 
     return make_response(json_body)
 

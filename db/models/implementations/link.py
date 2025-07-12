@@ -48,7 +48,7 @@ class LinkUserFollowedLocation(
 ):
     __tablename__ = Relations.LINK_USER_FOLLOWED_LOCATION.value
 
-    record_types: Mapped[list["RecordType"]] = relationship(
+    record_types = relationship(
         "RecordType",
         secondary="public.link_follow_record_types",
         primaryjoin="LinkUserFollowedLocation.id == LinkFollowRecordType.follow_id",

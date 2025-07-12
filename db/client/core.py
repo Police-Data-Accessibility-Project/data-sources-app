@@ -168,6 +168,8 @@ from endpoints.instantiations.source_collector.data_sources.post.dtos.response i
 from endpoints.instantiations.source_collector.sync.dtos.request import (
     SourceCollectorSyncAgenciesRequestDTO,
 )
+from endpoints.instantiations.user.by_id.get.dto import UserProfileResponseSchemaInnerDTO
+from endpoints.instantiations.user.by_id.get.query import GetUserByIdQueryBuilder
 from endpoints.instantiations.user.by_id.patch.dto import UserPatchDTO
 from endpoints.instantiations.user.by_id.patch.query import UserPatchQueryBuilder
 from middleware.constants import DATE_FORMAT
@@ -201,7 +203,7 @@ from middleware.schema_and_dto.dtos.notifications.preview import (
 )
 from middleware.schema_and_dto.dtos.entry_create_update_request import EntryCreateUpdateRequestDTO
 from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
-from utilities.enums import RecordCategories
+from utilities.enums import RecordCategoryEnum
 
 
 @final
@@ -370,6 +372,10 @@ class DatabaseClient:
             return None
         return self.UserIdentifiers(id=result["id"], email=result["email"])
 
+    def get_user_profile(self, user_id: int) -> UserProfileResponseSchemaInnerDTO:
+        builder = GetUserByIdQueryBuilder(user_id)
+        return self.run_query_builder(builder)
+
     def update_user_api_key(self, api_key: str, user_id: int):
         """Update the api key for a user."""
         query = update(User).where(User.id == user_id).values(api_key=api_key)
@@ -529,7 +535,7 @@ class DatabaseClient:
     def search_with_location_and_record_type(
         self,
         location_id: int,
-        record_categories: list[RecordCategories] | None = None,
+        record_categories: list[RecordCategoryEnum] | None = None,
         record_types: list[RecordTypes] | None = None,
     ) -> list[dict]:
         """Search for data sources in the database."""
@@ -545,7 +551,7 @@ class DatabaseClient:
 
     @cursor_manager()
     def search_federal_records(
-        self, record_categories: list[RecordCategories] | None = None, page: int = 1
+        self, record_categories: list[RecordCategoryEnum] | None = None, page: int = 1
     ) -> list[dict]:
         query = DynamicQueryConstructor.create_federal_search_query(
             page=page,
@@ -817,7 +823,7 @@ class DatabaseClient:
         user_id: int,
         location_id: int,
         record_types: list[RecordTypes] | None = None,
-        record_categories: list[RecordCategories] | None = None,
+        record_categories: list[RecordCategoryEnum] | None = None,
     ) -> None:
         builder = CreateFollowQueryBuilder(
             user_id=user_id,
@@ -1079,7 +1085,7 @@ class DatabaseClient:
         user_id: int,
         location_id: int,
         record_types: list[RecordTypes] | None = None,
-        record_categories: list[RecordCategories] | None = None,
+        record_categories: list[RecordCategoryEnum] | None = None,
     ):
         builder = DeleteFollowQueryBuilder(
             user_id=user_id,
@@ -1236,7 +1242,7 @@ class DatabaseClient:
         self,
         user_id: int,
         location_id: int,
-        record_categories: list[RecordCategories] | RecordCategories | None = None,
+        record_categories: list[RecordCategoryEnum] | RecordCategoryEnum | None = None,
         record_types: list[RecordTypes] | RecordTypes | None = None,
     ):
         builder = CreateSearchRecordQueryBuilder(

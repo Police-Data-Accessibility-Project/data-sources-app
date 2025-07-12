@@ -56,6 +56,9 @@ class User(StandardBase, CreatedAtMixin):
         primaryjoin="User.id == LinkUserFollowedLocation.user_id",
         secondaryjoin="LinkUserFollowedLocation.location_id == Location.id",
     )
+    follows = relationship(
+        argument="LinkUserFollowedLocation",
+    )
     recent_searches = relationship(
         argument="RecentSearch",
         back_populates="user",

@@ -4,7 +4,7 @@ from db.models.implementations.link import LinkFollowRecordType
 from middleware.enums import RecordTypes
 from tests.integration.search.constants import TEST_STATE, TEST_COUNTY, TEST_LOCALITY
 from tests.integration.search.search_test_setup import SearchTestSetup
-from utilities.enums import RecordCategories
+from utilities.enums import RecordCategoryEnum
 
 
 def test_search_record_types(search_test_setup: SearchTestSetup):
@@ -41,11 +41,11 @@ def test_search_record_types(search_test_setup: SearchTestSetup):
         )
 
     d = {
-        RecordCategories.POLICE: [
+        RecordCategoryEnum.POLICE: [
             RecordTypes.ACCIDENT_REPORTS,
             RecordTypes.ARREST_RECORDS,
         ],
-        RecordCategories.AGENCIES: [
+        RecordCategoryEnum.AGENCIES: [
             RecordTypes.ANNUAL_MONTHLY_REPORTS,
             RecordTypes.BUDGETS_FINANCES,
             RecordTypes.CONTACT_INFO_AGENCY_META,
@@ -64,11 +64,11 @@ def test_search_record_types(search_test_setup: SearchTestSetup):
 
     check_result(
         {
-            RecordCategories.POLICE.value: [
+            RecordCategoryEnum.POLICE.value: [
                 RecordTypes.ACCIDENT_REPORTS.value,
                 RecordTypes.ARREST_RECORDS.value,
             ],
-            RecordCategories.AGENCIES.value: [
+            RecordCategoryEnum.AGENCIES.value: [
                 RecordTypes.ANNUAL_MONTHLY_REPORTS.value,
                 RecordTypes.BUDGETS_FINANCES.value,
                 RecordTypes.CONTACT_INFO_AGENCY_META.value,
@@ -80,22 +80,22 @@ def test_search_record_types(search_test_setup: SearchTestSetup):
     rv.follow_search(
         headers=sts.tus.jwt_authorization_header,
         location_id=sts.location_id,
-        record_categories=[RecordCategories.JAIL],
+        record_categories=[RecordCategoryEnum.JAIL],
     )
 
     # There should be 8 record types followed
     check_result(
         {
-            RecordCategories.POLICE.value: [
+            RecordCategoryEnum.POLICE.value: [
                 RecordTypes.ACCIDENT_REPORTS.value,
                 RecordTypes.ARREST_RECORDS.value,
             ],
-            RecordCategories.AGENCIES.value: [
+            RecordCategoryEnum.AGENCIES.value: [
                 RecordTypes.ANNUAL_MONTHLY_REPORTS.value,
                 RecordTypes.BUDGETS_FINANCES.value,
                 RecordTypes.CONTACT_INFO_AGENCY_META.value,
             ],
-            RecordCategories.JAIL.value: [
+            RecordCategoryEnum.JAIL.value: [
                 RecordTypes.BOOKING_REPORTS.value,
                 RecordTypes.COURT_CASES.value,
                 RecordTypes.INCARCERATION_RECORDS.value,
@@ -107,18 +107,18 @@ def test_search_record_types(search_test_setup: SearchTestSetup):
     rv.unfollow_search(
         headers=sts.tus.jwt_authorization_header,
         location_id=sts.location_id,
-        record_categories=[RecordCategories.AGENCIES],
+        record_categories=[RecordCategoryEnum.AGENCIES],
     )
 
     # Confirm those record types are no longer followed, while the other is unaffected
     # There should be 5 record types followed
     check_result(
         {
-            RecordCategories.POLICE.value: [
+            RecordCategoryEnum.POLICE.value: [
                 RecordTypes.ACCIDENT_REPORTS.value,
                 RecordTypes.ARREST_RECORDS.value,
             ],
-            RecordCategories.JAIL.value: [
+            RecordCategoryEnum.JAIL.value: [
                 RecordTypes.BOOKING_REPORTS.value,
                 RecordTypes.COURT_CASES.value,
                 RecordTypes.INCARCERATION_RECORDS.value,
@@ -136,10 +136,10 @@ def test_search_record_types(search_test_setup: SearchTestSetup):
     # Confirm the remaining record types are still followed
     check_result(
         {
-            RecordCategories.POLICE.value: [
+            RecordCategoryEnum.POLICE.value: [
                 RecordTypes.ARREST_RECORDS.value,
             ],
-            RecordCategories.JAIL.value: [
+            RecordCategoryEnum.JAIL.value: [
                 RecordTypes.BOOKING_REPORTS.value,
                 RecordTypes.COURT_CASES.value,
                 RecordTypes.INCARCERATION_RECORDS.value,

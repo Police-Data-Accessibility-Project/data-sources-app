@@ -63,3 +63,9 @@ class DataRequest(
         back_populates="data_request",
         uselist=False,
     )
+    data_sources: Mapped[list["DataSource"]] = relationship(
+        argument="DataSource",
+        secondary="public.link_data_sources_data_requests",
+        primaryjoin="DataRequest.id == LinkDataSourceDataRequest.request_id",
+        secondaryjoin="DataSource.id == LinkDataSourceDataRequest.data_source_id",
+    )

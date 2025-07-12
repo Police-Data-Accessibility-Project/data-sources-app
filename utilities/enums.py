@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class RecordCategories(Enum):
+class RecordCategoryEnum(Enum):
     """
     Enum for record categories.
     """

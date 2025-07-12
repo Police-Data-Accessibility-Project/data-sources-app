@@ -173,7 +173,7 @@ from tests.helper_scripts.helper_functions_simple import (
 from tests.helper_scripts.run_and_validate_request import (
     run_and_validate_request,
 )
-from utilities.enums import RecordCategories
+from utilities.enums import RecordCategoryEnum
 
 
 class RequestValidator:
@@ -431,7 +431,7 @@ class RequestValidator:
         self,
         headers: dict,
         location_id: int,
-        record_categories: Optional[list[RecordCategories]] = None,
+        record_categories: Optional[list[RecordCategoryEnum]] = None,
         record_types: Optional[list[RecordTypes]] = None,
         format: Optional[OutputFormatEnum] = OutputFormatEnum.JSON,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
@@ -493,7 +493,7 @@ class RequestValidator:
         self,
         headers: dict,
         page: int = 1,
-        record_categories: Optional[list[RecordCategories]] = None,
+        record_categories: Optional[list[RecordCategoryEnum]] = None,
     ):
         endpoint_base = "/search/federal"
         query_params = {"page": page}
@@ -513,7 +513,7 @@ class RequestValidator:
 
     @staticmethod
     def _get_search_query_params(
-        record_categories: Optional[list[RecordCategories]],
+        record_categories: Optional[list[RecordCategoryEnum]],
         location_id: Optional[int] = None,
         record_types: Optional[list[RecordTypes]] = None,
     ):
@@ -567,7 +567,7 @@ class RequestValidator:
     def follow_national_search(
         self,
         headers: dict,
-        record_categories: Optional[list[RecordCategories]] = None,
+        record_categories: Optional[list[RecordCategoryEnum]] = None,
         record_types: Optional[list[RecordTypes]] = None,
         expected_json_content: Optional[dict] = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
@@ -592,7 +592,7 @@ class RequestValidator:
     def unfollow_national_search(
         self,
         headers: dict,
-        record_categories: Optional[list[RecordCategories]] = None,
+        record_categories: Optional[list[RecordCategoryEnum]] = None,
         record_types: Optional[list[RecordTypes]] = None,
         expected_json_content: Optional[dict] = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
@@ -618,7 +618,7 @@ class RequestValidator:
         self,
         headers: dict,
         location_id: int,
-        record_categories: Optional[list[RecordCategories]] = None,
+        record_categories: Optional[list[RecordCategoryEnum]] = None,
         record_types: Optional[list[RecordTypes]] = None,
         expected_json_content: Optional[dict] = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
@@ -645,7 +645,7 @@ class RequestValidator:
         self,
         headers: dict,
         location_id: int,
-        record_categories: Optional[list[RecordCategories]] = None,
+        record_categories: Optional[list[RecordCategoryEnum]] = None,
         record_types: Optional[list[RecordTypes]] = None,
         expected_json_content: Optional[dict] = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,

@@ -15,7 +15,12 @@ class IDAndMessageDTO(MessageDTO):
     id: str = default_field_required(description="The id of the created entry")
 
 class GetManyResponseDTOBase(MessageDTO):
-    metadata: dict = default_field_required(description="Metadata of the results")
+    metadata: dict = Field(
+        default={},
+        description="Metadata of the results",
+        json_schema_extra=MetadataInfo(required=False),
+    )
+
 
 class GetManyResponseDTO(GetManyResponseDTOBase):
     data: list[dict] = default_field_required(description="The list of results")

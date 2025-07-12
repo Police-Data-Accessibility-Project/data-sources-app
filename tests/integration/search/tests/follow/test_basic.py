@@ -21,7 +21,7 @@ from tests.helper_scripts.run_and_validate_request import (
 )
 from tests.integration.search.constants import TEST_STATE, TEST_COUNTY, TEST_LOCALITY
 from tests.integration.search.search_test_setup import SearchTestSetup
-from utilities.enums import RecordCategories
+from utilities.enums import RecordCategoryEnum
 
 
 def test_search_follow(search_test_setup: SearchTestSetup):
@@ -101,7 +101,7 @@ def test_search_follow(search_test_setup: SearchTestSetup):
                 ),
                 "location_id": sts.location_id,
                 "subscriptions_by_category": {
-                    RecordCategories.POLICE.value: [
+                    RecordCategoryEnum.POLICE.value: [
                         RecordTypes.ACCIDENT_REPORTS.value,
                         RecordTypes.ARREST_RECORDS.value,
                         RecordTypes.CALLS_FOR_SERVICE.value,
@@ -118,18 +118,18 @@ def test_search_follow(search_test_setup: SearchTestSetup):
                         RecordTypes.USE_OF_FORCE_REPORTS.value,
                         RecordTypes.VEHICLE_PURSUITS.value,
                     ],
-                    RecordCategories.JAIL.value: [
+                    RecordCategoryEnum.JAIL.value: [
                         RecordTypes.BOOKING_REPORTS.value,
                         RecordTypes.COURT_CASES.value,
                         RecordTypes.INCARCERATION_RECORDS.value,
                     ],
-                    RecordCategories.OFFICERS.value: [
+                    RecordCategoryEnum.OFFICERS.value: [
                         RecordTypes.COMPLAINTS_MISCONDUCT.value,
                         RecordTypes.DAILY_ACTIVITY_LOGS.value,
                         RecordTypes.TRAINING_HIRING_INFO.value,
                         RecordTypes.PERSONNEL_RECORDS.value,
                     ],
-                    RecordCategories.AGENCIES.value: [
+                    RecordCategoryEnum.AGENCIES.value: [
                         RecordTypes.ANNUAL_MONTHLY_REPORTS.value,
                         RecordTypes.BUDGETS_FINANCES.value,
                         RecordTypes.CONTACT_INFO_AGENCY_META.value,
@@ -137,7 +137,7 @@ def test_search_follow(search_test_setup: SearchTestSetup):
                         RecordTypes.LIST_OF_DATA_SOURCES.value,
                         RecordTypes.POLICIES_CONTRACTS.value,
                     ],
-                    RecordCategories.RESOURCE.value: [
+                    RecordCategoryEnum.RESOURCE.value: [
                         RecordTypes.CRIME_MAPS_REPORTS.value,
                         RecordTypes.CRIME_STATISTICS.value,
                         RecordTypes.MEDIA_BULLETINS.value,
@@ -146,7 +146,7 @@ def test_search_follow(search_test_setup: SearchTestSetup):
                         RecordTypes.SEX_OFFENDER_REGISTRY.value,
                         RecordTypes.WANTED_PERSONS.value,
                     ],
-                    RecordCategories.OTHER.value: [
+                    RecordCategoryEnum.OTHER.value: [
                         RecordTypes.OTHER.value,
                     ],
                 },

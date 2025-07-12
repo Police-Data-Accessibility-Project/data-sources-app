@@ -226,4 +226,5 @@ def get_display_name(
             return f"{locality_name}, {county_name}, {state_name}"
         case LocationType.NATIONAL:
             return "United States - All"
+
     raise ValueError(f"Invalid location type: {location_type}")
