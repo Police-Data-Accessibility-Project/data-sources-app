@@ -10,7 +10,7 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 
-from middleware.alembic_helpers import id_column, user_id_column, enum_column, drop_enum
+from middleware.alembic_helpers import id_column, user_id_column, enum_column, drop_enum, list_of_enums_column
 
 # revision identifiers, used by Alembic.
 revision: str = 'd6c5ae86c776'
@@ -31,6 +31,9 @@ ENUM_VALUES = [
     'researcher',
 ]
 
+PENDING_USER_TABLE_NAME = 'pending_users'
+CAPACITIES_COLUMN_NAME = 'capacities'
+
 def upgrade() -> None:
 
     # Create table
@@ -42,6 +45,23 @@ def upgrade() -> None:
         sa.UniqueConstraint('user_id', 'capacity', name='user_capacities_user_id_capacity_key'),
     )
 
+    op.add_column(
+        PENDING_USER_TABLE_NAME,
+        list_of_enums_column(
+            column_name=CAPACITIES_COLUMN_NAME,
+            enum_name=ENUM_NAME,
+            enum_values=ENUM_VALUES,
+            nullable=True
+        )
+    )
+
 def downgrade() -> None:
     op.drop_table(TABLE_NAME)
+
+    op.drop_column(
+        PENDING_USER_TABLE_NAME,
+        CAPACITIES_COLUMN_NAME
+    )
+
     drop_enum(ENUM_NAME)
+

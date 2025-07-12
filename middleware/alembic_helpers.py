@@ -149,6 +149,13 @@ def enum_column(column_name: str, enum_name: str, enum_values: list[str], nullab
         nullable=nullable,
     )
 
+def list_of_enums_column(column_name: str, enum_name: str, enum_values: list[str], nullable: bool = False):
+    return sa.Column(
+        column_name,
+        sa.ARRAY(sa.Enum(*enum_values, name=enum_name)),
+        nullable=nullable,
+    )
+
 def drop_enum(enum_name: str) -> None:
     enum = sa.Enum(name=enum_name)
     enum.drop(op.get_bind())

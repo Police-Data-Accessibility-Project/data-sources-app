@@ -113,10 +113,12 @@ def test_signup_post_validation_token_expires(
     """
     tdc = test_data_creator_flask
 
+    patch_addr = f"{PATCH_ROOT}._get_validation_expiry"
+
     email = get_test_email()
     # Manipulate expiry to be in the past
     mocker.patch(
-        f"{PATCH_ROOT}.get_validation_expiry",
+        patch_addr,
         return_value=0,
     )
 
@@ -138,7 +140,7 @@ def test_signup_post_validation_token_expires(
 
     # Reset expiry to be in the future
     mocker.patch(
-        f"{PATCH_ROOT}.get_validation_expiry",
+        patch_addr,
         return_value=(datetime.now(tz=timezone.utc) + timedelta(days=1)).timestamp(),
     )
 

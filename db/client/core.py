@@ -42,7 +42,7 @@ from db.enums import (
     RequestStatus,
     LocationType,
     ApprovalStatus,
-    UpdateFrequency,
+    UpdateFrequency, UserCapacityEnum,
 )
 from db.exceptions import LocationDoesNotExistError
 from db.helpers_.psycopg import initialize_psycopg_connection
@@ -1323,13 +1323,18 @@ class DatabaseClient:
         return result is not None
 
     def create_pending_user(
-        self, email: str, password_digest: str, validation_token: str
+        self,
+        email: str,
+        password_digest: str,
+        validation_token: str,
+        capacities: list[UserCapacityEnum] | None
     ):
         self.add(
             PendingUser(
                 email=email,
                 password_digest=password_digest,
                 validation_token=validation_token,
+                capacities=[capacity.value for capacity in capacities] if capacities else [],
             )
         )
 

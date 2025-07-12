@@ -50,9 +50,7 @@ from endpoints.schema_config.instantiations.archives.get import (
     ArchivesGetEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.auth.login import LoginEndpointSchemaConfig
-from endpoints.schema_config.instantiations.auth.signup import (
-    AuthSignupEndpointSchemaConfig,
-)
+from endpoints.instantiations.auth_.signup.endpoint_schema_config import AuthSignupEndpointSchemaConfig
 from endpoints.schema_config.instantiations.auth.validate_email import (
     AuthValidateEmailEndpointSchema,
 )

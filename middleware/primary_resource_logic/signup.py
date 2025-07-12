@@ -1,7 +1,7 @@
 from werkzeug.exceptions import BadRequest
 
 from db.client.core import DatabaseClient
-from endpoints.instantiations.auth_.signup.middleware import send_signup_link, validation_email_sent_response, \
+from endpoints.instantiations.auth_.signup.middleware import send_signup_link, _validation_email_sent_response, \
     get_validation_token_jwt
 from middleware.primary_resource_logic.api_key import generate_token
 from middleware.primary_resource_logic.login_queries import (
@@ -52,4 +52,4 @@ def resend_validation_email_wrapper(
         token=jwt_token.encode(),
     )
 
-    return validation_email_sent_response(email=email)
+    return _validation_email_sent_response(email=email)
