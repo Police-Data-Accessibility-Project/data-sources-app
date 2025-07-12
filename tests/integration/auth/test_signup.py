@@ -9,7 +9,7 @@ from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 
-PATCH_ROOT = "middleware.primary_resource_logic.signup"
+PATCH_ROOT = "endpoints.instantiations.auth_.signup.middleware"
 
 
 def test_signup_post(test_data_creator_flask: TestDataCreatorFlask, mocker):

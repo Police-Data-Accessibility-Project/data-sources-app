@@ -24,7 +24,7 @@ from endpoints.instantiations.auth_.reset_token_validation import (
     namespace_reset_token_validation,
 )
 from endpoints.instantiations.auth_.routes import namespace_auth
-from endpoints.instantiations.auth_.signup import namespace_signup
+from endpoints.instantiations.auth_.signup.route import namespace_signup
 from endpoints.instantiations.check_.route import namespace_url_checker
 from endpoints.instantiations.contact_.route import namespace_contact
 from endpoints.instantiations.data_requests_.data_requests import (

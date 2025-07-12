@@ -3,19 +3,15 @@ from http import HTTPStatus
 from flask import Response
 
 from endpoints._helpers.response_info import ResponseInfo
-from endpoints.instantiations.auth_.signup import namespace_signup
+from endpoints.instantiations.auth_.signup.route import namespace_signup
 from endpoints.psycopg_resource import PsycopgResource
 from endpoints.schema_config.enums import SchemaConfigs
 from endpoints.schema_config.instantiations.auth.resend_validate_email import (
     AuthResendValidationEmailEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.auth.signup import (
-    AuthSignupEndpointSchemaConfig,
-)
 from middleware.decorators.endpoint_info import endpoint_info
 from middleware.primary_resource_logic.api_key import create_api_key_for_user
 from middleware.primary_resource_logic.signup import (
-    signup_wrapper,
     validate_email_wrapper,
     resend_validation_email_wrapper,
 )
@@ -60,28 +56,6 @@ class ApiKeyResource(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=create_api_key_for_user,
             access_info=access_info,
-        )
-
-
-@namespace_auth.route("/signup")
-class Signup(PsycopgResource):
-    @endpoint_info(
-        namespace=namespace_signup,
-        auth_info=NO_AUTH_INFO,
-        description="Sign up for an account",
-        response_info=ResponseInfo(
-            response_dictionary={
-                HTTPStatus.OK.value: "OK. User created.",
-                HTTPStatus.CONFLICT.value: "User already exists.",
-                HTTPStatus.INTERNAL_SERVER_ERROR.value: "Internal server error",
-            }
-        ),
-        schema_config=SchemaConfigs.AUTH_SIGNUP,
-    )
-    def post(self, access_info: AccessInfoPrimary):
-        return self.run_endpoint(
-            wrapper_function=signup_wrapper,
-            schema_populate_parameters=AuthSignupEndpointSchemaConfig.get_schema_populate_parameters(),
         )
 
 
