@@ -21,14 +21,14 @@ class ValidateEmailQueryBuilder(QueryBuilderBase):
 
     def _add_user_capacities(
         self,
-        capacities: list[UserCapacityEnum],
+        capacities: list[str],
         user_id: int
     ):
         for capacity in capacities:
             self.session.add(
                 UserCapacity(
                     user_id=user_id,
-                    capacity=capacity.value
+                    capacity=capacity
                 )
             )
 

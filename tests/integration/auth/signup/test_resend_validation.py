@@ -1,6 +1,5 @@
 from http import HTTPStatus
 
-from tests.helper_scripts.common_test_data import get_test_email
 from tests.integration.auth.signup.helpers import SignupTestHelper
 
 

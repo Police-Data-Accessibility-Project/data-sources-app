@@ -14,7 +14,7 @@ from db.enums import (
     SortOrder,
     RequestStatus,
     ApprovalStatus,
-    UpdateFrequency,
+    UpdateFrequency, UserCapacityEnum,
 )
 from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
     SourceCollectorPostRequestDTO,
@@ -286,7 +286,10 @@ class RequestValidator:
     ):
         return self.post(
             endpoint="/api/auth/login",
-            json={"email": email, "password": password},
+            json={
+                "email": email,
+                "password": password,
+            },
             expected_response_status=expected_response_status,
             expected_json_content=expected_json_content,
             expected_schema=expected_schema,

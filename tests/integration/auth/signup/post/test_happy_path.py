@@ -1,5 +1,7 @@
 from http import HTTPStatus
 
+from db.enums import UserCapacityEnum
+from db.models.implementations.core.user.capacity import UserCapacity
 from middleware.schema_and_dto.schemas.common.common_response_schemas import MessageSchema
 
 
@@ -13,7 +15,12 @@ def test_signup_post(helper):
     """
 
     # Have user sign up using the /signup endpoint, and confirm email sent
-    token = helper.signup_user()
+    token = helper.signup_user(
+        capacities=[
+            UserCapacityEnum.POLICE,
+            UserCapacityEnum.COMMUNITY_MEMBER,
+        ]
+    )
 
     # Try logging in using the /login endpoint and be denied because email not verified
     helper.login(
@@ -31,3 +38,8 @@ def test_signup_post(helper):
 
     # Try logging in using the /login endpoint and be successful.
     helper.login()
+
+    # Confirm presence of capacities in database
+    results = helper.tdc.db_client.get_all(UserCapacity)
+    assert results[0]["capacity"] == UserCapacityEnum.POLICE.value
+    assert results[1]["capacity"] == UserCapacityEnum.COMMUNITY_MEMBER.value
