@@ -50,10 +50,6 @@ from endpoints.schema_config.instantiations.archives.get import (
     ArchivesGetEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.auth.login import LoginEndpointSchemaConfig
-from endpoints.instantiations.auth_.signup.endpoint_schema_config import AuthSignupEndpointSchemaConfig
-from endpoints.schema_config.instantiations.auth.validate_email import (
-    AuthValidateEmailEndpointSchema,
-)
 from endpoints.schema_config.instantiations.data_requests.by_id.get import (
     DataRequestsByIDGetEndpointSchemaConfig,
 )
@@ -328,60 +324,6 @@ class RequestValidator:
         if not expect_call:
             assert not mock.called
             return
-        assert mock.call_args[1]["email"] == email
-        return mock.call_args[1]["token"]
-
-    def signup(
-        self,
-        email: str,
-        password: str,
-        mocker,
-        expected_json_content: Optional[dict] = None,
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-    ):
-        mock = mocker.patch("endpoints.instantiations.auth_.signup.middleware.send_signup_link")
-        self.post(
-            endpoint="/api/auth/signup",
-            json={"email": email, "password": password},
-            expected_schema=AuthSignupEndpointSchemaConfig.primary_output_schema,
-            expected_response_status=expected_response_status,
-            expected_json_content=expected_json_content,
-        )
-        if expected_response_status != HTTPStatus.OK:
-            return None
-        assert mock.call_args[1]["email"] == email
-        return mock.call_args[1]["token"]
-
-    def validate_email(
-        self,
-        token: str,
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: Optional[dict] = None,
-    ):
-        return self.post(
-            endpoint="/api/auth/validate-email",
-            headers=get_authorization_header(scheme="Bearer", token=token),
-            expected_schema=AuthValidateEmailEndpointSchema.primary_output_schema,
-            expected_response_status=expected_response_status,
-            expected_json_content=expected_json_content,
-        )
-
-    def resend_validation_email(
-        self,
-        email: str,
-        mocker,
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: Optional[dict] = None,
-    ):
-        mock = mocker.patch("middleware.primary_resource_logic.signup.send_signup_link")
-        self.post(
-            endpoint="/api/auth/resend-validation-email",
-            json={"email": email},
-            expected_response_status=expected_response_status,
-            expected_json_content=expected_json_content,
-        )
-        if not expected_response_status == HTTPStatus.OK:
-            return None
         assert mock.call_args[1]["email"] == email
         return mock.call_args[1]["token"]
 

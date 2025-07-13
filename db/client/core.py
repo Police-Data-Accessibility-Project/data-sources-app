@@ -159,6 +159,7 @@ from db.queries.instantiations.util.select_from_relation import (
 )
 from db.queries.models.get_params import GetParams
 from db.subquery_logic import SubqueryParameters
+from endpoints.instantiations.auth_.validate_email.query import ValidateEmailQueryBuilder
 from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
     SourceCollectorPostRequestInnerDTO,
 )
@@ -1350,16 +1351,6 @@ class DatabaseClient:
         )
         self.execute(query)
 
-    def get_pending_user_with_token(self, validation_token: str) -> dict | None:
-        query = select(PendingUser.email, PendingUser.password_digest).where(
-            PendingUser.validation_token == validation_token
-        )
-        return self.mapping(query)
-
-    def delete_pending_user(self, email: str):
-        stmt = delete(PendingUser).where(PendingUser.email == email)
-        self.execute(stmt)
-
     def get_locality_id_by_location_id(self, location_id: int):
         query = select(Location.locality_id).where(Location.id == location_id)
         return self.scalar(query)
@@ -1564,3 +1555,8 @@ class DatabaseClient:
     def patch_user(self, user_id: int, dto: UserPatchDTO) -> None:
         builder = UserPatchQueryBuilder(dto=dto, user_id=user_id)
         self.run_query_builder(builder)
+
+    def validate_and_add_user(self, validation_token: str) -> str:
+        """Validate pending user, add as full user, and return user email."""
+        builder = ValidateEmailQueryBuilder(validation_token=validation_token)
+        return self.run_query_builder(builder)

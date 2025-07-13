@@ -1,5 +1,6 @@
 from enum import Enum
 
+from endpoints.instantiations.auth_.validate_email.endpoint_schema_config import AuthValidateEmailEndpointSchema
 from endpoints.instantiations.source_collector.sync.schema_config import (
     SourceCollectorSyncAgenciesSchemaConfig,
 )
@@ -57,13 +58,10 @@ from endpoints.schema_config.instantiations.auth.github.oauth import (
     AuthGitHubOAuthEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.auth.login import LoginEndpointSchemaConfig
-from endpoints.schema_config.instantiations.auth.resend_validate_email import (
-    AuthResendValidationEmailEndpointSchemaConfig,
-)
+from endpoints.instantiations.auth_.resend_validation_email.endpoint_schema_config import \
+    AuthResendValidationEmailEndpointSchemaConfig
 from endpoints.instantiations.auth_.signup.endpoint_schema_config import AuthSignupEndpointSchemaConfig
-from endpoints.schema_config.instantiations.auth.validate_email import (
-    AuthValidateEmailEndpointSchema,
-)
+
 from endpoints.schema_config.instantiations.checker import (
     UniqueURLCheckerEndpointSchemaConfig,
 )
