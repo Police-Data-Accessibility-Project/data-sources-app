@@ -1,8 +1,8 @@
 from collections import namedtuple
+from collections.abc import Sequence
 from datetime import datetime
 from functools import partialmethod
 from operator import and_
-from collections.abc import Sequence
 from typing import (
     Any,
     Callable,
@@ -23,10 +23,6 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.sql.compiler import SQLCompiler
 
-from db.dtos.data_request_info_for_github import (
-    DataRequestInfoForGithub,
-)
-from db.dtos.user_with_permissions import UsersWithPermissions
 from db.client.decorators import session_manager, session_manager_v2, cursor_manager
 from db.client.helpers import initialize_sqlalchemy_session
 from db.constants import (
@@ -36,6 +32,11 @@ from db.db_client_dataclasses import (
     OrderByParameters,
     WhereMapping,
 )
+from db.dtos.data_request_info_for_github import (
+    DataRequestInfoForGithub,
+)
+from db.dtos.event_batch import EventBatch
+from db.dtos.user_with_permissions import UsersWithPermissions
 from db.dynamic_query_constructor import DynamicQueryConstructor
 from db.enums import (
     ExternalAccountTypeEnum,
@@ -142,8 +143,6 @@ from db.queries.instantiations.source_collector.data_sources import (
 from db.queries.instantiations.source_collector.sync import (
     SourceCollectorSyncAgenciesQueryBuilder,
 )
-
-
 from db.queries.instantiations.user.create import CreateNewUserQueryBuilder
 from db.queries.instantiations.user.get_recent_searches import GetUserRecentSearchesQueryBuilder
 from db.queries.instantiations.util.create_entry_in_table import (
@@ -161,6 +160,7 @@ from db.queries.instantiations.util.select_from_relation import (
 from db.queries.models.get_params import GetParams
 from db.subquery_logic import SubqueryParameters
 from endpoints.instantiations.auth_.validate_email.query import ValidateEmailQueryBuilder
+from endpoints.instantiations.data_requests_.post.dto import DataRequestsPostDTO
 from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
     SourceCollectorPostRequestInnerDTO,
 )
@@ -175,7 +175,6 @@ from endpoints.instantiations.user.by_id.get.query import GetUserByIdQueryBuilde
 from endpoints.instantiations.user.by_id.patch.dto import UserPatchDTO
 from endpoints.instantiations.user.by_id.patch.query import UserPatchQueryBuilder
 from middleware.constants import DATE_FORMAT
-from db.dtos.event_batch import EventBatch
 from middleware.enums import (
     PermissionsEnum,
     Relations,
@@ -183,16 +182,15 @@ from middleware.enums import (
 )
 from middleware.exceptions import (
     UserNotFoundError,
-    DuplicateUserError,
 )
 from middleware.miscellaneous.table_count_logic import (
     TableCountReference,
     TableCountReferenceManager,
 )
 from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
-from endpoints.instantiations.data_requests_.post.dto import DataRequestsPostDTO
 from middleware.schema_and_dto.dtos.data_requests.put import DataRequestsPutOuterDTO
 from middleware.schema_and_dto.dtos.data_sources.post import DataSourcesPostDTO
+from middleware.schema_and_dto.dtos.entry_create_update_request import EntryCreateUpdateRequestDTO
 from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
 from middleware.schema_and_dto.dtos.match.response import (
     AgencyMatchResponseInnerDTO,
@@ -203,7 +201,6 @@ from middleware.schema_and_dto.dtos.metrics import (
 from middleware.schema_and_dto.dtos.notifications.preview import (
     NotificationsPreviewOutput,
 )
-from middleware.schema_and_dto.dtos.entry_create_update_request import EntryCreateUpdateRequestDTO
 from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
 from utilities.enums import RecordCategoryEnum
 
@@ -299,10 +296,15 @@ class DatabaseClient:
     def create_new_user(
         self,
         email: str,
-        password_digest: str
+        password_digest: str,
+        capacities: list[UserCapacityEnum] | None = None
     ) -> int | None:
         """Adds a new user to the database."""
-        builder = CreateNewUserQueryBuilder(email=email, password_digest=password_digest)
+        builder = CreateNewUserQueryBuilder(
+            email=email,
+            password_digest=password_digest,
+            capacities=capacities
+        )
         return self.run_query_builder(builder)
 
     def get_user_id(self, email: str) -> int | None:

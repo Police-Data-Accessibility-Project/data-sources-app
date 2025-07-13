@@ -97,7 +97,7 @@ class GetUserByIdQueryBuilder(QueryBuilderBase):
             followed_searches=self._process_follows(user.follows),
             data_requests=self._process_data_requests(user.data_requests),
             permissions=[PermissionsEnum(permission.permission_name) for permission in user.permissions],
-            capacities=[UserCapacityEnum(capacity.name) for capacity in user.capacities],
+            capacities=[UserCapacityEnum(capacity.capacity) for capacity in user.capacities],
         )
 
     def _process_external_accounts(

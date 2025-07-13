@@ -2,14 +2,32 @@ from db.enums import UserCapacityEnum
 from db.models.implementations.core.user.capacity import UserCapacity
 from tests.helper_scripts.helper_classes.test_data_creator.flask import TestDataCreatorFlask
 
+def get_capacities_from_db(tdc, user_id: int):
+    db_client = tdc.db_client
+    result = db_client.get_all(UserCapacity)
+    enum_results = []
+    for r in result:
+        if r["user_id"] == user_id:
+            enum_results.append(UserCapacityEnum(r["capacity"]))
+    return enum_results
+
 
 def test_user_patch(
     test_data_creator_flask: TestDataCreatorFlask
 ):
     tdc = test_data_creator_flask
+    tdc.clear_test_data()
     tus = tdc.standard_user()
+
+    user_id = tus.user_info.user_id
+    # Default test user capacities
+    assert set(get_capacities_from_db(tdc, user_id)) == {
+        UserCapacityEnum.POLICE,
+        UserCapacityEnum.COMMUNITY_MEMBER
+    }
+
     tdc.request_validator.patch(
-        endpoint=f"/api/user/{tus.user_info.user_id}",
+        endpoint=f"/api/user/{user_id}",
         headers=tus.jwt_authorization_header,
         json={
             "capacities": [
@@ -20,6 +38,7 @@ def test_user_patch(
     )
 
     # Check that entries present in database
-    db_client = tdc.db_client
-    result = db_client.get_all(UserCapacity)
-    assert len(result) == 2
+    assert set(get_capacities_from_db(tdc, user_id)) == {
+        UserCapacityEnum.POLICE,
+        UserCapacityEnum.PUBLIC_OFFICIAL,
+    }

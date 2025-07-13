@@ -29,6 +29,7 @@ from db.models.implementations.core.notification.queue.data_request import (
 from db.models.implementations.core.notification.queue.data_source import (
     DataSourceUserNotificationQueue,
 )
+from db.models.implementations.core.user.capacity import UserCapacity
 from db.models.implementations.core.user.core import User
 from middleware.enums import (
     JurisdictionType,
