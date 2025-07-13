@@ -34,14 +34,16 @@ class SimpleJWT:
         )
 
     @staticmethod
-    def decode(token, expected_purpose: Optional[JWTPurpose] = None):
+    def decode(token: str, expected_purpose: JWTPurpose | None = None):
         kid = int(jwt.get_unverified_header(token)["kid"])
         decoded_purpose = JWTPurpose(kid)
         if expected_purpose is not None:
             SimpleJWT.validate_purpose(decoded_purpose, expected_purpose)
         try:
             payload = jwt.decode(
-                jwt=token, key=get_secret_key(decoded_purpose), algorithms=[ALGORITHM]
+                jwt=token,
+                key=get_secret_key(decoded_purpose),
+                algorithms=[ALGORITHM]
             )
         except InvalidSignatureError as e:
             raise Unauthorized(str(e))
