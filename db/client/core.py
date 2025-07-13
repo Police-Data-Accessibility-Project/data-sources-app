@@ -142,9 +142,10 @@ from db.queries.instantiations.source_collector.data_sources import (
 from db.queries.instantiations.source_collector.sync import (
     SourceCollectorSyncAgenciesQueryBuilder,
 )
-from db.queries.instantiations.user.get_user_recent_searches import (
-    GetUserRecentSearchesQueryBuilder,
-)
+
+
+from db.queries.instantiations.user.create import CreateNewUserQueryBuilder
+from db.queries.instantiations.user.get_recent_searches import GetUserRecentSearchesQueryBuilder
 from db.queries.instantiations.util.create_entry_in_table import (
     CreateEntryInTableQueryBuilder,
 )
@@ -295,18 +296,14 @@ class DatabaseClient:
     def mappings(self, session: Session, query: Executable) -> Sequence[RowMapping]:
         return session.execute(query).mappings().all()
 
-    @session_manager_v2
     def create_new_user(
-        self, session: Session, email: str, password_digest: str
+        self,
+        email: str,
+        password_digest: str
     ) -> int | None:
         """Adds a new user to the database."""
-        try:
-            user = User(email=email, password_digest=password_digest)
-            session.add(user)
-            session.flush()
-            return user.id
-        except sqlalchemy.exc.IntegrityError:
-            raise DuplicateUserError
+        builder = CreateNewUserQueryBuilder(email=email, password_digest=password_digest)
+        return self.run_query_builder(builder)
 
     def get_user_id(self, email: str) -> int | None:
         """Gets the ID of a user in the database based on their email."""

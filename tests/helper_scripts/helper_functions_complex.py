@@ -36,7 +36,10 @@ def create_test_user_db_client(db_client: DatabaseClient) -> UserInfo:
     email = get_test_email()
     password = get_test_name()
     password_digest = generate_password_hash(password)
-    user_id = db_client.create_new_user(email=email, password_digest=password_digest)
+    user_id = db_client.create_new_user(
+        email=email,
+        password_digest=password_digest
+    )
     return UserInfo(email=email, password=password, user_id=user_id)
 
 
@@ -151,7 +154,8 @@ def setup_get_typeahead_suggestion_test_data():
 
 
 def create_test_user_setup(
-    client: FlaskClient, permissions: Optional[list[PermissionsEnum]] = None
+    client: FlaskClient,
+    permissions: Optional[list[PermissionsEnum]] = None
 ) -> TestUserSetup:
     db_client = DatabaseClient()
     user_info = create_test_user_db_client(db_client)

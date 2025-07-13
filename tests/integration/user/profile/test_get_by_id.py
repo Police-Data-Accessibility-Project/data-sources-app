@@ -5,7 +5,11 @@ from middleware.schema_and_dto.schemas.common.common_response_schemas import Mes
 from tests.helper_scripts.helper_classes.test_data_creator.flask import TestDataCreatorFlask
 
 
-def test_user_profile_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
+def test_user_profile_get_by_id(
+    test_data_creator_flask: TestDataCreatorFlask,
+    pennsylvania_id,
+    california_id
+):
     tdc = test_data_creator_flask
 
     # Create test user
@@ -14,25 +18,13 @@ def test_user_profile_get_by_id(test_data_creator_flask: TestDataCreatorFlask):
     # Create a recent search
     tdc.request_validator.search(
         headers=tus.api_authorization_header,
-        location_id=tdc.db_client.get_location_id(
-            where_mappings={
-                "state_name": "Pennsylvania",
-                "county_name": None,
-                "locality_name": None,
-            }
-        ),
+        location_id=pennsylvania_id,
     )
 
     # Have the user follow a search
     tdc.request_validator.follow_search(
         headers=tus.jwt_authorization_header,
-        location_id=tdc.db_client.get_location_id(
-            where_mappings={
-                "state_name": "California",
-                "county_name": None,
-                "locality_name": None,
-            }
-        ),
+        location_id=california_id,
     )
 
     # Have the user create a data request
