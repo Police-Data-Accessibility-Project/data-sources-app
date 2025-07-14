@@ -210,4 +210,3 @@ class TestDataCreatorFlask:
             action="add",
             permission=permission.value,
         )
-

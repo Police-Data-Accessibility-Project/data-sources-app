@@ -265,7 +265,7 @@ class TestDataCreatorDBClient:
                 request_urgency=RequestUrgency.INDEFINITE,
                 record_types_required=record_type_as_list,
             ),
-            location_ids=location_ids
+            location_ids=location_ids,
         )
         data_request_id = self.db_client.create_data_request_v2(
             dto=dto, user_id=user_id

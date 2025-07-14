@@ -1,24 +1,6 @@
-import uuid
-from typing import Optional
-
 import psycopg
-from flask.testing import FlaskClient
 
 from db.client.core import DatabaseClient
-from db.enums import RequestUrgency
-from middleware.enums import JurisdictionType, AgencyType
-from middleware.schema_and_dto.schemas.agencies.info.post import (
-    AgencyInfoPostSchema,
-)
-from tests.helper_scripts.common_test_data import get_test_name
-from tests.helper_scripts.constants import (
-    DATA_REQUESTS_BASE_ENDPOINT,
-)
-from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
-    generate_test_data_from_schema,
-)
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-from tests.helper_scripts.test_dataclasses import TestDataRequestInfo
 
 
 def create_data_source_entry_for_url_duplicate_checking(
