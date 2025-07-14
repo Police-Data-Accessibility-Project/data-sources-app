@@ -1,9 +1,11 @@
 from marshmallow import Schema, fields
 
-from endpoints.instantiations.source_collector.data_sources.post.dtos.request import SourceCollectorPostRequestInnerDTO
-from middleware.enums import RecordTypes
-from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import pydantic_to_marshmallow
-from middleware.schema_and_dto.schemas.helpers import enum_field
+from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
+    SourceCollectorPostRequestInnerDTO,
+)
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import (
+    pydantic_to_marshmallow,
+)
 from middleware.schema_and_dto.util import get_json_metadata
 
 

@@ -5,6 +5,7 @@ Revises: 4f9431c309e3
 Create Date: 2025-07-14 10:39:59.888189
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
@@ -12,8 +13,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '0896cefcf910'
-down_revision: Union[str, None] = '4f9431c309e3'
+revision: str = "0896cefcf910"
+down_revision: Union[str, None] = "4f9431c309e3"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -21,10 +22,10 @@ DATA_SOURCES_TABLE_NAME = "data_sources"
 DATA_REQUESTS_TABLE_NAME = "data_requests"
 
 table_column_type = [
-    (DATA_REQUESTS_TABLE_NAME, 'record_types_required', 'record_type[]'),
-    (DATA_SOURCES_TABLE_NAME, 'access_types', 'access_type[]'),
-    (DATA_SOURCES_TABLE_NAME, 'tags', 'text[]'),
-    (DATA_SOURCES_TABLE_NAME, 'record_formats', 'text[]'),
+    (DATA_REQUESTS_TABLE_NAME, "record_types_required", "record_type[]"),
+    (DATA_SOURCES_TABLE_NAME, "access_types", "access_type[]"),
+    (DATA_SOURCES_TABLE_NAME, "tags", "text[]"),
+    (DATA_SOURCES_TABLE_NAME, "record_formats", "text[]"),
 ]
 
 
@@ -38,23 +39,15 @@ def downgrade() -> None:
         relax_not_null_array_column(table_name, column_name)
 
 
-
 def relax_not_null_array_column(
     table_name: str,
     column_name: str,
 ):
-    op.alter_column(
-        table_name,
-        column_name,
-        nullable=True,
-        server_default=None
-    )
+    op.alter_column(table_name, column_name, nullable=True, server_default=None)
 
 
 def enforce_not_null_array_column(
-    table_name: str,
-    column_name: str,
-    pg_array_type: str
+    table_name: str, column_name: str, pg_array_type: str
 ):
     """
     Updates a PostgreSQL array column in-place to:
@@ -79,14 +72,8 @@ def enforce_not_null_array_column(
 
     # 2. Set default to empty list
     op.alter_column(
-        table_name,
-        column_name,
-        server_default=sa.text(f"'{{}}'::{pg_array_type}")
+        table_name, column_name, server_default=sa.text(f"'{{}}'::{pg_array_type}")
     )
 
     # 3. Apply NOT NULL constraint
-    op.alter_column(
-        table_name,
-        column_name,
-        nullable=False
-    )
+    op.alter_column(table_name, column_name, nullable=False)
