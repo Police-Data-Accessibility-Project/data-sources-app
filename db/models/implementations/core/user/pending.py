@@ -1,7 +1,8 @@
 # pyright: reportUninitializedInstanceVariable=false
-
 from sqlalchemy.orm import Mapped, mapped_column
 
+from db.enums import UserCapacityEnum
+from db.models.helpers import enum_list_column
 from db.models.mixins import CreatedAtMixin
 from db.models.templates.standard import StandardBase
 from middleware.enums import Relations
@@ -13,3 +14,7 @@ class PendingUser(StandardBase, CreatedAtMixin):
     email: Mapped[str] = mapped_column(unique=True)
     password_digest: Mapped[str | None]
     validation_token: Mapped[str | None]
+    capacities: Mapped[list[UserCapacityEnum]] = enum_list_column(
+        enum=UserCapacityEnum,
+        name="user_capacities_enum",
+    )

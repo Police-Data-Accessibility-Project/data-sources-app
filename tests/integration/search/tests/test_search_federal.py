@@ -7,7 +7,7 @@ from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
 from tests.helper_scripts.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from utilities.enums import RecordCategories
+from utilities.enums import RecordCategoryEnum
 
 
 def test_search_federal(test_data_creator_flask: TestDataCreatorFlask):
@@ -54,7 +54,9 @@ def test_search_federal(test_data_creator_flask: TestDataCreatorFlask):
     # Check results are the same as if we did a search on all record categories
     results_implicit = tdc.request_validator.federal_search(
         headers=tdc.get_admin_tus().jwt_authorization_header,
-        record_categories=[rc for rc in RecordCategories if rc != RecordCategories.ALL],
+        record_categories=[
+            rc for rc in RecordCategoryEnum if rc != RecordCategoryEnum.ALL
+        ],
     )
 
     assert len(results_implicit["results"]) == 4

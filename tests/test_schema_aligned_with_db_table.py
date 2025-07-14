@@ -6,7 +6,7 @@ from marshmallow import Schema
 
 from db.client.core import DatabaseClient
 from middleware.enums import Relations
-from middleware.schema_and_dto.schemas.data_requests.base import (
+from endpoints.instantiations.data_requests_._shared.schemas.base import (
     DataRequestsSchema,
 )
 

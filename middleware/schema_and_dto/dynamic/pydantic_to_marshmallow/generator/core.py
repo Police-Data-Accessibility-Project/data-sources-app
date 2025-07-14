@@ -5,13 +5,20 @@ from marshmallow import Schema
 from marshmallow.fields import (
     Field,
     List as MarshmallowList,
-    Enum as MarshmallowEnum,
     Nested,
 )
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 from pydantic_core import PydanticUndefinedType
 
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.convert import (
+    convert_validators,
+    convert_enum,
+    convert_to_marshmallow_class,
+)
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.exceptions import (
+    GetMarshmallowFieldException,
+)
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.helpers import (
     is_optional,
     extract_inner_type,
@@ -23,7 +30,7 @@ from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.
     MetadataInfo,
 )
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.mapping import (
-    TYPE_MAPPING,
+    _is_mapped_type,
 )
 
 
@@ -40,7 +47,7 @@ class MarshmallowSchemaGenerator:
         try:
             return processor.process_field()
         except Exception as e:
-            raise Exception(f"Error processing field {model_field}: {e}")
+            raise Exception(f"Error processing field {model_field}: {e}") from e
 
     def generate_marshmallow_schema(self) -> type[Schema]:
         schema_fields = {}
@@ -93,6 +100,7 @@ class FieldProcessor:
             required=self.metadata_info.required,
             allow_none=allow_none,
             metadata=self.prepare_metadata(),
+            validate=convert_validators(self.model_field),
             **marshmallow_field_info.field_kwargs,
         )
 
@@ -105,23 +113,23 @@ class FieldProcessor:
         return metadata_
 
     def get_marshmallow_field_cls(self, field_type: type) -> MarshmallowFieldInfo:
-        inner_type = extract_inner_type(field_type)
-        if get_origin(inner_type) is list:
-            return self.get_list_field(inner_type)
-        if issubclass(inner_type, Enum):
-            return self.get_enum_field(inner_type)
-        if issubclass(inner_type, BaseModel):
-            return self.get_nested_field(inner_type)
+        try:
+            inner_type = extract_inner_type(field_type)
+            if _is_mapped_type(inner_type):
+                marshmallow_field_cls = convert_to_marshmallow_class(inner_type)
+                return MarshmallowFieldInfo(field=marshmallow_field_cls)
+            if get_origin(inner_type) is list:
+                return self.get_list_field(inner_type)
+            if issubclass(inner_type, Enum):
+                return convert_enum(inner_type)
+            if issubclass(inner_type, BaseModel):
+                return self.get_nested_field(inner_type)
+            raise GetMarshmallowFieldException(f"Unsupported field type: {inner_type}")
 
-        marshmallow_field_cls = self.get_marshmallow_class(inner_type)
-        return MarshmallowFieldInfo(field=marshmallow_field_cls)
-
-    @staticmethod
-    def get_marshmallow_class(inner_type: Any) -> type[Field]:
-        marshmallow_field_cls = TYPE_MAPPING.get(inner_type)
-        if marshmallow_field_cls is None:
-            raise ValueError(f"Unsupported field type: {inner_type}")
-        return marshmallow_field_cls
+        except Exception as e:
+            raise GetMarshmallowFieldException(
+                f"Error processing field {field_type}: {e}"
+            ) from e
 
     def get_list_field(self, inner_type: list[Any]) -> MarshmallowFieldInfo:
         type_arg = get_args(inner_type)[0]
@@ -147,12 +155,6 @@ class FieldProcessor:
             field=Nested,
             field_kwargs={
                 "nested": inner_schema(),
+                "nested_dto_class": inner_type,
             },
-        )
-
-    @staticmethod
-    def get_enum_field(inner_type: Any) -> MarshmallowFieldInfo:
-        return MarshmallowFieldInfo(
-            field=MarshmallowEnum,
-            field_kwargs={"enum": inner_type, "by_value": True},
         )

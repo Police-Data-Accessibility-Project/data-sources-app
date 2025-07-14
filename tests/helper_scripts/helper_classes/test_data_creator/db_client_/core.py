@@ -41,9 +41,9 @@ from middleware.schema_and_dto.dtos.agencies.post import (
     AgencyInfoPostDTO,
     AgenciesPostDTO,
 )
-from middleware.schema_and_dto.dtos.data_requests.post import (
-    DataRequestsPostDTO,
+from endpoints.instantiations.data_requests_.post.dto import (
     RequestInfoPostDTO,
+    DataRequestsPostDTO,
 )
 from middleware.schema_and_dto.dtos.data_requests.put import (
     DataRequestsPutDTO,
@@ -53,7 +53,7 @@ from middleware.schema_and_dto.dtos.data_sources.post import (
     DataSourcesPostDTO,
     DataSourceEntryDataPostDTO,
 )
-from middleware.schema_and_dto.schemas.data_sources.base import (
+from middleware.schema_and_dto.dtos.entry_create_update_request import (
     EntryCreateUpdateRequestDTO,
 )
 from tests.helper_scripts.common_endpoint_calls import CreatedDataSource

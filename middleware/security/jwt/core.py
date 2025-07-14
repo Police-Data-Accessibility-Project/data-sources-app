@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 import jwt
 from jwt import InvalidSignatureError
@@ -34,7 +33,7 @@ class SimpleJWT:
         )
 
     @staticmethod
-    def decode(token, expected_purpose: Optional[JWTPurpose] = None):
+    def decode(token: str, expected_purpose: JWTPurpose | None = None):
         kid = int(jwt.get_unverified_header(token)["kid"])
         decoded_purpose = JWTPurpose(kid)
         if expected_purpose is not None:

@@ -10,7 +10,7 @@ from werkzeug.security import generate_password_hash
 
 from db.client.core import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
-from db.enums import ApprovalStatus
+from db.enums import ApprovalStatus, UserCapacityEnum
 from middleware.enums import (
     PermissionsEnum,
     Relations,
@@ -36,8 +36,15 @@ def create_test_user_db_client(db_client: DatabaseClient) -> UserInfo:
     email = get_test_email()
     password = get_test_name()
     password_digest = generate_password_hash(password)
-    user_id = db_client.create_new_user(email=email, password_digest=password_digest)
-    return UserInfo(email=email, password=password, user_id=user_id)
+    capacities = [UserCapacityEnum.POLICE, UserCapacityEnum.COMMUNITY_MEMBER]
+    user_id = db_client.create_new_user(
+        email=email,
+        password_digest=password_digest,
+        capacities=capacities,
+    )
+    return UserInfo(
+        email=email, password=password, user_id=user_id, capacities=capacities
+    )
 
 
 JWTTokens = namedtuple("JWTTokens", ["access_token", "refresh_token"])

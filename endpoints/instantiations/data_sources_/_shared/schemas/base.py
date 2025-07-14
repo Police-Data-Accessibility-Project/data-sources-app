@@ -1,0 +1,6 @@
+from endpoints.instantiations.data_sources_._shared.dtos.base import DataSourceBaseDTO
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import (
+    pydantic_to_marshmallow,
+)
+
+DataSourceBaseSchema = pydantic_to_marshmallow(DataSourceBaseDTO)

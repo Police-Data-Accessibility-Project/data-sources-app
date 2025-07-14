@@ -103,7 +103,7 @@ def _get_class_attribute_values_from_request(
 
 
 def _get_class_attribute_values_from_request_source_mapping(
-    object_class: Type[BaseModel], source_mapping: dict[str, SourceMappingEnum]
+    object_class: type[BaseModel], source_mapping: dict[str, SourceMappingEnum]
 ) -> dict[str, Any]:
     """
     Apply multiple getters on all defined class attributes,

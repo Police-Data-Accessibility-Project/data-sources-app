@@ -1,6 +1,6 @@
 from endpoints.schema_config.helpers import get_post_resource_endpoint_schema_config
-from middleware.schema_and_dto.dtos.data_requests.post import DataRequestsPostDTO
-from middleware.schema_and_dto.schemas.data_requests.post import DataRequestsPostSchema
+from endpoints.instantiations.data_requests_.post.dto import DataRequestsPostDTO
+from endpoints.instantiations.data_requests_.post.schema import DataRequestsPostSchema
 
 DataRequestsPostEndpointSchemaConfig = get_post_resource_endpoint_schema_config(
     input_schema=DataRequestsPostSchema(),

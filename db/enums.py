@@ -180,3 +180,14 @@ class UpdateFrequency(Enum):
     BI_WEEKLY = "Bi-weekly"
     HOURLY = "Hourly"
     QUARTERLY = "Quarterly"
+
+
+class UserCapacityEnum(Enum):
+    ADVOCATE = "advocate"
+    COMMUNITY_MEMBER = "community_member"
+    DATA_PUBLISHER = "data_publisher"
+    LAWYER = "lawyer"
+    JOURNALIST = "journalist"
+    POLICE = "police"
+    PUBLIC_OFFICIAL = "public_official"
+    RESEARCHER = "researcher"

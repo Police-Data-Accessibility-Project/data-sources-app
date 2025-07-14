@@ -1,7 +1,7 @@
 from middleware.schema_and_dto.schemas.schema_helpers import (
     create_get_by_id_schema,
 )
-from middleware.schema_and_dto.schemas.data_requests.get.base import (
+from endpoints.instantiations.data_requests_._shared.schemas.get import (
     DataRequestsGetSchemaBase,
 )
 

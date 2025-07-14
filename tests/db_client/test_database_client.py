@@ -45,7 +45,7 @@ from tests.helper_scripts.test_dataclasses import TestDataRequestInfo
 from tests.helper_scripts.helper_functions_complex import (
     create_test_user_db_client,
 )
-from utilities.enums import RecordCategories
+from utilities.enums import RecordCategoryEnum
 
 
 def test_select_from_relation_columns_only(
@@ -353,7 +353,7 @@ def test_search_with_location_and_record_types_real_data(
     :return:
     """
     state_parameter = "Pennsylvania"  # Additionally testing for case-insensitivity
-    record_type_parameter = RecordCategories.AGENCIES
+    record_type_parameter = RecordCategoryEnum.AGENCIES
     county_parameter = "Allegheny"
     locality_parameter = "Pittsburgh"
 
@@ -488,7 +488,7 @@ def test_search_with_location_and_record_types_real_data_multiple_records(
     last_count = 0
     # Exclude the ALL pseudo-category
     applicable_record_categories = [
-        e for e in RecordCategories if e != RecordCategories.ALL
+        e for e in RecordCategoryEnum if e != RecordCategoryEnum.ALL
     ]
 
     # Check that when more record types are added, the number of results increases
@@ -860,7 +860,7 @@ def test_insert_search_record(test_data_creator_db_client: TestDataCreatorDBClie
     location_id = tdc.locality()
 
     def assert_are_expected_record_categories(
-        rc_ids: list[int], record_categories: list[RecordCategories]
+        rc_ids: list[int], record_categories: list[RecordCategoryEnum]
     ):
         table = SQL_ALCHEMY_TABLE_REFERENCE[Relations.RECORD_CATEGORIES.value]
         name_column = getattr(table, "name")
@@ -893,7 +893,7 @@ def test_insert_search_record(test_data_creator_db_client: TestDataCreatorDBClie
     tdc.db_client.create_search_record(
         user_id=user_info.id,
         location_id=location_id,
-        record_categories=RecordCategories.ALL,
+        record_categories=RecordCategoryEnum.ALL,
     )
 
     # Confirm record exists in both `recent_searches` and `link_recent_search_record_types` tables
@@ -907,13 +907,13 @@ def test_insert_search_record(test_data_creator_db_client: TestDataCreatorDBClie
     # Confirm record category is all
     assert_are_expected_record_categories(
         rc_ids=[link_results[0]["record_category_id"]],
-        record_categories=[RecordCategories.ALL],
+        record_categories=[RecordCategoryEnum.ALL],
     )
 
     tdc.db_client.create_search_record(
         user_id=user_info.id,
         location_id=location_id,
-        record_categories=[RecordCategories.AGENCIES, RecordCategories.JAIL],
+        record_categories=[RecordCategoryEnum.AGENCIES, RecordCategoryEnum.JAIL],
     )
 
     # Confirm two records now exists in `recent_searches` table associated with this information
@@ -927,7 +927,7 @@ def test_insert_search_record(test_data_creator_db_client: TestDataCreatorDBClie
 
     assert_are_expected_record_categories(
         rc_ids=rc_ids,
-        record_categories=[RecordCategories.AGENCIES, RecordCategories.JAIL],
+        record_categories=[RecordCategoryEnum.AGENCIES, RecordCategoryEnum.JAIL],
     )
 
 

@@ -2,7 +2,7 @@ from flask import Response
 
 from db.client.core import DatabaseClient
 from middleware.common_response_formatting import created_id_response
-from middleware.schema_and_dto.dtos.data_requests.post import DataRequestsPostDTO
+from endpoints.instantiations.data_requests_.post.dto import DataRequestsPostDTO
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.third_party_interaction_logic.mailgun_.constants import OPERATIONS_EMAIL
 from middleware.third_party_interaction_logic.mailgun_.send import send_via_mailgun

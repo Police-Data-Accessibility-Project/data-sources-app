@@ -7,7 +7,7 @@ from db.models.implementations.core.record.category import RecordCategory
 from db.models.implementations.core.record.type import RecordType
 from db.queries.builder.core import QueryBuilderBase
 from middleware.enums import RecordTypes
-from utilities.enums import RecordCategories
+from utilities.enums import RecordCategoryEnum
 
 
 class FollowBaseQueryBuilder(QueryBuilderBase):
@@ -16,7 +16,7 @@ class FollowBaseQueryBuilder(QueryBuilderBase):
         location_id: int,
         user_id: int,
         record_types: Optional[list[RecordTypes]],
-        record_categories: Optional[list[RecordCategories]],
+        record_categories: Optional[list[RecordCategoryEnum]],
     ):
         super().__init__()
         self.location_id = location_id
@@ -54,7 +54,7 @@ class FollowBaseQueryBuilder(QueryBuilderBase):
         return list(results)
 
     def get_record_type_ids_from_record_categories(
-        self, record_categories: Optional[list[RecordCategories]]
+        self, record_categories: Optional[list[RecordCategoryEnum]]
     ) -> list[int]:
         if record_categories is None:
             return []
@@ -72,7 +72,7 @@ class FollowBaseQueryBuilder(QueryBuilderBase):
     def get_record_type_ids(
         self,
         record_types: Optional[list[RecordTypes]],
-        record_categories: Optional[list[RecordCategories]],
+        record_categories: Optional[list[RecordCategoryEnum]],
     ) -> list[int]:
         if record_types is not None:
             record_type_ids = self.get_record_type_ids_from_record_types(

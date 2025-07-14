@@ -50,12 +50,6 @@ from endpoints.schema_config.instantiations.archives.get import (
     ArchivesGetEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.auth.login import LoginEndpointSchemaConfig
-from endpoints.schema_config.instantiations.auth.signup import (
-    AuthSignupEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.auth.validate_email import (
-    AuthValidateEmailEndpointSchema,
-)
 from endpoints.schema_config.instantiations.data_requests.by_id.get import (
     DataRequestsByIDGetEndpointSchemaConfig,
 )
@@ -173,7 +167,7 @@ from tests.helper_scripts.helper_functions_simple import (
 from tests.helper_scripts.run_and_validate_request import (
     run_and_validate_request,
 )
-from utilities.enums import RecordCategories
+from utilities.enums import RecordCategoryEnum
 
 
 class RequestValidator:
@@ -260,6 +254,26 @@ class RequestValidator:
             **request_kwargs,
         )
 
+    def patch(
+        self,
+        endpoint: str,
+        expected_response_status: HTTPStatus = HTTPStatus.OK,
+        expected_json_content: Optional[dict] = None,
+        expected_schema: Optional[Union[Type[Schema], Schema]] = None,
+        query_parameters: Optional[dict] = None,
+        **request_kwargs,
+    ):
+        return run_and_validate_request(
+            flask_client=self.flask_client,
+            http_method="patch",
+            endpoint=endpoint,
+            expected_response_status=expected_response_status,
+            expected_json_content=expected_json_content,
+            expected_schema=expected_schema,
+            query_parameters=query_parameters,
+            **request_kwargs,
+        )
+
     # Below are shorthands for common requests
 
     def login(
@@ -272,7 +286,10 @@ class RequestValidator:
     ):
         return self.post(
             endpoint="/api/auth/login",
-            json={"email": email, "password": password},
+            json={
+                "email": email,
+                "password": password,
+            },
             expected_response_status=expected_response_status,
             expected_json_content=expected_json_content,
             expected_schema=expected_schema,
@@ -310,60 +327,6 @@ class RequestValidator:
         if not expect_call:
             assert not mock.called
             return
-        assert mock.call_args[1]["email"] == email
-        return mock.call_args[1]["token"]
-
-    def signup(
-        self,
-        email: str,
-        password: str,
-        mocker,
-        expected_json_content: Optional[dict] = None,
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-    ):
-        mock = mocker.patch("middleware.primary_resource_logic.signup.send_signup_link")
-        self.post(
-            endpoint="/api/auth/signup",
-            json={"email": email, "password": password},
-            expected_schema=AuthSignupEndpointSchemaConfig.primary_output_schema,
-            expected_response_status=expected_response_status,
-            expected_json_content=expected_json_content,
-        )
-        if expected_response_status != HTTPStatus.OK:
-            return None
-        assert mock.call_args[1]["email"] == email
-        return mock.call_args[1]["token"]
-
-    def validate_email(
-        self,
-        token: str,
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: Optional[dict] = None,
-    ):
-        return self.post(
-            endpoint="/api/auth/validate-email",
-            headers=get_authorization_header(scheme="Bearer", token=token),
-            expected_schema=AuthValidateEmailEndpointSchema.primary_output_schema,
-            expected_response_status=expected_response_status,
-            expected_json_content=expected_json_content,
-        )
-
-    def resend_validation_email(
-        self,
-        email: str,
-        mocker,
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: Optional[dict] = None,
-    ):
-        mock = mocker.patch("middleware.primary_resource_logic.signup.send_signup_link")
-        self.post(
-            endpoint="/api/auth/resend-validation-email",
-            json={"email": email},
-            expected_response_status=expected_response_status,
-            expected_json_content=expected_json_content,
-        )
-        if not expected_response_status == HTTPStatus.OK:
-            return None
         assert mock.call_args[1]["email"] == email
         return mock.call_args[1]["token"]
 
@@ -411,7 +374,7 @@ class RequestValidator:
         self,
         headers: dict,
         location_id: int,
-        record_categories: Optional[list[RecordCategories]] = None,
+        record_categories: Optional[list[RecordCategoryEnum]] = None,
         record_types: Optional[list[RecordTypes]] = None,
         format: Optional[OutputFormatEnum] = OutputFormatEnum.JSON,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
@@ -473,7 +436,7 @@ class RequestValidator:
         self,
         headers: dict,
         page: int = 1,
-        record_categories: Optional[list[RecordCategories]] = None,
+        record_categories: Optional[list[RecordCategoryEnum]] = None,
     ):
         endpoint_base = "/search/federal"
         query_params = {"page": page}
@@ -493,7 +456,7 @@ class RequestValidator:
 
     @staticmethod
     def _get_search_query_params(
-        record_categories: Optional[list[RecordCategories]],
+        record_categories: Optional[list[RecordCategoryEnum]],
         location_id: Optional[int] = None,
         record_types: Optional[list[RecordTypes]] = None,
     ):
@@ -547,7 +510,7 @@ class RequestValidator:
     def follow_national_search(
         self,
         headers: dict,
-        record_categories: Optional[list[RecordCategories]] = None,
+        record_categories: Optional[list[RecordCategoryEnum]] = None,
         record_types: Optional[list[RecordTypes]] = None,
         expected_json_content: Optional[dict] = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
@@ -572,7 +535,7 @@ class RequestValidator:
     def unfollow_national_search(
         self,
         headers: dict,
-        record_categories: Optional[list[RecordCategories]] = None,
+        record_categories: Optional[list[RecordCategoryEnum]] = None,
         record_types: Optional[list[RecordTypes]] = None,
         expected_json_content: Optional[dict] = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
@@ -598,7 +561,7 @@ class RequestValidator:
         self,
         headers: dict,
         location_id: int,
-        record_categories: Optional[list[RecordCategories]] = None,
+        record_categories: Optional[list[RecordCategoryEnum]] = None,
         record_types: Optional[list[RecordTypes]] = None,
         expected_json_content: Optional[dict] = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
@@ -625,7 +588,7 @@ class RequestValidator:
         self,
         headers: dict,
         location_id: int,
-        record_categories: Optional[list[RecordCategories]] = None,
+        record_categories: Optional[list[RecordCategoryEnum]] = None,
         record_types: Optional[list[RecordTypes]] = None,
         expected_json_content: Optional[dict] = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,

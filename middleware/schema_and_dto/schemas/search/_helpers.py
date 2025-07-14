@@ -2,13 +2,13 @@ from typing import Optional
 
 from middleware.enums import RecordTypes
 from utilities.common import get_enums_from_string
-from utilities.enums import RecordCategories, SourceMappingEnum, ParserLocation
+from utilities.enums import RecordCategoryEnum, SourceMappingEnum, ParserLocation
 
 
-def transform_record_categories(value: str) -> Optional[list[RecordCategories]]:
+def transform_record_categories(value: str) -> Optional[list[RecordCategoryEnum]]:
     if value is not None:
         return get_enums_from_string(  # pyright: ignore[reportReturnType]
-            RecordCategories, value, case_insensitive=True
+            RecordCategoryEnum, value, case_insensitive=True
         )
     return None
 
@@ -27,7 +27,7 @@ RECORD_CATEGORY_METADATA = {
     "Multiple record categories can be provided as a comma-separated list, eg. 'Police & Public "
     "Interactions,Agency-published Resources'."
     "Allowable record categories include: \n  * "
-    + "\n  * ".join([e.value for e in RecordCategories]),
+    + "\n  * ".join([e.value for e in RecordCategoryEnum]),
     "source": SourceMappingEnum.QUERY_ARGS,
     "location": ParserLocation.QUERY.value,
 }

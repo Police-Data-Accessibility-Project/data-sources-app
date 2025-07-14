@@ -1,13 +1,17 @@
 # pyright: reportUninitializedInstanceVariable=false
 from datetime import date
-from typing import get_args
+from typing import final
 
-from sqlalchemy import Column, DateTime, func, String, Enum, ForeignKey
-from sqlalchemy.dialects.postgresql import ARRAY, ENUM as pgEnum
+from sqlalchemy import Column, DateTime, func, String, ForeignKey
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from db.enums import AccessType
-from db.models.helpers import make_get_iter_model_list_of_dict
+from db.enums import AccessType, URLStatus
+from db.models.helpers import (
+    make_get_iter_model_list_of_dict,
+    enum_list_column,
+    enum_column,
+)
 from db.models.implementations.core.location.core import Location
 from db.models.mixins import CountMetadata, CreatedAtMixin, IterWithSpecialCasesMixin
 from db.models.templates.standard import StandardBase
@@ -24,6 +28,7 @@ from db.models.types import (
 from middleware.enums import Relations
 
 
+@final
 class DataSource(
     StandardBase,
     CountMetadata,
@@ -49,9 +54,7 @@ class DataSource(
     updated_at: Mapped[date | None] = Column(DateTime, default=func.now())
     detail_level: Mapped[DetailLevelLiteral | None]
     # Note: Below is an array of enums in Postgres but this is cumbersome to convey in SQLAlchemy terms
-    access_types = Column(
-        ARRAY(pgEnum(*[e.value for e in AccessType], name="access_type"))
-    )
+    access_types = enum_list_column(AccessType, name="access_type")
     data_portal_type: Mapped[str | None]
     record_formats = Column(ARRAY(String))
     update_method: Mapped[UpdateMethodLiteral | None]
@@ -69,8 +72,10 @@ class DataSource(
     data_source_request: Mapped[str | None]
     broken_source_url_as_of: Mapped[date | None]
     access_notes: Mapped[text | None]
-    url_status: Mapped[URLStatusLiteral] = Column(
-        Enum(*get_args(URLStatusLiteral), name="url_status"), server_default="ok"
+    url_status: Mapped[URLStatusLiteral] = enum_column(
+        URLStatus,
+        name="url_status",
+        default=URLStatus.OK,
     )
     approval_status: Mapped[ApprovalStatusLiteral]
     record_type_id: Mapped[int | None] = mapped_column(

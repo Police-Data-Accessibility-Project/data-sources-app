@@ -1,11 +1,10 @@
-
 from endpoints.schema_config.instantiations.data_sources.by_id.get import (
     DataSourcesByIDGetEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.data_sources.post import (
     DataSourcesPostEndpointSchemaConfig,
 )
-from middleware.schema_and_dto.schemas.data_sources.expanded import (
+from endpoints.instantiations.data_sources_._shared.schemas.expanded import (
     DataSourceExpandedSchema,
 )
 from middleware.third_party_interaction_logic.mailgun_.constants import OPERATIONS_EMAIL

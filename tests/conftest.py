@@ -250,7 +250,7 @@ def mock_send_via_mailgun(monkeypatch) -> Generator[MagicMock, Any, None]:
         "middleware.primary_resource_logic.data_requests_.post",
         "middleware.primary_resource_logic.data_sources",
         "middleware.primary_resource_logic.notifications.notifications",
-        "middleware.primary_resource_logic.signup",
+        "endpoints.instantiations.auth_.signup.middleware",
     ]
 
     mock_send_via_mailgun = MagicMock()

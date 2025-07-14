@@ -1,0 +1,9 @@
+from endpoints.instantiations.data_sources_._shared.dtos.expanded import (
+    DataSourceExpandedDTO,
+)
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import (
+    pydantic_to_marshmallow,
+)
+
+
+DataSourceExpandedSchema = pydantic_to_marshmallow(DataSourceExpandedDTO)

@@ -20,7 +20,7 @@ from endpoints.psycopg_resource import handle_exceptions
 from endpoints.schema_config.config.manager import OutputSchemaManager
 from endpoints.schema_config.enums import SchemaConfigs
 from middleware.decorators.authentication_required import authentication_required
-from middleware.schema_and_dto.dynamic.schema.documentation_construction import (
+from middleware.schema_and_dto.dynamic.schema.doc_construction.documentation_construction import (
     get_restx_param_documentation,
 )
 from middleware.security.parser_determinator import ParserDeterminator

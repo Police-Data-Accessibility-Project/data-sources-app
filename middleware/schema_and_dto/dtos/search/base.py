@@ -7,11 +7,11 @@ from middleware.enums import RecordTypes
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.metadata import (
     MetadataInfo,
 )
-from utilities.enums import RecordCategories, SourceMappingEnum
+from utilities.enums import RecordCategoryEnum, SourceMappingEnum
 
 
 class SearchFollowRequestBaseDTO(BaseModel):
-    record_categories: Optional[list[RecordCategories]] = Field(
+    record_categories: Optional[list[RecordCategoryEnum]] = Field(
         default=None,
         description="Selected record categories.",
         json_schema_extra=MetadataInfo(

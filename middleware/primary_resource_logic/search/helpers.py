@@ -7,7 +7,7 @@ from werkzeug.exceptions import BadRequest
 
 from middleware.enums import JurisdictionSimplified, OutputFormatEnum
 from middleware.util.datetime import get_datetime_now
-from utilities.enums import RecordCategories
+from utilities.enums import RecordCategoryEnum
 
 
 def get_jurisdiction_type_enum(
@@ -114,12 +114,12 @@ def send_as_csv(search_results):
 
 
 def get_explicit_record_categories(
-    record_categories=Optional[list[RecordCategories]],
-) -> Optional[list[RecordCategories]]:
+    record_categories=Optional[list[RecordCategoryEnum]],
+) -> Optional[list[RecordCategoryEnum]]:
     if record_categories is None:
         return None
-    if RecordCategories.ALL in record_categories:
+    if RecordCategoryEnum.ALL in record_categories:
         if len(record_categories) > 1:
             raise BadRequest("ALL cannot be provided with other record categories.")
-        return [rc for rc in RecordCategories if rc != RecordCategories.ALL]
+        return [rc for rc in RecordCategoryEnum if rc != RecordCategoryEnum.ALL]
     return record_categories

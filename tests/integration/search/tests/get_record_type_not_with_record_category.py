@@ -5,7 +5,7 @@ from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )
 from tests.integration.search.search_test_setup import SearchTestSetup
-from utilities.enums import RecordCategories
+from utilities.enums import RecordCategoryEnum
 
 
 def test_search_get_record_type_not_with_record_category(
@@ -22,7 +22,7 @@ def test_search_get_record_type_not_with_record_category(
     tdc.request_validator.search(
         headers=tus.api_authorization_header,
         location_id=sts.location_id,
-        record_categories=[RecordCategories.POLICE],
+        record_categories=[RecordCategoryEnum.POLICE],
         record_types=[RecordTypes.ARREST_RECORDS],
         expected_response_status=HTTPStatus.BAD_REQUEST,
         expected_schema=MessageSchema,
