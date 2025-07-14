@@ -1,3 +1,4 @@
+
 from endpoints.schema_config.instantiations.data_sources.by_id.get import (
     DataSourcesByIDGetEndpointSchemaConfig,
 )
@@ -7,6 +8,7 @@ from endpoints.schema_config.instantiations.data_sources.post import (
 from endpoints.instantiations.data_sources_._shared.schemas.expanded import (
     DataSourceExpandedSchema,
 )
+from middleware.third_party_interaction_logic.mailgun_.constants import OPERATIONS_EMAIL
 from tests.helper_scripts.common_asserts import assert_contains_key_value_pairs
 from tests.helper_scripts.constants import DATA_SOURCES_BASE_ENDPOINT
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
@@ -19,7 +21,7 @@ from tests.helper_scripts.run_and_validate_request import run_and_validate_reque
 
 
 def test_data_sources_post(
-    test_data_creator_flask: TestDataCreatorFlask,
+    test_data_creator_flask: TestDataCreatorFlask, mock_send_via_mailgun
 ):
     """
     Test that POST call to /data-sources endpoint successfully creates a new data source with a unique name and verifies its existence in the database
@@ -52,6 +54,12 @@ def test_data_sources_post(
             "linked_agency_ids": [agency_id],
         },
         expected_schema=DataSourcesPostEndpointSchemaConfig.primary_output_schema,
+    )
+
+    mock_send_via_mailgun.assert_called_once_with(
+        to_email=OPERATIONS_EMAIL,
+        subject=f"New data source submitted: {entry_data['name']}",
+        text=f"Description: \n\n{entry_data['description']}",
     )
 
     response_json = run_and_validate_request(

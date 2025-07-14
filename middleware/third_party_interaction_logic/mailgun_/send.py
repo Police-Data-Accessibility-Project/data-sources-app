@@ -1,11 +1,10 @@
-from typing import Optional
-
 import requests
 
+from middleware.third_party_interaction_logic.mailgun_.constants import (
+    MAILGUN_URL,
+    FROM_EMAIL,
+)
 from middleware.util.env import get_env_variable
-
-MAILGUN_URL = "https://api.mailgun.net/v3/mail.pdap.io/messages"
-FROM_EMAIL = "mail@pdap.io"
 
 
 def send_via_mailgun(
@@ -20,6 +19,8 @@ def send_via_mailgun(
     :param to_email: The address to send the email to
     :param subject: The subject of the email
     :param text: The body of the email
+    :param html: The HTML body of the email
+    :param bcc: The address to BCC
     :return:
     """
     data = {

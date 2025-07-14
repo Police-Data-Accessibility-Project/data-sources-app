@@ -3,7 +3,9 @@ from tests.helper_scripts.helper_classes.test_data_creator.flask import (
 )
 
 
-def test_source_collector_duplicates(test_data_creator_flask: TestDataCreatorFlask):
+def test_source_collector_duplicates(
+    test_data_creator_flask: TestDataCreatorFlask,
+):
     tdc = test_data_creator_flask
     extant_data_sources = []
     for i in range(50):
