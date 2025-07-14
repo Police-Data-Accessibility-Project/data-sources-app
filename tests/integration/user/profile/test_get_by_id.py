@@ -1,14 +1,16 @@
 from http import HTTPStatus
 
 from middleware.enums import PermissionsEnum
-from middleware.schema_and_dto.schemas.common.common_response_schemas import MessageSchema
-from tests.helper_scripts.helper_classes.test_data_creator.flask import TestDataCreatorFlask
+from middleware.schema_and_dto.schemas.common.common_response_schemas import (
+    MessageSchema,
+)
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+    TestDataCreatorFlask,
+)
 
 
 def test_user_profile_get_by_id(
-    test_data_creator_flask: TestDataCreatorFlask,
-    pennsylvania_id,
-    california_id
+    test_data_creator_flask: TestDataCreatorFlask, pennsylvania_id, california_id
 ):
     tdc = test_data_creator_flask
 

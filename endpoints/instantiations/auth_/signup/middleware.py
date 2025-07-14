@@ -7,7 +7,6 @@ from db.client.core import DatabaseClient
 from endpoints.instantiations.auth_.signup.dto import UserStandardSignupRequestDTO
 from middleware.common_response_formatting import message_response
 from middleware.primary_resource_logic.api_key import generate_token
-from middleware.primary_resource_logic.user_queries import UserRequestDTO
 from middleware.security.jwt.core import SimpleJWT
 from middleware.security.jwt.enums import JWTPurpose
 from middleware.third_party_interaction_logic.mailgun_.send import send_via_mailgun
@@ -24,8 +23,8 @@ def signup_wrapper(
 
     if db_client.pending_user_exists(email=dto.email):
         raise Conflict(
-            "User with email has already signed up. " +
-            "Please validate your email or request a new validation email."
+            "User with email has already signed up. "
+            + "Please validate your email or request a new validation email."
         )
 
     jwt_token = _setup_pending_user(db_client, dto)
@@ -91,8 +90,8 @@ def send_signup_link(email: str, token: str):
 
 def _validation_email_sent_response(email: str):
     return message_response(
-        message=f"Validation email sent to {email}. " +
-        f"To complete sign up, please validate your email.",
+        message=f"Validation email sent to {email}. "
+        + "To complete sign up, please validate your email.",
     )
 
 
@@ -100,7 +99,9 @@ def _get_validation_expiry() -> float:
     return (datetime.now(tz=timezone.utc) + timedelta(days=1)).timestamp()
 
 
-def _setup_pending_user(db_client: DatabaseClient, dto: UserStandardSignupRequestDTO) -> SimpleJWT:
+def _setup_pending_user(
+    db_client: DatabaseClient, dto: UserStandardSignupRequestDTO
+) -> SimpleJWT:
     """
     Sets up pending user with given information
     and returns the validation token wrapped in a JWT

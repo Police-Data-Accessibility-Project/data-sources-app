@@ -14,7 +14,7 @@ from db.enums import (
     SortOrder,
     RequestStatus,
     ApprovalStatus,
-    UpdateFrequency, UserCapacityEnum,
+    UpdateFrequency,
 )
 from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
     SourceCollectorPostRequestDTO,

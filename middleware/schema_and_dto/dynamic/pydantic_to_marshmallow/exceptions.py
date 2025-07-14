@@ -1,4 +1,2 @@
-
-
 class GetMarshmallowFieldException(Exception):
     pass

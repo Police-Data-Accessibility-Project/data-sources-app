@@ -1,7 +1,9 @@
 from pydantic import BaseModel
 
 from middleware.schema_and_dto.non_dto_dataclasses import DTOPopulateParameters
-from middleware.schema_and_dto.schemas.data_sources.entry_data_request import EntryDataRequestSchema
+from middleware.schema_and_dto.schemas.data_sources.entry_data_request import (
+    EntryDataRequestSchema,
+)
 from utilities.enums import SourceMappingEnum
 
 

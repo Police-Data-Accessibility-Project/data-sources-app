@@ -1,5 +1,7 @@
 from db.client.core import DatabaseClient
-from middleware.primary_resource_logic.login_queries import access_and_refresh_token_response
+from middleware.primary_resource_logic.login_queries import (
+    access_and_refresh_token_response,
+)
 from middleware.security.access_info.validate_email import ValidateEmailTokenAccessInfo
 
 

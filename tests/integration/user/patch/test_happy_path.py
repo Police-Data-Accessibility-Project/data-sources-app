@@ -1,6 +1,9 @@
 from db.enums import UserCapacityEnum
 from db.models.implementations.core.user.capacity import UserCapacity
-from tests.helper_scripts.helper_classes.test_data_creator.flask import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+    TestDataCreatorFlask,
+)
+
 
 def get_capacities_from_db(tdc, user_id: int):
     db_client = tdc.db_client
@@ -12,9 +15,7 @@ def get_capacities_from_db(tdc, user_id: int):
     return enum_results
 
 
-def test_user_patch(
-    test_data_creator_flask: TestDataCreatorFlask
-):
+def test_user_patch(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
     tdc.clear_test_data()
     tus = tdc.standard_user()
@@ -23,7 +24,7 @@ def test_user_patch(
     # Default test user capacities
     assert set(get_capacities_from_db(tdc, user_id)) == {
         UserCapacityEnum.POLICE,
-        UserCapacityEnum.COMMUNITY_MEMBER
+        UserCapacityEnum.COMMUNITY_MEMBER,
     }
 
     tdc.request_validator.patch(

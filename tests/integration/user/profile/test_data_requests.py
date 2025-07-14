@@ -48,5 +48,3 @@ def test_user_profile_data_requests(test_data_creator_flask: TestDataCreatorFlas
     )
 
     assert len(json_response["data"]) == 2
-
-

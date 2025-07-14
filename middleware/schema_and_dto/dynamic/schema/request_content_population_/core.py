@@ -1,7 +1,11 @@
 from pydantic import BaseModel
 
-from middleware.schema_and_dto.dynamic.schema.request_content_population_.helpers import \
-    get_source_data_info_from_sources, validate_data, _apply_transformation_functions_to_dict, setup_dto_class
+from middleware.schema_and_dto.dynamic.schema.request_content_population_.helpers import (
+    get_source_data_info_from_sources,
+    validate_data,
+    _apply_transformation_functions_to_dict,
+    setup_dto_class,
+)
 from middleware.schema_and_dto.types import SchemaTypes
 
 

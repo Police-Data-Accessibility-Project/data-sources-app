@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 
-from middleware.schema_and_dto.dynamic.schema.request_content_population_.models.nested_dto import NestedDTOInfo
+from middleware.schema_and_dto.dynamic.schema.request_content_population_.models.nested_dto import (
+    NestedDTOInfo,
+)
 
 
 class SourceDataInfo(BaseModel):

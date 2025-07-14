@@ -20,7 +20,7 @@ def patch_user(
     db_client: DatabaseClient,
     access_info: AccessInfoPrimary,
     user_id: int,
-    dto: UserPatchDTO
+    dto: UserPatchDTO,
 ) -> Response:
     if not _is_admin_or_owner(access_info, user_id):
         raise BadRequest("You do not have permission to patch this user.")

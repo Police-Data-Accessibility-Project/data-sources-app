@@ -45,17 +45,17 @@ def get_iter_model_list_of_dict(instance, attr_name: str):
 def make_get_iter_model_list_of_dict(attr_name):
     return lambda instance: get_iter_model_list_of_dict(instance, attr_name=attr_name)
 
+
 def enum_list_column(enum: type[Enum], name: str) -> Column[Sequence[str | Enum]]:
-    return Column(
-        ARRAY(pgEnum(*[e.value for e in enum], name=name))
-    )
+    return Column(ARRAY(pgEnum(*[e.value for e in enum], name=name)))
+
 
 def enum_column(
-    enum: type[Enum],
-    name: str,
-    default: Enum | None = None
+    enum: type[Enum], name: str, default: Enum | None = None
 ) -> Column[str | Enum]:
     if default is None:
         return Column(pgEnum(*[e.value for e in enum], name=name))
     else:
-        return Column(pgEnum(*[e.value for e in enum], name=name), default=default.value)
+        return Column(
+            pgEnum(*[e.value for e in enum], name=name), default=default.value
+        )

@@ -5,15 +5,19 @@ from marshmallow import validate
 from marshmallow.validate import Validator
 from pydantic.fields import FieldInfo
 
-from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.field import MarshmallowFieldInfo
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.field import (
+    MarshmallowFieldInfo,
+)
 
 from marshmallow.fields import Enum as MarshmallowEnum, Field
 
-from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.mapping import TYPE_MAPPING
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.mapping import (
+    TYPE_MAPPING,
+)
 
 
 def convert_validators(model_field: FieldInfo) -> Validator | None:
-    if not model_field.annotation is str:
+    if model_field.annotation is not str:
         return None
     metadata = model_field.metadata
     if len(metadata) == 0:
@@ -26,11 +30,13 @@ def convert_validators(model_field: FieldInfo) -> Validator | None:
             validation_kwargs["max"] = metadata_item.max_length
     return validate.Length(**validation_kwargs)
 
+
 def convert_enum(inner_type: Any) -> MarshmallowFieldInfo:
     return MarshmallowFieldInfo(
         field=MarshmallowEnum,
         field_kwargs={"enum": inner_type, "by_value": True},
     )
+
 
 def convert_to_marshmallow_class(inner_type: Any) -> type[Field]:
     if get_origin(inner_type) is dict:

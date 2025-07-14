@@ -20,6 +20,7 @@ from db.models.types import (
 )
 from middleware.enums import Relations
 
+
 @final
 class DataRequest(
     StandardBase, CountMetadata, CountSubqueryMetadata, IterWithSpecialCasesMixin

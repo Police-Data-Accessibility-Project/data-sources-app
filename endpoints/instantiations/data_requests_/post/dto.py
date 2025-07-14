@@ -4,8 +4,13 @@ from pydantic import BaseModel, Field
 
 from db.enums import RequestUrgency, RequestStatus
 from middleware.enums import RecordTypes
-from middleware.schema_and_dto.dtos._helpers import default_field_not_required, default_field_required
-from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.metadata import MetadataInfo
+from middleware.schema_and_dto.dtos._helpers import (
+    default_field_not_required,
+    default_field_required,
+)
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.metadata import (
+    MetadataInfo,
+)
 
 
 class RequestInfoPostDTO(BaseModel):
@@ -13,7 +18,7 @@ class RequestInfoPostDTO(BaseModel):
         description="The title of the data request.",
         json_schema_extra=MetadataInfo(required=True),
         min_length=1,
-        max_length=255
+        max_length=255,
     )
     submission_notes: str = default_field_required(
         description="Optional notes provided by the submitter during the request submission."
@@ -35,8 +40,6 @@ class RequestInfoPostDTO(BaseModel):
         description="The status of the data request.",
         json_schema_extra=MetadataInfo(required=False),
     )
-
-
 
 
 class DataRequestsPostDTO(BaseModel):

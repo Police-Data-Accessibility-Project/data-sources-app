@@ -32,8 +32,12 @@ from marshmallow import fields as marshmallow_fields, missing, Schema
 from marshmallow.fields import Field as MarshmallowField
 from marshmallow.validate import OneOf
 
-from middleware.schema_and_dto.dynamic.schema.doc_construction.mappings import PARSER_SOURCE_LOCATION_MAP
-from middleware.schema_and_dto.dynamic.schema.doc_construction.types_ import PARSER_FIELDS
+from middleware.schema_and_dto.dynamic.schema.doc_construction.mappings import (
+    PARSER_SOURCE_LOCATION_MAP,
+)
+from middleware.schema_and_dto.dynamic.schema.doc_construction.types_ import (
+    PARSER_FIELDS,
+)
 from middleware.schema_and_dto.mappings import (
     MARSHMALLOW_TO_RESTX_FIELD_MAPPING,
     RESTX_FIELD_TO_NATIVE_TYPE_MAPPING,

@@ -3,35 +3,47 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from db.enums import AgencyAggregation, DetailLevel, AccessType, UpdateMethod, RetentionSchedule, ApprovalStatus, \
-    URLStatus
-from middleware.schema_and_dto.dtos._helpers import default_field_required, default_field_not_required
-from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.metadata import MetadataInfo
+from db.enums import (
+    AgencyAggregation,
+    DetailLevel,
+    AccessType,
+    UpdateMethod,
+    RetentionSchedule,
+    ApprovalStatus,
+    URLStatus,
+)
+from middleware.schema_and_dto.dtos._helpers import (
+    default_field_required,
+    default_field_not_required,
+)
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.metadata import (
+    MetadataInfo,
+)
 
 
 class DataSourceBaseDTO(BaseModel):
     name: str = default_field_required(description="The name of the data source.")
     description: Optional[str] = Field(
         default="",
-        description="Information to give clarity and confidence about what this source is, how it was " +
-                    "processed, and whether the person reading the description might want to use it. " +
-                    "Especially important if the source is difficult to preview or categorize.",
+        description="Information to give clarity and confidence about what this source is, how it was "
+        + "processed, and whether the person reading the description might want to use it. "
+        + "Especially important if the source is difficult to preview or categorize.",
         json_schema_extra=MetadataInfo(required=False),
     )
     source_url: Optional[str] = default_field_required(
         description="The URL of the data source."
     )
     agency_supplied: Optional[bool] = default_field_not_required(
-        description='Is the relevant Agency also the entity supplying the data? This may be "no" if the Agency or local ' +
-                    "government contracted with a third party to publish this data, or if a third party was the original " +
-                    "record-keeper."
+        description='Is the relevant Agency also the entity supplying the data? This may be "no" if the Agency or local '
+        + "government contracted with a third party to publish this data, or if a third party was the original "
+        + "record-keeper."
     )
     supplying_entity: Optional[str] = default_field_not_required(
         description="The name of the entity that supplied the data source, if not the agency itself."
     )
     agency_originated: Optional[bool] = default_field_not_required(
-        description="Is the relevant Agency the entity that originally published this data source? " +
-                    'This is usually "yes", unless a third party collected data about a police Agency.'
+        description="Is the relevant Agency the entity that originally published this data source? "
+        + 'This is usually "yes", unless a third party collected data about a police Agency.'
     )
     agency_aggregation: Optional[AgencyAggregation] = default_field_not_required(
         description="If present, the aggregation level of the data source."

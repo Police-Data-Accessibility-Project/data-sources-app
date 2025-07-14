@@ -3,7 +3,9 @@ from http import HTTPStatus
 from endpoints._helpers.response_info import ResponseInfo
 from endpoints.psycopg_resource import PsycopgResource
 from endpoints.schema_config.enums import SchemaConfigs
-from endpoints.instantiations.auth_.signup.endpoint_schema_config import AuthSignupEndpointSchemaConfig
+from endpoints.instantiations.auth_.signup.endpoint_schema_config import (
+    AuthSignupEndpointSchemaConfig,
+)
 from middleware.decorators.endpoint_info import endpoint_info
 from endpoints.instantiations.auth_.signup.middleware import signup_wrapper
 from middleware.security.access_info.primary import AccessInfoPrimary

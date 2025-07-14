@@ -1,9 +1,7 @@
 from http import HTTPStatus
 
 
-def test_signup_post_user_exists_is_not_verified(
-    helper
-):
+def test_signup_post_user_exists_is_not_verified(helper):
     """
     If a user signs up with an email that exists but is not verified
     that user should receive a special error message reminding them to

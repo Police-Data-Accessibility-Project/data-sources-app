@@ -142,19 +142,26 @@ def updated_at_column():
         nullable=False,
     )
 
-def enum_column(column_name: str, enum_name: str, enum_values: list[str], nullable: bool = False):
+
+def enum_column(
+    column_name: str, enum_name: str, enum_values: list[str], nullable: bool = False
+):
     return sa.Column(
         column_name,
         sa.Enum(*enum_values, name=enum_name),
         nullable=nullable,
     )
 
-def list_of_enums_column(column_name: str, enum_name: str, enum_values: list[str], nullable: bool = False):
+
+def list_of_enums_column(
+    column_name: str, enum_name: str, enum_values: list[str], nullable: bool = False
+):
     return sa.Column(
         column_name,
         sa.ARRAY(sa.Enum(*enum_values, name=enum_name)),
         nullable=nullable,
     )
+
 
 def drop_enum(enum_name: str) -> None:
     enum = sa.Enum(name=enum_name)

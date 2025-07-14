@@ -19,7 +19,10 @@ def test_user_patch_user_permissions(monkeypatch):
 
     All others should receive a BAD REQUEST response
     """
-    monkeypatch.setattr("endpoints.instantiations.user.by_id.patch.middleware.message_response", MagicMock())
+    monkeypatch.setattr(
+        "endpoints.instantiations.user.by_id.patch.middleware.message_response",
+        MagicMock(),
+    )
     mock_db_client = MagicMock(spec=DatabaseClient)
     dto = UserPatchDTO(
         capacities=[

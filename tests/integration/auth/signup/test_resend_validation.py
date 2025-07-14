@@ -3,9 +3,7 @@ from http import HTTPStatus
 from tests.integration.auth.signup.helpers import SignupTestHelper
 
 
-def test_resend_validation_invalid_email(
-    helper: SignupTestHelper
-):
+def test_resend_validation_invalid_email(helper: SignupTestHelper):
     """
     If user tries to resend validation email for an email that does not exist
     that user should receive a special error message informing them

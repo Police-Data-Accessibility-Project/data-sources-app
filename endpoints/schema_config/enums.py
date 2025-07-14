@@ -1,10 +1,14 @@
 from enum import Enum
 
-from endpoints.instantiations.auth_.validate_email.endpoint_schema_config import AuthValidateEmailEndpointSchema
+from endpoints.instantiations.auth_.validate_email.endpoint_schema_config import (
+    AuthValidateEmailEndpointSchema,
+)
 from endpoints.instantiations.source_collector.sync.schema_config import (
     SourceCollectorSyncAgenciesSchemaConfig,
 )
-from endpoints.instantiations.user.by_id.patch.endpoint_schema_config import UserPatchEndpointSchemaConfig
+from endpoints.instantiations.user.by_id.patch.endpoint_schema_config import (
+    UserPatchEndpointSchemaConfig,
+)
 from endpoints.schema_config.config.core import EndpointSchemaConfig
 from endpoints.schema_config.instantiations.admin.users.by_id.delete import (
     AdminUsersByIDDeleteEndpointSchemaConfig,
@@ -58,9 +62,12 @@ from endpoints.schema_config.instantiations.auth.github.oauth import (
     AuthGitHubOAuthEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.auth.login import LoginEndpointSchemaConfig
-from endpoints.instantiations.auth_.resend_validation_email.endpoint_schema_config import \
-    AuthResendValidationEmailEndpointSchemaConfig
-from endpoints.instantiations.auth_.signup.endpoint_schema_config import AuthSignupEndpointSchemaConfig
+from endpoints.instantiations.auth_.resend_validation_email.endpoint_schema_config import (
+    AuthResendValidationEmailEndpointSchemaConfig,
+)
+from endpoints.instantiations.auth_.signup.endpoint_schema_config import (
+    AuthSignupEndpointSchemaConfig,
+)
 
 from endpoints.schema_config.instantiations.checker import (
     UniqueURLCheckerEndpointSchemaConfig,

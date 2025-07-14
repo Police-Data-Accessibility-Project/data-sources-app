@@ -10,7 +10,9 @@ from db.queries.builder.mixins.pending_event.data_source import (
 )
 from db.queries.builder.mixins.record_type import RecordTypeMixin
 from middleware.enums import PermissionsEnum
-from middleware.schema_and_dto.dtos.entry_create_update_request import EntryCreateUpdateRequestDTO
+from middleware.schema_and_dto.dtos.entry_create_update_request import (
+    EntryCreateUpdateRequestDTO,
+)
 from middleware.util.type_conversion import dict_enums_to_values
 
 

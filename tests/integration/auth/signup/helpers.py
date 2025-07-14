@@ -5,20 +5,19 @@ from unittest.mock import MagicMock
 from marshmallow import Schema
 
 from db.enums import UserCapacityEnum
-from endpoints.instantiations.auth_.signup.endpoint_schema_config import AuthSignupEndpointSchemaConfig
+from endpoints.instantiations.auth_.signup.endpoint_schema_config import (
+    AuthSignupEndpointSchemaConfig,
+)
 from endpoints.schema_config.instantiations.auth.login import LoginEndpointSchemaConfig
 from tests.helper_scripts.common_test_data import get_test_email
-from tests.helper_scripts.helper_classes.test_data_creator.flask import TestDataCreatorFlask
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+    TestDataCreatorFlask,
+)
 from tests.helper_scripts.helper_functions_simple import get_authorization_header
 
 
 class SignupTestHelper:
-
-    def __init__(
-        self,
-        tdc: TestDataCreatorFlask,
-        mocker
-    ):
+    def __init__(self, tdc: TestDataCreatorFlask, mocker):
         self.tdc = tdc
         self.request_validator = tdc.request_validator
         self.mocker = mocker
@@ -38,36 +37,36 @@ class SignupTestHelper:
         self,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
         expected_json_content: Optional[dict] = None,
-        expected_schema: Schema = LoginEndpointSchemaConfig.primary_output_schema
+        expected_schema: Schema = LoginEndpointSchemaConfig.primary_output_schema,
     ):
         self.request_validator.login(
             email=self.email,
             password=self.password,
             expected_response_status=expected_response_status,
             expected_schema=expected_schema,
-            expected_json_content=expected_json_content
+            expected_json_content=expected_json_content,
         )
 
     def signup_user(
         self,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
         expected_json_content: Optional[dict] = None,
-        capacities: list[UserCapacityEnum] | None = None
+        capacities: list[UserCapacityEnum] | None = None,
     ):
         mock = self.patch(
             "endpoints.instantiations.auth_.signup.middleware.send_signup_link"
         )
         self.request_validator.post(
-                endpoint="/api/auth/signup",
-                json={
-                    "email": self.email,
-                    "password": self.password,
-                    "capacities": [c.value for c in capacities] if capacities else None
-                },
-                expected_schema=AuthSignupEndpointSchemaConfig.primary_output_schema,
-                expected_response_status=expected_response_status,
-                expected_json_content=expected_json_content,
-            )
+            endpoint="/api/auth/signup",
+            json={
+                "email": self.email,
+                "password": self.password,
+                "capacities": [c.value for c in capacities] if capacities else None,
+            },
+            expected_schema=AuthSignupEndpointSchemaConfig.primary_output_schema,
+            expected_response_status=expected_response_status,
+            expected_json_content=expected_json_content,
+        )
         if expected_response_status != HTTPStatus.OK:
             return None
         return check_email_and_return_token(mock, self.email)
@@ -89,7 +88,6 @@ class SignupTestHelper:
         if not expected_response_status == HTTPStatus.OK:
             return None
         return check_email_and_return_token(mock, self.email)
-
 
     def validate_email(
         self,

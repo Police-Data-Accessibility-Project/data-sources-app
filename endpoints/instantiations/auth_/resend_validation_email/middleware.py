@@ -2,8 +2,11 @@ from werkzeug.exceptions import BadRequest
 
 from db.client.core import DatabaseClient
 from endpoints.instantiations.auth_.resend_validation_email.dto import EmailOnlyDTO
-from endpoints.instantiations.auth_.signup.middleware import get_validation_token_jwt, send_signup_link, \
-    _validation_email_sent_response
+from endpoints.instantiations.auth_.signup.middleware import (
+    get_validation_token_jwt,
+    send_signup_link,
+    _validation_email_sent_response,
+)
 from middleware.primary_resource_logic.api_key import generate_token
 
 

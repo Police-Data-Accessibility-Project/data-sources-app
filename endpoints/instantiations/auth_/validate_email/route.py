@@ -2,7 +2,9 @@ from endpoints._helpers.response_info import ResponseInfo
 from endpoints.psycopg_resource import PsycopgResource
 from endpoints.schema_config.enums import SchemaConfigs
 from middleware.decorators.endpoint_info import endpoint_info
-from endpoints.instantiations.auth_.validate_email.middleware import validate_email_wrapper
+from endpoints.instantiations.auth_.validate_email.middleware import (
+    validate_email_wrapper,
+)
 from middleware.security.access_info.validate_email import ValidateEmailTokenAccessInfo
 from middleware.security.auth.info.instantiations import VALIDATE_EMAIL_AUTH_INFO
 from utilities.namespace import AppNamespaces, create_namespace

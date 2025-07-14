@@ -9,6 +9,7 @@ from db.models.templates.standard import StandardBase
 from db.models.types import timestamp_tz, text
 from middleware.enums import Relations
 
+
 @final
 class User(StandardBase, CreatedAtMixin):
     __tablename__ = Relations.USERS.value

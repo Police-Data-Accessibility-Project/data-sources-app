@@ -11,9 +11,14 @@ from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 from pydantic_core import PydanticUndefinedType
 
-from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.convert import convert_validators, convert_enum, \
-    convert_to_marshmallow_class
-from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.exceptions import GetMarshmallowFieldException
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.convert import (
+    convert_validators,
+    convert_enum,
+    convert_to_marshmallow_class,
+)
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.exceptions import (
+    GetMarshmallowFieldException,
+)
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.helpers import (
     is_optional,
     extract_inner_type,
@@ -25,7 +30,7 @@ from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.
     MetadataInfo,
 )
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.mapping import (
-    TYPE_MAPPING, _is_mapped_type,
+    _is_mapped_type,
 )
 
 
@@ -119,12 +124,12 @@ class FieldProcessor:
                 return convert_enum(inner_type)
             if issubclass(inner_type, BaseModel):
                 return self.get_nested_field(inner_type)
-            raise GetMarshmallowFieldException(
-                f"Unsupported field type: {inner_type}"
-            )
+            raise GetMarshmallowFieldException(f"Unsupported field type: {inner_type}")
 
         except Exception as e:
-            raise GetMarshmallowFieldException(f"Error processing field {field_type}: {e}") from e
+            raise GetMarshmallowFieldException(
+                f"Error processing field {field_type}: {e}"
+            ) from e
 
     def get_list_field(self, inner_type: list[Any]) -> MarshmallowFieldInfo:
         type_arg = get_args(inner_type)[0]

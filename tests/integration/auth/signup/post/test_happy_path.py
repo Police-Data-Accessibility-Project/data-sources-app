@@ -2,7 +2,9 @@ from http import HTTPStatus
 
 from db.enums import UserCapacityEnum
 from db.models.implementations.core.user.capacity import UserCapacity
-from middleware.schema_and_dto.schemas.common.common_response_schemas import MessageSchema
+from middleware.schema_and_dto.schemas.common.common_response_schemas import (
+    MessageSchema,
+)
 
 
 def test_signup_post(helper):

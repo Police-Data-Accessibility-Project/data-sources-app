@@ -36,7 +36,9 @@ def test_search_get_record_categories_all(
 
     # Check that the count is the same as if every record type is provided
     data_all_implicit = run_search(
-        record_categories=[rc for rc in RecordCategoryEnum if rc != RecordCategoryEnum.ALL]
+        record_categories=[
+            rc for rc in RecordCategoryEnum if rc != RecordCategoryEnum.ALL
+        ]
     )
     assert data_all_implicit["count"] > 0
     assert data_all_implicit["count"] == data_all_explicit["count"]

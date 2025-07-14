@@ -18,4 +18,3 @@ def default_field_required(description: str) -> Field:
         description=description,
         json_schema_extra=MetadataInfo(),
     )
-

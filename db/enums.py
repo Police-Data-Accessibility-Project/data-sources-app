@@ -181,6 +181,7 @@ class UpdateFrequency(Enum):
     HOURLY = "Hourly"
     QUARTERLY = "Quarterly"
 
+
 class UserCapacityEnum(Enum):
     ADVOCATE = "advocate"
     COMMUNITY_MEMBER = "community_member"

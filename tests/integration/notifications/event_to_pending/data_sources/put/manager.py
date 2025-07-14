@@ -1,7 +1,9 @@
 from db.client.core import DatabaseClient
 from db.enums import ApprovalStatus
 from middleware.enums import PermissionsEnum
-from middleware.schema_and_dto.dtos.entry_create_update_request import EntryCreateUpdateRequestDTO
+from middleware.schema_and_dto.dtos.entry_create_update_request import (
+    EntryCreateUpdateRequestDTO,
+)
 from tests.integration.notifications.event_to_pending.data_sources.manager import (
     EventToPendingDataSourcesTestManager,
 )

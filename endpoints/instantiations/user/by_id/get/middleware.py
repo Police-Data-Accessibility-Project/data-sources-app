@@ -3,8 +3,6 @@ from werkzeug.exceptions import Forbidden
 
 from db.client.core import DatabaseClient
 from middleware.enums import PermissionsEnum
-from middleware.primary_resource_logic.user_profile import get_owner_data_requests
-from middleware.schema_and_dto.dtos.common.base import GetManyBaseDTO
 from middleware.security.access_info.primary import AccessInfoPrimary
 
 

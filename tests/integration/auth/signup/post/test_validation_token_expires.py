@@ -2,9 +2,7 @@ from datetime import datetime, timezone, timedelta
 from http import HTTPStatus
 
 
-def test_signup_post_validation_token_expires(
-    helper
-):
+def test_signup_post_validation_token_expires(helper):
     """
     Confirm that validation token properly expires if user does not confirm email in time
     """

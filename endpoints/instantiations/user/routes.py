@@ -1,6 +1,8 @@
 from flask import Response
 
-from endpoints.instantiations.user.by_id.patch.endpoint_schema_config import UserPatchEndpointSchemaConfig
+from endpoints.instantiations.user.by_id.patch.endpoint_schema_config import (
+    UserPatchEndpointSchemaConfig,
+)
 from endpoints.instantiations.user.by_id.patch.middleware import patch_user
 from endpoints.schema_config.instantiations.user.put import UserPutEndpointSchemaConfig
 from middleware.security.access_info.primary import AccessInfoPrimary

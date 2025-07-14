@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 import jwt
 from jwt import InvalidSignatureError
@@ -41,9 +40,7 @@ class SimpleJWT:
             SimpleJWT.validate_purpose(decoded_purpose, expected_purpose)
         try:
             payload = jwt.decode(
-                jwt=token,
-                key=get_secret_key(decoded_purpose),
-                algorithms=[ALGORITHM]
+                jwt=token, key=get_secret_key(decoded_purpose), algorithms=[ALGORITHM]
             )
         except InvalidSignatureError as e:
             raise Unauthorized(str(e))

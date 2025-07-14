@@ -43,7 +43,8 @@ from db.enums import (
     RequestStatus,
     LocationType,
     ApprovalStatus,
-    UpdateFrequency, UserCapacityEnum,
+    UpdateFrequency,
+    UserCapacityEnum,
 )
 from db.exceptions import LocationDoesNotExistError
 from db.helpers_.psycopg import initialize_psycopg_connection
@@ -144,7 +145,9 @@ from db.queries.instantiations.source_collector.sync import (
     SourceCollectorSyncAgenciesQueryBuilder,
 )
 from db.queries.instantiations.user.create import CreateNewUserQueryBuilder
-from db.queries.instantiations.user.get_recent_searches import GetUserRecentSearchesQueryBuilder
+from db.queries.instantiations.user.get_recent_searches import (
+    GetUserRecentSearchesQueryBuilder,
+)
 from db.queries.instantiations.util.create_entry_in_table import (
     CreateEntryInTableQueryBuilder,
 )
@@ -159,7 +162,9 @@ from db.queries.instantiations.util.select_from_relation import (
 )
 from db.queries.models.get_params import GetParams
 from db.subquery_logic import SubqueryParameters
-from endpoints.instantiations.auth_.validate_email.query import ValidateEmailQueryBuilder
+from endpoints.instantiations.auth_.validate_email.query import (
+    ValidateEmailQueryBuilder,
+)
 from endpoints.instantiations.data_requests_.post.dto import DataRequestsPostDTO
 from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
     SourceCollectorPostRequestInnerDTO,
@@ -170,7 +175,9 @@ from endpoints.instantiations.source_collector.data_sources.post.dtos.response i
 from endpoints.instantiations.source_collector.sync.dtos.request import (
     SourceCollectorSyncAgenciesRequestDTO,
 )
-from endpoints.instantiations.user.by_id.get.dto import UserProfileResponseSchemaInnerDTO
+from endpoints.instantiations.user.by_id.get.dto import (
+    UserProfileResponseSchemaInnerDTO,
+)
 from endpoints.instantiations.user.by_id.get.query import GetUserByIdQueryBuilder
 from endpoints.instantiations.user.by_id.patch.dto import UserPatchDTO
 from endpoints.instantiations.user.by_id.patch.query import UserPatchQueryBuilder
@@ -190,7 +197,9 @@ from middleware.miscellaneous.table_count_logic import (
 from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
 from middleware.schema_and_dto.dtos.data_requests.put import DataRequestsPutOuterDTO
 from middleware.schema_and_dto.dtos.data_sources.post import DataSourcesPostDTO
-from middleware.schema_and_dto.dtos.entry_create_update_request import EntryCreateUpdateRequestDTO
+from middleware.schema_and_dto.dtos.entry_create_update_request import (
+    EntryCreateUpdateRequestDTO,
+)
 from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
 from middleware.schema_and_dto.dtos.match.response import (
     AgencyMatchResponseInnerDTO,
@@ -297,13 +306,11 @@ class DatabaseClient:
         self,
         email: str,
         password_digest: str,
-        capacities: list[UserCapacityEnum] | None = None
+        capacities: list[UserCapacityEnum] | None = None,
     ) -> int | None:
         """Adds a new user to the database."""
         builder = CreateNewUserQueryBuilder(
-            email=email,
-            password_digest=password_digest,
-            capacities=capacities
+            email=email, password_digest=password_digest, capacities=capacities
         )
         return self.run_query_builder(builder)
 
@@ -1327,14 +1334,16 @@ class DatabaseClient:
         email: str,
         password_digest: str,
         validation_token: str,
-        capacities: list[UserCapacityEnum] | None
+        capacities: list[UserCapacityEnum] | None,
     ):
         self.add(
             PendingUser(
                 email=email,
                 password_digest=password_digest,
                 validation_token=validation_token,
-                capacities=[capacity.value for capacity in capacities] if capacities else [],
+                capacities=[capacity.value for capacity in capacities]
+                if capacities
+                else [],
             )
         )
 

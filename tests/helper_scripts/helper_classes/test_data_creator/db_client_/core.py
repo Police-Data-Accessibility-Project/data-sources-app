@@ -29,7 +29,6 @@ from db.models.implementations.core.notification.queue.data_request import (
 from db.models.implementations.core.notification.queue.data_source import (
     DataSourceUserNotificationQueue,
 )
-from db.models.implementations.core.user.capacity import UserCapacity
 from db.models.implementations.core.user.core import User
 from middleware.enums import (
     JurisdictionType,
@@ -42,7 +41,10 @@ from middleware.schema_and_dto.dtos.agencies.post import (
     AgencyInfoPostDTO,
     AgenciesPostDTO,
 )
-from endpoints.instantiations.data_requests_.post.dto import RequestInfoPostDTO, DataRequestsPostDTO
+from endpoints.instantiations.data_requests_.post.dto import (
+    RequestInfoPostDTO,
+    DataRequestsPostDTO,
+)
 from middleware.schema_and_dto.dtos.data_requests.put import (
     DataRequestsPutDTO,
     DataRequestsPutOuterDTO,
@@ -51,7 +53,9 @@ from middleware.schema_and_dto.dtos.data_sources.post import (
     DataSourcesPostDTO,
     DataSourceEntryDataPostDTO,
 )
-from middleware.schema_and_dto.dtos.entry_create_update_request import EntryCreateUpdateRequestDTO
+from middleware.schema_and_dto.dtos.entry_create_update_request import (
+    EntryCreateUpdateRequestDTO,
+)
 from tests.helper_scripts.common_endpoint_calls import CreatedDataSource
 from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,

@@ -19,7 +19,9 @@ from endpoints.instantiations.auth_.refresh_session import namespace_refresh_ses
 from endpoints.instantiations.auth_.request_reset_password import (
     namespace_request_reset_password,
 )
-from endpoints.instantiations.auth_.resend_validation_email.route import namespace_resend_validation_email
+from endpoints.instantiations.auth_.resend_validation_email.route import (
+    namespace_resend_validation_email,
+)
 from endpoints.instantiations.auth_.reset_password import namespace_reset_password
 from endpoints.instantiations.auth_.reset_token_validation import (
     namespace_reset_token_validation,
@@ -95,7 +97,7 @@ NAMESPACES = [
     namespace_proposals,
     namespace_source_collector,
     namespace_validate_email,
-    namespace_resend_validation_email
+    namespace_resend_validation_email,
 ]
 
 MY_PREFIX = "/api"

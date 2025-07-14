@@ -42,7 +42,9 @@ def create_test_user_db_client(db_client: DatabaseClient) -> UserInfo:
         password_digest=password_digest,
         capacities=capacities,
     )
-    return UserInfo(email=email, password=password, user_id=user_id, capacities=capacities)
+    return UserInfo(
+        email=email, password=password, user_id=user_id, capacities=capacities
+    )
 
 
 JWTTokens = namedtuple("JWTTokens", ["access_token", "refresh_token"])
@@ -156,8 +158,7 @@ def setup_get_typeahead_suggestion_test_data():
 
 
 def create_test_user_setup(
-    client: FlaskClient,
-    permissions: Optional[list[PermissionsEnum]] = None
+    client: FlaskClient, permissions: Optional[list[PermissionsEnum]] = None
 ) -> TestUserSetup:
     db_client = DatabaseClient()
     user_info = create_test_user_db_client(db_client)

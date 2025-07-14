@@ -11,12 +11,11 @@ from middleware.exceptions import DuplicateUserError
 
 @final
 class CreateNewUserQueryBuilder(QueryBuilderBase):
-
     def __init__(
         self,
         email: str,
         password_digest: str,
-        capacities: list[UserCapacityEnum] | None = None
+        capacities: list[UserCapacityEnum] | None = None,
     ):
         super().__init__()
         self.email = email
@@ -25,10 +24,7 @@ class CreateNewUserQueryBuilder(QueryBuilderBase):
 
     @override
     def run(self) -> int:
-        user = User(
-            email=self.email,
-            password_digest=self.password_digest
-        )
+        user = User(email=self.email, password_digest=self.password_digest)
         self.session.add(user)
         try:
             self.session.flush()
@@ -39,8 +35,4 @@ class CreateNewUserQueryBuilder(QueryBuilderBase):
 
     def _add_user_capacities(self, user_id: int):
         for capacity in self.capacities:
-            self.session.add(
-                UserCapacity(
-                    user_id=user_id,
-                    capacity=capacity.value)
-            )
+            self.session.add(UserCapacity(user_id=user_id, capacity=capacity.value))

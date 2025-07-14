@@ -44,5 +44,3 @@ class ApiKeyResource(PsycopgResource):
             wrapper_function=create_api_key_for_user,
             access_info=access_info,
         )
-
-

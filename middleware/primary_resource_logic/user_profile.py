@@ -40,5 +40,3 @@ def get_user_recent_searches(db_client: DatabaseClient, access_info: AccessInfoP
     )
 
     return make_response(recent_searches)
-
-
