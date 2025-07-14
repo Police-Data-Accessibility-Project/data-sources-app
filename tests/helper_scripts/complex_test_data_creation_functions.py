@@ -1,4 +1,3 @@
-
 import psycopg
 
 from db.client.core import DatabaseClient
