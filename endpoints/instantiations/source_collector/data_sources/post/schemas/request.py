@@ -1,66 +1,15 @@
 from marshmallow import Schema, fields
 
+from endpoints.instantiations.source_collector.data_sources.post.dtos.request import SourceCollectorPostRequestInnerDTO
 from middleware.enums import RecordTypes
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import pydantic_to_marshmallow
 from middleware.schema_and_dto.schemas.helpers import enum_field
 from middleware.schema_and_dto.util import get_json_metadata
 
 
-class SourceCollectorPostRequestInnerSchema(Schema):
-    name = fields.String(
-        metadata=get_json_metadata("The name of the data source"), required=True
-    )
-    description = fields.String(
-        metadata=get_json_metadata("The description of the data source"), required=True
-    )
-    source_url = fields.String(
-        metadata=get_json_metadata("The URL of the data source"), required=True
-    )
-    record_type = enum_field(
-        RecordTypes,
-        allow_none=False,
-        description="The record type of the data source.",
-    )
-    record_formats = fields.List(
-        fields.String(
-            metadata=get_json_metadata(
-                "What formats the data source can be obtained in.",
-            ),
-        ),
-        allow_none=True,
-        metadata=get_json_metadata(
-            "What formats the data source can be obtained in.",
-        ),
-    )
-    data_portal_type = fields.String(
-        allow_none=True,
-        metadata=get_json_metadata(
-            "The data portal type of the data source.",
-        ),
-    )
-    last_approval_editor = fields.Integer(
-        required=True,
-        metadata=get_json_metadata(
-            "User id of the user who provided approval for the data source in source collector."
-        ),
-    )
-    supplying_entity = fields.String(
-        allow_none=True,
-        metadata=get_json_metadata(
-            "If the Agency didn't publish this, who did?",
-        ),
-    )
-    agency_ids = fields.List(
-        fields.Integer(
-            required=True,
-            metadata=get_json_metadata(
-                "The agencies that are associated with this data source."
-            ),
-        ),
-        required=True,
-        metadata=get_json_metadata(
-            "The agencies that are associated with this data source."
-        ),
-    )
+SourceCollectorPostRequestInnerSchema = pydantic_to_marshmallow(
+    SourceCollectorPostRequestInnerDTO
+)
 
 
 class SourceCollectorPostRequestSchema(Schema):

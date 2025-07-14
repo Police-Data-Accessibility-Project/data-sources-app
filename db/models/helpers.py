@@ -47,7 +47,15 @@ def make_get_iter_model_list_of_dict(attr_name):
 
 
 def enum_list_column(enum: type[Enum], name: str) -> Column[Sequence[str | Enum]]:
-    return Column(ARRAY(pgEnum(*[e.value for e in enum], name=name)))
+    return Column(
+        ARRAY(
+            pgEnum(
+                *[e.value for e in enum],
+                name=name
+            )
+        ),
+        default=[],
+    )
 
 
 def enum_column(
