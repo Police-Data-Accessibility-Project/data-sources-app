@@ -1,4 +1,3 @@
-
 from endpoints.instantiations.locations_._shared.dtos.response import (
     LocationInfoResponseDTO,
 )
