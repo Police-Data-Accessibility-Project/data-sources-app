@@ -1,5 +1,4 @@
 import uuid
-
 from http import HTTPStatus
 from typing import Dict, Optional
 
@@ -7,6 +6,7 @@ from flask.testing import FlaskClient
 
 from db.db_client_dataclasses import WhereMapping
 from db.enums import RequestUrgency, LocationType, RequestStatus, SortOrder
+from endpoints.schema_config.enums import SchemaConfigs
 from endpoints.schema_config.instantiations.data_requests.by_id.get import (
     DataRequestsByIDGetEndpointSchemaConfig,
 )
@@ -20,16 +20,9 @@ from middleware.constants import DATA_KEY
 from middleware.enums import RecordTypes
 from middleware.third_party_interaction_logic.mailgun_.constants import OPERATIONS_EMAIL
 from middleware.util.type_conversion import get_enum_values
-from endpoints.schema_config.enums import SchemaConfigs
 from tests.helper_scripts.common_test_data import (
     get_random_number_for_testing,
     get_test_name,
-)
-from tests.helper_scripts.complex_test_data_creation_functions import (
-    create_test_data_request,
-)
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
-    TestDataCreatorFlask,
 )
 from tests.helper_scripts.constants import (
     DATA_REQUESTS_BASE_ENDPOINT,
@@ -38,9 +31,10 @@ from tests.helper_scripts.constants import (
     DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT,
     DATA_REQUESTS_RELATED_LOCATIONS,
 )
-
 from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
-
+from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+    TestDataCreatorFlask,
+)
 from tests.helper_scripts.run_and_validate_request import run_and_validate_request
 
 

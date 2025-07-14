@@ -10,13 +10,8 @@ from middleware.schema_and_dto.schemas.agencies.info.post import (
 )
 from tests.helper_scripts.common_endpoint_calls import CreatedDataSource
 from tests.helper_scripts.common_test_data import get_test_name
-from tests.helper_scripts.complex_test_data_creation_functions import (
-    create_test_data_request,
-)
 from tests.helper_scripts.constants import (
-    DATA_REQUESTS_BY_ID_ENDPOINT,
     AGENCIES_BASE_ENDPOINT,
-    AGENCIES_BY_ID_ENDPOINT,
     DATA_SOURCES_POST_DELETE_RELATED_AGENCY_ENDPOINT,
     DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT,
 )
@@ -24,10 +19,10 @@ from tests.helper_scripts.helper_classes.RequestValidator import RequestValidato
 from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,
 )
+from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
-from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
 from tests.helper_scripts.helper_functions_complex import (
     create_admin_test_user_setup,
     create_test_user_setup,
@@ -87,24 +82,6 @@ class TestDataCreatorFlask:
             request_status=request_status,
             record_type=record_type,
             location_ids=location_ids,
-        )
-
-    def update_data_request_status(self, data_request_id: int, status: RequestStatus):
-        run_and_validate_request(
-            flask_client=self.flask_client,
-            http_method="put",
-            endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
-                data_request_id=data_request_id
-            ),
-            headers=self.get_admin_tus().jwt_authorization_header,
-            json={"request_status": status.value},
-        )
-
-    def get_sample_location_info(self, locality_name: Optional[str] = None) -> int:
-        if locality_name is None:
-            locality_name = get_test_name()
-        return self.locality(
-            locality_name=locality_name,
         )
 
     def get_sample_agency_post_parameters(
@@ -175,15 +152,6 @@ class TestDataCreatorFlask:
     def refresh_typeahead_locations(self):
         self.db_client.execute_raw_sql("CALL refresh_typeahead_locations();")
 
-    def update_agency(self, agency_id: int, data_to_update: dict):
-        run_and_validate_request(
-            flask_client=self.flask_client,
-            http_method="put",
-            endpoint=AGENCIES_BY_ID_ENDPOINT.format(agency_id=agency_id),
-            headers=self.get_admin_tus().jwt_authorization_header,
-            json=data_to_update,
-        )
-
     def link_data_source_to_agency(self, data_source_id, agency_id):
         run_and_validate_request(
             flask_client=self.flask_client,
@@ -243,4 +211,3 @@ class TestDataCreatorFlask:
             permission=permission.value,
         )
 
-        # TODO: Create a tuple providing all 4 id's -- for the user, the data_source, the agency, and the data_request

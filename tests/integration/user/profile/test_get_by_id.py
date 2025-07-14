@@ -30,7 +30,7 @@ def test_user_profile_get_by_id(
     )
 
     # Have the user create a data request
-    data_request_id = tdc.tdcdb.data_request(user_id=tus.user_info.user_id).id
+    data_request_id = tdc.data_request(user_id=tus.user_id).id
 
     # Assign the user a permission
     tdc.add_permission(
@@ -44,7 +44,7 @@ def test_user_profile_get_by_id(
     # Call user profile endpoint and confirm it returns results
     json_response = tdc.request_validator.get_user_by_id(
         headers=tus.jwt_authorization_header,
-        user_id=tus.user_info.user_id,
+        user_id=tus.user_id,
     )
 
     data = json_response["data"]
@@ -59,7 +59,7 @@ def test_user_profile_get_by_id(
     # Test that admin can also get this user's information
     json_response_admin = tdc.request_validator.get_user_by_id(
         headers=tdc.get_admin_tus().jwt_authorization_header,
-        user_id=tus.user_info.user_id,
+        user_id=tus.user_id,
     )
     assert json_response_admin == json_response
     # Test that other non-admin users cannot get this user's information
@@ -67,7 +67,7 @@ def test_user_profile_get_by_id(
     tus_2 = tdc.standard_user()
     tdc.request_validator.get_user_by_id(
         headers=tus_2.jwt_authorization_header,
-        user_id=tus.user_info.user_id,
+        user_id=tus.user_id,
         expected_response_status=HTTPStatus.FORBIDDEN,
         expected_schema=MessageSchema(),
     )

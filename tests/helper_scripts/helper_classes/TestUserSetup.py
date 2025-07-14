@@ -10,3 +10,7 @@ class TestUserSetup:
     api_key: str
     api_authorization_header: dict
     jwt_authorization_header: Optional[dict] = None
+
+    @property
+    def user_id(self) -> int:
+        return self.user_info.user_id

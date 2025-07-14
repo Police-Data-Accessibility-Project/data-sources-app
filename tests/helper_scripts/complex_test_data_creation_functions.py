@@ -21,39 +21,6 @@ from tests.helper_scripts.run_and_validate_request import run_and_validate_reque
 from tests.helper_scripts.test_dataclasses import TestDataRequestInfo
 
 
-def insert_test_column_permission_data(db_client: DatabaseClient):
-    try:
-        db_client.execute_raw_sql(
-            """
-        DO $$
-        DECLARE
-            column_a_id INT;
-            column_b_id INT;
-            column_c_id INT;
-        BEGIN
-            INSERT INTO relation_column (relation, associated_column) VALUES ('test_relation', 'column_a') RETURNING id INTO column_a_id;
-            INSERT INTO relation_column (relation, associated_column) VALUES ('test_relation', 'column_b') RETURNING id INTO column_b_id;
-            INSERT INTO relation_column (relation, associated_column) VALUES ('test_relation', 'column_c') RETURNING id INTO column_c_id;
-
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_a_id, 'STANDARD', 'READ');
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_b_id, 'STANDARD', 'READ');
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_c_id, 'STANDARD', 'NONE');
-
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_a_id, 'OWNER', 'READ');
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_b_id, 'OWNER', 'WRITE');
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_c_id, 'OWNER', 'NONE');
-
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_a_id, 'ADMIN', 'WRITE');
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_b_id, 'ADMIN', 'WRITE');
-            INSERT INTO column_permission (rc_id, relation_role, access_permission) VALUES (column_c_id, 'ADMIN', 'READ');
-
-        END $$;
-        """
-        )
-    except psycopg.errors.UniqueViolation:
-        pass  # Already added
-
-
 def create_data_source_entry_for_url_duplicate_checking(
     db_client: DatabaseClient,
 ) -> str:
@@ -84,65 +51,3 @@ def create_data_source_entry_for_url_duplicate_checking(
         # Rollback
         db_client.connection.rollback()
         raise e
-
-
-def create_test_data_request(
-    flask_client: FlaskClient,
-    jwt_authorization_header: dict,
-    location_info: Optional[dict] = None,
-) -> TestDataRequestInfo:
-    submission_notes = uuid.uuid4().hex
-    json_to_post = {
-        "request_info": {
-            "submission_notes": submission_notes,
-            "title": get_test_name(),
-            "request_urgency": RequestUrgency.INDEFINITE.value,
-        }
-    }
-
-    if location_info is not None:
-        json_to_post["location_infos"] = [location_info]
-
-    json = run_and_validate_request(
-        flask_client=flask_client,
-        http_method="post",
-        endpoint=DATA_REQUESTS_BASE_ENDPOINT,
-        headers=jwt_authorization_header,
-        json=json_to_post,
-    )
-
-    return TestDataRequestInfo(id=json["id"], submission_notes=submission_notes)
-
-
-def get_sample_location_info(locality_name: Optional[str] = None) -> dict:
-    if locality_name is None:
-        locality_name = get_test_name()
-    return {
-        "type": "Locality",
-        "state_iso": "PA",
-        "county_fips": "42003",
-        "locality_name": locality_name,
-    }
-
-
-def get_sample_agency_post_parameters(
-    name,
-    locality_name,
-    jurisdiction_type: JurisdictionType,
-    location_info: Optional[dict] = None,
-) -> dict:
-    """
-    Obtains information to be passed to an `/agencies` POST request
-    """
-
-    return {
-        "agency_info": generate_test_data_from_schema(
-            schema=AgencyInfoPostSchema(),
-            override={
-                "name": name,
-                "jurisdiction_type": JurisdictionType.LOCAL.value,
-                "agency_type": AgencyType.POLICE.value,
-            },
-        ),
-        "location_id": location_info,
-    }
