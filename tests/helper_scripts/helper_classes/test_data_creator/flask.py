@@ -43,7 +43,7 @@ class TestDataCreatorFlask:
 
     def __init__(self, flask_client: FlaskClient):
         self.flask_client = flask_client
-        self.tdcdb = TestDataCreatorDBClient()
+        self.tdcdb: TestDataCreatorDBClient = TestDataCreatorDBClient()
         self.request_validator = RequestValidator(flask_client)
         self.db_client = DatabaseClient()
         self.admin_tus: Optional[TestUserSetup] = None
@@ -77,24 +77,17 @@ class TestDataCreatorFlask:
 
     def data_request(
         self,
-        user_tus: Optional[TestUserSetup] = None,
-        location_ids: Optional[list[int]] = None,
+        user_id: int | None = None,
+        request_status: RequestStatus | None = RequestStatus.INTAKE,
+        record_type: RecordTypes | None = None,
+        location_ids: list[int] | None = None,
     ) -> TestDataRequestInfo:
-        if user_tus is None:
-            user_tus = self.get_admin_tus()
-        tdr = create_test_data_request(
-            flask_client=self.flask_client,
-            jwt_authorization_header=user_tus.jwt_authorization_header,
+        return self.tdcdb.data_request(
+            user_id=user_id,
+            request_status=request_status,
+            record_type=record_type,
+            location_ids=location_ids,
         )
-        if location_ids is not None:
-            for location_id in location_ids:
-                self.request_validator.link_data_request_with_location(
-                    data_request_id=tdr.id,
-                    location_id=location_id,
-                    headers=self.get_admin_tus().jwt_authorization_header,
-                )
-
-        return tdr
 
     def update_data_request_status(self, data_request_id: int, status: RequestStatus):
         run_and_validate_request(

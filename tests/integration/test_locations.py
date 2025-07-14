@@ -58,8 +58,8 @@ def test_locations_related_data_requests(locations_test_setup: LocationsTestSetu
     location_id = lts.location_info["location_id"]
 
     # Add two data requests to location
-    tdc.data_request(location_ids=[location_id])
-    tdc.data_request(location_ids=[location_id])
+    tdc.tdcdb.data_request(location_ids=[location_id])
+    tdc.tdcdb.data_request(location_ids=[location_id])
 
     # Get data requests
     tus = tdc.standard_user()

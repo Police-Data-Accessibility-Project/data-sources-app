@@ -30,7 +30,7 @@ def test_user_profile_get_by_id(
     )
 
     # Have the user create a data request
-    data_request_id = tdc.data_request(user_tus=tus).id
+    data_request_id = tdc.tdcdb.data_request(user_id=tus.user_info.user_id).id
 
     # Assign the user a permission
     tdc.add_permission(

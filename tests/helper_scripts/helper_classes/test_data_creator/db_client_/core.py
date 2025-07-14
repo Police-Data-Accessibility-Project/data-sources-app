@@ -247,6 +247,7 @@ class TestDataCreatorDBClient:
         user_id: int | None = None,
         request_status: RequestStatus | None = RequestStatus.INTAKE,
         record_type: RecordTypes | None = None,
+        location_ids: list[int] | None = None,
     ) -> TestDataRequestInfo:
         if record_type is None:
             record_type_as_list = []
@@ -263,7 +264,8 @@ class TestDataCreatorDBClient:
                 request_status=request_status,
                 request_urgency=RequestUrgency.INDEFINITE,
                 record_types_required=record_type_as_list,
-            )
+            ),
+            location_ids=location_ids
         )
         data_request_id = self.db_client.create_data_request_v2(
             dto=dto, user_id=user_id
