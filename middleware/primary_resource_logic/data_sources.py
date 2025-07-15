@@ -191,11 +191,14 @@ def add_new_data_source_wrapper(
     db_client: DatabaseClient, dto: DataSourcesPostDTO, access_info: AccessInfoPrimary
 ) -> Response:
     data_source_id = db_client.add_data_source_v2(dto)
-    send_via_mailgun(
-        to_email=OPERATIONS_EMAIL,
-        subject=f"New data source submitted: {dto.entry_data.name}",
-        text=f"Description: \n\n{dto.entry_data.description}",
-    )
+    
+    # Only send email if notifications are enabled
+    if os.getenv('SEND_OPS_NOTIFICATIONS', 'false').lower() == 'true':
+        send_via_mailgun(
+            to_email=OPERATIONS_EMAIL,
+            subject=f"New data source submitted: {dto.entry_data.name}",
+            text=f"Description: \n\n{dto.entry_data.description}",
+        )
 
     return make_response(
         {
