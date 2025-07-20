@@ -72,22 +72,8 @@ ApprovalStatusLiteral = Literal[
     "rejected", "approved", "needs identification", "pending"
 ]
 URLStatusLiteral = Literal["available", "none found", "ok", "broken"]
-RetentionScheduleLiteral = Literal[
-    "1-10 years",
-    "< 1 week",
-    "1 day",
-    "Future only",
-    "< 1 day",
-    "< 1 year",
-    "1 month",
-    "1 week",
-    "> 10 years",
-]
-DetailLevelLiteral = Literal[
-    "Individual record", "Aggregated records", "Summarized totals"
-]
+
 AccessTypeLiteral = Literal["Web page", "API", "Download"]
-UpdateMethodLiteral = Literal["Insert", "No updates", "Overwrite"]
 RequestUrgencyLiteral = Literal[
     "urgent",
     "somewhat_urgent",
@@ -105,8 +91,6 @@ LocationTypePGEnum = postgresql.ENUM(
 )
 EventTypeDataRequestLiteral = Literal["Request Ready to Start", "Request Complete"]
 EventTypeDataSourceLiteral = Literal["Data Source Approved"]
-EntityTypeLiteral = Literal["Data Request", "Data Source"]
-AgencyAggregationLiteral = Literal["county", "local", "state", "federal"]
 AgencyTypeLiteral = Literal[
     "incarceration",
     "law enforcement",

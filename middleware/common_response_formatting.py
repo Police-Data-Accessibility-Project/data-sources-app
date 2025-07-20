@@ -1,6 +1,7 @@
 from typing import Any
 
 from flask import Response, make_response
+from pydantic import BaseModel
 
 
 def format_list_response(data: dict, message: str = "") -> dict:
@@ -32,3 +33,7 @@ def message_response(message: str, **kwargs: dict[str, Any]) -> Response:
     dict_response = {"message": message}
     dict_response.update(kwargs)
     return make_response(dict_response)
+
+
+def dto_to_response(dto: BaseModel) -> Response:
+    return make_response(dto.model_dump(mode="json"))

@@ -1,14 +1,14 @@
 from endpoints.schema_config.instantiations.data_sources.by_id.agencies.get import (
     DataSourcesRelatedAgenciesGet,
 )
-from tests.helper_scripts.constants import (
+from tests.helpers.constants import (
     DATA_SOURCES_GET_RELATED_AGENCIES_ENDPOINT,
     DATA_SOURCES_POST_DELETE_RELATED_AGENCY_ENDPOINT,
 )
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helpers.run_and_validate_request import run_and_validate_request
 
 
 def test_data_source_by_id_related_agencies(

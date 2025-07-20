@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from tests.helper_scripts.common_asserts import assert_response_status
+from tests.helpers.asserts import assert_response_status
 
 
 def test_api_doc_load(flask_client_with_db):

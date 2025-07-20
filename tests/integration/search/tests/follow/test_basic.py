@@ -12,10 +12,10 @@ from endpoints.schema_config.instantiations.search.follow.get import (
     SearchFollowGetEndpointSchemaConfig,
 )
 from middleware.enums import RecordTypes
-from tests.helper_scripts.constants import SEARCH_FOLLOW_BASE_ENDPOINT
-from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
-from tests.helper_scripts.helper_functions_simple import add_query_params
-from tests.helper_scripts.run_and_validate_request import (
+from tests.helpers.constants import SEARCH_FOLLOW_BASE_ENDPOINT
+from tests.helpers.helper_classes.TestUserSetup import TestUserSetup
+from tests.helpers.helper_functions_simple import add_query_params
+from tests.helpers.run_and_validate_request import (
     http_methods,
     run_and_validate_request,
 )

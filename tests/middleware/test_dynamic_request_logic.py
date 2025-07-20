@@ -21,7 +21,7 @@ from middleware.dynamic_request_logic.get.many import (
 from middleware.dynamic_request_logic.put import put_entry
 from middleware.dynamic_request_logic.supporting_classes import IDInfo
 from middleware.util.dynamic import call_if_not_none, execute_if_not_none
-from tests.helper_scripts.common_mocks_and_patches import (
+from tests.helpers.common_mocks_and_patches import (
     patch_and_return_mock,
     multi_monkeypatch,
 )

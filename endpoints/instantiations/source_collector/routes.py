@@ -1,15 +1,18 @@
 from endpoints._helpers.response_info import ResponseInfo
+from endpoints.instantiations.source_collector.agencies.sync.schema_config import (
+    SourceCollectorSyncAgenciesSchemaConfig,
+)
 from endpoints.instantiations.source_collector.data_sources.duplicates.wrapper import (
     check_for_duplicate_urls,
 )
 from endpoints.instantiations.source_collector.data_sources.post.wrapper import (
     add_data_sources_from_source_collector,
 )
-from endpoints.instantiations.source_collector.sync.middleware.wrapper import (
+from endpoints.instantiations.source_collector.agencies.sync.wrapper import (
     get_agencies_for_sync,
 )
-from endpoints.instantiations.source_collector.sync.schema_config import (
-    SourceCollectorSyncAgenciesSchemaConfig,
+from endpoints.instantiations.source_collector.data_sources.sync.wrapper import (
+    get_data_sources_for_sync,
 )
 from endpoints.psycopg_resource import PsycopgResource
 from endpoints.schema_config.enums import SchemaConfigs
@@ -87,5 +90,26 @@ class SourceCollectorSyncAgencies(PsycopgResource):
     def get(self, access_info: AccessInfoPrimary):
         return self.run_endpoint(
             wrapper_function=get_agencies_for_sync,
+            schema_populate_parameters=SourceCollectorSyncAgenciesSchemaConfig.get_schema_populate_parameters(),
+        )
+
+
+@namespace_source_collector.route("/data-sources/sync", methods=["GET"])
+class SourceCollectorSyncDataSources(PsycopgResource):
+    @endpoint_info(
+        namespace=namespace_source_collector,
+        auth_info=AuthenticationInfo(
+            allowed_access_methods=[AccessTypeEnum.JWT],
+            restrict_to_permissions=[PermissionsEnum.SOURCE_COLLECTOR_DATA_SOURCES],
+        ),
+        schema_config=SchemaConfigs.SOURCE_COLLECTOR_SYNC_DATA_SOURCES,
+        response_info=ResponseInfo(
+            success_message="Successfully returns data sources to sync"
+        ),
+        description="Syncs data sources.",
+    )
+    def get(self, access_info: AccessInfoPrimary):
+        return self.run_endpoint(
+            wrapper_function=get_data_sources_for_sync,
             schema_populate_parameters=SourceCollectorSyncAgenciesSchemaConfig.get_schema_populate_parameters(),
         )

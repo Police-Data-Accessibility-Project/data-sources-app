@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock
 
-from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
+from tests.helpers.DynamicMagicMock import DynamicMagicMock
 
 
 class GetTypeaheadSuggestionsMocks(DynamicMagicMock):

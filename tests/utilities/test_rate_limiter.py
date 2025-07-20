@@ -3,8 +3,8 @@ from unittest.mock import MagicMock
 import pytest
 
 from config import limiter
-from tests.helper_scripts.constants import TEST_RESPONSE
-from tests.helper_scripts.common_asserts import assert_response_status
+from tests.helpers.constants import TEST_RESPONSE
+from tests.helpers.asserts import assert_response_status
 
 
 def post_login_request(client_with_mock_db, ip_address="127.0.0.1"):

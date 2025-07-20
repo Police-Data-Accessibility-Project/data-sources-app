@@ -24,7 +24,7 @@ from db.models.implementations.core.notification.queue.data_request import (
 from db.models.implementations.core.notification.queue.data_source import (
     DataSourceUserNotificationQueue,
 )
-from tests.helper_scripts.helper_classes.test_data_creator.db_client_.core import (
+from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
 from tests.integration.notifications.pending_to_queue._helpers.checker_.data_requests import (

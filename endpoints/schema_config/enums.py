@@ -3,8 +3,11 @@ from enum import Enum
 from endpoints.instantiations.auth_.validate_email.endpoint_schema_config import (
     AuthValidateEmailEndpointSchema,
 )
-from endpoints.instantiations.source_collector.sync.schema_config import (
+from endpoints.instantiations.source_collector.agencies.sync.schema_config import (
     SourceCollectorSyncAgenciesSchemaConfig,
+)
+from endpoints.instantiations.source_collector.data_sources.sync.schema_config import (
+    SourceCollectorSyncDataSourceSchemaConfig,
 )
 from endpoints.instantiations.user.by_id.patch.endpoint_schema_config import (
     UserPatchEndpointSchemaConfig,
@@ -402,3 +405,4 @@ class SchemaConfigs(Enum):
 
     SOURCE_COLLECTOR_DUPLICATES_POST = SourceCollectorDuplicatesPostEndpointSchemaConfig
     SOURCE_COLLECTOR_SYNC_AGENCIES = SourceCollectorSyncAgenciesSchemaConfig
+    SOURCE_COLLECTOR_SYNC_DATA_SOURCES = SourceCollectorSyncDataSourceSchemaConfig

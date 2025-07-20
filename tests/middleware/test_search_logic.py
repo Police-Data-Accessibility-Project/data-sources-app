@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 from middleware.primary_resource_logic.search.helpers import (
     format_search_results,
 )
-from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
+from tests.helpers.DynamicMagicMock import DynamicMagicMock
 
 
 class SearchWrapperMocks(DynamicMagicMock):

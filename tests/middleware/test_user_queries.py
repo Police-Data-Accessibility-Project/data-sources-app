@@ -10,8 +10,8 @@ from middleware.primary_resource_logic.user_queries import (
     user_post_results,
     user_check_email,
 )
-from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
-from tests.helper_scripts.common_mocks_and_patches import multi_monkeypatch
+from tests.helpers.DynamicMagicMock import DynamicMagicMock
+from tests.helpers.common_mocks_and_patches import multi_monkeypatch
 
 PATCH_ROOT = "middleware.primary_resource_logic.user_queries"
 

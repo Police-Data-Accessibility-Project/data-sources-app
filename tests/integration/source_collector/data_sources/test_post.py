@@ -13,7 +13,7 @@ from endpoints.instantiations.source_collector.data_sources.post.dtos.request im
     SourceCollectorPostRequestInnerDTO,
     SourceCollectorPostRequestDTO,
 )
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 

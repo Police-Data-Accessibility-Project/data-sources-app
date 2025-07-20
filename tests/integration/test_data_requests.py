@@ -20,22 +20,22 @@ from middleware.constants import DATA_KEY
 from middleware.enums import RecordTypes
 from middleware.third_party_interaction_logic.mailgun_.constants import OPERATIONS_EMAIL
 from middleware.util.type_conversion import get_enum_values
-from tests.helper_scripts.common_test_data import (
+from tests.helpers.common_test_data import (
     get_random_number_for_testing,
     get_test_name,
 )
-from tests.helper_scripts.constants import (
+from tests.helpers.constants import (
     DATA_REQUESTS_BASE_ENDPOINT,
     DATA_REQUESTS_BY_ID_ENDPOINT,
     DATA_REQUESTS_GET_RELATED_SOURCE_ENDPOINT,
     DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT,
     DATA_REQUESTS_RELATED_LOCATIONS,
 )
-from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.helper_classes.TestUserSetup import TestUserSetup
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helpers.run_and_validate_request import run_and_validate_request
 
 
 def test_data_requests_get(

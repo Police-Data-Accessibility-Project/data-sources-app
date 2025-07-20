@@ -15,12 +15,12 @@ from db.db_client_dataclasses import WhereMapping
 from db.enums import ApprovalStatus, URLStatus
 from db.models.implementations.core.recent_search.core import RecentSearch
 from middleware.enums import Relations, OperationType
-from tests.helper_scripts.common_test_data import get_test_name
-from tests.helper_scripts.helper_classes.MultiLocationSetup import MultiLocationSetup
-from tests.helper_scripts.helper_classes.test_data_creator.db_client_.core import (
+from tests.helpers.common_test_data import get_test_name
+from tests.helpers.helper_classes.MultiLocationSetup import MultiLocationSetup
+from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
-from tests.helper_scripts.test_dataclasses import TestAgencyInfo
+from tests.helpers.test_dataclasses import TestAgencyInfo
 from utilities.enums import RecordCategoryEnum
 
 ID_COLUMN = "state_iso"

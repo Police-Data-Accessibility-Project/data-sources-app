@@ -1,7 +1,7 @@
 import uuid
 
 from db.client.core import DatabaseClient
-from tests.helper_scripts.common_test_data import get_test_name
+from tests.helpers.common_test_data import get_test_name
 
 
 def test_update_user_api_key(live_database_client: DatabaseClient):

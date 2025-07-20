@@ -23,20 +23,20 @@ from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )
 
-from tests.helper_scripts.common_test_data import get_test_name
-from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
+from tests.helpers.common_test_data import get_test_name
+from tests.helpers.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,
 )
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.constants import AGENCIES_BASE_ENDPOINT
+from tests.helpers.constants import AGENCIES_BASE_ENDPOINT
 
-from tests.helper_scripts.common_asserts import (
+from tests.helpers.asserts import (
     assert_expected_get_many_result,
     assert_contains_key_value_pairs,
 )
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helpers.run_and_validate_request import run_and_validate_request
 
 
 def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):

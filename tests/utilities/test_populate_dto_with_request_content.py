@@ -23,7 +23,7 @@ from middleware.schema_and_dto.dynamic.schema.request_content_population_.except
     InvalidSourceMappingError,
 )
 from middleware.schema_and_dto.non_dto_dataclasses import DTOPopulateParameters
-from tests.helper_scripts.common_mocks_and_patches import patch_request_args_get
+from tests.helpers.common_mocks_and_patches import patch_request_args_get
 
 from middleware.schema_and_dto.exceptions import AttributeNotInClassError
 from utilities.enums import SourceMappingEnum

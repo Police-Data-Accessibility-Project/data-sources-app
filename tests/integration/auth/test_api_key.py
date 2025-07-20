@@ -7,10 +7,10 @@ from endpoints.schema_config.instantiations.api_key import (
 )
 from middleware.security.api_key.core import ApiKey
 from endpoints.instantiations.auth_.routes import API_KEY_ROUTE
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helpers.run_and_validate_request import run_and_validate_request
 
 
 def test_api_key_post(test_data_creator_flask: TestDataCreatorFlask):
