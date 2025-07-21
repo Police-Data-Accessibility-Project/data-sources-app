@@ -1,3 +1,5 @@
+import os
+
 from flask import Response
 
 from db.client.core import DatabaseClient
@@ -14,7 +16,7 @@ def create_data_request_wrapper(
     dr_id = db_client.create_data_request_v2(dto=dto, user_id=access_info.get_user_id())
 
     # Only send email if notifications are enabled
-    if os.getenv('SEND_OPS_NOTIFICATIONS', 'false').lower() == 'true':
+    if os.getenv("SEND_OPS_NOTIFICATIONS", "false").lower() == "true":
         send_via_mailgun(
             to_email=OPERATIONS_EMAIL,
             subject=f"New data request submitted: {dto.request_info.title}",
