@@ -13,9 +13,12 @@ All unit and integration tests for the API live in the `tests` folder
 It is best practice to add tests for any new feature to ensure it is working as expected and that any future code changes do not affect its functionality. All tests will be automatically run when a PR into dev is opened in order to ensure any changes do not break current app functionality. If a test fails, it is a sign that the new code should be checked or possibly that the test needs to be updated. 
 
 ## Linting
-Linting is enforced with black on PR creation. You can use black to automatically reformat your files before commiting them, this will allow your PR to pass this check. Any files that require reformatting will be listed on any failed checks on the PR.
+Linting is enforced with ruff on PR creation. You can use ruff to automatically reformat your files before commiting them, which will allow your PR to pass this check. Any files that require reformatting will be listed on any failed checks on the PR.
 ```
-black app_test.py
+ruff check .              # Lint
+ruff check --fix .        # Lint and auto-fix issues
+ruff format --check .     # Check if formatting needed
+ruff format .             # Format code
 ```
 
 ## Docstring and Type Checking
