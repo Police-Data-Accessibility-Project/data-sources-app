@@ -63,11 +63,11 @@ class DataSource(
     # Note: Below is an array of enums in Postgres but this is cumbersome to convey in SQLAlchemy terms
     access_types = enum_list_column(AccessType, name="access_type")
     data_portal_type: Mapped[str | None]
-    record_formats = Column(ARRAY(String))
+    record_formats = Column(ARRAY(String), default=[])
     update_method: Mapped[UpdateMethod | None] = enum_column(
         UpdateMethod, name="update_method"
     )
-    tags = Column(ARRAY(String))
+    tags = Column(ARRAY(String), default=[])
     readme_url: Mapped[str | None]
     originating_entity: Mapped[str | None]
     retention_schedule: Mapped[RetentionSchedule | None] = enum_column(

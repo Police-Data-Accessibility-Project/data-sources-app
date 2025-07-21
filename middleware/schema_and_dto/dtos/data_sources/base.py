@@ -56,11 +56,11 @@ class DataSourceEntryBaseDTO(BaseModel):
     coverage_start: date | None = None
     coverage_end: date | None = None
     detail_level: DetailLevel | None = None
-    access_types: list[AccessType] | None = None
+    access_types: list[AccessType] = []
     data_portal_type: str | None = None
-    record_formats: list[str] | None = None
+    record_formats: list[str] = []
     update_method: UpdateMethod | None = None
-    tags: list[str] | None = None
+    tags: list[str] = []
     readme_url: str | None = None
     originating_entity: str | None = None
     retention_schedule: RetentionSchedule | None = None
