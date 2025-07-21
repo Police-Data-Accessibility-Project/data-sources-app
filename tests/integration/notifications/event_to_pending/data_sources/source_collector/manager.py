@@ -5,7 +5,7 @@ from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.notification.pending.data_source import (
     DataSourcePendingEventNotification,
 )
-from tests.helper_scripts.helper_classes.test_data_creator.db_client_.core import (
+from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
 from tests.integration.notifications.event_to_pending.data_sources.manager import (

@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock
 from middleware.util.env import get_env_variable
-from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
+from tests.helpers.DynamicMagicMock import DynamicMagicMock
 
 
 class GetEnvVariableMocks(DynamicMagicMock):

@@ -1,5 +1,6 @@
 from collections import namedtuple
 from collections.abc import Sequence
+from contextlib import contextmanager
 from datetime import datetime
 from functools import partialmethod
 from operator import and_
@@ -141,9 +142,6 @@ from db.queries.instantiations.search.record import CreateSearchRecordQueryBuild
 from db.queries.instantiations.source_collector.data_sources import (
     AddDataSourcesFromSourceCollectorQueryBuilder,
 )
-from db.queries.instantiations.source_collector.sync import (
-    SourceCollectorSyncAgenciesQueryBuilder,
-)
 from db.queries.instantiations.user.create import CreateNewUserQueryBuilder
 from db.queries.instantiations.user.get_recent_searches import (
     GetUserRecentSearchesQueryBuilder,
@@ -166,14 +164,26 @@ from endpoints.instantiations.auth_.validate_email.query import (
     ValidateEmailQueryBuilder,
 )
 from endpoints.instantiations.data_requests_.post.dto import DataRequestsPostDTO
+from endpoints.instantiations.source_collector.agencies.sync.query import (
+    SourceCollectorSyncAgenciesQueryBuilder,
+)
 from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
     SourceCollectorPostRequestInnerDTO,
 )
 from endpoints.instantiations.source_collector.data_sources.post.dtos.response import (
     SourceCollectorPostResponseInnerDTO,
 )
-from endpoints.instantiations.source_collector.sync.dtos.request import (
+from endpoints.instantiations.source_collector.agencies.sync.dtos.request import (
     SourceCollectorSyncAgenciesRequestDTO,
+)
+from endpoints.instantiations.source_collector.data_sources.sync.dtos.request import (
+    SourceCollectorSyncDataSourcesRequestDTO,
+)
+from endpoints.instantiations.source_collector.data_sources.sync.dtos.response import (
+    SourceCollectorSyncDataSourcesResponseDTO,
+)
+from endpoints.instantiations.source_collector.data_sources.sync.query.core import (
+    SourceCollectorSyncDataSourcesQueryBuilder,
 )
 from endpoints.instantiations.user.by_id.get.dto import (
     UserProfileResponseSchemaInnerDTO,
@@ -301,6 +311,18 @@ class DatabaseClient:
     @session_manager_v2
     def mappings(self, session: Session, query: Executable) -> Sequence[RowMapping]:
         return session.execute(query).mappings().all()
+
+    @contextmanager
+    def session_scope(self):
+        session: Session = self.session_maker()
+        try:
+            yield session
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     def create_new_user(
         self,
@@ -801,12 +823,6 @@ class DatabaseClient:
     create_request_location_relation = partialmethod(
         _create_entry_in_table,
         table_name=Relations.LINK_LOCATIONS_DATA_REQUESTS.value,
-        column_to_return="id",
-    )
-
-    add_data_source = partialmethod(
-        _create_entry_in_table,
-        table_name="data_sources",
         column_to_return="id",
     )
 
@@ -1559,6 +1575,13 @@ class DatabaseClient:
         """Get agencies for source collector sync."""
         builder = SourceCollectorSyncAgenciesQueryBuilder(dto=dto)
         return self.run_query_builder(builder)
+
+    def get_data_sources_for_sync(
+        self, dto: SourceCollectorSyncDataSourcesRequestDTO
+    ) -> SourceCollectorSyncDataSourcesResponseDTO:
+        return self.run_query_builder(
+            SourceCollectorSyncDataSourcesQueryBuilder(dto=dto)
+        )
 
     def patch_user(self, user_id: int, dto: UserPatchDTO) -> None:
         builder = UserPatchQueryBuilder(dto=dto, user_id=user_id)

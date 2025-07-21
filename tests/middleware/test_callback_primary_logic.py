@@ -15,7 +15,7 @@ from middleware.primary_resource_logic.github_oauth import (
 from middleware.custom_dataclasses import (
     FlaskSessionCallbackInfo,
 )
-from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
+from tests.helpers.DynamicMagicMock import DynamicMagicMock
 
 PATCH_PREFIX = "middleware.primary_resource_logic.callback"
 GITHUB_OAUTH_PREFIX = "middleware.primary_resource_logic.github_oauth"

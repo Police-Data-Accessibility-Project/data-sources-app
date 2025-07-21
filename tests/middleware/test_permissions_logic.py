@@ -12,7 +12,7 @@ from middleware.primary_resource_logic.permissions import (
     manage_user_permissions,
     update_permissions_wrapper,
 )
-from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
+from tests.helpers.DynamicMagicMock import DynamicMagicMock
 
 PATCH_ROOT = "middleware.primary_resource_logic.permissions"
 

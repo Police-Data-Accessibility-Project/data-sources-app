@@ -7,7 +7,7 @@ from endpoints.schema_config.instantiations.user.profile.recent_searches import 
 from middleware.enums import OutputFormatEnum, JurisdictionSimplified
 from middleware.util.csv import read_from_csv
 from middleware.util.type_conversion import get_enum_values
-from tests.helper_scripts.constants import USER_PROFILE_RECENT_SEARCHES_ENDPOINT
+from tests.helpers.constants import USER_PROFILE_RECENT_SEARCHES_ENDPOINT
 from tests.integration.search.constants import TEST_STATE, TEST_COUNTY, TEST_LOCALITY
 from tests.integration.search.search_test_setup import SearchTestSetup
 from utilities.enums import RecordCategoryEnum

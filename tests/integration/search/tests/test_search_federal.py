@@ -1,10 +1,10 @@
 from db.enums import ApprovalStatus
 from middleware.enums import JurisdictionType, AgencyType, RecordTypes
 from middleware.schema_and_dto.schemas.agencies.info.post import AgencyInfoPostSchema
-from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
+from tests.helpers.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,
 )
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 from utilities.enums import RecordCategoryEnum

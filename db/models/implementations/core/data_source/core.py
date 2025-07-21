@@ -6,7 +6,15 @@ from sqlalchemy import Column, DateTime, func, String, ForeignKey
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from db.enums import AccessType, URLStatus
+from db.enums import (
+    AccessType,
+    URLStatus,
+    AgencyAggregation,
+    DetailLevel,
+    UpdateMethod,
+    RetentionSchedule,
+    ApprovalStatus,
+)
 from db.models.helpers import (
     make_get_iter_model_list_of_dict,
     enum_list_column,
@@ -16,13 +24,8 @@ from db.models.implementations.core.location.core import Location
 from db.models.mixins import CountMetadata, CreatedAtMixin, IterWithSpecialCasesMixin
 from db.models.templates.standard import StandardBase
 from db.models.types import (
-    AgencyAggregationLiteral,
-    DetailLevelLiteral,
-    UpdateMethodLiteral,
-    RetentionScheduleLiteral,
     text,
     URLStatusLiteral,
-    ApprovalStatusLiteral,
     timestamp_tz,
 )
 from middleware.enums import Relations
@@ -48,20 +51,28 @@ class DataSource(
     agency_supplied: Mapped[bool | None]
     supplying_entity: Mapped[str | None]
     agency_originated: Mapped[bool | None]
-    agency_aggregation: Mapped[AgencyAggregationLiteral | None]
+    agency_aggregation: Mapped[AgencyAggregation | None] = enum_column(
+        AgencyAggregation, name="agency_aggregation"
+    )
     coverage_start: Mapped[date | None]
     coverage_end: Mapped[date | None]
     updated_at: Mapped[date | None] = Column(DateTime, default=func.now())
-    detail_level: Mapped[DetailLevelLiteral | None]
+    detail_level: Mapped[DetailLevel | None] = enum_column(
+        DetailLevel, name="detail_level"
+    )
     # Note: Below is an array of enums in Postgres but this is cumbersome to convey in SQLAlchemy terms
     access_types = enum_list_column(AccessType, name="access_type")
     data_portal_type: Mapped[str | None]
     record_formats = Column(ARRAY(String), default=[])
-    update_method: Mapped[UpdateMethodLiteral | None]
+    update_method: Mapped[UpdateMethod | None] = enum_column(
+        UpdateMethod, name="update_method"
+    )
     tags = Column(ARRAY(String), default=[])
     readme_url: Mapped[str | None]
     originating_entity: Mapped[str | None]
-    retention_schedule: Mapped[RetentionScheduleLiteral | None]
+    retention_schedule: Mapped[RetentionSchedule | None] = enum_column(
+        RetentionSchedule, name="retention_schedule"
+    )
     scraper_url: Mapped[str | None]
     submission_notes: Mapped[str | None]
     rejection_note: Mapped[str | None]
@@ -77,7 +88,11 @@ class DataSource(
         name="url_status",
         default=URLStatus.OK,
     )
-    approval_status: Mapped[ApprovalStatusLiteral]
+    approval_status: Mapped[ApprovalStatus] = enum_column(
+        ApprovalStatus,
+        name="approval_status",
+        default=ApprovalStatus.PENDING,
+    )
     record_type_id: Mapped[int | None] = mapped_column(
         ForeignKey("public.record_types.id")
     )

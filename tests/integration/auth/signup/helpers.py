@@ -9,11 +9,11 @@ from endpoints.instantiations.auth_.signup.endpoint_schema_config import (
     AuthSignupEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.auth.login import LoginEndpointSchemaConfig
-from tests.helper_scripts.common_test_data import get_test_email
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.common_test_data import get_test_email
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.helper_functions_simple import get_authorization_header
+from tests.helpers.helper_functions_simple import get_authorization_header
 
 
 class SignupTestHelper:

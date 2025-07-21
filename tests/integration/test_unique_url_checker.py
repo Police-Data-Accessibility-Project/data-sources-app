@@ -1,13 +1,13 @@
 from middleware.primary_resource_logic.unique_url_checker import (
     UniqueURLCheckerResponseOuterSchema,
 )
-from tests.helper_scripts.complex_test_data_creation_functions import (
+from tests.helpers.complex_test_data_creation_functions import (
     create_data_source_entry_for_url_duplicate_checking,
 )
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helpers.run_and_validate_request import run_and_validate_request
 
 
 def test_unique_url_checker(test_data_creator_flask: TestDataCreatorFlask):

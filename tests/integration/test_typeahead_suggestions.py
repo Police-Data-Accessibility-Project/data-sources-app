@@ -2,13 +2,13 @@ from db.enums import ApprovalStatus
 from middleware.schema_and_dto.schemas.typeahead.locations import (
     TypeaheadLocationsOuterResponseSchema,
 )
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.helper_functions_complex import (
+from tests.helpers.helper_functions_complex import (
     setup_get_typeahead_suggestion_test_data,
 )
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helpers.run_and_validate_request import run_and_validate_request
 
 
 def test_typeahead_locations(flask_client_with_db):

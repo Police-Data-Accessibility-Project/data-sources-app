@@ -1,12 +1,12 @@
 from endpoints.schema_config.instantiations.auth.github.link import (
     AuthGithubLinkEndpointSchemaConfig,
 )
-from tests.helper_scripts.common_asserts import assert_jwt_token_matches_user_email
-from tests.helper_scripts.constants import GITHUB_OAUTH_LINK_ENDPOINT
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.asserts import assert_jwt_token_matches_user_email
+from tests.helpers.constants import GITHUB_OAUTH_LINK_ENDPOINT
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helpers.run_and_validate_request import run_and_validate_request
 from tests.integration.oauth.helpers import setup_github_mocks, login_with_github
 
 

@@ -11,7 +11,7 @@ from middleware.security.jwt.core import SimpleJWT
 from middleware.security.jwt.enums import JWTPurpose
 from middleware.third_party_interaction_logic.mailgun_.send import send_via_mailgun
 from middleware.util.url import create_web_app_url
-from tests.helper_scripts.helper_functions_simple import add_query_params
+from tests.helpers.helper_functions_simple import add_query_params
 
 
 def signup_wrapper(

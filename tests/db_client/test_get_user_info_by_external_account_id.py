@@ -2,7 +2,7 @@ import uuid
 
 from db.client.core import DatabaseClient
 from db.enums import ExternalAccountTypeEnum
-from tests.helper_scripts.common_test_data import get_test_name
+from tests.helpers.common_test_data import get_test_name
 
 
 def test_get_user_info_by_external_account_id(live_database_client: DatabaseClient):

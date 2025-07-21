@@ -4,12 +4,12 @@ from http import HTTPStatus
 from endpoints.schema_config.instantiations.auth.github.link import (
     AuthGithubLinkEndpointSchemaConfig,
 )
-from tests.helper_scripts.common_test_data import get_test_name
-from tests.helper_scripts.constants import GITHUB_OAUTH_LINK_ENDPOINT
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.common_test_data import get_test_name
+from tests.helpers.constants import GITHUB_OAUTH_LINK_ENDPOINT
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helpers.run_and_validate_request import run_and_validate_request
 
 
 def test_link_to_github_oauth_user_email_not_in_db(

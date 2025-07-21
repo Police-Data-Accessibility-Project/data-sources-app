@@ -1,8 +1,8 @@
-from tests.helper_scripts.constants import DATA_SOURCES_BASE_ENDPOINT
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.constants import DATA_SOURCES_BASE_ENDPOINT
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helpers.run_and_validate_request import run_and_validate_request
 
 
 def test_data_sources_by_id_delete(

@@ -29,20 +29,20 @@ from middleware.exceptions import (
 from db.models.implementations.core.user.core import User
 from db.models.table_reference import SQL_ALCHEMY_TABLE_REFERENCE
 from middleware.enums import PermissionsEnum, Relations, RecordTypes
-from tests.helper_scripts.common_test_data import (
+from tests.helpers.common_test_data import (
     get_random_number_for_testing,
     get_test_name,
 )
-from tests.helper_scripts.complex_test_data_creation_functions import (
+from tests.helpers.complex_test_data_creation_functions import (
     create_data_source_entry_for_url_duplicate_checking,
 )
 
-from tests.helper_scripts.helper_classes.AnyOrder import AnyOrder
-from tests.helper_scripts.helper_classes.test_data_creator.db_client_.core import (
+from tests.helpers.helper_classes.AnyOrder import AnyOrder
+from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
-from tests.helper_scripts.test_dataclasses import TestDataRequestInfo
-from tests.helper_scripts.helper_functions_complex import (
+from tests.helpers.test_dataclasses import TestDataRequestInfo
+from tests.helpers.helper_functions_complex import (
     create_test_user_db_client,
 )
 from utilities.enums import RecordCategoryEnum

@@ -12,8 +12,8 @@ from middleware.security.auth.method_config.helpers import (
 )
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.enums import PermissionsEnum, AccessTypeEnum
-from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
-from tests.helper_scripts.common_mocks_and_patches import (
+from tests.helpers.DynamicMagicMock import DynamicMagicMock
+from tests.helpers.common_mocks_and_patches import (
     patch_request_headers,
 )
 

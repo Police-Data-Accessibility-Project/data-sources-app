@@ -6,13 +6,13 @@ from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
 from middleware.util.env import get_env_variable
-from tests.helper_scripts.helper_classes.MultiAgencySetup import MultiAgencySetup
-from tests.helper_scripts.helper_classes.MultiDataSourceSetup import (
+from tests.helpers.helper_classes.MultiAgencySetup import MultiAgencySetup
+from tests.helpers.helper_classes.MultiDataSourceSetup import (
     MultiDataSourceSetup,
 )
-from tests.helper_scripts.helper_classes.MultiFollowSetup import MultiFollowSetup
-from tests.helper_scripts.helper_classes.MultiRequestSetup import MultiRequestSetup
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.helper_classes.MultiFollowSetup import MultiFollowSetup
+from tests.helpers.helper_classes.MultiRequestSetup import MultiRequestSetup
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 
