@@ -4,7 +4,7 @@ from middleware.schema_and_dto.dtos.data_sources.post import (
     DataSourceEntryDataPostDTO,
 )
 from middleware.schema_and_dto.enums import CSVColumnCondition
-from middleware.schema_and_dto.schemas.data_sources.expanded import (
+from endpoints.instantiations.data_sources_._shared.schemas.expanded import (
     DataSourceExpandedSchema,
 )
 from middleware.schema_and_dto.util import get_json_metadata

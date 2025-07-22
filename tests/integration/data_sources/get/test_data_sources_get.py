@@ -4,11 +4,11 @@ from endpoints.schema_config.instantiations.data_sources.by_id.get import (
     DataSourcesByIDGetEndpointSchemaConfig,
 )
 
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-from tests.helper_scripts.constants import (
+from tests.helpers.run_and_validate_request import run_and_validate_request
+from tests.helpers.constants import (
     DATA_SOURCES_BASE_ENDPOINT,
 )
 
@@ -27,7 +27,7 @@ def test_data_sources_by_id_get(test_data_creator_flask: TestDataCreatorFlask):
     tdc.link_data_source_to_agency(data_source_id=cds.id, agency_id=agency_id)
 
     # Create data request and link to data source
-    request_id = tdc.data_request(tus).id
+    request_id = tdc.tdcdb.data_request(tus.user_info.user_id).id
     tdc.link_data_request_to_data_source(
         data_source_id=cds.id, data_request_id=request_id
     )

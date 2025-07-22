@@ -7,14 +7,14 @@ from middleware.schema_and_dto.schemas.common.common_response_schemas import (
 )
 from middleware.security.jwt.core import SimpleJWT
 from middleware.security.jwt.enums import JWTPurpose
-from tests.helper_scripts.constants import (
+from tests.helpers.constants import (
     GITHUB_OAUTH_LINK_ENDPOINT,
     GITHUB_OAUTH_LOGIN_ENDPOINT,
 )
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helpers.run_and_validate_request import run_and_validate_request
 
 
 def test_github_oauth_token_expired(

@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 from flask import Response, request
 
-from middleware.schema_and_dto.dynamic.schema.documentation_construction import (
+from middleware.schema_and_dto.dynamic.schema.doc_construction.documentation_construction import (
     get_restx_param_documentation,
 )
 from middleware.security.access_info.primary import AccessInfoPrimary

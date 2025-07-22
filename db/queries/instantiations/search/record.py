@@ -11,7 +11,7 @@ from db.models.implementations.core.record.category import RecordCategory
 from db.models.implementations.core.record.type import RecordType
 from db.queries.builder.core import QueryBuilderBase
 from middleware.enums import RecordTypes
-from utilities.enums import RecordCategories
+from utilities.enums import RecordCategoryEnum
 
 
 class CreateSearchRecordQueryBuilder(QueryBuilderBase):
@@ -20,7 +20,7 @@ class CreateSearchRecordQueryBuilder(QueryBuilderBase):
         user_id: int,
         location_id: int,
         record_categories: Optional[
-            Union[list[RecordCategories], RecordCategories]
+            Union[list[RecordCategoryEnum], RecordCategoryEnum]
         ] = None,
         record_types: Optional[Union[list[RecordTypes], RecordTypes]] = None,
     ):
@@ -31,7 +31,7 @@ class CreateSearchRecordQueryBuilder(QueryBuilderBase):
         self.record_types = record_types
 
     def run(self) -> Any:
-        if isinstance(self.record_categories, RecordCategories):
+        if isinstance(self.record_categories, RecordCategoryEnum):
             self.record_categories = [self.record_categories]
 
         with self.session.begin():

@@ -8,9 +8,9 @@ from db.enums import LocationType
 from db.models.implementations.core.location.core import Location
 from middleware.schema_and_dto.dtos.locations.get import LocationsGetRequestDTO
 from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
-from tests.helper_scripts.common_test_data import get_test_name
-from tests.helper_scripts.helper_classes.MultiLocationSetup import MultiLocationSetup
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.common_test_data import get_test_name
+from tests.helpers.helper_classes.MultiLocationSetup import MultiLocationSetup
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 
@@ -58,8 +58,8 @@ def test_locations_related_data_requests(locations_test_setup: LocationsTestSetu
     location_id = lts.location_info["location_id"]
 
     # Add two data requests to location
-    tdc.data_request(location_ids=[location_id])
-    tdc.data_request(location_ids=[location_id])
+    tdc.tdcdb.data_request(location_ids=[location_id])
+    tdc.tdcdb.data_request(location_ids=[location_id])
 
     # Get data requests
     tus = tdc.standard_user()

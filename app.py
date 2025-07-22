@@ -19,12 +19,16 @@ from endpoints.instantiations.auth_.refresh_session import namespace_refresh_ses
 from endpoints.instantiations.auth_.request_reset_password import (
     namespace_request_reset_password,
 )
+from endpoints.instantiations.auth_.resend_validation_email.route import (
+    namespace_resend_validation_email,
+)
 from endpoints.instantiations.auth_.reset_password import namespace_reset_password
 from endpoints.instantiations.auth_.reset_token_validation import (
     namespace_reset_token_validation,
 )
 from endpoints.instantiations.auth_.routes import namespace_auth
-from endpoints.instantiations.auth_.signup import namespace_signup
+from endpoints.instantiations.auth_.signup.route import namespace_signup
+from endpoints.instantiations.auth_.validate_email.route import namespace_validate_email
 from endpoints.instantiations.check_.route import namespace_url_checker
 from endpoints.instantiations.contact_.route import namespace_contact
 from endpoints.instantiations.data_requests_.data_requests import (
@@ -92,6 +96,8 @@ NAMESPACES = [
     namespace_metadata,
     namespace_proposals,
     namespace_source_collector,
+    namespace_validate_email,
+    namespace_resend_validation_email,
 ]
 
 MY_PREFIX = "/api"

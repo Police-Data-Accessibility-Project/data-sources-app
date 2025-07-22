@@ -1,5 +1,5 @@
 from endpoints.schema_config.config.core import EndpointSchemaConfig
-from middleware.schema_and_dto.schemas.user_profile.recent_searches import (
+from endpoints.instantiations.user.by_id.get.recent_searches.schema import (
     GetUserRecentSearchesOuterSchema,
 )
 

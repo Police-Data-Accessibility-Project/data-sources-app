@@ -3,7 +3,7 @@ from middleware.schema_and_dto.dtos.common.base import (
     GetManyRequestsBaseSchema,
     GetManyBaseDTO,
 )
-from middleware.schema_and_dto.schemas.data_requests.get.many.response import (
+from endpoints.instantiations.data_requests_.get.many.schemas.response import (
     GetManyDataRequestsResponseSchema,
 )
 

@@ -1,5 +1,4 @@
 import uuid
-
 from http import HTTPStatus
 from typing import Dict, Optional
 
@@ -7,6 +6,7 @@ from flask.testing import FlaskClient
 
 from db.db_client_dataclasses import WhereMapping
 from db.enums import RequestUrgency, LocationType, RequestStatus, SortOrder
+from endpoints.schema_config.enums import SchemaConfigs
 from endpoints.schema_config.instantiations.data_requests.by_id.get import (
     DataRequestsByIDGetEndpointSchemaConfig,
 )
@@ -20,29 +20,24 @@ from middleware.constants import DATA_KEY
 from middleware.enums import RecordTypes
 from middleware.third_party_interaction_logic.mailgun_.constants import OPERATIONS_EMAIL
 from middleware.util.type_conversion import get_enum_values
-from endpoints.schema_config.enums import SchemaConfigs
-from tests.helper_scripts.common_test_data import (
+from tests.helpers.common_test_data import (
     get_random_number_for_testing,
     get_test_name,
 )
-from tests.helper_scripts.complex_test_data_creation_functions import (
-    create_test_data_request,
-)
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
-    TestDataCreatorFlask,
-)
-from tests.helper_scripts.constants import (
+from tests.helpers.constants import (
     DATA_REQUESTS_BASE_ENDPOINT,
     DATA_REQUESTS_BY_ID_ENDPOINT,
     DATA_REQUESTS_GET_RELATED_SOURCE_ENDPOINT,
     DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT,
     DATA_REQUESTS_RELATED_LOCATIONS,
 )
+from tests.helpers.helper_classes.TestUserSetup import TestUserSetup
+from tests.helpers.helper_classes.test_data_creator.flask import (
+    TestDataCreatorFlask,
+)
+from tests.helpers.run_and_validate_request import run_and_validate_request
 
-from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
-
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
-
+from unittest.mock import patch
 
 def test_data_requests_get(
     test_data_creator_flask: TestDataCreatorFlask,
@@ -55,7 +50,7 @@ def test_data_requests_get(
     tus_creator = tdc.standard_user()
 
     # Creator creates a data request
-    dr_info = tdc.data_request(tus_creator)
+    dr_info = tdc.tdcdb.data_request(tus_creator.user_info.user_id)
     # Create a data source and associate with that request
     ds_info = tdc.data_source()
     tdc.link_data_request_to_data_source(
@@ -64,7 +59,7 @@ def test_data_requests_get(
     )
 
     # Add another data_request, and set its approval status to `Active`
-    dr_info_2 = tdc.data_request(tus_creator)
+    dr_info_2 = tdc.tdcdb.data_request(tus_creator.user_info.user_id)
 
     tdc.request_validator.update_data_request(
         data_request_id=dr_info_2.id,
@@ -80,7 +75,7 @@ def test_data_requests_get(
 
     # Add another data request, set its approval status to `Archived`
     # THen perform a search for both Active and Archived
-    dr_info_3 = tdc.data_request(tus_creator)
+    dr_info_3 = tdc.tdcdb.data_request(tus_creator.user_info.user_id)
 
     tdc.request_validator.update_data_request(
         data_request_id=dr_info_3.id,
@@ -115,7 +110,7 @@ def test_data_requests_get(
     assert int(data[0]["id"]) == int(dr_info_2.id)
 
     # Create additional intake data request to populate
-    tdc.data_request(tus_creator)
+    tdc.tdcdb.data_request(tus_creator.user_info.user_id)
 
     # Test sorting
     def get_sorted_data_requests(sort_order: SortOrder):
@@ -139,7 +134,7 @@ def test_data_requests_get(
 
     assert len(data) == 1
 
-
+@patch.dict('os.environ', {'SEND_OPS_NOTIFICATIONS': 'true'})
 def test_data_requests_post(
     test_data_creator_flask: TestDataCreatorFlask, mock_send_via_mailgun
 ):
@@ -272,7 +267,7 @@ def test_data_requests_by_id_get(
     tdc = test_data_creator_flask
     admin_tus = tdc.get_admin_tus()
 
-    tdr = tdc.data_request(admin_tus)
+    tdr = tdc.tdcdb.data_request(admin_tus.user_info.user_id)
 
     # Create data source and link to data request
     data_source_id = tdc.data_source().id
@@ -319,7 +314,7 @@ def test_data_requests_by_id_put(
     tdc = test_data_creator_flask
     standard_tus = tdc.standard_user()
 
-    tdr = tdc.data_request(standard_tus)
+    tdr = tdc.tdcdb.data_request(standard_tus.user_info.user_id)
     data_request_id = tdr.id
 
     new_submission_notes = str(uuid.uuid4())
@@ -396,7 +391,7 @@ def test_data_requests_by_id_delete(test_data_creator_flask):
 
     flask_client = tdc.flask_client
 
-    tdr = tdc.data_request(tus_owner)
+    tdr = tdc.tdcdb.data_request(user_id=tus_owner.user_info.user_id)
 
     data_request_id = int(tdr.id)
 
@@ -417,7 +412,7 @@ def test_data_requests_by_id_delete(test_data_creator_flask):
     )
 
     # Check that request is denied if user is not owner and does not have DB_WRITE permission
-    new_tdr = create_test_data_request(flask_client, tus_owner.jwt_authorization_header)
+    new_tdr = tdc.data_request(user_id=tus_owner.user_info.user_id)
 
     NEW_ENDPOINT = DATA_REQUESTS_BY_ID_ENDPOINT.format(data_request_id=new_tdr.id)
 
@@ -479,7 +474,7 @@ def test_data_request_by_id_related_sources(
     cds = tdc.data_source()
 
     # USER_OWNER creates a data request
-    cdr = tdc.data_request(tus_owner)
+    cdr = tdc.tdcdb.data_request(tus_owner.user_info.user_id)
 
     def get_data_request_related_sources_with_given_data_request_id(
         api_authorization_header: dict, expected_json_content: Optional[dict] = None
@@ -602,7 +597,7 @@ def test_link_unlink_data_requests_with_locations(
     test_data_creator_flask: TestDataCreatorFlask,
 ):
     tdc = test_data_creator_flask
-    cdr = tdc.data_request()
+    cdr = tdc.tdcdb.data_request()
     admin_tus = tdc.get_admin_tus()
 
     location_get_endpoint = DATA_REQUESTS_RELATED_LOCATIONS.format(
@@ -705,7 +700,7 @@ def test_link_unlink_data_requests_with_locations(
 def test_data_request_withdraw(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
     tus_owner = tdc.standard_user()
-    data_request = tdc.data_request(user_tus=tus_owner)
+    data_request = tdc.tdcdb.data_request(user_id=tus_owner.user_info.user_id)
 
     tdc.request_validator.withdraw_request(
         data_request_id=data_request.id, headers=tus_owner.jwt_authorization_header
@@ -719,7 +714,7 @@ def test_data_request_withdraw(test_data_creator_flask: TestDataCreatorFlask):
 
     # Test that this works for an admin user as well
     tus_admin = tdc.get_admin_tus()
-    data_request = tdc.data_request(user_tus=tus_owner)
+    data_request = tdc.tdcdb.data_request(user_id=tus_owner.user_info.user_id)
 
     tdc.request_validator.withdraw_request(
         data_request_id=data_request.id, headers=tus_admin.jwt_authorization_header
@@ -733,7 +728,7 @@ def test_data_request_withdraw(test_data_creator_flask: TestDataCreatorFlask):
 
     # Test that this doesn't work for a standard user who is not the owner
     tus_non_owner = tdc.standard_user()
-    data_request = tdc.data_request(user_tus=tus_owner)
+    data_request = tdc.tdcdb.data_request(user_id=tus_owner.user_info.user_id)
 
     tdc.request_validator.withdraw_request(
         data_request_id=data_request.id,

@@ -8,9 +8,9 @@ from endpoints.schema_config.instantiations.auth.github.login import (
 )
 from middleware.security.jwt.core import SimpleJWT
 from middleware.security.jwt.enums import JWTPurpose
-from tests.helper_scripts.common_test_data import get_random_number_for_testing
-from tests.helper_scripts.constants import GITHUB_OAUTH_LOGIN_ENDPOINT
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helpers.common_test_data import get_random_number_for_testing
+from tests.helpers.constants import GITHUB_OAUTH_LOGIN_ENDPOINT
+from tests.helpers.run_and_validate_request import run_and_validate_request
 from tests.integration.oauth.constants import GITHUB_OATH_LOGIC_PATCH_ROOT
 
 

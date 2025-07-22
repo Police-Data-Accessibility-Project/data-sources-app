@@ -7,15 +7,15 @@ import uuid
 from middleware.security.jwt.core import SimpleJWT
 from middleware.security.jwt.enums import JWTPurpose
 from middleware.enums import Relations
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.constants import DATA_SOURCES_BASE_ENDPOINT
-from tests.helper_scripts.helper_classes.TestUserSetup import TestUserSetup
-from tests.helper_scripts.helper_functions_complex import (
+from tests.helpers.constants import DATA_SOURCES_BASE_ENDPOINT
+from tests.helpers.helper_classes.TestUserSetup import TestUserSetup
+from tests.helpers.helper_functions_complex import (
     request_reset_password_api,
 )
-from tests.helper_scripts.helper_functions_simple import get_authorization_header
+from tests.helpers.helper_functions_simple import get_authorization_header
 
 
 def test_reset_password_post(

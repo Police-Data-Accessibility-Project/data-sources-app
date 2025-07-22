@@ -11,7 +11,7 @@ from middleware.third_party_interaction_logic.github.issue_project_info.core imp
 from middleware.third_party_interaction_logic.github.issue_project_info.model import (
     GIPIInfo,
 )
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 from tests.integration.github_data_requests_issues.constants import PATCH_ROOT

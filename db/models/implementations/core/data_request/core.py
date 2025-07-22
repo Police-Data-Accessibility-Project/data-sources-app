@@ -1,7 +1,7 @@
 # pyright: reportUninitializedInstanceVariable=false
-from typing import get_args
+from typing import get_args, final
 
-from sqlalchemy import Enum
+from sqlalchemy import Enum, ForeignKey
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -21,6 +21,7 @@ from db.models.types import (
 from middleware.enums import Relations
 
 
+@final
 class DataRequest(
     StandardBase, CountMetadata, CountSubqueryMetadata, IterWithSpecialCasesMixin
 ):
@@ -38,7 +39,7 @@ class DataRequest(
     archive_reason: Mapped[str | None]
     date_created: Mapped[timestamp_tz]
     date_status_last_changed: Mapped[timestamp_tz | None]
-    creator_user_id: Mapped[int | None]
+    creator_user_id: Mapped[int | None] = mapped_column(ForeignKey("public.users.id"))  # pyright: ignore [reportUnknownArgumentType]
     internal_notes: Mapped[str | None]
     record_types_required: Mapped[ARRAY[RecordTypeLiteral] | None] = mapped_column(
         ARRAY(Enum(*get_args(RecordTypeLiteral), name="record_type"), as_tuple=True)
@@ -62,4 +63,10 @@ class DataRequest(
         argument="DataRequestsGithubIssueInfo",
         back_populates="data_request",
         uselist=False,
+    )
+    data_sources: Mapped[list["DataSource"]] = relationship(
+        argument="DataSource",
+        secondary="public.link_data_sources_data_requests",
+        primaryjoin="DataRequest.id == LinkDataSourceDataRequest.request_id",
+        secondaryjoin="DataSource.id == LinkDataSourceDataRequest.data_source_id",
     )

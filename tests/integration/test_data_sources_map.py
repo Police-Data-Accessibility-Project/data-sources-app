@@ -4,7 +4,7 @@ from db.enums import ApprovalStatus
 from endpoints.schema_config.instantiations.data_sources.map import (
     DataSourcesMapEndpointSchemaConfig,
 )
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 

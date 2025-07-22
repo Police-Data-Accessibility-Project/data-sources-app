@@ -7,10 +7,10 @@ from endpoints.schema_config.instantiations.user.profile.recent_searches import 
 from middleware.enums import OutputFormatEnum, JurisdictionSimplified
 from middleware.util.csv import read_from_csv
 from middleware.util.type_conversion import get_enum_values
-from tests.helper_scripts.constants import USER_PROFILE_RECENT_SEARCHES_ENDPOINT
+from tests.helpers.constants import USER_PROFILE_RECENT_SEARCHES_ENDPOINT
 from tests.integration.search.constants import TEST_STATE, TEST_COUNTY, TEST_LOCALITY
 from tests.integration.search.search_test_setup import SearchTestSetup
-from utilities.enums import RecordCategories
+from utilities.enums import RecordCategoryEnum
 
 
 def test_search_get(search_test_setup: SearchTestSetup):
@@ -28,7 +28,7 @@ def test_search_get(search_test_setup: SearchTestSetup):
         return tdc.request_validator.search(
             headers=tus.api_authorization_header,
             location_id=sts.location_id,
-            record_categories=[RecordCategories.POLICE],
+            record_categories=[RecordCategoryEnum.POLICE],
             format=record_format,
         )
 
@@ -57,7 +57,7 @@ def test_search_get(search_test_setup: SearchTestSetup):
         "county_name": TEST_COUNTY,
         "locality_name": TEST_LOCALITY,
         "location_type": LocationType.LOCALITY.value,
-        "record_categories": [RecordCategories.POLICE.value],
+        "record_categories": [RecordCategoryEnum.POLICE.value],
     }
 
     # Search in CSV

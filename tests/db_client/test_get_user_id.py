@@ -2,7 +2,7 @@ from sqlalchemy import select
 
 from db.client.core import DatabaseClient
 from db.models.implementations.core.user.core import User
-from tests.helper_scripts.common_test_data import get_test_name
+from tests.helpers.common_test_data import get_test_name
 
 
 def test_get_user_id(live_database_client: DatabaseClient):

@@ -19,7 +19,7 @@ from db.models.table_reference import (
 )
 from db.subquery_logic import SubqueryParameters
 from middleware.enums import RecordTypes, Relations
-from utilities.enums import RecordCategories
+from utilities.enums import RecordCategoryEnum
 
 TableColumn = namedtuple("TableColumn", ["table", "column"])
 TableColumnAlias = namedtuple("TableColumnAlias", ["table", "column", "alias"])
@@ -216,7 +216,7 @@ class DynamicQueryConstructor:
 
     @staticmethod
     def create_federal_search_query(
-        record_categories: list[RecordCategories] | None = None,
+        record_categories: list[RecordCategoryEnum] | None = None,
         page: int = 1,
     ) -> sql.Composed:
         base_query = sql.SQL(
@@ -285,7 +285,7 @@ class DynamicQueryConstructor:
     @staticmethod
     def create_search_query(
         location_id: int,
-        record_categories: Optional[list[RecordCategories]] = None,
+        record_categories: Optional[list[RecordCategoryEnum]] = None,
         record_types: Optional[list[RecordTypes]] = None,
     ) -> sql.Composed:
         base_query = sql.SQL(

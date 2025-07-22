@@ -23,7 +23,7 @@ class CountSubqueryMetadata:
     @hybrid_method
     def count_subquery(
         cls, data: list[dict], subquery_parameters, **kwargs
-    ) -> Optional[dict[str, int]]:
+    ) -> dict[str, int] | None:
         if not subquery_parameters or len(data) != 1:
             return None
 

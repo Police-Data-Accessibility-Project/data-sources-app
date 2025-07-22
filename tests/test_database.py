@@ -15,13 +15,13 @@ from db.db_client_dataclasses import WhereMapping
 from db.enums import ApprovalStatus, URLStatus
 from db.models.implementations.core.recent_search.core import RecentSearch
 from middleware.enums import Relations, OperationType
-from tests.helper_scripts.common_test_data import get_test_name
-from tests.helper_scripts.helper_classes.MultiLocationSetup import MultiLocationSetup
-from tests.helper_scripts.helper_classes.test_data_creator.db_client_.core import (
+from tests.helpers.common_test_data import get_test_name
+from tests.helpers.helper_classes.MultiLocationSetup import MultiLocationSetup
+from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
-from tests.helper_scripts.test_dataclasses import TestAgencyInfo
-from utilities.enums import RecordCategories
+from tests.helpers.test_dataclasses import TestAgencyInfo
+from utilities.enums import RecordCategoryEnum
 
 ID_COLUMN = "state_iso"
 FAKE_STATE_INFO = {"state_iso": "ZZ", "state_name": "Zaldoniza"}
@@ -462,7 +462,7 @@ def test_link_recent_search_record_types_rows_deleted_on_recent_searches_delete(
     tdc.db_client.create_search_record(
         user_id=user_info.id,
         location_id=location_id,
-        record_categories=[RecordCategories.AGENCIES, RecordCategories.JAIL],
+        record_categories=[RecordCategoryEnum.AGENCIES, RecordCategoryEnum.JAIL],
     )
 
     # Delete recent searches
@@ -509,7 +509,7 @@ def test_recent_searches_row_limit_maintained(
         tdc.db_client.create_search_record(
             user_id=user_id,
             location_id=location_id,
-            record_categories=[RecordCategories.ALL],
+            record_categories=[RecordCategoryEnum.ALL],
         )
 
     create_search_record(user_1.id)

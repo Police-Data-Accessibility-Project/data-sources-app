@@ -32,7 +32,7 @@ class SchemaMetadata(BaseModel):
 
 def create_get_many_schema(
     data_list_schema: type[Schema], description: str
-) -> Type[Schema]:
+) -> type[Schema]:
     class GetManySchema(GetManyResponseSchemaBase):
         data = fields.List(
             fields.Nested(

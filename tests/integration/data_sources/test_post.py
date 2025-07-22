@@ -1,25 +1,27 @@
-
 from endpoints.schema_config.instantiations.data_sources.by_id.get import (
     DataSourcesByIDGetEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.data_sources.post import (
     DataSourcesPostEndpointSchemaConfig,
 )
-from middleware.schema_and_dto.schemas.data_sources.expanded import (
+from endpoints.instantiations.data_sources_._shared.schemas.expanded import (
     DataSourceExpandedSchema,
 )
 from middleware.third_party_interaction_logic.mailgun_.constants import OPERATIONS_EMAIL
-from tests.helper_scripts.common_asserts import assert_contains_key_value_pairs
-from tests.helper_scripts.constants import DATA_SOURCES_BASE_ENDPOINT
-from tests.helper_scripts.helper_classes.SchemaTestDataGenerator import (
+from tests.helpers.asserts import assert_contains_key_value_pairs
+from tests.helpers.constants import DATA_SOURCES_BASE_ENDPOINT
+from tests.helpers.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,
 )
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helpers.run_and_validate_request import run_and_validate_request
+
+from unittest.mock import patch
 
 
+@patch.dict('os.environ', {'SEND_OPS_NOTIFICATIONS': 'true'})
 def test_data_sources_post(
     test_data_creator_flask: TestDataCreatorFlask, mock_send_via_mailgun
 ):

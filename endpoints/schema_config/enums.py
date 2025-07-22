@@ -1,7 +1,16 @@
 from enum import Enum
 
-from endpoints.instantiations.source_collector.sync.schema_config import (
+from endpoints.instantiations.auth_.validate_email.endpoint_schema_config import (
+    AuthValidateEmailEndpointSchema,
+)
+from endpoints.instantiations.source_collector.agencies.sync.schema_config import (
     SourceCollectorSyncAgenciesSchemaConfig,
+)
+from endpoints.instantiations.source_collector.data_sources.sync.schema_config import (
+    SourceCollectorSyncDataSourceSchemaConfig,
+)
+from endpoints.instantiations.user.by_id.patch.endpoint_schema_config import (
+    UserPatchEndpointSchemaConfig,
 )
 from endpoints.schema_config.config.core import EndpointSchemaConfig
 from endpoints.schema_config.instantiations.admin.users.by_id.delete import (
@@ -56,15 +65,13 @@ from endpoints.schema_config.instantiations.auth.github.oauth import (
     AuthGitHubOAuthEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.auth.login import LoginEndpointSchemaConfig
-from endpoints.schema_config.instantiations.auth.resend_validate_email import (
+from endpoints.instantiations.auth_.resend_validation_email.endpoint_schema_config import (
     AuthResendValidationEmailEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.auth.signup import (
+from endpoints.instantiations.auth_.signup.endpoint_schema_config import (
     AuthSignupEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.auth.validate_email import (
-    AuthValidateEmailEndpointSchema,
-)
+
 from endpoints.schema_config.instantiations.checker import (
     UniqueURLCheckerEndpointSchemaConfig,
 )
@@ -314,6 +321,7 @@ class SchemaConfigs(Enum):
     NOTIFICATIONS_PREVIEW = NotificationsPreviewEndpointSchemaConfig
     # region User Profile
     USER_PUT = UserPutEndpointSchemaConfig
+    USER_PATCH = UserPatchEndpointSchemaConfig
     USER_PROFILE_RECENT_SEARCHES = UserProfileRecentSearchesEndpointSchemaConfig
     USER_PROFILE_GET = UserProfileGetEndpointSchemaConfig
     USER_PROFILE_DATA_REQUESTS_GET = UserProfileDataRequestsGetEndpointSchemaConfig
@@ -397,3 +405,4 @@ class SchemaConfigs(Enum):
 
     SOURCE_COLLECTOR_DUPLICATES_POST = SourceCollectorDuplicatesPostEndpointSchemaConfig
     SOURCE_COLLECTOR_SYNC_AGENCIES = SourceCollectorSyncAgenciesSchemaConfig
+    SOURCE_COLLECTOR_SYNC_DATA_SOURCES = SourceCollectorSyncDataSourceSchemaConfig

@@ -5,7 +5,7 @@ from flask import Response
 
 from db.enums import ExternalAccountTypeEnum
 from middleware.primary_resource_logic.api_key import generate_token
-from tests.helper_scripts.DynamicMagicMock import DynamicMagicMock
+from tests.helpers.DynamicMagicMock import DynamicMagicMock
 
 
 PATCH_ROOT = "middleware.primary_resource_logic.login_queries"

@@ -13,7 +13,7 @@ from endpoints.instantiations.source_collector.data_sources.post.dtos.request im
     SourceCollectorPostRequestInnerDTO,
     SourceCollectorPostRequestDTO,
 )
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 
@@ -138,7 +138,7 @@ def test_source_collector_data_sources_post(
 
     # Check record formats
     assert data_sources[1]["record_formats"] == ["CSV"]
-    assert data_sources[2]["record_formats"] is None
+    assert data_sources[2]["record_formats"] == []
 
     # Check source url
     assert data_sources[1]["source_url"] == "http://test.com"

@@ -1,3 +1,4 @@
+import datetime
 import logging
 from collections import namedtuple
 from typing import Any, Generator
@@ -19,11 +20,13 @@ from db.models.implementations.core.location.core import Location
 from db.models.implementations.core.location.county import County
 from db.models.implementations.core.location.locality import Locality
 from db.models.implementations.core.location.us_state import USState
-from middleware.enums import Relations
-from tests.helper_scripts.helper_classes.test_data_creator.db_client_.core import (
+from db.models.implementations.core.record.type import RecordType
+from middleware.enums import Relations, RecordTypes
+from tests.helpers.helper_classes.TestUserSetup import TestUserSetup
+from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
 from utilities.common import get_alembic_conn_string, downgrade_to_base
@@ -250,7 +253,7 @@ def mock_send_via_mailgun(monkeypatch) -> Generator[MagicMock, Any, None]:
         "middleware.primary_resource_logic.data_requests_.post",
         "middleware.primary_resource_logic.data_sources",
         "middleware.primary_resource_logic.notifications.notifications",
-        "middleware.primary_resource_logic.signup",
+        "endpoints.instantiations.auth_.signup.middleware",
     ]
 
     mock_send_via_mailgun = MagicMock()
@@ -259,3 +262,30 @@ def mock_send_via_mailgun(monkeypatch) -> Generator[MagicMock, Any, None]:
         monkeypatch.setattr(f"{path}.send_via_mailgun", mock_send_via_mailgun)
 
     yield mock_send_via_mailgun
+
+
+@pytest.fixture
+def test_agencies(test_data_creator_db_client) -> list[int]:
+    """Create test agencies and returns their IDs."""
+    tdc = test_data_creator_db_client
+    agency_ids = []
+    for _ in range(5):
+        agency_ids.append(tdc.agency().id)
+    return agency_ids
+
+
+@pytest.fixture
+def sample_record_type_id(live_database_client) -> int:
+    """Returns the ID of the OTHER record type."""
+    query = select(RecordType.id).where(RecordType.name == RecordTypes.OTHER.value)
+    return live_database_client.scalar(query)
+
+
+@pytest.fixture
+def user_admin(test_data_creator_flask) -> TestUserSetup:
+    return test_data_creator_flask.get_admin_tus()
+
+
+@pytest.fixture
+def tomorrow() -> datetime.date:
+    return datetime.date.today() + datetime.timedelta(days=1)

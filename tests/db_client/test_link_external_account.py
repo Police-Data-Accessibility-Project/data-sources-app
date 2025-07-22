@@ -5,7 +5,7 @@ from sqlalchemy import select
 from db.client.core import DatabaseClient
 from db.enums import ExternalAccountTypeEnum
 from db.models.implementations.core.external_account import ExternalAccount
-from tests.helper_scripts.common_test_data import get_test_name
+from tests.helpers.common_test_data import get_test_name
 
 
 def test_link_external_account(live_database_client: DatabaseClient):

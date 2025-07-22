@@ -1,3 +1,5 @@
+import os
+
 from typing import Optional
 
 from flask import make_response, Response
@@ -28,7 +30,7 @@ from middleware.enums import Relations, PermissionsEnum
 from middleware.schema_and_dto.dtos.data_requests.by_id.source import (
     RelatedSourceByIDDTO,
 )
-from middleware.schema_and_dto.schemas.data_sources.base import (
+from middleware.schema_and_dto.dtos.entry_create_update_request import (
     EntryCreateUpdateRequestDTO,
 )
 from middleware.schema_and_dto.dtos.common.base import (
@@ -191,11 +193,14 @@ def add_new_data_source_wrapper(
     db_client: DatabaseClient, dto: DataSourcesPostDTO, access_info: AccessInfoPrimary
 ) -> Response:
     data_source_id = db_client.add_data_source_v2(dto)
-    send_via_mailgun(
-        to_email=OPERATIONS_EMAIL,
-        subject=f"New data source submitted: {dto.entry_data.name}",
-        text=f"Description: \n\n{dto.entry_data.description}",
-    )
+
+    # Only send email if notifications are enabled
+    if os.getenv("SEND_OPS_NOTIFICATIONS", "false").lower() == "true":
+        send_via_mailgun(
+            to_email=OPERATIONS_EMAIL,
+            subject=f"New data source submitted: {dto.entry_data.name}",
+            text=f"Description: \n\n{dto.entry_data.description}",
+        )
 
     return make_response(
         {

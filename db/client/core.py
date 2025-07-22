@@ -1,8 +1,9 @@
 from collections import namedtuple
+from collections.abc import Sequence
+from contextlib import contextmanager
 from datetime import datetime
 from functools import partialmethod
 from operator import and_
-from collections.abc import Sequence
 from typing import (
     Any,
     Callable,
@@ -23,10 +24,6 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.sql.compiler import SQLCompiler
 
-from db.dtos.data_request_info_for_github import (
-    DataRequestInfoForGithub,
-)
-from db.dtos.user_with_permissions import UsersWithPermissions
 from db.client.decorators import session_manager, session_manager_v2, cursor_manager
 from db.client.helpers import initialize_sqlalchemy_session
 from db.constants import (
@@ -36,6 +33,11 @@ from db.db_client_dataclasses import (
     OrderByParameters,
     WhereMapping,
 )
+from db.dtos.data_request_info_for_github import (
+    DataRequestInfoForGithub,
+)
+from db.dtos.event_batch import EventBatch
+from db.dtos.user_with_permissions import UsersWithPermissions
 from db.dynamic_query_constructor import DynamicQueryConstructor
 from db.enums import (
     ExternalAccountTypeEnum,
@@ -43,6 +45,7 @@ from db.enums import (
     LocationType,
     ApprovalStatus,
     UpdateFrequency,
+    UserCapacityEnum,
 )
 from db.exceptions import LocationDoesNotExistError
 from db.helpers_.psycopg import initialize_psycopg_connection
@@ -139,10 +142,8 @@ from db.queries.instantiations.search.record import CreateSearchRecordQueryBuild
 from db.queries.instantiations.source_collector.data_sources import (
     AddDataSourcesFromSourceCollectorQueryBuilder,
 )
-from db.queries.instantiations.source_collector.sync import (
-    SourceCollectorSyncAgenciesQueryBuilder,
-)
-from db.queries.instantiations.user_profile.get_user_recent_searches import (
+from db.queries.instantiations.user.create import CreateNewUserQueryBuilder
+from db.queries.instantiations.user.get_recent_searches import (
     GetUserRecentSearchesQueryBuilder,
 )
 from db.queries.instantiations.util.create_entry_in_table import (
@@ -159,17 +160,38 @@ from db.queries.instantiations.util.select_from_relation import (
 )
 from db.queries.models.get_params import GetParams
 from db.subquery_logic import SubqueryParameters
+from endpoints.instantiations.auth_.validate_email.query import (
+    ValidateEmailQueryBuilder,
+)
+from endpoints.instantiations.data_requests_.post.dto import DataRequestsPostDTO
+from endpoints.instantiations.source_collector.agencies.sync.query import (
+    SourceCollectorSyncAgenciesQueryBuilder,
+)
 from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
     SourceCollectorPostRequestInnerDTO,
 )
 from endpoints.instantiations.source_collector.data_sources.post.dtos.response import (
     SourceCollectorPostResponseInnerDTO,
 )
-from endpoints.instantiations.source_collector.sync.dtos.request import (
+from endpoints.instantiations.source_collector.agencies.sync.dtos.request import (
     SourceCollectorSyncAgenciesRequestDTO,
 )
+from endpoints.instantiations.source_collector.data_sources.sync.dtos.request import (
+    SourceCollectorSyncDataSourcesRequestDTO,
+)
+from endpoints.instantiations.source_collector.data_sources.sync.dtos.response import (
+    SourceCollectorSyncDataSourcesResponseDTO,
+)
+from endpoints.instantiations.source_collector.data_sources.sync.query.core import (
+    SourceCollectorSyncDataSourcesQueryBuilder,
+)
+from endpoints.instantiations.user.by_id.get.dto import (
+    UserProfileResponseSchemaInnerDTO,
+)
+from endpoints.instantiations.user.by_id.get.query import GetUserByIdQueryBuilder
+from endpoints.instantiations.user.by_id.patch.dto import UserPatchDTO
+from endpoints.instantiations.user.by_id.patch.query import UserPatchQueryBuilder
 from middleware.constants import DATE_FORMAT
-from db.dtos.event_batch import EventBatch
 from middleware.enums import (
     PermissionsEnum,
     Relations,
@@ -177,16 +199,17 @@ from middleware.enums import (
 )
 from middleware.exceptions import (
     UserNotFoundError,
-    DuplicateUserError,
 )
 from middleware.miscellaneous.table_count_logic import (
     TableCountReference,
     TableCountReferenceManager,
 )
 from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
-from middleware.schema_and_dto.dtos.data_requests.post import DataRequestsPostDTO
 from middleware.schema_and_dto.dtos.data_requests.put import DataRequestsPutOuterDTO
 from middleware.schema_and_dto.dtos.data_sources.post import DataSourcesPostDTO
+from middleware.schema_and_dto.dtos.entry_create_update_request import (
+    EntryCreateUpdateRequestDTO,
+)
 from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
 from middleware.schema_and_dto.dtos.match.response import (
     AgencyMatchResponseInnerDTO,
@@ -197,11 +220,8 @@ from middleware.schema_and_dto.dtos.metrics import (
 from middleware.schema_and_dto.dtos.notifications.preview import (
     NotificationsPreviewOutput,
 )
-from middleware.schema_and_dto.schemas.data_sources.base import (
-    EntryCreateUpdateRequestDTO,
-)
 from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
-from utilities.enums import RecordCategories
+from utilities.enums import RecordCategoryEnum
 
 
 @final
@@ -292,18 +312,29 @@ class DatabaseClient:
     def mappings(self, session: Session, query: Executable) -> Sequence[RowMapping]:
         return session.execute(query).mappings().all()
 
-    @session_manager_v2
+    @contextmanager
+    def session_scope(self):
+        session: Session = self.session_maker()
+        try:
+            yield session
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
     def create_new_user(
-        self, session: Session, email: str, password_digest: str
+        self,
+        email: str,
+        password_digest: str,
+        capacities: list[UserCapacityEnum] | None = None,
     ) -> int | None:
         """Adds a new user to the database."""
-        try:
-            user = User(email=email, password_digest=password_digest)
-            session.add(user)
-            session.flush()
-            return user.id
-        except sqlalchemy.exc.IntegrityError:
-            raise DuplicateUserError
+        builder = CreateNewUserQueryBuilder(
+            email=email, password_digest=password_digest, capacities=capacities
+        )
+        return self.run_query_builder(builder)
 
     def get_user_id(self, email: str) -> int | None:
         """Gets the ID of a user in the database based on their email."""
@@ -369,6 +400,10 @@ class DatabaseClient:
         if result is None:
             return None
         return self.UserIdentifiers(id=result["id"], email=result["email"])
+
+    def get_user_profile(self, user_id: int) -> UserProfileResponseSchemaInnerDTO:
+        builder = GetUserByIdQueryBuilder(user_id)
+        return self.run_query_builder(builder)
 
     def update_user_api_key(self, api_key: str, user_id: int):
         """Update the api key for a user."""
@@ -529,7 +564,7 @@ class DatabaseClient:
     def search_with_location_and_record_type(
         self,
         location_id: int,
-        record_categories: list[RecordCategories] | None = None,
+        record_categories: list[RecordCategoryEnum] | None = None,
         record_types: list[RecordTypes] | None = None,
     ) -> list[dict]:
         """Search for data sources in the database."""
@@ -545,7 +580,7 @@ class DatabaseClient:
 
     @cursor_manager()
     def search_federal_records(
-        self, record_categories: list[RecordCategories] | None = None, page: int = 1
+        self, record_categories: list[RecordCategoryEnum] | None = None, page: int = 1
     ) -> list[dict]:
         query = DynamicQueryConstructor.create_federal_search_query(
             page=page,
@@ -791,12 +826,6 @@ class DatabaseClient:
         column_to_return="id",
     )
 
-    add_data_source = partialmethod(
-        _create_entry_in_table,
-        table_name="data_sources",
-        column_to_return="id",
-    )
-
     def add_data_source_v2(self, dto: DataSourcesPostDTO) -> int:
         builder = DataSourcesPostSingleQueryBuilder(dto)
         return self.run_query_builder(builder)
@@ -817,7 +846,7 @@ class DatabaseClient:
         user_id: int,
         location_id: int,
         record_types: list[RecordTypes] | None = None,
-        record_categories: list[RecordCategories] | None = None,
+        record_categories: list[RecordCategoryEnum] | None = None,
     ) -> None:
         builder = CreateFollowQueryBuilder(
             user_id=user_id,
@@ -1079,7 +1108,7 @@ class DatabaseClient:
         user_id: int,
         location_id: int,
         record_types: list[RecordTypes] | None = None,
-        record_categories: list[RecordCategories] | None = None,
+        record_categories: list[RecordCategoryEnum] | None = None,
     ):
         builder = DeleteFollowQueryBuilder(
             user_id=user_id,
@@ -1236,7 +1265,7 @@ class DatabaseClient:
         self,
         user_id: int,
         location_id: int,
-        record_categories: list[RecordCategories] | RecordCategories | None = None,
+        record_categories: list[RecordCategoryEnum] | RecordCategoryEnum | None = None,
         record_types: list[RecordTypes] | RecordTypes | None = None,
     ):
         builder = CreateSearchRecordQueryBuilder(
@@ -1317,13 +1346,20 @@ class DatabaseClient:
         return result is not None
 
     def create_pending_user(
-        self, email: str, password_digest: str, validation_token: str
+        self,
+        email: str,
+        password_digest: str,
+        validation_token: str,
+        capacities: list[UserCapacityEnum] | None,
     ):
         self.add(
             PendingUser(
                 email=email,
                 password_digest=password_digest,
                 validation_token=validation_token,
+                capacities=[capacity.value for capacity in capacities]
+                if capacities
+                else [],
             )
         )
 
@@ -1338,16 +1374,6 @@ class DatabaseClient:
             .values(validation_token=validation_token)
         )
         self.execute(query)
-
-    def get_pending_user_with_token(self, validation_token: str) -> dict | None:
-        query = select(PendingUser.email, PendingUser.password_digest).where(
-            PendingUser.validation_token == validation_token
-        )
-        return self.mapping(query)
-
-    def delete_pending_user(self, email: str):
-        stmt = delete(PendingUser).where(PendingUser.email == email)
-        self.execute(stmt)
 
     def get_locality_id_by_location_id(self, location_id: int):
         query = select(Location.locality_id).where(Location.id == location_id)
@@ -1548,4 +1574,20 @@ class DatabaseClient:
     ) -> dict[str, list[dict]]:
         """Get agencies for source collector sync."""
         builder = SourceCollectorSyncAgenciesQueryBuilder(dto=dto)
+        return self.run_query_builder(builder)
+
+    def get_data_sources_for_sync(
+        self, dto: SourceCollectorSyncDataSourcesRequestDTO
+    ) -> SourceCollectorSyncDataSourcesResponseDTO:
+        return self.run_query_builder(
+            SourceCollectorSyncDataSourcesQueryBuilder(dto=dto)
+        )
+
+    def patch_user(self, user_id: int, dto: UserPatchDTO) -> None:
+        builder = UserPatchQueryBuilder(dto=dto, user_id=user_id)
+        self.run_query_builder(builder)
+
+    def validate_and_add_user(self, validation_token: str) -> str:
+        """Validate pending user, add as full user, and return user email."""
+        builder = ValidateEmailQueryBuilder(validation_token=validation_token)
         return self.run_query_builder(builder)

@@ -8,7 +8,7 @@ from middleware.schema_and_dto.dtos.data_requests.put import (
     DataRequestsPutOuterDTO,
     DataRequestsPutDTO,
 )
-from tests.helper_scripts.helper_classes.test_data_creator.db_client_.core import (
+from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
 

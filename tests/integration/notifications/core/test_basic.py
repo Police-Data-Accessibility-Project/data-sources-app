@@ -5,14 +5,14 @@ from endpoints.schema_config.instantiations.notifications_.core import (
 from endpoints.schema_config.instantiations.notifications_.preview import (
     NotificationsPreviewEndpointSchemaConfig,
 )
-from tests.helper_scripts.constants import NOTIFICATIONS_BASE_ENDPOINT
-from tests.helper_scripts.helper_classes.test_data_creator.db_client_.core import (
+from tests.helpers.constants import NOTIFICATIONS_BASE_ENDPOINT
+from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
-from tests.helper_scripts.helper_classes.test_data_creator.flask import (
+from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from tests.helper_scripts.run_and_validate_request import run_and_validate_request
+from tests.helpers.run_and_validate_request import run_and_validate_request
 from tests.integration.notifications.core._helpers.asserts import (
     assert_all_notifications_sent,
     assert_notification_log_created,

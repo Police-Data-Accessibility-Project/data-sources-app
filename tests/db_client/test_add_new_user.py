@@ -4,7 +4,7 @@ from sqlalchemy import select
 from db.client.core import DatabaseClient
 from db.models.implementations.core.user.core import User
 from middleware.exceptions import DuplicateUserError
-from tests.helper_scripts.common_test_data import get_test_name
+from tests.helpers.common_test_data import get_test_name
 
 
 def test_add_new_user(live_database_client: DatabaseClient):

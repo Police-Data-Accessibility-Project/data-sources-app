@@ -5,6 +5,7 @@ Decorators used exclusively by the Database Client
 from functools import wraps
 
 from psycopg.rows import RowFactory, dict_row
+from sqlalchemy.orm import Session
 
 from db.helpers_.psycopg import initialize_psycopg_connection
 
@@ -31,7 +32,7 @@ def session_manager(method):
 def session_manager_v2(method: callable) -> callable:
     @wraps(method)
     def wrapper(self: "DatabaseClient", *args, **kwargs):
-        session = self.session_maker()
+        session: Session = self.session_maker()
         try:
             result = method(self, session, *args, **kwargs)
             session.commit()

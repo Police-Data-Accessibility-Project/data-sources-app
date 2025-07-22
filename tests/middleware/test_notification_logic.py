@@ -9,7 +9,7 @@ from db.dtos.event_info import EventInfo
 from middleware.primary_resource_logic.notifications.notifications import (
     format_and_send_notifications,
 )
-from tests.helper_scripts.common_mocks_and_patches import patch_and_return_mock
+from tests.helpers.common_mocks_and_patches import patch_and_return_mock
 
 PATCH_ROOT = "middleware.primary_resource_logic.notifications.notifications"
 
