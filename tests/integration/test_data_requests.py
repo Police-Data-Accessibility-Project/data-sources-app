@@ -37,6 +37,7 @@ from tests.helpers.helper_classes.test_data_creator.flask import (
 )
 from tests.helpers.run_and_validate_request import run_and_validate_request
 
+from unittest.mock import patch
 
 def test_data_requests_get(
     test_data_creator_flask: TestDataCreatorFlask,
@@ -133,7 +134,7 @@ def test_data_requests_get(
 
     assert len(data) == 1
 
-
+@patch.dict('os.environ', {'SEND_OPS_NOTIFICATIONS': 'true'})
 def test_data_requests_post(
     test_data_creator_flask: TestDataCreatorFlask, mock_send_via_mailgun
 ):

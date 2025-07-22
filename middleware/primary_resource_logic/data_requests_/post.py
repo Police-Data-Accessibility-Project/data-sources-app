@@ -1,3 +1,5 @@
+import os
+
 from flask import Response
 
 from db.client.core import DatabaseClient
@@ -13,10 +15,12 @@ def create_data_request_wrapper(
 ) -> Response:
     dr_id = db_client.create_data_request_v2(dto=dto, user_id=access_info.get_user_id())
 
-    send_via_mailgun(
-        to_email=OPERATIONS_EMAIL,
-        subject=f"New data request submitted: {dto.request_info.title}",
-        text=f"Submission notes: \n\n{dto.request_info.submission_notes}",
-    )
+    # Only send email if notifications are enabled
+    if os.getenv("SEND_OPS_NOTIFICATIONS", "false").lower() == "true":
+        send_via_mailgun(
+            to_email=OPERATIONS_EMAIL,
+            subject=f"New data request submitted: {dto.request_info.title}",
+            text=f"Submission notes: \n\n{dto.request_info.submission_notes}",
+        )
 
     return created_id_response(new_id=str(dr_id), message="Data request created.")
