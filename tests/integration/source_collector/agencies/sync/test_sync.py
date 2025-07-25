@@ -41,6 +41,16 @@ def test_source_collector_sync_agencies(
             agency_type=AgencyType.POLICE.value,
         )
         agencies.append(agency)
+    # Add an additional agency that is not approved
+    agencies.append(
+        Agency(
+            name="Unapproved Agency",
+            approval_status=ApprovalStatus.PENDING.value,
+            jurisdiction_type=cast(JurisdictionType.LOCAL.value, JurisdictionTypeEnum),
+            agency_type=AgencyType.POLICE.value,
+        )
+    )
+
     agency_ids = dbc.add_many(agencies, return_ids=True)
 
     # Update the `updated_at` field of the ids to be equivalent to today - (1 day * id)
@@ -69,7 +79,7 @@ def test_source_collector_sync_agencies(
     first_agency = results["agencies"][-1]
     assert first_agency["agency_id"] == agency_ids[0]
     last_agency = results["agencies"][0]
-    assert last_agency["agency_id"] == agency_ids[-2]
+    assert last_agency["agency_id"] == agency_ids[-3]
 
     for i in range(1000):
         result_idx = 1000 - i - 1

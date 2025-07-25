@@ -15,7 +15,7 @@ from sqlalchemy.exc import IntegrityError as IntegrityErrorSA
 
 from config import limiter
 from db.client.core import DatabaseClient
-from db.enums import LocationType
+from db.enums import LocationType, ApprovalStatus
 from db.models.implementations.core.location.core import Location
 from db.models.implementations.core.location.county import County
 from db.models.implementations.core.location.locality import Locality
@@ -270,7 +270,9 @@ def test_agencies(test_data_creator_db_client) -> list[int]:
     tdc = test_data_creator_db_client
     agency_ids = []
     for _ in range(5):
-        agency_ids.append(tdc.agency().id)
+        agency_ids.append(tdc.agency(
+            approval_status=ApprovalStatus.APPROVED
+        ).id)
     return agency_ids
 
 

@@ -14,7 +14,7 @@ from endpoints.instantiations.source_collector.data_sources.sync.dtos.response i
     SourceCollectorSyncDataSourcesResponseDTO,
     SourceCollectorSyncDataSourcesResponseInnerDTO,
 )
-from endpoints.instantiations.source_collector.data_sources.sync.query.cte import (
+from endpoints.instantiations.source_collector.data_sources.sync.query.ctes.agency_id import (
     AgencyIdsCTE,
 )
 from middleware.enums import RecordTypes
