@@ -13,6 +13,7 @@ from middleware.enums import JurisdictionType, AgencyType
 from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
+from tests.integration.source_collector.agencies.sync.setup import set_updated_at_dates
 
 
 def test_source_collector_sync_agencies(
@@ -28,35 +29,30 @@ def test_source_collector_sync_agencies(
     # Add 1000 agencies to the database, receiving the agency ids
     agencies = []
     for i in range(1001):
+        if i % 2 == 0:
+            jurisdiction_type = JurisdictionType.LOCAL.value
+        else:
+            jurisdiction_type = JurisdictionType.FEDERAL.value
+
         agency = Agency(
             name=f"Test Agency {i}",
             approval_status=ApprovalStatus.APPROVED.value,
-            jurisdiction_type=cast(JurisdictionType.LOCAL.value, JurisdictionTypeEnum),
+            jurisdiction_type=cast(jurisdiction_type, JurisdictionTypeEnum),
             agency_type=AgencyType.POLICE.value,
         )
         agencies.append(agency)
     agency_ids = dbc.add_many(agencies, return_ids=True)
 
     # Update the `updated_at` field of the ids to be equivalent to today - (1 day * id)
-    stmt = f"""
-    WITH ranked AS (
-      SELECT
-        id,
-        ROW_NUMBER() OVER (ORDER BY id) AS rn
-      FROM agencies
-      WHERE agencies.id in ({", ".join(map(str, agency_ids))})
-      LIMIT 1000
-    )
-    UPDATE agencies
-    SET updated_at = CURRENT_DATE - INTERVAL '1 day' * ranked.rn
-    FROM ranked
-    WHERE agencies.id = ranked.id;
-    """
-    dbc.execute_raw_sql(stmt)
+    set_updated_at_dates(agency_ids, dbc)
 
-    # Link all to the location
+    # Link non-Federal agencies to locations
     links = []
-    for agency_id in agency_ids:
+
+    for idx, agency_id in enumerate(agency_ids):
+        if idx % 2 == 0:
+            continue
+
         link = LinkAgencyLocation(
             location_id=location_id,
             agency_id=agency_id,
@@ -99,3 +95,5 @@ def test_source_collector_sync_agencies(
         ),
     )
     assert len(results["agencies"]) in (501, 502)
+
+

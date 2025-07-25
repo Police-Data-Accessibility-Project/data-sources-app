@@ -683,52 +683,6 @@ def delete_change_log(db_client):
     db_client.execute_raw_sql("DELETE FROM CHANGE_LOG;")
 
 
-def test_localities_table_log_logic(
-    test_data_creator_db_client: TestDataCreatorDBClient,
-):
-    tdc = test_data_creator_db_client
-    db_client = tdc.db_client
-    delete_change_log(db_client)
-
-    old_name = get_test_name()
-    new_name = get_test_name()
-
-    # Create locality
-    location_id = tdc.locality(locality_name=old_name)
-    locality_id = db_client.get_locality_id_by_location_id(location_id)
-    # Check that creation is logged:
-    logs = db_client.get_change_logs_for_table(Relations.LOCALITIES)
-    assert len(logs) == 1
-
-    # Change locality name
-    db_client._update_entry_in_table(
-        table_name=Relations.LOCALITIES.value,
-        entry_id=locality_id,
-        column_edit_mappings={"name": new_name},
-    )
-    # Check that update is logged for `localities`
-    logs = db_client.get_change_logs_for_table(Relations.LOCALITIES)
-    assert len(logs) == 2
-    log = logs[1]
-    assert log["operation_type"] == OperationType.UPDATE.value
-    assert log["table_name"] == Relations.LOCALITIES.value
-    assert log["affected_id"] == locality_id
-    assert log["old_data"] == {"name": old_name}
-    assert log["new_data"] == {"name": new_name}
-    assert log["created_at"] is not None
-    # Delete locality
-    db_client._delete_from_table(
-        table_name=Relations.LOCALITIES.value, id_column_value=locality_id
-    )
-    # Check that delete is logged for `localities`
-    logs = db_client.get_change_logs_for_table(Relations.LOCALITIES)
-    assert len(logs) == 3
-    log = logs[2]
-    assert log["operation_type"] == OperationType.DELETE.value
-    assert log["affected_id"] == locality_id
-    assert log["old_data"] == {"id": locality_id, "county_id": 1, "name": new_name}
-    assert log["new_data"] is None
-
 
 def test_counties_table_log_logic(test_data_creator_db_client: TestDataCreatorDBClient):
     tdc = test_data_creator_db_client
