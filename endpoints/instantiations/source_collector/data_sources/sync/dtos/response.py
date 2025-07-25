@@ -1,5 +1,6 @@
 # pyright: reportUnknownVariableType = false
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -12,7 +13,7 @@ class SourceCollectorSyncDataSourcesResponseInnerDTO(BaseModel):
     id: int = default_field_required(description="The id of the data source.")
     url: str = default_field_required(description="The url of the data source.")
     name: str = default_field_required(description="The name of the data source.")
-    description: str = default_field_required(
+    description: Optional[str] = default_field_required(
         description="The description of the data source."
     )
     record_type: RecordTypes = default_field_required(
