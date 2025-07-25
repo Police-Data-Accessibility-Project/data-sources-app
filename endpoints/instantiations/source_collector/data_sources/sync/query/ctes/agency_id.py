@@ -19,7 +19,7 @@ class AgencyIdsCTE:
             )
             .join(Agency, LinkAgencyDataSource.agency_id == Agency.id)
             .where(
-                Agency.approval_status == ApprovalStatus.PENDING.value
+                Agency.approval_status == ApprovalStatus.APPROVED.value
             )
             .group_by(LinkAgencyDataSource.data_source_id)
             .cte(name="agency_ids")
