@@ -16,11 +16,16 @@ def test_source_collector_sync_data_sources(
     dbc = test_data_creator_flask.db_client
     data_sources = []
     for i in range(1001):
+        if i % 2 == 0:
+            description = f"Test Data Source {i}, created by test_source_collector_sync_data_sources()"
+        else:
+            description = None
+
         data_source = DataSource(
             name=f"Test Data Source {i}",
             source_url=f"https://test.com/{i}",
             approval_status=ApprovalStatus.APPROVED.value,
-            description=f"Test Data Source {i}, created by test_source_collector_sync_data_sources()",
+            description=description,
             record_type_id=sample_record_type_id,
         )
         data_sources.append(data_source)
