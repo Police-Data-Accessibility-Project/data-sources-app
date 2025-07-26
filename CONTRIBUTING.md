@@ -66,5 +66,9 @@ Once this is set, you can run tests by running `pytest <directory-or-file>`
 Full pytest documentation can be found [here](https://docs.pytest.org/en/stable/contents.html).
 
 
+## Design Principles
+
+[These Design Principles](https://github.com/Police-Data-Accessibility-Project/meta/blob/main/DESIGN-PRINCIPLES.md) may be used to make decisions or guide your work.
+
 ## Client App
 See the [README at pdap.io](https://github.com/Police-Data-Accessibility-Project/pdap.io)

@@ -35,29 +35,25 @@ class SourceCollectorSyncAgenciesQueryBuilder(QueryBuilderBase):
                 Locality.name.label("locality_name"),
                 Agency.updated_at,
             )
-            .join(
+            .outerjoin(
                 LinkAgencyLocation,
                 Agency.id == LinkAgencyLocation.agency_id,
             )
-            .join(
+            .outerjoin(
                 Location,
                 LinkAgencyLocation.location_id == Location.id,
-                isouter=True,
             )
-            .join(
+            .outerjoin(
                 USState,
                 Location.state_id == USState.id,
-                isouter=True,
             )
-            .join(
+            .outerjoin(
                 County,
                 Location.county_id == County.id,
-                isouter=True,
             )
-            .join(
+            .outerjoin(
                 Locality,
                 Location.locality_id == Locality.id,
-                isouter=True,
             )
             .where(
                 Agency.approval_status == ApprovalStatus.APPROVED.value,
