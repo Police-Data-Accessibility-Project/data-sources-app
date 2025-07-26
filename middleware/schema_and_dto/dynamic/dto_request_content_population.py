@@ -1,14 +1,16 @@
-from typing import Type, Optional, Callable, Any
+from typing import Callable, Any
 
+from marshmallow import Schema
 from pydantic import BaseModel
 
+from middleware.schema_and_dto.dynamic.schema.request_content_population_.source_extraction.core import \
+    _get_source_getting_function
+from middleware.schema_and_dto.exceptions import AttributeNotInClassError
 from middleware.schema_and_dto.non_dto_dataclasses import DTOPopulateParameters
 from middleware.util.argument_checking import (
     check_for_mutually_exclusive_arguments,
     check_for_either_or_argument,
 )
-from middleware.schema_and_dto.exceptions import AttributeNotInClassError
-from middleware.schema_and_dto.util import _get_source_getting_function
 from utilities.enums import SourceMappingEnum
 
 
@@ -45,7 +47,10 @@ def populate_dto_with_request_content(
     return instantiated_object
 
 
-def _optionally_check_against_schema(validation_schema, values):
+def _optionally_check_against_schema(
+    validation_schema: Schema | None,
+    values: dict[str, Any]
+):
     if validation_schema is not None:
         validation_schema().load(values)
 
@@ -62,7 +67,7 @@ def _get_values(attribute_source_mapping, dto_class, source):
 
 def _apply_transformation_functions(
     instantiated_object: BaseModel,
-    transformation_functions: Optional[dict[str, Callable]] = None,
+    transformation_functions: dict[str, Callable] | None = None,
 ) -> None:
     """
     Apply transformation functions to select specific attributes
@@ -86,7 +91,7 @@ def _apply_transformation_functions(
 
 
 def _get_class_attribute_values_from_request(
-    object_class: Type[BaseModel],
+    object_class: type[BaseModel],
     source: SourceMappingEnum = SourceMappingEnum.QUERY_ARGS,
 ) -> dict[str, Any]:
     """

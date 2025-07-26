@@ -110,7 +110,7 @@ class RecordTypeIDMixin:
 
 
 class IterWithSpecialCasesMixin:
-    special_cases: Optional[dict] = None
+    special_cases: dict | None = None
 
     def __iter__(self):
         yield from iter_with_special_cases(self, special_cases=self.special_cases)

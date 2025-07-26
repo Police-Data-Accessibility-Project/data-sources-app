@@ -70,6 +70,11 @@ class SourceCollectorSyncAgenciesQueryBuilder(QueryBuilderBase):
         )
 
         mappings = self.session.execute(query).mappings().all()
+        results = self._process_results(mappings)
+
+        return {"agencies": results}
+
+    def _process_results(self, mappings):
         results = []
         for mapping in mappings:
             results.append(
@@ -82,5 +87,4 @@ class SourceCollectorSyncAgenciesQueryBuilder(QueryBuilderBase):
                     "updated_at": mapping.updated_at.strftime(DATETIME_FORMAT),
                 }
             )
-
-        return {"agencies": results}
+        return results
