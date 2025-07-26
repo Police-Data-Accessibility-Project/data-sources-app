@@ -38,7 +38,7 @@ def populate_dto_with_request_content(
     check_for_mutually_exclusive_arguments(source, attribute_source_mapping)
     check_for_either_or_argument(source, attribute_source_mapping)
 
-    values = _get_values(attribute_source_mapping, dto_class, source)
+    values = _get_values(dto_class, source)
     _optionally_check_against_schema(validation_schema, values)
 
     instantiated_object = dto_class(**values)
@@ -55,13 +55,10 @@ def _optionally_check_against_schema(
         validation_schema().load(values)
 
 
-def _get_values(attribute_source_mapping, dto_class, source):
-    if source is not None:
-        values = _get_class_attribute_values_from_request(dto_class, source)
-    elif attribute_source_mapping is not None:
-        values = _get_class_attribute_values_from_request_source_mapping(
-            dto_class, attribute_source_mapping
-        )
+def _get_values(dto_class, source):
+    # TODO: Are both logic branches used?
+    values = _get_class_attribute_values_from_request(dto_class, source)
+
     return values
 
 
@@ -103,23 +100,5 @@ def _get_class_attribute_values_from_request(
     values = {}
     getter = _get_source_getting_function(source)
     for attribute in object_class.__annotations__:
-        values[attribute] = getter(attribute)
-    return values
-
-
-def _get_class_attribute_values_from_request_source_mapping(
-    object_class: type[BaseModel], source_mapping: dict[str, SourceMappingEnum]
-) -> dict[str, Any]:
-    """
-    Apply multiple getters on all defined class attributes,
-        according to the source mapping, returning a dictionary of values
-    :param object_class: The class whose attributes will be retrieved
-    :return: A list of values, in the order in which the attributes were defined in the class
-    """
-    values = {}
-    for attribute, source in source_mapping.items():
-        if attribute not in object_class.__annotations__:
-            raise AttributeNotInClassError(attribute, object_class.__name__)
-        getter = _get_source_getting_function(source)
         values[attribute] = getter(attribute)
     return values

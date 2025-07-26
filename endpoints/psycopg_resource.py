@@ -99,26 +99,20 @@ class PsycopgResource(Resource):
     def run_endpoint(
         self,
         wrapper_function: Callable[..., Any],
-        dto_populate_parameters: Optional[DTOPopulateParameters] = None,
-        schema_populate_parameters: Optional[SchemaPopulateParameters] = None,
+        dto_populate_parameters: DTOPopulateParameters | None = None,
+        schema_populate_parameters: SchemaPopulateParameters | None = None,
         **wrapper_kwargs: Any,
     ) -> Response:
-        check_for_mutually_exclusive_arguments(
-            schema_populate_parameters, dto_populate_parameters
-        )
 
-        if dto_populate_parameters is None and schema_populate_parameters is None:
+        if schema_populate_parameters is None:
             with setup_database_client() as db_client:
                 return wrapper_function(db_client, **wrapper_kwargs)
 
-        if dto_populate_parameters is not None:
-            dto = populate_dto_with_request_content(dto_populate_parameters)
-        elif schema_populate_parameters is not None:
-            dto = populate_schema_with_request_content(
-                schema=schema_populate_parameters.schema,
-                dto_class=schema_populate_parameters.dto_class,
-                load_file=schema_populate_parameters.load_file,
-            )
+        dto = populate_schema_with_request_content(
+            schema=schema_populate_parameters.schema,
+            dto_class=schema_populate_parameters.dto_class,
+            load_file=schema_populate_parameters.load_file,
+        )
         with setup_database_client() as db_client:
             response = wrapper_function(db_client, dto=dto, **wrapper_kwargs)
 

@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import Any
 
 import marshmallow
@@ -66,6 +67,7 @@ def get_nested_dto_info_list(schema: Schema) -> list[NestedDTOInfo]:
 def _get_data_from_sources(schema: Schema) -> JSONDict:
     """Get extract request data from request sources specified in the schema and field metadata."""
     data = {}
+    field_by_source: dict[SourceMappingEnum, list[str]] = defaultdict(list)
     for field_name, field_value in schema.fields.items():
         metadata: dict[
             str,
@@ -74,10 +76,14 @@ def _get_data_from_sources(schema: Schema) -> JSONDict:
         source: SourceMappingEnum = _get_required_argument(
             argument_name="source", metadata=metadata, schema_class=schema
         )
-        source_getting_function = _get_source_getting_function(source)
-        val = source_getting_function(field_name)
-        if val is not None:
-            data[field_name] = val
+        field_by_source[source].append(field_name)
+
+    for source in field_by_source:
+        for field_name in field_by_source[source]:
+            source_getting_function = _get_source_getting_function(source)
+            val = source_getting_function(field_name)
+            if val is not None:
+                data[field_name] = val
 
     return data
 
