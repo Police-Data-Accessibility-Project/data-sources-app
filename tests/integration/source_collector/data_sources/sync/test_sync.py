@@ -1,3 +1,5 @@
+from datetime import timedelta, date
+
 from endpoints.instantiations.source_collector.data_sources.sync.dtos.request import (
     SourceCollectorSyncDataSourcesRequestDTO,
 )
@@ -45,7 +47,7 @@ def test_source_collector_sync_data_sources(
     results = request_get_data_sources_for_sync(
         rv,
         headers=user_admin.jwt_authorization_header,
-        dto=SourceCollectorSyncDataSourcesRequestDTO(updated_at=tomorrow),
+        dto=SourceCollectorSyncDataSourcesRequestDTO(updated_at=date.today() + timedelta(days=2)),
     )
     assert_expected_data_sources_count(results=results, count=0)
 

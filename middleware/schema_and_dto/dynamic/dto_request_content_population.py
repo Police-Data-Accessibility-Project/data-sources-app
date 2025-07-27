@@ -56,7 +56,6 @@ def _optionally_check_against_schema(
 
 
 def _get_values(dto_class, source):
-    # TODO: Are both logic branches used?
     values = _get_class_attribute_values_from_request(dto_class, source)
 
     return values

@@ -48,7 +48,7 @@ def handle_exceptions(
     @functools.wraps(func)
     def wrapper(
         self: "PsycopgResource", *args: Any, **kwargs: Any
-    ) -> Union[Any, Tuple[Dict[str, str], int]]:
+    ) -> Union[Any, tuple[dict[str, str], int]]:
         try:
             return func(self, *args, **kwargs)
         except Exception as e:
