@@ -19,7 +19,6 @@ class FlaskRestxDocInfo:
 class SchemaPopulateParameters:
     schema: type[Schema] | Schema
     dto_class: type[BaseModel]
-    load_file: bool = False
 
 
 class DTOPopulateParameters(BaseModel):

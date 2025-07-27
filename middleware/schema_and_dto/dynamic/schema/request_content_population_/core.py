@@ -10,7 +10,7 @@ from middleware.schema_and_dto.dynamic.schema.request_content_population_.helper
 
 
 def populate_schema_with_request_content(
-    schema: Schema, dto_class: type[BaseModel], load_file: bool = False
+    schema: Schema, dto_class: type[BaseModel]
 ) -> BaseModel:
     """
     Populates a marshmallow schema with request content, given custom arguments in the schema fields
@@ -20,8 +20,6 @@ def populate_schema_with_request_content(
     :return:
     """
     # Get all declared fields from the schema
-    if load_file:
-        raise NotImplementedError("Load file logic has been removed")
     fields = schema.fields
     source_data_info = get_source_data_info_from_sources(schema)
     intermediate_data = validate_data(source_data_info.data, schema)
