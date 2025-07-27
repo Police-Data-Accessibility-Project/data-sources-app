@@ -12,15 +12,11 @@ class AgencyIdsCTE:
     def __init__(self):
         self.query = (
             select(
-                func.array_agg(
-                    LinkAgencyDataSource.agency_id
-                ).label("agency_ids"),
+                func.array_agg(LinkAgencyDataSource.agency_id).label("agency_ids"),
                 LinkAgencyDataSource.data_source_id,
             )
             .join(Agency, LinkAgencyDataSource.agency_id == Agency.id)
-            .where(
-                Agency.approval_status == ApprovalStatus.APPROVED.value
-            )
+            .where(Agency.approval_status == ApprovalStatus.APPROVED.value)
             .group_by(LinkAgencyDataSource.data_source_id)
             .cte(name="agency_ids")
         )

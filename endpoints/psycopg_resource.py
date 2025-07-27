@@ -1,7 +1,7 @@
 # pyright: reportAttributeAccessIssue=false
 
 import functools
-from typing import Callable, Any, Union, Tuple, Dict, Optional
+from typing import Callable, Any, Union, Tuple, Dict
 
 from flask import Response
 from flask_restx import Resource
@@ -9,9 +9,6 @@ from flask_restx import Resource
 from config import config
 from db.client.context_manager import setup_database_client
 from db.helpers_.psycopg import initialize_psycopg_connection
-from middleware.schema_and_dto.dynamic.dto_request_content_population import (
-    populate_dto_with_request_content,
-)
 from middleware.schema_and_dto.dynamic.schema.request_content_population_.core import (
     populate_schema_with_request_content,
 )
@@ -19,7 +16,6 @@ from middleware.schema_and_dto.non_dto_dataclasses import (
     SchemaPopulateParameters,
     DTOPopulateParameters,
 )
-from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
 
 
 def handle_exceptions(
@@ -48,7 +44,7 @@ def handle_exceptions(
     @functools.wraps(func)
     def wrapper(
         self: "PsycopgResource", *args: Any, **kwargs: Any
-    ) -> Union[Any, Tuple[Dict[str, str], int]]:
+    ) -> Union[Any, tuple[dict[str, str], int]]:
         try:
             return func(self, *args, **kwargs)
         except Exception as e:
@@ -99,26 +95,18 @@ class PsycopgResource(Resource):
     def run_endpoint(
         self,
         wrapper_function: Callable[..., Any],
-        dto_populate_parameters: Optional[DTOPopulateParameters] = None,
-        schema_populate_parameters: Optional[SchemaPopulateParameters] = None,
+        dto_populate_parameters: DTOPopulateParameters | None = None,
+        schema_populate_parameters: SchemaPopulateParameters | None = None,
         **wrapper_kwargs: Any,
     ) -> Response:
-        check_for_mutually_exclusive_arguments(
-            schema_populate_parameters, dto_populate_parameters
-        )
-
-        if dto_populate_parameters is None and schema_populate_parameters is None:
+        if schema_populate_parameters is None:
             with setup_database_client() as db_client:
                 return wrapper_function(db_client, **wrapper_kwargs)
 
-        if dto_populate_parameters is not None:
-            dto = populate_dto_with_request_content(dto_populate_parameters)
-        elif schema_populate_parameters is not None:
-            dto = populate_schema_with_request_content(
-                schema=schema_populate_parameters.schema,
-                dto_class=schema_populate_parameters.dto_class,
-                load_file=schema_populate_parameters.load_file,
-            )
+        dto = populate_schema_with_request_content(
+            schema=schema_populate_parameters.schema,
+            dto_class=schema_populate_parameters.dto_class,
+        )
         with setup_database_client() as db_client:
             response = wrapper_function(db_client, dto=dto, **wrapper_kwargs)
 

@@ -1,15 +1,13 @@
-from typing import Type, Optional, Callable, Any
+from typing import Callable, Any
 
+from marshmallow import Schema
 from pydantic import BaseModel
 
-from middleware.schema_and_dto.non_dto_dataclasses import DTOPopulateParameters
-from middleware.util.argument_checking import (
-    check_for_mutually_exclusive_arguments,
-    check_for_either_or_argument,
+from middleware.schema_and_dto.dynamic.schema.request_content_population_.source_extraction.core import (
+    get_data_from_source,
 )
 from middleware.schema_and_dto.exceptions import AttributeNotInClassError
-from middleware.schema_and_dto.util import _get_source_getting_function
-from utilities.enums import SourceMappingEnum
+from middleware.schema_and_dto.non_dto_dataclasses import DTOPopulateParameters
 
 
 def populate_dto_with_request_content(
@@ -26,43 +24,37 @@ def populate_dto_with_request_content(
     :validation_schema: A schema used to validate the input is in the expected form.
     :return: The instantiated object populated with data from the request
     """
-    dto_class = populate_parameters.dto_class
-    transformation_functions = populate_parameters.transformation_functions
-    source = populate_parameters.source
-    attribute_source_mapping = populate_parameters.attribute_source_mapping
-    validation_schema = populate_parameters.validation_schema
+    pp = populate_parameters
+    dto_class = pp.dto_class
 
     # Instantiate object
-    check_for_mutually_exclusive_arguments(source, attribute_source_mapping)
-    check_for_either_or_argument(source, attribute_source_mapping)
 
-    values = _get_values(attribute_source_mapping, dto_class, source)
-    _optionally_check_against_schema(validation_schema, values)
+    values = get_data_from_source(
+        source=pp.source, fields=list(dto_class.__annotations__.keys())
+    )
+    _optionally_check_against_schema(
+        validation_schema=pp.validation_schema, values=values
+    )
 
     instantiated_object = dto_class(**values)
-    _apply_transformation_functions(instantiated_object, transformation_functions)
+    _apply_transformation_functions(
+        instantiated_object=instantiated_object,
+        transformation_functions=pp.transformation_functions,
+    )
 
     return instantiated_object
 
 
-def _optionally_check_against_schema(validation_schema, values):
+def _optionally_check_against_schema(
+    validation_schema: Schema | None, values: dict[str, Any]
+):
     if validation_schema is not None:
         validation_schema().load(values)
 
 
-def _get_values(attribute_source_mapping, dto_class, source):
-    if source is not None:
-        values = _get_class_attribute_values_from_request(dto_class, source)
-    elif attribute_source_mapping is not None:
-        values = _get_class_attribute_values_from_request_source_mapping(
-            dto_class, attribute_source_mapping
-        )
-    return values
-
-
 def _apply_transformation_functions(
     instantiated_object: BaseModel,
-    transformation_functions: Optional[dict[str, Callable]] = None,
+    transformation_functions: dict[str, Callable] | None = None,
 ) -> None:
     """
     Apply transformation functions to select specific attributes
@@ -83,38 +75,3 @@ def _apply_transformation_functions(
         if value is not None and callable(transform):
             value = transform(value)
         setattr(instantiated_object, attribute, value)
-
-
-def _get_class_attribute_values_from_request(
-    object_class: Type[BaseModel],
-    source: SourceMappingEnum = SourceMappingEnum.QUERY_ARGS,
-) -> dict[str, Any]:
-    """
-    Apply getter on all defined class attributes, returning a list of values
-    :param object_class: The class whose attributes will be retrieved
-    :param source: The source of the request
-    :return: A list of values, in the order in which the attributes were defined in the class
-    """
-    values = {}
-    getter = _get_source_getting_function(source)
-    for attribute in object_class.__annotations__:
-        values[attribute] = getter(attribute)
-    return values
-
-
-def _get_class_attribute_values_from_request_source_mapping(
-    object_class: type[BaseModel], source_mapping: dict[str, SourceMappingEnum]
-) -> dict[str, Any]:
-    """
-    Apply multiple getters on all defined class attributes,
-        according to the source mapping, returning a dictionary of values
-    :param object_class: The class whose attributes will be retrieved
-    :return: A list of values, in the order in which the attributes were defined in the class
-    """
-    values = {}
-    for attribute, source in source_mapping.items():
-        if attribute not in object_class.__annotations__:
-            raise AttributeNotInClassError(attribute, object_class.__name__)
-        getter = _get_source_getting_function(source)
-        values[attribute] = getter(attribute)
-    return values

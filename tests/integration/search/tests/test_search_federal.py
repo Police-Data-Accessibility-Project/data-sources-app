@@ -19,7 +19,6 @@ def test_search_federal(test_data_creator_flask: TestDataCreatorFlask):
         a_id = tdc.request_validator.create_agency(
             headers=tdc.get_admin_tus().jwt_authorization_header,
             agency_post_parameters={
-                "location_info": None,
                 "agency_info": generate_test_data_from_schema(
                     schema=AgencyInfoPostSchema(),
                     override={

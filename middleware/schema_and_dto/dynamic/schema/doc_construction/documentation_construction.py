@@ -50,7 +50,9 @@ from middleware.schema_and_dto.types import (
     SchemaTypes,
 )
 
-from middleware.schema_and_dto.util import _get_required_argument
+from middleware.schema_and_dto.dynamic.schema.request_content_population_.util import (
+    _get_required_argument,
+)
 from endpoints._helpers.docs import create_variable_columns_model
 from utilities.enums import SourceMappingEnum
 

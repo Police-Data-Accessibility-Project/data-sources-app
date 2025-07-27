@@ -35,34 +35,13 @@ class SourceCollectorSyncDataSourcesQueryBuilder(QueryBuilderBase):
 
     @override
     def run(self) -> SourceCollectorSyncDataSourcesResponseDTO:
-        aic = AgencyIdsCTE()
-
-        query: Select = (
-            select(
-                DataSource.id,
-                DataSource.source_url,
-                DataSource.name,
-                DataSource.description,
-                DataSource.approval_status,
-                DataSource.url_status,
-                DataSource.updated_at,
-                RecordType.name.label("record_type_name"),
-                aic.agency_ids,
-            )
-            .join(RecordType, DataSource.record_type_id == RecordType.id)
-            .join(aic.query, DataSource.id == aic.data_source_id)
-        )
-
-        if self.updated_at is not None:
-            query = query.where(DataSource.updated_at >= self.updated_at)
-
-        query = (
-            query.order_by(DataSource.updated_at.asc(), DataSource.id.asc())
-            .offset((self.page - 1) * 1000)
-            .limit(1000)
-        )
+        query = self._build_query()
 
         mappings = self.session.execute(query).mappings().all()
+        results = self._format_results(mappings)
+        return SourceCollectorSyncDataSourcesResponseDTO(data_sources=results)
+
+    def _format_results(self, mappings):
         results: list[SourceCollectorSyncDataSourcesResponseInnerDTO] = []
         for mapping in mappings:
             results.append(
@@ -78,4 +57,30 @@ class SourceCollectorSyncDataSourcesQueryBuilder(QueryBuilderBase):
                     agency_ids=mapping["agency_ids"],
                 )
             )
-        return SourceCollectorSyncDataSourcesResponseDTO(data_sources=results)
+        return results
+
+    def _build_query(self):
+        aic = AgencyIdsCTE()
+        query: Select = (
+            select(
+                DataSource.id,
+                DataSource.source_url,
+                DataSource.name,
+                DataSource.description,
+                DataSource.approval_status,
+                DataSource.url_status,
+                DataSource.updated_at,
+                RecordType.name.label("record_type_name"),
+                aic.agency_ids,
+            )
+            .join(RecordType, DataSource.record_type_id == RecordType.id)
+            .join(aic.query, DataSource.id == aic.data_source_id)
+        )
+        if self.updated_at is not None:
+            query = query.where(DataSource.updated_at >= self.updated_at)
+        query = (
+            query.order_by(DataSource.updated_at.asc(), DataSource.id.asc())
+            .offset((self.page - 1) * 1000)
+            .limit(1000)
+        )
+        return query

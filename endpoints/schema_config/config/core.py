@@ -13,7 +13,6 @@ class EndpointSchemaConfig:
         input_schema: Schema | None = None,
         primary_output_schema: Schema | None = None,
         input_dto_class: type[BaseModel] | None = None,
-        additional_output_schemas: dict[HTTPStatus, Schema] | None = None,
     ):
         """
 
@@ -27,19 +26,12 @@ class EndpointSchemaConfig:
         all_output_schemas = {}
         if primary_output_schema is not None:
             all_output_schemas[HTTPStatus.OK] = primary_output_schema
-        if additional_output_schemas is not None:
-            all_output_schemas.update(additional_output_schemas)
         self.output_schema_manager = OutputSchemaManager(
             output_schemas=all_output_schemas
         )
 
     def get_schema_populate_parameters(self) -> SchemaPopulateParameters:
-        if "file" in self.input_schema.fields:
-            load_file = True
-        else:
-            load_file = False
         return SchemaPopulateParameters(
             schema=self.input_schema,
             dto_class=self.input_dto_class,
-            load_file=load_file,
         )

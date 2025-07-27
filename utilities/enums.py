@@ -21,10 +21,8 @@ class SourceMappingEnum(Enum):
     """
 
     QUERY_ARGS = "args"
-    FORM = "form"
     JSON = "json"
     PATH = "path"
-    FILE = "file"
 
 
 class ParserLocation(Enum):

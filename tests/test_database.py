@@ -603,7 +603,6 @@ def delete_change_log(db_client):
     db_client.execute_raw_sql("DELETE FROM CHANGE_LOG;")
 
 
-
 def test_counties_table_log_logic(test_data_creator_db_client: TestDataCreatorDBClient):
     tdc = test_data_creator_db_client
     delete_change_log(tdc.db_client)
