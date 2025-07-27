@@ -1,6 +1,9 @@
-from middleware.schema_and_dto.dynamic.schema.request_content_population_.source_extraction.mapping import \
-    EXTRACTOR_MAPPING
-from middleware.schema_and_dto.dynamic.schema.request_content_population_.types import JSONDict
+from middleware.schema_and_dto.dynamic.schema.request_content_population_.source_extraction.mapping import (
+    EXTRACTOR_MAPPING,
+)
+from middleware.schema_and_dto.dynamic.schema.request_content_population_.types import (
+    JSONDict,
+)
 from utilities.enums import SourceMappingEnum
 
 

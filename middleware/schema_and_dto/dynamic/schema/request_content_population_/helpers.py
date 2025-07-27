@@ -15,17 +15,23 @@ from middleware.schema_and_dto.dynamic.schema.request_content_population_.models
 from middleware.schema_and_dto.dynamic.schema.request_content_population_.models.source_data import (
     SourceDataInfo,
 )
-from middleware.schema_and_dto.dynamic.schema.request_content_population_.source_extraction.core import \
-    get_data_from_source
-from middleware.schema_and_dto.dynamic.schema.request_content_population_.types import JSONDict, ValidatedDict
-from middleware.schema_and_dto.dynamic.schema.request_content_population_.util import _get_required_argument
+from middleware.schema_and_dto.dynamic.schema.request_content_population_.source_extraction.core import (
+    get_data_from_source,
+)
+from middleware.schema_and_dto.dynamic.schema.request_content_population_.types import (
+    JSONDict,
+    ValidatedDict,
+)
+from middleware.schema_and_dto.dynamic.schema.request_content_population_.util import (
+    _get_required_argument,
+)
 from utilities.enums import SourceMappingEnum
 
 
 def setup_dto_class(
     data: ValidatedDict,
     dto_class: type[BaseModel],
-    nested_dto_info_list: list[NestedDTOInfo]
+    nested_dto_info_list: list[NestedDTOInfo],
 ) -> BaseModel:
     """Setup DTO class based on data and nested DTO info list."""
     for nested_dto_info in nested_dto_info_list:
@@ -67,10 +73,7 @@ def _get_data_from_sources(schema: Schema) -> JSONDict:
     """Get extract request data from request sources specified in the schema and field metadata."""
     field_by_source: dict[SourceMappingEnum, list[str]] = defaultdict(list)
     for field_name, field_value in schema.fields.items():
-        metadata: dict[
-            str,
-            SourceMappingEnum | str
-        ] = field_value.metadata
+        metadata: dict[str, SourceMappingEnum | str] = field_value.metadata
         source: SourceMappingEnum = _get_required_argument(
             argument_name="source", metadata=metadata, schema_class=schema
         )
@@ -107,8 +110,7 @@ def _check_for_errors(metadata: dict[str, Any], source: SourceMappingEnum):
 
 
 def _apply_transformation_functions_to_dict(
-    fields: dict,
-    intermediate_data: ValidatedDict
+    fields: dict, intermediate_data: ValidatedDict
 ):
     """
     Apply transformation functions to the data,

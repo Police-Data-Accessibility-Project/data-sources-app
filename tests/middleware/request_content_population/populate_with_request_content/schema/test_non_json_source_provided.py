@@ -1,9 +1,15 @@
 import pytest
 
-from middleware.schema_and_dto.dynamic.schema.request_content_population_.core import \
-    populate_schema_with_request_content
-from middleware.schema_and_dto.dynamic.schema.request_content_population_.exceptions import InvalidSourceMappingError
-from tests.middleware.request_content_population.data import ExampleNestedSchemaWithIncorrectSource, ExampleNestedDTO
+from middleware.schema_and_dto.dynamic.schema.request_content_population_.core import (
+    populate_schema_with_request_content,
+)
+from middleware.schema_and_dto.dynamic.schema.request_content_population_.exceptions import (
+    InvalidSourceMappingError,
+)
+from tests.middleware.request_content_population.data import (
+    ExampleNestedSchemaWithIncorrectSource,
+    ExampleNestedDTO,
+)
 
 
 def test_populate_nested_schema_with_request_content_non_json_source_provided(
@@ -19,5 +25,3 @@ def test_populate_nested_schema_with_request_content_non_json_source_provided(
             schema=ExampleNestedSchemaWithIncorrectSource(),
             dto_class=ExampleNestedDTO,
         )
-
-

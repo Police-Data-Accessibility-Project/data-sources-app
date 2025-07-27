@@ -57,9 +57,7 @@ class MarshmallowSchemaGenerator:
             schema_fields[field_name] = marshmallow_field
 
         return type(
-            f"{self.pydantic_model_cls.__name__}AutoSchema",
-            (Schema,),
-            schema_fields
+            f"{self.pydantic_model_cls.__name__}AutoSchema", (Schema,), schema_fields
         )
 
 

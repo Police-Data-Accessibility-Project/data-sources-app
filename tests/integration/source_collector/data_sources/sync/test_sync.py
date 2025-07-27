@@ -3,13 +3,18 @@ from datetime import timedelta, date
 from endpoints.instantiations.source_collector.data_sources.sync.dtos.request import (
     SourceCollectorSyncDataSourcesRequestDTO,
 )
-from tests.integration.source_collector.data_sources.sync.asserts import assert_data_sources_each_have_one_agency, \
-    assert_expected_data_sources_count
+from tests.integration.source_collector.data_sources.sync.asserts import (
+    assert_data_sources_each_have_one_agency,
+    assert_expected_data_sources_count,
+)
 from tests.integration.source_collector.data_sources.sync.request import (
     request_get_data_sources_for_sync,
 )
-from tests.integration.source_collector.data_sources.sync.setup import _generate_ds_agency_links, \
-    _generate_test_data_sources, link_pending_agency_to_data_sources
+from tests.integration.source_collector.data_sources.sync.setup import (
+    _generate_ds_agency_links,
+    _generate_test_data_sources,
+    link_pending_agency_to_data_sources,
+)
 
 
 def test_source_collector_sync_data_sources(
@@ -47,8 +52,8 @@ def test_source_collector_sync_data_sources(
     results = request_get_data_sources_for_sync(
         rv,
         headers=user_admin.jwt_authorization_header,
-        dto=SourceCollectorSyncDataSourcesRequestDTO(updated_at=date.today() + timedelta(days=2)),
+        dto=SourceCollectorSyncDataSourcesRequestDTO(
+            updated_at=date.today() + timedelta(days=2)
+        ),
     )
     assert_expected_data_sources_count(results=results, count=0)
-
-

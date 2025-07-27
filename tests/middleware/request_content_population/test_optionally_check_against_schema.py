@@ -1,8 +1,13 @@
 import pytest
 from marshmallow import ValidationError
 
-from middleware.schema_and_dto.dynamic.dto_request_content_population import _optionally_check_against_schema
-from tests.middleware.request_content_population.data import ExampleSchemaWithoutForm, ExampleSchema
+from middleware.schema_and_dto.dynamic.dto_request_content_population import (
+    _optionally_check_against_schema,
+)
+from tests.middleware.request_content_population.data import (
+    ExampleSchemaWithoutForm,
+    ExampleSchema,
+)
 
 
 def test_optionally_check_against_schema_none():

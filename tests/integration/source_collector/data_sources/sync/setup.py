@@ -36,9 +36,7 @@ def _generate_test_data_sources(sample_record_type_id: int):
 
 
 def link_pending_agency_to_data_sources(
-    data_source_ids: list[int],
-    dbc: DatabaseClient,
-    tdc: TestDataCreatorFlask
+    data_source_ids: list[int], dbc: DatabaseClient, tdc: TestDataCreatorFlask
 ):
     pending_agency = tdc.agency(approval_status=ApprovalStatus.PENDING)
     links = _generate_ds_agency_links(data_source_ids, test_agency_id=pending_agency.id)

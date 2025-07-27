@@ -2,9 +2,13 @@ import flask_restx
 from flask_restx import Namespace, Model
 from flask_restx.reqparse import RequestParser
 
-from middleware.schema_and_dto.dynamic.schema.doc_construction.documentation_construction import \
-    get_restx_param_documentation
-from tests.middleware.request_content_population.data import ExampleSchemaWithoutForm, ExampleSchemaWithEnum
+from middleware.schema_and_dto.dynamic.schema.doc_construction.documentation_construction import (
+    get_restx_param_documentation,
+)
+from tests.middleware.request_content_population.data import (
+    ExampleSchemaWithoutForm,
+    ExampleSchemaWithEnum,
+)
 
 
 def test_get_restx_param_documentation():

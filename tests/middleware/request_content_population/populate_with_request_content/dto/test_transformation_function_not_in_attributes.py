@@ -1,6 +1,8 @@
 import pytest
 
-from middleware.schema_and_dto.dynamic.dto_request_content_population import populate_dto_with_request_content
+from middleware.schema_and_dto.dynamic.dto_request_content_population import (
+    populate_dto_with_request_content,
+)
 from middleware.schema_and_dto.exceptions import AttributeNotInClassError
 from middleware.schema_and_dto.non_dto_dataclasses import DTOPopulateParameters
 from tests.middleware.request_content_population.data import SimpleDTO

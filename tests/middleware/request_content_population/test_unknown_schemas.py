@@ -10,10 +10,6 @@ def test_unknown_schemas(test_data_creator_flask: TestDataCreatorFlask):
     rv.get(
         endpoint="/api/typeahead/locations",
         headers=tdc.admin_tus.jwt_authorization_header,
-        query_parameters={
-            "query": "abc",
-            "unknown": "abc"
-        },
+        query_parameters={"query": "abc", "unknown": "abc"},
         expected_response_status=HTTPStatus.BAD_REQUEST,
     )
-

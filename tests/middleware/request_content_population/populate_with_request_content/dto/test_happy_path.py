@@ -36,5 +36,3 @@ def test_populate_dto_with_request_content_happy_path(
     assert dto.simple_string == "spam"
     assert dto.optional_int is None
     assert dto.transformed_array == ["hello", "world"]
-
-

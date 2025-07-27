@@ -20,18 +20,17 @@ class ExampleDTOWithEnum(BaseModel):
     example_enum: str
 
 
-
 @dataclass
 class ExampleDTO:
     example_string: str
     example_query_string: str
+
 
 @dataclass
 class SimpleDTO:
     simple_string: str
     optional_int: Optional[int] = None
     transformed_array: Optional[list[str]] = None
-
 
 
 class ExampleSchema(Schema):
@@ -86,8 +85,6 @@ class ExampleNestedSchemaWithIncorrectSource(Schema):
     )
 
 
-
-
 class ExampleSchemaWithoutForm(Schema):
     example_string = fields.String(
         required=True,
@@ -99,6 +96,7 @@ class ExampleSchemaWithoutForm(Schema):
         source=SourceMappingEnum.QUERY_ARGS,
         description="An example query string",
     )
+
 
 SAMPLE_REQUEST_ARGS = {
     "simple_string": "spam",

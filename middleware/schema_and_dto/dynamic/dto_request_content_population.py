@@ -3,8 +3,9 @@ from typing import Callable, Any
 from marshmallow import Schema
 from pydantic import BaseModel
 
-from middleware.schema_and_dto.dynamic.schema.request_content_population_.source_extraction.core import \
-    get_data_from_source
+from middleware.schema_and_dto.dynamic.schema.request_content_population_.source_extraction.core import (
+    get_data_from_source,
+)
 from middleware.schema_and_dto.exceptions import AttributeNotInClassError
 from middleware.schema_and_dto.non_dto_dataclasses import DTOPopulateParameters
 
@@ -29,29 +30,27 @@ def populate_dto_with_request_content(
     # Instantiate object
 
     values = get_data_from_source(
-        source=pp.source,
-        fields=list(dto_class.__annotations__.keys())
+        source=pp.source, fields=list(dto_class.__annotations__.keys())
     )
     _optionally_check_against_schema(
-        validation_schema=pp.validation_schema,
-        values=values
+        validation_schema=pp.validation_schema, values=values
     )
 
     instantiated_object = dto_class(**values)
     _apply_transformation_functions(
         instantiated_object=instantiated_object,
-        transformation_functions=pp.transformation_functions
+        transformation_functions=pp.transformation_functions,
     )
 
     return instantiated_object
 
 
 def _optionally_check_against_schema(
-    validation_schema: Schema | None,
-    values: dict[str, Any]
+    validation_schema: Schema | None, values: dict[str, Any]
 ):
     if validation_schema is not None:
         validation_schema().load(values)
+
 
 def _apply_transformation_functions(
     instantiated_object: BaseModel,
@@ -76,4 +75,3 @@ def _apply_transformation_functions(
         if value is not None and callable(transform):
             value = transform(value)
         setattr(instantiated_object, attribute, value)
-

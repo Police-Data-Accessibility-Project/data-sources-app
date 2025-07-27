@@ -17,4 +17,3 @@ def get_query_metadata(description: str, **kwargs) -> dict:
         "source": SourceMappingEnum.QUERY_ARGS,
         **kwargs,
     }
-

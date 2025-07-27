@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 from sqlalchemy import func, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_method

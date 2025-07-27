@@ -3,4 +3,3 @@ class MutuallyExclusiveArgumentError(ValueError):
 
     def __init__(self, arg1, arg2):
         super().__init__(f"Arguments '{arg1}' and '{arg2}' cannot be used together.")
-

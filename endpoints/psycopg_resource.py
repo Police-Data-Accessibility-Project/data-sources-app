@@ -1,7 +1,7 @@
 # pyright: reportAttributeAccessIssue=false
 
 import functools
-from typing import Callable, Any, Union, Tuple, Dict, Optional
+from typing import Callable, Any, Union, Tuple, Dict
 
 from flask import Response
 from flask_restx import Resource
@@ -9,9 +9,6 @@ from flask_restx import Resource
 from config import config
 from db.client.context_manager import setup_database_client
 from db.helpers_.psycopg import initialize_psycopg_connection
-from middleware.schema_and_dto.dynamic.dto_request_content_population import (
-    populate_dto_with_request_content,
-)
 from middleware.schema_and_dto.dynamic.schema.request_content_population_.core import (
     populate_schema_with_request_content,
 )
@@ -19,7 +16,6 @@ from middleware.schema_and_dto.non_dto_dataclasses import (
     SchemaPopulateParameters,
     DTOPopulateParameters,
 )
-from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
 
 
 def handle_exceptions(
@@ -103,7 +99,6 @@ class PsycopgResource(Resource):
         schema_populate_parameters: SchemaPopulateParameters | None = None,
         **wrapper_kwargs: Any,
     ) -> Response:
-
         if schema_populate_parameters is None:
             with setup_database_client() as db_client:
                 return wrapper_function(db_client, **wrapper_kwargs)
