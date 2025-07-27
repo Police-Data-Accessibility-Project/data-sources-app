@@ -112,51 +112,12 @@ def test_populate_dto_with_request_no_transformation_functions(
     assert dto.optional_int is None
     assert dto.transformed_array == "hello,world"
 
-
-def test_populate_dto_with_request_source_mapping_and_source_arguments(
-    patched_request_args_get,
-):
-    with pytest.raises(MutuallyExclusiveArgumentError):
-        populate_dto_with_request_content(
-            DTOPopulateParameters(
-                dto_class=SimpleDTO,
-                source=SourceMappingEnum.QUERY_ARGS,
-                attribute_source_mapping={"simple_string": SourceMappingEnum.FORM},
-            )
-        )
-
-
 def test_populate_dto_with_request_no_source_argument(
     patched_request_args_get,
 ):
     with pytest.raises(MissingRequiredArgumentError):
         populate_dto_with_request_content(DTOPopulateParameters(dto_class=SimpleDTO))
 
-
-def test_populate_dto_with_request_source_mapping_happy_path(
-    patched_request_args_get,
-):
-    mock_request = patched_request_args_get
-    mock_request.args.get = MagicMock(return_value=1)
-    mock_request.form.get = MagicMock(return_value=2)
-    mock_request.json.get = MagicMock(return_value=3)
-    dto = populate_dto_with_request_content(
-        DTOPopulateParameters(
-            dto_class=SimpleDTO,
-            attribute_source_mapping={
-                "simple_string": SourceMappingEnum.QUERY_ARGS,
-                "optional_int": SourceMappingEnum.FORM,
-                "transformed_array": SourceMappingEnum.JSON,
-            },
-        )
-    )
-    mock_request.json.get.assert_called_once_with("transformed_array")
-    mock_request.form.get.assert_called_once_with("optional_int")
-    mock_request.args.get.assert_called_once_with("simple_string")
-
-    assert dto.simple_string == 1
-    assert dto.optional_int == 2
-    assert dto.transformed_array == 3
 
 
 class ExampleSchema(Schema):

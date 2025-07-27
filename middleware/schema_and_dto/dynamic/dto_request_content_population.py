@@ -7,10 +7,6 @@ from middleware.schema_and_dto.dynamic.schema.request_content_population_.source
     _get_source_getting_function
 from middleware.schema_and_dto.exceptions import AttributeNotInClassError
 from middleware.schema_and_dto.non_dto_dataclasses import DTOPopulateParameters
-from middleware.util.argument_checking import (
-    check_for_mutually_exclusive_arguments,
-    check_for_either_or_argument,
-)
 from utilities.enums import SourceMappingEnum
 
 
@@ -31,12 +27,9 @@ def populate_dto_with_request_content(
     dto_class = populate_parameters.dto_class
     transformation_functions = populate_parameters.transformation_functions
     source = populate_parameters.source
-    attribute_source_mapping = populate_parameters.attribute_source_mapping
     validation_schema = populate_parameters.validation_schema
 
     # Instantiate object
-    check_for_mutually_exclusive_arguments(source, attribute_source_mapping)
-    check_for_either_or_argument(source, attribute_source_mapping)
 
     values = _get_values(dto_class, source)
     _optionally_check_against_schema(validation_schema, values)

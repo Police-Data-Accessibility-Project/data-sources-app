@@ -32,6 +32,5 @@ class DTOPopulateParameters(BaseModel):
     dto_class: type[BaseModel] | type[Any]
     source: SourceMappingEnum | None = None
     transformation_functions: dict[str, Callable] | None = None
-    attribute_source_mapping: dict[str, SourceMappingEnum] | None = None
     # A schema to be used for validating the input of the class.
     validation_schema: type[Schema] | Schema | None = None
