@@ -270,9 +270,7 @@ def test_agencies(test_data_creator_db_client) -> list[int]:
     tdc = test_data_creator_db_client
     agency_ids = []
     for _ in range(5):
-        agency_ids.append(tdc.agency(
-            approval_status=ApprovalStatus.APPROVED
-        ).id)
+        agency_ids.append(tdc.agency(approval_status=ApprovalStatus.APPROVED).id)
     return agency_ids
 
 
