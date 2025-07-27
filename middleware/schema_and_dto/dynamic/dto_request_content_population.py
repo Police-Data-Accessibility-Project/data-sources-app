@@ -4,10 +4,9 @@ from marshmallow import Schema
 from pydantic import BaseModel
 
 from middleware.schema_and_dto.dynamic.schema.request_content_population_.source_extraction.core import \
-    _get_source_getting_function
+    get_data_from_source
 from middleware.schema_and_dto.exceptions import AttributeNotInClassError
 from middleware.schema_and_dto.non_dto_dataclasses import DTOPopulateParameters
-from utilities.enums import SourceMappingEnum
 
 
 def populate_dto_with_request_content(
@@ -24,18 +23,25 @@ def populate_dto_with_request_content(
     :validation_schema: A schema used to validate the input is in the expected form.
     :return: The instantiated object populated with data from the request
     """
-    dto_class = populate_parameters.dto_class
-    transformation_functions = populate_parameters.transformation_functions
-    source = populate_parameters.source
-    validation_schema = populate_parameters.validation_schema
+    pp = populate_parameters
+    dto_class = pp.dto_class
 
     # Instantiate object
 
-    values = _get_values(dto_class, source)
-    _optionally_check_against_schema(validation_schema, values)
+    values = get_data_from_source(
+        source=pp.source,
+        fields=list(dto_class.__annotations__.keys())
+    )
+    _optionally_check_against_schema(
+        validation_schema=pp.validation_schema,
+        values=values
+    )
 
     instantiated_object = dto_class(**values)
-    _apply_transformation_functions(instantiated_object, transformation_functions)
+    _apply_transformation_functions(
+        instantiated_object=instantiated_object,
+        transformation_functions=pp.transformation_functions
+    )
 
     return instantiated_object
 
@@ -46,13 +52,6 @@ def _optionally_check_against_schema(
 ):
     if validation_schema is not None:
         validation_schema().load(values)
-
-
-def _get_values(dto_class, source):
-    values = _get_class_attribute_values_from_request(dto_class, source)
-
-    return values
-
 
 def _apply_transformation_functions(
     instantiated_object: BaseModel,
@@ -78,19 +77,3 @@ def _apply_transformation_functions(
             value = transform(value)
         setattr(instantiated_object, attribute, value)
 
-
-def _get_class_attribute_values_from_request(
-    object_class: type[BaseModel],
-    source: SourceMappingEnum = SourceMappingEnum.QUERY_ARGS,
-) -> dict[str, Any]:
-    """
-    Apply getter on all defined class attributes, returning a list of values
-    :param object_class: The class whose attributes will be retrieved
-    :param source: The source of the request
-    :return: A list of values, in the order in which the attributes were defined in the class
-    """
-    values = {}
-    getter = _get_source_getting_function(source)
-    for attribute in object_class.__annotations__:
-        values[attribute] = getter(attribute)
-    return values

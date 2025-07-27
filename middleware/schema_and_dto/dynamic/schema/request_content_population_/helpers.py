@@ -15,11 +15,10 @@ from middleware.schema_and_dto.dynamic.schema.request_content_population_.models
 from middleware.schema_and_dto.dynamic.schema.request_content_population_.models.source_data import (
     SourceDataInfo,
 )
-from middleware.schema_and_dto.dynamic.schema.request_content_population_.types import JSONDict, ValidatedDict
-
-from middleware.schema_and_dto.dynamic.schema.request_content_population_.util import _get_required_argument
 from middleware.schema_and_dto.dynamic.schema.request_content_population_.source_extraction.core import \
-    _get_source_getting_function
+    get_data_from_source
+from middleware.schema_and_dto.dynamic.schema.request_content_population_.types import JSONDict, ValidatedDict
+from middleware.schema_and_dto.dynamic.schema.request_content_population_.util import _get_required_argument
 from utilities.enums import SourceMappingEnum
 
 
@@ -66,7 +65,6 @@ def get_nested_dto_info_list(schema: Schema) -> list[NestedDTOInfo]:
 
 def _get_data_from_sources(schema: Schema) -> JSONDict:
     """Get extract request data from request sources specified in the schema and field metadata."""
-    data = {}
     field_by_source: dict[SourceMappingEnum, list[str]] = defaultdict(list)
     for field_name, field_value in schema.fields.items():
         metadata: dict[
@@ -78,14 +76,16 @@ def _get_data_from_sources(schema: Schema) -> JSONDict:
         )
         field_by_source[source].append(field_name)
 
-    for source in field_by_source:
-        for field_name in field_by_source[source]:
-            source_getting_function = _get_source_getting_function(source)
-            val = source_getting_function(field_name)
-            if val is not None:
-                data[field_name] = val
+    full_data: JSONDict = {}
 
-    return data
+    for source in field_by_source:
+        data = get_data_from_source(
+            source=source,
+            fields=field_by_source[source],
+        )
+        full_data.update(data)
+
+    return full_data
 
 
 def get_source_data_info_from_sources(schema: Schema) -> SourceDataInfo:
