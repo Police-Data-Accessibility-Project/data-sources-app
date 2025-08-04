@@ -3,13 +3,13 @@ from alembic import op
 
 
 def switch_enum_type(
-    table_name,
-    column_name,
-    enum_name,
-    new_enum_values,
-    drop_old_enum=True,
-    mapping_dict=None,
-):
+    table_name: str,
+    column_name: str,
+    enum_name: str,
+    new_enum_values: list[str],
+    drop_old_enum: bool = True,
+    mapping_dict: dict = None,
+) -> None:
     """
     Switches an ENUM type in a PostgreSQL column by:
     1. Renaming the old enum type.
