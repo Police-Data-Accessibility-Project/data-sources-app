@@ -1,0 +1,1 @@
+A `multi-follow` in this case refers to a user following both a location and a sublocation of that location.

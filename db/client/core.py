@@ -1232,9 +1232,10 @@ class DatabaseClient:
             for result in results
         ]
 
-    def optionally_update_user_notification_queue(self):
-        builder = OptionallyUpdateUserNotificationQueueQueryBuilder()
-        return self.run_query_builder(builder)
+    def optionally_update_user_notification_queue(self) -> None:
+        return self.run_query_builder(
+            OptionallyUpdateUserNotificationQueueQueryBuilder()
+        )
 
     def get_national_location_id(self) -> int:
         query = select(Location.id).where(
