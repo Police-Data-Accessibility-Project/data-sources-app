@@ -96,6 +96,17 @@ class NotificationsPendingToQueueLocationTestManager:
         self.dr_checker = DataRequestsEventQueueChecker(self.db_client)
         self.ds_checker = DataSourcesEventQueueChecker(self.db_client)
 
+    def setup_follow_locations(
+        self, follow_location_ids: list[int], entity_location_id: int
+    ) -> None:
+        for follow_location_id in follow_location_ids:
+            self._setup_user_follows(location_id=follow_location_id)
+        self._setup_entity_location(location_id=entity_location_id)
+        self._add_entries_to_pending()
+        self.db_client.optionally_update_user_notification_queue()
+        self.dr_checker = DataRequestsEventQueueChecker(self.db_client)
+        self.ds_checker = DataSourcesEventQueueChecker(self.db_client)
+
     def _check_results_for_user(self, user_id: int) -> None:
         assert self.dr_checker.user_has_event(
             user_id=user_id,

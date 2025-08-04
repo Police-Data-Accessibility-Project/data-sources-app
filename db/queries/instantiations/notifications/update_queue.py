@@ -80,6 +80,7 @@ class OptionallyUpdateUserNotificationQueueQueryBuilder(QueryBuilderBase):
                 DataSourcePendingEventNotification.id.label("event_id"),
                 User.id.label("user_id"),
             )
+            .distinct()
             .select_from(User)
             # User follows location
             .join(
@@ -138,6 +139,7 @@ class OptionallyUpdateUserNotificationQueueQueryBuilder(QueryBuilderBase):
                 DataRequestPendingEventNotification.id.label("event_id"),
                 User.id.label("user_id"),
             )
+            .distinct()
             .select_from(User)
             # User follows location
             .join(
