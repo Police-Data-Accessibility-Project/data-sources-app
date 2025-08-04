@@ -1,3 +1,4 @@
+from marshmallow import Schema
 from pydantic import BaseModel
 
 from middleware.schema_and_dto.dynamic.schema.request_content_population_.helpers import (
@@ -6,24 +7,19 @@ from middleware.schema_and_dto.dynamic.schema.request_content_population_.helper
     _apply_transformation_functions_to_dict,
     setup_dto_class,
 )
-from middleware.schema_and_dto.types import SchemaTypes
 
 
 def populate_schema_with_request_content(
-    schema: SchemaTypes, dto_class: type[BaseModel], load_file: bool = False
+    schema: Schema, dto_class: type[BaseModel]
 ) -> BaseModel:
     """
     Populates a marshmallow schema with request content, given custom arguments in the schema fields
     Custom arguments include:
     * source: The source in the request the data will be pulled from
     * transformation_function (optional): A function that will be applied to the data
-    :param schema_class:
-    :param dto_class:
     :return:
     """
     # Get all declared fields from the schema
-    if load_file:
-        raise NotImplementedError("Load file logic has been removed")
     fields = schema.fields
     source_data_info = get_source_data_info_from_sources(schema)
     intermediate_data = validate_data(source_data_info.data, schema)

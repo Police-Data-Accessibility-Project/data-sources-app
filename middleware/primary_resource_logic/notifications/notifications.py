@@ -52,7 +52,7 @@ def send_notifications(
 
 
 def preview_notifications(
-    db_client: DatabaseClient, access_info: AccessInfoPrimary
+    db_client: DatabaseClient, access_info: AccessInfoPrimary | None
 ) -> Response:
     db_client.optionally_update_user_notification_queue()
     notifications_preview = db_client.preview_notifications()

@@ -218,8 +218,7 @@ class TestDataCreatorDBClient:
         )
 
     def agency(
-        self,
-        location_id: int | None = None, **additional_column_value_mappings
+        self, location_id: int | None = None, **additional_column_value_mappings
     ) -> TestAgencyInfo:
         agency_name = self.test_name()
         agency_info = AgencyInfoPostDTO(

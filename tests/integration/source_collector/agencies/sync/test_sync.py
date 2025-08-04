@@ -105,5 +105,3 @@ def test_source_collector_sync_agencies(
         ),
     )
     assert len(results["agencies"]) in (501, 502)
-
-
