@@ -13,3 +13,4 @@ def test_notifications_pending_to_queue_multi_follow(
         follow_location_ids=[pittsburgh_id, allegheny_id],
         entity_location_id=pittsburgh_id
     )
+    manager.check_results()

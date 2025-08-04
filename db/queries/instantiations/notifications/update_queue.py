@@ -1,6 +1,6 @@
 from typing import final
 
-from sqlalchemy import select, Executable, and_
+from sqlalchemy import select, Executable, and_, func
 
 from db.models.implementations import (
     LinkLocationDataRequest,
@@ -79,7 +79,7 @@ class OptionallyUpdateUserNotificationQueueQueryBuilder(QueryBuilderBase):
             select(
                 DataSourcePendingEventNotification.id.label("event_id"),
                 User.id.label("user_id"),
-            )
+            ).distinct()
             .select_from(User)
             # User follows location
             .join(
@@ -137,7 +137,7 @@ class OptionallyUpdateUserNotificationQueueQueryBuilder(QueryBuilderBase):
             select(
                 DataRequestPendingEventNotification.id.label("event_id"),
                 User.id.label("user_id"),
-            )
+            ).distinct()
             .select_from(User)
             # User follows location
             .join(
