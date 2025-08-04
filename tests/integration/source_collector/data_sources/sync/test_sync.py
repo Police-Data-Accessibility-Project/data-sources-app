@@ -22,9 +22,8 @@ def test_source_collector_sync_data_sources(
     dbc.add_many(links, return_ids=False)
     # Generate a rejected agency id and link to data sources as well
     pending_agency = tdc.agency(approval_status=ApprovalStatus.PENDING)
-    links =_generate_ds_agency_links(data_source_ids, test_agency_id=pending_agency.id)
+    links = _generate_ds_agency_links(data_source_ids, test_agency_id=pending_agency.id)
     dbc.add_many(links, return_ids=False)
-
 
     rv = tdc.request_validator
     results = request_get_data_sources_for_sync(
