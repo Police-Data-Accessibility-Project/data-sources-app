@@ -5,7 +5,7 @@ from flask.testing import FlaskClient
 from db.client.core import DatabaseClient
 from db.enums import RequestStatus, ApprovalStatus
 from middleware.enums import JurisdictionType, PermissionsEnum, AgencyType, RecordTypes
-from middleware.schema_and_dto.schemas.agencies.info.post import (
+from endpoints.instantiations.agencies_.post.schemas.inner import (
     AgencyInfoPostSchema,
 )
 from tests.helpers.common_endpoint_calls import CreatedDataSource

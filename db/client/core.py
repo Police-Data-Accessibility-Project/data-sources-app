@@ -206,7 +206,7 @@ from middleware.miscellaneous.table_count_logic import (
     TableCountReference,
     TableCountReferenceManager,
 )
-from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
+from endpoints.instantiations.agencies_.post.dto import AgenciesPostDTO
 from middleware.schema_and_dto.dtos.data_requests.put import DataRequestsPutOuterDTO
 from middleware.schema_and_dto.dtos.data_sources.post import DataSourcesPostDTO
 from middleware.schema_and_dto.dtos.entry_create_update_request import (

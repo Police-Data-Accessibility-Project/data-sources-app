@@ -1,7 +1,9 @@
 from datetime import datetime, timezone, timedelta
 
 from db.models.implementations.core.agency.core import Agency
-from endpoints.schema_config.instantiations.agencies.post import AgenciesPostEndpointSchemaConfig
+from endpoints.schema_config.instantiations.agencies.post import (
+    AgenciesPostEndpointSchemaConfig,
+)
 from middleware.enums import JurisdictionType
 from tests.helpers.asserts import assert_contains_key_value_pairs
 from tests.helpers.common_test_data import get_test_name

@@ -68,5 +68,3 @@ def test_agencies_get(test_data_creator_flask: TestDataCreatorFlask):
         expected_non_null_columns=["id"],
     )
     assert len(response_json["data"]) == 1
-
-

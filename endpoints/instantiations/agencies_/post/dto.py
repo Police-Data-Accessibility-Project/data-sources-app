@@ -13,14 +13,9 @@ from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.
 )
 
 
-class AgencyInfoPutDTO(BaseModel):
-    name: str = get_name_field(required=False)
-    jurisdiction_type: JurisdictionType = get_jurisdiction_type_field(required=False)
-    agency_type: Optional[AgencyType] = Field(
-        default=None,
-        description="The type of the agency.",
-        json_schema_extra=MetadataInfo(required=False),
-    )
+class AgencyInfoPostDTO(BaseModel):
+    name: str = get_name_field(required=True)
+    jurisdiction_type: JurisdictionType = get_jurisdiction_type_field(required=True)
     multi_agency: bool = Field(
         default=False,
         description="Whether or not the agency is a multi-agency.",
@@ -61,3 +56,12 @@ class AgencyInfoPutDTO(BaseModel):
         description="The contact information of the user who submitted the agency.",
         json_schema_extra=MetadataInfo(required=False),
     )
+    agency_type: AgencyType = Field(
+        description="The type of the agency.",
+        json_schema_extra=MetadataInfo(required=True),
+    )
+
+
+class AgenciesPostDTO(BaseModel):
+    agency_info: AgencyInfoPostDTO
+    location_ids: Optional[list[int]] = None

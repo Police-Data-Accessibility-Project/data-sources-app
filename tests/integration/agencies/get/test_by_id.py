@@ -1,4 +1,6 @@
-from endpoints.schema_config.instantiations.agencies.by_id.get import AgenciesByIDGetEndpointSchemaConfig
+from endpoints.schema_config.instantiations.agencies.by_id.get import (
+    AgenciesByIDGetEndpointSchemaConfig,
+)
 from tests.helpers.constants import AGENCIES_BASE_ENDPOINT
 from tests.helpers.helper_classes.test_data_creator.flask import TestDataCreatorFlask
 from tests.helpers.run_and_validate_request import run_and_validate_request

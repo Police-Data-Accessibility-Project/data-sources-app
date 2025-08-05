@@ -85,5 +85,3 @@ def test_agencies_put(test_data_creator_flask: TestDataCreatorFlask):
     assert datetime.fromisoformat(agency_created) < datetime.fromisoformat(
         last_modified
     )
-
-
