@@ -40,7 +40,7 @@ from endpoints.instantiations.dev_.route import (
 )
 from endpoints.instantiations.github_.route import namespace_github
 from endpoints.instantiations.locations_.locations import namespace_locations
-from endpoints.instantiations.map_.map import namespace_map
+from endpoints.instantiations.map.routes import namespace_map
 from endpoints.instantiations.match_.route import namespace_match
 from endpoints.instantiations.metadata_.route import namespace_metadata
 from endpoints.instantiations.metrics_.metrics import namespace_metrics
