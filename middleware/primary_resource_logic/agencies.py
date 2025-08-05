@@ -15,7 +15,7 @@ from middleware.dynamic_request_logic.supporting_classes import (
     IDInfo,
     PutPostRequestInfo,
 )
-from middleware.schema_and_dto.schemas.agencies.put import AgenciesPutSchema
+from endpoints.instantiations.agencies_.put.schemas.outer import AgenciesPutSchema
 from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
 from middleware.schema_and_dto.dtos.agencies.get_many import AgenciesGetManyDTO
 from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO

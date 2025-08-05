@@ -777,8 +777,6 @@ class DatabaseClient:
             no_web_presence=agency_info.no_web_presence,
             approval_status=agency_info.approval_status.value,
             homepage_url=agency_info.homepage_url,
-            lat=agency_info.lat,
-            lng=agency_info.lng,
             defunct_year=agency_info.defunct_year,
             rejection_reason=agency_info.rejection_reason,
             last_approval_editor=agency_info.last_approval_editor,

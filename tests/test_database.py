@@ -700,7 +700,7 @@ def test_agencies_table_logic(test_data_creator_db_client: TestDataCreatorDBClie
     db_client = tdc.db_client
     delete_change_log(db_client)
 
-    NUMBER_OF_AGENCY_TABLE_COLUMNS = 19
+    NUMBER_OF_AGENCY_TABLE_COLUMNS = 17
 
     # Create agency
     old_name = get_test_name()

@@ -1,10 +1,10 @@
 from marshmallow import Schema
 
-from middleware.schema_and_dto.dtos.agencies.put import AgencyInfoPutDTO
+from endpoints.instantiations.agencies_.put.dto import AgencyInfoPutDTO
 from middleware.schema_and_dto.schemas.agencies.helpers import (
     get_agency_info_field,
 )
-from middleware.schema_and_dto.schemas.agencies.info.put import (
+from endpoints.instantiations.agencies_.put.schemas.inner import (
     AgencyInfoPutSchema,
 )
 

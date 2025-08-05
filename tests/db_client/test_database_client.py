@@ -232,8 +232,6 @@ def test_get_data_sources_for_map(
     ds_id = tdc.data_source(approval_status=ApprovalStatus.APPROVED).id
     a_id = tdc.agency(
         location_id=location_id,
-        lat=0.0,
-        lng=0.0,
     ).id
     tdc.link_data_source_to_agency(
         data_source_id=ds_id,
