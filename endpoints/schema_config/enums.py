@@ -135,9 +135,7 @@ from endpoints.schema_config.instantiations.data_sources.by_id.reject import (
 from endpoints.schema_config.instantiations.data_sources.get_many import (
     DataSourcesGetManyEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.data_sources.map import (
-    DataSourcesMapEndpointSchemaConfig,
-)
+from endpoints.instantiations.map.data_sources.schema_config import DataSourcesMapEndpointSchemaConfig
 from endpoints.schema_config.instantiations.data_sources.post import (
     DataSourcesPostEndpointSchemaConfig,
 )

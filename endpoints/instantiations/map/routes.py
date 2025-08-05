@@ -4,9 +4,7 @@ from config import limiter
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.info.instantiations import API_OR_JWT_AUTH_INFO
 from middleware.decorators.endpoint_info import endpoint_info
-from middleware.primary_resource_logic.data_sources import (
-    get_data_sources_for_map_wrapper,
-)
+from endpoints.instantiations.map.data_sources.wrapper import get_data_sources_for_map_wrapper
 from middleware.primary_resource_logic.locations import (
     get_locations_for_map_wrapper,
 )
