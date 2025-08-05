@@ -37,7 +37,7 @@ from middleware.enums import (
     PermissionsEnum,
     RecordTypes,
 )
-from middleware.schema_and_dto.dtos.agencies.post import (
+from endpoints.instantiations.agencies_.post.dto import (
     AgencyInfoPostDTO,
     AgenciesPostDTO,
 )

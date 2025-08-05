@@ -1,6 +1,6 @@
 from db.enums import ApprovalStatus
 from middleware.enums import JurisdictionType, AgencyType, RecordTypes
-from middleware.schema_and_dto.schemas.agencies.info.post import AgencyInfoPostSchema
+from endpoints.instantiations.agencies_.post.schemas.inner import AgencyInfoPostSchema
 from tests.helpers.helper_classes.SchemaTestDataGenerator import (
     generate_test_data_from_schema,
 )

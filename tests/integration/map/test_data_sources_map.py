@@ -20,8 +20,6 @@ def test_data_sources_map_get(test_data_creator_flask: TestDataCreatorFlask):
     ds_id = tdc.data_source(approval_status=ApprovalStatus.APPROVED).id
     a_id = tdc.agency(
         location_id=location_id,
-        lat=0.0,
-        lng=0.0,
     ).id
     tdc.link_data_source_to_agency(
         data_source_id=ds_id,

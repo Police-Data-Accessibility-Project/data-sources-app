@@ -206,7 +206,7 @@ from middleware.miscellaneous.table_count_logic import (
     TableCountReference,
     TableCountReferenceManager,
 )
-from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
+from endpoints.instantiations.agencies_.post.dto import AgenciesPostDTO
 from middleware.schema_and_dto.dtos.data_requests.put import DataRequestsPutOuterDTO
 from middleware.schema_and_dto.dtos.data_sources.post import DataSourcesPostDTO
 from middleware.schema_and_dto.dtos.entry_create_update_request import (
@@ -777,8 +777,6 @@ class DatabaseClient:
             no_web_presence=agency_info.no_web_presence,
             approval_status=agency_info.approval_status.value,
             homepage_url=agency_info.homepage_url,
-            lat=agency_info.lat,
-            lng=agency_info.lng,
             defunct_year=agency_info.defunct_year,
             rejection_reason=agency_info.rejection_reason,
             last_approval_editor=agency_info.last_approval_editor,

@@ -1,12 +1,11 @@
 from marshmallow import Schema, fields, validates_schema, ValidationError
 
 from middleware.enums import JurisdictionType
-from middleware.schema_and_dto.dtos.agencies.post import AgencyInfoPostDTO
-from middleware.schema_and_dto.enums import CSVColumnCondition
+from endpoints.instantiations.agencies_.post.dto import AgencyInfoPostDTO
 from middleware.schema_and_dto.schemas.agencies.helpers import (
     get_agency_info_field,
 )
-from middleware.schema_and_dto.schemas.agencies.info.post import (
+from endpoints.instantiations.agencies_.post.schemas.inner import (
     AgencyInfoPostSchema,
 )
 from middleware.schema_and_dto.util import get_json_metadata
@@ -24,12 +23,10 @@ class AgenciesPostSchema(Schema):
             load_default=None,
             metadata=get_json_metadata(
                 description="The ids of locations associated with the agency.",
-                csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
             ),
         ),
         metadata=get_json_metadata(
             description="The ids of locations associated with the agency.",
-            csv_column_name=CSVColumnCondition.SAME_AS_FIELD,
         ),
     )
 

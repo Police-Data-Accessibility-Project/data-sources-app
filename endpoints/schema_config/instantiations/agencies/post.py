@@ -1,6 +1,6 @@
 from endpoints.schema_config.helpers import get_post_resource_endpoint_schema_config
-from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
-from middleware.schema_and_dto.schemas.agencies.post import AgenciesPostSchema
+from endpoints.instantiations.agencies_.post.dto import AgenciesPostDTO
+from endpoints.instantiations.agencies_.post.schemas.outer import AgenciesPostSchema
 
 AgenciesPostEndpointSchemaConfig = get_post_resource_endpoint_schema_config(
     input_schema=AgenciesPostSchema(),
