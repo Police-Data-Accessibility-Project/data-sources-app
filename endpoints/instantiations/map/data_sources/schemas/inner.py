@@ -27,5 +27,9 @@ class DataSourcesMapResponseInnerSchema(Schema):
         metadata=get_json_metadata("The name of the county"), allow_none=True
     )
     record_type = fields.String(metadata=get_json_metadata("The type of the record"))
-    lat = fields.Float(metadata=get_json_metadata("The latitude of the data source"), allow_none=True)
-    lng = fields.Float(metadata=get_json_metadata("The longitude of the data source"), allow_none=True)
+    lat = fields.Float(
+        metadata=get_json_metadata("The latitude of the data source"), allow_none=True
+    )
+    lng = fields.Float(
+        metadata=get_json_metadata("The longitude of the data source"), allow_none=True
+    )
