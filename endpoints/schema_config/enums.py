@@ -3,7 +3,9 @@ from enum import Enum
 from endpoints.instantiations.auth_.validate_email.endpoint_schema_config import (
     AuthValidateEmailEndpointSchema,
 )
-from endpoints.instantiations.map.data.schema_config import LocationsDataEndpointSchemaConfig
+from endpoints.instantiations.map.data.schema_config import (
+    LocationsDataEndpointSchemaConfig,
+)
 from endpoints.instantiations.source_collector.agencies.sync.schema_config import (
     SourceCollectorSyncAgenciesSchemaConfig,
 )

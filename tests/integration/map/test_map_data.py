@@ -1,11 +1,7 @@
-from endpoints.instantiations.map.data.schema_config import LocationsDataEndpointSchemaConfig
 from tests.helpers.helper_classes.test_data_creator.flask import TestDataCreatorFlask
 
 
-def test_map_data(
-    test_data_creator_flask: TestDataCreatorFlask,
-    pittsburgh_id
-) -> None:
+def test_map_data(test_data_creator_flask: TestDataCreatorFlask, pittsburgh_id) -> None:
     # TODO: Incomplete
     pass
     # tdc = test_data_creator_flask

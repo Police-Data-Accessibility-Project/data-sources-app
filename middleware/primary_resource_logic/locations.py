@@ -73,5 +73,3 @@ def get_locations_related_data_requests_wrapper(
         raise BadRequest("Location not found or no data requests found.")
 
     return multiple_results_response(message="Data requests found.", data=results)
-
-

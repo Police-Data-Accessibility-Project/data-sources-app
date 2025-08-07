@@ -11,6 +11,6 @@ def get_data_for_map_wrapper(db_client: DatabaseClient) -> Response:
             "counties": db_client.get_map_counties(),
             "states": db_client.get_map_states(),
         },
-        "sources": db_client.execute_raw_sql(GET_FEDERAL_QUERY)
+        "sources": db_client.execute_raw_sql(GET_FEDERAL_QUERY),
     }
     return make_response(results)

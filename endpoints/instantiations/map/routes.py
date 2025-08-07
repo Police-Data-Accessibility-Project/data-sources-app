@@ -70,7 +70,8 @@ class LocationsMap(PsycopgResource):
         """
         return self.run_endpoint(get_locations_for_map_wrapper)
 
-@namespace_map.route('/data')
+
+@namespace_map.route("/data")
 class MapData(PsycopgResource):
     @endpoint_info(
         namespace=namespace_map,

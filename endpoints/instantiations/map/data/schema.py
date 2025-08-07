@@ -1,8 +1,11 @@
 from marshmallow import Schema, fields
 from marshmallow.fields import Nested
 
-from middleware.schema_and_dto.schemas.locations.map.response import LocationsMapResponseSchema
+from middleware.schema_and_dto.schemas.locations.map.response import (
+    LocationsMapResponseSchema,
+)
 from middleware.schema_and_dto.util import get_json_metadata
+
 
 class FederalSourcesResponseInnerSchema(Schema):
     agency_name = fields.Str(
@@ -34,4 +37,3 @@ class DataMapResponseSchema(Schema):
         required=True,
         metadata=get_json_metadata("All federal sources"),
     )
-
