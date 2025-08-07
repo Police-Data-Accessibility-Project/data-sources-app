@@ -75,11 +75,3 @@ def get_locations_related_data_requests_wrapper(
     return multiple_results_response(message="Data requests found.", data=results)
 
 
-def get_locations_for_map_wrapper(db_client: DatabaseClient) -> Response:
-    return make_response(
-        {
-            "localities": db_client.get_map_localities(),
-            "counties": db_client.get_map_counties(),
-            "states": db_client.get_map_states(),
-        }
-    )

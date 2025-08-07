@@ -114,15 +114,15 @@ from db.queries.instantiations.locations.get.many import GetManyLocationsQueryBu
 from db.queries.instantiations.log.most_recent_logged_table_counts import (
     GetMostRecentLoggedTableCountsQueryBuilder,
 )
-from db.queries.instantiations.map.counties import GET_MAP_COUNTIES_QUERY
+from endpoints.instantiations.map.locations.queries.counties import GET_MAP_COUNTIES_QUERY
 from db.queries.instantiations.map.data_source_count import (
     GET_DATA_SOURCE_COUNT_BY_LOCATION_TYPE_QUERY,
 )
 from endpoints.instantiations.map.data_sources.query import (
     GET_DATA_SOURCES_FOR_MAP_QUERY,
 )
-from db.queries.instantiations.map.localities import GET_MAP_LOCALITIES_QUERY
-from db.queries.instantiations.map.states import GET_MAP_STATES_QUERY
+from endpoints.instantiations.map.locations.queries.localities import GET_MAP_LOCALITIES_QUERY
+from endpoints.instantiations.map.locations.queries.states import GET_MAP_STATES_QUERY
 from db.queries.instantiations.match.agencies import GetSimilarAgenciesQueryBuilder
 from db.queries.instantiations.metrics.followed_searches.breakdown import (
     GetMetricsFollowedSearchesBreakdownQueryBuilder,

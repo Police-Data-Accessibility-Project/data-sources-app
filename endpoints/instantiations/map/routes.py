@@ -1,15 +1,14 @@
 from flask import Response
 
 from config import limiter
+from endpoints.instantiations.map.data.wrapper import get_data_for_map_wrapper
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.info.instantiations import API_OR_JWT_AUTH_INFO
 from middleware.decorators.endpoint_info import endpoint_info
 from endpoints.instantiations.map.data_sources.wrapper import (
     get_data_sources_for_map_wrapper,
 )
-from middleware.primary_resource_logic.locations import (
-    get_locations_for_map_wrapper,
-)
+from endpoints.instantiations.map.locations.wrapper import get_locations_for_map_wrapper
 from endpoints.psycopg_resource import PsycopgResource
 from endpoints.schema_config.enums import SchemaConfigs
 from endpoints._helpers.response_info import ResponseInfo
@@ -70,3 +69,18 @@ class LocationsMap(PsycopgResource):
         - A dictionary containing the count of locations and their details.
         """
         return self.run_endpoint(get_locations_for_map_wrapper)
+
+@namespace_map.route('/data')
+class MapData(PsycopgResource):
+    @endpoint_info(
+        namespace=namespace_map,
+        auth_info=API_OR_JWT_AUTH_INFO,
+        schema_config=SchemaConfigs.LOCATIONS_DATA_MAP,
+        response_info=ResponseInfo(
+            success_message="Returns all requested map data.",
+        ),
+        description="Retrieves relevant map data.",
+    )
+    @limiter.exempt
+    def get(self, access_info: AccessInfoPrimary) -> Response:
+        return self.run_endpoint(get_data_for_map_wrapper)
