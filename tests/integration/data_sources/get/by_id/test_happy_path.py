@@ -1,6 +1,8 @@
 """Integration tests for /data-sources endpoint"""
 
-from endpoints.instantiations.data_sources_.get.by_id.schema_config import DataSourcesByIDGetEndpointSchemaConfig
+from endpoints.instantiations.data_sources_.get.by_id.schema_config import (
+    DataSourcesByIDGetEndpointSchemaConfig,
+)
 
 from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,

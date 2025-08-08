@@ -3,7 +3,9 @@ from werkzeug.exceptions import Forbidden
 
 from middleware.enums import AccessTypeEnum, PermissionsEnum
 from middleware.security.access_info.primary import AccessInfoPrimary
-from middleware.security.auth.method_config.helpers import check_permissions_with_access_info
+from middleware.security.auth.method_config.helpers import (
+    check_permissions_with_access_info,
+)
 
 
 @pytest.mark.parametrize(

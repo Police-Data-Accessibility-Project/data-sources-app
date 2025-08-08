@@ -5,7 +5,9 @@ from tests.helpers.helper_classes.test_data_creator.flask import TestDataCreator
 from tests.helpers.run_and_validate_request import run_and_validate_request
 
 
-def test_data_sources_by_id_get_invalid_id(test_data_creator_flask: TestDataCreatorFlask):
+def test_data_sources_by_id_get_invalid_id(
+    test_data_creator_flask: TestDataCreatorFlask,
+):
     tdc = test_data_creator_flask
     tus = tdc.standard_user()
     _ = run_and_validate_request(

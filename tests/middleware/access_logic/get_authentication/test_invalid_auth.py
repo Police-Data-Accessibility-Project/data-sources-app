@@ -10,9 +10,7 @@ from middleware.security.auth.method_config.enums import AuthScheme
 from tests.middleware.access_logic.get_authentication.constants import PATCH_ROOT
 
 
-def test_get_authentication_invalid_auth(
-    monkeypatch
-):
+def test_get_authentication_invalid_auth(monkeypatch):
     mock = MagicMock(
         return_value=HeaderAuthInfo(
             auth_scheme=AuthScheme.BASIC,
@@ -22,6 +20,4 @@ def test_get_authentication_invalid_auth(
     monkeypatch.setattr(f"{PATCH_ROOT}", mock)
 
     with pytest.raises(BadRequest):
-        get_authentication(
-            allowed_access_methods=[AccessTypeEnum.JWT]
-        )
+        get_authentication(allowed_access_methods=[AccessTypeEnum.JWT])
