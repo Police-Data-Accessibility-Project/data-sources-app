@@ -119,27 +119,6 @@ def get_data_sources_wrapper(
     )
 
 
-def data_source_by_id_wrapper(
-    db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: GetByIDBaseDTO
-) -> Response:
-    cro: DataSourcesColumnRequestObject = get_data_sources_columns(
-        access_info=access_info,
-    )
-
-    result = db_client.get_data_source_by_id(
-        int(dto.resource_id),
-        data_requests_columns=cro.data_requests_columns,
-        data_sources_columns=cro.data_sources_columns,
-    )
-
-    return make_response(
-        {
-            "data": result,
-            "message": "Successfully retrieved data source",
-        }
-    )
-
-
 def delete_data_source_wrapper(
     db_client: DatabaseClient,
     access_info: AccessInfoPrimary,

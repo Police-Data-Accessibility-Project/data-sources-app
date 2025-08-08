@@ -1,6 +1,4 @@
-from endpoints.schema_config.instantiations.data_sources.by_id.get import (
-    DataSourcesByIDGetEndpointSchemaConfig,
-)
+from endpoints.instantiations.data_sources_.get.by_id.schema_config import DataSourcesByIDGetEndpointSchemaConfig
 from endpoints.schema_config.instantiations.data_sources.post import (
     DataSourcesPostEndpointSchemaConfig,
 )

@@ -38,7 +38,6 @@ from middleware.decorators.endpoint_info import (
 )
 from middleware.primary_resource_logic.data_sources import (
     get_data_sources_wrapper,
-    data_source_by_id_wrapper,
     add_new_data_source_wrapper,
     update_data_source_wrapper,
     delete_data_source_wrapper,
@@ -47,6 +46,7 @@ from middleware.primary_resource_logic.data_sources import (
     get_data_source_related_agencies,
     reject_data_source,
 )
+from endpoints.instantiations.data_sources_.get.by_id.wrapper import data_source_by_id_wrapper
 
 from endpoints.schema_config.enums import SchemaConfigs
 from endpoints._helpers.response_info import ResponseInfo

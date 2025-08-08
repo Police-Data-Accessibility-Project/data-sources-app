@@ -41,12 +41,12 @@ class PermissionsActionEnum(Enum):
 
 
 class AccessTypeEnum(Enum):
-    JWT = auto()
-    REFRESH_JWT = auto()
-    API_KEY = auto()
-    RESET_PASSWORD = auto()
-    VALIDATE_EMAIL = auto()
-    NO_AUTH = auto()
+    JWT = "JSON Web Token"
+    REFRESH_JWT = "Refresh JSON Web Token"
+    API_KEY = "API Key"
+    RESET_PASSWORD = "Reset Password Token"
+    VALIDATE_EMAIL = "Validate Email Token"
+    NO_AUTH = "No Authentication Required"
 
 
 class OutputFormatEnum(Enum):
