@@ -126,7 +126,7 @@ from endpoints.schema_config.instantiations.data_sources.by_id.agencies.post imp
 from endpoints.schema_config.instantiations.data_sources.by_id.delete import (
     DataSourcesByIDDeleteEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.data_sources.by_id.get import (
+from endpoints.instantiations.data_sources_.get.by_id.schema_config import (
     DataSourcesByIDGetEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.data_sources.by_id.put import (

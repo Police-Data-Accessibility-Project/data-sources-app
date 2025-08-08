@@ -34,7 +34,7 @@ from endpoints.instantiations.contact_.route import namespace_contact
 from endpoints.instantiations.data_requests_.data_requests import (
     namespace_data_requests,
 )
-from endpoints.instantiations.data_sources_.data_sources import namespace_data_source
+from endpoints.instantiations.data_sources_.routes import namespace_data_source
 from endpoints.instantiations.dev_.route import (
     namespace_create_test_user,
 )

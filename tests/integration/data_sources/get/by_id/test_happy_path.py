@@ -1,6 +1,6 @@
 """Integration tests for /data-sources endpoint"""
 
-from endpoints.schema_config.instantiations.data_sources.by_id.get import (
+from endpoints.instantiations.data_sources_.get.by_id.schema_config import (
     DataSourcesByIDGetEndpointSchemaConfig,
 )
 
@@ -15,7 +15,8 @@ from tests.helpers.constants import (
 
 def test_data_sources_by_id_get(test_data_creator_flask: TestDataCreatorFlask):
     """
-    Test that GET call to /data-sources-by-id/<data_source_id> endpoint retrieves the data source with the correct homepage URL
+    Test that GET call to /data-sources-by-id/<data_source_id> endpoint
+    retrieves the data source with the correct homepage URL
     """
     tdc = test_data_creator_flask
 
