@@ -117,10 +117,8 @@ class URLStatus(Enum):
     Correlates to the url_status enum in the database
     """
 
-    AVAILABLE = "available"
     BROKEN = "broken"
     OK = "ok"
-    NONE_FOUND = "none found"
 
 
 class UpdateMethod(Enum):
