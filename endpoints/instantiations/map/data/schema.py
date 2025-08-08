@@ -20,6 +20,10 @@ class FederalSourcesResponseInnerSchema(Schema):
         required=True,
         metadata=get_json_metadata("The URL of the federal source"),
     )
+    source_id = fields.Int(
+        required=True,
+        metadata=get_json_metadata("The ID of the federal source"),
+    )
 
 
 class DataMapResponseSchema(Schema):
