@@ -3,9 +3,14 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from endpoints.instantiations.locations_._shared.dtos.response import LocationInfoResponseDTO
+from endpoints.instantiations.locations_._shared.dtos.response import (
+    LocationInfoResponseDTO,
+)
 from middleware.enums import JurisdictionType
-from middleware.schema_and_dto.dtos._helpers import default_field_required, default_field_not_required
+from middleware.schema_and_dto.dtos._helpers import (
+    default_field_required,
+    default_field_not_required,
+)
 from middleware.schema_and_dto.dtos.agencies.base import AgencyInfoBaseDTO
 
 
@@ -13,8 +18,8 @@ class DataSourcesSmallDTO(BaseModel):
     id: int = default_field_required(description="The id of the data source.")
     name: str = default_field_required(description="The name of the data source.")
 
-class AgenciesGetDTO(AgencyInfoBaseDTO):
 
+class AgenciesGetDTO(AgencyInfoBaseDTO):
     class Config:
         arbitrary_types_allowed = True
 
