@@ -8,11 +8,11 @@ def apply_migrations():
     print("Applying migrations...")
     alembic_config = Config("alembic.ini")
     alembic_config.set_main_option(
-        "sqlalchemy.url",
-        get_env_variable("DO_DATABASE_URL")
+        "sqlalchemy.url", get_env_variable("DO_DATABASE_URL")
     )
     command.upgrade(alembic_config, "head")
     print("Migrations applied.")
+
 
 if __name__ == "__main__":
     apply_migrations()
