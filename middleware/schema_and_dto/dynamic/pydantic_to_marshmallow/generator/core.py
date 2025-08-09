@@ -32,7 +32,7 @@ from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.mapping import (
     _is_mapped_type,
 )
-
+from datetime import datetime
 
 class MarshmallowSchemaGenerator:
     def __init__(

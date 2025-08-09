@@ -3,7 +3,7 @@ from marshmallow import fields
 from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     GetManyResponseSchemaBase,
 )
-from middleware.schema_and_dto.schemas.data_sources.get.base import (
+from endpoints.instantiations.data_sources_.get._shared.schema.base import (
     DataSourceGetSchema,
 )
 from middleware.schema_and_dto.util import get_json_metadata
