@@ -5,16 +5,15 @@ Revises: 0da785aaf39a
 Create Date: 2025-08-08 15:07:19.653336
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
-import sqlalchemy as sa
 
-from middleware.alembic_helpers import switch_enum_type
 
 # revision identifiers, used by Alembic.
-revision: str = 'a2e1c321a4a1'
-down_revision: Union[str, None] = '0da785aaf39a'
+revision: str = "a2e1c321a4a1"
+down_revision: Union[str, None] = "0da785aaf39a"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -23,17 +22,14 @@ ENUM_NAME = "url_status"
 COLUMN_NAME = "url_status"
 
 
-
 def upgrade() -> None:
     _drop_view()
 
     op.execute(
-        "CREATE TYPE url_status_enum AS "
-        "ENUM ('ok', 'broken');",
+        "CREATE TYPE url_status_enum AS ENUM ('ok', 'broken');",
     )
     # Remove default value
     op.execute(f"ALTER TABLE {TABLE_NAME} ALTER COLUMN {COLUMN_NAME} SET DEFAULT NULL;")
-
 
     op.execute("""
         ALTER TABLE data_sources
@@ -54,14 +50,11 @@ def upgrade() -> None:
     _create_view()
 
 
-
 def downgrade() -> None:
-
     _drop_view()
 
     op.execute(
-        "CREATE TYPE url_status AS "
-        "ENUM ('ok', 'broken', 'available', 'none found');",
+        "CREATE TYPE url_status AS ENUM ('ok', 'broken', 'available', 'none found');",
     )
 
     op.execute(f"ALTER TABLE {TABLE_NAME} ALTER COLUMN {COLUMN_NAME} SET DEFAULT NULL;")
@@ -83,8 +76,10 @@ def downgrade() -> None:
 
     _create_view()
 
+
 def _drop_view():
     op.execute("DROP VIEW data_sources_expanded;")
+
 
 def _create_view():
     op.execute(
