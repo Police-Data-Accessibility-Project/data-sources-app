@@ -6,7 +6,6 @@ from mirrored_local_app.docker_client import DockerClient
 
 
 class DockerContainer:
-
     def __init__(self, dc: DockerClient, container: Container):
         self.dc: DockerClient = dc
         self.container = container
@@ -31,4 +30,3 @@ class DockerContainer:
                 return
             time.sleep(1)
         raise Exception("Timed out waiting for postgres to be ready")
-

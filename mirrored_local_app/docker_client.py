@@ -8,16 +8,12 @@ from mirrored_local_app.models.docker_file import DockerfileInfo
 
 
 class DockerClient:
-
     def __init__(self):
         self.client = docker.from_env()
 
     def run_command(self, command: str, container_id: str) -> None:
         exec_id = self.client.api.exec_create(
-            container_id,
-            cmd=command,
-            tty=False,
-            stdin=False
+            container_id, cmd=command, tty=False, stdin=False
         )
         output_stream = self.client.api.exec_start(exec_id=exec_id, stream=True)
         for line in output_stream:
@@ -37,9 +33,7 @@ class DockerClient:
         self.client.networks.get(network_name).remove()
 
     def get_image(
-            self,
-            dockerfile_info: DockerfileInfo,
-            force_rebuild: bool = False
+        self, dockerfile_info: DockerfileInfo, force_rebuild: bool = False
     ) -> None:
         if dockerfile_info.dockerfile_directory:
             # Build image from Dockerfile
@@ -47,7 +41,7 @@ class DockerClient:
                 path=dockerfile_info.dockerfile_directory,
                 tag=dockerfile_info.image_tag,
                 nocache=force_rebuild,
-                rm=True  # Remove intermediate images
+                rm=True,  # Remove intermediate images
             )
             return
 
@@ -67,15 +61,16 @@ class DockerClient:
         except NotFound:
             return None
 
-    def create_container(self, docker_info: DockerInfo, network_name: str, force_rebuild: bool = False):
-        self.get_image(
-            docker_info.dockerfile_info,
-            force_rebuild=force_rebuild
-        )
+    def create_container(
+        self, docker_info: DockerInfo, network_name: str, force_rebuild: bool = False
+    ):
+        self.get_image(docker_info.dockerfile_info, force_rebuild=force_rebuild)
 
         container = self.client.containers.run(
             image=docker_info.dockerfile_info.image_tag,
-            volumes=docker_info.volume_info.build_volumes() if docker_info.volume_info is not None else None,
+            volumes=docker_info.volume_info.build_volumes()
+            if docker_info.volume_info is not None
+            else None,
             command=docker_info.command,
             entrypoint=docker_info.entrypoint,
             detach=True,
@@ -86,16 +81,14 @@ class DockerClient:
             stdout=True,
             stderr=True,
             tty=True,
-            healthcheck=docker_info.health_check_info.build_healthcheck() if docker_info.health_check_info is not None else None
+            healthcheck=docker_info.health_check_info.build_healthcheck()
+            if docker_info.health_check_info is not None
+            else None,
         )
         return container
 
-
     def run_container(
-            self,
-            docker_info: DockerInfo,
-            network_name: str,
-            force_rebuild: bool = False
+        self, docker_info: DockerInfo, network_name: str, force_rebuild: bool = False
     ):
         print(f"Running container {docker_info.name}")
         container = self.get_existing_container(docker_info.name)
@@ -103,7 +96,7 @@ class DockerClient:
             return self.create_container(
                 docker_info=docker_info,
                 network_name=network_name,
-                force_rebuild=force_rebuild
+                force_rebuild=force_rebuild,
             )
         if force_rebuild:
             print("Rebuilding container...")
@@ -111,11 +104,10 @@ class DockerClient:
             return self.create_container(
                 docker_info=docker_info,
                 network_name=network_name,
-                force_rebuild=force_rebuild
+                force_rebuild=force_rebuild,
             )
-        if container.status == 'running':
+        if container.status == "running":
             print(f"Container '{docker_info.name}' is already running")
             return container
         container.start()
         return container
-
