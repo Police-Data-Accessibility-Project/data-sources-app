@@ -71,7 +71,7 @@ JurisdictionTypeEnum = Enum(
 ApprovalStatusLiteral = Literal[
     "rejected", "approved", "needs identification", "pending"
 ]
-URLStatusLiteral = Literal["available", "none found", "ok", "broken"]
+URLStatusLiteral = Literal["ok", "broken"]
 
 AccessTypeLiteral = Literal["Web page", "API", "Download"]
 RequestUrgencyLiteral = Literal[
