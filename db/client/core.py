@@ -1493,16 +1493,16 @@ class DatabaseClient:
     def refresh_materialized_view(self, view_name: str):
         self.execute_raw_sql(f"REFRESH MATERIALIZED VIEW {view_name};")
 
-    def refresh_all_materialized_views(self):
+    def refresh_all_materialized_views(self) -> None:
         self.execute_raw_sql(REFRESH_ALL_MATERIALIZED_VIEWS_QUERIES)
 
-    def get_map_localities(self):
+    def get_map_localities(self) -> list[dict[str, str | int | dict[str, float]]]:
         return self.execute_raw_sql(GET_MAP_LOCALITIES_QUERY)
 
-    def get_map_counties(self):
+    def get_map_counties(self) -> list[dict[str, str | int]]:
         return self.execute_raw_sql(GET_MAP_COUNTIES_QUERY)
 
-    def get_map_states(self):
+    def get_map_states(self) -> list[dict[str, str | int]]:
         return self.execute_raw_sql(GET_MAP_STATES_QUERY)
 
     def get_data_source_count_by_location_type(self):
@@ -1527,7 +1527,7 @@ class DatabaseClient:
         self,
         user_count: int,
         dt: datetime | None = None,
-    ):
+    ) -> None:
         item = NotificationLog(
             user_count=user_count,
         )
@@ -1541,7 +1541,7 @@ class DatabaseClient:
         builder = GetMetricsFollowedSearchesBreakdownQueryBuilder(dto=dto)
         return self.run_query_builder(builder)
 
-    def get_metrics_followed_searches_aggregate(self):
+    def get_metrics_followed_searches_aggregate(self) -> dict[str, Any]:
         # TODO: QueryBuilder
         subquery_latest_notification = (
             select(NotificationLog.created_at.label("last_notification"))
