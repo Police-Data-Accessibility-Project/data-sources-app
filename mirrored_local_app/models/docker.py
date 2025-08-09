@@ -9,7 +9,7 @@ class DockerInfo(BaseModel):
     dockerfile_info: DockerfileInfo
     volume_info: VolumeInfo | None = None
     name: str
-    ports: dict | None = None
+    ports: dict[str, int] | None = None
     environment: dict | None
     command: str | None = None
     entrypoint: list[str] | None = None

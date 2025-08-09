@@ -20,8 +20,8 @@ services:
       RESTORE_PASSWORD: ClandestineCornucopiaCommittee
       DUMP_FILE: /dump/db_dump.sql
     entrypoint: [
-#      "bash",
+      "bash",
       # Comment out one of the following lines depending on your needs
 #      "/usr/local/bin/dump.sh"
-#      "/usr/local/bin/restore.sh"
+      "/usr/local/bin/restore.sh"
     ]
