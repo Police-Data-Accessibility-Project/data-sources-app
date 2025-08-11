@@ -34,13 +34,13 @@ from endpoints.instantiations.contact_.route import namespace_contact
 from endpoints.instantiations.data_requests_.data_requests import (
     namespace_data_requests,
 )
-from endpoints.instantiations.data_sources_.data_sources import namespace_data_source
+from endpoints.instantiations.data_sources_.routes import namespace_data_source
 from endpoints.instantiations.dev_.route import (
     namespace_create_test_user,
 )
 from endpoints.instantiations.github_.route import namespace_github
 from endpoints.instantiations.locations_.locations import namespace_locations
-from endpoints.instantiations.map_.map import namespace_map
+from endpoints.instantiations.map.routes import namespace_map
 from endpoints.instantiations.match_.route import namespace_match
 from endpoints.instantiations.metadata_.route import namespace_metadata
 from endpoints.instantiations.metrics_.metrics import namespace_metrics

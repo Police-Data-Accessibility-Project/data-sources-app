@@ -1,5 +1,3 @@
-from typing import Optional
-
 from werkzeug.exceptions import BadRequest, Unauthorized
 
 from middleware.enums import AccessTypeEnum, PermissionsEnum
@@ -12,14 +10,15 @@ from middleware.security.auth.method_config.map import AUTH_METHODS_MAP
 
 def get_authentication(
     allowed_access_methods: list[AccessTypeEnum],
-    restrict_to_permissions: Optional[list[PermissionsEnum]] = None,
+    restrict_to_permissions: list[PermissionsEnum] | None = None,
     no_auth: bool = False,
-) -> Optional[AccessInfoPrimary]:
+) -> AccessInfoPrimary | None:
     """
     Authenticate the user based on allowed access methods and optionally restrict permissions.
 
     :param allowed_access_methods: List of allowed access methods (API_KEY, JWT).
     :param restrict_to_permissions: Optional list of permissions to restrict the access.
+    :param no_auth: Optional flag to disable authentication.
     :return: AccessInfo object containing user email and access type.
     :raises HTTPException: If authentication fails.
     """

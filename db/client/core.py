@@ -114,13 +114,19 @@ from db.queries.instantiations.locations.get.many import GetManyLocationsQueryBu
 from db.queries.instantiations.log.most_recent_logged_table_counts import (
     GetMostRecentLoggedTableCountsQueryBuilder,
 )
-from db.queries.instantiations.map.counties import GET_MAP_COUNTIES_QUERY
+from endpoints.instantiations.map.locations.queries.counties import (
+    GET_MAP_COUNTIES_QUERY,
+)
 from db.queries.instantiations.map.data_source_count import (
     GET_DATA_SOURCE_COUNT_BY_LOCATION_TYPE_QUERY,
 )
-from db.queries.instantiations.map.data_sources import GET_DATA_SOURCES_FOR_MAP_QUERY
-from db.queries.instantiations.map.localities import GET_MAP_LOCALITIES_QUERY
-from db.queries.instantiations.map.states import GET_MAP_STATES_QUERY
+from endpoints.instantiations.map.data_sources.query import (
+    GET_DATA_SOURCES_FOR_MAP_QUERY,
+)
+from endpoints.instantiations.map.locations.queries.localities import (
+    GET_MAP_LOCALITIES_QUERY,
+)
+from endpoints.instantiations.map.locations.queries.states import GET_MAP_STATES_QUERY
 from db.queries.instantiations.match.agencies import GetSimilarAgenciesQueryBuilder
 from db.queries.instantiations.metrics.followed_searches.breakdown import (
     GetMetricsFollowedSearchesBreakdownQueryBuilder,
@@ -204,7 +210,7 @@ from middleware.miscellaneous.table_count_logic import (
     TableCountReference,
     TableCountReferenceManager,
 )
-from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
+from endpoints.instantiations.agencies_.post.dto import AgenciesPostDTO
 from middleware.schema_and_dto.dtos.data_requests.put import DataRequestsPutOuterDTO
 from middleware.schema_and_dto.dtos.data_sources.post import DataSourcesPostDTO
 from middleware.schema_and_dto.dtos.entry_create_update_request import (
@@ -775,8 +781,6 @@ class DatabaseClient:
             no_web_presence=agency_info.no_web_presence,
             approval_status=agency_info.approval_status.value,
             homepage_url=agency_info.homepage_url,
-            lat=agency_info.lat,
-            lng=agency_info.lng,
             defunct_year=agency_info.defunct_year,
             rejection_reason=agency_info.rejection_reason,
             last_approval_editor=agency_info.last_approval_editor,
@@ -1489,16 +1493,16 @@ class DatabaseClient:
     def refresh_materialized_view(self, view_name: str):
         self.execute_raw_sql(f"REFRESH MATERIALIZED VIEW {view_name};")
 
-    def refresh_all_materialized_views(self):
+    def refresh_all_materialized_views(self) -> None:
         self.execute_raw_sql(REFRESH_ALL_MATERIALIZED_VIEWS_QUERIES)
 
-    def get_map_localities(self):
+    def get_map_localities(self) -> list[dict[str, str | int | dict[str, float]]]:
         return self.execute_raw_sql(GET_MAP_LOCALITIES_QUERY)
 
-    def get_map_counties(self):
+    def get_map_counties(self) -> list[dict[str, str | int]]:
         return self.execute_raw_sql(GET_MAP_COUNTIES_QUERY)
 
-    def get_map_states(self):
+    def get_map_states(self) -> list[dict[str, str | int]]:
         return self.execute_raw_sql(GET_MAP_STATES_QUERY)
 
     def get_data_source_count_by_location_type(self):
@@ -1523,7 +1527,7 @@ class DatabaseClient:
         self,
         user_count: int,
         dt: datetime | None = None,
-    ):
+    ) -> None:
         item = NotificationLog(
             user_count=user_count,
         )
@@ -1537,7 +1541,7 @@ class DatabaseClient:
         builder = GetMetricsFollowedSearchesBreakdownQueryBuilder(dto=dto)
         return self.run_query_builder(builder)
 
-    def get_metrics_followed_searches_aggregate(self):
+    def get_metrics_followed_searches_aggregate(self) -> dict[str, Any]:
         # TODO: QueryBuilder
         subquery_latest_notification = (
             select(NotificationLog.created_at.label("last_notification"))

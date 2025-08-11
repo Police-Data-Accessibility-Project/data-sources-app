@@ -3,9 +3,9 @@ from typing import Union
 from marshmallow import fields
 
 from middleware.enums import JurisdictionType
-from middleware.schema_and_dto.dtos.agencies.put import AgencyInfoPutDTO
-from middleware.schema_and_dto.dtos.agencies.post import AgencyInfoPostDTO
-from middleware.schema_and_dto.schemas.agencies.base import AgencyInfoBaseSchema
+from endpoints.instantiations.agencies_.put.dto import AgencyInfoPutDTO
+from endpoints.instantiations.agencies_.post.dto import AgencyInfoPostDTO
+from endpoints.instantiations.agencies_._shared.base import AgencyInfoBaseSchema
 from utilities.enums import SourceMappingEnum
 
 

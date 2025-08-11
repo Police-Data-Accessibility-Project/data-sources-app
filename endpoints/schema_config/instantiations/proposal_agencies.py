@@ -1,8 +1,8 @@
 from marshmallow import RAISE
 
 from endpoints.schema_config.config.core import EndpointSchemaConfig
-from middleware.schema_and_dto.dtos.agencies.post import AgenciesPostDTO
-from middleware.schema_and_dto.schemas.agencies.post import AgenciesPostSchema
+from endpoints.instantiations.agencies_.post.dto import AgenciesPostDTO
+from endpoints.instantiations.agencies_.post.schemas.outer import AgenciesPostSchema
 
 ProposalAgenciesPostEndpointSchemaConfig = EndpointSchemaConfig(
     input_schema=AgenciesPostSchema(

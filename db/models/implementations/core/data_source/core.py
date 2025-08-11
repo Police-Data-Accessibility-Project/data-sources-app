@@ -85,7 +85,7 @@ class DataSource(
     access_notes: Mapped[text | None]
     url_status: Mapped[URLStatusLiteral] = enum_column(
         URLStatus,
-        name="url_status",
+        name="url_status_enum",
         default=URLStatus.OK,
     )
     approval_status: Mapped[ApprovalStatus] = enum_column(

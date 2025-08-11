@@ -1,4 +1,4 @@
-from enum import Enum, auto
+from enum import Enum
 
 
 class CallbackFunctionsEnum(Enum):
@@ -41,12 +41,12 @@ class PermissionsActionEnum(Enum):
 
 
 class AccessTypeEnum(Enum):
-    JWT = auto()
-    REFRESH_JWT = auto()
-    API_KEY = auto()
-    RESET_PASSWORD = auto()
-    VALIDATE_EMAIL = auto()
-    NO_AUTH = auto()
+    JWT = "JSON Web Token"  # nosec
+    REFRESH_JWT = "Refresh JSON Web Token"  # nosec
+    API_KEY = "API Key"  # nosec
+    RESET_PASSWORD = "Reset Password Token"  # nosec
+    VALIDATE_EMAIL = "Validate Email Token"  # nosec
+    NO_AUTH = "No Authentication Required"  # nosec
 
 
 class OutputFormatEnum(Enum):

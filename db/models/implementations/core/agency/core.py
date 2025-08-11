@@ -20,8 +20,6 @@ class Agency(StandardBase, CountMetadata, UpdatedAtMixin):
     name: Mapped[str]
     homepage_url: Mapped[str | None]
     jurisdiction_type: Mapped[JurisdictionTypeLiteral]
-    lat: Mapped[float | None]
-    lng: Mapped[float | None]
     defunct_year: Mapped[str | None]
     agency_type: Mapped[AgencyTypeLiteral]
     multi_agency: Mapped[bool] = mapped_column(server_default=false())

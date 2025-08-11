@@ -65,7 +65,7 @@ from endpoints.schema_config.instantiations.data_requests.related_locations.dele
 from endpoints.schema_config.instantiations.data_requests.related_locations.post import (
     DataRequestsRelatedLocationsPostEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.data_sources.by_id.get import (
+from endpoints.instantiations.data_sources_.get.by_id.schema_config import (
     DataSourcesByIDGetEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.data_sources.by_id.reject import (
@@ -89,7 +89,7 @@ from endpoints.schema_config.instantiations.locations.data_requests import (
 from endpoints.schema_config.instantiations.locations.get_many import (
     LocationsGetManyEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.locations.map import (
+from endpoints.instantiations.map.locations.schema_config import (
     LocationsMapEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.match import MatchAgencyEndpointSchemaConfig

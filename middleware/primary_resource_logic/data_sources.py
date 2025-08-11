@@ -10,7 +10,6 @@ from werkzeug.exceptions import BadRequest
 from db.client.core import DatabaseClient
 from db.db_client_dataclasses import OrderByParameters
 from db.enums import ApprovalStatus, RelationRoleEnum, ColumnPermissionEnum
-from db.helpers_.result_formatting import zip_get_datas_sources_for_map_results
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.column_permission.core import get_permitted_columns
 from middleware.dynamic_request_logic.delete import delete_entry
@@ -37,7 +36,7 @@ from middleware.schema_and_dto.dtos.common.base import (
     GetManyBaseDTO,
     GetByIDBaseDTO,
 )
-from middleware.common_response_formatting import format_list_response, message_response
+from middleware.common_response_formatting import message_response
 from middleware.schema_and_dto.dtos.data_sources.post import DataSourcesPostDTO
 from middleware.schema_and_dto.dtos.data_sources.reject import (
     DataSourcesRejectDTO,
@@ -117,37 +116,6 @@ def get_data_sources_wrapper(
             "message": "Successfully retrieved data sources",
             "data": results,
         }
-    )
-
-
-def data_source_by_id_wrapper(
-    db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: GetByIDBaseDTO
-) -> Response:
-    cro: DataSourcesColumnRequestObject = get_data_sources_columns(
-        access_info=access_info,
-    )
-
-    result = db_client.get_data_source_by_id(
-        int(dto.resource_id),
-        data_requests_columns=cro.data_requests_columns,
-        data_sources_columns=cro.data_sources_columns,
-    )
-
-    return make_response(
-        {
-            "data": result,
-            "message": "Successfully retrieved data source",
-        }
-    )
-
-
-def get_data_sources_for_map_wrapper(db_client: DatabaseClient) -> Response:
-    raw_results = db_client.get_data_sources_for_map()
-    zipped_results = zip_get_datas_sources_for_map_results(raw_results)
-    return make_response(
-        format_list_response(
-            data={"data": zipped_results},
-        )
     )
 
 

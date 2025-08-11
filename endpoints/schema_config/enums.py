@@ -3,6 +3,9 @@ from enum import Enum
 from endpoints.instantiations.auth_.validate_email.endpoint_schema_config import (
     AuthValidateEmailEndpointSchema,
 )
+from endpoints.instantiations.map.data.schema_config import (
+    LocationsDataEndpointSchemaConfig,
+)
 from endpoints.instantiations.source_collector.agencies.sync.schema_config import (
     SourceCollectorSyncAgenciesSchemaConfig,
 )
@@ -123,7 +126,7 @@ from endpoints.schema_config.instantiations.data_sources.by_id.agencies.post imp
 from endpoints.schema_config.instantiations.data_sources.by_id.delete import (
     DataSourcesByIDDeleteEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.data_sources.by_id.get import (
+from endpoints.instantiations.data_sources_.get.by_id.schema_config import (
     DataSourcesByIDGetEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.data_sources.by_id.put import (
@@ -135,7 +138,7 @@ from endpoints.schema_config.instantiations.data_sources.by_id.reject import (
 from endpoints.schema_config.instantiations.data_sources.get_many import (
     DataSourcesGetManyEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.data_sources.map import (
+from endpoints.instantiations.map.data_sources.schema_config import (
     DataSourcesMapEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.data_sources.post import (
@@ -156,7 +159,7 @@ from endpoints.schema_config.instantiations.locations.data_requests import (
 from endpoints.schema_config.instantiations.locations.get_many import (
     LocationsGetManyEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.locations.map import (
+from endpoints.instantiations.map.locations.schema_config import (
     LocationsMapEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.match import MatchAgencyEndpointSchemaConfig
@@ -368,6 +371,7 @@ class SchemaConfigs(Enum):
     )
     LOCATIONS_MAP = LocationsMapEndpointSchemaConfig
     LOCATIONS_GET_MANY = LocationsGetManyEndpointSchemaConfig
+    LOCATIONS_DATA_MAP = LocationsDataEndpointSchemaConfig
     # endregion
 
     # region Metrics
