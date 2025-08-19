@@ -33,6 +33,7 @@ class SourceCollectorSyncAgenciesQueryBuilder(QueryBuilderBase):
                 USState.state_name.label("state_name"),
                 County.name.label("county_name"),
                 Locality.name.label("locality_name"),
+                Agency.homepage_url,
                 Agency.updated_at,
             )
             .outerjoin(
@@ -84,6 +85,7 @@ class SourceCollectorSyncAgenciesQueryBuilder(QueryBuilderBase):
                     "state_name": mapping.state_name,
                     "county_name": mapping.county_name,
                     "locality_name": mapping.locality_name,
+                    "homepage_url": mapping.homepage_url,
                     "updated_at": mapping.updated_at.strftime(DATETIME_FORMAT),
                 }
             )
