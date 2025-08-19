@@ -115,6 +115,14 @@ def id_column():
     return sa.Column("id", sa.Integer, primary_key=True, nullable=False)
 
 
+def agency_id_column():
+    return sa.Column(
+        "agency_id",
+        sa.Integer,
+        sa.ForeignKey("agencies.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+
 def user_id_column():
     return sa.Column(
         "user_id",
@@ -142,6 +150,11 @@ def updated_at_column():
         nullable=False,
     )
 
+
+def created_at_column():
+    return sa.Column(
+        "created_at", sa.DateTime, server_default=sa.func.now(), nullable=False
+    )
 
 def enum_column(
     column_name: str, enum_name: str, enum_values: list[str], nullable: bool = False

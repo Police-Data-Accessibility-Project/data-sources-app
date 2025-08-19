@@ -18,7 +18,6 @@ class Agency(StandardBase, CountMetadata, UpdatedAtMixin):
     __tablename__ = Relations.AGENCIES.value
 
     name: Mapped[str]
-    homepage_url: Mapped[str | None]
     jurisdiction_type: Mapped[JurisdictionTypeLiteral]
     defunct_year: Mapped[str | None]
     agency_type: Mapped[AgencyTypeLiteral]
@@ -54,4 +53,9 @@ class Agency(StandardBase, CountMetadata, UpdatedAtMixin):
         primaryjoin="LinkAgencyDataSource.agency_id == Agency.id",
         secondaryjoin="LinkAgencyDataSource.data_source_id == DataSourceExpanded.id",
         back_populates="agencies",
+    )
+    meta_urls: Mapped[list["AgencyMetaURL"]] = relationship(
+        argument="AgencyMetaURL",
+        secondary="public.link_agencies_meta_urls",
+        primaryjoin="AgencyMetaURL.agency_id == Agency.id",
     )

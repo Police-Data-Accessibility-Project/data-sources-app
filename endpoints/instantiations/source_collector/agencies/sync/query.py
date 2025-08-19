@@ -85,7 +85,7 @@ class SourceCollectorSyncAgenciesQueryBuilder(QueryBuilderBase):
                     "state_name": mapping.state_name,
                     "county_name": mapping.county_name,
                     "locality_name": mapping.locality_name,
-                    "homepage_url": mapping.homepage_url,
+                    "homepage_url": mapping.meta_urls,
                     "updated_at": mapping.updated_at.strftime(DATETIME_FORMAT),
                 }
             )
