@@ -24,6 +24,9 @@ class SourceCollectorSyncAgenciesResponseInnerDTO(BaseModel):
     locality_name: Optional[str] = default_field_not_required(
         description="The locality name of the agency."
     )
+    homepage_url: Optional[str] = default_field_not_required(
+        description="The homepage URL of the agency."
+    )
     updated_at: datetime.datetime = default_field_required(
         description="The date and time the agency was last updated."
     )

@@ -39,6 +39,7 @@ def test_source_collector_sync_agencies(
             approval_status=ApprovalStatus.APPROVED.value,
             jurisdiction_type=cast(jurisdiction_type, JurisdictionTypeEnum),
             agency_type=AgencyType.POLICE.value,
+            homepage_url=f"https://example.com/{i}",
         )
         agencies.append(agency)
     # Add an additional agency that is not approved
@@ -84,6 +85,7 @@ def test_source_collector_sync_agencies(
     for i in range(1000):
         result_idx = 1000 - i - 1
         assert results["agencies"][result_idx]["display_name"] == f"Test Agency {i}"
+        assert results["agencies"][result_idx]["homepage_url"] == f"https://example.com/{i}"
 
     # Check pagination
     results_pagination = rv.get_agencies_for_sync(
