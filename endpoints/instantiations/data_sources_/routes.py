@@ -43,9 +43,9 @@ from middleware.primary_resource_logic.data_sources import (
     delete_data_source_wrapper,
     create_data_source_related_agency,
     delete_data_source_related_agency,
-    get_data_source_related_agencies,
     reject_data_source,
 )
+from endpoints.instantiations.data_sources_.get.by_id.agencies.middleware import get_data_source_related_agencies
 from endpoints.instantiations.data_sources_.get.by_id.wrapper import (
     data_source_by_id_wrapper,
 )

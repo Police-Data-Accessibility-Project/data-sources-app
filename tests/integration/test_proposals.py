@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from db.enums import ApprovalStatus
 from db.models.implementations.core.agency.core import Agency
+from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMetaURL
 from db.models.implementations.link import LinkAgencyLocation
 from middleware.enums import JurisdictionType, AgencyType
 from tests.helpers.helper_classes.test_data_creator.flask import (
@@ -21,7 +22,7 @@ def test_proposal_agency_create(test_data_creator_flask: TestDataCreatorFlask):
                 "name": "Test Agency",
                 "jurisdiction_type": JurisdictionType.LOCAL.value,
                 "agency_type": AgencyType.COURT.value,
-                "homepage_url": "https://example.com",
+                "meta_urls": ["https://example.com"],
             },
             "location_ids": [location_id],
         },
@@ -33,9 +34,13 @@ def test_proposal_agency_create(test_data_creator_flask: TestDataCreatorFlask):
     assert agencies[0]["name"] == "Test Agency"
     assert agencies[0]["jurisdiction_type"] == JurisdictionType.LOCAL.value
     assert agencies[0]["agency_type"] == AgencyType.COURT.value
-    assert agencies[0]["homepage_url"] == "https://example.com"
     assert agencies[0]["creator_user_id"] == tdc.get_admin_tus().user_info.user_id
     assert agencies[0]["approval_status"] == ApprovalStatus.PENDING.value
+
+    # Confirm meta url in database
+    meta_urls: list[dict] = tdc.db_client.get_all(AgencyMetaURL)
+    assert len(meta_urls) == 1
+    assert meta_urls[0]["url"] == "https://example.com"
 
     # Confirm agency location link in database
     links = tdc.db_client.get_all(LinkAgencyLocation)
@@ -58,7 +63,7 @@ def test_proposal_agency_create_fail_on_approval_status_included(
                 "name": "Test Agency",
                 "jurisdiction_type": JurisdictionType.LOCAL.value,
                 "agency_type": AgencyType.COURT.value,
-                "homepage_url": "https://example.com",
+                "meta_urls": ["https://example.com"],
                 "approval_status": ApprovalStatus.APPROVED.value,
             },
             "location_ids": [location_id],

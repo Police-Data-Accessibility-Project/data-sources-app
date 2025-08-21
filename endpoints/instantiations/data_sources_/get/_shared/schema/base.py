@@ -25,7 +25,7 @@ class DataSourceGetSchema(DataSourceExpandedSchema):
                     "submitted_name",
                     "agency_type",
                     "jurisdiction_type",
-                    "homepage_url",
+                    "meta_urls",
                     "locations",
                     "state_name",
                     "state_iso",

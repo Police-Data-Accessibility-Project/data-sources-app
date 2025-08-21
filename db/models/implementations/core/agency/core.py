@@ -56,6 +56,5 @@ class Agency(StandardBase, CountMetadata, UpdatedAtMixin):
     )
     meta_urls: Mapped[list["AgencyMetaURL"]] = relationship(
         argument="AgencyMetaURL",
-        secondary="public.link_agencies_meta_urls",
         primaryjoin="AgencyMetaURL.agency_id == Agency.id",
     )

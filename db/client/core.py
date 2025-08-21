@@ -51,8 +51,8 @@ from db.exceptions import LocationDoesNotExistError
 from db.helpers_.psycopg import initialize_psycopg_connection
 from db.helpers_.result_formatting import (
     get_expanded_display_name,
-    agency_to_data_sources_get_related_agencies_output,
 )
+from endpoints.instantiations.data_sources_.get.by_id.agencies.format import agency_to_data_sources_get_related_agencies_output
 from db.models.base import Base
 from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.data_request.core import DataRequest
@@ -100,10 +100,10 @@ from db.queries.instantiations.data_sources.archive import (
     GetDataSourcesToArchiveQueryBuilder,
     ArchiveInfo,
 )
-from db.queries.instantiations.data_sources.get.by_id import (
+from endpoints.instantiations.data_sources_.get.by_id.query import (
     GetDataSourceByIDQueryBuilder,
 )
-from db.queries.instantiations.data_sources.get.many import (
+from endpoints.instantiations.data_sources_.get.many.query import (
     GetDataSourcesQueryBuilder,
 )
 from db.queries.instantiations.data_sources.post.single import (
@@ -163,7 +163,7 @@ from db.queries.instantiations.util.get_columns_for_relation import (
 from db.queries.instantiations.util.refresh_all_materialized_views import (
     REFRESH_ALL_MATERIALIZED_VIEWS_QUERIES,
 )
-from db.queries.instantiations.util.select_from_relation import (
+from db.queries.instantiations.util.select_from_relation.query import (
     SelectFromRelationQueryBuilder,
 )
 from db.queries.models.get_params import GetParams
@@ -172,7 +172,7 @@ from endpoints.instantiations.auth_.validate_email.query import (
     ValidateEmailQueryBuilder,
 )
 from endpoints.instantiations.data_requests_.post.dto import DataRequestsPostDTO
-from endpoints.instantiations.source_collector.agencies.sync.query import (
+from endpoints.instantiations.source_collector.agencies.sync.query.query import (
     SourceCollectorSyncAgenciesQueryBuilder,
 )
 from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
@@ -732,12 +732,6 @@ class DatabaseClient:
         )
         self.run_query_builder(builder)
 
-    update_agency = partialmethod(
-        _update_entry_in_table,
-        table_name="agencies",
-        id_column_name="id",
-    )
-
     def _create_entry_in_table(
         self,
         table_name: str,
@@ -969,7 +963,8 @@ class DatabaseClient:
         query = (
             select(DataSourceExpanded)
             .options(
-                selectinload(DataSourceExpanded.agencies).selectinload(Agency.locations)
+                selectinload(DataSourceExpanded.agencies)
+                .selectinload(Agency.locations)
             )
             .where(DataSourceExpanded.id == data_source_id)
         )

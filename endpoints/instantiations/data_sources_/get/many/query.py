@@ -7,7 +7,7 @@ from db.db_client_dataclasses import OrderByParameters
 from db.dynamic_query_constructor import DynamicQueryConstructor
 from db.enums import ApprovalStatus
 from db.helpers import get_offset
-from db.helpers_.result_formatting import data_source_to_get_data_sources_output
+from endpoints.instantiations.data_sources_.get.convert import data_source_to_get_data_sources_output
 from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.data_source.expanded import DataSourceExpanded
 from db.queries.builder.core import QueryBuilderBase

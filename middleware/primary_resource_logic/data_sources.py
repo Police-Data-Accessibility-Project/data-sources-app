@@ -34,7 +34,6 @@ from middleware.schema_and_dto.dtos.entry_create_update_request import (
 )
 from middleware.schema_and_dto.dtos.common.base import (
     GetManyBaseDTO,
-    GetByIDBaseDTO,
 )
 from middleware.common_response_formatting import message_response
 from middleware.schema_and_dto.dtos.data_sources.post import DataSourcesPostDTO
@@ -179,24 +178,6 @@ def add_new_data_source_wrapper(
 
 
 # region Related Resources
-
-
-def get_data_source_related_agencies(
-    db_client: DatabaseClient, dto: GetByIDBaseDTO
-) -> Response:
-    results = db_client.get_data_source_related_agencies(
-        data_source_id=int(dto.resource_id)
-    )
-    if results is None:
-        return message_response("Data Source not found.")
-
-    return make_response(
-        {
-            "metadata": {"count": len(results)},
-            "message": "Successfully retrieved related agencies",
-            "data": results,
-        }
-    )
 
 
 class CreateDataSourceRelatedAgenciesLogic(PostLogic):

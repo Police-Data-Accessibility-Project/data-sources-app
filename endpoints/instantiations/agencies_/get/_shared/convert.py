@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from db.helpers_.result_formatting import location_to_location_info
 from db.models.implementations.core.agency.core import Agency
@@ -14,7 +14,6 @@ def agency_to_agency_dict(agency: Agency) -> dict[str, Any]:
         "id": agency.id,
         "submitted_name": agency.name,
         "name": agency.name,
-        "homepage_url": agency.homepage_url,
         "lat": None,
         "lng": None,
         "defunct_year": agency.defunct_year,
@@ -35,16 +34,29 @@ def agency_to_agency_dict(agency: Agency) -> dict[str, Any]:
         "locality_name": first_location.locality_name if first_location else None,
     }
 
+def agency_to_meta_urls(agency: Agency) -> list[str]:
+    meta_urls: list[str] = []
+    for meta_url in agency.meta_urls:
+        meta_urls.append(meta_url.url)
+    return meta_urls
+
 
 def agency_to_get_agencies_output(
-    agency: Agency, requested_columns: Optional[list[str]] = None
+    agency: Agency, requested_columns: list[str] | None = None
 ) -> dict[str, Any]:
+    # Agency
     if requested_columns is not None:
         d = {}
         for column in requested_columns:
             d[column] = getattr(agency, column)
     else:
         d = agency_to_agency_dict(agency)
+
+    # Meta URLs
+    meta_urls = agency_to_meta_urls(agency)
+    d["meta_urls"] = meta_urls
+
+    # Data Sources
     data_sources = []
     for data_source in agency.data_sources:
         data_sources.append(
@@ -54,6 +66,8 @@ def agency_to_get_agencies_output(
             }
         )
     d["data_sources"] = data_sources
+
+    # Locations
     locations = []
     for location in agency.locations:
         locations.append(location_to_location_info(location))

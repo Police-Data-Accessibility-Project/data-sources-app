@@ -3,7 +3,7 @@ from typing import Any
 from sqlalchemy import select
 
 from db.dynamic_query_constructor import DynamicQueryConstructor
-from db.helpers_.result_formatting import data_source_to_get_data_sources_output
+from endpoints.instantiations.data_sources_.get.convert import data_source_to_get_data_sources_output
 from db.models.implementations.core.data_source.expanded import DataSourceExpanded
 from db.queries.builder.core import QueryBuilderBase
 

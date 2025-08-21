@@ -21,9 +21,15 @@ depends_on: Union[str, Sequence[str], None] = None
 AGENCY_META_URLS_TABLE_NAME = "agency_meta_urls"
 AGENCY_TABLE_NAME = "agencies"
 
+
+
+
+
 def upgrade() -> None:
     _create_agency_meta_urls_table()
     _migrate_homepage_urls_to_agency_meta_urls()
+    _migrate_agency_meta_data_sources_to_agency_meta_urls()
+    _delete_agency_meta_data_sources()
     _delete_homepage_urls_column()
 
 def downgrade() -> None:
@@ -76,3 +82,35 @@ def _create_agency_meta_urls_table():
 
 def _drop_agency_meta_urls_table():
     op.drop_table(AGENCY_META_URLS_TABLE_NAME)
+
+
+
+def _migrate_agency_meta_data_sources_to_agency_meta_urls():
+    op.execute(
+        f"""
+        INSERT INTO {AGENCY_META_URLS_TABLE_NAME} (url, agency_id)
+        select
+            ds.source_url,
+            a.id as agency_id
+        from
+            data_sources ds
+                join record_types rt on rt.id = ds.record_type_id
+                join link_agencies_data_sources l on l.data_source_id = ds.id
+                join agencies a on a.id = l.agency_id
+        where
+            rt.name = 'Contact Info & Agency Meta'
+            and ds.source_url != a.homepage_url
+        """
+    )
+
+def _delete_agency_meta_data_sources():
+    op.execute(
+        f"""
+        DELETE FROM data_sources
+        WHERE record_type_id = (
+            SELECT id
+            FROM record_types
+            WHERE name = 'Contact Info & Agency Meta'
+        )
+        """
+    )

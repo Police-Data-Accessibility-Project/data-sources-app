@@ -21,6 +21,7 @@ class CreateAgencyQueryBuilder(QueryBuilderBase):
         agency_id = self._add_agency()
 
         self._link_to_locations(agency_id)
+        self._link_to_meta_urls(agency_id)
 
         return agency_id
 
