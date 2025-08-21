@@ -47,6 +47,7 @@ class UpdatedAtMixin:
         server_default=func.current_timestamp(), onupdate=func.current_timestamp()
     )
 
+
 class AgencyIDMixin:
     agency_id: Mapped[int] = mapped_column(ForeignKey("public.agencies.id"))
 
@@ -57,6 +58,7 @@ class AgencyIDMixin:
             primaryjoin=f"foreign({cls.__name__}.agency_id) == Agency.id",
             uselist=False,
         )
+
 
 class UserIDMixin:
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))

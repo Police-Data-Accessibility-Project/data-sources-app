@@ -88,7 +88,7 @@ def test_source_collector_sync_agencies_bulk(
     for i in range(1000):
         result_idx = 1000 - i - 1
         assert results["agencies"][result_idx]["display_name"] == f"Test Agency {i}"
-        assert results["agencies"][result_idx]['meta_urls'] == []
+        assert results["agencies"][result_idx]["meta_urls"] == []
 
     # Check pagination
     results_pagination = rv.get_agencies_for_sync(

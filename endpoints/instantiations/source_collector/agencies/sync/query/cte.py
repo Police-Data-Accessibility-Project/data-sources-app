@@ -5,16 +5,15 @@ from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMet
 
 
 class AgencyMetaURLsCTE:
-
     def __init__(self):
         self._cte = (
             select(
                 Agency.id,
                 func.coalesce(
-                    func.array_agg(
-                        AgencyMetaURL.url
-                    ).filter(AgencyMetaURL.url.isnot(None)),
-                    cast({}, ARRAY(String))
+                    func.array_agg(AgencyMetaURL.url).filter(
+                        AgencyMetaURL.url.isnot(None)
+                    ),
+                    cast({}, ARRAY(String)),
                 ).label("meta_urls"),
             )
             .outerjoin(AgencyMetaURL, Agency.id == AgencyMetaURL.agency_id)
@@ -33,4 +32,3 @@ class AgencyMetaURLsCTE:
     @property
     def meta_urls(self) -> ColumnElement[list[str]]:
         return self._cte.c.meta_urls
-

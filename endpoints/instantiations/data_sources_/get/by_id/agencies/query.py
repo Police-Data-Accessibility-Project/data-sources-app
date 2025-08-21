@@ -4,15 +4,13 @@ from sqlalchemy.orm import selectinload
 from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.data_source.expanded import DataSourceExpanded
 from db.queries.builder.core import QueryBuilderBase
-from endpoints.instantiations.data_sources_.get.by_id.agencies.format import agency_to_data_sources_get_related_agencies_output
+from endpoints.instantiations.data_sources_.get.by_id.agencies.format import (
+    agency_to_data_sources_get_related_agencies_output,
+)
 
 
 class GetDataSourceRelatedAgenciesQueryBuilder(QueryBuilderBase):
-
-    def __init__(
-        self,
-        data_source_id: int
-    ) -> None:
+    def __init__(self, data_source_id: int) -> None:
         super().__init__()
         self.data_source_id = data_source_id
 
@@ -20,10 +18,12 @@ class GetDataSourceRelatedAgenciesQueryBuilder(QueryBuilderBase):
         query = (
             select(DataSourceExpanded)
             .options(
-                selectinload(DataSourceExpanded.agencies)
-                .selectinload(Agency.locations),
-                selectinload(DataSourceExpanded.agencies)
-                .selectinload(Agency.meta_urls),
+                selectinload(DataSourceExpanded.agencies).selectinload(
+                    Agency.locations
+                ),
+                selectinload(DataSourceExpanded.agencies).selectinload(
+                    Agency.meta_urls
+                ),
             )
             .where(DataSourceExpanded.id == self.data_source_id)
         )

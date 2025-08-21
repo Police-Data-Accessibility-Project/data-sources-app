@@ -123,6 +123,7 @@ def agency_id_column():
         nullable=False,
     )
 
+
 def user_id_column():
     return sa.Column(
         "user_id",
@@ -155,6 +156,7 @@ def created_at_column():
     return sa.Column(
         "created_at", sa.DateTime, server_default=sa.func.now(), nullable=False
     )
+
 
 def enum_column(
     column_name: str, enum_name: str, enum_values: list[str], nullable: bool = False

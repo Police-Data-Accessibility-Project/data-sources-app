@@ -5,14 +5,16 @@ from db.enums import ApprovalStatus
 from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMetaURL
 from db.models.types import JurisdictionTypeEnum
-from endpoints.instantiations.source_collector.agencies.sync.dtos.request import SourceCollectorSyncAgenciesRequestDTO
+from endpoints.instantiations.source_collector.agencies.sync.dtos.request import (
+    SourceCollectorSyncAgenciesRequestDTO,
+)
 from middleware.enums import JurisdictionType, AgencyType
 from tests.helpers.helper_classes.RequestValidator import RequestValidator
 from tests.helpers.helper_classes.test_data_creator.flask import TestDataCreatorFlask
 
 
 def test_source_collector_sync_agencies_meta_urls(
-    test_data_creator_flask: TestDataCreatorFlask
+    test_data_creator_flask: TestDataCreatorFlask,
 ):
     """
     Test that the source collector sync agencies endpoint returns all meta urls
@@ -21,8 +23,6 @@ def test_source_collector_sync_agencies_meta_urls(
     tdc: TestDataCreatorFlask = test_data_creator_flask
     dbc: DatabaseClient = tdc.db_client
     rv: RequestValidator = tdc.request_validator
-    # Add location to the database
-    location_id: int = tdc.locality()
 
     # Add 2 agencies to the database, with multiple meta urls
     agencies = []
@@ -52,7 +52,7 @@ def test_source_collector_sync_agencies_meta_urls(
     results = rv.get_agencies_for_sync(
         headers=tdc.get_admin_tus().jwt_authorization_header,
         dto=SourceCollectorSyncAgenciesRequestDTO(page=1, updated_at=None),
-    )['agencies']
+    )["agencies"]
     assert len(results) == 2
     result_meta_urls = []
     for result in results:

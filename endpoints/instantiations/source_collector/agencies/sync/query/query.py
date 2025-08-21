@@ -13,7 +13,9 @@ from db.queries.builder.core import QueryBuilderBase
 from endpoints.instantiations.source_collector.agencies.sync.dtos.request import (
     SourceCollectorSyncAgenciesRequestDTO,
 )
-from endpoints.instantiations.source_collector.agencies.sync.query.cte import AgencyMetaURLsCTE
+from endpoints.instantiations.source_collector.agencies.sync.query.cte import (
+    AgencyMetaURLsCTE,
+)
 from middleware.constants import DATETIME_FORMAT
 
 

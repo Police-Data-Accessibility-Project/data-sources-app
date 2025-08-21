@@ -5,7 +5,9 @@ from sqlalchemy import asc, select
 from db.dynamic_query_constructor import DynamicQueryConstructor
 from db.enums import ApprovalStatus
 from db.helpers import get_offset
-from endpoints.instantiations.agencies_.get._shared.convert import agency_to_get_agencies_output
+from endpoints.instantiations.agencies_.get._shared.convert import (
+    agency_to_get_agencies_output,
+)
 from db.models.implementations.core.agency.core import Agency
 from db.queries.builder.core import QueryBuilderBase
 from db.queries.models.get_params import GetParams

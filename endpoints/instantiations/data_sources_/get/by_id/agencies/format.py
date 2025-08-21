@@ -1,6 +1,9 @@
 from db.helpers_.result_formatting import location_to_location_info
 from db.models.implementations.core.agency.core import Agency
-from endpoints.instantiations.agencies_.get._shared.convert import agency_to_agency_dict, agency_to_meta_urls
+from endpoints.instantiations.agencies_.get._shared.convert import (
+    agency_to_agency_dict,
+    agency_to_meta_urls,
+)
 
 
 def agency_to_data_sources_get_related_agencies_output(

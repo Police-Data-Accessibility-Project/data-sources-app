@@ -6,16 +6,10 @@ from endpoints.instantiations.agencies_.post.dto import AgenciesPostDTO
 
 
 class CreateAgencyQueryBuilder(QueryBuilderBase):
-
-    def __init__(
-        self,
-        dto: AgenciesPostDTO,
-        user_id: int | None = None
-    ):
+    def __init__(self, dto: AgenciesPostDTO, user_id: int | None = None):
         super().__init__()
         self.user_id = user_id
         self.dto = dto
-
 
     def run(self) -> int:
         agency_id = self._add_agency()
@@ -48,17 +42,11 @@ class CreateAgencyQueryBuilder(QueryBuilderBase):
     def _link_to_meta_urls(self, agency_id: int) -> None:
         if self.dto.agency_info.meta_urls is not None:
             for meta_url in self.dto.agency_info.meta_urls:
-                insert_obj = AgencyMetaURL(
-                    url=meta_url,
-                    agency_id=agency_id
-                )
+                insert_obj = AgencyMetaURL(url=meta_url, agency_id=agency_id)
                 self.session.add(insert_obj)
 
     def _link_to_locations(self, agency_id: int) -> None:
         if self.dto.location_ids is not None:
             for location_id in self.dto.location_ids:
-                lal = LinkAgencyLocation(
-                    location_id=location_id,
-                    agency_id=agency_id
-                )
+                lal = LinkAgencyLocation(location_id=location_id, agency_id=agency_id)
                 self.session.add(lal)

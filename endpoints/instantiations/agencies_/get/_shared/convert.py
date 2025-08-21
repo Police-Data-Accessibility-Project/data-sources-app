@@ -34,6 +34,7 @@ def agency_to_agency_dict(agency: Agency) -> dict[str, Any]:
         "locality_name": first_location.locality_name if first_location else None,
     }
 
+
 def agency_to_meta_urls(agency: Agency) -> list[str]:
     meta_urls: list[str] = []
     for meta_url in agency.meta_urls:

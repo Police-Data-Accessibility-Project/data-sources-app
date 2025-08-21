@@ -5,24 +5,27 @@ Revises: d2fda1435aac
 Create Date: 2025-08-19 12:18:16.283448
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
 
-from middleware.alembic_helpers import id_column, created_at_column, updated_at_column, agency_id_column
+from middleware.alembic_helpers import (
+    id_column,
+    created_at_column,
+    updated_at_column,
+    agency_id_column,
+)
 
 # revision identifiers, used by Alembic.
-revision: str = 'bee37113acc4'
-down_revision: Union[str, None] = 'd2fda1435aac'
+revision: str = "bee37113acc4"
+down_revision: Union[str, None] = "d2fda1435aac"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 AGENCY_META_URLS_TABLE_NAME = "agency_meta_urls"
 AGENCY_TABLE_NAME = "agencies"
-
-
-
 
 
 def upgrade() -> None:
@@ -32,19 +35,23 @@ def upgrade() -> None:
     _delete_agency_meta_data_sources()
     _delete_homepage_urls_column()
 
+
 def downgrade() -> None:
     _add_homepage_urls_column()
     _migrate_agency_meta_urls_to_homepage_urls()
     _drop_agency_meta_urls_table()
 
+
 def _delete_homepage_urls_column():
     op.drop_column(AGENCY_TABLE_NAME, "homepage_url")
+
 
 def _add_homepage_urls_column():
     op.add_column(
         AGENCY_TABLE_NAME,
         sa.Column("homepage_url", sa.String(), nullable=True),
     )
+
 
 def _migrate_homepage_urls_to_agency_meta_urls():
     op.execute(
@@ -55,6 +62,7 @@ def _migrate_homepage_urls_to_agency_meta_urls():
         WHERE homepage_url IS NOT NULL;
         """
     )
+
 
 def _migrate_agency_meta_urls_to_homepage_urls():
     op.execute(
@@ -69,6 +77,7 @@ def _migrate_agency_meta_urls_to_homepage_urls():
         """
     )
 
+
 def _create_agency_meta_urls_table():
     op.create_table(
         AGENCY_META_URLS_TABLE_NAME,
@@ -77,12 +86,14 @@ def _create_agency_meta_urls_table():
         updated_at_column(),
         sa.Column("url", sa.String(), nullable=False),
         agency_id_column(),
-        sa.UniqueConstraint("url", "agency_id", name="agency_meta_urls_url_agency_id_key"),
+        sa.UniqueConstraint(
+            "url", "agency_id", name="agency_meta_urls_url_agency_id_key"
+        ),
     )
+
 
 def _drop_agency_meta_urls_table():
     op.drop_table(AGENCY_META_URLS_TABLE_NAME)
-
 
 
 def _migrate_agency_meta_data_sources_to_agency_meta_urls():
@@ -103,9 +114,10 @@ def _migrate_agency_meta_data_sources_to_agency_meta_urls():
         """
     )
 
+
 def _delete_agency_meta_data_sources():
     op.execute(
-        f"""
+        """
         DELETE FROM data_sources
         WHERE record_type_id = (
             SELECT id

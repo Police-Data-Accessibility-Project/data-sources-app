@@ -52,7 +52,9 @@ from db.helpers_.psycopg import initialize_psycopg_connection
 from db.helpers_.result_formatting import (
     get_expanded_display_name,
 )
-from endpoints.instantiations.data_sources_.get.by_id.agencies.format import agency_to_data_sources_get_related_agencies_output
+from endpoints.instantiations.data_sources_.get.by_id.agencies.format import (
+    agency_to_data_sources_get_related_agencies_output,
+)
 from db.models.base import Base
 from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.data_request.core import DataRequest
@@ -92,7 +94,9 @@ from db.models.table_reference import (
     SQL_ALCHEMY_TABLE_REFERENCE,
 )
 from db.queries.builder.core import QueryBuilderBase
-from endpoints.instantiations.agencies_.get.by_id.core.query import GetAgencyByIDQueryBuilder
+from endpoints.instantiations.agencies_.get.by_id.core.query import (
+    GetAgencyByIDQueryBuilder,
+)
 from endpoints.instantiations.agencies_.get.many.query import GetAgenciesQueryBuilder
 from db.queries.instantiations.data_requests.post import DataRequestsPostQueryBuilder
 from db.queries.instantiations.data_requests.put import DataRequestsPutQueryBuilder
@@ -766,10 +770,7 @@ class DatabaseClient:
         user_id: int | None = None,
     ) -> int:
         return self.run_query_builder(
-            CreateAgencyQueryBuilder(
-                dto=dto,
-                user_id=user_id
-            )
+            CreateAgencyQueryBuilder(dto=dto, user_id=user_id)
         )
 
     def add_location_to_agency(self, location_id: int, agency_id: int):
@@ -963,8 +964,7 @@ class DatabaseClient:
         query = (
             select(DataSourceExpanded)
             .options(
-                selectinload(DataSourceExpanded.agencies)
-                .selectinload(Agency.locations)
+                selectinload(DataSourceExpanded.agencies).selectinload(Agency.locations)
             )
             .where(DataSourceExpanded.id == data_source_id)
         )

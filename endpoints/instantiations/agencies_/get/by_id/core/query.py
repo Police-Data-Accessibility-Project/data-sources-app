@@ -1,7 +1,9 @@
 from sqlalchemy import select
 
 from db.dynamic_query_constructor import DynamicQueryConstructor
-from endpoints.instantiations.agencies_.get._shared.convert import agency_to_get_agencies_output
+from endpoints.instantiations.agencies_.get._shared.convert import (
+    agency_to_get_agencies_output,
+)
 from db.models.implementations.core.agency.core import Agency
 from db.queries.builder.core import QueryBuilderBase
 from endpoints.instantiations.agencies_.get._shared.dto.base import AgenciesGetDTO
