@@ -51,6 +51,8 @@ from db.exceptions import LocationDoesNotExistError
 from db.helpers_.psycopg import initialize_psycopg_connection
 from db.helpers_.result_formatting import (
     get_expanded_display_name,
+)
+from endpoints.instantiations.data_sources_.get.by_id.agencies.format import (
     agency_to_data_sources_get_related_agencies_output,
 )
 from db.models.base import Base
@@ -92,18 +94,20 @@ from db.models.table_reference import (
     SQL_ALCHEMY_TABLE_REFERENCE,
 )
 from db.queries.builder.core import QueryBuilderBase
-from db.queries.instantiations.agencies.get_.by_id import GetAgencyByIDQueryBuilder
-from db.queries.instantiations.agencies.get_.many import GetAgenciesQueryBuilder
+from endpoints.instantiations.agencies_.get.by_id.core.query import (
+    GetAgencyByIDQueryBuilder,
+)
+from endpoints.instantiations.agencies_.get.many.query import GetAgenciesQueryBuilder
 from db.queries.instantiations.data_requests.post import DataRequestsPostQueryBuilder
 from db.queries.instantiations.data_requests.put import DataRequestsPutQueryBuilder
 from db.queries.instantiations.data_sources.archive import (
     GetDataSourcesToArchiveQueryBuilder,
     ArchiveInfo,
 )
-from db.queries.instantiations.data_sources.get.by_id import (
+from endpoints.instantiations.data_sources_.get.by_id.query import (
     GetDataSourceByIDQueryBuilder,
 )
-from db.queries.instantiations.data_sources.get.many import (
+from endpoints.instantiations.data_sources_.get.many.query import (
     GetDataSourcesQueryBuilder,
 )
 from db.queries.instantiations.data_sources.post.single import (
@@ -114,6 +118,8 @@ from db.queries.instantiations.locations.get.many import GetManyLocationsQueryBu
 from db.queries.instantiations.log.most_recent_logged_table_counts import (
     GetMostRecentLoggedTableCountsQueryBuilder,
 )
+from endpoints.instantiations.agencies_.get._shared.dto.base import AgenciesGetDTO
+from endpoints.instantiations.agencies_.post.query import CreateAgencyQueryBuilder
 from endpoints.instantiations.map.locations.queries.counties import (
     GET_MAP_COUNTIES_QUERY,
 )
@@ -161,7 +167,7 @@ from db.queries.instantiations.util.get_columns_for_relation import (
 from db.queries.instantiations.util.refresh_all_materialized_views import (
     REFRESH_ALL_MATERIALIZED_VIEWS_QUERIES,
 )
-from db.queries.instantiations.util.select_from_relation import (
+from db.queries.instantiations.util.select_from_relation.query import (
     SelectFromRelationQueryBuilder,
 )
 from db.queries.models.get_params import GetParams
@@ -170,7 +176,7 @@ from endpoints.instantiations.auth_.validate_email.query import (
     ValidateEmailQueryBuilder,
 )
 from endpoints.instantiations.data_requests_.post.dto import DataRequestsPostDTO
-from endpoints.instantiations.source_collector.agencies.sync.query import (
+from endpoints.instantiations.source_collector.agencies.sync.query.query import (
     SourceCollectorSyncAgenciesQueryBuilder,
 )
 from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
@@ -730,12 +736,6 @@ class DatabaseClient:
         )
         self.run_query_builder(builder)
 
-    update_agency = partialmethod(
-        _update_entry_in_table,
-        table_name="agencies",
-        id_column_name="id",
-    )
-
     def _create_entry_in_table(
         self,
         table_name: str,
@@ -764,41 +764,14 @@ class DatabaseClient:
         )
         return self.run_query_builder(builder)
 
-    @session_manager_v2
     def create_agency(
         self,
-        session: Session,
         dto: AgenciesPostDTO,
         user_id: int | None = None,
-    ):
-        # Create Agency Entry
-        agency_info = dto.agency_info
-        agency = Agency(
-            name=agency_info.name,
-            agency_type=agency_info.agency_type.value,
-            jurisdiction_type=agency_info.jurisdiction_type.value,
-            multi_agency=agency_info.multi_agency,
-            no_web_presence=agency_info.no_web_presence,
-            approval_status=agency_info.approval_status.value,
-            homepage_url=agency_info.homepage_url,
-            defunct_year=agency_info.defunct_year,
-            rejection_reason=agency_info.rejection_reason,
-            last_approval_editor=agency_info.last_approval_editor,
-            submitter_contact=agency_info.submitter_contact,
-            creator_user_id=user_id,
+    ) -> int:
+        return self.run_query_builder(
+            CreateAgencyQueryBuilder(dto=dto, user_id=user_id)
         )
-        session.add(agency)
-
-        # Flush to get agency id
-        session.flush()
-
-        # Link to Locations
-        if dto.location_ids is not None:
-            for location_id in dto.location_ids:
-                lal = LinkAgencyLocation(location_id=location_id, agency_id=agency.id)
-                session.add(lal)
-
-        return agency.id
 
     def add_location_to_agency(self, location_id: int, agency_id: int):
         self.add(LinkAgencyLocation(location_id=location_id, agency_id=agency_id))
@@ -959,7 +932,7 @@ class DatabaseClient:
     def get_agency_by_id(
         self,
         agency_id: int,
-    ):
+    ) -> AgenciesGetDTO:
         builder = GetAgencyByIDQueryBuilder(agency_id)
         return self.run_query_builder(builder)
 

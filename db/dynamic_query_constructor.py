@@ -57,7 +57,8 @@ class DynamicQueryConstructor:
         data_requests_columns: list[str],
     ) -> list:
         load_options = [
-            selectinload(DataSourceExpanded.agencies).selectinload(Agency.locations)
+            selectinload(DataSourceExpanded.agencies).selectinload(Agency.locations),
+            selectinload(DataSourceExpanded.agencies).selectinload(Agency.meta_urls),
         ]
 
         data_sources_attributes = [

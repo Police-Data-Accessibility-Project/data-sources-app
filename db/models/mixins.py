@@ -48,6 +48,18 @@ class UpdatedAtMixin:
     )
 
 
+class AgencyIDMixin:
+    agency_id: Mapped[int] = mapped_column(ForeignKey("public.agencies.id"))
+
+    @declared_attr
+    def agency(cls: type["AgencyIDMixin"]) -> Mapped["Agency"]:
+        return relationship(
+            "Agency",
+            primaryjoin=f"foreign({cls.__name__}.agency_id) == Agency.id",
+            uselist=False,
+        )
+
+
 class UserIDMixin:
     user_id: Mapped[int] = mapped_column(ForeignKey("public.users.id"))
 

@@ -25,11 +25,11 @@ from middleware.primary_resource_logic.agencies import (
     get_agencies,
     get_agency_by_id,
     create_agency,
-    update_agency,
     delete_agency,
     add_agency_related_location,
     remove_agency_related_location,
 )
+from endpoints.instantiations.agencies_.put.middleware import update_agency
 from endpoints.psycopg_resource import PsycopgResource
 from endpoints.schema_config.enums import SchemaConfigs
 from endpoints._helpers.docs import column_permissions_description

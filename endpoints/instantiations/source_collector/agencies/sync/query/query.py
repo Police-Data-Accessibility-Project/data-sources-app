@@ -13,6 +13,9 @@ from db.queries.builder.core import QueryBuilderBase
 from endpoints.instantiations.source_collector.agencies.sync.dtos.request import (
     SourceCollectorSyncAgenciesRequestDTO,
 )
+from endpoints.instantiations.source_collector.agencies.sync.query.cte import (
+    AgencyMetaURLsCTE,
+)
 from middleware.constants import DATETIME_FORMAT
 
 
@@ -25,6 +28,8 @@ class SourceCollectorSyncAgenciesQueryBuilder(QueryBuilderBase):
 
     @override
     def run(self) -> Any:
+        cte = AgencyMetaURLsCTE()
+
         query = (
             select(
                 Agency.id.label("agency_id"),
@@ -33,8 +38,12 @@ class SourceCollectorSyncAgenciesQueryBuilder(QueryBuilderBase):
                 USState.state_name.label("state_name"),
                 County.name.label("county_name"),
                 Locality.name.label("locality_name"),
-                Agency.homepage_url,
+                cte.meta_urls,
                 Agency.updated_at,
+            )
+            .outerjoin(
+                cte.cte,
+                Agency.id == cte.agency_id,
             )
             .outerjoin(
                 LinkAgencyLocation,
@@ -85,7 +94,7 @@ class SourceCollectorSyncAgenciesQueryBuilder(QueryBuilderBase):
                     "state_name": mapping.state_name,
                     "county_name": mapping.county_name,
                     "locality_name": mapping.locality_name,
-                    "homepage_url": mapping.homepage_url,
+                    "meta_urls": mapping.meta_urls,
                     "updated_at": mapping.updated_at.strftime(DATETIME_FORMAT),
                 }
             )

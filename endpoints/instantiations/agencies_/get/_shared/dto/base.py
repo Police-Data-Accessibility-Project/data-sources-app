@@ -26,6 +26,9 @@ class AgenciesGetDTO(AgencyInfoBaseDTO):
     id: int = default_field_required(
         description="The id of the agency.",
     )
+    meta_urls: list[str] = default_field_required(
+        description="The meta URLs of the agency.",
+    )
     submitted_name: str = default_field_required(
         description="The submitted name of the agency.",
     )
