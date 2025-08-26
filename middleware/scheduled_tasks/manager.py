@@ -18,6 +18,7 @@ class SchedulerManager:
         current_time = datetime.now()
 
         def func():
+            print(f"Refreshing materialized view {view_name}")
             return self.dbc.refresh_materialized_view(view_name)
 
         self.add_job(
