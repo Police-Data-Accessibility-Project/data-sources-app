@@ -578,7 +578,7 @@ class DatabaseClient:
         location_id: int,
         record_categories: list[RecordCategoryEnum] | None = None,
         record_types: list[RecordTypes] | None = None,
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         """Search for data sources in the database."""
         check_for_mutually_exclusive_arguments(record_categories, record_types)
 
