@@ -62,6 +62,10 @@ from middleware.scheduled_tasks.check_database_health import check_database_heal
 from middleware.scheduled_tasks.manager import SchedulerManager
 from middleware.security.jwt.core import SimpleJWT
 from middleware.util.env import get_env_variable
+from environs import Env
+
+env = Env()
+env.read_env()
 
 NAMESPACES = [
     namespace_callback,
@@ -184,20 +188,25 @@ def create_app() -> Flask:
 
     # Initialize and start the scheduler
     scheduler = SchedulerManager(app)
-    scheduler.add_job(
-        job_id="database_health_check",
-        func=check_database_health,
-        interval=IntervalTrigger(
-            start_date=current_time + timedelta(minutes=3), minutes=60
-        ),
-    )
 
-    scheduler.add_materialized_view_scheduled_job("typeahead_locations", 1)
-    scheduler.add_materialized_view_scheduled_job("typeahead_agencies", 2)
-    scheduler.add_materialized_view_scheduled_job("unique_urls", 3)
-    scheduler.add_materialized_view_scheduled_job("map_states", 4)
-    scheduler.add_materialized_view_scheduled_job("map_counties", 5)
-    scheduler.add_materialized_view_scheduled_job("map_localities", 6)
+    flag_run_scheduled_jobs: bool = env.bool("FLAG_RUN_SCHEDULED_JOBS", False)
+    if flag_run_scheduled_jobs:
+        scheduler.add_job(
+            job_id="database_health_check",
+            func=check_database_health,
+            interval=IntervalTrigger(
+                start_date=current_time + timedelta(minutes=3), minutes=60
+            ),
+        )
+        scheduler.add_materialized_view_scheduled_job("typeahead_locations", 1)
+        scheduler.add_materialized_view_scheduled_job("typeahead_agencies", 2)
+        scheduler.add_materialized_view_scheduled_job("unique_urls", 3)
+        scheduler.add_materialized_view_scheduled_job("map_states", 4)
+        scheduler.add_materialized_view_scheduled_job("map_counties", 5)
+        scheduler.add_materialized_view_scheduled_job("map_localities", 6)
+        scheduler.start()
+    else:
+        print("Scheduled jobs are disabled.")
     # Store scheduler in the app context to manage it later
     app.scheduler = scheduler  # pyright: ignore[reportAttributeAccessIssue]
 
