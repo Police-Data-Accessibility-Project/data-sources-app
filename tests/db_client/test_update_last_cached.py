@@ -4,7 +4,9 @@ from db.client.core import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
 from middleware.constants import DATETIME_FORMAT
 from middleware.enums import Relations
-from tests.helpers.helper_classes.test_data_creator.db_client_.core import TestDataCreatorDBClient
+from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
+    TestDataCreatorDBClient,
+)
 
 
 def test_update_last_cached(

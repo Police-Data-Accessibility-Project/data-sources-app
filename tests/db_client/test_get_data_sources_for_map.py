@@ -1,6 +1,8 @@
 from db.client.core import DatabaseClient
 from db.enums import ApprovalStatus
-from tests.helpers.helper_classes.test_data_creator.db_client_.core import TestDataCreatorDBClient
+from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
+    TestDataCreatorDBClient,
+)
 from tests.integration.test_check_database_health import wipe_database
 
 

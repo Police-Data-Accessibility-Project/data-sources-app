@@ -7,7 +7,6 @@ import uuid
 import pytest
 import sqlalchemy
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
 
 from db.client.core import DatabaseClient
 from db.db_client_dataclasses import (

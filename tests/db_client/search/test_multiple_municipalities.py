@@ -1,6 +1,7 @@
 from db.client.core import DatabaseClient
-from tests.conftest import pennsylvania_id
-from tests.helpers.helper_classes.test_data_creator.db_client_.core import TestDataCreatorDBClient
+from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
+    TestDataCreatorDBClient,
+)
 
 
 def test_multiple_municipalities(
@@ -22,7 +23,6 @@ def test_multiple_municipalities(
         location_id=locality_2_id,
     )
 
-
     ds_id_1: int = tdc.data_source().id
 
     tdc.link_data_source_to_agency(
@@ -34,11 +34,9 @@ def test_multiple_municipalities(
         location_id=pennsylvania_id,
     )
 
-
     # Test that despite the agency being linked to multiple municipalities, only one result is returned
     assert len(results) == 1
     result = results[0]
 
     # Test that the municipality is comma-delimited, to denote multiple municipalities
-    assert ',' in result['municipality']
-
+    assert "," in result["municipality"]

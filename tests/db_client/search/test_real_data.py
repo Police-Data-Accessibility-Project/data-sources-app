@@ -2,7 +2,9 @@ from sqlalchemy.exc import IntegrityError
 
 from db.enums import ApprovalStatus
 from middleware.enums import RecordTypes
-from tests.helpers.helper_classes.test_data_creator.db_client_.core import TestDataCreatorDBClient
+from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
+    TestDataCreatorDBClient,
+)
 from utilities.enums import RecordCategoryEnum
 
 
