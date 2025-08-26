@@ -343,9 +343,7 @@ class DynamicQueryConstructor:
                     INNER JOIN 
                     associated_locations al ON al.id = locations.id
         """
-        ).format(
-            location_id=sql.Literal(location_id)
-        )
+        ).format(location_id=sql.Literal(location_id))
 
         join_conditions = []
         where_subclauses = [
@@ -395,7 +393,8 @@ class DynamicQueryConstructor:
                 agencies.name,
                 us_states.state_iso,
                 agencies.jurisdiction_type
-            """)
+            """
+        )
 
         query = sql.Composed(
             [
