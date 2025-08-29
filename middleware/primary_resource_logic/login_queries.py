@@ -46,7 +46,7 @@ class JWTAccessRefreshTokens:
 
     @staticmethod
     def get_expiry():
-        return (datetime.now(tz=timezone.utc) + timedelta(minutes=15)).timestamp()
+        return (datetime.now(tz=timezone.utc) + timedelta(minutes=60)).timestamp()
 
 
 INVALID_MESSAGE = "Invalid email or password"
