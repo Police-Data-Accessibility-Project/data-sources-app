@@ -1,4 +1,8 @@
 from endpoints._helpers.response_info import ResponseInfo
+from endpoints.instantiations.source_collector.agencies.search.locations.schema_config import \
+    SourceCollectorAgencySearchLocationSchemaConfig
+from endpoints.instantiations.source_collector.agencies.search.locations.wrapper import \
+    source_collector_search_agencies_by_location
 from endpoints.instantiations.source_collector.agencies.sync.schema_config import (
     SourceCollectorSyncAgenciesSchemaConfig,
 )
@@ -112,4 +116,28 @@ class SourceCollectorSyncDataSources(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=get_data_sources_for_sync,
             schema_populate_parameters=SourceCollectorSyncAgenciesSchemaConfig.get_schema_populate_parameters(),
+        )
+
+@namespace_source_collector.route(
+    "/agencies/search/location",
+    methods=["POST"]
+)
+class SourceCollectorAgenciesSearchLocation(PsycopgResource):
+
+    @endpoint_info(
+        namespace=namespace_source_collector,
+        auth_info=AuthenticationInfo(
+            allowed_access_methods=[AccessTypeEnum.JWT],
+            restrict_to_permissions=[PermissionsEnum.SOURCE_COLLECTOR_DATA_SOURCES],
+        ),
+        schema_config=SchemaConfigs.SOURCE_COLLECTOR_SEARCH_AGENCIES_LOCATION,
+        response_info=ResponseInfo(
+            success_message="Successfully searched for agencies by location"
+        ),
+        description="Bulk submit multiple location objects and receive suggested agencies for each.",
+    )
+    def post(self, access_info: AccessInfoPrimary):
+        return self.run_endpoint(
+            wrapper_function=source_collector_search_agencies_by_location,
+            schema_populate_parameters=SourceCollectorAgencySearchLocationSchemaConfig.get_schema_populate_parameters(),
         )
