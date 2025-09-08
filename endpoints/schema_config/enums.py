@@ -6,8 +6,9 @@ from endpoints.instantiations.auth_.validate_email.endpoint_schema_config import
 from endpoints.instantiations.map.data.schema_config import (
     LocationsDataEndpointSchemaConfig,
 )
-from endpoints.instantiations.source_collector.agencies.search.locations.schema_config import \
-    SourceCollectorAgencySearchLocationSchemaConfig
+from endpoints.instantiations.source_collector.agencies.search.locations.schema_config import (
+    SourceCollectorAgencySearchLocationSchemaConfig,
+)
 from endpoints.instantiations.source_collector.agencies.sync.schema_config import (
     SourceCollectorSyncAgenciesSchemaConfig,
 )
@@ -412,4 +413,6 @@ class SchemaConfigs(Enum):
     SOURCE_COLLECTOR_DUPLICATES_POST = SourceCollectorDuplicatesPostEndpointSchemaConfig
     SOURCE_COLLECTOR_SYNC_AGENCIES = SourceCollectorSyncAgenciesSchemaConfig
     SOURCE_COLLECTOR_SYNC_DATA_SOURCES = SourceCollectorSyncDataSourceSchemaConfig
-    SOURCE_COLLECTOR_SEARCH_AGENCIES_LOCATION = SourceCollectorAgencySearchLocationSchemaConfig
+    SOURCE_COLLECTOR_SEARCH_AGENCIES_LOCATION = (
+        SourceCollectorAgencySearchLocationSchemaConfig
+    )

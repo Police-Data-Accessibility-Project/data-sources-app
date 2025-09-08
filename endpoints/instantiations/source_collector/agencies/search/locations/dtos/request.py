@@ -11,7 +11,10 @@ class SourceCollectorAgencySearchLocationRequestInnerDTO(BaseModel):
         description="The request ID, used in identifying the response",
     )
 
+
 class SourceCollectorAgencySearchLocationRequestDTO(BaseModel):
-    requests: list[SourceCollectorAgencySearchLocationRequestInnerDTO] = default_field_required(
-        description="The list of requests to search for agencies by location.",
+    requests: list[SourceCollectorAgencySearchLocationRequestInnerDTO] = (
+        default_field_required(
+            description="The list of requests to search for agencies by location.",
+        )
     )

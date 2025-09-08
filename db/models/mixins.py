@@ -128,8 +128,10 @@ class IterWithSpecialCasesMixin:
     def __iter__(self):
         yield from iter_with_special_cases(self, special_cases=self.special_cases)
 
+
 class ViewMixin:
     """Attach to any mapped class that represents a DB view."""
+
     __is_view__: ClassVar[bool] = True
 
     @classmethod

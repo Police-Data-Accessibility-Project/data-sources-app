@@ -1,12 +1,18 @@
-from db.client.core import DatabaseClient
-from endpoints.instantiations.source_collector.agencies.search.locations.dtos.request import \
-    SourceCollectorAgencySearchLocationRequestDTO, SourceCollectorAgencySearchLocationRequestInnerDTO
-from endpoints.instantiations.source_collector.agencies.search.locations.dtos.response import \
-    SourceCollectorAgencySearchLocationResponseDTO, InnerSearchLocationResponse, SearchLocationRequestResponse
-from endpoints.instantiations.source_collector.agencies.search.locations.schemas.response import \
-    SourceCollectorAgencySearchLocationResponseSchema
+from endpoints.instantiations.source_collector.agencies.search.locations.dtos.request import (
+    SourceCollectorAgencySearchLocationRequestDTO,
+    SourceCollectorAgencySearchLocationRequestInnerDTO,
+)
+from endpoints.instantiations.source_collector.agencies.search.locations.dtos.response import (
+    SourceCollectorAgencySearchLocationResponseDTO,
+    InnerSearchLocationResponse,
+)
+from endpoints.instantiations.source_collector.agencies.search.locations.schemas.response import (
+    SourceCollectorAgencySearchLocationResponseSchema,
+)
 from tests.helpers.helper_classes.RequestValidator import RequestValidator
-from tests.helpers.helper_classes.test_data_creator.db_client_.core import TestDataCreatorDBClient
+from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
+    TestDataCreatorDBClient,
+)
 from tests.helpers.helper_classes.test_data_creator.flask import TestDataCreatorFlask
 
 
@@ -31,34 +37,29 @@ def test_sc_agencies_search_location_happy_path(
     # Link agency to Pennsylvania
     pennsylvania_agency_id: int = tdc.agency(location_id=pennsylvania_id).id
 
-
-
     # Run request
     request = SourceCollectorAgencySearchLocationRequestDTO(
         requests=[
             SourceCollectorAgencySearchLocationRequestInnerDTO(
-                query="Pittsburgh, Allegheny, Pennsylvania",
-                request_id=1
+                query="Pittsburgh, Allegheny, Pennsylvania", request_id=1
             ),
             SourceCollectorAgencySearchLocationRequestInnerDTO(
-                query="Allegheny, Pennsylvania",
-                request_id=2
+                query="Allegheny, Pennsylvania", request_id=2
             ),
             SourceCollectorAgencySearchLocationRequestInnerDTO(
-                query="Pennsylvania",
-                request_id=3
+                query="Pennsylvania", request_id=3
             ),
         ]
     )
     # Include three searches.
-        # - One for "Pittsburgh, Allegheny, Pennsylvania"
-        # - One for "Allegheny, Pennsylvania"
-        # - One for "Pennsylvania"
+    # - One for "Pittsburgh, Allegheny, Pennsylvania"
+    # - One for "Allegheny, Pennsylvania"
+    # - One for "Pennsylvania"
     request_response: dict = rv.post(
         "source-collector/agencies/search/location",
         headers=test_data_creator_flask.get_admin_tus().jwt_authorization_header,
         json=request.model_dump(mode="json"),
-        expected_schema=SourceCollectorAgencySearchLocationResponseSchema
+        expected_schema=SourceCollectorAgencySearchLocationResponseSchema,
     )
     dto = SourceCollectorAgencySearchLocationResponseDTO(**request_response)
 
@@ -81,14 +82,16 @@ def test_sc_agencies_search_location_happy_path(
     assert agencies_1 == agencies_2 == agencies_3
 
     # Confirm that the highest for each request
-    max_similarity_agency_1: int = max(results_1, key=lambda result: result.similarity).agency_id
-    max_similarity_agency_2: int = max(results_2, key=lambda result: result.similarity).agency_id
-    max_similarity_agency_3: int = max(results_3, key=lambda result: result.similarity).agency_id
+    max_similarity_agency_1: int = max(
+        results_1, key=lambda result: result.similarity
+    ).agency_id
+    max_similarity_agency_2: int = max(
+        results_2, key=lambda result: result.similarity
+    ).agency_id
+    max_similarity_agency_3: int = max(
+        results_3, key=lambda result: result.similarity
+    ).agency_id
     # is the agency linked to that location
     assert max_similarity_agency_1 == pittsburgh_agency_id
     assert max_similarity_agency_2 == allegheny_agency_id
     assert max_similarity_agency_3 == pennsylvania_agency_id
-
-
-
-

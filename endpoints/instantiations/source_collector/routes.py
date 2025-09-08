@@ -1,8 +1,10 @@
 from endpoints._helpers.response_info import ResponseInfo
-from endpoints.instantiations.source_collector.agencies.search.locations.schema_config import \
-    SourceCollectorAgencySearchLocationSchemaConfig
-from endpoints.instantiations.source_collector.agencies.search.locations.wrapper import \
-    source_collector_search_agencies_by_location
+from endpoints.instantiations.source_collector.agencies.search.locations.schema_config import (
+    SourceCollectorAgencySearchLocationSchemaConfig,
+)
+from endpoints.instantiations.source_collector.agencies.search.locations.wrapper import (
+    source_collector_search_agencies_by_location,
+)
 from endpoints.instantiations.source_collector.agencies.sync.schema_config import (
     SourceCollectorSyncAgenciesSchemaConfig,
 )
@@ -118,12 +120,9 @@ class SourceCollectorSyncDataSources(PsycopgResource):
             schema_populate_parameters=SourceCollectorSyncAgenciesSchemaConfig.get_schema_populate_parameters(),
         )
 
-@namespace_source_collector.route(
-    "/agencies/search/location",
-    methods=["POST"]
-)
-class SourceCollectorAgenciesSearchLocation(PsycopgResource):
 
+@namespace_source_collector.route("/agencies/search/location", methods=["POST"])
+class SourceCollectorAgenciesSearchLocation(PsycopgResource):
     @endpoint_info(
         namespace=namespace_source_collector,
         auth_info=AuthenticationInfo(

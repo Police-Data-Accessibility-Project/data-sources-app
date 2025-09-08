@@ -5,35 +5,41 @@ from sqlalchemy import values, column, Integer, String, select, func, RowMapping
 
 from db.models.implementations import LinkAgencyLocation
 from db.models.implementations.core.location.core import Location
-from db.models.implementations.materialized_views.typeahead.locations import TypeaheadLocations
+from db.models.implementations.materialized_views.typeahead.locations import (
+    TypeaheadLocations,
+)
 from db.queries.builder.core import QueryBuilderBase
-from endpoints.instantiations.source_collector.agencies.search.locations.dtos.request import \
-    SourceCollectorAgencySearchLocationRequestDTO
-from endpoints.instantiations.source_collector.agencies.search.locations.dtos.response import \
-    SourceCollectorAgencySearchLocationResponseDTO, InnerSearchLocationResponse, SearchLocationRequestResponse
+from endpoints.instantiations.source_collector.agencies.search.locations.dtos.request import (
+    SourceCollectorAgencySearchLocationRequestDTO,
+)
+from endpoints.instantiations.source_collector.agencies.search.locations.dtos.response import (
+    SourceCollectorAgencySearchLocationResponseDTO,
+    InnerSearchLocationResponse,
+    SearchLocationRequestResponse,
+)
 
 from db.helpers_ import session as sh
 
-class SourceCollectorAgencySearchLocationQueryBuilder(QueryBuilderBase):
 
+class SourceCollectorAgencySearchLocationQueryBuilder(QueryBuilderBase):
     def __init__(self, dto: SourceCollectorAgencySearchLocationRequestDTO):
         super().__init__()
         self.dto = dto
 
-    def run(
-        self
-    ) -> SourceCollectorAgencySearchLocationResponseDTO:
-
+    def run(self) -> SourceCollectorAgencySearchLocationResponseDTO:
         queries_as_tups: list[tuple[int, str]] = [
-            (request.request_id, request.query) for request in
-            self.dto.requests
+            (request.request_id, request.query) for request in self.dto.requests
         ]
 
-        vals = values(
-            column('request_id', Integer),
-            column('query', String),
-            name="input_queries"
-        ).data(queries_as_tups).alias("input_queries_alias")
+        vals = (
+            values(
+                column("request_id", Integer),
+                column("query", String),
+                name="input_queries",
+            )
+            .data(queries_as_tups)
+            .alias("input_queries_alias")
+        )
 
         locations_with_one_agency = (
             select(
@@ -70,7 +76,8 @@ class SourceCollectorAgencySearchLocationQueryBuilder(QueryBuilderBase):
             )
             .join(
                 locations_with_one_agency,
-                TypeaheadLocations.location_id == locations_with_one_agency.c.location_id,
+                TypeaheadLocations.location_id
+                == locations_with_one_agency.c.location_id,
             )
             .order_by(
                 similarity.desc(),
@@ -79,23 +86,19 @@ class SourceCollectorAgencySearchLocationQueryBuilder(QueryBuilderBase):
             .lateral("lateral_top_5")
         )
 
-        final = (
-            select(
-                vals.c.request_id,
-                lateral_top_5.c.agency_id,
-                lateral_top_5.c.similarity,
-            )
-            .join(
-                lateral_top_5,
-                vals.c.request_id == lateral_top_5.c.request_id,
-            )
+        final = select(
+            vals.c.request_id,
+            lateral_top_5.c.agency_id,
+            lateral_top_5.c.similarity,
+        ).join(
+            lateral_top_5,
+            vals.c.request_id == lateral_top_5.c.request_id,
         )
 
         mappings: Sequence[RowMapping] = sh.mappings(self.session, query=final)
-        request_id_to_inner_dtos: dict[
-            int,
-            list[InnerSearchLocationResponse]
-        ] = defaultdict(list)
+        request_id_to_inner_dtos: dict[int, list[InnerSearchLocationResponse]] = (
+            defaultdict(list)
+        )
         for mapping in mappings:
             inner_response = InnerSearchLocationResponse(
                 agency_id=mapping["agency_id"],
@@ -104,14 +107,11 @@ class SourceCollectorAgencySearchLocationQueryBuilder(QueryBuilderBase):
             request_id: int = mapping["request_id"]
             request_id_to_inner_dtos[request_id].append(inner_response)
 
-
         responses: list[SearchLocationRequestResponse] = []
 
         for request_id, inner_dtos in request_id_to_inner_dtos.items():
             sorted_dtos: list[InnerSearchLocationResponse] = sorted(
-                inner_dtos,
-                key=lambda dto: dto.similarity,
-                reverse=True
+                inner_dtos, key=lambda dto: dto.similarity, reverse=True
             )
             response = SearchLocationRequestResponse(
                 request_id=request_id,
@@ -122,7 +122,3 @@ class SourceCollectorAgencySearchLocationQueryBuilder(QueryBuilderBase):
         return SourceCollectorAgencySearchLocationResponseDTO(
             responses=responses,
         )
-
-
-
-

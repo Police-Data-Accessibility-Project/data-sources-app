@@ -5,16 +5,9 @@ from db.models.base import Base
 from db.models.mixins import ViewMixin
 
 
-class TypeaheadLocations(
-    Base,
-    ViewMixin
-):
-
+class TypeaheadLocations(Base, ViewMixin):
     __tablename__ = "typeahead_locations"
-    __table_args__ = (
-        PrimaryKeyConstraint("location_id"),
-        {"info": "view"}
-    )
+    __table_args__ = (PrimaryKeyConstraint("location_id"), {"info": "view"})
 
     location_id: Mapped[int] = mapped_column()
     search_name: Mapped[str] = mapped_column()
