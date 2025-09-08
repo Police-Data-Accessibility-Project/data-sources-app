@@ -1,9 +1,11 @@
 import datetime
+from typing import ClassVar
 
-from sqlalchemy import func, ForeignKey
+from sqlalchemy import func, ForeignKey, event
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import Mapped, mapped_column, relationship, declared_attr
 
+from db.models.exceptions import WriteToViewError
 from db.models.helpers import iter_with_special_cases
 from db.models.types import timestamp
 
@@ -125,3 +127,19 @@ class IterWithSpecialCasesMixin:
 
     def __iter__(self):
         yield from iter_with_special_cases(self, special_cases=self.special_cases)
+
+
+class ViewMixin:
+    """Attach to any mapped class that represents a DB view."""
+
+    __is_view__: ClassVar[bool] = True
+
+    @classmethod
+    def __declare_last__(cls) -> None:
+        # Block writes on this mapped class
+        for evt in ("before_insert", "before_update", "before_delete"):
+            event.listen(cls, evt, cls._block_write)
+
+    @staticmethod
+    def _block_write(mapper, connection, target):
+        raise WriteToViewError(f"{type(target).__name__} is a read-only view.")
