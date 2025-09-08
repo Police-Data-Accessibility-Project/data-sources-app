@@ -38,7 +38,6 @@ class SourceCollectorAgencySearchLocationQueryBuilder(QueryBuilderBase):
         locations_with_one_agency = (
             select(
                 Location.id.label("location_id"),
-                LinkAgencyLocation.agency_id,
             )
             .join(
                 LinkAgencyLocation,
@@ -55,14 +54,23 @@ class SourceCollectorAgencySearchLocationQueryBuilder(QueryBuilderBase):
 
         similarity = func.similarity(
             vals.c.query,
-            TypeaheadLocations.search_name,
+            TypeaheadLocations.display_name,
         )
 
         lateral_top_5 = (
             select(
+                vals.c.request_id,
                 TypeaheadLocations.location_id,
-                locations_with_one_agency.c.agency_id,
+                LinkAgencyLocation.agency_id,
                 similarity.label("similarity"),
+            )
+            .join(
+                LinkAgencyLocation,
+                TypeaheadLocations.location_id == LinkAgencyLocation.location_id,
+            )
+            .join(
+                locations_with_one_agency,
+                TypeaheadLocations.location_id == locations_with_one_agency.c.location_id,
             )
             .order_by(
                 similarity.desc(),

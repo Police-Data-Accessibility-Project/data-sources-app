@@ -7,7 +7,7 @@ from endpoints.instantiations.source_collector.agencies.search.locations.schemas
 from endpoints.schema_config.config.core import EndpointSchemaConfig
 
 SourceCollectorAgencySearchLocationSchemaConfig = EndpointSchemaConfig(
-    input_schema=SourceCollectorAgencySearchLocationRequestSchema,
+    input_schema=SourceCollectorAgencySearchLocationRequestSchema(),
     input_dto_class=SourceCollectorAgencySearchLocationRequestDTO,
-    primary_output_schema=SourceCollectorAgencySearchLocationResponseSchema,
+    primary_output_schema=SourceCollectorAgencySearchLocationResponseSchema(),
 )
