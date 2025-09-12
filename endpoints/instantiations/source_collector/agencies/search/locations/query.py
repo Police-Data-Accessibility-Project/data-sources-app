@@ -33,7 +33,8 @@ class SourceCollectorAgencySearchLocationQueryBuilder(QueryBuilderBase):
                 request.request_id,
                 request.query,
                 request.iso,
-            ) for request in self.dto.requests
+            )
+            for request in self.dto.requests
         ]
 
         vals = (
@@ -60,10 +61,7 @@ class SourceCollectorAgencySearchLocationQueryBuilder(QueryBuilderBase):
                 USState,
                 Location.state_id == USState.id,
             )
-            .group_by(
-                Location.id,
-                USState.state_iso
-            )
+            .group_by(Location.id, USState.state_iso)
             .having(
                 func.count(LinkAgencyLocation.agency_id) == 1,
             )
@@ -88,7 +86,8 @@ class SourceCollectorAgencySearchLocationQueryBuilder(QueryBuilderBase):
             )
             .join(
                 locations_with_one_agency,
-                TypeaheadLocations.location_id == locations_with_one_agency.c.location_id,
+                TypeaheadLocations.location_id
+                == locations_with_one_agency.c.location_id,
             )
             .where(
                 locations_with_one_agency.c.iso == vals.c.iso,

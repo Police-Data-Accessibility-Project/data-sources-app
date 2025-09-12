@@ -35,22 +35,17 @@ def test_sc_agencies_search_location_happy_path(
     allegheny_agency_id: int = tdc.agency(location_id=allegheny_id).id
 
     # Link agency to Pennsylvania
-    pennsylvania_agency_id: int = tdc.agency(location_id=pennsylvania_id).id
+    _ = tdc.agency(location_id=pennsylvania_id).id
 
     # Run request
     request = SourceCollectorAgencySearchLocationRequestDTO(
         requests=[
             SourceCollectorAgencySearchLocationRequestInnerDTO(
-                query="Pittsburgh",
-                iso="PA",
-                request_id=1
+                query="Pittsburgh", iso="PA", request_id=1
             ),
             SourceCollectorAgencySearchLocationRequestInnerDTO(
-                query="Allegheny",
-                iso="PA",
-                request_id=2
+                query="Allegheny", iso="PA", request_id=2
             ),
-
         ]
     )
     # Include three searches.

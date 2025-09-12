@@ -1,7 +1,9 @@
 from pydantic import BaseModel, Field
 
 from middleware.schema_and_dto.dtos._helpers import default_field_required
-from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.metadata import MetadataInfo
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.metadata import (
+    MetadataInfo,
+)
 
 
 class SourceCollectorAgencySearchLocationRequestInnerDTO(BaseModel):
