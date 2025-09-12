@@ -1,0 +1,10 @@
+from endpoints.instantiations.source_collector.agencies.search.locations.dtos.response import (
+    SourceCollectorAgencySearchLocationResponseDTO,
+)
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import (
+    pydantic_to_marshmallow,
+)
+
+SourceCollectorAgencySearchLocationResponseSchema = pydantic_to_marshmallow(
+    SourceCollectorAgencySearchLocationResponseDTO
+)

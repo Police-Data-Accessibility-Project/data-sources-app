@@ -1,7 +1,9 @@
 from flask import Response, make_response
 
 from db.client.core import DatabaseClient
-from db.helpers_.result_formatting import zip_get_datas_sources_for_map_results
+from endpoints.instantiations.map.data_sources.format import (
+    zip_get_datas_sources_for_map_results,
+)
 from middleware.common_response_formatting import format_list_response
 
 

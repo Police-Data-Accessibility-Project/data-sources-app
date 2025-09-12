@@ -1,4 +1,4 @@
-from flask import Response, request, make_response
+from flask import Response, make_response
 
 from db.client.core import DatabaseClient
 from db.db_client_dataclasses import OrderByParameters
@@ -15,7 +15,6 @@ from middleware.dynamic_request_logic.supporting_classes import (
     IDInfo,
     PutPostRequestInfo,
 )
-from endpoints.instantiations.agencies_.put.schemas.outer import AgenciesPutSchema
 from endpoints.instantiations.agencies_.post.dto import AgenciesPostDTO
 from middleware.schema_and_dto.dtos.agencies.get_many import AgenciesGetManyDTO
 from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
@@ -111,29 +110,6 @@ def create_agency(
     agency_id = db_client.create_agency(dto, user_id=access_info.user_id)
 
     return created_id_response(new_id=str(agency_id), message="Agency created.")
-
-
-AGENCY_PUT_MIDDLEWARE_PARAMETERS = MiddlewareParameters(
-    entry_name="agency",
-    relation=Relations.AGENCIES.value,
-    db_client_method=DatabaseClient.update_agency,
-)
-
-
-def update_agency(
-    db_client: DatabaseClient,
-    access_info: AccessInfoPrimary,
-    agency_id: str,
-) -> Response:
-    AgenciesPutSchema().load(request.json)
-    entry_data = request.json.get("agency_info")
-
-    db_client.update_agency(
-        entry_id=int(agency_id),
-        column_edit_mappings=entry_data,
-    )
-
-    return message_response(message="Agency updated.")
 
 
 def delete_agency(

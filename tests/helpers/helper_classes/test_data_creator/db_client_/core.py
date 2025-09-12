@@ -237,11 +237,6 @@ class TestDataCreatorDBClient:
         agency_id = self.db_client.create_agency(dto=dto)
         return TestAgencyInfo(id=agency_id, submitted_name=agency_name)
 
-    def update_agency(self, agency_id: int, column_value_mappings: dict):
-        self.db_client.update_agency(
-            entry_id=agency_id, column_value_mappings=column_value_mappings
-        )
-
     def data_request(
         self,
         user_id: int | None = None,

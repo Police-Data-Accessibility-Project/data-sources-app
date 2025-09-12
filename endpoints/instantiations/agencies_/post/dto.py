@@ -31,9 +31,9 @@ class AgencyInfoPostDTO(BaseModel):
         description="The approval status of the agency.",
         json_schema_extra=MetadataInfo(required=False),
     )
-    homepage_url: Optional[str] = Field(
-        default=None,
-        description="The homepage URL of the agency.",
+    meta_urls: list[str] = Field(
+        default=[],
+        description="The meta URLs of the agency.",
         json_schema_extra=MetadataInfo(required=False),
     )
     defunct_year: Optional[str] = Field(

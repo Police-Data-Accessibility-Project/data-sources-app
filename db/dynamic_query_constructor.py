@@ -57,7 +57,8 @@ class DynamicQueryConstructor:
         data_requests_columns: list[str],
     ) -> list:
         load_options = [
-            selectinload(DataSourceExpanded.agencies).selectinload(Agency.locations)
+            selectinload(DataSourceExpanded.agencies).selectinload(Agency.locations),
+            selectinload(DataSourceExpanded.agencies).selectinload(Agency.meta_urls),
         ]
 
         data_sources_attributes = [
@@ -290,7 +291,26 @@ class DynamicQueryConstructor:
     ) -> sql.Composed:
         base_query = sql.SQL(
             """
-            SELECT DISTINCT
+            WITH associated_locations as (
+                SELECT
+                    LOCATIONS.id
+                FROM
+                    locations
+                WHERE
+                    LOCATIONS.ID = {location_id}
+                UNION DISTINCT
+                SELECT
+                    dependent_locations.dependent_location_id
+                FROM
+                    dependent_locations
+                WHERE
+                    dependent_locations.parent_location_id = {location_id}
+                UNION DISTINCT
+                SELECT dependent_locations.parent_location_id
+                FROM dependent_locations
+                WHERE dependent_locations.dependent_location_id = {location_id}
+            )
+            SELECT
                 data_sources.id,
                 data_sources.name AS data_source_name,
                 data_sources.description,
@@ -301,33 +321,32 @@ class DynamicQueryConstructor:
                 data_sources.coverage_end,
                 data_sources.agency_supplied,
                 agencies.name AS agency_name,
-                locations_expanded.locality_name as municipality,
-                locations_expanded.state_iso,
+                string_agg(localities.name, ', ') as municipality,
+                us_states.state_iso,
                 agencies.jurisdiction_type
             FROM
                 LINK_AGENCIES_DATA_SOURCES AS agency_source_link
-            INNER JOIN
-                data_sources ON agency_source_link.data_source_id = data_sources.id
-            INNER JOIN
-                agencies ON agency_source_link.agency_id = agencies.id
-            LEFT JOIN 
-                link_agencies_locations LAL ON LAL.agency_id = agencies.id
-            INNER JOIN
-				locations_expanded on LAL.location_id = locations_expanded.id
-            INNER JOIN 
-                record_types on record_types.id = data_sources.record_type_id
-            LEFT JOIN
-                DEPENDENT_LOCATIONS DL1 ON DL1.DEPENDENT_LOCATION_ID = LOCATIONS_EXPANDED.ID
-            LEFT JOIN 
-                DEPENDENT_LOCATIONS DL2 ON DL2.PARENT_LOCATION_ID = LOCATIONS_EXPANDED.ID
+                    INNER JOIN
+                    data_sources ON agency_source_link.data_source_id = data_sources.id
+                    INNER JOIN
+                    agencies ON agency_source_link.agency_id = agencies.id
+                    LEFT JOIN
+                    link_agencies_locations LAL ON LAL.agency_id = agencies.id
+                    INNER JOIN
+                    locations on LAL.location_id = locations.id
+                    LEFT JOIN
+                    US_STATES ON US_STATES.ID = locations.state_id
+                    LEFT JOIN
+                    localities on localities.id = locations.locality_id
+                    INNER JOIN
+                    record_types on record_types.id = data_sources.record_type_id
+                    INNER JOIN 
+                    associated_locations al ON al.id = locations.id
         """
-        )
+        ).format(location_id=sql.Literal(location_id))
 
         join_conditions = []
         where_subclauses = [
-            sql.SQL(
-                "(locations_expanded.id = {location_id} OR DL1.PARENT_LOCATION_ID = {location_id} OR DL2.DEPENDENT_LOCATION_ID = {location_id})"
-            ).format(location_id=sql.Literal(location_id)),
             sql.SQL("data_sources.approval_status = 'approved'"),
             sql.SQL("data_sources.url_status != 'broken'"),
         ]
@@ -359,11 +378,30 @@ class DynamicQueryConstructor:
                 )
             )
 
+        # Add group by clause
+        group_by_clause = sql.SQL(
+            """group by
+                data_sources.id,
+                data_sources.name,
+                data_sources.description,
+                record_types.name,
+                data_sources.source_url,
+                data_sources.record_formats,
+                data_sources.coverage_start,
+                data_sources.coverage_end,
+                data_sources.agency_supplied,
+                agencies.name,
+                us_states.state_iso,
+                agencies.jurisdiction_type
+            """
+        )
+
         query = sql.Composed(
             [
                 base_query,
                 sql.SQL(" ").join(join_conditions),
                 DynamicQueryConstructor.build_full_where_clause(where_subclauses),
+                group_by_clause,
             ]
         )
 

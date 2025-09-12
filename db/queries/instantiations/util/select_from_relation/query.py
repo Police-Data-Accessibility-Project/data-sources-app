@@ -6,7 +6,9 @@ from db.constants import PAGE_SIZE
 from db.db_client_dataclasses import WhereMapping, OrderByParameters
 from db.dynamic_query_constructor import DynamicQueryConstructor
 from db.helpers import get_offset
-from db.helpers_.result_formatting import format_with_metadata
+from db.queries.instantiations.util.select_from_relation.format import (
+    format_with_metadata,
+)
 from db.models.table_reference import convert_to_column_reference
 from db.queries.builder.core import QueryBuilderBase
 from db.subquery_logic import SubqueryParameters
