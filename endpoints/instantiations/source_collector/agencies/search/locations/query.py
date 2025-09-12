@@ -5,6 +5,7 @@ from sqlalchemy import values, column, Integer, String, select, func, RowMapping
 
 from db.models.implementations import LinkAgencyLocation
 from db.models.implementations.core.location.core import Location
+from db.models.implementations.core.location.us_state import USState
 from db.models.implementations.materialized_views.typeahead.locations import (
     TypeaheadLocations,
 )
@@ -27,14 +28,20 @@ class SourceCollectorAgencySearchLocationQueryBuilder(QueryBuilderBase):
         self.dto = dto
 
     def run(self) -> SourceCollectorAgencySearchLocationResponseDTO:
-        queries_as_tups: list[tuple[int, str]] = [
-            (request.request_id, request.query) for request in self.dto.requests
+        queries_as_tups: list[tuple[int, str, str]] = [
+            (
+                request.request_id,
+                request.query,
+                request.iso,
+            )
+            for request in self.dto.requests
         ]
 
         vals = (
             values(
                 column("request_id", Integer),
                 column("query", String),
+                column("iso", String),
                 name="input_queries",
             )
             .data(queries_as_tups)
@@ -44,14 +51,17 @@ class SourceCollectorAgencySearchLocationQueryBuilder(QueryBuilderBase):
         locations_with_one_agency = (
             select(
                 Location.id.label("location_id"),
+                USState.state_iso.label("iso"),
             )
             .join(
                 LinkAgencyLocation,
                 Location.id == LinkAgencyLocation.location_id,
             )
-            .group_by(
-                Location.id,
+            .join(
+                USState,
+                Location.state_id == USState.id,
             )
+            .group_by(Location.id, USState.state_iso)
             .having(
                 func.count(LinkAgencyLocation.agency_id) == 1,
             )
@@ -60,7 +70,7 @@ class SourceCollectorAgencySearchLocationQueryBuilder(QueryBuilderBase):
 
         similarity = func.similarity(
             vals.c.query,
-            TypeaheadLocations.display_name,
+            TypeaheadLocations.search_name,
         )
 
         lateral_top_5 = (
@@ -78,6 +88,9 @@ class SourceCollectorAgencySearchLocationQueryBuilder(QueryBuilderBase):
                 locations_with_one_agency,
                 TypeaheadLocations.location_id
                 == locations_with_one_agency.c.location_id,
+            )
+            .where(
+                locations_with_one_agency.c.iso == vals.c.iso,
             )
             .order_by(
                 similarity.desc(),

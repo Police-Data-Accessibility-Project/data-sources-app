@@ -35,19 +35,16 @@ def test_sc_agencies_search_location_happy_path(
     allegheny_agency_id: int = tdc.agency(location_id=allegheny_id).id
 
     # Link agency to Pennsylvania
-    pennsylvania_agency_id: int = tdc.agency(location_id=pennsylvania_id).id
+    _ = tdc.agency(location_id=pennsylvania_id).id
 
     # Run request
     request = SourceCollectorAgencySearchLocationRequestDTO(
         requests=[
             SourceCollectorAgencySearchLocationRequestInnerDTO(
-                query="Pittsburgh, Allegheny, Pennsylvania", request_id=1
+                query="Pittsburgh", iso="PA", request_id=1
             ),
             SourceCollectorAgencySearchLocationRequestInnerDTO(
-                query="Allegheny, Pennsylvania", request_id=2
-            ),
-            SourceCollectorAgencySearchLocationRequestInnerDTO(
-                query="Pennsylvania", request_id=3
+                query="Allegheny", iso="PA", request_id=2
             ),
         ]
     )
@@ -64,7 +61,7 @@ def test_sc_agencies_search_location_happy_path(
     dto = SourceCollectorAgencySearchLocationResponseDTO(**request_response)
 
     # Confirm for each request, 3 agencies are returned
-    assert len(dto.responses) == 3
+    assert len(dto.responses) == 2
     request_id_to_results: dict[int, list[InnerSearchLocationResponse]] = {}
     for response in dto.responses:
         assert len(response.results) == 3
@@ -73,13 +70,11 @@ def test_sc_agencies_search_location_happy_path(
     # Confirm all three have the same agencies
     results_1: list[InnerSearchLocationResponse] = request_id_to_results[1]
     results_2: list[InnerSearchLocationResponse] = request_id_to_results[2]
-    results_3: list[InnerSearchLocationResponse] = request_id_to_results[3]
 
     agencies_1: set[int] = {result.agency_id for result in results_1}
     agencies_2: set[int] = {result.agency_id for result in results_2}
-    agencies_3: set[int] = {result.agency_id for result in results_3}
 
-    assert agencies_1 == agencies_2 == agencies_3
+    assert agencies_1 == agencies_2
 
     # Confirm that the highest for each request
     max_similarity_agency_1: int = max(
@@ -88,10 +83,7 @@ def test_sc_agencies_search_location_happy_path(
     max_similarity_agency_2: int = max(
         results_2, key=lambda result: result.similarity
     ).agency_id
-    max_similarity_agency_3: int = max(
-        results_3, key=lambda result: result.similarity
-    ).agency_id
+
     # is the agency linked to that location
     assert max_similarity_agency_1 == pittsburgh_agency_id
     assert max_similarity_agency_2 == allegheny_agency_id
-    assert max_similarity_agency_3 == pennsylvania_agency_id
