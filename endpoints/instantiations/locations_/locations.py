@@ -76,6 +76,7 @@ class LocationsByID(PsycopgResource):
         ),
     )
     @limiter.limit("60/minute")
+    @namespace_locations.deprecated
     def put(self, location_id: int, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             wrapper_function=update_location_by_id_wrapper,
