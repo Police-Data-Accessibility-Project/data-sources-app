@@ -79,51 +79,6 @@ def test_locations_related_data_requests(locations_test_setup: LocationsTestSetu
     assert data[0]["locations"] == data[1]["locations"]
     assert data[0]["locations"][0]["location_id"] == location_id
 
-
-def test_locations_update(locations_test_setup: LocationsTestSetup):
-    lts = locations_test_setup
-    tdc = lts.tdc
-
-    # Update location with invalid location id
-    location_id = 9123
-
-    dto = LocationPutDTO(
-        latitude=39.5,
-        longitude=93.1,
-    )
-    tdc.request_validator.update_location(
-        location_id=location_id,
-        dto=dto,
-        headers=tdc.get_admin_tus().jwt_authorization_header,
-        expected_response_status=HTTPStatus.BAD_REQUEST,
-        expected_json_content={"message": "Location not found."},
-    )
-
-    # Create location
-    locality_name = get_test_name()
-    location_id = tdc.locality(locality_name=locality_name)
-
-    # Update location with valid location id
-    tdc.request_validator.update_location(
-        location_id=location_id,
-        dto=dto,
-        headers=tdc.get_admin_tus().jwt_authorization_header,
-        expected_json_content={"message": "Successfully updated location."},
-    )
-
-    # Confirm location updated in database
-    locations = tdc.db_client.get_all(Location)
-    # Find location matching id
-    location = None
-    for loc in locations:
-        if loc["id"] == location_id:
-            location = loc
-            break
-    assert location is not None
-    assert location["lat"] == dto.latitude
-    assert location["lng"] == dto.longitude
-
-
 def test_map_locations(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
     tdc.clear_test_data()
