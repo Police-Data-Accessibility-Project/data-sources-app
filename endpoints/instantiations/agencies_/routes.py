@@ -75,6 +75,7 @@ class AgenciesByPage(PsycopgResource):
             success_message="Returns the id of the newly created agency."
         ),
     )
+    @namespace_agencies.deprecated
     def post(self, access_info: AccessInfoPrimary):
         return self.run_endpoint(
             wrapper_function=create_agency,
@@ -117,6 +118,7 @@ class AgenciesById(PsycopgResource):
         ),
         description="Updates an agency",
     )
+    @namespace_agencies.deprecated
     def put(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             update_agency,
@@ -130,6 +132,7 @@ class AgenciesById(PsycopgResource):
         schema_config=SchemaConfigs.AGENCIES_BY_ID_DELETE,
         response_info=ResponseInfo(success_message="Agency successfully deleted."),
     )
+    @namespace_agencies.deprecated
     def delete(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             delete_agency, agency_id=resource_id, access_info=access_info
@@ -146,6 +149,7 @@ class AgenciesRelatedLocations(PsycopgResource):
             success_message="Returns locations related to the specific agency."
         ),
     )
+    @namespace_agencies.deprecated
     def post(
         self, resource_id: str, location_id: str, access_info: AccessInfoPrimary
     ) -> Response:
@@ -163,6 +167,7 @@ class AgenciesRelatedLocations(PsycopgResource):
             success_message="Returns locations related to the specific agency."
         ),
     )
+    @namespace_agencies.deprecated
     def delete(
         self, resource_id: str, location_id: str, access_info: AccessInfoPrimary
     ) -> Response:
