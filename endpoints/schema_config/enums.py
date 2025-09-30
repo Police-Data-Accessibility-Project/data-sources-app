@@ -1,20 +1,31 @@
 from enum import Enum
 
+from endpoints.instantiations.auth_.resend_validation_email.endpoint_schema_config import (
+    AuthResendValidationEmailEndpointSchemaConfig,
+)
+from endpoints.instantiations.auth_.signup.endpoint_schema_config import (
+    AuthSignupEndpointSchemaConfig,
+)
 from endpoints.instantiations.auth_.validate_email.endpoint_schema_config import (
     AuthValidateEmailEndpointSchema,
+)
+from endpoints.instantiations.data_sources_.get.by_id.schema_config import (
+    DataSourcesByIDGetEndpointSchemaConfig,
 )
 from endpoints.instantiations.map.data.schema_config import (
     LocationsDataEndpointSchemaConfig,
 )
+from endpoints.instantiations.map.data_sources.schema_config import (
+    DataSourcesMapEndpointSchemaConfig,
+)
+from endpoints.instantiations.map.locations.schema_config import (
+    LocationsMapEndpointSchemaConfig,
+)
 from endpoints.instantiations.source_collector.agencies.search.locations.schema_config import (
     SourceCollectorAgencySearchLocationSchemaConfig,
 )
-from endpoints.instantiations.source_collector.agencies.sync.schema_config import (
-    SourceCollectorSyncAgenciesSchemaConfig,
-)
-from endpoints.instantiations.source_collector.data_sources.sync.schema_config import (
-    SourceCollectorSyncDataSourceSchemaConfig,
-)
+from endpoints.instantiations.source_collector.meta_urls.post.endpoint_schema_config import \
+    SourceCollectorMetaURLPostEndpointSchemaConfig
 from endpoints.instantiations.user.by_id.patch.endpoint_schema_config import (
     UserPatchEndpointSchemaConfig,
 )
@@ -71,13 +82,6 @@ from endpoints.schema_config.instantiations.auth.github.oauth import (
     AuthGitHubOAuthEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.auth.login import LoginEndpointSchemaConfig
-from endpoints.instantiations.auth_.resend_validation_email.endpoint_schema_config import (
-    AuthResendValidationEmailEndpointSchemaConfig,
-)
-from endpoints.instantiations.auth_.signup.endpoint_schema_config import (
-    AuthSignupEndpointSchemaConfig,
-)
-
 from endpoints.schema_config.instantiations.checker import (
     UniqueURLCheckerEndpointSchemaConfig,
 )
@@ -129,9 +133,6 @@ from endpoints.schema_config.instantiations.data_sources.by_id.agencies.post imp
 from endpoints.schema_config.instantiations.data_sources.by_id.delete import (
     DataSourcesByIDDeleteEndpointSchemaConfig,
 )
-from endpoints.instantiations.data_sources_.get.by_id.schema_config import (
-    DataSourcesByIDGetEndpointSchemaConfig,
-)
 from endpoints.schema_config.instantiations.data_sources.by_id.put import (
     DataSourcesByIDPutEndpointSchemaConfig,
 )
@@ -140,9 +141,6 @@ from endpoints.schema_config.instantiations.data_sources.by_id.reject import (
 )
 from endpoints.schema_config.instantiations.data_sources.get_many import (
     DataSourcesGetManyEndpointSchemaConfig,
-)
-from endpoints.instantiations.map.data_sources.schema_config import (
-    DataSourcesMapEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.data_sources.post import (
     DataSourcesPostEndpointSchemaConfig,
@@ -161,9 +159,6 @@ from endpoints.schema_config.instantiations.locations.data_requests import (
 )
 from endpoints.schema_config.instantiations.locations.get_many import (
     LocationsGetManyEndpointSchemaConfig,
-)
-from endpoints.instantiations.map.locations.schema_config import (
-    LocationsMapEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.match import MatchAgencyEndpointSchemaConfig
 from endpoints.schema_config.instantiations.metrics.followed_searches.aggregate import (
@@ -409,10 +404,9 @@ class SchemaConfigs(Enum):
     SOURCE_COLLECTOR_DATA_SOURCES_POST = (
         SourceCollectorDataSourcesPostEndpointSchemaConfig
     )
+    SOURCE_COLLECTOR_META_URLS_POST = SourceCollectorMetaURLPostEndpointSchemaConfig
 
     SOURCE_COLLECTOR_DUPLICATES_POST = SourceCollectorDuplicatesPostEndpointSchemaConfig
-    SOURCE_COLLECTOR_SYNC_AGENCIES = SourceCollectorSyncAgenciesSchemaConfig
-    SOURCE_COLLECTOR_SYNC_DATA_SOURCES = SourceCollectorSyncDataSourceSchemaConfig
     SOURCE_COLLECTOR_SEARCH_AGENCIES_LOCATION = (
         SourceCollectorAgencySearchLocationSchemaConfig
     )

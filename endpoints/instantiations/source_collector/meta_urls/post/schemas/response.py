@@ -1,0 +1,6 @@
+from endpoints.instantiations.source_collector.meta_urls.post.dtos.response import SourceCollectorMetaURLPostResponseDTO
+from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.core import pydantic_to_marshmallow
+
+SourceCollectorMetaURLPostResponseSchema = pydantic_to_marshmallow(
+    SourceCollectorMetaURLPostResponseDTO
+)
