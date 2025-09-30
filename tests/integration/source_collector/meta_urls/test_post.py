@@ -12,9 +12,10 @@ def test_source_collector_meta_urls_post(
     test_data_creator_flask: TestDataCreatorFlask,
 ):
     tdc = test_data_creator_flask
+    tdcdb = tdc.tdcdb
     tdc.clear_test_data()
 
-    agency_ids = [int(tdc.agency().id) for _ in range(3)]
+    agency_ids = [int(tdcdb.agency().id) for _ in range(3)]
 
     tus_source_collector = tdc.user_with_permissions(
         permissions=[PermissionsEnum.SOURCE_COLLECTOR_DATA_SOURCES]
@@ -50,9 +51,9 @@ def test_source_collector_meta_urls_post(
     meta_url_ids = [meta_url.meta_url_id for meta_url in dto.meta_urls]
     assert all(meta_url_id is not None for meta_url_id in meta_url_ids)
 
-    meta_url_dbs: list[AgencyMetaURL] = tdc.db_client.get_all(AgencyMetaURL)
+    meta_url_dbs: list[dict] = tdc.db_client.get_all(AgencyMetaURL)
     assert len(meta_url_dbs) == 3
 
     for meta_url_db in meta_url_dbs:
-        assert meta_url_db.id in meta_url_ids
-        assert meta_url_db.url in {"http://test.com", "http://test2.com", "http://test3.com"}
+        assert meta_url_db["id"] in meta_url_ids
+        assert meta_url_db["url"] in {"http://test.com", "http://test2.com", "http://test3.com"}
