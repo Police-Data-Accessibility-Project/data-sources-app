@@ -1,9 +1,14 @@
 from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMetaURL
-from endpoints.instantiations.source_collector.meta_urls.post.dtos.request import \
-    SourceCollectorMetaURLPostRequestInnerDTO, SourceCollectorMetaURLPostRequestDTO
-from endpoints.instantiations.source_collector.meta_urls.post.dtos.response import SourceCollectorMetaURLPostResponseDTO
-from endpoints.instantiations.source_collector.meta_urls.post.endpoint_schema_config import \
-    SourceCollectorMetaURLPostEndpointSchemaConfig
+from endpoints.instantiations.source_collector.meta_urls.post.dtos.request import (
+    SourceCollectorMetaURLPostRequestInnerDTO,
+    SourceCollectorMetaURLPostRequestDTO,
+)
+from endpoints.instantiations.source_collector.meta_urls.post.dtos.response import (
+    SourceCollectorMetaURLPostResponseDTO,
+)
+from endpoints.instantiations.source_collector.meta_urls.post.endpoint_schema_config import (
+    SourceCollectorMetaURLPostEndpointSchemaConfig,
+)
 from middleware.enums import PermissionsEnum
 from tests.helpers.helper_classes.test_data_creator.flask import TestDataCreatorFlask
 
@@ -34,7 +39,7 @@ def test_source_collector_meta_urls_post(
             SourceCollectorMetaURLPostRequestInnerDTO(
                 agency_id=agency_ids[2],
                 url="http://test3.com",
-            )
+            ),
         ]
     )
 
@@ -56,4 +61,8 @@ def test_source_collector_meta_urls_post(
 
     for meta_url_db in meta_url_dbs:
         assert meta_url_db["id"] in meta_url_ids
-        assert meta_url_db["url"] in {"http://test.com", "http://test2.com", "http://test3.com"}
+        assert meta_url_db["url"] in {
+            "http://test.com",
+            "http://test2.com",
+            "http://test3.com",
+        }

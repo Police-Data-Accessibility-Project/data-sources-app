@@ -1,13 +1,10 @@
 from dataclasses import dataclass
-from http import HTTPStatus
 from typing import Optional
 
 import pytest
 
 from db.enums import LocationType
-from db.models.implementations.core.location.core import Location
 from middleware.schema_and_dto.dtos.locations.get import LocationsGetRequestDTO
-from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
 from tests.helpers.common_test_data import get_test_name
 from tests.helpers.helper_classes.MultiLocationSetup import MultiLocationSetup
 from tests.helpers.helper_classes.test_data_creator.flask import (
@@ -78,6 +75,7 @@ def test_locations_related_data_requests(locations_test_setup: LocationsTestSetu
     )["data"]
     assert data[0]["locations"] == data[1]["locations"]
     assert data[0]["locations"][0]["location_id"] == location_id
+
 
 def test_map_locations(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask

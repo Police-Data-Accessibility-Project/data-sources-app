@@ -2,8 +2,13 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from endpoints.instantiations.source_collector.meta_urls.post.enums import MetaURLCreationResponse
-from middleware.schema_and_dto.dtos._helpers import default_field_not_required, default_field_required
+from endpoints.instantiations.source_collector.meta_urls.post.enums import (
+    MetaURLCreationResponse,
+)
+from middleware.schema_and_dto.dtos._helpers import (
+    default_field_not_required,
+    default_field_required,
+)
 
 
 class SourceCollectorMetaURLPostResponseInnerDTO(BaseModel):
@@ -20,7 +25,10 @@ class SourceCollectorMetaURLPostResponseInnerDTO(BaseModel):
         description="The error message, if the meta URL creation failed.",
     )
 
+
 class SourceCollectorMetaURLPostResponseDTO(BaseModel):
-    meta_urls: list[SourceCollectorMetaURLPostResponseInnerDTO] = default_field_required(
-        description="The list of meta URLs created.",
+    meta_urls: list[SourceCollectorMetaURLPostResponseInnerDTO] = (
+        default_field_required(
+            description="The list of meta URLs created.",
+        )
     )

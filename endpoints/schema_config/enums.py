@@ -24,8 +24,9 @@ from endpoints.instantiations.map.locations.schema_config import (
 from endpoints.instantiations.source_collector.agencies.search.locations.schema_config import (
     SourceCollectorAgencySearchLocationSchemaConfig,
 )
-from endpoints.instantiations.source_collector.meta_urls.post.endpoint_schema_config import \
-    SourceCollectorMetaURLPostEndpointSchemaConfig
+from endpoints.instantiations.source_collector.meta_urls.post.endpoint_schema_config import (
+    SourceCollectorMetaURLPostEndpointSchemaConfig,
+)
 from endpoints.instantiations.user.by_id.patch.endpoint_schema_config import (
     UserPatchEndpointSchemaConfig,
 )

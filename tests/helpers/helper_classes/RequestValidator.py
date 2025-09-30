@@ -1132,5 +1132,3 @@ class RequestValidator:
             json={"urls": urls},
             expected_schema=SourceCollectorDuplicatesPostEndpointSchemaConfig.primary_output_schema,
         )
-
-

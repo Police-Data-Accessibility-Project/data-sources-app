@@ -11,9 +11,12 @@ from endpoints.instantiations.source_collector.data_sources.duplicates.wrapper i
 from endpoints.instantiations.source_collector.data_sources.post.wrapper import (
     add_data_sources_from_source_collector,
 )
-from endpoints.instantiations.source_collector.meta_urls.post.endpoint_schema_config import \
-    SourceCollectorMetaURLPostEndpointSchemaConfig
-from endpoints.instantiations.source_collector.meta_urls.post.wrapper import add_meta_urls_from_source_collector
+from endpoints.instantiations.source_collector.meta_urls.post.endpoint_schema_config import (
+    SourceCollectorMetaURLPostEndpointSchemaConfig,
+)
+from endpoints.instantiations.source_collector.meta_urls.post.wrapper import (
+    add_meta_urls_from_source_collector,
+)
 from endpoints.psycopg_resource import PsycopgResource
 from endpoints.schema_config.enums import SchemaConfigs
 from endpoints.schema_config.instantiations.source_collector.data_sources import (
@@ -73,8 +76,6 @@ class SourceCollectorDataSourcesDuplicates(PsycopgResource):
         )
 
 
-
-
 @namespace_source_collector.route("/agencies/search/location", methods=["POST"])
 class SourceCollectorAgenciesSearchLocation(PsycopgResource):
     @endpoint_info(
@@ -95,6 +96,7 @@ class SourceCollectorAgenciesSearchLocation(PsycopgResource):
             schema_populate_parameters=SourceCollectorAgencySearchLocationSchemaConfig.get_schema_populate_parameters(),
         )
 
+
 @namespace_source_collector.route("/meta-urls", methods=["POST"])
 class SourceCollectorMetaURLs(PsycopgResource):
     @endpoint_info(
@@ -104,9 +106,7 @@ class SourceCollectorMetaURLs(PsycopgResource):
             restrict_to_permissions=[PermissionsEnum.SOURCE_COLLECTOR_DATA_SOURCES],
         ),
         schema_config=SchemaConfigs.SOURCE_COLLECTOR_META_URLS_POST,
-        response_info=ResponseInfo(
-            success_message="Successfully added meta urls"
-        ),
+        response_info=ResponseInfo(success_message="Successfully added meta urls"),
         description="Add meta URLs in bulk.",
     )
     def post(self, access_info: AccessInfoPrimary):

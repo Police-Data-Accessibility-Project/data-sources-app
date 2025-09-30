@@ -1,18 +1,20 @@
-from typing import Any
-
 import sqlalchemy
 
 from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMetaURL
 from db.queries.builder.core import QueryBuilderBase
-from endpoints.instantiations.source_collector.meta_urls.post.dtos.request import \
-    SourceCollectorMetaURLPostRequestInnerDTO
-from endpoints.instantiations.source_collector.meta_urls.post.dtos.response import \
-    SourceCollectorMetaURLPostResponseDTO, SourceCollectorMetaURLPostResponseInnerDTO
-from endpoints.instantiations.source_collector.meta_urls.post.enums import MetaURLCreationResponse
+from endpoints.instantiations.source_collector.meta_urls.post.dtos.request import (
+    SourceCollectorMetaURLPostRequestInnerDTO,
+)
+from endpoints.instantiations.source_collector.meta_urls.post.dtos.response import (
+    SourceCollectorMetaURLPostResponseDTO,
+    SourceCollectorMetaURLPostResponseInnerDTO,
+)
+from endpoints.instantiations.source_collector.meta_urls.post.enums import (
+    MetaURLCreationResponse,
+)
 
 
 class AddMetaURLsFromSourceCollectorQueryBuilder(QueryBuilderBase):
-
     def __init__(self, meta_urls: list[SourceCollectorMetaURLPostRequestInnerDTO]):
         super().__init__()
         self._meta_urls = meta_urls
