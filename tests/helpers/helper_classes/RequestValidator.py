@@ -16,14 +16,14 @@ from db.enums import (
     ApprovalStatus,
     UpdateFrequency,
 )
-from endpoints.instantiations.source_collector.agencies.sync.schema_config import (
-    SourceCollectorSyncAgenciesSchemaConfig,
+from endpoints.instantiations.data_sources_.get.by_id.schema_config import (
+    DataSourcesByIDGetEndpointSchemaConfig,
+)
+from endpoints.instantiations.map.locations.schema_config import (
+    LocationsMapEndpointSchemaConfig,
 )
 from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
     SourceCollectorPostRequestDTO,
-)
-from endpoints.instantiations.source_collector.agencies.sync.dtos.request import (
-    SourceCollectorSyncAgenciesRequestDTO,
 )
 from endpoints.schema_config.instantiations.admin.users.by_id.delete import (
     AdminUsersByIDDeleteEndpointSchemaConfig,
@@ -65,9 +65,6 @@ from endpoints.schema_config.instantiations.data_requests.related_locations.dele
 from endpoints.schema_config.instantiations.data_requests.related_locations.post import (
     DataRequestsRelatedLocationsPostEndpointSchemaConfig,
 )
-from endpoints.instantiations.data_sources_.get.by_id.schema_config import (
-    DataSourcesByIDGetEndpointSchemaConfig,
-)
 from endpoints.schema_config.instantiations.data_sources.by_id.reject import (
     DataSourcesByIDRejectEndpointSchemaConfig,
 )
@@ -88,9 +85,6 @@ from endpoints.schema_config.instantiations.locations.data_requests import (
 )
 from endpoints.schema_config.instantiations.locations.get_many import (
     LocationsGetManyEndpointSchemaConfig,
-)
-from endpoints.instantiations.map.locations.schema_config import (
-    LocationsMapEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.match import MatchAgencyEndpointSchemaConfig
 from endpoints.schema_config.instantiations.metrics.followed_searches.aggregate import (
@@ -1137,14 +1131,4 @@ class RequestValidator:
             headers=headers,
             json={"urls": urls},
             expected_schema=SourceCollectorDuplicatesPostEndpointSchemaConfig.primary_output_schema,
-        )
-
-    def get_agencies_for_sync(
-        self, headers: dict, dto: SourceCollectorSyncAgenciesRequestDTO
-    ):
-        return self.get(
-            endpoint="/api/source-collector/agencies/sync",
-            headers=headers,
-            query_parameters=dto.model_dump(mode="json"),
-            expected_schema=SourceCollectorSyncAgenciesSchemaConfig.primary_output_schema,
         )

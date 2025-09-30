@@ -5,20 +5,17 @@ from endpoints.instantiations.source_collector.agencies.search.locations.schema_
 from endpoints.instantiations.source_collector.agencies.search.locations.wrapper import (
     source_collector_search_agencies_by_location,
 )
-from endpoints.instantiations.source_collector.agencies.sync.schema_config import (
-    SourceCollectorSyncAgenciesSchemaConfig,
-)
 from endpoints.instantiations.source_collector.data_sources.duplicates.wrapper import (
     check_for_duplicate_urls,
 )
 from endpoints.instantiations.source_collector.data_sources.post.wrapper import (
     add_data_sources_from_source_collector,
 )
-from endpoints.instantiations.source_collector.agencies.sync.wrapper import (
-    get_agencies_for_sync,
+from endpoints.instantiations.source_collector.meta_urls.post.endpoint_schema_config import (
+    SourceCollectorMetaURLPostEndpointSchemaConfig,
 )
-from endpoints.instantiations.source_collector.data_sources.sync.wrapper import (
-    get_data_sources_for_sync,
+from endpoints.instantiations.source_collector.meta_urls.post.wrapper import (
+    add_meta_urls_from_source_collector,
 )
 from endpoints.psycopg_resource import PsycopgResource
 from endpoints.schema_config.enums import SchemaConfigs
@@ -79,48 +76,6 @@ class SourceCollectorDataSourcesDuplicates(PsycopgResource):
         )
 
 
-@namespace_source_collector.route("/agencies/sync", methods=["GET"])
-class SourceCollectorSyncAgencies(PsycopgResource):
-    @endpoint_info(
-        namespace=namespace_source_collector,
-        auth_info=AuthenticationInfo(
-            allowed_access_methods=[AccessTypeEnum.JWT],
-            restrict_to_permissions=[PermissionsEnum.SOURCE_COLLECTOR_DATA_SOURCES],
-        ),
-        schema_config=SchemaConfigs.SOURCE_COLLECTOR_SYNC_AGENCIES,
-        response_info=ResponseInfo(
-            success_message="Successfully returns agencies to sync"
-        ),
-        description="Syncs agencies.",
-    )
-    def get(self, access_info: AccessInfoPrimary):
-        return self.run_endpoint(
-            wrapper_function=get_agencies_for_sync,
-            schema_populate_parameters=SourceCollectorSyncAgenciesSchemaConfig.get_schema_populate_parameters(),
-        )
-
-
-@namespace_source_collector.route("/data-sources/sync", methods=["GET"])
-class SourceCollectorSyncDataSources(PsycopgResource):
-    @endpoint_info(
-        namespace=namespace_source_collector,
-        auth_info=AuthenticationInfo(
-            allowed_access_methods=[AccessTypeEnum.JWT],
-            restrict_to_permissions=[PermissionsEnum.SOURCE_COLLECTOR_DATA_SOURCES],
-        ),
-        schema_config=SchemaConfigs.SOURCE_COLLECTOR_SYNC_DATA_SOURCES,
-        response_info=ResponseInfo(
-            success_message="Successfully returns data sources to sync"
-        ),
-        description="Syncs data sources.",
-    )
-    def get(self, access_info: AccessInfoPrimary):
-        return self.run_endpoint(
-            wrapper_function=get_data_sources_for_sync,
-            schema_populate_parameters=SourceCollectorSyncAgenciesSchemaConfig.get_schema_populate_parameters(),
-        )
-
-
 @namespace_source_collector.route("/agencies/search/location", methods=["POST"])
 class SourceCollectorAgenciesSearchLocation(PsycopgResource):
     @endpoint_info(
@@ -139,4 +94,23 @@ class SourceCollectorAgenciesSearchLocation(PsycopgResource):
         return self.run_endpoint(
             wrapper_function=source_collector_search_agencies_by_location,
             schema_populate_parameters=SourceCollectorAgencySearchLocationSchemaConfig.get_schema_populate_parameters(),
+        )
+
+
+@namespace_source_collector.route("/meta-urls", methods=["POST"])
+class SourceCollectorMetaURLs(PsycopgResource):
+    @endpoint_info(
+        namespace=namespace_source_collector,
+        auth_info=AuthenticationInfo(
+            allowed_access_methods=[AccessTypeEnum.JWT],
+            restrict_to_permissions=[PermissionsEnum.SOURCE_COLLECTOR_DATA_SOURCES],
+        ),
+        schema_config=SchemaConfigs.SOURCE_COLLECTOR_META_URLS_POST,
+        response_info=ResponseInfo(success_message="Successfully added meta urls"),
+        description="Add meta URLs in bulk.",
+    )
+    def post(self, access_info: AccessInfoPrimary):
+        return self.run_endpoint(
+            wrapper_function=add_meta_urls_from_source_collector,
+            schema_populate_parameters=SourceCollectorMetaURLPostEndpointSchemaConfig.get_schema_populate_parameters(),
         )

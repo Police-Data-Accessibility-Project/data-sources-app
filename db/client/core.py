@@ -52,9 +52,6 @@ from db.helpers_.psycopg import initialize_psycopg_connection
 from db.helpers_.result_formatting import (
     get_expanded_display_name,
 )
-from endpoints.instantiations.data_sources_.get.by_id.agencies.format import (
-    agency_to_data_sources_get_related_agencies_output,
-)
 from db.models.base import Base
 from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.data_request.core import DataRequest
@@ -94,21 +91,11 @@ from db.models.table_reference import (
     SQL_ALCHEMY_TABLE_REFERENCE,
 )
 from db.queries.builder.core import QueryBuilderBase
-from endpoints.instantiations.agencies_.get.by_id.core.query import (
-    GetAgencyByIDQueryBuilder,
-)
-from endpoints.instantiations.agencies_.get.many.query import GetAgenciesQueryBuilder
 from db.queries.instantiations.data_requests.post import DataRequestsPostQueryBuilder
 from db.queries.instantiations.data_requests.put import DataRequestsPutQueryBuilder
 from db.queries.instantiations.data_sources.archive import (
     GetDataSourcesToArchiveQueryBuilder,
     ArchiveInfo,
-)
-from endpoints.instantiations.data_sources_.get.by_id.query import (
-    GetDataSourceByIDQueryBuilder,
-)
-from endpoints.instantiations.data_sources_.get.many.query import (
-    GetDataSourcesQueryBuilder,
 )
 from db.queries.instantiations.data_sources.post.single import (
     DataSourcesPostSingleQueryBuilder,
@@ -118,21 +105,9 @@ from db.queries.instantiations.locations.get.many import GetManyLocationsQueryBu
 from db.queries.instantiations.log.most_recent_logged_table_counts import (
     GetMostRecentLoggedTableCountsQueryBuilder,
 )
-from endpoints.instantiations.agencies_.get._shared.dto.base import AgenciesGetDTO
-from endpoints.instantiations.agencies_.post.query import CreateAgencyQueryBuilder
-from endpoints.instantiations.map.locations.queries.counties import (
-    GET_MAP_COUNTIES_QUERY,
-)
 from db.queries.instantiations.map.data_source_count import (
     GET_DATA_SOURCE_COUNT_BY_LOCATION_TYPE_QUERY,
 )
-from endpoints.instantiations.map.data_sources.query import (
-    GET_DATA_SOURCES_FOR_MAP_QUERY,
-)
-from endpoints.instantiations.map.locations.queries.localities import (
-    GET_MAP_LOCALITIES_QUERY,
-)
-from endpoints.instantiations.map.locations.queries.states import GET_MAP_STATES_QUERY
 from db.queries.instantiations.match.agencies import GetSimilarAgenciesQueryBuilder
 from db.queries.instantiations.metrics.followed_searches.breakdown import (
     GetMetricsFollowedSearchesBreakdownQueryBuilder,
@@ -172,30 +147,41 @@ from db.queries.instantiations.util.select_from_relation.query import (
 )
 from db.queries.models.get_params import GetParams
 from db.subquery_logic import SubqueryParameters
+from endpoints.instantiations.agencies_.get._shared.dto.base import AgenciesGetDTO
+from endpoints.instantiations.agencies_.get.by_id.core.query import (
+    GetAgencyByIDQueryBuilder,
+)
+from endpoints.instantiations.agencies_.get.many.query import GetAgenciesQueryBuilder
+from endpoints.instantiations.agencies_.post.dto import AgenciesPostDTO
+from endpoints.instantiations.agencies_.post.query import CreateAgencyQueryBuilder
 from endpoints.instantiations.auth_.validate_email.query import (
     ValidateEmailQueryBuilder,
 )
 from endpoints.instantiations.data_requests_.post.dto import DataRequestsPostDTO
-from endpoints.instantiations.source_collector.agencies.sync.query.query import (
-    SourceCollectorSyncAgenciesQueryBuilder,
+from endpoints.instantiations.data_sources_.get.by_id.agencies.format import (
+    agency_to_data_sources_get_related_agencies_output,
 )
+from endpoints.instantiations.data_sources_.get.by_id.query import (
+    GetDataSourceByIDQueryBuilder,
+)
+from endpoints.instantiations.data_sources_.get.many.query import (
+    GetDataSourcesQueryBuilder,
+)
+from endpoints.instantiations.map.data_sources.query import (
+    GET_DATA_SOURCES_FOR_MAP_QUERY,
+)
+from endpoints.instantiations.map.locations.queries.counties import (
+    GET_MAP_COUNTIES_QUERY,
+)
+from endpoints.instantiations.map.locations.queries.localities import (
+    GET_MAP_LOCALITIES_QUERY,
+)
+from endpoints.instantiations.map.locations.queries.states import GET_MAP_STATES_QUERY
 from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
     SourceCollectorPostRequestInnerDTO,
 )
 from endpoints.instantiations.source_collector.data_sources.post.dtos.response import (
     SourceCollectorPostResponseInnerDTO,
-)
-from endpoints.instantiations.source_collector.agencies.sync.dtos.request import (
-    SourceCollectorSyncAgenciesRequestDTO,
-)
-from endpoints.instantiations.source_collector.data_sources.sync.dtos.request import (
-    SourceCollectorSyncDataSourcesRequestDTO,
-)
-from endpoints.instantiations.source_collector.data_sources.sync.dtos.response import (
-    SourceCollectorSyncDataSourcesResponseDTO,
-)
-from endpoints.instantiations.source_collector.data_sources.sync.query.core import (
-    SourceCollectorSyncDataSourcesQueryBuilder,
 )
 from endpoints.instantiations.user.by_id.get.dto import (
     UserProfileResponseSchemaInnerDTO,
@@ -216,7 +202,6 @@ from middleware.miscellaneous.table_count_logic import (
     TableCountReference,
     TableCountReferenceManager,
 )
-from endpoints.instantiations.agencies_.post.dto import AgenciesPostDTO
 from middleware.schema_and_dto.dtos.data_requests.put import DataRequestsPutOuterDTO
 from middleware.schema_and_dto.dtos.data_sources.post import DataSourcesPostDTO
 from middleware.schema_and_dto.dtos.entry_create_update_request import (
@@ -1546,20 +1531,6 @@ class DatabaseClient:
         )
         existing_urls = self.scalars(stmt)
         return existing_urls
-
-    def get_agencies_for_sync(
-        self, dto: SourceCollectorSyncAgenciesRequestDTO
-    ) -> dict[str, list[dict]]:
-        """Get agencies for source collector sync."""
-        builder = SourceCollectorSyncAgenciesQueryBuilder(dto=dto)
-        return self.run_query_builder(builder)
-
-    def get_data_sources_for_sync(
-        self, dto: SourceCollectorSyncDataSourcesRequestDTO
-    ) -> SourceCollectorSyncDataSourcesResponseDTO:
-        return self.run_query_builder(
-            SourceCollectorSyncDataSourcesQueryBuilder(dto=dto)
-        )
 
     def patch_user(self, user_id: int, dto: UserPatchDTO) -> None:
         builder = UserPatchQueryBuilder(dto=dto, user_id=user_id)
