@@ -15,6 +15,9 @@ class SourceCollectorMetaURLPostResponseInnerDTO(BaseModel):
     url: Optional[str] = default_field_not_required(
         description="The URL of the created meta URL.",
     )
+    agency_id: Optional[int] = default_field_not_required(
+        description="The ID of the agency that the meta URL is associated with.",
+    )
     status: MetaURLCreationResponse = default_field_required(
         description="The status of the meta URL creation.",
     )

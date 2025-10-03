@@ -61,6 +61,7 @@ def test_source_collector_meta_urls_post(
 
     for meta_url_db in meta_url_dbs:
         assert meta_url_db["id"] in meta_url_ids
+        assert meta_url_db["agency_id"] in agency_ids
         assert meta_url_db["url"] in {
             "http://test.com",
             "http://test2.com",
