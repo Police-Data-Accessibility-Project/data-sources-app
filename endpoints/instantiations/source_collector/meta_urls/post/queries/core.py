@@ -34,6 +34,7 @@ class AddMetaURLsFromSourceCollectorQueryBuilder(QueryBuilderBase):
 
                 dto = SourceCollectorMetaURLPostResponseInnerDTO(
                     url=meta_url.url,
+                    agency_id=meta_url.agency_id,
                     status=MetaURLCreationResponse.SUCCESS,
                     meta_url_id=meta_url_db.id,
                 )
@@ -42,7 +43,8 @@ class AddMetaURLsFromSourceCollectorQueryBuilder(QueryBuilderBase):
                 self.session.rollback()
                 dto = SourceCollectorMetaURLPostResponseInnerDTO(
                     url=meta_url.url,
-                    status=MetaURLCreationResponse.FAILURE,
+                    agency_id=meta_url.agency_id,
+                    status=MetaURLCreationResponse.ALREADY_EXISTS,
                     meta_url_id=None,
                     error=str(e),
                 )
