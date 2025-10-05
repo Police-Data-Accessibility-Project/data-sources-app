@@ -44,7 +44,6 @@ from db.enums import (
     RequestStatus,
     LocationType,
     ApprovalStatus,
-    UpdateFrequency,
     UserCapacityEnum,
 )
 from db.exceptions import LocationDoesNotExistError
@@ -59,8 +58,6 @@ from db.models.implementations.core.data_request.expanded import DataRequestExpa
 from db.models.implementations.core.data_request.github_issue_info import (
     DataRequestsGithubIssueInfo,
 )
-from db.models.implementations.core.data_source.archive import DataSourceArchiveInfo
-from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.data_source.expanded import DataSourceExpanded
 from db.models.implementations.core.distinct_source_url import DistinctSourceURL
 from db.models.implementations.core.external_account import ExternalAccount
@@ -93,10 +90,6 @@ from db.models.table_reference import (
 from db.queries.builder.core import QueryBuilderBase
 from db.queries.instantiations.data_requests.post import DataRequestsPostQueryBuilder
 from db.queries.instantiations.data_requests.put import DataRequestsPutQueryBuilder
-from db.queries.instantiations.data_sources.archive import (
-    GetDataSourcesToArchiveQueryBuilder,
-    ArchiveInfo,
-)
 from db.queries.instantiations.data_sources.post.single import (
     DataSourcesPostSingleQueryBuilder,
 )
@@ -431,7 +424,6 @@ class DatabaseClient:
         results = self.cursor.fetchall()
 
         return [self.MapInfo(*result) for result in results]
-
 
     DataSourceMatches = namedtuple("DataSourceMatches", ["converted", "ids"])
 
