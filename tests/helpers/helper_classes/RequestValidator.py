@@ -2,7 +2,6 @@
 Class based means to run and validate requests
 """
 
-from datetime import datetime
 from http import HTTPStatus
 from typing import Optional, Type, Union, List
 
@@ -14,7 +13,6 @@ from db.enums import (
     SortOrder,
     RequestStatus,
     ApprovalStatus,
-    UpdateFrequency,
 )
 from endpoints.instantiations.data_sources_.get.by_id.schema_config import (
     DataSourcesByIDGetEndpointSchemaConfig,
@@ -45,9 +43,6 @@ from endpoints.schema_config.instantiations.agencies.by_id.get import (
 )
 from endpoints.schema_config.instantiations.agencies.get_many import (
     AgenciesGetManyEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.archives.get import (
-    ArchivesGetEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.auth.login import LoginEndpointSchemaConfig
 from endpoints.schema_config.instantiations.data_requests.by_id.get import (
@@ -138,7 +133,6 @@ from endpoints.schema_config.instantiations.user.profile.data_requests import (
 from endpoints.schema_config.instantiations.user.profile.get import (
     UserProfileGetEndpointSchemaConfig,
 )
-from middleware.constants import DATE_FORMAT
 from middleware.enums import OutputFormatEnum, RecordTypes
 from middleware.schema_and_dto.dtos.locations.get import LocationsGetRequestDTO
 from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
@@ -396,34 +390,6 @@ class RequestValidator:
             expected_response_status=expected_response_status,
             expected_json_content=expected_json_content,
             **kwargs,
-        )
-
-    def archives_get(
-        self,
-        headers: dict,
-        update_frequency: Optional[UpdateFrequency] = None,
-        last_archived_before: Optional[datetime] = None,
-        page: int = 1,
-    ):
-        endpoint_base = "/archives"
-        if last_archived_before is not None:
-            last_archived_before = last_archived_before.strftime(DATE_FORMAT)
-
-        params = {}
-        d = {
-            "update_frequency": update_frequency,
-            "last_archived_before": last_archived_before,
-            "page": page,
-        }
-        update_if_not_none(dict_to_update=params, secondary_dict=d)
-        url = add_query_params(
-            url=endpoint_base,
-            params=params,
-        )
-        return self.get(
-            endpoint=url,
-            expected_schema=ArchivesGetEndpointSchemaConfig.primary_output_schema,
-            headers=headers,
         )
 
     def federal_search(

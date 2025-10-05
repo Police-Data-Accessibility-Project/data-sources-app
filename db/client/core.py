@@ -432,45 +432,6 @@ class DatabaseClient:
 
         return [self.MapInfo(*result) for result in results]
 
-    def get_data_sources_to_archive(
-        self,
-        update_frequency: UpdateFrequency | None = None,
-        last_archived_before: datetime | None = None,
-        page: int = 1,
-    ) -> list[ArchiveInfo]:
-        """Pulls data sources to be archived by the automatic archives script."""
-        builder = GetDataSourcesToArchiveQueryBuilder(
-            update_frequency=update_frequency,
-            last_archived_before=last_archived_before,
-            page=page,
-        )
-        return self.run_query_builder(builder)
-
-    def update_url_status_to_broken(
-        self, data_source_id: str, broken_as_of: str
-    ) -> None:
-        """
-        Update a data sources' url_status to 'broken'.
-
-        :param data_source_id: The id of the data source.
-        :param broken_as_of: The date when the source was identified as broken.
-        """
-        query = (
-            update(DataSource)
-            .where(DataSource.id == data_source_id)
-            .values(url_status="broken", broken_source_url_as_of=broken_as_of)
-        )
-        self.execute(query)
-
-    def update_last_cached(self, data_source_id: str, last_cached: str) -> None:
-        """Update when a data source was last cached."""
-        d = DataSourceArchiveInfo
-        query = (
-            update(d)
-            .where(d.data_source_id == data_source_id)
-            .values(last_cached=last_cached)
-        )
-        self.execute(query)
 
     DataSourceMatches = namedtuple("DataSourceMatches", ["converted", "ids"])
 
