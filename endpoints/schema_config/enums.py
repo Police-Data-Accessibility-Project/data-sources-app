@@ -67,12 +67,6 @@ from endpoints.schema_config.instantiations.agencies.post import (
 from endpoints.schema_config.instantiations.api_key import (
     ApiKeyPostEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.archives.get import (
-    ArchivesGetEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.archives.put import (
-    ArchivesPutEndpointSchemaConfig,
-)
 from endpoints.schema_config.instantiations.auth.github.link import (
     AuthGithubLinkEndpointSchemaConfig,
 )
@@ -347,11 +341,6 @@ class SchemaConfigs(Enum):
     RESET_PASSWORD = ResetPasswordEndpointSchemaConfig
     RESET_TOKEN_VALIDATION = ResetTokenValidationEndpointSchemaConfig
     API_KEY_POST = ApiKeyPostEndpointSchemaConfig
-    # endregion
-
-    # region Archives
-    ARCHIVES_GET = ArchivesGetEndpointSchemaConfig
-    ARCHIVES_PUT = ArchivesPutEndpointSchemaConfig
     # endregion
 
     # region Permission

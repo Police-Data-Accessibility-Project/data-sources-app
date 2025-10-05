@@ -2,6 +2,7 @@ import os
 from datetime import timedelta, date, datetime
 
 from apscheduler.triggers.interval import IntervalTrigger
+from environs import Env
 from flask import Flask
 from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
@@ -12,7 +13,6 @@ from config import config, oauth, limiter, jwt
 from db.helpers_.psycopg import initialize_psycopg_connection
 from endpoints.instantiations.admin_.routes import namespace_admin
 from endpoints.instantiations.agencies_.routes import namespace_agencies
-from endpoints.instantiations.archives_.route import namespace_archives
 from endpoints.instantiations.auth_.callback import namespace_callback
 from endpoints.instantiations.auth_.login import namespace_login
 from endpoints.instantiations.auth_.refresh_session import namespace_refresh_session
@@ -62,7 +62,6 @@ from middleware.scheduled_tasks.check_database_health import check_database_heal
 from middleware.scheduled_tasks.manager import SchedulerManager
 from middleware.security.jwt.core import SimpleJWT
 from middleware.util.env import get_env_variable
-from environs import Env
 
 env = Env()
 env.read_env()
@@ -72,7 +71,6 @@ NAMESPACES = [
     namespace_request_reset_password,
     namespace_oauth,
     namespace_reset_token_validation,
-    namespace_archives,
     namespace_agencies,
     namespace_data_source,
     namespace_login,
