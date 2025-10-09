@@ -37,7 +37,7 @@ class SearchQueryBuilder(QueryBuilderBase):
         self.record_categories = record_categories
         self.record_types = record_types
 
-    def build(self, session: Session) -> SearchResponseDTO:
+    def run(self) -> SearchResponseDTO:
 
         query = (
             select(
@@ -133,6 +133,6 @@ class SearchQueryBuilder(QueryBuilderBase):
             )
         )
 
-        results: Sequence[RowMapping] = sh.mappings(session, query=query)
+        results: Sequence[RowMapping] = sh.mappings(self.session, query=query)
         search_results_json: dict = format_search_results(results)
         return SearchResponseDTO(**search_results_json)
