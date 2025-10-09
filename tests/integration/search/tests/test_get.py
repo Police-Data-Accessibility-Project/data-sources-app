@@ -1,10 +1,8 @@
-from typing import Optional
-
 from db.enums import LocationType
 from endpoints.schema_config.instantiations.user.profile.recent_searches import (
     UserProfileRecentSearchesEndpointSchemaConfig,
 )
-from middleware.enums import OutputFormatEnum, JurisdictionSimplified
+from middleware.enums import JurisdictionSimplified
 from middleware.util.type_conversion import get_enum_values
 from tests.helpers.constants import USER_PROFILE_RECENT_SEARCHES_ENDPOINT
 from tests.integration.search.constants import TEST_STATE, TEST_COUNTY, TEST_LOCALITY
@@ -23,15 +21,11 @@ def test_search_get(search_test_setup: SearchTestSetup):
         agency_id=tdcdb.agency(location_id=sts.location_id).id,
     )
 
-    def search(record_format: Optional[OutputFormatEnum] = OutputFormatEnum.JSON):
-        return tdc.request_validator.search(
-            headers=tus.api_authorization_header,
-            location_id=sts.location_id,
-            record_categories=[RecordCategoryEnum.POLICE],
-            format=record_format,
-        )
-
-    json_data = search()
+    json_data = tdc.request_validator.search(
+        headers=tus.api_authorization_header,
+        location_id=sts.location_id,
+        record_categories=[RecordCategoryEnum.POLICE],
+    )
     assert json_data["count"] > 0
 
     jurisdiction_count = 0
@@ -58,3 +52,9 @@ def test_search_get(search_test_setup: SearchTestSetup):
         "location_type": LocationType.LOCALITY.value,
         "record_categories": [RecordCategoryEnum.POLICE.value],
     }
+
+    tdc.request_validator.search(
+        headers=tus.api_authorization_header,
+        location_id=None,
+        record_categories=[RecordCategoryEnum.POLICE],
+    )

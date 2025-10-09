@@ -1,4 +1,3 @@
-
 from sqlalchemy import select
 
 from db.models.implementations.core.location.core import Location
