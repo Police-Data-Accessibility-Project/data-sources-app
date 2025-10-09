@@ -58,7 +58,6 @@ class AgenciesByPage(PsycopgResource):
         )
 
 
-
 @namespace_agencies.route("/<resource_id>")
 class AgenciesById(PsycopgResource):
     @endpoint_info(
@@ -83,4 +82,3 @@ class AgenciesById(PsycopgResource):
             schema_populate_parameters=AgenciesByIDGetEndpointSchemaConfig.get_schema_populate_parameters(),
             access_info=access_info,
         )
-

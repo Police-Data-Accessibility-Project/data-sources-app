@@ -61,7 +61,6 @@ class LocationsByID(PsycopgResource):
         )
 
 
-
 @namespace_locations.route("/<resource_id>/data-requests")
 class LocationsRelatedDataRequestsById(PsycopgResource):
     @endpoint_info(

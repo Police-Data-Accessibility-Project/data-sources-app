@@ -21,7 +21,9 @@ from endpoints.instantiations.map.data_sources.schema_config import (
 from endpoints.instantiations.map.locations.schema_config import (
     LocationsMapEndpointSchemaConfig,
 )
-from endpoints.instantiations.search.core.endpoint_schema_config import SearchGetEndpointSchemaConfig
+from endpoints.instantiations.search.core.endpoint_schema_config import (
+    SearchGetEndpointSchemaConfig,
+)
 from endpoints.instantiations.source_collector.agencies.search.locations.schema_config import (
     SourceCollectorAgencySearchLocationSchemaConfig,
 )
@@ -69,28 +71,39 @@ from endpoints.schema_config.instantiations.checker import (
 from endpoints.schema_config.instantiations.contact import (
     ContactFormSubmitEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.data_requests.by_id.delete import DataRequestsByIDDeleteEndpointSchemaConfig
+from endpoints.schema_config.instantiations.data_requests.by_id.delete import (
+    DataRequestsByIDDeleteEndpointSchemaConfig,
+)
 from endpoints.schema_config.instantiations.data_requests.by_id.get import (
     DataRequestsByIDGetEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.data_requests.by_id.put import DataRequestsByIDPutEndpointSchemaConfig
-from endpoints.schema_config.instantiations.data_requests.by_id.withdraw import \
-    DataRequestsByIDWithdrawEndpointSchemaConfig
+from endpoints.schema_config.instantiations.data_requests.by_id.put import (
+    DataRequestsByIDPutEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.data_requests.by_id.withdraw import (
+    DataRequestsByIDWithdrawEndpointSchemaConfig,
+)
 from endpoints.schema_config.instantiations.data_requests.get_many import (
     DataRequestsGetManyEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.data_requests.post import DataRequestsPostEndpointSchemaConfig
-from endpoints.schema_config.instantiations.data_requests.related_locations.delete import \
-    DataRequestsRelatedLocationsDeleteEndpointSchemaConfig
+from endpoints.schema_config.instantiations.data_requests.post import (
+    DataRequestsPostEndpointSchemaConfig,
+)
+from endpoints.schema_config.instantiations.data_requests.related_locations.delete import (
+    DataRequestsRelatedLocationsDeleteEndpointSchemaConfig,
+)
 from endpoints.schema_config.instantiations.data_requests.related_locations.get import (
     DataRequestsRelatedLocationsGetEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.data_requests.related_locations.post import \
-    DataRequestsRelatedLocationsPostEndpointSchemaConfig
+from endpoints.schema_config.instantiations.data_requests.related_locations.post import (
+    DataRequestsRelatedLocationsPostEndpointSchemaConfig,
+)
 from endpoints.schema_config.instantiations.data_requests.related_sources.get import (
     DataRequestsRelatedSourcesGetEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.data_requests.related_sources.post import DataRequestsRelatedSourcesPost
+from endpoints.schema_config.instantiations.data_requests.related_sources.post import (
+    DataRequestsRelatedSourcesPost,
+)
 from endpoints.schema_config.instantiations.data_sources.by_id.agencies.get import (
     DataSourcesRelatedAgenciesGet,
 )

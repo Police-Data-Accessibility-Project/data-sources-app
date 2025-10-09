@@ -1,7 +1,6 @@
-from typing import Any, Sequence
+from typing import Sequence
 
 from sqlalchemy import select, func, RowMapping
-from sqlalchemy.orm import Session
 
 from db.models.implementations import LinkAgencyDataSource, LinkAgencyLocation
 from db.models.implementations.core.agency.core import Agency
@@ -13,7 +12,9 @@ from db.models.implementations.core.record.category import RecordCategory
 from db.models.implementations.core.record.type import RecordType
 from db.queries.builder.core import QueryBuilderBase
 from endpoints.instantiations.search.core.models.response import SearchResponseDTO
-from endpoints.instantiations.search.core.queries.locations import AssociatedLocationsCTEContainer
+from endpoints.instantiations.search.core.queries.locations import (
+    AssociatedLocationsCTEContainer,
+)
 from middleware.enums import RecordTypes
 from middleware.primary_resource_logic.search.helpers import format_search_results
 from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
@@ -21,8 +22,8 @@ from utilities.enums import RecordCategoryEnum
 
 from db.helpers_ import session as sh
 
-class SearchQueryBuilder(QueryBuilderBase):
 
+class SearchQueryBuilder(QueryBuilderBase):
     def __init__(
         self,
         location_id: int | None = None,
@@ -31,14 +32,13 @@ class SearchQueryBuilder(QueryBuilderBase):
     ):
         super().__init__()
         check_for_mutually_exclusive_arguments(
-            arg1=record_categories,
-            arg2=record_types)
+            arg1=record_categories, arg2=record_types
+        )
         self.location_id = location_id
         self.record_categories = record_categories
         self.record_types = record_types
 
     def run(self) -> SearchResponseDTO:
-
         query = (
             select(
                 DataSource.id,
@@ -51,12 +51,9 @@ class SearchQueryBuilder(QueryBuilderBase):
                 DataSource.coverage_end,
                 DataSource.agency_supplied,
                 Agency.name.label("agency_name"),
-                func.string_agg(
-                    Locality.name,
-                    ", "
-                ).label("municipality"),
+                func.string_agg(Locality.name, ", ").label("municipality"),
                 USState.state_iso,
-                Agency.jurisdiction_type
+                Agency.jurisdiction_type,
             )
             .join(
                 LinkAgencyDataSource,
@@ -94,43 +91,32 @@ class SearchQueryBuilder(QueryBuilderBase):
                 associated_locations_cte.cte.c.id == Location.id,
             )
         if self.record_categories is not None:
-            query = (
-                query.join(
-                    RecordCategory,
-                    RecordCategory.id == RecordType.category_id,
-                )
-                .where(
-                    RecordCategory.name.in_([rc.value for rc in self.record_categories])
-                )
+            query = query.join(
+                RecordCategory,
+                RecordCategory.id == RecordType.category_id,
+            ).where(
+                RecordCategory.name.in_([rc.value for rc in self.record_categories])
             )
         if self.record_types is not None:
-            query = (
-                query
-                .where(
-                    RecordType.name.in_([rt.value for rt in self.record_types])
-                )
+            query = query.where(
+                RecordType.name.in_([rt.value for rt in self.record_types])
             )
 
-        query = (
-            query
-            .where(
-                DataSource.approval_status == 'approved',
-                DataSource.url_status != 'broken'
-            )
-            .group_by(
-                DataSource.id,
-                DataSource.name,
-                DataSource.description,
-                RecordType.name,
-                DataSource.source_url,
-                DataSource.record_formats,
-                DataSource.coverage_start,
-                DataSource.coverage_end,
-                DataSource.agency_supplied,
-                Agency.name,
-                USState.state_iso,
-                Agency.jurisdiction_type
-            )
+        query = query.where(
+            DataSource.approval_status == "approved", DataSource.url_status != "broken"
+        ).group_by(
+            DataSource.id,
+            DataSource.name,
+            DataSource.description,
+            RecordType.name,
+            DataSource.source_url,
+            DataSource.record_formats,
+            DataSource.coverage_start,
+            DataSource.coverage_end,
+            DataSource.agency_supplied,
+            Agency.name,
+            USState.state_iso,
+            Agency.jurisdiction_type,
         )
 
         results: Sequence[RowMapping] = sh.mappings(self.session, query=query)

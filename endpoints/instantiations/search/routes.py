@@ -1,7 +1,9 @@
 from flask import Response
 
 from endpoints._helpers.response_info import ResponseInfo
-from endpoints.instantiations.search.core.endpoint_schema_config import SearchGetEndpointSchemaConfig
+from endpoints.instantiations.search.core.endpoint_schema_config import (
+    SearchGetEndpointSchemaConfig,
+)
 from endpoints.instantiations.search.core.wrapper import search_wrapper_v2
 from endpoints.psycopg_resource import PsycopgResource
 from endpoints.schema_config.enums import SchemaConfigs
@@ -51,12 +53,14 @@ from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_search = create_namespace(namespace_attributes=AppNamespaces.SEARCH)
 
+
 @namespace_search.route("")
 class Search(PsycopgResource):
     """
     Provides a resource for performing searches in the database for data sources
     based on user-provided search terms and location.
     """
+
     @endpoint_info(
         namespace=namespace_search,
         auth_info=API_OR_JWT_AUTH_INFO,
@@ -70,6 +74,7 @@ class Search(PsycopgResource):
             access_info=access_info,
             schema_populate_parameters=SearchGetEndpointSchemaConfig.get_schema_populate_parameters(),
         )
+
 
 @namespace_search.route("/search-location-and-record-type")
 class SearchLocationAndRecordType(PsycopgResource):

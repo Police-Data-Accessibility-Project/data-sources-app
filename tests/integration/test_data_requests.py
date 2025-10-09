@@ -18,7 +18,6 @@ from endpoints.schema_config.instantiations.data_requests.related_sources.get im
 )
 from middleware.constants import DATA_KEY
 from middleware.enums import RecordTypes
-from middleware.schema_and_dto.dtos.data_requests.put import DataRequestsPutOuterDTO, DataRequestsPutDTO
 from middleware.third_party_interaction_logic.mailgun_.constants import OPERATIONS_EMAIL
 from middleware.util.type_conversion import get_enum_values
 from tests.helpers.common_test_data import (
@@ -69,7 +68,6 @@ def test_data_requests_get(
         request_status=RequestStatus.ACTIVE,
     )
 
-
     data = tdc.request_validator.get_data_requests(
         headers=tus_creator.jwt_authorization_header,
     )[DATA_KEY]
@@ -77,8 +75,8 @@ def test_data_requests_get(
     assert len(data) == 2
 
     # Add another data request, set its approval status to `Archived`
-    # THen perform a search for both Active and Archived
-    dr_info_3 = tdc.tdcdb.data_request(
+    # Then perform a search for both Active and Archived
+    _ = tdc.tdcdb.data_request(
         tus_creator.user_info.user_id,
         request_status=RequestStatus.ARCHIVED,
     )

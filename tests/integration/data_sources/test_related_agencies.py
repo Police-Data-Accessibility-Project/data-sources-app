@@ -3,7 +3,6 @@ from endpoints.schema_config.instantiations.data_sources.by_id.agencies.get impo
 )
 from tests.helpers.constants import (
     DATA_SOURCES_GET_RELATED_AGENCIES_ENDPOINT,
-    DATA_SOURCES_POST_DELETE_RELATED_AGENCY_ENDPOINT,
 )
 from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
@@ -40,10 +39,7 @@ def test_data_source_by_id_related_agencies(
     agency_info = tdc.agency()
 
     # Associate agency with data source
-    tdc.link_data_source_to_agency(
-        data_source_id=ds_info.id,
-        agency_id=agency_info.id
-    )
+    tdc.link_data_source_to_agency(data_source_id=ds_info.id, agency_id=agency_info.id)
 
     # Confirm agency is associated with data source
 
@@ -55,8 +51,7 @@ def test_data_source_by_id_related_agencies(
     # Delete association
 
     tdc.db_client.delete_data_source_agency_relation(
-        data_source_id=ds_info.id,
-        agency_id=agency_info.id
+        data_source_id=ds_info.id, agency_id=agency_info.id
     )
 
     # Confirm agency is no longer associated with data source

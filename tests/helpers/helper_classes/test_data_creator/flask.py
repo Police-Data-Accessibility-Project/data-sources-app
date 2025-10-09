@@ -9,10 +9,7 @@ from endpoints.instantiations.agencies_.post.schemas.inner import (
     AgencyInfoPostSchema,
 )
 from tests.helpers.common_endpoint_calls import CreatedDataSource
-from tests.helpers.common_test_data import get_test_name
 from tests.helpers.constants import (
-    AGENCIES_BASE_ENDPOINT,
-    DATA_SOURCES_POST_DELETE_RELATED_AGENCY_ENDPOINT,
     DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT,
 )
 from tests.helpers.helper_classes.RequestValidator import RequestValidator
@@ -122,14 +119,6 @@ class TestDataCreatorFlask:
             submitted_name = self.tdcdb.test_name(agency_name)
         else:
             submitted_name = agency_name
-        locality_name = self.tdcdb.test_name()
-        sample_agency_post_parameters = self.get_sample_agency_post_parameters(
-            name=submitted_name,
-            locality_name=locality_name,
-            jurisdiction_type=jurisdiction_type,
-            location_ids=location_ids,
-            approval_status=approval_status,
-        )
 
         test_agency_info: TestAgencyInfo = self.tdcdb.agency(
             name=submitted_name,
@@ -152,11 +141,7 @@ class TestDataCreatorFlask:
     def refresh_typeahead_locations(self):
         self.db_client.execute_raw_sql("CALL refresh_typeahead_locations();")
 
-    def link_data_source_to_agency(
-        self,
-        data_source_id: int,
-        agency_id: int
-    ):
+    def link_data_source_to_agency(self, data_source_id: int, agency_id: int):
         self.tdcdb.link_data_source_to_agency(
             data_source_id=data_source_id,
             agency_id=agency_id,

@@ -64,5 +64,3 @@ def test_location_info_schema_validation_errors():
             with pytest.raises(ValidationError):
                 LocationInfoSchema().load(data_with_nones)
                 pytest.fail(f"Expected validation error for {data}")
-
-

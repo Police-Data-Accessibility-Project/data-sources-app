@@ -3,7 +3,7 @@ Class based means to run and validate requests
 """
 
 from http import HTTPStatus
-from typing import Optional, Type, Union, List
+from typing import Type, Union, List
 
 from flask.testing import FlaskClient
 from marshmallow import Schema
@@ -357,7 +357,9 @@ class RequestValidator:
         record_types: list[RecordTypes] | None = None,
         format: OutputFormatEnum | None = OutputFormatEnum.JSON,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_schema: Type[Schema] | Schema | None = SearchLocationAndRecordTypeGetEndpointSchemaConfig.primary_output_schema,
+        expected_schema: Type[Schema]
+        | Schema
+        | None = SearchLocationAndRecordTypeGetEndpointSchemaConfig.primary_output_schema,
         expected_json_content: dict | None = None,
     ) -> dict | None:
         endpoint_base = "/search"
@@ -420,7 +422,6 @@ class RequestValidator:
         if record_types is not None:
             query_params["record_types"] = ",".join([rt.value for rt in record_types])
         return query_params
-
 
     def follow_national_search(
         self,
@@ -553,7 +554,6 @@ class RequestValidator:
             expected_schema=expected_schema,
             expected_response_status=expected_response_status,
         )
-
 
     def get_data_requests(
         self,

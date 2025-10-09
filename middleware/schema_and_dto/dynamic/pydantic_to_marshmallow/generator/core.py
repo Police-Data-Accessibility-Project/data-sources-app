@@ -62,7 +62,6 @@ class MarshmallowSchemaGenerator:
 
 
 class FieldProcessor:
-
     def __init__(self, model_field: FieldInfo):
         self.model_field = model_field
         if self.model_field.json_schema_extra is None:
@@ -89,7 +88,9 @@ class FieldProcessor:
 
         additional_kwargs: dict = self.get_additional_kwargs()
 
-        marshmallow_field_info: MarshmallowFieldInfo = self.get_marshmallow_field_cls(self.field_type)
+        marshmallow_field_info: MarshmallowFieldInfo = self.get_marshmallow_field_cls(
+            self.field_type
+        )
         # Combine kwargs
         marshmallow_field_info.field_kwargs = {
             **marshmallow_field_info.field_kwargs,
@@ -117,7 +118,9 @@ class FieldProcessor:
         try:
             inner_type = extract_inner_type(field_type)
             if _is_mapped_type(inner_type):
-                marshmallow_field_cls: type[Field] = convert_to_marshmallow_class(inner_type)
+                marshmallow_field_cls: type[Field] = convert_to_marshmallow_class(
+                    inner_type
+                )
                 return MarshmallowFieldInfo(field=marshmallow_field_cls)
             if get_origin(inner_type) is list:
                 return self.get_list_field(inner_type)
@@ -134,7 +137,9 @@ class FieldProcessor:
 
     def get_list_field(self, inner_type: list[Any]) -> MarshmallowFieldInfo:
         type_arg = get_args(inner_type)[0]
-        type_arg_field_info: MarshmallowFieldInfo = self.get_marshmallow_field_cls(type_arg)
+        type_arg_field_info: MarshmallowFieldInfo = self.get_marshmallow_field_cls(
+            type_arg
+        )
         type_arg_field_instance: Field = type_arg_field_info.field(
             required=self.metadata_info.required,
             allow_none=is_optional(type_arg),

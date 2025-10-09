@@ -3,11 +3,9 @@ from werkzeug.exceptions import BadRequest
 
 from db.client.core import DatabaseClient
 from db.enums import ColumnPermissionEnum
-from db.exceptions import LocationDoesNotExistError
 from middleware.column_permission.core import get_permitted_columns
 from middleware.security.access_info.helpers import get_relation_role
 from middleware.common_response_formatting import (
-    message_response,
     multiple_results_response,
 )
 from middleware.enums import Relations
@@ -16,7 +14,6 @@ from middleware.primary_resource_logic.data_requests_.helpers import (
 )
 from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
 from middleware.schema_and_dto.dtos.locations.get import LocationsGetRequestDTO
-from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
 from middleware.security.access_info.primary import AccessInfoPrimary
 
 

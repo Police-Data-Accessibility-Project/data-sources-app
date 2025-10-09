@@ -1017,7 +1017,6 @@ class DatabaseClient:
         _delete_from_table, table_name=Relations.LINK_LOCATIONS_DATA_REQUESTS.value
     )
 
-
     def delete_followed_search(
         self,
         user_id: int,
@@ -1035,17 +1034,11 @@ class DatabaseClient:
 
     @session_manager_v2
     def delete_data_source_agency_relation(
-        self,
-        session: Session,
-        agency_id: int,
-        data_source_id: int
+        self, session: Session, agency_id: int, data_source_id: int
     ) -> None:
-        statement = (
-            delete(LinkAgencyDataSource)
-            .where(
-                LinkAgencyDataSource.agency_id == agency_id,
-                LinkAgencyDataSource.data_source_id == data_source_id
-            )
+        statement = delete(LinkAgencyDataSource).where(
+            LinkAgencyDataSource.agency_id == agency_id,
+            LinkAgencyDataSource.data_source_id == data_source_id,
         )
         session.execute(statement)
 

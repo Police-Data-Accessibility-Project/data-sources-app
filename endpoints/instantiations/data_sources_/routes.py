@@ -70,7 +70,6 @@ class DataSourceById(PsycopgResource):
         )
 
 
-
 @namespace_data_source.route("")
 class DataSources(PsycopgResource):
     """
@@ -100,7 +99,6 @@ class DataSources(PsycopgResource):
             schema_populate_parameters=DataSourcesGetManyEndpointSchemaConfig.get_schema_populate_parameters(),
             access_info=access_info,
         )
-
 
 
 # region Related Agencies
