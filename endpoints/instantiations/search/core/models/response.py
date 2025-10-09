@@ -25,7 +25,7 @@ class SearchResultDTO(BaseModel):
         "The start of the coverage."
     )
     coverage_end: Optional[date] = default_field_required("The end of the coverage.")
-    agency_supplied: bool | None = default_field_required(
+    agency_supplied: Optional[bool] = default_field_required(
         "Whether the agency supplied the data."
     )
     jurisdiction_type: JurisdictionType = default_field_required(
