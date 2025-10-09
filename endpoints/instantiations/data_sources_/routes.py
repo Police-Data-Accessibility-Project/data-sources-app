@@ -1,63 +1,35 @@
 from flask import Response
 
 from config import limiter
-from endpoints.schema_config.instantiations.data_sources.by_id.agencies.delete import (
-    DataSourcesRelatedAgenciesDeleteEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.data_sources.by_id.agencies.get import (
-    DataSourcesRelatedAgenciesGet,
-)
-from endpoints.schema_config.instantiations.data_sources.by_id.agencies.post import (
-    DataSourcesRelatedAgenciesPostEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.data_sources.by_id.reject import (
-    DataSourcesByIDRejectEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.data_sources.get_many import (
-    DataSourcesGetManyEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.data_sources.post import (
-    DataSourcesPostEndpointSchemaConfig,
-)
-from middleware.security.access_info.primary import AccessInfoPrimary
-from middleware.security.auth.info.instantiations import (
-    WRITE_ONLY_AUTH_INFO,
-    STANDARD_JWT_AUTH_INFO,
-    API_OR_JWT_AUTH_INFO,
-)
-from middleware.schema_and_dto.schemas.common.base import GetByIDBaseSchema
-from middleware.schema_and_dto.dtos.entry_create_update_request import (
-    EntryCreateUpdateRequestDTO,
-)
-from middleware.schema_and_dto.schemas.data_sources.entry_data_request import (
-    EntryDataRequestSchema,
-)
-from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
-from middleware.decorators.endpoint_info import (
-    endpoint_info,
-)
-from middleware.primary_resource_logic.data_sources import (
-    get_data_sources_wrapper,
-    add_new_data_source_wrapper,
-    update_data_source_wrapper,
-    delete_data_source_wrapper,
-    create_data_source_related_agency,
-    delete_data_source_related_agency,
-    reject_data_source,
-)
+from endpoints._helpers.response_info import ResponseInfo
 from endpoints.instantiations.data_sources_.get.by_id.agencies.middleware import (
     get_data_source_related_agencies,
 )
 from endpoints.instantiations.data_sources_.get.by_id.wrapper import (
     data_source_by_id_wrapper,
 )
-
-from endpoints.schema_config.enums import SchemaConfigs
-from endpoints._helpers.response_info import ResponseInfo
-from utilities.namespace import create_namespace, AppNamespaces
 from endpoints.psycopg_resource import PsycopgResource
-
+from endpoints.schema_config.enums import SchemaConfigs
+from endpoints.schema_config.instantiations.data_sources.by_id.agencies.get import (
+    DataSourcesRelatedAgenciesGet,
+)
+from endpoints.schema_config.instantiations.data_sources.get_many import (
+    DataSourcesGetManyEndpointSchemaConfig,
+)
+from middleware.decorators.endpoint_info import (
+    endpoint_info,
+)
+from middleware.primary_resource_logic.data_sources import (
+    get_data_sources_wrapper,
+)
+from middleware.schema_and_dto.dtos.common.base import GetByIDBaseDTO
 from middleware.schema_and_dto.non_dto_dataclasses import SchemaPopulateParameters
+from middleware.schema_and_dto.schemas.common.base import GetByIDBaseSchema
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.info.instantiations import (
+    API_OR_JWT_AUTH_INFO,
+)
+from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_data_source = create_namespace(AppNamespaces.DATA_SOURCES)
 
@@ -97,60 +69,6 @@ class DataSourceById(PsycopgResource):
             ),
         )
 
-    @endpoint_info(
-        namespace=namespace_data_source,
-        auth_info=WRITE_ONLY_AUTH_INFO,
-        schema_config=SchemaConfigs.DATA_SOURCES_PUT,
-        response_info=ResponseInfo(
-            success_message="Data source successfully updated.",
-        ),
-        description="Update details of a specific data source by its ID.",
-    )
-    def put(self, access_info: AccessInfoPrimary, resource_id: str) -> Response:
-        """
-        Updates a data source by its ID based on the provided JSON payload.
-
-        Parameters:
-        - data_source_id (str): The unique identifier of the data source to update.
-
-        Returns:
-        - A dictionary containing a message about the update operation.
-        """
-        return self.run_endpoint(
-            wrapper_function=update_data_source_wrapper,
-            schema_populate_parameters=SchemaPopulateParameters(
-                dto_class=EntryCreateUpdateRequestDTO,
-                schema=EntryDataRequestSchema(),
-            ),
-            data_source_id=resource_id,
-            access_info=access_info,
-        )
-
-    @endpoint_info(
-        namespace=namespace_data_source,
-        auth_info=WRITE_ONLY_AUTH_INFO,
-        response_info=ResponseInfo(
-            success_message="Data source successfully deleted.",
-        ),
-        description="Delete a data source by its ID.",
-        schema_config=SchemaConfigs.DATA_SOURCES_BY_ID_DELETE,
-    )
-    def delete(self, access_info: AccessInfoPrimary, resource_id: str) -> Response:
-        """
-        Deletes a data source by its ID.
-
-        Parameters:
-        - data_source_id (str): The unique identifier of the data source to delete.
-
-        Returns:
-        - A dictionary containing a message about the deletion operation.
-        """
-        return self.run_endpoint(
-            wrapper_function=delete_data_source_wrapper,
-            data_source_id=resource_id,
-            access_info=access_info,
-        )
-
 
 @namespace_data_source.route("")
 class DataSources(PsycopgResource):
@@ -182,28 +100,6 @@ class DataSources(PsycopgResource):
             access_info=access_info,
         )
 
-    @endpoint_info(
-        namespace=namespace_data_source,
-        auth_info=STANDARD_JWT_AUTH_INFO,
-        schema_config=SchemaConfigs.DATA_SOURCES_POST,
-        response_info=ResponseInfo(
-            success_message="Data source successfully added.",
-        ),
-        description="Adds a new data source.",
-    )
-    def post(self, access_info: AccessInfoPrimary) -> Response:
-        """
-        Adds a new data source based on the provided JSON payload.
-
-        Returns:
-        - A dictionary containing a message about the addition operation.
-        """
-        return self.run_endpoint(
-            wrapper_function=add_new_data_source_wrapper,
-            schema_populate_parameters=DataSourcesPostEndpointSchemaConfig.get_schema_populate_parameters(),
-            access_info=access_info,
-        )
-
 
 # region Related Agencies
 
@@ -230,72 +126,4 @@ class DataSourcesRelatedAgencies(PsycopgResource):
         )
 
 
-@namespace_data_source.route("/<resource_id>/related-agencies/<agency_id>")
-class DataSourcesRelatedAgenciesById(PsycopgResource):
-    @endpoint_info(
-        namespace=namespace_data_source,
-        auth_info=WRITE_ONLY_AUTH_INFO,
-        schema_config=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_POST,
-        response_info=ResponseInfo(
-            success_message="Data source successfully associated with data request.",
-        ),
-        description="Mark a data source as related to a data request",
-    )
-    def post(
-        self, resource_id: str, agency_id: str, access_info: AccessInfoPrimary
-    ) -> Response:
-        """
-        Mark a data source as related to a data request
-        """
-        return self.run_endpoint(
-            wrapper_function=create_data_source_related_agency,
-            schema_populate_parameters=DataSourcesRelatedAgenciesPostEndpointSchemaConfig.get_schema_populate_parameters(),
-            access_info=access_info,
-        )
-
-    @endpoint_info(
-        namespace=namespace_data_source,
-        auth_info=WRITE_ONLY_AUTH_INFO,
-        schema_config=SchemaConfigs.DATA_SOURCES_RELATED_AGENCIES_DELETE,
-        response_info=ResponseInfo(
-            success_message="Data source successfully removed from data request.",
-        ),
-        description="Remove an association of a data source with a data request",
-    )
-    def delete(
-        self, resource_id: str, agency_id: str, access_info: AccessInfoPrimary
-    ) -> Response:
-        """
-        Remove an association of a data source with a data request
-        """
-        return self.run_endpoint(
-            wrapper_function=delete_data_source_related_agency,
-            schema_populate_parameters=DataSourcesRelatedAgenciesDeleteEndpointSchemaConfig.get_schema_populate_parameters(),
-            access_info=access_info,
-        )
-
-
 # endregion
-
-# region Reject
-
-
-@namespace_data_source.route("/<resource_id>/reject")
-class DataSourcesRejectByID(PsycopgResource):
-    @endpoint_info(
-        namespace=namespace_data_source,
-        auth_info=WRITE_ONLY_AUTH_INFO,
-        schema_config=SchemaConfigs.DATA_SOURCES_BY_ID_REJECT,
-        response_info=ResponseInfo(
-            success_message="Data source successfully rejected.",
-        ),
-        description="Reject a data source",
-    )
-    def post(self, access_info: AccessInfoPrimary, resource_id: str) -> Response:
-        """
-        Reject a data source
-        """
-        return self.run_endpoint(
-            wrapper_function=reject_data_source,
-            schema_populate_parameters=DataSourcesByIDRejectEndpointSchemaConfig.get_schema_populate_parameters(),
-        )

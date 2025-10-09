@@ -1,31 +1,25 @@
 from flask import Response
 
-from config import limiter
-from endpoints.schema_config.instantiations.locations.by_id.put import (
-    LocationsByIDPutEndpointSchemaConfig,
-)
+from endpoints._helpers.response_info import ResponseInfo
+from endpoints.psycopg_resource import PsycopgResource
+from endpoints.schema_config.enums import SchemaConfigs
 from endpoints.schema_config.instantiations.locations.data_requests import (
     LocationsRelatedDataRequestsGetEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.locations.get_many import (
     LocationsGetManyEndpointSchemaConfig,
 )
-from middleware.security.access_info.primary import AccessInfoPrimary
-from middleware.security.auth.info.instantiations import (
-    STANDARD_JWT_AUTH_INFO,
-    API_OR_JWT_AUTH_INFO,
-    WRITE_ONLY_AUTH_INFO,
-)
 from middleware.decorators.endpoint_info import endpoint_info
 from middleware.primary_resource_logic.locations import (
     get_location_by_id_wrapper,
     get_locations_related_data_requests_wrapper,
-    update_location_by_id_wrapper,
     get_many_locations_wrapper,
 )
-from endpoints.psycopg_resource import PsycopgResource
-from endpoints.schema_config.enums import SchemaConfigs
-from endpoints._helpers.response_info import ResponseInfo
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.info.instantiations import (
+    STANDARD_JWT_AUTH_INFO,
+    API_OR_JWT_AUTH_INFO,
+)
 from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_locations = create_namespace(AppNamespaces.LOCATIONS)
@@ -63,24 +57,6 @@ class LocationsByID(PsycopgResource):
     def get(self, location_id: int, access_info: AccessInfoPrimary) -> Response:
         return self.run_endpoint(
             wrapper_function=get_location_by_id_wrapper,
-            location_id=int(location_id),
-        )
-
-    @endpoint_info(
-        namespace=namespace_locations,
-        description="Get a location by ID",
-        auth_info=WRITE_ONLY_AUTH_INFO,
-        schema_config=SchemaConfigs.LOCATIONS_BY_ID_PUT,
-        response_info=ResponseInfo(
-            success_message="Successfully updates a location by ID.",
-        ),
-    )
-    @limiter.limit("60/minute")
-    @namespace_locations.deprecated
-    def put(self, location_id: int, access_info: AccessInfoPrimary) -> Response:
-        return self.run_endpoint(
-            wrapper_function=update_location_by_id_wrapper,
-            schema_populate_parameters=LocationsByIDPutEndpointSchemaConfig.get_schema_populate_parameters(),
             location_id=int(location_id),
         )
 

@@ -52,6 +52,7 @@ from db.helpers_.result_formatting import (
     get_expanded_display_name,
 )
 from db.models.base import Base
+from db.models.implementations import LinkAgencyDataSource
 from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.data_request.core import DataRequest
 from db.models.implementations.core.data_request.expanded import DataRequestExpanded
@@ -1006,8 +1007,6 @@ class DatabaseClient:
 
     delete_data_request = partialmethod(_delete_from_table, table_name="data_requests")
 
-    delete_agency = partialmethod(_delete_from_table, table_name="agencies")
-
     delete_data_source = partialmethod(_delete_from_table, table_name="data_sources")
 
     delete_request_source_relation = partialmethod(
@@ -1033,9 +1032,15 @@ class DatabaseClient:
         )
         return self.run_query_builder(builder)
 
-    delete_data_source_agency_relation = partialmethod(
-        _delete_from_table, table_name=Relations.LINK_AGENCIES_DATA_SOURCES.value
-    )
+    @session_manager_v2
+    def delete_data_source_agency_relation(
+        self, session: Session, agency_id: int, data_source_id: int
+    ) -> None:
+        statement = delete(LinkAgencyDataSource).where(
+            LinkAgencyDataSource.agency_id == agency_id,
+            LinkAgencyDataSource.data_source_id == data_source_id,
+        )
+        session.execute(statement)
 
     @cursor_manager()
     def check_for_url_duplicates(self, url: str) -> list[dict]:
@@ -1361,15 +1366,6 @@ class DatabaseClient:
                 record_types.append(record_type_dict)
 
         return {"record_types": record_types, "record_categories": record_categories}
-
-    def reject_data_source(self, data_source_id: int, rejection_note: str):
-        self.update_data_source(
-            entry_id=data_source_id,
-            column_edit_mappings={
-                "approval_status": ApprovalStatus.REJECTED.value,
-                "rejection_note": rejection_note,
-            },
-        )
 
     @session_manager
     def get_all(self, model: type[Base]):

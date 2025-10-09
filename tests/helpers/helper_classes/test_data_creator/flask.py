@@ -9,10 +9,7 @@ from endpoints.instantiations.agencies_.post.schemas.inner import (
     AgencyInfoPostSchema,
 )
 from tests.helpers.common_endpoint_calls import CreatedDataSource
-from tests.helpers.common_test_data import get_test_name
 from tests.helpers.constants import (
-    AGENCIES_BASE_ENDPOINT,
-    DATA_SOURCES_POST_DELETE_RELATED_AGENCY_ENDPOINT,
     DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT,
 )
 from tests.helpers.helper_classes.RequestValidator import RequestValidator
@@ -53,16 +50,11 @@ class TestDataCreatorFlask:
         return self.admin_tus
 
     def data_source(self) -> CreatedDataSource:
-        submitted_name = get_test_name()
         url = self.tdcdb.test_url()
-        json = self.request_validator.create_data_source(
-            headers=self.get_admin_tus().jwt_authorization_header,
+        cdc: CreatedDataSource = self.tdcdb.data_source(
             source_url=url,
-            name=submitted_name,
-            record_type_name=RecordTypes.ARREST_RECORDS.value,
         )
-
-        return CreatedDataSource(id=json["id"], name=submitted_name, url=url)
+        return cdc
 
     def clear_test_data(self):
         tdc_db = TestDataCreatorDBClient()
@@ -127,24 +119,21 @@ class TestDataCreatorFlask:
             submitted_name = self.tdcdb.test_name(agency_name)
         else:
             submitted_name = agency_name
-        locality_name = self.tdcdb.test_name()
-        sample_agency_post_parameters = self.get_sample_agency_post_parameters(
+
+        test_agency_info: TestAgencyInfo = self.tdcdb.agency(
             name=submitted_name,
-            locality_name=locality_name,
             jurisdiction_type=jurisdiction_type,
-            location_ids=location_ids,
             approval_status=approval_status,
         )
 
-        json = run_and_validate_request(
-            flask_client=self.flask_client,
-            http_method="post",
-            endpoint=AGENCIES_BASE_ENDPOINT,
-            headers=self.get_admin_tus().jwt_authorization_header,
-            json=sample_agency_post_parameters,
-        )
+        if location_ids is not None:
+            for location_id in location_ids:
+                self.tdcdb.db_client.add_location_to_agency(
+                    location_id=location_id,
+                    agency_id=test_agency_info.id,
+                )
 
-        return TestAgencyInfo(id=json["id"], submitted_name=submitted_name)
+        return TestAgencyInfo(id=test_agency_info.id, submitted_name=submitted_name)
 
     def refresh_typeahead_agencies(self):
         self.db_client.execute_raw_sql("CALL refresh_typeahead_agencies();")
@@ -152,14 +141,10 @@ class TestDataCreatorFlask:
     def refresh_typeahead_locations(self):
         self.db_client.execute_raw_sql("CALL refresh_typeahead_locations();")
 
-    def link_data_source_to_agency(self, data_source_id, agency_id):
-        run_and_validate_request(
-            flask_client=self.flask_client,
-            http_method="post",
-            endpoint=DATA_SOURCES_POST_DELETE_RELATED_AGENCY_ENDPOINT.format(
-                data_source_id=data_source_id, agency_id=agency_id
-            ),
-            headers=self.get_admin_tus().jwt_authorization_header,
+    def link_data_source_to_agency(self, data_source_id: int, agency_id: int):
+        self.tdcdb.link_data_source_to_agency(
+            data_source_id=data_source_id,
+            agency_id=agency_id,
         )
 
     def link_data_request_to_data_source(self, data_source_id, data_request_id):
