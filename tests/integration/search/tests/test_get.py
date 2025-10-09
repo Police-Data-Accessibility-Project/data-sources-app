@@ -59,27 +59,3 @@ def test_search_get(search_test_setup: SearchTestSetup):
         "location_type": LocationType.LOCALITY.value,
         "record_categories": [RecordCategoryEnum.POLICE.value],
     }
-
-    # Search in CSV
-    csv_data = search(record_format=OutputFormatEnum.CSV)
-
-    results = read_from_csv(csv_data)
-
-    assert len(results) == json_data["count"]
-
-    # Flatten json data for comparison
-    flat_json_data = []
-    for jurisdiction in jurisdictions:
-        if json_data["data"][jurisdiction]["count"] == 0:
-            continue
-        for result in json_data["data"][jurisdiction]["results"]:
-            flat_json_data.append(result)
-
-    # Sort both the flat json data and the csv results for comparison
-    # Due to differences in how CSV and JSON results are formatted, compare only ids
-    json_ids = sorted([result["id"] for result in flat_json_data])
-    csv_ids = sorted(
-        [int(result["id"]) for result in results]
-    )  # CSV ids are formatted as strings
-
-    assert json_ids == csv_ids

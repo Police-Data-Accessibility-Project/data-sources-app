@@ -27,10 +27,10 @@ class SearchResponseInnerDTO(BaseModel):
     count: int = default_field_required("The count of the search results.")
 
 class SearchResponseJurisdictionsWrapperDTO(BaseModel):
-    federal: list[SearchResponseInnerDTO] = default_field_required("The list of federal search results.")
-    state: list[SearchResponseInnerDTO] = default_field_required("The list of state search results.")
-    county: list[SearchResponseInnerDTO] = default_field_required("The list of county search results.")
-    locality: list[SearchResponseInnerDTO] = default_field_required("The list of city search results.")
+    federal: SearchResponseInnerDTO= default_field_required("The list of federal search results.")
+    state: SearchResponseInnerDTO = default_field_required("The list of state search results.")
+    county: SearchResponseInnerDTO = default_field_required("The list of county search results.")
+    locality: SearchResponseInnerDTO = default_field_required("The list of city search results.")
 
 class SearchResponseDTO(BaseModel):
     data: SearchResponseJurisdictionsWrapperDTO = default_field_required("The list of search results.")
