@@ -1,6 +1,8 @@
 from flask import Response
 
 from endpoints._helpers.response_info import ResponseInfo
+from endpoints.instantiations.search.core.endpoint_schema_config import SearchGetEndpointSchemaConfig
+from endpoints.instantiations.search.core.wrapper import search_wrapper_v2
 from endpoints.psycopg_resource import PsycopgResource
 from endpoints.schema_config.enums import SchemaConfigs
 from endpoints.schema_config.instantiations.search.federal import (
@@ -49,9 +51,28 @@ from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_search = create_namespace(namespace_attributes=AppNamespaces.SEARCH)
 
+@namespace_search.route("")
+class Search(PsycopgResource):
+    """
+    Provides a resource for performing searches in the database for data sources
+    based on user-provided search terms and location.
+    """
+    @endpoint_info(
+        namespace=namespace_search,
+        auth_info=API_OR_JWT_AUTH_INFO,
+        schema_config=SchemaConfigs.SEARCH_GET,
+        response_info=ResponseInfo(success_message="Search successful."),
+        description="Performs a search using the provided record types, record categories, and/or location location.",
+    )
+    def get(self, access_info: AccessInfoPrimary) -> Response:
+        return self.run_endpoint(
+            wrapper_function=search_wrapper_v2,
+            access_info=access_info,
+            schema_populate_parameters=SearchGetEndpointSchemaConfig.get_schema_populate_parameters(),
+        )
 
 @namespace_search.route("/search-location-and-record-type")
-class Search(PsycopgResource):
+class SearchLocationAndRecordType(PsycopgResource):
     """
     Provides a resource for performing searches in the database for data sources
     based on user-provided search terms and location.
@@ -64,6 +85,7 @@ class Search(PsycopgResource):
         response_info=ResponseInfo(success_message="Search successful."),
         description="Performs a search using the provided search terms and location.",
     )
+    @namespace_search.deprecated
     def get(self, access_info: AccessInfoPrimary) -> Response:
         """
         Performs a search using the provided search terms and location.

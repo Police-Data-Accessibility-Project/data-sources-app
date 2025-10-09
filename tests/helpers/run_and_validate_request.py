@@ -22,7 +22,7 @@ def run_and_validate_request(
     file: Optional[TextIO] = None,
     return_json: bool = True,
     **request_kwargs,
-):
+) -> dict:
     """
     Run a request and validate the response.
     :param flask_client: The flask test client

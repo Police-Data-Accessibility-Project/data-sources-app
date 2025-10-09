@@ -18,6 +18,7 @@ from endpoints.schema_config.instantiations.data_requests.related_sources.get im
 )
 from middleware.constants import DATA_KEY
 from middleware.enums import RecordTypes
+from middleware.schema_and_dto.dtos.data_requests.put import DataRequestsPutOuterDTO, DataRequestsPutDTO
 from middleware.third_party_interaction_logic.mailgun_.constants import OPERATIONS_EMAIL
 from middleware.util.type_conversion import get_enum_values
 from tests.helpers.common_test_data import (
@@ -51,7 +52,10 @@ def test_data_requests_get(
     tus_creator = tdc.standard_user()
 
     # Creator creates a data request
-    dr_info = tdc.tdcdb.data_request(tus_creator.user_info.user_id)
+    dr_info = tdc.tdcdb.data_request(
+        tus_creator.user_info.user_id,
+        # request_status=RequestStatus.ACTIVE,
+    )
     # Create a data source and associate with that request
     ds_info = tdc.data_source()
     tdc.link_data_request_to_data_source(
@@ -60,13 +64,11 @@ def test_data_requests_get(
     )
 
     # Add another data_request, and set its approval status to `Active`
-    dr_info_2 = tdc.tdcdb.data_request(tus_creator.user_info.user_id)
-
-    tdc.request_validator.update_data_request(
-        data_request_id=dr_info_2.id,
-        headers=tdc.get_admin_tus().jwt_authorization_header,
-        entry_data={"request_status": "Active"},
+    dr_info_2 = tdc.tdcdb.data_request(
+        tus_creator.user_info.user_id,
+        request_status=RequestStatus.ACTIVE,
     )
+
 
     data = tdc.request_validator.get_data_requests(
         headers=tus_creator.jwt_authorization_header,
@@ -76,12 +78,9 @@ def test_data_requests_get(
 
     # Add another data request, set its approval status to `Archived`
     # THen perform a search for both Active and Archived
-    dr_info_3 = tdc.tdcdb.data_request(tus_creator.user_info.user_id)
-
-    tdc.request_validator.update_data_request(
-        data_request_id=dr_info_3.id,
-        headers=tdc.get_admin_tus().jwt_authorization_header,
-        entry_data={"request_status": "Archived"},
+    dr_info_3 = tdc.tdcdb.data_request(
+        tus_creator.user_info.user_id,
+        request_status=RequestStatus.ARCHIVED,
     )
 
     data = tdc.request_validator.get_data_requests(

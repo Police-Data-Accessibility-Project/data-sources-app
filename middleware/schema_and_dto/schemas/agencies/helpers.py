@@ -8,29 +8,6 @@ from endpoints.instantiations.agencies_.post.dto import AgencyInfoPostDTO
 from endpoints.instantiations.agencies_._shared.base import AgencyInfoBaseSchema
 from utilities.enums import SourceMappingEnum
 
-
-def get_name_field(required: bool) -> fields.Str:
-    return fields.Str(
-        required=required,
-        metadata={
-            "description": "The name of the agency.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-
-
-def get_jurisdiction_type_field(required: bool) -> fields.Enum:
-    return fields.Enum(
-        required=required,
-        enum=JurisdictionType,
-        by_value=fields.Str,
-        metadata={
-            "description": "The highest level of jurisdiction of the agency.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
-
-
 def get_agency_info_field(
     schema: type[AgencyInfoBaseSchema],  # pyright: ignore[reportInvalidTypeForm]
     nested_dto_class: type[Union[AgencyInfoPutDTO, AgencyInfoPostDTO]],

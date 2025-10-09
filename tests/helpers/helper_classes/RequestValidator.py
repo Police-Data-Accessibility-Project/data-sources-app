@@ -60,9 +60,6 @@ from endpoints.schema_config.instantiations.data_requests.related_locations.dele
 from endpoints.schema_config.instantiations.data_requests.related_locations.post import (
     DataRequestsRelatedLocationsPostEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.data_sources.by_id.reject import (
-    DataSourcesByIDRejectEndpointSchemaConfig,
-)
 from endpoints.schema_config.instantiations.data_sources.get_many import (
     DataSourcesGetManyEndpointSchemaConfig,
 )
@@ -71,9 +68,6 @@ from endpoints.schema_config.instantiations.github.synchronize import (
 )
 from endpoints.schema_config.instantiations.locations.by_id.get import (
     LocationsByIDGetEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.locations.by_id.put import (
-    LocationsByIDPutEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.locations.data_requests import (
     LocationsRelatedDataRequestsGetEndpointSchemaConfig,
@@ -135,19 +129,16 @@ from endpoints.schema_config.instantiations.user.profile.get import (
 )
 from middleware.enums import OutputFormatEnum, RecordTypes
 from middleware.schema_and_dto.dtos.locations.get import LocationsGetRequestDTO
-from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
 from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
 from middleware.util.dict import update_if_not_none
-from tests.helpers.common_test_data import get_test_name
 from tests.helpers.constants import (
     DATA_REQUESTS_BY_ID_ENDPOINT,
     AGENCIES_BASE_ENDPOINT,
     DATA_REQUESTS_POST_DELETE_RELATED_LOCATIONS_ENDPOINT,
     DATA_SOURCES_BASE_ENDPOINT,
 )
-from tests.helpers.helper_classes.TestUserSetup import TestUserSetup
 from tests.helpers.helper_functions_simple import (
     get_authorization_header,
     add_query_params,
@@ -419,7 +410,7 @@ class RequestValidator:
         record_categories: Optional[list[RecordCategoryEnum]],
         location_id: Optional[int] = None,
         record_types: Optional[list[RecordTypes]] = None,
-    ):
+    ) -> dict[str, str]:
         if location_id is not None:
             query_params = {
                 "location_id": location_id,
@@ -435,37 +426,6 @@ class RequestValidator:
             query_params["record_types"] = ",".join([rt.value for rt in record_types])
         return query_params
 
-    def create_agency(
-        self,
-        headers: dict,
-        agency_post_parameters: dict,
-    ):
-        return self.post(
-            endpoint="/agencies",
-            headers=headers,
-            json=agency_post_parameters,
-        )["id"]
-
-    def create_data_source(
-        self,
-        headers: dict,
-        source_url: str = "http://src1.com",
-        name: str = get_test_name(),
-        approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
-        **kwargs,
-    ):
-        return self.post(
-            endpoint=DATA_SOURCES_BASE_ENDPOINT,
-            headers=headers,
-            json={
-                "entry_data": {
-                    "source_url": source_url,
-                    "name": name,
-                    "approval_status": approval_status.value,
-                    **kwargs,
-                }
-            },
-        )
 
     def follow_national_search(
         self,
@@ -599,16 +559,6 @@ class RequestValidator:
             expected_response_status=expected_response_status,
         )
 
-    def update_data_request(
-        self, data_request_id: int, headers: dict, entry_data: dict
-    ):
-        return self.put(
-            endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
-                data_request_id=data_request_id
-            ),
-            headers=headers,
-            json={"entry_data": entry_data},
-        )
 
     def get_data_requests(
         self,
@@ -817,22 +767,6 @@ class RequestValidator:
             expected_schema=DataSourcesGetManyEndpointSchemaConfig.primary_output_schema,
         )
 
-    def update_data_source(
-        self,
-        tus: TestUserSetup,
-        data_source_id: int,
-        entry_data: dict,
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: Optional[dict] = None,
-    ):
-        return self.put(
-            endpoint=f"/api/data-sources/{data_source_id}",
-            headers=tus.jwt_authorization_header,
-            json={"entry_data": entry_data},
-            expected_response_status=expected_response_status,
-            expected_json_content=expected_json_content,
-        )
-
     def get_agency_by_id(self, headers: dict, id: int):
         return self.get(
             endpoint=f"/api/agencies/{id}",
@@ -1000,24 +934,6 @@ class RequestValidator:
             expected_json_content=expected_json_content,
         )
 
-    def reject_data_source(
-        self,
-        headers: dict,
-        data_source_id: int,
-        rejection_note: str,
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: Optional[dict] = None,
-        expected_schema: Schema = DataSourcesByIDRejectEndpointSchemaConfig.primary_output_schema,
-    ):
-        return self.post(
-            endpoint=f"/api/data-sources/{data_source_id}/reject",
-            headers=headers,
-            json={"rejection_note": rejection_note},
-            expected_schema=expected_schema,
-            expected_response_status=expected_response_status,
-            expected_json_content=expected_json_content,
-        )
-
     def source_collector_data_sources(
         self,
         headers: dict,
@@ -1031,23 +947,6 @@ class RequestValidator:
             json=dto.model_dump(mode="json"),
             expected_schema=expected_schema,
             expected_response_status=expected_response_status,
-        )
-
-    def update_location(
-        self,
-        headers: dict,
-        location_id: int,
-        dto: LocationPutDTO,
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: Optional[dict] = None,
-    ):
-        return self.put(
-            endpoint=f"/api/locations/{location_id}",
-            headers=headers,
-            json=dto.model_dump(mode="json"),
-            expected_schema=LocationsByIDPutEndpointSchemaConfig.primary_output_schema,
-            expected_response_status=expected_response_status,
-            expected_json_content=expected_json_content,
         )
 
     def get_locations_map(

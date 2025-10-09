@@ -52,7 +52,7 @@ def test_source_collector_data_sources_post(
                 name=data_source.name,
                 description="Test Data Source Description",
                 source_url=data_source.url,
-                record_type=RecordTypes.ARREST_RECORDS.value,  # This should trigger a duplicate error
+                record_type=RecordTypes.ACCIDENT_REPORTS.value,  # This should trigger a duplicate error
                 record_formats=["CSV"],
                 data_portal_type="test",
                 last_approval_editor=tus_admin.user_info.user_id,

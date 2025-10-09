@@ -39,18 +39,6 @@ def get_many_locations_wrapper(
     )
 
 
-def update_location_by_id_wrapper(
-    db_client: DatabaseClient,
-    dto: LocationPutDTO,
-    location_id: int,
-) -> Response:
-    try:
-        db_client.update_location_by_id(location_id=int(location_id), dto=dto)
-    except LocationDoesNotExistError:
-        raise BadRequest("Location not found.")
-    return message_response("Successfully updated location.")
-
-
 def get_locations_related_data_requests_wrapper(
     db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: GetByIDBaseDTO
 ) -> Response:
