@@ -13,7 +13,6 @@ from db.enums import (
     DetailLevel,
     UpdateMethod,
     RetentionSchedule,
-    ApprovalStatus,
 )
 from db.models.helpers import (
     make_get_iter_model_list_of_dict,
@@ -26,7 +25,6 @@ from db.models.templates.standard import StandardBase
 from db.models.types import (
     text,
     URLStatusLiteral,
-    timestamp_tz,
 )
 from middleware.enums import Relations
 
@@ -75,9 +73,6 @@ class DataSource(
     )
     scraper_url: Mapped[str | None]
     submission_notes: Mapped[str | None]
-    rejection_note: Mapped[str | None]
-    last_approval_editor: Mapped[int | None]
-    submitter_contact_info: Mapped[str | None]
     agency_described_not_in_database: Mapped[str | None]
     data_portal_type_other: Mapped[str | None]
     data_source_request: Mapped[str | None]
@@ -88,15 +83,9 @@ class DataSource(
         name="url_status_enum",
         default=URLStatus.OK,
     )
-    approval_status: Mapped[ApprovalStatus] = enum_column(
-        ApprovalStatus,
-        name="approval_status",
-        default=ApprovalStatus.PENDING,
-    )
     record_type_id: Mapped[int | None] = mapped_column(
         ForeignKey("public.record_types.id")
     )
-    approval_status_updated_at: Mapped[timestamp_tz | None]
 
     # Relationships
     locations: Mapped[list[Location]] = relationship(

@@ -44,7 +44,6 @@ def test_source_collector_data_sources_post(
                 record_type=RecordTypes.INCARCERATION_RECORDS,
                 record_formats=["CSV"],
                 data_portal_type="test",
-                last_approval_editor=tus_standard.user_info.user_id,
                 supplying_entity="Test Supplying Entity",
                 agency_ids=agency_ids,
             ),
@@ -55,7 +54,6 @@ def test_source_collector_data_sources_post(
                 record_type=RecordTypes.ACCIDENT_REPORTS.value,  # This should trigger a duplicate error
                 record_formats=["CSV"],
                 data_portal_type="test",
-                last_approval_editor=tus_admin.user_info.user_id,
                 supplying_entity="Test Supplying Entity",
                 agency_ids=agency_ids[1:],
             ),
@@ -64,7 +62,6 @@ def test_source_collector_data_sources_post(
                 description="Test Data Source Description",
                 source_url="http://new_test.com",
                 record_type=RecordTypes.PERSONNEL_RECORDS,
-                last_approval_editor=tus_admin.user_info.user_id,
                 agency_ids=agency_ids[:2],
             ),
         ]
@@ -113,16 +110,9 @@ def test_source_collector_data_sources_post(
     assert data_sources[1]["id"] == int(data_source_id_1)
     assert data_sources[2]["id"] == int(data_source_id_3)
 
-    for data_source in data_sources:
-        assert data_source["approval_status"] == "approved"
-
     # Check submission notes
     assert data_sources[1]["submission_notes"] == "Auto-submitted from Source Collector"
     assert data_sources[2]["submission_notes"] == "Auto-submitted from Source Collector"
-
-    # Check last approval editor
-    assert data_sources[1]["last_approval_editor"] == tus_standard.user_info.user_id
-    assert data_sources[2]["last_approval_editor"] == tus_admin.user_info.user_id
 
     # Check supplying entity
     assert data_sources[1]["supplying_entity"] == "Test Supplying Entity"

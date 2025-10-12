@@ -3,7 +3,6 @@ from marshmallow import Schema, fields
 from pydantic import BaseModel
 
 from db.client.core import DatabaseClient
-from db.enums import ApprovalStatus
 from middleware.util.url import normalize_url
 from utilities.enums import SourceMappingEnum
 
@@ -31,17 +30,9 @@ class UniqueURLCheckerResponseInnerSchema(Schema):
             "source": SourceMappingEnum.JSON,
         },
     )
-    approval_status = fields.Enum(
-        required=True,
-        enum=ApprovalStatus,
-        by_value=fields.Str,
-        metadata={
-            "description": "The approval status of the URL.",
-            "source": SourceMappingEnum.JSON,
-        },
-    )
     rejection_note = fields.Str(
         required=False,
+        default=None,
         metadata={
             "description": "The rejection note of the URL.",
             "source": SourceMappingEnum.JSON,

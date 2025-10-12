@@ -102,9 +102,7 @@ class SearchQueryBuilder(QueryBuilderBase):
                 RecordType.name.in_([rt.value for rt in self.record_types])
             )
 
-        query = query.where(
-            DataSource.approval_status == "approved", DataSource.url_status != "broken"
-        ).group_by(
+        query = query.where(DataSource.url_status != "broken").group_by(
             DataSource.id,
             DataSource.name,
             DataSource.description,

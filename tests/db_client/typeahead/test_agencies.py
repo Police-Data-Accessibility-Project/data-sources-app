@@ -1,4 +1,3 @@
-from db.enums import ApprovalStatus
 from middleware.enums import JurisdictionType, AgencyType
 from endpoints.instantiations.agencies_.post.dto import (
     AgenciesPostDTO,
@@ -16,7 +15,6 @@ def test_get_typeahead_agencies(live_database_client, pittsburgh_id):
                 name="Xylodammerung Police Agency",
                 jurisdiction_type=JurisdictionType.STATE,
                 agency_type=AgencyType.POLICE,
-                approval_status=ApprovalStatus.APPROVED,
             ),
             location_ids=[pittsburgh_id],
         )

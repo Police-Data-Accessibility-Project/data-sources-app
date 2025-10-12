@@ -32,7 +32,6 @@ def get_agencies(
         page=dto.page,
         limit=dto.limit,
         requested_columns=dto.requested_columns,
-        approval_status=dto.approval_status,
     )
 
     return make_response(

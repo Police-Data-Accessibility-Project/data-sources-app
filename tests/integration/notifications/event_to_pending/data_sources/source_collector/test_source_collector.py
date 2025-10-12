@@ -15,21 +15,18 @@ from tests.integration.notifications.event_to_pending.data_sources.source_collec
 def test_data_source_added_from_source_collector(
     manager: EventToPendingDataSourcesSourceCollectorTestManager,
 ):
-    approval_user_id = manager.tdc.user().id
     agency_id = manager.tdc.agency().id
     dtos = [
         SourceCollectorPostRequestInnerDTO(
             name="Test Data Source 1",
             source_url="https://example.com/test1",
             record_type=RecordTypes.COURT_CASES,
-            last_approval_editor=approval_user_id,
             agency_ids=[agency_id],
         ),
         SourceCollectorPostRequestInnerDTO(
             name="Test Data Source 2",
             source_url="https://example.com/test2",
             record_type=RecordTypes.ACCIDENT_REPORTS,
-            last_approval_editor=approval_user_id,
             agency_ids=[agency_id],
         ),
     ]

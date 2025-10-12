@@ -10,7 +10,9 @@ from middleware.schema_and_dto.dtos._helpers import default_field_required
 class SearchResultDTO(BaseModel):
     id: int = default_field_required("The ID of the search result.")
     agency_name: str = default_field_required("The name of the agency.")
-    municipality: Optional[str] = default_field_required("The municipality of the agency.")
+    municipality: Optional[str] = default_field_required(
+        "The municipality of the agency."
+    )
     state_iso: Optional[str] = default_field_required("The state iso of the agency.")
     data_source_name: str = default_field_required("The name of the data source.")
     description: Optional[str] = default_field_required(

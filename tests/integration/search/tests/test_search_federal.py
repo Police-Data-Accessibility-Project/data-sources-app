@@ -1,4 +1,3 @@
-from db.enums import ApprovalStatus
 from middleware.enums import JurisdictionType, AgencyType, RecordTypes
 from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
@@ -15,32 +14,15 @@ def test_search_federal(test_data_creator_flask: TestDataCreatorFlask):
     for i in range(2):
         tai: TestAgencyInfo = tdc.tdcdb.agency(
             jurisdiction_type=JurisdictionType.FEDERAL,
-            approval_status=ApprovalStatus.APPROVED,
             agency_type=AgencyType.POLICE,
         )
         agency_ids.append(tai.id)
-        # a_id = tdc.request_validator.create_agency(
-        #     headers=tdc.get_admin_tus().jwt_authorization_header,
-        #     agency_post_parameters={
-        #         "agency_info": generate_test_data_from_schema(
-        #             schema=AgencyInfoPostSchema(),
-        #             override={
-        #                 "jurisdiction_type": JurisdictionType.FEDERAL.value,
-        #                 "approval_status": ApprovalStatus.APPROVED.value,
-        #                 "agency_type": AgencyType.POLICE.value,
-        #             },
-        #         ),
-        #     },
-        # )
-        # agency_ids.append(a_id)
 
     # Link 2 approved data sources to each federal agency
     record_types = list(RecordTypes)
     for i in range(2):
         for j in range(2):
-            d_id = tdc.tdcdb.data_source(
-                approval_status=ApprovalStatus.APPROVED, record_type=record_types[j]
-            ).id
+            d_id = tdc.tdcdb.data_source(record_type=record_types[j]).id
             tdc.link_data_source_to_agency(
                 data_source_id=d_id,
                 agency_id=agency_ids[i],

@@ -12,7 +12,6 @@ from db.constants import PAGE_SIZE
 from db.enums import (
     SortOrder,
     RequestStatus,
-    ApprovalStatus,
 )
 from endpoints.instantiations.data_sources_.get.by_id.schema_config import (
     DataSourcesByIDGetEndpointSchemaConfig,
@@ -670,15 +669,11 @@ class RequestValidator:
         sort_order: SortOrder | None = None,
         page: int = 1,
         limit: int = PAGE_SIZE,
-        approval_status: ApprovalStatus | None = None,
     ):
         params = {}
         update_if_not_none(
             dict_to_update=params,
             secondary_dict={
-                "approval_status": (
-                    approval_status.value if approval_status is not None else None
-                ),
                 "sort_by": sort_by,
                 "sort_order": sort_order.value if sort_order is not None else None,
                 "page": page,
@@ -738,7 +733,6 @@ class RequestValidator:
         sort_order: SortOrder | None = None,
         page: int = 1,
         limit: int = PAGE_SIZE,
-        approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
     ):
         query_params = {}
         update_if_not_none(
@@ -748,7 +742,6 @@ class RequestValidator:
                 "sort_order": sort_order.value if sort_order is not None else None,
                 "page": page,
                 "limit": limit,
-                "approval_status": approval_status.value,
             },
         )
 
