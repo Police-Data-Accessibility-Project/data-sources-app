@@ -51,7 +51,6 @@ from endpoints.instantiations.oauth_.login_with_github import (
 )
 from endpoints.instantiations.oauth_.oauth import namespace_oauth
 from endpoints.instantiations.permissions_.routes import namespace_permissions
-from endpoints.instantiations.proposals_.routes import namespace_proposals
 from endpoints.instantiations.search.routes import namespace_search
 from endpoints.instantiations.source_collector.routes import namespace_source_collector
 from endpoints.instantiations.typeahead_.routes import (
@@ -96,7 +95,6 @@ NAMESPACES = [
     namespace_admin,
     namespace_contact,
     namespace_metadata,
-    namespace_proposals,
     namespace_source_collector,
     namespace_validate_email,
     namespace_resend_validation_email,

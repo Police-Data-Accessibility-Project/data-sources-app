@@ -4,18 +4,12 @@ from flask.testing import FlaskClient
 
 from db.client.core import DatabaseClient
 from db.enums import RequestStatus, ApprovalStatus
-from middleware.enums import JurisdictionType, PermissionsEnum, AgencyType, RecordTypes
-from endpoints.instantiations.agencies_.post.schemas.inner import (
-    AgencyInfoPostSchema,
-)
+from middleware.enums import JurisdictionType, PermissionsEnum, RecordTypes
 from tests.helpers.common_endpoint_calls import CreatedDataSource
 from tests.helpers.constants import (
     DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT,
 )
 from tests.helpers.helper_classes.RequestValidator import RequestValidator
-from tests.helpers.helper_classes.SchemaTestDataGenerator import (
-    generate_test_data_from_schema,
-)
 from tests.helpers.helper_classes.TestUserSetup import TestUserSetup
 from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
@@ -75,37 +69,6 @@ class TestDataCreatorFlask:
             record_type=record_type,
             location_ids=location_ids,
         )
-
-    def get_sample_agency_post_parameters(
-        self,
-        name,
-        locality_name,
-        jurisdiction_type: JurisdictionType,
-        location_ids: Optional[list[dict]] = None,
-        approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
-    ) -> dict:
-        d = {
-            "agency_info": generate_test_data_from_schema(
-                schema=AgencyInfoPostSchema(),
-                override={
-                    "name": name,
-                    "jurisdiction_type": jurisdiction_type.value,
-                    "agency_type": AgencyType.POLICE.value,
-                    "approval_status": approval_status.value,
-                },
-            ),
-        }
-
-        if location_ids is None and jurisdiction_type != JurisdictionType.FEDERAL:
-            location_id = self.locality(
-                locality_name=locality_name,
-            )
-            location_ids = [location_id]
-
-        if location_ids is not None:
-            d["location_ids"] = location_ids
-
-        return d
 
     def agency(
         self,

@@ -144,9 +144,6 @@ from endpoints.schema_config.instantiations.permissions.get import (
 from endpoints.schema_config.instantiations.permissions.put import (
     PermissionsPutEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.proposal_agencies import (
-    ProposalAgenciesPostEndpointSchemaConfig,
-)
 from endpoints.schema_config.instantiations.record_type_and_category import (
     RecordTypeAndCategoryGetEndpointSchemaConfig,
 )
@@ -336,8 +333,6 @@ class SchemaConfigs(Enum):
     # region Metadata
     RECORD_TYPE_AND_CATEGORY_GET = RecordTypeAndCategoryGetEndpointSchemaConfig
     # endregion
-
-    PROPOSAL_AGENCIES_POST = ProposalAgenciesPostEndpointSchemaConfig
 
     SOURCE_COLLECTOR_DATA_SOURCES_POST = (
         SourceCollectorDataSourcesPostEndpointSchemaConfig

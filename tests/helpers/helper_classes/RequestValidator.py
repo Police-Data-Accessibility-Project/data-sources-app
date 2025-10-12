@@ -85,9 +85,6 @@ from endpoints.schema_config.instantiations.metrics.followed_searches.breakdown 
 from endpoints.schema_config.instantiations.metrics.get import (
     MetricsGetEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.proposal_agencies import (
-    ProposalAgenciesPostEndpointSchemaConfig,
-)
 from endpoints.schema_config.instantiations.record_type_and_category import (
     RecordTypeAndCategoryGetEndpointSchemaConfig,
 )
@@ -911,22 +908,6 @@ class RequestValidator:
         return self.get(
             endpoint=f"/api/typeahead/agencies?query={query}",
             expected_schema=TypeaheadAgenciesEndpointSchemaConfig.primary_output_schema,
-        )
-
-    def create_proposal_agency(
-        self,
-        headers: dict,
-        data: dict,
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: dict | None = None,
-    ):
-        return self.post(
-            endpoint="/api/proposals/agencies",
-            headers=headers,
-            json=data,
-            expected_schema=ProposalAgenciesPostEndpointSchemaConfig.primary_output_schema,
-            expected_response_status=expected_response_status,
-            expected_json_content=expected_json_content,
         )
 
     def source_collector_data_sources(
