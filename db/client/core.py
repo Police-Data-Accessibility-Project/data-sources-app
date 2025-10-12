@@ -43,7 +43,6 @@ from db.enums import (
     ExternalAccountTypeEnum,
     RequestStatus,
     LocationType,
-    ApprovalStatus,
     UserCapacityEnum,
 )
 from db.exceptions import LocationDoesNotExistError
@@ -854,7 +853,6 @@ class DatabaseClient:
         page: int | None = 1,
         limit: int | None = PAGE_SIZE,
         requested_columns: list[str] | None = None,
-        approval_status: ApprovalStatus | None = None,
     ):
         params = GetParams(
             order_by=order_by,
@@ -864,7 +862,6 @@ class DatabaseClient:
         )
         builder = GetAgenciesQueryBuilder(
             params=params,
-            approval_status=approval_status,
         )
         return self.run_query_builder(builder)
 
@@ -882,7 +879,6 @@ class DatabaseClient:
         order_by: OrderByParameters | None = None,
         page: int | None = 1,
         limit: int | None = PAGE_SIZE,
-        approval_status: ApprovalStatus | None = None,
     ):
         builder = GetDataSourcesQueryBuilder(
             data_sources_columns=data_sources_columns,
@@ -890,7 +886,6 @@ class DatabaseClient:
             order_by=order_by,
             page=page,
             limit=limit,
-            approval_status=approval_status,
         )
         return self.run_query_builder(builder)
 

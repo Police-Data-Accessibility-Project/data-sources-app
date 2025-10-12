@@ -1,9 +1,8 @@
-from typing import Any, Optional, Sequence
+from typing import Any, Sequence
 
 from sqlalchemy import asc, select
 
 from db.dynamic_query_constructor import DynamicQueryConstructor
-from db.enums import ApprovalStatus
 from db.helpers import get_offset
 from endpoints.instantiations.agencies_.get._shared.convert import (
     agency_to_get_agencies_output,
@@ -18,11 +17,9 @@ class GetAgenciesQueryBuilder(QueryBuilderBase):
     def __init__(
         self,
         params: GetParams,
-        approval_status: Optional[ApprovalStatus] = None,
     ):
         super().__init__()
         self.params = params
-        self.approval_status = approval_status
 
     def run(self) -> Any:
         order_by_clause = DynamicQueryConstructor.get_sql_alchemy_order_by_clause(
@@ -37,9 +34,6 @@ class GetAgenciesQueryBuilder(QueryBuilderBase):
 
         # TODO: This format can be extracted to a function (see get_data_sources)
         query = select(Agency)
-
-        if self.approval_status is not None:
-            query = query.where(Agency.approval_status == self.approval_status.value)
 
         query = (
             query.options(*load_options)

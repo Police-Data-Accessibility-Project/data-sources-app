@@ -1,4 +1,3 @@
-from db.enums import ApprovalStatus
 from middleware.schema_and_dto.schemas.typeahead.locations import (
     TypeaheadLocationsOuterResponseSchema,
 )
@@ -127,21 +126,3 @@ def test_typeahead_agencies_approved(test_data_creator_flask: TestDataCreatorFla
 
     assert "Qzy" in result["display_name"]
     assert result["id"] == int(agency_id)
-
-
-def test_typeahead_agencies_not_approved(test_data_creator_flask: TestDataCreatorFlask):
-    """
-    Test that GET call to /typeahead/agencies endpoint successfully retrieves data
-    """
-    tdc = test_data_creator_flask
-    tdc.clear_test_data()
-    tdc.locality(locality_name="Hky")
-    agency_id = tdc.agency(agency_name="Hky", approval_status=ApprovalStatus.PENDING).id
-    tdc.refresh_typeahead_agencies()
-
-    json_content = tdc.request_validator.typeahead_agency(
-        query="Hky",
-    )
-
-    for result in json_content["suggestions"]:
-        assert result["id"] != int(agency_id)

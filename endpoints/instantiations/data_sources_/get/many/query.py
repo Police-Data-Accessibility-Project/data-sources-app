@@ -5,7 +5,6 @@ from sqlalchemy import asc, select
 from db.constants import PAGE_SIZE
 from db.db_client_dataclasses import OrderByParameters
 from db.dynamic_query_constructor import DynamicQueryConstructor
-from db.enums import ApprovalStatus
 from db.helpers import get_offset
 from endpoints.instantiations.data_sources_.get.convert import (
     data_source_to_get_data_sources_output,
@@ -24,7 +23,6 @@ class GetDataSourcesQueryBuilder(QueryBuilderBase):
         order_by: Optional[OrderByParameters] = None,
         page: Optional[int] = 1,
         limit: Optional[int] = PAGE_SIZE,
-        approval_status: Optional[ApprovalStatus] = None,
     ):
         super().__init__()
         self.data_sources_columns = data_sources_columns
@@ -32,7 +30,6 @@ class GetDataSourcesQueryBuilder(QueryBuilderBase):
         self.order_by = order_by
         self.page = page
         self.limit = limit
-        self.approval_status = approval_status
 
     def run(self) -> Any:
         order_by_clause = DynamicQueryConstructor.get_sql_alchemy_order_by_clause(
@@ -46,13 +43,7 @@ class GetDataSourcesQueryBuilder(QueryBuilderBase):
             data_sources_columns=self.data_sources_columns,
         )
 
-        # TODO: This format can be extracted to a function (see get_agencies)
         query = select(DataSourceExpanded)
-
-        if self.approval_status is not None:
-            query = query.where(
-                DataSourceExpanded.approval_status == self.approval_status.value
-            )
 
         query = (
             query.options(*load_options).order_by(order_by_clause).limit(self.limit)

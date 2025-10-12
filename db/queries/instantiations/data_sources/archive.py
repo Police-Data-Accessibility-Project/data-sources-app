@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy import or_, select
 
 from db.constants import PAGE_SIZE
-from db.enums import UpdateFrequency, ApprovalStatus, URLStatus
+from db.enums import UpdateFrequency, URLStatus
 from db.helpers import get_offset
 from db.models.implementations.core.data_source.archive import DataSourceArchiveInfo
 from db.models.implementations.core.data_source.core import DataSource
@@ -47,7 +47,6 @@ class GetDataSourcesToArchiveQueryBuilder(QueryBuilderBase):
     def run(self) -> list[ArchiveInfo]:
         def get_where_queries():
             clauses = [
-                DataSource.approval_status == ApprovalStatus.APPROVED.value,
                 or_(
                     DataSourceArchiveInfo.last_cached.is_(None),
                     DataSourceArchiveInfo.update_frequency.isnot(None),

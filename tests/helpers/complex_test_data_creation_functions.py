@@ -17,8 +17,6 @@ def create_data_source_entry_for_url_duplicate_checking(
             table_name="data_sources",
             column_value_mappings={
                 "name": submitted_name,
-                "rejection_note": "Test rejection note",
-                "approval_status": "rejected",
                 "source_url": "https://duplicate-checker.com/",
             },
         )

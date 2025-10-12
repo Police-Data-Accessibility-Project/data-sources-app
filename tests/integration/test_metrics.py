@@ -96,21 +96,21 @@ def test_metrics_followed_searches_breakdown(
                 continue
             try:
                 for key, value in pairs:
-                    assert result[key] == value
+                    assert result[key] == value, f"{result[key]} != {value} ({key})"
                 assert (
                     result["search_url"] == f"{search_url_base}{result['location_id']}"
                 )
             except AssertionError as e:
                 raise AssertionError(
                     f"Assertion error in {result['location_name']}: {e}"
-                )
+                ) from e
 
     validate_location(
         location_name="Pennsylvania",
         follower_count=2,
         follower_change=2,
-        source_count=2,
-        source_change=1,
+        source_count=4,
+        source_change=3,
         complete_request_count=2,
         complete_request_change=2,
         approved_request_count=2,
@@ -120,8 +120,8 @@ def test_metrics_followed_searches_breakdown(
         location_name="Pittsburgh, Allegheny, Pennsylvania",
         follower_count=3,
         follower_change=2,
-        source_count=1,
-        source_change=0,
+        source_count=2,
+        source_change=1,
         complete_request_count=1,
         complete_request_change=1,
         approved_request_count=1,

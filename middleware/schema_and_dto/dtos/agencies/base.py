@@ -2,7 +2,6 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from db.enums import ApprovalStatus
 from middleware.enums import AgencyType
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.metadata import (
     MetadataInfo,
@@ -18,11 +17,6 @@ class AgencyInfoBaseDTO(BaseModel):
     no_web_presence: bool = Field(
         default=False,
         description="Whether or not the agency has no web presence.",
-        json_schema_extra=MetadataInfo(required=False),
-    )
-    approval_status: ApprovalStatus = Field(
-        default=ApprovalStatus.PENDING,
-        description="The approval status of the agency.",
         json_schema_extra=MetadataInfo(required=False),
     )
     homepage_url: Optional[str] = Field(

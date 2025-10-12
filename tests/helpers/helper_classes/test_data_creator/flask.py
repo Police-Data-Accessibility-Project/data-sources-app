@@ -3,7 +3,7 @@ from typing import Optional
 from flask.testing import FlaskClient
 
 from db.client.core import DatabaseClient
-from db.enums import RequestStatus, ApprovalStatus
+from db.enums import RequestStatus
 from middleware.enums import JurisdictionType, PermissionsEnum, RecordTypes
 from tests.helpers.common_endpoint_calls import CreatedDataSource
 from tests.helpers.constants import (
@@ -75,7 +75,6 @@ class TestDataCreatorFlask:
         location_ids: Optional[list[dict]] = None,
         agency_name: str = "",
         add_test_name: bool = True,
-        approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
         jurisdiction_type: JurisdictionType = JurisdictionType.LOCAL,
     ) -> TestAgencyInfo:
         if add_test_name and agency_name == "":
@@ -86,7 +85,6 @@ class TestDataCreatorFlask:
         test_agency_info: TestAgencyInfo = self.tdcdb.agency(
             name=submitted_name,
             jurisdiction_type=jurisdiction_type,
-            approval_status=approval_status,
         )
 
         if location_ids is not None:

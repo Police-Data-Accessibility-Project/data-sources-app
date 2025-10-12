@@ -1,6 +1,6 @@
 # pyright: reportUninitializedInstanceVariable=false
 
-from sqlalchemy import false, func, Column, String, ForeignKey
+from sqlalchemy import false, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.models.mixins import CountMetadata, UpdatedAtMixin
@@ -9,7 +9,6 @@ from db.models.types import (
     JurisdictionTypeLiteral,
     AgencyTypeLiteral,
     timestamp_tz,
-    ApprovalStatusLiteral,
 )
 from middleware.enums import Relations
 
@@ -26,19 +25,11 @@ class Agency(StandardBase, CountMetadata, UpdatedAtMixin):
     airtable_agency_last_modified: Mapped[timestamp_tz] = mapped_column(
         server_default=func.current_timestamp()
     )
-    approval_status: Mapped[ApprovalStatusLiteral]
-    rejection_reason: Mapped[str | None]
-    last_approval_editor = Column(String, nullable=True)
-    submitter_contact: Mapped[str | None]
     agency_created: Mapped[timestamp_tz] = mapped_column(
         server_default=func.current_timestamp()
     )
-    creator_user_id: Mapped[int | None] = mapped_column(ForeignKey("public.users.id"))
 
     # relationships
-    creator: Mapped["User"] = relationship(
-        argument="User", back_populates="created_agencies", uselist=False
-    )
     locations: Mapped[list["LocationExpanded"]] = relationship(
         argument="LocationExpanded",
         secondary="public.link_agencies_locations",

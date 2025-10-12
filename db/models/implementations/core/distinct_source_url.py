@@ -10,5 +10,3 @@ class DistinctSourceURL(Base):
 
     base_url: Mapped[str] = mapped_column(primary_key=True)
     original_url: Mapped[str]
-    rejection_note: Mapped[str]
-    approval_status: Mapped[str]

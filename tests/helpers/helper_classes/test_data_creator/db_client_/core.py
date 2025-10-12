@@ -6,7 +6,6 @@ from sqlalchemy.exc import IntegrityError
 
 from db.client.core import DatabaseClient
 from db.enums import (
-    ApprovalStatus,
     RequestStatus,
     EventType,
     ExternalAccountTypeEnum,
@@ -177,7 +176,6 @@ class TestDataCreatorDBClient:
 
     def data_source(
         self,
-        approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
         record_type: RecordTypes | None = RecordTypes.ACCIDENT_REPORTS,
         source_url: str | None = None,
     ) -> CreatedDataSource:
@@ -186,7 +184,6 @@ class TestDataCreatorDBClient:
                 name=self.test_name(),
                 source_url=source_url or self.test_url(),
                 agency_supplied=True,
-                approval_status=approval_status,
                 record_type_name=record_type,
             )
         )
@@ -444,14 +441,6 @@ class ValidNotificationEventCreator:
         ds_info = self.tdc.data_source()
         self.tdc.link_data_source_to_agency(
             data_source_id=ds_info.id, agency_id=agency_info.id
-        )
-        self.tdc.db_client.update_data_source_v2(
-            dto=EntryCreateUpdateRequestDTO(
-                entry_data={"approval_status_updated_at": self.notification_valid_date}
-            ),
-            user_id=user_id,
-            data_source_id=ds_info.id,
-            permissions=[PermissionsEnum.DB_WRITE],
         )
         self.tdc.user_follow_location(user_id=user_id, location_id=locality_location_id)
         return ds_info.id

@@ -46,8 +46,6 @@ def test_unique_url_checker(test_data_creator_flask: TestDataCreatorFlask):
                 "duplicates": [
                     {
                         "original_url": "https://duplicate-checker.com/",
-                        "approval_status": "rejected",
-                        "rejection_note": "Test rejection note",
                     }
                 ]
             },

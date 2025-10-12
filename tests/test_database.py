@@ -12,7 +12,7 @@ import pytest
 
 from db.client.core import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
-from db.enums import ApprovalStatus, URLStatus
+from db.enums import URLStatus
 from db.models.implementations.core.recent_search.core import RecentSearch
 from middleware.enums import Relations, OperationType
 from tests.helpers.common_test_data import get_test_name
@@ -361,43 +361,6 @@ def test_data_sources_created_at_updated_at(
     assert result[0]["updated_at"] > created_at
 
 
-def test_approval_status_updated_at(
-    test_data_creator_db_client: TestDataCreatorDBClient,
-):
-    tdc = test_data_creator_db_client
-    # Create bare-minimum fake data source
-    data_source_id = tdc.data_source(approval_status=ApprovalStatus.PENDING).id
-
-    def get_approval_status_updated_at():
-        return tdc.db_client._select_single_entry_from_relation(
-            relation_name=Relations.DATA_SOURCES.value,
-            columns=["approval_status_updated_at"],
-            where_mappings=WhereMapping.from_dict({"id": data_source_id}),
-        )["approval_status_updated_at"]
-
-    def update_data_source(column_edit_mappings):
-        tdc.db_client.update_data_source(
-            entry_id=data_source_id,
-            column_edit_mappings=column_edit_mappings,
-        )
-
-    initial_approval_status_updated_at = get_approval_status_updated_at()
-
-    # Update approval status
-    update_data_source({"approval_status": ApprovalStatus.APPROVED.value})
-    # Get `approval_status_updated_at` for data request
-    approval_status_updated_at = get_approval_status_updated_at()
-
-    # Confirm `approval_status_updated_at` is now greater than `initial_approval_status_updated_at`
-    assert approval_status_updated_at > initial_approval_status_updated_at
-
-    # Make an edit to a different column and confirm that `approval_status_updated_at` is not updated
-    update_data_source({"name": get_test_name()})
-
-    new_approval_status_updated_at = get_approval_status_updated_at()
-    assert approval_status_updated_at == new_approval_status_updated_at
-
-
 def test_dependent_locations_view(test_data_creator_db_client: TestDataCreatorDBClient):
     tdc = test_data_creator_db_client
     mls = MultiLocationSetup(tdc)
@@ -573,7 +536,7 @@ def test_update_broken_source_url_as_of(
     now = datetime.now(timezone.utc)
 
     # Create data source
-    cds = tdc.data_source(approval_status=ApprovalStatus.APPROVED)
+    cds = tdc.data_source()
 
     def get_broken_source_url_as_of():
         return tdc.db_client._select_single_entry_from_relation(
@@ -700,7 +663,7 @@ def test_agencies_table_logic(test_data_creator_db_client: TestDataCreatorDBClie
     db_client = tdc.db_client
     delete_change_log(db_client)
 
-    NUMBER_OF_AGENCY_TABLE_COLUMNS = 16
+    NUMBER_OF_AGENCY_TABLE_COLUMNS = 11
 
     # Create agency
     old_name = get_test_name()

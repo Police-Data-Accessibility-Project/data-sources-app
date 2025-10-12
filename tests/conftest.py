@@ -15,7 +15,7 @@ from sqlalchemy.exc import IntegrityError as IntegrityErrorSA
 
 from config import limiter
 from db.client.core import DatabaseClient
-from db.enums import LocationType, ApprovalStatus
+from db.enums import LocationType
 from db.models.implementations.core.location.core import Location
 from db.models.implementations.core.location.county import County
 from db.models.implementations.core.location.locality import Locality
@@ -29,7 +29,7 @@ from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
 from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from utilities.common import get_alembic_conn_string, downgrade_to_base
+from utilities.common import get_alembic_conn_string
 
 # Load environment variables
 dotenv.load_dotenv()
@@ -172,14 +172,17 @@ def setup_database():
         command.upgrade(alembic_cfg, "head")
     except Exception:
         # Downgrade to base and try again
-        downgrade_to_base(alembic_cfg, engine)
         connection = alembic_cfg.attributes["connection"]
         connection.exec_driver_sql("DROP SCHEMA public CASCADE;")
         connection.exec_driver_sql("CREATE SCHEMA public;")
         connection.commit()
         command.upgrade(alembic_cfg, "head")
     yield
-    downgrade_to_base(alembic_cfg, engine)
+    connection = alembic_cfg.attributes["connection"]
+    connection.exec_driver_sql("DROP SCHEMA public CASCADE;")
+    connection.exec_driver_sql("CREATE SCHEMA public;")
+    connection.commit()
+
     # Base.metadata.create_all(engine)
 
 
@@ -269,7 +272,7 @@ def test_agencies(test_data_creator_db_client) -> list[int]:
     tdc = test_data_creator_db_client
     agency_ids = []
     for _ in range(5):
-        agency_ids.append(tdc.agency(approval_status=ApprovalStatus.APPROVED).id)
+        agency_ids.append(tdc.agency().id)
     return agency_ids
 
 

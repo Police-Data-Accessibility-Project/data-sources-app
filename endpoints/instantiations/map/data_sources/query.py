@@ -21,7 +21,5 @@ FROM
         LEFT JOIN us_states S ON L.state_id = S.id
         LEFT JOIN LOCALITIES LOC ON L.locality_id = LOC.id
         LEFT JOIN COUNTIES c on L.county_id = C.id
-WHERE
-    DATA_SOURCES.APPROVAL_STATUS = 'approved'
 
         """

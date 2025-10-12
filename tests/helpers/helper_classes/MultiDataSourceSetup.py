@@ -1,4 +1,3 @@
-from db.enums import ApprovalStatus
 from tests.helpers.helper_classes.MultiAgencySetup import MultiAgencySetup
 from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
@@ -22,21 +21,15 @@ class MultiDataSourceSetup:
             self.approved_source_federal.id, self.mas.federal_agency.id
         )
         # Add pending data sources as well
-        self.pending_source_1 = self.tdc.tdcdb.data_source(
-            approval_status=ApprovalStatus.PENDING
-        )
+        self.pending_source_1 = self.tdc.tdcdb.data_source()
         self.tdc.link_data_source_to_agency(
             self.pending_source_1.id, self.mas.pittsburgh_agency.id
         )
-        self.pending_source_2 = self.tdc.tdcdb.data_source(
-            approval_status=ApprovalStatus.PENDING
-        )
+        self.pending_source_2 = self.tdc.tdcdb.data_source()
         self.tdc.link_data_source_to_agency(
             self.pending_source_2.id, self.mas.pennsylvania_id.id
         )
-        self.pending_source_3 = self.tdc.tdcdb.data_source(
-            approval_status=ApprovalStatus.PENDING
-        )
+        self.pending_source_3 = self.tdc.tdcdb.data_source()
         self.tdc.link_data_source_to_agency(
             self.pending_source_3.id, self.mas.federal_agency.id
         )

@@ -246,7 +246,6 @@ class DynamicQueryConstructor:
         )
         where_subclauses = [
             sql.SQL("agencies.jurisdiction_type = 'federal'"),
-            sql.SQL("data_sources.approval_status = 'approved'"),
             sql.SQL("data_sources.url_status != 'broken'"),
         ]
 
@@ -347,7 +346,6 @@ class DynamicQueryConstructor:
 
         join_conditions = []
         where_subclauses = [
-            sql.SQL("data_sources.approval_status = 'approved'"),
             sql.SQL("data_sources.url_status != 'broken'"),
         ]
 
@@ -477,9 +475,7 @@ class DynamicQueryConstructor:
         query = sql.SQL(
             """
             SELECT 
-                original_url,
-                rejection_note,
-                approval_status
+                original_url
             FROM distinct_source_urls
             WHERE base_url = {url}
             """

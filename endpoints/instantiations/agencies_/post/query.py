@@ -27,12 +27,7 @@ class CreateAgencyQueryBuilder(QueryBuilderBase):
             jurisdiction_type=agency_info.jurisdiction_type.value,
             multi_agency=agency_info.multi_agency,
             no_web_presence=agency_info.no_web_presence,
-            approval_status=agency_info.approval_status.value,
             defunct_year=agency_info.defunct_year,
-            rejection_reason=agency_info.rejection_reason,
-            last_approval_editor=agency_info.last_approval_editor,
-            submitter_contact=agency_info.submitter_contact,
-            creator_user_id=self.user_id,
         )
         self.session.add(agency)
         # Flush to get agency id

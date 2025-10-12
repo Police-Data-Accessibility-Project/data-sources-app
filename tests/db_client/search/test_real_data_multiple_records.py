@@ -1,4 +1,3 @@
-from db.enums import ApprovalStatus
 from middleware.enums import RecordTypes
 from utilities.enums import RecordCategoryEnum
 
@@ -19,9 +18,7 @@ def test_search_with_location_and_record_types_real_data_multiple_records(
     def agency_and_data_source(
         location_id, record_type: RecordTypes = RecordTypes.LIST_OF_DATA_SOURCES
     ):
-        ds_id = tdc.data_source(
-            approval_status=ApprovalStatus.APPROVED, record_type=record_type
-        ).id
+        ds_id = tdc.data_source(record_type=record_type).id
         a_id = tdc.agency(location_id=location_id).id
         tdc.link_data_source_to_agency(data_source_id=ds_id, agency_id=a_id)
 
