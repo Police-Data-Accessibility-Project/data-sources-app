@@ -14,8 +14,12 @@ from endpoints.instantiations.source_collector.data_sources.duplicates.wrapper i
 from endpoints.instantiations.source_collector.data_sources.post.wrapper import (
     add_data_sources_from_source_collector,
 )
-from endpoints.instantiations.source_collector.follows.query import GetUserFollowsSourceCollectorQueryBuilder
-from endpoints.instantiations.source_collector.follows.response import GetFollowsResponse
+from endpoints.instantiations.source_collector.follows.query import (
+    GetUserFollowsSourceCollectorQueryBuilder,
+)
+from endpoints.instantiations.source_collector.follows.response import (
+    GetFollowsResponse,
+)
 from endpoints.instantiations.source_collector.meta_urls.post.endpoint_schema_config import (
     SourceCollectorMetaURLPostEndpointSchemaConfig,
 )
@@ -121,11 +125,13 @@ class SourceCollectorMetaURLs(PsycopgResource):
             schema_populate_parameters=SourceCollectorMetaURLPostEndpointSchemaConfig.get_schema_populate_parameters(),
         )
 
-sc_router = APIRouter(prefix="/v2/source-collector", tags=['Source Collector'])
+
+sc_router = APIRouter(prefix="/v2/source-collector", tags=["Source Collector"])
+
 
 @sc_router.get("/follows")
 def get_follows(
-    access_info: AccessInfoPrimary = Depends(get_access_info)
+    access_info: AccessInfoPrimary = Depends(get_access_info),
 ) -> GetFollowsResponse:
     dbc = DatabaseClient()
     return dbc.run_query_builder(GetUserFollowsSourceCollectorQueryBuilder())

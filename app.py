@@ -55,7 +55,10 @@ from endpoints.instantiations.oauth_.login_with_github import (
 from endpoints.instantiations.oauth_.oauth import namespace_oauth
 from endpoints.instantiations.permissions_.routes import namespace_permissions
 from endpoints.instantiations.search.routes import namespace_search
-from endpoints.instantiations.source_collector.routes import namespace_source_collector, sc_router
+from endpoints.instantiations.source_collector.routes import (
+    namespace_source_collector,
+    sc_router,
+)
 from endpoints.instantiations.typeahead_.routes import (
     namespace_typeahead_suggestions,
 )
@@ -220,17 +223,20 @@ def get_api_with_namespaces():
         "\n\nBy accessing our API, you are agreeing to our [Terms of Service](https://docs.pdap.io/meta/operations/legal/terms-of-service). Please read them before you start."
         "\n\nFor API help, consult [our getting started guide.](https://docs.pdap.io/api/introduction)"
         "\n\nTo search the database, go to [pdap.io](https://pdap.io)."
-        "\n\nThe new FastAPI API is available at {this_address}/docs"
+        "\n\nThe new FastAPI API is available at {this_address}/docs",
     )
     for namespace in NAMESPACES:
         api.add_namespace(namespace)
     return api
 
+
 root_router = APIRouter(prefix="/v2/test", tags=["test"])
+
 
 @root_router.get("/test")
 def test():
     return "test"
+
 
 if __name__ == "__main__":
     flask_app = create_flask_app()
@@ -242,13 +248,10 @@ if __name__ == "__main__":
         "\n\nFor API help, consult [our getting started guide.](https://docs.pdap.io/api/introduction)"
         "\n\nTo search the database, go to [pdap.io](https://pdap.io)."
         "\n\nThe old Flask API is available at {this_address}/"
-        ""
+        "",
     )
 
-    for router in [
-        root_router,
-        sc_router
-    ]:
+    for router in [root_router, sc_router]:
         fast_api_app.include_router(router)
 
     fast_api_app.mount("/", WSGIMiddlewareFastAPI(flask_app))

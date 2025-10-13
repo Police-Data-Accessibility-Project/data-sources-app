@@ -23,8 +23,7 @@ class JWTService:
     def get_access_info(token: str) -> AccessInfoPrimary | None:
         try:
             simple_jwt = SimpleJWT.decode(
-                token,
-                expected_purpose=JWTPurpose.STANDARD_ACCESS_TOKEN
+                token, expected_purpose=JWTPurpose.STANDARD_ACCESS_TOKEN
             )
         except Exception:
             return None
