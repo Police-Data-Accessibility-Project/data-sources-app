@@ -247,11 +247,8 @@ def create_asgi_app() -> FastAPI:
         fast_api_app.include_router(router)
 
     fast_api_app.mount("/", WSGIMiddlewareFastAPI(flask_app))
-    uvicorn.run(
-        fast_api_app,
-        host=os.getenv("FLASK_RUN_HOST", "127.0.0.1"),
-        port=int(os.getenv("FLASK_RUN_PORT", 8000)),
-    )
+
+    return fast_api_app
 
 if __name__ == "__main__":
     app = create_asgi_app()
