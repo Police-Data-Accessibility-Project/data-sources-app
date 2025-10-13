@@ -11,6 +11,7 @@ from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 from flask_restx import Api
 from jwt import DecodeError, ExpiredSignatureError
+from starlette.applications import Starlette
 
 from config import config, oauth, limiter, jwt
 from db.helpers_.psycopg import initialize_psycopg_connection
@@ -246,7 +247,10 @@ def create_asgi_app() -> FastAPI:
     for router in [sc_router]:
         fast_api_app.include_router(router)
 
-    fast_api_app.mount("/", WSGIMiddlewareFastAPI(flask_app))
+    app = Starlette()
+
+    app.mount("/v3", fast_api_app)
+    app.mount("/v2", WSGIMiddlewareFastAPI(flask_app))
 
     return fast_api_app
 
