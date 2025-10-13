@@ -2,6 +2,7 @@ from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from werkzeug.exceptions import BadRequest
 
+from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.jwt.core import SimpleJWT
 from middleware.security.jwt.enums import JWTPurpose
 from middleware.security.jwt.helpers import get_jwt_access_info_with_permissions
@@ -19,7 +20,7 @@ class JWTService:
             return None
 
     @staticmethod
-    def get_access_info(token: str):
+    def get_access_info(token: str) -> AccessInfoPrimary | None:
         try:
             simple_jwt = SimpleJWT.decode(
                 token, expected_purpose=JWTPurpose.STANDARD_ACCESS_TOKEN

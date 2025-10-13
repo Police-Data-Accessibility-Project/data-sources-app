@@ -1,3 +1,6 @@
+from fastapi import APIRouter, Depends
+
+from db.client.core import DatabaseClient
 from endpoints._helpers.response_info import ResponseInfo
 from endpoints.instantiations.source_collector.agencies.search.locations.schema_config import (
     SourceCollectorAgencySearchLocationSchemaConfig,
@@ -10,6 +13,12 @@ from endpoints.instantiations.source_collector.data_sources.duplicates.wrapper i
 )
 from endpoints.instantiations.source_collector.data_sources.post.wrapper import (
     add_data_sources_from_source_collector,
+)
+from endpoints.instantiations.source_collector.follows.query import (
+    GetUserFollowsSourceCollectorQueryBuilder,
+)
+from endpoints.instantiations.source_collector.follows.response import (
+    GetFollowsResponse,
 )
 from endpoints.instantiations.source_collector.meta_urls.post.endpoint_schema_config import (
     SourceCollectorMetaURLPostEndpointSchemaConfig,
@@ -28,6 +37,7 @@ from endpoints.schema_config.instantiations.source_collector.duplicates import (
 from middleware.decorators.endpoint_info import endpoint_info
 from middleware.enums import AccessTypeEnum, PermissionsEnum
 from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.fastapi import get_access_info
 from middleware.security.auth.info.base import AuthenticationInfo
 from utilities.namespace import create_namespace, AppNamespaces
 
@@ -114,3 +124,14 @@ class SourceCollectorMetaURLs(PsycopgResource):
             wrapper_function=add_meta_urls_from_source_collector,
             schema_populate_parameters=SourceCollectorMetaURLPostEndpointSchemaConfig.get_schema_populate_parameters(),
         )
+
+
+sc_router = APIRouter(prefix="/v2/source-collector", tags=["Source Collector"])
+
+
+@sc_router.get("/follows")
+def get_follows(
+    access_info: AccessInfoPrimary = Depends(get_access_info),
+) -> GetFollowsResponse:
+    dbc = DatabaseClient()
+    return dbc.run_query_builder(GetUserFollowsSourceCollectorQueryBuilder())
