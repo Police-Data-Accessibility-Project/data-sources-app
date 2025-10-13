@@ -231,7 +231,7 @@ def get_api_with_namespaces():
     return api
 
 
-def create_asgi_app() -> FastAPI:
+def create_asgi_app() -> Starlette:
     flask_app = create_flask_app()
     fast_api_app = FastAPI(
         title="PDAP Data Sources API",
@@ -250,9 +250,9 @@ def create_asgi_app() -> FastAPI:
     app = Starlette()
 
     app.mount("/v3", fast_api_app)
-    app.mount("/", WSGIMiddlewareFastAPI(flask_app))
+    app.mount("/v2", WSGIMiddlewareFastAPI(flask_app))
 
-    return fast_api_app
+    return app
 
 if __name__ == "__main__":
     app = create_asgi_app()
