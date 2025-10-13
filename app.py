@@ -3,6 +3,9 @@ from datetime import timedelta, date, datetime
 
 from apscheduler.triggers.interval import IntervalTrigger
 from environs import Env
+from fastapi import FastAPI, APIRouter
+from fastapi.middleware.wsgi import WSGIMiddleware as WSGIMiddlewareFastAPI
+import uvicorn
 from flask import Flask
 from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
@@ -52,7 +55,7 @@ from endpoints.instantiations.oauth_.login_with_github import (
 from endpoints.instantiations.oauth_.oauth import namespace_oauth
 from endpoints.instantiations.permissions_.routes import namespace_permissions
 from endpoints.instantiations.search.routes import namespace_search
-from endpoints.instantiations.source_collector.routes import namespace_source_collector
+from endpoints.instantiations.source_collector.routes import namespace_source_collector, sc_router
 from endpoints.instantiations.typeahead_.routes import (
     namespace_typeahead_suggestions,
 )
@@ -156,7 +159,7 @@ class UpdatedJSONProvider(DefaultJSONProvider):
         return super().default(o)
 
 
-def create_app() -> Flask:
+def create_flask_app() -> Flask:
     psycopg2_connection = initialize_psycopg_connection()
     config.connection = psycopg2_connection
     api = get_api_with_namespaces()
@@ -216,13 +219,42 @@ def get_api_with_namespaces():
         description="The following is the API documentation for the PDAP Data Sources API."
         "\n\nBy accessing our API, you are agreeing to our [Terms of Service](https://docs.pdap.io/meta/operations/legal/terms-of-service). Please read them before you start."
         "\n\nFor API help, consult [our getting started guide.](https://docs.pdap.io/api/introduction)"
-        "\n\nTo search the database, go to [pdap.io](https://pdap.io).",
+        "\n\nTo search the database, go to [pdap.io](https://pdap.io)."
+        "\n\nThe new FastAPI API is available at {this_address}/docs"
     )
     for namespace in NAMESPACES:
         api.add_namespace(namespace)
     return api
 
+root_router = APIRouter(prefix="/v2/test", tags=["test"])
+
+@root_router.get("/test")
+def test():
+    return "test"
 
 if __name__ == "__main__":
-    app = create_app()
-    app.run(host=os.getenv("FLASK_RUN_HOST", "127.0.0.1"))
+    flask_app = create_flask_app()
+    fast_api_app = FastAPI(
+        title="PDAP Data Sources API",
+        version="3.0",
+        description="The following is the API documentation for the PDAP Data Sources API."
+        "\n\nBy accessing our API, you are agreeing to our [Terms of Service](https://docs.pdap.io/meta/operations/legal/terms-of-service). Please read them before you start."
+        "\n\nFor API help, consult [our getting started guide.](https://docs.pdap.io/api/introduction)"
+        "\n\nTo search the database, go to [pdap.io](https://pdap.io)."
+        "\n\nThe old Flask API is available at {this_address}/"
+        ""
+    )
+
+    for router in [
+        root_router,
+        sc_router
+    ]:
+        fast_api_app.include_router(router)
+
+    fast_api_app.mount("/", WSGIMiddlewareFastAPI(flask_app))
+    uvicorn.run(
+        fast_api_app,
+        host=os.getenv("FLASK_RUN_HOST", "127.0.0.1"),
+        port=int(os.getenv("FLASK_RUN_PORT", 8000)),
+    )
+    # flask_app.run(host=os.getenv("FLASK_RUN_HOST", "127.0.0.1"))
