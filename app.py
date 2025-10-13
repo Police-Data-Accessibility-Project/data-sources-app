@@ -179,7 +179,7 @@ def create_flask_app() -> Flask:
     app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
 
     app.secret_key = get_flask_app_cookie_encryption_key()
-    app.wsgi_app = WSGIMiddleware(app.wsgi_app)
+    # app.wsgi_app = WSGIMiddleware(app.wsgi_app)
     CORS(app)
 
     api.init_app(app)
