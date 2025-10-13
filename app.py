@@ -179,7 +179,7 @@ def create_flask_app() -> Flask:
     app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
 
     app.secret_key = get_flask_app_cookie_encryption_key()
-    app.wsgi_app = WSGIMiddleware(app.wsgi_app)
+    # app.wsgi_app = WSGIMiddleware(app.wsgi_app)
     CORS(app)
 
     api.init_app(app)
@@ -249,8 +249,8 @@ def create_asgi_app() -> FastAPI:
 
     app = Starlette()
 
-    app.mount("/v3", fast_api_app)
-    app.mount("/v2", WSGIMiddlewareFastAPI(flask_app))
+    app.mount("/api/v3", fast_api_app)
+    app.mount("/api/v2", WSGIMiddlewareFastAPI(flask_app))
 
     return fast_api_app
 
