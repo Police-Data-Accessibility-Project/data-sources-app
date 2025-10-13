@@ -249,8 +249,8 @@ def create_asgi_app() -> Starlette:
 
     app = Starlette()
 
-    app.mount("/v3", fast_api_app)
-    app.mount("/v2", WSGIMiddlewareFastAPI(flask_app))
+    app.mount("/api/v3", fast_api_app)
+    app.mount("/api/v2", WSGIMiddlewareFastAPI(flask_app))
 
     return app
 
