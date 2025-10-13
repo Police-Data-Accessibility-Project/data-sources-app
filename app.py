@@ -1,16 +1,15 @@
 import os
 from datetime import timedelta, date, datetime
 
+import uvicorn
 from apscheduler.triggers.interval import IntervalTrigger
 from environs import Env
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI
 from fastapi.middleware.wsgi import WSGIMiddleware as WSGIMiddlewareFastAPI
-import uvicorn
 from flask import Flask
 from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 from flask_restx import Api
-from jwt import DecodeError, ExpiredSignatureError
 from starlette.applications import Starlette
 
 from config import config, oauth, limiter, jwt
@@ -66,7 +65,6 @@ from endpoints.instantiations.typeahead_.routes import (
 from endpoints.instantiations.user.routes import namespace_user
 from middleware.scheduled_tasks.check_database_health import check_database_health
 from middleware.scheduled_tasks.manager import SchedulerManager
-from middleware.security.jwt.core import SimpleJWT
 from middleware.util.env import get_env_variable
 
 env = Env()
@@ -106,51 +104,6 @@ NAMESPACES = [
     namespace_validate_email,
     namespace_resend_validation_email,
 ]
-
-MY_PREFIX = "/api"
-
-
-class WSGIMiddleware(object):
-    """Wrap the application in this middleware and configure the
-    front-end server to add these headers, to let you quietly bind
-    this to a URL other than / and to an HTTP scheme that is
-    different than what is used locally.
-
-    :param app: the WSGI application
-    """
-
-    def __init__(self, app):
-        self.app = app
-
-    def __call__(self, environ, start_response):
-        self.set_up_reverse_proxy(environ)
-        self.inject_user_id(environ)
-        return self.app(environ, start_response)
-
-    def set_up_reverse_proxy(self, environ):
-        script_name = MY_PREFIX
-        environ["SCRIPT_NAME"] = script_name
-        path_info = environ["PATH_INFO"]
-        if path_info.startswith(script_name):
-            environ["PATH_INFO"] = path_info[len(script_name) :]
-
-        scheme = environ.get("HTTP_X_SCHEME", "")
-        if scheme:
-            environ["wsgi.url_scheme"] = scheme
-
-    def inject_user_id(self, environ):
-        auth_header = environ.get("HTTP_AUTHORIZATION", "")
-        if auth_header.startswith("Bearer "):
-            token = auth_header[len("Bearer ") :]
-            try:
-                my_jwt = SimpleJWT.decode(token)
-                environ["HTTP_X_USER_ID"] = my_jwt.other_claims["user_id"]
-                return
-            except (KeyError, DecodeError, ExpiredSignatureError):
-                pass
-
-        environ["HTTP_X_USER_ID"] = "-"
-
 
 def get_flask_app_cookie_encryption_key() -> str:
     return get_env_variable("FLASK_APP_COOKIE_ENCRYPTION_KEY")

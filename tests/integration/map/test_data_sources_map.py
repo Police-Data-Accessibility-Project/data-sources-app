@@ -25,7 +25,7 @@ def test_data_sources_map_get(test_data_creator_flask: TestDataCreatorFlask):
         agency_id=a_id,
     )
     response_json = tdcf.request_validator.get(
-        endpoint="/api/map/data-sources",
+        endpoint="/map/data-sources",
         headers=tus.api_authorization_header,
         expected_schema=DataSourcesMapEndpointSchemaConfig.primary_output_schema,
     )

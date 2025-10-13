@@ -27,7 +27,7 @@ from utilities.namespace import AppNamespaces, create_namespace
 namespace_user = create_namespace(AppNamespaces.USER)
 
 DATA_REQUESTS_PARTIAL_ENDPOINT = "data-requests"
-USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL = f"/api/user/{DATA_REQUESTS_PARTIAL_ENDPOINT}"
+USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL = f"/user/{DATA_REQUESTS_PARTIAL_ENDPOINT}"
 
 
 @namespace_user.route("/update-password")

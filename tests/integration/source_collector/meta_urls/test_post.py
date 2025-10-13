@@ -44,7 +44,7 @@ def test_source_collector_meta_urls_post(
     )
 
     response: dict = tdc.request_validator.post(
-        endpoint="/api/source-collector/meta-urls",
+        endpoint="/source-collector/meta-urls",
         headers=tus_source_collector.jwt_authorization_header,
         json=dto.model_dump(mode="json"),
         expected_schema=SourceCollectorMetaURLPostEndpointSchemaConfig.primary_output_schema,

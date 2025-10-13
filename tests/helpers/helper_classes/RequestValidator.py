@@ -260,7 +260,7 @@ class RequestValidator:
         expected_schema: Schema = LoginEndpointSchemaConfig.primary_output_schema,
     ):
         return self.post(
-            endpoint="/api/auth/login",
+            endpoint="/auth/login",
             json={
                 "email": email,
                 "password": password,
@@ -277,7 +277,7 @@ class RequestValidator:
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
         return self.post(
-            endpoint="/api/auth/reset-password",
+            endpoint="/auth/reset-password",
             headers=get_authorization_header(scheme="Bearer", token=token),
             json={"password": password},
             expected_response_status=expected_response_status,
@@ -294,7 +294,7 @@ class RequestValidator:
             "middleware.primary_resource_logic.reset_token_queries.send_password_reset_link"
         )
         self.post(
-            endpoint="/api/auth/request-reset-password",
+            endpoint="/auth/request-reset-password",
             json={"email": email},
             expected_response_status=expected_response_status,
             expected_schema=RequestResetPasswordEndpointSchemaConfig.primary_output_schema,
@@ -312,7 +312,7 @@ class RequestValidator:
         expected_json_content: dict | None = None,
     ):
         return self.post(
-            endpoint="/api/auth/reset-token-validation",
+            endpoint="/auth/reset-token-validation",
             headers=get_authorization_header(scheme="Bearer", token=token),
             expected_response_status=expected_response_status,
             expected_json_content=expected_json_content,
@@ -432,7 +432,7 @@ class RequestValidator:
             record_types=record_types,
         )
         endpoint = add_query_params(
-            url="/api/search/follow/national",
+            url="/search/follow/national",
             params=query_params,
         )
 
@@ -457,7 +457,7 @@ class RequestValidator:
             record_types=record_types,
         )
         endpoint = add_query_params(
-            url="/api/search/follow/national",
+            url="/search/follow/national",
             params=query_params,
         )
 
@@ -478,7 +478,7 @@ class RequestValidator:
         expected_json_content: dict | None = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
-        endpoint_base = "/api/search/follow"
+        endpoint_base = "/search/follow"
         query_params = self._get_search_query_params(
             location_id=location_id,
             record_categories=record_categories,
@@ -505,7 +505,7 @@ class RequestValidator:
         expected_json_content: dict | None = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
-        endpoint_base = "/api/search/follow"
+        endpoint_base = "/search/follow"
         query_params = self._get_search_query_params(
             location_id=location_id,
             record_categories=record_categories,
@@ -530,7 +530,7 @@ class RequestValidator:
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
         return self.get(
-            endpoint="/api/search/follow",
+            endpoint="/search/follow",
             headers=headers,
             expected_json_content=expected_json_content,
             expected_response_status=expected_response_status,
@@ -545,7 +545,7 @@ class RequestValidator:
         expected_schema=UserProfileGetEndpointSchemaConfig.primary_output_schema,
     ):
         return self.get(
-            endpoint=f"/api/user/{user_id}",
+            endpoint=f"/user/{user_id}",
             headers=headers,
             expected_schema=expected_schema,
             expected_response_status=expected_response_status,
@@ -574,7 +574,7 @@ class RequestValidator:
             },
         )
         return self.get(
-            endpoint="/api/data-requests",
+            endpoint="/data-requests",
             headers=headers,
             query_parameters=query_params,
             expected_schema=DataRequestsGetManyEndpointSchemaConfig.primary_output_schema,
@@ -587,7 +587,7 @@ class RequestValidator:
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
         return self.post(
-            endpoint="/api/data-requests/{data_request_id}/withdraw".format(
+            endpoint="/data-requests/{data_request_id}/withdraw".format(
                 data_request_id=data_request_id
             ),
             headers=headers,
@@ -656,7 +656,7 @@ class RequestValidator:
         limit: int = PAGE_SIZE,
     ):
         return self.get(
-            endpoint=f"/api/user/data-requests?page=1&limit={limit}",
+            endpoint=f"/user/data-requests?page=1&limit={limit}",
             headers=headers,
             expected_json_content=expected_json_content,
             expected_schema=UserProfileDataRequestsGetEndpointSchemaConfig.primary_output_schema,
@@ -693,7 +693,7 @@ class RequestValidator:
 
     def add_location_to_agency(self, headers: dict, agency_id: int, location_id: int):
         return self.post(
-            endpoint=f"/api/agencies/{agency_id}/locations/{location_id}",
+            endpoint=f"/agencies/{agency_id}/locations/{location_id}",
             headers=headers,
         )
 
@@ -701,7 +701,7 @@ class RequestValidator:
         self, headers: dict, agency_id: int, location_id: int
     ):
         return self.delete(
-            endpoint=f"/api/agencies/{agency_id}/locations/{location_id}",
+            endpoint=f"/agencies/{agency_id}/locations/{location_id}",
             headers=headers,
         )
 
@@ -713,7 +713,7 @@ class RequestValidator:
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
         return self.post(
-            endpoint="/api/user/update-password",
+            endpoint="/user/update-password",
             headers=headers,
             json={"old_password": old_password, "new_password": new_password},
             expected_response_status=expected_response_status,
@@ -723,7 +723,7 @@ class RequestValidator:
         self,
     ):
         return self.get(
-            endpoint="/api/swagger.json",
+            endpoint="/swagger.json",
         )
 
     def get_data_sources(
@@ -754,14 +754,14 @@ class RequestValidator:
 
     def get_agency_by_id(self, headers: dict, id: int):
         return self.get(
-            endpoint=f"/api/agencies/{id}",
+            endpoint=f"/agencies/{id}",
             headers=headers,
             expected_schema=AgenciesByIDGetEndpointSchemaConfig.primary_output_schema,
         )
 
     def get_data_source_by_id(self, headers: dict, id: int):
         return self.get(
-            endpoint=f"/api/data-sources/{id}",
+            endpoint=f"/data-sources/{id}",
             headers=headers,
             expected_schema=DataSourcesByIDGetEndpointSchemaConfig.primary_output_schema,
         )
@@ -786,7 +786,7 @@ class RequestValidator:
             },
         )
         return self.post(
-            endpoint="/api/match/agency",
+            endpoint="/match/agency",
             headers=headers,
             json=data,
             expected_schema=MatchAgencyEndpointSchemaConfig.primary_output_schema,
@@ -801,7 +801,7 @@ class RequestValidator:
         expected_json_content: dict | None = None,
     ):
         return self.get(
-            endpoint=f"/api/locations/{location_id}",
+            endpoint=f"/locations/{location_id}",
             headers=headers,
             expected_schema=LocationsByIDGetEndpointSchemaConfig.primary_output_schema,
         )
@@ -812,7 +812,7 @@ class RequestValidator:
         location_id: int,
     ):
         return self.get(
-            endpoint=f"/api/locations/{location_id}/data-requests",
+            endpoint=f"/locations/{location_id}/data-requests",
             headers=headers,
             expected_schema=LocationsRelatedDataRequestsGetEndpointSchemaConfig.primary_output_schema,
         )
@@ -822,21 +822,21 @@ class RequestValidator:
         headers: dict,
     ):
         return self.get(
-            endpoint="/api/metrics",
+            endpoint="/metrics",
             headers=headers,
             expected_schema=MetricsGetEndpointSchemaConfig.primary_output_schema,
         )
 
     def get_user_by_id_admin(self, headers: dict, user_id: str):
         return self.get(
-            endpoint=f"/api/admin/users/{user_id}",
+            endpoint=f"/admin/users/{user_id}",
             headers=headers,
             expected_schema=AdminUsersByIDGetEndpointSchemaConfig.primary_output_schema,
         )
 
     def get_users(self, headers: dict, page: int = 1):
         return self.get(
-            endpoint=f"/api/admin/users?page={page}",
+            endpoint=f"/admin/users?page={page}",
             headers=headers,
             expected_schema=AdminUsersGetManyEndpointSchemaConfig.primary_output_schema,
         )
@@ -849,7 +849,7 @@ class RequestValidator:
         permissions: List[str],
     ):
         return self.post(
-            endpoint="/api/admin/users",
+            endpoint="/admin/users",
             headers=headers,
             json={
                 "email": email,
@@ -861,14 +861,14 @@ class RequestValidator:
 
     def delete_user(self, headers: dict, user_id: str):
         return self.delete(
-            endpoint=f"/api/admin/users/{user_id}",
+            endpoint=f"/admin/users/{user_id}",
             headers=headers,
             expected_schema=AdminUsersByIDDeleteEndpointSchemaConfig.primary_output_schema,
         )
 
     def update_admin_user(self, headers: dict, resource_id: str, password: str):
         return self.put(
-            endpoint=f"/api/admin/users/{resource_id}",
+            endpoint=f"/admin/users/{resource_id}",
             headers=headers,
             json={"password": password},
             expected_schema=AdminUsersByIDPutEndpointSchemaConfig.primary_output_schema,
@@ -876,7 +876,7 @@ class RequestValidator:
 
     def get_record_types_and_categories(self, headers: dict):
         return self.get(
-            endpoint="/api/metadata/record-types-and-categories",
+            endpoint="/metadata/record-types-and-categories",
             headers=headers,
             expected_schema=RecordTypeAndCategoryGetEndpointSchemaConfig.primary_output_schema,
         )
@@ -890,7 +890,7 @@ class RequestValidator:
         expected_json_content: dict | None = None,
     ) -> dict:
         return self.post(
-            endpoint="/api/github/data-requests/synchronize",
+            endpoint="/github/data-requests/synchronize",
             headers=headers,
             expected_schema=GitHubDataRequestsSynchronizePostEndpointSchemaConfig.primary_output_schema,
             expected_response_status=expected_response_status,
@@ -899,7 +899,7 @@ class RequestValidator:
 
     def typeahead_agency(self, query: str):
         return self.get(
-            endpoint=f"/api/typeahead/agencies?query={query}",
+            endpoint=f"/typeahead/agencies?query={query}",
             expected_schema=TypeaheadAgenciesEndpointSchemaConfig.primary_output_schema,
         )
 
@@ -911,7 +911,7 @@ class RequestValidator:
         expected_schema: Schema = SourceCollectorDataSourcesPostEndpointSchemaConfig.primary_output_schema,
     ):
         return self.post(
-            endpoint="/api/source-collector/data-sources",
+            endpoint="/source-collector/data-sources",
             headers=headers,
             json=dto.model_dump(mode="json"),
             expected_schema=expected_schema,
@@ -922,7 +922,7 @@ class RequestValidator:
         self, headers: dict, expected_json_content: dict | None = None
     ):
         return self.get(
-            endpoint="/api/map/locations",
+            endpoint="/map/locations",
             headers=headers,
             expected_schema=LocationsMapEndpointSchemaConfig.primary_output_schema,
             expected_json_content=expected_json_content,
@@ -935,7 +935,7 @@ class RequestValidator:
         expected_json_content: dict | None = None,
     ):
         return self.get(
-            endpoint="/api/locations",
+            endpoint="/locations",
             headers=headers,
             query_parameters=dto.model_dump(mode="json"),
             expected_schema=LocationsGetManyEndpointSchemaConfig.primary_output_schema,
@@ -946,7 +946,7 @@ class RequestValidator:
         self, headers: dict, dto: MetricsFollowedSearchesBreakdownRequestDTO
     ):
         return self.get(
-            endpoint="/api/metrics/followed-searches/breakdown",
+            endpoint="/metrics/followed-searches/breakdown",
             headers=headers,
             query_parameters=dto.model_dump(mode="json"),
             expected_schema=MetricsFollowedSearchesBreakdownGetEndpointSchemaConfig.primary_output_schema,
@@ -954,14 +954,14 @@ class RequestValidator:
 
     def get_metrics_followed_searches_aggregate(self, headers: dict):
         return self.get(
-            endpoint="/api/metrics/followed-searches/aggregate",
+            endpoint="/metrics/followed-searches/aggregate",
             headers=headers,
             expected_schema=MetricsFollowedSearchesAggregateGetEndpointSchemaConfig.primary_output_schema,
         )
 
     def post_source_collector_duplicates(self, headers: dict, urls: List[str]):
         return self.post(
-            endpoint="/api/source-collector/data-sources/duplicates",
+            endpoint="/source-collector/data-sources/duplicates",
             headers=headers,
             json={"urls": urls},
             expected_schema=SourceCollectorDuplicatesPostEndpointSchemaConfig.primary_output_schema,

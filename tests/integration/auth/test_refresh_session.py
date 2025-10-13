@@ -32,7 +32,7 @@ def test_refresh_session_post(test_data_creator_flask: TestDataCreatorFlask):
     response_json = run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="post",
-        endpoint="/api/auth/refresh-session",
+        endpoint="/auth/refresh-session",
         headers={"Authorization": f"Bearer {jwt_tokens.refresh_token}"},
     )
 
@@ -69,7 +69,7 @@ def test_refresh_session_post_access_token(
     run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="post",
-        endpoint="/api/auth/refresh-session",
+        endpoint="/auth/refresh-session",
         headers={"Authorization": f"Bearer {jwt_tokens.access_token}"},
         expected_response_status=HTTPStatus.BAD_REQUEST,
     )
