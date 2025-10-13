@@ -230,15 +230,7 @@ def get_api_with_namespaces():
     return api
 
 
-root_router = APIRouter(prefix="/v2/test", tags=["test"])
-
-
-@root_router.get("/test")
-def test():
-    return "test"
-
-
-if __name__ == "__main__":
+def create_asgi_app() -> FastAPI:
     flask_app = create_flask_app()
     fast_api_app = FastAPI(
         title="PDAP Data Sources API",
@@ -251,7 +243,7 @@ if __name__ == "__main__":
         "",
     )
 
-    for router in [root_router, sc_router]:
+    for router in [sc_router]:
         fast_api_app.include_router(router)
 
     fast_api_app.mount("/", WSGIMiddlewareFastAPI(flask_app))
@@ -260,4 +252,11 @@ if __name__ == "__main__":
         host=os.getenv("FLASK_RUN_HOST", "127.0.0.1"),
         port=int(os.getenv("FLASK_RUN_PORT", 8000)),
     )
-    # flask_app.run(host=os.getenv("FLASK_RUN_HOST", "127.0.0.1"))
+
+if __name__ == "__main__":
+    app = create_asgi_app()
+    uvicorn.run(
+        app,
+        host=os.getenv("FLASK_RUN_HOST", "127.0.0.1"),
+        port=int(os.getenv("FLASK_RUN_PORT", 8000)),
+    )
