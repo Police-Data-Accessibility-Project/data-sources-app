@@ -250,7 +250,7 @@ def create_asgi_app() -> FastAPI:
     app = Starlette()
 
     app.mount("/v3", fast_api_app)
-    app.mount("/api", WSGIMiddlewareFastAPI(flask_app))
+    app.mount("/", WSGIMiddlewareFastAPI(flask_app))
 
     return fast_api_app
 
