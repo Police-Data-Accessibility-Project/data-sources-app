@@ -29,6 +29,31 @@ def upgrade() -> None:
     op.drop_column(AGENCIES_TABLE_NAME, "multi_agency")
     op.drop_column(AGENCIES_TABLE_NAME, "airtable_agency_last_modified")
     op.drop_column(AGENCIES_TABLE_NAME, "airtable_uid")
+    op.execute("""
+    DROP TRIGGER IF EXISTS set_agency_updated_at ON public.agencies
+    """)
+    op.execute("""
+    DROP FUNCTION IF EXISTS update_airtable_agency_last_modified_column
+    """)
+
+    op.execute("""
+    CREATE OR REPLACE FUNCTION update_agency_updated_at_column()
+        
+    RETURNS TRIGGER language plpgsql AS $$
+    BEGIN
+        NEW.updated_at = NOW();
+        RETURN NEW;
+    END;
+    $$
+    """)
+
+    op.execute("""
+    CREATE TRIGGER set_agency_updated_at
+    BEFORE UPDATE ON public.agencies
+    FOR EACH ROW
+    WHEN (OLD.* IS DISTINCT FROM NEW.*)
+    EXECUTE FUNCTION update_agency_updated_at_column()
+    """)
 
 
 def downgrade() -> None:
