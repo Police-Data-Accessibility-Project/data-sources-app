@@ -20,12 +20,8 @@ class Agency(StandardBase, CountMetadata, UpdatedAtMixin):
     jurisdiction_type: Mapped[JurisdictionTypeLiteral]
     defunct_year: Mapped[str | None]
     agency_type: Mapped[AgencyTypeLiteral]
-    multi_agency: Mapped[bool] = mapped_column(server_default=false())
     no_web_presence: Mapped[bool] = mapped_column(server_default=false())
-    airtable_agency_last_modified: Mapped[timestamp_tz] = mapped_column(
-        server_default=func.current_timestamp()
-    )
-    agency_created: Mapped[timestamp_tz] = mapped_column(
+    created_at: Mapped[timestamp_tz] = mapped_column(
         server_default=func.current_timestamp()
     )
 
