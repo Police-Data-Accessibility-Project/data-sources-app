@@ -5,19 +5,20 @@ Revises: a41df84338bb
 Create Date: 2025-10-21 11:33:46.002274
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
-import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'a1a8d636f4dd'
-down_revision: Union[str, None] = 'a41df84338bb'
+revision: str = "a1a8d636f4dd"
+down_revision: Union[str, None] = "a41df84338bb"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 DATA_SOURCES_TABLE_NAME: str = "data_sources"
+
 
 def upgrade() -> None:
     op.execute("""
@@ -25,9 +26,7 @@ def upgrade() -> None:
     """)
 
     op.alter_column(
-        table_name=DATA_SOURCES_TABLE_NAME,
-        column_name="record_type_id",
-        nullable=True
+        table_name=DATA_SOURCES_TABLE_NAME, column_name="record_type_id", nullable=True
     )
     # Drop columns
     op.drop_column(
@@ -39,22 +38,16 @@ def upgrade() -> None:
         column_name="tags",
     )
     op.drop_column(
-        table_name=DATA_SOURCES_TABLE_NAME,
-        column_name="broken_source_url_as_of"
+        table_name=DATA_SOURCES_TABLE_NAME, column_name="broken_source_url_as_of"
     )
     op.drop_column(
         table_name=DATA_SOURCES_TABLE_NAME,
-        column_name="record_download_option_provided"
+        column_name="record_download_option_provided",
     )
     op.drop_column(
-        table_name=DATA_SOURCES_TABLE_NAME,
-        column_name="data_source_request"
+        table_name=DATA_SOURCES_TABLE_NAME, column_name="data_source_request"
     )
-    op.drop_column(
-        table_name=DATA_SOURCES_TABLE_NAME,
-        column_name="submission_notes"
-    )
-
+    op.drop_column(table_name=DATA_SOURCES_TABLE_NAME, column_name="submission_notes")
 
     op.execute("""
     create view data_sources_expanded
