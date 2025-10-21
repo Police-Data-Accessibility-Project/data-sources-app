@@ -13,7 +13,7 @@ from db.queries.builder.core import QueryBuilderBase
 
 ArchiveInfo = namedtuple(
     "ArchiveInfo",
-    ["id", "url", "update_frequency", "last_cached", "broken_url_as_of"],
+    ["id", "url", "update_frequency", "last_cached"],
 )
 
 
