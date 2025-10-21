@@ -157,7 +157,6 @@ def create_flask_app() -> Flask:
         )
         scheduler.add_materialized_view_scheduled_job("typeahead_locations", 1)
         scheduler.add_materialized_view_scheduled_job("typeahead_agencies", 2)
-        scheduler.add_materialized_view_scheduled_job("unique_urls", 3)
         scheduler.add_materialized_view_scheduled_job("map_states", 4)
         scheduler.add_materialized_view_scheduled_job("map_counties", 5)
         scheduler.add_materialized_view_scheduled_job("map_localities", 6)
