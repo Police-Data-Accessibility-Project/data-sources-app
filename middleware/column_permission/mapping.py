@@ -11,7 +11,6 @@ ROLE_COLUMN_PERMISSIONS = {
         "lng": {"ADMIN": "WRITE", "STANDARD": "READ"},
         "defunct_year": {"ADMIN": "WRITE", "STANDARD": "READ"},
         "agency_type": {"ADMIN": "WRITE", "STANDARD": "READ"},
-        "multi_agency": {"ADMIN": "WRITE", "STANDARD": "READ"},
         "no_web_presence": {"ADMIN": "WRITE", "STANDARD": "READ"},
         "airtable_agency_last_modified": {"ADMIN": "READ", "STANDARD": "READ"},
         "approval_status": {"ADMIN": "WRITE", "STANDARD": "READ"},

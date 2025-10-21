@@ -105,6 +105,7 @@ NAMESPACES = [
     namespace_resend_validation_email,
 ]
 
+
 def get_flask_app_cookie_encryption_key() -> str:
     return get_env_variable("FLASK_APP_COOKIE_ENCRYPTION_KEY")
 
@@ -206,6 +207,7 @@ def create_asgi_app() -> Starlette:
     app.mount("/api/v2", WSGIMiddlewareFastAPI(flask_app))
 
     return app
+
 
 if __name__ == "__main__":
     app = create_asgi_app()

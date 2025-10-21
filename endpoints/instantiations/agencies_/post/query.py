@@ -25,7 +25,6 @@ class CreateAgencyQueryBuilder(QueryBuilderBase):
             name=agency_info.name,
             agency_type=agency_info.agency_type.value,
             jurisdiction_type=agency_info.jurisdiction_type.value,
-            multi_agency=agency_info.multi_agency,
             no_web_presence=agency_info.no_web_presence,
             defunct_year=agency_info.defunct_year,
         )
