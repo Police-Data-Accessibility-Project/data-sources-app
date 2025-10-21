@@ -3,16 +3,17 @@
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from db.models.helpers import enum_column
 from db.models.implementations.core.record.category import RecordCategory
 from db.models.templates.standard import StandardBase
-from db.models.types import str_255, text
-from middleware.enums import Relations
+from db.models.types import text
+from middleware.enums import Relations, RecordTypes
 
 
 class RecordType(StandardBase):
     __tablename__ = Relations.RECORD_TYPES.value
 
-    name: Mapped[str_255]
+    name: Mapped[RecordTypes] = enum_column(RecordTypes, name="record_type")
     category_id: Mapped[int] = mapped_column(ForeignKey("public.record_categories.id"))
     description: Mapped[text | None]
 
