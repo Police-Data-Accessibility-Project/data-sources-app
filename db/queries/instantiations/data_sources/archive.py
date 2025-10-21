@@ -13,7 +13,7 @@ from db.queries.builder.core import QueryBuilderBase
 
 ArchiveInfo = namedtuple(
     "ArchiveInfo",
-    ["id", "url", "update_frequency", "last_cached", "broken_url_as_of"],
+    ["id", "url", "update_frequency", "last_cached"],
 )
 
 
@@ -71,7 +71,6 @@ class GetDataSourcesToArchiveQueryBuilder(QueryBuilderBase):
                 DataSource.source_url,
                 DataSourceArchiveInfo.update_frequency,
                 DataSourceArchiveInfo.last_cached,
-                DataSource.broken_source_url_as_of,
             )
             .select_from(DataSource)
             .join(
@@ -91,7 +90,6 @@ class GetDataSourcesToArchiveQueryBuilder(QueryBuilderBase):
                 url=row["source_url"],
                 update_frequency=row["update_frequency"],
                 last_cached=row["last_cached"],
-                broken_url_as_of=row["broken_source_url_as_of"],
             )
             for row in data_sources
         ]

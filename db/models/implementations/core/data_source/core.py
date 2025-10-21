@@ -65,18 +65,14 @@ class DataSource(
     update_method: Mapped[UpdateMethod | None] = enum_column(
         UpdateMethod, name="update_method"
     )
-    tags = Column(ARRAY(String), default=[])
     readme_url: Mapped[str | None]
     originating_entity: Mapped[str | None]
     retention_schedule: Mapped[RetentionSchedule | None] = enum_column(
         RetentionSchedule, name="retention_schedule"
     )
     scraper_url: Mapped[str | None]
-    submission_notes: Mapped[str | None]
     agency_described_not_in_database: Mapped[str | None]
     data_portal_type_other: Mapped[str | None]
-    data_source_request: Mapped[str | None]
-    broken_source_url_as_of: Mapped[date | None]
     access_notes: Mapped[text | None]
     url_status: Mapped[URLStatusLiteral] = enum_column(
         URLStatus,

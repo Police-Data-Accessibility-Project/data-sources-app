@@ -6,13 +6,11 @@ which test the database-external views and functions
 
 import uuid
 from collections import namedtuple
-from datetime import datetime, timedelta, timezone
 
 import pytest
 
 from db.client.core import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
-from db.enums import URLStatus
 from db.models.implementations.core.recent_search.core import RecentSearch
 from middleware.enums import Relations, OperationType
 from tests.helpers.common_test_data import get_test_name
@@ -526,40 +524,6 @@ def test_recent_searches_row_limit_maintained(
 
     # Confirm that the original recent search id remains in the list for user 2
     assert user_2_search_record_id in user_2_recent_searches
-
-
-def test_update_broken_source_url_as_of(
-    test_data_creator_db_client: TestDataCreatorDBClient,
-):
-    tdc = test_data_creator_db_client
-
-    now = datetime.now(timezone.utc)
-
-    # Create data source
-    cds = tdc.data_source()
-
-    def get_broken_source_url_as_of():
-        return tdc.db_client._select_single_entry_from_relation(
-            relation_name=Relations.DATA_SOURCES.value,
-            columns=["broken_source_url_as_of"],
-            where_mappings=WhereMapping.from_dict({"id": cds.id}),
-        )["broken_source_url_as_of"]
-
-    # Get broken_source_url_as_of, confirm it is null
-    assert get_broken_source_url_as_of() is None
-
-    # Update source url to `broken`
-    tdc.db_client._update_entry_in_table(
-        table_name=Relations.DATA_SOURCES.value,
-        entry_id=cds.id,
-        column_edit_mappings={"url_status": URLStatus.BROKEN.value},
-    )
-
-    # Confirm broken_source_url_as_of is updated
-    # (Allow a margin of error accounting for timezone chicanery)
-    now_pre = now - timedelta(hours=1)
-    now_post = now + timedelta(hours=1)
-    assert now_pre < get_broken_source_url_as_of() < now_post
 
 
 def delete_change_log(db_client):

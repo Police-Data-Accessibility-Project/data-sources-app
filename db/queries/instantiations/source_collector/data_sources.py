@@ -46,7 +46,6 @@ class AddDataSourcesFromSourceCollectorQueryBuilder(
                     record_formats=data_source.record_formats,
                     data_portal_type=data_source.data_portal_type,
                     supplying_entity=data_source.supplying_entity,
-                    submission_notes="Auto-submitted from Source Collector",
                 )
                 self.session.add(data_source_db)
                 self.session.flush()  # Execute the insert immediately
