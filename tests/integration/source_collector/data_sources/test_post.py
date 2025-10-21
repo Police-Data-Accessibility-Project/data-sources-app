@@ -110,10 +110,6 @@ def test_source_collector_data_sources_post(
     assert data_sources[1]["id"] == int(data_source_id_1)
     assert data_sources[2]["id"] == int(data_source_id_3)
 
-    # Check submission notes
-    assert data_sources[1]["submission_notes"] == "Auto-submitted from Source Collector"
-    assert data_sources[2]["submission_notes"] == "Auto-submitted from Source Collector"
-
     # Check supplying entity
     assert data_sources[1]["supplying_entity"] == "Test Supplying Entity"
     assert data_sources[2]["supplying_entity"] is None

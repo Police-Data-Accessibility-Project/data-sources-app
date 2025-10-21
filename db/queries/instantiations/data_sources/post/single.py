@@ -57,18 +57,14 @@ class DataSourcesPostSingleQueryBuilder(
             data_portal_type=entry.data_portal_type,
             record_formats=entry.record_formats,
             update_method=enum_value_or_none(entry.update_method),
-            tags=entry.tags,
             readme_url=entry.readme_url,
             originating_entity=entry.originating_entity,
             retention_schedule=enum_value_or_none(entry.retention_schedule),
             scraper_url=entry.scraper_url,
-            submission_notes=entry.submission_notes,
             agency_described_not_in_database=entry.agency_described_not_in_database,
             data_portal_type_other=entry.data_portal_type_other,
             access_notes=entry.access_notes,
             url_status=enum_value_or_none(entry.url_status),
-            data_source_request=entry.data_source_request,
-            broken_source_url_as_of=entry.broken_source_url_as_of,
             record_type_id=self._get_record_type_id(entry.record_type_name.value)
             if entry.record_type_name is not None
             else None,
