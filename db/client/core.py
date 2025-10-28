@@ -277,12 +277,7 @@ class DatabaseClient:
         session.execute(stmt)
 
     @session_manager_v2
-    def add(
-        self,
-        session: Session,
-        model: Base,
-        return_id: bool = False
-    ) -> int | None:
+    def add(self, session: Session, model: Base, return_id: bool = False) -> int | None:
         session.add(model)
         if return_id:
             if not hasattr(model, "id"):
@@ -1375,7 +1370,6 @@ class DatabaseClient:
         results = self.session.query(model).all()
 
         return [to_dict(result) for result in results]
-
 
     def add_data_sources_from_source_collector(
         self, data_sources: list[SourceCollectorPostRequestInnerDTO]

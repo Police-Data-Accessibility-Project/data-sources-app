@@ -31,7 +31,10 @@ def test_create_issue_with_status():
         title="test",
         body="test",
         status=RequestStatus.READY_TO_START,
-        record_types=[RecordTypesEnum.ARREST_RECORDS, RecordTypesEnum.PERSONNEL_RECORDS],
+        record_types=[
+            RecordTypesEnum.ARREST_RECORDS,
+            RecordTypesEnum.PERSONNEL_RECORDS,
+        ],
     )
 
 

@@ -1,8 +1,10 @@
 from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMetaURL
 from db.queries.builder.core import QueryBuilderBase
 from endpoints.v3.sync.meta_urls.add.request import AddMetaURLsOuterRequest
-from endpoints.v3.sync.shared.models.response.add import SourceManagerSyncAddOuterResponse, \
-    SourceManagerSyncAddInnerResponse
+from endpoints.v3.sync.shared.models.response.add import (
+    SourceManagerSyncAddOuterResponse,
+    SourceManagerSyncAddInnerResponse,
+)
 
 
 class SourceManagerAddMetaURLsQueryBuilder(QueryBuilderBase):
@@ -11,7 +13,6 @@ class SourceManagerAddMetaURLsQueryBuilder(QueryBuilderBase):
         self.request = request
 
     def run(self) -> SourceManagerSyncAddOuterResponse:
-
         # Add Meta URLs
         meta_url_inserts: list[AgencyMetaURL] = []
         for meta_url_request in self.request.meta_urls:
@@ -20,7 +21,6 @@ class SourceManagerAddMetaURLsQueryBuilder(QueryBuilderBase):
                 url=meta_url_request.url,
             )
             meta_url_inserts.append(meta_url_insert)
-
 
         request_app_mappings: dict[int, int] = {}
         mu_ids: list[int] = self.add_many(meta_url_inserts, return_ids=True)

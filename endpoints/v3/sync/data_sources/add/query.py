@@ -8,23 +8,28 @@ from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.record.type import RecordType
 from db.queries.builder.core import QueryBuilderBase
 from endpoints.v3.sync.data_sources.add.request import AddDataSourcesOuterRequest
-from endpoints.v3.sync.shared.models.response.add import SourceManagerSyncAddOuterResponse, \
-    SourceManagerSyncAddInnerResponse
+from endpoints.v3.sync.shared.models.response.add import (
+    SourceManagerSyncAddOuterResponse,
+    SourceManagerSyncAddInnerResponse,
+)
 from middleware.enums import RecordTypesEnum
+
 
 def _value_if_not_none(value: Enum | None) -> str | None:
     if value is None:
         return None
     return value.value
 
-class SourceManagerAddDataSourcesQueryBuilder(QueryBuilderBase):
 
+class SourceManagerAddDataSourcesQueryBuilder(QueryBuilderBase):
     def __init__(self, request: AddDataSourcesOuterRequest):
         super().__init__()
         self.request = request
 
     def run(self) -> SourceManagerSyncAddOuterResponse:
-        record_type_id_mapping: dict[RecordTypesEnum, int] = self.get_record_type_id_mapping()
+        record_type_id_mapping: dict[RecordTypesEnum, int] = (
+            self.get_record_type_id_mapping()
+        )
 
         data_source_inserts: list[DataSource] = []
         for ds_request in self.request.data_sources:
@@ -33,7 +38,6 @@ class SourceManagerAddDataSourcesQueryBuilder(QueryBuilderBase):
                 name=ds_request.name,
                 description=ds_request.description,
                 record_type_id=record_type_id_mapping[ds_request.record_type],
-
                 agency_supplied=ds_request.agency_supplied,
                 supplying_entity=ds_request.supplying_entity,
                 agency_originated=ds_request.agency_originated,
@@ -41,7 +45,9 @@ class SourceManagerAddDataSourcesQueryBuilder(QueryBuilderBase):
                 coverage_start=ds_request.coverage_start,
                 coverage_end=ds_request.coverage_end,
                 detail_level=ds_request.detail_level,
-                access_types=[at.value for at in ds_request.access_types] if ds_request.access_types else None,
+                access_types=[at.value for at in ds_request.access_types]
+                if ds_request.access_types
+                else None,
                 data_portal_type=ds_request.data_portal_type,
                 record_formats=ds_request.record_formats,
                 update_method=_value_if_not_none(ds_request.update_method),
@@ -68,8 +74,7 @@ class SourceManagerAddDataSourcesQueryBuilder(QueryBuilderBase):
             ds_id: int = request_app_mappings[ds_request.request_id]
             for agency_id in ds_request.agency_ids:
                 link_insert = LinkAgencyDataSource(
-                    data_source_id=ds_id,
-                    agency_id=agency_id
+                    data_source_id=ds_id, agency_id=agency_id
                 )
                 link_inserts.append(link_insert)
 
@@ -90,11 +95,9 @@ class SourceManagerAddDataSourcesQueryBuilder(QueryBuilderBase):
         )
 
     def get_record_type_id_mapping(self) -> dict[RecordTypesEnum, int]:
-        query = (
-            select(
-                RecordType.id,
-                RecordType.name,
-            )
+        query = select(
+            RecordType.id,
+            RecordType.name,
         )
         mappings: Sequence[RowMapping] = self.mappings(query)
         return {

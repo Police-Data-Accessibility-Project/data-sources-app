@@ -11,10 +11,8 @@ from db.enums import (
     ExternalAccountTypeEnum,
     RequestUrgency,
 )
-from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.data_request.core import DataRequest
 from db.models.implementations.core.data_source.core import DataSource
-from db.models.implementations.core.location.locality import Locality
 from db.models.implementations.core.log.notification import NotificationLog
 from db.models.implementations.core.notification.pending.data_request import (
     DataRequestPendingEventNotification,
@@ -28,7 +26,6 @@ from db.models.implementations.core.notification.queue.data_request import (
 from db.models.implementations.core.notification.queue.data_source import (
     DataSourceUserNotificationQueue,
 )
-from db.models.implementations.core.user.core import User
 from middleware.enums import (
     JurisdictionType,
     Relations,
@@ -380,7 +377,9 @@ class ValidNotificationEventCreatorV2:
         self.notification_valid_date = get_notification_valid_date()
         self.user_id = self.tdc.user().id
 
-    def data_source_approved(self, record_type: RecordTypesEnum, location_id: int) -> int:
+    def data_source_approved(
+        self, record_type: RecordTypesEnum, location_id: int
+    ) -> int:
         """Create approved data source with record type and link to agency with location"""
         agency_info = self.tdc.agency(location_id)
         ds_info = self.tdc.data_source()
@@ -401,7 +400,10 @@ class ValidNotificationEventCreatorV2:
         return ds_info.id
 
     def create_data_request(
-        self, request_status: RequestStatus, record_type: RecordTypesEnum, location_id: int
+        self,
+        request_status: RequestStatus,
+        record_type: RecordTypesEnum,
+        location_id: int,
     ) -> int:
         """Create data request of given request status and record type and link to location"""
         dr_info = self.tdc.data_request()

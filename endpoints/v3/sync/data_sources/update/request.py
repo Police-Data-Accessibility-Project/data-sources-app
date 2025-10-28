@@ -2,7 +2,14 @@ from datetime import date
 
 from pydantic import BaseModel, Field
 
-from db.enums import AgencyAggregation, UpdateMethod, RetentionSchedule, DetailLevel, URLStatus, AccessType
+from db.enums import (
+    AgencyAggregation,
+    UpdateMethod,
+    RetentionSchedule,
+    DetailLevel,
+    URLStatus,
+    AccessType,
+)
 from middleware.enums import RecordTypesEnum
 
 
@@ -45,9 +52,10 @@ class UpdateDataSourcesInnerRequest(BaseModel):
     agency_ids: list[int] | None = Field(
         min_length=1,
         default=None,
-        description="List of agency IDs to be associated with the data source. " +
-                    "Fully overwrites previous associations if defined.",
+        description="List of agency IDs to be associated with the data source. "
+        + "Fully overwrites previous associations if defined.",
     )
+
 
 class UpdateDataSourcesOuterRequest(BaseModel):
     data_sources: list[UpdateDataSourcesInnerRequest] = Field(max_length=1000)

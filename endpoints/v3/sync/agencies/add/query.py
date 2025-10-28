@@ -2,25 +2,24 @@ from db.models.implementations import LinkAgencyLocation
 from db.models.implementations.core.agency.core import Agency
 from db.queries.builder.core import QueryBuilderBase
 from endpoints.v3.sync.agencies.add.request import AddAgenciesOuterRequest
-from endpoints.v3.sync.shared.models.response.add import SourceManagerSyncAddOuterResponse, \
-    SourceManagerSyncAddInnerResponse
+from endpoints.v3.sync.shared.models.response.add import (
+    SourceManagerSyncAddOuterResponse,
+    SourceManagerSyncAddInnerResponse,
+)
 
 
 class SourceManagerAddAgenciesQueryBuilder(QueryBuilderBase):
-
     def __init__(self, request: AddAgenciesOuterRequest):
         super().__init__()
         self.request = request
 
     def run(self) -> SourceManagerSyncAddOuterResponse:
-
         agency_inserts: list[Agency] = []
         for agency_request in self.request.agencies:
             agency_insert = Agency(
                 name=agency_request.name,
                 jurisdiction_type=agency_request.jurisdiction_type.value,
                 agency_type=agency_request.agency_type.value,
-
                 no_web_presence=agency_request.no_web_presence,
                 defunct_year=agency_request.defunct_year,
             )
@@ -43,8 +42,7 @@ class SourceManagerAddAgenciesQueryBuilder(QueryBuilderBase):
             agency_id: int = request_app_mappings[agency_request.request_id]
             for location_id in agency_request.location_ids:
                 link_insert = LinkAgencyLocation(
-                    agency_id=agency_id,
-                    location_id=location_id
+                    agency_id=agency_id, location_id=location_id
                 )
                 link_inserts.append(link_insert)
 
@@ -62,8 +60,3 @@ class SourceManagerAddAgenciesQueryBuilder(QueryBuilderBase):
         return SourceManagerSyncAddOuterResponse(
             entities=inner_responses,
         )
-
-
-
-
-

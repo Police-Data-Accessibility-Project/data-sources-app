@@ -1,7 +1,6 @@
 import datetime
 
 from db.enums import SortOrder
-from middleware.constants import DATE_FORMAT
 from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )

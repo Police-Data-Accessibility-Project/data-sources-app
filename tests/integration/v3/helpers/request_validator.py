@@ -6,7 +6,6 @@ from starlette.testclient import TestClient
 
 
 class RequestValidatorFastAPI:
-
     def __init__(self, client: TestClient):
         self.client = client
 
@@ -16,21 +15,22 @@ class RequestValidatorFastAPI:
         url: str,
         params: dict | None = None,
         expected_model: type[BaseModel] | None = None,
-        **kwargs
+        **kwargs,
     ) -> BaseModel | dict:
         if params:
-            kwargs['params'] = params
+            kwargs["params"] = params
 
         response = self.client.request(
             method=method,
             url=url,
-            headers={"Authorization": "Bearer token"},  # Fake authentication that is overridden during testing
-            **kwargs
+            headers={
+                "Authorization": "Bearer token"
+            },  # Fake authentication that is overridden during testing
+            **kwargs,
         )
         if response.status_code != HTTPStatus.OK:
             raise HTTPException(
-                status_code=response.status_code,
-                detail=response.json()
+                status_code=response.status_code, detail=response.json()
             )
         json = response.json()
 
@@ -43,14 +43,14 @@ class RequestValidatorFastAPI:
         url: str,
         params: dict | None = None,
         expected_model: type[BaseModel] | None = None,
-        **kwargs
+        **kwargs,
     ) -> BaseModel | dict:
         return self.open_v3(
             method="GET",
             url=url,
             params=params,
             expected_model=expected_model,
-            **kwargs
+            **kwargs,
         )
 
     def post_v3(
@@ -58,14 +58,14 @@ class RequestValidatorFastAPI:
         url: str,
         params: dict | None = None,
         expected_model: type[BaseModel] | None = None,
-        **kwargs
+        **kwargs,
     ) -> BaseModel | dict:
         return self.open_v3(
             method="POST",
             url=url,
             params=params,
             expected_model=expected_model,
-            **kwargs
+            **kwargs,
         )
 
     def put_v3(
@@ -73,14 +73,14 @@ class RequestValidatorFastAPI:
         url: str,
         params: dict | None = None,
         expected_model: type[BaseModel] | None = None,
-        **kwargs
+        **kwargs,
     ) -> BaseModel | dict:
         return self.open_v3(
             method="PUT",
             url=url,
             params=params,
             expected_model=expected_model,
-            **kwargs
+            **kwargs,
         )
 
     def delete_v3(
@@ -88,12 +88,12 @@ class RequestValidatorFastAPI:
         url: str,
         params: dict | None = None,
         expected_model: type[BaseModel] | None = None,
-        **kwargs
+        **kwargs,
     ) -> BaseModel | dict:
         return self.open_v3(
             method="DELETE",
             url=url,
             params=params,
             expected_model=expected_model,
-            **kwargs
+            **kwargs,
         )

@@ -22,10 +22,6 @@ from db.models.helpers import (
 from db.models.implementations.core.location.core import Location
 from db.models.mixins import CountMetadata, CreatedAtMixin, IterWithSpecialCasesMixin
 from db.models.templates.standard import StandardBase
-from db.models.types import (
-    text,
-    URLStatusLiteral,
-)
 from middleware.enums import Relations
 
 
@@ -58,7 +54,9 @@ class DataSource(
         DetailLevel, name="detail_level"
     )
     # Note: Below is an array of enums in Postgres but this is cumbersome to convey in SQLAlchemy terms
-    access_types: Mapped[list[AccessType]] = enum_list_column(AccessType, name="access_type")
+    access_types: Mapped[list[AccessType]] = enum_list_column(
+        AccessType, name="access_type"
+    )
     data_portal_type: Mapped[str | None]
     record_formats = Column(ARRAY(String), default=[])
     update_method: Mapped[UpdateMethod | None] = enum_column(

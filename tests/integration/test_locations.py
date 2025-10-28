@@ -1,10 +1,7 @@
 from dataclasses import dataclass
-from typing import Optional
 
 import pytest
 
-from db.enums import LocationType
-from middleware.schema_and_dto.dtos.locations.get import LocationsGetRequestDTO
 from tests.helpers.common_test_data import get_test_name
 from tests.helpers.helper_classes.MultiLocationSetup import MultiLocationSetup
 from tests.helpers.helper_classes.test_data_creator.flask import (
@@ -165,6 +162,7 @@ def test_map_locations(test_data_creator_flask: TestDataCreatorFlask):
 
     # Validate there is 1 data source for the state of California
     check_location_source_count(name="California", data=states, expected_value=1)
+
 
 # TODO: Rebuild
 # def test_get_many_locations(

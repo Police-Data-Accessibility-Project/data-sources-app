@@ -5,9 +5,7 @@ from db.queries.builder.core import QueryBuilderBase
 from middleware.schema_and_dto.dtos.common_dtos import MessageDTO
 
 
-def run_sync_query_builder(
-    query_builder: QueryBuilderBase
-) -> MessageDTO:
+def run_sync_query_builder(query_builder: QueryBuilderBase) -> MessageDTO:
     try:
         db_client = DatabaseClient()
         db_client.run_query_builder(query_builder)

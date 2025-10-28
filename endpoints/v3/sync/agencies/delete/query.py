@@ -16,18 +16,11 @@ class SourceManagerDeleteAgenciesQueryBuilder(QueryBuilderBase):
         self.request = request
 
     def run(self) -> None:
-
         self.check_for_no_meta_url_orphans()
         self.check_for_no_data_source_orphans()
 
         # Delete the agencies.
-        statement = (
-            delete(
-                Agency
-            ).where(
-                Agency.id.in_(self.request.ids)
-            )
-        )
+        statement = delete(Agency).where(Agency.id.in_(self.request.ids))
 
         self.execute(statement)
 
@@ -37,15 +30,10 @@ class SourceManagerDeleteAgenciesQueryBuilder(QueryBuilderBase):
         If they would, raise error
         """
 
-        query = (
-            select(
-                AgencyMetaURL.id,
-                AgencyMetaURL.agency_id,
-            )
-            .where(
-                AgencyMetaURL.agency_id.in_(self.request.ids)
-            )
-        )
+        query = select(
+            AgencyMetaURL.id,
+            AgencyMetaURL.agency_id,
+        ).where(AgencyMetaURL.agency_id.in_(self.request.ids))
         mappings: Sequence[RowMapping] = self.mappings(query)
         potential_orphan_mappings: list[dict[str, int]] = []
         for mapping in mappings:
@@ -71,7 +59,8 @@ class SourceManagerDeleteAgenciesQueryBuilder(QueryBuilderBase):
             select(LinkAgencyDataSource.data_source_id)
             .group_by(LinkAgencyDataSource.data_source_id)
             .having(  # nothing remains after removing these agencies
-                func.count().filter(LinkAgencyDataSource.agency_id.notin_(removal_ids)) == 0
+                func.count().filter(LinkAgencyDataSource.agency_id.notin_(removal_ids))
+                == 0
             )
             .having(  # there was at least one link that would be removed
                 func.count().filter(LinkAgencyDataSource.agency_id.in_(removal_ids)) > 0
@@ -79,15 +68,12 @@ class SourceManagerDeleteAgenciesQueryBuilder(QueryBuilderBase):
             .cte("orphans")
         )
         query = (
-            select(
-                LinkAgencyDataSource.agency_id,
-                LinkAgencyDataSource.data_source_id)
+            select(LinkAgencyDataSource.agency_id, LinkAgencyDataSource.data_source_id)
             .join(
                 orphans_q,
-                LinkAgencyDataSource.data_source_id == orphans_q.c.data_source_id)
-            .where(
-                LinkAgencyDataSource.agency_id.in_(removal_ids)
+                LinkAgencyDataSource.data_source_id == orphans_q.c.data_source_id,
             )
+            .where(LinkAgencyDataSource.agency_id.in_(removal_ids))
         )
         mappings: Sequence[RowMapping] = self.mappings(query)
         potential_orphan_mappings: list[dict[str, int]] = []
@@ -101,4 +87,3 @@ class SourceManagerDeleteAgenciesQueryBuilder(QueryBuilderBase):
             raise OrphanedEntityException(
                 f"Cannot delete agencies with data sources: {potential_orphan_mappings}"
             )
-

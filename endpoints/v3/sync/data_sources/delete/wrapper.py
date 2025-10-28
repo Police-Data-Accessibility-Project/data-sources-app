@@ -1,4 +1,6 @@
-from endpoints.v3.sync.data_sources.delete.query import SourceManagerDeleteDataSourcesQueryBuilder
+from endpoints.v3.sync.data_sources.delete.query import (
+    SourceManagerDeleteDataSourcesQueryBuilder,
+)
 from endpoints.v3.sync.shared.functions import run_sync_query_builder
 from endpoints.v3.sync.shared.models.request.delete import SourceManagerDeleteRequest
 from middleware.schema_and_dto.dtos.common_dtos import MessageDTO

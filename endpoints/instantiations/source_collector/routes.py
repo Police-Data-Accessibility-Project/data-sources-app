@@ -114,5 +114,3 @@ class SourceCollectorMetaURLs(PsycopgResource):
             wrapper_function=add_meta_urls_from_source_collector,
             schema_populate_parameters=SourceCollectorMetaURLPostEndpointSchemaConfig.get_schema_populate_parameters(),
         )
-
-

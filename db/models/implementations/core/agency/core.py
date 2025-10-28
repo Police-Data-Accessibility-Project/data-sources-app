@@ -7,8 +7,6 @@ from db.models.helpers import enum_column
 from db.models.mixins import CountMetadata, UpdatedAtMixin
 from db.models.templates.standard import StandardBase
 from db.models.types import (
-    JurisdictionTypeLiteral,
-    AgencyTypeLiteral,
     timestamp_tz,
 )
 from middleware.enums import Relations, JurisdictionType, AgencyType

@@ -164,7 +164,8 @@ class TestSynchronizeGithubIssueHappyPathManager:
         data_request_ids.append(data_request_id)
         # Update existing issue to "Complete"
         self.mock_repo[1] = GIPIInfo(
-            project_status="Complete", record_types=[RecordTypesEnum.RECORDS_REQUEST_INFO]
+            project_status="Complete",
+            record_types=[RecordTypesEnum.RECORDS_REQUEST_INFO],
         )
 
     def check_sync_3(self, data_request_ids: list[int]):

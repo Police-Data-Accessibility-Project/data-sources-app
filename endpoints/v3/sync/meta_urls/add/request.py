@@ -7,11 +7,14 @@ class AddMetaURLsInnerRequest(BaseModel):
     url: str
     agency_id: int
 
+
 class AddMetaURLsOuterRequest(BaseModel):
     meta_urls: list[AddMetaURLsInnerRequest] = Field(max_length=1000)
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def all_request_ids_unique(self):
-        if len(self.meta_urls) != len(set([meta_url.request_id for meta_url in self.meta_urls])):
+        if len(self.meta_urls) != len(
+            set([meta_url.request_id for meta_url in self.meta_urls])
+        ):
             raise ValueError("All request_ids must be unique")
         return self

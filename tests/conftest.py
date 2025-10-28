@@ -35,6 +35,7 @@ from utilities.common import get_alembic_conn_string
 # Load environment variables
 dotenv.load_dotenv()
 
+
 # TODO: Redundant with Live Database Client. Consolidate and remove this.
 @pytest.fixture
 def dev_db_client() -> Generator[DatabaseClient, Any, None]:

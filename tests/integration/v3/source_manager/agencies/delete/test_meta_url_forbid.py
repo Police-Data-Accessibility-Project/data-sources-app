@@ -1,4 +1,3 @@
-
 import pytest
 from fastapi import HTTPException
 
@@ -14,16 +13,15 @@ def test_source_manager_agencies_delete_forbid_meta_url(
     live_database_client: DatabaseClient,
     api_test_helper: APITestHelper,
 ):
-
     with pytest.raises(HTTPException) as exc_info:
         api_test_helper.request_validator.post_v3(
-            url=f"/source-manager/agencies/delete",
-            json=SourceManagerDeleteRequest(
-                ids=[agency_id_1, agency_id_2]
-            ).model_dump(mode='json')
+            url="/source-manager/agencies/delete",
+            json=SourceManagerDeleteRequest(ids=[agency_id_1, agency_id_2]).model_dump(
+                mode="json"
+            ),
         )
     assert exc_info.value.status_code == 400
     assert (
-        exc_info.value.detail['detail'] ==
-        f"Cannot delete agencies with meta URLs: [{{'meta_url_id': {meta_url_id_1}, 'agency_id': {agency_id_1}}}]"
+        exc_info.value.detail["detail"]
+        == f"Cannot delete agencies with meta URLs: [{{'meta_url_id': {meta_url_id_1}, 'agency_id': {agency_id_1}}}]"
     )

@@ -5,7 +5,7 @@ class SourceManagerSyncResponse(BaseModel):
     success: bool
     error: str | None = None
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def check_error(self):
         if self.success and self.error is not None:
             raise ValueError("Error should be None if success is True")

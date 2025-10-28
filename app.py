@@ -201,11 +201,11 @@ def create_fast_api_app() -> FastAPI:
         title="PDAP Data Sources API",
         version="3.0",
         description="The following is the API documentation for the PDAP Data Sources API."
-                    "\n\nBy accessing our API, you are agreeing to our [Terms of Service](https://docs.pdap.io/meta/operations/legal/terms-of-service). Please read them before you start."
-                    "\n\nFor API help, consult [our getting started guide.](https://docs.pdap.io/api/introduction)"
-                    "\n\nTo search the database, go to [pdap.io](https://pdap.io)."
-                    "\n\nThe old Flask API is available at {this_address}/"
-                    "",
+        "\n\nBy accessing our API, you are agreeing to our [Terms of Service](https://docs.pdap.io/meta/operations/legal/terms-of-service). Please read them before you start."
+        "\n\nFor API help, consult [our getting started guide.](https://docs.pdap.io/api/introduction)"
+        "\n\nTo search the database, go to [pdap.io](https://pdap.io)."
+        "\n\nThe old Flask API is available at {this_address}/"
+        "",
     )
     for router in [sm_router]:
         fast_api_app.include_router(router)

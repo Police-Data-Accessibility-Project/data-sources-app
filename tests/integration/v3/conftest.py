@@ -6,19 +6,34 @@ from starlette.testclient import TestClient
 
 from app import create_fast_api_app
 from db.client.core import DatabaseClient
-from db.enums import AgencyAggregation, DetailLevel, AccessType, UpdateMethod, RetentionSchedule, URLStatus
+from db.enums import (
+    AgencyAggregation,
+    DetailLevel,
+    AccessType,
+    UpdateMethod,
+    RetentionSchedule,
+    URLStatus,
+)
 from db.models.implementations import LinkAgencyLocation, LinkAgencyDataSource
 from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMetaURL
 from db.models.implementations.core.data_source.core import DataSource
-from middleware.enums import PermissionsEnum, AccessTypeEnum, JurisdictionType, AgencyType
+from middleware.enums import (
+    PermissionsEnum,
+    AccessTypeEnum,
+    JurisdictionType,
+    AgencyType,
+)
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.fastapi import get_access_info
-from tests.helpers.helper_classes.test_data_creator.db_client_.core import TestDataCreatorDBClient
+from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
+    TestDataCreatorDBClient,
+)
 from tests.integration.v3.helpers.api_test_helper import APITestHelper
 from tests.integration.v3.helpers.request_validator import RequestValidatorFastAPI
 
 MOCK_USER_ID = 1
+
 
 @pytest.fixture(scope="session")
 def client() -> Generator[TestClient, None, None]:
@@ -28,31 +43,27 @@ def client() -> Generator[TestClient, None, None]:
             user_id=MOCK_USER_ID,
             permissions=[
                 PermissionsEnum.SOURCE_COLLECTOR,
-                PermissionsEnum.SOURCE_COLLECTOR_FINAL_REVIEW
+                PermissionsEnum.SOURCE_COLLECTOR_FINAL_REVIEW,
             ],
             user_email="test@example.com",
-            access_type=AccessTypeEnum.JWT
-
-    )
+            access_type=AccessTypeEnum.JWT,
+        )
 
         yield c
 
 
 @pytest.fixture
 def api_test_helper(
-    client: TestClient,
-    test_data_creator_db_client: TestDataCreatorDBClient
+    client: TestClient, test_data_creator_db_client: TestDataCreatorDBClient
 ) -> Generator[APITestHelper, None, None]:
     yield APITestHelper(
         request_validator=RequestValidatorFastAPI(client),
         db_data_creator=test_data_creator_db_client,
     )
 
+
 @pytest.fixture
-def agency_id_1(
-    pittsburgh_id: int,
-    live_database_client: DatabaseClient
-) -> int:
+def agency_id_1(pittsburgh_id: int, live_database_client: DatabaseClient) -> int:
     agency = Agency(
         name="Test Agency 1",
         jurisdiction_type=JurisdictionType.LOCAL.value,
@@ -70,11 +81,9 @@ def agency_id_1(
 
     return agency_id
 
+
 @pytest.fixture
-def agency_id_2(
-    pennsylvania_id: int,
-    live_database_client: DatabaseClient
-) -> int:
+def agency_id_2(pennsylvania_id: int, live_database_client: DatabaseClient) -> int:
     agency = Agency(
         name="Test Agency 2",
         jurisdiction_type=JurisdictionType.STATE.value,
@@ -92,11 +101,9 @@ def agency_id_2(
 
     return agency_id
 
+
 @pytest.fixture
-def data_source_id_1(
-    agency_id_1: int,
-    live_database_client: DatabaseClient
-) -> int:
+def data_source_id_1(agency_id_1: int, live_database_client: DatabaseClient) -> int:
     data_source = DataSource(
         name="Test Data Source",
         description="Test Description",
@@ -104,8 +111,8 @@ def data_source_id_1(
         agency_supplied=True,
         supplying_entity="Test supplying entity",
         agency_aggregation=AgencyAggregation.LOCAL.value,
-        coverage_start=date(year=2023,month=7,day=5),
-        coverage_end=date(year=2024,month=7,day=5),
+        coverage_start=date(year=2023, month=7, day=5),
+        coverage_end=date(year=2024, month=7, day=5),
         detail_level=DetailLevel.INDIVIDUAL.value,
         access_types=[AccessType.API.value, AccessType.DOWNLOAD.value],
         data_portal_type="Test Data Portal Type",
@@ -132,11 +139,9 @@ def data_source_id_1(
 
     return data_source_id
 
+
 @pytest.fixture
-def data_source_id_2(
-    agency_id_2: int,
-    live_database_client: DatabaseClient
-) -> int:
+def data_source_id_2(agency_id_2: int, live_database_client: DatabaseClient) -> int:
     data_source = DataSource(
         name="Test Data Source",
         description="Test Description",
@@ -174,11 +179,7 @@ def data_source_id_2(
 
 
 @pytest.fixture
-def meta_url_id_1(
-    agency_id_1: int,
-    live_database_client: DatabaseClient
-) -> int:
-
+def meta_url_id_1(agency_id_1: int, live_database_client: DatabaseClient) -> int:
     agency_meta_url = AgencyMetaURL(
         agency_id=agency_id_1,
         url="https://www.example.com/agency_meta_url",
@@ -186,11 +187,9 @@ def meta_url_id_1(
     meta_url_id: int = live_database_client.add(agency_meta_url, return_id=True)
     return meta_url_id
 
+
 @pytest.fixture
-def meta_url_id_2(
-    agency_id_2: int,
-    live_database_client: DatabaseClient
-) -> int:
+def meta_url_id_2(agency_id_2: int, live_database_client: DatabaseClient) -> int:
     agency_meta_url = AgencyMetaURL(
         agency_id=agency_id_2,
         url="https://www.example.com/agency_meta_url_2",

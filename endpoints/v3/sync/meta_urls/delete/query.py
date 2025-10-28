@@ -6,19 +6,11 @@ from endpoints.v3.sync.shared.models.request.delete import SourceManagerDeleteRe
 
 
 class SourceManagerDeleteMetaURLsQueryBuilder(QueryBuilderBase):
-
     def __init__(self, request: SourceManagerDeleteRequest):
         super().__init__()
         self.request = request
 
     def run(self) -> None:
-
-        statement = (
-            delete(
-                AgencyMetaURL
-            ).where(
-                AgencyMetaURL.id.in_(self.request.ids)
-            )
-        )
+        statement = delete(AgencyMetaURL).where(AgencyMetaURL.id.in_(self.request.ids))
 
         self.execute(statement)

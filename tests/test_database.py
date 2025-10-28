@@ -14,7 +14,6 @@ from db.db_client_dataclasses import WhereMapping
 from db.models.implementations.core.recent_search.core import RecentSearch
 from middleware.enums import Relations, OperationType
 from tests.helpers.common_test_data import get_test_name
-from tests.helpers.helper_classes.MultiLocationSetup import MultiLocationSetup
 from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
@@ -357,6 +356,7 @@ def test_data_sources_created_at_updated_at(
 
     # Confirm `updated_at` is now greater than `created_at`
     assert result[0]["updated_at"] > created_at
+
 
 # TODO: Rebuild with test isolation
 # def test_dependent_locations_view(test_data_creator_db_client: TestDataCreatorDBClient):

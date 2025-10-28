@@ -593,8 +593,7 @@ def test_data_request_by_id_related_sources(
 
 
 def test_link_unlink_data_requests_with_locations(
-    test_data_creator_flask: TestDataCreatorFlask,
-    pittsburgh_id: int
+    test_data_creator_flask: TestDataCreatorFlask, pittsburgh_id: int
 ):
     tdc = test_data_creator_flask
     cdr = tdc.tdcdb.data_request()

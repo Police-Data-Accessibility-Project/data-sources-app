@@ -1,4 +1,6 @@
-from endpoints.v3.sync.data_sources.update.query import SourceManagerUpdateDataSourcesQueryBuilder
+from endpoints.v3.sync.data_sources.update.query import (
+    SourceManagerUpdateDataSourcesQueryBuilder,
+)
 from endpoints.v3.sync.data_sources.update.request import UpdateDataSourcesOuterRequest
 from endpoints.v3.sync.shared.functions import run_sync_query_builder
 from middleware.schema_and_dto.dtos.common_dtos import MessageDTO
