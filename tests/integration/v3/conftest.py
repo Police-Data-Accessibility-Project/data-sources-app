@@ -14,15 +14,12 @@ from db.enums import (
     RetentionSchedule,
     URLStatus,
 )
-from db.models.implementations import LinkAgencyLocation, LinkAgencyDataSource
-from db.models.implementations.core.agency.core import Agency
+from db.models.implementations import LinkAgencyDataSource
 from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMetaURL
 from db.models.implementations.core.data_source.core import DataSource
 from middleware.enums import (
     PermissionsEnum,
     AccessTypeEnum,
-    JurisdictionType,
-    AgencyType,
 )
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.fastapi import get_access_info
@@ -60,46 +57,6 @@ def api_test_helper(
         request_validator=RequestValidatorFastAPI(client),
         db_data_creator=test_data_creator_db_client,
     )
-
-
-@pytest.fixture
-def agency_id_1(pittsburgh_id: int, live_database_client: DatabaseClient) -> int:
-    agency = Agency(
-        name="Test Agency 1",
-        jurisdiction_type=JurisdictionType.LOCAL.value,
-        agency_type=AgencyType.POLICE.value,
-        no_web_presence=False,
-        defunct_year=None,
-    )
-    agency_id: int = live_database_client.add(agency, return_id=True)
-
-    link = LinkAgencyLocation(
-        agency_id=agency_id,
-        location_id=pittsburgh_id,
-    )
-    live_database_client.add(link)
-
-    return agency_id
-
-
-@pytest.fixture
-def agency_id_2(pennsylvania_id: int, live_database_client: DatabaseClient) -> int:
-    agency = Agency(
-        name="Test Agency 2",
-        jurisdiction_type=JurisdictionType.STATE.value,
-        agency_type=AgencyType.COURT.value,
-        no_web_presence=True,
-        defunct_year=None,
-    )
-    agency_id: int = live_database_client.add(agency, return_id=True)
-
-    link = LinkAgencyLocation(
-        agency_id=agency_id,
-        location_id=pennsylvania_id,
-    )
-    live_database_client.add(link)
-
-    return agency_id
 
 
 @pytest.fixture

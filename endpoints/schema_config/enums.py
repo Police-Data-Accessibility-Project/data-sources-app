@@ -12,6 +12,9 @@ from endpoints.instantiations.auth_.validate_email.endpoint_schema_config import
 from endpoints.instantiations.data_sources_.get.by_id.schema_config import (
     DataSourcesByIDGetEndpointSchemaConfig,
 )
+from endpoints.instantiations.data_sources_.post.request_.endpoint_schema_config import (
+    PostDataSourceRequestEndpointSchemaConfig,
+)
 from endpoints.instantiations.map.data.schema_config import (
     LocationsDataEndpointSchemaConfig,
 )
@@ -228,6 +231,7 @@ class SchemaConfigs(Enum):
 
     # endregion
     # region Data Sources
+    DATA_SOURCES_POST = PostDataSourceRequestEndpointSchemaConfig
     DATA_SOURCES_GET_MANY = DataSourcesGetManyEndpointSchemaConfig
     DATA_SOURCES_GET_BY_ID = DataSourcesByIDGetEndpointSchemaConfig
     DATA_SOURCES_MAP = DataSourcesMapEndpointSchemaConfig
