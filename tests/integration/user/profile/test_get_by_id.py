@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from middleware.enums import PermissionsEnum
+from middleware.enums import PermissionsEnum, RecordTypesEnum
 from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )
@@ -21,6 +21,12 @@ def test_user_profile_get_by_id(
     tdc.request_validator.search(
         headers=tus.api_authorization_header,
         location_id=pennsylvania_id,
+    )
+
+    # Create another recent search with no location
+    tdc.request_validator.search(
+        headers=tus.api_authorization_header,
+        record_types=[RecordTypesEnum.BOOKING_REPORTS],
     )
 
     # Have the user follow a search
