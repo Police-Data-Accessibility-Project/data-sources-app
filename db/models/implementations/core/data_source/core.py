@@ -22,10 +22,6 @@ from db.models.helpers import (
 from db.models.implementations.core.location.core import Location
 from db.models.mixins import CountMetadata, CreatedAtMixin, IterWithSpecialCasesMixin
 from db.models.templates.standard import StandardBase
-from db.models.types import (
-    text,
-    URLStatusLiteral,
-)
 from middleware.enums import Relations
 
 
@@ -54,12 +50,13 @@ class DataSource(
     )
     coverage_start: Mapped[date | None]
     coverage_end: Mapped[date | None]
-    updated_at: Mapped[date | None] = Column(DateTime, default=func.now())
     detail_level: Mapped[DetailLevel | None] = enum_column(
         DetailLevel, name="detail_level"
     )
     # Note: Below is an array of enums in Postgres but this is cumbersome to convey in SQLAlchemy terms
-    access_types = enum_list_column(AccessType, name="access_type")
+    access_types: Mapped[list[AccessType]] = enum_list_column(
+        AccessType, name="access_type"
+    )
     data_portal_type: Mapped[str | None]
     record_formats = Column(ARRAY(String), default=[])
     update_method: Mapped[UpdateMethod | None] = enum_column(
@@ -73,8 +70,8 @@ class DataSource(
     scraper_url: Mapped[str | None]
     agency_described_not_in_database: Mapped[str | None]
     data_portal_type_other: Mapped[str | None]
-    access_notes: Mapped[text | None]
-    url_status: Mapped[URLStatusLiteral] = enum_column(
+    access_notes: Mapped[str | None]
+    url_status: Mapped[URLStatus] = enum_column(
         URLStatus,
         name="url_status_enum",
         default=URLStatus.OK,
@@ -82,6 +79,7 @@ class DataSource(
     record_type_id: Mapped[int | None] = mapped_column(
         ForeignKey("public.record_types.id")
     )
+    updated_at: Mapped[date | None] = Column(DateTime, default=func.now())
 
     # Relationships
     locations: Mapped[list[Location]] = relationship(

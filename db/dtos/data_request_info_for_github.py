@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 
 
 class DataRequestInfoForGithub(BaseModel):
@@ -13,4 +13,4 @@ class DataRequestInfoForGithub(BaseModel):
     submission_notes: str
     data_requirements: str
     locations: list[str] | None
-    record_types: list[RecordTypes] | None
+    record_types: list[RecordTypesEnum] | None

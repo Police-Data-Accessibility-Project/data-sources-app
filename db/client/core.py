@@ -186,7 +186,7 @@ from middleware.constants import DATE_FORMAT
 from middleware.enums import (
     PermissionsEnum,
     Relations,
-    RecordTypes,
+    RecordTypesEnum,
 )
 from middleware.exceptions import (
     UserNotFoundError,
@@ -212,6 +212,7 @@ from middleware.schema_and_dto.dtos.notifications.preview import (
 )
 from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
 from utilities.enums import RecordCategoryEnum
+from db.helpers_ import session as sh
 
 
 @final
@@ -276,23 +277,20 @@ class DatabaseClient:
         session.execute(stmt)
 
     @session_manager_v2
-    def add(self, session: Session, model: Base):
+    def add(self, session: Session, model: Base, return_id: bool = False) -> int | None:
         session.add(model)
+        if return_id:
+            if not hasattr(model, "id"):
+                raise AttributeError("Model must have an id attribute")
+            session.flush()
+            return model.id  #pyright: ignore
+        return None
 
     @session_manager_v2
     def add_many(
         self, session: Session, models: list[Base], return_ids: bool = False
     ) -> list[int] | None:
-        session.add_all(models)
-        if return_ids:
-            if not hasattr(models[0], "id"):
-                raise AttributeError("Models must have an id attribute")
-            session.flush()
-            return [
-                model.id  # pyright: ignore [reportAttributeAccessIssue]
-                for model in models
-            ]
-        return None
+        sh.add_many(session, models=models, return_ids=return_ids)
 
     @session_manager_v2
     def mapping(self, session: Session, query: Executable) -> RowMapping | None:
@@ -515,7 +513,7 @@ class DatabaseClient:
         self,
         location_id: int,
         record_categories: list[RecordCategoryEnum] | None = None,
-        record_types: list[RecordTypes] | None = None,
+        record_types: list[RecordTypesEnum] | None = None,
     ) -> list[dict[str, Any]]:
         """Search for data sources in the database."""
         check_for_mutually_exclusive_arguments(record_categories, record_types)
@@ -760,7 +758,7 @@ class DatabaseClient:
         self,
         user_id: int,
         location_id: int,
-        record_types: list[RecordTypes] | None = None,
+        record_types: list[RecordTypesEnum] | None = None,
         record_categories: list[RecordCategoryEnum] | None = None,
     ) -> None:
         builder = CreateFollowQueryBuilder(
@@ -1016,7 +1014,7 @@ class DatabaseClient:
         self,
         user_id: int,
         location_id: int,
-        record_types: list[RecordTypes] | None = None,
+        record_types: list[RecordTypesEnum] | None = None,
         record_categories: list[RecordCategoryEnum] | None = None,
     ):
         builder = DeleteFollowQueryBuilder(
@@ -1182,7 +1180,7 @@ class DatabaseClient:
         user_id: int,
         location_id: int,
         record_categories: list[RecordCategoryEnum] | RecordCategoryEnum | None = None,
-        record_types: list[RecordTypes] | RecordTypes | None = None,
+        record_types: list[RecordTypesEnum] | RecordTypesEnum | None = None,
     ):
         builder = CreateSearchRecordQueryBuilder(
             user_id=user_id,

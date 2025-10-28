@@ -15,7 +15,7 @@ from endpoints.instantiations.search.core.models.response import SearchResponseD
 from endpoints.instantiations.search.core.queries.locations import (
     AssociatedLocationsCTEContainer,
 )
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from middleware.primary_resource_logic.search.helpers import format_search_results
 from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
 from utilities.enums import RecordCategoryEnum
@@ -28,7 +28,7 @@ class SearchQueryBuilder(QueryBuilderBase):
         self,
         location_id: int | None = None,
         record_categories: list[RecordCategoryEnum] | None = None,
-        record_types: list[RecordTypes] | None = None,
+        record_types: list[RecordTypesEnum] | None = None,
     ):
         super().__init__()
         check_for_mutually_exclusive_arguments(

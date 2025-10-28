@@ -2,7 +2,7 @@ from db.client.core import DatabaseClient
 from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
-from tests.integration.test_check_database_health import wipe_database
+from tests.helpers.wipe import wipe_database
 
 
 def test_get_data_sources_for_map(

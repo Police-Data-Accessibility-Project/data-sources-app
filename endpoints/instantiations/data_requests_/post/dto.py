@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 from db.enums import RequestUrgency, RequestStatus
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from middleware.schema_and_dto.dtos._helpers import (
     default_field_not_required,
     default_field_required,
@@ -32,7 +32,7 @@ class RequestInfoPostDTO(BaseModel):
     data_requirements: Optional[str] = default_field_not_required(
         description="The data requirements of the data request."
     )
-    record_types_required: Optional[list[RecordTypes]] = default_field_not_required(
+    record_types_required: Optional[list[RecordTypesEnum]] = default_field_not_required(
         description="The record types required for the data request."
     )
     request_status: RequestStatus = Field(

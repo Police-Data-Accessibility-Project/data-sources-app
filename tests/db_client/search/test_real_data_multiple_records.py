@@ -1,4 +1,4 @@
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from utilities.enums import RecordCategoryEnum
 
 
@@ -16,13 +16,13 @@ def test_search_with_location_and_record_types_real_data_multiple_records(
     tdc = test_data_creator_db_client
 
     def agency_and_data_source(
-        location_id, record_type: RecordTypes = RecordTypes.LIST_OF_DATA_SOURCES
+        location_id, record_type: RecordTypesEnum = RecordTypesEnum.LIST_OF_DATA_SOURCES
     ):
         ds_id = tdc.data_source(record_type=record_type).id
         a_id = tdc.agency(location_id=location_id).id
         tdc.link_data_source_to_agency(data_source_id=ds_id, agency_id=a_id)
 
-    record_types = [record_type for record_type in RecordTypes]
+    record_types = [record_type for record_type in RecordTypesEnum]
     for record_type in record_types:
         agency_and_data_source(pa_location_id, record_type=record_type)
 

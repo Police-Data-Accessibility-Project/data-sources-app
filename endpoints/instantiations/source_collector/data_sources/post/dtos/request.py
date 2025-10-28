@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from middleware.schema_and_dto.dtos._helpers import (
     default_field_required,
     default_field_not_required,
@@ -18,7 +18,7 @@ class SourceCollectorPostRequestInnerDTO(BaseModel):
         description="The description of the data source."
     )
     source_url: str = default_field_required(description="The URL of the data source.")
-    record_type: RecordTypes = default_field_required(
+    record_type: RecordTypesEnum = default_field_required(
         description="The record type of the data source."
     )
     record_formats: list[str] = Field(

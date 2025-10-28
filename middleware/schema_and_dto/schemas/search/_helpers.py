@@ -1,6 +1,6 @@
 from typing import Optional
 
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from utilities.common import get_enums_from_string
 from utilities.enums import RecordCategoryEnum, SourceMappingEnum, ParserLocation
 
@@ -13,10 +13,10 @@ def transform_record_categories(value: str) -> Optional[list[RecordCategoryEnum]
     return None
 
 
-def transform_record_types(value: str) -> Optional[list[RecordTypes]]:
+def transform_record_types(value: str) -> Optional[list[RecordTypesEnum]]:
     if value is not None:
         return get_enums_from_string(  # pyright: ignore[reportReturnType]
-            RecordTypes, value, case_insensitive=True
+            RecordTypesEnum, value, case_insensitive=True
         )
     return None
 

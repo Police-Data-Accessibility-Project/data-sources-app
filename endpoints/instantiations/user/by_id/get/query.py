@@ -49,7 +49,7 @@ from endpoints.instantiations.user.by_id.get.dto import (
 from endpoints.instantiations.user.by_id.get.recent_searches.dto import (
     GetUserRecentSearchesOuterDTO,
 )
-from middleware.enums import PermissionsEnum, RecordTypes
+from middleware.enums import PermissionsEnum, RecordTypesEnum
 from utilities.enums import RecordCategoryEnum
 
 
@@ -233,7 +233,7 @@ class GetUserByIdQueryBuilder(QueryBuilderBase):
                 creator_user_id=data_request.creator_user_id,
                 internal_notes=data_request.internal_notes,
                 record_types_required=[
-                    RecordTypes(rt) for rt in data_request.record_types_required
+                    RecordTypesEnum(rt) for rt in data_request.record_types_required
                 ],
                 pdap_response=data_request.pdap_response,
                 coverage_range=data_request.coverage_range,

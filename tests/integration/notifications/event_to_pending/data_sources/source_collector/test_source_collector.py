@@ -6,7 +6,7 @@ the relevant event is added to the notification queue
 from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
     SourceCollectorPostRequestInnerDTO,
 )
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from tests.integration.notifications.event_to_pending.data_sources.source_collector.manager import (
     EventToPendingDataSourcesSourceCollectorTestManager,
 )
@@ -20,13 +20,13 @@ def test_data_source_added_from_source_collector(
         SourceCollectorPostRequestInnerDTO(
             name="Test Data Source 1",
             source_url="https://example.com/test1",
-            record_type=RecordTypes.COURT_CASES,
+            record_type=RecordTypesEnum.COURT_CASES,
             agency_ids=[agency_id],
         ),
         SourceCollectorPostRequestInnerDTO(
             name="Test Data Source 2",
             source_url="https://example.com/test2",
-            record_type=RecordTypes.ACCIDENT_REPORTS,
+            record_type=RecordTypesEnum.ACCIDENT_REPORTS,
             agency_ids=[agency_id],
         ),
     ]

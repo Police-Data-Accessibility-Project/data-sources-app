@@ -1,4 +1,4 @@
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from tests.integration.search.search_test_setup import SearchTestSetup
 from utilities.enums import RecordCategoryEnum
 
@@ -16,7 +16,7 @@ def test_search_get_record_categories_all(
     tus = sts.tus
 
     tdcdb = tdc.tdcdb
-    record_types = list(RecordTypes)
+    record_types = list(RecordTypesEnum)
 
     for i in range(2):
         tdcdb.link_data_source_to_agency(

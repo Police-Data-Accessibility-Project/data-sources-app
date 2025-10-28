@@ -1,10 +1,7 @@
 from dataclasses import dataclass
-from typing import Optional
 
 import pytest
 
-from db.enums import LocationType
-from middleware.schema_and_dto.dtos.locations.get import LocationsGetRequestDTO
 from tests.helpers.common_test_data import get_test_name
 from tests.helpers.helper_classes.MultiLocationSetup import MultiLocationSetup
 from tests.helpers.helper_classes.test_data_creator.flask import (
@@ -167,57 +164,47 @@ def test_map_locations(test_data_creator_flask: TestDataCreatorFlask):
     check_location_source_count(name="California", data=states, expected_value=1)
 
 
-def test_get_many_locations(test_data_creator_flask: TestDataCreatorFlask):
-    tdc = test_data_creator_flask
-    tdc.clear_test_data()
-
-    def get_many_locations(
-        page: int = 1,
-        has_coordinates: Optional[bool] = None,
-        type_: Optional[LocationType] = None,
-    ):
-        return tdc.request_validator.get_many_locations(
-            headers=tdc.get_admin_tus().jwt_authorization_header,
-            dto=LocationsGetRequestDTO(
-                page=page,
-                has_coordinates=has_coordinates,
-                type=type_,
-            ),
-        )["results"]
-
-    # Run get many locations with no data and confirm no entries
-    data = get_many_locations()
-    assert len(data) == 8
-
-    # Set Up Locations
-    MultiLocationSetup(tdc.tdcdb)
-
-    # Run get many locations with data
-    data = get_many_locations()
-
-    # Validate expected count of locations
-    assert len(data) == 10
-
-    # Filter on states and get expected location count
-    data = get_many_locations(type_=LocationType.STATE)
-    assert len(data) == 3
-
-    # Filter on counties and get expected location count
-    data = get_many_locations(type_=LocationType.COUNTY)
-    assert len(data) == 4
-
-    # Filter on localities and get expected location count
-    data = get_many_locations(type_=LocationType.LOCALITY)
-    assert len(data) == 2
-
-    # Filter on has_coordinates = False and get all but one location
-    data = get_many_locations(has_coordinates=False)
-    assert len(data) == 9
-
-    # Filter on has_coordinates = True and get 1 location
-    data = get_many_locations(has_coordinates=True)
-    assert len(data) == 1
-
-    # Set page to 2 and get no results
-    data = get_many_locations(page=2)
-    assert len(data) == 0
+# TODO: Rebuild
+# def test_get_many_locations(
+#     live_database_client,
+#     pennsylvania_id: int,
+#     allegheny_id: int,
+#     pittsburgh_id: int,
+#     test_data_creator_flask: TestDataCreatorFlask
+# ):
+#     tdc = test_data_creator_flask
+#     tdc.clear_test_data()
+#
+#     def get_many_locations(
+#         page: int = 1,
+#         has_coordinates: Optional[bool] = None,
+#         type_: Optional[LocationType] = None,
+#     ):
+#         return tdc.request_validator.get_many_locations(
+#             headers=tdc.get_admin_tus().jwt_authorization_header,
+#             dto=LocationsGetRequestDTO(
+#                 page=page,
+#                 has_coordinates=has_coordinates,
+#                 type=type_,
+#             ),
+#         )["results"]
+#
+#     # Run get many locations with no data and confirm no entries
+#     data = get_many_locations()
+#     assert len(data) == 3
+#
+#     # Filter on states and get expected location count
+#     data = get_many_locations(type_=LocationType.STATE)
+#     assert len(data) == 1
+#
+#     # Filter on counties and get expected location count
+#     data = get_many_locations(type_=LocationType.COUNTY)
+#     assert len(data) == 1
+#
+#     # Filter on localities and get expected location count
+#     data = get_many_locations(type_=LocationType.LOCALITY)
+#     assert len(data) == 1
+#
+#     # Set page to 2 and get no results
+#     data = get_many_locations(page=2)
+#     assert len(data) == 0

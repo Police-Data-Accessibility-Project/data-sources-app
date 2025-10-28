@@ -4,7 +4,7 @@ from flask.testing import FlaskClient
 
 from db.client.core import DatabaseClient
 from db.enums import RequestStatus
-from middleware.enums import JurisdictionType, PermissionsEnum, RecordTypes
+from middleware.enums import JurisdictionType, PermissionsEnum, RecordTypesEnum
 from tests.helpers.common_endpoint_calls import CreatedDataSource
 from tests.helpers.constants import (
     DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT,
@@ -60,7 +60,7 @@ class TestDataCreatorFlask:
         self,
         user_id: int | None = None,
         request_status: RequestStatus | None = RequestStatus.INTAKE,
-        record_type: RecordTypes | None = None,
+        record_type: RecordTypesEnum | None = None,
         location_ids: list[int] | None = None,
     ) -> TestDataRequestInfo:
         return self.tdcdb.data_request(

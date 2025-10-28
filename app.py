@@ -57,8 +57,8 @@ from endpoints.instantiations.permissions_.routes import namespace_permissions
 from endpoints.instantiations.search.routes import namespace_search
 from endpoints.instantiations.source_collector.routes import (
     namespace_source_collector,
-    sc_router,
 )
+from endpoints.v3.routes import sm_router
 from endpoints.instantiations.typeahead_.routes import (
     namespace_typeahead_suggestions,
 )
@@ -186,6 +186,17 @@ def get_api_with_namespaces():
 
 def create_asgi_app() -> Starlette:
     flask_app = create_flask_app()
+    fast_api_app: FastAPI = create_fast_api_app()
+
+    app = Starlette()
+
+    app.mount("/api/v3", fast_api_app)
+    app.mount("/api/v2", WSGIMiddlewareFastAPI(flask_app))
+
+    return app
+
+
+def create_fast_api_app() -> FastAPI:
     fast_api_app = FastAPI(
         title="PDAP Data Sources API",
         version="3.0",
@@ -196,16 +207,9 @@ def create_asgi_app() -> Starlette:
         "\n\nThe old Flask API is available at {this_address}/"
         "",
     )
-
-    for router in [sc_router]:
+    for router in [sm_router]:
         fast_api_app.include_router(router)
-
-    app = Starlette()
-
-    app.mount("/api/v3", fast_api_app)
-    app.mount("/api/v2", WSGIMiddlewareFastAPI(flask_app))
-
-    return app
+    return fast_api_app
 
 
 if __name__ == "__main__":

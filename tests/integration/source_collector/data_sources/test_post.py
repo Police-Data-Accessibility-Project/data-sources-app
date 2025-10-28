@@ -5,7 +5,7 @@ from sqlalchemy import select
 from db.models.implementations.core.notification.pending.data_source import (
     DataSourcePendingEventNotification,
 )
-from middleware.enums import RecordTypes, PermissionsEnum
+from middleware.enums import RecordTypesEnum, PermissionsEnum
 from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )
@@ -41,7 +41,7 @@ def test_source_collector_data_sources_post(
                 name="Test Data Source",
                 description="Test Data Source Description",
                 source_url="http://test.com",
-                record_type=RecordTypes.INCARCERATION_RECORDS,
+                record_type=RecordTypesEnum.INCARCERATION_RECORDS,
                 record_formats=["CSV"],
                 data_portal_type="test",
                 supplying_entity="Test Supplying Entity",
@@ -51,7 +51,7 @@ def test_source_collector_data_sources_post(
                 name=data_source.name,
                 description="Test Data Source Description",
                 source_url=data_source.url,
-                record_type=RecordTypes.ACCIDENT_REPORTS.value,  # This should trigger a duplicate error
+                record_type=RecordTypesEnum.ACCIDENT_REPORTS.value,  # This should trigger a duplicate error
                 record_formats=["CSV"],
                 data_portal_type="test",
                 supplying_entity="Test Supplying Entity",
@@ -61,7 +61,7 @@ def test_source_collector_data_sources_post(
                 name="Test Data Source 2",
                 description="Test Data Source Description",
                 source_url="http://new_test.com",
-                record_type=RecordTypes.PERSONNEL_RECORDS,
+                record_type=RecordTypesEnum.PERSONNEL_RECORDS,
                 agency_ids=agency_ids[:2],
             ),
         ]

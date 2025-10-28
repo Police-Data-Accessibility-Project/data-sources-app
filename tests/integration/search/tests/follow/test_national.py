@@ -1,4 +1,4 @@
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from tests.integration.search.search_test_setup import SearchTestSetup
 from utilities.enums import RecordCategoryEnum
 
@@ -13,8 +13,8 @@ def test_search_national_follow(search_test_setup: SearchTestSetup):
     rv.follow_national_search(
         headers=tus.jwt_authorization_header,
         record_types=[
-            RecordTypes.INCARCERATION_RECORDS,
-            RecordTypes.SEX_OFFENDER_REGISTRY,
+            RecordTypesEnum.INCARCERATION_RECORDS,
+            RecordTypesEnum.SEX_OFFENDER_REGISTRY,
         ],
     )
 
@@ -34,10 +34,10 @@ def test_search_national_follow(search_test_setup: SearchTestSetup):
                     "location_id": tdc.db_client.get_national_location_id(),
                     "subscriptions_by_category": {
                         RecordCategoryEnum.JAIL.value: [
-                            RecordTypes.INCARCERATION_RECORDS.value,
+                            RecordTypesEnum.INCARCERATION_RECORDS.value,
                         ],
                         RecordCategoryEnum.RESOURCE.value: [
-                            RecordTypes.SEX_OFFENDER_REGISTRY.value,
+                            RecordTypesEnum.SEX_OFFENDER_REGISTRY.value,
                         ],
                     },
                 }

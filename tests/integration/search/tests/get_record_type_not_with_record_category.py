@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )
@@ -23,7 +23,7 @@ def test_search_get_record_type_not_with_record_category(
         headers=tus.api_authorization_header,
         location_id=sts.location_id,
         record_categories=[RecordCategoryEnum.POLICE],
-        record_types=[RecordTypes.ARREST_RECORDS],
+        record_types=[RecordTypesEnum.ARREST_RECORDS],
         expected_response_status=HTTPStatus.BAD_REQUEST,
         expected_schema=MessageSchema,
         expected_json_content={

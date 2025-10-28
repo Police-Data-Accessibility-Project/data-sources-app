@@ -3,23 +3,28 @@
 from sqlalchemy import false, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from db.models.helpers import enum_column
 from db.models.mixins import CountMetadata, UpdatedAtMixin
 from db.models.templates.standard import StandardBase
 from db.models.types import (
-    JurisdictionTypeLiteral,
-    AgencyTypeLiteral,
     timestamp_tz,
 )
-from middleware.enums import Relations
+from middleware.enums import Relations, JurisdictionType, AgencyType
 
 
 class Agency(StandardBase, CountMetadata, UpdatedAtMixin):
     __tablename__ = Relations.AGENCIES.value
 
     name: Mapped[str]
-    jurisdiction_type: Mapped[JurisdictionTypeLiteral]
+    jurisdiction_type: Mapped[JurisdictionType] = enum_column(
+        name="jurisdiction_type",
+        enum=JurisdictionType,
+    )
     defunct_year: Mapped[str | None]
-    agency_type: Mapped[AgencyTypeLiteral]
+    agency_type: Mapped[AgencyType] = enum_column(
+        name="agency_type",
+        enum=AgencyType,
+    )
     no_web_presence: Mapped[bool] = mapped_column(server_default=false())
     created_at: Mapped[timestamp_tz] = mapped_column(
         server_default=func.current_timestamp()

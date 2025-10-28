@@ -10,7 +10,7 @@ from db.models.implementations.core.recent_search.core import RecentSearch
 from db.models.implementations.core.record.category import RecordCategory
 from db.models.implementations.core.record.type import RecordType
 from db.queries.builder.core import QueryBuilderBase
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from utilities.enums import RecordCategoryEnum
 
 
@@ -22,7 +22,7 @@ class CreateSearchRecordQueryBuilder(QueryBuilderBase):
         record_categories: Optional[
             Union[list[RecordCategoryEnum], RecordCategoryEnum]
         ] = None,
-        record_types: Optional[Union[list[RecordTypes], RecordTypes]] = None,
+        record_types: Optional[Union[list[RecordTypesEnum], RecordTypesEnum]] = None,
     ):
         super().__init__()
         self.user_id = user_id
