@@ -10,7 +10,7 @@ from db.dtos.data_request_info_for_github import DataRequestInfoForGithub
 from db.client.core import DatabaseClient
 from db.enums import RequestStatus
 from middleware.common_response_formatting import message_response
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from middleware.schema_and_dto.dtos.data_requests.put import (
     DataRequestsPutDTO,
     DataRequestsPutOuterDTO,
@@ -102,7 +102,7 @@ def is_empty(a: Optional[list]) -> bool:
 
 def record_types_match(
     record_types_required_str: Optional[list[str]],
-    record_types_enums: Optional[list[RecordTypes]],
+    record_types_enums: Optional[list[RecordTypesEnum]],
 ) -> bool:
     if is_empty(record_types_required_str) and is_empty(record_types_enums):
         return True

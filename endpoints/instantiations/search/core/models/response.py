@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from middleware.enums import RecordTypes, JurisdictionType
+from middleware.enums import RecordTypesEnum, JurisdictionType
 from middleware.schema_and_dto.dtos._helpers import default_field_required
 
 
@@ -18,7 +18,7 @@ class SearchResultDTO(BaseModel):
     description: Optional[str] = default_field_required(
         "The description of the data source."
     )
-    record_type: RecordTypes = default_field_required("The type of the record.")
+    record_type: RecordTypesEnum = default_field_required("The type of the record.")
     source_url: Optional[str] = default_field_required("The URL of the source.")
     record_formats: Optional[list[str]] = default_field_required(
         "The formats of the record."

@@ -14,7 +14,7 @@ from db.models.implementations.core.notification.queue.data_request import (
 from db.models.implementations.core.notification.queue.data_source import (
     DataSourceUserNotificationQueue,
 )
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
@@ -35,16 +35,16 @@ class NotificationsPendingToQueueRecordTypeTestManager:
         self.user_id_2 = self.tdc.user().id
 
         self.data_source_accident_id = self.tdc.data_source(
-            record_type=RecordTypes.ACCIDENT_REPORTS
+            record_type=RecordTypesEnum.ACCIDENT_REPORTS
         ).id
         self.data_request_accident_id = self.tdc.data_request(
-            record_type=RecordTypes.ACCIDENT_REPORTS
+            record_type=RecordTypesEnum.ACCIDENT_REPORTS
         ).id
         self.data_source_court_id = self.tdc.data_source(
-            record_type=RecordTypes.COURT_CASES
+            record_type=RecordTypesEnum.COURT_CASES
         ).id
         self.data_request_court_id = self.tdc.data_request(
-            record_type=RecordTypes.COURT_CASES
+            record_type=RecordTypesEnum.COURT_CASES
         ).id
 
         # Clear pending tables to ensure clean slate
@@ -109,7 +109,7 @@ class NotificationsPendingToQueueRecordTypeTestManager:
         self.tdc.user_follow_location(
             user_id=self.user_id_2,
             location_id=location_id,
-            record_types=[RecordTypes.ACCIDENT_REPORTS],
+            record_types=[RecordTypesEnum.ACCIDENT_REPORTS],
         )
 
     def _check_for_all_data_request_events(self, user_id: int):

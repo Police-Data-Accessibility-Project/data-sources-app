@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from db.enums import RequestStatus, RequestUrgency
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from middleware.schema_and_dto.dtos._helpers import (
     default_field_required,
     default_field_not_required,
@@ -51,7 +51,7 @@ class DataRequestsBaseDTO(BaseModel):
     internal_notes: Optional[str] = default_field_not_required(
         description="Internal notes by PDAP staff about the request. Viewable and editable only by admins."
     )
-    record_types_required: Optional[list[RecordTypes]] = default_field_required(
+    record_types_required: Optional[list[RecordTypesEnum]] = default_field_required(
         description="The record types associated with the data request. Editable only by admins."
     )
     pdap_response: Optional[str] = default_field_required(

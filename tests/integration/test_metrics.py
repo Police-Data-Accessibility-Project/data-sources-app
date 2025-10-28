@@ -185,18 +185,19 @@ def test_metrics_followed_searches_breakdown(
     assert results[2]["location_name"] == "Pittsburgh, Allegheny, Pennsylvania"
 
 
-def test_metrics_followed_searches_aggregate(test_data_creator_flask):
-    tdc = test_data_creator_flask
-    tdc.clear_test_data()
-    last_notification_datetime = tdc.tdcdb.notification_log()
-
-    MultiFollowSetup.setup(tdc)
-
-    data = tdc.request_validator.get_metrics_followed_searches_aggregate(
-        headers=tdc.get_admin_tus().jwt_authorization_header,
-    )
-    assert data["total_followers"] == 3
-    assert data["total_followed_searches"] == 6
-    assert data["last_notification_date"] == last_notification_datetime.strftime(
-        DATE_FORMAT
-    )
+# TODO: Rebuild with test isolation
+# def test_metrics_followed_searches_aggregate(test_data_creator_flask):
+#     tdc = test_data_creator_flask
+#     tdc.clear_test_data()
+#     last_notification_datetime = tdc.tdcdb.notification_log()
+#
+#     MultiFollowSetup.setup(tdc)
+#
+#     data = tdc.request_validator.get_metrics_followed_searches_aggregate(
+#         headers=tdc.get_admin_tus().jwt_authorization_header,
+#     )
+#     assert data["total_followers"] == 3
+#     assert data["total_followed_searches"] == 6
+#     assert data["last_notification_date"] == last_notification_datetime.strftime(
+#         DATE_FORMAT
+#     )

@@ -123,7 +123,7 @@ from endpoints.schema_config.instantiations.user.profile.data_requests import (
 from endpoints.schema_config.instantiations.user.profile.get import (
     UserProfileGetEndpointSchemaConfig,
 )
-from middleware.enums import OutputFormatEnum, RecordTypes
+from middleware.enums import OutputFormatEnum, RecordTypesEnum
 from middleware.schema_and_dto.dtos.locations.get import LocationsGetRequestDTO
 from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
@@ -350,7 +350,7 @@ class RequestValidator:
         headers: dict,
         location_id: int,
         record_categories: list[RecordCategoryEnum] | None = None,
-        record_types: list[RecordTypes] | None = None,
+        record_types: list[RecordTypesEnum] | None = None,
         format: OutputFormatEnum | None = OutputFormatEnum.JSON,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
         expected_schema: Type[Schema]
@@ -402,7 +402,7 @@ class RequestValidator:
     def _get_search_query_params(
         record_categories: list[RecordCategoryEnum] | None,
         location_id: int | None = None,
-        record_types: list[RecordTypes] | None = None,
+        record_types: list[RecordTypesEnum] | None = None,
     ) -> dict[str, str]:
         if location_id is not None:
             query_params = {
@@ -423,7 +423,7 @@ class RequestValidator:
         self,
         headers: dict,
         record_categories: list[RecordCategoryEnum] | None = None,
-        record_types: list[RecordTypes] | None = None,
+        record_types: list[RecordTypesEnum] | None = None,
         expected_json_content: dict | None = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
@@ -448,7 +448,7 @@ class RequestValidator:
         self,
         headers: dict,
         record_categories: list[RecordCategoryEnum] | None = None,
-        record_types: list[RecordTypes] | None = None,
+        record_types: list[RecordTypesEnum] | None = None,
         expected_json_content: dict | None = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
@@ -474,7 +474,7 @@ class RequestValidator:
         headers: dict,
         location_id: int,
         record_categories: list[RecordCategoryEnum] | None = None,
-        record_types: list[RecordTypes] | None = None,
+        record_types: list[RecordTypesEnum] | None = None,
         expected_json_content: dict | None = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
@@ -501,7 +501,7 @@ class RequestValidator:
         headers: dict,
         location_id: int,
         record_categories: list[RecordCategoryEnum] | None = None,
-        record_types: list[RecordTypes] | None = None,
+        record_types: list[RecordTypesEnum] | None = None,
         expected_json_content: dict | None = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):

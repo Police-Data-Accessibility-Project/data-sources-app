@@ -1,0 +1,4 @@
+
+
+class OrphanedEntityException(Exception):
+    pass

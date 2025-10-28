@@ -18,7 +18,7 @@ from db.models.table_reference import (
     convert_to_column_reference,
 )
 from db.subquery_logic import SubqueryParameters
-from middleware.enums import RecordTypes, Relations
+from middleware.enums import RecordTypesEnum, Relations
 from utilities.enums import RecordCategoryEnum
 
 TableColumn = namedtuple("TableColumn", ["table", "column"])
@@ -286,7 +286,7 @@ class DynamicQueryConstructor:
     def create_search_query(
         location_id: int,
         record_categories: Optional[list[RecordCategoryEnum]] = None,
-        record_types: Optional[list[RecordTypes]] = None,
+        record_types: Optional[list[RecordTypesEnum]] = None,
     ) -> sql.Composed:
         base_query = sql.SQL(
             """

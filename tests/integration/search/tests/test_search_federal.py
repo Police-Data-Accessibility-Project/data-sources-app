@@ -1,4 +1,4 @@
-from middleware.enums import JurisdictionType, AgencyType, RecordTypes
+from middleware.enums import JurisdictionType, AgencyType, RecordTypesEnum
 from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
@@ -19,7 +19,7 @@ def test_search_federal(test_data_creator_flask: TestDataCreatorFlask):
         agency_ids.append(tai.id)
 
     # Link 2 approved data sources to each federal agency
-    record_types = list(RecordTypes)
+    record_types = list(RecordTypesEnum)
     for i in range(2):
         for j in range(2):
             d_id = tdc.tdcdb.data_source(record_type=record_types[j]).id

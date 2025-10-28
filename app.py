@@ -57,8 +57,8 @@ from endpoints.instantiations.permissions_.routes import namespace_permissions
 from endpoints.instantiations.search.routes import namespace_search
 from endpoints.instantiations.source_collector.routes import (
     namespace_source_collector,
-    sc_router,
 )
+from endpoints.v3.routes import sm_router
 from endpoints.instantiations.typeahead_.routes import (
     namespace_typeahead_suggestions,
 )
@@ -186,19 +186,7 @@ def get_api_with_namespaces():
 
 def create_asgi_app() -> Starlette:
     flask_app = create_flask_app()
-    fast_api_app = FastAPI(
-        title="PDAP Data Sources API",
-        version="3.0",
-        description="The following is the API documentation for the PDAP Data Sources API."
-        "\n\nBy accessing our API, you are agreeing to our [Terms of Service](https://docs.pdap.io/meta/operations/legal/terms-of-service). Please read them before you start."
-        "\n\nFor API help, consult [our getting started guide.](https://docs.pdap.io/api/introduction)"
-        "\n\nTo search the database, go to [pdap.io](https://pdap.io)."
-        "\n\nThe old Flask API is available at {this_address}/"
-        "",
-    )
-
-    for router in [sc_router]:
-        fast_api_app.include_router(router)
+    fast_api_app: FastAPI = create_fast_api_app()
 
     app = Starlette()
 
@@ -206,6 +194,22 @@ def create_asgi_app() -> Starlette:
     app.mount("/api/v2", WSGIMiddlewareFastAPI(flask_app))
 
     return app
+
+
+def create_fast_api_app() -> FastAPI:
+    fast_api_app = FastAPI(
+        title="PDAP Data Sources API",
+        version="3.0",
+        description="The following is the API documentation for the PDAP Data Sources API."
+                    "\n\nBy accessing our API, you are agreeing to our [Terms of Service](https://docs.pdap.io/meta/operations/legal/terms-of-service). Please read them before you start."
+                    "\n\nFor API help, consult [our getting started guide.](https://docs.pdap.io/api/introduction)"
+                    "\n\nTo search the database, go to [pdap.io](https://pdap.io)."
+                    "\n\nThe old Flask API is available at {this_address}/"
+                    "",
+    )
+    for router in [sm_router]:
+        fast_api_app.include_router(router)
+    return fast_api_app
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.metadata import (
     MetadataInfo,
 )
@@ -17,7 +17,7 @@ class SearchRequestDTO(BaseModel):
         ),
         default=None,
     )
-    record_types: Optional[list[RecordTypes]] = Field(
+    record_types: Optional[list[RecordTypesEnum]] = Field(
         description="A record type to search for data sources in.",
         json_schema_extra=MetadataInfo(
             source=SourceMappingEnum.QUERY_ARGS, required=False

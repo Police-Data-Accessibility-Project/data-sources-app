@@ -17,7 +17,7 @@ from endpoints.schema_config.instantiations.data_requests.related_sources.get im
     DataRequestsRelatedSourcesGetEndpointSchemaConfig,
 )
 from middleware.constants import DATA_KEY
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from middleware.third_party_interaction_logic.mailgun_.constants import OPERATIONS_EMAIL
 from middleware.util.type_conversion import get_enum_values
 from tests.helpers.common_test_data import (
@@ -375,7 +375,7 @@ def test_data_requests_by_id_put(
                 "github_issue_url": uuid.uuid4().hex,
                 "github_issue_number": get_random_number_for_testing(),
                 "pdap_response": uuid.uuid4().hex,
-                "record_types_required": get_enum_values(RecordTypes),
+                "record_types_required": get_enum_values(RecordTypesEnum),
             }
         },
     )
@@ -594,6 +594,7 @@ def test_data_request_by_id_related_sources(
 
 def test_link_unlink_data_requests_with_locations(
     test_data_creator_flask: TestDataCreatorFlask,
+    pittsburgh_id: int
 ):
     tdc = test_data_creator_flask
     cdr = tdc.tdcdb.data_request()
@@ -621,7 +622,7 @@ def test_link_unlink_data_requests_with_locations(
     assert data == []
 
     # Add location
-    location_id = tdc.locality("Pittsburgh")
+    location_id = pittsburgh_id
 
     def post_location_association(
         tus: TestUserSetup = admin_tus,

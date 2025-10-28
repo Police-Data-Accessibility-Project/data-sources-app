@@ -10,7 +10,7 @@ from db.enums import (
     RetentionSchedule,
     URLStatus,
 )
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from middleware.schema_and_dto.dtos._helpers import (
     default_field_required,
     default_field_not_required,
@@ -62,4 +62,4 @@ class DataSourceEntryBaseDTO(BaseModel):
     data_portal_type_other: str | None = None
     access_notes: str | None = None
     url_status: URLStatus | None = None
-    record_type_name: RecordTypes | None = None
+    record_type_name: RecordTypesEnum | None = None

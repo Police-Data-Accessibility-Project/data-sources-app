@@ -21,7 +21,7 @@ from db.models.implementations.core.location.county import County
 from db.models.implementations.core.location.locality import Locality
 from db.models.implementations.core.location.us_state import USState
 from db.models.implementations.core.record.type import RecordType
-from middleware.enums import Relations, RecordTypes
+from middleware.enums import Relations, RecordTypesEnum
 from tests.helpers.helper_classes.TestUserSetup import TestUserSetup
 from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
@@ -29,12 +29,13 @@ from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
 from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
+from tests.helpers.wipe import wipe_database
 from utilities.common import get_alembic_conn_string
 
 # Load environment variables
 dotenv.load_dotenv()
 
-
+# TODO: Redundant with Live Database Client. Consolidate and remove this.
 @pytest.fixture
 def dev_db_client() -> Generator[DatabaseClient, Any, None]:
     db_client = DatabaseClient()
@@ -87,6 +88,9 @@ def bypass_jwt_required(monkeypatch):
 def live_database_client() -> Generator[DatabaseClient, Any, None]:
     """Returns a database client with a live connection to the database"""
     db_client = DatabaseClient()
+    # Wipe database before returning
+    wipe_database(db_client)
+
     yield db_client
 
 
@@ -279,7 +283,7 @@ def test_agencies(test_data_creator_db_client) -> list[int]:
 @pytest.fixture
 def sample_record_type_id(live_database_client) -> int:
     """Returns the ID of the OTHER record type."""
-    query = select(RecordType.id).where(RecordType.name == RecordTypes.OTHER.value)
+    query = select(RecordType.id).where(RecordType.name == RecordTypesEnum.OTHER.value)
     return live_database_client.scalar(query)
 
 

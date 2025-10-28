@@ -1,7 +1,7 @@
 import json
 
 from db.enums import RequestStatus
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from middleware.third_party_interaction_logic.github.constants import (
     GH_ORG_NAME,
     GH_PROJECT_NUMBER,
@@ -56,7 +56,7 @@ class GithubIssueManager:
         response = make_graph_ql_query(query=query)
         return response["data"]["repository"]["id"]
 
-    def get_record_type_label_ids(self, record_types: list[RecordTypes]):
+    def get_record_type_label_ids(self, record_types: list[RecordTypesEnum]):
         record_type_str_list = [
             f"RT-{record_type.value}" for record_type in record_types
         ]
@@ -66,7 +66,7 @@ class GithubIssueManager:
         ]
 
     def create_issue(
-        self, title: str, body: str, record_types: list[RecordTypes]
+        self, title: str, body: str, record_types: list[RecordTypesEnum]
     ) -> GithubIssueInfo:
         label_ids = self.get_record_type_label_ids(record_types)
         query = """
@@ -133,7 +133,7 @@ class GithubIssueManager:
         title: str,
         body: str,
         status: RequestStatus,
-        record_types: list[RecordTypes],
+        record_types: list[RecordTypesEnum],
     ) -> GithubIssueInfo:
         gii: GithubIssueInfo = self.create_issue(
             title=title, body=body, record_types=record_types

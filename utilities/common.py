@@ -107,3 +107,11 @@ def downgrade_to_base(alembic_cfg: Config, engine):
 
         command.stamp(alembic_cfg, "base")
         raise e
+
+
+def value_if_enum(entity: Any) -> Any:
+    if isinstance(entity, Enum):
+        return entity.value
+    if isinstance(entity, list) and isinstance(entity[0], Enum):
+        return [e.value for e in entity]
+    return entity

@@ -3,7 +3,7 @@ from db.models.implementations.core.data_request.core import DataRequest
 from db.models.implementations.core.data_request.github_issue_info import (
     DataRequestsGithubIssueInfo,
 )
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from middleware.third_party_interaction_logic.github.issue_info import GithubIssueInfo
 from middleware.third_party_interaction_logic.github.issue_project_info.core import (
     GithubIssueProjectInfo,
@@ -164,7 +164,7 @@ class TestSynchronizeGithubIssueHappyPathManager:
         data_request_ids.append(data_request_id)
         # Update existing issue to "Complete"
         self.mock_repo[1] = GIPIInfo(
-            project_status="Complete", record_types=[RecordTypes.RECORDS_REQUEST_INFO]
+            project_status="Complete", record_types=[RecordTypesEnum.RECORDS_REQUEST_INFO]
         )
 
     def check_sync_3(self, data_request_ids: list[int]):
@@ -181,14 +181,14 @@ class TestSynchronizeGithubIssueHappyPathManager:
         assert list(self.mock_repo.values()) == [
             GIPIInfo(
                 project_status="Complete",
-                record_types=[RecordTypes.RECORDS_REQUEST_INFO],
+                record_types=[RecordTypesEnum.RECORDS_REQUEST_INFO],
             ),
             GIPIInfo(project_status="Ready to start", record_types=[]),
             GIPIInfo(
                 project_status="Ready to start",
                 record_types=[
-                    RecordTypes.DISPATCH_RECORDINGS,
-                    RecordTypes.INCARCERATION_RECORDS,
+                    RecordTypesEnum.DISPATCH_RECORDINGS,
+                    RecordTypesEnum.INCARCERATION_RECORDS,
                 ],
             ),
         ]
@@ -205,14 +205,14 @@ class TestSynchronizeGithubIssueHappyPathManager:
         assert list(self.mock_repo.values()) == [
             GIPIInfo(
                 project_status="Complete",
-                record_types=[RecordTypes.RECORDS_REQUEST_INFO],
+                record_types=[RecordTypesEnum.RECORDS_REQUEST_INFO],
             ),
             GIPIInfo(project_status="Ready to start", record_types=[]),
             GIPIInfo(
                 project_status="Ready to start",
                 record_types=[
-                    RecordTypes.DISPATCH_RECORDINGS,
-                    RecordTypes.INCARCERATION_RECORDS,
+                    RecordTypesEnum.DISPATCH_RECORDINGS,
+                    RecordTypesEnum.INCARCERATION_RECORDS,
                 ],
             ),
         ]

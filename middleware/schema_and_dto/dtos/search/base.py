@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel, model_validator, Field
 from werkzeug.exceptions import BadRequest
 
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.metadata import (
     MetadataInfo,
 )
@@ -18,7 +18,7 @@ class SearchFollowRequestBaseDTO(BaseModel):
             required=False, source=SourceMappingEnum.QUERY_ARGS
         ),
     )
-    record_types: Optional[list[RecordTypes]] = Field(
+    record_types: Optional[list[RecordTypesEnum]] = Field(
         default=None,
         description="Selected record types.",
         json_schema_extra=MetadataInfo(

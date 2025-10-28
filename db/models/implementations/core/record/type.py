@@ -7,13 +7,13 @@ from db.models.helpers import enum_column
 from db.models.implementations.core.record.category import RecordCategory
 from db.models.templates.standard import StandardBase
 from db.models.types import text
-from middleware.enums import Relations, RecordTypes
+from middleware.enums import Relations, RecordTypesEnum
 
 
 class RecordType(StandardBase):
     __tablename__ = Relations.RECORD_TYPES.value
 
-    name: Mapped[RecordTypes] = enum_column(RecordTypes, name="record_type")
+    name: Mapped[RecordTypesEnum] = enum_column(RecordTypesEnum, name="record_type")
     category_id: Mapped[int] = mapped_column(ForeignKey("public.record_categories.id"))
     description: Mapped[text | None]
 

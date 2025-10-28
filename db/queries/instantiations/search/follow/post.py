@@ -36,6 +36,7 @@ class CreateFollowQueryBuilder(FollowBaseQueryBuilder):
         except IntegrityError as e:
             if 'not present in table "locations"' in str(e):
                 raise LocationNotFound
+            raise e
 
         # Add all record types to the user's follows, if they don't already exist
         rt_ids = self.record_type_ids

@@ -3,7 +3,7 @@ from typing import Sequence
 from sqlalchemy import select, RowMapping
 
 from db.queries.builder.core import QueryBuilderBase
-from endpoints.instantiations.source_collector.follows.response import (
+from endpoints.v3.follows.response import (
     LinkUserFollow,
     GetFollowsResponse,
 )

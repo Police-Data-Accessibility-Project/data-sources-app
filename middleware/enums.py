@@ -156,7 +156,7 @@ class AgencyType(Enum):
     UNKNOWN = "unknown"
 
 
-class RecordTypes(Enum):
+class RecordTypesEnum(Enum):
     ACCIDENT_REPORTS = "Accident Reports"
     ARREST_RECORDS = "Arrest Records"
     CALLS_FOR_SERVICE = "Calls for Service"

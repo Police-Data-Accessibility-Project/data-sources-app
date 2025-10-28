@@ -34,7 +34,7 @@ from middleware.enums import (
     Relations,
     AgencyType,
     PermissionsEnum,
-    RecordTypes,
+    RecordTypesEnum,
 )
 from endpoints.instantiations.agencies_.post.dto import (
     AgencyInfoPostDTO,
@@ -89,10 +89,10 @@ class TestDataCreatorDBClient:
     def clear_test_data(self) -> None:
         for model in [
             DataRequest,
-            Agency,
-            Locality,
+            # Agency,
+            # Locality
             DataSource,
-            User,
+            # User,
             NotificationLog,
             DataRequestUserNotificationQueue,
             DataSourceUserNotificationQueue,
@@ -176,7 +176,7 @@ class TestDataCreatorDBClient:
 
     def data_source(
         self,
-        record_type: RecordTypes | None = RecordTypes.ACCIDENT_REPORTS,
+        record_type: RecordTypesEnum | None = RecordTypesEnum.ACCIDENT_REPORTS,
         source_url: str | None = None,
     ) -> CreatedDataSource:
         dto = DataSourcesPostDTO(
@@ -238,7 +238,7 @@ class TestDataCreatorDBClient:
         self,
         user_id: int | None = None,
         request_status: RequestStatus | None = RequestStatus.INTAKE,
-        record_type: RecordTypes | None = None,
+        record_type: RecordTypesEnum | None = None,
         location_ids: list[int] | None = None,
     ) -> TestDataRequestInfo:
         if record_type is None:
@@ -270,7 +270,7 @@ class TestDataCreatorDBClient:
         self,
         user_id: int,
         location_id: int,
-        record_types: list[RecordTypes] | None = None,
+        record_types: list[RecordTypesEnum] | None = None,
     ) -> None:
         self.db_client.create_followed_search(
             user_id=user_id, location_id=location_id, record_types=record_types
@@ -380,7 +380,7 @@ class ValidNotificationEventCreatorV2:
         self.notification_valid_date = get_notification_valid_date()
         self.user_id = self.tdc.user().id
 
-    def data_source_approved(self, record_type: RecordTypes, location_id: int) -> int:
+    def data_source_approved(self, record_type: RecordTypesEnum, location_id: int) -> int:
         """Create approved data source with record type and link to agency with location"""
         agency_info = self.tdc.agency(location_id)
         ds_info = self.tdc.data_source()
@@ -401,7 +401,7 @@ class ValidNotificationEventCreatorV2:
         return ds_info.id
 
     def create_data_request(
-        self, request_status: RequestStatus, record_type: RecordTypes, location_id: int
+        self, request_status: RequestStatus, record_type: RecordTypesEnum, location_id: int
     ) -> int:
         """Create data request of given request status and record type and link to location"""
         dr_info = self.tdc.data_request()
