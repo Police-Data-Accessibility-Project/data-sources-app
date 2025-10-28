@@ -26,7 +26,6 @@ from middleware.security.auth.fastapi import get_access_info
 from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
-from tests.integration.conftest import agency_id_1, agency_id_2
 from tests.integration.v3.helpers.api_test_helper import APITestHelper
 from tests.integration.v3.helpers.request_validator import RequestValidatorFastAPI
 

@@ -3,9 +3,18 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from db.enums import DetailLevel, AgencyAggregation, UpdateMethod, RetentionSchedule, AccessType, URLStatus
+from db.enums import (
+    DetailLevel,
+    AgencyAggregation,
+    UpdateMethod,
+    RetentionSchedule,
+    AccessType,
+)
 from middleware.enums import RecordTypesEnum
-from middleware.schema_and_dto.dtos._helpers import default_field_not_required, default_field_required
+from middleware.schema_and_dto.dtos._helpers import (
+    default_field_not_required,
+    default_field_required,
+)
 
 
 class PostDataSourceRequest(BaseModel):
@@ -30,16 +39,16 @@ class PostDataSourceRequest(BaseModel):
     originating_entity: Optional[str] = default_field_not_required()
     retention_schedule: Optional[RetentionSchedule] = default_field_not_required()
     scraper_url: Optional[str] = default_field_not_required()
-    submission_notes: Optional[str] = default_field_not_required()  #X
-    rejection_note: Optional[str] = default_field_not_required()  #X
-    submitter_contact_info: Optional[str] = default_field_not_required()  #X
+    submission_notes: Optional[str] = default_field_not_required()  # X
+    rejection_note: Optional[str] = default_field_not_required()  # X
+    submitter_contact_info: Optional[str] = default_field_not_required()  # X
     agency_described_not_in_database: Optional[str] = default_field_not_required()
     data_portal_type_other: Optional[str] = default_field_not_required()
-    data_source_request: Optional[str] = default_field_not_required()  #X
-    record_type_name: RecordTypesEnum  = default_field_required()
-
+    data_source_request: Optional[str] = default_field_not_required()  # X
+    record_type_name: RecordTypesEnum = default_field_required()
 
     linked_agency_ids: list[int] = default_field_required()
+
 
 class PostDataSourceOuterRequest(BaseModel):
     entry_data: PostDataSourceRequest = default_field_required()

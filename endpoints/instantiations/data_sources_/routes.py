@@ -8,7 +8,9 @@ from endpoints.instantiations.data_sources_.get.by_id.agencies.middleware import
 from endpoints.instantiations.data_sources_.get.by_id.wrapper import (
     data_source_by_id_wrapper,
 )
-from endpoints.instantiations.data_sources_.post.request_.wrapper import post_data_source_wrapper
+from endpoints.instantiations.data_sources_.post.request_.wrapper import (
+    post_data_source_wrapper,
+)
 from endpoints.psycopg_resource import PsycopgResource
 from endpoints.schema_config.enums import SchemaConfigs
 from endpoints.schema_config.instantiations.data_sources.by_id.agencies.get import (
@@ -28,7 +30,8 @@ from middleware.schema_and_dto.non_dto_dataclasses import SchemaPopulateParamete
 from middleware.schema_and_dto.schemas.common.base import GetByIDBaseSchema
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.info.instantiations import (
-    API_OR_JWT_AUTH_INFO, STANDARD_JWT_AUTH_INFO,
+    API_OR_JWT_AUTH_INFO,
+    STANDARD_JWT_AUTH_INFO,
 )
 from utilities.namespace import create_namespace, AppNamespaces
 

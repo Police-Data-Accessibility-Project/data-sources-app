@@ -64,9 +64,7 @@ def test_data_source_manager_data_sources_update(
 
     data_sources: list[dict] = live_database_client.get_all(DataSource)
     assert len(data_sources) == 2
-    id_to_data_source = {
-        data_source["id"]: data_source for data_source in data_sources
-    }
+    id_to_data_source = {data_source["id"]: data_source for data_source in data_sources}
 
     data_source_1 = id_to_data_source[data_source_id_1]
     assert data_source_1["source_url"] == "https://updated-data-source.com/"

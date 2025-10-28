@@ -283,7 +283,7 @@ class DatabaseClient:
             if not hasattr(model, "id"):
                 raise AttributeError("Model must have an id attribute")
             session.flush()
-            return model.id  #pyright: ignore
+            return model.id  # pyright: ignore
         return None
 
     @session_manager_v2
