@@ -64,8 +64,11 @@ def test_data_source_manager_data_sources_update(
 
     data_sources: list[dict] = live_database_client.get_all(DataSource)
     assert len(data_sources) == 2
+    id_to_data_source = {
+        data_source["id"]: data_source for data_source in data_sources
+    }
 
-    data_source_1 = data_sources[0]
+    data_source_1 = id_to_data_source[data_source_id_1]
     assert data_source_1["source_url"] == "https://updated-data-source.com/"
     assert data_source_1["name"] == "Updated Data Source"
     assert data_source_1["description"] == "Test Description"
@@ -93,7 +96,7 @@ def test_data_source_manager_data_sources_update(
     assert data_source_1["url_status"] == URLStatus.OK.value
     assert data_source_1["record_type_id"] == 1
 
-    data_source_2 = data_sources[1]
+    data_source_2 = id_to_data_source[data_source_id_2]
     # Should be unchanged
     assert data_source_2["name"] == "Test Data Source"
     assert data_source_2["record_type_id"] == 2
