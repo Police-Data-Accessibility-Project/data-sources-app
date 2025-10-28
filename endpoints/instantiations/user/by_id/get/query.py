@@ -129,10 +129,10 @@ class GetUserByIdQueryBuilder(QueryBuilderBase):
     ) -> GetUserRecentSearchesOuterDTO:
         results: list[GetUserRecentSearchesDTO] = []
         for recent_search in recent_searches:
-            location: Location = recent_search.location
-            state: USState = location.state
-            county: County = location.county
-            locality: Locality = location.locality
+            location: Location | None = recent_search.location
+            state: USState | None = location.state if location else None
+            county: County | None = location.county if location else None
+            locality: Locality | None = location.locality if location else None
 
             record_categories: list[RecordCategory] = recent_search.record_categories
             rc_enums: list[RecordCategoryEnum] = []
@@ -140,11 +140,11 @@ class GetUserByIdQueryBuilder(QueryBuilderBase):
                 rc_enums.append(RecordCategoryEnum(record_category.name))
 
             dto = GetUserRecentSearchesDTO(
-                location_id=location.id,
+                location_id=location.id if location else None,
                 state_name=state.state_name if state else None,
                 county_name=county.name if county else None,
                 locality_name=locality.name if locality else None,
-                location_type=location.type,
+                location_type=location.type if location else None,
                 record_categories=rc_enums,
             )
             results.append(dto)

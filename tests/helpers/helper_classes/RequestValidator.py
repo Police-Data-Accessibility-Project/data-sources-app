@@ -348,7 +348,7 @@ class RequestValidator:
     def search(
         self,
         headers: dict,
-        location_id: int,
+        location_id: int | None = None,
         record_categories: list[RecordCategoryEnum] | None = None,
         record_types: list[RecordTypesEnum] | None = None,
         format: OutputFormatEnum | None = OutputFormatEnum.JSON,
