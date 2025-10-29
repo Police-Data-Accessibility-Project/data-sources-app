@@ -51,4 +51,3 @@ class PostDataSourceRequest(BaseModel):
 class PostDataSourceOuterRequest(BaseModel):
     entry_data: PostDataSourceRequest = default_field_required()
     linked_agency_ids: list[int] = default_field_required()
-
