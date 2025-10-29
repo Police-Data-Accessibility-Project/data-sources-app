@@ -40,8 +40,8 @@ def test_post_data_source(
                 scraper_url="https://www.example.com/scraper",
                 access_notes="Test Access Notes",
                 access_types=[AccessType.API, AccessType.DOWNLOAD],
-                linked_agency_ids=[agency_id_1, agency_id_2],
             ),
+            linked_agency_ids=[agency_id_1, agency_id_2],
         ).model_dump(mode="json"),
         expected_schema=PostDataSourceRequestEndpointSchemaConfig.primary_output_schema,
     )

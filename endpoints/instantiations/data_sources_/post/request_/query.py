@@ -7,16 +7,17 @@ from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.record.type import RecordType
 from db.queries.builder.core import QueryBuilderBase
 from endpoints.instantiations.data_sources_.post.request_.model import (
-    PostDataSourceRequest,
+    PostDataSourceRequest, PostDataSourceOuterRequest,
 )
 from endpoints.v3.sync.data_sources.add.query import _value_if_not_none
 from middleware.enums import RecordTypesEnum
 
 
 class PostDataSourceQuery(QueryBuilderBase):
-    def __init__(self, request: PostDataSourceRequest):
+    def __init__(self, request: PostDataSourceOuterRequest):
         super().__init__()
-        self.request = request
+        self.request = request.entry_data
+        self.linked_agency_ids = request.linked_agency_ids
 
     def run(self) -> int:
         record_type_id_mapping: dict[RecordTypesEnum, int] = (
@@ -54,7 +55,7 @@ class PostDataSourceQuery(QueryBuilderBase):
         self.session.add(ds_insert)
         self.session.flush()
 
-        for agency_id in ds_request.linked_agency_ids:
+        for agency_id in self.linked_agency_ids:
             link_insert = LinkAgencyDataSource(
                 data_source_id=ds_insert.id, agency_id=agency_id
             )

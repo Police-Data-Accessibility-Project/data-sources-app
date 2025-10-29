@@ -13,7 +13,7 @@ def post_data_source_wrapper(
     db_client: DatabaseClient,
     dto: PostDataSourceOuterRequest,
 ) -> Response:
-    ds_id: int = db_client.run_query_builder(PostDataSourceQuery(dto.entry_data))
+    ds_id: int = db_client.run_query_builder(PostDataSourceQuery(dto))
     return make_response(
         {
             "message": "Successfully created data source",

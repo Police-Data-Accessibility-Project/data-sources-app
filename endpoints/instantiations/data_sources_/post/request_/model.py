@@ -47,8 +47,8 @@ class PostDataSourceRequest(BaseModel):
     data_source_request: Optional[str] = default_field_not_required()  # X
     record_type_name: RecordTypesEnum = default_field_required()
 
-    linked_agency_ids: list[int] = default_field_required()
-
 
 class PostDataSourceOuterRequest(BaseModel):
     entry_data: PostDataSourceRequest = default_field_required()
+    linked_agency_ids: list[int] = default_field_required()
+
