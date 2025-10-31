@@ -45,7 +45,7 @@ class PostDataSourceRequest(BaseModel):
     agency_described_not_in_database: Optional[str] = default_field_not_required()
     data_portal_type_other: Optional[str] = default_field_not_required()
     data_source_request: Optional[str] = default_field_not_required()  # X
-    record_type_name: RecordTypesEnum = default_field_required()
+    record_type_name: Optional[RecordTypesEnum] = default_field_not_required()
 
 
 class PostDataSourceOuterRequest(BaseModel):
