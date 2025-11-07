@@ -2,7 +2,8 @@ from typing import Sequence
 
 from sqlalchemy import select, func, RowMapping
 
-from db.models.implementations import LinkAgencyDataSource, LinkAgencyLocation
+from db.models.implementations.links.agency__location import LinkAgencyLocation
+from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
 from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.location.core import Location

@@ -23,7 +23,10 @@ from middleware.enums import Relations
 
 @final
 class DataRequest(
-    StandardBase, CountMetadata, CountSubqueryMetadata, IterWithSpecialCasesMixin
+    StandardBase,
+    CountMetadata,
+    CountSubqueryMetadata,
+    IterWithSpecialCasesMixin
 ):
     __tablename__ = Relations.DATA_REQUESTS.value
 

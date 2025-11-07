@@ -1,6 +1,6 @@
 from db.enums import LocationType
 from db.helpers_.result_formatting import get_display_name
-from db.models.implementations.link import LinkFollowRecordType
+from db.models.implementations.links.follow__record_types import LinkFollowRecordType
 from middleware.enums import RecordTypesEnum
 from tests.integration.search.constants import TEST_STATE, TEST_COUNTY, TEST_LOCALITY
 from tests.integration.search.search_test_setup import SearchTestSetup

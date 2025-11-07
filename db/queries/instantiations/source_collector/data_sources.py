@@ -1,6 +1,6 @@
 import sqlalchemy
 
-from db.models.implementations import LinkAgencyDataSource
+from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
 from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.record.type import RecordType
 from db.queries.builder.core import QueryBuilderBase

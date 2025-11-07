@@ -51,7 +51,7 @@ from db.helpers_.result_formatting import (
     get_expanded_display_name,
 )
 from db.models.base import Base
-from db.models.implementations import LinkAgencyDataSource
+from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
 from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.data_request.core import DataRequest
 from db.models.implementations.core.data_request.expanded import DataRequestExpanded
@@ -80,10 +80,8 @@ from db.models.implementations.core.reset_token import ResetToken
 from db.models.implementations.core.user.core import User
 from db.models.implementations.core.user.pending import PendingUser
 from db.models.implementations.core.user.permission import UserPermission
-from db.models.implementations.link import (
-    LinkAgencyLocation,
-    LinkUserFollowedLocation,
-)
+from db.models.implementations.links.user__followed_location import LinkUserFollowedLocation
+from db.models.implementations.links.agency__location import LinkAgencyLocation
 from db.models.table_reference import (
     SQL_ALCHEMY_TABLE_REFERENCE,
 )

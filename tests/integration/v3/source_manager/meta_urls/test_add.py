@@ -1,10 +1,10 @@
 from db.client.core import DatabaseClient
 from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMetaURL
-from endpoints.v3.sync.meta_urls.add.request import (
+from endpoints.v3.source_manager.sync.meta_urls.add.request import (
     AddMetaURLsOuterRequest,
     AddMetaURLsInnerRequest,
 )
-from endpoints.v3.sync.shared.models.response.add import (
+from endpoints.v3.source_manager.sync.shared import (
     SourceManagerSyncAddOuterResponse,
 )
 from tests.integration.v3.helpers.api_test_helper import APITestHelper

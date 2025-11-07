@@ -1,9 +1,7 @@
 from sqlalchemy import delete
 
-from db.models.implementations.link import (
-    LinkFollowRecordType,
-    LinkUserFollowedLocation,
-)
+from db.models.implementations.links.follow__record_types import LinkFollowRecordType
+from db.models.implementations.links.user__followed_location import LinkUserFollowedLocation
 from db.queries.instantiations.search.follow.base import FollowBaseQueryBuilder
 
 

@@ -11,7 +11,7 @@ from db.enums import (
     RequestUrgency,
 )
 from db.helpers_.result_formatting import get_display_name
-from db.models.implementations import LinkUserFollowedLocation
+from db.models.implementations.links.user__followed_location import LinkUserFollowedLocation
 from db.models.implementations.core.data_request.core import DataRequest
 from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.external_account import ExternalAccount

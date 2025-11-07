@@ -1,9 +1,15 @@
+from http import HTTPStatus
+from typing import Any
+
 import sqlalchemy
+from fastapi import HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import NullPool
 
+from db.client.core import DatabaseClient
 from db.exceptions import DatabaseInitializationError
+from db.queries.builder.core import QueryBuilderBase
 from middleware.util.env import get_env_variable
 
 
@@ -27,3 +33,15 @@ def initialize_sqlalchemy_session() -> sessionmaker[Session]:
 
     except sqlalchemy.exc.SQLAlchemyError as e:
         raise DatabaseInitializationError(e) from e
+
+def run_query_builder(
+    query_builder: QueryBuilderBase
+) -> Any:
+    try:
+        db_client = DatabaseClient()
+        return db_client.run_query_builder(query_builder)
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
