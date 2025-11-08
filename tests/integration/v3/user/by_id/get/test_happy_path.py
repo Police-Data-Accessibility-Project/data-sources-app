@@ -65,6 +65,7 @@ def test_happy_path(
     national_id: int,
     agency_id_1: int,
     agency_id_2: int,
+    monkeypatch,
 ):
     rv: RequestValidatorFastAPI = api_test_helper.request_validator
     tdc = test_data_creator_db_client
@@ -139,7 +140,7 @@ def test_happy_path(
     )
     data_request_minimal_id: int = db_client.add(data_request_minimal, return_id=True)
 
-    # TODO: Have the user created a data request with all attributes filled
+    # Have the user created a data request with all attributes filled
     data_request_all_attributes = DataRequest(
         submission_notes="Test Submission Notes",
         request_status=RequestStatus.ARCHIVED.value,
@@ -258,6 +259,10 @@ def test_happy_path(
     db_client.add(user_capacity)
 
     # Call user profile endpoint and confirm it returns results
+    monkeypatch.setattr(
+        "endpoints.v3.user.by_id.get.wrapper._check_user_is_either_owner_or_admin",
+        lambda x, user_id: None,
+    )
     json: dict = rv.get_v3(f"/user/{tus.id}")
     model = GetUserProfileResponse(**json)
 
