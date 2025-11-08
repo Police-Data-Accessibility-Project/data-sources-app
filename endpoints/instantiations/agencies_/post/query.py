@@ -1,6 +1,6 @@
 from db.models.implementations.links.agency__location import LinkAgencyLocation
 from db.models.implementations.core.agency.core import Agency
-from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMetaURL
+from db.models.implementations.core.agency.meta_urls.sqlalchemy import MetaURL
 from db.queries.builder.core import QueryBuilderBase
 from endpoints.instantiations.agencies_.post.dto import AgenciesPostDTO
 
@@ -36,7 +36,7 @@ class CreateAgencyQueryBuilder(QueryBuilderBase):
     def _link_to_meta_urls(self, agency_id: int) -> None:
         if self.dto.agency_info.meta_urls is not None:
             for meta_url in self.dto.agency_info.meta_urls:
-                insert_obj = AgencyMetaURL(url=meta_url, agency_id=agency_id)
+                insert_obj = MetaURL(url=meta_url, agency_id=agency_id)
                 self.session.add(insert_obj)
 
     def _link_to_locations(self, agency_id: int) -> None:

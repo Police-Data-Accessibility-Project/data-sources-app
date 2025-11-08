@@ -1,5 +1,5 @@
 from db.client.core import DatabaseClient
-from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMetaURL
+from db.models.implementations.core.agency.meta_urls.sqlalchemy import MetaURL
 from endpoints.v3.source_manager.sync.shared.models.request.delete import (
     SourceManagerDeleteRequest,
 )
@@ -19,5 +19,5 @@ def test_source_manager_meta_urls_delete(
         ),
     )
 
-    meta_urls: list[dict] = live_database_client.get_all(AgencyMetaURL)
+    meta_urls: list[dict] = live_database_client.get_all(MetaURL)
     assert len(meta_urls) == 0

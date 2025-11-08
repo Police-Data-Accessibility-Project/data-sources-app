@@ -1,5 +1,6 @@
 from db.client.core import DatabaseClient
-from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMetaURL
+from db.models.implementations import LinkAgencyMetaURL
+from db.models.implementations.core.agency.meta_urls.sqlalchemy import MetaURL
 from endpoints.v3.source_manager.sync.meta_urls.add.request import (
     AddMetaURLsOuterRequest,
     AddMetaURLsInnerRequest,
@@ -27,14 +28,14 @@ def test_source_manager_meta_urls_add(
                     AddMetaURLsInnerRequest(
                         request_id=1,
                         content=MetaURLSyncContentModel(
-                            url="https://meta-url.com", agency_id=agency_id_1
+                            url="https://meta-url.com", agency_ids=[agency_id_1]
                         ),
                     ),
                     AddMetaURLsInnerRequest(
                         request_id=2,
                         content=MetaURLSyncContentModel(
                             url="https://meta-url-2.com",
-                            agency_id=agency_id_2,
+                            agency_ids=[agency_id_2],
                         ),
                     ),
                 ]
@@ -48,13 +49,16 @@ def test_source_manager_meta_urls_add(
         2,
     }
 
-    meta_urls: list[dict] = live_database_client.get_all(AgencyMetaURL)
+    meta_urls: list[dict] = live_database_client.get_all(MetaURL)
     assert len(meta_urls) == 2
 
     meta_url_1: dict = meta_urls[0]
     assert meta_url_1["url"] == "https://meta-url.com"
-    assert meta_url_1["agency_id"] == agency_id_1
+    # assert meta_url_1["agency_id"] == agency_id_1
 
     meta_url_2: dict = meta_urls[1]
     assert meta_url_2["url"] == "https://meta-url-2.com"
-    assert meta_url_2["agency_id"] == agency_id_2
+    # assert meta_url_2["agency_id"] == agency_id_2
+
+    links: list[dict] = live_database_client.get_all(LinkAgencyMetaURL)
+    assert len(links) == 2

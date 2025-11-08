@@ -3,4 +3,4 @@ from pydantic import BaseModel
 
 class MetaURLSyncContentModel(BaseModel):
     url: str
-    agency_id: int
+    agency_ids: list[int]

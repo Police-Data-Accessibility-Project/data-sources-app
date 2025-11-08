@@ -30,9 +30,6 @@ from endpoints.instantiations.search.core.endpoint_schema_config import (
 from endpoints.instantiations.source_collector.agencies.search.locations.schema_config import (
     SourceCollectorAgencySearchLocationSchemaConfig,
 )
-from endpoints.instantiations.source_collector.meta_urls.post.endpoint_schema_config import (
-    SourceCollectorMetaURLPostEndpointSchemaConfig,
-)
 from endpoints.instantiations.user.by_id.patch.endpoint_schema_config import (
     UserPatchEndpointSchemaConfig,
 )
@@ -176,9 +173,6 @@ from endpoints.schema_config.instantiations.search.follow.post import (
 )
 from endpoints.schema_config.instantiations.search.location_and_record_type import (
     SearchLocationAndRecordTypeGetEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.source_collector.data_sources import (
-    SourceCollectorDataSourcesPostEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.source_collector.duplicates import (
     SourceCollectorDuplicatesPostEndpointSchemaConfig,
@@ -337,11 +331,6 @@ class SchemaConfigs(Enum):
     # region Metadata
     RECORD_TYPE_AND_CATEGORY_GET = RecordTypeAndCategoryGetEndpointSchemaConfig
     # endregion
-
-    SOURCE_COLLECTOR_DATA_SOURCES_POST = (
-        SourceCollectorDataSourcesPostEndpointSchemaConfig
-    )
-    SOURCE_COLLECTOR_META_URLS_POST = SourceCollectorMetaURLPostEndpointSchemaConfig
 
     SOURCE_COLLECTOR_DUPLICATES_POST = SourceCollectorDuplicatesPostEndpointSchemaConfig
     SOURCE_COLLECTOR_SEARCH_AGENCIES_LOCATION = (

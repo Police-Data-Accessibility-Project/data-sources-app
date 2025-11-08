@@ -4,7 +4,7 @@ def wipe_database(db_client):
         "data_sources",
         "data_requests",
         "users",
-        "agency_meta_urls",
+        "meta_urls",
         "localities",
     ]:
         db_client.execute_raw_sql("DELETE FROM " + table)

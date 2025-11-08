@@ -4,6 +4,8 @@ from sqlalchemy import false, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.models.helpers import enum_column
+from db.models.implementations.core.agency.meta_urls.sqlalchemy import MetaURL
+from db.models.implementations.links.agency__meta_url import LinkAgencyMetaURL
 from db.models.mixins import CountMetadata, UpdatedAtMixin
 from db.models.templates.standard import StandardBase
 from db.models.types import (
@@ -46,7 +48,13 @@ class Agency(StandardBase, CountMetadata, UpdatedAtMixin):
         secondaryjoin="LinkAgencyDataSource.data_source_id == DataSourceExpanded.id",
         back_populates="agencies",
     )
-    meta_urls: Mapped[list["AgencyMetaURL"]] = relationship(
-        argument="AgencyMetaURL",
-        primaryjoin="AgencyMetaURL.agency_id == Agency.id",
+    meta_urls: Mapped[list[MetaURL]] = relationship(
+        argument=MetaURL,
+        secondary=LinkAgencyMetaURL.__table__,
+        primaryjoin="LinkAgencyMetaURL.agency_id == Agency.id",
+        secondaryjoin="LinkAgencyMetaURL.meta_url_id == MetaURL.id",
+    )
+    link_meta_urls: Mapped[list[LinkAgencyMetaURL]] = relationship(
+        argument="LinkAgencyMetaURL",
+        primaryjoin="LinkAgencyMetaURL.agency_id == Agency.id",
     )

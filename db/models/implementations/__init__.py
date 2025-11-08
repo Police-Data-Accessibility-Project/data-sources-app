@@ -6,3 +6,4 @@ from db.models.implementations.links.location__data_request import *
 from db.models.implementations.links.location__data_source_view import *
 from db.models.implementations.links.recent_search__record_categories import *
 from db.models.implementations.links.recent_search__record_types import *
+from db.models.implementations.links.agency__meta_url import *
