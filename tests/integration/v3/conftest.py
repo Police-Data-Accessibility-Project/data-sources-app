@@ -14,8 +14,9 @@ from db.enums import (
     RetentionSchedule,
     URLStatus,
 )
+from db.models.implementations import LinkAgencyMetaURL
 from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
-from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMetaURL
+from db.models.implementations.core.agency.meta_urls.sqlalchemy import MetaURL
 from db.models.implementations.core.data_source.core import DataSource
 from middleware.enums import (
     PermissionsEnum,
@@ -148,19 +149,27 @@ def data_source_id_2(agency_id_2: int, live_database_client: DatabaseClient) -> 
 
 @pytest.fixture
 def meta_url_id_1(agency_id_1: int, live_database_client: DatabaseClient) -> int:
-    agency_meta_url = AgencyMetaURL(
-        agency_id=agency_id_1,
+    agency_meta_url = MetaURL(
         url="https://www.example.com/agency_meta_url",
     )
     meta_url_id: int = live_database_client.add(agency_meta_url, return_id=True)
+    link = LinkAgencyMetaURL(
+        agency_id=agency_id_1,
+        meta_url_id=meta_url_id,
+    )
+    live_database_client.add(link)
     return meta_url_id
 
 
 @pytest.fixture
 def meta_url_id_2(agency_id_2: int, live_database_client: DatabaseClient) -> int:
-    agency_meta_url = AgencyMetaURL(
-        agency_id=agency_id_2,
+    agency_meta_url = MetaURL(
         url="https://www.example.com/agency_meta_url_2",
     )
     meta_url_id: int = live_database_client.add(agency_meta_url, return_id=True)
+    link = LinkAgencyMetaURL(
+        agency_id=agency_id_2,
+        meta_url_id=meta_url_id,
+    )
+    live_database_client.add(link)
     return meta_url_id

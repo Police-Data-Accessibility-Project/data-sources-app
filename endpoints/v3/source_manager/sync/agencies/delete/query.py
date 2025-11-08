@@ -2,9 +2,9 @@ from typing import Sequence
 
 from sqlalchemy import select, RowMapping, func, delete
 
+from db.models.implementations import LinkAgencyMetaURL
 from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
 from db.models.implementations.core.agency.core import Agency
-from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMetaURL
 from db.queries.builder.core import QueryBuilderBase
 from endpoints.v3.source_manager.sync.agencies.delete.exceptions import (
     OrphanedEntityException,
@@ -35,15 +35,15 @@ class SourceManagerDeleteAgenciesQueryBuilder(QueryBuilderBase):
         """
 
         query = select(
-            AgencyMetaURL.id,
-            AgencyMetaURL.agency_id,
-        ).where(AgencyMetaURL.agency_id.in_(self.request.ids))
+            LinkAgencyMetaURL.meta_url_id,
+            LinkAgencyMetaURL.agency_id,
+        ).where(LinkAgencyMetaURL.agency_id.in_(self.request.ids))
         mappings: Sequence[RowMapping] = self.mappings(query)
         potential_orphan_mappings: list[dict[str, int]] = []
         for mapping in mappings:
             pom = {
-                "meta_url_id": mapping[AgencyMetaURL.id],
-                "agency_id": mapping[AgencyMetaURL.agency_id],
+                "meta_url_id": mapping[LinkAgencyMetaURL.meta_url_id],
+                "agency_id": mapping[LinkAgencyMetaURL.agency_id],
             }
             potential_orphan_mappings.append(pom)
         if len(potential_orphan_mappings) > 0:

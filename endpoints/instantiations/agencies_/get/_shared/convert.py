@@ -33,7 +33,7 @@ def agency_to_agency_dict(agency: Agency) -> dict[str, Any]:
 def agency_to_meta_urls(agency: Agency) -> list[str]:
     meta_urls: list[str] = []
     for meta_url in agency.meta_urls:
-        meta_urls.append(meta_url.source_url)
+        meta_urls.append(meta_url.url)
     return meta_urls
 
 

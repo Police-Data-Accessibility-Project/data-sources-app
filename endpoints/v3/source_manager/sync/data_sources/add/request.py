@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel, Field, model_validator
 
 from endpoints.v3.source_manager.sync.data_sources.shared.content import (

@@ -46,12 +46,12 @@ from db.enums import (
     UserCapacityEnum,
 )
 from db.exceptions import LocationDoesNotExistError
+from db.helpers_ import session as sh
 from db.helpers_.psycopg import initialize_psycopg_connection
 from db.helpers_.result_formatting import (
     get_expanded_display_name,
 )
 from db.models.base import Base
-from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
 from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.data_request.core import DataRequest
 from db.models.implementations.core.data_request.expanded import DataRequestExpanded
@@ -80,10 +80,11 @@ from db.models.implementations.core.reset_token import ResetToken
 from db.models.implementations.core.user.core import User
 from db.models.implementations.core.user.pending import PendingUser
 from db.models.implementations.core.user.permission import UserPermission
+from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
+from db.models.implementations.links.agency__location import LinkAgencyLocation
 from db.models.implementations.links.user__followed_location import (
     LinkUserFollowedLocation,
 )
-from db.models.implementations.links.agency__location import LinkAgencyLocation
 from db.models.table_reference import (
     SQL_ALCHEMY_TABLE_REFERENCE,
 )
@@ -119,9 +120,6 @@ from db.queries.instantiations.search.follow.get import (
 )
 from db.queries.instantiations.search.follow.post import CreateFollowQueryBuilder
 from db.queries.instantiations.search.record import CreateSearchRecordQueryBuilder
-from db.queries.instantiations.source_collector.data_sources import (
-    AddDataSourcesFromSourceCollectorQueryBuilder,
-)
 from db.queries.instantiations.user.create import CreateNewUserQueryBuilder
 from db.queries.instantiations.user.get_recent_searches import (
     GetUserRecentSearchesQueryBuilder,
@@ -170,12 +168,6 @@ from endpoints.instantiations.map.locations.queries.localities import (
     GET_MAP_LOCALITIES_QUERY,
 )
 from endpoints.instantiations.map.locations.queries.states import GET_MAP_STATES_QUERY
-from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
-    SourceCollectorPostRequestInnerDTO,
-)
-from endpoints.instantiations.source_collector.data_sources.post.dtos.response import (
-    SourceCollectorPostResponseInnerDTO,
-)
 from endpoints.instantiations.user.by_id.get.dto import (
     UserProfileResponseSchemaInnerDTO,
 )
@@ -212,7 +204,6 @@ from middleware.schema_and_dto.dtos.notifications.preview import (
 )
 from middleware.util.argument_checking import check_for_mutually_exclusive_arguments
 from utilities.enums import RecordCategoryEnum
-from db.helpers_ import session as sh
 
 
 @final
@@ -1370,12 +1361,6 @@ class DatabaseClient:
         results = self.session.query(model).all()
 
         return [to_dict(result) for result in results]
-
-    def add_data_sources_from_source_collector(
-        self, data_sources: list[SourceCollectorPostRequestInnerDTO]
-    ) -> list[SourceCollectorPostResponseInnerDTO]:
-        builder = AddDataSourcesFromSourceCollectorQueryBuilder(data_sources)
-        return self.run_query_builder(builder)
 
     @session_manager
     def update_location_by_id(self, location_id: int, dto: LocationPutDTO):

@@ -19,9 +19,6 @@ from endpoints.instantiations.data_sources_.get.by_id.schema_config import (
 from endpoints.instantiations.map.locations.schema_config import (
     LocationsMapEndpointSchemaConfig,
 )
-from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
-    SourceCollectorPostRequestDTO,
-)
 from endpoints.schema_config.instantiations.admin.users.by_id.delete import (
     AdminUsersByIDDeleteEndpointSchemaConfig,
 )
@@ -107,9 +104,6 @@ from endpoints.schema_config.instantiations.search.follow.post import (
 )
 from endpoints.schema_config.instantiations.search.location_and_record_type import (
     SearchLocationAndRecordTypeGetEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.source_collector.data_sources import (
-    SourceCollectorDataSourcesPostEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.source_collector.duplicates import (
     SourceCollectorDuplicatesPostEndpointSchemaConfig,
@@ -901,21 +895,6 @@ class RequestValidator:
         return self.get(
             endpoint=f"/typeahead/agencies?query={query}",
             expected_schema=TypeaheadAgenciesEndpointSchemaConfig.primary_output_schema,
-        )
-
-    def source_collector_data_sources(
-        self,
-        headers: dict,
-        dto: SourceCollectorPostRequestDTO,
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_schema: Schema = SourceCollectorDataSourcesPostEndpointSchemaConfig.primary_output_schema,
-    ):
-        return self.post(
-            endpoint="/source-collector/data-sources",
-            headers=headers,
-            json=dto.model_dump(mode="json"),
-            expected_schema=expected_schema,
-            expected_response_status=expected_response_status,
         )
 
     def get_locations_map(
