@@ -1,22 +1,13 @@
 from pydantic import BaseModel, Field
 
-from middleware.enums import JurisdictionType, AgencyType
+from endpoints.v3.source_manager.sync.agencies.shared.content import (
+    AgencySyncContentModel,
+)
 
 
 class UpdateAgenciesInnerRequest(BaseModel):
     app_id: int
-
-    name: str = None
-    jurisdiction_type: JurisdictionType | None = None
-    agency_type: AgencyType | None = None
-    location_ids: list[int] | None = Field(
-        default=None,
-        description="List of location IDs to be associated with the agency. "
-        + "If defined, fully overwrites previous associations.",
-    )
-
-    no_web_presence: bool = False
-    defunct_year: int | None = None
+    content: AgencySyncContentModel
 
 
 class UpdateAgenciesOuterRequest(BaseModel):
