@@ -49,7 +49,7 @@ def data_source_to_get_data_sources_output(
         # Agency Meta URLs
         meta_urls: list[str] = []
         for meta_url in agency.meta_urls:
-            meta_urls.append(meta_url.source_url)
+            meta_urls.append(meta_url.url)
         agency_dict["meta_urls"] = meta_urls
 
         # Associated locations
