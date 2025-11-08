@@ -21,6 +21,10 @@ class GetRecordTypeMapperQueryBuilder(QueryBuilderBase):
                 RecordType.category_id,
                 RecordCategory.name,
             )
+            .join(
+                RecordCategory,
+                RecordType.category_id == RecordCategory.id,
+            )
         )
 
         raw_results: Sequence[RowMapping] = self.mappings(query)

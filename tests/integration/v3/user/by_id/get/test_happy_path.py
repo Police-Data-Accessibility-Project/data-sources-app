@@ -1,9 +1,9 @@
 from datetime import date
 
 from db.client.core import DatabaseClient
-from db.client.helpers import run_query_builder
+from db.queries.helpers import run_query_builder
 from db.enums import RequestStatus, RequestUrgency, URLStatus, AgencyAggregation, DetailLevel, AccessType, UpdateMethod, \
-    RetentionSchedule, ExternalAccountTypeEnum
+    RetentionSchedule, ExternalAccountTypeEnum, LocationType, UserCapacityEnum
 from db.helpers_.record_type.mapper import RecordTypeMapper
 from db.helpers_.record_type.query import GetRecordTypeMapperQueryBuilder
 from db.models.implementations import LinkRecentSearchRecordTypes, LinkRecentSearchRecordCategories, \
@@ -13,9 +13,15 @@ from db.models.implementations.core.data_request.github_issue_info import DataRe
 from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.external_account import ExternalAccount
 from db.models.implementations.core.recent_search.core import RecentSearch
+from db.models.implementations.core.user.capacity import UserCapacity
 from db.models.implementations.core.user.permission import UserPermission
 from db.models.implementations.links.user__followed_location import LinkUserFollowedLocation
-from middleware.enums import RecordTypesEnum
+from endpoints.instantiations.locations_._shared.dtos.response import LocationInfoResponseDTO
+from endpoints.v3.user.by_id.get.response.core import GetUserProfileResponse
+from endpoints.v3.user.by_id.get.response.data_request import GetUserDataRequestModel, GetDataSourceLimitedModel
+from endpoints.v3.user.by_id.get.response.followed_search import GetUserFollowedSearchModel
+from endpoints.v3.user.by_id.get.response.recent_search import GetUserRecentSearchModel
+from middleware.enums import RecordTypesEnum, PermissionsEnum
 from tests.helpers.helper_classes.test_data_creator.db_client_.core import TestDataCreatorDBClient
 from tests.helpers.test_dataclasses import TestUserDBInfo
 from tests.integration.v3.helpers.api_test_helper import APITestHelper
@@ -96,7 +102,8 @@ def test_happy_path(
     data_request_minimal = DataRequest(
         request_status=RequestStatus.INTAKE.value,
         creator_user_id=tus.id,
-        title="Data Request Minimal Test"
+        title="Data Request Minimal Test",
+        record_types_required=[]
     )
     data_request_minimal_id: int = db_client.add(
         data_request_minimal,
@@ -105,7 +112,7 @@ def test_happy_path(
 
     # TODO: Have the user created a data request with all attributes filled
     data_request_all_attributes = DataRequest(
-        submission_notes="Test submission notes",
+        submission_notes="Test Submission Notes",
         request_status=RequestStatus.ARCHIVED.value,
         archive_reason="Test Archive Reason",
         creator_user_id=tus.id,
@@ -118,7 +125,7 @@ def test_happy_path(
         coverage_range="Test Coverage Range",
         data_requirements="Test Data Requirements",
         request_urgency=RequestUrgency.LONG_TERM.value,
-        title="Data Request All Attributes Test"
+        title="Test Data Request All Attributes"
     )
     data_request_all_attributes_id: int = db_client.add(
         data_request_all_attributes,
@@ -143,6 +150,7 @@ def test_happy_path(
     ### Add Minimal Data Source
     data_source_minimal = DataSource(
         name="Test Data Source Minimal",
+        source_url="https://test.com/minimal",
         url_status=URLStatus.OK.value,
         record_type_id=record_type_mapper.get_record_type_id_by_record_type(
             RecordTypesEnum.MEDIA_BULLETINS
@@ -161,7 +169,7 @@ def test_happy_path(
     #### Link to Data Request
     link_data_source_minimal_to_data_request = LinkDataSourceDataRequest(
         data_source_id=data_source_minimal_id,
-        request_id=data_request_minimal_id
+        request_id=data_request_all_attributes_id
     )
     db_client.add(link_data_source_minimal_to_data_request)
 
@@ -174,13 +182,13 @@ def test_happy_path(
         agency_supplied=True,
         supplying_entity="Test Supplying Entity",
         agency_originated=False,
-        agency_aggregation=AgencyAggregation.LOCAL,
+        agency_aggregation=AgencyAggregation.LOCAL.value,
         coverage_start=date(year=2020, month=8, day=3),
         coverage_end=date(year=2020, month=8, day=4),
-        detail_level=DetailLevel.AGGREGATED,
+        detail_level=DetailLevel.AGGREGATED.value,
         access_types=[
-            AccessType.DOWNLOAD,
-            AccessType.API
+            AccessType.DOWNLOAD.value,
+            AccessType.API.value
         ],
         data_portal_type="CKAN",
         record_formats=[
@@ -189,12 +197,12 @@ def test_happy_path(
         ],
         readme_url="https://test.com/readme",
         originating_entity="Test Originating Entity",
-        retention_schedule=RetentionSchedule.FUTURE_ONLY,
+        retention_schedule=RetentionSchedule.FUTURE_ONLY.value,
         scraper_url="https://test.com/scraper",
         agency_described_not_in_database="Test Agency Described Not In Database",
         data_portal_type_other="Test Data Portal Type",
         access_notes="Test Access Notes",
-        update_method=UpdateMethod.OVERWRITE,
+        update_method=UpdateMethod.OVERWRITE.value,
         record_type_id=record_type_mapper.get_record_type_id_by_record_type(
             RecordTypesEnum.CAR_GPS
         ),
@@ -231,10 +239,138 @@ def test_happy_path(
     )
     db_client.add(external_account)
 
-    # TODO: Call user profile endpoint and confirm it returns results
+    # Add User Capacity
+    user_capacity = UserCapacity(
+        capacity=UserCapacityEnum.POLICE.value,
+        user_id=tus.id
+    )
+    db_client.add(user_capacity)
+
+    # Call user profile endpoint and confirm it returns results
+    json: dict = rv.get_v3(
+        f"/user/{tus.id}"
+    )
+    model = GetUserProfileResponse(**json)
+
+    assert model.email == tus.email
+    assert model.external_accounts.github == "123"
+    assert len(model.recent_searches) == 3
+    # Check Recent Search with location, no record types or record categories
+    pittsburgh_recent_search: GetUserRecentSearchModel = model.recent_searches[2]
+    assert pittsburgh_recent_search.display_name == "Pittsburgh, Allegheny, Pennsylvania"
+    assert pittsburgh_recent_search.location_info.location_id == pittsburgh_id
+    assert pittsburgh_recent_search.record_types == []
+    assert pittsburgh_recent_search.record_categories == []
+    # Check Recent Search with national location, 2 record types
+    national_recent_search: GetUserRecentSearchModel = model.recent_searches[1]
+    assert national_recent_search.display_name == "United States - All"
+    assert national_recent_search.location_info.location_id == national_id
+    assert set(national_recent_search.record_types) == {
+        RecordTypesEnum.ACCIDENT_REPORTS,
+        RecordTypesEnum.BOOKING_REPORTS
+    }
+    assert national_recent_search.record_categories == []
+    # Check Recent Search with no location, 1 record category
+    no_location_recent_search: GetUserRecentSearchModel = model.recent_searches[0]
+    assert no_location_recent_search.display_name == "No Location"
+    assert no_location_recent_search.location_info.location_id is None
+    assert no_location_recent_search.record_types == []
+    assert no_location_recent_search.record_categories == [
+        RecordCategoryEnum.JAIL
+    ]
+
+    # Check followed locality search
+    followed_locality_search: GetUserFollowedSearchModel = model.followed_searches[0]
+    assert followed_locality_search.display_name == "Pittsburgh, Allegheny, Pennsylvania"
+    assert followed_locality_search.location_info.location_id == pittsburgh_id
+    assert followed_locality_search.record_types == []
+    assert followed_locality_search.record_categories == []
+
+    # Check Data Requests
+    data_requests: list[GetUserDataRequestModel] = model.data_requests
+    assert len(data_requests) == 2
+
+    ## Check Minimal Data Request
+    minimal_data_request: GetUserDataRequestModel = data_requests[0]
+    minimal_data_request_info = minimal_data_request.info
+    assert minimal_data_request_info.id == data_request_minimal_id
+    assert minimal_data_request_info.title == "Data Request Minimal Test"
+    assert minimal_data_request_info.submission_notes is None
+    assert minimal_data_request_info.request_status == RequestStatus.INTAKE
+    assert minimal_data_request_info.archive_reason is None
+    assert minimal_data_request_info.date_created is not None
+    assert minimal_data_request_info.date_status_last_changed is not None
+    assert minimal_data_request_info.creator_user_id == tus.id
+    assert minimal_data_request_info.github_issue_url is None
+    assert minimal_data_request_info.github_issue_number is None
+    assert minimal_data_request_info.internal_notes is None
+    assert minimal_data_request_info.record_types_required == []
+    assert minimal_data_request_info.pdap_response is None
+    assert minimal_data_request_info.coverage_range is None
+    assert minimal_data_request_info.data_requirements is None
+    assert minimal_data_request_info.request_urgency == RequestUrgency.INDEFINITE
+
+    ### Check Data Sources
+    assert len(minimal_data_request.data_sources) == 0
+    assert len(minimal_data_request.data_source_ids) == 0
+    ### Check Locations
+    assert len(minimal_data_request.location_ids) == 0
+    assert len(minimal_data_request.locations) == 0
+
+    ## Check Data Request With All Attributes
+    all_attributes_data_request: GetUserDataRequestModel = data_requests[1]
+    all_attributes_data_request_info = all_attributes_data_request.info
+    assert all_attributes_data_request_info.id == data_request_all_attributes_id
+    assert all_attributes_data_request_info.title == "Test Data Request All Attributes"
+    assert all_attributes_data_request_info.submission_notes == "Test Submission Notes"
+    assert all_attributes_data_request_info.request_status == RequestStatus.ARCHIVED
+    assert all_attributes_data_request_info.archive_reason == "Test Archive Reason"
+    assert all_attributes_data_request_info.date_created is not None
+    assert all_attributes_data_request_info.date_status_last_changed is not None
+    assert all_attributes_data_request_info.creator_user_id == tus.id
+    assert all_attributes_data_request_info.github_issue_url == "https://github.com/test-repo/issue/21"
+    assert all_attributes_data_request_info.github_issue_number == 21
+    assert all_attributes_data_request_info.internal_notes == "Test Internal Notes"
+    assert all_attributes_data_request_info.record_types_required == [
+        RecordTypesEnum.RECORDS_REQUEST_INFO,
+        RecordTypesEnum.CRIME_STATISTICS
+    ]
+    assert all_attributes_data_request_info.pdap_response == "Test PDAP Response"
+    assert all_attributes_data_request_info.coverage_range == "Test Coverage Range"
+    assert all_attributes_data_request_info.data_requirements == "Test Data Requirements"
+    assert all_attributes_data_request_info.request_urgency == RequestUrgency.LONG_TERM
+    
+    ### Check Data Sources
+    assert set(all_attributes_data_request.data_sources) == {
+        GetDataSourceLimitedModel(
+            id=data_source_minimal_id,
+            name="Test Data Source Minimal",
+        ),
+        GetDataSourceLimitedModel(
+            id=data_source_all_attributes_id,
+            name="Test Data Source All Attributes"
+        )
+    }
+    assert set(all_attributes_data_request.data_source_ids) == {
+        data_source_minimal_id,
+        data_source_all_attributes_id
+    }
+    ### Check Locations
+    assert set(all_attributes_data_request.location_ids) == {pittsburgh_id}
+    assert len(all_attributes_data_request.locations) == 1
+    location_info: LocationInfoResponseDTO = all_attributes_data_request.locations[0]
+    assert location_info.type == LocationType.LOCALITY
+    assert location_info.location_id == pittsburgh_id
+    assert location_info.display_name == "Pittsburgh, Allegheny, Pennsylvania"
+
+    # Check Permissions
+    assert model.permissions == [
+        PermissionsEnum.DB_WRITE
+    ]
+
+    # Check Capacity
+    assert model.capacities == [
+        UserCapacityEnum.POLICE
+    ]
 
 
-
-    # TODO: Test that admin can also get this user's information
-
-    # TODO: Test that other non-admin users cannot get this user's information

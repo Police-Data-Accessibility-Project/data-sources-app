@@ -2,12 +2,12 @@ from http import HTTPStatus
 
 from fastapi import HTTPException
 
-from db.client.core import DatabaseClient
-from db.client.helpers import run_query_builder
+from db.queries.helpers import run_query_builder
 from endpoints.v3.user.by_id.get.queries.core import GetUserByIdQueryBuilder
 from endpoints.v3.user.by_id.get.response.core import GetUserProfileResponse
 from middleware.enums import PermissionsEnum
 from middleware.security.access_info.primary import AccessInfoPrimary
+
 
 def _check_user_is_either_owner_or_admin(access_info, user_id):
     if (

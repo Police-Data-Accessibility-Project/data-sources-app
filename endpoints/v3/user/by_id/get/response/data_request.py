@@ -8,6 +8,9 @@ from middleware.enums import RecordTypesEnum
 
 
 class GetDataSourceLimitedModel(BaseModel):
+    class Config:
+        frozen = True
+
     id: int = Field(
         description="The ID of the data source.",
     )
@@ -22,7 +25,7 @@ class GetDataRequestInfoModel(BaseModel):
     title: str = Field(
         description="The title of the data request.",
     )
-    submission_notes: str = Field(
+    submission_notes: str | None = Field(
         description="The submission notes of the data request.",
     )
     request_status: RequestStatus = Field(
@@ -65,7 +68,7 @@ class GetDataRequestInfoModel(BaseModel):
         description="The urgency of the data request.",
     )
 
-class GetDataRequestModel(BaseModel):
+class GetUserDataRequestModel(BaseModel):
     info: GetDataRequestInfoModel = Field(
         description="The info of the data request.",
     )

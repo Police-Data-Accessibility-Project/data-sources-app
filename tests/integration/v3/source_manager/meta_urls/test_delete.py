@@ -1,6 +1,6 @@
 from db.client.core import DatabaseClient
 from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMetaURL
-from endpoints.v3.source_manager.sync.shared.models.request import SourceManagerDeleteRequest
+from endpoints.v3.source_manager.sync.shared.models.request.delete import SourceManagerDeleteRequest
 from tests.integration.v3.helpers.api_test_helper import APITestHelper
 
 

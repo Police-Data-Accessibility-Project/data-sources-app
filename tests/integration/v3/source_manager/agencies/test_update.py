@@ -1,10 +1,8 @@
 from db.client.core import DatabaseClient
 from db.models.implementations.links.agency__location import LinkAgencyLocation
 from db.models.implementations.core.agency.core import Agency
-from endpoints.v3.source_manager.sync.agencies import (
-    UpdateAgenciesOuterRequest,
-    UpdateAgenciesInnerRequest,
-)
+from endpoints.v3.source_manager.sync.agencies.update.request import UpdateAgenciesOuterRequest, \
+    UpdateAgenciesInnerRequest
 from middleware.enums import JurisdictionType, AgencyType
 from tests.integration.v3.helpers.api_test_helper import APITestHelper
 

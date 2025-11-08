@@ -11,7 +11,6 @@ from db.enums import (
     RequestUrgency,
 )
 from db.helpers_.result_formatting import get_display_name
-from db.models.implementations.links.user__followed_location import LinkUserFollowedLocation
 from db.models.implementations.core.data_request.core import DataRequest
 from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.external_account import ExternalAccount
@@ -24,21 +23,14 @@ from db.models.implementations.core.recent_search.core import RecentSearch
 from db.models.implementations.core.record.category import RecordCategory
 from db.models.implementations.core.record.type import RecordType
 from db.models.implementations.core.user.core import User
+from db.models.implementations.links.user__followed_location import LinkUserFollowedLocation
 from db.queries.builder.core import QueryBuilderBase
-from endpoints.instantiations.data_requests_._shared.dtos.get import (
-    DataSourceLimitedDTO,
-)
 from endpoints.instantiations.locations_._shared.dtos.response import (
     LocationInfoResponseDTO,
 )
-from endpoints.instantiations.search._shared.dtos.follow import (
-    GetUserFollowedSearchesDTO,
-)
-from endpoints.instantiations.user.by_id.get.recent_searches.dto import (
-    GetUserRecentSearchesOuterDTO,
-)
 from endpoints.v3.user.by_id.get.response.core import GetUserProfileResponse
-from endpoints.v3.user.by_id.get.response.data_request import GetDataRequestModel, GetDataRequestInfoModel
+from endpoints.v3.user.by_id.get.response.data_request import GetUserDataRequestModel, GetDataRequestInfoModel, \
+    GetDataSourceLimitedModel
 from endpoints.v3.user.by_id.get.response.external_accounts import ExternalAccountsModel
 from endpoints.v3.user.by_id.get.response.followed_search import GetUserFollowedSearchModel
 from endpoints.v3.user.by_id.get.response.location import GetUserSearchLocationModel
@@ -128,26 +120,30 @@ class GetUserByIdQueryBuilder(QueryBuilderBase):
             state: USState | None = location.state if location else None
             county: County | None = location.county if location else None
             locality: Locality | None = location.locality if location else None
+            # Get Display Name
             if location is not None:
                 display_name = get_display_name(
                     location_type=LocationType(location.type),
                     state_name=state.state_name if state else None,
                     county_name=county.name if county else None,
                     locality_name=locality.name if locality else None,
-                ),
+                )
             else:
-                display_name = ""
+                display_name = "No Location"
 
+            # Get Record Type Enums
             record_types: list[RecordType] = recent_search.record_types
             rt_enums: list[RecordTypesEnum] = []
             for record_type in record_types:
                 rt_enums.append(RecordTypesEnum(record_type.name))
 
+            # Get Record Category Enums
             record_categories: list[RecordCategory] = recent_search.record_categories
             rc_enums: list[RecordCategoryEnum] = []
             for record_category in record_categories:
                 rc_enums.append(RecordCategoryEnum(record_category.name))
 
+            # Compile Result
             result = GetUserRecentSearchModel(
                 location_info=GetUserSearchLocationModel(
                     location_id=location.id if location else None,
@@ -163,7 +159,10 @@ class GetUserByIdQueryBuilder(QueryBuilderBase):
             )
             results.append(result)
 
-        return GetUserRecentSearchesOuterDTO(data=results)
+        # Sort results by search date
+        results.sort(key=lambda x: x.search_date, reverse=True)
+
+        return results
 
     def _process_follows(
         self, follows: list[LinkUserFollowedLocation]
@@ -175,6 +174,7 @@ class GetUserByIdQueryBuilder(QueryBuilderBase):
             county = location.county
             locality = location.locality
 
+            # Compile Record Types and Categories
             subscriptions_by_category: dict[str, str] = {}
             record_types: list[RecordTypesEnum] = []
             record_categories: list[RecordCategoryEnum] = []
@@ -205,25 +205,27 @@ class GetUserByIdQueryBuilder(QueryBuilderBase):
             )
             results.append(result)
 
-        return GetUserFollowedSearchesDTO(data=results)
+        return results
 
     def _process_data_requests(
         self, data_requests: list[DataRequest]
-    ) -> list[GetDataRequestModel]:
-        results: list[GetDataRequestModel] = []
+    ) -> list[GetUserDataRequestModel]:
+        results: list[GetUserDataRequestModel] = []
         for data_request in data_requests:
+            # Get Data Sources For Location
             data_sources: list[DataSource] = data_request.data_sources
-            ds_results: list[DataSourceLimitedDTO] = []
+            ds_results: list[GetDataSourceLimitedModel] = []
             ds_ids: list[int] = []
             for data_source in data_sources:
                 ds_results.append(
-                    DataSourceLimitedDTO(
+                    GetDataSourceLimitedModel(
                         id=data_source.id,
                         name=data_source.name,
                     )
                 )
                 ds_ids.append(data_source.id)
 
+            # Get Locations for Data Requests
             locations: list[LocationExpanded] = data_request.locations
             loc_results: list[LocationInfoResponseDTO] = []
             loc_ids: list[int] = []
@@ -236,15 +238,16 @@ class GetUserByIdQueryBuilder(QueryBuilderBase):
                         county_name=location.county_name,
                         county_fips=location.county_fips,
                         locality_name=location.locality_name,
-                        display_name=location.display_name,
+                        display_name=location.full_display_name,
                         location_id=location.id,
                     )
                 )
                 loc_ids.append(location.id)
 
+            # Get Github Issue Info
             github_issue_info = data_request.github_issue_info
 
-            dto = GetDataRequestModel(
+            dto = GetUserDataRequestModel(
                 # Core fields
                 info=GetDataRequestInfoModel(
                     id=data_request.id,

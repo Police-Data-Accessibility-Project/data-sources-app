@@ -2,7 +2,7 @@ import pytest
 from fastapi import HTTPException
 
 from db.client.core import DatabaseClient
-from endpoints.v3.source_manager.sync.shared.models.request import SourceManagerDeleteRequest
+from endpoints.v3.source_manager.sync.shared.models.request.delete import SourceManagerDeleteRequest
 from tests.integration.v3.helpers.api_test_helper import APITestHelper
 
 

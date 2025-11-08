@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 
 from db.enums import UserCapacityEnum
-from endpoints.v3.user.by_id.get.response.data_request import GetDataRequestModel
+from endpoints.v3.user.by_id.get.response.data_request import GetUserDataRequestModel
 from endpoints.v3.user.by_id.get.response.external_accounts import ExternalAccountsModel
 from endpoints.v3.user.by_id.get.response.followed_search import GetUserFollowedSearchModel
 from endpoints.v3.user.by_id.get.response.recent_search import GetUserRecentSearchModel
@@ -22,7 +22,7 @@ class GetUserProfileResponse(BaseModel):
     followed_searches: list[GetUserFollowedSearchModel] = Field(
         description="The followed searches of the user.",
     )
-    data_requests: list[GetDataRequestModel] = Field(
+    data_requests: list[GetUserDataRequestModel] = Field(
         description="The data requests of the user.",
     )
     permissions: list[PermissionsEnum] = Field(
