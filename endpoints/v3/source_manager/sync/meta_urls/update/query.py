@@ -17,8 +17,8 @@ class SourceManagerUpdateMetaURLsQueryBuilder(QueryBuilderBase):
 
         for meta_url_request in self.request.meta_urls:
             bum = {"id": meta_url_request.app_id}
-            for key, value in meta_url_request.model_dump(exclude_unset=True).items():
-                if key in ("app_id"):
+            for key, value in meta_url_request.content.model_dump(exclude_unset=True).items():
+                if key in ("app_id",):
                     continue
                 bum[key] = value
             # Skip if no updates

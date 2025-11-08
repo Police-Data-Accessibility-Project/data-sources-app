@@ -1,20 +1,12 @@
 from pydantic import BaseModel, Field, model_validator
 
+from endpoints.v3.source_manager.sync.agencies.shared.content import AgencySyncContentModel
 from middleware.enums import JurisdictionType, AgencyType
 
 
 class AddAgenciesInnerRequest(BaseModel):
     request_id: int
-
-    # Required
-    name: str
-    jurisdiction_type: JurisdictionType
-    agency_type: AgencyType
-    location_ids: list[int] = Field(min_length=1)
-
-    # Optional
-    no_web_presence: bool = False
-    defunct_year: int | None = None
+    content: AgencySyncContentModel
 
 
 class AddAgenciesOuterRequest(BaseModel):

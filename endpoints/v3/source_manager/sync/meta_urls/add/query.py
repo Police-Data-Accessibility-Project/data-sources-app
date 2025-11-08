@@ -18,9 +18,10 @@ class SourceManagerAddMetaURLsQueryBuilder(QueryBuilderBase):
         # Add Meta URLs
         meta_url_inserts: list[AgencyMetaURL] = []
         for meta_url_request in self.request.meta_urls:
+            content = meta_url_request.content
             meta_url_insert = AgencyMetaURL(
-                agency_id=meta_url_request.agency_id,
-                url=meta_url_request.url,
+                agency_id=content.agency_id,
+                url=content.url,
             )
             meta_url_inserts.append(meta_url_insert)
 

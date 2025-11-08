@@ -11,10 +11,12 @@ from db.enums import (
 )
 from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
 from db.models.implementations.core.data_source.core import DataSource
+from endpoints.v3.source_manager.sync.data_sources.shared.content import DataSourceSyncContentModel
 from endpoints.v3.source_manager.sync.data_sources.update.request import (
     UpdateDataSourcesOuterRequest,
     UpdateDataSourcesInnerRequest,
 )
+from middleware.enums import RecordTypesEnum
 from tests.integration.v3.helpers.api_test_helper import APITestHelper
 
 
@@ -33,30 +35,40 @@ def test_data_source_manager_data_sources_update(
                 # The majority of these are left undefined to test that they are not updated
                 UpdateDataSourcesInnerRequest(
                     app_id=data_source_id_1,
-                    source_url="https://updated-data-source.com/",
-                    name="Updated Data Source",
+                    content=DataSourceSyncContentModel(
+                        source_url="https://updated-data-source.com/",
+                        name="Updated Data Source",
+                        record_type=RecordTypesEnum.CAR_GPS,
+                        agency_ids=[agency_id_1],
+                    )
                 ),
                 UpdateDataSourcesInnerRequest(
                     app_id=data_source_id_2,
-                    description="Updated Data Source Description",
-                    record_formats=["Updated Record Format"],
-                    data_portal_type="Updated Data Portal Type",
-                    supplying_entity="Updated supplying entity",
-                    coverage_start=date(year=2023, month=7, day=5),
-                    coverage_end=date(year=2024, month=7, day=5),
-                    detail_level=DetailLevel.INDIVIDUAL,
-                    access_types=[AccessType.API, AccessType.DOWNLOAD],
-                    update_method=UpdateMethod.OVERWRITE,
-                    readme_url="https://www.example.com/readme",
-                    originating_entity="Updated originating entity",
-                    retention_schedule=RetentionSchedule.LESS_THAN_ONE_DAY,
-                    scraper_url="https://www.example.com/scraper",
-                    agency_described_not_in_database="Updated agency described not in database",
-                    data_portal_type_other="Updated other data portal type",
-                    access_notes="Updated access notes",
-                    url_status=URLStatus.OK,
-                    agency_supplied=None,
-                    agency_ids=[agency_id_1, agency_id_2],
+                    content=DataSourceSyncContentModel(
+                        source_url="https://updated-data-source-2.com/",
+                        name="Updated Data Source 2",
+                        record_type=RecordTypesEnum.RECORDS_REQUEST_INFO,
+                        description="Updated Data Source Description",
+                        record_formats=["Updated Record Format"],
+                        data_portal_type="Updated Data Portal Type",
+                        supplying_entity="Updated supplying entity",
+                        coverage_start=date(year=2023, month=7, day=5),
+                        coverage_end=date(year=2024, month=7, day=5),
+                        detail_level=DetailLevel.INDIVIDUAL,
+                        access_types=[AccessType.API, AccessType.DOWNLOAD],
+                        update_method=UpdateMethod.OVERWRITE,
+                        readme_url="https://www.example.com/readme",
+                        originating_entity="Updated originating entity",
+                        retention_schedule=RetentionSchedule.LESS_THAN_ONE_DAY,
+                        scraper_url="https://www.example.com/scraper",
+                        agency_described_not_in_database="Updated agency described not in database",
+                        data_portal_type_other="Updated other data portal type",
+                        access_notes="Updated access notes",
+                        url_status=URLStatus.OK,
+                        agency_supplied=None,
+                        agency_ids=[agency_id_1, agency_id_2],
+                    )
+
                 ),
             ]
         ).model_dump(mode="json", exclude_unset=True),
@@ -96,12 +108,12 @@ def test_data_source_manager_data_sources_update(
 
     data_source_2 = id_to_data_source[data_source_id_2]
     # Should be unchanged
-    assert data_source_2["name"] == "Test Data Source"
+    assert data_source_2["name"] == "Updated Data Source 2"
     assert data_source_2["record_type_id"] == 2
     assert data_source_2["agency_aggregation"] is None
 
     # Should be modified
-    assert data_source_2["source_url"] == "https://www.example.com/2"
+    assert data_source_2["source_url"] == "https://updated-data-source-2.com/"
     assert data_source_2["description"] == "Updated Data Source Description"
     assert data_source_2["record_formats"] == ["Updated Record Format"]
     assert data_source_2["data_portal_type"] == "Updated Data Portal Type"

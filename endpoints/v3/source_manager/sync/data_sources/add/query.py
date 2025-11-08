@@ -35,32 +35,33 @@ class SourceManagerAddDataSourcesQueryBuilder(QueryBuilderBase):
 
         data_source_inserts: list[DataSource] = []
         for ds_request in self.request.data_sources:
+            content = ds_request.content
             ds_insert = DataSource(
-                source_url=ds_request.url,
-                name=ds_request.name,
-                description=ds_request.description,
-                record_type_id=record_type_id_mapping[ds_request.record_type],
-                agency_supplied=ds_request.agency_supplied,
-                supplying_entity=ds_request.supplying_entity,
-                agency_originated=ds_request.agency_originated,
-                agency_aggregation=_value_if_not_none(ds_request.agency_aggregation),
-                coverage_start=ds_request.coverage_start,
-                coverage_end=ds_request.coverage_end,
-                detail_level=ds_request.detail_level,
-                access_types=[at.value for at in ds_request.access_types]
-                if ds_request.access_types
+                source_url=content.source_url,
+                name=content.name,
+                description=content.description,
+                record_type_id=record_type_id_mapping[content.record_type],
+                agency_supplied=content.agency_supplied,
+                supplying_entity=content.supplying_entity,
+                agency_originated=content.agency_originated,
+                agency_aggregation=_value_if_not_none(content.agency_aggregation),
+                coverage_start=content.coverage_start,
+                coverage_end=content.coverage_end,
+                detail_level=content.detail_level,
+                access_types=[at.value for at in content.access_types]
+                if content.access_types
                 else None,
-                data_portal_type=ds_request.data_portal_type,
-                record_formats=ds_request.record_formats,
-                update_method=_value_if_not_none(ds_request.update_method),
-                readme_url=ds_request.readme_url,
-                originating_entity=ds_request.originating_entity,
-                retention_schedule=_value_if_not_none(ds_request.retention_schedule),
-                scraper_url=ds_request.scraper_url,
-                agency_described_not_in_database=ds_request.agency_described_not_in_database,
-                data_portal_type_other=ds_request.data_portal_type_other,
-                access_notes=ds_request.access_notes,
-                url_status=_value_if_not_none(ds_request.url_status),
+                data_portal_type=content.data_portal_type,
+                record_formats=content.record_formats,
+                update_method=_value_if_not_none(content.update_method),
+                readme_url=content.readme_url,
+                originating_entity=content.originating_entity,
+                retention_schedule=_value_if_not_none(content.retention_schedule),
+                scraper_url=content.scraper_url,
+                agency_described_not_in_database=content.agency_described_not_in_database,
+                data_portal_type_other=content.data_portal_type_other,
+                access_notes=content.access_notes,
+                url_status=_value_if_not_none(content.url_status),
             )
             data_source_inserts.append(ds_insert)
 
@@ -74,7 +75,7 @@ class SourceManagerAddDataSourcesQueryBuilder(QueryBuilderBase):
         link_inserts: list[LinkAgencyDataSource] = []
         for ds_request in self.request.data_sources:
             ds_id: int = request_app_mappings[ds_request.request_id]
-            for agency_id in ds_request.agency_ids:
+            for agency_id in ds_request.content.agency_ids:
                 link_insert = LinkAgencyDataSource(
                     data_source_id=ds_id, agency_id=agency_id
                 )

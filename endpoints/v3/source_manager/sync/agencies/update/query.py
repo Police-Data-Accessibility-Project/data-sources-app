@@ -21,7 +21,7 @@ class SourceManagerUpdateAgenciesQueryBuilder(QueryBuilderBase):
 
         for agency_request in self.request.agencies:
             bum = {"id": agency_request.app_id}
-            for key, value in agency_request.model_dump(exclude_unset=True).items():
+            for key, value in agency_request.content.model_dump(exclude_unset=True).items():
                 if key in ("app_id", "location_ids"):
                     continue
                 bum[key] = value_if_enum(value)
@@ -38,9 +38,9 @@ class SourceManagerUpdateAgenciesQueryBuilder(QueryBuilderBase):
         # If any location_ids were provided, update the location links
         agency_id_location_id_mappings: dict[int, list[int]] = {}
         for agency_request in self.request.agencies:
-            if agency_request.location_ids is not None:  # TODO: Mod.
+            if agency_request.content.location_ids is not None:
                 agency_id_location_id_mappings[agency_request.app_id] = (
-                    agency_request.location_ids
+                    agency_request.content.location_ids
                 )
 
         # Delete existing location links

@@ -4,6 +4,7 @@ from endpoints.v3.source_manager.sync.agencies.add.request import (
     AddAgenciesOuterRequest,
     AddAgenciesInnerRequest,
 )
+from endpoints.v3.source_manager.sync.agencies.shared.content import AgencySyncContentModel
 from endpoints.v3.source_manager.sync.shared.models.response.add import (
     SourceManagerSyncAddOuterResponse,
 )
@@ -25,21 +26,25 @@ def test_source_manager_agencies_add(
                 agencies=[
                     AddAgenciesInnerRequest(
                         request_id=1,
-                        name="test",
-                        jurisdiction_type=JurisdictionType.STATE,
-                        agency_type=AgencyType.POLICE,
-                        no_web_presence=False,
-                        defunct_year=None,
-                        location_ids=[pennsylvania_id, pittsburgh_id],
+                        content=AgencySyncContentModel(
+                            name="test",
+                            jurisdiction_type=JurisdictionType.STATE,
+                            agency_type=AgencyType.POLICE,
+                            no_web_presence=False,
+                            defunct_year=None,
+                            location_ids=[pennsylvania_id, pittsburgh_id],
+                        )
                     ),
                     AddAgenciesInnerRequest(
                         request_id=2,
-                        name="test2",
-                        jurisdiction_type=JurisdictionType.COUNTY,
-                        agency_type=AgencyType.POLICE,
-                        no_web_presence=False,
-                        defunct_year=2022,
-                        location_ids=[allegheny_id],
+                        content=AgencySyncContentModel(
+                            name="test2",
+                            jurisdiction_type=JurisdictionType.COUNTY,
+                            agency_type=AgencyType.POLICE,
+                            no_web_presence=False,
+                            defunct_year=2022,
+                            location_ids=[allegheny_id],
+                        )
                     ),
                 ]
             ).model_dump(mode="json"),

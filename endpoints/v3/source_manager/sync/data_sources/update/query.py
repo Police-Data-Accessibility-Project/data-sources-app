@@ -21,7 +21,7 @@ class SourceManagerUpdateDataSourcesQueryBuilder(QueryBuilderBase):
 
         for data_source_request in self.request.data_sources:
             bum = {"id": data_source_request.app_id}
-            for key, value in data_source_request.model_dump(
+            for key, value in data_source_request.content.model_dump(
                 exclude_unset=True
             ).items():
                 if key in ("app_id", "agency_ids"):
@@ -40,9 +40,9 @@ class SourceManagerUpdateDataSourcesQueryBuilder(QueryBuilderBase):
         # If any agency ids were provided, update the agency links
         ds_id_agency_id_mappings: dict[int, list[int]] = {}
         for data_source_request in self.request.data_sources:
-            if data_source_request.agency_ids is not None:
+            if data_source_request.content.agency_ids is not None:
                 ds_id_agency_id_mappings[data_source_request.app_id] = (
-                    data_source_request.agency_ids
+                    data_source_request.content.agency_ids
                 )
 
         # Delete existing agency links
