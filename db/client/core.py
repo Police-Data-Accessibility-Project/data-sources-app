@@ -80,7 +80,9 @@ from db.models.implementations.core.reset_token import ResetToken
 from db.models.implementations.core.user.core import User
 from db.models.implementations.core.user.pending import PendingUser
 from db.models.implementations.core.user.permission import UserPermission
-from db.models.implementations.links.user__followed_location import LinkUserFollowedLocation
+from db.models.implementations.links.user__followed_location import (
+    LinkUserFollowedLocation,
+)
 from db.models.implementations.links.agency__location import LinkAgencyLocation
 from db.models.table_reference import (
     SQL_ALCHEMY_TABLE_REFERENCE,

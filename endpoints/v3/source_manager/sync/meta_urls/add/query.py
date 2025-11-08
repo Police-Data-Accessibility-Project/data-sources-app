@@ -1,6 +1,8 @@
 from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMetaURL
 from db.queries.builder.core import QueryBuilderBase
-from endpoints.v3.source_manager.sync.meta_urls.add.request import AddMetaURLsOuterRequest
+from endpoints.v3.source_manager.sync.meta_urls.add.request import (
+    AddMetaURLsOuterRequest,
+)
 from endpoints.v3.source_manager.sync.shared.models.response.add import (
     SourceManagerSyncAddOuterResponse,
     SourceManagerSyncAddInnerResponse,

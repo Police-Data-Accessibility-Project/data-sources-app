@@ -12,19 +12,15 @@ from utilities.enums import RecordCategoryEnum
 
 
 class GetRecordTypeMapperQueryBuilder(QueryBuilderBase):
-
     def run(self) -> RecordTypeMapper:
-        query = (
-            select(
-                RecordType.id,
-                RecordType.name,
-                RecordType.category_id,
-                RecordCategory.name,
-            )
-            .join(
-                RecordCategory,
-                RecordType.category_id == RecordCategory.id,
-            )
+        query = select(
+            RecordType.id,
+            RecordType.name,
+            RecordType.category_id,
+            RecordCategory.name,
+        ).join(
+            RecordCategory,
+            RecordType.category_id == RecordCategory.id,
         )
 
         raw_results: Sequence[RowMapping] = self.mappings(query)
@@ -40,5 +36,3 @@ class GetRecordTypeMapperQueryBuilder(QueryBuilderBase):
             mappings.append(mapping)
 
         return RecordTypeMapper(mappings)
-
-

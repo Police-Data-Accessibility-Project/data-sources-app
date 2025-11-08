@@ -27,4 +27,3 @@ def initialize_sqlalchemy_session() -> sessionmaker[Session]:
 
     except sqlalchemy.exc.SQLAlchemyError as e:
         raise DatabaseInitializationError(e) from e
-

@@ -2,7 +2,9 @@ from db.client.core import DatabaseClient
 from endpoints.v3.source_manager.sync.agencies.delete.query import (
     SourceManagerDeleteAgenciesQueryBuilder,
 )
-from endpoints.v3.source_manager.sync.shared.models.request.delete import SourceManagerDeleteRequest
+from endpoints.v3.source_manager.sync.shared.models.request.delete import (
+    SourceManagerDeleteRequest,
+)
 from middleware.schema_and_dto.dtos.common_dtos import MessageDTO
 
 

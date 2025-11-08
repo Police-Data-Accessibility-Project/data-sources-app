@@ -7,7 +7,9 @@ from db.models.implementations.links.agency__data_source import LinkAgencyDataSo
 from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.record.type import RecordType
 from db.queries.builder.core import QueryBuilderBase
-from endpoints.v3.source_manager.sync.data_sources.add.request import AddDataSourcesOuterRequest
+from endpoints.v3.source_manager.sync.data_sources.add.request import (
+    AddDataSourcesOuterRequest,
+)
 from endpoints.v3.source_manager.sync.shared.models.response.add import (
     SourceManagerSyncAddOuterResponse,
     SourceManagerSyncAddInnerResponse,

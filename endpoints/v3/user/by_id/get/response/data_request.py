@@ -3,7 +3,9 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 from db.enums import RequestStatus, RequestUrgency
-from endpoints.instantiations.locations_._shared.dtos.response import LocationInfoResponseDTO
+from endpoints.instantiations.locations_._shared.dtos.response import (
+    LocationInfoResponseDTO,
+)
 from middleware.enums import RecordTypesEnum
 
 
@@ -17,6 +19,7 @@ class GetDataSourceLimitedModel(BaseModel):
     name: str = Field(
         description="The name of the data source.",
     )
+
 
 class GetDataRequestInfoModel(BaseModel):
     id: int = Field(
@@ -67,6 +70,7 @@ class GetDataRequestInfoModel(BaseModel):
     request_urgency: RequestUrgency = Field(
         description="The urgency of the data request.",
     )
+
 
 class GetUserDataRequestModel(BaseModel):
     info: GetDataRequestInfoModel = Field(

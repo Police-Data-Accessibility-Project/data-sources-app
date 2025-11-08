@@ -4,7 +4,9 @@ from endpoints.v3.source_manager.sync.meta_urls.add.request import (
     AddMetaURLsOuterRequest,
     AddMetaURLsInnerRequest,
 )
-from endpoints.v3.source_manager.sync.shared.models.response.add import SourceManagerSyncAddOuterResponse
+from endpoints.v3.source_manager.sync.shared.models.response.add import (
+    SourceManagerSyncAddOuterResponse,
+)
 from tests.integration.v3.helpers.api_test_helper import APITestHelper
 
 

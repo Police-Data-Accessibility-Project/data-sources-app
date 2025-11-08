@@ -5,7 +5,9 @@ from sqlalchemy import delete
 from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
 from db.models.implementations.core.data_source.core import DataSource
 from db.queries.builder.core import QueryBuilderBase
-from endpoints.v3.source_manager.sync.data_sources.update.request import UpdateDataSourcesOuterRequest
+from endpoints.v3.source_manager.sync.data_sources.update.request import (
+    UpdateDataSourcesOuterRequest,
+)
 from utilities.common import value_if_enum
 
 

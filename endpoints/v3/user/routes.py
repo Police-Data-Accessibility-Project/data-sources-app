@@ -7,6 +7,7 @@ from middleware.security.auth.fastapi import get_standard_access_info
 
 user_router = APIRouter(prefix="/user", tags=["User"])
 
+
 @user_router.get("/{user_id}")
 def get_user(
     user_id: int,

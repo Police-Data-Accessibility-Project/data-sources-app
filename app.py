@@ -208,10 +208,7 @@ def create_fast_api_app() -> FastAPI:
         "\n\nThe old Flask API is available at {this_address}/"
         "",
     )
-    for router in [
-        sm_router,
-        user_router
-    ]:
+    for router in [sm_router, user_router]:
         fast_api_app.include_router(router)
     return fast_api_app
 

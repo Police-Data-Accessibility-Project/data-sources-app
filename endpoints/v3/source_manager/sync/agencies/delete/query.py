@@ -6,8 +6,12 @@ from db.models.implementations.links.agency__data_source import LinkAgencyDataSo
 from db.models.implementations.core.agency.core import Agency
 from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMetaURL
 from db.queries.builder.core import QueryBuilderBase
-from endpoints.v3.source_manager.sync.agencies.delete.exceptions import OrphanedEntityException
-from endpoints.v3.source_manager.sync.shared.models.request.delete import SourceManagerDeleteRequest
+from endpoints.v3.source_manager.sync.agencies.delete.exceptions import (
+    OrphanedEntityException,
+)
+from endpoints.v3.source_manager.sync.shared.models.request.delete import (
+    SourceManagerDeleteRequest,
+)
 
 
 class SourceManagerDeleteAgenciesQueryBuilder(QueryBuilderBase):

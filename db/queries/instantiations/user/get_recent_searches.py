@@ -8,7 +8,9 @@ from db.models.implementations.core.location.locality import Locality
 from db.models.implementations.core.location.us_state import USState
 from db.models.implementations.core.recent_search.core import RecentSearch
 from db.models.implementations.core.record.category import RecordCategory
-from db.models.implementations.links.recent_search__record_categories import LinkRecentSearchRecordCategories
+from db.models.implementations.links.recent_search__record_categories import (
+    LinkRecentSearchRecordCategories,
+)
 from db.queries.builder.core import QueryBuilderBase
 
 

@@ -5,12 +5,7 @@ from db.models.templates.standard import StandardBase
 from middleware.enums import Relations
 
 
-class RecentSearch(
-    StandardBase,
-    CreatedAtMixin,
-    UserIDMixin,
-    LocationIDMixin
-):
+class RecentSearch(StandardBase, CreatedAtMixin, UserIDMixin, LocationIDMixin):
     __tablename__ = Relations.RECENT_SEARCHES.value
 
     record_categories = relationship(

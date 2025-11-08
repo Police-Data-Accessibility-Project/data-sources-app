@@ -2,7 +2,9 @@ from typing import Any
 
 from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMetaURL
 from db.queries.builder.core import QueryBuilderBase
-from endpoints.v3.source_manager.sync.meta_urls.update.request import UpdateMetaURLsOuterRequest
+from endpoints.v3.source_manager.sync.meta_urls.update.request import (
+    UpdateMetaURLsOuterRequest,
+)
 
 
 class SourceManagerUpdateMetaURLsQueryBuilder(QueryBuilderBase):

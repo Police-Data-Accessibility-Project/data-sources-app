@@ -3,9 +3,15 @@ from werkzeug.exceptions import BadRequest
 
 from db.constants import GET_METRICS_FOLLOWED_SEARCHES_BREAKDOWN_SORTABLE_COLUMNS
 from db.enums import RequestStatus
-from db.models.implementations.links.location__data_source_view import LinkLocationDataSourceView
-from db.models.implementations.links.location__data_request import LinkLocationDataRequest
-from db.models.implementations.links.user__followed_location import LinkUserFollowedLocation
+from db.models.implementations.links.location__data_source_view import (
+    LinkLocationDataSourceView,
+)
+from db.models.implementations.links.location__data_request import (
+    LinkLocationDataRequest,
+)
+from db.models.implementations.links.user__followed_location import (
+    LinkUserFollowedLocation,
+)
 from db.models.implementations.core.data_request.core import DataRequest
 from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.location.expanded import LocationExpanded

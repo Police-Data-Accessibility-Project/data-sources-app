@@ -2,7 +2,9 @@ from sqlalchemy import delete
 
 from db.models.implementations.core.data_source.core import DataSource
 from db.queries.builder.core import QueryBuilderBase
-from endpoints.v3.source_manager.sync.shared.models.request.delete import SourceManagerDeleteRequest
+from endpoints.v3.source_manager.sync.shared.models.request.delete import (
+    SourceManagerDeleteRequest,
+)
 
 
 class SourceManagerDeleteDataSourcesQueryBuilder(QueryBuilderBase):

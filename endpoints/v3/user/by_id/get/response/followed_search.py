@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
 
-from db.enums import LocationType
 from endpoints.v3.user.by_id.get.response.location import GetUserSearchLocationModel
 from middleware.enums import RecordTypesEnum
 from utilities.enums import RecordCategoryEnum

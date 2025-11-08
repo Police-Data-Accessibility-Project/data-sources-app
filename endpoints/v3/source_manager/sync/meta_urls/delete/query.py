@@ -2,7 +2,9 @@ from sqlalchemy import delete
 
 from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMetaURL
 from db.queries.builder.core import QueryBuilderBase
-from endpoints.v3.source_manager.sync.shared.models.request.delete import SourceManagerDeleteRequest
+from endpoints.v3.source_manager.sync.shared.models.request.delete import (
+    SourceManagerDeleteRequest,
+)
 
 
 class SourceManagerDeleteMetaURLsQueryBuilder(QueryBuilderBase):

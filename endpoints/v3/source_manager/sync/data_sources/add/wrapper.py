@@ -4,7 +4,9 @@ from db.client.core import DatabaseClient
 from endpoints.v3.source_manager.sync.data_sources.add.query import (
     SourceManagerAddDataSourcesQueryBuilder,
 )
-from endpoints.v3.source_manager.sync.data_sources.add.request import AddDataSourcesOuterRequest
+from endpoints.v3.source_manager.sync.data_sources.add.request import (
+    AddDataSourcesOuterRequest,
+)
 from endpoints.v3.source_manager.sync.shared.models.response.add import (
     SourceManagerSyncAddOuterResponse,
 )

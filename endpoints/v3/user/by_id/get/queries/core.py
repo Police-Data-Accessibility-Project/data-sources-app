@@ -23,16 +23,23 @@ from db.models.implementations.core.recent_search.core import RecentSearch
 from db.models.implementations.core.record.category import RecordCategory
 from db.models.implementations.core.record.type import RecordType
 from db.models.implementations.core.user.core import User
-from db.models.implementations.links.user__followed_location import LinkUserFollowedLocation
+from db.models.implementations.links.user__followed_location import (
+    LinkUserFollowedLocation,
+)
 from db.queries.builder.core import QueryBuilderBase
 from endpoints.instantiations.locations_._shared.dtos.response import (
     LocationInfoResponseDTO,
 )
 from endpoints.v3.user.by_id.get.response.core import GetUserProfileResponse
-from endpoints.v3.user.by_id.get.response.data_request import GetUserDataRequestModel, GetDataRequestInfoModel, \
-    GetDataSourceLimitedModel
+from endpoints.v3.user.by_id.get.response.data_request import (
+    GetUserDataRequestModel,
+    GetDataRequestInfoModel,
+    GetDataSourceLimitedModel,
+)
 from endpoints.v3.user.by_id.get.response.external_accounts import ExternalAccountsModel
-from endpoints.v3.user.by_id.get.response.followed_search import GetUserFollowedSearchModel
+from endpoints.v3.user.by_id.get.response.followed_search import (
+    GetUserFollowedSearchModel,
+)
 from endpoints.v3.user.by_id.get.response.location import GetUserSearchLocationModel
 from endpoints.v3.user.by_id.get.response.recent_search import GetUserRecentSearchModel
 from middleware.enums import PermissionsEnum, RecordTypesEnum
@@ -54,7 +61,6 @@ class GetUserByIdQueryBuilder(QueryBuilderBase):
                 selectinload(User.external_accounts),
                 selectinload(User.capacities),
                 selectinload(User.permissions),
-
                 # Recent searches: record categories + location pieces
                 selectinload(User.recent_searches).options(
                     selectinload(RecentSearch.record_categories),
@@ -65,18 +71,17 @@ class GetUserByIdQueryBuilder(QueryBuilderBase):
                         selectinload(Location.locality),
                     ),
                 ),
-
                 # Follows: record types -> category, plus location pieces
                 selectinload(User.follows).options(
-                    selectinload(LinkUserFollowedLocation.record_types)
-                    .selectinload(RecordType.record_category),
+                    selectinload(LinkUserFollowedLocation.record_types).selectinload(
+                        RecordType.record_category
+                    ),
                     selectinload(LinkUserFollowedLocation.location).options(
                         selectinload(Location.state),
                         selectinload(Location.county),
                         selectinload(Location.locality),
                     ),
-                    ),
-
+                ),
                 # Data requests: data sources, locations, GitHub info
                 selectinload(User.data_requests).options(
                     selectinload(DataRequest.data_sources),
@@ -199,7 +204,7 @@ class GetUserByIdQueryBuilder(QueryBuilderBase):
                     locality_name=locality.name if locality else None,
                     location_type=location.type if location else None,
                 ),
-                record_types_by_category = subscriptions_by_category,
+                record_types_by_category=subscriptions_by_category,
                 record_types=record_types,
                 record_categories=record_categories,
             )

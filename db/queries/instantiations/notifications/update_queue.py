@@ -2,9 +2,13 @@ from typing import final
 
 from sqlalchemy import select, Executable, and_
 
-from db.models.implementations.links.location__data_request import LinkLocationDataRequest
+from db.models.implementations.links.location__data_request import (
+    LinkLocationDataRequest,
+)
 from db.models.implementations.links.follow__record_types import LinkFollowRecordType
-from db.models.implementations.links.user__followed_location import LinkUserFollowedLocation
+from db.models.implementations.links.user__followed_location import (
+    LinkUserFollowedLocation,
+)
 from db.models.implementations.links.agency__location import LinkAgencyLocation
 from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
 from db.models.implementations.core.data_source.core import DataSource

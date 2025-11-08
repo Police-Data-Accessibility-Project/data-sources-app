@@ -1,7 +1,9 @@
 from db.models.implementations.links.agency__location import LinkAgencyLocation
 from db.models.implementations.core.agency.core import Agency
 from db.queries.builder.core import QueryBuilderBase
-from endpoints.v3.source_manager.sync.agencies.add.request import AddAgenciesOuterRequest
+from endpoints.v3.source_manager.sync.agencies.add.request import (
+    AddAgenciesOuterRequest,
+)
 from endpoints.v3.source_manager.sync.shared.models.response.add import (
     SourceManagerSyncAddOuterResponse,
     SourceManagerSyncAddInnerResponse,

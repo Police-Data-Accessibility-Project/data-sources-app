@@ -22,7 +22,10 @@ from middleware.enums import (
     AccessTypeEnum,
 )
 from middleware.security.access_info.primary import AccessInfoPrimary
-from middleware.security.auth.fastapi import get_source_collector_access_info, get_standard_access_info
+from middleware.security.auth.fastapi import (
+    get_source_collector_access_info,
+    get_standard_access_info,
+)
 from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
@@ -36,14 +39,16 @@ MOCK_USER_ID = 1
 def client() -> Generator[TestClient, None, None]:
     app = create_fast_api_app()
     with TestClient(app) as c:
-        app.dependency_overrides[get_source_collector_access_info] = lambda: AccessInfoPrimary(
-            user_id=MOCK_USER_ID,
-            permissions=[
-                PermissionsEnum.SOURCE_COLLECTOR,
-                PermissionsEnum.SOURCE_COLLECTOR_FINAL_REVIEW,
-            ],
-            user_email="test@example.com",
-            access_type=AccessTypeEnum.JWT,
+        app.dependency_overrides[get_source_collector_access_info] = (
+            lambda: AccessInfoPrimary(
+                user_id=MOCK_USER_ID,
+                permissions=[
+                    PermissionsEnum.SOURCE_COLLECTOR,
+                    PermissionsEnum.SOURCE_COLLECTOR_FINAL_REVIEW,
+                ],
+                user_email="test@example.com",
+                access_type=AccessTypeEnum.JWT,
+            )
         )
         app.dependency_overrides[get_standard_access_info] = lambda: AccessInfoPrimary(
             user_id=MOCK_USER_ID,

@@ -1,6 +1,8 @@
 from typing import override, final
 
-from db.models.implementations.links.location__data_request import LinkLocationDataRequest
+from db.models.implementations.links.location__data_request import (
+    LinkLocationDataRequest,
+)
 from db.models.implementations.core.data_request.core import DataRequest
 from db.queries.builder.core import QueryBuilderBase
 from endpoints.instantiations.data_requests_.post.dto import DataRequestsPostDTO

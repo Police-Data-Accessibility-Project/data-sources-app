@@ -3,7 +3,9 @@ from pydantic import BaseModel, Field
 from db.enums import UserCapacityEnum
 from endpoints.v3.user.by_id.get.response.data_request import GetUserDataRequestModel
 from endpoints.v3.user.by_id.get.response.external_accounts import ExternalAccountsModel
-from endpoints.v3.user.by_id.get.response.followed_search import GetUserFollowedSearchModel
+from endpoints.v3.user.by_id.get.response.followed_search import (
+    GetUserFollowedSearchModel,
+)
 from endpoints.v3.user.by_id.get.response.recent_search import GetUserRecentSearchModel
 from middleware.enums import PermissionsEnum
 from middleware.schema_and_dto.dtos._helpers import default_field_required

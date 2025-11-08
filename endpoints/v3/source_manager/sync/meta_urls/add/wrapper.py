@@ -1,8 +1,12 @@
 from fastapi import HTTPException
 
 from db.client.core import DatabaseClient
-from endpoints.v3.source_manager.sync.meta_urls.add.query import SourceManagerAddMetaURLsQueryBuilder
-from endpoints.v3.source_manager.sync.meta_urls.add.request import AddMetaURLsOuterRequest
+from endpoints.v3.source_manager.sync.meta_urls.add.query import (
+    SourceManagerAddMetaURLsQueryBuilder,
+)
+from endpoints.v3.source_manager.sync.meta_urls.add.request import (
+    AddMetaURLsOuterRequest,
+)
 from endpoints.v3.source_manager.sync.shared.models.response.add import (
     SourceManagerSyncAddOuterResponse,
 )
