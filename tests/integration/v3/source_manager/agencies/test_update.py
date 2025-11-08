@@ -1,7 +1,7 @@
 from db.client.core import DatabaseClient
-from db.models.implementations import LinkAgencyLocation
+from db.models.implementations.links.agency__location import LinkAgencyLocation
 from db.models.implementations.core.agency.core import Agency
-from endpoints.v3.sync.agencies.update.request import (
+from endpoints.v3.source_manager.sync.agencies.update.request import (
     UpdateAgenciesOuterRequest,
     UpdateAgenciesInnerRequest,
 )

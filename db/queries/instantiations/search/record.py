@@ -2,8 +2,10 @@ from typing import Optional, Union, Any
 
 from sqlalchemy import insert, select
 
-from db.models.implementations import (
+from db.models.implementations.links.recent_search__record_types import (
     LinkRecentSearchRecordTypes,
+)
+from db.models.implementations.links.recent_search__record_categories import (
     LinkRecentSearchRecordCategories,
 )
 from db.models.implementations.core.recent_search.core import RecentSearch

@@ -2,13 +2,13 @@ from datetime import date
 
 from db.client.core import DatabaseClient
 from db.enums import AgencyAggregation, UpdateMethod, RetentionSchedule, AccessType
-from db.models.implementations import LinkAgencyDataSource
+from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
 from db.models.implementations.core.data_source.core import DataSource
-from endpoints.v3.sync.data_sources.add.request import (
+from endpoints.v3.source_manager.sync.data_sources.add.request import (
     AddDataSourcesOuterRequest,
     AddDataSourcesInnerRequest,
 )
-from endpoints.v3.sync.shared.models.response.add import (
+from endpoints.v3.source_manager.sync.shared.models.response.add import (
     SourceManagerSyncAddOuterResponse,
 )
 from middleware.enums import RecordTypesEnum

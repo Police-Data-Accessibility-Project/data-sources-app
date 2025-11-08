@@ -2,7 +2,7 @@ from typing import override, final
 
 
 from db.helpers import enum_value_or_none
-from db.models.implementations import LinkAgencyDataSource
+from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
 from db.models.implementations.core.data_source.core import DataSource
 from db.queries.builder.core import QueryBuilderBase
 from db.queries.builder.mixins.pending_event.data_source import (

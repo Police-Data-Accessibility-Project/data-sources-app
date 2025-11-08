@@ -215,7 +215,7 @@ def california_id(live_database_client):
 
 
 @pytest.fixture
-def allegheny_id(live_database_client, pennsylvania_id):
+def allegheny_id(live_database_client, pennsylvania_id) -> int:
     query = (
         select(Location.id)
         .where(
@@ -227,7 +227,7 @@ def allegheny_id(live_database_client, pennsylvania_id):
 
 
 @pytest.fixture
-def pittsburgh_id(live_database_client):
+def pittsburgh_id(live_database_client) -> int:
     query = select(County.id).where(County.name == "Allegheny")
     county_id = live_database_client.scalar(query)
 
@@ -248,7 +248,7 @@ def pittsburgh_id(live_database_client):
 
 
 @pytest.fixture
-def national_id(live_database_client):
+def national_id(live_database_client) -> int:
     query = select(Location.id).where(Location.type == LocationType.NATIONAL.value)
     return live_database_client.scalar(query)
 

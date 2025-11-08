@@ -1,7 +1,7 @@
 import pytest
 
 from db.client.core import DatabaseClient
-from db.models.implementations import LinkAgencyLocation
+from db.models.implementations.links.agency__location import LinkAgencyLocation
 from db.models.implementations.core.agency.core import Agency
 from middleware.enums import JurisdictionType, AgencyType
 

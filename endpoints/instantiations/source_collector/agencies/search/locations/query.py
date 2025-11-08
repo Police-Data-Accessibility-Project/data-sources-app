@@ -3,7 +3,7 @@ from typing import Sequence
 
 from sqlalchemy import values, column, Integer, String, select, func, RowMapping
 
-from db.models.implementations import LinkAgencyLocation
+from db.models.implementations.links.agency__location import LinkAgencyLocation
 from db.models.implementations.core.location.core import Location
 from db.models.implementations.core.location.us_state import USState
 from db.models.implementations.materialized_views.typeahead.locations import (

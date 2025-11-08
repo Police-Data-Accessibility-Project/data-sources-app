@@ -1,6 +1,6 @@
 from db.client.core import DatabaseClient
 from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMetaURL
-from endpoints.v3.sync.meta_urls.update.request import (
+from endpoints.v3.source_manager.sync.meta_urls.update.request import (
     UpdateMetaURLsOuterRequest,
     UpdateMetaURLsInnerRequest,
 )

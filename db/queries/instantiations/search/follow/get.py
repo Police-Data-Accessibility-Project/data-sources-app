@@ -7,7 +7,9 @@ from db.enums import LocationType
 from db.helpers_.result_formatting import get_display_name
 from db.models.implementations.core.location.core import Location
 from db.models.implementations.core.record.type import RecordType
-from db.models.implementations.link import LinkUserFollowedLocation
+from db.models.implementations.links.user__followed_location import (
+    LinkUserFollowedLocation,
+)
 from db.queries.builder.core import QueryBuilderBase
 
 

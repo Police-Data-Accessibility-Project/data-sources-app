@@ -9,9 +9,9 @@ from db.enums import (
     URLStatus,
     AgencyAggregation,
 )
-from db.models.implementations import LinkAgencyDataSource
+from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
 from db.models.implementations.core.data_source.core import DataSource
-from endpoints.v3.sync.data_sources.update.request import (
+from endpoints.v3.source_manager.sync.data_sources.update.request import (
     UpdateDataSourcesOuterRequest,
     UpdateDataSourcesInnerRequest,
 )
