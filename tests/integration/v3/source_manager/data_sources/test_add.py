@@ -8,7 +8,9 @@ from endpoints.v3.source_manager.sync.data_sources.add.request import (
     AddDataSourcesOuterRequest,
     AddDataSourcesInnerRequest,
 )
-from endpoints.v3.source_manager.sync.data_sources.shared.content import DataSourceSyncContentModel
+from endpoints.v3.source_manager.sync.data_sources.shared.content import (
+    DataSourceSyncContentModel,
+)
 from endpoints.v3.source_manager.sync.shared.models.response.add import (
     SourceManagerSyncAddOuterResponse,
 )
@@ -50,7 +52,7 @@ def test_source_manager_data_sources_add(
                         access_notes="Test Access Notes",
                         access_types=[AccessType.API, AccessType.DOWNLOAD],
                         agency_ids=[agency_id_1, agency_id_2],
-                    )
+                    ),
                 ),
                 AddDataSourcesInnerRequest(
                     request_id=2,
@@ -76,7 +78,7 @@ def test_source_manager_data_sources_add(
                         access_notes=None,
                         access_types=None,
                         agency_ids=[agency_id_1],
-                    )
+                    ),
                 ),
             ]
         ).model_dump(mode="json"),

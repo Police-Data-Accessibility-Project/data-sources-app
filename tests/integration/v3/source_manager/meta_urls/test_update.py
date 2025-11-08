@@ -1,6 +1,8 @@
 from db.client.core import DatabaseClient
 from db.models.implementations.core.agency.meta_urls.sqlalchemy import AgencyMetaURL
-from endpoints.v3.source_manager.sync.meta_urls.shared.content import MetaURLSyncContentModel
+from endpoints.v3.source_manager.sync.meta_urls.shared.content import (
+    MetaURLSyncContentModel,
+)
 from endpoints.v3.source_manager.sync.meta_urls.update.request import (
     UpdateMetaURLsOuterRequest,
     UpdateMetaURLsInnerRequest,
@@ -25,14 +27,13 @@ def test_source_manager_meta_urls_update(
                     content=MetaURLSyncContentModel(
                         url="https://meta-url.com/modified",
                         agency_id=agency_id_2,
-                    )
+                    ),
                 ),
                 UpdateMetaURLsInnerRequest(
                     app_id=meta_url_id_2,
                     content=MetaURLSyncContentModel(
-                        url="https://meta-url-2.com/modified",
-                        agency_id=agency_id_1
-                    )
+                        url="https://meta-url-2.com/modified", agency_id=agency_id_1
+                    ),
                 ),
             ]
         ).model_dump(mode="json", exclude_unset=True),

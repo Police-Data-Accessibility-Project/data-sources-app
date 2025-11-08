@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field, model_validator
 
-from endpoints.v3.source_manager.sync.meta_urls.shared.content import MetaURLSyncContentModel
+from endpoints.v3.source_manager.sync.meta_urls.shared.content import (
+    MetaURLSyncContentModel,
+)
 
 
 class AddMetaURLsInnerRequest(BaseModel):

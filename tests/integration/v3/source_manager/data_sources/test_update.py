@@ -11,7 +11,9 @@ from db.enums import (
 )
 from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
 from db.models.implementations.core.data_source.core import DataSource
-from endpoints.v3.source_manager.sync.data_sources.shared.content import DataSourceSyncContentModel
+from endpoints.v3.source_manager.sync.data_sources.shared.content import (
+    DataSourceSyncContentModel,
+)
 from endpoints.v3.source_manager.sync.data_sources.update.request import (
     UpdateDataSourcesOuterRequest,
     UpdateDataSourcesInnerRequest,
@@ -40,7 +42,7 @@ def test_data_source_manager_data_sources_update(
                         name="Updated Data Source",
                         record_type=RecordTypesEnum.CAR_GPS,
                         agency_ids=[agency_id_1],
-                    )
+                    ),
                 ),
                 UpdateDataSourcesInnerRequest(
                     app_id=data_source_id_2,
@@ -67,8 +69,7 @@ def test_data_source_manager_data_sources_update(
                         url_status=URLStatus.OK,
                         agency_supplied=None,
                         agency_ids=[agency_id_1, agency_id_2],
-                    )
-
+                    ),
                 ),
             ]
         ).model_dump(mode="json", exclude_unset=True),

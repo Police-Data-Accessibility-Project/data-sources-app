@@ -4,7 +4,9 @@ from endpoints.v3.source_manager.sync.agencies.add.request import (
     AddAgenciesOuterRequest,
     AddAgenciesInnerRequest,
 )
-from endpoints.v3.source_manager.sync.agencies.shared.content import AgencySyncContentModel
+from endpoints.v3.source_manager.sync.agencies.shared.content import (
+    AgencySyncContentModel,
+)
 from endpoints.v3.source_manager.sync.shared.models.response.add import (
     SourceManagerSyncAddOuterResponse,
 )
@@ -33,7 +35,7 @@ def test_source_manager_agencies_add(
                             no_web_presence=False,
                             defunct_year=None,
                             location_ids=[pennsylvania_id, pittsburgh_id],
-                        )
+                        ),
                     ),
                     AddAgenciesInnerRequest(
                         request_id=2,
@@ -44,7 +46,7 @@ def test_source_manager_agencies_add(
                             no_web_presence=False,
                             defunct_year=2022,
                             location_ids=[allegheny_id],
-                        )
+                        ),
                     ),
                 ]
             ).model_dump(mode="json"),

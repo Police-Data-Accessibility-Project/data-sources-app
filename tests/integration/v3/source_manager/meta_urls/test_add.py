@@ -4,7 +4,9 @@ from endpoints.v3.source_manager.sync.meta_urls.add.request import (
     AddMetaURLsOuterRequest,
     AddMetaURLsInnerRequest,
 )
-from endpoints.v3.source_manager.sync.meta_urls.shared.content import MetaURLSyncContentModel
+from endpoints.v3.source_manager.sync.meta_urls.shared.content import (
+    MetaURLSyncContentModel,
+)
 from endpoints.v3.source_manager.sync.shared.models.response.add import (
     SourceManagerSyncAddOuterResponse,
 )
@@ -25,16 +27,15 @@ def test_source_manager_meta_urls_add(
                     AddMetaURLsInnerRequest(
                         request_id=1,
                         content=MetaURLSyncContentModel(
-                            url="https://meta-url.com",
-                            agency_id=agency_id_1
-                        )
+                            url="https://meta-url.com", agency_id=agency_id_1
+                        ),
                     ),
                     AddMetaURLsInnerRequest(
                         request_id=2,
                         content=MetaURLSyncContentModel(
                             url="https://meta-url-2.com",
                             agency_id=agency_id_2,
-                        )
+                        ),
                     ),
                 ]
             ).model_dump(mode="json"),

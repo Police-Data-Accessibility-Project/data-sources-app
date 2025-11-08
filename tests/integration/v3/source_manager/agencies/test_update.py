@@ -1,7 +1,9 @@
 from db.client.core import DatabaseClient
 from db.models.implementations.links.agency__location import LinkAgencyLocation
 from db.models.implementations.core.agency.core import Agency
-from endpoints.v3.source_manager.sync.agencies.shared.content import AgencySyncContentModel
+from endpoints.v3.source_manager.sync.agencies.shared.content import (
+    AgencySyncContentModel,
+)
 from endpoints.v3.source_manager.sync.agencies.update.request import (
     UpdateAgenciesOuterRequest,
     UpdateAgenciesInnerRequest,
@@ -31,7 +33,7 @@ def test_source_manager_agencies_update_happy_path(
                         no_web_presence=True,
                         defunct_year=2023,
                         location_ids=[allegheny_id],
-                    )
+                    ),
                 ),
                 UpdateAgenciesInnerRequest(
                     app_id=agency_id_2,
@@ -42,7 +44,7 @@ def test_source_manager_agencies_update_happy_path(
                         jurisdiction_type=JurisdictionType.STATE,
                         agency_type=AgencyType.POLICE,
                         no_web_presence=False,
-                    )
+                    ),
                 ),
             ]
         ).model_dump(mode="json", exclude_unset=True),

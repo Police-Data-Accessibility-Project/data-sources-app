@@ -2,7 +2,14 @@ from datetime import date
 
 from pydantic import BaseModel, Field
 
-from db.enums import DetailLevel, AgencyAggregation, UpdateMethod, RetentionSchedule, AccessType, URLStatus
+from db.enums import (
+    DetailLevel,
+    AgencyAggregation,
+    UpdateMethod,
+    RetentionSchedule,
+    AccessType,
+    URLStatus,
+)
 from middleware.enums import RecordTypesEnum
 
 

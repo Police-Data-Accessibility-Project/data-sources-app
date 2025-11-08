@@ -21,7 +21,9 @@ class SourceManagerUpdateAgenciesQueryBuilder(QueryBuilderBase):
 
         for agency_request in self.request.agencies:
             bum = {"id": agency_request.app_id}
-            for key, value in agency_request.content.model_dump(exclude_unset=True).items():
+            for key, value in agency_request.content.model_dump(
+                exclude_unset=True
+            ).items():
                 if key in ("app_id", "location_ids"):
                     continue
                 bum[key] = value_if_enum(value)

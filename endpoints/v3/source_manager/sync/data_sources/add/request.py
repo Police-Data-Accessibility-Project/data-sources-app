@@ -1,17 +1,9 @@
-from datetime import date
 
 from pydantic import BaseModel, Field, model_validator
 
-from db.enums import (
-    AgencyAggregation,
-    UpdateMethod,
-    RetentionSchedule,
-    AccessType,
-    DetailLevel,
-    URLStatus,
+from endpoints.v3.source_manager.sync.data_sources.shared.content import (
+    DataSourceSyncContentModel,
 )
-from endpoints.v3.source_manager.sync.data_sources.shared.content import DataSourceSyncContentModel
-from middleware.enums import RecordTypesEnum
 
 
 class AddDataSourcesInnerRequest(BaseModel):

@@ -13,4 +13,3 @@ class AgencySyncContentModel(BaseModel):
     # Optional
     no_web_presence: bool = False
     defunct_year: int | None = None
-
