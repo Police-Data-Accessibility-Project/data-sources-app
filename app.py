@@ -192,6 +192,22 @@ def create_asgi_app() -> Starlette:
 
     app = Starlette()
 
+    # Add CORS middleware
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "https://pdap.io",
+            "https://www.pdap.io",
+            "https://data-sources.pdap.dev",
+            "https://pdap.dev",
+            "https://data-sources.pdap.io"
+        ],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+
     app.mount("/api/v3", fast_api_app)
     app.mount("/api/v2", WSGIMiddlewareFastAPI(flask_app))
 
@@ -212,14 +228,6 @@ def create_fast_api_app() -> FastAPI:
     for router in [sm_router, user_router]:
         fast_api_app.include_router(router)
 
-    # Add CORS middleware
-    fast_api_app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
 
     return fast_api_app
 
