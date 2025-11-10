@@ -200,7 +200,9 @@ def create_asgi_app() -> Starlette:
             "https://www.pdap.io",
             "https://data-sources.pdap.dev",
             "https://pdap.dev",
-            "https://data-sources.pdap.io"
+            "https://data-sources.pdap.io",
+            # Dev origins
+            "localhost:8888"
         ],
         allow_credentials=True,
         allow_methods=["*"],
