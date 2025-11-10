@@ -11,6 +11,7 @@ from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 from flask_restx import Api
 from starlette.applications import Starlette
+from starlette.middleware.cors import CORSMiddleware
 
 from config import config, oauth, limiter, jwt
 from db.helpers_.psycopg import initialize_psycopg_connection
@@ -210,6 +211,16 @@ def create_fast_api_app() -> FastAPI:
     )
     for router in [sm_router, user_router]:
         fast_api_app.include_router(router)
+
+    # Add CORS middleware
+    fast_api_app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
     return fast_api_app
 
 
