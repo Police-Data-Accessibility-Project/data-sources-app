@@ -11,6 +11,7 @@ from db.models.implementations.links.user__followed_location import (
     LinkUserFollowedLocation,
 )
 from db.queries.builder.core import QueryBuilderBase
+from endpoints.instantiations.search.follow.get.query.helpers import build_record_category_type_dictionary
 
 
 class GetUserFollowedSearchesQueryBuilder(QueryBuilderBase):
@@ -25,18 +26,6 @@ class GetUserFollowedSearchesQueryBuilder(QueryBuilderBase):
             sil.selectinload(Location.county),
             sil.selectinload(Location.locality),
         ]
-
-    def process_record_types(
-        self, record_types: list[RecordType]
-    ) -> dict[str, list[str]]:
-        d = {}
-        for rt in record_types:
-            rc = rt.record_category.name
-            if rc in d:
-                d[rc].append(rt.name)
-            else:
-                d[rc] = [rt.name]
-        return d
 
     def run(self) -> dict[str, Any]:
         query = self.build_query()
@@ -74,7 +63,7 @@ class GetUserFollowedSearchesQueryBuilder(QueryBuilderBase):
                     "state_name": state_name,
                     "county_name": county_name,
                     "locality_name": locality_name,
-                    "subscriptions_by_category": self.process_record_types(
+                    "subscriptions_by_category": build_record_category_type_dictionary(
                         record_types
                     ),
                 }
@@ -92,9 +81,8 @@ class GetUserFollowedSearchesQueryBuilder(QueryBuilderBase):
             .where(LinkUserFollowedLocation.user_id == self.user_id)
             .options(
                 *self.location_selectin_loads(),
-                selectinload(LinkUserFollowedLocation.record_types).selectinload(
-                    RecordType.record_category
-                ),
+                selectinload(LinkUserFollowedLocation.record_types)
+                .selectinload(RecordType.record_category),
             )
         )
         return query

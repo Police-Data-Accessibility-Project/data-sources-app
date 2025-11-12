@@ -46,6 +46,20 @@ from middleware.enums import PermissionsEnum, RecordTypesEnum
 from utilities.enums import RecordCategoryEnum
 
 
+def extract_record_type_enums(record_types: list[RecordType]) -> list[RecordTypesEnum]:
+    rt_enums: list[RecordTypesEnum] = []
+    for record_type in record_types:
+        rt_enums.append(RecordTypesEnum(record_type.name))
+    return rt_enums
+
+
+def extract_record_category_enums(record_categories: list[RecordCategory]) -> list[RecordCategoryEnum]:
+    rc_enums: list[RecordCategoryEnum] = []
+    for record_category in record_categories:
+        rc_enums.append(RecordCategoryEnum(record_category.name))
+    return rc_enums
+
+
 @final
 class GetUserByIdQueryBuilder(QueryBuilderBase):
     def __init__(self, user_id: int) -> None:
@@ -137,16 +151,10 @@ class GetUserByIdQueryBuilder(QueryBuilderBase):
                 display_name = "No Location"
 
             # Get Record Type Enums
-            record_types: list[RecordType] = recent_search.record_types
-            rt_enums: list[RecordTypesEnum] = []
-            for record_type in record_types:
-                rt_enums.append(RecordTypesEnum(record_type.name))
+            rt_enums = extract_record_type_enums(recent_search.record_types)
 
             # Get Record Category Enums
-            record_categories: list[RecordCategory] = recent_search.record_categories
-            rc_enums: list[RecordCategoryEnum] = []
-            for record_category in record_categories:
-                rc_enums.append(RecordCategoryEnum(record_category.name))
+            rc_enums = extract_record_category_enums(recent_search.record_categories)
 
             # Compile Result
             result = GetUserRecentSearchModel(

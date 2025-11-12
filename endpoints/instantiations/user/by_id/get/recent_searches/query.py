@@ -34,6 +34,7 @@ class GetUserRecentSearchesQueryBuilder(QueryBuilderBase):
         self.location_info_subquery = self.get_location_info_subquery(self.base_cte)
 
     def get_base_cte(self) -> CTE:
+        # Get all recent searches for the user, ordered by id desc, limited to 10
         return (
             select(RecentSearch.id.label(self.search_id_label))
             .where(RecentSearch.user_id == self.user_id)
@@ -43,6 +44,7 @@ class GetUserRecentSearchesQueryBuilder(QueryBuilderBase):
         )
 
     def get_record_category_subquery(self, base_cte: CTE) -> Subquery:
+        # Get the record categories associated with each recent search
         search_id = base_cte.c[self.search_id_label]
 
         return (
@@ -65,6 +67,7 @@ class GetUserRecentSearchesQueryBuilder(QueryBuilderBase):
         )
 
     def get_location_info_subquery(self, base_cte: CTE) -> Subquery:
+        # Get the location info associated with each recent search
         search_id = base_cte.c[self.search_id_label]
 
         return (
@@ -85,7 +88,7 @@ class GetUserRecentSearchesQueryBuilder(QueryBuilderBase):
             .subquery("location_info")
         )
 
-    def run(self) -> Any:
+    def run(self) -> dict:
         search_id = self.base_cte.c[self.search_id_label]
 
         query = (

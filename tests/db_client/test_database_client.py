@@ -12,6 +12,7 @@ from db.client.core import DatabaseClient
 from db.db_client_dataclasses import (
     OrderByParameters,
 )
+from endpoints.instantiations.search.follow.get.query.core import GetUserFollowedSearchesQueryBuilder
 from db.subquery_logic import SubqueryParameterManager
 from db.enums import (
     SortOrder,
@@ -295,8 +296,13 @@ def test_user_followed_searches_logic(
         location_id=2,
     )
 
+    def get_user_followed_searches():
+        return tdc.db_client.run_query_builder(
+            GetUserFollowedSearchesQueryBuilder(user_id=user_info.id)
+        )
+
     # Get the user's followed searches
-    results = tdc.db_client.get_user_followed_searches(user_id=user_info.id)
+    results = get_user_followed_searches()
     assert len(results["data"]) == 2
 
     # Unfollow one of the searches
@@ -306,7 +312,7 @@ def test_user_followed_searches_logic(
     )
 
     # Get the user's followed searches, and ensure the un-followed search is gone
-    results = tdc.db_client.get_user_followed_searches(user_id=user_info.id)
+    results = get_user_followed_searches()
     assert len(results["data"]) == 1
 
 

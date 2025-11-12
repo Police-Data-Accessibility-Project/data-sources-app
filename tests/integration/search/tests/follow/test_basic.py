@@ -8,7 +8,7 @@ from db.helpers_.result_formatting import get_display_name
 from endpoints.schema_config.instantiations.search.follow.delete import (
     SearchFollowDeleteEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.search.follow.get import (
+from endpoints.instantiations.search.follow.get.schema_config import (
     SearchFollowGetEndpointSchemaConfig,
 )
 from middleware.enums import RecordTypesEnum
