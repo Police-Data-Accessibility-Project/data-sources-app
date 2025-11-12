@@ -29,7 +29,7 @@ class PostDataSourceQuery(QueryBuilderBase):
             source_url=ds_request.source_url,
             name=ds_request.name,
             description=ds_request.description,
-            record_type_id=record_type_id_mapping[ds_request.record_type_name],
+            record_type_id=record_type_id_mapping[ds_request.record_type_name] if ds_request.record_type_name else None,
             agency_supplied=ds_request.agency_supplied,
             supplying_entity=ds_request.supplying_entity,
             agency_originated=ds_request.agency_originated,

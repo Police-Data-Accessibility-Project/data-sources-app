@@ -39,12 +39,12 @@ class PostDataSourceRequest(BaseModel):
     originating_entity: Optional[str] = default_field_not_required()
     retention_schedule: Optional[RetentionSchedule] = default_field_not_required()
     scraper_url: Optional[str] = default_field_not_required()
-    submission_notes: Optional[str] = default_field_not_required()  # X
-    rejection_note: Optional[str] = default_field_not_required()  # X
-    submitter_contact_info: Optional[str] = default_field_not_required()  # X
+    submission_notes: Optional[str] = default_field_not_required()  
+    rejection_note: Optional[str] = default_field_not_required()  
+    submitter_contact_info: Optional[str] = default_field_not_required()  
     agency_described_not_in_database: Optional[str] = default_field_not_required()
     data_portal_type_other: Optional[str] = default_field_not_required()
-    data_source_request: Optional[str] = default_field_not_required()  # X
+    data_source_request: Optional[str] = default_field_not_required()  
     record_type_name: Optional[RecordTypesEnum] = default_field_not_required()
 
 
