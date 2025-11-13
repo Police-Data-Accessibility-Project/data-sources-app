@@ -3,7 +3,9 @@ from typing import Any
 from flask import Response, make_response
 
 from db.client.core import DatabaseClient
-from endpoints.instantiations.search.follow.get.query.core import GetUserFollowedSearchesQueryBuilder
+from endpoints.instantiations.search.follow.get.query.core import (
+    GetUserFollowedSearchesQueryBuilder,
+)
 from middleware.security.access_info.primary import AccessInfoPrimary
 
 

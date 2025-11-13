@@ -11,7 +11,9 @@ from db.models.implementations.links.user__followed_location import (
     LinkUserFollowedLocation,
 )
 from db.queries.builder.core import QueryBuilderBase
-from endpoints.instantiations.search.follow.get.query.helpers import build_record_category_type_dictionary
+from endpoints.instantiations.search.follow.get.query.helpers import (
+    build_record_category_type_dictionary,
+)
 
 
 class GetUserFollowedSearchesQueryBuilder(QueryBuilderBase):
@@ -81,8 +83,9 @@ class GetUserFollowedSearchesQueryBuilder(QueryBuilderBase):
             .where(LinkUserFollowedLocation.user_id == self.user_id)
             .options(
                 *self.location_selectin_loads(),
-                selectinload(LinkUserFollowedLocation.record_types)
-                .selectinload(RecordType.record_category),
+                selectinload(LinkUserFollowedLocation.record_types).selectinload(
+                    RecordType.record_category
+                ),
             )
         )
         return query

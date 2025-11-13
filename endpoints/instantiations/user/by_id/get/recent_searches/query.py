@@ -1,5 +1,3 @@
-from typing import Any
-
 from sqlalchemy import CTE, select, Subquery, func
 
 from db.models.implementations.core.location.core import Location

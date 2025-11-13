@@ -202,13 +202,12 @@ def create_asgi_app() -> Starlette:
             "https://pdap.dev",
             "https://data-sources.pdap.io",
             # Dev origins
-            "http://localhost:8888"
+            "http://localhost:8888",
         ],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
 
     app.mount("/api/v3", fast_api_app)
     app.mount("/api/v2", WSGIMiddlewareFastAPI(flask_app))
@@ -229,7 +228,6 @@ def create_fast_api_app() -> FastAPI:
     )
     for router in [sm_router, user_router]:
         fast_api_app.include_router(router)
-
 
     return fast_api_app
 

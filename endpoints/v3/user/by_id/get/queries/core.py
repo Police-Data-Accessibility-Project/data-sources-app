@@ -53,7 +53,9 @@ def extract_record_type_enums(record_types: list[RecordType]) -> list[RecordType
     return rt_enums
 
 
-def extract_record_category_enums(record_categories: list[RecordCategory]) -> list[RecordCategoryEnum]:
+def extract_record_category_enums(
+    record_categories: list[RecordCategory],
+) -> list[RecordCategoryEnum]:
     rc_enums: list[RecordCategoryEnum] = []
     for record_category in record_categories:
         rc_enums.append(RecordCategoryEnum(record_category.name))

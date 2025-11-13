@@ -14,7 +14,9 @@ from middleware.primary_resource_logic.reset_token_queries import (
 from middleware.primary_resource_logic.user_profile import (
     get_owner_data_requests_wrapper,
 )
-from endpoints.instantiations.user.by_id.get.recent_searches.wrapper import get_user_recent_searches
+from endpoints.instantiations.user.by_id.get.recent_searches.wrapper import (
+    get_user_recent_searches,
+)
 from endpoints.instantiations.user.by_id.get.middleware import get_user_by_id_wrapper
 from middleware.schema_and_dto.populate_parameters import (
     GET_MANY_SCHEMA_POPULATE_PARAMETERS,

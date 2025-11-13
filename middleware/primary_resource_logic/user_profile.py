@@ -32,5 +32,3 @@ def get_owner_data_requests(
         build_metadata=True,
     )
     return data_requests
-
-

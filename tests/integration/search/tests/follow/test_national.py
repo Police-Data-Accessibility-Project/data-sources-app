@@ -20,7 +20,7 @@ def test_search_national_follow(search_test_setup: SearchTestSetup):
     )
 
     # Get followed searches and confirm that national search is there,
-    endpoints.instantiations.search.follow.get.wrapper.get_followed_searches(
+    rv.get_followed_searches(
         headers=tus.jwt_authorization_header,
         expected_json_content={
             "metadata": {
@@ -53,7 +53,7 @@ def test_search_national_follow(search_test_setup: SearchTestSetup):
     )
 
     # Get followed searches and confirm that national search is not there
-    endpoints.instantiations.search.follow.get.wrapper.get_followed_searches(
+    rv.get_followed_searches(
         headers=tus.jwt_authorization_header,
         expected_json_content={
             "metadata": {

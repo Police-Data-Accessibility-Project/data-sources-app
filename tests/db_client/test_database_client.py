@@ -12,7 +12,9 @@ from db.client.core import DatabaseClient
 from db.db_client_dataclasses import (
     OrderByParameters,
 )
-from endpoints.instantiations.search.follow.get.query.core import GetUserFollowedSearchesQueryBuilder
+from endpoints.instantiations.search.follow.get.query.core import (
+    GetUserFollowedSearchesQueryBuilder,
+)
 from db.subquery_logic import SubqueryParameterManager
 from db.enums import (
     SortOrder,

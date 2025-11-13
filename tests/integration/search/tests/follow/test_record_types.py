@@ -16,7 +16,7 @@ def test_search_record_types(search_test_setup: SearchTestSetup):
     def check_result(
         expected_record_categories_dict: dict,
     ):
-        return endpoints.instantiations.search.follow.get.wrapper.get_followed_searches(
+        return rv.get_followed_searches(
             headers=sts.tus.jwt_authorization_header,
             expected_json_content={
                 "metadata": {
