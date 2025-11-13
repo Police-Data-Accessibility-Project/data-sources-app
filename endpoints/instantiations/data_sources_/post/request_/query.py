@@ -1,6 +1,7 @@
 from typing import Sequence
 
 from sqlalchemy import RowMapping, select
+from werkzeug.exceptions import InternalServerError
 
 from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
 from db.models.implementations.core.data_source.core import DataSource
@@ -25,32 +26,37 @@ class PostDataSourceQuery(QueryBuilderBase):
         )
         ds_request = self.request
 
-        ds_insert = DataSource(
-            source_url=ds_request.source_url,
-            name=ds_request.name,
-            description=ds_request.description,
-            record_type_id=record_type_id_mapping[ds_request.record_type_name],
-            agency_supplied=ds_request.agency_supplied,
-            supplying_entity=ds_request.supplying_entity,
-            agency_originated=ds_request.agency_originated,
-            agency_aggregation=_value_if_not_none(ds_request.agency_aggregation),
-            coverage_start=ds_request.coverage_start,
-            coverage_end=ds_request.coverage_end,
-            detail_level=ds_request.detail_level,
-            access_types=[at.value for at in ds_request.access_types]
-            if ds_request.access_types
-            else None,
-            data_portal_type=ds_request.data_portal_type,
-            record_formats=ds_request.record_formats,
-            update_method=_value_if_not_none(ds_request.update_method),
-            readme_url=ds_request.readme_url,
-            originating_entity=ds_request.originating_entity,
-            retention_schedule=_value_if_not_none(ds_request.retention_schedule),
-            scraper_url=ds_request.scraper_url,
-            agency_described_not_in_database=ds_request.agency_described_not_in_database,
-            data_portal_type_other=ds_request.data_portal_type_other,
-            access_notes=ds_request.access_notes,
-        )
+        try:
+            ds_insert = DataSource(
+                source_url=ds_request.source_url,
+                name=ds_request.name,
+                description=ds_request.description,
+                record_type_id=record_type_id_mapping[ds_request.record_type_name]
+                if ds_request.record_type_name
+                else None,
+                agency_supplied=ds_request.agency_supplied,
+                supplying_entity=ds_request.supplying_entity,
+                agency_originated=ds_request.agency_originated,
+                agency_aggregation=_value_if_not_none(ds_request.agency_aggregation),
+                coverage_start=ds_request.coverage_start,
+                coverage_end=ds_request.coverage_end,
+                detail_level=ds_request.detail_level,
+                access_types=[at.value for at in ds_request.access_types]
+                if ds_request.access_types
+                else None,
+                data_portal_type=ds_request.data_portal_type,
+                record_formats=ds_request.record_formats,
+                update_method=_value_if_not_none(ds_request.update_method),
+                readme_url=ds_request.readme_url,
+                originating_entity=ds_request.originating_entity,
+                retention_schedule=_value_if_not_none(ds_request.retention_schedule),
+                scraper_url=ds_request.scraper_url,
+                agency_described_not_in_database=ds_request.agency_described_not_in_database,
+                data_portal_type_other=ds_request.data_portal_type_other,
+                access_notes=ds_request.access_notes,
+            )
+        except Exception as e:
+            raise InternalServerError(f"Error creating data source: {e}")
 
         self.session.add(ds_insert)
         self.session.flush()

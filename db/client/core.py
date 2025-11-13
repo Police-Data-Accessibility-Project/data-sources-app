@@ -115,13 +115,10 @@ from db.queries.instantiations.notifications.update_queue import (
     OptionallyUpdateUserNotificationQueueQueryBuilder,
 )
 from db.queries.instantiations.search.follow.delete import DeleteFollowQueryBuilder
-from db.queries.instantiations.search.follow.get import (
-    GetUserFollowedSearchesQueryBuilder,
-)
 from db.queries.instantiations.search.follow.post import CreateFollowQueryBuilder
 from db.queries.instantiations.search.record import CreateSearchRecordQueryBuilder
 from db.queries.instantiations.user.create import CreateNewUserQueryBuilder
-from db.queries.instantiations.user.get_recent_searches import (
+from endpoints.instantiations.user.by_id.get.recent_searches.query import (
     GetUserRecentSearchesQueryBuilder,
 )
 from db.queries.instantiations.util.create_entry_in_table import (
@@ -1093,11 +1090,6 @@ class DatabaseClient:
             subquery_parameters=subquery_parameters,
         )
         return linked_results
-
-    def get_user_followed_searches(self, user_id: int) -> dict[str, Any]:
-        return self.run_query_builder(
-            GetUserFollowedSearchesQueryBuilder(user_id=user_id)
-        )
 
     DataRequestIssueInfo = namedtuple(
         "DataRequestIssueInfo",

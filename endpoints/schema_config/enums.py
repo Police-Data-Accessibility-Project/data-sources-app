@@ -162,7 +162,7 @@ from endpoints.schema_config.instantiations.search.federal import (
 from endpoints.schema_config.instantiations.search.follow.delete import (
     SearchFollowDeleteEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.search.follow.get import (
+from endpoints.instantiations.search.follow.get.schema_config import (
     SearchFollowGetEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.search.follow.national import (

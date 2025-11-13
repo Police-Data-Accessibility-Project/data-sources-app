@@ -32,9 +32,7 @@ from middleware.primary_resource_logic.search.wrappers.follow.create import (
 from middleware.primary_resource_logic.search.wrappers.follow.delete import (
     delete_followed_search,
 )
-from middleware.primary_resource_logic.search.wrappers.follow.get import (
-    get_followed_searches,
-)
+from endpoints.instantiations.search.follow.get.wrapper import get_followed_searches
 from middleware.primary_resource_logic.search.wrappers.follow.national.follow import (
     follow_national_wrapper,
 )

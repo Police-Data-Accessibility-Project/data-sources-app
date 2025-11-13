@@ -32,11 +32,3 @@ def get_owner_data_requests(
         build_metadata=True,
     )
     return data_requests
-
-
-def get_user_recent_searches(db_client: DatabaseClient, access_info: AccessInfoPrimary):
-    recent_searches = db_client.get_user_recent_searches(
-        user_id=access_info.get_user_id()
-    )
-
-    return make_response(recent_searches)
