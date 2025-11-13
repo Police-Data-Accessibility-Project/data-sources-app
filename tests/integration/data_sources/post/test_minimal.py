@@ -1,6 +1,10 @@
-from endpoints.instantiations.data_sources_.post.request_.endpoint_schema_config import \
-    PostDataSourceRequestEndpointSchemaConfig
-from endpoints.instantiations.data_sources_.post.request_.model import PostDataSourceOuterRequest, PostDataSourceRequest
+from endpoints.instantiations.data_sources_.post.request_.endpoint_schema_config import (
+    PostDataSourceRequestEndpointSchemaConfig,
+)
+from endpoints.instantiations.data_sources_.post.request_.model import (
+    PostDataSourceOuterRequest,
+    PostDataSourceRequest,
+)
 from tests.helpers.helper_classes.test_data_creator.flask import TestDataCreatorFlask
 
 

@@ -1,4 +1,3 @@
-import endpoints.instantiations.search.follow.get.wrapper
 from middleware.enums import RecordTypesEnum
 from tests.integration.search.search_test_setup import SearchTestSetup
 from utilities.enums import RecordCategoryEnum

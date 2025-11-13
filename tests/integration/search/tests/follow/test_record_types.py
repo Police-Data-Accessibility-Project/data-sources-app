@@ -1,4 +1,3 @@
-import endpoints.instantiations.search.follow.get.wrapper
 from db.enums import LocationType
 from db.helpers_.result_formatting import get_display_name
 from db.models.implementations.links.follow__record_types import LinkFollowRecordType
