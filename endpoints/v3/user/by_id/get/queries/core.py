@@ -192,12 +192,12 @@ class GetUserByIdQueryBuilder(QueryBuilderBase):
             # Compile Record Types and Categories
             subscriptions_by_category: dict[str, str] = {}
             record_types: list[RecordTypesEnum] = []
-            record_categories: list[RecordCategoryEnum] = []
+            record_categories: set[RecordCategoryEnum] = set()
             for record_type in follow.record_types:
                 record_category_name = record_type.record_category.name
                 record_type_name = record_type.name
                 record_types.append(RecordTypesEnum(record_type_name))
-                record_categories.append(RecordCategoryEnum(record_category_name))
+                record_categories.add(RecordCategoryEnum(record_category_name))
                 subscriptions_by_category[record_category_name] = record_type_name
 
             result = GetUserFollowedSearchModel(
@@ -216,7 +216,7 @@ class GetUserByIdQueryBuilder(QueryBuilderBase):
                 ),
                 record_types_by_category=subscriptions_by_category,
                 record_types=record_types,
-                record_categories=record_categories,
+                record_categories=list(record_categories),
             )
             results.append(result)
 
