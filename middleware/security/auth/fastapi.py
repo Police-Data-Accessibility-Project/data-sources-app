@@ -44,10 +44,10 @@ def get_relevant_permissions(raw_permissions: list[str]) -> list[PermissionsEnum
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-def get_source_collector_access_info(
+def get_source_collector_data_sources_access_info(
     token: Annotated[str, Depends(oauth2_scheme)],
 ) -> AccessInfoPrimary:
-    return check_access(token, PermissionsEnum.SOURCE_COLLECTOR)
+    return check_access(token, PermissionsEnum.SOURCE_COLLECTOR_DATA_SOURCES)
 
 
 def get_standard_access_info(
