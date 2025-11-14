@@ -1,3 +1,4 @@
+import traceback
 from http import HTTPStatus
 from typing import Any
 
@@ -12,4 +13,8 @@ def run_query_builder(query_builder: QueryBuilderBase) -> Any:
         db_client = DatabaseClient()
         return db_client.run_query_builder(query_builder)
     except Exception as e:
-        raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e))
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
