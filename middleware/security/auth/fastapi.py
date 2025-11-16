@@ -61,8 +61,7 @@ def get_source_collector_data_sources_access_info(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=e.description,
         )
-    except HTTPException as e:
-        raise e
+
 
 
 def get_standard_access_info(
