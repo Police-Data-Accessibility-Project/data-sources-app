@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt import InvalidTokenError
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, Unauthorized
 
 from middleware.enums import PermissionsEnum
 from middleware.security.access_info.primary import AccessInfoPrimary
@@ -54,6 +54,11 @@ def get_source_collector_data_sources_access_info(
     except BadRequest as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
+            detail=e.description,
+        )
+    except Unauthorized as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail=e.description,
         )
     except HTTPException as e:
