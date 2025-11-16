@@ -2,7 +2,7 @@ import traceback
 
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 from flask_jwt_extended.exceptions import NoAuthorizationError
-from jwt import ExpiredSignatureError
+from jwt import ExpiredSignatureError, DecodeError
 from werkzeug.exceptions import BadRequest, InternalServerError
 
 from middleware.security.access_info.primary import AccessInfoPrimary
@@ -30,7 +30,11 @@ class JWTService:
             )
         except ExpiredSignatureError:
             raise BadRequest("Token has expired")
-        except Exception:
+        except DecodeError:
+            raise BadRequest("Token is invalid")
+        except BadRequest:
+            raise
+        except Exception as e:
             traceback.print_exc()
             raise InternalServerError("Unexpected error. See internal stack trace for details.")
         if isinstance(simple_jwt.sub, dict):

@@ -54,7 +54,7 @@ def test_reset_password_post(
     tdc.request_validator.get(
         endpoint=DATA_SOURCES_BASE_ENDPOINT,
         headers=get_authorization_header(scheme="Bearer", token=token),
-        expected_response_status=HTTPStatus.UNAUTHORIZED,
+        expected_response_status=HTTPStatus.BAD_REQUEST,
     )
 
     new_password = str(uuid.uuid4())
@@ -70,7 +70,10 @@ def test_reset_password_post(
     )
 
     # User should not be able to log in with the old password
-    login(password=user_info.password, expected_response_status=HTTPStatus.UNAUTHORIZED)
+    login(
+        password=user_info.password,
+        expected_response_status=HTTPStatus.UNAUTHORIZED
+    )
 
     # User should be able to login with the new password
     login(password=new_password)

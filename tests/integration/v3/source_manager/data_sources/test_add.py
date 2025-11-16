@@ -1,7 +1,7 @@
 from datetime import date
 
 from db.client.core import DatabaseClient
-from db.enums import AgencyAggregation, UpdateMethod, RetentionSchedule, AccessType
+from db.enums import AgencyAggregation, UpdateMethod, RetentionSchedule, AccessType, URLStatus
 from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
 from db.models.implementations.core.data_source.core import DataSource
 from endpoints.v3.source_manager.sync.data_sources.add.request import (
@@ -52,6 +52,7 @@ def test_source_manager_data_sources_add(
                         access_notes="Test Access Notes",
                         access_types=[AccessType.API, AccessType.DOWNLOAD],
                         agency_ids=[agency_id_1, agency_id_2],
+                        url_status=URLStatus.OK
                     ),
                 ),
                 AddDataSourcesInnerRequest(
@@ -61,7 +62,7 @@ def test_source_manager_data_sources_add(
                         name="test2",
                         record_type=RecordTypesEnum.GEOGRAPHIC,
                         description="Test description",
-                        record_formats=None,
+                        record_formats=[],
                         data_portal_type=None,
                         supplying_entity=None,
                         coverage_start=None,
@@ -76,8 +77,9 @@ def test_source_manager_data_sources_add(
                         retention_schedule=None,
                         scraper_url=None,
                         access_notes=None,
-                        access_types=None,
+                        access_types=[],
                         agency_ids=[agency_id_1],
+                        url_status=URLStatus.OK
                     ),
                 ),
             ]
