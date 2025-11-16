@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt import InvalidTokenError
+from werkzeug.exceptions import BadRequest
 
 from middleware.enums import PermissionsEnum
 from middleware.security.access_info.primary import AccessInfoPrimary
@@ -47,7 +48,16 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 def get_source_collector_data_sources_access_info(
     token: Annotated[str, Depends(oauth2_scheme)],
 ) -> AccessInfoPrimary:
-    return check_access(token, PermissionsEnum.SOURCE_COLLECTOR_DATA_SOURCES)
+    try:
+        return check_access(token, PermissionsEnum.SOURCE_COLLECTOR_DATA_SOURCES)
+    # Translate exceptions into FastAPI exceptions
+    except BadRequest as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=e.description,
+        )
+    except HTTPException as e:
+        raise e
 
 
 def get_standard_access_info(
