@@ -7,6 +7,7 @@ from endpoints.v3.source_manager.sync.data_sources.add.query import (
 from endpoints.v3.source_manager.sync.data_sources.add.request import (
     AddDataSourcesOuterRequest,
 )
+from endpoints.v3.source_manager.sync.shared.functions import run_sync_query_builder
 from endpoints.v3.source_manager.sync.shared.models.response.add import (
     SourceManagerSyncAddOuterResponse,
 )
@@ -15,10 +16,6 @@ from endpoints.v3.source_manager.sync.shared.models.response.add import (
 def source_manager_add_data_sources(
     request: AddDataSourcesOuterRequest,
 ) -> SourceManagerSyncAddOuterResponse:
-    try:
-        db_client = DatabaseClient()
-        return db_client.run_query_builder(
-            SourceManagerAddDataSourcesQueryBuilder(request)
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return run_sync_query_builder(
+        SourceManagerAddDataSourcesQueryBuilder(request)
+    )
