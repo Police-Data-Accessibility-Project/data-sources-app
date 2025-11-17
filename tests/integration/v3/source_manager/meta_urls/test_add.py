@@ -43,7 +43,8 @@ def test_source_manager_meta_urls_add(
                     AddMetaURLsInnerRequest(
                         request_id=3,
                         content=MetaURLSyncContentModel(
-                            url="https://www.example.com/agency_meta_url", agency_ids=[agency_id_1]
+                            url="https://www.example.com/agency_meta_url",
+                            agency_ids=[agency_id_1],
                         ),
                     ),
                 ]

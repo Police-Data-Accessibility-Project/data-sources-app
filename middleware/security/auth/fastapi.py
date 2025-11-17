@@ -63,7 +63,6 @@ def get_source_collector_data_sources_access_info(
         )
 
 
-
 def get_standard_access_info(
     token: Annotated[str, Depends(oauth2_scheme)],
 ) -> AccessInfoPrimary:

@@ -14,7 +14,4 @@ def run_query_builder(query_builder: QueryBuilderBase) -> Any:
         return db_client.run_query_builder(query_builder)
     except Exception as e:
         traceback.print_exc()
-        raise HTTPException(
-            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e))

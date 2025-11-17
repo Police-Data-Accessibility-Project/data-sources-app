@@ -8,7 +8,10 @@ from db.models.implementations.links.agency__data_source import LinkAgencyDataSo
 from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.record.type import RecordType
 from db.queries.builder.core import QueryBuilderBase
-from endpoints.v3.source_manager.sync.data_sources.add.helpers import _consolidate_responses, _value_if_not_none
+from endpoints.v3.source_manager.sync.data_sources.add.helpers import (
+    _consolidate_responses,
+    _value_if_not_none,
+)
 from endpoints.v3.source_manager.sync.data_sources.add.request import (
     AddDataSourcesOuterRequest,
 )
@@ -38,15 +41,10 @@ class SourceManagerAddDataSourcesQueryBuilder(QueryBuilderBase):
         )
 
     def _get_preexisting_url_mappings(self, urls: list[str]) -> URLMapper:
-        query = (
-            select(
-                DataSource.source_url,
-                DataSource.id,
-            )
-            .where(
-                DataSource.source_url.in_(urls)
-            )
-        )
+        query = select(
+            DataSource.source_url,
+            DataSource.id,
+        ).where(DataSource.source_url.in_(urls))
         mappings: Sequence[RowMapping] = self.mappings(query)
         return URLMapper(
             mappings=[
@@ -61,11 +59,9 @@ class SourceManagerAddDataSourcesQueryBuilder(QueryBuilderBase):
     def _add_data_sources(self) -> AddMappings:
         # Check whether any URLs are already in database
         urls: list[str] = [
-            ds_request.content.source_url
-            for ds_request in self.request.data_sources
+            ds_request.content.source_url for ds_request in self.request.data_sources
         ]
         preexisting_url_mapper: URLMapper = self._get_preexisting_url_mappings(urls)
-
 
         record_type_id_mapping: dict[RecordTypesEnum, int] = (
             self.get_record_type_id_mapping()
@@ -73,7 +69,6 @@ class SourceManagerAddDataSourcesQueryBuilder(QueryBuilderBase):
         data_source_inserts: list[DataSource] = []
         request_app_mappings: dict[int, int] = {}
         for ds_request in self.request.data_sources:
-
             content = ds_request.content
             # For preexisting URLs, just add to mappings and skip insert
             if preexisting_url_mapper.url_exists(content.source_url):

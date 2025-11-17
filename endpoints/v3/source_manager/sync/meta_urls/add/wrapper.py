@@ -13,6 +13,4 @@ from endpoints.v3.source_manager.sync.shared.models.response.add import (
 def source_manager_add_meta_urls(
     request: AddMetaURLsOuterRequest,
 ) -> SourceManagerSyncAddOuterResponse:
-    return run_sync_query_builder(
-        SourceManagerAddMetaURLsQueryBuilder(request)
-    )
+    return run_sync_query_builder(SourceManagerAddMetaURLsQueryBuilder(request))

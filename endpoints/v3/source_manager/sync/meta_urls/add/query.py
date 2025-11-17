@@ -60,15 +60,10 @@ class SourceManagerAddMetaURLsQueryBuilder(QueryBuilderBase):
         self.add_many(link_inserts)
 
     def _get_preexisting_url_mappings(self, urls: list[str]) -> URLMapper:
-        query = (
-            select(
-                MetaURL.url,
-                MetaURL.id,
-            )
-            .where(
-                MetaURL.url.in_(urls)
-            )
-        )
+        query = select(
+            MetaURL.url,
+            MetaURL.id,
+        ).where(MetaURL.url.in_(urls))
         mappings: Sequence[RowMapping] = self.mappings(query)
         return URLMapper(
             mappings=[
@@ -84,8 +79,7 @@ class SourceManagerAddMetaURLsQueryBuilder(QueryBuilderBase):
         meta_url_inserts: list[MetaURL] = []
 
         urls: list[str] = [
-            meta_url_request.content.url
-            for meta_url_request in self.request.meta_urls
+            meta_url_request.content.url for meta_url_request in self.request.meta_urls
         ]
 
         preexisting_url_mapper: URLMapper = self._get_preexisting_url_mappings(urls)
@@ -94,7 +88,9 @@ class SourceManagerAddMetaURLsQueryBuilder(QueryBuilderBase):
         for meta_url_request in self.request.meta_urls:
             # For preexisting URLs, just add to mappings and skip insert
             if preexisting_url_mapper.url_exists(meta_url_request.content.url):
-                url_id: int = preexisting_url_mapper.get_id(meta_url_request.content.url)
+                url_id: int = preexisting_url_mapper.get_id(
+                    meta_url_request.content.url
+                )
                 request_app_mappings[meta_url_request.request_id] = url_id
                 continue
 

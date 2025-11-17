@@ -1,9 +1,13 @@
 from enum import Enum
 
-from endpoints.v3.source_manager.sync.shared.models.response.add import SourceManagerSyncAddInnerResponse
+from endpoints.v3.source_manager.sync.shared.models.response.add import (
+    SourceManagerSyncAddInnerResponse,
+)
 
 
-def _consolidate_responses(request_app_mappings: dict[int, int]) -> list[SourceManagerSyncAddInnerResponse]:
+def _consolidate_responses(
+    request_app_mappings: dict[int, int],
+) -> list[SourceManagerSyncAddInnerResponse]:
     inner_responses: list[SourceManagerSyncAddInnerResponse] = []
     for request_id, ds_id in request_app_mappings.items():
         inner_responses.append(

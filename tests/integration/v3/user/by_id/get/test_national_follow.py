@@ -1,5 +1,7 @@
 from endpoints.v3.user.by_id.get.response.core import GetUserProfileResponse
-from tests.helpers.helper_classes.test_data_creator.db_client_.core import TestDataCreatorDBClient
+from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
+    TestDataCreatorDBClient,
+)
 from tests.helpers.test_dataclasses import TestUserDBInfo
 from tests.integration.v3.helpers.api_test_helper import APITestHelper
 
@@ -8,7 +10,7 @@ def test_national_follow(
     test_data_creator_db_client: TestDataCreatorDBClient,
     api_test_helper: APITestHelper,
     national_id: int,
-    monkeypatch
+    monkeypatch,
 ):
     tdc = test_data_creator_db_client
     tus: TestUserDBInfo = tdc.user()

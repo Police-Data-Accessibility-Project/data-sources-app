@@ -1,7 +1,13 @@
 from datetime import date
 
 from db.client.core import DatabaseClient
-from db.enums import AgencyAggregation, UpdateMethod, RetentionSchedule, AccessType, URLStatus
+from db.enums import (
+    AgencyAggregation,
+    UpdateMethod,
+    RetentionSchedule,
+    AccessType,
+    URLStatus,
+)
 from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
 from db.models.implementations.core.data_source.core import DataSource
 from endpoints.v3.source_manager.sync.data_sources.add.request import (
@@ -23,7 +29,7 @@ def test_source_manager_data_sources_add(
     api_test_helper: APITestHelper,
     agency_id_1: int,
     agency_id_2: int,
-    data_source_id_1: int
+    data_source_id_1: int,
 ):
     response: SourceManagerSyncAddOuterResponse = api_test_helper.request_validator.post_v3(
         url="/source-manager/data-sources/add",
@@ -53,7 +59,7 @@ def test_source_manager_data_sources_add(
                         access_notes="Test Access Notes",
                         access_types=[AccessType.API, AccessType.DOWNLOAD],
                         agency_ids=[agency_id_1, agency_id_2],
-                        url_status=URLStatus.OK
+                        url_status=URLStatus.OK,
                     ),
                 ),
                 AddDataSourcesInnerRequest(
@@ -80,7 +86,7 @@ def test_source_manager_data_sources_add(
                         access_notes=None,
                         access_types=[],
                         agency_ids=[agency_id_1],
-                        url_status=URLStatus.OK
+                        url_status=URLStatus.OK,
                     ),
                 ),
                 # Add pre-existing data source
@@ -108,7 +114,7 @@ def test_source_manager_data_sources_add(
                         access_notes=None,
                         access_types=[],
                         agency_ids=[agency_id_1],
-                        url_status=URLStatus.OK
+                        url_status=URLStatus.OK,
                     ),
                 ),
             ]
@@ -119,7 +125,6 @@ def test_source_manager_data_sources_add(
     # Check that one of the db ids is for the preexisting data source
     db_ids: list[int] = [ent.app_id for ent in response.entities]
     assert data_source_id_1 in db_ids
-
 
     data_sources: list[dict] = live_database_client.get_all(DataSource)
     assert len(data_sources) == 3
