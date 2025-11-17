@@ -23,15 +23,16 @@ def test_source_manager_data_sources_add(
     api_test_helper: APITestHelper,
     agency_id_1: int,
     agency_id_2: int,
+    data_source_id_1: int
 ):
-    api_test_helper.request_validator.post_v3(
+    response: SourceManagerSyncAddOuterResponse = api_test_helper.request_validator.post_v3(
         url="/source-manager/data-sources/add",
         json=AddDataSourcesOuterRequest(
             data_sources=[
                 AddDataSourcesInnerRequest(
                     request_id=1,
                     content=DataSourceSyncContentModel(
-                        source_url="https://www.example.com/",
+                        source_url="https://www.example.com/1",
                         name="test",
                         record_type=RecordTypesEnum.CRIME_STATISTICS,
                         description="Test description",
@@ -82,15 +83,48 @@ def test_source_manager_data_sources_add(
                         url_status=URLStatus.OK
                     ),
                 ),
+                # Add pre-existing data source
+                AddDataSourcesInnerRequest(
+                    request_id=3,
+                    content=DataSourceSyncContentModel(
+                        source_url="https://www.example.com/",
+                        name="test3",
+                        record_type=RecordTypesEnum.GEOGRAPHIC,
+                        description="Test description",
+                        record_formats=[],
+                        data_portal_type=None,
+                        supplying_entity=None,
+                        coverage_start=None,
+                        coverage_end=None,
+                        agency_supplied=True,
+                        agency_originated=False,
+                        agency_aggregation=None,
+                        agency_described_not_in_database=None,
+                        update_method=None,
+                        readme_url=None,
+                        originating_entity=None,
+                        retention_schedule=None,
+                        scraper_url=None,
+                        access_notes=None,
+                        access_types=[],
+                        agency_ids=[agency_id_1],
+                        url_status=URLStatus.OK
+                    ),
+                ),
             ]
         ).model_dump(mode="json"),
         expected_model=SourceManagerSyncAddOuterResponse,
     )
 
-    data_sources: list[dict] = live_database_client.get_all(DataSource)
-    assert len(data_sources) == 2
+    # Check that one of the db ids is for the preexisting data source
+    db_ids: list[int] = [ent.app_id for ent in response.entities]
+    assert data_source_id_1 in db_ids
 
-    data_source_1 = data_sources[0]
+
+    data_sources: list[dict] = live_database_client.get_all(DataSource)
+    assert len(data_sources) == 3
+
+    data_source_1 = data_sources[1]
     assert data_source_1["name"] == "test"
     assert data_source_1["record_type_id"] == 27  # Geographic
     assert data_source_1["description"] == "Test description"
@@ -119,7 +153,7 @@ def test_source_manager_data_sources_add(
         AccessType.DOWNLOAD.value,
     ]
 
-    data_source_2 = data_sources[1]
+    data_source_2 = data_sources[2]
     assert data_source_2["name"] == "test2"
     assert data_source_2["record_type_id"] == 23  # Crime statistics
     assert data_source_2["description"] == "Test description"
@@ -142,10 +176,11 @@ def test_source_manager_data_sources_add(
 
     # Check links.
     links: list[dict] = live_database_client.get_all(LinkAgencyDataSource)
-    assert len(links) == 3
+    assert len(links) == 4
     link_tuples_set = {(link["agency_id"], link["data_source_id"]) for link in links}
     assert link_tuples_set == {
         (agency_id_1, data_source_1["id"]),
         (agency_id_2, data_source_1["id"]),
         (agency_id_1, data_source_2["id"]),
+        (agency_id_1, data_source_id_1),
     }

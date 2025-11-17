@@ -10,7 +10,7 @@ from db.queries.builder.core import QueryBuilderBase
 from endpoints.instantiations.data_sources_.post.request_.model import (
     PostDataSourceOuterRequest,
 )
-from endpoints.v3.source_manager.sync.data_sources.add.query import _value_if_not_none
+from endpoints.v3.source_manager.sync.data_sources.add.helpers import _value_if_not_none
 from middleware.enums import RecordTypesEnum
 
 

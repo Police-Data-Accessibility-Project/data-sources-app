@@ -19,6 +19,7 @@ def test_source_manager_meta_urls_add(
     api_test_helper: APITestHelper,
     agency_id_1: int,
     agency_id_2: int,
+    meta_url_id_1: int,
 ):
     response: SourceManagerSyncAddOuterResponse = (
         api_test_helper.request_validator.post_v3(
@@ -38,6 +39,13 @@ def test_source_manager_meta_urls_add(
                             agency_ids=[agency_id_2],
                         ),
                     ),
+                    # Add preexisting meta url
+                    AddMetaURLsInnerRequest(
+                        request_id=3,
+                        content=MetaURLSyncContentModel(
+                            url="https://www.example.com/agency_meta_url", agency_ids=[agency_id_1]
+                        ),
+                    ),
                 ]
             ).model_dump(mode="json"),
             expected_model=SourceManagerSyncAddOuterResponse,
@@ -47,18 +55,22 @@ def test_source_manager_meta_urls_add(
     assert {r.request_id for r in response.entities} == {
         1,
         2,
+        3,
     }
 
-    meta_urls: list[dict] = live_database_client.get_all(MetaURL)
-    assert len(meta_urls) == 2
+    db_ids: list[int] = [ent.app_id for ent in response.entities]
+    assert meta_url_id_1 in db_ids
 
-    meta_url_1: dict = meta_urls[0]
+    meta_urls: list[dict] = live_database_client.get_all(MetaURL)
+    assert len(meta_urls) == 3
+
+    meta_url_1: dict = meta_urls[1]
     assert meta_url_1["url"] == "https://meta-url.com"
     # assert meta_url_1["agency_id"] == agency_id_1
 
-    meta_url_2: dict = meta_urls[1]
+    meta_url_2: dict = meta_urls[2]
     assert meta_url_2["url"] == "https://meta-url-2.com"
     # assert meta_url_2["agency_id"] == agency_id_2
 
     links: list[dict] = live_database_client.get_all(LinkAgencyMetaURL)
-    assert len(links) == 2
+    assert len(links) == 3
