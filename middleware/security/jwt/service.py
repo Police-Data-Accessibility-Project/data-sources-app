@@ -34,9 +34,11 @@ class JWTService:
             raise BadRequest("Token is invalid")
         except BadRequest:
             raise
-        except Exception as e:
+        except Exception:
             traceback.print_exc()
-            raise InternalServerError("Unexpected error. See internal stack trace for details.")
+            raise InternalServerError(
+                "Unexpected error. See internal stack trace for details."
+            )
         if isinstance(simple_jwt.sub, dict):
             raise BadRequest("Sub is not a valid string.")
         return get_jwt_access_info_with_permissions(

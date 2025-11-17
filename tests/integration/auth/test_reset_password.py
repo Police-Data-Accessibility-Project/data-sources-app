@@ -70,10 +70,7 @@ def test_reset_password_post(
     )
 
     # User should not be able to log in with the old password
-    login(
-        password=user_info.password,
-        expected_response_status=HTTPStatus.UNAUTHORIZED
-    )
+    login(password=user_info.password, expected_response_status=HTTPStatus.UNAUTHORIZED)
 
     # User should be able to login with the new password
     login(password=new_password)

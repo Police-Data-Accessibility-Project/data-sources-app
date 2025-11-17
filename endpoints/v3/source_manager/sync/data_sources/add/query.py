@@ -1,26 +1,25 @@
-from enum import Enum
 from typing import Sequence
 
 from sqlalchemy import select, RowMapping
 
+from db.helpers_.url_mappings.mapper import URLMapper
+from db.helpers_.url_mappings.model import URLMapping
 from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
 from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.record.type import RecordType
 from db.queries.builder.core import QueryBuilderBase
+from endpoints.v3.source_manager.sync.data_sources.add.helpers import (
+    _consolidate_responses,
+    _value_if_not_none,
+)
 from endpoints.v3.source_manager.sync.data_sources.add.request import (
     AddDataSourcesOuterRequest,
 )
+from endpoints.v3.source_manager.sync.shared.add_mappings import AddMappings
 from endpoints.v3.source_manager.sync.shared.models.response.add import (
     SourceManagerSyncAddOuterResponse,
-    SourceManagerSyncAddInnerResponse,
 )
 from middleware.enums import RecordTypesEnum
-
-
-def _value_if_not_none(value: Enum | None) -> str | None:
-    if value is None:
-        return None
-    return value.value
 
 
 class SourceManagerAddDataSourcesQueryBuilder(QueryBuilderBase):
@@ -29,13 +28,54 @@ class SourceManagerAddDataSourcesQueryBuilder(QueryBuilderBase):
         self.request = request
 
     def run(self) -> SourceManagerSyncAddOuterResponse:
+        add_mappings: AddMappings = self._add_data_sources()
+
+        # Add agency links
+        self._add_agency_links(add_mappings)
+
+        # Consolidate response
+        inner_responses = _consolidate_responses(add_mappings.request_app_mappings)
+
+        return SourceManagerSyncAddOuterResponse(
+            entities=inner_responses,
+        )
+
+    def _get_preexisting_url_mappings(self, urls: list[str]) -> URLMapper:
+        query = select(
+            DataSource.source_url,
+            DataSource.id,
+        ).where(DataSource.source_url.in_(urls))
+        mappings: Sequence[RowMapping] = self.mappings(query)
+        return URLMapper(
+            mappings=[
+                URLMapping(
+                    url=mapping[DataSource.source_url],
+                    url_id=mapping[DataSource.id],
+                )
+                for mapping in mappings
+            ]
+        )
+
+    def _add_data_sources(self) -> AddMappings:
+        # Check whether any URLs are already in database
+        urls: list[str] = [
+            ds_request.content.source_url for ds_request in self.request.data_sources
+        ]
+        preexisting_url_mapper: URLMapper = self._get_preexisting_url_mappings(urls)
+
         record_type_id_mapping: dict[RecordTypesEnum, int] = (
             self.get_record_type_id_mapping()
         )
-
         data_source_inserts: list[DataSource] = []
+        request_app_mappings: dict[int, int] = {}
         for ds_request in self.request.data_sources:
             content = ds_request.content
+            # For preexisting URLs, just add to mappings and skip insert
+            if preexisting_url_mapper.url_exists(content.source_url):
+                url_id: int = preexisting_url_mapper.get_id(content.source_url)
+                request_app_mappings[ds_request.request_id] = url_id
+                continue
+
             ds_insert = DataSource(
                 source_url=content.source_url,
                 name=content.name,
@@ -64,38 +104,32 @@ class SourceManagerAddDataSourcesQueryBuilder(QueryBuilderBase):
                 url_status=_value_if_not_none(content.url_status),
             )
             data_source_inserts.append(ds_insert)
-
         # Add and get DS IDs
-        request_app_mappings: dict[int, int] = {}
         ds_ids: list[int] = self.add_many(data_source_inserts, return_ids=True)
         for ds_id, ds_request in zip(ds_ids, self.request.data_sources):
             request_app_mappings[ds_request.request_id] = ds_id
+        return AddMappings(
+            request_app_mappings=request_app_mappings,
+            preexisting_url_mapper=preexisting_url_mapper,
+        )
 
-        # Add agency links
+    def _add_agency_links(self, add_mappings: AddMappings) -> None:
         link_inserts: list[LinkAgencyDataSource] = []
+        request_app_mappings: dict[int, int] = add_mappings.request_app_mappings
+        preexisting_mapper: URLMapper = add_mappings.preexisting_url_mapper
         for ds_request in self.request.data_sources:
             ds_id: int = request_app_mappings[ds_request.request_id]
+
+            # For preexisting URLs, skip insert
+            if preexisting_mapper.id_exists(ds_id):
+                continue
+
             for agency_id in ds_request.content.agency_ids:
                 link_insert = LinkAgencyDataSource(
                     data_source_id=ds_id, agency_id=agency_id
                 )
                 link_inserts.append(link_insert)
-
         self.add_many(link_inserts)
-
-        # Consolidate response
-        inner_responses: list[SourceManagerSyncAddInnerResponse] = []
-        for request_id, ds_id in request_app_mappings.items():
-            inner_responses.append(
-                SourceManagerSyncAddInnerResponse(
-                    request_id=request_id,
-                    app_id=ds_id,
-                )
-            )
-
-        return SourceManagerSyncAddOuterResponse(
-            entities=inner_responses,
-        )
 
     def get_record_type_id_mapping(self) -> dict[RecordTypesEnum, int]:
         query = select(

@@ -42,7 +42,7 @@ def test_data_source_manager_data_sources_update(
                         name="Updated Data Source",
                         record_type=RecordTypesEnum.CAR_GPS,
                         agency_ids=[agency_id_1],
-                        url_status=URLStatus.OK
+                        url_status=URLStatus.OK,
                     ),
                 ),
                 UpdateDataSourcesInnerRequest(

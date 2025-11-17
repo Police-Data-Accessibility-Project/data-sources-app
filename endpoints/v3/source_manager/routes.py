@@ -61,14 +61,18 @@ from endpoints.v3.source_manager.sync.shared.models.response.add import (
 )
 from middleware.schema_and_dto.dtos.common_dtos import MessageDTO
 from middleware.security.access_info.primary import AccessInfoPrimary
-from middleware.security.auth.fastapi import get_source_collector_data_sources_access_info
+from middleware.security.auth.fastapi import (
+    get_source_collector_data_sources_access_info,
+)
 
 sm_router = APIRouter(prefix="/source-manager", tags=["Source Manager"])
 
 
 @sm_router.get("follows")
 def get_follows(
-    access_info: AccessInfoPrimary = Depends(get_source_collector_data_sources_access_info),
+    access_info: AccessInfoPrimary = Depends(
+        get_source_collector_data_sources_access_info
+    ),
 ) -> GetFollowsResponse:
     return DatabaseClient().run_query_builder(
         GetUserFollowsSourceCollectorQueryBuilder()
@@ -79,7 +83,9 @@ def get_follows(
 @sm_router.post("/data-sources/add")
 def add_data_sources(
     request: AddDataSourcesOuterRequest,
-    access_info: AccessInfoPrimary = Depends(get_source_collector_data_sources_access_info),
+    access_info: AccessInfoPrimary = Depends(
+        get_source_collector_data_sources_access_info
+    ),
 ) -> SourceManagerSyncAddOuterResponse:
     return source_manager_add_data_sources(request)
 
@@ -87,7 +93,9 @@ def add_data_sources(
 @sm_router.post("/data-sources/delete")
 def delete_data_sources(
     request: SourceManagerDeleteRequest,
-    access_info: AccessInfoPrimary = Depends(get_source_collector_data_sources_access_info),
+    access_info: AccessInfoPrimary = Depends(
+        get_source_collector_data_sources_access_info
+    ),
 ) -> MessageDTO:
     return source_manager_delete_data_sources(request)
 
@@ -95,7 +103,9 @@ def delete_data_sources(
 @sm_router.post("/data-sources/update", response_model_exclude_unset=True)
 def update_data_sources(
     request: UpdateDataSourcesOuterRequest,
-    access_info: AccessInfoPrimary = Depends(get_source_collector_data_sources_access_info),
+    access_info: AccessInfoPrimary = Depends(
+        get_source_collector_data_sources_access_info
+    ),
 ) -> MessageDTO:
     return source_manager_update_data_sources(request)
 
@@ -106,7 +116,9 @@ def update_data_sources(
 @sm_router.post("/meta-urls/add")
 def add_meta_urls(
     request: AddMetaURLsOuterRequest,
-    access_info: AccessInfoPrimary = Depends(get_source_collector_data_sources_access_info),
+    access_info: AccessInfoPrimary = Depends(
+        get_source_collector_data_sources_access_info
+    ),
 ) -> SourceManagerSyncAddOuterResponse:
     return source_manager_add_meta_urls(request)
 
@@ -114,7 +126,9 @@ def add_meta_urls(
 @sm_router.post("/meta-urls/delete")
 def delete_meta_urls(
     request: SourceManagerDeleteRequest,
-    access_info: AccessInfoPrimary = Depends(get_source_collector_data_sources_access_info),
+    access_info: AccessInfoPrimary = Depends(
+        get_source_collector_data_sources_access_info
+    ),
 ) -> MessageDTO:
     return source_manager_delete_meta_urls(request)
 
@@ -122,7 +136,9 @@ def delete_meta_urls(
 @sm_router.post("/meta-urls/update", response_model_exclude_unset=True)
 def update_meta_urls(
     request: UpdateMetaURLsOuterRequest,
-    access_info: AccessInfoPrimary = Depends(get_source_collector_data_sources_access_info),
+    access_info: AccessInfoPrimary = Depends(
+        get_source_collector_data_sources_access_info
+    ),
 ) -> MessageDTO:
     return source_manager_update_meta_urls(request)
 
@@ -133,7 +149,9 @@ def update_meta_urls(
 @sm_router.post("/agencies/add")
 def add_agencies(
     request: AddAgenciesOuterRequest,
-    access_info: AccessInfoPrimary = Depends(get_source_collector_data_sources_access_info),
+    access_info: AccessInfoPrimary = Depends(
+        get_source_collector_data_sources_access_info
+    ),
 ) -> SourceManagerSyncAddOuterResponse:
     return source_manager_add_agencies(request)
 
@@ -141,7 +159,9 @@ def add_agencies(
 @sm_router.post("/agencies/delete")
 def delete_agencies(
     request: SourceManagerDeleteRequest,
-    access_info: AccessInfoPrimary = Depends(get_source_collector_data_sources_access_info),
+    access_info: AccessInfoPrimary = Depends(
+        get_source_collector_data_sources_access_info
+    ),
 ) -> MessageDTO:
     try:
         return source_manager_delete_agencies(request)
@@ -152,6 +172,8 @@ def delete_agencies(
 @sm_router.post("/agencies/update", response_model_exclude_unset=True)
 def update_agencies(
     request: UpdateAgenciesOuterRequest,
-    access_info: AccessInfoPrimary = Depends(get_source_collector_data_sources_access_info),
+    access_info: AccessInfoPrimary = Depends(
+        get_source_collector_data_sources_access_info
+    ),
 ) -> MessageDTO:
     return source_manager_update_agencies(request)
