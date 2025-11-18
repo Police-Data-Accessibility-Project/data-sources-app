@@ -14,6 +14,10 @@ def mappings(session: Session, query: Select) -> Sequence[RowMapping]:
 def add_many(
     session: Session, models: list[Base], return_ids: bool = False
 ) -> list[int] | None:
+    if len(models) == 0:
+        # nothing to add
+        return [] if return_ids else None
+
     session.add_all(models)
     if return_ids:
         if not hasattr(models[0], "id"):
