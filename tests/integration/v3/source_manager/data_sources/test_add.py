@@ -60,6 +60,7 @@ def test_source_manager_data_sources_add(
                         access_types=[AccessType.API, AccessType.DOWNLOAD],
                         agency_ids=[agency_id_1, agency_id_2],
                         url_status=URLStatus.OK,
+                        internet_archive_url="https://www.example.com/internet-archive",
                     ),
                 ),
                 AddDataSourcesInnerRequest(
@@ -157,6 +158,7 @@ def test_source_manager_data_sources_add(
         AccessType.API.value,
         AccessType.DOWNLOAD.value,
     ]
+    assert data_source_1["internet_archive_url"] == "https://www.example.com/internet-archive"
 
     data_source_2 = data_sources[2]
     assert data_source_2["name"] == "test2"

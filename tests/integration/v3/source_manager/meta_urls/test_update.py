@@ -1,4 +1,5 @@
 from db.client.core import DatabaseClient
+from db.enums import URLStatus
 from db.models.implementations import LinkAgencyMetaURL
 from db.models.implementations.core.agency.meta_urls.sqlalchemy import MetaURL
 from endpoints.v3.source_manager.sync.meta_urls.shared.content import (
@@ -28,6 +29,8 @@ def test_source_manager_meta_urls_update(
                     content=MetaURLSyncContentModel(
                         url="https://meta-url.com/modified",
                         agency_ids=[agency_id_2],
+                        url_status=URLStatus.OK,
+                        internet_archive_url="https://www.example.com/internet-archive",
                     ),
                 ),
                 UpdateMetaURLsInnerRequest(
@@ -45,6 +48,8 @@ def test_source_manager_meta_urls_update(
 
     meta_url_1: dict = meta_urls[0]
     assert meta_url_1["url"] == "https://meta-url.com/modified"
+    assert meta_url_1["url_status"] == URLStatus.OK.value
+    assert meta_url_1["internet_archive_url"] == "https://www.example.com/internet-archive"
 
     meta_url_2: dict = meta_urls[1]
     assert meta_url_2["url"] == "https://meta-url-2.com/modified"

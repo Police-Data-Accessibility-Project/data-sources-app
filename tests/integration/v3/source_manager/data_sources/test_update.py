@@ -68,6 +68,7 @@ def test_data_source_manager_data_sources_update(
                         data_portal_type_other="Updated other data portal type",
                         access_notes="Updated access notes",
                         url_status=URLStatus.OK,
+                        internet_archive_url="https://www.example.com/internet-archive",
                         agency_supplied=None,
                         agency_ids=[agency_id_1, agency_id_2],
                     ),
@@ -142,6 +143,7 @@ def test_data_source_manager_data_sources_update(
     assert data_source_2["access_notes"] == "Updated access notes"
     assert data_source_2["url_status"] == URLStatus.OK.value
     assert data_source_2["agency_supplied"] is None
+    assert data_source_2["internet_archive_url"] == "https://www.example.com/internet-archive"
 
     # Test Links
     links: list[dict] = live_database_client.get_all(LinkAgencyDataSource)

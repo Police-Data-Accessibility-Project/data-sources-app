@@ -97,6 +97,8 @@ class SourceManagerAddMetaURLsQueryBuilder(QueryBuilderBase):
             content = meta_url_request.content
             meta_url_insert = MetaURL(
                 url=content.url,
+                internet_archive_url=content.internet_archive_url,
+                url_status=content.url_status.value,
             )
             meta_url_inserts.append(meta_url_insert)
 
