@@ -79,6 +79,7 @@ class DataSource(
     record_type_id: Mapped[int | None] = mapped_column(
         ForeignKey("public.record_types.id")
     )
+    internet_archive_url: Mapped[str | None] = mapped_column()
     updated_at: Mapped[date | None] = Column(DateTime, default=func.now())
 
     # Relationships

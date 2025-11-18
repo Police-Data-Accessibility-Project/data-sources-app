@@ -8,6 +8,7 @@ from db.queries.builder.core import QueryBuilderBase
 from endpoints.v3.source_manager.sync.meta_urls.update.request import (
     UpdateMetaURLsOuterRequest,
 )
+from utilities.common import value_if_enum
 
 
 class SourceManagerUpdateMetaURLsQueryBuilder(QueryBuilderBase):
@@ -25,7 +26,7 @@ class SourceManagerUpdateMetaURLsQueryBuilder(QueryBuilderBase):
             ).items():
                 if key in ("app_id",):
                     continue
-                bum[key] = value
+                bum[key] = value_if_enum(value)
             # Skip if no updates
             if len(bum) == 1:
                 continue

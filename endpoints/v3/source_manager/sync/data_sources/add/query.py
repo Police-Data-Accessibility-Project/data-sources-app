@@ -102,6 +102,7 @@ class SourceManagerAddDataSourcesQueryBuilder(QueryBuilderBase):
                 data_portal_type_other=content.data_portal_type_other,
                 access_notes=content.access_notes,
                 url_status=_value_if_not_none(content.url_status),
+                internet_archive_url=content.internet_archive_url,
             )
             data_source_inserts.append(ds_insert)
         # Add and get DS IDs

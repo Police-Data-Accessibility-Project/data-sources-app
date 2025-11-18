@@ -42,5 +42,6 @@ class DataSourceSyncContentModel(BaseModel):
     access_types: list[AccessType] = []
     data_portal_type_other: str | None = None
     url_status: URLStatus
+    internet_archive_url: str | None = None
 
     agency_ids: list[int] = Field(min_length=1)
