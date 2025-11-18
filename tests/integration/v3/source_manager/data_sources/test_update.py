@@ -143,7 +143,10 @@ def test_data_source_manager_data_sources_update(
     assert data_source_2["access_notes"] == "Updated access notes"
     assert data_source_2["url_status"] == URLStatus.OK.value
     assert data_source_2["agency_supplied"] is None
-    assert data_source_2["internet_archive_url"] == "https://www.example.com/internet-archive"
+    assert (
+        data_source_2["internet_archive_url"]
+        == "https://www.example.com/internet-archive"
+    )
 
     # Test Links
     links: list[dict] = live_database_client.get_all(LinkAgencyDataSource)
