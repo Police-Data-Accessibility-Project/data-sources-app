@@ -25,7 +25,7 @@ class User(StandardBase, CreatedAtMixin):
     # Relationships
     permissions = relationship(
         argument="Permission",
-        secondary="public.user_permissions",
+        secondary="public.link_users__permissions",
         primaryjoin="User.id == UserPermission.user_id",
         secondaryjoin="UserPermission.permission_id == Permission.id",
     )
