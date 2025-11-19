@@ -23,7 +23,7 @@ def test_source_manager_agencies_add(
 ):
     response: SourceManagerSyncAddOuterResponse = (
         api_test_helper.request_validator.post_v3(
-            url="/source-manager/agencies/add",
+            url="/sync/agencies/add",
             json=AddAgenciesOuterRequest(
                 agencies=[
                     AddAgenciesInnerRequest(

@@ -32,7 +32,7 @@ def test_source_manager_data_sources_add(
     data_source_id_1: int,
 ):
     response: SourceManagerSyncAddOuterResponse = api_test_helper.request_validator.post_v3(
-        url="/source-manager/data-sources/add",
+        url="/sync/data-sources/add",
         json=AddDataSourcesOuterRequest(
             data_sources=[
                 AddDataSourcesInnerRequest(

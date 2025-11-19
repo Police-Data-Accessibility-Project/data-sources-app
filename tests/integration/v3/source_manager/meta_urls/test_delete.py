@@ -13,7 +13,7 @@ def test_source_manager_meta_urls_delete(
     live_database_client: DatabaseClient,
 ):
     api_test_helper.request_validator.post_v3(
-        url="/source-manager/meta-urls/delete",
+        url="/sync/meta-urls/delete",
         json=SourceManagerDeleteRequest(ids=[meta_url_id_1, meta_url_id_2]).model_dump(
             mode="json"
         ),

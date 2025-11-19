@@ -65,10 +65,10 @@ from middleware.security.auth.fastapi import (
     get_source_collector_data_sources_access_info,
 )
 
-sm_router = APIRouter(prefix="/source-manager", tags=["Source Manager"])
+sm_router = APIRouter(prefix="/sync", tags=["Sync"])
 
 
-@sm_router.get("follows")
+@sm_router.get("/follows")
 def get_follows(
     access_info: AccessInfoPrimary = Depends(
         get_source_collector_data_sources_access_info

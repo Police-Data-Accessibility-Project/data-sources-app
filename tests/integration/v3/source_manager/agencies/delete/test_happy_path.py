@@ -13,7 +13,7 @@ def test_source_manager_agencies_delete_happy_path(
     api_test_helper: APITestHelper,
 ):
     api_test_helper.request_validator.post_v3(
-        url="/source-manager/agencies/delete",
+        url="/sync/agencies/delete",
         json=SourceManagerDeleteRequest(ids=[agency_id_1, agency_id_2]).model_dump(
             mode="json"
         ),

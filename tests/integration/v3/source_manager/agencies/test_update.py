@@ -21,7 +21,7 @@ def test_source_manager_agencies_update_happy_path(
     api_test_helper: APITestHelper,
 ):
     api_test_helper.request_validator.post_v3(
-        url="/source-manager/agencies/update",
+        url="/sync/agencies/update",
         json=UpdateAgenciesOuterRequest(
             agencies=[
                 UpdateAgenciesInnerRequest(

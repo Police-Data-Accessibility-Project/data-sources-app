@@ -23,7 +23,7 @@ def test_source_manager_meta_urls_add(
     meta_url_id_1: int,
 ):
     response: SourceManagerSyncAddOuterResponse = api_test_helper.request_validator.post_v3(
-        url="/source-manager/meta-urls/add",
+        url="/sync/meta-urls/add",
         json=AddMetaURLsOuterRequest(
             meta_urls=[
                 AddMetaURLsInnerRequest(
