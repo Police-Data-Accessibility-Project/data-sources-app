@@ -13,7 +13,7 @@ def test_source_manager_data_sources_delete(
     data_source_id_2: int,
 ):
     api_test_helper.request_validator.post_v3(
-        url="/source-manager/data-sources/delete",
+        url="/sync/data-sources/delete",
         json=SourceManagerDeleteRequest(
             ids=[data_source_id_1, data_source_id_2]
         ).model_dump(mode="json"),

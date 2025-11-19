@@ -21,7 +21,7 @@ def test_source_manager_meta_urls_update(
     live_database_client: DatabaseClient,
 ):
     api_test_helper.request_validator.post_v3(
-        url="/source-manager/meta-urls/update",
+        url="/sync/meta-urls/update",
         json=UpdateMetaURLsOuterRequest(
             meta_urls=[
                 UpdateMetaURLsInnerRequest(

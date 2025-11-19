@@ -31,7 +31,7 @@ def test_data_source_manager_data_sources_update(
     agency_id_2: int,
 ):
     api_test_helper.request_validator.post_v3(
-        url="/source-manager/data-sources/update",
+        url="/sync/data-sources/update",
         json=UpdateDataSourcesOuterRequest(
             data_sources=[
                 # The majority of these are left undefined to test that they are not updated

@@ -17,7 +17,7 @@ def test_source_manager_agencies_delete_forbid_meta_url(
 ):
     with pytest.raises(HTTPException) as exc_info:
         api_test_helper.request_validator.post_v3(
-            url="/source-manager/agencies/delete",
+            url="/sync/agencies/delete",
             json=SourceManagerDeleteRequest(ids=[agency_id_1, agency_id_2]).model_dump(
                 mode="json"
             ),
